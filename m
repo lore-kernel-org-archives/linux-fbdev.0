@@ -1,21 +1,22 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: atyfb correction for 3D Rage Mobility L
-Date: Wed, 21 Apr 2004 18:51:01 +0100 (BST)
+Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
+ one works ;-)
+Date: Wed, 21 Apr 2004 19:03:01 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0404211849460.9207-100000@phoenix.infradead.org>
-References: <408681FA.50607@free.fr>
+Message-ID: <Pine.LNX.4.44.0404211851520.9207-100000@phoenix.infradead.org>
+References: <1082507399.2056.26.camel@gaston>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BGLsI-0008AA-U2
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 10:51:06 -0700
+	id 1BGM3u-00032b-Tq
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 11:03:06 -0700
 Received: from phoenix.infradead.org ([213.86.99.234])
 	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1BGLsI-0003Sn-Ko
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 10:51:06 -0700
-In-Reply-To: <408681FA.50607@free.fr>
+	id 1BGM3u-0006Kx-Dc
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 11:03:06 -0700
+In-Reply-To: <1082507399.2056.26.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,45 +28,47 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Arnaud FONTAINE <arnaud.fontaine@free.fr>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: David Eger <eger-dated-1082943669.d79d33@theboonies.us>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
 
-Yes those are the correct values. They are in a newer ATI driver I have. I 
-looked at the default 2.6.5 code and it looks correct. Are you sure you 
-are not using a modified driver?
+> Why not simply
+> 
+>  1) Document properly what those various options do
+>  2) Let the driver provide it's "preferred" scroll mode ? It's sort-of
+>     a stack violation since it really only affects fbcon at this point,
+>     but since it's just an "hint", it's perfectly acceptable.
+> 
+> (Note: I'm not sure about controlfb at this point, I have to dig
+> out some old HW and test)
+> 
+> Also, we sort-of lost the ability to have fbcon specific accels in the
+> drivers... 
 
+I agree. I don't doubt that in time we will find that the low level driver 
+has to deal with this. Also it would really nice if userland new which is 
+better for when it would using the accel engine.
 
-On Wed, 21 Apr 2004, Arnaud FONTAINE wrote:
+> It would have been nice to be able to store the font in
+> vram and use blits to composite text, but that would have meant having
+> fbcon-related hooks =P Or maybe we can find a clean way to express that
+> to fbcon without clobbering fbdev's with fbcon-related datas ? Simply by
+> having fbcon request a vres big enough to store the font data outside
+> of the visible area and using copyarea ?
 
-> Hi,
-> I'm running a Debian sarge on an iBook SE with a 2.6.5 kernel.
-> My iBook contains a "3D Rage Mobility L" and I've had some troubles with
-> the atyfb: my screen was turning blank.
-> 
-> I've modified the MCLCK and XCLCK of the "3D Rage Mobility L" in
-> drivers/video/aty/atyfb_base.c :
-> 
-> # old version
-> 	{ 0x4c4e, 0x4c4e, 0x00, 0x00, m64n_mob_a, 230, 83, 125, M64F_GT |
-> M64F_INTEGRATED | M64F_RESET_3D | M64F_GTB_DSP | M64F_MOBIL_BUS |
-> M64F_MFB_FORCE_4 }
-> 
-> 
-> # new version
-> 	{ 0x4c4e, 0x4c4e, 0x00, 0x00, m64n_mob_a, 230, 50, 50, M64F_GT |
-> M64F_INTEGRATED | M64F_RESET_3D | M64F_GTB_DSP | M64F_MOBIL_BUS |
-> M64F_MFB_FORCE_4 }
-> 
-> 
-> I don't know if these settings are rights for every architectures, but
-> for powerpc it is.
-> 
-> Thanks in advance
-> 
-> Arnaud FONTAINE
-> 
-> 
+Struct fb_pixmap. We have data pointer *addr. The only problem is using 
+the memory space to the right of the visible framebuffer
+
+------------|
+|	|   |
+|	|   |
+--------------
+
+At the bottom of the framebuffer it would be no problem. We could even use 
+struct fb_pixmap with texture maps. Store fonts as texture maps and just 
+draw them to a surface. You can do lots of fancy tricks. The only issue I 
+have thought about is we might need to had a hook for fb_get_buffer_offset.
+Not to big a deal.
 
 
 

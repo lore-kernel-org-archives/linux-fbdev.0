@@ -1,21 +1,24 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: fbdev driver and sysfs question.
-Date: Fri, 13 Feb 2004 18:44:49 +0000 (GMT)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: atyfb expert needed
+Date: Sat, 14 Feb 2004 10:20:54 +1100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0402131839040.17669-100000@phoenix.infradead.org>
-References: <20040211225724.GN21151@parcelfarce.linux.theplanet.co.uk>
+Message-ID: <1076714453.7304.103.camel@gaston>
+References: <1076537453.868.123.camel@gaston>
+	 <Pine.GSO.4.58.0402121024540.7297@waterleaf.sonytel.be>
+	 <200402131641.29028.alex.kern@gmx.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AriKy-00007w-1g
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 13 Feb 2004 10:46:52 -0800
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1ArmfM-0005XV-LF
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 13 Feb 2004 15:24:12 -0800
+Received: from gate.crashing.org ([63.228.1.57] ident=root)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1AriJ6-0005N6-9r
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 13 Feb 2004 10:44:56 -0800
-In-Reply-To: <20040211225724.GN21151@parcelfarce.linux.theplanet.co.uk>
+	id 1ArmdL-0002AS-W9
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 13 Feb 2004 15:22:08 -0800
+In-Reply-To: <200402131641.29028.alex.kern@gmx.de>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,32 +28,19 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: viro@parcelfarce.linux.theplanet.co.uk
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Alexander Kern <alex.kern@gmx.de>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> > +	if (!info->screen_base) {
-> >  		release_mem_region(vesafb_fix.smem_start, vesafb_fix.smem_len);
-> >  		printk(KERN_ERR
-> >  		       "vesafb: abort, cannot ioremap video memory 0x%x @ 0x%lx\n",
-> 
-> 	Who will free info?
-...
-> 	Who will undo allocations?  BTW, that applies to the old code too -
-> even if fb_alloc_cmap() doesn't require any actions on cleanup, ioremap()
-> definitely does.
+> Hi,
+> mach64_ct.c(where aty_dsp_gt is) from James tree should be identical with 
+> Daniel'S 2.4 tree. If not, please send me the diff.
 
-release_fb_info in fbsysfs.c. That happens in the struct class release 
-function. Also the fb_dealloc_cmap is called. No ioremap is called tho 
-since this is driver specific. So I have the ioremap and cleanup of it 
-done in the dev.remove function. 
+Is Daniel's latest version in current 2.4 or is there another source
+for his patches ?
 
-This makes sense since we could have one driver for the hardware with 
-multiple framebuffers on board. One driver and two devices. 
-
-
+Ben.
 
 
 

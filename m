@@ -1,20 +1,20 @@
 From: Alexander Kern <alex.kern@gmx.de>
-Subject: [PATCH] ATI Mach64 accelerated imgblit (sligthly improved)
-Date: Sat, 17 Jan 2004 01:20:25 +0100
+Subject: Fwd: [PATCH] ATI Mach64 accelerated imgblit (sligthly improved)
+Date: Sat, 17 Jan 2004 01:23:23 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200401170120.25603.alex.kern@gmx.de>
+Message-ID: <200401170123.23351.alex.kern@gmx.de>
 Mime-Version: 1.0
 Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_J/HCA8XGMYhA9o5"
+  boundary="Boundary-00=_7BICApHzXog9AxN"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AheCp-0006TW-NG
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 16 Jan 2004 16:20:51 -0800
-Received: from mail.gmx.de ([213.165.64.20] helo=mail.gmx.net)
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
-	id 1AheCo-0005l0-S8
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 16 Jan 2004 16:20:51 -0800
+	id 1AheFY-00070C-HB
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 16 Jan 2004 16:23:40 -0800
+Received: from imap.gmx.net ([213.165.64.20] helo=mail.gmx.net)
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
+	id 1AheFX-000102-FJ
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 16 Jan 2004 16:23:39 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,6 +26,36 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 To: James Simmons <jsimmons@infradead.org>
 Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+
+
+--Boundary-00=_7BICApHzXog9AxN
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Sorry, forgot to say it's against 2.6.1-mm1 + last fbdev.diff.gz.
+
+--Boundary-00=_7BICApHzXog9AxN
+Content-Type: message/rfc822;
+  name="forwarded message"
+Content-Transfer-Encoding: 7bit
+Content-Description: Alexander Kern <alex.kern@gmx.de>: [PATCH] ATI Mach64 accelerated imgblit (sligthly improved)
+
+From: Alexander Kern <alex.kern@gmx.de>
+To: James Simmons <jsimmons@infradead.org>
+Subject: [PATCH] ATI Mach64 accelerated imgblit (sligthly improved)
+Date: Sat, 17 Jan 2004 01:20:25 +0100
+User-Agent: KMail/1.5.4
+Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+MIME-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_J/HCA8XGMYhA9o5"
+Message-Id: <200401170120.25603.alex.kern@gmx.de>
+Status: RO
+X-Status: S
+X-KMail-EncryptionState: 
+X-KMail-SignatureState: 
 
 
 --Boundary-00=_J/HCA8XGMYhA9o5
@@ -407,6 +437,8 @@ diff -r -u -X /data/patches/exclude /usr/src/linux-2.6.orig/include/video/mach64
  #define BKGD_MIX_NOT_D			0
 
 --Boundary-00=_J/HCA8XGMYhA9o5--
+
+--Boundary-00=_7BICApHzXog9AxN--
 
 
 

@@ -1,23 +1,23 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 2/11] fbcon: Catch blank events on both device and console level
-Date: Thu, 13 Jan 2005 21:01:23 +0800
-Message-ID: <20050113214615.59AE01A0184@smtp-1.hotpop.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Fw: [Bugme-new] [Bug 4000] New: Laptop Panel gets black on
+ switch to frame buffer device 175x65
+Date: Fri, 14 Jan 2005 15:33:36 +1100
+Message-ID: <1105677216.27410.49.camel@gaston>
+References: <20050106081943.530018e4.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CpCnc-00013w-41
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 Jan 2005 13:46:36 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CpCnb-0008Vz-Jy
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 Jan 2005 13:46:35 -0800
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 2FDEAC7CD77
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 13 Jan 2005 21:46:19 +0000 (UTC)
-Content-Disposition: inline
+	id 1CpJA5-0005u0-TN
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 Jan 2005 20:34:13 -0800
+Received: from gate.crashing.org ([63.228.1.57])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1CpJA4-0000wT-Cg
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 Jan 2005 20:34:13 -0800
+In-Reply-To: <20050106081943.530018e4.akpm@osdl.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,52 +32,20 @@ Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-  Call fb_blank() instead of info->fbops->fb_blank() to capture events on both
-  device and console level.
+On Thu, 2005-01-06 at 08:19 -0800, Andrew Morton wrote:
+> 
+> Begin forwarded message:
+> 
+> Date: Thu, 6 Jan 2005 04:14:39 -0800
+> From: bugme-daemon@osdl.org
+> To: bugme-new@lists.osdl.org
+> Subject: [Bugme-new] [Bug 4000] New: Laptop Panel gets black on switch to frame buffer device 175x65
 
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
+It would be useful to toy a bit with the panel power delay and other
+LVDS_GEN_CNTL related bits. The proper sequence for manipulating those
+has never been fully documented by ATI afaik...
 
- fbcon.c |   19 ++++++++-----------
- 1 files changed, 8 insertions(+), 11 deletions(-)
-
-diff -Nru a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
---- a/drivers/video/console/fbcon.c	2005-01-12 06:10:17 +08:00
-+++ b/drivers/video/console/fbcon.c	2005-01-13 19:39:19 +08:00
-@@ -2014,6 +2014,7 @@
- static int fbcon_blank(struct vc_data *vc, int blank, int mode_switch)
- {
- 	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
-+	struct fbcon_ops *ops = info->fbcon_par;
- 	int active = !fbcon_is_inactive(vc, info);
- 
- 	if (mode_switch) {
-@@ -2037,18 +2038,14 @@
- 	}
- 
-  	if (active) {
--		struct fbcon_ops *ops = info->fbcon_par;
-+		if (ops->blank_state != blank) {
-+			ops->blank_state = blank;
-+			fbcon_cursor(vc, blank ? CM_ERASE : CM_DRAW);
-+			ops->cursor_flash = (!blank);
- 
-- 		fbcon_cursor(vc, blank ? CM_ERASE : CM_DRAW);
-- 		ops->cursor_flash = (!blank);
--
-- 		if (ops->blank_state != blank) {
-- 			if (info->fbops->fb_blank &&
-- 			    info->fbops->fb_blank(blank, info))
-- 				fbcon_generic_blank(vc, info, blank);
--
-- 			ops->blank_state = blank;
-- 		}
-+			if (fb_blank(info, blank))
-+				fbcon_generic_blank(vc, info, blank);
-+		}
- 
-  		if (!blank)
-  			update_screen(vc->vc_num);
+Ben.
 
 
 

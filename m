@@ -1,21 +1,23 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: Re: New radeonfb, mostly untested
-Date: Thu, 11 Sep 2003 08:55:32 +0200 (MEST)
+Date: Thu, 11 Sep 2003 09:05:05 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0309110854490.1879-100000@vervain.sonytel.be>
-References: <1063262300.2023.23.camel@gaston>
+Message-ID: <1063263904.2023.27.camel@gaston>
+References: <Pine.GSO.4.21.0309110854490.1879-100000@vervain.sonytel.be>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19xLNm-0008Nw-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 10 Sep 2003 23:56:46 -0700
-Received: from mail2.sonytel.be ([195.0.45.172] helo=witte.sonytel.be)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 19xLNl-0005AL-HA
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Sep 2003 23:56:46 -0700
-In-Reply-To: <1063262300.2023.23.camel@gaston>
+	id 19xLWe-0000wo-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 11 Sep 2003 00:05:56 -0700
+Received: from pentafluge.infradead.org ([213.86.99.235])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.22)
+	id 19xLWd-0003AO-5Q
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 11 Sep 2003 00:05:56 -0700
+In-Reply-To: <Pine.GSO.4.21.0309110854490.1879-100000@vervain.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -25,41 +27,18 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: Kronos <kronos@kronoz.cjb.net>, Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, 11 Sep 2003, Benjamin Herrenschmidt wrote:
-> On Thu, 2003-09-11 at 08:03, Geert Uytterhoeven wrote:
-> > On Wed, 10 Sep 2003, Benjamin Herrenschmidt wrote:
-> > > > It  fails only  if  compiled  as module. I  see  that fb_find_mode  (and
-> > > > my_atoi) are marked  as __init. Maybe they get discarded  after boot and
-> > > > when  radeonfb module  tries  to call  them it  ends  up in  deallocated
-> > > > memory...
-> > > 
-> > > Exactly, they should definitely not be marked __init
-> > 
-> > That doesn't harm. If MODULE is defined, fb_find_mode() is an inline function
-> > that knows about 640x400@70 only, cfr. <linux/fb.h>.
-> 
-> But that's wrong ! Why would you want to prevent a modular driver to
-> use fb_find_mode ? Especially in that case where I'm looking for a mode
-> in the modedb built from EDID list...
 
-Because the modedb itself is __init. Once you have modules, you have userspace
-and fbset, too.
+> Because the modedb itself is __init. Once you have modules, you have userspace
+> and fbset, too.
 
-Gr{oetje,eeting}s,
+But the modedb I'm building from EDID isn't __init ;)
 
-						Geert
+Ben.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 
 

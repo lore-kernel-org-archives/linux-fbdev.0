@@ -1,62 +1,51 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: radeon, apertures & memory mapping
-Date: Sun, 13 Mar 2005 23:04:59 +1100
-Message-ID: <1110715499.14684.132.camel@gaston>
-References: <1110677744.19810.80.camel@gaston>
-	<20050313082216.GA7362@sci.fi> <1110705646.14684.126.camel@gaston>
-	<20050313103936.GA11002@sci.fi>
+From: Alexander Kern <alex.kern@gmx.de>
+Subject: Re: [PATCH 1/6] atyfb: Add boot/module option to override composite sync
+Date: Sun, 13 Mar 2005 16:37:21 +0100
+Message-ID: <200503131637.21630.alex.kern@gmx.de>
+References: <200503130832.41113.adaplas@hotpop.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-In-Reply-To: <20050313103936.GA11002@sci.fi>
+Content-Transfer-Encoding: quoted-printable
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1DAVAR-0007zN-MK
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Mar 2005 07:38:11 -0800
+Received: from mail.gmx.de ([213.165.64.20] helo=mail.gmx.net)
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
+	id 1DAVAQ-0007KR-0V
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Mar 2005 07:38:11 -0800
+In-Reply-To: <200503130832.41113.adaplas@hotpop.com>
+Content-Disposition: inline
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/xorg>
-List-Post: <mailto:xorg@lists.freedesktop.org>
-List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
-Sender: xorg-bounces@lists.freedesktop.org
-Errors-To: xorg-bounces@lists.freedesktop.org
-Content-Type: text/plain; charset="us-ascii"
-To: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Cc: Jon Smirl <jonsmirl@yahoo.com>, dri-devel@lists.sourceforge.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, xorg@lists.freedesktop.org
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: "Antonino A. Daplas" <adaplas@hotpop.com>, Andrew Morton <akpm@osdl.org>
+
+Am Sonntag, 13. M=E4rz 2005 01:32 schrieb Antonino A. Daplas:
+>   Some SPARC-based displays need the composite sync set to high.
+>   Since none of the entries in the default db has the composite
+>   sync set to high, using fb_find_mode() will produce a blank
+>   display.
+>
+>   Add this new option to Documentation/fb/aty128fb.txt
+>
+> Signed-off-by: Antonino Daplas <adaplas@pol.net>
+We do not have documentation file for aty.
+In other Part:
+Acked-by: Alexander Kern <alex.kern@gmx.de>
 
 
-> AGP as it's currently used is pretty much pointless for software fallbacks 
-> since reading from AGP memory is nearly as slow as reading from video 
-> memory.
-
-Hrm.. I wouldn't expect _that_ slow. It's uncacheable, right, but still
-on a faster bus. Especially if we use it the way we do on ppc where we
-actually map the RAM pages directly instead of having processes go
-through the GART.
-
-> > Or things can be put in accessible space,
-> > and blitted elsewhere using the accelerator.
-> 
-> This could work (and it would avoid DRM which in my book is a plus) but 
-> it's not very nice to have to copy the data twice.
-> 
-> > That "half" of vram is plenty enough for a framebuffer (and more). it's
-> > only an issue when you start doing very large offscreen surfaces. Do you
-> > have much usage of those without DMA ?
-> 
-> I have about 26MB of video memory used when running XDirectFB with GNOME, 
-> epiphany and 4 gnome-terminals, and I also have some videos playing on the 
-> TV at the same time. That's on a 32MB G400 BTW.
-> 
-> I must be missing something something obvious because I don't quite 
-> understand what major drawbacks there are with the non-overlapping mode. 
-> As I see it you get at least the same amount of CPU accessible memory as 
-> you get in the overlapping mode.
-
-Yes, you do, but that means that if the apertures are configured such
-that the entire VRAM fits in a single aperture, then you just can't use
-the second aperture at all. Which means you can't have separate swapper
-setting for both apertures, and thus, can't let two independant
-processes access the video memory with different bit depth, at least on
-big endian machines unless you do trickery, and play with the swapper
-before each access.
-
-Ben.
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

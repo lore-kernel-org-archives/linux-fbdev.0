@@ -1,57 +1,37 @@
-From: "Petr Vandrovec" <VANDROVE@vc.cvut.cz>
-Subject: Re: [Linux-fbdev-devel] [PATCH] FBDev: vga16fb port
-Date: Wed, 4 Dec 2002 11:38:24 +0100
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [OT] Re: [Linux-fbdev-devel] [PATCH] FBDev: vga16fb port
+Date: Wed, 4 Dec 2002 12:44:15 +0100 (MET)
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <95A78C92329@vcnet.vc.cvut.cz>
+Message-ID: <Pine.GSO.4.21.0212041242170.4748-100000@vervain.sonytel.be>
+References: <95A9172394F@vcnet.vc.cvut.cz>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <95A9172394F@vcnet.vc.cvut.cz>
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-To: Antonino Daplas <adaplas@pol.net>
-Cc: James Simmons <jsimmons@infradead.org>, linux-fbdev-devel@lists.sourceforge.net, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, luther@dpt-info.u-strasbg.fr
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Petr Vandrovec <VANDROVE@vc.cvut.cz>
+Cc: James Simmons <jsimmons@infradead.org>, Brad Douglas <Brad@NERUO.com>, luther@dpt-info.u-strasbg.fr, adaplas@pol.net, Linux Kernel Development <linux-kernel@vger.kernel.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, linux-fbdev-devel-admin@lists.sourceforge.net
 
-On  4 Dec 02 at 17:08, Antonino Daplas wrote:
-> On Wed, 2002-12-04 at 12:32, Sven Luther wrote:
-> > On Tue, Dec 03, 2002 at 05:22:35PM +0500, Antonino Daplas wrote:
-> > > >   2) The ability to go back to vga text mode on close of /dev/fb. 
-> > > >      Yes fbdev/fbcon supports that now. 
-> > > 
-> > > I'll take a stab at writing VGA save/restore routines which hopefully is
-> > > generic enough to be used by various hardware.  No promises though, VGA
-> > > programming gives me a headache :(
-> > 
-> > BTW, i am writing a fbdev for a card where the docs tell me to disable
-> > vga output before enabling graphical output. Does i need to do this in
-> > the fbdev i write, or is it already handled by the vga layer, or
-> > whatever ?
-> 
-> Most cards with a VGA core needs to disable the VGA output before going
-> to graphics mode.  Disabling VGA output is hardware specific, and is
-> usually automatic when you go to graphics mode.
-> 
-> Because James wrote the fb framework to be very modular, then you must
-> be careful to save/restore the initial video state  when loading or
-> unloading.  Theoretically, a driver should load, but not go to graphics
-> mode immediately.  Only upon a call to xxxfb_set_par() should the driver
-> do so.  Before going to graphics mode, that's were you save the initial
-> state.  Have a reference count or something to keep track of the number
-> of users, and when this reference count becomes zero, restore the
-> initial state.  You should be able to do this by hooking these routines
-> in fb_open() and fb_release().
+On Wed, 4 Dec 2002, Petr Vandrovec wrote:
+> FYI, I'm going to unsubscribe myself from linux-fbdev-devel.
+> I'm not interested in reading messages on list which is not public:
+> I get again an error that my message is waiting for moderator approval,
+> and as such list is unsuitable for any realtime discussion.
 
-FYI, I'm not going to support any hardware restoration on last fb_release,
-nor hardware init only after first fb_open in matroxfb. Either you want
-this driver, or not. Besides that I do not see any reason to have such 
-code, matroxfb provides multiple framebuffers, and to get them
-all work, hardware must be in known state, it is impossible to program
-only half of chip and expect that it will somehow work. It will crash,
-lock your PCI bus, or even commits suicide.
+Yes, I know it's annoying :-(
 
-And I'm sure that other possible solution, that opening /dev/fb1 
-(or /dev/videoX or /dev/dri/mga) will cause your vgacon picture to 
-disappear, violates principle of least surprise.
-                                            Best regards,
-                                                Petr Vandrovec
-                                                vandrove@vc.cvut.cz
-                                                
+But, AFAIK we don't know yet
+  1. who changed the list to a moderated list
+  2. who is actually moderating it
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds

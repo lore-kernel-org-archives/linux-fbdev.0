@@ -1,19 +1,20 @@
-From: John Zielinski <grim@undead.cc>
-Subject: Changing modes with fbset
-Date: Wed, 10 Dec 2003 02:03:08 -0500
+From: Matan Ziv-Av <matan@svgalib.org>
+Subject: Re: VGA routing
+Date: Wed, 10 Dec 2003 18:05:33 +0200 (IST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3FD6C52C.7090906@undead.cc>
+Message-ID: <Pine.LNX.4.58.0312101709300.3578@matan.home>
+References: <20031207073448.83488.qmail@web14911.mail.yahoo.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1ATyNW-00083X-2k
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Dec 2003 23:03:22 -0800
-Received: from gw-undead3.tht.net ([216.126.84.18] helo=mail.undead.cc)
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.24)
-	id 1ATyNV-0001xy-Q1
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Dec 2003 23:03:21 -0800
+	id 1AU6qL-0006hB-Fs
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Dec 2003 08:05:41 -0800
+Received: from [212.29.226.3] (helo=arava.co.il)
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.24)
+	id 1AU6qK-0007FR-Jy
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Dec 2003 08:05:40 -0800
+In-Reply-To: <20031207073448.83488.qmail@web14911.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -23,17 +24,37 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-I've downloaded fbutils from the CVS and fixed up the source so that 
-they work (for the most part).  It reads the modedb and finds the mode I 
-requested on the command line.  But when it tries to switch my monitor 
-looses sync and the machine hangs.  I did a var.Print instead of the 
-var.Set and the values look OK.  Anyone have any ideas?
+On Sat, 6 Dec 2003, Jon Smirl wrote:
 
-John
+> My machine has three busses.
+> 1) on chip
+> 2) AGP
+> 3) PCI
+> 
+> My primary display is on a PCI card.
+> When I boot the VGA ports are routed through the PCI bridge.
+> I'm running X on the PCI card.
 
+There is VGA bit of Bridge Control register in PCI-PCI bridges (bit 19, 
+at 3c). But when there are a few cards on the same bus, I guess the 
+behaviour is undefined, since I did not see anything relevant in the 
+standards. 
+
+> Thanks for the help. I'm trying to figure out the right way to initialize a
+> secondary card by jumping to C000:0003 in it's BIOS. Does Xfree jump to
+> C000:0003? I can't find where it does that in the source.
+
+x86emu package does this by disabling all cards except for the one that 
+is being initialized.
+
+
+-- 
+Matan Ziv-Av.                         matan@svgalib.org
 
 
 

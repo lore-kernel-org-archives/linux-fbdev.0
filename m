@@ -1,20 +1,25 @@
-From: Alexander Kern <alex.kern@gmx.de>
-Subject: [PATCH modedb.c] change the find_mode behaviour
-Date: Wed, 10 Nov 2004 19:29:33 +0100
-Message-ID: <200411101929.33195.alex.kern@gmx.de>
+From: Jurriaan <thunder7@xs4all.nl>
+Subject: Re: [PATCH 1/2] fbdev: S3 Savage Framebuffer Driver
+Date: Wed, 10 Nov 2004 20:17:35 +0100
+Message-ID: <20041110191735.GA19864@middle.of.nowhere>
+References: <200410230436.42009.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_N4lkBYuQHX9Pi5m"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CRxDr-0008Q3-Ri
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Nov 2004 10:29:35 -0800
-Received: from imap.gmx.net ([213.165.64.20] helo=mail.gmx.net)
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.41)
-	id 1CRxDq-0004mY-Um
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Nov 2004 10:29:35 -0800
+	id 1CRxyV-000830-Sw
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Nov 2004 11:17:47 -0800
+Received: from smtp-vbr15.xs4all.nl ([194.109.24.35])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1CRxyV-000747-4O
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Nov 2004 11:17:47 -0800
+Received: from zeeotter.xs4all.nl (zeeotter.xs4all.nl [80.126.31.149])
+	by smtp-vbr15.xs4all.nl (8.12.11/8.12.11) with ESMTP id iAAJHigr035607
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 10 Nov 2004 20:17:44 +0100 (CET)
+	(envelope-from jurriaan@rivierenland.xs4all.nl)
+Content-Disposition: inline
+In-Reply-To: <200410230436.42009.adaplas@hotpop.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -25,104 +30,46 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: "Antonino A. Daplas" <adaplas@hotpop.com>
-Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
-
---Boundary-00=_N4lkBYuQHX9Pi5m
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: linux-fbdev-devel@lists.sourceforge.net
 
-let find_mode search for nearest refresh rate
+From: Antonino A. Daplas <adaplas@hotpop.com>
+Date: Sat, Oct 23, 2004 at 04:36:41AM +0800
+> S3 Savage Frambuffer Driver for the following chipsets: 
+> 
+> Savage 3D
+> Savage MX
+> Savage 4
+> Savage 2000
+> ProSavage
+> SuperSavage
+> 
+Excellent. I tried this (in 2.6.10-rc1-mm4) with my Thinkpad T23, which
+has a SuperSavage IX/C SDR according to lspci.
 
-Signed-off-by: Alexander Kern <alex.kern@gmx.de>
+If I compile the framebuffer into the kernel, it hangs during boot. The
+oops is only partly visible, but the first line of the traceback
+contains savage_setup_i2c_bus.
 
+If I compile it as a module, it comes up with 800x600, which looks like
+sh*t on a 1024x768 lcd panel. All my attempts to change the resolution,
+either with fbset, or variations on this command
 
---Boundary-00=_N4lkBYuQHX9Pi5m
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="modedb_search_refresh_closest_to.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="modedb_search_refresh_closest_to.patch"
+modprobe savagefb mode=1024x768-60
 
---- linux-2.6.head/drivers/video/modedb.c.orig	2004-11-09 19:06:54.000000000 +0100
-+++ linux-2.6.head/drivers/video/modedb.c	2004-11-10 16:40:10.994799088 +0100
-@@ -24,7 +24,7 @@
-     ((v).xres == (x) && (v).yres == (y))
- 
- #ifdef DEBUG
--#define DPRINTK(fmt, args...)	printk(KERN_DEBUG "%s: " fmt, __FUNCTION__ , ## args)
-+#define DPRINTK(fmt, args...)	printk("modedb %s: " fmt, __FUNCTION__ , ## args)
- #else
- #define DPRINTK(fmt, args...)
- #endif
-@@ -474,7 +474,7 @@
- 		 const struct fb_videomode *default_mode,
- 		 unsigned int default_bpp)
- {
--    int i, j;
-+    int i;
- 
-     /* Set up defaults */
-     if (!db) {
-@@ -493,7 +493,7 @@
- 	int res_specified = 0, bpp_specified = 0, refresh_specified = 0;
- 	unsigned int xres = 0, yres = 0, bpp = default_bpp, refresh = 0;
- 	int yres_specified = 0;
--	u32 best = -1, diff = -1;
-+	u32 best, diff;
- 
- 	for (i = namelen-1; i >= 0; i--) {
- 	    switch (name[i]) {
-@@ -532,16 +532,35 @@
- 	    res_specified = 1;
- 	}
- done:
--	for (i = refresh_specified; i >= 0; i--) {
--	    DPRINTK("Trying specified video mode%s %ix%i\n",
--		    i ? "" : " (ignoring refresh rate)", xres, yres);
--	    for (j = 0; j < dbsize; j++)
--		if ((name_matches(db[j], name, namelen) ||
--		     (res_specified && res_matches(db[j], xres, yres))) &&
--		    (!i || db[j].refresh == refresh) &&
--		    !fb_try_mode(var, info, &db[j], bpp))
--		    return 2-i;
-+	DPRINTK("Trying specified video mode%s %ix%i\n",
-+	    refresh_specified ? "" : " (ignoring refresh rate)", xres, yres);
-+
-+	diff = refresh;
-+	best = -1;
-+	for (i = 0; i < dbsize; i++) {
-+		if ((name_matches(db[i], name, namelen) &&
-+			!fb_try_mode(var, info, &db[i], bpp)))
-+			return 1;
-+		if (res_specified && res_matches(db[i], xres, yres)) {
-+			if(!fb_try_mode(var, info, &db[i], bpp)) {
-+				if(!refresh_specified || db[i].refresh == refresh)
-+					return 1;
-+				else {
-+					if(diff > abs(db[i].refresh - refresh)) {
-+						diff = abs(db[i].refresh - refresh);
-+						best = i;
-+					}
-+				}
-+			}
-+		}
-+	}
-+	if (best != -1) {
-+		fb_try_mode(var, info, &db[best], bpp);
-+		return 2;
- 	}
-+	
-+	diff = xres + yres;
-+	best = -1;
- 	DPRINTK("Trying best-fit modes\n");
- 	for (i = 0; i < dbsize; i++) {
- 	    if (xres <= db[i].xres && yres <= db[i].yres) {
+didn't work. 
 
---Boundary-00=_N4lkBYuQHX9Pi5m--
+Would you give me any hints on how to get it to come up with 1024x768?
+I would love to see if it's faster than the vesa framebuffer I've been
+using so far.
+
+Thanks,
+Jurriaan
+-- 
+I am the neurosis that requires a $500 an hour shrink
+	Darkwing Duck
+Debian (Unstable) GNU/Linux 2.6.9-mm1 2x6078 bogomips load 0.84
 
 
 -------------------------------------------------------

@@ -1,11 +1,21 @@
-From: "Blair Sanderson" <b_sandersonyd@isoleucin.de>
-Subject: Powerful weightloss now available where you are.
-Date: Fri, 18 Jun 2004 22:10:08 -0500
+From: David Eger <eger@havoc.gtf.org>
+Subject: Re: 2.6.7 still garbage upon start
+Date: Fri, 18 Jun 2004 23:08:54 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <8bad01c455aa$7484a291$12d3dde6__2259.32114194638$1087614621@tk.k-net.dk>
+Message-ID: <20040619030854.GB14319@havoc.gtf.org>
+References: <40D21E31.5070904@winischhofer.net> <40D2E96A.9000605@undead.cc> <Pine.GSO.4.58.0406181516460.11779@waterleaf.sonytel.be> <200406190240.31144.adaplas@hotpop.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BbWEB-0007Tw-SM
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 20:09:11 -0700
+Received: from havoc.gtf.org ([216.162.42.101])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BbWEB-0002wI-JT
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 20:09:11 -0700
+Content-Disposition: inline
+In-Reply-To: <200406190240.31144.adaplas@hotpop.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -15,35 +25,29 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: linux-usb-users@lists.sourceforge.net, linux-usb-devel@lists.sourceforge.net, linux-ntfs-dev@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: adaplas@pol.net
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, John Zielinski <grim@undead.cc>, Thomas Winischhofer <thomas@winischhofer.net>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Hello, I have a special offer for you...
-WANT TO LOSE WEIGHT?
-The most powerful weightloss is now available
-without prescription. All natural Adipren720
-100% Money Back Guarant=E9e!
-- Lose up to 19% Total Body Weight.
-- Loss of 20-35% abdominal Fat.
-- Up to 300% more Weight Loss while dieting.
-- Increase metabolic rate by 76.9% without Exercise.
-- Reduction of 40-70% overall Fat under skin.
-- Suppresses appetite for sugar.
-- Burns calorized fat.
-- Boost your Confidence level and Self Esteem.
-Get the facts about all-natural Adipren720 <http://diet40.com/>
+On Sat, Jun 19, 2004 at 02:40:31AM +0800, Antonino A. Daplas wrote:
+> 
+> Actually, to eliminate the white rectangle, we just need to initialize fbdev 
+> _after_ vgacon.  Currently, there is a set_par call in fbcon_startup()) which is
+>  called prior to vgacon_deinit.  
+> 
+>  [snip]
+>
+> I've include a patch that incorporates all of the above.  (It also has some fixes
+> for problems with creation of logo space -- the code does not consider that the
+> new VC window size is different or even smaller than the old VC window size).
+> Please test, and if it works for you, I'll push it upstream.
 
+with my cirrusfb driver and your patch, the area to the right of the
+penguins is cleared, but the area where the text is drawn still has
+white rectangle crud that scrolls off the screen.
 
-
----- system information ----
-different Preferences implementations replaced W3C Since documents numbering
-
-endorsement for same could solely sort show information)=20
-personalization Shorthand revised parameters element use nearly existing
-
-localization rely phonebook difficult important report those requests=20
-produced archive) disclose natural Scenario distinct strongly needed=20
-
+-dte
 
 
 

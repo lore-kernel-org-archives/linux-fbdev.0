@@ -1,25 +1,21 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: Re: [PATCH] atyfb (2.6): Add RGB565 support
-Date: Thu, 13 May 2004 22:19:48 +0300
+From: David Eger <eger-sender-da68b9@theboonies.us>
+Subject: fb accel capabilities - second draft of patches coming
+Date: Thu, 13 May 2004 15:48:38 -0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040513191948.GA25590@sci.fi>
-References: <20040511213607.GB6854@sci.fi> <Pine.GSO.4.58.0405121110360.19967@waterleaf.sonytel.be> <20040512185724.GA825@sci.fi> <Pine.GSO.4.58.0405131121210.9790@waterleaf.sonytel.be>
+Message-ID: <1084481318.40a3df264d552@mail.theboonies.us>
+Reply-To: David Eger <eger-dated-1085086121.170f6f@theboonies.us>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BOLkG-0003QV-AL
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 12:19:52 -0700
-Received: from gw02.mail.saunalahti.fi ([195.197.172.116])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BOLkF-00018W-TT
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 12:19:52 -0700
-Received: from kuori.saunalahti.fi (kuori.saunalahti.fi [195.197.175.23])
-	by gw02.mail.saunalahti.fi (Postfix) with ESMTP id A728B4E4F
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 13 May 2004 22:19:48 +0300 (EEST)
-Content-Disposition: inline
-In-Reply-To: <Pine.GSO.4.58.0405131121210.9790@waterleaf.sonytel.be>
+	id 1BON8F-0007kp-Q8
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 13:48:43 -0700
+Received: from not.theboonies.us ([66.139.79.224])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1BON8F-0002XC-Ik
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 13:48:43 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,40 +25,55 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, May 13, 2004 at 11:22:01AM +0200, Geert Uytterhoeven wrote:
-> 	Hi Ville,
->=20
-> On Wed, 12 May 2004, Ville [iso-8859-1] Syrj=E4l=E4 wrote:
-> > On Wed, May 12, 2004 at 11:11:21AM +0200, Geert Uytterhoeven wrote:
-> > > On Wed, 12 May 2004, Ville [iso-8859-1] Syrj=E4l=E4 wrote:
-> > > > This patch adds RGB565 support to atyfb.
-> > >
-> > > Nice! Have you tried fbtest on it?
-> > >
-> > > I once tried to implement it myself, but it didn't work reliably.
-> >
-> > I just tried fbtest and most tests look ok. The penguin images are wr=
-ong
-> > (green instead of white stuff aroung the penguin) and the test009 loo=
-ks
-> > wrong too. Are you sure fbtest is doing the right thing with rgb565
-> > directcolor visuals? DirectFB or mplayer don't have any problems.
->=20
-> It's always possible there's a bug in fbtest w.r.t. 565 handling, but I=
- didn't
-> see it.
+After trying a third batch of driver conversion (this time the matrox/ drivers),
+I've decided my first-draft fb accel capabilities patch is flawed... so while i
+  re-work them, please send me your thoughts...
 
-It has the same problems on aty128fb so either that driver is broken too=20
-or the fault lies with fbtest. On matroxfb RGB565 is fine but matroxfb=20
-uses a truecolor visual.
+In the first pass (these past five patches), I had:
 
---=20
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+#define FB_HWACCEL_DISABLED     0x0000
+#define FB_HWACCEL_COPYAREA     0x0001
+#define FB_HWACCEL_FILLRECT     0x0002
+#define FB_HWACCEL_ROTATE       0x0004
+
+The problem here is that the DISABLED functionality -- turning acceleration off
+-- is orthogonal to whether a driver knows how to frob the accel engine.  So
+for a second try, I'm taking the ever-present "noaccel" variable, and making it
+a separate flag, as follows:
+
+#define FB_HWACCEL_CAPABILITIES_MASk 0x0FFF
+#define FB_HWACCEL_NONE         0x0000
+#define FB_HWACCEL_COPYAREA     0x0001
+#define FB_HWACCEL_FILLRECT     0x0002
+#define FB_HWACCEL_ROTATE       0x0004
+#define FB_HWACCEL_IMAGEBLIT    0x0008
+
+#define FB_HWACCEL_DISABLED     0x8000
+
+Still, some capabilities are advertized elsewise: being able to pan or wrap are
+indicated by non-zero values in fix.xpanstep, fix.ypanstep, and fix.ywrapstep. 
+I'm somewhat inclined to duplicate this information in the .hwaccel field (as,
+for instance, the divides() macro in fbcon misinterprets the current
+implementation)... so say:
+
+#define FB_HWACCEL_XPAN         0x0010
+#define FB_HWACCEL_YPAN         0x0020
+#define FB_HWACCEL_YWRAP        0x0040
+#define FB_HWACCEL_READSFAST    0x0080 /* software copying is usually faster
+than re-r
+endering */
+
+Comments before I dive in for a second round?
+
+-dte
+
+ps, geert - i'm just now grokking var.vmode -- as an implisit extra
+   argument to pan_display()... i can't decide whether it's a horrible hack,
+   or just a warm reminder of closures in the lambda calculus...
+
 
 
 -------------------------------------------------------

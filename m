@@ -1,17 +1,16 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Re: [PATCH]: image.depth fix to accomodate
- monochrome cards
-Date: Fri, 10 Jan 2003 20:43:33 +0100 (MET)
+Subject: Re: fb_imageblit()
+Date: Fri, 10 Jan 2003 20:41:04 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0301102041130.18440-100000@vervain.sonytel.be>
-References: <Pine.LNX.4.44.0301101925110.18287-100000@phoenix.infradead.org>
+Message-ID: <Pine.GSO.4.21.0301102036520.18440-100000@vervain.sonytel.be>
+References: <Pine.LNX.4.44.0301101857310.18287-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18X559-0001m8-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Jan 2003 11:44:43 -0800
-In-Reply-To: <Pine.LNX.4.44.0301101925110.18287-100000@phoenix.infradead.org>
+	id 18X52l-0001Hh-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Jan 2003 11:42:15 -0800
+In-Reply-To: <Pine.LNX.4.44.0301101857310.18287-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -24,27 +23,38 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: James Simmons <jsimmons@infradead.org>
-Cc: Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Antonino Daplas <adaplas@pol.net>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
 On Fri, 10 Jan 2003, James Simmons wrote:
-> > I think we still have several corner cases, such as TRUECOLOR with bpp
-> > <= 8, I'm not sure if that works.
+> > Secondly, indexing the cmap instead of the pseudo_palette means that
+> > cfb_imageblit has to know the native framebuffer format.  
 > 
-> The matorx millenium has such a mode. So such things do exist.
->  
-> > -	if (image->depth == 1) {
-> > +	if (image->depth == 0) {
+> No indexing the cmap. Instead call fb_set_cmap before we call 
+> xxxfb_imageblit. Personally I think we should call fb_set_cmap always.
 > 
-> P.S
+> > I would rather have everything refer to
+> > the pseudopalette, regardless of the visual format.  This will be better
+> > especially for some of the corner cases, like monochrome cards with
+> > bits_per_pixel = 8. 
 > 
->    I'm just not to crazy about the depth equal zero thing. I just pitcure 
-> developers having a hard time with it.
+> It works pretty good for for any pack pixel type modes. Now for planar 
+> cards this isn't the case. Ideally struct fb_cmap should have contained 
 
-Monochrome color expansion just works differently: it expands the zeroes and
-ones in a bitmap based on fg_color and bg_color, while image drawing draws an
-image containing colormap indices to the frame buffer.
+What do you mean? I don't see a problem for planar modes. A pixel is still a
+value of size n bits, it's just that the n bits are not located next to each
+other, but spread across multiple words. planar_imageblit() will take care of
+converting from chunky to planar mode.
 
-Do you have a better suggestion?
+BTW, I do have a working amifb now (it's in Linux/m68k CVS), but the
+imageblit() needs more optimizations.
+
+> a 
+> 
+> unsigned long pixel;
+> 
+> field. Like X does. It does not and changing that would break things :-(
+
+And let the fbdev driver fill in the pixel values, based on the fb_cmap?
 
 Gr{oetje,eeting}s,
 

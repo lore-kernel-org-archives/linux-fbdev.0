@@ -1,55 +1,86 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [patch] (Preliminary) Geode framebuffer driver.
-Date: Tue, 15 Feb 2005 22:34:49 +0800
-Message-ID: <200502152234.49251.adaplas@hotpop.com>
-References: <420C92F0.1090409@arcom.com> <200502152138.24361.adaplas@hotpop.com> <421203E7.4030903@arcom.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: "David S. Miller" <davem@davemloft.net>
+Subject: Re: [atyfb] No display on Sparc Ultra 10 with kernel 2.6.10-rc2 or
+ later
+Date: Tue, 15 Feb 2005 08:49:58 -0800
+Message-ID: <20050215084958.1f68b39b.davem@davemloft.net>
+References: <200502140251.00645.aragorn@tiscali.nl>
+	<200502150741.01702.adaplas@hotpop.com>
+	<200502150722.24770.aragorn@tiscali.nl>
+	<200502152010.22880.adaplas@hotpop.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D13nD-0007XX-0F
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Feb 2005 06:35:11 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1D13nB-0000KV-Eh
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Feb 2005 06:35:10 -0800
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id A1EAEE3E8F0
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 15 Feb 2005 14:34:55 +0000 (UTC)
-In-Reply-To: <421203E7.4030903@arcom.com>
-Content-Disposition: inline
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+In-Reply-To: <200502152010.22880.adaplas@hotpop.com>
+Sender: sparclinux-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, David Vrabel <dvrabel@arcom.com>
+To: adaplas@pol.net
+Cc: adaplas@hotpop.com, aragorn@tiscali.nl, debian-sparc@lists.debian.org, sparclinux@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Tuesday 15 February 2005 22:15, David Vrabel wrote:
-> Note that this driver requires the FB_CFB_xxx and FB_SOFT_CURSOR kbuild
-> option patches I posted earlier today.
->
-> It's also:
->
-> Signed-off-by: David Vrabel <dvrabel@arcom.com>
->
+On Tue, 15 Feb 2005 20:10:21 +0800
+"Antonino A. Daplas" <adaplas@hotpop.com> wrote:
 
-Noted.  I'll submit this for the mm tree, it is too late for 2.6.11.
+> Okay.  It seems that in the working kernel, the default mode, 1152x900, was
+> taken from the prom (since there is no 1152x900 in the mode database) if you
+> did not specify any boot mode option.
+> 
+> In the non-working version, without the boot mode option, the default_var
+> was used (which is only 640x480) or taken from the mode database if you
+> specified a boot mode.
 
-Tony
+I think the bug is in the changes made to the fb_find_mode() calls
+in the !CONFIG_PPC case.  That looked suspicious to me the first time
+I scanned the atyfb driver diffs in 2.6.11
 
+First of all, a file global declared as "static char *mode" is asking for
+all sorts of trouble.  It's very easy to use such a simple name as
+a function local variable, thus making the global one invisible.
 
+I reviewed the driver and there are no cases of local variables named
+"mode" right now, but this is still asking for trouble in the future.
+It should be thus renamed.
 
+Now let's get back to the fb_find_mode() call in aty_init().  The old
+code for the non-CONFIG_PPC case did this:
 
--------------------------------------------------------
-SF email is sponsored by - The IT Product Guide
-Read honest & candid reviews on hundreds of IT Products from real users.
-Discover which products truly live up to the hype. Start reading now.
-http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
+#ifdef __sparc__
+	if (mode_option) {
+		if (!fb_find_mode(...))
+			var = default_var;
+	} else
+		var = default_var;
+#else
+	if (!fb_find_mode(...))
+		var = default_var;
+#endif
+
+The new code calls fb_find_mode() always, this is wrong for Sparc's
+desired behavior:
+
+	if (!fb_find_mode(...))
+		var = default_var;
+
+On sparc, when "mode" is NULL, we should always use default_var as
+setup by PROM probed values.
+
+Here is the fix:
+
+===== drivers/video/aty/atyfb_base.c 1.82 vs edited =====
+--- 1.82/drivers/video/aty/atyfb_base.c	2005-01-04 18:48:32 -08:00
++++ edited/drivers/video/aty/atyfb_base.c	2005-02-15 08:19:00 -08:00
+@@ -2511,7 +2511,15 @@
+ 		}
+ 	} else
+ #endif /* !CONFIG_PPC */
+-	if (!fb_find_mode(&var, info, mode, NULL, 0, &defmode, 8))
++	if (
++#if defined(CONFIG_SPARC32) || defined(CONFIG_SPARC64)
++	   /* On Sparc, unless the user gave a specific mode
++	    * specification, use the PROM probed values in
++	    * default_var.
++	    */
++	    !mode ||
++#endif
++	    !fb_find_mode(&var, info, mode, NULL, 0, &defmode, 8))
+ 		var = default_var;
+ 
+ 	if (noaccel)

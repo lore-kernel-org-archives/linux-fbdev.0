@@ -1,18 +1,22 @@
-From: <ravms@mtof01.sky-eye.com>
-Subject: RAV AntiVirus scan results.
-Date: Fri, 23 Apr 2004 08:55:44 +0000 (UTC)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: patch to radeonfb accel functions
+Date: Fri, 23 Apr 2004 20:18:08 +1000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <E1BGwQw-0003cZ-03@sc8-sf-mx2.sourceforge.net>
+Message-ID: <1082715487.10628.6.camel@gaston>
+References: <4088C014.7030505@undead.cc>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BGwQx-0004RA-H1
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 01:53:19 -0700
-Received: from mtof01.sky-eye.com ([207.236.180.19])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1BGxnZ-0002bX-C9
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 03:20:45 -0700
+Received: from gate.crashing.org ([63.228.1.57] ident=root)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1BGwQw-0003cZ-03
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 01:53:18 -0700
+	id 1BGxnZ-0002cG-0K
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 03:20:45 -0700
+In-Reply-To: <4088C014.7030505@undead.cc>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -22,25 +26,28 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Date: Fri Apr 23 01:54:06 2004
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: MAILER-DAEMON
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: John Zielinski <grim@undead.cc>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+On Fri, 2004-04-23 at 17:04, John Zielinski wrote:
+> I haven't seen anything about this on the list so I'm posting it.  The 
+> first change adds the pseudo_palette lookup to the fillrect function 
+> which cleans up the ugliness when running make menuconfig among other 
+> things.  The second change I'm not 100% sure if it's right but I'm quite 
+> sure what was originally there isn't right.  DP_SRC_RECT has the same 
+> value as GMC_DST_8BPP and is listed in the DP_MIX section and not the 
+> GMC section .  I'm assuming it should have been GMC_DP_SRC_RECT .  Can 
+> someone else confirm this?
 
-RAV AntiVirus for Linux i686 (snapshot-20010709)
-Registered version for 2 domain(s).
-Running on host: mtof01.sky-eye.com
+Your first patch wasn't lost, it's in my queue, I was planning to submit
+it along with other fixes as soon as we have sorted out the fbcon accel
+setting issue.
 
-The file (part0003:details.doc._if) attached to mail (with subject: failure notice) sent by MAILER-DAEMON to linux-fbdev-devel@lists.sourceforge.net, 
-is infected with virus: Win32/Netsky.P@mm.
-Cannot clean this file.
-The file was successfully renamed by RAV AntiVirus.
+I'll look at this other question tomorrow hopefully
 
-Scan engine 8.11 for i386.
-Last update: Thu Apr 22 22:26:08 2004
+Ben.
+
 
 
 

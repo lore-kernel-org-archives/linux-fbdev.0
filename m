@@ -1,26 +1,25 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
 Subject: Re: Re: fbdev cursor part 1.
-Date: Tue, 24 Feb 2004 09:53:20 +1100
+Date: Tue, 24 Feb 2004 02:55:08 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1077576800.28487.80.camel@gaston>
-References: <Pine.LNX.4.44.0402222234120.2390-100000@phoenix.infradead.org>
-	 <1077496550.5960.9.camel@gaston>
-	 <Pine.GSO.4.58.0402231156040.14277@waterleaf.sonytel.be>
-	 <1077533958.5942.42.camel@gaston>
-	 <Pine.GSO.4.58.0402231343270.14277@waterleaf.sonytel.be>
+Message-ID: <20040224005508.GD8088@sci.fi>
+References: <Pine.LNX.4.44.0402222234120.2390-100000@phoenix.infradead.org> <1077496550.5960.9.camel@gaston> <Pine.GSO.4.58.0402231156040.14277@waterleaf.sonytel.be> <1077533958.5942.42.camel@gaston> <Pine.GSO.4.58.0402231343270.14277@waterleaf.sonytel.be> <20040223132151.GA7255@sci.fi> <Pine.GSO.4.58.0402231449040.14277@waterleaf.sonytel.be>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AvPCB-0005YL-BD
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 23 Feb 2004 15:09:03 -0800
-Received: from gate.crashing.org ([63.228.1.57] ident=root)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1AvP4J-0007t4-Rw
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 23 Feb 2004 15:00:55 -0800
-In-Reply-To: <Pine.GSO.4.58.0402231343270.14277@waterleaf.sonytel.be>
+	id 1AvQym-0003ZQ-Tr
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 23 Feb 2004 17:03:20 -0800
+Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1AvQqs-0005Fw-HP
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 23 Feb 2004 16:55:10 -0800
+Received: from kuori.saunalahti.fi (kuori.saunalahti.fi [195.197.175.23])
+	by gw01.mail.saunalahti.fi (Postfix) with ESMTP id 2B1AC1113DE3
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 24 Feb 2004 02:55:09 +0200 (EET)
+Content-Disposition: inline
+In-Reply-To: <Pine.GSO.4.58.0402231449040.14277@waterleaf.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,24 +29,29 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: James Simmons <jsimmons@infradead.org>, Alexander Kern <alex.kern@gmx.de>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+On Mon, Feb 23, 2004 at 02:51:07PM +0100, Geert Uytterhoeven wrote:
+> On Mon, 23 Feb 2004, Ville [iso-8859-1] Syrj=E4l=E4 wrote:
+> > BTW would it be possible to add a new accelerator type for Pro chips.=
+ I'd
+> > like to identify Pro chips in my DirectFB driver because there are a =
+few
+> > important differences between Pro and older models. Othwerwise I'm go=
+ing
+> > to have to the same thing I did with matrox cards and use /proc/bus/p=
+ci :(
+>=20
+> Can't you just check CONFIG_CHIP_ID in your DirectFB driver?
 
-> 
-> That's OK, as long as entries <= 15.
-> 
-> Using this register you cannot check for more than 15. There's another register
-> for that, and the difference between PRO and older is in that second register.
+Yes I can ;) I didn't realize the chip kept the device id in it's own=20
+register. Thanks.
 
-Ok. But we never wait for more than 15. when filling the HOST_DATA, we wait
-for 1 for each long word (maybe that is wrong, it's definitely sub optimal),
-and we wait for at most 6 afiak when setting up.
-
-Ben.
-
-
+--=20
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
 
 
 -------------------------------------------------------

@@ -1,21 +1,22 @@
-From: Otto Solares <solca@guug.org>
+From: Stuart Young <sgy-lkml@amc.com.au>
 Subject: Re: fbdv/fbcon pending problems
-Date: Mon, 23 Feb 2004 20:37:59 -0600
+Date: Tue, 24 Feb 2004 16:57:37 +1100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040224023759.GA16499@guug.org>
+Message-ID: <200402241657.37382.sgy-lkml@amc.com.au>
 References: <1077497593.5960.28.camel@gaston>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AvSaE-0003ui-P1
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 23 Feb 2004 18:46:06 -0800
-Received: from guug.org ([168.234.203.30] helo=guug.galileo.edu)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AvSSH-0001ka-Lq
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 23 Feb 2004 18:37:53 -0800
-Content-Disposition: inline
+	id 1AvVgq-0007mX-SF
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 23 Feb 2004 22:05:08 -0800
+Received: from mail1.amc.com.au ([203.15.175.2])
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
+	id 1AvVYo-0007Ol-M4
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 23 Feb 2004 21:56:50 -0800
 In-Reply-To: <1077497593.5960.28.camel@gaston>
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,76 +27,37 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, James Simmons <jsimmons@infradead.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
 
-On Mon, Feb 23, 2004 at 11:53:14AM +1100, Benjamin Herrenschmidt wrote:
-> Hi !
-> 
-> Here's a list of pending issues with fbdev (either upstream or in the
-> fbdev bk treee), I figured posting it here may help getting more people
-> on those issues as my time is sparse and I suppose James too.
-> 
->  - First one, I will deal with, just writing it for completeness: When
-> switching from KD_GRAPHICS to KD_TEXT (either same console changing mode
-> or switching to a different console), we need a callback so the fbdev
-> has a chance to restore the accel engine setting (or even the whole
-> mode, to be safe).
-> 
->  - Memory corruption problems. There is still at least one identified
-> when using stty. Just use crazy values, like flipping rows & cols (like
-> stty rows 132 cols 30) and usually, you'll see the box blow up very soon
-> with heavy memory corruption.
-> 
->  - mach64 lockups on LT-G (I'll try on an LT-Pro soon) plus other
-> mach64 bugs in the new version in the bk fbdev, I'll have a patch for
-> some of the problems, but I didn't find a good explanation for the
-> accel lockups yet
-> 
+On Mon, 23 Feb 2004 11:53 am, Benjamin Herrenschmidt wrote:
+
 >  - Logo problems. When booting with a logo, then going to getty, the
 > logo doesn't get erased until we actually switch to another console (or
 > reset the console). At this point, using things like vi & scrolling up
 > doesn't work properly. Actually, last time I tried, I had to switch
 > back & forth twice before my console that had the logo got fully working
 > with vi.
-> 
->  - Back buffer problem: maybe related to the logo ? After boot, doing
-> shift-pageup to go back to the boot message, usually you get crap
-> displayed at various places.
-> 
->  - On x86, various junk displayed when the fbdev takes over. Reported
-> by radeonfb users, I couldn't test myself, I don't have an x86 with
-> radeon at hand for the moment. Apparently, the takeover from vgacon
-> doesn't properly "convert" the previous VGA text buffer content
-> 
->  - stty & mode picking. Currently, fbcon_resize() (called when stty is
-> used to resize the console) will hack a "var" strcture by just putting
-> new width/height in it and pass that to set_var. The way the various
-> drivers react to that mostly broken "var" structure is rather random.
-> We need to explicitely differenciate between a mode that is "complete"
-> (like what fbset or X passes down the fbdev) or a mode that is just
-> width/height and eventually a hint of frequency, like what fbcon passes
-> in this case. I added FB_ACTIVATE_FIND for that purpose, but that needs
-> better driver support to "pick" up a proper mode. The algorithm for
-> that isn't trivial. Could be moved to common code.
-> 
->  - fbset doesn't resize the console. I consider that a regression from
-> 2.4. I have some code based on the notification mecanism to address
-> that, but it tends to trigger the same memory corruption problem as
-> reported with stty & bogus coordinates. There is something hairy going
-> on with console resizes. That code is a bit foreign to me though.
-> 
-> Ok, that's all that comes to my mind right now, help is welcome :)
 
-- bus_id for each fbdev, so from userland became posible to identify
-  to which card we are controlling.  I know it should be exported via
-  sysfs but an ioctl should be really handy as when you program for
-  fbdev anyway you have to use ioctl's, just to get the bus_is will
-  be a pain use sysfs.
+Been around forever and a day. RedHat getty's clear the screen, which tends to 
+remove the unscrollable region that the logo sits in. Debian doesn't, so it's 
+much more noticable (and always has been).
 
--otto
-  
+This might be best done thru userspace, as having the logo and other graphics 
+sitting at the top of the screen through the boot process (eg: sysv init 
+scripts, etc) within an unscrollable region can be useful. I know that the 
+boot-icons package in Debian actually relies on this behaviour. Perhaps you 
+could provide an option in the kernel config to change this default 
+behaviour, for those that want it?
+
+If it's possible to unlock this region so that it scrolls again from userspace 
+(ie: not resetting/clearing it, just unlocking it), then it's just a simple 
+matter of checking wether the current console is an fb device, and if it is, 
+making it unlock the scrolling region. In Debian, this could be done 
+in /etc/init.d/rmnologin, or even in /etc/profile if someone would rather it 
+done after login.
+
+
 
 
 -------------------------------------------------------

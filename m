@@ -1,19 +1,19 @@
 From: Luismi <luismimoya@eresmas.net>
-Subject: aty radeon specs
-Date: Sun, 26 Jan 2003 12:40:12 +0000
+Subject: ati radeon specs
+Date: Sun, 26 Jan 2003 12:54:20 +0000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3E33D72C.3010005@eresmas.net>
+Message-ID: <3E33DA7C.9050602@eresmas.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from 38-99-adsl.red.retevision.es ([80.224.99.38] helo=localhost)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18cl9A-000737-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 26 Jan 2003 03:40:21 -0800
+	id 18clMq-0000q1-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 26 Jan 2003 03:54:28 -0800
 Received: from localhost ([127.0.0.1] helo=eresmas.net)
 	by localhost with esmtp (Exim 3.36 #1 (Debian))
-	id 18cm57-0001EW-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 26 Jan 2003 12:40:13 +0000
+	id 18cmIm-0001Jn-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 26 Jan 2003 12:54:20 +0000
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>

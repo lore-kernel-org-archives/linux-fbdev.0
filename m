@@ -1,21 +1,23 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Patch for review and testing
-Date: Tue, 27 Jan 2004 22:59:26 +0000 (GMT)
+From: Richard Smith <rsmith@bitworks.com>
+Subject: Re: still ..Confused about atyfb and M1
+Date: Tue, 27 Jan 2004 18:07:18 -0600
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0401272255180.19265-100000@phoenix.infradead.org>
-References: <1075241846.5657.222.camel@gaston>
+Message-ID: <4016FD36.6010109@bitworks.com>
+References: <20040117063816.87535.qmail@web14913.mail.yahoo.com>	 <200401171303.13802.alex.kern@gmx.de> <1074466378.813.12.camel@gaston> <400C8907.6080809@bitworks.com>
+Reply-To: RSmith@bitworks.com
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AlcB9-0004Ev-Au
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Jan 2004 14:59:31 -0800
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.30)
-	id 1AlcB8-0001aQ-I0
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Jan 2004 14:59:30 -0800
-In-Reply-To: <1075241846.5657.222.camel@gaston>
+	id 1AldFy-0008KI-UQ
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Jan 2004 16:08:34 -0800
+Received: from b44.xdsl.pgtc.com ([198.70.248.44] helo=bitworks.com)
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
+	id 1AldFy-0002o1-GT
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Jan 2004 16:08:34 -0800
+Received: from bitworks.com [192.168.1.22] by bitworks.com [127.0.0.1] with SMTP (MDaemon.v2.7.SP4.R) for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 27 Jan 2004 18:04:15 -0600
+In-Reply-To: <400C8907.6080809@bitworks.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,54 +27,34 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@osdl.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: benh@kernel.crashing.org
+Cc: Alexander Kern <alex.kern@gmx.de>, Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@infradead.org>
 
+Richard Smith wrote:
 
-> > Then I will remove it.
+> Benjamin Herrenschmidt wrote:
 > 
-> Not yet, not until the new version is in. It does work someway with the
-> current code. Let me deal with those OF things please.
-
-Sorry. I will leave this alone then. I posted it just case there where 
-conflicts with peoples work here. I will wait to send that patch. 
- 
-> Actually, that may not be a good approach neither... You probably want
-> to check that you are indeed dealing with the default VGA device so an
-> additional card don't get an unrelated EDID, no ?
+>>> Mach64 MOBILITY M1 works by me for ages. I submitted all patches to 
+>>> James for months. They are in fbdev.diff.gz. But I dont think, they 
+>>> will be merged with vanilla very soon.
+>>
+>>
+>   I grabbed fbdev.diff.gz from infradead (is this the canonical source?) 
+> and patched my 2.6.1 tree.  But I still don't see my 0x4c52 device id 
+> listed in the tables.
 > 
-> Also, other archs may want to implement this function too. Keep the
-> struct device as an argument, check for bus_type before casting to PCI,
-> and we should probably, in the x86 PCI code, "remember" the pci_dev of
-> the default VGA (if not done already) and compare it on calls to this
-> function. (To be completely clean, I also need to know if I'm the
-> primary VGA in radeonfb and aty128fb).
 
-I knew this was going to be more complex than I written.
+And it still dosen't detect my device(s).
 
-> What about a cmdline option then ? it's too early during boot to check
-> for it ? 
+I never received an answer to this.  I don't see how the M1 can work 
+supported when the device id isn't in the table.  Did I really get the 
+latest patch?
 
-Yes. The code is run in real mode before linux is started. 
+-- 
+Richard A. Smith
+rsmith@bitworks.com
 
-> vendors will build kernels with or without the CONFIG_ option,
-> and people won't change it, so I'm afraid it will be useless... Is the
-> BIOS call standard ? 
-
-Yes it is standard. 
-
-> There may be a way to workaround the hang, no ? Or
-> it's one of those calls that Windows never uses and are broken in half
-> of the BIOSes around ?
-
-I don't know of any work arounds. Its a small precentage but I like to 
-make life easier for people. 
-
-P.S.
-   Have any idea to know which card is the primary one on intel. I have 
-been trying to figure that one out for quite some time.
 
 
 

@@ -1,22 +1,16 @@
-From: Dawid Kuroczko <qnex@atlantis.ssw.krakow.pl>
-Subject: Re: Matrox Oopsed when using kernel with ACPI support...
-Date: Wed, 7 Aug 2002 19:36:06 +0200 (CEST)
+From: Petr Vandrovec <vandrove@vc.cvut.cz>
+Subject: FYI: [BK PATCH] matroxfb update: G450/G550 DVI and TV support
+Date: Thu, 8 Aug 2002 00:26:54 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0208071930090.1127-100000@atlantis.ssw.krakow.pl>
-References: <15239BD6CAD@vcnet.vc.cvut.cz>
+Message-ID: <20020807222654.GA3767@vana.vc.cvut.cz>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from panoramix.vasoftware.com ([198.186.202.147])
+Received: from vana.vc.cvut.cz ([147.32.240.58])
 	by usw-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17cVGZ-00031q-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 07 Aug 2002 11:10:39 -0700
-Received: from atlantis.ssw.krakow.pl ([62.233.209.66]:32886)
-	by panoramix.vasoftware.com with esmtp (Exim 4.05-VA-mm1 #1 (Debian))
-	id 17cUk6-0000Re-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 07 Aug 2002 10:37:06 -0700
-In-Reply-To: <15239BD6CAD@vcnet.vc.cvut.cz>
+	id 17cZGe-0005QR-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 07 Aug 2002 15:27:00 -0700
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -26,75 +20,141 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="iso-8859-1"
-To: Petr Vandrovec <VANDROVE@vc.cvut.cz>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 7 Aug 2002, Petr Vandrovec wrote:
+Hello everybody,
+  I just sent changeset below to the Linus. If you are using
+my patches for TV-Out from ftp://platan.vc.cvut.cz/pub/linux/matrox-latest,
+please note that V4L2 support for setting brightness/contrast and other
+features is NOT part of this patch. I'll send it to Linus after V4L2
+interface finds its way into the 2.5 kernel.
 
-> > Code;  c024d739 <matrox_cfbX_putcs+189/280>   <=3D=3D=3D=3D=3D
-> >    0:   f3 a5                     repz movsl %ds:(%esi),%es:(%edi) =
-  <=3D=3D=3D=3D=3D
->=20
-> Uh-oh. Impossible. Do you use multihead, or do all your ttyS belong
-> to /dev/fb0? If you are using /dev/fb1 (but you should do it anyway..=
-=2E)
-> please apply patch from
-> ftp://platan.vc.cvut.cz/pub/linux/matrox-latest/fbset-through-vt-2.4.=
-19-rc5.gz
-> to your kernel. Besides that it fixes (oopses|kernel corruption) if y=
-ou do=20
-> 'fbset -fb /dev/fb0' while you are watching console on /dev/fb1, it a=
-lso
-> allows you to do 'fbset -fb /dev/tty*' - this could simplify your
+  And also, as you may guess, driver is not ported to the new fbdev API.
 
-Actually I have only one fbdev:
-[root@atlantis ~]# cat /proc/fb
-0 MATROX VGA
+  Patch and bkpatch were removed from this copy of message - it is
+129KB file. You can download it from 
+ftp://platan.vc.cvut.cz/pub/linux/matrox-latest/bkpatch-for-linus-2.5.30,
+or you can look at http://matroxfb.bkbits.net, or you can pull from
+bk://matroxfb.bkbits.net/linux-2.5 or ... It applies cleanly to the currently
+available 2.5 tree.
+						Best regards,
+							Petr Vandrovec
+							vandrove@vc.cvut.cz
 
-=2E..the trick with open/fbdev pair might
+----- Forwarded message from Petr Vandrovec <vandrove@vc.cvut.cz> -----
 
-> script a lot. And no, patch is not going to the kernel. James vetoed =
-it
-> years ago...
-Oh [ anyways the patch is great! and I runned the "ugly old script" and
-it works fine too :) ]
+Date: Thu, 8 Aug 2002 00:16:52 +0200
+From: Petr Vandrovec <vandrove@vc.cvut.cz>
+To: torvalds@transmeta.com
+Subject: [BK PATCH] matroxfb update: G450/G550 DVI and TV support
 
-> And while you are on it, please try
-> ftp://platan.vc.cvut.cz/pub/linux/matrox-latest/mga-2.4.19-rc5-tvout.=
-gz
-> too. But I believe that fbset-through-vt patch will fix your oopses, =
-and
-> this mga patch will not bring any new feature to your old MGA.
+Linus,
+  please apply changesets below. It adds DVI and TVOut functionality to
+the matroxfb. Without proper DVI support matroxfb does not work with
+currently sold G550.
 
-I applied it and appears to be rock solid.  If I experience any problem=
-s,
-I'll write.  The card has no TV out, so only new feature are new things
-in /proc:
+You can import this changeset into BK by piping this whole message to:
+'| bk receive [path to repository]' or apply the patch as usual.
+You can also do
 
-[root@atlantis ~]# cat /proc/driver/mga/fb0/bios                       =
-                      =20
-BIOS:   0.0.0
-Output: 0x00
-TVOut:  no
-PINS:   found
-Info:   c03f2a0c
-[root@atlantis ~]# hexdump -c /proc/driver/mga/fb0/pins
-0000000   .   A   @   =FF  \0 002   .   =C4 003  \0  \0 021   A   B   C=
-   1
-0000010   7   3   5   1  \0 213   X  \0   4 213   X  \0   2   0   7  \0
-0000020  \0  \0   =A2   &   =FF   =FF   =FF   =FF  \0   F   F   <   =FF=
-   <   2   7
-0000030   =FF   =FF   =FF   =FF   =EE   =FF   =FF   =FF   =FF   =FF   =FF=
-   =FF   =FF   =FF   =FF   =E0
-0000040
+     bk pull bk://matroxfb.bkbits.net/linux-2.5
 
-And once again lots of thanks for quick response and solving my
-problem (and for fbset-through-vt which is defenatley going to stay
-in my copy of kernel :)).
+						Thanks,
+							Petr Vandrovec
+							vandrove@vc.cvut.cz
 
-   Regards,
-      Dawid
+===================================================================
+
+
+ChangeSet@1.486, 2002-08-07 23:08:40+02:00, vandrove@vc.cvut.cz
+  Set system PLL vcomax correctly in matroxfb. Discovered by Dirk Uffmann.
+
+ChangeSet@1.485, 2002-08-07 22:56:59+02:00, vandrove@vc.cvut.cz
+  matroxfb: Do not store results of bitwise AND directly in variables which are 
+  treated as a booleans. Comparsion does not work correctly on them. 
+
+ChangeSet@1.484, 2002-08-07 22:48:09+02:00, vandrove@vc.cvut.cz
+  Add support for MGA-TVO-B into matroxfb. By Mike Pieper.
+
+ChangeSet@1.483, 2002-08-07 22:17:53+02:00, vandrove@vc.cvut.cz
+  Return ENOTTY instead of EINVAL for unknown ioctl ops in matroxfb.
+
+ChangeSet@1.482, 2002-08-07 22:13:00+02:00, vandrove@vc.cvut.cz
+  Use sizeof(*var) instead of sizeof(struct xxx) in matroxfb.
+
+ChangeSet@1.481, 2002-08-07 22:07:39+02:00, vandrove@vc.cvut.cz
+  Remove currcon field from private fb_info in matroxfb. It was moved to the generic
+  layer long ago.
+
+ChangeSet@1.480, 2002-08-07 21:55:40+02:00, vandrove@vc.cvut.cz
+  Make debug printouts in matroxfb G400 TV-out disabled by default.
+  OUTPUT_MODE are values, not a bitmap, so use compare instead of bitwise AND.
+
+ChangeSet@1.479, 2002-08-07 21:46:46+02:00, vandrove@vc.cvut.cz
+  Add TV-Out support for Matrox G450/G550. Due to the hardware only secondary CRTC
+  can be used as a source for TV output.
+
+ChangeSet@1.478, 2002-08-07 20:34:38+02:00, vandrove@vc.cvut.cz
+  Handle DVI output on G450/G550.
+  Powerdown unused portions of G450/G550 DAC.
+  Split G450/G550 DAC from older DAC1064 handling.
+  Modify PLL setting when both CRTCs use same pixel clocks.
+
+ChangeSet@1.477, 2002-08-07 19:49:54+02:00, vandrove@vc.cvut.cz
+  Initialize Matrox G100 and G400 hardware with values read from BIOS instead of
+  with failsafe settings discovered in the past.
+  Fixes corrupted screen display on some G100.
+
+ChangeSet@1.476, 2002-08-07 19:31:42+02:00, vandrove@vc.cvut.cz
+  Use container_of instead of simple typecast when we convert pointers from pointer
+  to fb_info to pointers to matrox_fb_info.
+
+ChangeSet@1.475, 2002-08-07 19:15:08+02:00, vandrove@vc.cvut.cz
+  Store pointer to matroxfb specific fb information instead of universal fb_info*
+  pointer for secondary head. Saves some typecasts.
+
+ChangeSet@1.474, 2002-08-07 19:06:50+02:00, vandrove@vc.cvut.cz
+  Use arrays for holding Matrox output drivers, it is nicer and more extensible
+  than current solution with per-CRTC bitmaps.
+
+ChangeSet@1.473, 2002-08-07 01:24:20+02:00, vandrove@vc.cvut.cz
+  Simplify rules for writting secondary output drivers to matroxfb.
+  Update some initializations to use C99 initializers.
+
+ChangeSet@1.472, 2002-08-07 00:33:35+02:00, vandrove@vc.cvut.cz
+  Verify validity of color depth passed to matroxfb by looking through table instead of using ifelseif... code.
+
+ChangeSet@1.471, 2002-08-07 00:21:32+02:00, vandrove@vc.cvut.cz
+  Merge secondary output state structure to main in matroxfb driver.
+
+ChangeSet@1.470, 2002-08-06 23:58:36+02:00, vandrove@vc.cvut.cz
+  Make secondary output support mandatory for Matrox G450/G550.
+
+ChangeSet@1.469, 2002-08-06 22:52:03+02:00, vandrove@vc.cvut.cz
+  Support secondary head DDC on G450/G550.
+  Simplify i2c-matroxfb code.
+
+
+ Config.help               |   58 ++---
+ Config.in                 |    9 
+ matrox/Makefile           |    6 
+ matrox/g450_pll.c         |   85 ++++----
+ matrox/g450_pll.h         |    2 
+ matrox/matroxfb_DAC1064.c |  302 ++++++++++++++++++++---------
+ matrox/matroxfb_DAC1064.h |    4 
+ matrox/matroxfb_Ti3026.c  |   14 +
+ matrox/matroxfb_base.c    |  474 ++++++++++++++++++++++++----------------------
+ matrox/matroxfb_base.h    |   51 +++-
+ matrox/matroxfb_crtc2.c   |  279 +++++++++++++++++----------
+ matrox/matroxfb_crtc2.h   |    3 
+ matrox/matroxfb_g450.c    |  467 +++++++++++++++++++++++++++++++++++----------
+ matrox/matroxfb_g450.h    |   14 -
+ matrox/matroxfb_maven.c   |  123 +++++------
+ matrox/matroxfb_misc.c    |    6 
+ 16 files changed, 1208 insertions(+), 689 deletions(-)
+
 
 
 

@@ -1,20 +1,15 @@
-From: AntiVir@mx02.uni-tuebingen.de
-Subject: AntiVir ALARM [Ihre Email: "Re: Movie"]
-Date: Mon, 30 Jun 2003 06:04:12 +0200
+From: James Simmons <jsimmons@infradead.org>
+Subject: Problem displaying RBG image
+Date: Mon, 30 Jun 2003 17:16:14 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200306300404.h5U44CvE018232@mx02.uni-tuebingen.de>
+Message-ID: <Pine.LNX.4.44.0306301715120.21429-100000@phoenix.infradead.org>
+Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mx02.uni-tuebingen.de ([134.2.3.12])
+Received: from phoenix.infradead.org ([195.224.96.167])
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19Wptv-0008CU-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 29 Jun 2003 21:04:23 -0700
-Received: from mx02.uni-tuebingen.de (localhost [127.0.0.1])
-	by mx02.uni-tuebingen.de (8.12.3/8.12.3) with ESMTP id h5U44CDs018233
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 30 Jun 2003 06:04:12 +0200
-Received: (from vscan@localhost)
-	by mx02.uni-tuebingen.de (8.12.3/8.12.3/Submit) id h5U44CvE018232
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 30 Jun 2003 06:04:12 +0200
+	id 19X1Kk-0007OF-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 30 Jun 2003 09:16:51 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -24,46 +19,15 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-
-* * * * * * * * * * * * * * * AntiVir ALERT * * * * * * * * * * * * * * *
-This version of AntiVir is licensed and full featured.
-
-AntiVir hat Folgendes in einer von Ihnen adressierten E-Mail gefunden:
-
-     Worm/Sobig.E
-
-Diese E-Mail wurde nicht ausgeliefert und auf dem Server isoliert.
-Ueberpruefen Sie bitte Ihr System unverzueglich auf eventuellen 
-Virenbefall.
-
-Bitte entfernen Sie vorhandene Viren, bevor Sie weitere E-Mails mit 
-Dateianhaengen versenden.
-
-------------------------------------------------------------------------
-AntiVir has detected the following in a mail from your address:
-
-        Worm/Sobig.E
-
-The mail was not delivered.
-
-Please remove any potential malicious software from your computer before
-sending a new mail with attachments.
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: nitin@soc-soft.com
 
 
+Your post is to big. Please place the image on th eweb and send us a link 
+to it.
 
-
-
-Mail-Info:
---8<--
- From: <linux-fbdev-devel@lists.sourceforge.net>
- To: <rguenth@tat.physik.uni-tuebingen.de>
- Date: Mon, 30 Jun 2003 13:03:57 +0900
- Subject: Re: Movie
---8<--
 
 
 

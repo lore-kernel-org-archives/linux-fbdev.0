@@ -1,16 +1,16 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: fbdev changes.
-Date: Fri, 18 Oct 2002 10:29:47 -0700 (PDT)
+Subject: Re: endian problem ?
+Date: Fri, 18 Oct 2002 10:43:57 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.33.0210181028520.10832-100000@maxwell.earthlink.net>
-References: <1034628378.1143.507.camel@tibook>
+Message-ID: <Pine.LNX.4.33.0210181041210.10832-100000@maxwell.earthlink.net>
+References: <20021013184921.4571@192.168.4.1>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from gull.mail.pas.earthlink.net ([207.217.120.84])
+Received: from snipe.mail.pas.earthlink.net ([207.217.120.62])
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 182b2n-0005Mb-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Oct 2002 10:36:17 -0700
-In-Reply-To: <1034628378.1143.507.camel@tibook>
+	id 182bGV-0006F8-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Oct 2002 10:50:27 -0700
+In-Reply-To: <20021013184921.4571@192.168.4.1>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,17 +22,46 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Cc: Linus Torvalds <torvalds@transmeta.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
 
-> Wouldn't that complicate merges between the kernel and DRI CVS? At any
-> rate, I think discussion related to the DRI should take place on
-> dri-devel.
+On Sun, 13 Oct 2002, Benjamin Herrenschmidt wrote:
 
-Okay the idea of mixing the drivers together was rejected. SO I just moved
-the entire directory to drivers/video instead. People didn't seem to have
-problem with that.
+> Ok, I've ported radeonfb, controlfb and platinumfb to the
+> new API (which is quite nice since allowed me to remove
+> a whole bunch of cruft from these drivers, good job !)
+
+Great!!!! Just let me know when you want them placed into fbdev BK.
+
+> However, I'm having a problem: With controlfb and
+> radeonfb (couldn't test platinum yet but it's very similar
+> to controlfb), the console is fine in 8 bpp, but text is
+> plain blue in any higher bit depth (15, 16 or 32).
+
+Okay I have seen this problem on a few drivers. It is either a bug in
+setcolreg which is often copied from one place to another or a bug in the
+upper levels. I seen this on the atyfb driver happen.
+
+> X with "fbdev" driver works fine, so I think setcolreg
+> works properly. All those drivers are set to DIRECTCOLOR
+> for these bit depth. Maybe I've missed something about
+> the pseudo_palette thing (is it documented somewhere ?)
+> or are there known endian bugs in the cfb_* routines ?
+
+I now know it isn't a endian issues since on my little endian machine I
+have the same problem. I don't know if it is a cfb_* bug. I will try out
+my tdfx card to see. It has accelerated functions so the error woudln't be
+there.
+
+MS: (n) 1. A debilitating and surprisingly widespread affliction that
+renders the sufferer barely able to perform the simplest task. 2. A disease.
+
+James Simmons  [jsimmons@users.sf.net] 	                ____/|
+fbdev/console/gfx developer                             \ o.O|
+http://www.linux-fbdev.org                               =(_)=
+http://linuxgfx.sourceforge.net                            U
+http://linuxconsole.sourceforge.net
 
 
 

@@ -1,15 +1,17 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Petr Vandrovec <vandrove@vc.cvut.cz>
 Subject: Re: fb_pan_display
-Date: Sat, 2 Nov 2002 14:20:55 +0100 (MET)
+Date: Sun, 3 Nov 2002 03:25:07 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0211021420001.11959-100000@vervain.sonytel.be>
+Message-ID: <20021103022507.GE10610@ppc.vc.cvut.cz>
 References: <Pine.LNX.4.33.0211010908390.6296-100000@maxwell.earthlink.net>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
-	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 187yDc-0002kE-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 02 Nov 2002 05:21:40 -0800
+Received: from p0050.as-l042.contactel.cz ([194.108.237.50] helo=ppc.vc.cvut.cz)
+	by usw-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 188AS8-0004FY-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 02 Nov 2002 18:25:29 -0800
+Content-Disposition: inline
 In-Reply-To: <Pine.LNX.4.33.0211010908390.6296-100000@maxwell.earthlink.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
@@ -20,12 +22,15 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: James Simmons <jsimmons@infradead.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Fri, 1 Nov 2002, James Simmons wrote:
+On Fri, Nov 01, 2002 at 09:11:08AM -0800, James Simmons wrote:
+> 
+> Hi!
+> 
 >   Looking at the last bits of the fbdev changes I have question. Currently
 > I have in fbgen.c:
 > 
@@ -38,20 +43,22 @@ On Fri, 1 Nov 2002, James Simmons wrote:
 >         if (xoffset < 0 || yoffset < 0 ||
 >             xoffset + info->var.xres > info->var.xres_virtual ||
 >             yoffset + info->var.yres > info->var.yres_virtual)
+
+Hm, do not YWRAP devices need this
+
+          if (xoffset < 0 || yoffset < 0 ||
+              xoffset >= info->var.xres_virtual ||
+              yoffset >= info->var.yres_virtual) {
+
+instead?
+
 >                 return -EINVAL;
-
-The one above is generic.
-
 >         if (info->fbops->fb_pan_display) {
 >                 if ((err = info->fbops->fb_pan_display(var, info)))
 >                         return err;
 >                 else
 >                         return -EINVAL;
 >         }
-
-This is weird. if 0 == info->fbops->fb_pan_display, there's no panning, but it
-does succeed?
-
 >         info->var.xoffset = var->xoffset;
 >         info->var.yoffset = var->yoffset;
 >         if (var->vmode & FB_VMODE_YWRAP)
@@ -59,23 +66,14 @@ does succeed?
 >         else
 >                 info->var.vmode &= ~FB_VMODE_YWRAP;
 >         return 0;
-> }
-> 
-> Now what I was wondering are these test standard enough that we coudl call
-> this instead of info->fb_ops->fb_pan_display. Several drivers have this
-> test so it would me more code reduction.
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Somebody has to check whether FB_VMODE_YWRAP is supported
+by this hardware at all (i.e. var.vmode should already
+contain FB_VMODE_YWRAP bit set from previous set_var, should
+not it?).
+					Best regards,
+						Petr Vandrovec
+						vandrove@vc.cvut.cz
 
 
 -------------------------------------------------------

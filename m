@@ -1,18 +1,14 @@
-From: Hanno =?ISO-8859-15?Q?B=F6ck?= <hanno@gmx.de>
-Subject: Re: Situation on radeonfb
-Date: Sat, 1 Mar 2003 11:38:14 +0100
+From: Jon Smirl <jonsmirl@yahoo.com>
+Subject: Fwd: Re: [Dri-devel] future of DRI?
+Date: Sat, 1 Mar 2003 10:42:36 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030301113814.426d5d38.hanno@gmx.de>
-References: <20030219130026.4770b401.hanno@gmx.de>
-	<Pine.BSF.4.50.0302191104200.44401-100000@shell.unixbox.com>
+Message-ID: <20030301184236.77268.qmail@web14914.mail.yahoo.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail.gmx.net ([213.165.65.60])
+Received: from web14914.mail.yahoo.com ([216.136.225.241])
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18p4Nl-0005kD-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 01 Mar 2003 02:38:17 -0800
-In-Reply-To: <Pine.BSF.4.50.0302191104200.44401-100000@shell.unixbox.com>
+	id 18pBwT-0007EO-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 01 Mar 2003 10:42:37 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,16 +19,70 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Ani Joshi <ajoshi@unixbox.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-> Marcello and Linus will recieve an update in the next week or so.
+--- Linus Torvalds <torvalds@transmeta.com> wrote:
+> From: Linus Torvalds <torvalds@transmeta.com>
+> To: Keith Whitwell <keith@tungstengraphics.com>
+> CC: Jon Smirl <jonsmirl@yahoo.com>, Ian Romanick
+> <idr@us.ibm.com>,
+>         "DRI developer's list"
+> <dri-devel@lists.sourceforge.net>
+> Subject: Re: [Dri-devel] future of DRI?
+> Date: Sat, 1 Mar 2003 10:15:06 -0800 (PST)
+> 
+> 
+> On Sat, 1 Mar 2003, Keith Whitwell wrote:
+> > 
+> > Interesting you mention it.  This is what Brian &
+> I've done in the Mesa 
+> > embedded branch -- layered the radeon dri driver
+> on top of fbdev.  I can also 
+> > build regular DRI drivers from a minimal tree &
+> sane set of makefiles.
+> 
+> Personally, I'd rather see DRI _underneath_ fbdev
+> rather than on top of. 
+> Since fbdev would require at least to know of (and
+> obey) the DRI locking 
+> code - and would likely want to use all the same DRI
+> command execution for 
+> things like blits etc (this is on the assumption
+> that 2d and 3d will 
+> eventually use the same engine, which is probably a
+> safe assumption).
+> 
+> I _assume_ that what you really mean is that you use
+> fbdev really only to
+> set up the screen modes and do things like
+> initialize the graphics
+> buffers.
+> 
+> 		Linus
+> 
+> 
+> 
+>
+-------------------------------------------------------
+> This sf.net email is sponsored by:ThinkGeek
+> Welcome to geek heaven.
+> http://thinkgeek.com/sf
+> _______________________________________________
+> Dri-devel mailing list
+> Dri-devel@lists.sourceforge.net
+>
+https://lists.sourceforge.net/lists/listinfo/dri-devel
 
-Did you send anything? Can you post a copy of your patches to the list?
 
-cu,
+=====
+Jon Smirl
+jonsmirl@yahoo.com
 
-Hanno
+__________________________________________________
+Do you Yahoo!?
+Yahoo! Tax Center - forms, calculators, tips, more
+http://taxes.yahoo.com/
 
 
 -------------------------------------------------------

@@ -1,70 +1,72 @@
-From: Ian Romanick <idr@us.ibm.com>
-Subject: Re: Generic VESA framebuffer driver and Video
- card BOOT?
-Date: Fri, 15 Oct 2004 16:36:41 -0700
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <41705F09.4070908@us.ibm.com>
-References: <416E6ADC.3007.294DF20D@localhost> <416EDA9A.9010809@comcast.net>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: "Kendall Bennett" <KendallB@scitechsoft.com>
+Subject: Re: [Linux-fbdev-devel] Generic VESA framebuffer driver and Video card BOOT?
+Date: Fri, 15 Oct 2004 16:51:09 -0700
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <416FFFFD.28877.2F2B6C9@localhost>
+References: <200410160551.40635.adaplas@hotpop.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CIbd1-00074n-3a
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Oct 2004 16:36:55 -0700
-Received: from e34.co.us.ibm.com ([32.97.110.132])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.41)
-	id 1CIbd0-0000Gj-0L
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Oct 2004 16:36:55 -0700
-Received: from westrelay04.boulder.ibm.com (westrelay04.boulder.ibm.com [9.17.193.32])
-	by e34.co.us.ibm.com (8.12.10/8.12.9) with ESMTP id i9FNamJ8539776
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 15 Oct 2004 19:36:48 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by westrelay04.boulder.ibm.com (8.12.10/NCO/VER6.6) with ESMTP id i9FNalOX159756
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 15 Oct 2004 17:36:48 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11/8.12.11) with ESMTP id i9FNalaZ011001
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 15 Oct 2004 17:36:47 -0600
-In-Reply-To: <416EDA9A.9010809@comcast.net>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: penguinppc-team@lists.penguinppc.org
+Content-Transfer-Encoding: 7BIT
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S267375AbUJOXvd@vger.kernel.org>
+In-reply-to: <9e47339104101516206c8597d3@mail.gmail.com>
+Content-description: Mail message body
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-Zachary Smith wrote:
+Jon Smirl <jonsmirl@gmail.com> wrote:
 
-> This is a problem of the videocard manufacturers' making which,
-> in the spirit of good engineering, they should fix before requiring
-> a downstream kludge.
+> On Sat, 16 Oct 2004 05:51:38 +0800, Antonino A. Daplas
+> <adaplas@hotpop.com> wrote:
+> > Yes, that is the downside to a userspace solution. How bad will that be?
+> > Note that Jon Smirl is proposing a temporary console driver for early
+> > boot messages until the primary console driver activates.
 > 
-> Specifically, ATI, rather than advocate x86 emulation in order
-> to use their BIOS on non-x86 machines, should put a pseudocode BIOS
-> (something like java bytecode) in the ROM instead, including
-> an interpreter of course, perhaps gutting the x86 BIOS calls to use the
-> pseudocode routines so there is only one version to maintain.
-> And provide an entrypoint for non-x86 CPUs.
+> Does anyone know exactly how big the window is from when a
+> compiled in console activates until one that relies on initramfs
+> loads? I don't think it is very big given that a lot of the early
+> printk's are queued before they are displayed. 
 
-Isn't that basically what OpenFirmware is?  I think part of the issue is 
-the x86 compiled BIOS is smaller than the OF BIOS, so they use smaller 
-(i.e., cheaper) flash on the card.  That has prevented people from 
-re-flashing PC cards with OF images from Mac cards.
+I have not used initramfs at all (I am not sure I know what it is 
+actually) so I don't know. I know there is quite a long period of time on 
+most machines from when the kernel starts booting and when the real file 
+system based init process takes over.
 
-I think Digital had the right idea from the beginning:  put the x86 BIOS 
-emulator in the system firmware and be done with it.
+> Other than embedded systems, are there machines that have no
+> BIOS/PROM display at all and rely entirely on a bootable kernel
+> for display? If so, how do machines like this put up a message that
+> they can't find the kernel? How do you get hardware diagnostic
+> messages from them? 
 
+I am pretty sure most embedded systems use some kind of boot firmware to 
+bring up the box. Something like Open BIOS from IBM or U-Boot. U-Boot can 
+be set up to POST the card using the BIOS emulator but Open BIOS cannot. 
+If you don't POST the card in the boot loader, usually they display 
+diagnostics on the serial port until the console comes up (ie: I see the 
+'uncompress linux...' message on the serial port and then the framebuffer 
+console comes up and the messages switch over to it.
 
--------------------------------------------------------
-This SF.net email is sponsored by: IT Product Guide on ITManagersJournal
-Use IT products in your business? Tell us what you think of them. Give us
-Your Opinions, Get Free ThinkGeek Gift Certificates! Click to find out more
-http://productguide.itmanagersjournal.com/guidepromo.tmpl
+> In the case of something like a Mac you would want to keep the
+> display blank until the early user space code initializes the
+> display in graphics mode. Only if you get a fatal error before this
+> would you dump the info using the Open Firmware display. Same
+> strategy would apply to x86. 
+
+True. On the Mac they use the speakers so the user knows that the machine 
+is booting. Almost immediately after hitting the power you will hear a 
+calming sound coming from the speaker, and it might be another 5 seconds 
+or so before the actual video comes up. 
+
+If they didn't do that they would no doubt have lots of users turning the 
+machine off again before it had a chance to bring up the video!
+
+Regards,
+
+---
+Kendall Bennett
+Chief Executive Officer
+SciTech Software, Inc.
+Phone: (530) 894 8400
+http://www.scitechsoft.com
+
+~ SciTech SNAP - The future of device driver technology! ~

@@ -1,17 +1,17 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Reading the EDID block for x86 machines
-Date: Tue, 11 Mar 2003 15:49:24 +0000 (GMT)
+Subject: Re: Feature Freeze?
+Date: Tue, 11 Mar 2003 15:55:12 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0303111537420.23668-100000@phoenix.infradead.org>
-References: <1047386934.1113.35.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44.0303111553380.23668-100000@phoenix.infradead.org>
+References: <1046910001.1227.22.camel@localhost.localdomain>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18sm1R-0005g2-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 Mar 2003 07:50:34 -0800
-In-Reply-To: <1047386934.1113.35.camel@localhost.localdomain>
+	id 18sm7C-00070w-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 Mar 2003 07:56:31 -0800
+In-Reply-To: <1046910001.1227.22.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -24,57 +24,55 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Antonino Daplas <adaplas@pol.net>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> I was wondering how to get the EDID block, and my first thought was to
-> implement DDC.  But it is tricky to implement, so why not just get the
-> EDID using an int 0x10 BIOS call?
-
-DDC is tricky but the nice thing is it is very portable. We can do the 
-BIOS call but that limits it support to intel family of processors.
-I still like to do the BIOS call still because it allows us quick supprot 
-of EDID on intel platforms. 
-
-> The EDID block can be read before the kernel goes into protected mode
-> (just a short assembly code in arch/i386/boot/video.S) and this can be
-> saved later on as struct edid_info during the kernel's setup routine.  
+> I have already a working fbcon module unloading code in my local copy. 
+> The way it works is like this.  
 > 
-> One catch though is that that the "empty_zero_page" is becoming too
-> tight, so it will just use the same offset used by the EDD (BIOS
-> Enhanced Disk Drive).  So EDID reading will be disabled if EDD is
-> enabled under the "Processor Type and Features"  option.
-
-I believe it is possible to read the block after we are in protect mode.
-Look at vesafb and also the aty128 driver allows you to probe the BIOS 
-after we are in protect mode. I suggest we add a feild to struct 
-screeninfo to store the address to the edid pointer. 
- 
-> One of the goals is to build a video data structure that also includes a
-> database of video mode in fb_videomode format.  This can be dynamically
-> created per device using the supported VESA modes, manufacturer's mode
-> and detailed timings mode information in the EDID block. The EDID block
-> also contain information on GTF capability.  With these types of
-> displays, a video mode mode database may not be needed since all
-> possible supported modelines can be calculated.
+> 1. If take_over_console() is called with the "default" flag clear, it
+> behaves as usual.  It takes only a subset of console numbers but
+> "conswitchp" still points to the console driver that was loaded at boot
+> time.
 > 
-> The advantage of the above is that the driver can switch to different
-> modes without relying on user input (of course, user-entered modelines
-> are still preferred).
+> 2. If take_over_console() is called with the "default" flag set, it will
+> replace "conswitchp", but the original value of "conswitchp" is saved.
+> 
+> 3.  If take_over_console() with the "default" flag set is called again,
+> it will fail.  It's not logical to just overwrite "conswitchp" over and
+> over again.
+> 
+> 4. If give_up_console() is called and if the previous
+> take_over_console() did not overwrite "conswitchp", it proceeds as
+> usual.
+> 
+> 5. If give_up_console() is called and if the previous
+> take_over_console() overwrote "conswitchp", give_up_console() will also
+> call take_over_console() but using the saved "conswitchp".
+> 
+> I can then load fbdev and fbcon as modules.  If I "rmmod fbcon", I get
+> back again to vgacon/dummycon/whatever.  I can then load and unload
+> different fbdev's and load fbcon at will.
+> 
+> If I want to load mdacon, it will still work on top of fbcon, because
+> mdacon calls take_over_console() with the "default" flag cleared.
+> 
+> If you need to load other console drivers, then fbcon must be unloaded
+> first.  This is because the rest of the console drivers call
+> take_over_console() with the "default" flag set.
+> 
+> I can already load/unload fbcon using vga16fb, rivafb or i810fb as the
+> backend at will.  Drivers that wish to allow fbcon unloading can define
+> the xxxfb_release() method.  They can choose to save/restore the state
+> (if they have a vga core and running as primary), or just define the
+> xxfb_release method as a dummy (if no vga core or running as secondary).
+> 
+> What do you think?  Any suggestions to improve this (multiple console
+> drivers for instance)? I would rather have the above, or disallow
+> unloading, than having the whole console system freeze on me.
 
-Wow. I'm glad we both think alike. I was thinking the same thing except my 
-hands are tied with working on the upper layer stuff. 
-
-> Anyway, I need help in testing the code (especially the Detailed
-> Information part).  Just apply the attached patch, disable Enhanced Disk
-> Driver support (under Processor Type and Features), and enable EDID
-> support (under Graphics option).  Finally, add the following line to the
-> fbdev driver that you use (anywhere, but a good place is the init code):
-
-Diable Enhanced Disk support :-( I have a few suggestions. One we add a 
-pointer to struct screen_info that points to the edid information. We can 
-use phys_to_virt to translate that address into virtual memory. I can 
-create a patch today and store it in the BK tree. 
+Send me the patch. I like to have this support. As for multiple console 
+support. Well that will just be nasty. Nothing we can do about it.
 
 
 

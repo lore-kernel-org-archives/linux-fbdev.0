@@ -1,20 +1,17 @@
-From: Sascha Hauer <s.hauer@pengutronix.de>
-Subject: Re: [PATCH 1/2]Freescale i.MX framebuffer driver
-Date: Fri, 18 Mar 2005 12:39:12 +0100
-Message-ID: <20050318113912.GA18354@metis.extern.pengutronix.de>
-References: <20050317173624.GA29286@metis.extern.pengutronix.de> <200503180344.58891.adaplas@hotpop.com>
+From: Tony Daplas <aadaplas@yahoo.com>
+Subject: Fwd: linux-kernel radeonfb: Display corruption with power managment, after a while it goes away automatically
+Date: Thu, 17 Mar 2005 15:45:40 -0800 (PST)
+Message-ID: <20050317234540.12743.qmail@web53307.mail.yahoo.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DCFpO-0005al-Sn
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Mar 2005 03:39:42 -0800
-Received: from metis.extern.pengutronix.de ([83.236.181.26])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DCFpM-00063R-1d
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Mar 2005 03:39:42 -0800
-Content-Disposition: inline
-In-Reply-To: <200503180344.58891.adaplas@hotpop.com>
+	id 1DC4gZ-0004P0-CB
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Mar 2005 15:45:51 -0800
+Received: from web53307.mail.yahoo.com ([206.190.39.236])
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
+	id 1DC4gW-00050q-KH
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Mar 2005 15:45:51 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,840 +24,999 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: benh@kernel.crashing.org
+Cc: adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net, sebastian_ml@gmx.net
 
-Hi,
 
-Thanks for your fast reply
+--- Sebastian <sebastian_ml@gmx.net> wrote:
 
-On Fri, Mar 18, 2005 at 03:44:58AM +0800, Antonino A. Daplas wrote:
+> Date: Thu, 17 Mar 2005 23:07:14 +0100
+> From: Sebastian <sebastian_ml@gmx.net>
+> To: adaplas@hotpop.com
+> Subject: linux-kernel radeonfb: Display corruption
+> with power managment, after
+>  a while it goes away automatically
 > 
-> Preliminary comments:
+> Hello!
 > 
-> 1. Can you use framebuffer_alloc()?  Meaning you have to change this:
+> I have a desktop computer with a radeon 9250 agp
+> card from connect3d. I
+> append radeonfb.default_dynclk=1 when loading the
+> kernel or use options
+> radeonfb default.dynclk=1 when using modules. I
+> understand the power
+> managment feature is mostly for mobility cards for
+> laptops, but I like
+> it very much because my card stays much cooler with
+> it.
+> The problem is that, no matter if I load the module
+> or build it
+> statically in the kernel the screen gets garbled
+> until init says it's
+> "Setting user font".
 > 
-> struct imxfb_info {
->        struct fb_info          fb;
-> 	...
-> }
+> After setting the user fonts (exactly at this point
+> everytime)
+> everything at once is in order. And powermanagment
+> works flawlessly.
+> I don't get the point why this should have anything
+> to do with setting
+> user fonts (which are set to lat0-16 btw.).
 > 
-> Then put all driver private data in info->par.
-
-OK, done
-
+> I'm on Gentoo kernel 2.6.11. I can't tell how this
+> works with earlier
+> versions, because the card is only a few days old.
+> But if you like I
+> could check it out.
 > 
-> 2. Comment on putting the blank function in the workqueue:  The console
-> expects that after calling fbcon_blank/fb_blank, that the hardware is really
-> in that state.  For example, after calling unblank(), the console expects
-> that it is entirely safe to write to the device because it will do so.
+> cat /proc/version
+> Linux version 2.6.11.2 (root@hal9000) (gcc version
+> 3.3.5 (Gentoo Linux
+> 3.3.5-r1, ssp-3.3.2-3, pie-8.7.7.1)) #3 Thu Mar 17
+> 21:38:23 CET 2005
+> 
+> /usr/src/linux/scripts/ver_linux
+> If some fields are empty or look unusual you may
+> have an old version.
+> Compare to the current minimal requirements in
+> Documentation/Changes.
+> 
+> Linux hal9000 2.6.11.2 #3 Thu Mar 17 21:38:23 CET
+> 2005 i686 AMD
+> Athlon(tm) XP 1700+ AuthenticAMD GNU/Linux
+> 
+> Gnu C                  3.3.5
+> Gnu make               3.80
+> binutils               2.15.92.0.2
+> util-linux             2.12i
+> mount                  2.12i
+> module-init-tools      3.0
+> e2fsprogs              1.35
+> reiserfsprogs          line
+> reiser4progs           line
+> xfsprogs               2.6.25
+> Linux C Library        2.3.4
+> Dynamic linker (ldd)   2.3.4
+> Procps                 3.2.4
+> Net-tools              1.60
+> Kbd                    1.12
+> Sh-utils               5.2.1
+> udev                   045
+> Modules Loaded         dvb_ttpci dvb_core saa7146_vv
+> video_buf saa7146
+> ves1820 stv0299 tda8083 stv0297 sp8870 ves1x93
+> ttpci_eeprom radeonfb
+> cfbcopyarea cfbimgblt cfbfillrect lirc_serial
+> lirc_dev
+> 
+> cat /proc/cpuinfo
+> processor       : 0
+> vendor_id       : AuthenticAMD
+> cpu family      : 6
+> model           : 8
+> model name      : AMD Athlon(tm) XP 1700+
+> stepping        : 1
+> cpu MHz         : 1469.873
+> cache size      : 256 KB
+> fdiv_bug        : no
+> hlt_bug         : no
+> f00f_bug        : no
+> coma_bug        : no
+> fpu             : yes
+> fpu_exception   : yes
+> cpuid level     : 1
+> wp              : yes
+> flags           : fpu vme de pse tsc msr pae mce cx8
+> apic sep mtrr pge
+> mca cmov pat pse36 mmx fxsr sse pni syscall mmxext
+> 3dnowext 3dnow
+> bogomips        : 2899.96
+> 
+> cat /proc/modules
+> dvb_ttpci 90856 18 - Live 0xe1981000
+> dvb_core 75816 1 dvb_ttpci, Live 0xe094f000
+> saa7146_vv 45376 1 dvb_ttpci, Live 0xe092b000
+> video_buf 17092 1 saa7146_vv, Live 0xe0910000
+> saa7146 15204 2 dvb_ttpci,saa7146_vv, Live
+> 0xe0916000
+> ves1820 5508 1 dvb_ttpci, Live 0xe090d000
+> stv0299 9668 1 dvb_ttpci, Live 0xe08e5000
+> tda8083 5700 1 dvb_ttpci, Live 0xe08ed000
+> stv0297 8576 1 dvb_ttpci, Live 0xe08e9000
+> sp8870 7180 1 dvb_ttpci, Live 0xe08dd000
+> ves1x93 6340 1 dvb_ttpci, Live 0xe0816000
+> ttpci_eeprom 2304 1 dvb_ttpci, Live 0xe083d000
+> radeonfb 61252 1 - Live 0xe08f1000
+> cfbcopyarea 3712 1 radeonfb, Live 0xe083b000
+> cfbimgblt 2752 1 radeonfb, Live 0xe0839000
+> cfbfillrect 3392 1 radeonfb, Live 0xe081d000
+> lirc_serial 11488 1 - Live 0xe0835000
+> lirc_dev 11532 1 lirc_serial, Live 0xe0831000
+> 
+> cat /proc/ioports
+> 0000-001f : dma1
+> 0020-0021 : pic1
+> 0040-0043 : timer0
+> 0050-0053 : timer1
+> 0060-006f : keyboard
+> 0070-0077 : rtc
+> 0080-008f : dma page reg
+> 00a0-00a1 : pic2
+> 00c0-00df : dma2
+> 00f0-00ff : fpu
+> 0170-0177 : ide1
+> 01f0-01f7 : ide0
+> 0376-0376 : ide1
+> 03c0-03df : vga+
+> 03f6-03f6 : ide0
+> 03f8-03ff : lirc_serial
+> 0cf8-0cff : PCI conf1
+> 4000-407f : motherboard
+>    4000-4003 : PM1a_EVT_BLK
+>    4004-4005 : PM1a_CNT_BLK
+>    4008-400b : PM_TMR
+>    4020-4027 : GPE0_BLK
+> 4080-40ff : motherboard
+> 4200-427f : motherboard
+> 4280-42ff : motherboard
+> 4400-447f : motherboard
+> 4480-44ff : motherboard
+>    44a0-44af : GPE1_BLK
+> 5000-503f : motherboard
+> 5100-513f : motherboard
+> d000-dfff : PCI Bus #02
+>    d000-d0ff : 0000:02:00.0
+>      d000-d0ff : radeonfb
+> e000-e007 : 0000:00:04.0
+>    e000-e007 : forcedeth
+> ec00-ec1f : 0000:00:01.1
+> f000-f00f : 0000:00:09.0
+>    f000-f007 : ide0
+>    f008-f00f : ide1
+> 
+> cat /proc/iomem
+> 00000000-0009ffff : System RAM
+> 000a0000-000bffff : Video RAM area
+> 000c0000-000ccfff : Video ROM
+> 000d0000-000d17ff : Adapter ROM
+> 000f0000-000fffff : System ROM
+> 00100000-1ffeffff : System RAM
+>    00100000-0033a4e9 : Kernel code
+>    0033a4ea-004102ff : Kernel data
+> 1fff0000-1fff2fff : ACPI Non-volatile Storage
+> 1fff3000-1fffffff : ACPI Tables
+> d0000000-dfffffff : PCI Bus #02
+>    d0000000-dfffffff : 0000:02:00.0
+>      d0000000-dfffffff : radeonfb
+> e0000000-e1ffffff : 0000:00:00.0
+> e2000000-e3ffffff : PCI Bus #02
+>    e3000000-e300ffff : 0000:02:00.0
+>      e3000000-e300ffff : radeonfb
+> e4000000-e4ffffff : PCI Bus #01
+>    e4000000-e40001ff : 0000:01:09.0
+>      e4000000-e40001ff : saa7146
+> e5000000-e5000fff : 0000:00:04.0
+>    e5000000-e5000fff : forcedeth
+> e5002000-e5002fff : 0000:00:02.0
+>    e5002000-e5002fff : ohci_hcd
+> e5003000-e5003fff : 0000:00:02.1
+>    e5003000-e5003fff : ohci_hcd
+> e5004000-e50040ff : 0000:00:02.2
+>    e5004000-e50040ff : ehci_hcd
+> fec00000-fec00fff : reserved
+> fee00000-fee00fff : reserved
+> ffff0000-ffffffff : reserved
+> 
+> cat /proc/fb
+> 0 ATI Radeon Y`
+> 
+> dmesg:
+> dmesg
+> Linux version 2.6.11.2 (root@hal9000) (gcc version
+> 3.3.5 (Gentoo Linux
+> 3.3.5-r1, ssp-3.3.2-3, pie-8.7.7.1)) #3 Thu Mar 17
+> 21:38:23 CET 2005
+> BIOS-provided physical RAM map:
+>   BIOS-e820: 0000000000000000 - 00000000000a0000
+> (usable)
+>   BIOS-e820: 00000000000f0000 - 0000000000100000
+> (reserved)
+>   BIOS-e820: 0000000000100000 - 000000001fff0000
+> (usable)
+>   BIOS-e820: 000000001fff0000 - 000000001fff3000
+> (ACPI NVS)
+>   BIOS-e820: 000000001fff3000 - 0000000020000000
+> (ACPI data)
+>   BIOS-e820: 00000000fec00000 - 00000000fec01000
+> (reserved)
+>   BIOS-e820: 00000000fee00000 - 00000000fee01000
+> (reserved)
+>   BIOS-e820: 00000000ffff0000 - 0000000100000000
+> (reserved)
+> 511MB LOWMEM available.
+> On node 0 totalpages: 131056
+>    DMA zone: 4096 pages, LIFO batch:1
+>    Normal zone: 126960 pages, LIFO batch:16
+>    HighMem zone: 0 pages, LIFO batch:1
+> DMI 2.2 present.
+> ACPI: RSDP (v000 Nvidia                             
+>   ) @ 0x000f6fa0
+> ACPI: RSDT (v001 Nvidia AWRDACPI 0x42302e31 AWRD
+> 0x00000000) @ 0x1fff3000
+> ACPI: FADT (v001 Nvidia AWRDACPI 0x42302e31 AWRD
+> 0x00000000) @ 0x1fff3040
+> ACPI: MADT (v001 Nvidia AWRDACPI 0x42302e31 AWRD
+> 0x00000000) @ 0x1fff7880
+> ACPI: DSDT (v001 NVIDIA AWRDACPI 0x00001000 MSFT
+> 0x0100000e) @ 0x00000000
+> ACPI: Local APIC address 0xfee00000
+> ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
+> Processor #0 6:8 APIC version 16
+> ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
+> ACPI: IOAPIC (id[0x02] address[0xfec00000]
+> gsi_base[0])
+> IOAPIC[0]: apic_id 2, version 17, address
+> 0xfec00000, GSI 0-23
+> ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl
+> dfl)
+> ACPI: BIOS IRQ0 pin2 override ignored.
+> ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high
+> level)
+> ACPI: INT_SRC_OVR (bus 0 bus_irq 14 global_irq 14
+> high edge)
+> ACPI: INT_SRC_OVR (bus 0 bus_irq 15 global_irq 15
+> high edge)
+> ACPI: IRQ9 used by override.
+> ACPI: IRQ14 used by override.
+> ACPI: IRQ15 used by override.
+> Enabling APIC mode:  Flat.  Using 1 I/O APICs
+> Using ACPI (MADT) for SMP configuration information
+> Allocating PCI resources starting at 20000000 (gap:
+> 20000000:dec00000)
+> Built 1 zonelists
+> Kernel command line: auto BOOT_IMAGE=gentoo ro
+> root=303
+> radeonfb.default_dynclk=1 elevator=deadline
+> Unknown boot option `radeonfb.default_dynclk=1':
+> ignoring
+> mapped APIC to ffffd000 (fee00000)
+> mapped IOAPIC to ffffc000 (fec00000)
+> Initializing CPU#0
+> PID hash table entries: 2048 (order: 11, 32768
+> bytes)
+> Detected 1469.873 MHz processor.
+> Using tsc for high-res timesource
+> Console: colour VGA+ 80x25
+> Dentry cache hash table entries: 131072 (order: 7,
+> 524288 bytes)
+> Inode-cache hash table entries: 65536 (order: 6,
+> 262144 bytes)
+> Memory: 515168k/524224k available (2281k kernel
+> code, 8504k reserved,
+> 855k data, 156k init, 0k highmem)
+> Checking if this processor honours the WP bit even
+> in supervisor mode... Ok.
+> Calibrating delay loop... 2899.96 BogoMIPS
+> (lpj=1449984)
+> Mount-cache hash table entries: 512 (order: 0, 4096
+> bytes)
+> CPU: After generic identify, caps: 0383fbff c1c3fbff
+> 00000000 00000000
+> 00000000 00000000 00000000
+> CPU: After vendor identify, caps: 0383fbff c1c3fbff
+> 00000000 00000000
+> 00000000 00000000 00000000
+> CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K
+> (64 bytes/line)
+> CPU: L2 Cache: 256K (64 bytes/line)
+> CPU: After all inits, caps: 0383fbff c1c3fbff
+> 00000000 00000020 00000000
+> 00000000 00000000
+> Intel machine check architecture supported.
+> Intel machine check reporting enabled on CPU#0.
+> CPU: AMD Athlon(tm) XP 1700+ stepping 01
+> Enabling fast FPU save and restore... done.
+> Enabling unmasked SIMD FPU exception support...
+> done.
+> Checking 'hlt' instruction... OK.
+> ENABLING IO-APIC IRQs
+> ..TIMER: vector=0x31 pin1=0 pin2=-1
+> NET: Registered protocol family 16
+> PCI: PCI BIOS revision 2.10 entry at 0xfb590, last
+> bus=2
+> PCI: Using configuration type 1
+> mtrr: v2.0 (20020519)
+> ACPI: Subsystem revision 20050211
+> ACPI: Interpreter enabled
+> ACPI: Using IOAPIC for interrupt routing
+> ACPI: PCI Root Bridge [PCI0] (00:00)
+> PCI: Probing PCI hardware (bus 00)
+> ACPI: PCI Interrupt Routing Table [\_SB_.PCI0._PRT]
+> ACPI: PCI Interrupt Routing Table
+> [\_SB_.PCI0.HUB0._PRT]
+> ACPI: PCI Interrupt Routing Table
+> [\_SB_.PCI0.AGPB._PRT]
+> ACPI: PCI Interrupt Link [LNK1] (IRQs 3 4 5 6 7 10
+> 11 12 14 15) *0,
+> disabled.
+> ACPI: PCI Interrupt Link [LNK2] (IRQs 3 4 5 6 7 10
+> 11 *12 14 15)
+> ACPI: PCI Interrupt Link [LNK3] (IRQs 3 4 5 6 7 10
+> 11 12 14 15) *0,
+> disabled.
+> ACPI: PCI Interrupt Link [LNK4] (IRQs 3 4 5 6 7 *10
+> 11 12 14 15)
+> ACPI: PCI Interrupt Link [LNK5] (IRQs 3 4 5 6 7 10
+> 11 12 14 15) *0,
+> disabled.
+> ACPI: PCI Interrupt Link [LUBA] (IRQs *3 4 5 6 7 10
+> 11 12 14 15)
+> ACPI: PCI Interrupt Link [LUBB] (IRQs 3 4 5 6 *7 10
+> 11 12 14 15)
+> ACPI: PCI Interrupt Link [LMAC] (IRQs 3 4 5 6 7 10
+> *11 12 14 15)
+> ACPI: PCI Interrupt Link [LAPU] (IRQs 3 4 5 6 7 10
+> 11 12 14 15) *0,
+> disabled.
+> ACPI: PCI Interrupt Link [LACI] (IRQs 3 4 5 6 7 10
+> 11 12 14 15) *0,
+> disabled.
+> ACPI: PCI Interrupt Link [LMCI] (IRQs 3 4 5 6 7 10
+> 11 12 14 15) *0,
+> disabled.
+> ACPI: PCI Interrupt Link [LSMB] (IRQs 3 4 5 6 7 10
+> *11 12 14 15)
+> ACPI: PCI Interrupt Link [LUB2] (IRQs 3 4 *5 6 7 10
+> 11 12 14 15)
+> ACPI: PCI Interrupt Link [LFIR] (IRQs 3 4 5 6 7 10
+> 11 12 14 15) *0,
+> disabled.
+> ACPI: PCI Interrupt Link [L3CM] (IRQs 3 4 5 6 7 10
+> 11 12 14 15) *0,
+> disabled.
+> ACPI: PCI Interrupt Link [LIDE] (IRQs 3 4 5 6 7 10
+> 11 12 14 15) *0,
+> disabled.
+> ACPI: PCI Interrupt Link [APC1] (IRQs *16),
+> disabled.
+> ACPI: PCI Interrupt Link [APC2] (IRQs *17),
+> disabled.
+> ACPI: PCI Interrupt Link [APC3] (IRQs *18),
+> disabled.
+> ACPI: PCI Interrupt Link [APC4] (IRQs *19),
+> disabled.
+> ACPI: PCI Interrupt Link [APC5] (IRQs *16),
+> disabled.
+> ACPI: PCI Interrupt Link [APCF] (IRQs 20 21 22) *0,
+> disabled.
+> ACPI: PCI Interrupt Link [APCG] (IRQs 20 21 22) *0,
+> disabled.
+> ACPI: PCI Interrupt Link [APCH] (IRQs 20 21 22) *0,
+> disabled.
+> ACPI: PCI Interrupt Link [APCI] (IRQs 20 21 22) *0,
+> disabled.
+> ACPI: PCI Interrupt Link [APCJ] (IRQs 20 21 22) *0,
+> disabled.
+> ACPI: PCI Interrupt Link [APCK] (IRQs 20 21 22) *0,
+> disabled.
+> ACPI: PCI Interrupt Link [APCS] (IRQs *23),
+> disabled.
+> ACPI: PCI Interrupt Link [APCL] (IRQs 20 21 22) *0,
+> disabled.
+> ACPI: PCI Interrupt Link [APCM] (IRQs 20 21 22) *0,
+> disabled.
+> ACPI: PCI Interrupt Link [AP3C] (IRQs 20 21 22) *0,
+> disabled.
+> ACPI: PCI Interrupt Link [APCZ] (IRQs 20 21 22) *0,
+> disabled.
+> usbcore: registered new driver usbfs
+> usbcore: registered new driver hub
+> PCI: Using ACPI for IRQ routing
+> ** PCI interrupts are no longer routed
+> automatically.  If this
+> ** causes a device to stop working, it is probably
+> because the
+> ** driver failed to call pci_enable_device().  As a
+> temporary
+> ** workaround, the "pci=routeirq" argument restores
+> the old
+> ** behavior.  If this argument makes the device work
+> again,
+> ** please email the output of "lspci" to
+> bjorn.helgaas@hp.com
+> ** so I can fix the driver.
+> Machine check exception polling timer started.
+> SGI XFS with no debug enabled
+> ACPI: Power Button (FF) [PWRF]
+> ACPI: Sleep Button (CM) [SLPB]
+> ACPI: Fan [FAN] (on)
+> ACPI: Thermal Zone [THRM] (40 C)
+> Real Time Clock Driver v1.12
+> Non-volatile memory driver v1.2
+> Linux agpgart interface v0.100 (c) Dave Jones
+> agpgart: Detected NVIDIA nForce2 chipset
+> agpgart: Maximum main memory to use for agp memory:
+> 439M
+> agpgart: AGP aperture is 32M @ 0xe0000000
+> [drm] Initialized drm 1.0.0 20040925
+> ACPI: PCI Interrupt Link [APC4] enabled at IRQ 19
+> ACPI: PCI interrupt 0000:02:00.0[A] -> GSI 19
+> (level, high) -> IRQ 19
+> [drm] Initialized radeon 1.14.0 20050125 on minor 0:
+> ATI Technologies
+> Inc RV280 [Radeon 9200 PRO]
+> serio: i8042 AUX port at 0x60,0x64 irq 12
+> serio: i8042 KBD port at 0x60,0x64 irq 1
+> io scheduler noop registered
+> io scheduler deadline registered (default)
+> forcedeth.c: Reverse Engineered nForce ethernet
+> driver. Version 0.31.
+> ACPI: PCI Interrupt Link [APCH] enabled at IRQ 22
+> ACPI: PCI interrupt 0000:00:04.0[A] -> GSI 22
+> (level, high) -> IRQ 22
+> PCI: Setting latency timer of device 0000:00:04.0 to
+> 64
+> eth0: forcedeth.c: subsystem: 01297:0531 bound to
+> 0000:00:04.0
+> tun: Universal TUN/TAP device driver, 1.6
+> tun: (C) 1999-2004 Max Krasnyansky
+> <maxk@qualcomm.com>
+> Linux video capture interface: v1.00
+> Uniform Multi-Platform E-IDE driver Revision:
+> 7.00alpha2
+> ide: Assuming 33MHz system bus speed for PIO modes;
+> override with idebus=xx
+> NFORCE2: IDE controller at PCI slot 0000:00:09.0
+> NFORCE2: chipset revision 162
+> NFORCE2: not 100% native mode: will probe irqs later
+> NFORCE2: BIOS didn't set cable bits correctly.
+> Enabling workaround.
+> NFORCE2: 0000:00:09.0 (rev a2) UDMA133 controller
+>      ide0: BM-DMA at 0xf000-0xf007, BIOS settings:
+> hda:DMA, hdb:DMA
+>      ide1: BM-DMA at 0xf008-0xf00f, BIOS settings:
+> hdc:DMA, hdd:DMA
+> Probing IDE interface ide0...
+> hda: SAMSUNG SV1604N, ATA DISK drive
+> ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+> Probing IDE interface ide1...
+> hdc: HL-DT-ST DVDRAM GSA-4082B, ATAPI CD/DVD-ROM
+> drive
+> ide1 at 0x170-0x177,0x376 on irq 15
+> hda: max request size: 1024KiB
+> hda: 312581808 sectors (160041 MB) w/2048KiB Cache,
+> CHS=19457/255/63,
+> UDMA(100)
+> hda: cache flushes supported
+>   hda: hda1 hda2 hda3 hda4
+> hdc: ATAPI 32X DVD-ROM DVD-R-RAM CD-R/RW drive,
+> 2048kB Cache, UDMA(33)
+> Uniform CD-ROM driver Revision: 3.20
+> ACPI: PCI Interrupt Link [APCL] enabled at IRQ 21
+> ACPI: PCI interrupt 0000:00:02.2[C] -> GSI 21
+> (level, high) -> IRQ 21
+> ehci_hcd 0000:00:02.2: nVidia Corporation nForce2
+> USB Controller
+> PCI: Setting latency timer of device 0000:00:02.2 to
+> 64
+> ehci_hcd 0000:00:02.2: irq 21, pci mem 0xe5004000
+> ehci_hcd 0000:00:02.2: new USB bus registered,
+> assigned bus number 1
+> PCI: cache line size of 64 is not supported by
+> device 0000:00:02.2
+> ehci_hcd 0000:00:02.2: park 0
+> ehci_hcd 0000:00:02.2: USB 2.0 initialized, EHCI
+> 1.00, driver 10 Dec 2004
+> hub 1-0:1.0: USB hub found
+> hub 1-0:1.0: 6 ports detected
+> ohci_hcd: 2004 Nov 08 USB 1.1 'Open' Host Controller
+> (OHCI) Driver (PCI)
+> ACPI: PCI Interrupt Link [APCF] enabled at IRQ 20
+> ACPI: PCI interrupt 0000:00:02.0[A] -> GSI 20
+> (level, high) -> IRQ 20
+> ohci_hcd 0000:00:02.0: nVidia Corporation nForce2
+> USB Controller
+> PCI: Setting latency timer of device 0000:00:02.0 to
+> 64
+> ohci_hcd 0000:00:02.0: irq 20, pci mem 0xe5002000
+> ohci_hcd 0000:00:02.0: new USB bus registered,
+> assigned bus number 2
+> hub 2-0:1.0: USB hub found
+> hub 2-0:1.0: 3 ports detected
+> ACPI: PCI Interrupt Link [APCG] enabled at IRQ 22
+> ACPI: PCI interrupt 0000:00:02.1[B] -> GSI 22
+> (level, high) -> IRQ 22
+> ohci_hcd 0000:00:02.1: nVidia Corporation nForce2
+> USB Controller (#2)
+> PCI: Setting latency timer of device 0000:00:02.1 to
+> 64
+> ohci_hcd 0000:00:02.1: irq 22, pci mem 0xe5003000
+> ohci_hcd 0000:00:02.1: new USB bus registered,
+> assigned bus number 3
+> hub 3-0:1.0: USB hub found
+> hub 3-0:1.0: 3 ports detected
+> usbcore: registered new driver usblp
+> drivers/usb/class/usblp.c: v0.13: USB Printer Device
+> Class driver
+> usb 2-1: new low speed USB device using ohci_hcd and
+> address 2
+> usb 2-2: new full speed USB device using ohci_hcd
+> and address 3
+> usb 2-3: new full speed USB device using ohci_hcd
+> and address 4
+> drivers/usb/class/usblp.c: usblp0: USB Bidirectional
+> printer dev 4 if 0
+> alt 0 proto 2 vid 0x03F0 pid 0x6104
+> input: USB HID v1.10 Mouse [Logitech USB-PS/2
+> Optical Mouse] on
+> usb-0000:00:02.0-1
+> input: USB HID v1.00 Device [USB Audio] on
+> usb-0000:00:02.0-2
+> usbcore: registered new driver usbhid
+> drivers/usb/input/hid-core.c: v2.0:USB HID core
+> driver
+> mice: PS/2 mouse device common for all mice
+> usb 3-2: new full speed USB device using ohci_hcd
+> and address 2
+> usb 3-3: new low speed USB device using ohci_hcd and
+> address 3
+> Advanced Linux Sound Architecture Driver Version
+> 1.0.8 (Thu Jan 13
+> 09:39:32 2005 UTC).
+> input: USB HID v1.00 Keyboard [046a:0001] on
+> usb-0000:00:02.1-3
+> usbcore: registered new driver snd-usb-audio
+> ALSA device list:
+>    #0: USB Audio at usb-0000:00:02.0-2, full speed
+> NET: Registered protocol family 2
+> IP: routing cache hash table of 4096 buckets,
+> 32Kbytes
+> TCP established hash table entries: 32768 (order: 6,
+> 262144 bytes)
+> TCP bind hash table entries: 32768 (order: 5, 131072
+> bytes)
+> TCP: Hash tables configured (established 32768 bind
+> 32768)
+> ip_conntrack version 2.1 (4095 buckets, 32760 max) -
+> 172 bytes per conntrack
+> ip_tables: (C) 2000-2002 Netfilter core team
+> NET: Registered protocol family 1
+> NET: Registered protocol family 17
+> XFS mounting filesystem hda3
+> Ending clean XFS mount for filesystem: hda3
+> VFS: Mounted root (xfs filesystem) readonly.
+> Freeing unused kernel memory: 156k freed
+> Adding 996020k swap on /dev/hda2.  Priority:-1
+> extents:1
+> lirc_dev: IR Remote Control driver registered, at
+> major 61
+> lirc_serial: auto-detected active low receiver
+> lirc_dev: lirc_register_plugin:sample_rate: 0
+> ACPI: PCI interrupt 0000:02:00.0[A] -> GSI 19
+> (level, high) -> IRQ 19
+> radeonfb: Found Intel x86 BIOS ROM Image
+> radeonfb: Retreived PLL infos from BIOS
+> radeonfb: Reference=27.00 MHz (RefDiv=12)
+> Memory=240.00 Mhz,
+> System=166.00 MHz
+> radeonfb: PLL min 20000 max 40000
+> radeonfb: Monitor 1 type DFP found
+> radeonfb: EDID probed
+> radeonfb: Monitor 2 type no found
+> Console: switching to colour frame buffer device
+> 160x64
+> radeonfb: Dynamic Clock Power Management enabled
+> radeonfb (0000:02:00.0): ATI Radeon Y`
+> XFS mounting filesystem hda1
+> Ending clean XFS mount for filesystem: hda1
+> XFS mounting filesystem hda4
+> Ending clean XFS mount for filesystem: hda4
+> saa7146: register extension 'dvb'.
+> ACPI: PCI Interrupt Link [APC2] enabled at IRQ 17
+> ACPI: PCI interrupt 0000:01:09.0[A] -> GSI 17
+> (level, high) -> IRQ 17
+> saa7146: found saa7146 @ mem e091c000 (revision 1,
+> irq 17) (0x13c2,0x0000).
+> DVB: registering new adapter (Technotrend/Hauppauge
+> WinTV DVB-S rev1.X).
+> adapter has MAC addr = 00:d0:5c:03:2a:84
+> dvb-ttpci: gpioirq unknown type=0 len=0
+> dvb-ttpci: info @ card 0: firm f0240009, rtsl
+> b0250018, vid 71010068,
+> app 8000261d
+> dvb-ttpci: firmware @ card 0 supports CI link layer
+> interface
+> dvb-ttpci: Crystal audio DAC @ card 0 detected
+> saa7146_vv: saa7146 (0): registered device video0
+> [v4l2]
+> DVB: registering frontend 0 (ST STV0299 DVB-S)...
+> dvb-ttpci: found av7110-0.
+> agpgart: Found an AGP 3.0 compliant device at
+> 0000:00:00.0.
+> agpgart: X passes broken AGP3 flags (1f00420f).
+> Fixed.
+> agpgart: Putting AGP V3 device at 0000:00:00.0 into
+> 8x mode
+> agpgart: Putting AGP V3 device at 0000:02:00.0 into
+> 8x mode
+> [drm] Loading R200 Microcode
+> agpgart: Found an AGP 3.0 compliant device at
+> 0000:00:00.0.
+> agpgart: X passes broken AGP3 flags (1f00420f).
+> Fixed.
+> agpgart: Putting AGP V3 device at 0000:00:00.0 into
+> 8x mode
+> agpgart: Putting AGP V3 device at 0000:02:00.0 into
+> 8x mode
+> [drm] Loading R200 Microcode
+> agpgart: Found an AGP 3.0 compliant device at
+> 0000:00:00.0.
+> agpgart: X passes broken AGP3 flags (1f00420f).
+> Fixed.
+> agpgart: Putting AGP V3 device at 0000:00:00.0 into
+> 8x mode
+> agpgart: Putting AGP V3 device at 0000:02:00.0 into
+> 8x mode
+> [drm] Loading R200 Microcode
+> 
+> lspci -vvv
+> 0000:00:00.0 Host bridge: nVidia Corporation nForce2
+> AGP (different
+> version?) (rev c1)
+>          Control: I/O- Mem+ BusMaster+ SpecCycle-
+> MemWINV- VGASnoop-
+> ParErr- Stepping- SERR- FastB2B-
+>          Status: Cap+ 66Mhz+ UDF- FastB2B+ ParErr-
+> DEVSEL=fast >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR-
+>          Latency: 0
+>          Region 0: Memory at e0000000 (32-bit,
+> prefetchable)
+>          Capabilities: [40] AGP version 3.0
+>                  Status: RQ=32 Iso- ArqSz=2 Cal=0
+> SBA+ ITACoh- GART64-
+> HTrans- 64bit- FW- AGP3+ Rate=x4,x8
+>                  Command: RQ=1 ArqSz=0 Cal=0 SBA+
+> AGP+ GART64- 64bit-
+> FW- Rate=x8        Capabilities: [60] #08 [2001]
+> 
+> 0000:00:00.1 RAM memory: nVidia Corporation nForce2
+> Memory Controller 1
+> (rev c1)        Subsystem: Holco Enterprise Co,
+> Ltd/Shuttle Computer:
+> Unknown device 0531
+>          Control: I/O- Mem- BusMaster- SpecCycle-
+> MemWINV- VGASnoop-
+> ParErr- Stepping- SERR- FastB2B-
+>          Status: Cap- 66Mhz+ UDF- FastB2B- ParErr-
+> DEVSEL=fast >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR-
+> 
+> 0000:00:00.2 RAM memory: nVidia Corporation nForce2
+> Memory Controller 4
+> (rev c1)        Subsystem: Holco Enterprise Co,
+> Ltd/Shuttle Computer:
+> Unknown device 0531
+>          Control: I/O- Mem- BusMaster- SpecCycle-
+> MemWINV- VGASnoop-
+> ParErr- Stepping- SERR- FastB2B-
+>          Status: Cap- 66Mhz+ UDF- FastB2B- ParErr-
+> DEVSEL=fast >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR-
+> 
+> 0000:00:00.3 RAM memory: nVidia Corporation nForce2
+> Memory Controller 3
+> (rev c1)        Subsystem: Holco Enterprise Co,
+> Ltd/Shuttle Computer:
+> Unknown device 0531
+>          Control: I/O- Mem- BusMaster- SpecCycle-
+> MemWINV- VGASnoop-
+> ParErr- Stepping- SERR- FastB2B-
+>          Status: Cap- 66Mhz+ UDF- FastB2B- ParErr-
+> DEVSEL=fast >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR-
+> 
+> 0000:00:00.4 RAM memory: nVidia Corporation nForce2
+> Memory Controller 2
+> (rev c1)        Subsystem: Holco Enterprise Co,
+> Ltd/Shuttle Computer:
+> Unknown device 0531
+>          Control: I/O- Mem- BusMaster- SpecCycle-
+> MemWINV- VGASnoop-
+> ParErr- Stepping- SERR- FastB2B-
+>          Status: Cap- 66Mhz+ UDF- FastB2B- ParErr-
+> DEVSEL=fast >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR-
+> 
+> 0000:00:00.5 RAM memory: nVidia Corporation nForce2
+> Memory Controller 5
+> (rev c1)        Subsystem: Holco Enterprise Co,
+> Ltd/Shuttle Computer:
+> Unknown device 0531
+>          Control: I/O- Mem- BusMaster- SpecCycle-
+> MemWINV- VGASnoop-
+> ParErr- Stepping- SERR- FastB2B-
+>          Status: Cap- 66Mhz+ UDF- FastB2B- ParErr-
+> DEVSEL=fast >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR-
+> 
+> 0000:00:01.0 ISA bridge: nVidia Corporation nForce2
+> ISA Bridge (rev a4)
+>          Subsystem: Holco Enterprise Co, Ltd/Shuttle
+> Computer: Unknown
+> device 0531
+>          Control: I/O+ Mem+ BusMaster+ SpecCycle+
+> MemWINV- VGASnoop-
+> ParErr- Stepping- SERR- FastB2B-
+>          Status: Cap+ 66Mhz+ UDF- FastB2B+ ParErr-
+> DEVSEL=fast >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR-
+>          Latency: 0
+>          Capabilities: [48] #08 [01e1]
+> 
+> 0000:00:01.1 SMBus: nVidia Corporation nForce2 SMBus
+> (MCP) (rev a2)
+>          Subsystem: Holco Enterprise Co, Ltd/Shuttle
+> Computer: Unknown
+> device 0531
+>          Control: I/O+ Mem- BusMaster- SpecCycle-
+> MemWINV- VGASnoop-
+> ParErr- Stepping- SERR- FastB2B-
+>          Status: Cap+ 66Mhz+ UDF- FastB2B+ ParErr-
+> DEVSEL=fast >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR-
+>          Interrupt: pin A routed to IRQ 11
+>          Region 0: I/O ports at ec00
+>          Capabilities: [44] Power Management version
+> 2
+>                  Flags: PMEClk- DSI- D1- D2-
+> AuxCurrent=0mA
+> PME(D0-,D1-,D2-,D3hot+,D3cold+)
+>                  Status: D0 PME-Enable- DSel=0
+> DScale=0 PME-
+> 
+> 0000:00:02.0 USB Controller: nVidia Corporation
+> nForce2 USB Controller
+> (rev a4) (prog-if 10 [OHCI])
+>          Subsystem: Holco Enterprise Co, Ltd/Shuttle
+> Computer: Unknown
+> device 0531
+>          Control: I/O+ Mem+ BusMaster+ SpecCycle-
+> MemWINV- VGASnoop-
+> ParErr- Stepping- SERR- FastB2B-
+>          Status: Cap+ 66Mhz+ UDF- FastB2B+ ParErr-
+> DEVSEL=fast >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR-
+>          Latency: 0 (750ns min, 250ns max)
+>          Interrupt: pin A routed to IRQ 20
+>          Region 0: Memory at e5002000 (32-bit,
+> non-prefetchable)
+>          Capabilities: [44] Power Management version
+> 2
+>                  Flags: PMEClk- DSI- D1+ D2+
+> AuxCurrent=0mA
+> PME(D0+,D1+,D2+,D3hot+,D3cold+)
+>                  Status: D0 PME-Enable- DSel=0
+> DScale=0 PME-
+> 
+> 0000:00:02.1 USB Controller: nVidia Corporation
+> nForce2 USB Controller
+> (rev a4) (prog-if 10 [OHCI])
+>          Subsystem: Holco Enterprise Co, Ltd/Shuttle
+> Computer: Unknown
+> device 0531
+>          Control: I/O+ Mem+ BusMaster+ SpecCycle-
+> MemWINV- VGASnoop-
+> ParErr- Stepping- SERR- FastB2B-
+>          Status: Cap+ 66Mhz+ UDF- FastB2B+ ParErr-
+> DEVSEL=fast >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR-
+>          Latency: 0 (750ns min, 250ns max)
+>          Interrupt: pin B routed to IRQ 22
+>          Region 0: Memory at e5003000 (32-bit,
+> non-prefetchable)
+>          Capabilities: [44] Power Management version
+> 2
+>                  Flags: PMEClk- DSI- D1+ D2+
+> AuxCurrent=0mA
+> PME(D0+,D1+,D2+,D3hot+,D3cold+)
+>                  Status: D0 PME-Enable- DSel=0
+> DScale=0 PME-
+> 
+> 0000:00:02.2 USB Controller: nVidia Corporation
+> nForce2 USB Controller
+> (rev a4) (prog-if 20 [EHCI])
+>          Subsystem: Holco Enterprise Co, Ltd/Shuttle
+> Computer: Unknown
+> device 0531
+>          Control: I/O- Mem+ BusMaster+ SpecCycle-
+> MemWINV- VGASnoop-
+> ParErr- Stepping- SERR- FastB2B-
+>          Status: Cap+ 66Mhz+ UDF- FastB2B+ ParErr-
+> DEVSEL=fast >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR-
+>          Latency: 0 (750ns min, 250ns max)
+>          Interrupt: pin C routed to IRQ 21
+>          Region 0: Memory at e5004000 (32-bit,
+> non-prefetchable)
+>          Capabilities: [44] #0a [2080]
+>          Capabilities: [80] Power Management version
+> 2
+>                  Flags: PMEClk- DSI- D1+ D2+
+> AuxCurrent=0mA
+> PME(D0+,D1+,D2+,D3hot+,D3cold+)
+>                  Status: D0 PME-Enable- DSel=0
+> DScale=0 PME-
+> 
+> 0000:00:04.0 Ethernet controller: nVidia Corporation
+> nForce2 Ethernet
+> Controller (rev a1)
+>          Subsystem: Holco Enterprise Co, Ltd/Shuttle
+> Computer: Unknown
+> device 0531
+>          Control: I/O+ Mem+ BusMaster+ SpecCycle-
+> MemWINV- VGASnoop-
+> ParErr- Stepping- SERR- FastB2B-
+>          Status: Cap+ 66Mhz+ UDF- FastB2B+ ParErr-
+> DEVSEL=fast >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR-
+>          Latency: 0 (250ns min, 5000ns max)
+>          Interrupt: pin A routed to IRQ 22
+>          Region 0: Memory at e5000000 (32-bit,
+> non-prefetchable)
+>          Region 1: I/O ports at e000 [size=8]
+>          Capabilities: [44] Power Management version
+> 2
+>                  Flags: PMEClk- DSI- D1+ D2+
+> AuxCurrent=0mA
+> PME(D0+,D1+,D2+,D3hot+,D3cold+)
+>                  Status: D0 PME-Enable+ DSel=0
+> DScale=0 PME-
+> 
+> 0000:00:08.0 PCI bridge: nVidia Corporation nForce2
+> External PCI Bridge
+> (rev a3) (prog-if 00 [Normal decode])
+>          Control: I/O+ Mem+ BusMaster+ SpecCycle-
+> MemWINV- VGASnoop-
+> ParErr- Stepping- SERR+ FastB2B-
+>          Status: Cap- 66Mhz+ UDF- FastB2B+ ParErr-
+> DEVSEL=fast >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR-
+>          Latency: 0
+>          Bus: primary=00, secondary=01,
+> subordinate=01, sec-latency=32
+>          I/O behind bridge: 0000f000-00000fff
+>          Memory behind bridge: e4000000-e4ffffff
+>          Prefetchable memory behind bridge:
+> fff00000-000fffff
+>          BridgeCtl: Parity- SERR+ NoISA- VGA-
+> MAbort- >Reset- FastB2B-
+> 
+> 0000:00:09.0 IDE interface: nVidia Corporation
+> nForce2 IDE (rev a2)
+> (prog-if 8a [Master SecP PriP])
+>          Subsystem: Holco Enterprise Co, Ltd/Shuttle
+> Computer: Unknown
+> device 0531
+>          Control: I/O+ Mem- BusMaster+ SpecCycle-
+> MemWINV- VGASnoop-
+> ParErr- Stepping- SERR- FastB2B-
+>          Status: Cap+ 66Mhz+ UDF- FastB2B+ ParErr-
+> DEVSEL=fast >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR-
+>          Latency: 0 (750ns min, 250ns max)
+>          Region 4: I/O ports at f000 [size=16]
+>          Capabilities: [44] Power Management version
+> 2
+>                  Flags: PMEClk- DSI- D1- D2-
+> AuxCurrent=0mA
+> PME(D0-,D1-,D2-,D3hot-,D3cold-)
+>                  Status: D0 PME-Enable- DSel=0
+> DScale=0 PME-
+> 
+> 0000:00:1e.0 PCI bridge: nVidia Corporation nForce2
+> AGP (rev c1)
+> (prog-if 00 [Normal decode])
+>          Control: I/O+ Mem+ BusMaster+ SpecCycle-
+> MemWINV- VGASnoop-
+> ParErr- Stepping- SERR+ FastB2B-
+>          Status: Cap- 66Mhz+ UDF- FastB2B- ParErr-
+> DEVSEL=medium
+> >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+>          Latency: 32
+>          Bus: primary=00, secondary=02,
+> subordinate=02, sec-latency=32
+>          I/O behind bridge: 0000d000-0000dfff
+>          Memory behind bridge: e2000000-e3ffffff
+>          Prefetchable memory behind bridge:
+> d0000000-dfffffff
+>          Expansion ROM at 0000d000 [disabled]
+> [size=4K]
+>          BridgeCtl: Parity- SERR+ NoISA- VGA+
+> MAbort- >Reset- FastB2B-
+> 
+> 0000:01:09.0 Multimedia controller: Philips
+> Semiconductors SAA7146 (rev 01)
+>          Subsystem: Technotrend Systemtechnik GmbH
+> Siemens/Technotrend/Hauppauge DVB card rev1.3 or
+> rev1.5
+>          Control: I/O- Mem+ BusMaster+ SpecCycle-
+> MemWINV- VGASnoop-
+> ParErr- Stepping- SERR- FastB2B-
+>          Status: Cap- 66Mhz- UDF- FastB2B+ ParErr-
+> DEVSEL=medium
+> >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+>          Latency: 32 (3750ns min, 9500ns max)
+>          Interrupt: pin A routed to IRQ 17
+>          Region 0: Memory at e4000000 (32-bit,
+> non-prefetchable)
+> 
+> 0000:02:00.0 VGA compatible controller: ATI
+> Technologies Inc RV280
+> [Radeon 9200 PRO] (rev 01) (prog-if 00 [VGA])
+>          Subsystem: Connect Components Ltd: Unknown
+> device 2801
+>          Control: I/O+ Mem+ BusMaster+ SpecCycle-
+> MemWINV- VGASnoop-
+> ParErr- Stepping- SERR- FastB2B-
+>          Status: Cap+ 66Mhz+ UDF- FastB2B+ ParErr-
+> DEVSEL=medium
+> >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+>          Latency: 32 (2000ns min), cache line size
+> 08
+>          Interrupt: pin A routed to IRQ 19
+>          Region 0: Memory at d0000000 (32-bit,
+> prefetchable)
+>          Region 1: I/O ports at d000 [size=256]
+>          Region 2: Memory at e3000000 (32-bit,
+> non-prefetchable) [size=64K]
+>          Capabilities: [58] AGP version 3.0
+>                  Status: RQ=256 Iso- ArqSz=0 Cal=0
+> SBA+ ITACoh- GART64-
+> HTrans- 64bit- FW+ AGP3+ Rate=x4,x8
+>                  Command: RQ=32 ArqSz=2 Cal=0 SBA+
+> AGP+ GART64- 64bit-
+> FW- Rate=x8
+>          Capabilities: [50] Power Management version
+> 2
+>                  Flags: PMEClk- DSI- D1+ D2+
+> AuxCurrent=0mA
+> PME(D0-,D1-,D2-,D3hot-,D3cold-)
+>                  Status: D0 PME-Enable- DSel=0
+> DScale=0 PME-
+> 
+> Thank you very much!
+> 
+> Sebastian
+> 
+> 
 > 
 
-I guess I copied a bit too much from the PXA driver ;)
-I reworked the driver and got completely rid off the workqueue. When
-disabling the display the PXA waits for a disable done interrupt (which
-comes when the last frame has been written). The i.MX does not have the
-interrupt, so we don't need the workqueue.
 
-> 
-> 3. Also add a Signed-off-by line and submit the patch inline.
-> 
-> Tony
-
-OK, here it comes:
-
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
-
---- linux-2.6.11/drivers/video/Kconfig	2005-03-02 08:37:45.000000000 +0100
-+++ linux-2.6.11-work/drivers/video/Kconfig	2005-03-18 08:20:50.000000000 +0100
-@@ -133,6 +133,10 @@
- 	  If you plan to use the LCD display with your SA-1100 system, say
- 	  Y here.
- 
-+config FB_IMX
-+	tristate "Motorola i.MX LCD support"
-+	depends on FB && ARM && ARCH_IMX
-+
- config FB_CYBER2000
- 	tristate "CyberPro 2000/2010/5000 support"
- 	depends on FB && PCI && (BROKEN || !SPARC64)
---- linux-2.6.11/drivers/video/Makefile	2005-03-02 08:37:48.000000000 +0100
-+++ linux-2.6.11-work/drivers/video/Makefile	2005-03-18 08:20:50.000000000 +0100
-@@ -98,6 +98,7 @@
- obj-$(CONFIG_FB_PMAGB_B)	  += pmagb-b-fb.o  cfbfillrect.o cfbcopyarea.o cfbimgblt.o
- obj-$(CONFIG_FB_MAXINE)		  += maxinefb.o  cfbfillrect.o cfbcopyarea.o cfbimgblt.o
- obj-$(CONFIG_FB_TX3912)		  += tx3912fb.o  cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+obj-$(CONFIG_FB_IMX)               += imxfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
- 
- # Platform or fallback drivers go here
- obj-$(CONFIG_FB_VESA)             += vesafb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
---- linux-2.6.11/drivers/video/imxfb.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.11-work/drivers/video/imxfb.c	2005-03-18 11:53:33.000000000 +0100
-@@ -0,0 +1,687 @@
-+/*
-+ *  linux/drivers/video/imxfb.c
-+ *
-+ *  Freescale i.MX Frame Buffer device driver
-+ *
-+ *  Copyright (C) 2004 Sascha Hauer, Pengutronix
-+ *   Based on acornfb.c Copyright (C) Russell King.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file COPYING in the main directory of this archive for
-+ * more details.
-+ *
-+ * Please direct your questions and comments on this driver to the following
-+ * email address:
-+ *
-+ *	linux-arm-kernel@lists.arm.linux.org.uk
-+ */
-+
-+//#define DEBUG 1
-+
-+#include <linux/config.h>
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/sched.h>
-+#include <linux/errno.h>
-+#include <linux/string.h>
-+#include <linux/interrupt.h>
-+#include <linux/slab.h>
-+#include <linux/fb.h>
-+#include <linux/delay.h>
-+#include <linux/init.h>
-+#include <linux/ioport.h>
-+#include <linux/cpufreq.h>
-+#include <linux/device.h>
-+#include <linux/dma-mapping.h>
-+
-+#include <asm/hardware.h>
-+#include <asm/io.h>
-+#include <asm/mach-types.h>
-+#include <asm/uaccess.h>
-+#include <asm/arch/imxfb.h>
-+
-+/*
-+ * Complain if VAR is out of range.
-+ */
-+#define DEBUG_VAR 1
-+
-+#include "imxfb.h"
-+
-+static struct imxfb_rgb def_rgb_16 = {
-+	.red	= { offset: 8,  length: 4, },
-+	.green	= { offset: 4,  length: 4, },
-+	.blue	= { offset: 0,  length: 4, },
-+	.transp = { offset: 0,  length: 0, },
-+};
-+
-+static struct imxfb_rgb def_rgb_8 = {
-+	.red	= { offset: 0,  length: 8, },
-+	.green	= { offset: 0,  length: 8, },
-+	.blue	= { offset: 0,  length: 8, },
-+	.transp = { offset: 0,  length: 0, },
-+};
-+
-+static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *info);
-+
-+static inline u_int chan_to_field(u_int chan, struct fb_bitfield *bf)
-+{
-+	chan &= 0xffff;
-+	chan >>= 16 - bf->length;
-+	return chan << bf->offset;
-+}
-+
-+#define LCDC_PALETTE(x) __REG2(IMX_LCDC_BASE+0x800, (x)<<2)
-+static int
-+imxfb_setpalettereg(u_int regno, u_int red, u_int green, u_int blue,
-+		       u_int trans, struct fb_info *info)
-+{
-+	struct imxfb_info *fbi = (struct imxfb_info *)info;
-+	u_int val, ret = 1;
-+
-+#define CNVT_TOHW(val,width) ((((val)<<(width))+0x7FFF-(val))>>16)
-+	if (regno < fbi->palette_size) {
-+		val = (CNVT_TOHW(red, 4) << 8) |
-+		      (CNVT_TOHW(green,4) << 4) |
-+		      CNVT_TOHW(blue,  4);
-+
-+		LCDC_PALETTE(regno) = val;
-+		ret = 0;
-+	}
-+	return ret;
-+}
-+
-+static int
-+imxfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
-+		   u_int trans, struct fb_info *info)
-+{
-+	struct imxfb_info *fbi = info->par;
-+	unsigned int val;
-+	int ret = 1;
-+
-+	/*
-+	 * If inverse mode was selected, invert all the colours
-+	 * rather than the register number.  The register number
-+	 * is what you poke into the framebuffer to produce the
-+	 * colour you requested.
-+	 */
-+	if (fbi->cmap_inverse) {
-+		red   = 0xffff - red;
-+		green = 0xffff - green;
-+		blue  = 0xffff - blue;
-+	}
-+
-+	/*
-+	 * If greyscale is true, then we convert the RGB value
-+	 * to greyscale no mater what visual we are using.
-+	 */
-+	if (info->var.grayscale)
-+		red = green = blue = (19595 * red + 38470 * green +
-+					7471 * blue) >> 16;
-+
-+	switch (info->fix.visual) {
-+	case FB_VISUAL_TRUECOLOR:
-+		/*
-+		 * 12 or 16-bit True Colour.  We encode the RGB value
-+		 * according to the RGB bitfield information.
-+		 */
-+		if (regno < 16) {
-+			u32 *pal = info->pseudo_palette;
-+
-+			val  = chan_to_field(red, &info->var.red);
-+			val |= chan_to_field(green, &info->var.green);
-+			val |= chan_to_field(blue, &info->var.blue);
-+
-+			pal[regno] = val;
-+			ret = 0;
-+		}
-+		break;
-+
-+	case FB_VISUAL_STATIC_PSEUDOCOLOR:
-+	case FB_VISUAL_PSEUDOCOLOR:
-+		ret = imxfb_setpalettereg(regno, red, green, blue, trans, info);
-+		break;
-+	}
-+
-+	return ret;
-+}
-+
-+/*
-+ *  imxfb_check_var():
-+ *    Round up in the following order: bits_per_pixel, xres,
-+ *    yres, xres_virtual, yres_virtual, xoffset, yoffset, grayscale,
-+ *    bitfields, horizontal timing, vertical timing.
-+ */
-+static int
-+imxfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
-+{
-+	struct imxfb_info *fbi = info->par;
-+	int rgbidx;
-+
-+	if (var->xres < MIN_XRES)
-+		var->xres = MIN_XRES;
-+	if (var->yres < MIN_YRES)
-+		var->yres = MIN_YRES;
-+	if (var->xres > fbi->max_xres)
-+		var->xres = fbi->max_xres;
-+	if (var->yres > fbi->max_yres)
-+		var->yres = fbi->max_yres;
-+	var->xres_virtual = max(var->xres_virtual, var->xres);
-+	var->yres_virtual = max(var->yres_virtual, var->yres);
-+
-+	pr_debug("var->bits_per_pixel=%d\n", var->bits_per_pixel);
-+	switch (var->bits_per_pixel) {
-+	case 16:
-+		rgbidx = RGB_16;
-+		break;
-+	case 8:
-+		rgbidx = RGB_8;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	/*
-+	 * Copy the RGB parameters for this display
-+	 * from the machine specific parameters.
-+	 */
-+	var->red    = fbi->rgb[rgbidx]->red;
-+	var->green  = fbi->rgb[rgbidx]->green;
-+	var->blue   = fbi->rgb[rgbidx]->blue;
-+	var->transp = fbi->rgb[rgbidx]->transp;
-+
-+	pr_debug("RGBT length = %d:%d:%d:%d\n",
-+		var->red.length, var->green.length, var->blue.length,
-+		var->transp.length);
-+
-+	pr_debug("RGBT offset = %d:%d:%d:%d\n",
-+		var->red.offset, var->green.offset, var->blue.offset,
-+		var->transp.offset);
-+
-+	return 0;
-+}
-+
-+/*
-+ * imxfb_set_par():
-+ *	Set the user defined part of the display for the specified console
-+ */
-+static int imxfb_set_par(struct fb_info *info)
-+{
-+	struct imxfb_info *fbi = info->par;
-+	struct fb_var_screeninfo *var = &info->var;
-+
-+	pr_debug("set_par\n");
-+
-+	if (var->bits_per_pixel == 16)
-+		info->fix.visual = FB_VISUAL_TRUECOLOR;
-+	else if (!fbi->cmap_static)
-+		info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
-+	else {
-+		/*
-+		 * Some people have weird ideas about wanting static
-+		 * pseudocolor maps.  I suspect their user space
-+		 * applications are broken.
-+		 */
-+		info->fix.visual = FB_VISUAL_STATIC_PSEUDOCOLOR;
-+	}
-+
-+	info->fix.line_length = var->xres_virtual *
-+				  var->bits_per_pixel / 8;
-+	fbi->palette_size = var->bits_per_pixel == 8 ? 256 : 16;
-+
-+	imxfb_activate_var(var, info);
-+
-+	return 0;
-+}
-+
-+static void imxfb_enable_controller(struct imxfb_info *fbi)
-+{
-+	pr_debug("Enabling LCD controller\n");
-+
-+	/* initialize LCDC */
-+	LCDC_RMCR &= ~RMCR_LCDC_EN;		/* just to be safe... */
-+
-+	LCDC_SSA	= fbi->screen_dma;
-+	/* physical screen start address	    */
-+	LCDC_VPW	= VPW_VPW(fbi->max_xres * fbi->max_bpp / 8 / 4);
-+
-+	LCDC_POS	= 0x00000000;   /* panning offset 0 (0 pixel offset)        */
-+
-+	/* disable hardware cursor */
-+	LCDC_CPOS	&= ~(CPOS_CC0 | CPOS_CC1);
-+
-+	/* fixed burst length (see erratum 11) */
-+	LCDC_DMACR = DMACR_BURST | DMACR_HM(8) | DMACR_TM(2);
-+
-+	LCDC_RMCR = RMCR_LCDC_EN;
-+
-+	if(fbi->backlight_power)
-+		fbi->backlight_power(1);
-+	if(fbi->lcd_power)
-+		fbi->lcd_power(1);
-+}
-+
-+static void imxfb_disable_controller(struct imxfb_info *fbi)
-+{
-+	pr_debug("Disabling LCD controller\n");
-+
-+	if(fbi->backlight_power)
-+		fbi->backlight_power(0);
-+	if(fbi->lcd_power)
-+		fbi->lcd_power(0);
-+
-+	LCDC_RMCR = 0;
-+}
-+
-+/*
-+ * imxfb_blank():
-+ *	Blank the display by setting all palette values to zero.  Note, the
-+ * 	12 and 16 bpp modes don't really use the palette, so this will not
-+ *      blank the display in all modes.  
-+ */
-+static int imxfb_blank(int blank, struct fb_info *info)
-+{
-+	struct imxfb_info *fbi = info->par;
-+	int i;
-+
-+	pr_debug("imxfb_blank: blank=%d\n", blank);
-+
-+	switch (blank) {
-+	case VESA_POWERDOWN:
-+	case VESA_VSYNC_SUSPEND:
-+	case VESA_HSYNC_SUSPEND:
-+		if (info->fix.visual == FB_VISUAL_PSEUDOCOLOR ||
-+		    info->fix.visual == FB_VISUAL_STATIC_PSEUDOCOLOR)
-+			for (i = 0; i < fbi->palette_size; i++)
-+				imxfb_setpalettereg(i, 0, 0, 0, 0, info);
-+		imxfb_disable_controller(fbi);
-+		break;
-+
-+	case VESA_NO_BLANKING:
-+		if (info->fix.visual == FB_VISUAL_PSEUDOCOLOR ||
-+		    info->fix.visual == FB_VISUAL_STATIC_PSEUDOCOLOR)
-+			fb_set_cmap(&info->cmap, info);
-+		imxfb_enable_controller(fbi);
-+	}
-+	return 0;
-+}
-+
-+static struct fb_ops imxfb_ops = {
-+	.owner		= THIS_MODULE,
-+	.fb_check_var	= imxfb_check_var,
-+	.fb_set_par	= imxfb_set_par,
-+	.fb_setcolreg	= imxfb_setcolreg,
-+	.fb_fillrect	= cfb_fillrect,
-+	.fb_copyarea	= cfb_copyarea,
-+	.fb_imageblit	= cfb_imageblit,
-+	.fb_blank	= imxfb_blank,
-+	.fb_cursor	= soft_cursor, /* FIXME: i.MX can do hardware cursor */
-+};
-+
-+/*
-+ * imxfb_activate_var():
-+ *	Configures LCD Controller based on entries in var parameter.  Settings are
-+ *	only written to the controller if changes were made.
-+ */
-+static int imxfb_activate_var(struct fb_var_screeninfo *var, struct fb_info *info)
-+{
-+	struct imxfb_info *fbi = info->par;
-+	pr_debug("var: xres=%d hslen=%d lm=%d rm=%d\n",
-+		var->xres, var->hsync_len,
-+		var->left_margin, var->right_margin);
-+	pr_debug("var: yres=%d vslen=%d um=%d bm=%d\n",
-+		var->yres, var->vsync_len,
-+		var->upper_margin, var->lower_margin);
-+
-+#if DEBUG_VAR
-+	if (var->xres < 16        || var->xres > 1024)
-+		printk(KERN_ERR "%s: invalid xres %d\n",
-+			info->fix.id, var->xres);
-+	if (var->hsync_len < 1    || var->hsync_len > 64)
-+		printk(KERN_ERR "%s: invalid hsync_len %d\n",
-+			info->fix.id, var->hsync_len);
-+	if (var->left_margin > 255)
-+		printk(KERN_ERR "%s: invalid left_margin %d\n",
-+			info->fix.id, var->left_margin);
-+	if (var->right_margin > 255)
-+		printk(KERN_ERR "%s: invalid right_margin %d\n",
-+			info->fix.id, var->right_margin);
-+	if (var->yres < 1 || var->yres > 511)
-+		printk(KERN_ERR "%s: invalid yres %d\n",
-+			info->fix.id, var->yres);
-+	if (var->vsync_len > 100)
-+		printk(KERN_ERR "%s: invalid vsync_len %d\n",
-+			info->fix.id, var->vsync_len);
-+	if (var->upper_margin > 63)
-+		printk(KERN_ERR "%s: invalid upper_margin %d\n",
-+			info->fix.id, var->upper_margin);
-+	if (var->lower_margin > 255)
-+		printk(KERN_ERR "%s: invalid lower_margin %d\n",
-+			info->fix.id, var->lower_margin);
-+#endif
-+
-+	LCDC_HCR	= HCR_H_WIDTH(var->hsync_len) |
-+	                  HCR_H_WAIT_1(var->left_margin) |
-+			  HCR_H_WAIT_2(var->right_margin);
-+
-+	LCDC_VCR	= VCR_V_WIDTH(var->vsync_len) |
-+	                  VCR_V_WAIT_1(var->upper_margin) |
-+			  VCR_V_WAIT_2(var->lower_margin);
-+
-+	LCDC_SIZE	= SIZE_XMAX(var->xres) | SIZE_YMAX(var->yres);
-+	LCDC_PCR	= fbi->pcr;
-+	LCDC_PWMR	= fbi->pwmr;
-+	LCDC_LSCR1	= fbi->lscr1;
-+
-+	return 0;
-+}
-+
-+static void imxfb_setup_gpio(struct imxfb_info *fbi)
-+{
-+	int width;
-+
-+	LCDC_RMCR	&= ~(RMCR_LCDC_EN | RMCR_SELF_REF);
-+
-+	if( fbi->pcr & PCR_TFT )
-+		width = 16;
-+	else
-+		width = 1 << ((fbi->pcr >> 28) & 0x3);
-+	
-+	switch(width) {
-+	case 16:
-+		imx_gpio_mode(PD30_PF_LD15);
-+		imx_gpio_mode(PD29_PF_LD14);
-+		imx_gpio_mode(PD28_PF_LD13);
-+		imx_gpio_mode(PD27_PF_LD12);
-+		imx_gpio_mode(PD26_PF_LD11);
-+		imx_gpio_mode(PD25_PF_LD10);
-+		imx_gpio_mode(PD24_PF_LD9);
-+		imx_gpio_mode(PD23_PF_LD8);
-+	case 8:
-+		imx_gpio_mode(PD22_PF_LD7);
-+		imx_gpio_mode(PD21_PF_LD6);
-+		imx_gpio_mode(PD20_PF_LD5);
-+		imx_gpio_mode(PD19_PF_LD4);
-+	case 4:
-+		imx_gpio_mode(PD18_PF_LD3);
-+		imx_gpio_mode(PD17_PF_LD2);
-+	case 2:
-+		imx_gpio_mode(PD16_PF_LD1);
-+	case 1:
-+		imx_gpio_mode(PD15_PF_LD0);
-+	}
-+
-+	/* initialize GPIOs */
-+	imx_gpio_mode(PD6_PF_LSCLK);
-+	imx_gpio_mode(PD10_PF_SPL_SPR);
-+	imx_gpio_mode(PD11_PF_CONTRAST);
-+	imx_gpio_mode(PD14_PF_FLM_VSYNC);
-+	imx_gpio_mode(PD13_PF_LP_HSYNC);
-+	imx_gpio_mode(PD7_PF_REV);
-+	imx_gpio_mode(PD8_PF_CLS);
-+
-+#ifndef CONFIG_MACH_PIMX1
-+	/* on PiMX1 used as buffers enable signal
-+	 */
-+	imx_gpio_mode(PD9_PF_PS);
-+#endif	
-+
-+#ifndef CONFIG_MACH_MX1FS2
-+	/* on mx1fs2 this pin is used to (de)activate the display, so we need
-+	 * it as a normal gpio
-+	 */
-+	imx_gpio_mode(PD12_PF_ACD_OE);
-+#endif
-+
-+}
-+
-+#ifdef CONFIG_PM
-+/*
-+ * Power management hooks.  Note that we won't be called from IRQ context,
-+ * unlike the blank functions above, so we may sleep.
-+ */
-+static int imxfb_suspend(struct device *dev, u32 state, u32 level)
-+{
-+	struct imxfb_info *fbi = dev_get_drvdata(dev);
-+	pr_debug("%s\n",__FUNCTION__);
-+
-+	if (level == SUSPEND_DISABLE || level == SUSPEND_POWER_DOWN)
-+		imxfb_disable_controller(fbi);
-+	return 0;
-+}
-+
-+static int imxfb_resume(struct device *dev, u32 level)
-+{
-+	struct imxfb_info *fbi = dev_get_drvdata(dev);
-+	pr_debug("%s\n",__FUNCTION__);
-+
-+	if (level == RESUME_ENABLE)
-+		imxfb_enable_controller(fbi);
-+	return 0;
-+}
-+#else
-+#define imxfb_suspend	NULL
-+#define imxfb_resume	NULL
-+#endif
-+
-+static int __init imxfb_init_fbinfo(struct device *dev)
-+{
-+	struct imxfb_mach_info *inf = dev->platform_data;
-+	struct fb_info *info = dev_get_drvdata(dev);
-+	struct imxfb_info *fbi = info->par;
-+
-+	pr_debug("%s\n",__FUNCTION__);
-+
-+	info->pseudo_palette = kmalloc( sizeof(u32) * 16, GFP_KERNEL);
-+	if (!info->pseudo_palette)
-+		return -ENOMEM;
-+
-+	memset(fbi, 0, sizeof(struct imxfb_info));
-+	fbi->dev = dev;
-+
-+	strcpy(info->fix.id, IMX_NAME);
-+
-+	info->fix.type	= FB_TYPE_PACKED_PIXELS;
-+	info->fix.type_aux		= 0;
-+	info->fix.xpanstep		= 0;
-+	info->fix.ypanstep		= 0;
-+	info->fix.ywrapstep		= 0;
-+	info->fix.accel	= FB_ACCEL_NONE;
-+
-+	info->var.nonstd		= 0;
-+	info->var.activate		= FB_ACTIVATE_NOW;
-+	info->var.height		= -1;
-+	info->var.width	= -1;
-+	info->var.accel_flags		= 0;
-+	info->var.vmode	= FB_VMODE_NONINTERLACED;
-+
-+	info->fbops			= &imxfb_ops;
-+	info->flags			= FBINFO_FLAG_DEFAULT;
-+	info->pseudo_palette		= (fbi + 1);
-+
-+	fbi->rgb[RGB_16]		= &def_rgb_16;
-+	fbi->rgb[RGB_8]			= &def_rgb_8;
-+
-+	fbi->max_xres			= inf->xres;
-+	info->var.xres			= inf->xres;
-+	info->var.xres_virtual		= inf->xres;
-+	fbi->max_yres			= inf->yres;
-+	info->var.yres			= inf->yres;
-+	info->var.yres_virtual		= inf->yres;
-+	fbi->max_bpp			= inf->bpp;
-+	info->var.bits_per_pixel	= inf->bpp;
-+	info->var.pixclock		= inf->pixclock;
-+	info->var.hsync_len		= inf->hsync_len;
-+	info->var.left_margin		= inf->left_margin;
-+	info->var.right_margin		= inf->right_margin;
-+	info->var.vsync_len		= inf->vsync_len;
-+	info->var.upper_margin		= inf->upper_margin;
-+	info->var.lower_margin		= inf->lower_margin;
-+	info->var.sync			= inf->sync;
-+	info->var.grayscale		= inf->cmap_greyscale;
-+	fbi->cmap_inverse		= inf->cmap_inverse;
-+	fbi->pcr			= inf->pcr;
-+	fbi->lscr1			= inf->lscr1;
-+	fbi->pwmr			= inf->pwmr;
-+	fbi->lcd_power			= inf->lcd_power;
-+	fbi->backlight_power		= inf->backlight_power;
-+	info->fix.smem_len		= fbi->max_xres * fbi->max_yres *
-+					  fbi->max_bpp / 8;
-+
-+	return 0;
-+}
-+
-+/*
-+ *      Allocates the DRAM memory for the frame buffer.  This buffer is  
-+ *	remapped into a non-cached, non-buffered, memory region to  
-+ *      allow pixel writes to occur without flushing the cache.
-+ *      Once this area is remapped, all virtual memory access to the
-+ *      video memory should occur at the new region.
-+ */
-+static int __init imxfb_map_video_memory(struct fb_info *info)
-+{
-+	struct imxfb_info *fbi = info->par;
-+
-+	fbi->map_size = PAGE_ALIGN(info->fix.smem_len);
-+	fbi->map_cpu = dma_alloc_writecombine(fbi->dev, fbi->map_size,
-+					&fbi->map_dma,GFP_KERNEL);
-+
-+	if (fbi->map_cpu) {
-+		info->screen_base = fbi->map_cpu;
-+		fbi->screen_cpu = fbi->map_cpu;
-+		fbi->screen_dma = fbi->map_dma;
-+		info->fix.smem_start = fbi->screen_dma;
-+	}
-+
-+	return fbi->map_cpu ? 0 : -ENOMEM;
-+}
-+
-+static int __init imxfb_probe(struct device *dev)
-+{
-+	struct platform_device *pdev = to_platform_device(dev);
-+	struct imxfb_info *fbi;
-+	struct fb_info *info;
-+	struct imxfb_mach_info *inf;
-+	struct resource *res;
-+	int ret;
-+
-+	printk("i.MX Framebuffer driver\n");
-+
-+	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+
-+	inf = dev->platform_data;
-+	if(!inf) {
-+		dev_err(dev,"No platform_data available\n");
-+		return -ENOMEM;
-+	}
-+
-+	info = framebuffer_alloc(sizeof(struct imxfb_info), dev);
-+	info->device = dev;
-+	fbi = info->par;
-+
-+	dev_set_drvdata(dev, info);
-+
-+	ret = imxfb_init_fbinfo(dev);
-+	if( ret < 0 )
-+		goto failed;
-+
-+	res = request_mem_region(res->start, res->end - res->start, "IMXFB");
-+	if (!res) {
-+		ret = -EBUSY;
-+		goto failed;
-+	}
-+	
-+	if (!inf->fixed_screen_cpu) {
-+		ret = imxfb_map_video_memory(info);
-+		if (ret) {
-+			dev_err(dev, "Failed to allocate video RAM: %d\n", ret);
-+			ret = -ENOMEM;
-+			goto failed;
-+		}
-+	} else {
-+		/* Fixed framebuffer mapping enables location of the screen in eSRAM */
-+		fbi->map_cpu = inf->fixed_screen_cpu;
-+		fbi->map_dma = inf->fixed_screen_dma;
-+		info->screen_base = fbi->map_cpu;
-+		fbi->screen_cpu = fbi->map_cpu;
-+		fbi->screen_dma = fbi->map_dma;
-+		info->fix.smem_start = fbi->screen_dma;
-+	}
-+
-+	/*
-+	 * This makes sure that our colour bitfield
-+	 * descriptors are correctly initialised.
-+	 */
-+	imxfb_check_var(&info->var, info);
-+
-+	fb_alloc_cmap(&info->cmap, 1<<info->var.bits_per_pixel, 0);
-+
-+	imxfb_setup_gpio(fbi);
-+
-+	imxfb_set_par(info);
-+	ret = register_framebuffer(info);
-+	if (ret < 0) {
-+		dev_err(dev, "failed to register framebuffer\n");
-+		goto failed;
-+	}
-+
-+	imxfb_enable_controller(fbi);
-+
-+	return 0;
-+
-+failed:
-+	dev_set_drvdata(dev, NULL);
-+	if (info)
-+		framebuffer_release(info);
-+	release_resource(res);
-+	return ret;
-+}
-+
-+static int imxfb_remove(struct device *dev)
-+{
-+	struct fb_info *info = dev_get_drvdata(dev);
-+
-+	/* disable LCD controller */
-+	LCDC_RMCR &= ~RMCR_LCDC_EN;
-+
-+	unregister_framebuffer(info);
-+
-+	kfree(info->pseudo_palette);
-+	framebuffer_release(info);
-+
-+	dev_set_drvdata(dev, NULL);
-+
-+	return 0;
-+}
-+
-+void  imxfb_shutdown(struct device * dev)
-+{
-+	/* disable LCD Controller */
-+	LCDC_RMCR &= ~RMCR_LCDC_EN;
-+}
-+
-+static struct device_driver imxfb_driver = {
-+	.name		= "imx-fb",
-+	.bus		= &platform_bus_type,
-+	.probe		= imxfb_probe,
-+	.suspend	= imxfb_suspend,
-+	.resume		= imxfb_resume,
-+	.remove		= imxfb_remove,
-+	.shutdown	= imxfb_shutdown,
-+};
-+
-+int __init imxfb_init(void)
-+{
-+	return driver_register(&imxfb_driver);
-+}
-+
-+static void __exit imxfb_cleanup(void)
-+{
-+	driver_unregister(&imxfb_driver);
-+}
-+
-+module_init(imxfb_init);
-+module_exit(imxfb_cleanup);
-+
-+MODULE_DESCRIPTION("Motorola i.MX framebuffer driver");
-+MODULE_AUTHOR("Sascha Hauer, Pengutronix");
-+MODULE_LICENSE("GPL");
---- linux-2.6.11/drivers/video/imxfb.h	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.11-work/drivers/video/imxfb.h	2005-03-18 11:53:54.000000000 +0100
-@@ -0,0 +1,73 @@
-+/*
-+ * linux/drivers/video/imxfb.h
-+ *
-+ *  Freescale i.MX Frame Buffer device driver
-+ *
-+ *  Copyright (C) 2004 S.Hauer, Pengutronix
-+ *
-+ *  Copyright (C) 1999 Eric A. Thomas
-+ *   Based on acornfb.c Copyright (C) Russell King.
-+ *  
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file COPYING in the main directory of this archive
-+ * for more details.
-+ */
-+
-+/*
-+ * These are the bitfields for each
-+ * display depth that we support.
-+ */
-+struct imxfb_rgb {
-+	struct fb_bitfield	red;
-+	struct fb_bitfield	green;
-+	struct fb_bitfield	blue;
-+	struct fb_bitfield	transp;
-+};
-+
-+#define RGB_16	(0)
-+#define RGB_8	(1)
-+#define NR_RGB	2
-+
-+struct imxfb_info {
-+	struct fb_info		*fb;
-+	struct device		*dev;
-+	struct imxfb_rgb	*rgb[NR_RGB];
-+
-+	u_int			max_bpp;
-+	u_int			max_xres;
-+	u_int			max_yres;
-+
-+	/*
-+	 * These are the addresses we mapped
-+	 * the framebuffer memory region to.
-+	 */
-+	dma_addr_t		map_dma;
-+	u_char *		map_cpu;
-+	u_int			map_size;
-+
-+	u_char *		screen_cpu;
-+	dma_addr_t		screen_dma;
-+	u_int			palette_size;
-+
-+	dma_addr_t		dbar1;
-+	dma_addr_t		dbar2;
-+
-+	u_int			pcr;
-+	u_int			pwmr;
-+	u_int			lscr1;
-+	u_int			cmap_inverse:1,
-+				cmap_static:1,
-+				unused:30;
-+
-+	void (*lcd_power)(int);
-+	void (*backlight_power)(int);
-+};
-+
-+#define IMX_NAME	"IMX"
-+
-+/*
-+ * Minimum X and Y resolutions
-+ */
-+#define MIN_XRES	64
-+#define MIN_YRES	64
-+
-
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
 
 
 -------------------------------------------------------

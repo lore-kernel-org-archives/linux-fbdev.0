@@ -1,115 +1,65 @@
-From: HPCE Spam and Virusscan <virusalert@hpce.nec.com>
-Subject: VIRUS (I-Worm.NetSky.q) IN MAIL FROM YOU
-Date: Tue, 11 May 2004 12:06:25 +0200 (CEST)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <VS26562-02@mail01>
-References: <20040511100620.C82B967D1E@mail01.hpce.nec.com>
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel-otUistvHUpPR7s880joybQ@public.gmane.org>
+Subject: Re: Current discussion about the future of free software graphics
+Date: Tue, 11 May 2004 15:24:24 +0200
+Sender: xserver-bounces-CC+yJ3UmIYqDUpFQwHEjaQ@public.gmane.org
+Message-ID: <1084281863.807.73.camel@thor.asgaard.local>
+References: <A98078D7EF5BEA4D8D8FD797FFBBC75F0742A3A6@fmsmsx402.fm.intel.com>
+	<200405102120.48640.ajax@nwnk.net>
+Reply-To: "Xserver development list." <xserver-CC+yJ3UmIYqDUpFQwHEjaQ@public.gmane.org>
 Mime-Version: 1.0
-Content-Type: multipart/report; report-type=delivery-status;
-    boundary="----------=_1084269985-26562-1"
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BNU9g-0001Xp-AO
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 11 May 2004 03:06:32 -0700
-Received: from mail01.hpce.nec.com ([193.141.139.228])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BNU9f-0004sm-KF
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 11 May 2004 03:06:31 -0700
-Received: from localhost (localhost [127.0.0.1])
-	by mail01.hpce.nec.com (Postfix) with ESMTP id 2D6B167D22
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 May 2004 12:06:25 +0200 (CEST)
-In-Reply-To: <20040511100620.C82B967D1E@mail01.hpce.nec.com>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <xserver-bounces-CC+yJ3UmIYqDUpFQwHEjaQ@public.gmane.org>
+In-Reply-To: <200405102120.48640.ajax-TAsg7VrFCGc@public.gmane.org>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
-
-This is a multi-part message in MIME format...
-
-------------=_1084269985-26562-1
+List-Unsubscribe: <http://freedesktop.org/mailman/listinfo/xserver>,
+	<mailto:xserver-request-CC+yJ3UmIYr06gljFB5M2x44fDD1xmscxSRez2wfwdukMgtKGq/v6w@public.gmane.org>
+List-Archive: <http://freedesktop.org/pipermail/xserver>
+List-Post: <mailto:xserver-CC+yJ3UmIYqDUpFQwHEjaQ@public.gmane.org>
+List-Help: <mailto:xserver-request-CC+yJ3UmIYr06gljFB5M2x44fDD1xmsccn+ig0pBZCw@public.gmane.org>
+List-Subscribe: <http://freedesktop.org/mailman/listinfo/xserver>,
+	<mailto:xserver-request-CC+yJ3UmIYr06gljFB5M2x44fDD1xmscuCKOA6ERizqzQB+pC5nmwQ@public.gmane.org>
+Errors-To: xserver-bounces-CC+yJ3UmIYqDUpFQwHEjaQ@public.gmane.org
 Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-
-VIRUS ALERT
-
-Our content checker found
-    virus: I-Worm.NetSky.q
-in email presumably from you (<linux-fbdev-devel@lists.sourceforge.net>), to the following recipient:
--> efocht@ess.nec.de
-
-Please check your system for viruses,
-or ask your system administrator to do so.
-
-Delivery of the email was stopped!
+To: Adam Jackson <ajax-TAsg7VrFCGc@public.gmane.org>
+Cc: xserver-CC+yJ3UmIYqDUpFQwHEjaQ@public.gmane.org, "Sottek, Matthew J" <matthew.j.sottek-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, dri-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, mesa3d-dev-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
 
 
-For your reference, here are headers from your email:
-------------------------- BEGIN HEADERS -----------------------------
-Return-Path: <linux-fbdev-devel@lists.sourceforge.net>
-Received: from ess.nec.de (unknown [61.85.124.113])
-	by mail01.hpce.nec.com (Postfix) with ESMTP id C82B967D1E
-	for <efocht@ess.nec.de>; Tue, 11 May 2004 12:06:20 +0200 (CEST)
-From: linux-fbdev-devel@lists.sourceforge.net
-To: efocht@ess.nec.de
-Subject: Shocking document
-Date: Tue, 11 May 2004 19:06:40 +0900
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0016----=_NextPart_000_0016"
-X-Priority: 3
-X-MSMail-Priority: Normal
-Message-Id: <20040511100620.C82B967D1E@mail01.hpce.nec.com>
--------------------------- END HEADERS ------------------------------
+[ Please remove any subject tags when following up ]
 
-------------=_1084269985-26562-1
-Content-Type: message/delivery-status
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Description: Delivery error report
+On Tue, 2004-05-11 at 04:20, Adam Jackson wrote:
+>=20
+> You only need to trust the user if the operation could have security=20
+> implications.
 
-Reporting-MTA: dns; mail01
-Received-From-MTA: smtp; mail01.hpce.nec.com ([127.0.0.1])
-Arrival-Date: Tue, 11 May 2004 12:06:24 +0200 (CEST)
+[...]
 
-Final-Recipient: rfc822; efocht@ess.nec.de
-Action: failed
-Status: 5.7.1
-Diagnostic-Code: smtp; 550 5.7.1 Message content rejected, id=26562-02 - VIRUS: I-Worm.NetSky.q
-Last-Attempt-Date: Tue, 11 May 2004 12:06:25 +0200 (CEST)
+> mode setting isn't sensitive because changing the display mode isn't goin=
+g=20
+> to stomp on kernel data structures or on the address space of other runni=
+ng=20
+> processes.
 
-------------=_1084269985-26562-1
-Content-Type: text/rfc822-headers
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Description: Undelivered-message headers
-
-Received: from ess.nec.de (unknown [61.85.124.113])
-	by mail01.hpce.nec.com (Postfix) with ESMTP id C82B967D1E
-	for <efocht@ess.nec.de>; Tue, 11 May 2004 12:06:20 +0200 (CEST)
-From: linux-fbdev-devel@lists.sourceforge.net
-To: efocht@ess.nec.de
-Subject: Shocking document
-Date: Tue, 11 May 2004 19:06:40 +0900
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0016----=_NextPart_000_0016"
-X-Priority: 3
-X-MSMail-Priority: Normal
-Message-Id: <20040511100620.C82B967D1E@mail01.hpce.nec.com>
-
-------------=_1084269985-26562-1--
+You're assuming that the user programs a valid mode, but the proposed
+interface allows to program any combination of mode register values, of
+which valid modes are probably just a small subset, depending on the
+hardware. Combinations outside that set might cause unwanted effects
+such as lockups or even hardware damage, which is bad enough IMHO.
+System RAM access via DMA probably isn't an issue here with the hardware
+I'm familiar with, but it might be with others.
 
 
--------------------------------------------------------
-This SF.Net email is sponsored by Sleepycat Software
-Learn developer strategies Cisco, Motorola, Ericsson & Lucent use to 
-deliver higher performing products faster, at low TCO.
-http://www.sleepycat.com/telcomwpreg.php?From=osdnemail3
+> The mechanism _should_ be masked behind a library that abstracts away=20
+> the device and implementation details as much as possible so the user=20
+> (where here "user" equals X11 Classic, Y-Windows, Mesa Solo, whatever)=20
+> doesn't have to care, and also so each new user doesn't have to write=20
+> the same code again.
+
+Yes, an ALSA-style model is probably the way to go. I'm just pointing
+out that the interface between the library and the kernel probably can't
+be simply an unrestricted ioctl to dump a bunch of register values.
+
+
+--=20
+Earthling Michel D=C3=A4nzer      |     Debian (powerpc), X and DRI develop=
+er
+Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=3Ddaenzer

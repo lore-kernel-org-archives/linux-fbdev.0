@@ -1,86 +1,28 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: monochrome display fix.
-Date: Mon, 26 Jan 2004 22:13:20 +0000 (GMT)
+From: Linus Torvalds <torvalds@osdl.org>
+Subject: Re: monochrome display fix.
+Date: Mon, 26 Jan 2004 14:48:54 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.44.0401262212140.5445-100000@phoenix.infradead.org>
+Message-ID: <Pine.LNX.4.58.0401261446560.2313@home.osdl.org>
+References: <Pine.LNX.4.44.0401262212140.5445-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44.0401262212140.5445-100000@phoenix.infradead.org>
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@transmeta.com>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linus Torvalds <torvalds@transmeta.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
 
-[CONSOLE] Don't let a monochrome display stomp all over the console color 
-values.
 
---- linus-2.6/drivers/char/vt.c	2004-01-26 13:34:39.000000000 -0800
-+++ fbdev-2.5/drivers/char/vt.c	2004-01-21 17:36:26.000000000 -0800
-@@ -1062,7 +1062,8 @@
- 	underline = 0;
- 	reverse = 0;
- 	blink = 0;
--	color = def_color;
-+	if (can_do_color)
-+		color = def_color;
- }
- 
- /* console_sem is held */
-@@ -1135,7 +1136,8 @@
- 				  * with white underscore (Linux - use
- 				  * default foreground).
- 				  */
--				color = (def_color & 0x0f) | background;
-+				if (can_do_color)
-+					color = (def_color & 0x0f) | background;
- 				underline = 1;
- 				break;
- 			case 39: /* ANSI X3.64-1979 (SCO-ish?)
-@@ -1143,19 +1145,23 @@
- 				  * Reset colour to default? It did this
- 				  * before...
- 				  */
--				color = (def_color & 0x0f) | background;
-+				if (can_do_color)
-+					color = (def_color & 0x0f) | background;
- 				underline = 0;
- 				break;
- 			case 49:
--				color = (def_color & 0xf0) | foreground;
-+				if (can_do_color)
-+					color = (def_color & 0xf0) | foreground;
- 				break;
- 			default:
--				if (par[i] >= 30 && par[i] <= 37)
--					color = color_table[par[i]-30]
--						| background;
--				else if (par[i] >= 40 && par[i] <= 47)
--					color = (color_table[par[i]-40]<<4)
--						| foreground;
-+				if (can_do_color) {
-+					if (par[i] >= 30 && par[i] <= 37)
-+						color = color_table[par[i]-30]
-+							| background;
-+					else if (par[i] >= 40 && par[i] <= 47)
-+						color = (color_table[par[i]-40]<<4)
-+							| foreground;
-+				}
- 				break;
- 		}
- 	update_attr(currcons);
-@@ -1290,9 +1296,11 @@
- 			}
- 			break;
- 		case 8:	/* store colors as defaults */
--			def_color = attr;
--			if (hi_font_mask == 0x100)
--				def_color >>= 1;
-+			if (can_do_color) {
-+				def_color = attr;
-+				if (hi_font_mask == 0x100)
-+					def_color >>= 1;
-+			}	
- 			default_attr(currcons);
- 			update_attr(currcons);
- 			break;
+On Mon, 26 Jan 2004, James Simmons wrote:
+> 
+> [CONSOLE] Don't let a monochrome display stomp all over the console color 
+> values.
+
+Why is this ugly patch required? If something can't do color, why does it 
+care about "color" in the first place? We've never needed this patch 
+before, it looks like something broke somewhere _else_ that causes this
+to be relevant.
+
+		Linus

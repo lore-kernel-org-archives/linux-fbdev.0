@@ -1,20 +1,20 @@
-From: Stephen Hemminger <shemminger@osdl.org>
-Subject: [PATCH] eliminate warnings from unused variable in matrox frame
- buffer
-Date: Mon, 7 Jun 2004 10:13:13 -0700
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 2.6.7-rc2] get rid of fbmem warning
+Date: Mon, 7 Jun 2004 23:14:56 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040607101313.46e02b07@dell_ss3.pdx.osdl.net>
+Message-ID: <Pine.GSO.4.58.0406072314020.521@waterleaf.sonytel.be>
+References: <20040607101025.2e30b001@dell_ss3.pdx.osdl.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BXNgT-0003B5-Le
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Jun 2004 10:13:17 -0700
-Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BXNgT-00037v-0l
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Jun 2004 10:13:17 -0700
+	id 1BXRSa-0008Sa-Ur
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Jun 2004 14:15:12 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BXRSa-00055F-CN
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Jun 2004 14:15:12 -0700
+In-Reply-To: <20040607101025.2e30b001@dell_ss3.pdx.osdl.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -24,44 +24,82 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Petr Vandrovec <vandrove@vc.cvut.cz>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Stephen Hemminger <shemminger@osdl.org>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-The parameter 'inverse' is defined and never used, therefore it can be removed.
-This gets rid of a compiler warning when matrox fb is built as a module.
+On Mon, 7 Jun 2004, Stephen Hemminger wrote:
+> Get rid of warning because fb_image data is declared 'const char *' but is
+> being modified by the copy_from_user.
 
-diff -Nru a/drivers/video/matrox/matroxfb_base.c b/drivers/video/matrox/matroxfb_base.c
---- a/drivers/video/matrox/matroxfb_base.c	2004-06-07 10:08:03 -07:00
-+++ b/drivers/video/matrox/matroxfb_base.c	2004-06-07 10:08:03 -07:00
-@@ -1247,7 +1247,6 @@
- static int novga;			/* "matrox:novga" */
- static int nobios;			/* "matrox:nobios" */
- static int noinit = 1;			/* "matrox:init" */
--static int inverse;			/* "matrox:inverse" */
- static int sgram;			/* "matrox:sgram" */
- #ifdef CONFIG_MTRR
- static int mtrr = 1;			/* "matrox:nomtrr" */
-@@ -2376,9 +2375,7 @@
- 				value = 0;
- 				this_opt += 2;
- 			}
--			if (! strcmp(this_opt, "inverse"))
--				inverse = value;
--			else if (!strcmp(this_opt, "accel"))
-+			if (!strcmp(this_opt, "accel"))
- 				noaccel = !value;
- 			else if (!strcmp(this_opt, "pan"))
- 				nopan = !value;
-@@ -2459,8 +2456,6 @@
- MODULE_PARM_DESC(sgram, "Indicates that G100/G200/G400 has SGRAM memory (0=SDRAM, 1=SGRAM) (default=0)");
- MODULE_PARM(inv24, "i");
- MODULE_PARM_DESC(inv24, "Inverts clock polarity for 24bpp and loop frequency > 100MHz (default=do not invert polarity)");
--MODULE_PARM(inverse, "i");
--MODULE_PARM_DESC(inverse, "Inverse (0 or 1) (default=0)");
- #ifdef CONFIG_FB_MATROX_MULTIHEAD
- MODULE_PARM(dev, "i");
- MODULE_PARM_DESC(dev, "Multihead support, attach to device ID (0..N) (default=all working)");
+I prefer this (untested, except for a compile test) patch, which avoids the
+cast and makes cursor.mask const as well.
+
+--- linux-2.6.7-rc1/drivers/video/fbmem.c.orig	2004-05-24 11:38:04.000000000 +0200
++++ linux-2.6.7-rc1/drivers/video/fbmem.c	2004-06-07 22:38:42.000000000 +0200
+@@ -916,26 +916,30 @@ fb_cursor(struct fb_info *info, struct f
+
+ 	if (cursor.set & FB_CUR_SETSHAPE) {
+ 		int size = ((cursor.image.width + 7) >> 3) * cursor.image.height;
++		char *data, *mask;
++
+ 		if ((cursor.image.height != info->cursor.image.height) ||
+ 		    (cursor.image.width != info->cursor.image.width))
+ 			cursor.set |= FB_CUR_SETSIZE;
+
+-		cursor.image.data = kmalloc(size, GFP_KERNEL);
+-		if (!cursor.image.data)
++		data = kmalloc(size, GFP_KERNEL);
++		if (!data)
+ 			return -ENOMEM;
+
+-		cursor.mask = kmalloc(size, GFP_KERNEL);
+-		if (!cursor.mask) {
+-			kfree(cursor.image.data);
++		mask = kmalloc(size, GFP_KERNEL);
++		if (!mask) {
++			kfree(data);
+ 			return -ENOMEM;
+ 		}
+
+-		if (copy_from_user(cursor.image.data, sprite->image.data, size) ||
+-		    copy_from_user(cursor.mask, sprite->mask, size)) {
+-			kfree(cursor.image.data);
+-			kfree(cursor.mask);
++		if (copy_from_user(data, sprite->image.data, size) ||
++		    copy_from_user(mask, sprite->mask, size)) {
++			kfree(data);
++			kfree(mask);
+ 			return -EFAULT;
+ 		}
++		cursor.image.data = data;
++		cursor.mask = mask;
+ 	}
+ 	info->cursor.set = cursor.set;
+ 	info->cursor.rop = cursor.rop;
+--- linux-2.6.7-rc1/include/linux/fb.h.orig	2004-05-24 11:14:01.000000000 +0200
++++ linux-2.6.7-rc1/include/linux/fb.h	2004-06-07 22:38:01.000000000 +0200
+@@ -375,7 +375,7 @@ struct fb_cursor {
+ 	__u16 set;		/* what to set */
+ 	__u16 enable;		/* cursor on/off */
+ 	__u16 rop;		/* bitop operation */
+-	char *mask;		/* cursor mask bits */
++	const char *mask;	/* cursor mask bits */
+ 	struct fbcurpos hot;	/* cursor hot spot */
+ 	struct fb_image	image;	/* Cursor image */
+ };
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

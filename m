@@ -1,23 +1,25 @@
-From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-Subject: Re: Need help !
-Date: Tue, 15 Jun 2004 08:02:04 +0200
+From: David Eger <eger@havoc.gtf.org>
+Subject: fb modules and taking over console after boot
+Date: Tue, 15 Jun 2004 14:43:22 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040615060204.GU20632@lug-owl.de>
-References: <40CDFABF.2020503@integrated-devices.com>
+Message-ID: <20040615184322.GA9338@havoc.gtf.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="0WgWZzeKO51D09bo"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Ba71M-0001Ll-La
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Jun 2004 23:02:08 -0700
-Received: from dvmwest.gt.owl.de ([62.52.24.140])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1Ba71M-0003Ue-66
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Jun 2004 23:02:08 -0700
+	id 1BaIuC-0001I4-0b
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Jun 2004 11:43:32 -0700
+Received: from havoc.gtf.org ([216.162.42.101])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BaIuB-0006eA-Ju
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Jun 2004 11:43:31 -0700
+Received: from havoc.gtf.org (havoc.gtf.org [127.0.0.1])
+	by havoc.gtf.org (Postfix) with ESMTP id D7C1D759D
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 15 Jun 2004 14:43:22 -0400 (EDT)
+Received: (from eger@localhost)
+	by havoc.gtf.org (8.12.10/8.12.10/Submit) id i5FIhMTd012294
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Jun 2004 14:43:22 -0400
 Content-Disposition: inline
-In-Reply-To: <40CDFABF.2020503@integrated-devices.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,68 +29,17 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
 
+In Linux 2.6 -- It seems as though, for fbcon to take over the console,
+the relevant fb driver has to be built in to the kernel and the card
+detected during the boot sequence..  does anyone ever insert an fb driver
+as a module?  If so, which fb driver, and what do you do with it?  Just
+curious...
 
---0WgWZzeKO51D09bo
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, 2004-06-14 12:21:35 -0700, Srinivasa Deevi <sdeevi%integrated-devic=
-es.com@integrated-devices.com>
-wrote in message <40CDFABF.2020503@integrated-devices.com>:
-> do I need to add any fonts in fonts directory to see the any console=20
-> output through fbcon ? Right now I am able to see the blinking cursor=20
-> but any data from it .
-
-No, you don't need to add fonts, but make sure you've choosen at least
-one of them:)
-
-> can somebody help me what should I do to see the cosole output on a=20
-> frame buffer device ? The frame buffer driver is working in graphics=20
-> mode . I have trouble in console mode .
-
-I've seen that, too, when I wrote a FB driver. My bug was that I was
-missing
-
-#ifdef CONFIG_VT
-#ifdef CONFIG_DUMMY_CONSOLE
-	/*
-	 * We need a dummy console up at cons_init time, otherwise there'll
-	 * be no VTs allocated for the real fbdev console to later take over.
-	 */
-	conswitchp =3D &dummy_con;
-#endif
-#endif
-
-in arch-dependand code (for me, adding it to ./arch/vax/kernel/setup.c
-did the job).
-
-MfG, JBG
-
---=20
-   Jan-Benedict Glaw       jbglaw@lug-owl.de    . +49-172-7608481
-   "Eine Freie Meinung in  einem Freien Kopf    | Gegen Zensur | Gegen Krieg
-    fuer einen Freien Staat voll Freier B=FCrger" | im Internet! |   im Ira=
-k!
-   ret =3D do_actions((curr | FREE_SPEECH) & ~(NEW_COPYRIGHT_LAW | DRM | TC=
-PA));
-
---0WgWZzeKO51D09bo
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQFAzpDbHb1edYOZ4bsRAuclAJ9LAVdH+fQ71GLmbsiTE0ycOchbegCeMu1F
-h/unOmMfXyRqMbjYL1MwK60=
-=K7yS
------END PGP SIGNATURE-----
-
---0WgWZzeKO51D09bo--
+-dte
 
 
 -------------------------------------------------------

@@ -1,20 +1,23 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: fbutils
-Date: Tue, 6 Jan 2004 14:22:45 +0100 (CET)
+Subject: Re: Changing modes with fbset
+Date: Tue, 6 Jan 2004 16:23:13 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.58.0401061420420.1856@callisto>
-References: <3FE649BF.30501@undead.cc> <3FE7DCAC.8000204@undead.cc>
+Message-ID: <Pine.GSO.4.58.0401061621160.5752@waterleaf.sonytel.be>
+References: <3FDBB97F.4070207@undead.cc>  <Pine.LNX.4.44.0401060005511.7347-100000@phoenix.infradead.org>
+  <20040106002822.GB442@guug.org>  <1073349349.780.181.camel@gaston>
+ <1073389131.25197.30.camel@thor.asgaard.local>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AdrAf-0006fG-3d
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 05:22:57 -0800
-Received: from amsfep12-int.chello.nl ([213.46.243.18])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AdrAe-0005UW-Hb
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 05:22:56 -0800
-In-Reply-To: <3FE7DCAC.8000204@undead.cc>
+	id 1Adt3I-0005Nn-0y
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 07:23:28 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1Adt3H-0000ni-F2
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 07:23:27 -0800
+In-Reply-To: <1073389131.25197.30.camel@thor.asgaard.local>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -24,57 +27,38 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: John Zielinski <grim@undead.cc>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="iso-8859-1"
+To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Otto Solares <solca@guug.org>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tue, 23 Dec 2003, John Zielinski wrote:
-> I didn't get as much done as I've hoped but there's a few important
-> fixes so I'll repost early.  Apply to a fresh CVS copy.
+On Tue, 6 Jan 2004, Michel [ISO-8859-1] D=E4nzer wrote:
+> On Tue, 2004-01-06 at 01:35, Benjamin Herrenschmidt wrote:
+> > Then, we probably want some way to also enable mirroring instead of
+> > dual head...
+>
+> Crazy idea: What would break if it defaulted to mirroring? :) You could
+> achieve true multihead via panning or something...
 
-Thanks!
+Not that crazy!
 
-I need these patches to:
-  - accept the included etc/modes as a valid config file
-  - kill a warning
-
-If these are OK, I'll check everything in (someday :-)
-
---- fbutils-john-2/etc/modes	2004-01-04 15:38:38.000000000 +0100
-+++ fbutils/etc/modes	2004-01-04 15:33:21.000000000 +0100
-@@ -14,7 +14,7 @@
-     "640x480@75"	# 640x480 @ 75 Hz, 37.50 kHz hsync
- 	{ 640 480 31746 120 16 16 1 64 3 }
-     "800x600@60"	# 800x600 @ 60 Hz, 37.8 kHz hsync
--	{ 800 600 25000 88 40 23 1 128 4 0 hsync+ vsync+ }
-+	{ 800 600 25000 88 40 23 1 128 4 hsync+ vsync+ }
-     "640x480@85"	# 640x480 @ 85 Hz, 43.27 kHz hsync
- 	{ 640 480 27777 80 56 25 1 56 3 }
-     "1152x864@89"	# 1152x864 @ 89 Hz interlaced, 44 kHz hsync
---- fbutils-john-2/fbset/fbset.C	2004-01-04 15:38:38.000000000 +0100
-+++ fbutils/fbset/fbset.C	2004-01-04 15:42:02.000000000 +0100
-@@ -259,8 +259,8 @@
-
-     //  Parse the Options
-
--    while (id = GetNextOption(argc, argv, Options,
--			       sizeof(Options)/sizeof(*Options))) {
-+    while ((id = GetNextOption(argc, argv, Options,
-+			       sizeof(Options)/sizeof(*Options)))) {
- 	switch (id) {
- 	    case ID_HELP:
- 		Usage();
+It would revert the current con2fbmap approach: instead of mapping virtua=
+l
+consoles to frame buffer devices, it would allow to map frame buffer devi=
+ces to
+a virtual console or to another frame buffer device...
 
 Gr{oetje,eeting}s,
 
 						Geert
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m6=
+8k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
+In personal conversations with technical people, I call myself a hacker. =
+But
+when I'm talking to journalists I just say "programmer" or something like=
+ that.
 							    -- Linus Torvalds
 
 

@@ -1,30 +1,24 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: framebuffer ioctl
-Date: Wed, 8 Sep 2004 01:43:42 -0400
+From: "Mukund JB." <mukundjb@esntechnologies.co.in>
+Subject: how to test framebuffer driver
+Date: Wed, 8 Sep 2004 16:09:53 +0530
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <9e47339104090722437b81b373@mail.gmail.com>
-References: <Pine.GSO.4.58.0409041304080.3434@waterleaf.sonytel.be>
-	 <413A3735.9E7D2F11@orpatec.ch> <413B4925.5000706@comcast.net>
-	 <200409060926.07163.adaplas@hotpop.com> <413CC0EA.8070709@comcast.net>
-	 <9e4733910409061402372095b1@mail.gmail.com>
-	 <1094505860.31465.211.camel@admin.tel.thor.asgaard.local>
-	 <9e47339104090707172cdc258d@mail.gmail.com>
-	 <1094572321.6095.10.camel@admin.tel.thor.asgaard.local>
+Message-ID: <4EE0CBA31942E547B99B3D4BFAB348111073FB@mail.esn.co.in>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C4vFA-0003Lp-4a
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 07 Sep 2004 22:43:44 -0700
-Received: from rproxy.gmail.com ([64.233.170.194] helo=mproxy.gmail.com)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1C4vF9-00007h-DX
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 07 Sep 2004 22:43:44 -0700
-Received: by mproxy.gmail.com with SMTP id 77so243341rnl
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 07 Sep 2004 22:43:42 -0700 (PDT)
-In-Reply-To: <1094572321.6095.10.camel@admin.tel.thor.asgaard.local>
+	id 1C4zpn-0003YG-0r
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 08 Sep 2004 03:37:51 -0700
+Received: from [202.125.86.130] (helo=ns2.astrainfonets.net)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1C4zpl-0000RT-LL
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 08 Sep 2004 03:37:50 -0700
+Received: from mail.esn.co.in ([202.125.80.34])
+	by ns2.astrainfonets.net (8.12.8p1/8.12.8) with ESMTP id i88AXPUE001160
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 8 Sep 2004 10:33:27 GMT
+Content-class: urn:content-classes:message
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,32 +28,38 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 07 Sep 2004 11:52:00 -0400, Michel D=E4nzer <michel@daenzer.net> wr=
-ote:
-> All I'm saying is that it reflects badly on you if you need to resort to
-> skewed numbers.
+Hello all,
 
-I don't think they are skewed. Most desktops today have hardware
-OpenGL and software Render. The ratios are an accurate reflection of
-what a normal user would see when comparing Cairo on X vs Cairo on
-OpenGL. You may try to change the platform in the future but hardware
-Render is not deployed anywhere currently.
+my task is to write frame buffer driver.
+can someone provide me some material for - how to remove the existing
+framebuffer driver and place mine when testing it. Is these any other
+way i can test my framebuffer driver.
 
-Even KeithP says he would rather be on OpenGL than to continue
-accelerating Render functions and he designed Render. The argument is
-not about the technical merits of Render vs OpenGL, it's about the
-fact that OpenGL is a widely available standard that is well
-documented. Thousands of people can program to the OpenGL APL while
-only very few know about Render. Let's stand on the shoulders of other
-programmers (you're one of them since you helped with mesa) rather
-than build everything again.
+Are there any applications which can directly run on framebuffer driver
+other than X server.
+If yes, what r they and how can I test my framebuffer driver using them.
+If no, how can I test the fb driver using X server.
 
---=20
-Jon Smirl
-jonsmirl@gmail.com
+Please send all notes, corrections and additions to me regarding the
+framebuffer drivers.
+
+Can I write an application by directly opening my fb device and
+performing operations like read/write/ioctl on it.
+
+					OR
+
+Are there any functions for the following list of fb_ops function
+pointer.
+I mean when they will be called. r there any system calls for calling
+them.
+
+=20
+regards,
+mukund jampala
+
 
 
 -------------------------------------------------------

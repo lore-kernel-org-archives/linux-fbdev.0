@@ -1,22 +1,22 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 3/8] fbdev: Support for bigger than 16x32 fonts in rivafb cursor
-Date: Thu, 11 Nov 2004 10:15:25 +0800
-Message-ID: <20041111022439.D65241A0228@smtp-1.hotpop.com>
+Subject: [PATCH 8/8] fbdev: Change the find_mode behavior
+Date: Thu, 11 Nov 2004 10:15:46 +0800
+Message-ID: <20041111022526.D3B201A025D@smtp-1.hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CS4eL-00053b-F5
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Nov 2004 18:25:25 -0800
+	id 1CS4eZ-000548-Cr
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Nov 2004 18:25:39 -0800
 Received: from smtp-out.hotpop.com ([38.113.3.61])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CS4eK-0006nA-Ez
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Nov 2004 18:25:25 -0800
+	id 1CS4eY-0006oM-Mr
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Nov 2004 18:25:39 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 818529D86C4
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 11 Nov 2004 02:25:14 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id 06B929D766B
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 11 Nov 2004 02:25:31 +0000 (UTC)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -30,118 +30,92 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Alexander Kern <alex.kern@gmx.de>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-- Add support for fonts bigger thatn 16x32 by dynamically allocating buffer
-  based on font dimensions instead of statically allocating at 64 bytes.
-- use softcursor if cursor size exceeds 32x32.
-- fix rivafb_cursor if cursor width is not divisible by 2
+let find_mode search for nearest refresh rate
 
+Signed-off-by: Alexander Kern <alex.kern@gmx.de>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- fbdev.c |   72 ++++++++++++++++++++++++++++++++++++++--------------------------
- 1 files changed, 43 insertions(+), 29 deletions(-)
+ modedb.c |   43 +++++++++++++++++++++++++++++++------------
+ 1 files changed, 31 insertions(+), 12 deletions(-)
 
-diff -Nru a/drivers/video/riva/fbdev.c b/drivers/video/riva/fbdev.c
---- a/drivers/video/riva/fbdev.c	2004-11-10 06:15:06 +08:00
-+++ b/drivers/video/riva/fbdev.c	2004-11-10 07:37:11 +08:00
-@@ -444,6 +444,8 @@
- 	bg = le16_to_cpu(bg);
- 	fg = le16_to_cpu(fg);
+diff -Nru a/drivers/video/modedb.c b/drivers/video/modedb.c
+--- a/drivers/video/modedb.c	2004-10-19 20:21:56 +08:00
++++ b/drivers/video/modedb.c	2004-11-11 09:56:51 +08:00
+@@ -24,7 +24,7 @@
+     ((v).xres == (x) && (v).yres == (y))
  
-+	w = (w + 1) & ~1;
-+
- 	for (i = 0; i < h; i++) {
- 		b = *data++;
- 		reverse_order(&b);
-@@ -1577,6 +1579,10 @@
- 	u16 fg, bg;
- 	int i, set = cursor->set;
+ #ifdef DEBUG
+-#define DPRINTK(fmt, args...)	printk(KERN_DEBUG "%s: " fmt, __FUNCTION__ , ## args)
++#define DPRINTK(fmt, args...)	printk("modedb %s: " fmt, __FUNCTION__ , ## args)
+ #else
+ #define DPRINTK(fmt, args...)
+ #endif
+@@ -474,7 +474,7 @@
+ 		 const struct fb_videomode *default_mode,
+ 		 unsigned int default_bpp)
+ {
+-    int i, j;
++    int i;
  
-+	if (cursor->image.width > MAX_CURS ||
-+	    cursor->image.height > MAX_CURS)
-+		return soft_cursor(info, cursor);
-+
- 	par->riva.ShowHideCursor(&par->riva, 0);
+     /* Set up defaults */
+     if (!db) {
+@@ -493,7 +493,7 @@
+ 	int res_specified = 0, bpp_specified = 0, refresh_specified = 0;
+ 	unsigned int xres = 0, yres = 0, bpp = default_bpp, refresh = 0;
+ 	int yres_specified = 0;
+-	u32 best = -1, diff = -1;
++	u32 best, diff;
  
- 	if (par->cursor_reset) {
-@@ -1606,38 +1612,46 @@
- 		u32 d_pitch = MAX_CURS/8;
- 		u8 *dat = (u8 *) cursor->image.data;
- 		u8 *msk = (u8 *) cursor->mask;
--		u8 src[64];	
--		
--		switch (cursor->rop) {
--		case ROP_XOR:
--			for (i = 0; i < s_pitch * cursor->image.height;
--			     i++)
--				src[i] = dat[i] ^ msk[i];
--			break;
--		case ROP_COPY:
--		default:
--			for (i = 0; i < s_pitch * cursor->image.height;
--			     i++)
--				src[i] = dat[i] & msk[i];
--			break;
--		}
-+		u8 *src;
- 		
--		fb_sysmove_buf_aligned(info, &info->pixmap, data, d_pitch, src,
--				       s_pitch, cursor->image.height);
-+		src = kmalloc(s_pitch * cursor->image.height, GFP_ATOMIC);
- 
--		bg = ((info->cmap.red[bg_idx] & 0xf8) << 7) |
--		     ((info->cmap.green[bg_idx] & 0xf8) << 2) |
--		     ((info->cmap.blue[bg_idx] & 0xf8) >> 3) | 1 << 15;
--
--		fg = ((info->cmap.red[fg_idx] & 0xf8) << 7) |
--		     ((info->cmap.green[fg_idx] & 0xf8) << 2) |
--		     ((info->cmap.blue[fg_idx] & 0xf8) >> 3) | 1 << 15;
--
--		par->riva.LockUnlock(&par->riva, 0);
-+		if (src) {
-+			switch (cursor->rop) {
-+			case ROP_XOR:
-+				for (i = 0; i < s_pitch * cursor->image.height;
-+				     i++)
-+					src[i] = dat[i] ^ msk[i];
-+				break;
-+			case ROP_COPY:
-+			default:
-+				for (i = 0; i < s_pitch * cursor->image.height;
-+				     i++)
-+					src[i] = dat[i] & msk[i];
-+				break;
-+			}
- 
--		rivafb_load_cursor_image(par, data, bg, fg,
--					 cursor->image.width,
--					 cursor->image.height);
-+			fb_sysmove_buf_aligned(info, &info->pixmap, data,
-+					       d_pitch, src, s_pitch,
-+					       cursor->image.height);
-+
-+			bg = ((info->cmap.red[bg_idx] & 0xf8) << 7) |
-+				((info->cmap.green[bg_idx] & 0xf8) << 2) |
-+				((info->cmap.blue[bg_idx] & 0xf8) >> 3) |
-+				1 << 15;
-+
-+			fg = ((info->cmap.red[fg_idx] & 0xf8) << 7) |
-+				((info->cmap.green[fg_idx] & 0xf8) << 2) |
-+				((info->cmap.blue[fg_idx] & 0xf8) >> 3) |
-+				1 << 15;
-+
-+			par->riva.LockUnlock(&par->riva, 0);
-+
-+			rivafb_load_cursor_image(par, data, bg, fg,
-+						 cursor->image.width,
-+						 cursor->image.height);
-+			kfree(src);
-+		}
+ 	for (i = namelen-1; i >= 0; i--) {
+ 	    switch (name[i]) {
+@@ -532,16 +532,35 @@
+ 	    res_specified = 1;
  	}
- 
- 	if (cursor->enable)
+ done:
+-	for (i = refresh_specified; i >= 0; i--) {
+-	    DPRINTK("Trying specified video mode%s %ix%i\n",
+-		    i ? "" : " (ignoring refresh rate)", xres, yres);
+-	    for (j = 0; j < dbsize; j++)
+-		if ((name_matches(db[j], name, namelen) ||
+-		     (res_specified && res_matches(db[j], xres, yres))) &&
+-		    (!i || db[j].refresh == refresh) &&
+-		    !fb_try_mode(var, info, &db[j], bpp))
+-		    return 2-i;
++	DPRINTK("Trying specified video mode%s %ix%i\n",
++	    refresh_specified ? "" : " (ignoring refresh rate)", xres, yres);
++
++	diff = refresh;
++	best = -1;
++	for (i = 0; i < dbsize; i++) {
++		if ((name_matches(db[i], name, namelen) &&
++			!fb_try_mode(var, info, &db[i], bpp)))
++			return 1;
++		if (res_specified && res_matches(db[i], xres, yres)) {
++			if(!fb_try_mode(var, info, &db[i], bpp)) {
++				if(!refresh_specified || db[i].refresh == refresh)
++					return 1;
++				else {
++					if(diff > abs(db[i].refresh - refresh)) {
++						diff = abs(db[i].refresh - refresh);
++						best = i;
++					}
++				}
++			}
++		}
++	}
++	if (best != -1) {
++		fb_try_mode(var, info, &db[best], bpp);
++		return 2;
+ 	}
++
++	diff = xres + yres;
++	best = -1;
+ 	DPRINTK("Trying best-fit modes\n");
+ 	for (i = 0; i < dbsize; i++) {
+ 	    if (xres <= db[i].xres && yres <= db[i].yres) {
 
 
 

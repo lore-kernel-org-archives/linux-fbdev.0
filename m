@@ -1,25 +1,20 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: Re: [PATCH 7/8] fbdev: atyfb_base.c requires atyfb_cursor()
-Date: Wed, 3 Nov 2004 00:26:45 +0200
-Message-ID: <20041102222645.GA20934@sci.fi>
-References: <200411021946.26862.adaplas@hotpop.com> <20041102135843.GA13761@sci.fi> <200411030531.36468.adaplas@hotpop.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] fbdev: workaround for broken X servers
+Date: Wed, 03 Nov 2004 13:13:39 +1100
+Message-ID: <1099448020.900.25.camel@gaston>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CP771-0002xm-UY
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Nov 2004 14:26:47 -0800
-Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CP771-0008QN-04
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Nov 2004 14:26:47 -0800
-Received: from kuori.saunalahti.fi (kuori.saunalahti.fi [195.197.175.23])
-	by gw01.mail.saunalahti.fi (Postfix) with ESMTP id 48FAA7E095
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed,  3 Nov 2004 00:26:45 +0200 (EET)
-Content-Disposition: inline
-In-Reply-To: <200411030531.36468.adaplas@hotpop.com>
+	id 1CPAmB-0001h6-V5
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Nov 2004 18:21:31 -0800
+Received: from gate.crashing.org ([63.228.1.57])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1CPAmA-0007Iv-G1
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Nov 2004 18:21:31 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,39 +25,39 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linus Torvalds <torvalds@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, Nov 03, 2004 at 05:31:36AM +0800, Antonino A. Daplas wrote:
-> On Tuesday 02 November 2004 21:58, Ville Syrj=E4l=E4 wrote:
-> > On Tue, Nov 02, 2004 at 07:46:26PM +0800, Antonino A. Daplas wrote:
-> > > atyfb_base.c requires atyfb_cursor, but it is only available for li=
-nking
-> > > if CONFIG_FB_ATY_CT=3Dy.
-> > > This patch moves the .o file to the CONFIG_FB_ATY rule.
-> >
-> > Here's a better fix. It was a part of my swcursor patch which was
-> > partially included. Looks like Alex accidentally dropped this part.
-> >
-> >
-> > Fix atyfb cursor problems:
-> > - oops with noaccel option
-> > - CONFIG_FB_ATY_CT dependency problem
-> >
->=20
-> If I read Alex's patch correctly, it looks like the aty has a working
-> hardware cursor implementation, is this correct?  Then a better patch m=
-ay be
-> to use soft_cursor if noaccel is true, and atyfb_cursor otherwise.
+Hi !
 
-That is how things work with this patch. aty_init_cursor() sets fb_cursor=
-=20
-to atyfb_cursor.
+XFree (and X.org) has both always been broken in their conversion of the DPMS
+blanking mode when passing to the kernel ioctl FBIOBLANK (in fbdev mode).
 
---=20
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+This patch makes sure that at least the value passed by userland stays in the
+legal range, which has the side effect that an X DPMS POWERDOWN request will
+result as an fbdev VESA_POWERDOWN request at the fbdev level now, instead of
+an out-of-range value.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+Index: linux-work/drivers/video/fbmem.c
+===================================================================
+--- linux-work.orig/drivers/video/fbmem.c	2004-10-26 13:15:55.000000000 +1000
++++ linux-work/drivers/video/fbmem.c	2004-11-03 13:10:41.324932256 +1100
+@@ -748,6 +748,10 @@
+ 	u16 *black = NULL;
+ 	int err = 0;
+ 	
++	/* Workaround for broken X servers */
++	if (blank > VESA_POWERDOWN)
++		blank = VESA_POWERDOWN;
++
+ 	if (info->fbops->fb_blank && !info->fbops->fb_blank(blank, info))
+ 		return 0;
+ 
+
+
 
 
 -------------------------------------------------------

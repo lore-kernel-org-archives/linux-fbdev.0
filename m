@@ -1,7 +1,8 @@
 From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: Re: FB model basic issues (WAS: radeon, apertures & memory mapping)
-Date: Tue, 15 Mar 2005 15:27:46 +0200
-Message-ID: <20050315132746.GA14267@sci.fi>
+Subject: Re: [Linux-fbdev-devel] Re: FB model basic issues (WAS: radeon,
+	apertures & memory mapping)
+Date: Tue, 15 Mar 2005 15:36:28 +0200
+Message-ID: <20050315133628.GA16051@sci.fi>
 References: <1110696189.5787.100.camel@gaston>
 	<1110774523.4003.511.camel@localhost>
 	<1110784327.5787.288.camel@gaston>
@@ -10,11 +11,12 @@ References: <1110696189.5787.100.camel@gaston>
 	<1110838356.4003.548.camel@localhost>
 	<1110839873.5673.41.camel@gaston>
 	<1110862777.4044.592.camel@localhost>
-	<20050315060138.GA13064@sci.fi> <4236C770.8020101@hispeed.ch>
+	<20050315060138.GA13064@sci.fi>
+	<Pine.LNX.4.62.0503150946180.30569@numbat.sonytel.be>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
-In-Reply-To: <4236C770.8020101@hispeed.ch>
+In-Reply-To: <Pine.LNX.4.62.0503150946180.30569@numbat.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
 	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
@@ -26,42 +28,50 @@ List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
 Sender: xorg-bounces@lists.freedesktop.org
 Errors-To: xorg-bounces@lists.freedesktop.org
 Content-Type: text/plain; charset="iso-8859-1"
-To: Roland Scheidegger <rscheidegger_lists@hispeed.ch>
-Cc: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>, Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, dri-devel@lists.sourceforge.net, xorg@lists.freedesktop.org
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>, dri-devel@lists.sourceforge.net, Jon Smirl <jonsmirl@yahoo.com>, xorg@lists.freedesktop.org
 
-On Tue, Mar 15, 2005 at 12:30:56PM +0100, Roland Scheidegger wrote:
-> Ville Syrj=E4l=E4 wrote:
->  > I think that making the assumption that all memory is preserved when=
-=20
-> the
-> >memory layout (virtual resolution and depth) doesn't change is perfect=
-ly=20
-> >valid too. That would allow X to do it's Ctrl-Alt-+ and - things witho=
-ut=20
-> >repainting the whole screen.
-> I'm not sure I agree here, as it's not always true. For instance, the=20
-> radeon has some restrictions whether it can use tiling or not with a=20
-> certain mode (interlace/double scan) thus you need to redraw everything=
-=20
-> anyway
+On Tue, Mar 15, 2005 at 09:51:40AM +0100, Geert Uytterhoeven wrote:
+> On Tue, 15 Mar 2005, Ville [iso-8859-1] Syrj??wrote:
+> > If radeonfb will allocate the buffer for the second head from the top=
+ of=20
+> > the memory users would basically have to guess it's location. matroxf=
+b=20
+> > simply cuts the memory in two pieces and allocates the buffers from t=
+he=20
+> > start of each piece. I don't really like that approach. Adding a simp=
+le=20
+> > byte_offset field to fb_var_screeninfo would solve the problem quite=20
+> > nicely but I don't know if such API changes are acceptable at this st=
+age.
+>=20
+> You wouldn't have to guess its location, look at fix.smem_start.
 
-I didn't know about that. My first thought would be to disallow such mode=
+But how would someone mmap() the whole memory then? matroxfb already play=
 s=20
-but knowing that X lacks a proper fullscreen API that might not be a=20
-realistic option.
+tricks on fix.smem_start on Millennium I/II cards and it really confuses=20
+DirectFB's memory allocator.
 
-> (which is exactly why I implemented a driver workaround to=20
-> repaint everything when that happens - in fact the workaround also gets=
-=20
-> rid of the offscreen contents, which is not necessary, but was much=20
-> easier to implement, since I couldn't find an easy way to "invalidate=20
-> the framebuffer"). What's the big deal with repainting everything? It's=
-=20
-> not like you would do 100 mode changes per second so it would be=20
-> performance-critical...
+> I once did a similar thing for an embedded prototype: take a fixed amou=
+nt of
+> memory for both frame buffers (this was a UMA system), fb0 starts from =
+the top,
+> fb1 starts from the bottom. You can enlarge each frame buffer, until yo=
+u read
+> the memory of the other. Each fix.smem_{start,len} corresponds exactly =
+to the
+> memory allocated to each frame buffer.
+>=20
+> Of course, if you also want off-screen memory (i.e. memory beyond
+> xres_virtual*yres_virtual*bpp/8), things get more complicated, since cu=
+rrently
+> there's no way for the application to ask for a minimum amount of off-s=
+creen
+> memory. Perhaps a new field in fb_var_screeninfo (and zero means `I don=
+'t
+> care', for backwards compatibility).
 
-I don't really have a big deal with invalidating the visible part of the=20
-memory.
+Offscreen memory is pretty much essential for DirectFB.
 
 --=20
 Ville Syrj=E4l=E4

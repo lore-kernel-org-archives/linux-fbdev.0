@@ -1,24 +1,24 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: fbdraw 0.1 available
-Date: Sat, 11 Sep 2004 12:53:23 +0200 (MEST)
+From: Kronos <kronos@people.it>
+Subject: Re: monitor detection through ddc/edid stuff.
+Date: Sat, 11 Sep 2004 17:36:25 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0409111241390.17924@waterleaf.sonytel.be>
-References: <41426651.2010201@comcast.net>
+Message-ID: <20040911153625.GA3507@dreamland.darkstar.lan>
+References: <20040910111627.GA14811@pegasos>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C65VY-0007XJ-SE
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 11 Sep 2004 03:53:28 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1C65VY-00080M-3x
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 11 Sep 2004 03:53:28 -0700
-Received: from waterleaf.sonytel.be (mail.sonytel.be [43.221.60.197])
-	by witte.sonytel.be (8.12.10/8.12.10) with ESMTP id i8BArNMp023605
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 11 Sep 2004 12:53:24 +0200 (MEST)
-In-Reply-To: <41426651.2010201@comcast.net>
+	id 1C69vV-0001FS-8C
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 11 Sep 2004 08:36:33 -0700
+Received: from mail-relay-2.tiscali.it ([213.205.33.42])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
+	id 1C69vS-0007tr-7o
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 11 Sep 2004 08:36:33 -0700
+Received: from dreamland.darkstar.lan (82.84.183.146) by mail-relay-2.tiscali.it (7.1.021.3)
+        id 40F419A700E0A533 for linux-fbdev-devel@lists.sourceforge.net; Sat, 11 Sep 2004 17:36:11 +0200
+Content-Disposition: inline
+In-Reply-To: <20040910111627.GA14811@pegasos>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,56 +28,61 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, 10 Sep 2004, Zack wrote:
-> My changes to permit (optional) in-kernel drawing for applications
-> are available. It's only version 0.1 at this point, meaning alpha,
-> but I'm happy with the performance and structure. I've included
-> a test application that allows benchmarking.
+Il Fri, Sep 10, 2004 at 01:16:27PM +0200, Sven Luther ha scritto: 
+> I also have quickly overviewed the radeon driver, which has a function to read
+> the EDID either from the BIOS or the pmac OF. There seem to be no code
+> whatsoever that adds proper EDID reading through the graphic card directly,
+> like it is done in XFree86, where one can do in the individual drivers (using
+> i2c stuff also) :
+> 
+> 	...
+> 	pBus->BusName = "DDC";
+> 	pBus->I2CUDelay = WildcatVPI2CUDelay;
+> 	pBus->I2CPutBits = WildcatVPI2CPutBits;
+> 	pBus->I2CGetBits = WildcatVPI2CGetBits;
 >
-> home.comcast.net/~plinius/fbdraw-0.1.tar.gz
->
-> To install, move the tarfile to the 2.6.8.1 root dir, and use
-> tar zxfv fbdraw-0.1.tar.gz.
->
-> Constructive criticism is welcome.
+> These three being smallish functions to delay a bit, and to put/get bits in
+> the DCC Clock/Data Out/In registers.
 
-A few comments/questions:
+Ok, you a have a bit-style adapter. i2c kernel core needs function to
+control SDA and SCL but they can be easily created from X functions.
 
-  - Is there any special reason why you implement your own fb_fill_area() and
-    fb_copy_area() (which doesn't do anything?), while fb_fillrect() and
-    fb_copyarea() already exist?
+*GetBits must be splited in getscl (read clock) and getsda (get data),
+and *PutBits must be splited in setscl and setsda.
 
-  - Do you have compared the performance of your fbdraw compared to user space
-    mmap()ing the frame buffer and doing all drawings in user space?
+I've done that with the radeon driver, look at drivers/video/aty/radeon_i2c.c.
 
-BTW, I'm also considering exporting fb_fillrect(), fb_copyarea(), and
-fb_imageblit() to userspace, but for a different reason.
+> Would it make sense to implement such a feature in fbmon.c ? Is fbmon.c the
+> right place for this ? Is this already implemented somewhere else, or maybe in
+> some private tree somewhere ?
 
-Right now applications need to know the exact frame buffer layout. For most
-modern PC graphics cards that's OK, since they all do cfb8/16/24/32. But older
-(usually unaccelerated) and embedded hardware may use a different layout (e.g.
-seperate buffers for even and odd display lines on some set top box hardware,
-bitplanes, ...) putting a severe burden on applications.
+We already have a I2C subsystem, all you have to do is create a new
+adapter and read from it (ie. you put the starting address on bus and
+start reading).
 
-By letting the application draw to a fixed format cfb8 (pseudocolor) or cfb32
-(RGBA) shadow buffer and call the kernel for updating the screen, this can be
-solved in a generic way.  Currently now fb_imageblit() already has to do the
-conversion from cfb8 to native layout anyway.
+> As i understand this, we would need some place to set the those three
+> function, and then a common function to actually do a real EDID reading
+> through the graphic card (get_EDID_from_harware ?).
 
-Gr{oetje,eeting}s,
+Well, instead of PutBits/GetBits we have 4 functions, the algorithm is 
+provided by the i2c subsystem. Look at radeon_do_probe_i2c_edid in the
+radeon driver, it's not hard to do.
 
-						Geert
+Oh, radeon_probe_i2c_connector contains some "black magic" to wakeup
+some older boards/monitor. An ATI developer confirmed that it's needed
+to cover some corner case, probably you don't need that on your board.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Luca
+-- 
+Home: http://kronoz.cjb.net
+"L'abilita` politica e` l'abilita` di prevedere quello che
+ accadra` domani, la prossima settimana, il prossimo mese e
+ l'anno prossimo. E di essere cosi` abili, piu` tardi,
+ da spiegare  perche' non e` accaduto."
 
 
 -------------------------------------------------------

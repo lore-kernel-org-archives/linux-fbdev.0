@@ -1,18 +1,16 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: FB model basic issues (WAS: radeon, apertures & memory mapping)
-Date: Wed, 16 Mar 2005 14:09:18 +1100
-Message-ID: <1110942559.24296.107.camel@gaston>
-References: <1110677744.19810.80.camel@gaston>
-	<9e47339105031219223e606a52@mail.gmail.com>
-	<1110696189.5787.100.camel@gaston>	<1110774523.4003.511.camel@localhost>
-	<1110784327.5787.288.camel@gaston>	<1110817205.4004.527.camel@localhost>
-	<1110837171.5863.16.camel@gaston>	<1110838356.4003.548.camel@localhost>
-	<1110839873.5673.41.camel@gaston>	<1110862777.4044.592.camel@localhost>
-	<20050315060138.GA13064@sci.fi>  <4236C770.8020101@hispeed.ch>
-	<1110907029.4001.624.camel@localhost>
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: EGL_MESA_screen_surface proposal
+Date: Tue, 15 Mar 2005 23:30:51 -0500
+Message-ID: <9e47339105031520304154e567@mail.gmail.com>
+References: <4236F0A8.4000004@tungstengraphics.com>
+	<9e47339105031507064a68630f@mail.gmail.com>
+	<4236FC79.5000909@tungstengraphics.com>
+	<9e4733910503150828ecf5a1b@mail.gmail.com>
+	<1110904613.9080.62.camel@lnx-1cv4-4-110>
+Reply-To: Jon Smirl <jonsmirl@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-In-Reply-To: <1110907029.4001.624.camel@localhost>
+In-Reply-To: <1110904613.9080.62.camel@lnx-1cv4-4-110>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
 	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
@@ -24,26 +22,25 @@ List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
 Sender: xorg-bounces@lists.freedesktop.org
 Errors-To: xorg-bounces@lists.freedesktop.org
 Content-Type: text/plain; charset="us-ascii"
-To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Cc: Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, dri-devel@lists.sourceforge.net, xorg@lists.freedesktop.org
+To: Michel Danzer <mdanzer@ati.com>
+Cc: Xserver development <xorg@freedesktop.org>, fbdev <linux-fbdev-devel@lists.sourceforge.net>, DRI-EGL <dri-egl@lists.freedesktop.org>
 
+On Tue, 15 Mar 2005 11:36:53 -0500, Michel Danzer <mdanzer@ati.com> wrote:
+> On Tue, 2005-03-15 at 11:28 -0500, Jon Smirl wrote:
+> >
+> > On Tue, 15 Mar 2005 08:17:13 -0700, Brian Paul
+> > <brian.paul@tungstengraphics.com> wrote:
+> > > Perhaps the eglShowSurface() and eglScreenMode() functions should be
+> > > combined so the new surface and new display mode can be validated
+> > > together.  That way, the undefined state between setting the new
+> > > surface and new mode can be avoided.
+> 
+> Makes sense to me.
 
-> It's ugly, but that's not the point. The point is that all deployed
-> versions of X (and even current X.org CVS head still, in fact) make this
-> assumption.
+What if I just want to show another surface without changing the mode?
+I could still use a combined version and since the mode matches the
+mode won't actually get changed?
 
-Oh, that's fine and that's not a problem. I will only repaint the
-framebuffer on bit depth or line lenght changes. I'm trying to talk
-about the _future_ here. That is support for dual head at the fbdev
-level and other niceties.
-
-We simply cannot guarantee preserving the video memory accross mode
-switches. We have enumerated enough examples of that, and Ville himself
-came up with a nice one about Matrox.
-
-What we _can_ do is let people know what was expelled from video memory
-eventually. But even the "let's ask fdbev what will change" before the
-actual mode switch isn't really a good idea in the long run since it
-sort-of defeats the purpose of having a common memory manager.
-
-Ben.
+-- 
+Jon Smirl
+jonsmirl@gmail.com

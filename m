@@ -1,14 +1,11 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: [BK PATCH] fbdev updates.
-Date: Tue, 13 Aug 2002 09:24:04 -0700 (PDT)
+From: Petr Vandrovec <vandrove@vc.cvut.cz>
+Subject: fbdev tree pulled into Linus tree
+Date: Wed, 14 Aug 2002 03:55:42 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.33.0208130923000.3180-100000@maxwell.earthlink.net>
+Message-ID: <20020814015542.GA14680@ppc.vc.cvut.cz>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from swan.mail.pas.earthlink.net ([207.217.120.123])
-	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17eeYJ-000781-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 13 Aug 2002 09:29:51 -0700
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -18,28 +15,47 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@transmeta.com>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: jsimmons@users.sourceforge.net
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
+Hello James,
+  besides that the beast does not compile because of
+the use of p->type instead of info->fix.type in the logo code,
+what's the reason for having next_line, next_plane
+(and maybe other too - can_soft_blank, inverse, yscroll) 
+in the display struct, if you moved rest of the values 
+into fix. So now I maintain half of state in per-display 
+structs, and half in the per-fbdev structure? Nigthmare.
+Can you create some ('tmp' or 'par' or whatever) structure
+and hold them in fb_info too?
 
-Hi!
+  Also because of you moved these type/line_length and
+other into the fix, there is no point in having dispsw
+in the display struct: these functions must not be invoked
+on the fbdev with con != fbcon.currcon now because of
+part of state exists only for foreground console now. So
+move them into per-fb_info structure too, and handle 
+con != fbcon.currcon in generic code (if not done already).
 
-   Please pull the fbdev BK repository. It has many bug fixes as well as
-updates.
+  Then it will be clear what is really per-VT structure
+which should be maintained by upper layer, and what is
+fbdev bussiness. And while you'll move dispsw pointer, change
+it to the embeded structure. It will make life easier to
+atafb and matroxfb at least, as they like to modify fb_ops
+according to the hardware they find, and currently they
+modify structure global to the driver.
 
-http://fbdev.bkbits.net/fbdev-2.5
+  That's all for now, I'll see what will happen after reboot. 
+Expect first public matroxfb updates tomorrow.
+					Best regards,
+						Petr Vandrovec
 
-MS: (n) 1. A debilitating and surprisingly widespread affliction that
-renders the sufferer barely able to perform the simplest task. 2. A disease.
-
-James Simmons  [jsimmons@users.sf.net] 	                ____/|
-fbdev/console/gfx developer                             \ o.O|
-http://www.linux-fbdev.org                               =(_)=
-http://linuxgfx.sourceforge.net                            U
-http://linuxconsole.sourceforge.net
-
+P.S.: I do not have your new email address here at home,
+and you are neither in MAINTAINERS nor in the CREDITS,
+I hope that the address I randomly choosed from the credits
+in fbdev files will work.
 
 
 -------------------------------------------------------

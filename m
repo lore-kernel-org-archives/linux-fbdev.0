@@ -1,46 +1,49 @@
-From: Sven Luther <luther@dpt-info.u-strasbg.fr>
-Subject: Re: [Linux-fbdev-devel] [PATCH] FBDev: vga16fb port
-Date: Thu, 5 Dec 2002 21:44:42 +0100
+From: Antonino Daplas <adaplas@pol.net>
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/3: FBDEV: VGA State Save/Restore
+	module
+Date: 06 Dec 2002 05:47:06 +0500
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20021205204442.GA1103@iliana>
-References: <20021205180314.GA860@iliana> <Pine.LNX.4.44.0212052035330.31967-100000@phoenix.infradead.org>
+Message-ID: <1039135574.1032.17.camel@localhost.localdomain>
+References: <Pine.LNX.4.44.0212051729230.31967-100000@phoenix.infradead.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0212052035330.31967-100000@phoenix.infradead.org>
+In-Reply-To: <Pine.LNX.4.44.0212051729230.31967-100000@phoenix.infradead.org>
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: James Simmons <jsimmons@infradead.org>
-Cc: Sven Luther <luther@dpt-info.u-strasbg.fr>, Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Thu, Dec 05, 2002 at 08:37:08PM +0000, James Simmons wrote:
+On Thu, 2002-12-05 at 22:31, James Simmons wrote:
 > 
-> > > Not really. When X closes /dev/fb then fb_release is called which if the 
+> > Limitations:
+> > 1.  Restoring the VGA state from high-resolution graphics mode may
+> > result in a corrupt display which can be corrected by switching
+> > consoles.  May need a screen redraw at this point.  Restoring from VGA
+> > graphics mode to text mode and vice versa is okay.
 > > 
-> > That supposes X is fbdev aware (either using the fbdev driver or the
-> > UseFBDev option), right ? What if X knows nothing about fbdev, it will
-> > try restoring stuff as if it was in text mode.
-> 
-> That is what X will try. 
-
-Mmm, is it enough for X to just save/restore the registers it modifies ?
-
-Also, i suppose if i am comming from fbdev, what X saves or restores
-does not really count, since fbdev knows what relevant thing to save.
-
-Still i sense that there may be some issues involved here, especially
-if you switch from text mode to fbdev or between fbdevs while not in X.
-
-> > >     X on VESA fb always foobars my system when I exit X.
+> > 2. Assumes some things about the hardware which is not universally
+> > correct:  VGA memory base is at 0xA0000, memory size is 64KB, the
+> > hardware palette is readable, etc. 
 > > 
-> > With which driver ? (i am happily running the vesa X driver on top of
-> > vesafb without problems).
+> > Any comments welcome.
 > 
-> G400 X server 4.0.2 ontop of VESA framebuffer.
+> One thing I like to suggest. I like to move the vga code in fb.h to vga.h. 
+> Alot of fbdev devices don't have a VGA core. 
+> 
+> 
 
-And i suppose the VESA driver will work, right ?
+Only the structure definition of fb_vgastate is in fb.h.  For drivers
+without a vga core, they'll just won't link to it and it won't be
+compiled.  Plus, vga.h is not a common header (not located in
+include/asm or include/linux) and it contains a lot of declarations and
+definitions which are irrelevant to most drivers or are already
+duplicated.  This will be messier, I think.  
 
-Friendly,
+Maybe we can just enclose it in a macro, something like:
 
-Sven Luther
+#ifdef FBDEV_HAS_VGACORE
+...
+#endif
+
+Tony

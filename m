@@ -1,58 +1,30 @@
-From: "Petr Vandrovec" <VANDROVE@vc.cvut.cz>
-Subject: Re: [PATCH 1/3: FBDEV: VGA State Save/Restore module
-Date: Wed, 4 Dec 2002 23:33:58 +0100
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [OT] Re: [Linux-fbdev-devel] [PATCH] FBDev: vga16fb port
+Date: Wed, 4 Dec 2002 15:47:45 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <96665BC46B2@vcnet.vc.cvut.cz>
+Message-ID: <Pine.LNX.4.33.0212041546530.1533-100000@maxwell.earthlink.net>
+References: <Pine.GSO.4.21.0212041242170.4748-100000@vervain.sonytel.be>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <Pine.GSO.4.21.0212041242170.4748-100000@vervain.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-To: Antonino Daplas <adaplas@pol.net>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Petr Vandrovec <VANDROVE@vc.cvut.cz>, Brad Douglas <Brad@NERUO.com>, luther@dpt-info.u-strasbg.fr, adaplas@pol.net, Linux Kernel Development <linux-kernel@vger.kernel.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, linux-fbdev-devel-admin@lists.sourceforge.net
 
-On  5 Dec 02 at 6:05, Antonino Daplas wrote:
-> On Wed, 2002-12-04 at 23:41, Petr Vandrovec wrote:
-> > On  4 Dec 02 at 22:26, Antonino Daplas wrote:
-> [...]
-> > And if my VGA documentation is correct, you are saving random
-> > data into vga_text: first 8192 chars interleaved with
-> > 8192 bytes of garbage, plus attributes from chars 8192-16383 interleaved
-> > with 8192 bytes of garbage. 
-> >
-> Right, I'm not sure about this part too.  The docs say that this is true
-> for EGA compatible hardware.  How about non-compliant hardware?  
 
-Like non-VGA? Like CGA/MDA? I thought that non-VGA/non-EGA adapters are 
-out of scope of this document ;-)
-  
-> > And if you are using standard hardware, then font data live only in
-> > plane 2, plane 3 is unused on VGA hardware in text mode. I think that
-> > you should either save whole 256KB of memory, without deeper understanding,
-> > or you should just save FONT 0 (first 32*256 bytes from plane 2) if you
+> On Wed, 4 Dec 2002, Petr Vandrovec wrote:
+> > FYI, I'm going to unsubscribe myself from linux-fbdev-devel.
+> > I'm not interested in reading messages on list which is not public:
+> > I get again an error that my message is waiting for moderator approval,
+> > and as such list is unsuitable for any realtime discussion.
+>
+> Yes, I know it's annoying :-(
+>
+> But, AFAIK we don't know yet
+>   1. who changed the list to a moderated list
+>   2. who is actually moderating it
 
-> Only if saving the first character map in plane 2.  Hardware can have as
-> much as 8 character maps per plane, each 8K in size for 64K.  The same
-> setup is true for plane 3 fonts.
-
-How you select them? Mine doc says that font block 0 begins in plane 2
-at offset 0, block 1 at offset 16KB, 2 at 32K, 3 at 48K, 4 at 8K, 5 at 24K,
-6 at 40K, and last, 7th, at 56KB, and sequencer has two threebit fields...
-
-> > want to save memory and you know that console was driven by vgacon in
-> > text mode.
-> To save memory, apps can explicitly choose what to save, but I don't
-> want to go finer than that, ie. save character maps 2,3,5  of plane 2
-> and 1,2,3 of plane 3.  The current way of saving the text mode map may
-> be a bit wasteful, but better than being bitten by hardware that's
-> non-EGA compliant.  
-
-Look at vgacon. Uses font block 0,2,3 from plane 2 when built
-without BROKEN_GRAPHICS_PROGRAMS, or 0,1 when built with 
-BROKEN_GRAPHICS_PROGRAMS. So if you want just restore vgacon environment,
-save only these 4 blocks (4*8K = 32K). Or you want to save whole
-VGA memory, and then save whole 256KB, without tricks while saving
-planes 0 & 1.
-                                            Petr Vandrovec
-                                            vandrove@vc.cvut.cz
-                                            
+I'm also perturbed by this. I guess we need to apporach sourceforge to ask
+the list passwords to be changed so we can mange the list ourselves.

@@ -1,26 +1,23 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [RFC] Video Mode Handling
-Date: Mon, 9 Aug 2004 15:59:17 +0800
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: Re: [RFC] Video Mode Handling
+Date: Mon, 9 Aug 2004 01:03:26 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200408091559.18436.adaplas@hotpop.com>
-References: <20040809035002.65812.qmail@web14924.mail.yahoo.com>
-Reply-To: adaplas@pol.net
+Message-ID: <20040809010326.305620a7.akpm@osdl.org>
+References: <200408090944.01414.adaplas@hotpop.com>
+	<20040808230412.6dc16bf4.akpm@osdl.org>
+	<Pine.GSO.4.58.0408090920511.14159@waterleaf.sonytel.be>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bu549-00080d-OO
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Aug 2004 00:59:33 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.71])
+	id 1Bu59d-0000kj-Pz
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Aug 2004 01:05:13 -0700
+Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1Bu549-0005Tl-63
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Aug 2004 00:59:33 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 847A5105C910
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  9 Aug 2004 07:32:55 +0000 (UTC)
-In-Reply-To: <20040809035002.65812.qmail@web14924.mail.yahoo.com>
-Content-Disposition: inline
+	id 1Bu59d-0006DD-Ad
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Aug 2004 01:05:13 -0700
+In-Reply-To: <Pine.GSO.4.58.0408090920511.14159@waterleaf.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,66 +28,50 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@osdl.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: adaplas@pol.net, adaplas@hotpop.com, linux-fbdev-devel@lists.sourceforge.net
 
-On Monday 09 August 2004 11:50, Jon Smirl wrote:
-> There was a lot of discussion about mode handling at OLS. Here's some
-> of the lwn coverage...
+Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 >
-> http://lwn.net/Articles/94202/
-> http://lwn.net/Articles/94763/
->
+> On Sun, 8 Aug 2004, Andrew Morton wrote:
+> > "Antonino A. Daplas" <adaplas@hotpop.com> wrote:
+> > > Most fbdev developers are proposing to bring back the per-display var
+> > >  structures to ease the difficulty of video mode handling.  This proposal
+> > >  is countered by a few (notably James) in that it severely increases the
+> > >  memory footprint of the kernel.
+> >
+> > Surprised.
+> >
+> > By how much does this increase the kernel's memory footprint?
+> 
+> Indeed, you need a full mode database per driver.
 
+Sorry, that's way outside my area of knowledge ;)
 
-> I'll attach a list of points discussed. Mode setting needs to cover
-> multihead cards, and devices that only use the BIOS for mode setting.
-> There also needs to be coordinated memory management when multiple
-> heads are involved. Point 7 talks about a design where most of the mode
-> setting code is moved to user space via hotplug.
->
-> Can your design be adjusted to work in the framework outlined below?
->
+> > And how much simpler would the code be if we were to bring back the
+> > per-display var structures?
+> >
+> > IOW: what's the tradeoff here?
+> 
+>   - per-display var:
+>       - increase memory footprint by
+>         MAX_NR_CONSOLES.*sizeof(struct var_screen_info)
 
-Sure, if I correctly understand the pertinent parts of the discussion,
-they mostly pertain to moving mode handling to userspace.  The patches
-that I submitted are just that, move more of the mode handling away from
-the kernel and let userspace determine the numbers to give to the kernel.
-The job of the driver is to de-normalize the numbers, and write them to the
-registers.
+I see no var_screen_info.  sizeof(struct screen_info) is 56 bytes, and
+there are 63 of them.  This is a negligible amount of memory!
 
-Currently, the main problem is "are the values coming from userspace safe to
-use?" The fbdev drivers have a check_var() that does the verification.
-However the function is severely limited because not all details are known
-about the hardware and the display/s.  Drivers take different approaches,
-accept everything as gospel truth, be paranoid and reject everything, or
-check the numbers to varying degrees of effectivity (by using EDID, kernel
-boot options, etc).
+>       + simpler code
+>       + 100% compatible with 2.4
+> 
+>   - private modedb:
+>       - increase memory footprint by full mode database per driver.
+>       - more complex (and larger) code
+>       - subtle differences with 2.4, because not the whole var is saved
+>         (BTW, which fields do you want to save, and which not, so I can
+> 	 evaluate the impact on some drivers?)
 
-I guess most people will agree that writing to the hardware belongs in the
-kernel, while choosing the correct values to write belongs to userspace.  The
-unanswered question is the middle part, who does the verification?
-
-As for hardware that depends on the BIOS for mode setting, this is basically
-unsupported in the current fbdev framework (vesafb).  Either we allow BIOS
-code to run in the kernel (search for vesafb-tng) or run BIOS code in
-userspace (search for vm86d, vesafbd). 
-
-Multi-head cards can be configured as multiple fb_info's sharing a single par
-if each output is independent from the other (in which case each head has
-its own private mode list) or a single fb_info with multiple pars if each
-output are dependent on each other (in which case they share a common
-mode list which are filtered so all entries will work for all heads).
-
-As for memory management, yes, that's needed.  The i810fb for example explicitly
-avoids the framebuffer address that is used by X/DRI.  It's also fortunate that
-the i810 hardware has 2 ringbuffers, one is used by X/DRI, one by i810fb.  Add
-another application that needs the ringbuffers, and the hardware will definitely
-crash.
-
-Tony 
-
-
+Well gee.  If we're talking about 3k, or even 10k or 30k, let's go with the
+simplest code?
 
 
 -------------------------------------------------------

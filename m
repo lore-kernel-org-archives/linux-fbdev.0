@@ -1,60 +1,59 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [FBDEV UPDATE] Newer patch.
-Date: Thu, 23 Oct 2003 23:50:48 +0100 (BST)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0310232343410.21561-100000@phoenix.infradead.org>
-References: <20031023144315.GA667@phunnypharm.org>
+From: Jon Smirl <jonsmirl@yahoo.com>
+Subject: DRM and Framebuffer conflicts
+Date: Thu, 23 Oct 2003 09:24:54 -0700 (PDT)
+Sender: dri-devel-admin@lists.sourceforge.net
+Message-ID: <20031023162454.31377.qmail@web14903.mail.yahoo.com>
+References: <1066889583.643.2.camel@leguin>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1ACoOy-0005RH-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 23 Oct 2003 15:57:56 -0700
-Received: from [213.86.99.234] (helo=phoenix.infradead.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.22)
-	id 1ACoIH-0008NF-6z
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Oct 2003 15:51:01 -0700
-In-Reply-To: <20031023144315.GA667@phunnypharm.org>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Return-path: <dri-devel-admin@lists.sourceforge.net>
+In-Reply-To: <1066889583.643.2.camel@leguin>
+Errors-To: dri-devel-admin@lists.sourceforge.net
+List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:dri-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
+	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
+	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=dri-devel>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ben Collins <bcollins@debian.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Eric Anholt <eta@lclark.edu>
+Cc: DRI <dri-devel@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
+--- Eric Anholt <eta@lclark.edu> wrote:
+> I've converted the DRM to old-style attachment.  I haven't tested with
+> radeonfb to see if it actually fixed it (netboot linux kernels are
+> annoying to prepare), but my radeon and sis cards continued to work.  If
+> someone could test with radeonfb and the latest DRM, that would be
+> great.
 
-> The cursor has changed from a nice underline to a solid white block. 
+I think we need to implement both the old and new schemes and fallback to the
+old one if radeonfb is present. DRM also needs to add code marking resources in
+use which will also conflict with framebuffer. DRM needs to mark the resources
+when framebuffer isn't around to be compatible with hotplug.
 
-I seen the problem. Its the wrong color for the background color for the 
-cursor. I haven't been able to figure out why it went wrong. The specs are 
-not to clear on this.
+It would flow something like this:
+new style probe
+if (new probe has device)
+   mark resources in use
+else
+   do old style probe
 
-> Not only that,
-> but the block is bigger than the font it is over (if I am on top of
-> adjacent letters, it covers the entire letter I am on, plus a couple of
-> pixels of the letter to the right).
+The framebuffer drivers that have DRM parallels need to implement the same
+code. That way it won't matter what order things get loaded.
 
-Ug. That code is straight from the old driver. Will fix.
+A second possibility would be to implement a tiny stub for just attaching to
+the PCI ID and resources. Then framebuffer and DRM could both share the stub.
 
-> In additition, the cursor now disappears while typing, and navigating
-> around (on the command line left and right, or even in an editor when
-> moving the cursor up and down). This disappearing while typing or
-> navigating is _really_ annoying. If I go left or right a lot, I have to
-> keep stopping to see where the cursor actually is.
+=====
+Jon Smirl
+jonsmirl@yahoo.com
 
-I seen this problem last night with the NVIDIA fbdev driver. I think I 
-know what the problem is. I will try a fix tonight. 
-
-
+__________________________________
+Do you Yahoo!?
+The New Yahoo! Shopping - with improved product search
+http://shopping.yahoo.com
 
 
 -------------------------------------------------------

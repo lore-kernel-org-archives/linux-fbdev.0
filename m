@@ -1,76 +1,54 @@
-From: "Mukund JB." <mukundjb@esntechnologies.co.in>
-Subject: RE: Crosstool for EBD9312..
-Date: Mon, 7 Mar 2005 21:16:40 +0530
-Message-ID: <4EE0CBA31942E547B99B3D4BFAB348113A47A7@mail.esn.co.in>
-Reply-To: linux-fbdev-users@lists.sourceforge.net
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [PATCH] sysfs support for fbdev
+Date: Mon, 7 Mar 2005 13:10:04 -0500
+Message-ID: <9e473391050307101051d3ada3@mail.gmail.com>
+References: <9e47339105030102003ee47879@mail.gmail.com>
+	 <Pine.LNX.4.56.0503012105420.4595@pentafluge.infradead.org>
+	 <9e47339105030210135dbe71ed@mail.gmail.com>
+	 <Pine.LNX.4.56.0503030005490.27751@pentafluge.infradead.org>
+	 <9e47339105030216576d592d14@mail.gmail.com>
+	 <Pine.LNX.4.56.0503071803480.21233@pentafluge.infradead.org>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-class: urn:content-classes:message
-Sender: linux-fbdev-users-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-users-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-users>,
-	<mailto:linux-fbdev-users-request@lists.sourceforge.net?subject=unsubscribe>
+Content-Transfer-Encoding: 7bit
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1D8MgE-0007Vd-FK
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Mar 2005 10:10:10 -0800
+Received: from rproxy.gmail.com ([64.233.170.207])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1D8MgA-0005oc-JV
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Mar 2005 10:10:10 -0800
+Received: by rproxy.gmail.com with SMTP id z35so2011874rne
+        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 07 Mar 2005 10:10:05 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.56.0503071803480.21233@pentafluge.infradead.org>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-users@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-users-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-users>,
-	<mailto:linux-fbdev-users-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-users>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: J.A.K.Mouw@its.tudelft.nl, Michael Burian <dynmail1@gassner-waagen.at>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-fbdev-users@lists.sourceforge.netlinux-fbdev-users@lists.sourceforge.net
+To: James Simmons <jsimmons@www.infradead.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@pentafluge.infradead.org>
 
-Hello Burian,
+On Mon, 7 Mar 2005 18:05:35 +0000 (GMT), James Simmons
+<jsimmons@www.infradead.org> wrote:
+> The question is will work on systems that have no space to write data.
+> Alot of embedded devices can store anything. The fb.modes is very limiting
+> in this case. Having a permanent RAM filesystem is expensive.
 
-> The framebuffer implementation you get in the unofficial cirrus tree
-> (ep93xx-2.6) is not accelerated. The latest cirrus release (for
-> linux-2.4.21-rmk1) seems acclerated. Diff the source for details.
->=20
-> Note that the unaccelerated 2.6 driver and the accelerated
-> 2.4.21-rmk1-crus-whatever driver do not have a common anchestor,
-> the 2.6. was implemented from scratch, using fb-skeleton.c
->=20
+I doubt if a system that constrained needs to change modes at all. In
+that case just build the mode into the driver and forget everything
+else.
 
-OK.
-
-> To explain it short:
->=20
-> if hardware acceleration is not available you'll have to emulate the
-> missing features in software (always possible), which is usually slow.
-
-Yes, right. This will be painful (performance wise).
-
->=20
-> if hardware acceleration is available but the driver does not use it
-> (emulates it as if it wasn't there) you still have a software-only
-driver.
-=20
-You mean if the existing driver support is not accelerated, we need to
-emulate it in software again. But Why, can't we rewrite the driver at
-some places & make it work?
-
-> if hardware acceleration is available and the driver makes use of
-> it you've got a "accelerated" driver. In the ep93xx's case
-> the "raster engine" is used then.
-
-What is the raster engine? I goggled it, but did not find any thing
-strong enough.
-=20
-My actual requirement is to rotate the screen by 90 degrees. Maillists
-ask me to use Xfree86 as it already has such kind of a support to rotate
-the screen.=20
-
-Are there any side affects if I make use of the X server & rotate the
-screen. I mean is there any application that makes use of the video
-buffer directly without using X server and may fail to rotate the screen
-as we are rotating the screen at X server level and not at fb level.
-
-Also, if my device uses the console the screen rotation at X server
-level will not work. I mean if.
-
-Thanks & Regards,
-mukund jampala
-
+-- 
+Jon Smirl
+jonsmirl@gmail.com
 
 
 -------------------------------------------------------

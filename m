@@ -1,21 +1,22 @@
-From: Richard Smith <rsmith@bitworks.com>
-Subject: Rage Mobility M1 devid  4c52
-Date: Thu, 15 Jan 2004 01:44:16 -0600
+From: Clint Adams <schizo@debian.org>
+Subject: Re: Bug#226973: xserver-xfree86: [glint] second card at wrong resolution
+Date: Thu, 15 Jan 2004 16:55:24 -0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <400644D0.1060500@bitworks.com>
-Reply-To: rsmith@bitworks.com
+Message-ID: <20040115215524.GA656@scowler.net>
+References: <20040109163119.GA10151@scowler.net> <20040112121558.GA24511@iliana> <20040112215543.GB2150@scowler.net> <20040113074158.GF4863@iliana> <20040113154025.GA12817@scowler.net> <20040113160221.GA12752@iliana> <20040114211246.GA31567@scowler.net> <20040114211643.GA6793@iliana>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Ah2Be-0001m2-Dg
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Jan 2004 23:45:06 -0800
-Received: from b44.xdsl.pgtc.com ([198.70.248.44] helo=bitworks.com)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1Ah2Be-0003My-2C
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Jan 2004 23:45:06 -0800
-Received: from bitworks.com [192.168.1.22] by bitworks.com [127.0.0.1] with SMTP (MDaemon.v2.7.SP4.R) for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 15 Jan 2004 01:42:32 -0600
+	id 1AhFSY-00079P-Vv
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 15 Jan 2004 13:55:26 -0800
+Received: from acolyte.scowler.net ([216.254.112.142])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.30)
+	id 1AhFSY-0006Zv-Me
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 15 Jan 2004 13:55:26 -0800
+Content-Disposition: inline
+In-Reply-To: <20040114211643.GA6793@iliana>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,31 +26,31 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Sven Luther <sven.luther@wanadoo.fr>
+Cc: 226973@bugs.debian.org, linux-fbdev-devel@lists.sourceforge.net
 
-I'm trying to run the atyfb on a board that has a ATI Rage Mobility M1 
-on it.  Grepping the driver source yeilds some refererences to a 
-Mobility M1 as though its supported but my device id of 0x4c52 does not 
-show up in the table of known devices and the driver fails to detect my 
-chip.
+> This will not help, X things everything is ok, it is just the graphic
+> card output which is problematic. No way to find it in the log, you have
+> to look at the way the graphic output registers are programmed. 
+> 
+> Look at the pm2_dac.c stuff.
 
-If I copy the PCI Rage Mobililty like and change the device ID to 0x4c52 
-then I get atyfb messages but some of the info is wrong.  For example it 
-says I have 4M of wram but an M1 has 8M of sdram.
+Well, I haven't gotten as far as dumping the registers, but I came
+across Permedia2VPreInit in pm2v_dac.c, and forced it to call
+Permedia2VPreInitSecondary(pScrn) unconditionally.
 
-Is the Mobility M1 really suppported?
-
-
--- 
-Richard A. Smith
-rsmith@bitworks.com
-
-
+I also changed a few things seemingly related to linux-kernel-headers to
+get the thing to compile, and it improved the situation.  Now there is a
+mild amount of distortion and flicker.  The really bad part is that if I
+drag an open window, it will turn into a block of noise, somewhat
+related to the colors of the root window.  Also, X now detects 8 megs of
+memory on that card.
 
 
 -------------------------------------------------------
-This SF.net email is sponsored by: Perforce Software.
-Perforce is the Fast Software Configuration Management System offering
-advanced branching capabilities and atomic changes on 50+ platforms.
-Free Eval! http://www.perforce.com/perforce/loadprog.html
+The SF.Net email is sponsored by EclipseCon 2004
+Premiere Conference on Open Tools Development and Integration
+See the breadth of Eclipse activity. February 3-5 in Anaheim, CA.
+http://www.eclipsecon.org/osdn

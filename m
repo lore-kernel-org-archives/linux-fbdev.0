@@ -1,7 +1,7 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [Linux-fbdev-devel] Re: [atyfb] No display on Sparc Ultra 10 with kernel 2.6.10-rc2 or later
-Date: Thu, 17 Feb 2005 07:18:26 +0800
-Message-ID: <200502170718.26946.adaplas@hotpop.com>
+Subject: Re: [atyfb] No display on Sparc Ultra 10 with kernel 2.6.10-rc2 or later
+Date: Thu, 17 Feb 2005 07:24:36 +0800
+Message-ID: <200502170724.36195.adaplas@hotpop.com>
 References: <200502140251.00645.aragorn@tiscali.nl> <200502162310.12703.aragorn@tiscali.nl> <200502170702.58630.adaplas@hotpop.com>
 Reply-To: adaplas@pol.net
 Mime-Version: 1.0
@@ -32,77 +32,15 @@ On Thursday 17 February 2005 07:02, Antonino A. Daplas wrote:
 > > me.
 >
 > Try this patch and let me know.
+>
+> video=atyfb:comp_sync:<n>,vert_sync:<n>,hor_sync:<n>
+>
+> n = 0 (low), 1 (high)
 
-The previous patch has a bug, try this instead.
+BTW, the mode string should always be the last parameter, ie;
+
+video=atyfb:comp_sync:1,1024x768@70
 
 Tony
-
-diff -Nru a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
---- a/drivers/video/aty/atyfb_base.c	2005-02-16 00:19:00 +08:00
-+++ b/drivers/video/aty/atyfb_base.c	2005-02-17 07:15:57 +08:00
-@@ -307,6 +307,9 @@
- static int pll;
- static int mclk;
- static int xclk;
-+static int comp_sync __initdata = -1;
-+static int vert_sync __initdata = -1;
-+static int hor_sync  __initdata = -1;
- static char *mode;
- 
- #ifdef CONFIG_PPC
-@@ -2527,6 +2530,27 @@
- 	else
- 		var.accel_flags |= FB_ACCELF_TEXT;
- 
-+	if (comp_sync != -1) {
-+		if (!comp_sync)
-+			var.sync &= ~FB_SYNC_COMP_HIGH_ACT;
-+		else
-+			var.sync |= FB_SYNC_COMP_HIGH_ACT;
-+	}
-+
-+	if (vert_sync != -1) {
-+		if (!vert_sync)
-+			var.sync &= ~FB_SYNC_VERT_HIGH_ACT;
-+		else
-+			var.sync |= FB_SYNC_VERT_HIGH_ACT;
-+	}
-+
-+	if (hor_sync != -1) {
-+		if (!hor_sync)
-+			var.sync &= ~FB_SYNC_HOR_HIGH_ACT;
-+		else
-+			var.sync |= FB_SYNC_HOR_HIGH_ACT;
-+	}
-+
- 	if (var.yres == var.yres_virtual) {
- 		u32 videoram = (info->fix.smem_len - (PAGE_SIZE << 2));
- 		var.yres_virtual = ((videoram * 8) / var.bits_per_pixel) / var.xres_virtual;
-@@ -3611,6 +3635,12 @@
- 			mclk = simple_strtoul(this_opt + 5, NULL, 0);
- 		else if (!strncmp(this_opt, "xclk:", 5))
- 			xclk = simple_strtoul(this_opt+5, NULL, 0);
-+		else if (!strncmp(this_opt, "comp_sync:", 10))
-+			comp_sync = simple_strtoul(this_opt+10, NULL, 0);
-+		else if (!strncmp(this_opt, "vert_sync:", 10))
-+			vert_sync = simple_strtoul(this_opt+10, NULL, 0);
-+		else if (!strncmp(this_opt, "hor_sync:", 9))
-+			hor_sync = simple_strtoul(this_opt+9, NULL, 0);
- #ifdef CONFIG_PPC
- 		else if (!strncmp(this_opt, "vmode:", 6)) {
- 			unsigned int vmode =
-@@ -3701,6 +3731,12 @@
- MODULE_PARM_DESC(mclk, "int: override memory clock");
- module_param(xclk, int, 0);
- MODULE_PARM_DESC(xclk, "int: override accelerated engine clock");
-+module_param(comp_sync, int, 0)
-+MODULE_PARM_DESC(comp_sync, "Set composite sync signal to low (0) or high (1)");
-+module_param(vert_sync, int, 0)
-+MODULE_PARM_DESC(vert_sync, "Set vertical sync signal to low (0) or high (1)");
-+module_param(hor_sync, int, 0)
-+MODULE_PARM_DESC(hor_sync, "Set horizontal sync signal to low (0) or high (1)");
- module_param(mode, charp, 0);
- MODULE_PARM_DESC(mode, "Specify resolution as \"<xres>x<yres>[-<bpp>][@<refresh>]\" ");
- #ifdef CONFIG_MTRR
 
 

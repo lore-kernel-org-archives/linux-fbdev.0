@@ -1,21 +1,24 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] radeonfb: copyarea() "memmove()"
- problem
-Date: Mon, 29 Mar 2004 17:49:40 +0200 (MEST)
+From: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Subject: Get console sem on fbdev ioctls
+Date: Mon, 29 Mar 2004 16:45:55 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0403291748320.19888@waterleaf.sonytel.be>
-References: <Pine.LNX.4.58.0403291709020.2356@rosencrantz.theboonies.us>
+Message-ID: <043001c415a4$ec16e600$d100000a@sbs2003.local>
+Reply-To: <benh@kernel.crashing.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B7z1H-0004mO-RZ
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 07:49:47 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1B7z1F-0004Qo-1n
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 07:49:45 -0800
-In-Reply-To: <Pine.LNX.4.58.0403291709020.2356@rosencrantz.theboonies.us>
+	id 1B7zb4-000534-Bi
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 08:26:46 -0800
+Received: from [194.202.64.57] (helo=smtp.paston.co.uk)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1B7zb2-00079r-Li
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 08:26:44 -0800
+Received: from 2003SERVER.sbs2003.local (host213-123-250-229.in-addr.btopenworld.com [213.123.250.229])
+	by smtp.paston.co.uk (Postfix) with ESMTP id 4479F9B2F0
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 29 Mar 2004 17:29:52 +0100 (BST)
+Content-Class: urn:content-classes:message
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,33 +28,90 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: David Eger <eger-dated-1081179398.a664d4@theboonies.us>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Administrator@smtp.paston.co.uk
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
 
-	Hi David,
 
-On Mon, 29 Mar 2004, David Eger wrote:
-> Now that my local kernel actually calls copyarea(), I see that my code was
-> buggy... That is, the hardware needs to be told which way to do its memory
-> copies if areas overlap.  Think of memmove() versus memcpy().
-> Attached is the fix.
 
-Do you know if there's a noticable performance difference between forward and
-backward copies? If yes, you may want to check whether the areas really overlap
-instead of testing their relative positions.
+Along with my VT race fixes I sent earlier, this is a patch (that may
+need to be applied manually, I hacked the patch file a bit since my
+tree is so different from yours at this point). It takes the console
+semaphore on userland initiated mode change, pan display, ... ioctls.
 
-Gr{oetje,eeting}s,
+Maybe more are required... This is the basics for at least fbset operations
+to be "safe" (vs. printk/blanking and vs. the console resize code).
 
-						Geert
+Note that with that and the VT fixes, I can properly now call vc_resize
+instead of fbcon_resize in fbcon when getting a mode changed callback,
+and that works really better.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+I basically do that if cols and rows are seen to have changed:
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+	vc_resize(vc->vc_num, cols, rows);
+	if (CON_IS_VISIBLE(vc)) {
+		accel_clear_margins(vc, info, 0);
+		update_screen(vc->vc_num);
+	}
+
+Though for stty to work fine, I also had to do proper mode selection/validation
+for which I added this FB_ACTIVATE_FIND option (see my other email on the subject)
+along with proper support in radeonfb.
+
+
+diff -urN linux-2.5/drivers/video/fbmem.c linuxppc-2.5-benh/drivers/video/fbmem.c
+--- linux-2.5/drivers/video/fbmem.c	2004-01-06 10:05:18.708660576 +1100
++++ linuxppc-2.5-benh/drivers/video/fbmem.c	2003-12-31 12:38:25.000000000 +1100
+@@ -27,6 +27,7 @@
+ #include <linux/init.h>
+ #include <linux/linux_logo.h>
+ #include <linux/proc_fs.h>
++#include <linux/console.h>
+ #ifdef CONFIG_KMOD
+ #include <linux/kmod.h>
+ #endif
+@@ -984,7 +995,9 @@
+ 	case FBIOPUT_VSCREENINFO:
+ 		if (copy_from_user(&var, (void *) arg, sizeof(var)))
+ 			return -EFAULT;
++		acquire_console_sem();
+ 		i = fb_set_var(info, &var);
++		release_console_sem();
+ 		if (i) return i;
+ 		if (copy_to_user((void *) arg, &var, sizeof(var)))
+ 			return -EFAULT;
+@@ -1003,7 +1016,10 @@
+ 	case FBIOPAN_DISPLAY:
+ 		if (copy_from_user(&var, (void *) arg, sizeof(var)))
+ 			return -EFAULT;
+-		if ((i = fb_pan_display(info, &var)))
++		acquire_console_sem();
++		i = fb_pan_display(info, &var);
++		release_console_sem();
++		if (i)
+ 			return i;
+ 		if (copy_to_user((void *) arg, &var, sizeof(var)))
+ 			return -EFAULT;
+@@ -1039,7 +1055,10 @@
+ 		return 0;
+ #endif	/* CONFIG_FRAMEBUFFER_CONSOLE */
+ 	case FBIOBLANK:
+-		return fb_blank(info, arg);
++		acquire_console_sem();
++		i = fb_blank(info, arg);
++		release_console_sem();
++		return i;
+ 	default:
+ 		if (fb->fb_ioctl == NULL)
+ 			return -EINVAL;
+
+-
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
+
+
 
 
 -------------------------------------------------------

@@ -1,21 +1,17 @@
-From: Ramprasad <ramprasad@ncoretech.com>
-Subject: Full screen linux-logo
-Date: Sat, 30 Nov 2002 19:04:07 +0530
+From: "Szymanski, Frank-Peter" <F.Szymanski@dmt.de>
+Subject: Re: Re: status
+Date: Thu, 28 Nov 2002 13:24:23 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3DE8BE4F.2707958F@ncoretech.com>
+Message-ID: <20582D3416EEFC429CAAFBD42278DBC60328F4C7@eatpsv02.dmt.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [164.164.42.6] (helo=gateway.ncoretech.com)
+Received: from mail.cubis.de ([194.112.101.48] helo=mailgate.cubis.de)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18I7mW-0002u1-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 30 Nov 2002 05:35:43 -0800
-Received: from mail.ncoretech.com (IDENT:root@mail.ncoretech.com [192.168.1.3])
-	by gateway.ncoretech.com (8.10.0/8.10.0) with ESMTP id gAUDZD024622
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 30 Nov 2002 19:05:13 +0530
-Received: from ncoretech.com (ws225.ncoretech.com [192.168.1.225])
-	by mail.ncoretech.com (8.10.0/8.10.0) with ESMTP id gAUDc0629476
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 30 Nov 2002 19:08:00 +0530
+	id 18HNj0-0000XF-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 28 Nov 2002 04:24:59 -0800
+Received: from mailscan-1.tuev-mitte.de (mailscan-1.tuev-mitte.de [10.0.142.44] (may be forged))
+	by mailgate.cubis.de (Switch-2.1.1/Switch-2.1.1) with SMTP id UASC0ORP10382
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 28 Nov 2002 13:24:27 +0100
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -26,25 +22,31 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: geert@linux-m68k.org
 
-Hi All,
+Hi Geert,
 
-I am working on  assabet board with 320x240 mono LCD panel , kernel
-2.4.18 i want to display  full screen logo while boot up.  I have set
-the pixel clock value = 70000 , and bpp is 4  bit.
+>Anyone who cares to give it a try? Just check out CVS module `fbtest' from
+>http://sourceforge.net/cvs/?group_id=908, type `make' and run `fbtest' for
+all
+>available color depths (use fbset first), and tell me whether it works.
 
-I am not getting the logo. i get 4 small , compressed linux logo .
-Then i changed the pixclock to 171521 and bpp to 8. now  iam getting the
-full logo  but there is lot of wavey lines.......
+>If no one is left with an Atari with Linux/m68k installed, I can create a
+>ramdisk containing fbset and fbtest, so you just need ataboot and a kernel
+to
+>test it.
 
-I am using the patchs given  by arnor.net
+Due to the fact that since kernel 2.2.x X11 doesn't work any longer on
+ATARIs I don't have a working Linux/m68k configuration ATM but I have both a
+2.0.3x/2.2.x kernel and ataboot to test it if you like.
 
-Can anybody guide me ...
+Just tell me where I can find the above mentioned ramdisk.
 
-Thanks in advance,
-Ramprasad
+Regards,
 
+Frank 
 
 
 -------------------------------------------------------

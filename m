@@ -1,23 +1,28 @@
-From: Andrew Walrond <andrew@walrond.org>
-Subject: Re: Rivafb won't work with DVI connector
-Date: Tue, 23 Nov 2004 23:59:12 +0000
-Message-ID: <200411232359.12869.andrew@walrond.org>
-References: <200411191137.14649.andrew@walrond.org> <200411232053.28741.andrew@walrond.org> <200411240638.51261.adaplas@hotpop.com>
+From: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+Subject: Default timings in vga16fb driver
+Date: Tue, 23 Nov 2004 18:04:37 +0100
+Message-ID: <41A36DA5.8090200@fujitsu-siemens.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CWkZC-00011g-Qb
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 23 Nov 2004 15:59:26 -0800
-Received: from [62.24.231.113] (helo=cenedra.walrond.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1CWkZ4-0006it-6U
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 23 Nov 2004 15:59:26 -0800
-In-Reply-To: <200411240638.51261.adaplas@hotpop.com>
-Content-Disposition: inline
+	id 1CWe5s-0003EA-VX
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 23 Nov 2004 09:04:44 -0800
+Received: from plim.fujitsu-siemens.com ([217.115.66.8])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1CWe5r-0003c2-2k
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 23 Nov 2004 09:04:44 -0800
+Received: from trulli.pdb.fsc.net ([172.25.96.53])
+	by plim.fujitsu-siemens.com (8.11.3/8.11.3) with ESMTP id iANH4dk17670
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 23 Nov 2004 18:04:39 +0100
+Received: from biker.psw.pdb.fsc.net (biker.pdb.fsc.net [172.25.253.106])
+	by trulli.pdb.fsc.net (8.11.6/8.11.6) with ESMTP id iANH4cu02188
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 23 Nov 2004 18:04:38 +0100
+Received: from fujitsu-siemens.com (localhost [127.0.0.1])
+	by biker.psw.pdb.fsc.net (Postfix) with ESMTP id 449F3BC85
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 23 Nov 2004 18:04:38 +0100 (CET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,33 +33,55 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: "Antonino A. Daplas" <adaplas@hotpop.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Chad Daelhousen <cd9@cse.buffalo.edu>
 
-Hi Tony,
+Hello,
 
-Thanks for taking the time to explain; there is a lot of knowledge in your 
-post that it would have taken an age to acquire from scratch.
+I am wondering about the standard mode timings for the 640x480@60 mode 
+in vga16fb driver (vga16fb_defined):
 
-On Tuesday 23 Nov 2004 22:44, Antonino A. Daplas wrote:
->
-> BTW: How does X behave if the input is digital.  Does it accept modes
-> greater than panel size?  If it does, then the documentation is actually
-> there.  I'll look at the X code again.  And I'll probably do some googling
-> on this.  If you happen to encounter any kind of programming info about
-> this, let me know also.
->
+	.pixclock	= 39721,
+	.left_margin	= 48,
+	.right_margin	= 16,
+	.upper_margin	= 39,
+	.lower_margin	= 8,
+	.hsync_len 	= 96,
+	.vsync_len	= 2,
+	.vmode		= FB_VMODE_NONINTERLACED,
 
-I'll try all the stuff you has suggested and report back some results 
-tomorrow.
+IMO this corresponds to a total screen height of 529 which is different 
+from the value 525 which is normally used (eg in X Windows). What is the 
+reason for this? Is it possible that the value for "upper_margin" should 
+be 35 rather than 39?
 
-> Thanks for testing.
+I am asking because we have encountered a video device that obviously 
+has problems displaying the standard mode of the vga16fb driver.
 
-Not an issue. I want the linux frame buffer to work well on _all_ modern 
-graphics hardware for my own selfish reasons ;)
+More detail:
 
-Andrew
+Unless I'm  mistaken, the above translates into an XFree86 modeline
+   ModeLine "640x480" 25.175 640 656 752 800 480 488 490 529
+
+The standard XFree86 modeline for this mode, however, looks like this:
+(same in drivers/video/modedb.c)
+   ModeLine "640x480" 25.175 640 664 760 800 480 491 493 525
+
+The description at http://www.epanorama.net/documents/pc/vga_timing.html.
+would suggest:
+   ModeLine "640x480" 25.175 640 656 752 800 480 490 492 525
+
+I apologize if I'm overlooking something.
+
+Best regards,
+Martin
+
+--
+Martin Wilck                Phone: +49 5251 8 15113
+Fujitsu Siemens Computers   Fax:   +49 5251 8 20409
+Heinz-Nixdorf-Ring 1        mailto:Martin.Wilck@Fujitsu-Siemens.com
+D-33106 Paderborn           http://www.fujitsu-siemens.com/primergy
+
 
 
 -------------------------------------------------------

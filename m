@@ -1,15 +1,17 @@
-From: Stefan Krah <sfk1@bigfoot.com>
-Subject: Matrox G550, matroxfb: "Signal out of range"
-Date: Wed, 29 Jan 2003 14:42:27 +0100
+From: Kronos <kronos@kronoz.cjb.net>
+Subject: [2.5.59] radeonfb not working
+Date: Wed, 29 Jan 2003 16:27:03 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030129134227.GA201@irkutsk.ip503cbb7c.speed.planet.nl>
-Reply-To: Stefan Krah <stefankrah@bigfoot.com>
+Message-ID: <20030129152703.GA539@dreamland.darkstar.lan>
+Reply-To: kronos@kronoz.cjb.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from ip503cbb7c.speed.planet.nl ([80.60.187.124])
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18dsTQ-0001x8-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 29 Jan 2003 05:41:52 -0800
+Received: from mail-8.tiscali.it ([195.130.225.154] helo=mail.tiscali.it)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18du7Q-0003NL-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 29 Jan 2003 07:27:16 -0800
+Received: from dreamland.darkstar.lan (217.133.181.65) by mail.tiscali.it (6.5.032)
+        id 3E351FE800174698 for linux-fbdev-devel@lists.sourceforge.net; Wed, 29 Jan 2003 16:27:02 +0100
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
@@ -24,114 +26,60 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Hello,
+Hi,
+I've a  Radeon 9500 Pro board  and framebuffer isn't working. If  I boot
+with "video=radeon" monitor complains about "Out of scan range". This is
+from the bootlog:
 
-I am having a problem with the matroxfb driver which I couldn't solve
-by asking Google or reading the docs. I hope it is not too off-topic
-here.
+radeonfb_pci_register BEGIN
+radeonfb: ref_clk=2700, ref_div=67, xclk=16600 defaults
+radeonfb: probed SDR SGRAM 131072k videoram
+radeon_get_moninfo: bios 4 scratch = 2000002
+radeonfb: ATI Radeon 9700 NE SDR SGRAM 128 MB
+radeonfb: DVI port no monitor connected
+radeonfb: CRT port CRT monitor connected
+radeonfb_pci_register END
+hStart = 664, hEnd = 760, hTotal = 800
+vStart = 491, vEnd = 493, vTotal = 525
+h_total_disp = 0x4f0063    hsync_strt_wid = 0x8c02a2
+v_total_disp = 0x1df020c           vsync_strt_wid = 0x8201ea
+post div = 0x8
+fb_div = 0x1f4
+ppll_div_3 = 0x301f4
+ron = 1024, roff = 23632
+vclk_freq = 2519, per = 844
+Console: switching to colour frame buffer device 80x30
 
+If   I  append   a  specific   video  mode   I'll  get   "out  of   scan
+range"   or  "no   signal"  depending   on  the   video  mode. This   is
+"video=radeon:640x480-16@85" (no signal):
 
-The problem:
+radeonfb_pci_register BEGIN
+radeonfb: ref_clk=2700, ref_div=67, xclk=16600 defaults
+radeonfb: probed SDR SGRAM 131072k videoram
+radeon_get_moninfo: bios 4 scratch = 2000002
+radeonfb: ATI Radeon 9700 NE SDR SGRAM 128 MB
+radeonfb: DVI port no monitor connected
+radeonfb: CRT port CRT monitor connected
+radeonfb_pci_register END
+hStart = 696, hEnd = 752, hTotal = 832
+vStart = 481, vEnd = 484, vTotal = 509
+h_total_disp = 0x4f0067    hsync_strt_wid = 0x8702b9
+v_total_disp = 0x1df01fc           vsync_strt_wid = 0x8301e0
+post div = 0x4
+fb_div = 0x165
+ppll_div_3 = 0x20165
+ron = 960, roff = 16548
+vclk_freq = 3597, per = 591
+Console: switching to colour frame buffer device 80x30
 
-At bootup my monitor displays a warning sign saying:
-
-       Signal out of range
-       125.8 kHz    173Hz
-
-The warning sign is distorted (stretched vertically) and disappears
-after 4 seconds. From that moment on the framebuffer works normally
-and with the very frequencies I specified in /etc/lilo.conf.
-So (from my limited point of view) it seems that the driver disregards
-those maximum frequencies for 4 seconds. Or that I have forgotten to
-set some vital parameter.
-
-
-The hardware:
-
-Asus TUSL2-C (i815EP, AGP 4X)
-Matrox G550 (with the latest bios)
-Monitor CTX VL500 (30-70kHz, 50-120Hz)
-
-
-Reproduced on:
-
-SuSE 7.3, Debian Woody, LinuxFromScratch 4.0; kernels 2.4.20, 2.4.18
-
-
-My .config:
-
-[cut]
-CONFIG_FB=y
-CONFIG_DUMMY_CONSOLE=y
-# CONFIG_FB_RIVA is not set
-# CONFIG_FB_CLGEN is not set
-# CONFIG_FB_PM2 is not set
-# CONFIG_FB_PM3 is not set
-# CONFIG_FB_CYBER2000 is not set
-# CONFIG_FB_VESA is not set
-# CONFIG_FB_VGA16 is not set
-# CONFIG_FB_HGA is not set
-CONFIG_VIDEO_SELECT=y
-CONFIG_FB_MATROX=y
-# CONFIG_FB_MATROX_MILLENIUM is not set
-# CONFIG_FB_MATROX_MYSTIQUE is not set
-CONFIG_FB_MATROX_G100=y
-CONFIG_FB_MATROX_G450=y
-# CONFIG_FB_MATROX_MULTIHEAD is not set
-[cut]
-
-
-My lilo.conf:
-
-boot    = /dev/hda
-vga     = 788
-read-only
-menu-scheme = Wg:kw:Wg:Wg
-lba32
-prompt
-timeout = 80
-message = /boot/message
-
-  image  = /boot/2.4.20-suse-fb
-  label  = SuSE
-  root   = /dev/hda11
-  append = "video=matrox:vesa:788,fh:69,fv:90"
-
-  image  = /boot/2.4.20-lfs
-  label  = lfs-4.0
-  root   = /dev/hda6
-  append = "video=matrox:vesa:0x114,fh:69,fv:90"
-[cut]
-
-
-
-I have tried other parameters:
-
-video=matrox:vesa:0x114  -->  same problem
-
-video=matrox:vesa:0x114,fh:50,fv:70  -->  same problem
-
-video=matrox:nopan   -->  same problem, but warning sign is *not* distorted
-                          and videomode is different
-
-video=matrox:vesa:0x114,maxclk:16025   --> monitor stays black
-
-
-
-I have also tried leaving out the vga = 788, then I get the following:
-
-  - initial boot messages are displayed in the large default console font.
-
-  - when the matroxfb kicks in we have the same story: warning sign for
-    4 seconds, after that the framebuffer works impeccably, rest of boot
-    messages are displayed in framebuffer font.
-
-
-I'd be grateful for a hint or two.
-
-Regards,
-
-Stefan Krah
+ciao,
+Luca
+-- 
+Reply-To: kronos@kronoz.cjb.net
+Home: http://kronoz.cjb.net
+Il coraggio non mi manca.
+E` la paura che mi frega...
 
 
 -------------------------------------------------------

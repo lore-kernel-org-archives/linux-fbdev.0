@@ -1,22 +1,20 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Jon Smirl <jonsmirl@yahoo.com>
 Subject: Re: Re: mode setting and console locking
-Date: Mon, 17 May 2004 13:51:21 +1000
+Date: Sun, 16 May 2004 21:12:57 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1084765880.6447.21.camel@gaston>
-References: <20040517035129.28227.qmail@web14928.mail.yahoo.com>
+Message-ID: <20040517041258.65569.qmail@web14930.mail.yahoo.com>
+References: <1084765880.6447.21.camel@gaston>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BPZEf-00012e-IQ
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 16 May 2004 20:56:17 -0700
-Received: from gate.crashing.org ([63.228.1.57] ident=root)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1BPZEf-0002vu-6f
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 16 May 2004 20:56:17 -0700
-In-Reply-To: <20040517035129.28227.qmail@web14928.mail.yahoo.com>
+	id 1BPZUo-0002ZP-Cy
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 16 May 2004 21:12:58 -0700
+Received: from web14930.mail.yahoo.com ([216.136.225.159])
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
+	id 1BPZUo-0008R7-5A
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 16 May 2004 21:12:58 -0700
+In-Reply-To: <1084765880.6447.21.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,28 +25,35 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Jon Smirl <jonsmirl@yahoo.com>
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
+--- Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> The kernel VT subsystem issue a special blank call to the console driver
+> (I recently fixed issues there to catch those properly). fbcon will for
+> a set mode when getting one of those going from gfx->text
 
-> 
-> The only difference I can see is that the X term is in KD_GRAPHICS. When the VT
-> is swapped from a console in KD_TEXT to one in KD_GRAPHICS a signal must be sent
-> to radeonfb. This signal is being handled wrong and the wrong data is loaded
-> into the registers. But what is really wrong is that this signal shouldn't be
-> sent to radeonfb at all since my radeonfb is not the primary console device and
-> it shouldn't be touched on a VT swap.
-> 
-> I haven't figured out what happens in an fbdev driver on a KD_TEXT/KD_GRAPHICS
-> transition yet.
+I don't have fbcon loaded, I'm using vgacon. 
 
-The kernel VT subsystem issue a special blank call to the console driver
-(I recently fixed issues there to catch those properly). fbcon will for
-a set mode when getting one of those going from gfx->text
+I'll try adding a printk on the radeonfb blank call and see if I am getting one
+on VT swap.
 
-Ben.
+The special blank call is probably what is failing. It's the primary card that
+is transitioning from gfx->text, not the secondary radeonfb card. Telling the
+secondary card it is transitioning when it really isn't will probably mess it up.
+
+=====
+Jon Smirl
+jonsmirl@yahoo.com
 
 
+	
+		
+__________________________________
+Do you Yahoo!?
+SBC Yahoo! - Internet access at a great low price.
+http://promo.yahoo.com/sbc/
 
 
 -------------------------------------------------------

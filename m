@@ -1,21 +1,23 @@
-From: Unknown <unknown@unknown.invalid>
-Subject: Mail could not be delivered
-Date: Sun, 02 May 2004 00:01:11 +0900
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Subject: bk fbdev-2.5 doesn't boot
+Date: Sun, 2 May 2004 00:40:00 +0300
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <E1BK0JZ-0006H2-Ft@sc8-sf-mx2.sourceforge.net>
+Message-ID: <20040501214000.GA2822@sci.fi>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="----=_NextPartTM-000-a4bc326f-ef00-4e18-8150-b3a60ef10630"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BK0Ja-0002GK-9Z
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 01 May 2004 12:38:22 -0700
-Received: from net-ctr.oz.kitami-it.ac.jp ([150.97.252.1] helo=inet-fvc.cc.kitami-it.ac.jp)
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
-	id 1BK0JZ-0006H2-Ft
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 01 May 2004 12:38:21 -0700
-From: postmaster
+	id 1BK2EO-0002we-DW
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 01 May 2004 14:41:08 -0700
+Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BK2EN-0001NQ-2H
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 01 May 2004 14:41:07 -0700
+Received: from kuori.saunalahti.fi (kuori.saunalahti.fi [195.197.175.23])
+	by gw01.mail.saunalahti.fi (Postfix) with ESMTP id 2CEB8113BE50
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun,  2 May 2004 00:40:01 +0300 (EEST)
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,66 +27,25 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="windows-1254"
 To: linux-fbdev-devel@lists.sourceforge.net
 
+I have three computers: a desktop system with Matrox G400, a laptop with=20
+Rage Mobility (mach64) and another laptop with Rage LT-Pro. I can't get=20
+the fbdev-2.5 bk tree to boot on any of the systems.
 
-------=_NextPartTM-000-a4bc326f-ef00-4e18-8150-b3a60ef10630
-Content-type: text/plain
+The only reason for even trying the bk tree is that I need to get atyfb=20
+working on the laptops. 2.4.24 atyfb works with the laptops. 2.6 vanilla=20
+and mm work just fine with vesafb and matroxfb but atyfb in those trees i=
+s=20
+seriously out of date. With the bk tree only vgacon works :(
 
-****** Message from InterScan E-Mail VirusWall NT ******
+Does someone have an atyfb-only patch against mm?
 
-The following mail could not be delivered.
-Reason:  Unable to deliver message to maeda@rock.civil.kitami-it.ac.jp (and other receipients in the same domain). Please check if address is correct.
-*****************     End of message     ***************
-
-------=_NextPartTM-000-a4bc326f-ef00-4e18-8150-b3a60ef10630
-Content-type: message/rfc822
-
-Received: from 81.251.170.121 by inet-fvc.cc.kitami-it.ac.jp (InterScan E-Mail VirusWall NT); Mon, 26 Apr 2004 21:53:29 +0900
-From: linux-fbdev-devel@lists.sourceforge.net
-To: maeda@rock.civil.kitami-it.ac.jp
-Subject: Re: Error in document
-Date: Mon, 26 Apr 2004 14:53:33 +0200
-MIME-Version: 1.0
-X-Priority: 3
-X-MSMail-Priority: Normal
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0016----=_NextPart_000_0016"
-
-This is a multi-part message in MIME format.
-
-
-------=_NextPart_000_0016----=_NextPart_000_0016
-Content-Type: text/plain;
-	charset="Windows-1252"
-Content-Transfer-Encoding: 7bit
-
-Your important document, correction is finished!
-
-++++ Attachment: No Virus found
-++++ F-Secure AntiVirus - www.f-secure.com
-
-
-------=_NextPart_000_0016----=_NextPart_000_0016
-Content-Type: text/plain;
-	name="InterScan_SafeStamp.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="InterScan_SafeStamp.txt"
-
-****** Message from InterScan E-Mail VirusWall NT ******
-
-** ���x���������I ���Y���t������������ attach.zip ���������������������������������������������������������������������������������������F
-
-     WORM_NETSKY.P virus in compressed file document.txt                                                                   .exe
-
-   It has been deleted.
-*****************     End of message     ***************
-
-
-------=_NextPart_000_0016----=_NextPart_000_0016--
-
-------=_NextPartTM-000-a4bc326f-ef00-4e18-8150-b3a60ef10630--
+--=20
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
 
 
 -------------------------------------------------------

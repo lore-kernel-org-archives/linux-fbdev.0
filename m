@@ -1,17 +1,18 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH] update control video driver
-Date: Mon, 24 Mar 2003 18:58:56 +0000 (GMT)
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] intelfb fixes
+Date: 24 Mar 2003 20:20:27 +0000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0303241858540.22808-100000@phoenix.infradead.org>
-References: <15998.62418.678276.238530@nanango.paulus.ozlabs.org>
+Message-ID: <1048537227.25652.33.camel@irongate.swansea.linux.org.uk>
+References: <20030321193703.A12179@lst.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
+Received: from pc2-cwma1-4-cust86.swan.cable.ntl.com ([213.105.254.86] helo=irongate.swansea.linux.org.uk)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18xXAS-0000wE-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 24 Mar 2003 10:59:32 -0800
-In-Reply-To: <15998.62418.678276.238530@nanango.paulus.ozlabs.org>
+	id 18xXIL-0002qf-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 24 Mar 2003 11:07:41 -0800
+In-Reply-To: <20030321193703.A12179@lst.de>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,14 +22,22 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+To: Christoph Hellwig <hch@lst.de>
+Cc: Marcelo Tosatti <marcelo@conectiva.com.br>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
 
+On Fri, 2003-03-21 at 18:37, Christoph Hellwig wrote:
+> It looks like someone is trying to make the kernel looling as messy
+> as XFree..
+> 
+> Remove the silly symlinking rules from the intelfb makefile and remove
+> one of the copies of the private copy of modedb in intelfb.  Maybe
+> someone who actually has the hardware could fix it to properly use
+> modedb directly.
 
-Applied.
+No longer compiles with that change
 
+patch -> /dev/null
 
 
 

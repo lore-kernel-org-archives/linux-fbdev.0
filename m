@@ -1,22 +1,21 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Running frame buffer programs using a VGA
- console?
-Date: Tue, 6 Jan 2004 22:47:42 +0000 (GMT)
+Subject: Re: [patch] triviial: add PCI id to atyfb
+Date: Tue, 6 Jan 2004 22:58:08 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0401062246010.21143-100000@phoenix.infradead.org>
-References: <Pine.GSO.4.21.0311271109100.19234-100000@waterleaf.sonytel.be>
+Message-ID: <Pine.LNX.4.44.0401062258020.21143-100000@phoenix.infradead.org>
+References: <200312251913.07445.jhanne@gmx.de>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AdzzI-0006ga-9O
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 14:47:48 -0800
+	id 1Ae09M-0007au-0D
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 14:58:12 -0800
 Received: from phoenix.infradead.org ([213.86.99.234])
 	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1AdzzH-0000Ya-Nm
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 14:47:47 -0800
-In-Reply-To: <Pine.GSO.4.21.0311271109100.19234-100000@waterleaf.sonytel.be>
+	id 1Ae09L-0004C9-EI
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 14:58:11 -0800
+In-Reply-To: <200312251913.07445.jhanne@gmx.de>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,21 +27,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: John Zielinski <grim@undead.cc>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Johann Hanne <jhanne@gmx.de>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
 
-> On Thu, 27 Nov 2003, John Zielinski wrote:
-> > Silly question.  Is it actually possible to run a fb program like fbtest 
-> > if your console is the VGA console?  I tried it but the fb driver 
-> > doesn't seem to switch modes.
+Applied.
+
+
+On Thu, 25 Dec 2003, Johann Hanne wrote:
+
+> Hi,
 > 
-> No, you cannot. You need an active frame buffer device driver.
-
-It depends on the setup and driver. With the riva and vga16fb driver you 
-can. You just enable fbdev support without fbcon and use vgacon. It works 
-:-) 
-
+> the PCI id in this patch is used on an HP NetServer LH3000, where I've also 
+> successfully tested it.
+> 00:07.0 VGA compatible controller: ATI Technologies Inc 3D Rage IIC (rev 7a)
+> 00:07.0 Class 0300: 1002:4759 (rev 7a)
+> 
+> Cheers, Johann
+> 
 
 
 

@@ -1,22 +1,19 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH] Fix leak in aty fb code. (fwd)
-Date: Thu, 2 Sep 2004 11:44:49 +0200 (MEST)
+Subject: [PATCH] Fix possible leak in fbcon code. (fwd)
+Date: Thu, 2 Sep 2004 11:45:12 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0409021144390.5627@waterleaf.sonytel.be>
+Message-ID: <Pine.GSO.4.58.0409021144550.5627@waterleaf.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C2o9J-0001dH-62
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 02 Sep 2004 02:44:57 -0700
+	id 1C2o9f-0001hO-1h
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 02 Sep 2004 02:45:19 -0700
 Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1C2o9D-0003KL-Ux
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 02 Sep 2004 02:44:57 -0700
-Received: from waterleaf.sonytel.be (mail.sonytel.be [43.221.60.197])
-	by witte.sonytel.be (8.12.10/8.12.10) with ESMTP id i829inMp011692
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 2 Sep 2004 11:44:49 +0200 (MEST)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
+	id 1C2o9e-0006yI-6P
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 02 Sep 2004 02:45:18 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,29 +26,39 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Dave Jones <davej@redhat.com>
 
 ---------- Forwarded message ----------
-Date: Wed, 1 Sep 2004 16:51:21 +0100
+Date: Wed, 1 Sep 2004 16:51:22 +0100
 From: Dave Jones <davej@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix leak in aty fb code.
+Subject: [PATCH] Fix possible leak in fbcon code.
 
 Spotted with the source checker from Coverity.com.
 
 Signed-off-by: Dave Jones <davej@redhat.com>
 
 
-diff -urpN --exclude-from=/home/davej/.exclude bk-linus/drivers/video/aty/atyfb_base.c linux-2.6/drivers/video/aty/atyfb_base.c
---- bk-linus/drivers/video/aty/atyfb_base.c	2004-08-01 00:00:35.000000000 +0100
-+++ linux-2.6/drivers/video/aty/atyfb_base.c	2004-08-23 14:08:20.000000000 +0100
-@@ -2374,6 +2374,7 @@ int __init atyfb_init(void)
+diff -urpN --exclude-from=/home/davej/.exclude bk-linus/drivers/video/console/fbcon.c linux-2.6/drivers/video/console/fbcon.c
+--- bk-linus/drivers/video/console/fbcon.c	2004-08-24 00:02:40.000000000 +0100
++++ linux-2.6/drivers/video/console/fbcon.c	2004-09-01 13:31:12.000000000 +0100
+@@ -983,6 +983,7 @@ static void fbcon_init(struct vc_data *v
+ 			vc->vc_y += logo_lines;
+ 			vc->vc_pos += logo_lines * vc->vc_size_row;
+ 			kfree(save);
++			save = NULL;
+ 		}
+ 		if (logo_lines > vc->vc_bottom) {
+ 			logo_shown = -1;
+@@ -1004,6 +1005,8 @@ static void fbcon_init(struct vc_data *v
+ 			softback_top = 0;
  		}
  	}
- #endif				/* CONFIG_ATARI */
-+	kfree(info);
- 	return 0;
++	if (save)
++		kfree(save);
  }
 
+ static void fbcon_deinit(struct vc_data *vc)
 -
 To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
 the body of a message to majordomo@vger.kernel.org

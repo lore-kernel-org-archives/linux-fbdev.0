@@ -1,16 +1,16 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Thomas Winischhofer <thomas@winischhofer.net>
 Subject: Re: Some questions
-Date: Wed, 5 Mar 2003 15:12:08 +0100 (MET)
+Date: Wed, 05 Mar 2003 15:16:36 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0303051511200.23176-100000@vervain.sonytel.be>
-References: <1046870342.1291.86.camel@localhost.localdomain>
+Message-ID: <3E6606C4.801@winischhofer.net>
+References: <3E65EAFB.7020208@winischhofer.net> <1046870342.1291.86.camel@localhost.localdomain>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18qZeI-0005oy-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 06:13:35 -0800
-In-Reply-To: <1046870342.1291.86.camel@localhost.localdomain>
+Received: from [213.229.38.66] (helo=mail.falke.at)
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18qZjy-0007NU-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 06:19:27 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,40 +20,56 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: Antonino Daplas <adaplas@pol.net>
-Cc: Thomas Winischhofer <thomas@winischhofer.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On 5 Mar 2003, Antonino Daplas wrote:
-> > 3) The resizing using stty is - how do I put this - slightly imperfect.
-> > I don't know how you fbdev folks do it, but I am not used to think in
-> > row/col categories, but *resolutions* instead. Apart from this - IMHO a
-> > bit annoying - inconvenience, this method has further issues:
-> > 
-> > a) Calculating the desired mode resolution my simply multiplying the
-> > rows/cols by the font size very often results in odd modes like 800x592.
-> > This even when using a standard 8x16 font, not thinking of situations
-> > where for instance 12x22 fonts are used. How is the low level driver
-> > supposed to handle this?
-> 
-> Ideally, the driver should round up to the nearest mode it's capable
-> of.  The "fraction of a character dimensions" will be automatically
-> cleared by the "clear_margins" hook.
 
-But if I say e.g. `fbset 800x600-90', I do want a 90 Hz 800x600 mode, whatever
-the font may be.
+Further to my mail from a few minutes ago:
 
-Gr{oetje,eeting}s,
+I wrote:
+ > But I noticed another issue here:
+ >
+ > When switching to gfx mode during boot (ie as soon as the penguin
+ > appears), the text console is aligned correctly at all edges, with all
+ > lines visible.
 
-						Geert
+ > But when "initial console" starts, the mode is again changed, and now
+ > the last line of text is nearly invisible, its upper half appears at
+ > the lower screen edge, the lower half is below the screen's edge. The
+ > space between the penguin and the text is notably thicker.
+ >
+ > This can be recovered by switching to another VT and back. This makes
+ > the penguin disappear, and restores the console dimensions/edges to
+ > normal.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+ > Interestingly, this only happens with 800x600; this mode is chosen
+ > upon requesting 800x592 (because of the font size). At 1024x768,
+ > everything is as it should.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+I am almost sure that this has to do with the fact that I adapt var in 
+my check_var from 800x592 to 800x600. Console (or whoever) seems to 
+attempt to change the mode to its initially desired dimension on many 
+occasions.
+
+- This leads to the (unncessary) second mode switch during boot (when 
+the "initial console" starts), assumingly because the xres does not 
+match fontsize * rows,
+
+- and probably is the reason for that vertical offset I see after this 
+mode switch: The text area on the screen is shifted down by exactly 8 
+pixels - 600-592=8
+
+Any hints?
+
+Thomas
+
+-- 
+Thomas Winischhofer
+Vienna/Austria
+mailto:thomas@winischhofer.net            http://www.winischhofer.net/
+
+
 
 
 

@@ -1,22 +1,22 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 5/8] fbdev: Allow mode change even if EDID block is not found
-Date: Thu, 11 Nov 2004 10:15:32 +0800
-Message-ID: <20041111022448.615661A0265@smtp-1.hotpop.com>
+Subject: [PATCH 1/8] fbdev: Fix for using >16 pixel wide font in fb console
+Date: Thu, 11 Nov 2004 10:15:08 +0800
+Message-ID: <20041111022429.2C1541A022D@smtp-1.hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CS4eZ-000543-4T
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Nov 2004 18:25:39 -0800
+	id 1CS4dm-00051v-DS
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Nov 2004 18:24:50 -0800
 Received: from smtp-out.hotpop.com ([38.113.3.61])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CS4eY-0006oJ-6o
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Nov 2004 18:25:39 -0800
+	id 1CS4dk-0006i0-N7
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Nov 2004 18:24:49 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id A7832958017
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 11 Nov 2004 02:25:30 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id 9C2069D821A
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 11 Nov 2004 02:24:40 +0000 (UTC)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -30,246 +30,146 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Jani Jaakkola <jjaakkol@cs.Helsinki.FI>
 
-- use symbol_get() to check for the presence of i2c
-- allow mode changing even if EDID block is not found (no I2C support)
-- fix crashes on chipsets that do not have i2c support
-- shorten string in info->fix.id
-- trivial chip name changes
+From: Jani Jaakkola <jjaakkol@cs.Helsinki.FI>:
+
+...The first one was that fbcon_set_font() used one byte padding for fonts
+having width 16 <= width < 24, which was wrong since the pieces of code
+actually using the font did not use any padding. This is fixed in the
+included patch and also fbcon_set_font() is made a little cleaner. After
+the patch the following font is not garbled in fb console:
+http://www.cs.helsinki.fi/u/jjaakkol/psf/bitstream_vera_sans_mono_roman.16x30.psf
+
+The other bug is that fonts having height == 32 crash the kernel. I have
+no fix for this (at least not yet), but it can be reproduced with font:
+http://www.cs.helsinki.fi/u/jjaakkol/psf/bitstream_vera_sans_mono_roman.17x32.psf...
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- savagefb-i2c.c |   93 +++++++++++++++++++++++++++++++++------------------------
- savagefb.c     |   25 +++++++--------
- 2 files changed, 66 insertions(+), 52 deletions(-)
+ fbcon.c |   76 +++++++++++++++++++---------------------------------------------
+ 1 files changed, 23 insertions(+), 53 deletions(-)
 
-diff -Nru a/drivers/video/savage/savagefb-i2c.c b/drivers/video/savage/savagefb-i2c.c
---- a/drivers/video/savage/savagefb-i2c.c	2004-10-27 15:25:25 +08:00
-+++ b/drivers/video/savage/savagefb-i2c.c	2004-11-11 09:55:43 +08:00
-@@ -141,32 +141,37 @@
- static int savage_setup_i2c_bus(struct savagefb_i2c_chan *chan,
- 				const char *name)
- {
--	int rc;
-+	int (*add_bus)(struct i2c_adapter *) = symbol_get(i2c_bit_add_bus);
-+	int rc = 0;
-+
-+	if (add_bus && chan->par) {
-+		strcpy(chan->adapter.name, name);
-+		chan->adapter.owner		= THIS_MODULE;
-+		chan->adapter.id		= I2C_ALGO_SAVAGE;
-+		chan->adapter.algo_data		= &chan->algo;
-+		chan->adapter.dev.parent	= &chan->par->pcidev->dev;
-+		chan->algo.udelay		= 40;
-+		chan->algo.mdelay               = 5;
-+		chan->algo.timeout		= 20;
-+		chan->algo.data 		= chan;
-+
-+		i2c_set_adapdata(&chan->adapter, chan);
-+
-+		/* Raise SCL and SDA */
-+		chan->algo.setsda(chan, 1);
-+		chan->algo.setscl(chan, 1);
-+		udelay(20);
-+
-+		rc = add_bus(&chan->adapter);
-+		if (rc == 0)
-+			dev_dbg(&chan->par->pcidev->dev,
-+				"I2C bus %s registered.\n", name);
-+		else
-+			dev_warn(&chan->par->pcidev->dev,
-+				 "Failed to register I2C bus %s.\n", name);
-+	} else
-+		chan->par = NULL;
- 
--	strcpy(chan->adapter.name, name);
--	chan->adapter.owner		= THIS_MODULE;
--	chan->adapter.id		= I2C_ALGO_SAVAGE;
--	chan->adapter.algo_data		= &chan->algo;
--	chan->adapter.dev.parent	= &chan->par->pcidev->dev;
--	chan->algo.udelay		= 40;
--	chan->algo.mdelay               = 5;
--	chan->algo.timeout		= 20;
--	chan->algo.data 		= chan;
+diff -Nru a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+--- a/drivers/video/console/fbcon.c	2004-11-10 06:15:06 +08:00
++++ b/drivers/video/console/fbcon.c	2004-11-08 09:32:38 +08:00
+@@ -77,7 +77,7 @@
+ #include <linux/smp.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
 -
--	i2c_set_adapdata(&chan->adapter, chan);
--
--	/* Raise SCL and SDA */
--	chan->algo.setsda(chan, 1);
--	chan->algo.setscl(chan, 1);
--	udelay(20);
--
--	rc = i2c_bit_add_bus(&chan->adapter);
--	if (rc == 0)
--		dev_dbg(&chan->par->pcidev->dev,
--			"I2C bus %s registered.\n", name);
--	else
--		dev_warn(&chan->par->pcidev->dev,
--			 "Failed to register I2C bus %s.\n", name);
- 	return rc;
- }
++#include <linux/crc32.h> /* For counting font checksums */
+ #include <asm/irq.h>
+ #include <asm/system.h>
+ #include <asm/uaccess.h>
+@@ -2257,6 +2257,12 @@
+  *  User asked to set font; we are guaranteed that
+  *	a) width and height are in range 1..32
+  *	b) charcount does not exceed 512
++ *  but lets not assume that, since someone might someday want to use larger
++ *  fonts. And charcount of 512 is small for unicode support.
++ *
++ *  However, user space gives the font in 32 rows , regardless of
++ *  actual font height. So a new API is needed if support for larger fonts
++ *  is ever implemented.
+  */
  
-@@ -174,7 +179,7 @@
- {
- 	struct savagefb_par *par = (struct savagefb_par *)info->par;
- 	par->chan.par	= par;
--
-+
- 	switch(info->fix.accel) {
- 	case FB_ACCEL_PROSAVAGE_DDRK:
- 	case FB_ACCEL_PROSAVAGE_PM:
-@@ -193,6 +198,8 @@
- 		par->chan.algo.getsda = savage4_gpio_getsda;
- 		par->chan.algo.getscl = savage4_gpio_getscl;
- 		break;
-+	default:
-+		par->chan.par = NULL;
- 	}
+ static int fbcon_set_font(struct vc_data *vc, struct console_font *font, unsigned flags)
+@@ -2264,20 +2270,17 @@
+ 	unsigned charcount = font->charcount;
+ 	int w = font->width;
+ 	int h = font->height;
+-	int size = h;
+-	int i, k;
+-	u8 *new_data, *data = font->data, *p;
++	int size;
++	int i, csum;
++	u8 *new_data, *data = font->data;
++	int pitch = (font->width+7) >> 3;
  
- 	savage_setup_i2c_bus(&par->chan, "SAVAGE DDC2");
-@@ -202,9 +209,12 @@
- void savagefb_delete_i2c_busses(struct fb_info *info)
- {
- 	struct savagefb_par *par = (struct savagefb_par *)info->par;
-+	int (*del_bus)(struct i2c_adapter *) =
-+		symbol_get(i2c_bit_del_bus);
-+
-+	if (del_bus && par->chan.par)
-+		del_bus(&par->chan.adapter);
- 
--	if (par->chan.par)
--		i2c_bit_del_bus(&par->chan.adapter);
- 	par->chan.par = NULL;
- }
- EXPORT_SYMBOL(savagefb_delete_i2c_busses);
-@@ -212,6 +222,8 @@
- static u8 *savage_do_probe_i2c_edid(struct savagefb_i2c_chan *chan)
- {
- 	u8 start = 0x0;
-+	int (*transfer)(struct i2c_adapter *, struct i2c_msg *, int) =
-+		symbol_get(i2c_transfer);
- 	struct i2c_msg msgs[] = {
- 		{
- 			.addr	= SAVAGE_DDC,
-@@ -223,20 +235,23 @@
- 			.len	= EDID_LENGTH,
- 		},
- 	};
--	u8 *buf;
-+	u8 *buf = NULL;
- 
--	buf = kmalloc(EDID_LENGTH, GFP_KERNEL);
--	if (!buf) {
--		dev_warn(&chan->par->pcidev->dev, "Out of memory!\n");
--		return NULL;
-+	if (transfer && chan->par) {
-+		buf = kmalloc(EDID_LENGTH, GFP_KERNEL);
-+		if (buf) {
-+			msgs[1].buf = buf;
-+
-+			if (transfer(&chan->adapter, msgs, 2) != 2) {
-+				dev_dbg(&chan->par->pcidev->dev,
-+					"Unable to read EDID block.\n");
-+				kfree(buf);
-+				buf = NULL;
-+			}
-+		}
- 	}
--	msgs[1].buf = buf;
- 
--	if (i2c_transfer(&chan->adapter, msgs, 2) == 2)
--		return buf;
--	dev_dbg(&chan->par->pcidev->dev, "Unable to read EDID block.\n");
--	kfree(buf);
--	return NULL;
-+	return buf;
- }
- 
- int savagefb_probe_i2c_connector(struct savagefb_par *par, u8 **out_edid)
-diff -Nru a/drivers/video/savage/savagefb.c b/drivers/video/savage/savagefb.c
---- a/drivers/video/savage/savagefb.c	2004-10-30 19:10:43 +08:00
-+++ b/drivers/video/savage/savagefb.c	2004-11-11 09:55:43 +08:00
-@@ -738,7 +738,7 @@
- 		}
- 	}
- 
--	if (!mode_valid && !list_empty(&info->modelist))
-+	if (!mode_valid && info->monspecs.modedb_len)
++	/* Is there a reason why fbconsole couldn't handle any charcount >256?
++	 * If not this check should be changed to charcount < 256 */
+ 	if (charcount != 256 && charcount != 512)
  		return -EINVAL;
  
- 	/* Is the mode larger than the LCD panel? */
-@@ -1821,43 +1821,43 @@
- 		break;
- 	case FB_ACCEL_SAVAGE_MX_MV:
- 		par->chip = S3_SAVAGE_MX;
--		snprintf (info->fix.id, 16, "S3 Savage/MX-MV");
-+		snprintf (info->fix.id, 16, "Savage/MX-MV");
- 		break;
- 	case FB_ACCEL_SAVAGE_MX:
- 		par->chip = S3_SAVAGE_MX;
--		snprintf (info->fix.id, 16, "S3 Savage/MX");
-+		snprintf (info->fix.id, 16, "Savage/MX");
- 		break;
- 	case FB_ACCEL_SAVAGE_IX_MV:
- 		par->chip = S3_SAVAGE_MX;
--		snprintf (info->fix.id, 16, "S3 Savage/IX-MV");
-+		snprintf (info->fix.id, 16, "Savage/IX-MV");
- 		break;
- 	case FB_ACCEL_SAVAGE_IX:
- 		par->chip = S3_SAVAGE_MX;
--		snprintf (info->fix.id, 16, "S3 Savage/IX");
-+		snprintf (info->fix.id, 16, "Savage/IX");
- 		break;
- 	case FB_ACCEL_PROSAVAGE_PM:
- 		par->chip = S3_PROSAVAGE;
--		snprintf (info->fix.id, 16, "S3 ProSavage");
-+		snprintf (info->fix.id, 16, "ProSavagePM");
- 		break;
- 	case FB_ACCEL_PROSAVAGE_KM:
- 		par->chip = S3_PROSAVAGE;
--		snprintf (info->fix.id, 16, "S3 ProSavage");
-+		snprintf (info->fix.id, 16, "ProSavageKM");
- 		break;
- 	case FB_ACCEL_S3TWISTER_P:
- 		par->chip = S3_PROSAVAGE;
--		snprintf (info->fix.id, 16, "S3 Twister");
-+		snprintf (info->fix.id, 16, "TwisterP");
- 		break;
- 	case FB_ACCEL_S3TWISTER_K:
- 		par->chip = S3_PROSAVAGE;
--		snprintf (info->fix.id, 16, "S3 TwisterK");
-+		snprintf (info->fix.id, 16, "TwisterK");
- 		break;
- 	case FB_ACCEL_PROSAVAGE_DDR:
- 		par->chip = S3_PROSAVAGE;
--		snprintf (info->fix.id, 16, "S3 ProSavage DDR");
-+		snprintf (info->fix.id, 16, "ProSavageDDR");
- 		break;
- 	case FB_ACCEL_PROSAVAGE_DDRK:
- 		par->chip = S3_PROSAVAGE;
--		snprintf (info->fix.id, 16, "S3 ProSavage DDR-K");
-+		snprintf (info->fix.id, 16, "ProSavage8");
- 		break;
+-	if (w > 8) {
+-		if (w <= 16)
+-			size *= 2;
+-		else
+-			size *= 4;
+-	}
+-	size *= charcount;
++	size = h * pitch * charcount;
+ 
+ 	new_data = kmalloc(FONT_EXTRA_WORDS * sizeof(int) + size, GFP_USER);
+ 
+@@ -2288,55 +2291,22 @@
+ 	FNTSIZE(new_data) = size;
+ 	FNTCHARCNT(new_data) = charcount;
+ 	REFCOUNT(new_data) = 0;	/* usage counter */
+-	p = new_data;
+-	if (w <= 8) {
+-		for (i = 0; i < charcount; i++) {
+-			memcpy(p, data, h);
+-			data += 32;
+-			p += h;
+-		}
+-	} else if (w <= 16) {
+-		h *= 2;
+-		for (i = 0; i < charcount; i++) {
+-			memcpy(p, data, h);
+-			data += 64;
+-			p += h;
+-		}
+-	} else if (w <= 24) {
+-		for (i = 0; i < charcount; i++) {
+-			int j;
+-			for (j = 0; j < h; j++) {
+-				memcpy(p, data, 3);
+-				p[3] = 0;
+-				data += 3;
+-				p += sizeof(u32);
+-			}
+-			data += 3 * (32 - h);
+-		}
+-	} else {
+-		h *= 4;
+-		for (i = 0; i < charcount; i++) {
+-			memcpy(p, data, h);
+-			data += 128;
+-			p += h;
+-		}
+-	}
+-	/* we can do it in u32 chunks because of charcount is 256 or 512, so
+-	   font length must be multiple of 256, at least. And 256 is multiple
+-	   of 4 */
+-	k = 0;
+-	while (p > new_data) {
+-		p = (u8 *)((u32 *)p - 1);
+-		k += *(u32 *) p;
++	for (i=0; i< charcount; i++) {
++		memcpy(new_data + i*h*pitch, data +  i*32*pitch, h*pitch);
  	}
- 
-@@ -2033,14 +2033,13 @@
- 
- 
- 	fb_destroy_modedb(info->monspecs.modedb);
--	info->monspecs.modedb_len = 0;
- 	info->monspecs.modedb = NULL;
- 
- 	err = register_framebuffer (info);
- 	if (err < 0)
- 		goto failed;
- 
--	printk (KERN_INFO "fb: %s frame buffer device\n",
-+	printk (KERN_INFO "fb: S3 %s frame buffer device\n",
- 		info->fix.id);
- 
- 	/*
+-	FNTSUM(new_data) = k;
++
++	/* Since linux has a nice crc32 function use it for counting font
++	 * checksums. */
++	csum = crc32(0, new_data, size);
++
++	FNTSUM(new_data) = csum;
+ 	/* Check if the same font is on some other console already */
+ 	for (i = 0; i < MAX_NR_CONSOLES; i++) {
+ 		struct vc_data *tmp = vc_cons[i].d;
+ 		
+ 		if (fb_display[i].userfont &&
+ 		    fb_display[i].fontdata &&
+-		    FNTSUM(fb_display[i].fontdata) == k &&
++		    FNTSUM(fb_display[i].fontdata) == csum &&
+ 		    FNTSIZE(fb_display[i].fontdata) == size &&
+ 		    tmp->vc_font.width == w &&
+ 		    !memcmp(fb_display[i].fontdata, new_data, size)) {
+
 
 
 

@@ -1,61 +1,49 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: Rage128 as secondary adapter
-Date: Thu, 9 Jan 2003 09:47:06 -0800 (PST)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030109174706.1471.qmail@web14907.mail.yahoo.com>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [Linux-fbdev-devel] [PATCH][FBDEV]: fb_putcs() and fb_setfont()
+ methods
+Date: Thu, 9 Jan 2003 18:09:58 +0000 (GMT)
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <Pine.LNX.4.44.0301090034020.4976-100000@phoenix.infradead.org>
+References: <1042050026.982.172.camel@localhost.localdomain>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from web14907.mail.yahoo.com ([216.136.225.59])
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18Wgls-0005kW-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 09 Jan 2003 09:47:12 -0800
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <1042050026.982.172.camel@localhost.localdomain>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
-
-I'm working on aty128fb to make it support a Rage128
-as a secondary adapter. It needs a few new minor
-changes to do this.
-
-My main problem is that secondary adapters are not
-initialized at boot.  I have a program (vbios.vm86)
-that will initialize the R128, but instead I would
-like to do it when the driver loads. vbios.vm86 goes
-through a complicated process in real mode of
-emulating the system boot ROM (same thing X does).
-
-Can someone with access to the Rage128 documentation
-tell me how to do this from protected mode? I have the
-ROM mapped so the code can get to constants stored in
-the ROM. What I need is a piece of C code equal to
-what the ROM initialization does minus the part about
-Int10 vector setup.
-
-The programmers at ATI probably have a piece of code
-available to do this since ATI's Windows driver can do
-it.  I've tried emailing and signing up as a developer
-without response.
-
-=====
-Jon Smirl
-jonsmirl@yahoo.com
-
-__________________________________________________
-Do you Yahoo!?
-Yahoo! Mail Plus - Powerful. Affordable. Sign up now.
-http://mailplus.yahoo.com
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Petr Vandrovec <vandrove@vc.cvut.cz>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel List <linux-kernel@vger.kernel.org>, davidm@redhat.com
 
 
--------------------------------------------------------
-This SF.NET email is sponsored by:
-SourceForge Enterprise Edition + IBM + LinuxWorld = Something 2 See!
-http://www.vasoftware.com
+> :-) I did not want prolong the discussion, but...
+> 
+> Geert is correct that the functions are generic. The fb_putcs() and
+> fb_setfont() can be compared to Tile blitting.  Tile blitting is a
+> common operation in some games such as Warcraft, Starcraft, and most
+> RPG's. I'm think there is Tile Blitting support in DirectFB.
+> 
+> In a tile-based game, the basic unit is a Tile which is just a bitmap
+> with a predefined width and height. The game has several tiles stored in
+> memory each with it's own unique id.  To draw the background/layer, a
+> TileMap is constructed which is basically another array.  Its format is
+> something like this -  TileMap[x] = y which means draw Tile y at screen
+> position x.
+> 
+> In the fbcon perspective, we can think of each character as a Tile, and
+> fontdata as the collection of tiles. fb_char.data is basically a
+> TileMap.  Of course, tile blitting in games is more complicated than
+> this, since games have multiple layers for the background, so layer
+> position, transparency, etc has to be considered.
+> 
+> So maybe if we can rename fb_putcs() to fb_tileblit(), fb_setfont() to
+> fb_loadtiles(), struct fb_chars to struct fb_tilemap and struct
+> fb_fontdata to struct fb_tiledata, maybe it will be more acceptable?
+> 
+> It can be even be expanded by including fb_tiledata.depth
+> fb_tiledata.cmap so we can support multi-colored tiled blitting.
+
+This I have no problem with. I'm willing to accept this. As long as data 
+from the console layer is not touched. As for loadtiles one thing I like 
+to address is memory allocation. It probable is good idea to do things 
+like place the tile data in buffers allocated by pci_alloc_consistent.
+The other fear is it will only support so many tiles. 

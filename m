@@ -1,21 +1,21 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Problem about FB on an iBook G4
-Date: Thu, 30 Sep 2004 12:29:25 +0200 (MEST)
+Subject: Re: =?gb2312?B?u9i4tDpSZTogUHJvYmxlbSBhYm91dCBGQiBvbiBhbiBpQm9vayBHNA==?=
+Date: Thu, 30 Sep 2004 17:44:44 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.61.0409301227560.9524@waterleaf.sonytel.be>
-References: <c854a4.54a4c8@huawei.com>
+Message-ID: <Pine.GSO.4.61.0409301743180.9524@waterleaf.sonytel.be>
+References: <87dca6df.a6df87dc@huawei.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CCyC6-0006qg-Ro
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 30 Sep 2004 03:29:50 -0700
+	id 1CD372-0007bG-R9
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 30 Sep 2004 08:44:56 -0700
 Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CCyBy-0007Zo-0c
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 30 Sep 2004 03:29:50 -0700
-In-Reply-To: <c854a4.54a4c8@huawei.com>
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1CD371-00078X-NL
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 30 Sep 2004 08:44:56 -0700
+In-Reply-To: <87dca6df.a6df87dc@huawei.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,16 +30,20 @@ Content-Transfer-Encoding: 7bit
 To: jiangning 39481 <jiangnuts@huawei.com>
 Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-	Hi,
+On Thu, 30 Sep 2004, jiangning 39481 wrote:
+> > That's offb, the Open Firmware Frame Buffer device, which is used 
+> > as a fallback
+> > for unsupported graphics cards.
+> > 
+> > What kernel version does Yellow Dog Linux 3.01 use? Does it 
+> > include radeonfb?
+> > Recent versions of radeonfb should recognize your Mobility Radeon 
+> > 9200.
+> 
+> The kernel version of YDL3.01 is 2.4.22,I want to know the video command format like "video=xxx:xxxxxxx".Can you give me the detail info?
 
-> I bought an Apple iBook G4 with RV280M9+(Mobility Radeon 9200) one month ago.And I installed Yellow Dog Linux 3.01 on it.But I can't set the resolution with "fbset" in console mode and "startx" give me info like "(EE) FBDEV FBIOPUT invalid argument" while depth != 8."dmesg" says something like "Using unsupported 1024x768 Open Firmware FrameBuffer...".The output of "fbset -i" is
-> NAME OFfb ATY,Via A
-
-That's offb, the Open Firmware Frame Buffer device, which is used as a fallback
-for unsupported graphics cards.
-
-What kernel version does Yellow Dog Linux 3.01 use? Does it include radeonfb?
-Recent versions of radeonfb should recognize your Mobility Radeon 9200.
+The radeonfb in that kernel may be too old for your Radeon. What does `lspci
+-v' say?
 
 Gr{oetje,eeting}s,
 

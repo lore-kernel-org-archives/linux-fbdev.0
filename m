@@ -1,21 +1,27 @@
-From: "Mukund JB." <mukundjb@esntechnologies.co.in>
-Subject: how to activate X with famebuffer
-Date: Mon, 27 Sep 2004 10:45:25 +0530
+From: "Carlo E. Prelz" <fluido@fluido.as>
+Subject: Re: how to activate X with famebuffer
+Date: Mon, 27 Sep 2004 07:48:53 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <4EE0CBA31942E547B99B3D4BFAB34811107F50@mail.esn.co.in>
+Message-ID: <20040927054853.GA17151@epio.fluido.as>
+References: <4EE0CBA31942E547B99B3D4BFAB34811107F50@mail.esn.co.in>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CBnou-00035h-Hr
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Sep 2004 22:13:04 -0700
-Received: from [202.125.86.130] (helo=ns2.astrainfonets.net)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CBnoq-0007gj-0j
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Sep 2004 22:13:04 -0700
-Content-class: urn:content-classes:message
+	id 1CBoNe-0002bA-Ni
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Sep 2004 22:48:58 -0700
+Received: from a205017.upc-a.chello.nl
+	([62.163.205.17] helo=casa.fluido.as ident=Debian-exim)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:RC4-SHA:128)
+	(Exim 4.41)
+	id 1CBoNd-0006ro-9R
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Sep 2004 22:48:58 -0700
+Received: from fluido by casa.fluido.as with local (Exim 4.34)
+	id 1CBoNZ-0004sP-PZ
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 27 Sep 2004 07:48:53 +0200
+Content-Disposition: inline
+In-Reply-To: <4EE0CBA31942E547B99B3D4BFAB34811107F50@mail.esn.co.in>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,64 +31,51 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: linux-fbdev-devel@lists.sourceforge.net, otto.wyss@orpatec.ch
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Hello otto,
+	Subject: [Linux-fbdev-devel] how to activate X with famebuffer
+	Date: Mon, Sep 27, 2004 at 10:45:25AM +0530
 
-The question I am asking may the simplest of this field, but I found it =
-no where.
-Pls help.
+Quoting Mukund JB. (mukundjb@esntechnologies.co.in):
 
-How to activate X with framebuffer.
+> How to activate X with framebuffer.
 
-I am working with the following configuration:-
-* Red Hat Linux 7.3=20
-* Kernel 2.4.18-3=20
-* Nvidia Riva TNT card=20
-* Rivafb driver=20
-* XFree86 4.2.0=20
-=A0
-My edited the XF86Confoig file as follows( related sections only):-
+I am not much of an expert, but I see noone is answering...
+First of all, you must be sure that the framebuffer level is
+working. What does  /proc/fb contain? There should be one or more
+line. For example, mine has
 
-Section "device"
-	Identifier "linix fb"
-	Driver "rivafb"	# Is rivafb the right keyword for rivafb.o module?
-	BoardName "Unknown"
-EndSection
+0 ATI Radeon Yd
 
-Section "Screen"
-	Identifier "Screen0"
-	Device "linux fb"
-	Monitor "COMPAQ S510"
-	DefaultDepth 8
-	Subsection "Display"
-		Depth 8
-	EndSubSection=20
-EndSection
+which means that I have one framebuffer unit available. 
 
-Is rivafb the right keyword for rivafb.o module?
-Is it the driver name(module name) that we should keep in the Driver =
-part of Device section?
+Then, have a look at man fbdev. Specifically, the Driver line in your
+device section should be 
+ 
+Driver "fbdev"
+ 
+There should be another way. Set 
 
-If I startx afterb modprobing the rivafb, it results in errors.
-# startx=20
+Driver "nv"
 
-(EE) Fialed to load module "rivafb" ( module does not exist, 0)
-(EE) No devices detected.
+(for nvidia cards, including riva ones) and set 
 
-Please help me in this regard. I have spend good enough time on this and =
-its I high time get it done.
+Option "UseFBDev" "on"
 
-Is it so easy a question? Just becos I didn't find any info about in the =
-internet and no body replies for question.
+I have no clear idea about what the difference is. Anyway, Have a look
+at man nv and man fbdevhw. 
 
-Aim Behind all this :=20
-To debug the rivafb driver when it being called or used by X server( =
-XF86 ).
+ALL THIS IS PURELY THEORETICAL from my point of view!! You need to
+experiment a bit. 
 
-Regards,
-Mukund jampala
+Carlo
+
+-- 
+  *         Se la Strada e la sua Virtu' non fossero state messe da parte,
+* K * Carlo E. Prelz - fluido@fluido.as             che bisogno ci sarebbe
+  *               di parlare tanto di amore e di rettitudine? (Chuang-Tzu)
 
 
 -------------------------------------------------------

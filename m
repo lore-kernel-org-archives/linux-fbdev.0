@@ -1,19 +1,19 @@
 From: Luismi <luismimoya@eresmas.net>
 Subject: aty radeon specs
-Date: Sun, 26 Jan 2003 12:18:56 +0000
+Date: Sun, 26 Jan 2003 12:36:26 +0000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3E33D230.30502@eresmas.net>
+Message-ID: <3E33D64A.2010006@eresmas.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from 38-99-adsl.red.retevision.es ([80.224.99.38] helo=localhost)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18ckoa-0005Og-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 26 Jan 2003 03:19:04 -0800
+	id 18cl5d-0006lD-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 26 Jan 2003 03:36:42 -0800
 Received: from localhost ([127.0.0.1] helo=eresmas.net)
 	by localhost with esmtp (Exim 3.36 #1 (Debian))
-	id 18clkW-00005x-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 26 Jan 2003 12:18:56 +0000
+	id 18cm1T-00007G-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 26 Jan 2003 12:36:27 +0000
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -26,14 +26,14 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-	Hi, I've tried several radeonfb versions on a laptop with an 'ati 
+    Hi, I've tried several radeonfb versions on a laptop with an 'ati 
 radeon mobility M6 LY', and all of them have the same problem, sometimes 
 appear several horizontal lines when changing the resolution.
 
-	I've been reading the 'linux framebuffer driver writing howto' and I 
+    I've been reading the 'linux framebuffer driver writing howto' and I 
 want to learn about driver programming.
 
-	I'm thinking about doing it myself for this videocard, and help to 
+    I'm thinking about doing it myself for this videocard, and help to 
 radeonfb developing if it is possible, but I need
 the ati specs. Somebody has them or where can I find them?
 

@@ -1,24 +1,17 @@
 From: Antonino Daplas <adaplas@pol.net>
 Subject: Re: [ANNOUNCE]: VM86 Daemon
-Date: 01 Apr 2003 23:32:20 +0800
+Date: 02 Apr 2003 00:25:21 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1049210839.1009.27.camel@localhost.localdomain>
-References: <1049104351.1037.53.camel@localhost.localdomain>
-	<3E886C5F.28140.1013B3CA@localhost>
-	<1049160350.1059.39.camel@localhost.localdomain>
-	<1049185774.593.46.camel@zion.wanadoo.fr>
-	<1049189944.1009.61.camel@localhost.localdomain>
-	<1049196891.596.57.camel@zion.wanadoo.fr>
-	<1049203284.1050.14.camel@localhost.localdomain> 
-	<1049205224.589.71.camel@zion.wanadoo.fr>
+Message-ID: <1049214320.1174.68.camel@localhost.localdomain>
+References: <20030401152209.91116.qmail@web14913.mail.yahoo.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from pine.compass.com.ph ([202.70.96.37])
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 190NoW-0001aA-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 01 Apr 2003 07:36:40 -0800
-In-Reply-To: <1049205224.589.71.camel@zion.wanadoo.fr>
+	id 190Ods-0000iE-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 01 Apr 2003 08:29:44 -0800
+In-Reply-To: <20030401152209.91116.qmail@web14913.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -29,35 +22,52 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Kendall Bennett <KendallB@scitechsoft.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Kendall Bennett <KendallB@scitechsoft.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tue, 2003-04-01 at 21:53, Benjamin Herrenschmidt wrote:
-> > > 
-> > > What do you think about adding some ioctl's for that ?
-> > > 
+On Tue, 2003-04-01 at 23:22, Jon Smirl wrote:
 > > 
-> > It's okay by me.
+> > 5. fb_get_mode(int flags, int val, struct
+> > fb_var_screeninfo *var, struct
+> > fb_info *info)
+> > 
+> > - compute mode timings using GTF (refresh driven,
+> > hsync driven, pixclock
+> > driven, or maximized refresh) and place result in
+> > var
+> > 
+> > #4 and #5 are already in fbmon.c
+> >
 > 
-> Ok, I'll define something & implement it in radeonfb as soon as
-> I find some time (probably after your fbmon changes get in) for
-> both the EDID/userland and userland access to the dynamically
-> created modedb database
-> 
-> BTW. Do you know if it's possible to get some infos/specs on
-> the EDID format, GF formula, etc... or it's all paying stuffs ?
-> 
+> Wouldn't it be better to make fb_get_mode only return
+> the list of valid modes based on the hardware and
+> monitor (if available) combination rather than letting
+> the app sort it out?
 
-I think you have to pay VESA for these. 
+Actually, using a combination of functions that will be available in
+fbmon.c, the fbdev driver will become independent from userland, such as
+/etc/fb.modes. User-entered timings are still preferred thoug, and only
+when the timings are invalid that the driver will select the nearest
+mode from the database, or calculate one for it.  A theoretical sequence
+will be like this:
 
-I used a combination of XFree86, read-edid, and fbmon.c for the EDID
-parser. I think Kendall Bennett is planning to release their own code.
+1. driver rounds off values in var
+2. timings in var is validated using fb_validate_mode()
+3. if timings are valid, driver accepts the new timings
+4. if timings are invalid, it checks if monitor is GTF capable.
+5. if monitor is GTF capable, it calls fb_get_mode(). 
+6. if monitor is not GTF capable, it calls fb_find_mode(), passing the
+database created from fb_create_modedb().
 
-As for the GTF, I used the MS Excel spreadsheet available in VESA's ftp
-site.  
+Fbdev needs this independence from userland in order for stty to work,
+primarily, and to make it easier for the user, secondarily.
 
-As for VBE, the VBE 3.0 Core specs is free.  I also referred to Ralph
-Brown's comprehensive interrupt list for x86 real mode.
+You're correct though that it's a good idea to pass a list of modelines
+to userland.  However, the filtering is best done by the driver because
+it has the best knowledge on the limits/capabilities of the chipset.
+
+BTW:  fb_get_mode() will only compute a single modeline (using GTF). 
+It's fb_create_modedb() that will make a list of video modes.
 
 Tony
 

@@ -1,15 +1,15 @@
 From: Antonino Daplas <adaplas@pol.net>
-Subject: [PATCH 3/5]: rivafb fixes
-Date: 16 Feb 2003 14:08:51 +0800
+Subject: [PATCH 4/5]: i810fb fixes
+Date: 16 Feb 2003 14:08:55 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1045375693.1823.75.camel@localhost.localdomain>
+Message-ID: <1045375698.1823.77.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-aLQ6a/jK15w+7CmXNOao"
+Content-Type: multipart/mixed; boundary="=-aZkEjihxk2CDrYRdhZtm"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from pine.compass.com.ph ([202.70.96.37])
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18kI0Q-0005Zr-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 15 Feb 2003 22:10:27 -0800
+	id 18kI0W-0005gz-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 15 Feb 2003 22:10:32 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,301 +23,409 @@ To: James Simmons <jsimmons@infradead.org>, Geert Uytterhoeven <geert@linux-m68k
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
---=-aLQ6a/jK15w+7CmXNOao
+--=-aZkEjihxk2CDrYRdhZtm
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-Attached is a patch (linux-2.5.61 + James' fbdev.diff) to fix the "green screen" problem on module load, 
-and compilation warnings.
+Attached is a patch (linux-2.5.61 + James' fbdev.diff) to update i810fb:
+
+1.  added suspend/resume hooks to pci_driver.  This is needed to
+save/recover GART mappings during suspends/resumes.  These are also
+necessary for swsusp (software suspend) to work.
+
+2.  Fix compilation warnings.
 
 Tony
 
 
 
 
---=-aLQ6a/jK15w+7CmXNOao
-Content-Disposition: attachment; filename=rivafb4.diff
+--=-aZkEjihxk2CDrYRdhZtm
+Content-Disposition: attachment; filename=i810fb2.diff
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/x-patch; name=rivafb4.diff; charset=ANSI_X3.4-1968
+Content-Type: text/x-patch; name=i810fb2.diff; charset=ANSI_X3.4-1968
 
-diff -Naur linux-2.5.61-fbdev/drivers/video/riva/fbdev.c linux-2.5.61-ad/dr=
-ivers/video/riva/fbdev.c
---- linux-2.5.61-fbdev/drivers/video/riva/fbdev.c	2003-02-16 00:55:53.00000=
-0000 +0000
-+++ linux-2.5.61-ad/drivers/video/riva/fbdev.c	2003-02-16 02:52:37.00000000=
-0 +0000
-@@ -286,7 +286,6 @@
+diff -Naur linux-2.5.61-fbdev/drivers/video/i810/i810.h linux-2.5.61-ad/dri=
+vers/video/i810/i810.h
+--- linux-2.5.61-fbdev/drivers/video/i810/i810.h	2003-02-16 00:55:52.000000=
+000 +0000
++++ linux-2.5.61-ad/drivers/video/i810/i810.h	2003-02-16 04:50:15.000000000=
+ +0000
+@@ -256,6 +256,7 @@
+ 	drm_agp_t                *drm_agp;
+ 	atomic_t                 use_count;
+ 	u32 pseudo_palette[17];
++	u32 pci_state[16];
+ 	unsigned long mmio_start_phys;
+ 	u8 *mmio_start_virtual;
+ 	u32 cursor_reset;
+@@ -273,6 +274,7 @@
+ 	u32 depth;
+ 	u32 blit_bpp;
+ 	u32 ovract;
++	u32 cur_state;
+ 	int mtrr_reg;
+ 	u16 bltcntl;
+ 	u8 interlace;
+diff -Naur linux-2.5.61-fbdev/drivers/video/i810/i810_accel.c linux-2.5.61-=
+ad/drivers/video/i810/i810_accel.c
+--- linux-2.5.61-fbdev/drivers/video/i810/i810_accel.c	2003-02-16 00:55:52.=
+000000000 +0000
++++ linux-2.5.61-ad/drivers/video/i810/i810_accel.c	2003-02-16 04:50:11.000=
+000000 +0000
+@@ -315,19 +315,19 @@
+ 	i810_writel(IRING + 12, mmio, tmp);
+ }      =20
 =20
- /* command line data, set in rivafb_setup() */
- static u32 pseudo_palette[17];
--static int noblink =3D 0;
- static int flatpanel __initdata =3D -1; /* Autodetect later */
- static int forceCRTC __initdata =3D -1;
- #ifdef CONFIG_MTRR
-@@ -1380,15 +1379,16 @@
-  * CALLED FROM:
-  * framebuffer hook
-  */
--static void rivafb_imageblit(struct fb_info *info, const struct fb_image *=
-image)
-+static void rivafb_imageblit(struct fb_info *info,=20
-+			     const struct fb_image *image)
+-void i810fb_fillrect(struct fb_info *p, const struct fb_fillrect *rect)
++void i810fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
  {
- 	struct riva_par *par =3D (struct riva_par *) info->par;
- 	u32 fgx =3D 0, bgx =3D 0, width, mod, tmp;
--	u8 *cdat =3D image->data;
-+	u8 *cdat =3D (u8 *) image->data;
- 	volatile u32 *d;
- 	int i, j, k, size;
+-	struct i810fb_par *par =3D (struct i810fb_par *) p->par;
++	struct i810fb_par *par =3D (struct i810fb_par *) info->par;
+ 	u32 dx, dy, width, height, dest, rop =3D 0, color =3D 0;
 =20
--	if (image->depth !=3D 1) {
-+	if (image->depth !=3D 0) {
- 		wait_for_idle(par);
- 		cfb_imageblit(info, image);
- 		return;
-@@ -1854,8 +1854,8 @@
- 		default_par->riva.PCRTC =3D default_par->riva.PCRTC0 =3D default_par->ri=
-va.PGRAPH;
+-	if (!p->var.accel_flags || par->dev_flags & LOCKUP ||
++	if (!info->var.accel_flags || par->dev_flags & LOCKUP ||
+ 	    par->depth =3D=3D 4)=20
+-		return cfb_fillrect(p, rect);
++		return cfb_fillrect(info, rect);
+=20
+ 	if (par->depth =3D=3D 1)=20
+ 		color =3D rect->color;
+ 	else=20
+-		color =3D ((u32 *) (p->pseudo_palette))[rect->color];
++		color =3D ((u32 *) (info->pseudo_palette))[rect->color];
+=20
+ 	rop =3D i810fb_rop[rect->rop];
+=20
+@@ -336,19 +336,19 @@
+ 	dy =3D rect->dy;
+ 	height =3D rect->height;
+=20
+-	dest =3D p->fix.smem_start + (dy * p->fix.line_length) + dx;
+-	color_blit(width, height, p->fix.line_length, dest, rop, color,=20
++	dest =3D info->fix.smem_start + (dy * info->fix.line_length) + dx;
++	color_blit(width, height, info->fix.line_length, dest, rop, color,=20
+ 		   par->blit_bpp, par);
+ }
+ =09
+-void i810fb_copyarea(struct fb_info *p, struct fb_copyarea *region)=20
++void i810fb_copyarea(struct fb_info *info, const struct fb_copyarea *regio=
+n)=20
+ {
+-	struct i810fb_par *par =3D (struct i810fb_par *) p->par;
++	struct i810fb_par *par =3D (struct i810fb_par *) info->par;
+ 	u32 sx, sy, dx, dy, pitch, width, height, src, dest, xdir;
+=20
+-	if (!p->var.accel_flags || par->dev_flags & LOCKUP ||
++	if (!info->var.accel_flags || par->dev_flags & LOCKUP ||
+ 	    par->depth =3D=3D 4)
+-		return cfb_copyarea(p, region);
++		return cfb_copyarea(info, region);
+=20
+ 	dx =3D region->dx * par->depth;
+ 	sx =3D region->sx * par->depth;
+@@ -366,66 +366,68 @@
+ 		dx +=3D width - 1;
+ 	}
+ 	if (dy <=3D sy) {
+-		pitch =3D p->fix.line_length;
++		pitch =3D info->fix.line_length;
+ 	}
+ 	else {
+-		pitch =3D (-(p->fix.line_length)) & 0xFFFF;
++		pitch =3D (-(info->fix.line_length)) & 0xFFFF;
+ 		sy +=3D height - 1;
+ 		dy +=3D height - 1;
+ 	}
+-	src =3D p->fix.smem_start + (sy * p->fix.line_length) + sx;
+-	dest =3D p->fix.smem_start + (dy * p->fix.line_length) + dx;
++	src =3D info->fix.smem_start + (sy * info->fix.line_length) + sx;
++	dest =3D info->fix.smem_start + (dy * info->fix.line_length) + dx;
+=20
+ 	source_copy_blit(width, height, pitch, xdir, src, dest,
+ 			 PAT_COPY_ROP, par->blit_bpp, par);
+ }
+=20
+-void i810fb_imageblit(struct fb_info *p, struct fb_image *image)
++void i810fb_imageblit(struct fb_info *info, const struct fb_image *image)
+ {
+-	struct i810fb_par *par =3D (struct i810fb_par *) p->par;
++	struct i810fb_par *par =3D (struct i810fb_par *) info->par;
+ 	u32 fg =3D 0, bg =3D 0, s_pitch, d_pitch, size, offset, dst, i, j;
+ 	u8 *s_addr, *d_addr;
+ =09
+-	if (!p->var.accel_flags || par->dev_flags & LOCKUP ||
+-	    par->depth =3D=3D 4 || image->depth !=3D 1)=20
+-		return cfb_imageblit(p, image);
++	if (!info->var.accel_flags || par->dev_flags & LOCKUP ||
++	    par->depth =3D=3D 4 || image->depth !=3D 0)=20
++		return cfb_imageblit(info, image);
+=20
+-	switch (p->var.bits_per_pixel) {
++	switch (info->var.bits_per_pixel) {
+ 	case 8:
+ 		fg =3D image->fg_color;
+ 		bg =3D image->bg_color;
+ 		break;
+ 	case 16:
+ 	case 24:
+-		fg =3D ((u32 *)(p->pseudo_palette))[image->fg_color];
+-		bg =3D ((u32 *)(p->pseudo_palette))[image->bg_color];
++		fg =3D ((u32 *)(info->pseudo_palette))[image->fg_color];
++		bg =3D ((u32 *)(info->pseudo_palette))[image->bg_color];
+ 		break;
+ 	}=09
+ =09
+-	dst =3D p->fix.smem_start + (image->dy * p->fix.line_length) +=20
++	dst =3D info->fix.smem_start + (image->dy * info->fix.line_length) +=20
+ 		(image->dx * par->depth);
+=20
+ 	s_pitch =3D (image->width+7)/8;
+ 	d_pitch =3D (s_pitch + 1) & ~1;
+-=09
+-	size =3D (d_pitch * image->height) + 7;
+-	size &=3D ~7;
+-
+-	if (image->width & 15) {
++	size =3D d_pitch * image->height;
++	if (s_pitch !=3D d_pitch || size & 7) {
++		size +=3D 7;
++		size &=3D ~7;
+ 		offset =3D get_buffer_offset(size, par);	=09
+ 		d_addr =3D par->pixmap.virtual + offset;
+-		s_addr =3D image->data;
++		s_addr =3D (u8 *) image->data;
+ 	=09
+-		for (i =3D image->height; i--; ) {
+-			for (j =3D 0; j < s_pitch; j++)=20
+-				i810_writeb(j, d_addr, s_addr[j]);
+-			s_addr +=3D s_pitch;
+-			d_addr +=3D d_pitch;
++		if (s_pitch =3D=3D d_pitch) {
++			memcpy_toio(d_addr, s_addr, s_pitch * image->height);
++		} else {=20
++			for (i =3D image->height; i--; ) {
++				for (j =3D 0; j < s_pitch; j++)=20
++					i810_writeb(j, d_addr, s_addr[j]);
++				s_addr +=3D s_pitch;
++				d_addr +=3D d_pitch;
++			}
+ 		}
+-	=09
+ 		mono_src_copy_blit(image->width * par->depth, image->height,=20
+-				   p->fix.line_length, size/8, par->blit_bpp,
+-				   PAT_COPY_ROP, dst,=20
++				   info->fix.line_length, size/8,=20
++				   par->blit_bpp, PAT_COPY_ROP, dst,=20
+ 				   par->pixmap.physical + offset,
+ 				   bg, fg, par);
+ 	}
+@@ -434,18 +436,18 @@
+ 	 */
+ 	else {
+ 		mono_src_copy_imm_blit(image->width * par->depth,=20
+-				       image->height, p->fix.line_length,=20
++				       image->height, info->fix.line_length,=20
+ 				       size/4, par->blit_bpp,
+ 				       PAT_COPY_ROP, dst, (u32 *) image->data,=20
+ 				       bg, fg, par);
+ 	}=20
+ }
+=20
+-int i810fb_sync(struct fb_info *p)
++int i810fb_sync(struct fb_info *info)
+ {
+-	struct i810fb_par *par =3D (struct i810fb_par *) p->par;
++	struct i810fb_par *par =3D (struct i810fb_par *) info->par;
+ =09
+-	if (!p->var.accel_flags || par->dev_flags & LOCKUP)
++	if (!info->var.accel_flags || par->dev_flags & LOCKUP)
+ 		return 0;
+=20
+ 	return wait_for_engine_idle(par);
+diff -Naur linux-2.5.61-fbdev/drivers/video/i810/i810_main.c linux-2.5.61-a=
+d/drivers/video/i810/i810_main.c
+--- linux-2.5.61-fbdev/drivers/video/i810/i810_main.c	2003-02-16 00:55:52.0=
+00000000 +0000
++++ linux-2.5.61-ad/drivers/video/i810/i810_main.c	2003-02-16 04:50:11.0000=
+00000 +0000
+@@ -1437,6 +1437,68 @@
+ };
+=20
+ /***********************************************************************
++ *                         Power Management                            *
++ ***********************************************************************/
++static int i810fb_suspend(struct pci_dev *dev, u32 state)
++{
++	struct fb_info *info =3D pci_get_drvdata(dev);
++	struct i810fb_par *par =3D (struct i810fb_par *) info->par;
++	int blank =3D 0, prev_state =3D par->cur_state;
++
++	if (state =3D=3D prev_state)
++		return 0;
++
++	par->cur_state =3D state;
++
++	switch (state) {
++	case 1:
++		blank =3D VESA_VSYNC_SUSPEND;
++		break;
++	case 2:
++		blank =3D VESA_HSYNC_SUSPEND;
++		break;
++	case 3:
++		blank =3D VESA_POWERDOWN;
++		break;
++	default:
++		return -EINVAL;
++	}
++	info->fbops->fb_blank(blank, info);
++
++	if (!prev_state) {=20
++		par->drm_agp->unbind_memory(par->i810_gtt.i810_fb_memory);
++		par->drm_agp->unbind_memory(par->i810_gtt.i810_cursor_memory);
++		pci_disable_device(dev);
++	}
++	pci_save_state(dev, par->pci_state);
++	pci_set_power_state(dev, state);
++
++	return 0;
++}
++
++static int i810fb_resume(struct pci_dev *dev)=20
++{
++	struct fb_info *info =3D pci_get_drvdata(dev);
++	struct i810fb_par *par =3D (struct i810fb_par *) info->par;
++
++	if (par->cur_state =3D=3D 0)
++		return 0;
++
++	pci_restore_state(dev, par->pci_state);
++	pci_set_power_state(dev, 0);
++	pci_enable_device(dev);
++	par->drm_agp->bind_memory(par->i810_gtt.i810_fb_memory,=20
++				  par->fb.offset);
++	par->drm_agp->bind_memory(par->i810_gtt.i810_cursor_memory,=20
++				  par->cursor_heap.offset);
++
++	info->fbops->fb_blank(VESA_NO_BLANKING, info);
++
++	par->cur_state =3D 0;
++
++	return 0;
++}
++/***********************************************************************
+  *                  AGP resource allocation                            *
+  ***********************************************************************/
+  =20
+@@ -1469,13 +1531,13 @@
+ 	par->fb.offset =3D v_offset_default << 20;
+ 	par->fb.offset >>=3D 12;
+=20
+-	par->iring.offset =3D par->fb.offset + (par->fb.size >> 12);
+-	par->iring.size =3D RINGBUFFER_SIZE;
+-
+-	par->pixmap.offset =3D par->iring.offset + (RINGBUFFER_SIZE >> 12);
++	par->pixmap.offset =3D par->fb.offset + (par->fb.size >> 12);
+ 	par->pixmap.size =3D PIXMAP_SIZE;
+=20
+-	par->cursor_heap.offset =3D par->pixmap.offset + (PIXMAP_SIZE >> 12);
++	par->iring.offset =3D par->pixmap.offset + (PIXMAP_SIZE >> 12);
++	par->iring.size =3D RINGBUFFER_SIZE;
++
++	par->cursor_heap.offset =3D par->iring.offset + (RINGBUFFER_SIZE >> 12);
+ 	par->cursor_heap.size =3D 4096;
+ }
+=20
+@@ -1817,12 +1879,16 @@
+ 	vfreq =3D hfreq/(info->var.yres + info->var.upper_margin +
+ 		       info->var.vsync_len + info->var.lower_margin);
+=20
+-      	printk("fb: %s v%d.%d.%d%s, (c) Tony Daplas\n"
+-      	       "     Video RAM      : %dK\n"=20
+-	       "     Mode           : %dx%d-%dbpp@%dHz\n",
++      	printk("I810FB: fb%d         : %s v%d.%d.%d%s\n"
++      	       "I810FB: Video RAM   : %dK\n"=20
++	       "I810FB: Monitor     : H: %d-%d KHz V: %d-%d Hz\n"
++	       "I810FB: Mode        : %dx%d-%dbpp@%dHz\n",
++	       minor(info->node),
+ 	       i810_pci_list[entry->driver_data],
+ 	       VERSION_MAJOR, VERSION_MINOR, VERSION_TEENIE, BRANCH_VERSION,
+-	       (int) par->fb.size>>10, info->var.xres,=20
++	       (int) par->fb.size>>10, info->monspecs.hfmin/1000,
++	       info->monspecs.hfmax/1000, info->monspecs.vfmin,
++	       info->monspecs.vfmax, info->var.xres,=20
+ 	       info->var.yres, info->var.bits_per_pixel, vfreq);
+ 	return 0;
+ }
+@@ -1893,7 +1959,10 @@
+ 		return -ENODEV;
  	}
 =20
--	rivafb_fix.smem_len =3D default_par->riva.RamAmountKBytes * 1024;
--	default_par->dclk_max =3D default_par->riva.MaxVClockFreqKHz * 1000;
-+	rivafb_fix.smem_len =3D riva_get_memlen(default_par) * 1024;
-+	default_par->dclk_max =3D riva_get_maxdclk(default_par) * 1000;
-=20
- 	if (!request_mem_region(rivafb_fix.smem_start,
- 				rivafb_fix.smem_len, "rivafb")) {
-@@ -1976,8 +1976,6 @@
- 	while ((this_opt =3D strsep(&options, ",")) !=3D NULL) {
- 		if (!*this_opt)
- 			continue;
--		if (!strncmp(this_opt, "noblink", 7)) {
--			noblink =3D 1;
- #ifdef CONFIG_MTRR
- 		} else if (!strncmp(this_opt, "nomtrr", 6)) {
- 			nomtrr =3D 1;
-@@ -2016,7 +2014,10 @@
-=20
- int __init rivafb_init(void)
- {
--	return pci_module_init(&rivafb_driver);
-+	if (pci_register_driver(&rivafb_driver) > 0)
+-	return (pci_module_init(&i810fb_driver));
++	if (pci_register_driver(&i810fb_driver) > 0)
 +		return 0;
-+	pci_unregister_driver(&rivafb_driver);
++	pci_unregister_driver(&i810fb_driver);
++	return -ENODEV;
+ }
+ #endif=20
+=20
+@@ -1909,7 +1978,10 @@
+ 	hsync1 *=3D 1000;
+ 	hsync2 *=3D 1000;
+=20
+-	return (pci_module_init(&i810fb_driver));
++	if (pci_register_driver(&i810fb_driver) > 0)
++		return 0;
++	pci_unregister_driver(&i810fb_driver);
 +	return -ENODEV;
  }
 =20
-=20
-@@ -2029,8 +2030,6 @@
- module_init(rivafb_init);
- module_exit(rivafb_exit);
-=20
--MODULE_PARM(noblink, "i");
--MODULE_PARM_DESC(noblink, "Disables hardware cursor blinking (0 or 1=3Ddis=
-abled) (default=3D0)");
- MODULE_PARM(flatpanel, "i");
- MODULE_PARM_DESC(flatpanel, "Enables experimental flat panel support for s=
-ome chipsets. (0 or 1=3Denabled) (default=3D0)");
- MODULE_PARM(forceCRTC, "i");
-diff -Naur linux-2.5.61-fbdev/drivers/video/riva/nv_driver.c linux-2.5.61-a=
-d/drivers/video/riva/nv_driver.c
---- linux-2.5.61-fbdev/drivers/video/riva/nv_driver.c	2003-02-16 00:48:53.0=
+ MODULE_PARM(vram, "i");
+diff -Naur linux-2.5.61-fbdev/drivers/video/i810/i810_main.h linux-2.5.61-a=
+d/drivers/video/i810/i810_main.h
+--- linux-2.5.61-fbdev/drivers/video/i810/i810_main.h	2003-02-16 00:55:52.0=
 00000000 +0000
-+++ linux-2.5.61-ad/drivers/video/riva/nv_driver.c	2003-02-16 02:52:37.0000=
++++ linux-2.5.61-ad/drivers/video/i810/i810_main.h	2003-02-16 04:50:15.0000=
 00000 +0000
-@@ -35,6 +35,7 @@
- 5 20:47:06 mvojkovi Exp $ */
+@@ -43,12 +43,16 @@
+ static int  __init i810fb_init_pci (struct pci_dev *dev,=20
+ 				       const struct pci_device_id *entry);
+ static void __exit i810fb_remove_pci(struct pci_dev *dev);
++static int i810fb_resume(struct pci_dev *dev);
++static int i810fb_suspend(struct pci_dev *dev, u32 state);
 =20
- #include <linux/delay.h>
-+#include <linux/pci.h>
- #include <linux/pci_ids.h>
- #include "nv_type.h"
- #include "rivafb.h"
-@@ -133,6 +134,159 @@
- 	riva_override_CRTC(par);
- }
+ static struct pci_driver i810fb_driver =3D {
+ 	.name     =3D	"i810fb",
+ 	.id_table =3D	i810fb_pci_tbl,
+ 	.probe    =3D	i810fb_init_pci,
+ 	.remove   =3D	__exit_p(i810fb_remove_pci),
++	.suspend  =3D     i810fb_suspend,
++	.resume   =3D     i810fb_resume,
+ };=09
 =20
-+unsigned long riva_get_memlen(struct riva_par *par)
-+{
-+	RIVA_HW_INST *chip =3D &par->riva;
-+	unsigned long memlen =3D 0;
-+	unsigned int chipset =3D par->Chipset;
-+	struct pci_dev* dev;
-+	int amt;
-+
-+	switch (chip->Architecture) {
-+	case NV_ARCH_03:
-+		if (chip->PFB[0x00000000/4] & 0x00000020) {
-+			if (((chip->PMC[0x00000000/4] & 0xF0) =3D=3D 0x20)
-+			    && ((chip->PMC[0x00000000/4] & 0x0F) >=3D 0x02)) {
-+				/*
-+				 * SDRAM 128 ZX.
-+				 */
-+				switch (chip->PFB[0x00000000/4] & 0x03) {
-+				case 2:
-+					memlen =3D 1024 * 4;
-+					break;
-+				case 1:
-+					memlen =3D 1024 * 2;
-+					break;
-+				default:
-+					memlen =3D 1024 * 8;
-+					break;
-+				}
-+			} else {
-+				memlen =3D 1024 * 8;
-+			}           =20
-+		} else 	{
-+			/*
-+			 * SGRAM 128.
-+			 */
-+			switch (chip->PFB[0x00000000/4] & 0x00000003) {
-+			case 0:
-+				memlen =3D 1024 * 8;
-+				break;
-+			case 2:
-+				memlen =3D 1024 * 4;
-+				break;
-+			default:
-+				memlen =3D 1024 * 2;
-+				break;
-+			}
-+		}       =20
-+		break;
-+	case NV_ARCH_04:
-+		if (chip->PFB[0x00000000/4] & 0x00000100) {
-+			memlen =3D ((chip->PFB[0x00000000/4] >> 12) & 0x0F) *=20
-+				1024 * 2 + 1024 * 2;
-+		} else {
-+			switch (chip->PFB[0x00000000/4] & 0x00000003) {
-+			case 0:
-+				memlen =3D 1024 * 32;
-+				break;
-+			case 1:
-+				memlen =3D 1024 * 4;
-+				break;
-+			case 2:
-+				memlen =3D 1024 * 8;
-+				break;
-+			case 3:
-+			default:
-+				memlen =3D 1024 * 16;
-+				break;
-+			}
-+		}
-+		break;
-+	case NV_ARCH_10:
-+	case NV_ARCH_20:
-+		if(chipset =3D=3D NV_CHIP_IGEFORCE2) {
-+
-+			dev =3D pci_find_slot(0, 1);
-+			pci_read_config_dword(dev, 0x7C, &amt);
-+			memlen =3D (((amt >> 6) & 31) + 1) * 1024;
-+		} else if (chipset =3D=3D NV_CHIP_0x01F0) {
-+			dev =3D pci_find_slot(0, 1);
-+			pci_read_config_dword(dev, 0x84, &amt);
-+			memlen =3D (((amt >> 4) & 127) + 1) * 1024;
-+		} else {
-+			switch ((chip->PFB[0x0000020C/4] >> 20) & 0x000000FF){
-+			case 0x02:
-+				memlen =3D 1024 * 2;
-+				break;
-+			case 0x04:
-+				memlen =3D 1024 * 4;
-+				break;
-+			case 0x08:
-+				memlen =3D 1024 * 8;
-+				break;
-+			case 0x10:
-+				memlen =3D 1024 * 16;
-+				break;
-+			case 0x20:
-+				memlen =3D 1024 * 32;
-+				break;
-+			case 0x40:
-+				memlen =3D 1024 * 64;
-+				break;
-+			case 0x80:
-+				memlen =3D 1024 * 128;
-+				break;
-+			default:
-+				memlen =3D 1024 * 16;
-+				break;
-+			}
-+		}
-+		break;
-+	}
-+	return memlen;
-+}
-+
-+unsigned long riva_get_maxdclk(struct riva_par *par)
-+{
-+	RIVA_HW_INST *chip =3D &par->riva;
-+	unsigned long dclk =3D 0;
-+
-+	switch (chip->Architecture) {
-+	case NV_ARCH_03:
-+		if (chip->PFB[0x00000000/4] & 0x00000020) {
-+			if (((chip->PMC[0x00000000/4] & 0xF0) =3D=3D 0x20)
-+			    && ((chip->PMC[0x00000000/4] & 0x0F) >=3D 0x02)) {  =20
-+				/*
-+				 * SDRAM 128 ZX.
-+				 */
-+				dclk =3D 800000;
-+			} else {
-+				dclk =3D 1000000;
-+			}           =20
-+		} else {
-+			/*
-+			 * SGRAM 128.
-+			 */
-+			dclk =3D 1000000;
-+		}=20
-+		break;
-+	case NV_ARCH_04:
-+	case NV_ARCH_10:
-+	case NV_ARCH_20:
-+		switch ((chip->PFB[0x00000000/4] >> 3) & 0x00000003) {
-+		case 3:
-+			dclk =3D 800000;
-+			break;
-+		default:
-+			dclk =3D 1000000;
-+			break;
-+		}
-+		break;
-+	}
-+	return dclk;
-+}
-+
- void
- riva_common_setup(struct riva_par *par)
- {
-@@ -201,8 +355,6 @@
- 		par->riva.PDIO =3D par->riva.PDIO0;
- 	}
+ static int i810_init  __initdata =3D 0;
+@@ -121,9 +125,11 @@
+ extern void i810fb_fill_var_timings(struct fb_var_screeninfo *var);
+ 				   =20
+ /* Accelerated Functions */
+-extern void i810fb_fillrect (struct fb_info *p, const struct fb_fillrect *=
+rect);
+-extern void i810fb_copyarea (struct fb_info *p, struct fb_copyarea *region=
+);
+-extern void i810fb_imageblit(struct fb_info *p, struct fb_image *image);
++extern void i810fb_fillrect (struct fb_info *p,=20
++			     const struct fb_fillrect *rect);
++extern void i810fb_copyarea (struct fb_info *p,=20
++			     const struct fb_copyarea *region);
++extern void i810fb_imageblit(struct fb_info *p, const struct fb_image *ima=
+ge);
+ extern int  i810fb_sync     (struct fb_info *p);
 =20
--	RivaGetConfig(&par->riva, par->Chipset);
--
- 	if (par->FlatPanel =3D=3D -1) {
- 		/* Fix me, need x86 DDC code */
- 		par->FlatPanel =3D 0;
-diff -Naur linux-2.5.61-fbdev/drivers/video/riva/rivafb.h linux-2.5.61-ad/d=
-rivers/video/riva/rivafb.h
---- linux-2.5.61-fbdev/drivers/video/riva/rivafb.h	2003-02-16 00:48:53.0000=
-00000 +0000
-+++ linux-2.5.61-ad/drivers/video/riva/rivafb.h	2003-02-16 02:52:39.0000000=
-00 +0000
-@@ -55,5 +55,7 @@
- };
-=20
- void riva_common_setup(struct riva_par *);
-+unsigned long riva_get_memlen(struct riva_par *);
-+unsigned long riva_get_maxdclk(struct riva_par *);
-=20
- #endif /* __RIVAFB_H */
+ extern void i810fb_init_ringbuffer   (struct i810fb_par *par);
 
---=-aLQ6a/jK15w+7CmXNOao--
+--=-aZkEjihxk2CDrYRdhZtm--
 
 
 

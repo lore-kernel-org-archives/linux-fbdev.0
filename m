@@ -1,27 +1,22 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Re: Framebuffer console not working with
-	matroxfb on 2.6
-Date: Sun, 26 Sep 2004 18:29:34 +1000
+From: Michal 'hramrach' Suchanek <hramrach@centrum.cz>
+Subject: Re: aty128fb problems on iMac, kernel 2.8.1 (fwd)
+Date: Sun, 26 Sep 2004 14:13:00 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1096187374.576.305.camel@gaston>
-References: <3B9599C3EB4@vcnet.vc.cvut.cz>
-	 <200409171921.50273.adaplas@hotpop.com>
-	 <Pine.GSO.4.58.0409171349430.19914@waterleaf.sonytel.be>
-	 <200409172138.29021.adaplas@hotpop.com>
+Message-ID: <20040926121300.GN8333@uvt316-2.ruk.cuni.cz>
+References: <Pine.GSO.4.61.0409231022110.7127@waterleaf.sonytel.be> <1096187234.537.303.camel@gaston>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CBUR1-0006gd-G4
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Sep 2004 01:31:07 -0700
-Received: from gate.crashing.org ([63.228.1.57])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1CBUQy-0001lf-F0
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Sep 2004 01:31:07 -0700
-In-Reply-To: <200409172138.29021.adaplas@hotpop.com>
+	id 1CBXwE-0000VG-SH
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Sep 2004 05:15:34 -0700
+Received: from dec59.ruk.cuni.cz ([195.113.2.17])
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
+	id 1CBXwC-0003cn-0f
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Sep 2004 05:15:34 -0700
+Content-Disposition: inline
+In-Reply-To: <1096187234.537.303.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,23 +27,10 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Antonino Daplas <adaplas@pol.net>
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net
 
-
-> Indeed it does.  So why didn't radeonfb not use the mode?  Is it a problem
-> with fb_find_mode() or radeonfb?
-
-I suspect my radeonfb is bad at using mode paremeters to the module,
-does it work with fbdev afterward ?
-
-I need to work on it, I did a pretty good job with digital panels but
-I think I may have broken a few stuffs useful with analog, like boot mode
-setting...
-
-Ben.
-
-
+Yes, it's reported to to work tihs way.
 
 
 -------------------------------------------------------

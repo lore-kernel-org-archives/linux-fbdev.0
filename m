@@ -1,17 +1,17 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [BK updates]
-Date: Sat, 8 Mar 2003 15:11:13 +0000 (GMT)
+Subject: Re: [BK FBDEV] Updates.
+Date: Sat, 8 Mar 2003 15:12:45 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0303081510380.28479-100000@phoenix.infradead.org>
-References: <Pine.GSO.4.21.0303081540090.8221-100000@vervain.sonytel.be>
+Message-ID: <Pine.LNX.4.44.0303081512210.28479-100000@phoenix.infradead.org>
+References: <Pine.LNX.4.51L.0303080126140.17733@piorun.ds.pg.gda.pl>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from phoenix.infradead.org ([195.224.96.167])
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18rfzK-0002YH-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 08 Mar 2003 07:11:51 -0800
-In-Reply-To: <Pine.GSO.4.21.0303081540090.8221-100000@vervain.sonytel.be>
+	id 18rg0o-0003AL-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 08 Mar 2003 07:13:22 -0800
+In-Reply-To: <Pine.LNX.4.51L.0303080126140.17733@piorun.ds.pg.gda.pl>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,19 +23,21 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: =?ISO-8859-2?Q?Pawe=B3_Go=B3aszewski?= <blues@ds.pg.gda.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> On Sat, 8 Mar 2003, James Simmons wrote:
-> >  scripts/Makefile                           |    4 
-> >  scripts/pnmtologo                          |binary
-> >  scripts/pnmtologo.c                        |  523 +
+> > > Happily using this as sis fb doesn't compile in 2.5.64; This is the
+> > > first 2.5 kernel that boots for me. X seems faster than under 2.4.
+> > > This (almost) all sis based laptop likes things now.
+> > Yeah!!!!!! I have more updates for the SIS drivers. I'm going to upload
+> > the new stuff in about 30 minutes.
 > 
-> Are you really pushing the pnmtologo binary?
+> Do you have something for tdfx? :)
+> 
+> It's not usable in depth 16 or 24 bits (I've reported it).
 
-I did by mistake then removed it. It still is in the BK logs as being 
-there.
+I will give it try. Sorry about the delay. 
 
 
 

@@ -1,16 +1,22 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: fb_imageblit()
-Date: Thu, 9 Jan 2003 10:50:06 +0100 (MET)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Re: 2.5 fbdev & driver initial mode
+Date: 09 Jan 2003 11:39:09 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0301091038390.25052-100000@vervain.sonytel.be>
-References: <1042043058.982.115.camel@localhost.localdomain>
+Message-ID: <1042108748.567.20.camel@zion.wanadoo.fr>
+References: <Pine.GSO.4.21.0301091029140.25052-100000@vervain.sonytel.be>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18WZM0-0005DV-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 09 Jan 2003 01:52:00 -0800
-In-Reply-To: <1042043058.982.115.camel@localhost.localdomain>
+	id 18Wa5o-0003YZ-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 09 Jan 2003 02:39:20 -0800
+Received: from vervain.sonytel.be (mail.sonytel.be [10.17.0.26])
+	by mail.sonytel.be (8.9.0/8.8.6) with ESMTP id LAA11422
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 9 Jan 2003 11:38:41 +0100 (MET)
+In-Reply-To: <Pine.GSO.4.21.0301091029140.25052-100000@vervain.sonytel.be>
+ReSent-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+ReSent-Message-ID: <Pine.GSO.4.21.0301091138380.25052@vervain.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,61 +26,18 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 
-On 9 Jan 2003, Antonino Daplas wrote:
-> On Wed, 2003-01-08 at 23:15, Geert Uytterhoeven wrote:
-> > > c. Read color information from pseudopalette if directcolor/truecolor. 
-> > 
-> > Hoever, pseudopalette has entries for the first 16 colors only!
-> > Hence you are limited to the 16 color for directcolor/truecolor modes.
-> 
-> That's why there's an fb_set_logo_directpalette(), for directcolor
-> visuals >= 24bpp, and fb_set_logo_truepalette(), for truecolor, in
-> fb_set_logo().  Basically, it temporarily replaces info->pseudo_palette
-> with one that has 256 entries to match linux_logo.  Logo drawing, using
-> cfb_imageblit() has always worked for me in directcolor and truecolor
-> modes.
+On Thu, 2003-01-09 at 10:30, Geert Uytterhoeven wrote:
+> Note: on some platforms graphics chips with VGA cores are _not_ initialized to
+> VGA mode by the firmware. So great care should be taken when not explicitly
+> switching to graphics mode on those platforms.
 
-I see a small inconsistency here, which may cause problems with some exotic
-hardware: info->pseudo_palette is always initialized by the fbdev driver itself
-(which knows the hardware), except for logo drawing, where it's done by the
-generic code in fbmem.
+Yup. This is typically the case of PowerMacs where the VGA memory isn't
+even reachable on the PCI/AGP bus. 
 
-On virtually all hardware that will work fine. But on some hardware the exact
-pixel format cannot be represented by the {red,green,blue,transp} bitfields in
-fb_var_screeninfo.
-
-E.g. the Amiga CyberVision64 card has a S3Trio64. Since Amigas are little
-endian and PCI is big endian, they swapped the data bus to simplify 256-color
-modes. However, this also means that 16-bit pixel values have to be swapped. So
-in depth 15, the pixel format is not ARRRRRGGGGGBBBBB, but GGGBBBBBARRRRRGG.
-This can be handled fine in cyberfb by setting up a byteswapped pseudo palette,
-but the fb_set_logo_{direct,true}palette() don't know about this. And of course
-user space doesn't know about this neither.
-
-One possible solution is to extend the pseudo palette to 256+1 entries if the
-depth is at least 8. To save memory, we can still use a 16+1 entry pseudo
-palette if depth < 8, but then we have to move the cursor inversion value from
-index 16 to index -1.
-
-Note that the old logo code suffered from the same problem and cyberfb hasn't
-been updated since a while (it lacks pseudo palette support), so it may not be
-that important. I just wanted to mention this case.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Ben.
 
 
 

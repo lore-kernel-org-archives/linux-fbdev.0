@@ -1,12 +1,21 @@
-From: Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [Dri-devel] Re: DRM and pci_driver conversion
-Date: Tue, 28 Oct 2003 14:54:10 -0800 (PST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Missing radeonfb_setup
+Date: Wed, 29 Oct 2003 10:19:22 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0310281441470.1600-100000@home.osdl.org>
-References: <Pine.LNX.4.44.0310281855430.5142-100000@phoenix.infradead.org>
+Message-ID: <Pine.GSO.4.21.0310291018490.10663-100000@waterleaf.sonytel.be>
+References: <20031028185559.384201ff.jvillavicencio@arnet.com.ar>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-In-Reply-To: <Pine.LNX.4.44.0310281855430.5142-100000@phoenix.infradead.org>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 1AEmUD-00006I-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 29 Oct 2003 01:19:29 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.24)
+	id 1AEmUD-0007eE-BO
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 29 Oct 2003 01:19:29 -0800
+In-Reply-To: <20031028185559.384201ff.jvillavicencio@arnet.com.ar>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -18,51 +27,27 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Ian Romanick <idr@us.ibm.com>, David Dawes <dawes@XFree86.Org>, dri-devel <dri-devel@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Javier Villavicencio <jvillavicencio@arnet.com.ar>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
+On Tue, 28 Oct 2003, Javier Villavicencio wrote:
+> Simple patch to the new radeon fb driver to make it set modes/resolutions,
+> and take the other parameters.
+> Extracted some code from the matroxfb driver. Added radeonfb_setup function.
 
-On Tue, 28 Oct 2003, James Simmons wrote:
-> 
->    This is good design for DMA based graphics cards. Unfortunely at present 
-> maybe one fbdev driver actaully uses DMA (i810fb). Almost all fbdev drivers 
-> use IO access :-( Sure we could convert as many as possible to DMA, which I was 
-> planning to do anyways :-)
+If you bother to change the initialization of radeonfb_default_var, please also
+convert it to C99 struct unitializers, so you don't need the comments.
 
-Even if you don't use DMA, you still want the discovery/enumeration and
-serialization parts, which you want in the kernel.
+Gr{oetje,eeting}s,
 
-And if the driver ends up being really small - all the better. If the card 
-literally doesn't even have a command buffer (ie a truly stupid entirely 
-synchronous IO programming model like classic VGA) then the driver won't 
-even need the "wait for command ring empty" kind of thing.
+						Geert
 
-Now, your reaction might be that "oh, but what a wasteful thing to have a
-driver for just a simple serialization and discovery". True. But on the
-other hand, it's not like it would be actually wasting that much, and the
-nice thing is that this kind of truly minimal driver that doesn't have to
-worry about DMA etc can quite likely be shared with pretty much _all_ of
-the stupid cards. So we could have just _one_ driver that covers all of
-the "this card doesn't do DMA or even retrace interrupts".
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-So don't worry about the fact that for some hardware the driver might be 
-really simple. Even a simple driver is worth it if it means that we can 
-have a unified model for synchronizing between the different agents that 
-want to touch the video hardware. I think.
-
->    Unfortunely most fbdev drivers set the hardware in IO access mode. Plus 
-> some of the devices lack any kind of DMA support.
-
-I don't think this is "unfortunately" at all. Quite the reverse. If the
-card doesn't use/need DMA, that just makes for a simple low-level driver.
-
-The reason I mentioned DMA arbitration as a major thing the driver would
-do is not because I think that every driver _has_ to have DMA. I mentioned
-it specially because DMA is kind of special in that it is done
-asynchronously and thus needs an abitration model that is above-and-beyond
-just a normal "lock this card" thing.
-
-			Linus
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

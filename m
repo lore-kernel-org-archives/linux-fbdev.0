@@ -1,17 +1,15 @@
-From: James Simmons <jsimmons@transvirtual.com>
-Subject: Re: 2.5 vs. aty128fb & radeonfb
-Date: Sat, 27 Jul 2002 13:10:24 -0700 (PDT)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: 2.5 offb breakage
+Date: Wed, 31 Jul 2002 14:49:05 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0207271308180.17619-100000@www.transvirtual.com>
-References: <20020727135953.7916@192.168.4.1>
+Message-ID: <20020731124905.12781@192.168.4.1>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from www.transvirtual.com ([206.14.214.140])
-	by usw-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17YXtd-0004HM-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 27 Jul 2002 13:10:37 -0700
-In-Reply-To: <20020727135953.7916@192.168.4.1>
+Received: from [217.167.51.129] (helo=zion.wanadoo.fr)
+	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17Zsuh-0005lY-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 31 Jul 2002 05:49:15 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,33 +19,41 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Ani Joshi <ajoshi@shell.unixbox.com>
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@transvirtual.com>, linux-fbdev-devel@lists.sourceforge.net
+
+Hi !
+
+I've investigated a bit why offb dies on boot with current 2.5.
+
+It appears that dispsw is never set. You removed the code setting
+it for the various bit depth. It seems the gen_set_disp() call
+is supposed to do that instead.
+
+However, gen_set_disp() only does it for var.bits_per_pixel == 24,
+not for the other bit depths. In my case, offb boots at 8bpp, thus
+dispsw is never set, causing fbcon_setup to die when trying to
+call set_font(). That is without the accel in config. If I enable
+accel support, then it dies later, in cfbimgblt, apparently due
+to cfb_imageblit() beeing called with a NULL argument.
+
+What is the correct fix ? Changing back offb to set dispsw or 
+changing gen_set_disp() to set dispsw for all bit depth ?
+
+Also, when code in fbcon_accel.c is calling things like
+cfb_imageblit, it uses the "fb_info" field of structure
+struct display. Where is this supposed to be initialized ?
+It doesn't seem it's done in the drivers themselves (surely
+not in offb).
+
+Regards,
+Ben.
 
 
-> Hi !
->
-> Does somebody plans to update 2.5 with versions of these drivers that
-> at least build ? They have been broken for ages now.
->
-> If not, then I'll do my own fixing and submit that.
-
-Sorry about that. Pretty soon, next few days, I'm going to be submitting
-changes to the fbdev layer which breaks any driver not converted over to
-the new fbdev api. It needs to be done.
-
-
-P.S
-
-   Since the console system can use IRQ/DMA based modes for graphics cards
-it would be nice to the ati 128 card converted over to use the CCE engine
-:-)
 
 
 
 -------------------------------------------------------
-This sf.net email is sponsored by:ThinkGeek
-Welcome to geek heaven.
-http://thinkgeek.com/sf
+This sf.net email is sponsored by: Dice - The leading online job board
+for high-tech professionals. Search and apply for tech jobs today!
+http://seeker.dice.com/seeker.epl?rel_code=31

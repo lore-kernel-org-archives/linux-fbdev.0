@@ -1,12 +1,17 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Re: status
-Date: Mon, 25 Nov 2002 18:47:06 +0000 (GMT)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Radeon Framebuffer in 2.5
+Date: 25 Nov 2002 22:55:11 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0211251832200.22897-100000@phoenix.infradead.org>
-References: <Pine.GSO.4.21.0211232203340.20022-100000@vervain.sonytel.be>
+Message-ID: <1038261311.655.2.camel@zion>
+References: <20021125154339.70ae2239.hanno@gmx.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-In-Reply-To: <Pine.GSO.4.21.0211232203340.20022-100000@vervain.sonytel.be>
+Received: from amarseille-201-1-2-62.abo.wanadoo.fr ([193.253.217.62] helo=zion.wanadoo.fr)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18GRB2-0001Dr-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 25 Nov 2002 13:54:00 -0800
+In-Reply-To: <20021125154339.70ae2239.hanno@gmx.de>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -16,41 +21,28 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Antonino Daplas <adaplas@pol.net>, Linux console project <linuxconsole-dev@lists.sourceforge.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux/m68k <linux-m68k@lists.linux-m68k.org>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Hanno =?ISO-8859-1?Q?B=F6ck?= <hanno@gmx.de>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
+On Mon, 2002-11-25 at 15:43, Hanno B=F6ck wrote:
+> Hi,
+>=20
+> I would like to test the new Kernel 2.5 because it has a lot of features =
+I'm really waiting for.
+>=20
+> The only problem is that I want/need a working framebuffer. In the 2.5-re=
+leases, the radeonfb doesn't compile.
+> Is there a patch that makes it working in current 2.5-kernels?
+> Can you give me a download-location?
+> (I don't know how to use bitkeeper, so if you point me to a bitkeeper-loc=
+ation, please add a description how I can get things from there)
 
-> > Geert is busy porting the Amigia driver to the new api. That means all the 
-> > ilbm, iplan stuff will go away :-) 
-> 
-> I have first code for amifb, but it doesn't work yet, due to other problems
-> with 2.5.x on Amiga. I hope to fix these tomorrow...
+Get the version in the PPC tree, it should work
 
-Yeah!!!
+(ppc.bkbits.net/linuxppc-2.5)
 
-> Besides, we still need someone to take care of the Atari 2-byte interleaved
-> bitplanes (iplan2p*), since I don't have the hardware, and am not 100% sure 
-> how they work. But reviving 2.5.x on Atari will be even harder...
-
-   Me neither. But there is a way to find out. A trick I used to figure 
-out the hga framebuffer lay out. Build just the fbdev layer without fbcon. 
-Then do a write to /dev/fbX to see what happens. 
-   The way I have fbdev now is when you open /dev/fb0 the hardware mode is 
-set. When you close the /dev/fb the hardware goes back to text mode. I did 
-it this way so you could insmod the driver and NOT change the hardware 
-state. Also fb_open is the function register_framebuffer needs just before 
-take_over_console happens. The other benifiet is if X dies that uses 
-/dev/fb to set it modes then the file will be closed automatically and teh 
-hardware state will be set to a sane state. This is for the case of vgacon 
-with fbdev. WHat about from fbco? Well that is easy since fb_open passes a 
-falg to let us knwo if it is from userland for fbcon.
-
-P.S
-   It appears fbcon is totally broken in BK. I'm using the above trick to 
-test the code. Tonight I'm going to work on making fbcon completely 
-modular. Yeah!!!!
+Ben.
 
 
 

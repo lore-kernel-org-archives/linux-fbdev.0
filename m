@@ -1,56 +1,47 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Current discussion about the future of free
- software graphics
-Date: Tue, 11 May 2004 00:45:59 +0100 (BST)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0405110043020.8016-100000__48257.705444894$1084232899@phoenix.infradead.org>
-References: <1084205711.804.43.camel@thor.asgaard.local>
+Subject: Re: [Dri-devel] Re: [Linux-fbdev-devel] Redesign of kernel graphics
+ interface
+Date: Tue, 11 May 2004 00:50:01 +0100 (BST)
+Sender: mesa3d-dev-admin@lists.sourceforge.net
+Message-ID: <Pine.LNX.4.44.0405110048330.8016-100000@phoenix.infradead.org>
+References: <1084232443.2911.73.camel@gaston>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-In-Reply-To: <1084205711.804.43.camel@thor.asgaard.local>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+Return-path: <mesa3d-dev-admin@lists.sourceforge.net>
+In-Reply-To: <1084232443.2911.73.camel@gaston>
+Errors-To: mesa3d-dev-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
+	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:mesa3d-dev@lists.sourceforge.net>
+List-Help: <mailto:mesa3d-dev-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
+	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=mesa3d-dev>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Cc: xserver@freedesktop.org, mesa3d-dev@lists.sf.net, dri-devel@lists.sf.net, linux-fbdev-devel@lists.sf.net
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Nicolas Souchu <nsouch@free.fr>, Jon Smirl <jonsmirl@yahoo.com>, dri-devel <dri-devel@lists.sourceforge.net>, mesa3d-dev <mesa3d-dev@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> single kernel driver should muck with the hardware directly. However,
-> I'd like to point out again that it doesn't follow that the DRM and the
-> framebuffer device must merge to a single entity (which 'has to be' the
-> DRM if you ask some people, the framebuffer device if you ask
-> others...). E.g., they could both use the same mini-driver which deals
-> with the hardware. Let's try and keep our minds open to all possible
-> solutions.
-
-I agree. The disagreement is about where to put mode setting.
- 
-> > register values. Finally the plug-in lib would use a private IOCTL to set the
-> > state into the video hardware. 
-> > 
-> > There are numerous pros and cons for both a both schemes. The user space code is
-> > swappable, easier to debug, and does not need to be run as root.
+> > But we are rendering to draw fonts, clearing a area of the screen,copyarea.
+> > If we are to have a universal solution it needs to OpenGL. Either that or 
+> > mode switching stays in the kernel.  
 > 
-> It does, or the ioctl must verify the register data, which could require
-> about the same amount of code as computing it in the kernel in the first
-> place (possibly even more; the problem changes from computing a valid
-> combination of register values for a specific requested mode to limiting
-> the huge number of register value combinations to those that don't lock
-> up the chip or worse). I've pointed this out several times before, but
-> nobody has presented a solution yet. Will the userspace code live in a
-> daemon that runs as root? Or will only privileged processes be allowed
-> to change display properties?
+> Drawing fonts have _NOTING_ to do with mode switching ! Don't tell me
+> that you can't make the difference between fbdev and fbcon now ;)
 
-So in reality having mode switching would be just as expensive in 
-userspace as having it in the kernel? 
+That is not what I'm saying. I'm sayimng we could use opengl to draw the 
+fonts in fbcon. Opengl coudl be the center piece library that does 
+everything. 
+
+> > Speaking of bloat in the kernel. When will the crypto and TCP/IP stack be 
+> > moved to userspace. The networking code alone is over 17 megs in size. 
+> > Bloat bloat bloat. 
+> 
+> That has nothing to do with it. If you don't agree, come to KS or OLS
+> and talk to Linus. Your arguments & comparisons are pointless
+
+I think I'm going to have to.
 
 
 

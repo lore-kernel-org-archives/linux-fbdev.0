@@ -1,19 +1,19 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH]: Fix NULL-ptr dereference in pm2fb_probe (fwd)
-Date: Sun, 25 Apr 2004 03:08:05 +0100 (BST)
+Subject: Virtual fbdev updates.
+Date: Sun, 25 Apr 2004 03:29:16 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0404250307260.15965-100000@phoenix.infradead.org>
+Message-ID: <Pine.LNX.4.44.0404250327170.15965-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BHZ43-0007M3-6e
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 24 Apr 2004 19:08:15 -0700
+	id 1BHZOT-00067V-Ch
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 24 Apr 2004 19:29:21 -0700
 Received: from phoenix.infradead.org ([213.86.99.234])
 	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1BHZ42-0003sN-68
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 24 Apr 2004 19:08:14 -0700
+	id 1BHZOS-0000Kh-IV
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 24 Apr 2004 19:29:21 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,170 +26,175 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Andrew Morton <akpm@osdl.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, jim.hague@acm.org
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
+Hi!
 
----------- Forwarded message ----------
-Date: Sat, 24 Apr 2004 13:19:04 +0100 (BST)
-From: Jim Hague <jim.hague@acm.org>
-To: James Simmons <jsimmons@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Patrick McHardy <kaber@trash.net>
-Subject: Re: [PATCH]: Fix NULL-ptr dereference in pm2fb_probe
-
-On 23-Apr-2004 James Simmons wrote:
-> Okay I seen alot of patches going around. So the patch doesn't get lost 
-> can someone send me the final patch. I can then forward it to Andrew.
-
-This patch (against 2.6.6-rc1) please. It fixes the NULL pointer dereference
-and also a problem in pm2fb_blank().
+ This is attempt 2 at the virtual framebuffer patch. It migrates the 
+driver to the framebuffer_release/framebuffer_alloc api. It doesn't enable 
+the driver by default. With your approval Geert please apply this patch.
 
 
-===== pm2fb.c 1.25 vs 1.26 =====
---- 1.25/drivers/video/pm2fb.c  Fri Apr 16 17:30:02 2004
-+++ 1.26/drivers/video/pm2fb.c  Wed Apr 21 00:26:58 2004
-@@ -63,6 +63,16 @@
- #endif
+--- linus-2.6/drivers/video/vfb.c	2004-04-21 17:56:11.000000000 -0700
++++ fbdev-2.6/drivers/video/vfb.c	2004-04-24 16:59:56.000000000 -0700
+@@ -37,9 +37,6 @@
+ static u_long videomemorysize = VIDEOMEMSIZE;
+ MODULE_PARM(videomemorysize, "l");
  
- /*
-+ * The 2.4 driver calls reset_card() at init time, where it also sets the
-+ * initial mode. I don't think the driver should touch the chip until
-+ * the console sets a video mode. So I was calling this at the start
-+ * of setting a mode. However, certainly on 1280x1024 depth 16 on my
-+ * PCI Graphics Blaster Exxtreme this causes the display to smear
-+ * slightly.  I don't know why. Guesses to jim.hague@acm.org.
-+ */
-+#undef RESET_CARD_ON_MODE_SET
-+
-+/*
-  * Driver data 
-  */
- static char *mode __initdata = NULL;
-@@ -340,16 +350,7 @@
-        }
- }
- 
--#if 0
--/*
-- * FIXME:
-- * The 2.4 driver calls this at init time, where it also sets the
-- * initial mode. I don't think the driver should touch the chip
-- * until the console sets a video mode. So I was calling this
-- * at the start of setting a mode. However, certainly on 1280x1024
-- * depth 16 this causes the display to smear slightly.
-- * I don't know why. Guesses to jim.hague@acm.org.
-- */
-+#ifdef RESET_CARD_ON_MODE_SET
- static void reset_card(struct pm2fb_par* p)
- {
-        if (p->type == PM2_TYPE_PERMEDIA2V)
-@@ -501,6 +502,8 @@
-        u32 vsync;
- 
-        vsync = video;
-+
-+       DPRINTK("video = 0x%x\n", video);
-        
-        /*
-         * The hardware cursor needs +vsync to recognise vert retrace.
-@@ -660,6 +663,9 @@
-        u32 xres;
-        int data64;
- 
-+#ifdef RESET_CARD_ON_MODE_SET
-+       reset_card(par);
-+#endif 
-        reset_config(par);
-        clear_palette(par);
-     
-@@ -721,8 +727,7 @@
- 
-        info->fix.visual =
-                (depth == 8) ? FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
--       info->fix.line_length =
--               info->var.xres * ((info->var.bits_per_pixel + 7) >> 3);
-+       info->fix.line_length = info->var.xres * depth / 8;
-        info->cmap.len = 256;
- 
-        /*
-@@ -803,6 +808,8 @@
-                break;
-        }
-        set_pixclock(par, pixclock);
-+       DPRINTK("Setting graphics mode at %dx%d depth %d\n",
-+               info->var.xres, info->var.yres, info->var.bits_per_pixel);
-        return 0;       
- }
- 
-@@ -843,7 +850,8 @@
-         *   var->{color}.offset contains start of bitfield
-         *   var->{color}.length contains length of bitfield
-         *   {hardwarespecific} contains width of DAC
--        *   cmap[X] is programmed to (X << red.offset) | (X << green.offset) | 
-(X << blue.offset)
-+        *   cmap[X] is programmed to
-+        *   (X << red.offset) | (X << green.offset) | (X << blue.offset)
-         *   RAMDAC[X] is programmed to (red, green, blue)
-         *
-         * Pseudocolor:
-@@ -856,8 +864,9 @@
-         *    does not use RAMDAC (usually has 3 of them).
-         *    var->{color}.offset contains start of bitfield
-         *    var->{color}.length contains length of bitfield
--        *    cmap is programmed to (red << red.offset) | (green << green.offset
-) |
--        *                      (blue << blue.offset) | (transp << transp.offset
-)
-+        *    cmap is programmed to
-+        *    (red << red.offset) | (green << green.offset) |
-+        *    (blue << blue.offset) | (transp << transp.offset)
-         *    RAMDAC does not exist
-         */
- #define CNVT_TOHW(val,width) ((((val)<<(width))+0x7FFF-(val))>>16)
-@@ -962,6 +971,11 @@
-        struct pm2fb_par *par = (struct pm2fb_par *) info->par;
-        u32 video = par->video;
- 
-+       DPRINTK("blank_mode %d\n", blank_mode);
-+
-+       /* Turn everything on, then disable as requested. */
-+       video |= (PM2F_VIDEO_ENABLE | PM2F_HSYNC_MASK | PM2F_VSYNC_MASK);
-+
-        switch (blank_mode) {
-        case 0:         /* Screen: On; HSync: On, VSync: On */
-                break;
-@@ -1030,15 +1044,12 @@
-                return err;
-        }
- 
--       size = sizeof(struct fb_info) + sizeof(struct pm2fb_par) + 256 * sizeof(
-u32);
+-static struct fb_info fb_info;
+-static u32 vfb_pseudo_palette[17];
 -
-+       size = sizeof(struct pm2fb_par) + 256 * sizeof(u32);
-        info = framebuffer_alloc(size, &pdev->dev);
-        if ( !info )
-                return -ENOMEM;
--       memset(info, 0, size);
--    
--       default_par = info->par;
-- 
-+       default_par = (struct pm2fb_par *) info->par;
+ static struct fb_var_screeninfo vfb_default __initdata = {
+ 	.xres =		640,
+ 	.yres =		480,
+@@ -404,18 +401,22 @@
+      *  Initialisation
+      */
+ 
+-int __init vfb_init(void)
++static void vfb_platform_release(struct device *device)
+ {
+-	int retval;
++	// This is called when the reference count goes to zero.
++}
+ 
+-	if (!vfb_enable)
+-		return -ENXIO;
++static int __init vfb_probe(struct device *device)
++{
++	struct platform_device *dev = to_platform_device(device);
++	struct fb_info *info;
++	int retval = -ENOMEM;
+ 
+ 	/*
+ 	 * For real video cards we use ioremap.
+ 	 */
+ 	if (!(videomemory = vmalloc(videomemorysize)))
+-		return -ENOMEM;
++		return retval;
+ 
+ 	/*
+ 	 * VFB must clear memory to prevent kernel info
+@@ -425,41 +426,98 @@
+ 	 */
+ 	memset(videomemory, 0, videomemorysize);
+ 
+-	fb_info.screen_base = videomemory;
+-	fb_info.fbops = &vfb_ops;
+-
+-	retval = fb_find_mode(&fb_info.var, &fb_info, NULL,
++	info = framebuffer_alloc(sizeof(u32) * 256, &dev->dev);
++	if (!info)
++		goto err;
 +
-        switch (pdev->device) {
-        case  PCI_DEVICE_ID_TI_TVP4020:
-                strcpy(pm2fb_fix.id, "TVP4020");
-@@ -1112,7 +1123,6 @@
++	info->screen_base = videomemory;
++	info->fbops = &vfb_ops;
++	
++	retval = fb_find_mode(&info->var, info, NULL,
+ 			      NULL, 0, NULL, 8);
  
-        info->fbops             = &pm2fb_ops;
-        info->fix               = pm2fb_fix;    
--       info->par               = default_par;
-        info->pseudo_palette    = (void *)(default_par + 1); 
-        info->flags             = FBINFO_FLAG_DEFAULT;
+ 	if (!retval || (retval == 4))
+-		fb_info.var = vfb_default;
+-	fb_info.fix = vfb_fix;
+-	fb_info.pseudo_palette = &vfb_pseudo_palette;
+-	fb_info.flags = FBINFO_FLAG_DEFAULT;
++		info->var = vfb_default;
++	info->fix = vfb_fix;
++	info->pseudo_palette = info->par;
++	info->par = NULL;
++	info->flags = FBINFO_FLAG_DEFAULT;
++
++	retval = fb_alloc_cmap(&info->cmap, 256, 0);
++	if (retval < 0)
++		goto err1;
++		
++	retval = register_framebuffer(info);
++	if (retval < 0)
++		goto err2;
++	dev_set_drvdata(&dev->dev, info);
  
-
-
--- 
-Jim Hague - jim.hague@acm.org          Never trust a computer you can't lift.
+-	fb_alloc_cmap(&fb_info.cmap, 256, 0);
++	printk(KERN_INFO
++	       "fb%d: Virtual frame buffer device, using %ldK of video memory\n",
++	       info->node, videomemorysize >> 10);
++	return 0;
++err2:
++	fb_dealloc_cmap(&info->cmap);
++err1:
++	framebuffer_release(info);
++err:
++	vfree(videomemory);
++	return retval;
++}
+ 
+-	if (register_framebuffer(&fb_info) < 0) {
++static int vfb_remove(struct device *device)
++{
++	struct fb_info *info = dev_get_drvdata(device);
++	
++	if (info) {	
++		unregister_framebuffer(info);
+ 		vfree(videomemory);
+-		return -EINVAL;
++		framebuffer_release(info);
+ 	}
+-
+-	printk(KERN_INFO
+-	       "fb%d: Virtual frame buffer device, using %ldK of video memory\n",
+-	       fb_info.node, videomemorysize >> 10);
+ 	return 0;
+ }
++	
++static struct device_driver vfb_driver = {
++	.name	= "vfb",
++	.bus	= &platform_bus_type,
++	.probe	= vfb_probe,
++	.remove = vfb_remove,
++};
+ 
+-#ifdef MODULE
++static struct platform_device vfb_device = {
++	.name	= "vfb",
++	.id	= 0,
++	.dev	= {
++		.release = vfb_platform_release,
++	}	
++};
+ 
+-static void __exit vfb_cleanup(void)
++int __init vfb_init(void)
+ {
+-	unregister_framebuffer(&fb_info);
+-	vfree(videomemory);
++	int ret = 0;
++
++	if (!vfb_enable)
++		return -ENXIO;
++
++	ret = driver_register(&vfb_driver);
++
++	if (!ret) {
++		ret = platform_device_register(&vfb_device);
++		if (ret)
++			driver_unregister(&vfb_driver);
++	}
++	return ret;
++}
++
++#ifdef MODULE
++static void __exit vfb_exit(void)
++{
++	platform_device_unregister(&vfb_device);
++	driver_unregister(&vfb_driver);
+ }
+ 
+ module_init(vfb_init);
+-module_exit(vfb_cleanup);
++module_exit(vfb_exit);
+ 
+ MODULE_LICENSE("GPL");
+ #endif				/* MODULE */
 
 
 

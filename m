@@ -1,20 +1,16 @@
-From: "Kendall Bennett" <KendallB@scitechsoft.com>
-Subject: Finding Aki M Laukkanen's VESAFBD project?
-Date: Fri, 14 Mar 2003 10:37:50 -0800
+From: Jon Smirl <jonsmirl@yahoo.com>
+Subject: Re: Finding Aki M Laukkanen's VESAFBD project?
+Date: Fri, 14 Mar 2003 10:56:49 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3E71B0FE.1534.4BFD86E@localhost>
+Message-ID: <20030314185649.20002.qmail@web14908.mail.yahoo.com>
+References: <3E71B0FE.1534.4BFD86E@localhost>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from adsl-63-195-13-70.dsl.chic01.pacbell.net ([63.195.13.70] helo=mail.scitechsoft.com)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18tu4D-0004IM-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 14 Mar 2003 10:38:05 -0800
-Received: from KENDALLB (adsl-63-195-13-78.dsl.chic01.pacbell.net [63.195.13.78])
-	by mail.scitechsoft.com (8.12.8/8.12.5) with ESMTP id h2EIcCPD022288
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 14 Mar 2003 10:38:12 -0800
-Content-description: Mail message body
+Received: from web14908.mail.yahoo.com ([216.136.225.60])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18tuMM-0004YX-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 14 Mar 2003 10:56:50 -0800
+In-Reply-To: <3E71B0FE.1534.4BFD86E@localhost>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -25,77 +21,29 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+To: Kendall Bennett <KendallB@scitechsoft.com>, linux-fbdev-devel@lists.sourceforge.net
 
-Hi Guys,
+Most of the code your need is located in the x86emu-XX
+files on the ftp.scitechsoft.com server. x86emu has
+all of the VBIOS support for calling the INT
+functions. You would just need to hook it up so that
+the fb drivers can call it.
 
-A long time ago in early 2000, Aki M Laukkanen was a guy working on a 
-VESA framebuffer console daemon for Linux. This driver was structured as 
-a as a user land daemon that the kernel vesafb console driver would call 
-back into once the system was up, allowing the userland VESA driver to 
-use the vm86() service to change modes, program the palette and other 
-useful things that can't be done by the basic VESA driver that uses a 
-mode set previously by LILO or GRUB.
+But wouldn't the time be better spent on getting the
+info out of the board manufacturers that would allow
+protected mode versions of these routines to be
+implemented? With that info we could eliminate the
+need for this VM86 stuff forever.
 
-After some research I discovered that unfortunately Aki was killed in an 
-accident in January 2001, and hence this project was forgotten about. I 
-would very much like to resurrect this project and complete it on Aki's 
-behalf. Below is the original announcement email from Aki in January 
-2000, but none of the links work anymore. If anyone downloaded this code 
-at the time or knows where to find the code that Aki was working on, 
-please let me know.
+=====
+Jon Smirl
+jonsmirl@yahoo.com
 
---- cut here ----
-
-Subject: [ANNOUNCE] vesafb full VBE 2.0 support
-From: Aki M Laukkanen (amlaukka@cc.helsinki.fi)
-Date: Sat Jan 22 2000 - 09:21:48 EST
-
-Patch to vesafb adds support for communicating with a user-space daemon. 
-This user-space daemon uses the LRMI library by Josh Vanderhoof (need his 
-e-mail) to call real-mode VBE 2.0 functions to set the mode, pan the 
-display and perform other framebuffer functions. Thanks to Alan Cox for 
-the idea and mailing the LRMI library.  
-
-This is a very preliminary version and released because it works for me. 
-Your mileage may vary. The communication between kernel/user-space is 
-achieved via a special character device file (/dev/vesafb).  
-
-~$ file /dev/vesafb
-/dev/vesafb: character special (10/180)
-
-When vesafbd successfully opens the vesafb device, the `dummy' functions 
-in the vesafb driver are overrided with the ones capable of communicating 
-with the daemon. Issued FB ioctls are then added to a request/reply queue 
-which is processed by the device read/write functions. A queue is needed 
-because console switching is done from an interrupt context.  
-
-In practice this seems to work quite well. Even panning (for example in 
-X) is completely smooth on my Pentium/133. By default the patch writes a 
-lot of debug info but this may be omitted by commenting out the DEBUG 
-define in the code. The patch itself is against 2.3.x (I doubt there has 
-been any changes during that time) but needs only small changes to work 
-with 2.2.x.  
-
-Download from:
-http://www.cs.helsinki.fi/u/amlaukka/vesafb/
-
-I've also setting up a web page at:
-http://www.cs.helsinki.fi/u/amlaukka/vesafb.html
-
----- cut here ----
-
-Regards,
-
----
-Kendall Bennett
-Chief Executive Officer
-SciTech Software, Inc.
-Phone: (530) 894 8400
-http://www.scitechsoft.com
-
-~ SciTech SNAP - The future of device driver technology! ~
-
+__________________________________________________
+Do you Yahoo!?
+Yahoo! Web Hosting - establish your business online
+http://webhosting.yahoo.com
 
 
 -------------------------------------------------------

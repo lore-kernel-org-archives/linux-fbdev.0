@@ -1,25 +1,25 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: Re: [PATCH] atyfb (2.6): Memory type correction
-Date: Fri, 7 May 2004 14:37:18 +0300
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: Re: Fbdev magics
+Date: Fri, 7 May 2004 21:33:37 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040507113718.GA21174@sci.fi>
-References: <20040507021126.GA11648@sci.fi> <Pine.GSO.4.58.0405071035410.28787@waterleaf.sonytel.be>
+Message-ID: <200405072133.37300.adaplas@hotpop.com>
+References: <200405050027.58630.lucasvr@terra.com.br> <Pine.GSO.4.58.0405061112110.12096@waterleaf.sonytel.be> <200405070026.54372.lucasvr@gobolinux.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BM3fO-0001Ar-DU
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 07 May 2004 04:37:22 -0700
-Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BM3fN-0006yF-LB
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 07 May 2004 04:37:21 -0700
-Received: from kuori.saunalahti.fi (kuori.saunalahti.fi [195.197.175.23])
-	by gw01.mail.saunalahti.fi (Postfix) with ESMTP id AD4C311413DB
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri,  7 May 2004 14:37:18 +0300 (EEST)
+	id 1BM5T0-00048K-PC
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 07 May 2004 06:32:42 -0700
+Received: from snickers.hotpop.com ([38.113.3.51])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BM5T0-0002XR-GN
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 07 May 2004 06:32:42 -0700
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by snickers.hotpop.com (Postfix) with SMTP id 97EAD746BB
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri,  7 May 2004 12:44:23 +0000 (UTC)
+In-Reply-To: <200405070026.54372.lucasvr@gobolinux.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.GSO.4.58.0405071035410.28787@waterleaf.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,29 +29,28 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Lucas Correia Villa Real <lucasvr@gobolinux.org>, linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, May 07, 2004 at 10:36:50AM +0200, Geert Uytterhoeven wrote:
-> On Fri, 7 May 2004, Ville [iso-8859-1] Syrj=E4l=E4 wrote:
-> > This patch changes the memory type message to match reality. This agr=
-ees
-> > with both my hardware and the Mobility register specs.
->=20
-> I took the values from the RAGE II+ manual. So ATI recycled the WRAM va=
-lue for
-> Mobility? Unless they never actually made boards with WRAM.
+On Friday 07 May 2004 11:26, Lucas Correia Villa Real wrote:
+> On Thursday 06 May 2004 06:17, Geert Uytterhoeven wrote:
+> ...
 
-My Rage Pro manual lists WRAM in CONFIG_STAT2.CFG_MEM_TYPEb. And that's=20
-the only place where WRAM in mentioned as a valid memory type in my=20
-manuals. Also the values of CFG_MEM_TYPEb look like the xor of=20
-CONFIG_STAT0.CFG_MEM_TYPE except that WRAM is CFG_MEM_TYPEb=3D001 and=20
-CFG_MEM_TYPE=3D110 is listed as a reserved value.
+>
+> I've seen some LCD display drivers for embedded devices that handled it
+> directly with request_irq() on 2.4. As I could see from the bottom layers
+> of fbdev, an interrupt handler in a driver doesn't seem to hurt anyone
+> there.. or am I wrong?
+>
 
---=20
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+Within the console, you probably can't use interrupts, at least in 2.4.x.  
+However, there are patches around that uses an interrupt service especially 
+with waiting for vrefresh.  I've done it with the i810fb (around 2.4.18), and 
+I think matroxfb has one too.
+
+Tony
+
+
 
 
 -------------------------------------------------------

@@ -1,23 +1,18 @@
-From: Luigi Gangitano <luigi@debian.org>
-Subject: Re: Re: [Fwd: AtyFB in 2.6.10, still not
-	perfect]
-Date: Tue, 22 Mar 2005 21:06:00 +0100
-Message-ID: <1111521961.6402.4.camel@willis>
-References: <200503151826.46073.adaplas@hotpop.com>
-	 <1110928841.6491.0.camel@willis> <200503160749.19151.adaplas@hotpop.com>
-	 <200503191615.32610.alex.kern@gmx.de>
+From: Lobiuc Andrei <alobiuc@yahoo.com>
+Subject: Re: PROBLEM: Radeon card displays incorrectly under the 2.6.11 version unless compiled with SMP support
+Date: Tue, 22 Mar 2005 04:32:36 -0800 (PST)
+Message-ID: <20050322123236.2079.qmail@web30905.mail.mud.yahoo.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ndFqd47PDCbagsVRJsWG"
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DDpe3-0003pT-6l
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Mar 2005 12:06:31 -0800
-Received: from [193.205.140.229] (helo=localhost.localdomain)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DDpdj-0001X0-79
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Mar 2005 12:06:31 -0800
-In-Reply-To: <200503191615.32610.alex.kern@gmx.de>
+	id 1DDiZF-0005CG-Vx
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Mar 2005 04:33:05 -0800
+Received: from web30905.mail.mud.yahoo.com ([68.142.200.158])
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
+	id 1DDiYv-0005EH-Ap
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Mar 2005 04:33:05 -0800
+In-Reply-To: 6667
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,54 +23,72 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: "Antonino A. Daplas" <adaplas@hotpop.com>, Alexander Kern <alex.kern@gmx.de>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
 
---=-ndFqd47PDCbagsVRJsWG
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+--- Andrew Morton <akpm@osdl.org> wrote:
+> Lobiuc Andrei <alobiuc@yahoo.com> wrote:
+> >
+> > 
+> > --- Andrew Morton <akpm@osdl.org> wrote:
+> > 
+> > > 
+> > > Lobiuc, are you able to test 2.6.12-rc1 and/or
+> > > 2.6.12-rc1-mm1, see if we've
+> > > made any progress on this?
+> > > 
+> > > Thanks.
+> > > 
+> > Ok, I'll give it a try and I'll let you know as
+> soon
+> > as possible. Thanks for the reply, I thought my
+> > problem was totally forgotten.
+> > I can only hope that 2.6.12-rc1 will bring some
+> > improvements as I tested 2.6.11.5 but it made no
+> > difference from 2.6.11.
+> 
+> OK.  Please be sure to do reply-to-all when you have
+> a result.
+> 
+> Thanks.
+> 
+Dear Mr. Morton, I'm sorry to inform you that the
+2.6.12-rc1 kernel version did not bring any
+improvements regarding my problem.
+I compiled it several times, using different options
+settings but with no luck.
+I'll sumarize once again the problem to avoid any
+confusions: I'm running Debian GNU/Linux on a AthlonXP
+2800+/512Mb RAM/130Gb 2xHD/ASUS Radeon 9200SE
+computer.
+Since the 2.6.11 kernel, the graphic card would not
+work properly as in the bootup process resulting in
+some drm errors. Still, the 2.6.11, 2.6.11.2 and the
+2.6.11.5 versions allowed the card to function
+properly if I'd compile the kernel with SMP support
+enabled.
+The 2.6.12-rc1 kernel, even with SMP enabled, results
+in the same errors, the card being unusable by the
+DRM.
 
-Il giorno sab, 19-03-2005 alle 16:15 +0100, Alexander Kern ha scritto:
-> Copyed from oldest mail...=20
->=20
-> > (as known) with 2.6.10. Latest 2.6.10 source in
-> > debian adds the fix that
-> > was integrated in 2.6.11, from
-> >=20
-> > =20
-> > http://lists.debian.org/debian-sparc/2005/02/msg00063.html
->=20
-> It's mean you run 2.6.10 + "always hsync on SPARC" patch ?
+I compiled 2.6.12-rc1 in 3 (three) different ways:
+1. -AGP and AGP_ATI as built-in
+   -DRM and DRM_RADEON as built-in
+   -FB AND FB_RADEON as built-in; FB_RADEON_OLD as
+module
+2. -AGP and AGP_ATI modules
+-DRM and DRM_RADEON modules
+	-FB and FB_RADEON built-in; no FB_RADEON_OLD
 
-Right. Same behaviour with 2.6.11, however.
 
-> And if you try any fixes from Tony, you see mclk 100 xclk 100 in your dme=
-sg,=20
-> bur screen is steel garbage?
-
-Yes. dmesg reports the setting passed on cmdline and screen is still
-garbled. Setting xclk to 100 makes things worse.
-
-Regards,
-
---=20
- Luigi Gangitano -- <luigi@debian.org> -- <gangitano@lugroma3.org>
- GPG: 1024D/924C0C26: 12F8 9C03 89D3 DB4A 9972  C24A F19B A618 924C 0C26
-
---=-ndFqd47PDCbagsVRJsWG
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: Questa parte del messaggio =?ISO-8859-1?Q?=E8?= firmata
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.0 (GNU/Linux)
-
-iD8DBQBCQHqo8ZumGJJMDCYRAn9cAJ9Vjj1s9rYwsISe5AxA8K6FssjCNQCeL9Jo
-0tZQu8IBjYhPeXlD2mN4qJI=
-=AeOa
------END PGP SIGNATURE-----
-
---=-ndFqd47PDCbagsVRJsWG--
+		
+__________________________________ 
+Do you Yahoo!? 
+Make Yahoo! your home page 
+http://www.yahoo.com/r/hs
 
 
 -------------------------------------------------------

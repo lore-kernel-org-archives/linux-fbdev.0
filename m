@@ -1,90 +1,61 @@
-From: "Sottek, Matthew J" <matthew.j.sottek@intel.com>
-Subject: RE: [Linux-fbdev-devel] Re: [BK updates] fbdev changes updates.
-Date: Wed, 30 Oct 2002 12:55:32 -0800
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <2B4461BF89BAD511A86100508B66D53804E4FA66@fmsmsx112.fm.intel.com>
+From: James Simmons <jsimmons@infradead.org>
+Subject: [BK console] console updates.
+Date: Wed, 30 Oct 2002 13:56:38 -0800 (PST)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.LNX.4.33.0210301343580.1392-100000@maxwell.earthlink.net>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'Antonino Daplas' <adaplas@pol.net>, James Simmons <jsimmons@infradead.org>
-Cc: Dave Jones <davej@codemonkey.org.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux console project <linuxconsole-dev@lists.sourceforge.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-I made quite a large effort to work out a mechanism for enabling the i810
-before the AGP but I was just never happy with any of the solutions. As
-Tony et all mentioned, the cleanest way is to just let the gart driver come
-up before the Framebuffer.
+Hi folks!!!
 
- -Matt
+   Along with the new fbdev api I also have rewritten the console layer.
+The goals are:
 
+1) The idea here was to move alot of the basic functionaly present in
+   alot of low level drivers into the the higher layers thus making the
+   low level drivers smaller and cleaner. A good example is using the
+   /dev/fb interface to resize a VC. That is just plain dumb.
 
------Original Message-----
-From: Antonino Daplas [mailto:adaplas@pol.net]
-Sent: Tuesday, October 29, 2002 9:33 PM
-To: James Simmons
-Cc: Dave Jones; Linux Kernel Mailing List; Linux Fbdev development list
-Subject: [Linux-fbdev-devel] Re: [BK updates] fbdev changes updates.
+2) The second goal was to seperate out the terminal emulation to allow
+   for a light weight printk. Also the idea was to make the VT console
+   system modular. On embedded devices then we can insmod the VT
+   console system. This is partially done.
 
-
-On Wed, 2002-10-30 at 06:38, James Simmons wrote:
-> 
-> > On Tue, Oct 29, 2002 at 12:45:10PM -0800, James Simmons wrote:
-> >  > The reason for this is we will see in the future embedded ix86
-> >  > boards with things like i810 framebuffers with NO vga core. In this
-case
-> >  > we will need a fbdev driver for a graphical console. Thus the agp
-code
-> >  > must be started before the fbdev layer.
-> >
-> > Can you explain exactly what the agpgart code is doing that needs
-> > to be done earlier than framebuffer ? I don't see any reason for this
-> > change. There should be no GART mappings until we've booted userspace
-> > (except for the case of IOMMU)
-> 
-> Best to ask the author of the i810 framebuffer driver. He can tell you his
-> need for AGP stuff. I CC.
-> 
-> 
-
-Hi,
-
-James is right, I have been tackling with this for ages.  I have an
-i810  driver (http://i810fb.sourceforge.net) that's been "ready" for
-some time now, but never submitted it for kernel inclusion precisely
-because of this issue.  
-
-The i810/1815 has no video memory of it's own, except for memory stolen
-from system RAM (512 to 1024K).  Unfortunately, entire memory is
-accessible only through bank switching and is primarily used for legacy
-VGA.  Linear memory is availably only through GART mappings.
-
-I've seen/done/been thinking of the following approaches:
-
-1.  Do custom GART mappings only - abandoned
-
-2.  Fake a linear framebuffer by bank switching the 'stolen memory' -
-this idea is by Matt Sottek, but he might have some problems with this
-
-3.  Force loading of agpgart before the console/framebuffer - my current
-approach in 2.4
-
-4.  Do custom GART mappings, wait for agpgart to be available, then use
-kernel GART mapping routines - my current approach for 2.5
-
-5.  Create a fake framebuffer from System RAM, wait for agpgart to be
-loaded, then map the GART - been toying with this idea
-
-The easiest solution for me is to initialize the agpgart ahead of the
-framebuffer.  Since I'm not a kernel hacker, I don't really get a clear
-picture of the issues involved and I'll be grateful for any input.
-
-Thanks
-
-Tony 
+3) Multi-desktop systems. Already done this. The current code in BK
+   doesn't support this just yet as I have a few bug to beat out for
+   single headed systems. It will take about one more week to get this
+   ready.
 
 
+I doubt this code will go into 2.5.X but it is avaiable for anyone to play
+with it.
+
+bk://linuxconsole.bkbits.net
+
+BTW I will make patches avaiable as soon as 2.5.45 comes out.
+
+MS: (n) 1. A debilitating and surprisingly widespread affliction that
+renders the sufferer barely able to perform the simplest task. 2. A disease.
+
+James Simmons  [jsimmons@users.sf.net] 	                ____/|
+fbdev/console/gfx developer                             \ o.O|
+http://www.linux-fbdev.org                               =(_)=
+http://linuxgfx.sourceforge.net                            U
+http://linuxconsole.sourceforge.net
 
 
 
@@ -93,7 +64,3 @@ This sf.net email is sponsored by: Influence the future
 of Java(TM) technology. Join the Java Community 
 Process(SM) (JCP(SM)) program now. 
 http://ads.sourceforge.net/cgi-bin/redirect.pl?sunm0004en
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel

@@ -1,24 +1,21 @@
-From: Marcelo Ramos <mramos@montevideo.com.uy>
-Subject: Re: pm2fb fixes
-Date: Wed, 21 Apr 2004 01:51:18 -0300
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: vesafb and *fb
+Date: Wed, 21 Apr 2004 09:51:41 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040421015118.2caa6e99@zerocool>
-References: <XFMail.20040421004644.jim.hague@acm.org>
+Message-ID: <Pine.GSO.4.58.0404210949590.7657@waterleaf.sonytel.be>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="pgp-sha1";
- boundary="Signature=_Wed__21_Apr_2004_01_51_18_-0300_AOs2af=h0CF_tYXS"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BG9m4-0005wG-2A
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Apr 2004 21:55:52 -0700
-Received: from r200-40-228-146.adinet.com.uy ([200.40.228.146] helo=mx2.montevideo.com.uy)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1BG9m3-0004Ve-BY
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Apr 2004 21:55:51 -0700
-In-Reply-To: <XFMail.20040421004644.jim.hague@acm.org>
+	id 1BGCWI-00052N-1o
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 00:51:46 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BGCWH-0006i8-G7
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 00:51:45 -0700
+Received: from waterleaf.sonytel.be (localhost [127.0.0.1])
+	by witte.sonytel.be (8.12.10/8.12.10) with ESMTP id i3L7pfxt005447
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 21 Apr 2004 09:51:41 +0200 (MEST)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,53 +25,40 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
---Signature=_Wed__21_Apr_2004_01_51_18_-0300_AOs2af=h0CF_tYXS
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-El (On) Wed, 21 Apr 2004 00:46:44 +0100 (BST)
-Jim Hague <jim.hague@acm.org> escribi=F3 (wrote):
+Yesterday I noticed on a box at work that if you compile in both vesafb and
+atyfb (the box has an ATI 3D RAGE PRO), you get both fb0 (atyfb) and fb1
+(vesafb). That's not supposed to happen.
 
-> The conversion of pm2fb to using framebuffer_alloc() introduced a null po=
-inter
-> dereference bug.
->=20
-> This patch fixes this bug, and a silly problem in pm2fb_blank(). There's =
-also
-> some minor tidying.
->=20
-> The patch is against 2.6.6-rc1.
+Vesafb did print that the frame buffer was already in use, but it just
+continued, cfr. this code:
 
-I applied the patch and now the kernel oops is gone. How can I change the
-resolution? If I don't specify the mode then i get 640x480-60 but if i use
-video=3Dpm2fb:mode:1024x768 (or any other resolution) I get 640x400-70. am I
-passing the driver the argument with a wrong format?
+    if (!request_mem_region(vesafb_fix.smem_start, vesafb_fix.smem_len, "vesafb")) {
+	    printk(KERN_WARNING
+		   "vesafb: abort, cannot reserve video memory at 0x%lx\n",
+		    vesafb_fix.smem_start);
+	    /* We cannot make this fatal. Sometimes this comes from magic
+	       spaces our resource handlers simply don't know about */
+    }
 
-TIA
+That was on plain 2.6.5. But to my surprise the latest 2.4 behaves the same.
+This seems to have been changed in 2.4.15.
+Does anyone know why this was changed?
 
---=20
- _____________________________________________________________
-                                        _____  ____________
-  Marcelo Ramos                        |     \/      __    |
-  Fedora Core 1 | Linux 2.6.5          |            |_/    /
-  Socio UYLUG Nro 125                  |                   \
-  Linux registered user #118109        |____|\/|____|\______\
+Gr{oetje,eeting}s,
 
---Signature=_Wed__21_Apr_2004_01_51_18_-0300_AOs2af=h0CF_tYXS
-Content-Type: application/pgp-signature
+						Geert
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.3 (GNU/Linux)
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-iD8DBQFAhf3MKHiVwzS5rpkRAjmmAJ9eDZerw4onncJXY4+4KTvzYvDU+gCeLCjo
-Orklr5Qh/DvkGv8DLTJVecU=
-=32vf
------END PGP SIGNATURE-----
-
---Signature=_Wed__21_Apr_2004_01_51_18_-0300_AOs2af=h0CF_tYXS--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

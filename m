@@ -1,39 +1,26 @@
-From: "Chuck Meade" <chuck@ThePTRGroup.com>
-Subject: FB driver for Epson sed1335
-Date: Tue, 31 Dec 2002 20:47:58 -0500
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <IIEEICKJLNEPBBDJICNGCEPHCMAA.chuck@ThePTRGroup.com>
+From: Linus Torvalds <torvalds@transmeta.com>
+Subject: Re: [BK fbdev updates]
+Date: Tue, 31 Dec 2002 17:47:49 -0800 (PST)
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <Pine.LNX.4.44.0212311746550.8101-100000@home.transmeta.com>
+References: <200212311931.24544.dpaun@rogers.com>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <200212311931.24544.dpaun@rogers.com>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from smtp10.atl.mindspring.net ([207.69.200.246])
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18TXzH-00088C-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 31 Dec 2002 17:48:03 -0800
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: "Chuck Meade (PTR Group)" <chuck@ThePTRGroup.com>
-
-Does anyone have a Linux fb driver for the Epson sed1335 LCD
-controller?  I see drivers in the Linux tree for some of the
-newer Epson devices such as the 1355, but cannot locate a
-driver for the 1335.
-
-Thanks very much,
-Chuck
+To: "Dimitrie O. Paun" <dpaun@rogers.com>
+Cc: James Simmons <jsimmons@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
 
+On Tue, 31 Dec 2002, Dimitrie O. Paun wrote:
+> 
+> What about a diffstat? Come on dude, this a problem _every_single_patch_ :)
 
--------------------------------------------------------
-This sf.net email is sponsored by:ThinkGeek
-Welcome to geek heaven.
-http://thinkgeek.com/sf
+There are some nice scripts in the Documentation/BK directory, to not just 
+have diffstats but also listings of the things changed etc. Much nicer 
+than just a "please pull this blind without any clue what it will do for 
+you" email.
+
+		Linus

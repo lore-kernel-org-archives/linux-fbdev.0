@@ -1,28 +1,23 @@
-From: Hetz Ben Hamo <hetz@softier.com>
-Subject: question about frame buffer "emulation"
-Date: Thu, 25 Sep 2003 10:14:35 +0300
+From: Stefan Reinauer <stepan@suse.de>
+Subject: Re: Problem with radeon new ROM probe code
+Date: Thu, 25 Sep 2003 14:10:25 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200309251014.35544.hetz@softier.com>
+Message-ID: <20030925121025.GA30733@suse.de>
+References: <1064425449.15996.58.camel@gaston> <20030924181257.78090.qmail@web14914.mail.yahoo.com> <20030925053916.GA2068@iliana>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1A2QWW-0005q4-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 25 Sep 2003 00:26:48 -0700
-Received: from sphere.barak.net.il ([212.150.48.98])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 1A2QWV-0002fT-TF
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Sep 2003 00:26:48 -0700
-Received: from abu-fatma.softier.local ([62.90.245.250])
-          by sphere.barak.net.il
-          (InterMail vK.4.04.00.00 201-232-137 license 858186d517cc18a2ca9cf19e4d4c6a54)
-          with ESMTP
-          id <20030925071335.HMEO22161.sphere@abu-fatma.softier.local>
-          for <linux-fbdev-devel@lists.sourceforge.net>;
-          Thu, 25 Sep 2003 10:13:35 +0300
+	id 1A2UyW-0002fi-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 25 Sep 2003 05:12:00 -0700
+Received: from ns.suse.de ([195.135.220.2] helo=Cantor.suse.de)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.22)
+	id 1A2UyV-0005Px-Dt
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Sep 2003 05:11:59 -0700
 Content-Disposition: inline
+In-Reply-To: <20030925053916.GA2068@iliana>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -33,19 +28,35 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: Sven Luther <sven.luther@wanadoo.fr>
+Cc: Jon Smirl <jonsmirl@yahoo.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michel DXnzer <michel@daenzer.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi people,
+* Sven Luther <sven.luther@wanadoo.fr> [030925 07:39]:
+> On Wed, Sep 24, 2003 at 11:12:57AM -0700, Jon Smirl wrote:
+> > Is the 'Mac' card being used on a x86 machine?
+> > I thought the ROM code was compiled out on non-X86 machines.
+> 
+> Notice that not all powerpc boxes are in this case. The pegasos at least
+> includes an x86 emulator in the OF which runs the cards bios. I know
+> that the amigaone does the same. So testing for powerpc may well not be
+> enough for detecting OF cards.
 
-I'm looking for a frame buffer "emulation" layer/app that can be shown inside 
-X11, so I can write an application for frame-buffer and use this emulation 
-for testing without switching back and forth from X11 to FB...
+Whether it's an Open Firmware card or not can be read from the PCI
+headers stored in the ROM. Check the romheaders utility from OpenBIOS
+CVS ( http://www.openbios.org/ )
 
-Does anyone know about such an application?
+Look at the code here:
+http://cvs.openbios.org/cgi-dom/viewcvs.cgi/utils/romheaders.c?rev=1.2&content-type=text/vnd.viewcvs-markup
 
-Thanks a lot,
-Hetz
+The program prints whether the rom is OpenFirmware, x86 or HP PA-Risc.
+Note that graphics cards can theoretically contain ROM images for both
+x86 and OF in one chip.
 
+  Stefan
+-- 
+Architecture Team
+    SuSE Linux AG
 
 
 -------------------------------------------------------

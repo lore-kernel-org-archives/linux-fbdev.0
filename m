@@ -1,17 +1,19 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: "Parag Warudkar" <parag.warudkar@wipro.com>
 Subject: RE: 2.5.70 - Blank Screen with VESA VGA Framebuffer
-Date: Fri, 13 Jun 2003 10:54:18 +0200 (MEST)
+Date: Fri, 13 Jun 2003 14:34:17 +0530
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0306131052590.11546-100000@vervain.sonytel.be>
-References: <0BCBFEACE44CF0469CF5EBF7F6B612534468DE@chn-snr-msg.wipro.com>
+Message-ID: <0BCBFEACE44CF0469CF5EBF7F6B61253446914@chn-snr-msg.wipro.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=witte.sonytel.be)
+Received: from wiprom2mx1.wipro.com ([203.197.164.41])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19QkLV-0007xm-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 13 Jun 2003 01:55:41 -0700
-In-Reply-To: <0BCBFEACE44CF0469CF5EBF7F6B612534468DE@chn-snr-msg.wipro.com>
+	id 19QkUB-0003g3-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 13 Jun 2003 02:04:39 -0700
+Received: from m2vwall5.wipro.com (m2vwall5.wipro.com [10.115.50.5])
+	by wiprom2mx1.wipro.com (8.11.3/8.11.3) with SMTP id h5D94MC06899
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 13 Jun 2003 14:34:23 +0530 (IST)
+content-class: urn:content-classes:message
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,22 +23,39 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="iso-8859-1"
-To: Parag Warudkar <parag.warudkar@wipro.com>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
+You mean to say you have 2.5.XX working with VESA VGA Framebuffer or =
+ATYFB?
+If yes, could you please direct me to relevant sources / patches?
+
+Cheers
+
+Parag
+-----Original Message-----
+From: Geert Uytterhoeven [mailto:geert@linux-m68k.org]=20
+Sent: Friday, June 13, 2003 2:24 PM
+To: Parag Warudkar
+Cc: James Simmons; Linux Frame Buffer Device Development
+Subject: RE: [Linux-fbdev-devel] 2.5.70 - Blank Screen with VESA VGA =
+Framebuffer
+
 On Fri, 13 Jun 2003, Parag Warudkar wrote:
-> No. Atyfb hasn't worked for me in 2.4.20. If I use video=3Datyfb, I get=
- a
-> corrupted white screen which is beyond my capabilities to describe!! :)
+> No. Atyfb hasn't worked for me in 2.4.20. If I use video=3Datyfb, I =
+get a
+> corrupted white screen which is beyond my capabilities to describe!! =
+:)
 
 OK, so there's no point in trying atyfb in 2.5.x, it won't work neither.
 
-> The graphics chip is ATI RAGE Mobility M1(LT) AGP2X - a MACH64 Derivate
+> The graphics chip is ATI RAGE Mobility M1(LT) AGP2X - a MACH64 =
+Derivate
 > with 8Mb RAM..  For X, 3D acceleration (DRI, direct rendering) works
 
-So you probably have the same version as I have. Thanks to Dani=EBl Manti=
-one,
+So you probably have the same version as I have. Thanks to Dani=EBl =
+Mantione,
 it's almost working, though.
 
 Gr{oetje,eeting}s,
@@ -44,13 +63,13 @@ Gr{oetje,eeting}s,
 						Geert
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m6=
-8k.org
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- =
+geert@linux-m68k.org
 
 In personal conversations with technical people, I call myself a hacker. =
 But
-when I'm talking to journalists I just say "programmer" or something like=
- that.
+when I'm talking to journalists I just say "programmer" or something =
+like that.
 							    -- Linus Torvalds
 
 

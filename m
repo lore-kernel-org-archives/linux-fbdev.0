@@ -1,62 +1,48 @@
-From: Otto Solares <solca@guug.org>
-Subject: Re: Changing modes with fbset
-Date: Thu, 8 Jan 2004 19:31:44 -0600
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040109013144.GC17821@guug.org>
-References: <20040106002822.GB442@guug.org> <Pine.LNX.4.44.0401090002300.17957-100000@phoenix.infradead.org>
+From: Kronos <kronos@kronoz.cjb.net>
+Subject: Re: [Linux-fbdev-devel] New FBDev patch
+Date: Fri, 9 Jan 2004 18:17:33 +0100
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <20040109171733.GA13027@dreamland.darkstar.lan>
+References: <Pine.LNX.4.44.0401082108080.12797-100000@phoenix.infradead.org>
+Reply-To: kronos@kronoz.cjb.net
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AelUb-0005Ua-Im
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Jan 2004 17:31:17 -0800
-Received: from guug.org ([168.234.203.30] helo=guug.galileo.edu)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1AelUb-0005P2-7X
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Jan 2004 17:31:17 -0800
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0401090002300.17957-100000@phoenix.infradead.org>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+In-Reply-To: <Pine.LNX.4.44.0401082108080.12797-100000@phoenix.infradead.org>
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: James Simmons <jsimmons@infradead.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Fri, Jan 09, 2004 at 12:03:16AM +0000, James Simmons wrote:
-> On Mon, 5 Jan 2004, Otto Solares wrote:
+Il Thu, Jan 08, 2004 at 10:03:54PM +0000, James Simmons ha scritto: 
 > 
-> > On Tue, Jan 06, 2004 at 12:06:04AM +0000, James Simmons wrote:
-> > > 
-> > > Applied. Thanks for finding that.
-> > 
-> > Hi James! now that you are back again, i would like to suggest
-> > a modification to fbdev core, i am having problems guessing
-> > which card is attached to a fb device.  I need this info to
-> > solve the 'more than 1 card' situation.  This could be easily
-> > fixed if the fbdev api provides the busid of the card, like
-> > "pci:0000:01:0.0".  That would solve a lot of things in the
-> > HAL detection routines.  Maybe that could be exported via
-> > sysfs but i have been waiting for sysfs for a while and don't
-> > see it coming to a reality.  Maybe an ioctl is enough.
+> This is the latest patch against 2.6.0-rc3. Give it a try.
 > 
-> The patches are getting pushed. With sysfs the info is there :-)
+> http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
 
-Great!
+> <kronos@kronoz.cjb.net> (03/09/17 1.1267.40.1)
+>    Add new API framebuffer_alloc and framebuffer_release.
+>    
+>    Framebuffer info structure (ie. struct fb_info) must be obtained from
+>    framebuffer_alloc. When it is no longer needed (after unregister_framebuffer
+>    and clean up) it can be released using framebuffer_release.
+>    
+>    If the framebuffer is not registered yet (eg. on error path) then fb_info must
+>    be released via kfree. 
 
--solca
 
+Are we sure that we want this for 2.6? Greg KH has a much less intrusive
+patch, maybe you should take that instead and keep my work 2.7.
 
+If you decide to go with framebuffer_alloc then I have more patches for
+you ;)
 
--------------------------------------------------------
-This SF.net email is sponsored by: Perforce Software.
-Perforce is the Fast Software Configuration Management System offering
-advanced branching capabilities and atomic changes on 50+ platforms.
-Free Eval! http://www.perforce.com/perforce/loadprog.html
+Luca
+-- 
+Reply-To: kronos@kronoz.cjb.net
+Home: http://kronoz.cjb.net
+I went to God just to see
+And I was looking at me
+Saw heaven and hell were lies
+When I'm God everyone dies

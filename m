@@ -1,78 +1,58 @@
-From: Steven Newbury <dri.devel@ntlworld.com>
-Subject: Re: [Linux-fbdev-devel] Re: [Dri-devel] Rage128 and Radeon patches
-Date: Thu, 14 Aug 2003 19:32:55 +0100
-Sender: devel-admin@XFree86.Org
-Message-ID: <1060885975.26455.4.camel@timescape>
-References: <20030814180607.34519.qmail@web11305.mail.yahoo.com>
-Reply-To: devel@xfree86.org
+From: "Maciej W. Rozycki" <macro@ds2.pg.gda.pl>
+Subject: Re: Re: [macro@ds2.pg.gda.pl: Re: PMAG-A support?]
+Date: Thu, 14 Aug 2003 14:19:18 +0200 (MET DST)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.GSO.3.96.1030814140520.14241D-100000@delta.ds2.pg.gda.pl>
+References: <20030814022906.GH10792@rembrandt.csv.ica.uni-stuttgart.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <devel-admin@XFree86.Org>
-In-Reply-To: <20030814180607.34519.qmail@web11305.mail.yahoo.com>
-Errors-To: devel-admin@XFree86.Org
-List-Help: <mailto:devel-request@XFree86.Org?subject=help>
-List-Post: <mailto:devel@XFree86.Org>
-List-Subscribe: <http://XFree86.Org/mailman/listinfo/devel>,
-	<mailto:devel-request@XFree86.Org?subject=subscribe>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from delta.ds2.pg.gda.pl ([213.192.72.1] ident=macro)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19nH5G-0000Fz-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 14 Aug 2003 05:20:02 -0700
+In-Reply-To: <20030814022906.GH10792@rembrandt.csv.ica.uni-stuttgart.de>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://XFree86.Org/mailman/listinfo/devel>,
-	<mailto:devel-request@XFree86.Org?subject=unsubscribe>
-List-Archive: <http://XFree86.Org/mailman/private/devel/>
-Content-Type: text/plain; charset="us-ascii"
-To: Alex Deucher <agd5f@yahoo.com>
-Cc: Jon Smirl <jonsmirl@yahoo.com>, dri-devel <dri-devel@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>, devel@xfree86.org
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Thiemo Seufer <ica2_ts@csv.ica.uni-stuttgart.de>
+Cc: Karsten Merker <karsten@excalibur.cologne.de>, Martin Schulze <joey@infodrom.org>, linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, 2003-08-14 at 19:06, Alex Deucher wrote:
-> I haven't tried multiple radeon cards, but I seem to recall several
-> people having this problem right around when 4.3.0 was released.  I
-> don't think a "proper" fix ever went in and I think the issue was to be
-> revisited later.  I don't know if it's needed anymore or not.
-> 
-It is still needed, Radeon as a secondary display only works on the
-first initialisation (it can not find ROM on subsequent attempts) in all
-XFree86 versions I have tried up to and including current CVS.  At least
-on my hardware... :-/
+On Thu, 14 Aug 2003, Thiemo Seufer wrote:
 
-> Alex
+> >  I've looked at the patch and have changed the barriers as I deem
+> > appropriate.  But while doing this, I've noticed the code is insonsistent
+> > in a few places -- has it been successfully verified on real hardware?
 > 
-> --- Jon Smirl <jonsmirl@yahoo.com> wrote:
-> > --- Alex Deucher <agd5f@yahoo.com> wrote:
-> > > > 2) access ROM directly instead of relying on copy
-> > > > in low RAM. This allows multiple cards. Required
-> > > > MPP_TB_CONFIG fix in driver.
-> > > 
-> > > Is this patch necessary for xfree86?  It may address
-> > > some of the issues
-> > > in the email threads I sent out yesterday (ie,
-> > > problems with multiple
-> > > radeon cards and xfree86).  if so would you consider
-> > > making one?
-> > > 
-> > 
-> > Xfree code does not have the patch, but is Xfree
-> > experiencing the bug? Xfree accesses the hardware very
-> > differently than the framebuffer drivers.
-> > 
-> > I suspect that you would see this problem if you were
-> > using something else for your primary video and a
-> > Radeon for secondary. The first time you ran Xfree it
-> > would work. But when you exited and restarted Xfree it
-> > would hang when starting the secondary display.
-> > 
-> > Where does XFree reset the secondary card? The code
-> > below needs to run right after the reset in the radeon
-> > driver. I added it to my Rage128 driver too but I have
-> > not observed the problem with them.
-> > 
-> > Framebuffer code is different and triggers the bug the
-> > first time the secondary display is accessed.
-> > 
-> > /* Fix from ATI for problem with Radeon hardware not
-> > leaving ROM enabled */
-> > unsigned int temp;
-> > temp = INREG(RADEON_MPP_TB_CONFIG);
-> > temp &= 0x00ffffffu;
-> > temp |= 0x04 << 24;
-> > OUTREG(RADEON_MPP_TB_CONFIG, temp);
-> > temp = INREG(RADEON_MPP_TB_CONFIG);
-> > 
+> It works on my /260. Which parts look weird to you?
+
+1. bt431_write_reg_inc() uses u16 for value, even though it only uses 8
+bits (which of course makes all the calls in bt431_init_cursor() dubious). 
+
+2. bt431_load_cursor_sprite() loads control registers instead of the
+cursor map. 
+
+ See the patch for details.  You may use `diff -b' to get rid of spacing
+clean-ups -- this makes my updates quite clear. 
+
+  Maciej
+
+-- 
++  Maciej W. Rozycki, Technical University of Gdansk, Poland   +
++--------------------------------------------------------------+
++        e-mail: macro@ds2.pg.gda.pl, PGP key available        +
+
+
+
+-------------------------------------------------------
+This SF.Net email sponsored by: Free pre-built ASP.NET sites including
+Data Reports, E-commerce, Portals, and Forums are available now.
+Download today and enter to win an XBOX or Visual Studio .NET.
+http://aspnet.click-url.com/go/psa00100003ave/direct;at.aspnet_072303_01/01

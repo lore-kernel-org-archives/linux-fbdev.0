@@ -1,22 +1,23 @@
-From: James Simmons <jsimmons@infradead.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
- one works ;-)
-Date: Wed, 28 Apr 2004 00:57:00 +0100 (BST)
+	one works ;-)
+Date: Wed, 28 Apr 2004 09:53:28 +1000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0404280051480.23153-100000@phoenix.infradead.org>
-References: <1083108484.16544.61.camel@gaston>
+Message-ID: <1083110007.20091.5.camel@gaston>
+References: <Pine.LNX.4.44.0404280039460.23153-100000@phoenix.infradead.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIcRm-0006b1-Az
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:57:06 -0700
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1BIcTv-0006yO-2D
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:59:19 -0700
+Received: from gate.crashing.org ([63.228.1.57] ident=root)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1BIcRl-0000HK-Lx
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:57:06 -0700
-In-Reply-To: <1083108484.16544.61.camel@gaston>
+	id 1BIcTu-0006Wi-So
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:59:19 -0700
+In-Reply-To: <Pine.LNX.4.44.0404280039460.23153-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,22 +27,42 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@infradead.org>
 Cc: John Zielinski <grim@undead.cc>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> Nah, it's a lot easier to restore the state you need than to
-> save/restore everything. It's not even always possible to save/restore
-> everything (think: write only registers).
+> No. Look the logic should go from the upper VT layer to the lower driver 
+> to accomplish something. Not the reverse.
+> 
+> struct vc_data -> native console driver structure --> fbdev
 
-If this is true then it would be better if we have the below logic.
+But the upper VT layer has no clue about what a graphic mode can be and
+we know well enough that we _need_ to be able to enforce graphics mode
+or want to play with them by manipulating var structures, without losing
+the console.
 
-struct vc_data --> native driver layer --> fbdev.
+Your logic is only ever valid once every single fbdev is capable of
+doing proper mode management & validation. And even then, there isn't
+a 1:1 relationchip between a mode and an fbcon size.
 
-instead of save/restore the var for each VC.
+> Not.
+> 
+> fbdev --> native console driver --> struct vc_data.
+> 
+> This was the way it uses to be. If this is the case then I suggest we 
+> write our own vt.c and vt_ioctl.c for the fbcon layer. We shouldn't even
+> use struct vc_data then. In fact each fbdev driver should be independent 
+> console drivers. That is how 2.4.X was. Each driver was nearly its own 
+> console driver. We need to go one way or the other. 
 
+I agree we need to go away and I'm not proposing adding anything to
+fb_info nor whatever in this regard. It has to be all self-contained
+in the console subsystem, that is fbcon. And we already have a data
+structure holding per-console fbcon-specific data, it's called
+struct display.
+
+Ben.
 
 
 

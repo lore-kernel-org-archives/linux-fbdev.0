@@ -1,57 +1,36 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Generic VESA framebuffer driver and Video card BOOT?
-Date: Tue, 19 Oct 2004 23:11:14 +0200
+Subject: Re: [Linux-fbdev-devel] Generic VESA framebuffer driver and Video card BOOT?
+Date: Tue, 19 Oct 2004 23:42:46 +0200
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20041019211114.GC1142@elf.ucw.cz>
-References: <416E6ADC.3007.294DF20D@localhost>
+Message-ID: <20041019214246.GE1142@elf.ucw.cz>
+References: <200410160946.32644.adaplas@hotpop.com> <4173B865.26539.117B09BD@localhost> <417428F2.2050402@bitworks.com> <9e47339104101814166bf4cfe5@mail.gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S269863AbUJSVgX@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S269773AbUJSVvp@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <416E6ADC.3007.294DF20D@localhost>
+In-Reply-To: <9e47339104101814166bf4cfe5@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kendall Bennett <KendallB@scitechsoft.com>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, penguinppc-team@lists.penguinppc.org
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
 Hi!
 
-> I am writing this email to guage the interest in having code contributed 
-> to the main stream Linux kernel that would support the user of a generic, 
-> full featured VESA framebuffer driver that works on any CPU architecture 
-> along with a generic Video card BOOT or POST mechanism.
+> > > I would assume however a serial port console would be fine for embedded
+> > > machines until the framebuffer driver could come up anyway.
+> > > 
+> > This would be an incorrect assumption.  Speaking as a developer of one
+> > said embedded system I must have video at boot and be able to dump
+> > critical kernel messages to the screen.
+> 
+> I don't see it as the kernel's responsibility to compensate for lack
+> of something in an embedded system's BIOS. Embedded programmers are
+> free to go in and add basic display code to their arch specific
+> directories for printing out this class of messages. Better yet would
+> be to fix the embedded ROM to support basic display.
 
-BTW, does this look like right way to POST VGA BIOS from real mode? It
-is what we currently use... and it works on some machines...
-
-        movw    $0xb800, %ax
-        movw    %ax,%fs
-        movw    $0x0e00 + 'L', %fs:(0x10)
-
-        cli
-        cld
-
-        # setup data segment
-        movw    %cs, %ax
-        movw    %ax, %ds                                        # Make ds:0 point to wakeup_start
-        movw    %ax, %ss
-        mov     $(wakeup_stack - wakeup_code), %sp              # Private stack is needed for ASUS board
-        movw    $0x0e00 + 'S', %fs:(0x12)
-
-        pushl   $0                                              # Kill any dangerous flags
-        popfl
-
-        movl    real_magic - wakeup_code, %eax
-        cmpl    $0x12345678, %eax
-        jne     bogus_real_magic
-
-        testl   $1, video_flags - wakeup_code
-        jz      1f
-        lcall   $0xc000,$3
-        movw    %cs, %ax
-        movw    %ax, %ds                                        # Bios might have played with that
-        movw    %ax, %ss
-1:
+Unfortunately, this is not only problem of embedded bootup but also of
+resume (from suspend-to-RAM) on plain i386 notebook near you...
 
 								Pavel
 -- 

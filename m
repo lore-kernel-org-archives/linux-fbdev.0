@@ -1,17 +1,22 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: fb_cmap and transparency
-Date: Tue, 18 Mar 2003 17:21:11 +0000 (GMT)
+From: "Kendall Bennett" <KendallB@scitechsoft.com>
+Subject: Programmers documetnation on framebuffer console?
+Date: Tue, 18 Mar 2003 13:58:16 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0303181721050.483-100000@phoenix.infradead.org>
+Message-ID: <3E7725F8.25132.45DF134@localhost>
 References: <Pine.GSO.4.21.0303181529590.17808-100000@vervain.sonytel.be>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7BIT
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from phoenix.infradead.org ([195.224.96.167])
+Received: from adsl-63-195-13-70.dsl.chic01.pacbell.net ([63.195.13.70] helo=mail.scitechsoft.com)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18vKmb-0002gs-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 18 Mar 2003 09:21:50 -0800
-In-Reply-To: <Pine.GSO.4.21.0303181529590.17808-100000@vervain.sonytel.be>
+	id 18vP6W-0000Z1-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 18 Mar 2003 13:58:40 -0800
+Received: from KENDALLB (adsl-63-195-13-78.dsl.chic01.pacbell.net [63.195.13.78])
+	by mail.scitechsoft.com (8.12.8/8.12.5) with ESMTP id h2ILx2PD016508
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 18 Mar 2003 13:59:02 -0800
+In-reply-to: <Pine.GSO.4.21.0303181529590.17808-100000@vervain.sonytel.be>
+Content-description: Mail message body
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,61 +26,29 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
 
+Hi Guys,
 
-Applied.
+Can someone point me at programmer's documentation on how to use the 
+framebuffer console subsystem on Linux? I have been to linux-fbdev.org 
+and a few other places, but all of the linux to what would appear to be 
+useful documentation or libraries are all dead. I need something that 
+talks about the ioctl()'s that an application uses to get mode 
+information, set modes and use the acceleration functions from the 
+framebuffer console driver.
 
+Thanks!
 
-On Tue, 18 Mar 2003, Geert Uytterhoeven wrote:
+---
+Kendall Bennett
+Chief Executive Officer
+SciTech Software, Inc.
+Phone: (530) 894 8400
+http://www.scitechsoft.com
 
-> 
-> If a colormap contains no transparency information, fb_set_cmap() calls
-> fb_setcolreg() with trans = 0. This causes all CLUT entries to be fully
-> transparent on hardware that does have transparency information in the CLUT
-> registers.
-> 
-> The following patch solves this problem by changing the default transparency
-> from 0 (full transparent) to 0xffff (full opaque).
-> 
-> The patch applies to both 2.4.20 and 2.5.65.
-> 
-> --- linux/drivers/video/fbcmap.c.orig	Mon Mar  5 09:29:30 2001
-> +++ linux/drivers/video/fbcmap.c	Mon Mar 17 17:39:59 2003
-> @@ -271,7 +271,7 @@
->  	    hred = *red;
->  	    hgreen = *green;
->  	    hblue = *blue;
-> -	    htransp = transp ? *transp : 0;
-> +	    htransp = transp ? *transp : 0xffff;
->  	} else {
->  	    get_user(hred, red);
->  	    get_user(hgreen, green);
-> @@ -279,7 +279,7 @@
->  	    if (transp)
->  		get_user(htransp, transp);
->  	    else
-> -		htransp = 0;
-> +		htransp = 0xffff;
->  	}
->  	red++;
->  	green++;
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
-> 							    -- Linus Torvalds
-> 
-> 
+~ SciTech SNAP - The future of device driver technology! ~
 
 
 

@@ -1,22 +1,22 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 3/9] fbdev: Revive global_mode_option
-Date: Wed, 22 Dec 2004 05:31:45 +0800
-Message-ID: <20041221213641.178C31A019F@smtp-1.hotpop.com>
+Subject: [PATCH 4/9] fbcon/fbdev: Add blanking notification
+Date: Wed, 22 Dec 2004 05:35:13 +0800
+Message-ID: <20041221213648.89B701A0278@smtp-1.hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Cgrgk-0007WS-L5
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 21 Dec 2004 13:37:02 -0800
+	id 1Cgrgo-0007WY-V7
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 21 Dec 2004 13:37:06 -0800
 Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1Cgrgj-0001H0-RW
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 21 Dec 2004 13:37:02 -0800
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1Cgrgn-0002Qd-PF
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 21 Dec 2004 13:37:06 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 037D8BA57DF
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 21 Dec 2004 21:36:49 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id D0FD7BA0C92
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 21 Dec 2004 21:36:52 +0000 (UTC)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -32,77 +32,262 @@ Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-The global_mode_option is useful for choosing the initial video mode
-without specifying the driver, ie 'video=1024x768@60'.  After the
-initialization cleanup, this variable was accidentally removed.  This patch 
-brings it back again.
+Add blanking event to the notifier call chain.  This can be used by fbcon
+to blank/unblank the console, and theoretically, by backlight drivers.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- fbmem.c  |   29 +++++++++++++++++++++--------
- modedb.c |    4 +---
- 2 files changed, 22 insertions(+), 11 deletions(-)
+ drivers/video/console/fbcon.c |   91 ++++++++++++++++++++++--------------------
+ drivers/video/console/fbcon.h |    1
+ drivers/video/fbmem.c         |   26 ++++++++----
+ include/linux/fb.h            |    5 +-
+ 4 files changed, 70 insertions(+), 53 deletions(-)
 
-diff -Nru a/drivers/video/fbmem.c b/drivers/video/fbmem.c
---- a/drivers/video/fbmem.c	2004-12-18 20:38:35 +08:00
-+++ b/drivers/video/fbmem.c	2004-12-21 05:44:01 +08:00
-@@ -1224,19 +1224,32 @@
-  *
-  */
- 
-+extern const char *global_mode_option;
-+
- int __init video_setup(char *options)
+diff -Nru a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+--- a/drivers/video/console/fbcon.c	2004-11-17 18:15:17 +08:00
++++ b/drivers/video/console/fbcon.c	2004-12-21 05:55:41 +08:00
+@@ -2000,44 +2000,20 @@
+ 				int blank)
  {
--	int i;
-+	int i, global = 0;
+ 	if (blank) {
+-		if (info->fix.visual == FB_VISUAL_DIRECTCOLOR ||
+-		    info->fix.visual == FB_VISUAL_PSEUDOCOLOR) {
+-			struct fb_cmap cmap;
+-			u16 *black;
+-
+-			black = kmalloc(sizeof(u16) * info->cmap.len,
+-					GFP_KERNEL);
+-			if (black) {
+-				memset(black, 0, info->cmap.len * sizeof(u16));
+-				cmap.red = cmap.green = cmap.blue = black;
+-				cmap.transp = info->cmap.transp ? black : NULL;
+-				cmap.start = info->cmap.start;
+-				cmap.len = info->cmap.len;
+-				fb_set_cmap(&cmap, info);
+-			}
+-
+-			kfree(black);
+-		} else {
+-			unsigned short charmask = vc->vc_hi_font_mask ?
+-				0x1ff : 0xff;
+-			unsigned short oldc;
+-
+-			oldc = vc->vc_video_erase_char;
+-			vc->vc_video_erase_char &= charmask;
+-			fbcon_clear(vc, 0, 0, vc->vc_rows, vc->vc_cols);
+-			vc->vc_video_erase_char = oldc;
+-		}
+-	} else {
+-		if (info->fix.visual == FB_VISUAL_DIRECTCOLOR ||
+-		    info->fix.visual == FB_VISUAL_PSEUDOCOLOR)
+-			fb_set_cmap(&info->cmap, info);
++		unsigned short charmask = vc->vc_hi_font_mask ?
++			0x1ff : 0xff;
++		unsigned short oldc;
++
++		oldc = vc->vc_video_erase_char;
++		vc->vc_video_erase_char &= charmask;
++		fbcon_clear(vc, 0, 0, vc->vc_rows, vc->vc_cols);
++		vc->vc_video_erase_char = oldc;
+ 	}
+ }
  
- 	if (!options || !*options)
--		return 0;
-+ 		global = 1;
-+ 
-+ 	if (!global && !strncmp(options, "ofonly", 6)) {
-+ 		ofonly = 1;
-+ 		global = 1;
-+ 	}
-+ 
-+ 	if (!global && !strstr(options, "fb:")) {
-+ 		global_mode_option = options;
-+ 		global = 1;
-+ 	}
-+  
-+ 	if (!global) {
-+ 		for (i = 0; i < FB_MAX; i++) {
-+ 			if (video_options[i] == NULL) {
-+ 				video_options[i] = options;
-+ 				break;
-+ 			}
+ static int fbcon_blank(struct vc_data *vc, int blank, int mode_switch)
+ {
+ 	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
+-	struct fbcon_ops *ops = info->fbcon_par;
+ 	int active = !fbcon_is_inactive(vc, info);
  
--	for (i = 0; i < FB_MAX; i++) {
--		if (!strncmp(options, "ofonly", 6))
--			ofonly = 1;
--		if (video_options[i] == NULL) {
--			video_options[i] = options;
--			break;
- 		}
+ 	if (mode_switch) {
+@@ -2061,19 +2037,21 @@
  	}
  
-diff -Nru a/drivers/video/modedb.c b/drivers/video/modedb.c
---- a/drivers/video/modedb.c	2004-11-17 18:15:20 +08:00
-+++ b/drivers/video/modedb.c	2004-11-28 09:18:42 +08:00
-@@ -29,9 +29,7 @@
- #define DPRINTK(fmt, args...)
- #endif
+  	if (active) {
+- 		int ret = -1;
++		struct fbcon_ops *ops = info->fbcon_par;
  
--
--const char *global_mode_option = NULL;
--
-+const char *global_mode_option;
+  		fbcon_cursor(vc, blank ? CM_ERASE : CM_DRAW);
+  		ops->cursor_flash = (!blank);
  
+- 		if (info->fbops->fb_blank)
+- 			ret = info->fbops->fb_blank(blank, info);
+-
+- 		if (ret)
+- 			fbcon_generic_blank(vc, info, blank);
++ 		if (ops->blank_state != blank) {
++ 			if (info->fbops->fb_blank &&
++ 			    info->fbops->fb_blank(blank, info))
++ 				fbcon_generic_blank(vc, info, blank);
++ 
++ 			ops->blank_state = blank;
++ 		}
+ 
+  		if (!blank)
+-  			update_screen(vc->vc_num);
++ 			update_screen(vc->vc_num);
+  	}
+ 
+  	return 0;
+@@ -2580,14 +2558,12 @@
+ 	struct display *p;
+ 	int rows, cols;
+ 
+-	if (!ops)
++	if (!ops || ops->currcon < 0 || vt_cons[ops->currcon]->vc_mode !=
++	    KD_TEXT || registered_fb[con2fb_map[ops->currcon]] != info)
+ 		return;
+ 
+ 	vc = vc_cons[ops->currcon].d;
+ 
+-	if (ops->currcon < 0 || vt_cons[ops->currcon]->vc_mode !=
+-	    KD_TEXT)
+-		return;
+ 	p = &fb_display[vc->vc_num];
+ 
+ 	info->var.xoffset = info->var.yoffset = p->yscroll = 0;
+@@ -2665,6 +2641,32 @@
+ 	return ret;
+ }
+ 
++static void fbcon_fb_blanked(struct fb_info *info, int blank)
++{
++	struct fbcon_ops *ops = info->fbcon_par;
++	int valid = 1;
++
++	if (!ops || ops->currcon < 0 ||
++	    vt_cons[ops->currcon]->vc_mode != KD_TEXT ||
++	    registered_fb[con2fb_map[ops->currcon]] != info)
++		valid = 0;
++
++	if (valid) {
++		struct vc_data *vc;
++
++		vc = vc_cons[ops->currcon].d;
++
++		if (CON_IS_VISIBLE(vc)) {
++			ops->blank_state = blank;
++
++			if (blank)
++				do_blank_screen(0);
++			else
++				do_unblank_screen(0);
++		}
++	}
++}
++
+ static int fbcon_event_notify(struct notifier_block *self, 
+ 			      unsigned long action, void *data)
+ {
+@@ -2699,6 +2701,9 @@
+ 	case FB_EVENT_GET_CONSOLE_MAP:
+ 		con2fb = event->data;
+ 		con2fb->framebuffer = con2fb_map[con2fb->console - 1];
++		break;
++	case FB_EVENT_BLANK:
++		fbcon_fb_blanked(info, *(int *)event->data);
+ 		break;
+ 	}
+ 
+diff -Nru a/drivers/video/console/fbcon.h b/drivers/video/console/fbcon.h
+--- a/drivers/video/console/fbcon.h	2004-11-17 18:15:17 +08:00
++++ b/drivers/video/console/fbcon.h	2004-11-29 05:42:49 +08:00
+@@ -66,6 +66,7 @@
+         int    currcon;	                /* Current VC. */
+ 	int    cursor_flash;
+ 	int    cursor_reset;
++	int    blank_state;
+ 	char  *cursor_data;
+ };
      /*
-      *  Standard video mode definitions (taken from XFree86)
-
+diff -Nru a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+--- a/drivers/video/fbmem.c	2004-12-21 05:44:01 +08:00
++++ b/drivers/video/fbmem.c	2004-12-21 22:44:55 +08:00
+@@ -730,10 +730,10 @@
+ 			    !list_empty(&info->modelist))
+ 				fb_add_videomode(&mode, &info->modelist);
+ 
+-			if (info->flags & FBINFO_MISC_MODECHANGEUSER) {
++			if (info->flags & FBINFO_MISC_USEREVENT) {
+ 				struct fb_event event;
+ 
+-				info->flags &= ~FBINFO_MISC_MODECHANGEUSER;
++				info->flags &= ~FBINFO_MISC_USEREVENT;
+ 				event.info = info;
+ 				notifier_call_chain(&fb_notifier_list,
+ 						    FB_EVENT_MODE_CHANGE, &event);
+@@ -746,15 +746,23 @@
+ int
+ fb_blank(struct fb_info *info, int blank)
+ {	
+-	int err = -EINVAL;
+-	
++ 	int ret = -EINVAL;
++ 
+  	if (blank > FB_BLANK_POWERDOWN)
+  		blank = FB_BLANK_POWERDOWN;
+ 
+ 	if (info->fbops->fb_blank)
+- 		err = info->fbops->fb_blank(blank, info);
++ 		ret = info->fbops->fb_blank(blank, info);
++
++ 	if (!ret) {
++		struct fb_event event;
++
++		event.info = info;
++		event.data = &blank;
++		notifier_call_chain(&fb_notifier_list, FB_EVENT_BLANK, &event);
++	}
+ 
+-	return err;
++ 	return ret;
+ }
+ 
+ static int 
+@@ -782,9 +790,9 @@
+ 		if (copy_from_user(&var, argp, sizeof(var)))
+ 			return -EFAULT;
+ 		acquire_console_sem();
+-		info->flags |= FBINFO_MISC_MODECHANGEUSER;
++		info->flags |= FBINFO_MISC_USEREVENT;
+ 		i = fb_set_var(info, &var);
+-		info->flags &= ~FBINFO_MISC_MODECHANGEUSER;
++		info->flags &= ~FBINFO_MISC_USEREVENT;
+ 		release_console_sem();
+ 		if (i) return i;
+ 		if (copy_to_user(argp, &var, sizeof(var)))
+@@ -846,7 +854,9 @@
+ 					   &event);
+ 	case FBIOBLANK:
+ 		acquire_console_sem();
++		info->flags |= FBINFO_MISC_USEREVENT;
+ 		i = fb_blank(info, arg);
++		info->flags &= ~FBINFO_MISC_USEREVENT;
+ 		release_console_sem();
+ 		return i;
+ 	default:
+diff -Nru a/include/linux/fb.h b/include/linux/fb.h
+--- a/include/linux/fb.h	2004-11-10 06:15:14 +08:00
++++ b/include/linux/fb.h	2004-12-21 05:51:16 +08:00
+@@ -488,7 +488,8 @@
+ #define FB_EVENT_GET_CONSOLE_MAP        0x06
+ /*      set console to framebuffer mapping */
+ #define FB_EVENT_SET_CONSOLE_MAP        0x07
+-
++/*      A display blank is requested       */
++#define FB_EVENT_BLANK                  0x08
+ 
+ struct fb_event {
+ 	struct fb_info *info;
+@@ -690,7 +691,7 @@
+ #define FBINFO_HWACCEL_YPAN		0x2000 /* optional */
+ #define FBINFO_HWACCEL_YWRAP		0x4000 /* optional */
+ 
+-#define FBINFO_MISC_MODECHANGEUSER     0x10000 /* mode change request
++#define FBINFO_MISC_USEREVENT          0x10000 /* event request
+ 						  from userspace */
+ #define FBINFO_MISC_MODESWITCH         0x20000 /* mode switch */
+ #define FBINFO_MISC_MODESWITCHLATE     0x40000 /* init hardware later */
 
 
 

@@ -1,21 +1,22 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: hi-res fb console with 2.6.0-testX ?
-Date: Tue, 9 Sep 2003 10:54:00 +0200 (MEST)
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Subject: Re: New API and X option UseFBDev
+Date: Tue, 09 Sep 2003 11:21:55 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0309091005370.3617-100000@waterleaf.sonytel.be>
-References: <20030908223814.GA4495@vana.vc.cvut.cz>
+Message-ID: <1063099315.1407.43.camel@thor.holligenstrasse29.lan>
+References: <XFMail.20030909074955.jim.hague@acm.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19weHV-0005PA-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 09 Sep 2003 01:55:25 -0700
-Received: from mail2.sonytel.be ([195.0.45.172] helo=witte.sonytel.be)
+	id 19wehR-0008LY-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 09 Sep 2003 02:22:13 -0700
+Received: from [195.141.226.27] (helo=netline-mail1.netline.ch)
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 19weHU-0001Xf-OQ
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Sep 2003 01:55:24 -0700
-In-Reply-To: <20030908223814.GA4495@vana.vc.cvut.cz>
+	id 19wehQ-0003AD-3u
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Sep 2003 02:22:12 -0700
+In-Reply-To: <XFMail.20030909074955.jim.hague@acm.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -25,48 +26,59 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Petr Vandrovec <vandrove@vc.cvut.cz>
-Cc: Dave Jones <davej@redhat.com>, Linux Kernel Development <linux-kernel@vger.kernel.org>, cheapisp@sensewave.com, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Jim Hague <jim.hague@acm.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 9 Sep 2003, Petr Vandrovec wrote:
-> On Mon, Sep 08, 2003 at 10:57:34PM +0200, Geert Uytterhoeven wrote:
-> > On Mon, 8 Sep 2003, Petr Vandrovec wrote:
-> > > And whole fb subsystem changed semantic, so do not build both
-> > > vesafb & matroxfb into the kernel - either one or another, or
-> > > you'll be definitely surprised what will happen (and I'm almost
-> > > sure that blank screen is not what you want).
-> > 
-> > What's wrong with the resource system that prevents this from working?
-> 
-> vesafb ignore failures... for framebuffer it just prints warning only, and
-> for 0x3C0 region it just completely ignores warning (due to vgacon
-> clash). But it should not be serious, user should just get console 
-> on matroxfb, and vesafb on /dev/fb1 doing nothing.
+On Tue, 2003-09-09 at 08:49, Jim Hague wrote:
+>=20
+> I have a problem when I try and run X (Debian 4.2.1-11 20030829103906). My
+> config uses the Glint driver with UseFBDev true, and works fine on 2.4.22=
+. It
+> fails on 2.6 like this:
+>=20
+> (II) Setting vga for screen 0.
+> (**) GLINT(0): Depth 16, (--) framebuffer bpp 16
+> (=3D=3D) GLINT(0): RGB weight 565
+> (=3D=3D) GLINT(0): Default visual is TrueColor
+> (=3D=3D) GLINT(0): Using gamma correction (1.0, 1.0, 1.0)
+> (**) GLINT(0): Option "UseFBDev" "true"
+> (=3D=3D) GLINT(0): Using HW cursor
+> (II) Loading sub module "fbdevhw"
+> (II) LoadModule: "fbdevhw"
+> (II) Loading /usr/X11R6/lib/modules/linux/libfbdevhw.a
+> (II) Module fbdevhw: vendor=3D"The XFree86 Project"
+>         compiled for 4.2.1.1, module version =3D 0.0.2
+>         ABI class: XFree86 Video Driver, version 0.5
+> (**) GLINT(0): Using Linux framebuffer device
+> (--) GLINT(0): Chipset: "ti_pm2"
+> (--) GLINT(0): Linear framebuffer at 0xCE800000
+> (--) GLINT(0): MMIO registers at 0xCFFE0000
+> (EE) GLINT(0): mmap mmio: Invalid argument
+> (EE) GLINT(0): mmap mmio: Invalid argument
+> =20
+> Fatal server error:
+> Caught signal 11.  Server aborting
+>=20
+> The lfb and MMIO addresses are correct. Now, I've new to this game and ma=
+y have
+> missed filling out a structure field somewhere. But I'm dammed if I can s=
+ee
+> what.
+>=20
+> It's occurred to me that maybe this just doesn't work and I need an updat=
+ed
+> fbdevhw. Do I? Or should it really Just Work?
 
-OK.
+It should just work, certainly does here with the radeon driver and
+radeonfb. I'd add some debugging output to the framebuffer device and/or
+fbdevHW.
 
-> Main thing which prevents this from working as users expects is that
-> modular fbdevs cannot be used by fbcon. So people cannot create
-> initrd scripts which load proper fbdev driver anymore, after detecting
-> hardware and making sure that hardware & user wishes & driver are
-> compatible. They now have to build fbdevs to the kernel, and hope for
-> the best...
 
-Ugh, didn't know that...
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+--=20
+Earthling Michel D=C3=A4nzer   \  Debian (powerpc), XFree86 and DRI develop=
+er
+Software libre enthusiast  \     http://svcs.affero.net/rm.php?r=3Ddaenzer
 
 
 

@@ -1,64 +1,76 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: xxx_check_var
-Date: Tue, 10 Dec 2002 22:32:31 -0800 (PST)
+From: Antonino Daplas <adaplas@pol.net>
+Subject: Re: [TRIVIAL PATCH] FBDEV: Small impact patch for fbdev
+Date: 11 Dec 2002 15:45:36 +0500
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.33.0212102219010.2617-100000@maxwell.earthlink.net>
-References: <1039562028.3373.32.camel@zion>
+Message-ID: <1039603105.1084.73.camel@localhost.localdomain>
+References: <Pine.LNX.4.33.0212102155280.2617-100000@maxwell.earthlink.net>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <1039562028.3373.32.camel@zion>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.33.0212102155280.2617-100000@maxwell.earthlink.net>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
+On Wed, 2002-12-11 at 10:59, James Simmons wrote:
+> 
+> > Here's a diff to correct several small things that escaped through the
+> > cracks.
+> 
+> Ug. Now that a wider test base is being done and more drivers actually
+> compile we are going to see more cracks.
+> 
+> > 1.  The YNOMOVE scrollmode for non-accelerated drivers is just very slow
+> > because of a lot of block moves (leads to slow and jerky scrolling in
+> > vesafb with ypanning enabled).  Depending on var->accel_flags, set the
+> > scrollmode to either YREDRAW or YNOMOVE. For drivers with hardware
+> > acceleration, set var->accel_flags to nonzero for max speed.
+> 
+I think the scrollmode is better determined on a case-to-case basis, but
+the above should be a good enough differentiation.
 
-> > When I look at atyfb_check_var or aty128fb_check_var, I see that they
-> > will alter the contents of *info->par.  Isn't this a bad thing?  My
->
-> Yes, this wrong, and afaik, it's your original port to 2.5 that did that
-> ;)
+> Thanks. I have had several emails complementing the speed improvements.
+> Another speed boost will be a plus.
+> 
+Yes, probably not much at low pixel depths, but at high pixel depths and
+resolutions, 2.5 should be much better than 2.4 (even 2-3x faster in
+some cases).  And for drivers with hardware acceleration, whatever the
+color depth, it will be much better because they were written
+specifically for them. 
 
-Yeap. The idea of check_var is to validate a mode. Note modedb uses just
-check_var. It is okay to READ the values in your par. You shouldn't alter
-the values in par.
+Personally, the performance gain is just a minor side-effect. The
+greatest benefit in all this is the separation of the fbdev-fbcon
+structure into components, where each component has a defined use and
+function, and very much independent of each other.  This really makes it
+easier to understand the code, port or write drivers too it, write
+smaller and more efficient code, and even debug.  And you basically did
+all this, so great job :-)  
 
-> > understanding was that after calling check_var, you don't necessarily
-> > call set_par next (particularly if check_var returned an error).
+ > > 2.  fb_pan_display() always returns an error.  User apps will
+complain.
+> 
+> Fixed. Actually I used the following code.
+> 
+> int fb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
+> {
+>         int xoffset = var->xoffset;
+>         int yoffset = var->yoffset;
+>         int err;
+> 
+>         if (xoffset < 0 || yoffset < 0 || info->fbops->fb_pan_display ||
+>             xoffset + info->var.xres > info->var.xres_virtual ||
+>             yoffset + info->var.yres > info->var.yres_virtual)
+>                 return -EINVAL;
+>         if ((err = info->fbops->fb_pan_display(var, info)))
+>                 return err;
+>         info->var.xoffset = var->xoffset;
+>         info->var.yoffset = var->yoffset;
+>         if (var->vmode & FB_VMODE_YWRAP)
+> 
+> instead. The reason is I didn't like the idea of xoffset and yoffset being
+> changed even if the hardware panning function failed. Comments?
+> 
+Yes, I think thats better.
 
-Correct. Check_var is always called. Now if you wanted to just test a mode
-via userland with the FB_ACTIVATE_TEST flag then only fb_check_var is
-called. If you pass in FB_ACTIVATE_NOW then both fb_check_var and
-fb_set_par will be called. Fb_set_par actually sets the hardware state.
-
-> > Also I notice that atyfb_set_par and aty128fb_set_par don't look at
-> > info->var, they simply set the hardware state based on the contents of
-> > *info->par.
->
-> Which is wrong too indeed
-
-Actually you can look at info->var. Info->var has been validated so it can
-be trusted. You don't need to stuff everything into par. You DO need to
-change info->fix if the hardware state has changed.
-
-> > Looking at skeletonfb.c, it seems that this is the wrong behaviour.  I
-> > had fixed the aty128fb.c driver in the linuxppc-2.5 tree.  James, if
-> > you let me know whether the current behaviour is wrong or not, I'll
-> > fix them and send you the patch.
-
-I hope me input helped.
-
-BTW docs are on the way. I will work with Steven Luther on this the next
-couple of days.
-
-> I _think_ my radeonfb (in linuxppc-2.5) is right in this regard too.
-> Look at the initialization too, iirc, you had some non necessary stuff
-> in there (calling gen_set_disp, gen_set_var is plenty enough).
-
-You go the logic down.
-
-P.S
-
- For the pmu_sleep_notifier can you pass in a specific struct fb_info or
-do you need to make a list of all of them?
+Tony

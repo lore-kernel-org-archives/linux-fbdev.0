@@ -1,13 +1,16 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [Dri-devel] Linux kernel PCI IDs vs Xfree
-Date: Sun, 10 Aug 2003 15:07:27 +0100
+From: Jon Smirl <jonsmirl@yahoo.com>
+Subject: Re: Re: [Dri-devel] Linux kernel PCI IDs vs Xfree
+Date: Sun, 10 Aug 2003 08:07:19 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030810140727.GC17154@redhat.com>
-References: <328A30E823B7D511A0BF00065B042A3B0172D768@fgl00exh01.fgl.atitech.com>
+Message-ID: <20030810150719.56463.qmail@web14905.mail.yahoo.com>
+References: <20030810140727.GC17154@redhat.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Content-Disposition: inline
-In-Reply-To: <328A30E823B7D511A0BF00065B042A3B0172D768@fgl00exh01.fgl.atitech.com>
+Received: from web14905.mail.yahoo.com ([216.136.225.57])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19lrmy-0007xD-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 10 Aug 2003 08:07:20 -0700
+In-Reply-To: <20030810140727.GC17154@redhat.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -19,21 +22,24 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexander Stohr <AlexanderS@ati.com>
+To: Dave Jones <davej@redhat.com>, Alexander Stohr <AlexanderS@ati.com>
 Cc: fb-devel <linux-fbdev-devel@lists.sourceforge.net>, dri-devel <dri-devel@lists.sourceforge.net>
 
-On Sat, Aug 09, 2003 at 10:41:01PM +0200, Alexander Stohr wrote:
- > Which ones? e.g. www.yourvote.com\pci is the database
- > where the Linux kernel does get its listing.
+All of the Rage128 and Radeon IDs I am refering to in
+my posts are already in http://pciids.sf.net. These
+IDs are missing in various combinations from the linux
+and xfree header files. I usually have to also update
+the framebuffer drivers to handle the added IDs.
 
-wrong. it occasionally gets merges from http://pciids.sf.net,
-though IDs also get added directly to the kernel tree without
-being added 'upstream' too, so its a two-way merge process.
 
-		Dave
+=====
+Jon Smirl
+jonsmirl@yahoo.com
 
--- 
- Dave Jones     http://www.codemonkey.org.uk
+__________________________________
+Do you Yahoo!?
+Yahoo! SiteBuilder - Free, easy-to-use web site design software
+http://sitebuilder.yahoo.com
 
 
 -------------------------------------------------------

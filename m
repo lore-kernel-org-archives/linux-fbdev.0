@@ -1,21 +1,13 @@
-From: Alexander Kern <alex.kern@gmx.de>
-Subject: Re: excessive atyfb debug messages in 2.6.11
-Date: Sun, 13 Mar 2005 17:03:10 +0100
-Message-ID: <200503131703.10436.alex.kern@gmx.de>
-References: <Pine.LNX.4.21.0503111206270.32544-100000@hal.pp.fishpool.fi>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Subject: Re: Re: radeon, apertures & memory mapping
+Date: Sun, 13 Mar 2005 19:47:14 +0200
+Message-ID: <20050313174714.GA15871@sci.fi>
+References: <1110677744.19810.80.camel@gaston> <20050313082216.GA7362@sci.fi> <1110705646.14684.126.camel@gaston> <20050313103936.GA11002@sci.fi> <1110715499.14684.132.camel@gaston> <9e473391050313081937cde207@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_+QGNCozUnrNDjeq"
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DAVxm-0001jI-Ip
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Mar 2005 08:29:10 -0800
-Received: from pop.gmx.de ([213.165.64.20] helo=mail.gmx.net)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
-	id 1DAVxk-0003Ag-Uk
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Mar 2005 08:29:10 -0800
-In-Reply-To: <Pine.LNX.4.21.0503111206270.32544-100000@hal.pp.fishpool.fi>
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+In-Reply-To: <9e473391050313081937cde207@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,46 +18,55 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net
-Cc: =?iso-8859-1?q?Martin-=C9ric?= Racine <q-funk@iki.fi>
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jon Smirl <jonsmirl@yahoo.com>, dri-devel@lists.sourceforge.net, xorg@lists.freedesktop.org
 
---Boundary-00=_+QGNCozUnrNDjeq
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Sun, Mar 13, 2005 at 11:19:35AM -0500, Jon Smirl wrote:
+> On Sun, 13 Mar 2005 23:04:59 +1100, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
+> >=20
+> > > AGP as it's currently used is pretty much pointless for software fa=
+llbacks
+> > > since reading from AGP memory is nearly as slow as reading from vid=
+eo
+> > > memory.
+> >=20
+> > Hrm.. I wouldn't expect _that_ slow. It's uncacheable, right, but sti=
+ll
+> > on a faster bus. Especially if we use it the way we do on ppc where w=
+e
+> > actually map the RAM pages directly instead of having processes go
+> > through the GART.
+>=20
+> I asked at the Xdev conference if there were page table tricks that
+> would work for accessing GART memory.  Everybody said no but I'm still
+> wondering if there are any.
+>=20
+> For example the ppc has an instruction for flushing specific pages
+> from cache, unlike the x86 where you can only flush everything.
+>=20
+> So on the ppc you could leave the GART memory mapped normally and
+> cached. Do all of your fallback calculations, then flush the address
+> range from cache. Now tell the GPU to go use it.
+>=20
+> Can't GART memory be normally cached RAM as long as we flush the cache
+> before telling the GPU to use it?
+>=20
+> If you are doing fallback calculations in a 6MB buffer that is 1,500
+> pages. Accessing all of this effectively flushes the data cache. Once
+> you are done with it you probably don't want those pages in the cache
+> anyway.
 
-Am Freitag, 11. M=E4rz 2005 11:18 schrieb Martin-=C9ric Racine:
-> I keep on getting the following both directly to the console and to
-> several logs (debug, kern.log, messages, syslog), every time I switch
-> virtual console (this particular exerpt from syslog):
-It seems to be unneeded last time. Driver is pretty stable.
+I don't understand why we have "GART memory" anyway. It's just main memor=
+y=20
+and I don't see any point going through the GART to access it with the=20
+CPU. Only the graphics card needs to use the GART.
 
-Signed-off-by: Alexander Kern <alex.kern@gmx.de>
-
---Boundary-00=_+QGNCozUnrNDjeq
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="atyfb_undef_debug.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="atyfb_undef_debug.patch"
-
---- drivers/video/aty/atyfb_base.c.orig	2005-03-13 16:46:45.000000000 +0100
-+++ drivers/video/aty/atyfb_base.c	2005-03-13 16:51:40.776418368 +0100
-@@ -100,8 +100,8 @@
- /*
-  * Debug flags.
-  */
--/*#undef DEBUG*/
--#define DEBUG
-+#undef DEBUG
-+/*#define DEBUG*/
- 
- /* Make sure n * PAGE_SIZE is protected at end of Aperture for GUI-regs */
- /*  - must be large enough to catch all GUI-Regs   */
-
---Boundary-00=_+QGNCozUnrNDjeq--
+--=20
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
 
 
 -------------------------------------------------------

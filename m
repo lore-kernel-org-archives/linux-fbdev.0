@@ -1,22 +1,23 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Fw: [Bugme-new] [Bug 4218] New: Radeon fb doesn't have correct
- resolution for lcd screen
-Date: Wed, 16 Feb 2005 08:47:28 +1100
-Message-ID: <1108504048.13376.11.camel@gaston>
-References: <20050215133933.61769fd0.akpm@osdl.org>
+Subject: Re: Fw: [Bugme-new] [Bug 4217] New: radeonfb makes system hang and
+ LCD "burn"
+Date: Wed, 16 Feb 2005 08:49:02 +1100
+Message-ID: <1108504143.13376.14.camel@gaston>
+References: <20050215121555.54c63ed2.akpm@osdl.org>
+	 <1108502142.13394.2.camel@gaston>  <87fyzxsdo7.fsf@kataplop.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Content-Transfer-Encoding: quoted-printable
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D1AYM-0000DG-Ls
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Feb 2005 13:48:18 -0800
+	id 1D1AZv-0000Gm-Fh
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Feb 2005 13:49:55 -0800
 Received: from gate.crashing.org ([63.228.1.57])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1D1AYJ-000703-1s
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Feb 2005 13:48:16 -0800
-In-Reply-To: <20050215133933.61769fd0.akpm@osdl.org>
+	id 1D1AZu-0000S3-4E
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Feb 2005 13:49:55 -0800
+In-Reply-To: <87fyzxsdo7.fsf@kataplop.net>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,21 +28,44 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, bart@verwilst.be
+Content-Type: text/plain; charset="iso-8859-1"
+To: Marc =?ISO-8859-1?Q?Poulhi=E8s?= <marc.poulhies@epfl.ch>
+Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tue, 2005-02-15 at 13:39 -0800, Andrew Morton wrote:
-> 
-> Begin forwarded message:
-> 
-> Date: Tue, 15 Feb 2005 13:28:36 -0800
-> From: bugme-daemon@osdl.org
-> To: bugme-new@lists.osdl.org
-> Subject: [Bugme-new] [Bug 4218] New: Radeon fb doesn't have correct resolution for lcd screen
+On Tue, 2005-02-15 at 22:42 +0100, Marc Poulhi=E8s wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+>=20
+> > On Tue, 2005-02-15 at 12:15 -0800, Andrew Morton wrote:
+> >>=20
+> >> Begin forwarded message:
+> >>=20
+> >> Date: Tue, 15 Feb 2005 12:03:52 -0800
+> >> From: bugme-daemon@osdl.org
+> >> To: bugme-new@lists.osdl.org
+> >> Subject: [Bugme-new] [Bug 4217] New: radeonfb makes system hang and =
+LCD "burn"
+> >
+> > What if you load the module with option "default_dynclk=3D-1" ?
+> >
+> > (Or if radeonfb is built-in, do radeonfb.default_dynclk=3D-1 on the k=
+ernel
+> > command line).=20
+>=20
+> Seems to work a bit more. Module loads correctly, system is still
+> responding, but display is not correct. System caret seems to be the
+> only thing displayed, and it moves when I type, but no characters get
+> displayed.
+>=20
+> Do you need some more informations? (like debug output)=20
 
-Please, enable radeonfb verbose debug in the .config and send me the
-log.
+Try building radeonfb in the kernel and booting with
+radeonfb.default_dynclk=3D-1, let me know if that works. fbdev's in
+modules have always been sort-of dodgy....
+
+The "dynclk" thing has issues, the upstream code from ATI has some bugs
+plus there is something weird going on which I suspect might be a
+miscompile of a bit of code in there. I'll send a patch working around
+that today.
 
 Ben.
 

@@ -1,58 +1,72 @@
-From: Frans Pop <aragorn@tiscali.nl>
-Subject: Re: [atyfb] No display on Sparc Ultra 10 with kernel 2.6.10-rc2 or later
-Date: Wed, 16 Feb 2005 23:10:03 +0100
-Message-ID: <200502162310.12703.aragorn@tiscali.nl>
-References: <200502140251.00645.aragorn@tiscali.nl> <200502161927.58344.adaplas@hotpop.com> <20050216075140.77ae3563.davem@davemloft.net>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Fw: [Bugme-new] [Bug 4218] New: Radeon fb doesn't have correct
+ resolution for lcd screen
+Date: Thu, 17 Feb 2005 09:12:56 +1100
+Message-ID: <1108591976.5533.4.camel@gaston>
+References: <20050215133933.61769fd0.akpm@osdl.org>
+	 <1108504048.13376.11.camel@gaston>  <200502160948.51781.bart@verwilst.be>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart6563438.3IMlraUbTm";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-In-Reply-To: <20050216075140.77ae3563.davem@davemloft.net>
-Resent-Message-ID: <bHtT-B.A.Nz.GT8ECB@murphy>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1D1XR0-00056c-Bx
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 14:14:14 -0800
+Received: from gate.crashing.org ([63.228.1.57])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1D1XQy-0002KC-PA
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 14:14:14 -0800
+In-Reply-To: <200502160948.51781.bart@verwilst.be>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:debian-sparc@lists.debian.org>
-List-Help: <mailto:debian-sparc-request@lists.debian.org?subject=help>
-List-Subscribe: <mailto:debian-sparc-request@lists.debian.org?subject=subscribe>
-List-Unsubscribe: <mailto:debian-sparc-request@lists.debian.org?subject=unsubscribe>
-List-Archive: <http://lists.debian.org/debian-sparc/>
-To: "David S. Miller" <davem@davemloft.net>
-Cc: adaplas@pol.net, debian-sparc@lists.debian.org, sparclinux@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: Bart Verwilst <bart@verwilst.be>
+Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
---nextPart6563438.3IMlraUbTm
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Wed, 2005-02-16 at 09:48 +0100, Bart Verwilst wrote:
+> Hi!
+> 
+> Hm, i'm not sure wether it's radeonfb or not 
+> 
+> ----
+> 
+> vesafb: framebuffer at 0xe0000000, mapped to 0xdc880000, using 1875k, total 
+> 65472k
+> vesafb: mode is 800x600x16, linelength=1600, pages=67
+> vesafb: protected mode interface info at c000:51a9
+> vesafb: scrolling: redraw
+> vesafb: Truecolor: size=0:5:6:5, shift=0:11:5:0
+> bootsplash 3.1.4-2004/02/19: looking for picture.... silentjpeg size 14554 
+> bytes, found (800x600, 14506 bytes, v3).
+> Console: switching to colour frame buffer device 92x32
+> fb0: VESA VGA frame buffer device
+> 
+> ---
+> 
+> Is radeonfb a driver for vesafb? Or are they unrelated?
+> 
+> Could you give me some more pointers for me what i could do to test more? Or 
+> will enabling radeonfb debug support still be helpful?
 
-On Wednesday 16 February 2005 16:51, David S. Miller wrote:
-> On Wed, 16 Feb 2005 19:27:57 +0800 Antonino A. Daplas wrote:
-> > Nope, those are proposed options.  If nobody disagrees, I can easily
-> > add this for atyfb.
->
-> Please do.
->
-> BTW, for Sparc we may wish to inherit the CSYNC setting from
-> default_var.
+They are unrelated, so your problem is probably not related to
+radeonfb...
 
-Sounds like a nice idea.
+Ben.
+ 
 
-If you have a patch that you would like to have tested, feel free to mail=20
-me.
 
-Cheers,
-=46JP
 
---nextPart6563438.3IMlraUbTm
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.5 (GNU/Linux)
-
-iD8DBQBCE8TEgm/Kwh6ICoQRAh76AJ96bEvDhaPTTgPllsNlDDqaV8SYhQCgqQc4
-/7EOhAx+wKOn0tNiE3vTWM0=
-=wdrf
------END PGP SIGNATURE-----
-
---nextPart6563438.3IMlraUbTm--
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

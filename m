@@ -1,23 +1,23 @@
-From: Kate Alhola <kate@iti.fi>
-Subject: fbdev/xfree86 getting rid of /dev/tty0 console
-Date: Fri, 04 Jun 2004 10:07:18 +0300
+From: Jurriaan <thunder7@xs4all.nl>
+Subject: status of rivafb versus Geforce FX cards?
+Date: Fri, 4 Jun 2004 15:11:47 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <40C01FA6.2010806@iti.fi>
+Message-ID: <20040604131147.GA2056@middle.of.nowhere>
+Reply-To: Jurriaan <thunder7@xs4all.nl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BW8nV-0007SH-0q
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 04 Jun 2004 00:07:25 -0700
-Received: from [195.218.81.131] (helo=ns.iti.fi)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1BW8nT-0007Rg-Tv
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 04 Jun 2004 00:07:24 -0700
-Received: from iti.fi ([195.218.81.132])
-	by ns.iti.fi (8.12.8/8.12.8) with ESMTP id i5477JDo020706
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 4 Jun 2004 10:07:19 +0300
+	id 1BWEUS-00080j-N0
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 04 Jun 2004 06:12:08 -0700
+Received: from smtp-out6.xs4all.nl ([194.109.24.7])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BWEUS-0001av-3S
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 04 Jun 2004 06:12:08 -0700
+Received: from zeeotter.xs4all.nl (zeeotter.xs4all.nl [80.126.31.149])
+	by smtp-out6.xs4all.nl (8.12.10/8.12.10) with ESMTP id i54DC3ew073812
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 4 Jun 2004 15:12:03 +0200 (CEST)
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,33 +27,23 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
 
-I try to use Xfree86 with fbdev_drv in embedded system and i got stuck 
-to "xf86OpenConsole: Cannot open /dev/tty0" or
-"xf86OpenConsole: Cannot find a free VT" etc.
+The current rivafb driver doesn't support anything after the Ti-4600
+cards, if I read it correctly.
 
-The problem is that the device is embedded ppc without any console at 
-all and lesst there won't never be
-one in /dev/tty0 that is normally linked to serial port.
+Is this being worked on?
 
-The problem is that /dev/tty0 looks a like to be hardcoded to "void 
-xf86OpenConsole(void)" in xfree86 lnx_init.c and
-it is called unconditionally from xf86Init.c . I have not found any 
-switch to switch console off from xfree86
-config files. Also linkig /dev/tty to /dev/null or /dev/vcs0 etc does 
-not help, it just replaces
-"can not open" error with "Cannot find a free VT".
-
-I know that i  can hack xfree86 source and remove this dependency by 
-hand but it looks a like
-not to be right or most elegant solution because i can't believe that i 
-am first one that tries to use
-fbdev in embedded hw without any console.
-
-
-Kate
+Thanks,
+Jurriaan (whose FX-5700 card is not supported in framebuffer, and not
+supported in Debian's latest XFree :-( )
+-- 
+And isn't nature wonderful
+But is this art?
+        The Levellers
+Debian (Unstable) GNU/Linux 2.6.7-rc2 2x6062 bogomips load 0.24
 
 
 -------------------------------------------------------

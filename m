@@ -1,24 +1,24 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [PATCH: 2.6.10-rc2] fbdev: Fix rivafb breakage (typo introduced by cset 1.2563)
-Date: Fri, 19 Nov 2004 07:06:15 +0800
-Message-ID: <200411190706.16991.adaplas@hotpop.com>
-References: <200411181239.18093.andrew@walrond.org> <200411181255.50965.andrew@walrond.org>
+Subject: Re: rivafb: finally enable NV30 based pbooks/cleanup probe errors
+Date: Fri, 19 Nov 2004 07:19:24 +0800
+Message-ID: <200411190719.24961.adaplas@hotpop.com>
+References: <20041118164946.GA3763@bogon.ms20.nix>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CUvMN-0006uj-JS
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 18 Nov 2004 15:06:39 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.51])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CUvMN-0007eU-0Y
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 18 Nov 2004 15:06:39 -0800
+	id 1CUvYx-0008AD-0w
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 18 Nov 2004 15:19:39 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.71])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CUvYv-0005Td-Ap
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 18 Nov 2004 15:19:38 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 75B52728F9
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 18 Nov 2004 23:06:18 +0000 (UTC)
-In-Reply-To: <200411181255.50965.andrew@walrond.org>
+	by smtp-out.hotpop.com (Postfix) with SMTP id 9D1CB11F1200
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 18 Nov 2004 23:19:20 +0000 (UTC)
+In-Reply-To: <20041118164946.GA3763@bogon.ms20.nix>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -31,17 +31,26 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, Andrew Walrond <andrew@walrond.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, linux-kernel@vger.kernel.org
+To: Guido Guenther <agx@sigxcpu.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Wolfram Quester <wolfi@mittelerde.physik.uni-konstanz.de>
 
-On Thursday 18 November 2004 20:55, Andrew Walrond wrote:
-> Fixing this typo cures the screen corruption I was seeing on both 32 and
-> 64bit x86_64 kernels.
->
-> Thanks for the help tracking this down. Please apply!
+On Friday 19 November 2004 00:49, Guido Guenther wrote:
+> Hi Antonio,
+> this patch against 2.6.10-rc2 finally detects rivafb on NV30 based power
+> books by adding the pciid. Wolfram Quester tested it and reported it
+> working. It also cleans up the error code reported from the probe
+> function.
 >
 
-No, thank _you_ for the help tracking this down :-)
+Thanks.
+
+I also tested NV32 (GeForce FX 5200 0x0322) which also works.  So, I'm
+planning to add a lot of NV30 entries to pci_ids.h and the rivafb pci_table
+just so we can get a lot of reports (good and bad) from users.
+
+> Singed-Off-By: Guido Guenther <agx@sigxcpu.org>
+   ^^^^^^^
+:-)
 
 Tony
 

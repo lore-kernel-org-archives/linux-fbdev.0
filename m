@@ -1,25 +1,25 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [PATCH 2/3][FBCON]: New Scrolling Mode: YPAN + REDRAW
-Date: Tue, 6 Jul 2004 18:30:41 +0800
+Subject: Re: [PATCH 3/3][FBDEV]: Set capabilities flag for vesafb and vga16fb
+Date: Tue, 6 Jul 2004 18:30:37 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200407061830.41760.adaplas@hotpop.com>
-References: <200407060634.37125.adaplas@hotpop.com> <Pine.GSO.4.58.0407060933200.3788@waterleaf.sonytel.be>
+Message-ID: <200407061830.37554.adaplas@hotpop.com>
+References: <200407060634.43963.adaplas@hotpop.com> <20040706053545.GA2375@havoc.gtf.org>
 Reply-To: adaplas@pol.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BhnDO-00089n-Tr
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jul 2004 03:30:18 -0700
-Received: from babyruth.hotpop.com ([38.113.3.61])
+	id 1BhnDK-000890-RV
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jul 2004 03:30:14 -0700
+Received: from twix.hotpop.com ([38.113.3.71])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1BhnDO-0000xw-5l
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jul 2004 03:30:18 -0700
+	id 1BhnDK-0000xV-Fp
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jul 2004 03:30:14 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by babyruth.hotpop.com (Postfix) with SMTP id A86F6697B3F
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue,  6 Jul 2004 09:46:34 +0000 (UTC)
-In-Reply-To: <Pine.GSO.4.58.0407060933200.3788@waterleaf.sonytel.be>
+	by twix.hotpop.com (Postfix) with SMTP id DBEDBFE4079
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue,  6 Jul 2004 10:10:02 +0000 (UTC)
+In-Reply-To: <20040706053545.GA2375@havoc.gtf.org>
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,44 +31,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Antonino Daplas <adaplas@pol.net>
+To: David Eger <eger@havoc.gtf.org>, adaplas@pol.net
 Cc: Andrew Morton <akpm@osdl.org>, jsimmons@pentafluge.infradead.org, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tuesday 06 July 2004 15:38, Geert Uytterhoeven wrote:
-> On Tue, 6 Jul 2004, Antonino A. Daplas wrote:
-> > Added a new scrolling mode (SCROLL_PAN_REDRAW) to fbcon that should
-> > greatly benefit unaccelerated drivers such as VESA fbdev.  An increase of
-> > 3-10 times in scrolling speed can be expected.
->
-> Nice!
-
-Thanks.  Adding it was actually easy, all I have to do was reuse code already
-present in fbcon.c.
-
->
-> > Using an accelerated driver, we see almost the same effect but
-> > not as dramatically:
-> >
-> > 1. SCROLL_MOVE - accel
-> > real    0m3.112s
-> > user    0m0.000s
-> > sys     0m3.112s
-> >
-> > 2. SCROLL_REDRAW - accel
-> > real    0m2.604s
-> > user    0m0.000s
-> > sys     0m2.603s
-> >
-> > Redraw is still faster than move, but not much.
->
-> That probably depends on the card (imageblit vs copyarea)?
+On Tuesday 06 July 2004 13:35, David Eger wrote:
+> Thanks for getting these; I've been lazy and not gotten to them.
 >
 
-True.  I really don't want to speculate on this, it varies from 
-hardware to hardware, driver to driver. The only thing I can
-definitely say is that pan/wrap is the most effective means
-to facilitate scrolling.  Whether it be combined with imageblit
-or copyarea, I'll leave that up to the driver maintainers.
+My intent was to demonstrate the PAN_REDRAW patch, and 
+FBINFO_HWACCEL_YPAN must be set for that :-) And I chose
+vesafb and vga16fb since they're the most commonly used drivers
+in the x86 world.
+
+> I do want FBINFO_FLAG_DEFAULT to go away though... it's now
+
+Hmm, okay, I did not know that.
+
+> FBINFO_DEFAULT.  I also don't see anything in vga16fb that precludes
+> FBINFO_HWACCEL_XPAN, though I don't see anyone who uses that flag,
+> either.  *shrug*
+
+Well, fbcon does not use x-panning at all, so, yes, it's a useless flag, not
+just for vga16fb but for all drivrers.  Userspace uses x-panning though, but 
+they check xpanstep instead.
 
 Tony
 

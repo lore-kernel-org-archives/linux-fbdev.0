@@ -1,13 +1,16 @@
-From: QUOTA-GUARD@antai-genecon.com
-Subject: Failure notice: user's disk quota exceeded!
-Date: Fri, 27 Jun 2003 19:42:24 +0800
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] 2.4.21-rc8 vesafb memory remapping...
+Date: Fri, 27 Jun 2003 13:51:37 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <2003627194224.78792.quarkmail@vipmx6.hichina.com>
+Message-ID: <Pine.GSO.4.21.0306271340000.2794-100000@vervain.sonytel.be>
+References: <200306122343.49563.tmb@iki.fi>
+Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [210.192.103.166] (helo=vipmx6.hichina.com)
+Received: from mail2.sonytel.be ([195.0.45.172] helo=witte.sonytel.be)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19VrdK-00082N-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 27 Jun 2003 04:43:15 -0700
+	id 19VrmJ-0002nc-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 27 Jun 2003 04:52:31 -0700
+In-Reply-To: <200306122343.49563.tmb@iki.fi>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -17,33 +20,142 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Marcelo Tosatti <marcelo@conectiva.com.br>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Thomas Backlund <tmb@iki.fi>
+Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi, This is the mail deliver program at antai-genecon.com
+	Hi Marcelo,
 
-Sorry, Your message to <exh@antai-genecon.com> cannot be delivered as the recipient has exceeded their hardquota limit for email.However a small (< 1KB) message will be delivered should you wish to inform the person you tried to email.
+Can we please have a fix for vesafb in the next -pre*? Currently it maps 8
+times too much memory due to a bits/bytes confusion.
 
---- Below this line is a copy of the header. ---
+For your convenience, I rediffed against the latest trees and appended the
+patch below. This includes the fixed vram size handling and the documentation
+for the new vram parameter.
 
-Received: from 202.120.115.165 (HELO PANPAN) (envelope-from linux-fbdev-devel@lists.sourceforge.net)
-	by vipmx6.hichina.com (quarkmail-1.2.1) with ESMTP id S1003846AbTF0LmU
-	for exh@antai-genecon.com; Fri, 27 Jun 2003 19:42:20 +0800
-From: <linux-fbdev-devel@lists.sourceforge.net>
-To: <exh@antai-genecon.com>
-Subject: Re: Application
-Date: Fri, 27 Jun 2003 19:42:10 +0800
-Importance: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2600.0000
-X-MSMail-Priority: Normal
-X-Priority: 3 (Normal)
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="CSmtpMsgPart123X456_000_002B9E42"
+Thanks!
 
-------------------------------------------------
+On Thu, 12 Jun 2003, Thomas Backlund wrote:
+> I noticed that the vesafb still remaps memory according to a calculation 
+> done in bits, even if should be done in bytes...
+> This will remap more memory than old cards actually have...
+> 
+> An example:
+> My laptop has 8192 KB of videoram
+> I use it with videomode 1024x768x16
+> 
+> With current vesafb that will translate to 12288 KB remapping
+> 
+> So here is my suggestion,
+> either grab the complete "fix" from rc7-ac1 (wich calculates in bytes),
+> or If you dont like that, my second suggestion is to use the
+> old vesafb code to take care of old cards like this:
+> 
+> ----- cut -----
+> #diff -u rc8/drivers/video/vesafb.c rc8/drivers/video/vesafb.c.new
+> --- rc8/drivers/video/vesafb.c  2003-06-12 23:13:29.000000000 +0300
+> +++ rc8/drivers/video/vesafb.c.new      2003-06-12 23:18:03.000000000 +0300
+> @@ -521,6 +521,11 @@
+>         video_height        = screen_info.lfb_height;
+>         video_linelength    = screen_info.lfb_linelength;
+>         video_size          = screen_info.lfb_width *   
+> screen_info.lfb_height * video_bpp;
+> +
+> +       /* check that we don't remap more memory than old cards have */
+> +       if (video_size > screen_info.lfb_size * 65536)
+> +               video_size = screen_info.lfb_size * 65536;
+> +
+>         video_visual = (video_bpp == 8) ?
+>                 FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
+> 
+> ----- cut -----
+> 
+> Like this we would keep both old and new systems happy AFAIK...
+> 
+> 
+> -- 
+> Regards
+> 
+> Thomas Backlund
+> 
+> http://www.iki.fi/tmb/
+> tmb@iki.fi
+
+--- linux-2.4.22-pre2/drivers/video/vesafb.c	Fri May  9 11:03:41 2003
++++ linux-2.4.21-ac3/drivers/video/vesafb.c	Fri Jun 27 13:46:11 2003
+@@ -94,6 +94,7 @@
+ 
+ static int             inverse   = 0;
+ static int             mtrr      = 0;
++static int	 vram __initdata = 0;	/* needed for vram boot option */
+ static int             currcon   = 0;
+ 
+ static int             pmi_setpal = 0;	/* pmi for palette changes ??? */
+@@ -479,6 +480,10 @@
+ 			pmi_setpal=1;
+ 		else if (! strcmp(this_opt, "mtrr"))
+ 			mtrr=1;
++		/* checks for vram boot option */
++		else if (! strncmp(this_opt, "vram:", 5))
++			vram = simple_strtoul(this_opt+5, NULL, 0);
++
+ 		else if (!strncmp(this_opt, "font:", 5))
+ 			strcpy(fb_info.fontname, this_opt+5);
+ 	}
+@@ -520,7 +525,20 @@
+ 	video_width         = screen_info.lfb_width;
+ 	video_height        = screen_info.lfb_height;
+ 	video_linelength    = screen_info.lfb_linelength;
+-	video_size          = screen_info.lfb_width *	screen_info.lfb_height * video_bpp;
++
++	/* remap memory according to videomode, multiply by 2 to get space for doublebuffering */
++	video_size          = screen_info.lfb_width *	screen_info.lfb_height * video_bpp / 8 * 2;
++
++	/* check that we don't remap more memory than old cards have */
++	if (video_size > screen_info.lfb_size * 65536)
++		video_size = screen_info.lfb_size * 65536;
++	
++	/* FIXME: Should we clip against declared size for banked devices ? */
++	
++	/* sets video_size according to vram boot option */
++	if (vram && vram * 1024 * 1024 != video_size)
++		video_size = vram * 1024 * 1024;
++		
+ 	video_visual = (video_bpp == 8) ?
+ 		FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
+ 
+--- linux-2.4.22-pre2/Documentation/fb/vesafb.txt	Fri Jul 28 21:50:51 2000
++++ linux-2.4.21-ac3/Documentation/fb/vesafb.txt	Fri Jun 27 13:45:47 2003
+@@ -139,13 +139,17 @@
+ redraw	scroll by redrawing the affected part of the screen, this
+ 	is the safe (and slow) default.
+ 
+-
+ vgapal	Use the standard vga registers for palette changes.
+ 	This is the default.
+ pmipal	Use the protected mode interface for palette changes.
+ 
+ mtrr	setup memory type range registers for the vesafb framebuffer.
+ 
++vram:n  remap 'n' MiB of video RAM. If 0 or not specified, remap memory
++        according to video mode. (2.5.66 patch/idea by Antonino Daplas
++	reversed to give override possibility (allocate more fb memory
++	than the kernel would) to 2.4 by tmb@iki.fi)
++  
+ 
+ Have fun!
+ 
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

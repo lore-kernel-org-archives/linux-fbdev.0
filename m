@@ -1,18 +1,14 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: radeonfb and 2.5.66
-Date: 25 Mar 2003 16:34:45 +0100
+From: James Simmons <jsimmons@infradead.org>
+Subject: [BK FBDEV] A few more updates.
+Date: Tue, 25 Mar 2003 10:32:11 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1048606485.581.39.camel@zion.wanadoo.fr>
-References: <1048567152.2455.5.camel@tiger>
-	 <1048604437.582.37.camel@zion.wanadoo.fr>  <20030325153121.GA4941@iliana>
+Message-ID: <Pine.LNX.4.33.0303251031180.4272-100000@maxwell.earthlink.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from griffon.mipsys.com ([217.167.51.129] helo=zion.wanadoo.fr)
+Received: from scaup.mail.pas.earthlink.net ([207.217.120.49])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18xqRz-0008Mv-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 25 Mar 2003 07:34:55 -0800
-In-Reply-To: <20030325153121.GA4941@iliana>
+	id 18xsQH-0001iQ-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 25 Mar 2003 09:41:17 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,18 +18,36 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Sven Luther <luther@dpt-info.u-strasbg.fr>
-Cc: Louis Garcia <louisg00@bellsouth.net>, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linus Torvalds <torvalds@transmeta.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Tue, 2003-03-25 at 16:31, Sven Luther wrote:
 
-> Just curious, why is the option called dfp and not dvi or something such ? 
-> What does the f stand for (d for digital and p for port, right ?).
+Linus, please do a
 
-Digital Flat Panel
+	bk pull http://fbdev.bkbits.net/fbdev-2.5
 
-Ben.
+This will update the following files:
+
+ drivers/video/aty/aty128fb.c  |   16 +++++++---------
+ drivers/video/console/fbcon.c |    4 ++--
+ drivers/video/controlfb.c     |   18 +++---------------
+ drivers/video/platinumfb.c    |   28 ++++++++--------------------
+ drivers/video/radeonfb.c      |   10 ++++++++++
+ drivers/video/softcursor.c    |    2 +-
+ 6 files changed, 31 insertions(+), 47 deletions(-)
+
+through these ChangeSets:
+
+<jsimmons@maxwell.earthlink.net> (03/03/25 1.981)
+   [FBCON] Could be called outside of a process context. This fixes that.
+
+<jsimmons@maxwell.earthlink.net> (03/03/25 1.979)
+   [RAGE 128/CONTROL/PLATNIUM FBDEV] PPC updates.
+
+   [RADEON FBDEV] PLL fix for specific type of card.
+
 
 
 

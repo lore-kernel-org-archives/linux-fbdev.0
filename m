@@ -1,25 +1,25 @@
 From: "Tony" <adaplas@hotpop.com>
 Subject: RE: Re: New radeonfb, mostly untested
-Date: Mon, 15 Sep 2003 07:59:37 +0800
+Date: Mon, 15 Sep 2003 08:56:07 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <000301c37b1c$40b7e480$ba17b1cb@bom>
-References: <20030910212700.GA12271@dreamland.darkstar.lan>
+Message-ID: <000801c37b24$257b9100$ba17b1cb@bom>
+References: <20030914173137.GA2971@dreamland.darkstar.lan>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19ygca-000756-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 14 Sep 2003 16:49:36 -0700
+	id 19yhVR-0006tv-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 14 Sep 2003 17:46:17 -0700
 Received: from babyruth.hotpop.com ([204.57.55.14])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 19ygca-0002uP-B4
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 14 Sep 2003 16:49:36 -0700
+	id 19yhVR-0003nS-Ag
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 14 Sep 2003 17:46:17 -0700
 Received: from hotpop.com (kubrick.hotpop.com [204.57.55.16])
-	by babyruth.hotpop.com (Postfix) with SMTP id 1A6832171CC
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 14 Sep 2003 23:49:00 +0000 (UTC)
-In-Reply-To: <20030910212700.GA12271@dreamland.darkstar.lan>
+	by babyruth.hotpop.com (Postfix) with SMTP id 0989121E772
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 15 Sep 2003 00:45:33 +0000 (UTC)
+In-Reply-To: <20030914173137.GA2971@dreamland.darkstar.lan>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -30,71 +30,131 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: kronos@kronoz.cjb.net, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: kronos@kronoz.cjb.net, James Simmons <jsimmons@infradead.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-> Il Wed, Sep 10, 2003 at 07:50:10PM +0200, Benjamin
-> Herrenschmidt ha scritto:
-> > Anyway, if your EDID returns incorrect infos, then we are
-> screwed, or
-> > maybe we aren't calculating the horizontal margin properly
-> when building
-> > the mode.
+> void calc_mode_timings(int xres, int yres, int refresh,
+> struct fb_videomode *mode)
+> {
+>         int dbsize = sizeof(modedb)/sizeof(modedb[0]);
+>         struct fb_videomode *cur;
+>         int i;
 >
-> This is the modedb created from my edid:
-> [cut]
-> mode 18
-> mode->xres = 1280, mode->right_margin = 79
-> mode->hsync_len = 137, mode->left_margin = 217
-> mode->vres = 1024, mode->lower_margin = 1
-> mode->vsync_len = 3, mode->upper_margin = 32
-> mode->refresh = 60
-> mode 19
-> mode->xres = 1280, mode->right_margin = 48
-> mode->hsync_len = 112, mode->left_margin = 248
-> mode->vres = 1024, mode->lower_margin = 1
-> mode->vsync_len = 3, mode->upper_margin = 38
-> mode->refresh = 60
+>         for (i = 0; i < dbsize; i++) {
+>                 cur = &modedb[i];
 >
-> mode 19 comes from get_detailed_timing, while 18 comes from
-> get_std_timing and timings are calculated by
-> calc_mode_timings (which in
-> turn calls fb_get_mode). Any chance that there is some error in
-> fb_get_mode?
+>                 if (cur->xres == xres && cur->yres == yres &&
+>                                      cur->refreh == refresh) {
+>                         /* Yeah */
+>                         mode->xres = xres;
+>                         mode->yres = yres;
+>                         mode->pixclock = cur->pixclock;
+>                         mode->refresh = refresh;
+>                         mode->left_margin = cur->left_margin;
+>                         mode->right_margin = cur->right_margin;
+>                         mode->upper_margin = cur->upper_margin;
+>                         mode->lower_margin = cur->lower_margin;
+>                         mode->hsync_len = cur->hsync_len;
+>                         mode->vsync_len = cur->vsync_len;
+>                         mode->vmode = cur->vmode;
+>                         mode->sync = cur->sync;
+>
+>                         return;
+>                 }
+>         }
+>
+>         BUG();
+> }
+>
 
-fb_get_mode() uses GTF calculations to estimate the timings.  It will
-surely be different from VESA standard timings and manufacturer's
-timings (detailed).  Most, if not all, modern CRT , monitors should be
-able to handle GTF calculated timings -- at least it will display, but
-the frame may be wide/narrow, tall/short, or shifted left/right/up/down.
-This is when you need to use fbset to fine tune the timings.  However
-GTF calculations should be treated as last resort (manufacturer's
-detailed timings, VESA discrete timings, GTF -- decreasing priority).
+The bug may actually be in the following code:
 
-One thing I forgot to comment in fbmon.c is that the GTF horizontal
-timing results are not rounded off.  It may be necessary to round it off
-to the nearest character clock (usually 8 pixels) such as by doing a
+static int get_std_timing(unsigned char *block, struct fb_videomode
+*mode)
+{
+	int xres, yres = 0, refresh, ratio, i;
 
-	left_margin = (left_margin + 4) & ~7 .
+	xres = (block[0] + 31) * 8;
+	if (xres <= 256)
+		return 0;
 
-I agree with Ben that modedb should have extra flags to determine which
-of the modes came from where.  One can then check an extra flag in EDID
-(First detailed timing is preferred) to find what is the best mode for
-the display.   (The print out of show_edid() should tell you this
-information).
+ 	ratio = (block[1] & 0xc0) >> 6;
+ 	switch (ratio) {
+	case 0:
+		yres = xres;
+ 		break;
+	case 1:
+		yres = (xres * 3)/4;
+		break;
+ 	case 2:
+ 		yres = (xres * 4)/5;
+		break;j
+	case 3:
+ 		yres = (xres * 9)/16;
+		break;
+	}
+	refresh = (block[1] & 0x3f) + 60;
 
-I was also planning to extend info->monspecs to include most of the
-information from EDID, but I still have no time.
+ 	for (i = 0; i < VESA_MODEDB_SIZE; i++) {
+		if (vesa_modes[i].xres == xres &&
+		    vesa_modes[i].yres == yres &&
+ 		    vesa_modes[i].refresh == refresh) {
+ 			*mode = vesa_modes[i];
+			break;
+ 		} else {
+			calc_mode_timings(xres, yres, refresh, mode);
+			break;
+ 		}
+ 	}
+	return 1;
+}
+----------------------------------
 
-Regarding your problem about re-centering the screen, why not check the
-modeline used by XFree86 and by radeonfb?  In order to prevent
-re-centering when switching to/from X, the timings should be the same
-and if not, either create a custom Xfree86 modeline from fb or a custom
-timing in /etc/fb.modes taken from your current Xfree86 timings.
+Maybe you can replace it with this:
 
-BTW, i810fb largely uses timings generated from fb_get_modes() and I
-haven't heard anyone report a display problem yet.  The EDID parser
-though is largely untested, and I've already seen a few bugs.
+static int get_std_timing(unsigned char *block, struct fb_videomode
+*mode)
+{
+	int xres, yres = 0, refresh, ratio, i, j = 0;
+
+	xres = (block[0] + 31) * 8;
+	if (xres <= 256)
+		return 0;
+
+ 	ratio = (block[1] & 0xc0) >> 6;
+ 	switch (ratio) {
+	case 0:
+		yres = xres;
+ 		break;
+	case 1:
+		yres = (xres * 3)/4;
+		break;
+ 	case 2:
+ 		yres = (xres * 4)/5;
+		break;j
+	case 3:
+ 		yres = (xres * 9)/16;
+		break;
+	}
+	refresh = (block[1] & 0x3f) + 60;
+
+	/* First find standard mode from the table of VESA modes */
+ 	for (i = 0; i < VESA_MODEDB_SIZE; i++) {
+		if (vesa_modes[i].xres == xres &&
+		    vesa_modes[i].yres == yres &&
+ 		    vesa_modes[i].refresh == refresh) {
+ 			*mode = vesa_modes[i];
+			j = 1;
+			break;
+ 		}
+	}
+
+	/* If mode is not found in table, calculate using GTF */
+	if (!j)
+		calc_mode_timings(xres, yres, refresh, mode);
+
+	return 1;
+}
 
 Tony
 

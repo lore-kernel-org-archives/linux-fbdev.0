@@ -1,61 +1,51 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 8/8] fbdev: Fix broken fb_blank() implementation.
-Date: Mon, 08 Nov 2004 10:52:50 +1100
-Message-ID: <1099871570.3884.138.camel@gaston>
-References: <200411080526.50550.adaplas@hotpop.com>
-	 <1099863581.10262.134.camel@gaston> <200411080723.39722.adaplas@hotpop.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [PATCH] fbdev: Fix IO access in rivafb
+Date: Mon, 08 Nov 2004 16:57:26 +1100
+Message-ID: <1099893447.10262.154.camel@gaston>
+References: <200411080521.iA85LbG6025914@hera.kernel.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CQwrS-0004jb-6E
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Nov 2004 15:54:18 -0800
-Received: from gate.crashing.org ([63.228.1.57])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1CQwrR-0000ue-Nk
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Nov 2004 15:54:18 -0800
-In-Reply-To: <200411080723.39722.adaplas@hotpop.com>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261744AbUKHF6n@vger.kernel.org>
+In-Reply-To: <200411080521.iA85LbG6025914@hera.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: adaplas@pol.net
-Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: "Antonino A. Daplas" <adaplas@hotpop.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Mon, 2004-11-08 at 07:23 +0800, Antonino A. Daplas wrote:
 
-> I'm not too sure about this, but I think so, it is world callable and is
-> called by bust_spinlocks() at least. What about putting fbcon_blank() in the
-> workqueue...? (Or perhaps unblank/blank_screen in vt.c, but the code
-> in vt.c is very fragile...)
+> diff -Nru a/drivers/video/riva/riva_hw.h b/drivers/video/riva/riva_hw.h
+> --- a/drivers/video/riva/riva_hw.h	2004-11-07 21:21:47 -08:00
+> +++ b/drivers/video/riva/riva_hw.h	2004-11-07 21:21:47 -08:00
+> @@ -78,13 +78,13 @@
+>  #define NV_WR08(p,i,d)	out_8(p+i, d)
+>  #define NV_RD08(p,i)	in_8(p+i)
+>  #else
+> -#define NV_WR08(p,i,d)  (((U008 *)(p))[i]=(d))
+> -#define NV_RD08(p,i)    (((U008 *)(p))[i])
+> +#define NV_WR08(p,i,d)  (writeb((d), (u8 __iomem *)(p) + (i)))
+> +#define NV_RD08(p,i)    (readb((u8 __iomem *)(p) + (i)))
+>  #endif
+> -#define NV_WR16(p,i,d)  (((U016 *)(p))[(i)/2]=(d))
+> -#define NV_RD16(p,i)    (((U016 *)(p))[(i)/2])
+> -#define NV_WR32(p,i,d)  (((U032 *)(p))[(i)/4]=(d))
+> -#define NV_RD32(p,i)    (((U032 *)(p))[(i)/4])
+> +#define NV_WR16(p,i,d)  (writew((d), (u16 __iomem *)(p) + (i)/2))
+> +#define NV_RD16(p,i)    (readw((u16 __iomem *)(p) + (i)/2))
+> +#define NV_WR32(p,i,d)  (writel((d), (u32 __iomem *)(p) + (i)/4))
+> +#define NV_RD32(p,i)    (readl((u32 __iomem *)(p) + (i)/4))
+>  #define VGA_WR08(p,i,d) NV_WR08(p,i,d)
+>  #define VGA_RD08(p,i)   NV_RD08(p,i)
 
-Yah. I already fixed a bunch of vt.c so nowadays, at least, we do
-everything with the console sem. held, so the driver doesn't have to
-care about re-entrancy, though we still can be called at irq context.
 
-A workqueue may not be a good idea. I don't like workqueue abuse, and
-sleeping > 200ms there means that whatever other driver using workqueues
-will suddenly have _huge_ latencies, it's not good.
+You probably broke ppc versions here. The driver enables "big endian"
+register access, but readw/writew/l functions do byteswap, which will
+lead to incorrect results.
 
-I suppose I'll stick with my timer ...
+The fix would be to probably just remove the code that puts the chip
+registers into big endian mode, this isn't necessary nor a very good
+idea actually.
+
+I don't have an nVidia card on ppc to test any more unfortunately.
 
 Ben.
-
-
-
-
--------------------------------------------------------
-This SF.Net email is sponsored by:
-Sybase ASE Linux Express Edition - download now for FREE
-LinuxWorld Reader's Choice Award Winner for best database on Linux.
-http://ads.osdn.com/?ad_id=5588&alloc_id=12065&op=click

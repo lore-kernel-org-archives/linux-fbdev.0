@@ -1,18 +1,17 @@
-From: Aleksandr Koltsoff <czr@iki.fi>
-Subject: anyone working on radeonfb?
-Date: Thu, 12 Dec 2002 14:23:08 +0200 (EET)
+From: Miles Lane <miles.lane@attbi.com>
+Subject: Re: 2.5.51 -- rivafb is whacky (characters flipped on vertical axis, 640x480 usable area shown inside a higher-res area, etc).
+Date: Thu, 12 Dec 2002 22:55:07 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0212121419410.31977-100000@iohazard.tts.fi>
-Mime-Version: 1.0
+Message-ID: <D075B526-0E67-11D7-9B90-000393A337FC@attbi.com>
+References: <1039770362.1025.18.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v548)
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from iohazard.tts.fi ([193.94.244.252])
+Received: from sccrmhc02.attbi.com ([204.127.202.62])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18MSNX-0001fw-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 12 Dec 2002 04:23:48 -0800
-Received: from czr (helo=localhost)
-	by iohazard.tts.fi with local-esmtp (Exim 3.35 #1 (Debian))
-	id 18MSMu-0008K4-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 12 Dec 2002 14:23:08 +0200
+	id 18Mk6K-0003Qi-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 12 Dec 2002 23:19:12 -0800
+In-Reply-To: <1039770362.1025.18.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,29 +21,25 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Antonino Daplas <adaplas@pol.net>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-hello
 
-is anyone actively maintaining the radeon fb driver in the 2.4 series?
+On Friday, December 13, 2002, at 01:34  AM, Antonino Daplas wrote:
+> How extensive is the color problem?  Does it just affect the logo, or
+> everything? Also, is the color problem present in both hardware and
+> software mode (just do fbset -accel true/false to find out)?  Is the
+> vertical mirroring as reported by Miles still present?  How about bpp16
+> or bpp32?
 
-I've started reviving and older hacked version (based on mplayer radeonfb)
-of the driver. The version I have has proper panning and accel console
-(almost, 32bit mode is causing some minor head-aches still).
+I have had mixed results with 2.5.51 (vanilla).  I have booted
+once where I didn't see the mirroring.
 
-I'd like to eventually sync my version with the kernel one (and yes, I
-know that the mplayer version is way off Linus coding style, and yes, it's
-based somewhat on xfree86, but I'm willing to work that out eventually).
+I have not had a chance to test your patch.  Hopefully I'll have
+time tomorrow.  Sorry for the delay.
 
-currently I have only some radeon boards left, but no DVI anymore, so I'll
-need someone with DVI displays as well. Also I have no access to PPCs, so
-would need someone to test the newer driver there as well if possible.
-
-thanks :-)
-
-ak.
+	Miles
 
 
 

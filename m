@@ -1,86 +1,153 @@
-From: Torrey Hoffman <thoffman@arnor.net>
-Subject: Re: [Linux-fbdev-devel] Re: New logo code (fwd)
-Date: 05 Feb 2003 11:17:57 -0800
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1044472678.1321.388.camel@rohan.arnor.net>
-References: <Pine.GSO.4.21.0302051336170.16681-100000@vervain.sonytel.be>
+From: Otto Wyss <otto.wyss@bluewin.ch>
+Subject: Re: [wx-dev] Linux GUI considerations
+Date: Wed, 05 Feb 2003 20:44:00 +0100
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <3E416980.2B2F85@bluewin.ch>
+References: <3E403C75.2DBCC9F8@bluewin.ch>
+Reply-To: otto.wyss@bluewin.ch
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <Pine.GSO.4.21.0302051336170.16681-100000@vervain.sonytel.be>
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from isp247n.hispeed.ch ([62.2.95.247] helo=smtp.hispeed.ch)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18gVSp-0007or-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Feb 2003 11:44:08 -0800
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+To: wx-dev@lists.wxwindows.org, linux-fbdev-devel@lists.sourceforge.net
 
-> > On Sun, 12 Jan 2003, Geert Uytterhoeven wrote:
-> > > The current logo code is messy, complex, and inflexible. So I decided to
-> > > rewrite it. My goals were:
-[ good list ]
+> From: Julian Smart
+> I would certainly be keen to encourage better uptake of Linux through
+> use of wxWindows, but I have to take issue with the argument that
+> a framebuffer-based approach is going to help this. XFree86 has had years
+> of development and tweaking. Are you really saying that we could
+> write a better X11 replacement? Even if we did and managed to write
+> a 3rd super-duper desktop environment with all the required little apps,
+> we'd face a huge struggle in persuading people to use our particular
+> environment instead of X11.
+> 
+XFree86 has done a tremendous amount of effort. Still large part of this
+is simply spent in the wrong places. Instead of keeping writing directly
+to the hardware they should concentrate in building kernel drivers,
+maybe separate maybe together with the framebuffer people. Currently it
+looks close to that they fear anybody may come up with a better X
+solution if the hardware part is made generally available. A second
+part, the network part, is in a desktop environment or a PDA simply not
+necessary but it's not possible to get rid of it. And can you explain
+why VNC created their own protocol?
 
-This is wonderful.  I (and some co-conspirators) started a similar
-project, and put up patches at www.arnor.net/linuxlogo . But yours is up
-to date, and ours is not (I was waiting until the framebuffer rewrite
-was done, and then I didn't have time to catch up).  
+> >I fully agree with James Simmons when he complains about "Linux will
+> >NEVER move into the desktop market!" (See
+> 
+> Chicken/egg...
+> 
+Yes but if nobody starts to build eggs out of "nothing" you'll never get chickens.
 
-It would be great if your patch was merged.  If I may offer some
-suggestions... well, feature requests :-)
+> I may be missing your line of reasoning here, but I think the main
+> reason for lack of Linux uptake in the home is the lack of software,
+> in particular games (pity Loki didn't succeed). So rather than
+> invest in an entirely new GUI solution, perhaps the effort would
+> be better spent on porting or writing games and other software...
+> as well as trying to persuade more companies to release on
+> Linux (by telling them how easy wxWindows is to develop with!)
+> 
+There will be never any successful Linux gaming business as long as
+graphic cards manufactures don't provide their own written Linux
+drivers. Again a chicken/egg situation.
 
-It would also be nice to have an option to turn off the blinking cursor
-on the framebuffer.  With a full-screen boot logo as used on embedded
-systems, even with a serial console or console on tty2, you still get
-the blinking cursor in the top corner of the screen. (at least in 2.4.x)
+> From: Robert Roebling 
+> > why isn't there already a framebuffer port
+> > in wxWindows?
+>
+This was more a rhetorical question for the framebuffer people.
 
-Other options that might be useful, but less important: 
-- Single logo option for SMP
-- A "no logo" option, while still including framebuffer support
-- Logo positioning (centered horizontally, vertically, both)
-- Background and foreground text color options.  
+> From: Vadim Zeitlin
+> RR> > why isn't there already a framebuffer port
+> RR> > in wxWindows?
+> 
+>  FB port could be useful for the devices such as PDA and, especially
+> considering that it shouldn't be that difficult to create a wxFB port, I
+> hope that this is going to happen if any interesting FB-based systems
+> appear. For now I don't know of any however.
+> 
+IMO an FB port isn't even for PDA's a real alternative, since in a few
+years PDA's will have the same power as desktop systems and requests
+similar GUIs.
 
-A combination of these features would make it possible to do a smaller
-logo (say, 256 x 128) centered on the screen with a matching background
-color that would make it look like a full-screen logo, while not
-bloating the kernel image much.
+> RR> The Linux desktop will be based on X11 or it
+> RR> will not happen at all.
+> 
+>  And I'd really like to sign under this. I really don't understand why so
+> many people hate X so much. IMHO it's a very decent system. As for the
+> Linux desktop, it is alive and well alive. Whatever you may think of KDE (I
+> don't think much as I never used it myself anyhow) it's an amazingly
+> successful project.
+> 
+Just look at the decision of the "Deutsche Bundestag" about using Linux
+on the desktop (with KDE and OpenOffice). 
 
-Also, some simple documentation that would help beginners do a
-full-screen boot logo with the console on tty2 or serial should be
-included with the kernel.  Lots of people want to use Linux on
-"embedded" PC-based systems like kiosks, or just do this for fun on
-their home computers, and doing this is confusing for beginners.
-
-If you like, I would be happy to write documentation like this or help
-in other ways.
-
-I hope there is little resistance to merging a patch like this.  If
-anyone doubts the need, I can only say that despite our patches not
-being kept up to date regularly, I get a lot of email about them.  Also,
-there are patches by other people to do things like this, some better
-than others.  Despite the hassle of finding and applying these patches,
-people want the feature badly enough to make the effort.  I see a lot
-more desire for this feature than for many other worthwhile things that
-are merged into the kernel...
-
-Torrey Hoffman
-thoffman@arnor.net
+> From: Julian Smart
+> Interesting. Here's another relevant story from today -- a Desktop Linux
+> Consortium:
+> 
+> http://www.internetnews.com/ent-news/article.php/1579921
+> 
+Really interesting, especially the sencence about "end-users" shows that
+I'm on the right track. 
 
 
-On Wed, 2003-02-05 at 04:37, Geert Uytterhoeven wrote:
-> On Tue, 28 Jan 2003, Geert Uytterhoeven wrote:
-> > On Sun, 12 Jan 2003, Geert Uytterhoeven wrote:
-> > > The current logo code is messy, complex, and inflexible. So I decided to
-> > > rewrite it. My goals were:
-> > >   - Logos must be accessible easily by an image editor (currently: hex C source
-> > >     data must be converted to another format first)
-> > >   - Logos must be stored in ASCII-form in the source tree
-> > >   - Support arbitrary logo sizes (currently: fixed 80x80)
-> > >   - Allow the logo to be selected statically (at compile time) and/or
-> > >     dynamically (at run-time, based on machine type) (currently: at compile
-> > >     time only).
-> > >   - Allow simple adition of new logos
-> > >   - Support grayscale logos (not used yet)
-> > > 
-> > > The patch achieves all of these. Logos are stored in ASCII PNM format in
-> > > drivers/video/logo/, and automatically converted to hex C source arrays using
-> > > scripts/pnmtologo. I chose ASCII PNM because (a) it's ASCII, (b) it's very
-> > > simple to parse without an external library (XPM is more difficult to parse),
-> > > and (c) it can be handled by many image manipulation programs.
+What alternatives are there?
+
+- sticking with X11: While this is currently the only working solution,
+Linux won't get a widespread acceptance. It will silently evolve in its
+niche but won't break out of it.
+
+- trying a framebuffer port: This won't be successful as long as the
+single application approach is overcome (also for PDA).
+
+- trying a DirectFB port: This might be an alternative but my knowledge
+is too small to say more. Someone with more insight should have a look.
+
+- using QT: This might help Linux but it's no alternative for wxWindows.
+
+- changing X11: I have absolute no wish to get into a flame ware with
+the XFree86 people.
+
+- reactivating Dinx: From the echo in the kernel mailing list this isn't
+an option. Maybe it could be integrated into the framebuffer but this is
+up to them.
+
+- building a new API: As Julian said this is probably out of question.
+Much too much work and persuasion has to be done. 
+
+- re implementing a current API: IMO the only possible way is to take
+the Xlib API, leave away any unnecessary functionality and re implement
+it based on the framebuffer.
+
+- others: Suggestions?
+
+If you question if this is altogether possible, look at MacOS X. Why can
+Apple build a GUI on top of FreeBSD without requiring a single line of
+configuration from the user? Why can't this be done with Linux? Besides
+why has MacOS a GUI right from the start but Linux hasn't? Besides MacOS
+is famous for building a GUI where an ordinary user feels comfortable
+with. IMO this should be equally possible for Linux and wxWindows and
+not even that difficult. I'm not saying it isn't much work but it's
+doable. 
+
+O. Wyss
+
+
+-------------------------------------------------------
+This SF.NET email is sponsored by:
+SourceForge Enterprise Edition + IBM + LinuxWorld = Something 2 See!
+http://www.vasoftware.com

@@ -1,16 +1,16 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: FB model basic issues (WAS: radeon, apertures & memory mapping)
-Date: Thu, 17 Mar 2005 10:27:56 +1100
-Message-ID: <1111015676.7192.58.camel@gaston>
-References: <1110784327.5787.288.camel@gaston>
-	<1110817205.4004.527.camel@localhost> <1110837171.5863.16.camel@gaston>
-	<1110838356.4003.548.camel@localhost> <1110839873.5673.41.camel@gaston>
-	<1110862777.4044.592.camel@localhost> <20050315060138.GA13064@sci.fi>
-	<1110926659.25201.11.camel@gaston> <20050315230522.GA1444@sci.fi>
-	<1110930551.649.47.camel@gaston>  <20050316205511.GA18107@sci.fi>
+Date: Thu, 17 Mar 2005 10:28:46 +1100
+Message-ID: <1111015726.15510.60.camel@gaston>
+References: <1110696189.5787.100.camel@gaston>
+	<Pine.LNX.4.62.0503150946180.30569@numbat.sonytel.be>
+	<20050315133628.GA16051@sci.fi> <200503160737.04850.adaplas@hotpop.com>
+	<1110930652.649.50.camel@gaston> <20050316014714.GA5387@sci.fi>
+	<1110937887.649.101.camel@gaston>  <20050316195108.GA6651@sci.fi>
+	<1111006826.5533.68.camel@localhost>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20050316205511.GA18107@sci.fi>
+In-Reply-To: <1111006826.5533.68.camel@localhost>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
 	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
@@ -22,21 +22,25 @@ List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
 Sender: xorg-bounces@lists.freedesktop.org
 Errors-To: xorg-bounces@lists.freedesktop.org
 Content-Type: text/plain; charset="iso-8859-1"
-To: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Cc: Jon Smirl <jonsmirl@yahoo.com>, Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>, dri-devel@lists.sourceforge.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, xorg@lists.freedesktop.org
+To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Jon Smirl <jonsmirl@yahoo.com>, xorg@lists.freedesktop.org, adaplas@pol.net, dri-devel@lists.sourceforge.net
 
-On Wed, 2005-03-16 at 22:55 +0200, Ville Syrj=E4l=E4 wrote:
-> On Wed, Mar 16, 2005 at 10:49:11AM +1100, Benjamin Herrenschmidt wrote:
-> > In the meantime, can you tell me more about your arbitration scheme ?
+On Wed, 2005-03-16 at 16:00 -0500, Michel D=E4nzer wrote:
+> On Wed, 2005-03-16 at 21:51 +0200, Ville Syrj=E4l=E4 wrote:
+> >=20
+> > One thing just popped to my head though. If in the future we are goin=
+g to=20
+> > allow graphics cards to render to system memory, using the swapper wi=
+ll no=20
+> > longer work. I don't see any other solution that having the CPU perfo=
+rm=20
+> > the byte swapping.
 >=20
-> There is a lock associated with the graphics card. The lock is always=20
-> taken before programming the hardware. Other things wanting access to t=
-he=20
-> hardware wait until the lock is released.
+> Sane hardware should have a way to deal with this as well. Either way,
+> this is hardware specific, so it will probably have to be handled by th=
+e
+> hardware driver(s) somehow.
 
-Ok, so it would be easy to have directFB use an external arbiter without
-breaking existing clients ? It will need at least to use the vga arbiter
-that I'm about to finish, that should allow at least to have X on one
-card and directFB on another without conflict.
+Of course, and radeonfb is what if not a hardware driver ?
 
 Ben.

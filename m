@@ -1,21 +1,21 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: console fb: init blackout. (CyberBlade/i1)
-Date: Wed, 17 Mar 2004 22:14:36 +0000 (GMT)
+From: Jakub Bogusz <qboosh@pld-linux.org>
+Subject: [PATCH 2.6][RESEND] fbcon margins colour fix
+Date: Thu, 18 Mar 2004 00:31:35 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0403172208140.19415-100000@phoenix.infradead.org>
-References: <20040315172529.GA1199@foko.komputilo.org>
+Message-ID: <20040317233135.GB3510@satan.blackhosts>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="jI8keyz6grp/JLjh"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B3jJC-0000ql-3m
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Mar 2004 14:14:42 -0800
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1B3kPB-0000Vm-0W
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Mar 2004 15:24:57 -0800
+Received: from aea152.neoplus.adsl.tpnet.pl ([83.31.137.152] helo=satan.blackhosts)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1B3jJA-0006A0-VH
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Mar 2004 14:14:41 -0800
-In-Reply-To: <20040315172529.GA1199@foko.komputilo.org>
+	id 1B3kP8-0005D6-0R
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Mar 2004 15:24:54 -0800
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,81 +25,62 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Joost Witteveen <joost@iliana.nl>
-Cc: linux-fbdev-devel@lists.sourceforge.net, joostje@foko.komputilo.org
+To: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
 
-> When defining FRAMEBUFFER_CONSOLE on my system, kernels
-> 2.6.3 and 2.6.4 will black out the screen while the kernel
-> is booting (so fast I cannot see any line from the kernel
-> messages). X comes up normally, and everything else seems
-> to work fine too (only the VC's stay black when I try to
-> visit them with control-alt-F1 etc).
-> 
-> 2.6.1 did not have this. (Don't know about 2.6.2).
-> 
-> If there is anything I can do to help you figure out what
-> the problem is, please tell.
-> 
-> (Personally I don't use the console framebuffer, so I just 
-> comment it out).
-> 
-> 
-> Video: Trident Microsystems CyberBlade/i1 (rev 6a)
->        VGA-onboard on a MS 6368 motherboard
+--jI8keyz6grp/JLjh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-First of all in your lilo.conf what do you have vga= set to.
-Plus are you using a fbdev X server?
-
-> #
-> # Graphics support
-> #
-> CONFIG_FB=y
-> # CONFIG_FB_PM2 is not set
-> CONFIG_FB_CYBER2000=y
-
-Unset this option. You don't have this card.
-
-> # CONFIG_FB_IMSTT is not set
-> CONFIG_FB_VGA16=y
-
-I recommend disabling this driver.
-
-> CONFIG_FB_VESA=y
-> # CONFIG_VIDEO_SELECT is not set
-> # CONFIG_FB_HGA is not set
-> # CONFIG_FB_RIVA is not set
-> # CONFIG_FB_I810 is not set
-> # CONFIG_FB_MATROX is not set
-> # CONFIG_FB_RADEON_OLD is not set
-> # CONFIG_FB_RADEON is not set
-> # CONFIG_FB_ATY128 is not set
-> # CONFIG_FB_ATY is not set
-> # CONFIG_FB_SIS is not set
-> # CONFIG_FB_NEOMAGIC is not set
-> # CONFIG_FB_KYRO is not set
-> # CONFIG_FB_3DFX is not set
-> # CONFIG_FB_VOODOO1 is not set
-> CONFIG_FB_TRIDENT=y
-> # CONFIG_FB_VIRTUAL is not set
-> 
-> #
-> # Console display driver support
-> #
-> CONFIG_VGA_CONSOLE=y
-> # CONFIG_MDA_CONSOLE is not set
-> CONFIG_DUMMY_CONSOLE=y
-> 
-> # (note: I just edit-ed this option in again, as I'm typing
-> # this from a non-frame-buffer kernel)
-> CONFIG_FRAMEBUFFER_CONSOLE=y
-
-It shoudl work. I don't know if the Trident driver works since I liack 
-that hardware.
+I sent it a few times to linux-kernel and at least one to
+linux-fbdev-devel, but haven't seen any comments - and this annoying
+changing margins colour seems to be still there in 2.6.4 (at least on
+tdfxfb).
 
 
+-- 
+Jakub Bogusz    http://cyber.cs.net.pl/~qboosh/
+
+--jI8keyz6grp/JLjh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="linux-fbcon-margins.patch"
+
+This fixes "margin colour" (colour used to clear top and bottom margins -
+e.g. remaining half of line at the bottom of 100x37 console on 800x600
+framebuffer).
+
+I don't know what was the intention behind using attr_bgcol_ec() here,
+but it caused using of background colour of last erase character to clear
+margins (thus it was changing from time to time when switching consoles
+or so).
+I think that margin colour should be equal overscan colour, which seems
+to be always black.
+This patch changes margin colour to black (or colour 0 in palette modes)
+in accel_clear_margins() and removes unused then bgshift variable.
+
+	-- Jakub Bogusz <qboosh@pld-linux.org>
+
+--- linux-2.6.4/drivers/video/console/fbcon.c.orig	2004-03-11 03:55:36.000000000 +0100
++++ linux-2.6.4/drivers/video/console/fbcon.c	2004-03-17 20:47:38.749388312 +0100
+@@ -489,7 +489,6 @@
+ void accel_clear_margins(struct vc_data *vc, struct fb_info *info,
+ 				int bottom_only)
+ {
+-	int bgshift = (vc->vc_hi_font_mask) ? 13 : 12;
+ 	unsigned int cw = vc->vc_font.width;
+ 	unsigned int ch = vc->vc_font.height;
+ 	unsigned int rw = info->var.xres - (vc->vc_cols*cw);
+@@ -498,7 +497,7 @@
+ 	unsigned int bs = info->var.yres - bh;
+ 	struct fb_fillrect region;
+ 
+-	region.color = attr_bgcol_ec(bgshift, vc);
++	region.color = 0; /* margins color = overscan color */
+ 	region.rop = ROP_COPY;
+ 
+ 	if (rw && !bottom_only) {
+
+--jI8keyz6grp/JLjh--
 
 
 -------------------------------------------------------

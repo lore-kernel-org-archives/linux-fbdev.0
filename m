@@ -1,21 +1,17 @@
-From: =?iso-8859-1?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>
+From: Antonino Daplas <adaplas@pol.net>
 Subject: Re: Reading the EDID block for x86 machines
-Date: Wed, 12 Mar 2003 20:47:01 +0200
+Date: 13 Mar 2003 06:38:33 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030312204701.A1279@sci.fi>
-References: <1047386934.1113.35.camel@localhost.localdomain> <20030312141022.A6984@sci.fi> <1047490638.1028.29.camel@localhost.localdomain>
+Message-ID: <1047508652.1005.6.camel@localhost.localdomain>
+References: <20030312181658.96700.qmail@web14912.mail.yahoo.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from kura.mail.jippii.net ([195.197.172.113])
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18tBEG-0000VR-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 12 Mar 2003 10:45:28 -0800
-Received: from simpukka.saunalahti.fi (simpukka.saunalahti.fi [195.74.0.20])
-	by kura.mail.jippii.net (Postfix) with ESMTP id 4FC0B248D1F
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 12 Mar 2003 20:45:25 +0200 (EET)
-Received: (from syrjala@localhost) by simpukka.saunalahti.fi (8.8.5/8.8.3) id UAA01903 for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 Mar 2003 20:47:01 +0200 (EET)
-In-Reply-To: <1047490638.1028.29.camel@localhost.localdomain>; from adaplas@pol.net on Thu, Mar 13, 2003 at 01:38:19AM +0800
+Received: from pine.compass.com.ph ([202.70.96.37])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18tEua-0006iJ-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 12 Mar 2003 14:41:24 -0800
+In-Reply-To: <20030312181658.96700.qmail@web14912.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -25,39 +21,47 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, Mar 13, 2003 at 01:38:19AM +0800, Antonino Daplas wrote:
-> Matrox users are the fortunate few since the author implemented an i2c
-> backend.
+On Thu, 2003-03-13 at 02:16, Jon Smirl wrote:
+> --- Antonino Daplas <adaplas@pol.net> wrote:
+> > Unless I missed some imported BIOS calls or other
+> > methods to do this or
+> > something similar in real-mode...
+> 
+> You missed something. The address of the VBIOS ROM can
+> be controlled by writing to the PCI config space. You
+> can make the ROM appear anywhere you want it to.
+> 
+> This happens even for the boot video device. 
+> Somewhere very early in the boot the system BIOS
+> enabled the VBIOS ROM and copied it to C000. This is
+> the "shadow BIOS" option.
+> 
 
-;)
+So the steps needed would be:
 
-> That's okay.  The get_EDID() function can get the EDID block several
-> ways.
->=20
-> 1.  via the driver if it has its own method of getting the EDID block
-> (1st choice)
->=20
-> 2.  via userland - EDID block (ie get-edid > edid.dmp) uploaded to
-> driver via ioctl (2nd choice)
->=20
-> 3.  through an arch-specific method -- VBE for x86, OF for PPC, etc
-> (last choice)
->=20
-> When a user changes monitors without rebooting, he/she can upload an
-> edid block appropriate for the display.
+1.  scan for pci devices looking for the vga controller type
 
-Sounds good.
+2.  if 1 is found other than the primary, disable the current controller
 
-BTW are there public docs available about EDID & DDC? VESA doesn't like
-poor open-source developers :(
+3.  write to PCI config space of secondary controller the address you
+want it to appear (ie C000:0000).  Can I use other addresses?
 
---=20
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+4. enable the controller
+
+5. far call c000:0003
+
+6. disable the controller
+
+7. repeat
+
+Besides the finer points, did I miss anything obvious?
+
+Tony 
+
 
 
 -------------------------------------------------------

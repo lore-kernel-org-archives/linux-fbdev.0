@@ -1,21 +1,25 @@
-From: Sven Luther <sven.luther@wanadoo.fr>
-Subject: Re: [patch, 2.6, ppc] some modular framebuffer support
-Date: Thu, 1 Jul 2004 13:34:21 +0200
+From: Virus Checker <postmaster@gort.metaparadigm.com>
+Subject: BANNED FILENAME ("document07.doc .pif") IN MAIL FROM YOU
+Date: Thu,  1 Jul 2004 19:32:09 +0800 (SGT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040701113421.GA9187@pegasos>
-References: <hh4qosi15h.fsf@alsvidh.mathematik.uni-muenchen.de>
+Message-ID: <VS28438-03@gort>
+References: <20040701113206.63A931ACCD@gort.metaparadigm.com>
 Mime-Version: 1.0
+Content-Type: multipart/report; report-type=delivery-status;
+    boundary="----------=_1088681529-28438-1"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BfznZ-0002Eg-P6
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 01 Jul 2004 04:32:13 -0700
-Received: from smtp6.wanadoo.fr ([193.252.22.25] helo=mwinf0603.wanadoo.fr)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1BfznZ-00011B-B0
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 01 Jul 2004 04:32:13 -0700
-Content-Disposition: inline
-In-Reply-To: <hh4qosi15h.fsf@alsvidh.mathematik.uni-muenchen.de>
+	id 1Bfzne-0002Eq-2U
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 01 Jul 2004 04:32:18 -0700
+Received: from gort.metaparadigm.com ([203.117.131.12])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
+	id 1Bfznd-0006h6-CG
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 01 Jul 2004 04:32:18 -0700
+Received: from localhost (unknown [127.0.0.1])
+	by gort.metaparadigm.com (Postfix) with ESMTP id D54861ACFD
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu,  1 Jul 2004 19:32:09 +0800 (SGT)
+In-Reply-To: <20040701113206.63A931ACCD@gort.metaparadigm.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,47 +29,83 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
+
+This is a multi-part message in MIME format...
+
+------------=_1088681529-28438-1
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
-To: Jens Schmalzing <j.s@lmu.de>, linux-fbdev-devel@lists.sourceforge.net, debian-kernel@lists.debian.org
-Cc: linuxppc-dev@lists.linuxppc.org
 
-Let's bring linux-fbdev in the loop, as they probably are the best
-placed to comment.
+BANNED FILENAME ALERT
 
-On Thu, Jul 01, 2004 at 10:26:18AM +0200, Jens Schmalzing wrote:
-> Hi,
-> 
-> the following patch allows some accelerated framebuffers (aty128fb,
-> atyfb, radeonfb, and rivafb) and framebuffer console support itself to
-> be built as modules on ppc.  Tested on a Powerbook Pismo, works very
-> well including XFree86 and DRI.
-> 
-> The first hunk suppresses a warning only, not sure about it.
+Our content checker found
+    banned name: "document07.doc                                                                   .pif"
+in email presumably from you (<linux-fbdev-devel@lists.sourceforge.net>), to the following recipient:
+-> mclark@gort.metaparadigm.com
 
-Jens, i am not sure of the wisdom of pursuing this way. I know that
-modularizing stuff and even fbdev drivers is a good thing, but i also
-know that you plan to use this to modularize most fbdevs out of the
-debian powerpc kernel. 
+Please check your system,
+or ask your system administrator to do so.
 
-I wonder at the implications, since modular fbdevs are loaded well later
-than non-modular ones, and we thus lose lots of early log messages,
-which may be ok for us hackers with a serial console ready to catch
-them, but may be a nightmare for general users of the debian powerpc
-package, not to speak about us who will have to do the support job on
-those.
+Delivery of the email was stopped!
 
-linux-fbdev folk, what is your take on this, would it be possible to
-somehow get a way to have earlier debug messages, or to bring the
-loading of fbdev modules to an earlier point ? Benh, where you working
-on something such ? I think i remember something about this mentioned.
 
-Or maybe i am wrong, and using a modular fbdev on a not offb supporting
-powerpc is just fine.
+For your reference, here are headers from your email:
+------------------------- BEGIN HEADERS -----------------------------
+Return-Path: <linux-fbdev-devel@lists.sourceforge.net>
+Received: from metaparadigm.com (unknown [218.17.82.37])
+	by gort.metaparadigm.com (Postfix) with ESMTP id 63A931ACCD
+	for <michael@metaparadigm.com>; Thu,  1 Jul 2004 19:32:06 +0800 (SGT)
+From: linux-fbdev-devel@lists.sourceforge.net
+To: michael@metaparadigm.com
+Subject: Important m$6h?3p
+Date: Thu, 1 Jul 2004 19:32:13 +0800
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_0016----=_NextPart_000_0016"
+X-Priority: 3
+X-MSMail-Priority: Normal
+Message-Id: <20040701113206.63A931ACCD@gort.metaparadigm.com>
+-------------------------- END HEADERS ------------------------------
 
-Friendly,
+------------=_1088681529-28438-1
+Content-Type: message/delivery-status
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Content-Description: Delivery error report
 
-Sven Luther
+Reporting-MTA: dns; gort
+Received-From-MTA: smtp; gort.metaparadigm.com ([127.0.0.1])
+Arrival-Date: Thu,  1 Jul 2004 19:32:09 +0800 (SGT)
+
+Final-Recipient: rfc822; mclark@gort.metaparadigm.com
+Action: failed
+Status: 5.7.1
+Diagnostic-Code: smtp; 550 5.7.1 Message content rejected, id=28438-03 - BANNED: "document07.doc                                                                   .pif"
+Last-Attempt-Date: Thu,  1 Jul 2004 19:32:09 +0800 (SGT)
+
+------------=_1088681529-28438-1
+Content-Type: text/rfc822-headers
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Content-Description: Undelivered-message headers
+
+Received: from metaparadigm.com (unknown [218.17.82.37])
+	by gort.metaparadigm.com (Postfix) with ESMTP id 63A931ACCD
+	for <michael@metaparadigm.com>; Thu,  1 Jul 2004 19:32:06 +0800 (SGT)
+From: linux-fbdev-devel@lists.sourceforge.net
+To: michael@metaparadigm.com
+Subject: Important m$6h?3p
+Date: Thu, 1 Jul 2004 19:32:13 +0800
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_0016----=_NextPart_000_0016"
+X-Priority: 3
+X-MSMail-Priority: Normal
+Message-Id: <20040701113206.63A931ACCD@gort.metaparadigm.com>
+
+------------=_1088681529-28438-1--
 
 
 -------------------------------------------------------

@@ -1,107 +1,54 @@
-From: Ian Campbell <icampbell@arcom.com>
+From: Russell King <rmk+lkml@arm.linux.org.uk>
 Subject: Re: [PATCH] PXA255 LCD Driver
-Date: Thu, 18 Mar 2004 11:05:09 +0000
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1079607908.2175.67.camel@icampbell-debian>
-References: <Pine.LNX.4.44.0403171723330.15898-100000@phoenix.infradead.org>
+Date: Thu, 18 Mar 2004 20:36:38 +0000
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <20040318203638.A12978@flint.arm.linux.org.uk>
+References: <1079525185.13373.143.camel@icampbell-debian> <Pine.LNX.4.44.0403171723330.15898-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44.0403171723330.15898-100000@phoenix.infradead.org>
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1B44G8-00089Q-Mi
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 18 Mar 2004 12:36:56 -0800
+Received: from caramon.arm.linux.org.uk ([212.18.232.186])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1B44G7-0007i6-7M
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 18 Mar 2004 12:36:55 -0800
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44.0403171723330.15898-100000@phoenix.infradead.org>; from jsimmons@infradead.org on Wed, Mar 17, 2004 at 07:03:06PM +0000
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: James Simmons <jsimmons@infradead.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Ian Campbell <icampbell@arcom.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi James (and everyone),
-
-> The way to handle different types of displays, LCD, CRT etc has 
-> improved greatly in the latest 2.6.X kernels. You don't need to lock yourself 
-> into the standard modedb database. Also  modedb is used only for selecting a 
-> particular resolution. The structure used to define the display panels 
+On Wed, Mar 17, 2004 at 07:03:06PM +0000, James Simmons wrote:
 > behavior is struct fb_monspecs. Take a look at it in fb.h. I'm interested 
 > if I got all the needed data from the EDID about a display panel.
 
-I understand what you are saying (I think...), but I'm not sure how it
-applies to my situation -- my embedded LCD controller has no analogue
-for much of the stuff in fb_monspecs and has some extra stuff which are
-not present there.
+You're thinking too PC-centric.  You don't get EDID data with embedded
+LCD panels.  Instead, you get timing information, number of pixels per
+line, and other parameters either from a PDF or paper datasheet on the
+device.
 
-If I explain what the situation is with the PXA LCD controller perhaps
-you can give me some advice onto how I can massage this into the current
-system, or extend the system to my needs.
-
-Essentially the LCD controller<->panel interface has 16 data pins, an
-output enable, a pixel clock and (HV)sync. There is nothing
-'intelligent' in the controller, it needs to be told explicitly how it
-should manage these pins. The settings depend on the panel you have
-attached and there is no way to automatically derive them, the panel is
-not like a monitor really, it just shifts in pixel data on each clock
-pulse and puts it on the display.
-
-The settings which are of interest on a PXA255 are that aren't present
-in fb_monspecs, they specify the physical interface between the
-processor and the panel:
-
-        active(==TFT) or passive(==STN), 
-                These are two fundamentally different types of panel. It
-                impacts when the pixclock ticks (all the time or just
-                when data is present), and some other timing stuff.
-        output enable polarity
-                panel is enabled on low or high
-        pixel clock polarity
-                should the panel shift in data on a rising or a falling
-                edge
-	dual or single panel
-                some STN panels are physically two panels stacked on top
-                of each other, this impacts the way pixel data is packed
-                onto the data lines
-        4pix or 8pix STN mono
-                Monochrome STN panels take either 4 or 8 pixels at a
-                time.
-
-All of these differ from panel to panel, pretty much at the whim of the
-manufacturer...
-
-The other settings I think are already accounted for in the mode db:
-        resolution, bit depth, color/mono/grayscale, pixel clock, h and
-        vsync length, Left-Right-Upper-Lower margins.
-However -- all these are fixed in hardware for any given panel (although
-you could emulate different resolutions in s/w I guess).
-
-Because the driver is often used in an embedded environment the settings
-are often hardcoded at compile time.
-
-My problem is that I need to support Arcom's development kits, which a
-customer might plug just about any TFT or STN panel into, so I need to
-be able to control all of the above settings from the command line or
-module parameters, or to pass in something like the LCD part # and have
-the settings looked up from a DB. However I would like to keep the
-overhead for others who just want a single static panel to be as small
-as possible.
-
-I also don't know how applicable all this is to other embedded LCD
-controllers --- the StrongArm hardware is very close to the PXA
-hardware, and I think all controllers which are as low level as them
-will share the same settings (since they are down to the hardware
-interface). I don't know for sure though.
-
-My thinking prior to this discussion was to go for a database which maps
-LCD part # to all the settings above, where each LCD is selectable from
-Kconfig and a default can be specified (sort of like NLS now). People
-with a static panel would only build in the one database entry, people
-like me could build in a selection and choose from the command line etc
-(with overrides for all the above). 
-
-Ian.
 -- 
-Ian Campbell, Senior Design Engineer
-                                        Web: http://www.arcom.com
-Arcom, Clifton Road, 			Direct: +44 (0)1223 403 465
-Cambridge CB1 7EA, United Kingdom	Phone:  +44 (0)1223 411 200
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:  2.6 PCMCIA      - http://pcmcia.arm.linux.org.uk/
+                 2.6 Serial core
 
 
-_____________________________________________________________________
-The message in this transmission is sent in confidence for the attention of the addressee only and should not be disclosed to any other party. Unauthorised recipients are requested to preserve this confidentiality. Please advise the sender if the addressee is not resident at the receiving end.  Email to and from Arcom is automatically monitored for operational and lawful business reasons.
-
-This message has been checked for all viruses by MessageLabs Virus Control Centre.
+-------------------------------------------------------
+This SF.Net email is sponsored by: IBM Linux Tutorials
+Free Linux tutorial presented by Daniel Robbins, President and CEO of
+GenToo technologies. Learn everything from fundamentals to system
+administration.http://ads.osdn.com/?ad_id=1470&alloc_id=3638&op=click

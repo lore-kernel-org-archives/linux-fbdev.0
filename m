@@ -1,20 +1,22 @@
-From: Mail Delivery Subsystem <MAILER-DAEMON@iphase.com>
-Subject: Returned mail: see transcript for details
-Date: Tue, 20 Apr 2004 12:13:20 -0500 (CDT)
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
+ one works ;-)
+Date: Tue, 20 Apr 2004 23:52:23 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200404201713.i3KHDK905887@eclipse.iphase.com>
+Message-ID: <Pine.LNX.4.44.0404202032210.29160-100000@phoenix.infradead.org>
+References: <1082339577.15101.4.camel@gaston>
 Mime-Version: 1.0
-Content-Type: multipart/report; report-type=delivery-status;
-	boundary="i3KHDK905887.1082481200/eclipse.iphase.com"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BFyoG-0007eC-85
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Apr 2004 10:13:24 -0700
-Received: from eclipse.iphase.com ([157.175.3.200] ident=firewall-user)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BFyoF-0001K9-QH
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Apr 2004 10:13:23 -0700
+	id 1BG46P-0003w3-9x
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Apr 2004 15:52:29 -0700
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1BG46O-00075Z-Kt
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Apr 2004 15:52:29 -0700
+In-Reply-To: <1082339577.15101.4.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -24,99 +26,100 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
-
-This is a MIME-encapsulated message
-
---i3KHDK905887.1082481200/eclipse.iphase.com
-
-The original message was received at Tue, 20 Apr 2004 12:13:19 -0500 (CDT)
-from uucp@localhost
-
-   ----- The following addresses had permanent fatal errors -----
-<pwang@iphase.com>
-    (reason: 550 5.1.1 <pwang@iphase.com>... User unknown)
-
-   ----- Transcript of session follows -----
-... while talking to mailhub.iphase.com.:
->>> RCPT To:<pwang@iphase.com>
-<<< 550 5.1.1 <pwang@iphase.com>... User unknown
-550 5.1.1 <pwang@iphase.com>... User unknown
-
---i3KHDK905887.1082481200/eclipse.iphase.com
-Content-Type: message/delivery-status
-
-Reporting-MTA: dns; eclipse.iphase.com
-Arrival-Date: Tue, 20 Apr 2004 12:13:19 -0500 (CDT)
-
-Final-Recipient: RFC822; pwang@iphase.com
-Action: failed
-Status: 5.1.1
-Remote-MTA: DNS; mailhub.iphase.com
-Diagnostic-Code: SMTP; 550 5.1.1 <pwang@iphase.com>... User unknown
-Last-Attempt-Date: Tue, 20 Apr 2004 12:13:20 -0500 (CDT)
-
---i3KHDK905887.1082481200/eclipse.iphase.com
-Content-Type: message/rfc822
-
-Return-Path: <linux-fbdev-devel@lists.sourceforge.net>
-Received: (from uucp@localhost)
-	by eclipse.iphase.com (8.11.7p1+Sun/8.11.7) id i3KHDJA05881
-	for <pwang@iphase.com>; Tue, 20 Apr 2004 12:13:19 -0500 (CDT)
-Message-Id: <200404201713.i3KHDJA05881@eclipse.iphase.com>
-Received: from ohta113244.catv.ppp.infoweb.ne.jp(218.226.214.244) by eclipse.iphase.com via csmap (V6.0)
-	id srcAAAoPaaEl; Tue, 20 Apr 04 12:13:15 -0500
-From: linux-fbdev-devel@lists.sourceforge.net
-To: pwang@iphase.com
-Subject: Re: Secure delivery
-Date: Wed, 21 Apr 2004 02:13:11 +0900
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0016----=_NextPart_000_0016"
-X-Priority: 3
-X-MSMail-Priority: Normal
-
-This is a multi-part message in MIME format.
-
-------=_NextPart_000_0016----=_NextPart_000_0016
-Content-Type: text/plain;
-	charset="Windows-1252"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: David Eger <eger-dated-1082943669.d79d33@theboonies.us>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
 
-For further details see the attachment.
+> BTW, James, did we decide what is the best way to set fbcon accel
+> mode ? For drivers with copyarea accelerated, we want YMOVE. I'd like
+> a patch to send Linus/Andrew asap along with some pending radeonfb
+> fixes for that.
+
+I had to do some thinking about this. Here is explation ofthe scrolling 
+code. It really needs to be cleaned up. So renamings would make sense 
+here.
+
+In the original code we had:
+
+These we set by the driver.
+
+SCROLL_YREDRAW		( __SCROLL_YFIXED  | __SCROLL_YREDRAW )     Lots use this
+SCROLL_YNOMOVE		( __SCROLL_YNOMOVE | __SCROLL_YPANREDRAW )  Lots use this
+SCROLL_YNOPARTIAL	  __SCROLL_YNOPARTIAL			    (controlfb)
+
+fbcon.c -> updatescrollmode.
+
+__SCROLL_YFIXED		--> Does not update. Test to see if it is set then exits
+__SCROLL_YWRAP		--> sets if we have ywrapstep and conditions are right
+__SCROLL_YPAN		--> sets if we have ypanstep and conditions are right
+__SCROLL_YNOMOVE	--> test for this and if yes then
+__SCROLL_YREDRAW	-->			set __SCROLL_YREDRAW
+__SCROLL_YMOVE		-->		      else set __SCROLL_YMOVE
+
+__SCROLL_YMASK		Mask to clear out extra bits.
+
+Not used in updatescrollmode
+
+__SCROLL_YPANREDRAW	--> Set by SCROLL_YNOMOVE
+__SCROLL_YNOPARTIAL	--> Set by SCROLL_YNOPARTIAL. Its deals for the case 
+			    when we can only only pan the whole screen, 
+			    not a region of the screen.
+---------------------------------------------------------------------------------
+Let go over what happened in the old code.
+
+So if the driver set SCROLL_YNOPARTIAL then __SCROLL_YNOPARTIAL was set. This was
+to deal with hardware panning flickering. Only the controlfb used it. Is this 
+problem still present? If not this could go away. The goal is:
+
+	Handle screen flickering.
+
+The second one is the driver using SCROLL_YREDRAW. This sets __SCROLL_YFIXED and
+__SCROLL_YREDRAW. When going into updatescrollmode nothing happens since the first
+thing we do is test for __SCROLL_YFIXED. So the goal is to override the hardware 
+panning or wrap. The system is set up to only __SCROLL_YREDRAW which just redraws
+all the font images. In this case only __SCROLL_YREDRAW is important. So the 
+goal is:
+	
+	if driver set SCROLL_YREDRAW
+		Use hardware image drawing	// Only use this
+
+The 3rd and final one is where we set the scrollmode to __SCROLL_YNOMOVE and 
+__SCROLL_YPANREDRAW. __SCROLL_YNOMOVE again is one of those variables used only
+in updatescrollmode. First we test to see if hardware panning or hardware wrapping. 
+Use that. If we don't have that ablity then we test the __SCROLL_YNOMOVE to see
+if we just draw all the font images or use a copyarea operation with the flag 
+is set to __SCROLL_YMOVE. So the goal is:
+
+	if Ywrap
+		Use hardware ywrap
+	else if ypan 
+	  	Use hardware panning
+	else if driver set SCROLL_YNOMOVE
+		Use hardware image drawing
+	else 
+		Use hardware copyarea
+
+I like to see this cleaned up now. The question is what is the proper order of all
+this stuff. For use we have the following conditions.
+
+Hardware panning. Test for fb_pan_display and ypanstep. 
+Hardware wrapping. Test for ywrapstep.
+Hardware copyarea.
+Hardware image drawing.
+
+   So if the we have the case of both copyarea and imageblit hardware accelerated we
+need to use copyarea for scrolling since that will be faster. Its the same case
+for if we only have copyarea accelerating. 
+   The question is if we have only hardware imageblit should we use that? There is
+a cost to assembly a image for the hardware to draw. The question is the assembly
+of the image less costly than a soft copyarea?
+   As for hardware panning should we prefer it above everthing? 
+   
 
 
 
-------=_NextPart_000_0016----=_NextPart_000_0016
-Content-Type: Text/HTML;
-  name="data.zip.htm"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-  filename="data.zip.htm"
-X-NAI-Gauntlet-mimepp: Attachment removed
-
-<html><head><meta HTTP-EQUIV="Content-Type" content="text/html; charset=">
-<title>VIRUS INFECTION ALERT</title></head>
-<body>
-<h1><font color="#FF0000">VIRUS INFECTION ALERT</font></h1>
-<p>The Gauntlet Firewall&reg discovered a virus in this file.
-The file was not repaired and has therefore been removed.
-See your system administrator for further information.
-</p>
-<p>Filename: data.zip<br>
-Virus name: W32/Netsky.p@MM!zip</p>
-
-<p>Copyright &copy; 1993-2001, Networks Associates Technology, Inc.All Rights Reserved.<br>
-<a href="http://www.pgp.com">http://www.pgp.com</a></p>
- </body></html>
-
-
-------=_NextPart_000_0016----=_NextPart_000_0016--
-
-
-
---i3KHDK905887.1082481200/eclipse.iphase.com--
 
 
 

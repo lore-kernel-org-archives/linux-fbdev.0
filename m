@@ -1,18 +1,17 @@
-From: Brad Douglas <brad@neruo.com>
-Subject: Re: Rage1128
-Date: 14 Jan 2003 13:17:03 -0800
+From: Sven Luther <luther@dpt-info.u-strasbg.fr>
+Subject: Re: video dir reorg
+Date: Tue, 14 Jan 2003 22:26:47 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1042579023.20959.14.camel@12-235-123-161.client.attbi.com>
-References: <20030109193447.78391.qmail@web14906.mail.yahoo.com>
+Message-ID: <20030114212646.GA3731@iliana>
+References: <20030114091308.GA17392@iliana> <20030114172236.69468.qmail@web14905.mail.yahoo.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from 12-235-107-98.client.attbi.com ([12.235.107.98] helo=12-235-123-161.client.attbi.com)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18YYRO-0000cp-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 14 Jan 2003 13:17:46 -0800
-In-Reply-To: <20030109193447.78391.qmail@web14906.mail.yahoo.com>
+Received: from smtp-out-2.wanadoo.fr ([193.252.19.254] helo=mel-rto2.wanadoo.fr)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18YYaF-0002JO-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 14 Jan 2003 13:26:56 -0800
+Content-Disposition: inline
+In-Reply-To: <20030114172236.69468.qmail@web14905.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,43 +22,47 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Jon Smirl <jonsmirl@yahoo.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-Sorry for replying so late...
-
-ATI does not give out initialization information about their chipsets.
-
-They expect that we initialize by either BIOS call (x86 - This is how MS
-initializes their dual displays) or probing initialization settings from
-OpenFirmware on the architectures that have it.
-
-Part of the reason is because ATI claims that each revision of the
-chipset can have different initialization parameters, etc (which is
-certainly possible, but has not been my experience).
-
-I will approach developer relations again and see if they are willing to
-part with more information now that they have moved on to the Radeon.
-
-If I successfully get any information from them, I post a message to the
-list...
-
-
-Brad Douglas
-brad@neruo.com
-
-
-On Thu, 2003-01-09 at 11:34, Jon Smirl wrote:
-> Does anyone on this list have a Rage128 manual? 
+On Tue, Jan 14, 2003 at 09:22:36AM -0800, Jon Smirl wrote:
+> --- Sven Luther <luther@dpt-info.u-strasbg.fr> wrote:
+> > I think Linus rejected this last time James
+> > submitted it.
 > 
-> Can anyone point me to source code for directly
-> reseting a Rage128? I already have the emulate real
-> mode and call C000:3 method.
-> 
-> =====
-> Jon Smirl
-> jonsmirl@yahoo.com
+> Didn't the last patch just move the DRM directory from
+> driver/char into the video directory.?
 
+There is a response of linus in the mailing list archive about this, i
+don't remember nor checked if it was only the first time, or not. I
+think the objection was about complicate to supervise diffs.
+
+> This could be done in two steps. First split out the
+> fb console driver files into their own directory and
+> then sort out the hardware drivers more. Then if the
+> DRM merge gets ok'd everything will be ready.
+> 
+> In the config system I don't like how you have to
+> enable driver support for the same piece of hardware
+> in two different places. I also don't like looking in
+> two different places for the source to drivers for the
+> same hardware.
+> 
+> What is Linus' take on merging a card's fb and drm
+> drivers into a single module in the long run?
+
+Well, the problem is that the fb drivers are maintained by us, and the
+drm drivers are maintained by the DRI.
+
+Also, i think the drm drivers should compile not only on linux, but on
+other oses too (BSDs at least).
+
+Also, i believe some of the XFree86 guys don't like fbdevs.
+
+Friendly,
+
+Sven Luther
 
 
 -------------------------------------------------------

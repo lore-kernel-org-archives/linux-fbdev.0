@@ -1,40 +1,52 @@
-From: Greg KH <greg@kroah.com>
-Subject: Re: fbdev sysfs support.
-Date: Fri, 6 Feb 2004 16:59:54 -0800
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20040207005954.GB4492@kroah.com>
-References: <Pine.LNX.4.44.0402070032030.19559-100000@phoenix.infradead.org>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: Re: still ..Confused about atyfb and M1
+Date: Fri, 6 Feb 2004 23:30:38 +0000 (GMT)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.LNX.4.44.0402062330130.19559-100000@phoenix.infradead.org>
+References: <4022838A.8010502@bitworks.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0402070032030.19559-100000@phoenix.infradead.org>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1ApGrW-0003Aj-1X
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 06 Feb 2004 17:02:22 -0800
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1ApFQt-0004CJ-Q0
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 06 Feb 2004 15:30:48 -0800
+In-Reply-To: <4022838A.8010502@bitworks.com>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linus Torvalds <torvalds@transmeta.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Richard Smith <rsmith@bitworks.com>
+Cc: geert@linux-m68k.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Alexander Kern <alex.kern@gmx.de>, Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sat, Feb 07, 2004 at 12:34:29AM +0000, James Simmons wrote:
-> 
-> Linus, please do a
-> 
-> 	bk pull http://fbdev.bkbits.net/fbdev-2.6
-> 
-> This will update the following files:
-> 
->  drivers/video/Makefile  |    2 
->  drivers/video/fbmem.c   |    6 ++
->  drivers/video/fbsysfs.c |  110 ++++++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/fb.h      |   40 ++++++++++-------
->  4 files changed, 141 insertions(+), 17 deletions(-)
-> 
-> through these ChangeSets:
-> 
-> <jsimmons@infradead.org> (04/02/06 1.1549)
->    [FBDEV] Add syfs support.
 
-Is there a patch anywhere to look at?
+> James:
+> 
+> If you read this from the list...  I get your mail but for some reason I 
+> can't send you mail.  I get:
+> 
+>    Attempting TCP connection to [phoenix.ipv6.infradead.org : 25]
+>    A-record resolution of [phoenix.ipv6.infradead.org] in progress...
+>    Name server has no records of the requested type for that domain.
 
-thanks,
+Have no idea why. What email address are you sending it too?
 
-greg k-h
+
+
+
+-------------------------------------------------------
+The SF.Net email is sponsored by EclipseCon 2004
+Premiere Conference on Open Tools Development and Integration
+See the breadth of Eclipse activity. February 3-5 in Anaheim, CA.
+http://www.eclipsecon.org/osdn

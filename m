@@ -1,17 +1,17 @@
-From: <benh@kernel.crashing.org>
+From: Ani Joshi <ajoshi@shell.unixbox.com>
 Subject: Re: radeonfb 0.1.5 testing
-Date: Tue, 4 Jun 2002 18:11:24 +0200
+Date: Tue, 4 Jun 2002 12:11:07 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20020604161124.15107@mailhost.mipsys.com>
-References: <Pine.BSF.4.44.0206031931450.11992-200000@shell.unixbox.com>
+Message-ID: <Pine.BSF.4.44.0206041210490.46132-100000@shell.unixbox.com>
+References: <20020604161124.15107@mailhost.mipsys.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mailhost.mipsys.com ([62.161.177.33])
-	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17FGtx-00062N-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 04 Jun 2002 09:11:17 -0700
-In-Reply-To: <Pine.BSF.4.44.0206031931450.11992-200000@shell.unixbox.com>
+Received: from shell.unixbox.com ([207.211.45.65])
+	by usw-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17FJYz-0006DA-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 04 Jun 2002 12:01:49 -0700
+In-Reply-To: <20020604161124.15107@mailhost.mipsys.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,18 +21,29 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Ani Joshi <ajoshi@shell.unixbox.com>, linux-fbdev-devel@lists.sourceforge.net
-
->Attatched is a patch against 2.4.19-pre9 which fixes a host of problems
->with radeonfb, for those experiencing problems please test and give
->feedback, thanks!
-
-You included rivafb diffs as well ;)
-
-Ben.
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: benh@kernel.crashing.org
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
 
+Oops, well test those too!  The rivafb hunks unbreak Riva128 support.
+
+
+ani
+
+On Tue, 4 Jun 2002 benh@kernel.crashing.org wrote:
+
+> >Attatched is a patch against 2.4.19-pre9 which fixes a host of problems
+> >with radeonfb, for those experiencing problems please test and give
+> >feedback, thanks!
+>
+> You included rivafb diffs as well ;)
+>
+> Ben.
+>
+>
+>
 
 
 _______________________________________________________________

@@ -1,21 +1,25 @@
-From: Alexander Kern <alex.kern@gmx.de>
-Subject: [PATCH fbtest] fix blue feet by 24bpp
-Date: Mon, 18 Oct 2004 00:25:24 +0200
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [RFC] Does fbdev need a cursor API for userland?
+Date: Sun, 17 Oct 2004 18:25:54 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200410180025.24498.alex.kern@gmx.de>
+Message-ID: <9e4733910410171525543c1992@mail.gmail.com>
+References: <200410172347.15516.adaplas@hotpop.com>
+	 <4172A952.4080607@comcast.net> <200410180551.11105.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_UFvcBZd9uoEu+qJ"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CJJSs-0000mo-Bp
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 17 Oct 2004 15:25:22 -0700
-Received: from imap.gmx.net ([213.165.64.20] helo=mail.gmx.net)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
-	id 1CJJSr-0006w2-Fc
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 17 Oct 2004 15:25:22 -0700
+	id 1CJJTQ-0000nU-6Z
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 17 Oct 2004 15:25:56 -0700
+Received: from rproxy.gmail.com ([64.233.170.207] helo=mproxy.gmail.com)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CJJTP-0002JK-El
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 17 Oct 2004 15:25:56 -0700
+Received: by mproxy.gmail.com with SMTP id 79so121421rnk
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 17 Oct 2004 15:25:54 -0700 (PDT)
+In-Reply-To: <200410180551.11105.adaplas@hotpop.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,64 +29,27 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: fbdev mail-list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
 
---Boundary-00=_UFvcBZd9uoEu+qJ
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Sun, 17 Oct 2004 23:47:15 +0800, Antonino A. Daplas
+<adaplas@hotpop.com> wrote:
 
-Hello, I have investigate, that blue feet by penguin in fbtest and 24bpp deep 
-was caused by error in cfb24.c.
-This patch fix it for me
+> IMO, I believe that the cursor ioctl should just be removed :-)
 
+The merged fbdev/DRM needs hardware cursor support in fbdev but it
+doesn't need the fbdev cursor IOCTL. Moving cursor support to fbcon
+won't work either. Implementing cursor support in merged fbdev/DRM
+probably means a modified API since we have to deal with multiple
+heads.
 
+Are there cards still out there with no hardware cursor support?
+How many apps use the user space fbdev interface?
 
-But I have steel problems in test 007 and 008
-
-I have posted photo pixs on 
-http://home.arcor.de/alexander.khe/atyfb/fbtest-results/
-
-Is it the similar problems with byte separation?
-
-Cheers
-Alex
-
---Boundary-00=_UFvcBZd9uoEu+qJ
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="fbtest24bppfix.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="fbtest24bppfix.patch"
-
---- drawops/cfb24.c.orig	2002-10-08 16:20:27.000000000 +0200
-+++ drawops/cfb24.c	2004-10-17 15:08:02.000000000 +0200
-@@ -33,9 +33,9 @@ static void cfb24_setpixel(u32 x, u32 y,
-     u8 *dst;
- 
-     dst = &screen[y*screen_width+x*3];
--    dst[0] = (pixel >> 16) & 0xff;
-+    dst[2] = (pixel >> 16) & 0xff;
-     dst[1] = (pixel >> 8) & 0xff;
--    dst[2] = pixel & 0xff;
-+    dst[0] = pixel & 0xff;
- }
- 
- static pixel_t cfb24_getpixel(u32 x, u32 y)
-@@ -43,7 +43,7 @@ static pixel_t cfb24_getpixel(u32 x, u32
-     const u8 *src;
- 
-     src = &screen[y*screen_width+x*3];
--    return (src[0] << 16) | (src[1] << 8) | src[2];
-+    return (src[2] << 16) | (src[1] << 8) | src[0];
- }
- 
- const struct drawops cfb24_drawops = {
-
---Boundary-00=_UFvcBZd9uoEu+qJ--
+Also, a some point I would like to revisit the fbcon/fbdev interface
+and reduce the number of fbdev variables fbcon can access but doesn't
+use. fbcon shouldn't have direct access to the fb_info struct, there
+should be more of an interface there.
 
 
 -------------------------------------------------------

@@ -1,14 +1,19 @@
-From: e.fuste@focal.fr
-Subject: RE:Whats the scoop for the apollo framebuffers?
-Date: Fri, 31 May 2002 18:14:14 +0200
+From: Chris Howells <chrish@gmx.co.uk>
+Subject: Re: Possible bug: nasty interaction between framebuffer and DRI/DRM
+Date: Fri, 31 May 2002 19:39:13 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <OF23FD3867.7218A6AF-ONC1256BCA.0057E5DF-C1256BCA.0059138E@antall.com>
+Message-ID: <200205311939.13659.chrish@gmx.co.uk>
+References: <Pine.GSO.4.21.0205311407530.1147-100000@vervain.sonytel.be>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mailhost.antall.com ([194.51.175.3] helo=stella.antall.com)
+Received: from msgdirector2.onetel.net.uk ([212.67.96.149] ident=mirapoint)
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17Dp2g-0007dz-00
-	for <Linux-fbdev-devel@lists.sourceforge.net>; Fri, 31 May 2002 09:14:18 -0700
+	id 17DrMT-00056f-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 31 May 2002 11:42:53 -0700
+In-Reply-To: <Pine.GSO.4.21.0205311407530.1147-100000@vervain.sonytel.be>
+Content-Description: clearsigned data
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -18,31 +23,30 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@transvirtual.com>
-Cc: Linux-fbdev-devel@lists.sourceforge.net
+Content-Type: Text/Plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
 
->I noticed dnfb.c and dn_cfb4.c and dn_cfb8.c. They look the same except
->for different modes. Anyone have a clue here?
+=2D----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Yes, the only functionnal one was dnfb.c, the others were for testing
-purpose:
-Developpers Peter (and me for a less big part) had only the mono frame
-buffer board.
-There is color boards for Apollo DN workstation for which I have docs, but
-I no longuer
-have access to the hardware, color fb or Apollo. Basic color fb management
-is similar to
-the mono one.
-Apollo hardware is ISA based, perhaps someone still have some working one.
-I stoped working on Linux Apollo port because of lack of hardware.
+Hi,
 
-Bye.
+On Friday 31 May 2002 1:08 pm, Geert Uytterhoeven wrote:
 
+> Do you use `option UseFBDev' in your XF86Config?
 
-Emmanuel.
-(Sory for my froggy english ;-))
+No I'm not. Should I be?
+
+Cheers
+
+=2D----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.0.6 (GNU/Linux)
+Comment: For info see http://www.gnupg.org
+
+iD8DBQE898NRF8Iu1zN5WiwRAiU5AJ95WKTct4sFOXe+ruIMvlICGxyhFACggQvB
+0RaUngCVTJQdFTS3H3ceb7c=3D
+=3D/n6Q
+=2D----END PGP SIGNATURE-----
 
 
 _______________________________________________________________

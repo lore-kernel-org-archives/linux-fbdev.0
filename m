@@ -1,80 +1,32 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: [BK FBDEV] A few more updates.
-Date: 26 Mar 2003 19:20:19 +0800
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1048677567.1025.64.camel@localhost.localdomain>
-References: <84D3825146@vcnet.vc.cvut.cz>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Framebuffer updates.
+Date: 26 Mar 2003 14:16:11 +0100
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <1048684571.10476.40.camel@zion.wanadoo.fr>
+References: <Pine.LNX.4.44.0303252049550.6228-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from pine.compass.com.ph ([202.70.96.37])
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18y9BJ-0004Rz-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 26 Mar 2003 03:34:58 -0800
-In-Reply-To: <84D3825146@vcnet.vc.cvut.cz>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44.0303252049550.6228-100000@phoenix.infradead.org>
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Petr Vandrovec <vandrove@vc.cvut.cz>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Florin Iucha <florin@iucha.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 2003-03-26 at 18:42, Petr Vandrovec wrote:
-> On 26 Mar 03 at 17:53, Antonino Daplas wrote:
-> > On Wed, 2003-03-26 at 13:34, James Simmons wrote:
-> > > 
-> > > > 5.  softcursor should not concern itself with memory bookkeeping, and
-> > > > must be able to function with just the parameter passed to it in order
-> > > > to keep it as simple as possible.  These tasks are moved to
-> > > > accel_cursor.
-> > > 
-> > > We do if we make a ioctl for cursors. I'm trying to avoid reprogramming 
-> > > the hardware over and over again if the properties of the cursor don't 
-> > > change. The idea is similar to passing in var and comparing it to the var 
-> > > in struct fb_info. 
-> > 
-> > Of course, that's what the fb_cursor.set field is for, and drivers have
-> > the option of ignoring or not ignoring bits in this field. Whoever calls
-> > fb_cursor has the responsibility of setting any cursor state changes. 
-> > 
-> > Unlike fb_set_var(), cursor states change very frequently (ie, each
-> > blink or movement of the cursor are considered state changes), so just
-> > forego the memcmp() and call fb_cursor unconditionally.  Let the
-> > low-level method sort it out by checking bits in fb_cursor.set.
-> 
-> accel_cursor unconditionally sets FB_CUR_SETPOS. Can you write it
-> down to the TODO list to eliminate this? Cursor position lives 
-> in different registers than cursor enable/disable on my hardware...
-> 
+On Tue, 2003-03-25 at 21:50, James Simmons wrote:
 
-The patch that I submitted to James does that already.
+> Try using stty. I see most people will continue to use fbset so I guess I 
+> need to patch it up to do the right thing.
 
-> And if we could rename FB_CUR_SETCUR to FB_CUR_SETVISIBILITY and
-> leave cursor->enable setting on accel_cursor's caller, it would
-> be even better.
-> 
-> And if we could change enable value to 0: disable; 1: enable;
-> 2: disable due to blink (called from vbl), it would be even better,
-> as then fbdev which does hardware blinking could just completely
-> ignore changes which set only FB_CUR_SETVISIBILITY with enable == 2.
+Well, I don't like the fbdev magially picking modes like this,
+those modes may just not be supported by the display. At least,
+fbset allows me to setup the proper timings for 'special'
+displays like iMac fixed hoziontal frequency for example.
 
+Ultimately, we really need a "monitor" driver on top of the
+fbdev that does DDC/EDID when the low level fbdev can provide
+an i2c bus or EDID information via some different way and
+that can be tweaked to deal with special monitors when we
+know we are using these.
 
-Okay.
-
-
-Tony
-
-
-
-
--------------------------------------------------------
-This SF.net email is sponsored by:
-The Definitive IT and Networking Event. Be There!
-NetWorld+Interop Las Vegas 2003 -- Register today!
-http://ads.sourceforge.net/cgi-bin/redirect.pl?keyn0001en
+Ben.

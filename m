@@ -1,21 +1,21 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: fbdv/fbcon pending problems
-Date: Wed, 25 Feb 2004 12:26:43 +1100
+Date: Wed, 25 Feb 2004 12:29:52 +1100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1077672403.1084.45.camel@gaston>
+Message-ID: <1077672591.978.49.camel@gaston>
 References: <Pine.LNX.4.44.0402250118210.24952-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Avo3q-0008QB-PL
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 17:42:06 -0800
+	id 1Avo6p-0000mv-UD
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 17:45:11 -0800
 Received: from gate.crashing.org ([63.228.1.57] ident=root)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1AvnvK-0005NJ-Op
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 17:33:18 -0800
+	id 1Avnlm-0001cY-5N
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 17:23:26 -0800
 In-Reply-To: <Pine.LNX.4.44.0402250118210.24952-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,42 +30,39 @@ Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@infradead.org>
 Cc: Otto Solares <solca@guug.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
 
-
-> > We have now with 2.6 a good input and sound layers.  Just by fixing
-> > the graphics layer many interesting userland projects could be born.
+On Wed, 2004-02-25 at 12:21, James Simmons wrote:
+> > Sure, hopefully fbdev drivers became more 'intelligent', with just a
+> > 
+> > echo "1024x768x16-75" > /sys/class/fbdev/0/geometry
+> > 
+> > they will compute internally the timings or get it from EDID and
+> > glad the user with something correct for the hardware.
+> > 
+> > cat /sys/class/fbdev/0/modes
+> > 
+> > will give you the modes supported by the card.
 > 
-> I agree. The graphics layer is the last frontier.
+> Yes.
 
-It is. What we really need right now is a proper way to get the mode
-lists. but more than that. We need to expose per-output detection data,
-mapping of CRTCs to outputs, and a way to change that mapping & trigger
-a re-probe. All of that can probably not be done in a completely card
-neutral way.  
+Note that "the modes supported by the card" means nothing.
 
-I've started working on a userland library taking care of managing
-the "environment", that is the various screens & heads, their modes,
-the geometry (relative screen positions), and such. I haven't gone
-very far yet, but the idea is ultimately to have the entire mode
-setting go through this library. That include proper interface to
-the kernel drivers (whatever they become, fbdev is what we have to
-day but that may change) and that also probably means moving some
-of the monitor management down to userland.
+They depend on something fundamentally dynamic, which is what is
+connected to what output, mixed with some card-spcific limitations
+(like bandwidth limitations when using 2 very big monitors, vram
+limitations, etc...)
 
-This library will also be responsible to broadcast, possibly via
-D-BUS, events like screen hotplug and mode changes. We are thinking
-about interfacing the fd.o xserver on this among others. It will
-not do anything about rendering though.
+You can not really know a-priori what modes will be available for
+sure. You can provide a list of modes that are considered as valid
+for a given output, but the whole mode setting scheme cannot be
+anything else but non-deterministic. You setup a global configuration,
+send it down the driver, and obtain a new configuration which may or
+may not be what you asked for.
 
-That leads to another issue which is arbitration at the low level
-driver between rendering & mode switching. That should be done by
-the kernel driver at some point, we need to merge the mode setting
-driver (fbdev) and the command queue diver (DRI). Probably moving 
-some of the higher level mode management out of the kernel driver
-down to this userland library.
-
-Anyway, it's all mostly ideas at this point. I'm trying to get an
-API out with a test implementation on top of fbdev. At which point
-we'll be able to move further.
+I'm trying to address the API issues as part of the userland library
+I'm talking about in the other email. The actual interface to the
+kernel driver should ultimately be hidden, and eventually private
+between card-specific kernel driver and card-specific module in
+the userland API.
 
 Ben.
 

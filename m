@@ -1,23 +1,23 @@
-From: Gerd Knorr <kraxel@bytesex.org>
-Subject: Re: Generic VESA framebuffer driver and Video card BOOT?
-Date: Mon, 18 Oct 2004 10:36:32 +0200
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [RFC] Does fbdev need a cursor API for
+ userland?
+Date: Mon, 18 Oct 2004 11:35:15 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20041018083632.GE3065@bytesex>
-References: <416E6ADC.3007.294DF20D@localhost> <87d5zkqj8h.fsf@bytesex.org> <Pine.GSO.4.61.0410151437050.10040@waterleaf.sonytel.be> <87y8i8p1jq.fsf@bytesex.org> <20041017120728.GC10532@admingilde.org>
+Message-ID: <Pine.GSO.4.61.0410181133300.23486@waterleaf.sonytel.be>
+References: <200410172347.15516.adaplas@hotpop.com> <200410180920.39170.adaplas@hotpop.com>
+ <9e47339104101719462ea5b2dd@mail.gmail.com> <200410181447.44492.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CJTNA-0007Me-Kp
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 02:00:08 -0700
-Received: from hirsch.in-berlin.de ([192.109.42.6] ident=root)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1CJTN9-0000jp-TA
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 02:00:08 -0700
-Content-Disposition: inline
-In-Reply-To: <20041017120728.GC10532@admingilde.org>
+	id 1CJTvH-0003a9-MU
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 02:35:23 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CJTvG-00065x-QT
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 02:35:23 -0700
+In-Reply-To: <200410181447.44492.adaplas@hotpop.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,37 +27,30 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net, Linux Kernel Development <linux-kernel@vger.kernel.org>, penguinppc-team@lists.penguinppc.org
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Jon Smirl <jonsmirl@gmail.com>, Antonino Daplas <adaplas@hotpop.com>
 
-On Sun, Oct 17, 2004 at 02:07:28PM +0200, Martin Waitz wrote:
-> hi :)
-> 
-> On Fri, Oct 15, 2004 at 03:13:13PM +0200, Gerd Knorr wrote:
-> > You have a application running which uses the framebuffer device, then
-> > suspend with that app running.  You'll have to restore the state of
-> > the device _before_ restarting all the userspace proccesses, otherwise
-> > the app will not be very happy.
-> 
-> As long as the app only interfaces with the framebuffer device and not
-> directly with the hardware it won't notice.
+On Mon, 18 Oct 2004, Antonino A. Daplas wrote:
+> The restore_fb_contents/save_fb_contents cannot be done generically.  Not
+> all framebuffers have a linear format, there are some that are planar such
+> as amifb and vga16fb.  This means that we need to add per-driver hooks just
+> to save and restore the framebuffer contents.
 
-Well, mmap("/dev/fb") will just map the gfx cards memory into
-the applications address space, so they _will_ interface with
-the hardware.
+Can't we use fb_imageblit() for restore? Then al we need to add is a
+get_image() routine.
 
-> The apps data will simply not show up on the screen until the
-> usermode helper finishes.
+Gr{oetje,eeting}s,
 
-Whenever writing to the gfx memory before finishing the initialization
-is harmless or not probably depends on the hardware, I'd better not
-count on it ...
+						Geert
 
-  Gerd
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
--- 
-return -ENOSIG;
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

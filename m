@@ -1,16 +1,19 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [ANNOUNCE]: VM86 Daemon
-Date: Mon, 31 Mar 2003 20:01:06 -0800 (PST)
+Date: 01 Apr 2003 10:29:34 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030401040106.65664.qmail@web14906.mail.yahoo.com>
-References: <1049158940.1059.21.camel@localhost.localdomain>
+Message-ID: <1049185774.593.46.camel@zion.wanadoo.fr>
+References: <1049104351.1037.53.camel@localhost.localdomain>
+	 <3E886C5F.28140.1013B3CA@localhost>
+	 <1049160350.1059.39.camel@localhost.localdomain>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from web14906.mail.yahoo.com ([216.136.225.58])
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 190CxO-0006pP-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 31 Mar 2003 20:01:06 -0800
-In-Reply-To: <1049158940.1059.21.camel@localhost.localdomain>
+Received: from griffon.mipsys.com ([217.167.51.129] helo=zion.wanadoo.fr)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 190H8e-0002Fd-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 01 Apr 2003 00:29:00 -0800
+In-Reply-To: <1049160350.1059.39.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,48 +24,36 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: Antonino Daplas <adaplas@pol.net>
-Cc: Kendall Bennett <KendallB@scitechsoft.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, DirectFB-devel <directfb-dev@directfb.org>
+Cc: Kendall Bennett <KendallB@scitechsoft.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
---- Antonino Daplas <adaplas@pol.net> wrote:
-> A new device seems more powerful and more generic. 
-> Generic in a sense
-> that other subsystems besides fbdev can use it to
-> access the BIOS or
+This is interesting, but brings back a point I had in mind
+for some time (regardless of having that daemon or not), which
+is to provide a consistent API for fbdev's to provide EDID
+informations to a "monitor" layer (or to userland) and for
+fbdev's to setup appropriately based on EDID informations.
 
-The new device is going to need to sort out multiple
-adapters. Using /dev/fbX avoids that problem. You'll
-also be able to get the /dev/fb code into the kernel.
-Getting a driver in that creates /dev/vm86 is going to
-be harder. 
+There are several issues here. One is the actual retreival of
+the EDID data. There are several ways to do it, and all of them
+must be implemented in an ideal world:
 
-I'm not clear on what /dev/vm86 does. Why couldn't the
-radeon driver exec vm86d with a parameter of /dev/fb0.
-vm86d would then open/IOCTL the radeon driver to
-identify the PCI device and what actions are needed.
-After it resets and gets the EDID data it would IOCTL
-them back into /dev/fb0 and exit. You need to know
-which PCI device so that you can set up the right
-VBIOS ROM. Each adapter would get it's own vm86d, but
-they wouldn't hang around long.
+ - BIOS stuff (via something like your daemon)
+ - Direct i2c (for all platforms that don't have a BIOS or cannot
+   run it)
+ - Other arch specific way (this includes what we do on some PPCs
+   which is to retreive the EDID block from the device tree provided
+   by the firmware).
 
-I haven't played with this yet but the vm86d should
-use the new klibc. That would allow it to run early in
-the boot process. The driver could then exec it if
-needed. It would also make vm86d tiny.
+Once the fbdev can provide, upon request, the EDID and probing info
+(some cards can tell you if something is connected even without
+providing an EDID, like on the S-Video output, or on the VGA output
+with a non-DDC capable monitor), we need some consistent API to
+retreive that from, userland at least
 
-The Radeon and Rage128 cards need a reset if they are
-reporting zero VRAM.
+Then, we need fbdev to "validate" modes based on those EDID infos
+(via fbmon ?).
 
-=====
-Jon Smirl
-jonsmirl@yahoo.com
 
-__________________________________________________
-Do you Yahoo!?
-Yahoo! Tax Center - File online, calculators, forms, and more
-http://platinum.yahoo.com
 
 
 -------------------------------------------------------

@@ -1,23 +1,27 @@
-From: Mail Delivery Subsystem <MAILER-DAEMON@us.es>
-Subject: Returned mail: see transcript for details
-Date: Tue, 25 May 2004 08:31:36 +0200
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Any patches against the most recent kernel?
+Date: Tue, 25 May 2004 20:29:58 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200405250631.i4P6Vac26698@correo1.us.es>
+Message-ID: <200405252029.58481.adaplas@hotpop.com>
+Reply-To: adaplas@pol.net
 Mime-Version: 1.0
-Content-Type: multipart/report; report-type=delivery-status;
-	boundary="i4P6Vac26698.1085466696/correo1.us.es"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BSVTW-0000XY-0a
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 24 May 2004 23:31:46 -0700
-Received: from correo1.us.es ([150.214.9.229])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BSVTV-00050W-2O
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 24 May 2004 23:31:45 -0700
-Received: from correo1.us.es (localhost.localdomain [127.0.0.1])
-	by correo1.us.es (8.11.7/8.11.1) with ESMTP id i4P6Vbk26707
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 25 May 2004 08:31:37 +0200
+	id 1BSb4E-00089R-Cb
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 25 May 2004 05:30:02 -0700
+Received: from babyruth.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BSb4E-0006ti-0p
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 25 May 2004 05:30:02 -0700
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by babyruth.hotpop.com (Postfix) with SMTP id 0AFA6512E7B
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 25 May 2004 11:58:23 +0000 (UTC)
+Received: from 203.177.116.91 (unknown [203.177.116.91])
+	by smtp-1.hotpop.com (Postfix) with ESMTP id 50AEC1A01D8
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 25 May 2004 11:36:20 +0000 (UTC)
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,58 +31,19 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-This is a MIME-encapsulated message
+Hi James,
 
---i4P6Vac26698.1085466696/correo1.us.es
+I would like to work again on fbdev development.  I don't have BK, so I'm 
+relying on your occasional fbdev.diff.gz.  Even if the latest changes are 
+broken, can you create one against the latest standard kernel?
 
-The original message was received at Tue, 25 May 2004 08:31:23 +0200
-from [159.226.248.194]
+Thanks.
 
-   ----- The following addresses had permanent fatal errors -----
-<jon@gte.esi.us.es>
-    (reason: 550 Unacceptable content)
+Tony
 
-   ----- Transcript of session follows -----
-... while talking to localhost.localdomain.:
->>> DATA
-<<< 550 Unacceptable content
-554 5.0.0 Service unavailable
-
---i4P6Vac26698.1085466696/correo1.us.es
-Content-Type: message/delivery-status
-
-Reporting-MTA: dns; correo1.us.es
-Received-From-MTA: DNS; [159.226.248.194]
-Arrival-Date: Tue, 25 May 2004 08:31:23 +0200
-
-Final-Recipient: RFC822; jon@gtex10.us.es
-Action: failed
-Status: 5.2.0
-Remote-MTA: DNS; localhost.localdomain
-Diagnostic-Code: SMTP; 550 Unacceptable content
-Last-Attempt-Date: Tue, 25 May 2004 08:31:36 +0200
-
---i4P6Vac26698.1085466696/correo1.us.es
-Content-Type: text/rfc822-headers
-
-Return-Path: <linux-fbdev-devel@lists.sourceforge.net>
-Received: from gte.esi.us.es ([159.226.248.194])
-	by correo1.us.es (8.11.7/8.11.1) with ESMTP id i4P6VMc26396
-	for <jon@gte.esi.us.es>; Tue, 25 May 2004 08:31:23 +0200
-Message-Id: <200405250631.i4P6VMc26396@correo1.us.es>
-From: linux-fbdev-devel@lists.sourceforge.net
-To: jon@gtex10.us.es
-Subject: Stolen document
-Date: Tue, 25 May 2004 14:31:28 +0800
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0016----=_NextPart_000_0016"
-X-Priority: 3
-X-MSMail-Priority: Normal
-
---i4P6Vac26698.1085466696/correo1.us.es--
 
 
 

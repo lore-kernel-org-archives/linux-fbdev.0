@@ -1,21 +1,18 @@
 From: James Simmons <jsimmons@www.infradead.org>
-Subject: Re: [patch] framebuffer Kconfig -- add option
- for building cfb*.o (0/2)
-Date: Mon, 14 Feb 2005 17:25:47 +0000 (GMT)
-Message-ID: <Pine.LNX.4.56.0502141724240.6781@pentafluge.infradead.org>
-References: <421096C6.3030105@arcom.com> <Pine.GSO.4.61.0502141322060.16209@waterleaf.sonytel.be>
+Subject: Logo code fixes.
+Date: Mon, 14 Feb 2005 17:31:29 +0000 (GMT)
+Message-ID: <Pine.LNX.4.56.0502141726140.6781@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D0jyy-0005Ir-FW
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Feb 2005 09:26:00 -0800
+	id 1D0k4X-0005uk-G5
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Feb 2005 09:31:45 -0800
 Received: from pentafluge.infradead.org ([213.146.154.40])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1D0jyu-00086W-0U
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Feb 2005 09:26:00 -0800
-In-Reply-To: <Pine.GSO.4.61.0502141322060.16209@waterleaf.sonytel.be>
+	id 1D0k4W-0001v4-H8
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Feb 2005 09:31:45 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,31 +25,108 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: David Vrabel <dvrabel@arcom.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: "Antonino A. Daplas" <adaplas@hotpop.com>, Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> > This set of two patches add a new option (FB_SOFTWARE_CFB_OPS) to the
-> > framebuffer Kconfig to enable building the generic software cfbfillrect,
-> > cfbcopyarea and cfbimageblt objects.  This cuts out a lot of stuff from
-> > the Makefile and allows drivers in their own directory to be more
-> > self-contained.
-> > 
-> > 1/2 -- add the FB_SOFTWARE_CFB_OPS option to Kconfig and Makefile
-> > 2/2 -- make all drivers (where appropriate) select FB_SOFTWARE_CFB_OPS
-> > 
-> > Please consider applying, thanks.
-> 
-> Thanks, good idea!
-> 
-> But I'd prefer to have 3 separate options, since some drivers don't need all 3
-> of them, e.g.:
->   - CONFIG_CFB_FILLRECT
->   - CONFIG_CFB_COPYAREA
->   - CONFIG_CFB_IMAGEBLT
+Signed-off-by: James Simmons <jsimmons@www.infradead.org>
 
-We should have CONFIG_SOFT_CURSOR for the sotftware cursor, softcursor.c, as 
-well. David could you add that as well? 
+This patch fixes a few bugs with the low level logo code. 
+
+1. Allow DEC Alpha machines to draw the DEC logo
+2. Cleanup the logo directory on a make clean
+3. Some makefile cleanups.
+
+I have tested on my local machines. I like to be able to create the C 
+files from the logos for only the ones we want to compile but I haven't 
+figured out how to do that. That can wait. Please apply.
+
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/logo/Kconfig fbdev-2.6/drivers/video/logo/Kconfig
+--- linus-2.6/drivers/video/logo/Kconfig	2005-02-11 16:55:28.000000000 -0800
++++ fbdev-2.6/drivers/video/logo/Kconfig	2005-02-14 08:40:04.000000000 -0800
+@@ -25,7 +25,7 @@
+ 
+ config LOGO_DEC_CLUT224
+ 	bool "224-color Digital Equipment Corporation Linux logo"
+-	depends on LOGO && MACH_DECSTATION
++	depends on LOGO && (MACH_DECSTATION || ALPHA)
+ 	default y
+ 
+ config LOGO_MAC_CLUT224
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/logo/Makefile fbdev-2.6/drivers/video/logo/Makefile
+--- linus-2.6/drivers/video/logo/Makefile	2005-02-11 16:55:28.000000000 -0800
++++ fbdev-2.6/drivers/video/logo/Makefile	2005-02-14 08:41:49.000000000 -0800
+@@ -23,35 +23,32 @@
+ # Mono logos
+ extra-y += $(call logo-cfiles,_mono,pbm)
+ 
+-quiet_cmd_logo_mono    = MONO    $@
+-      cmd_logo_mono    = scripts/pnmtologo -t mono -n $*_mono -o $@ $<
+-
+-$(obj)/%_mono.c: $(src)/%_mono.pbm FORCE
+-	$(call if_changed,logo_mono)
+-
+ # VGA16 logos
+ extra-y += $(call logo-cfiles,_vga16,ppm)
+ 
+-quiet_cmd_logo_vga16   = VGA16   $@
+-      cmd_logo_vga16   = scripts/pnmtologo -t vga16 -n $*_vga16 -o $@ $<
+-
+-$(obj)/%_vga16.c: $(src)/%_vga16.ppm FORCE
+-	$(call if_changed,logo_vga16)
+-
+-#224 Logos
++# 224 Logos
+ extra-y += $(call logo-cfiles,_clut224,ppm)
+ 
+-quiet_cmd_logo_clut224 = CLUT224 $@
+-      cmd_logo_clut224 = scripts/pnmtologo -t clut224 -n $*_clut224 -o $@ $<
+-
+-$(obj)/%_clut224.c: $(src)/%_clut224.ppm FORCE
+-	$(call if_changed,logo_clut224)
+-
+ # Gray 256
+ extra-y += $(call logo-cfiles,_gray256,pgm)
+ 
+-quiet_cmd_logo_gray256 = GRAY256 $@
+-      cmd_logo_gray256 = scripts/pnmtologo -t gray256 -n $*_gray256 -o $@ $<
++# Create commands like "pnmtologo -t mono -n logo_mac_mono -o ..."
++quiet_cmd_logo = LOGO	$@
++	cmd_logo = scripts/pnmtologo \
++			-t $(patsubst $*_%,%,$(notdir $(basename $<))) \
++			-n $(notdir $(basename $<)) -o $@ $<
++
++$(obj)/%_mono.c: $(src)/%_mono.pbm FORCE
++	$(call if_changed,logo)
++
++$(obj)/%_vga16.c: $(src)/%_vga16.ppm FORCE
++	$(call if_changed,logo)
++
++$(obj)/%_clut224.c: $(src)/%_clut224.ppm FORCE
++	$(call if_changed,logo)
+ 
+ $(obj)/%_gray256.c: $(src)/%_gray256.pgm FORCE
+-	$(call if_changed,logo_gray256)
++	$(call if_changed,logo)
++
++# Files generated that shall be removed upon make clean
++clean-files := *.o *_mono.c *_vga16.c *_clut224.c *_gray256.c
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/logo/logo.c fbdev-2.6/drivers/video/logo/logo.c
+--- linus-2.6/drivers/video/logo/logo.c	2005-02-11 16:55:28.000000000 -0800
++++ fbdev-2.6/drivers/video/logo/logo.c	2005-02-14 09:11:01.000000000 -0800
+@@ -66,8 +66,10 @@
+ 		logo = &logo_linux_clut224;
+ #endif
+ #ifdef CONFIG_LOGO_DEC_CLUT224
+-		/* DEC Linux logo on MIPS/MIPS64 */
++		/* DEC Linux logo on MIPS/MIPS64 or ALPHA */
++#ifdef CONFIG_MACH_DECSTATION
+ 		if (mips_machgroup == MACH_GROUP_DEC)
++#endif
+ 			logo = &logo_dec_clut224;
+ #endif
+ #ifdef CONFIG_LOGO_MAC_CLUT224
+
 
 
 

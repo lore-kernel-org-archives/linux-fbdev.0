@@ -1,22 +1,23 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] neofb patches
-Date: Wed, 28 Apr 2004 09:25:59 +1000
+Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
+	one works ;-)
+Date: Wed, 28 Apr 2004 09:28:05 +1000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1083108358.16544.58.camel@gaston>
-References: <Pine.LNX.4.44.0404280019070.23153-100000@phoenix.infradead.org>
+Message-ID: <1083108484.16544.61.camel@gaston>
+References: <Pine.LNX.4.44.0404280023360.23153-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIc3L-0002dp-2z
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:31:51 -0700
+	id 1BIc5M-0003CC-Kl
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:33:56 -0700
 Received: from gate.crashing.org ([63.228.1.57] ident=root)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1BIc3K-00044j-Lc
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:31:50 -0700
-In-Reply-To: <Pine.LNX.4.44.0404280019070.23153-100000@phoenix.infradead.org>
+	id 1BIc5M-0002V2-95
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:33:56 -0700
+In-Reply-To: <Pine.LNX.4.44.0404280023360.23153-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,48 +29,34 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@infradead.org>
-Cc: John Zielinski <grim@undead.cc>, Geert Uytterhoeven <geert@linux-m68k.org>, Alex Stewart <alex@foogod.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: John Zielinski <grim@undead.cc>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 2004-04-28 at 09:21, James Simmons wrote:
-> > > I can see how vgacon and fbcon would walk all over each other but how 
-> > > would a serial console
-> > > mess things up?
+On Wed, 2004-04-28 at 09:24, James Simmons wrote:
+> > No, this would not be for the stable release.  But what I'm saying is 
+> > that it's nice that a program cleans up after itself but we shouldn't 
+> > rely on it.  Take resources like memory, file handles, sockets, etc.  
+> > Most program release those resources when the shut down normally but 
+> > what if they seg fault or exit unexpectedly?  The kernel cleans up after 
+> > the process regardless.
 > > 
-> > Same question... Where is the problem ?
+> > So if a fb program restores the mode properly then we should do nothing 
+> > but if it doesn't either because of a bad programming or an unexpected 
+> > termination then we should reset the mode to what the user has selected 
+> > for their console.
 > 
-> Say two people are logged in. One on a serial console and another on the 
-> framebuffer console. The person starts X fbdev from the serial console. 
-> Ooops the fbcon user lost his console.
+> Trust me. I wish the console would cleanup itself. It would take a good 
+> amount of work to redo.
 
-And ? Where is the problem ? I can do that today with ssh ... That's
-normal console switch. X will trigger a console switch to a new VT,
-it will not just tap on the current console "as is".
+Nah, it's a lot easier to restore the state you need than to
+save/restore everything. It's not even always possible to save/restore
+everything (think: write only registers).
 
-> > We need several level of arbitration, I'm not sure hwo to do that at
-> > this point and I don't have time to dive into the DRI side of things.
-> > 
-> > Jon Smirl has been working on embedded mesa & moving DRI outside of
-> > X. Unfortunately, last I heard, he was still on his trip of re-inventing
-> > everything including replacing the fbdev's with his own stuff instead
-> > of moving from what we have ...
-> 
-> Ug. This is sad :-(
-> 
-> 
-> 
-> 
-> 
-> -------------------------------------------------------
-> This SF.Net email is sponsored by: Oracle 10g
-> Get certified on the hottest thing ever to hit the market... Oracle 10g. 
-> Take an Oracle 10g class now, and we'll give you the exam FREE. 
-> http://ads.osdn.com/?ad_id=3149&alloc_id=8166&op=click
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
--- 
-Benjamin Herrenschmidt <benh@kernel.crashing.org>
+I got that pretty much working lately with the new blank() argument
+anyway, though some drivers need to be told about it FB_ACTIVATE_FORCE I
+suppose.
+
+Ben.
+
 
 
 

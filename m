@@ -1,17 +1,20 @@
-From: Mail Delivery System <Mailer-Daemon@t-online.de>
-Subject: Mail delivery failed: returning message to sender
-Date: Sun, 11 Jul 2004 10:46:24 +0200
+From: Andrew Morton <akpm@osdl.org>
+Subject: Fw: Rivafb I2C problem, new patch
+Date: Mon, 12 Jul 2004 16:39:42 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1BjZya-000xfeC@mailin08.aul.t-online.de>
+Message-ID: <20040712163942.672d4047.akpm@osdl.org>
+Mime-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="Multipart=_Mon__12_Jul_2004_16_39_42_-0700_7gGbGfkixgVX2Dva"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BjZzO-0006Hm-Od
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 11 Jul 2004 01:47:14 -0700
-Received: from mailout11.sul.t-online.com ([194.25.134.85])
+	id 1BkALe-0007uQ-8W
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 12 Jul 2004 16:36:38 -0700
+Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1BjZzN-0006Ev-Qt
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 11 Jul 2004 01:47:14 -0700
+	id 1BkALd-0000JL-Qr
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 12 Jul 2004 16:36:38 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -21,176 +24,104 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
-
-|------------------------- Failed addresses follow: ---------------------|
- <tgxl@linutronix.de>
-   unknown user / Teilnehmer existiert nicht
-|----------- Message text follows: (body too large, truncated) ----------|
-Received: from linutronix.de ([219.139.254.213]) by mailin08.sul.t-online.de
-	with esmtp id 1BjZyO-17bqbI0; Sun, 11 Jul 2004 10:46:12 +0200
-From: linux-fbdev-devel@lists.sourceforge.net
-To: tgxl@linutronix.de
-Subject: Re: Encrypted Mail
-Date: Sun, 11 Jul 2004 16:45:25 +0800
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0016----=_NextPart_000_0016"
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Seen: false
+Cc: Greg KH <greg@kroah.com>, Nicolas Boichat <nicolas@boichat.ch>
 
 This is a multi-part message in MIME format.
 
-------=_NextPart_000_0016----=_NextPart_000_0016
-Content-Type: text/plain;
-	charset="Windows-1252"
+--Multipart=_Mon__12_Jul_2004_16_39_42_-0700_7gGbGfkixgVX2Dva
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 
 
-Encrypted message is available.
+Maybe Greg, or the linux-fbdev-devel denizens can comment upon
+this?
 
 
+Begin forwarded message:
 
-------=_NextPart_000_0016----=_NextPart_000_0016
-Content-Type: application/octet-stream;
-	name="readme.zip"
-Content-Transfer-Encoding: base64
+Date: Tue, 13 Jul 2004 01:24:02 +0200
+From: Nicolas Boichat <nicolas@boichat.ch>
+To: akpm@digeo.com
+Subject: Rivafb I2C problem, new patch
+
+
+Hello,
+
+I'm currently writing a DDC/CI tool for Linux (DDC/CI is the protocol which permits to modify monitor parameters without using the OSD), see http://www.boichat.ch/nicolas/ddcci .
+
+I use the new rivafb I2C support, but a problem appeared: the I2C bus is immediately deleted after the DDC2 EDID is read, but I need to access it from my application!
+
+I attached a patch which fixes this problem: the bus is deleted only when the driver is unloaded (please note that the atyfb behave like my patched version). Could you add it to the next -mm kernel release ?
+
+I also contacted the driver maintainer but he seems not to answer (I sent an e-mail to him about a week ago).
+
+Best regards,
+
+Nicolas Boichat
+
+
+--Multipart=_Mon__12_Jul_2004_16_39_42_-0700_7gGbGfkixgVX2Dva
+Content-Type: text/x-patch;
+ name="riva-2.6.7-mm6.patch"
 Content-Disposition: attachment;
-	filename="readme.zip"
+ filename="riva-2.6.7-mm6.patch"
+Content-Transfer-Encoding: 7bit
 
-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
+--- linux-2.6.7/drivers/video/riva.old/fbdev.c	2004-07-07 11:26:23.000000000 +0200
++++ linux-2.6.7/drivers/video/riva/fbdev.c	2004-07-07 11:36:47.008371568 +0200
+@@ -1773,7 +1773,7 @@
+ 	struct riva_par *par = (struct riva_par *) info->par;
+ 	int i;
+ 
+-	riva_create_i2c_busses(par);
++	//riva_create_i2c_busses(par);
+ 	for (i = par->bus; i >= 1; i--) {
+ 		riva_probe_i2c_connector(par, i, &par->EDID);
+ 		if (par->EDID) {
+@@ -1781,7 +1781,7 @@
+ 			break;
+ 		}
+ 	}
+-	riva_delete_i2c_busses(par);
++	//riva_delete_i2c_busses(par);
+ #endif
+ #endif
+ }
+@@ -1933,6 +1933,8 @@
+ 	}
+ #endif /* CONFIG_MTRR */
+ 
++	riva_create_i2c_busses((struct riva_par *) info->par);
++
+ 	info->fbops = &riva_fb_ops;
+ 	info->fix = rivafb_fix;
+ 	riva_get_EDID(info, pd);
+@@ -1961,6 +1963,7 @@
+ 	return 0;
+ 
+ err_out_iounmap_fb:
++	riva_delete_i2c_busses((struct riva_par *) info->par);
+ 	iounmap(info->screen_base);
+ err_out_free_base1:
+ 	if (default_par->riva.Architecture == NV_ARCH_03) 
+@@ -1985,10 +1988,12 @@
+ {
+ 	struct fb_info *info = pci_get_drvdata(pd);
+ 	struct riva_par *par = (struct riva_par *) info->par;
+-	
++
+ 	if (!info)
+ 		return;
+ 
++	riva_delete_i2c_busses(par);
++
+ 	unregister_framebuffer(info);
+ #ifdef CONFIG_MTRR
+ 	if (par->mtrr.vram_valid)
+
+
+--Multipart=_Mon__12_Jul_2004_16_39_42_-0700_7gGbGfkixgVX2Dva--
 
 
 -------------------------------------------------------

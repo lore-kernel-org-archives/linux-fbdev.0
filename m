@@ -1,21 +1,21 @@
 From: David Eger <eger@havoc.gtf.org>
-Subject: [PATCH][RIVAFB] rivafb: fb accel capabilities
-Date: Thu, 17 Jun 2004 14:24:47 -0400
+Subject: Re: cirrusfb status report
+Date: Thu, 17 Jun 2004 15:54:30 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040617182446.GA6355@havoc.gtf.org>
-References: <200406160406.07060.adaplas@hotpop.com> <Pine.LNX.4.56.0406161743100.14901@pentafluge.infradead.org> <20040616132318.1435b0c7.akpm@osdl.org> <200406170629.27427.adaplas@hotpop.com>
+Message-ID: <20040617195430.GA4682@havoc.gtf.org>
+References: <20040615185355.GA12307@havoc.gtf.org> <Pine.LNX.4.56.0406152328230.4653@pentafluge.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bb1ZL-0008Na-8B
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Jun 2004 11:24:59 -0700
+	id 1Bb2y5-00022e-TZ
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Jun 2004 12:54:37 -0700
 Received: from havoc.gtf.org ([216.162.42.101])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bb1ZK-0000P8-UF
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Jun 2004 11:24:59 -0700
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1Bb2y5-0003Jh-K8
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Jun 2004 12:54:37 -0700
 Content-Disposition: inline
-In-Reply-To: <200406170629.27427.adaplas@hotpop.com>
+In-Reply-To: <Pine.LNX.4.56.0406152328230.4653@pentafluge.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,33 +27,26 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: adaplas@pol.net
-Cc: Andrew Morton <akpm@osdl.org>, jsimmons@pentafluge.infradead.org, linux-fbdev-devel@lists.sourceforge.net
+To: jsimmons@pentafluge.infradead.org
+Cc: Jeff Garzik <garzik@havoc.gtf.org>, linux-fbdev-devel@lists.sourceforge.net
 
-Dear Andrew,
+On Tue, Jun 15, 2004 at 11:28:38PM +0100, jsimmons@pentafluge.infradead.org wrote:
+> 
+> I just bought this card so I'm willing to give it a try.
 
-Here's the fb accel capabilities patch for rivafb.
+The cirrusfb driver is for some old cards.  Garage sale? ;-)
+I finally tracked down a screen corruption issue.. you have to wait
+till BLT's are done to do a pan().  This probably affects 2.4 as well.
+
+The patch is at:
+
+http://www.yak.net/random/fbdev-patches/cirrusfb-2.6-update.patch
+
+ZORRO is still busted, and my monitor freaks out when I try anything
+but 640x480x8.  Is this something that modedb could help out with?
+If you can figure it, I'd gladly accept a patch for it :-D
 
 -dte
-
-
-diff -ru linux-2.6.7-rc3-mm2-wrivafb/drivers/video/riva/fbdev.c linux-2.6.7-rc3-mm2-wrivafb2/drivers/video/riva/fbdev.c
---- linux-2.6.7-rc3-mm2-wrivafb/drivers/video/riva/fbdev.c	2004-06-17 14:08:29.000000000 -0400
-+++ linux-2.6.7-rc3-mm2-wrivafb2/drivers/video/riva/fbdev.c	2004-06-16 12:39:11.000000000 -0400
-@@ -1665,7 +1665,12 @@
- {
- 	unsigned int cmap_len;
- 
--	info->flags = FBINFO_FLAG_DEFAULT;
-+	info->flags = FBINFO_DEFAULT
-+		    | FBINFO_HWACCEL_XPAN
-+		    | FBINFO_HWACCEL_YPAN
-+		    | FBINFO_HWACCEL_COPYAREA
-+		    | FBINFO_HWACCEL_FILLRECT
-+		    | FBINFO_HWACCEL_IMAGEBLIT;
- 	info->var = rivafb_default_var;
- 	info->fix.visual = (info->var.bits_per_pixel == 8) ?
- 				FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_DIRECTCOLOR;
 
 
 -------------------------------------------------------

@@ -1,17 +1,15 @@
-From: James Simmons <jsimmons@infradead.org>
+From: rwhron@earthlink.net
 Subject: Re: Re: 2.6.0-test2 does not boot with matroxfb
-Date: Fri, 15 Aug 2003 23:36:44 +0100 (BST)
+Date: Fri, 15 Aug 2003 19:18:34 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0308152333200.30952-100000@phoenix.infradead.org>
-References: <20030814231409.GA745@rushmore>
+Message-ID: <20030815231834.GA9226@rushmore>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from pub234.cambridge.redhat.com ([213.86.99.234] helo=phoenix.infradead.org)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19nnCB-000195-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 15 Aug 2003 15:37:19 -0700
-In-Reply-To: <20030814231409.GA745@rushmore>
+Received: from turkey.mail.pas.earthlink.net ([207.217.120.126])
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19nnoC-0003NK-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 15 Aug 2003 16:16:36 -0700
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,31 +19,27 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: rwhron@earthlink.net
+To: jsimmons@infradead.org
 Cc: vandrove@vc.cvut.cz, linux-fbdev-devel@lists.sourceforge.net
 
+>> o graphics in console with "links -g"
 
-> Petr's patch is mandatory to get mga400 to do all this at the same time:
-> 
-> o multiple fast high res (240x90 char) virtual text consoles.
+> Links ??? the web browser. I tried that option and it complained.
 
-At present only fbdev is mapped to the console and the rest have to mapped 
-by con2fb. That should work. I really didn't want to push forcing all the 
-framebuffers to a console because it is a very common setup to have one 
-framebuffer used for graphics developement and the other for a console. 
-We used that alot at my job at Transvirtual. I still use this setup from 
-time to time. 
+There are two versions of links.  
+v0.99.x	The amazing text browser.
+2.1.x	Does graphics, javascript, etc in console mode.
 
-> o graphics in console with "links -g"
+http://atrey.karlin.mff.cuni.cz/~clock/twibright/links/download/links-2.1pre11.tar.bz2
 
-Links ??? the web browser. I tried that option and it complained.
+I configured links-2.x with:
+/configure  --prefix=/usr --enable-graphics --enable-javascript --with-ssl=/usr/lib
 
-> o X11
-
-Ug. I haven't figured that one out yet. I need to make fbcon fully restore 
-the hardware state for each card. 
+-- 
+Randy Hron
+http://home.earthlink.net/~rwhron/kernel/bigbox.html
 
 
 

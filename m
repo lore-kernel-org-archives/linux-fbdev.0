@@ -1,20 +1,20 @@
 From: Kronos <kronos@kronoz.cjb.net>
-Subject: [PATCH] amifb: New framebuffer_alloc API and class_dev changes
-Date: Mon, 15 Sep 2003 21:36:40 +0200
+Subject: [PATCH] aty: New framebuffer_alloc API and class_dev changes
+Date: Mon, 15 Sep 2003 21:36:49 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030915193640.GD16370@dreamland.darkstar.lan>
+Message-ID: <20030915193649.GE16370@dreamland.darkstar.lan>
 Reply-To: kronos@kronoz.cjb.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19yzAH-0003RH-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 15 Sep 2003 12:37:37 -0700
-Received: from mail-4.tiscali.it ([195.130.225.150])
+	id 19yzAL-0003Ra-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 15 Sep 2003 12:37:41 -0700
+Received: from mail-3.tiscali.it ([195.130.225.149])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 19yzAF-0001ih-Ux
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 15 Sep 2003 12:37:36 -0700
+	id 19yzAK-0001jm-E0
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 15 Sep 2003 12:37:40 -0700
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
@@ -27,321 +27,241 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: geert@linux-m68k.org
+To: brad@neruo.com, geert@linux-m68k.org
 Cc: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>
 
 Hi,
-this patch converts driver/video/amifb.c to framebuffer_alloc:
+this patch converts driver/video/aty to framebuffer_alloc:
 
-======== drivers/video/amifb.c 1.29 ========
-D 1.29 03/09/13 00:33:55+02:00 kronos@kronoz.cjb.net 33 32 70/50/3778
-P drivers/video/amifb.c
+======== drivers/video/aty/aty128fb.c 1.41 ========
+D 1.41 03/09/13 00:35:43+02:00 kronos@kronoz.cjb.net 52 51 23/19/2333
+P drivers/video/aty/aty128fb.c
 C - switch to framebuffer_alloc
 ------------------------------------------------
 
-===== drivers/video/amifb.c 1.28 vs 1.29 =====
---- 1.28/drivers/video/amifb.c	Tue May 27 02:51:43 2003
-+++ 1.29/drivers/video/amifb.c	Sat Sep 13 00:33:55 2003
-@@ -774,15 +774,7 @@
- 	u_short fmode;		/* vmode */
- } currentpar;
+===== drivers/video/aty/aty128fb.c 1.40 vs 1.41 =====
+--- 1.40/drivers/video/aty/aty128fb.c	Fri Aug 22 08:27:08 2003
++++ 1.41/drivers/video/aty/aty128fb.c	Sat Sep 13 00:35:43 2003
+@@ -362,6 +362,7 @@
+ static int aty128fb_ioctl(struct inode *inode, struct file *file, u_int cmd,
+ 			  u_long arg, struct fb_info *info);
+ static int aty128fb_sync(struct fb_info *info);
++static void release_aty128fb(struct fb_info *info);
  
+     /*
+      *  Internal routines
+@@ -1536,7 +1537,6 @@
+ 	/* fill in info */
+ 	info->fbops = &aty128fb_ops;
+ 	info->flags = FBINFO_FLAG_DEFAULT;
+-	info->dev = &pdev->dev;
+ 
+ #ifdef CONFIG_PMAC_PBOOK
+ 	par->lcd_on = default_lcd_on;
+@@ -1677,16 +1677,14 @@
+ 
+ 	/* We have the resources. Now virtualize them */
+ 	size = sizeof(struct fb_info) + sizeof(struct aty128fb_par);
+-	if (!(info = kmalloc(size, GFP_ATOMIC))) {
++	if (!(info = framebuffer_alloc(sizeof(struct aty128fb_par), &pdev->dev))) {
+ 		printk(KERN_ERR "aty128fb: can't alloc fb_info_aty128\n");
+ 		goto err_free_mmio;
+ 	}
+-	memset(info, 0, size);
 -
--static struct fb_info fb_info = {
--    .fix = {
--	.id		= "Amiga ",
--	.visual		= FB_VISUAL_PSEUDOCOLOR,
--	.accel		= FB_ACCEL_AMIGABLITT
--    }
--};
--
-+static struct fb_info *fb_info;
+-	par = (struct aty128fb_par *)(info + 1);
++	info->release = &release_aty128fb;
++	par = info->par;
+ 	info->pseudo_palette = par->pseudo_palette;
  
- 	/*
- 	 *  Saved color entry 0 so we can restore it when unblanking
-@@ -1140,6 +1132,7 @@
+-	info->par = par;
+ 	info->fix = aty128fb_fix;
  
- int amifb_init(void);
- static void amifb_deinit(void);
-+static void release_amifb(struct fb_info *);
- 
- 	/*
- 	 * Internal routines
-@@ -1220,10 +1213,10 @@
- 	if (hmax <= 0 || hmax <= hmin)
- 		return;
- 
--	fb_info.monspecs.vfmin = vmin;
--	fb_info.monspecs.vfmax = vmax;
--	fb_info.monspecs.hfmin = hmin;
--	fb_info.monspecs.hfmax = hmax;
-+	fb_info->monspecs.vfmin = vmin;
-+	fb_info->monspecs.vfmax = vmax;
-+	fb_info->monspecs.hfmin = hmin;
-+	fb_info->monspecs.hfmax = hmax;
+ 	/* Virtualize mmio region */
+@@ -1758,15 +1756,9 @@
+ 	return -ENODEV;
  }
  
- int __init amifb_setup(char *options)
-@@ -1233,6 +1226,17 @@
- 	if (!options || !*options)
- 		return 0;
- 
-+	if (!fb_info) {
-+		fb_info = framebuffer_alloc(0, NULL);
-+		if (!fb_info)
-+			return -ENOMEM;
-+
-+		strcpy(fb_info->fix.id, "Amiga ");
-+		fb_info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
-+		fb_info->fix.accel = FB_ACCEL_AMIGABLITT;
-+		fb_info->release = &release_amifb;
-+	}
-+
- 	while ((this_opt = strsep(&options, ",")) != NULL) {
- 		if (!*this_opt)
- 			continue;
-@@ -2277,12 +2281,23 @@
- 				"amifb [Denise/Lisa]"))
- 		return -EBUSY;
- 
-+	if (!fb_info) {
-+		fb_info = framebuffer_alloc(0, NULL);
-+		if (!fb_info)
-+			return -ENOMEM;
-+
-+		strcpy(fb_info->fix.id, "Amiga ");
-+		fb_info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
-+		fb_info->fix.accel = FB_ACCEL_AMIGABLITT;
-+		fb_info->release = &release_amifb;
-+	}
-+
- 	custom.dmacon = DMAF_ALL | DMAF_MASTER;
- 
- 	switch (amiga_chipset) {
- #ifdef CONFIG_FB_AMIGA_OCS
- 		case CS_OCS:
--			strcat(fb_info.fix.id, "OCS");
-+			strcat(fb_info->fix.id, "OCS");
- default_chipset:
- 			chipset = TAG_OCS;
- 			maxdepth[TAG_SHRES] = 0;	/* OCS means no SHRES */
-@@ -2291,13 +2306,13 @@
- 			maxfmode = TAG_FMODE_1;
- 			defmode = amiga_vblank == 50 ? DEFMODE_PAL
- 						     : DEFMODE_NTSC;
--			fb_info.fix.smem_len = VIDEOMEMSIZE_OCS;
-+			fb_info->fix.smem_len = VIDEOMEMSIZE_OCS;
- 			break;
- #endif /* CONFIG_FB_AMIGA_OCS */
- 
- #ifdef CONFIG_FB_AMIGA_ECS
- 		case CS_ECS:
--			strcat(fb_info.fix.id, "ECS");
-+			strcat(fb_info->fix.id, "ECS");
- 			chipset = TAG_ECS;
- 			maxdepth[TAG_SHRES] = 2;
- 			maxdepth[TAG_HIRES] = 4;
-@@ -2311,15 +2326,15 @@
- 							 : DEFMODE_NTSC;
- 			if (amiga_chip_avail()-CHIPRAM_SAFETY_LIMIT >
- 			    VIDEOMEMSIZE_ECS_1M)
--				fb_info.fix.smem_len = VIDEOMEMSIZE_ECS_2M;
-+				fb_info->fix.smem_len = VIDEOMEMSIZE_ECS_2M;
- 			else
--				fb_info.fix.smem_len = VIDEOMEMSIZE_ECS_1M;
-+				fb_info->fix.smem_len = VIDEOMEMSIZE_ECS_1M;
- 			break;
- #endif /* CONFIG_FB_AMIGA_ECS */
- 
- #ifdef CONFIG_FB_AMIGA_AGA
- 		case CS_AGA:
--			strcat(fb_info.fix.id, "AGA");
-+			strcat(fb_info->fix.id, "AGA");
- 			chipset = TAG_AGA;
- 			maxdepth[TAG_SHRES] = 8;
- 			maxdepth[TAG_HIRES] = 8;
-@@ -2328,16 +2343,16 @@
- 			defmode = DEFMODE_AGA;
- 			if (amiga_chip_avail()-CHIPRAM_SAFETY_LIMIT >
- 			    VIDEOMEMSIZE_AGA_1M)
--				fb_info.fix.smem_len = VIDEOMEMSIZE_AGA_2M;
-+				fb_info->fix.smem_len = VIDEOMEMSIZE_AGA_2M;
- 			else
--				fb_info.fix.smem_len = VIDEOMEMSIZE_AGA_1M;
-+				fb_info->fix.smem_len = VIDEOMEMSIZE_AGA_1M;
- 			break;
- #endif /* CONFIG_FB_AMIGA_AGA */
- 
- 		default:
- #ifdef CONFIG_FB_AMIGA_OCS
- 			printk("Unknown graphics chipset, defaulting to OCS\n");
--			strcat(fb_info.fix.id, "Unknown");
-+			strcat(fb_info->fix.id, "Unknown");
- 			goto default_chipset;
- #else /* CONFIG_FB_AMIGA_OCS */
- 			err = -ENXIO;
-@@ -2373,31 +2388,31 @@
- 	/*
- 	 *  These monitor specs are for a typical Amiga monitor (e.g. A1960)
- 	 */
--	if (fb_info.monspecs.hfmin == 0) {
--	    fb_info.monspecs.hfmin = 15000;
--	    fb_info.monspecs.hfmax = 38000;
--	    fb_info.monspecs.vfmin = 49;
--	    fb_info.monspecs.vfmax = 90;
-+	if (fb_info->monspecs.hfmin == 0) {
-+	    fb_info->monspecs.hfmin = 15000;
-+	    fb_info->monspecs.hfmax = 38000;
-+	    fb_info->monspecs.vfmin = 49;
-+	    fb_info->monspecs.vfmax = 90;
- 	}
- 
--	fb_info.fbops = &amifb_ops;
--	fb_info.par = &currentpar;
--	fb_info.flags = FBINFO_FLAG_DEFAULT;
-+	fb_info->fbops = &amifb_ops;
-+	fb_info->par = &currentpar;
-+	fb_info->flags = FBINFO_FLAG_DEFAULT;
- 
--	if (!fb_find_mode(&fb_info.var, &fb_info, mode_option, ami_modedb,
-+	if (!fb_find_mode(&fb_info->var, fb_info, mode_option, ami_modedb,
- 			  NUM_TOTAL_MODES, &ami_modedb[defmode], 4)) {
- 		err = -EINVAL;
- 		goto amifb_error;
- 	}
- 
- 	round_down_bpp = 0;
--	chipptr = chipalloc(fb_info.fix.smem_len+
-+	chipptr = chipalloc(fb_info->fix.smem_len+
- 	                    SPRITEMEMSIZE+
- 	                    DUMMYSPRITEMEMSIZE+
- 	                    COPINITSIZE+
- 	                    4*COPLISTSIZE);
- 
--	assignchunk(videomemory, u_long, chipptr, fb_info.fix.smem_len);
-+	assignchunk(videomemory, u_long, chipptr, fb_info->fix.smem_len);
- 	assignchunk(spritememory, u_long, chipptr, SPRITEMEMSIZE);
- 	assignchunk(dummysprite, u_short *, chipptr, DUMMYSPRITEMEMSIZE);
- 	assignchunk(copdisplay.init, copins *, chipptr, COPINITSIZE);
-@@ -2409,15 +2424,15 @@
- 	/*
- 	 * access the videomem with writethrough cache
- 	 */
--	fb_info.fix.smem_start = (u_long)ZTWO_PADDR(videomemory);
--	videomemory = (u_long)ioremap_writethrough(fb_info.fix.smem_start,
--						   fb_info.fix.smem_len);
-+	fb_info->fix.smem_start = (u_long)ZTWO_PADDR(videomemory);
-+	videomemory = (u_long)ioremap_writethrough(fb_info->fix.smem_start,
-+						   fb_info->fix.smem_len);
- 	if (!videomemory) {
- 		printk("amifb: WARNING! unable to map videomem cached writethrough\n");
--		videomemory = ZTWO_VADDR(fb_info.fix.smem_start);
-+		videomemory = ZTWO_VADDR(fb_info->fix.smem_start);
- 	}
- 
--	fb_info.screen_base = (char *)videomemory;
-+	fb_info->screen_base = (char *)videomemory;
- 	memset(dummysprite, 0, DUMMYSPRITEMEMSIZE);
- 
- 	/*
-@@ -2439,15 +2454,15 @@
- 		goto amifb_error;
- 	}
- 
--	fb_alloc_cmap(&fb_info.cmap, 1<<fb_info.var.bits_per_pixel, 0);
-+	fb_alloc_cmap(&fb_info->cmap, 1<<fb_info->var.bits_per_pixel, 0);
- 
--	if (register_framebuffer(&fb_info) < 0) {
-+	if (register_framebuffer(fb_info) < 0) {
- 		err = -EINVAL;
- 		goto amifb_error;
- 	}
- 
- 	printk("fb%d: %s frame buffer device, using %dK of video memory\n",
--	       fb_info.node, fb_info.fix.id, fb_info.fix.smem_len>>10);
-+	       fb_info->node, fb_info->fix.id, fb_info->fix.smem_len>>10);
- 
- 	return 0;
- 
-@@ -2458,7 +2473,8 @@
- 
- static void amifb_deinit(void)
- {
--	fb_dealloc_cmap(&fb_info.cmap);
-+	fb_dealloc_cmap(&fb_info->cmap);
-+	kfree(fb_info);
- 	chipfree();
- 	release_mem_region(CUSTOM_PHYSADDR+0xe0, 0x120);
- 	custom.dmacon = DMAF_ALL | DMAF_MASTER;
-@@ -2850,14 +2866,14 @@
- 	if (amifb_ilbm) {
- 		par->next_plane = div8(upx(16<<maxfmode, par->vxres));
- 		par->next_line = par->bpp*par->next_plane;
--		if (par->next_line * par->vyres > fb_info.fix.smem_len) {
-+		if (par->next_line * par->vyres > fb_info->fix.smem_len) {
- 			DPRINTK("too few video mem\n");
- 			return -EINVAL;
- 		}
- 	} else {
- 		par->next_line = div8(upx(16<<maxfmode, par->vxres));
- 		par->next_plane = par->vyres*par->next_line;
--		if (par->next_plane * par->bpp > fb_info.fix.smem_len) {
-+		if (par->next_plane * par->bpp > fb_info->fix.smem_len) {
- 			DPRINTK("too few video mem\n");
- 			return -EINVAL;
- 		}
-@@ -3089,16 +3105,16 @@
- 		par->bpl1mod = par->bpl2mod;
- 
- 	if (par->yoffset) {
--		par->bplpt0 = fb_info.fix.smem_start + par->next_line*par->yoffset + move;
-+		par->bplpt0 = fb_info->fix.smem_start + par->next_line*par->yoffset + move;
- 		if (par->vmode & FB_VMODE_YWRAP) {
- 			if (par->yoffset > par->vyres-par->yres) {
--				par->bplpt0wrap = fb_info.fix.smem_start + move;
-+				par->bplpt0wrap = fb_info->fix.smem_start + move;
- 				if (par->bplcon0 & BPC0_LACE && mod2(par->diwstrt_v+par->vyres-par->yoffset))
- 					par->bplpt0wrap += par->next_line;
- 			}
- 		}
- 	} else
--		par->bplpt0 = fb_info.fix.smem_start + move;
-+		par->bplpt0 = fb_info->fix.smem_start + move;
- 
- 	if (par->bplcon0 & BPC0_LACE && mod2(par->diwstrt_v))
- 		par->bplpt0 += par->next_line;
-@@ -3810,6 +3826,12 @@
- 	}
- }
- 
-+static void release_amifb(struct fb_info *info) {
-+	amifb_deinit();
-+	amifb_video_off();
+-static void __devexit aty128_remove(struct pci_dev *pdev)
+-{
+-	struct fb_info *info = pci_get_drvdata(pdev);
++static void release_aty128fb(struct fb_info *info) {
+ 	struct aty128fb_par *par = info->par;
+-
+-	if (!info)
+-		return;
+-
+-	unregister_framebuffer(info);
 +	
-+	fb_info = NULL;
+ #ifdef CONFIG_MTRR
+ 	if (par->mtrr.vram_valid)
+ 		mtrr_del(par->mtrr.vram, info->fix.smem_start,
+@@ -1775,17 +1767,29 @@
+ 	iounmap(par->regbase);
+ 	iounmap(info->screen_base);
+ 
++#ifdef CONFIG_PMAC_PBOOK
++	if (info == aty128_fb)
++		aty128_fb = NULL;
++#endif
 +}
- 
- #ifdef MODULE
- MODULE_LICENSE("GPL");
-@@ -3821,8 +3843,6 @@
- 
- void cleanup_module(void)
- {
--	unregister_framebuffer(&fb_info);
--	amifb_deinit();
--	amifb_video_off();
-+	unregister_framebuffer(fb_info);
++
++static void __devexit aty128_remove(struct pci_dev *pdev)
++{
++	struct fb_info *info = pci_get_drvdata(pdev);
++
++	if (!info)
++		return;
++
++	unregister_framebuffer(info);
++	
+ 	release_mem_region(pci_resource_start(pdev, 0),
+ 			   pci_resource_len(pdev, 0));
+ 	release_mem_region(pci_resource_start(pdev, 1),
+ 			   pci_resource_len(pdev, 1));
+ 	release_mem_region(pci_resource_start(pdev, 2),
+ 			   pci_resource_len(pdev, 2));
+-#ifdef CONFIG_PMAC_PBOOK
+-	if (info == aty128_fb)
+-		aty128_fb = NULL;
+-#endif
+-	kfree(info);
++
++	pci_set_drvdata(pdev, NULL);
  }
- #endif /* MODULE */
+ #endif /* CONFIG_PCI */
+
+
+======== drivers/video/aty/atyfb_base.c 1.59 ========
+D 1.59 03/09/13 00:37:36+02:00 kronos@kronoz.cjb.net 70 69 22/38/2575
+P drivers/video/aty/atyfb_base.c
+C - switch to framebuffer_alloc
+------------------------------------------------
+
+===== drivers/video/aty/atyfb_base.c 1.58 vs 1.59 =====
+--- 1.58/drivers/video/aty/atyfb_base.c	Mon May 26 02:00:00 2003
++++ 1.59/drivers/video/aty/atyfb_base.c	Sat Sep 13 00:37:36 2003
+@@ -162,6 +162,7 @@
+      */
+ 
+ static int aty_init(struct fb_info *info, const char *name);
++static void release_atyfb(struct fb_info *info);
+ #ifdef CONFIG_ATARI
+ static int store_video_par(char *videopar, unsigned char m64_num);
+ #endif
+@@ -1941,27 +1942,17 @@
+ 			if (i < 0)
+ 				continue;
+ 
+-			info =
+-			    kmalloc(sizeof(struct fb_info), GFP_ATOMIC);
++			info = framebuffer_alloc(sizeof(struct atyfb_par), &pdev->dev);
+ 			if (!info) {
+ 				printk
+ 				    ("atyfb_init: can't alloc fb_info\n");
+ 				return -ENXIO;
+ 			}
+-			memset(info, 0, sizeof(struct fb_info));
++			info->release = &release_atyfb;
+ 
+-			default_par =
+-			    kmalloc(sizeof(struct atyfb_par), GFP_ATOMIC);
+-			if (!default_par) {
+-				printk
+-				    ("atyfb_init: can't alloc atyfb_par\n");
+-				kfree(info);
+-				return -ENXIO;
+-			}
+-			memset(default_par, 0, sizeof(struct atyfb_par));
++			default_par = info->par;
+ 
+ 			info->fix = atyfb_fix;
+-			info->par = default_par;
+ 
+ 			rp = &pdev->resource[0];
+ 			if (rp->flags & IORESOURCE_IO)
+@@ -2220,7 +2211,6 @@
+ 			    ioremap(info->fix.mmio_start, 0x1000);
+ 
+ 			if (!default_par->ati_regbase) {
+-				kfree(default_par);
+ 				kfree(info);
+ 				release_mem_region(res_start, res_size);
+ 				return -ENOMEM;
+@@ -2312,21 +2302,13 @@
+ 			continue;
+ 		}
+ 
+-		info = kmalloc(sizeof(struct fb_info), GFP_ATOMIC);
++		info = framebuffer_alloc(sizeof(struct atyfb_par), NULL);
+ 		if (!info) {
+ 			printk("atyfb_init: can't alloc fb_info\n");
+ 			return -ENOMEM;
+ 		}
+-		memset(info, 0, sizeof(struct fb_info));
+-
+-		default_par = kmalloc(sizeof(struct atyfb_par), GFP_ATOMIC);
+-		if (!default_par) {
+-			printk
+-			    ("atyfb_init: can't alloc atyfb_par\n");
+-			kfree(info);
+-			return -ENXIO;
+-		}
+-		memset(default_par, 0, sizeof(struct atyfb_par));
++		info->release = &release_atyfb;
++		default_par = info->par;
+ 
+ 		info->fix = atyfb_fix;
+ 
+@@ -2577,18 +2559,8 @@
+ 	return 0;
+ }
+ 
+-#ifdef MODULE
+-int __init init_module(void)
+-{
+-	atyfb_init();
+-	return fb_list ? 0 : -ENXIO;
+-}
+-
+-void cleanup_module(void)
+-{
+-	struct fb_info *info = fb_list;
+-	struct atyfb_par *par = (struct atyfb_par *) info->par;		
+-	unregister_framebuffer(info);
++static void release_atyfb(struct fb_info *info) {
++	struct atyfb_par *par = (struct atyfb_par *) info->par;
+ 
+ #ifndef __sparc__
+ 	if (par->ati_regbase)
+@@ -2606,7 +2578,19 @@
+ 	if (par->mmap_map)
+ 		kfree(par->mmap_map);
+ #endif
+-	kfree(info);
++}
++
++#ifdef MODULE
++int __init init_module(void)
++{
++	atyfb_init();
++	return fb_list ? 0 : -ENXIO;
++}
++
++void cleanup_module(void)
++{
++	struct fb_info *info = fb_list;
++	unregister_framebuffer(info);
+ }
+ 
+ #endif
 
 Luca
 -- 
 Reply-To: kronos@kronoz.cjb.net
 Home: http://kronoz.cjb.net
-Windows /win'dohz/ n. : thirty-two  bit extension and graphical shell to
-a sixteen  bit patch to an  eight bit operating system  originally coded
-for a  four bit microprocessor  which was  written by a  two-bit company
-that can't stand a bit of competition.
+Ci sono due cose che l'uomo non puo` nascondere:
+essere ubriaco ed essere innamorato.
 
 
 -------------------------------------------------------

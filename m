@@ -1,17 +1,16 @@
-From: "Sottek, Matthew J" <matthew.j.sottek@intel.com>
+From: James Simmons <jsimmons@infradead.org>
 Subject: RE: Framebuffer with banked memory
-Date: Thu, 31 Oct 2002 13:18:33 -0800
+Date: Thu, 31 Oct 2002 13:48:08 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <2B4461BF89BAD511A86100508B66D53804E4FA69@fmsmsx112.fm.intel.com>
+Message-ID: <Pine.LNX.4.33.0210311345270.1721-100000@maxwell.earthlink.net>
+References: <2B4461BF89BAD511A86100508B66D53804E4FA67@fmsmsx112.fm.intel.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from petasus.ch.intel.com ([143.182.124.5])
+Received: from albatross.mail.pas.earthlink.net ([207.217.120.120] helo=albatross.prod.itd.earthlink.net)
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 187Mi9-0005R0-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 31 Oct 2002 13:18:41 -0800
-Received: from fmsmsxvs043.fm.intel.com (fmsmsxvs043.fm.intel.com [132.233.42.129])
-	by petasus.ch.intel.com (8.11.6/8.11.6/d: solo.mc,v 1.48 2002/10/16 23:47:34 dmccart Exp $) with SMTP id g9VLJv413093
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 31 Oct 2002 21:19:57 GMT
+	id 187MLB-0000ca-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 31 Oct 2002 12:54:57 -0800
+In-Reply-To: <2B4461BF89BAD511A86100508B66D53804E4FA67@fmsmsx112.fm.intel.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,28 +20,38 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'James Simmons' <jsimmons@infradead.org>
+To: "Sottek, Matthew J" <matthew.j.sottek@intel.com>
 Cc: 'alain volmat' <avolmat@yahoo.fr>, linux-fbdev-devel@lists.sourceforge.net
 
 
->:-( Even with providing your own mmap function you still couldn't get it
->to work.
+>   The short answer to your problem is that, sadly, much of the 2.4
+> framebuffer is badly implemented, allowing device independent code to
+> directly access device memory etc. Some of this is cleaned up for 2.5, but
+> as I've not looked at it lately I'm not sure how much.  Here are some
+> pointers as to what is required for 2.4.
+>
+> #1 The Boot penguin code directly accesses your video memory. If you have
+> banked memory this will likely fall off the end of a pointer and oops the
+> kernel or worse.
 
-Is that a question?
-I did make it work. It worked just fine however when a client accesses a
-bank via the mmap you have to fault in that bank and _unmap_ the other
-bank from the client's mmap. This isn't something the kernel lets you
-do from a module (for good reason).
+Fixed in 2.5.X. You use the image drawing function to draw the penguin.
 
-The problem is that when one instruction accesses two banks at the same
-time there is no possible way to have both banks present and the fault
-handler would get stuck trying to satisfy the impossible. It doesn't
-happen in normal aligned accesses (I had XFree running on it) but it
-is a timebomb waiting to go off so I stopped pursuing it.
+> #2 Read/Write Access video memory directly. I had added a read/write
+> handler to the fb_ops to hook these out and switch banks.
+> Read/write are also incorrect if your pitch != width.
 
--Matt
+Fixed. I have hooks now. I didn't notice the pitch != width problem. Give
+me time to fix up a patch, unless someone bets me to the punch.
+
+> #3 Memory map can't be done. I had coded up a working version that would
+> map a single back and page fault in the banks as necessary. This worked
+> but would get hung up on unaligned accesses where one instruction accessed
+> two memory banks at the same time. So memory map isn't possible.
+
+:-( Even with providing your own mmap function you still couldn't get it
+to work.
 
 
 

@@ -1,22 +1,22 @@
 From: James Simmons <jsimmons@infradead.org>
 Subject: Re: [PATCH] cyber2000fb: New framebuffer_alloc API and class_dev
  changes
-Date: Wed, 17 Sep 2003 20:58:56 +0100 (BST)
+Date: Wed, 17 Sep 2003 21:13:58 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0309172051150.1730-100000@phoenix.infradead.org>
+Message-ID: <Pine.LNX.4.44.0309172059110.1730-100000@phoenix.infradead.org>
 References: <20030917204120.F16045@flint.arm.linux.org.uk>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19ziS6-0008Tt-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 17 Sep 2003 12:59:02 -0700
+	id 19zigj-0002Fr-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 17 Sep 2003 13:14:09 -0700
 Received: from [213.86.99.234] (helo=phoenix.infradead.org)
 	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.22)
-	id 19ziS5-00047m-Qs
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Sep 2003 12:59:02 -0700
+	id 19zigi-0007ly-8V
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Sep 2003 13:14:08 -0700
 In-Reply-To: <20030917204120.F16045@flint.arm.linux.org.uk>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
@@ -48,6 +48,17 @@ Cc: Kronos <kronos@kronoz.cjb.net>, linux-fbdev-devel@lists.sourceforge.net
 > Unless this sort of data lifetime rules are clearly and unabiguously
 > defined, there is no way that a sysfs / driver model "port" will ever
 > come anywhere near being stable.
+
+Sorry about the earlier email sent too early. 
+
+   I'm attempting to look long term. We will have graphics cards with 
+built in video as well. Plus 3D stuff. So my attempt was to create a driver 
+core that was independent of any api. Then we would have mappers to 
+different api's (fbdev/v4l etc). Thus different api sturctures could share 
+the same core.  
+   As for sysfs. I really don't see the need to export a par to userspace. 
+In fact it could be dangerous to mess with. Now fb_info is important to 
+export to userspace.
 
 
 

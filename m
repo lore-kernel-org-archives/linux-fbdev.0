@@ -1,22 +1,21 @@
 From: James Simmons <jsimmons@www.infradead.org>
-Subject: Re: [PATCH 2/7] fbdev: Make fb_find_mode() return
- failure if modular
-Date: Thu, 17 Feb 2005 22:09:19 +0000 (GMT)
-Message-ID: <Pine.LNX.4.56.0502172203260.10099@pentafluge.infradead.org>
-References: <200502172045.16677.adaplas@hotpop.com> <4214AA55.3000006@arcom.com>
- <200502180507.32473.adaplas@hotpop.com>
+Subject: Re: Patch to add mode setting to sysfs
+Date: Thu, 17 Feb 2005 22:13:32 +0000 (GMT)
+Message-ID: <Pine.LNX.4.56.0502172210030.10099@pentafluge.infradead.org>
+References: <9e4733910502161430ff1dad1@mail.gmail.com> 
+ <200502172150.16256.adaplas@hotpop.com> <9e47339105021712494955212d@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D1tpv-0001J1-R5
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 14:09:27 -0800
+	id 1D1tu3-0001hB-Fs
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 14:13:43 -0800
 Received: from pentafluge.infradead.org ([213.146.154.40])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1D1tpv-0005gK-66
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 14:09:27 -0800
-In-Reply-To: <200502180507.32473.adaplas@hotpop.com>
+	id 1D1tu1-0003Mr-HA
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 14:13:43 -0800
+In-Reply-To: <9e47339105021712494955212d@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,26 +28,47 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: David Vrabel <dvrabel@arcom.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: adaplas@pol.net, James Simmons <jsimmons@pentafluge.infradead.org>, linux-fbdev-devel@lists.sourceforge.net
 
 
-> On Thursday 17 February 2005 22:29, David Vrabel wrote:
-> > Antonino A. Daplas wrote:
-> > > A few drivers call fb_find_mode() even if compiled as a module.  If the
-> > > modedb parameter is NULL, the function will use default modedb array
-> > > which is marked __init. This will cause a crash.  To avoid this, check if
-> > > the driver is compiled as a module, and if it is, fail.
-> >
-> > Why limit the default mode DB to built-in drivers only?
+
+> On Thu, 17 Feb 2005 21:50:16 +0800, Antonino A. Daplas
+> <adaplas@hotpop.com> wrote:
+> > Instead of hardcoding some of the fields in var, why not
+> > copy it from the current var?  Ie:
+> > 
+> > var = info->var;
+> > fb_videomode_to_var(&var, mode);
 > 
-> The default db is used by drivers only once.  After that, it just consumes
-> memory.
+> I added this change, plus more robust error handing. Add attributes
+> for virtual resolution and bpp.
+> 
+> I also fixed fb so that it works as module.
 
-For modules it wouldn't be that hard to add the modedb from userland after 
-loading. First insmod your module. Normally modular fbdev driver don't set 
-the hardware explictly. Once we have sysfs it will be easy. Next send the 
-new modes to the db. Next select the mode you want. 
+Seperate the make fbdev modular into another patch. Also I have a feeling 
+that will open a whole new can of worms. Also please create something 
+like
+
+static struct attribute *frame_attrs[] = {
+	&class_device_attr_dev.attr,
+	&class_device_attr_name.attr,
+	NULL
+};
+
+and do 
+
+for (i = 0; i < ARRAY_SIZE(frame_class_device_attributes); i++) {
+               rc = class_device_create_file(&info->class_dev, frame_class_device_attributes[i]);
+               if (unlikely(rc)) {
+                       /* Not fatal */
+                       printk(KERN_WARNING "Unable to create device file  for framebuffer %d\n", info->node);
+             }
+       }
+
+
+Did you see me email with my ideas about the sysfs structure?
+
 
 
 -------------------------------------------------------

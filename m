@@ -1,21 +1,22 @@
-From: biatx@portugalmail.com
-Subject: Re: Issues with radeonfb (new) in widescreen displays
-Date: Wed, 23 Jun 2004 19:16:14 +0100
+From: jsimmons@pentafluge.infradead.org
+Subject: Re: Sane behavior of fbset
+Date: Wed, 23 Jun 2004 19:52:16 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1088014574.40d9c8eee32ad@webmail.portugalmail.pt>
-References: <1087949171.40d8c97373b9e@webmail.portugalmail.pt> <200406230904.20399.adaplas@hotpop.com>
+Message-ID: <Pine.LNX.4.56.0406231945150.27210@pentafluge.infradead.org>
+References: <200406180945.12444.adaplas@hotpop.com>
+ <Pine.GSO.4.58.0406181024180.11779@waterleaf.sonytel.be>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BdCjA-0003u0-1e
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 11:44:08 -0700
-Received: from galadriel.portugalmail.pt ([195.245.179.73])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BdCj9-0001YV-IK
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 11:44:07 -0700
-In-Reply-To: <200406230904.20399.adaplas@hotpop.com>
+	id 1BdCr6-0004XT-NF
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 11:52:20 -0700
+Received: from [213.146.154.40] (helo=pentafluge.infradead.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.30)
+	id 1BdCr6-0003DH-40
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 11:52:20 -0700
+In-Reply-To: <Pine.GSO.4.58.0406181024180.11779@waterleaf.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,46 +26,39 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: "adaplas@pol.net" <adaplas@pol.net>
-Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
-
-When I run "stty -F /dev/tty7 cols 80 rows 30" the problem seems gone and
-radeonfb acts perfect...hope you can fix it definitively then.
-
-Thank you a lot
-
-Carlos Silva
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-"Antonino A. Daplas" <adaplas@hotpop.com> wrote:
+> > 1.  Revert to 2.4 behavior.  This is easy to add since fbdev already has a notifier
+> > support. (I already have working code for this). Of course, stty will still work.
+> >
+> > 2.  Make the set_var ioctl return immediately if the vc_mode of the current display is
+> > KD_TEXT. Basically, fbset becomes an informational utility only. I don't know the
+> > repercussions of this with userland fb applications though.
+> >
+> > 3.  Modify fbset (and other similar utilities, if there are any) so it also issues an
+> > 'stty-like' call after a 'set_var' call.
+> >
+> > Note: As mentioned by many people before, it's almost impossible to completely
+> > preserve per-console mode info because of the lack of a per-display var.  So even
+> > if we agree to implement #1,  it cannot completely match 2.4 behavior. Also, the lack
+> > of per-display var means that drivers must be able to handle mode changes without
+> > any help.  James' fb_find_mode support in fbcon_resize does partly alleviate this
+> > limitation.
+> >
+> > Comments?
+> 
+> I vote for 1, and re-adding per-display vars.
 
- A workaround which may or may not work is to set the tty where X is loca=
-ted
- to a different size as compared to the tty's where your console is mappe=
-d.
-=20
- So if X is in /dev/tty7, you can do something like this:
-=20
- stty -F /dev/tty7 cols 80 rows 30
-=20
- (Use the latest BK or mm release.  stty will fail in 2.6.7)
-=20
- The above will set tty7 to 640x480.  This way, when you switch to any of=
-=20
- your consoles (assuming they are not in 640x480), the framebuffer consol=
-e
- will "reinitialize" the hardware.=20
-=20
- A more definitive fix is in the works.
-=20
- Tony
-
-
-
-__________________________________________________________
-Continua a preferir gastar mais? Adira =E0 liga=E7=E3o Portugalmail.
-http://acesso.portugalmail.pt/compare
+I have no problem adding in a notifier for fbset. I don't agree with 
+adding in per VC vars. The reason is that every VC, all 64, will have a 
+copy of struct fb_var_screeninfo. That is really heavy for embedded 
+devices. Instead with a modedb we have one copy of different kinds of 
+modes. What we need to do is add valid modes that are not present in 
+modedb. 
 
 
 -------------------------------------------------------

@@ -1,22 +1,22 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Fw: 2.6.10-rc2 swsusp status & framebuffer problems
-Date: Fri, 19 Nov 2004 04:10:43 -0800
-Message-ID: <20041119041043.0b4ad40d.akpm@osdl.org>
+From: Guido Guenther <agx@sigxcpu.org>
+Subject: Re: rivafb: finally enable NV30 based pbooks/cleanup probe errors
+Date: Fri, 19 Nov 2004 12:58:07 +0100
+Message-ID: <20041119115807.GF6409@bogon.ms20.nix>
+References: <20041118164946.GA3763@bogon.ms20.nix> <200411190719.24961.adaplas@hotpop.com> <20041119080951.GA6409@bogon.ms20.nix> <200411191909.13371.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CV7bN-0003XR-DW
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Nov 2004 04:10:57 -0800
-Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CV7bK-0002N7-Tw
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Nov 2004 04:10:57 -0800
-Received: from bix (build.pdx.osdl.net [172.20.1.2])
-	by mail.osdl.org (8.11.6/8.11.6) with SMTP id iAJCAr921047
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 19 Nov 2004 04:10:53 -0800
+	id 1CV7d0-0003we-4K
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Nov 2004 04:12:38 -0800
+Received: from honk1.physik.uni-konstanz.de ([134.34.140.224])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1CV7cw-0004IE-LR
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Nov 2004 04:12:37 -0800
+Content-Disposition: inline
+In-Reply-To: <200411191909.13371.adaplas@hotpop.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,33 +28,25 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+To: adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net, Wolfram Quester <wolfi@mittelerde.physik.uni-konstanz.de>
 
+On Fri, Nov 19, 2004 at 07:09:13PM +0800, Antonino A. Daplas wrote:
+> Anyway, I'm planning to write another driver for nvidia, based on xorg
+> sources, as nvidiafb.  The rivafb uses programmed io, whereas the newer
+Great, I thought about this already too. Would be nice to have...
 
-
-Begin forwarded message:
-
-Date: Fri, 19 Nov 2004 13:08:56 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@zip.com.au>
-Subject: 2.6.10-rc2 swsusp status & framebuffer problems
-
-
-Hi!
-
-If works for me, modulo graphics problems. So if it is broken on your
-machine, try finding driver that is responsible.
-
-Graphics problems: for some reason, swsusp now eats cursor
-(radeonfb)... or is it softcursor breakage? There are more problems in
-framebuffer, something seems to be very wrong in palete handling. (I
-set green palete by default. mutt likes to reset terminal in such way
-that font goes white; with -rc2 it affects even non-current console).
- 
-								Pavel
--- 
-People were complaining that M$ turns users into beta-testers...
-...jr ghea gurz vagb qrirybcref, naq gurl frrz gb yvxr vg gung jnl!
+> chipsets uses DMA, and without docs, that's the only way we can support
+> newer chipsets (use X sources).
+> 
+> So, eventually, rivafb will support only nv20 chipsets and older, whilst
+> nvidiafb nv10 and newer.
+Well we should at least support the NV30 cards that are known to work,
+ppc users want this badly since rivafb has backlight control while offb
+hasn't.
+Cheers,
+ -- Guido
 
 
 -------------------------------------------------------

@@ -1,21 +1,23 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: 2.6.11-rc5
-Date: Sun, 27 Feb 2005 09:07:37 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0502270906420.3143@numbat.sonytel.be>
-References: <Pine.LNX.4.58.0502232014190.18997@ppc970.osdl.org>
- <20050224145049.GA21313@suse.de>  <20050226004137.GA25539@suse.de>
- <1109380389.15026.112.camel@gaston>
+Subject: Re: PATCH Proposal make FB_ACCEL_ private to
+ the driver
+Date: Sun, 27 Feb 2005 19:28:47 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0502271926560.3143@numbat.sonytel.be>
+References: <20050227032611.GB14968@systol.god.lan>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D5JSx-0004pM-2H
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 27 Feb 2005 00:07:51 -0800
+	id 1D5TA1-0005Am-Pa
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 27 Feb 2005 10:28:57 -0800
 Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1D5JSv-0005ak-BW
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 27 Feb 2005 00:07:50 -0800
-In-Reply-To: <1109380389.15026.112.camel@gaston>
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1D5T9z-0007i5-3M
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 27 Feb 2005 10:28:57 -0800
+Received: from numbat.sonytel.be (mail.sonytel.be [43.221.60.197])
+	by witte.sonytel.be (8.12.10/8.12.10) with ESMTP id j1RISpGU011012
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 27 Feb 2005 19:28:52 +0100 (MET)
+In-Reply-To: <20050227032611.GB14968@systol.god.lan>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,18 +30,25 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Olaf Hering <olh@suse.de>, Linus Torvalds <torvalds@osdl.org>, Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sat, 26 Feb 2005, Benjamin Herrenschmidt wrote:
-> On Sat, 2005-02-26 at 01:41 +0100, Olaf Hering wrote:
-> > modedb can not be __init because fb_find_mode() may get db == NULL.
-> > fb_find_mode() is called from modules.
+On Sun, 27 Feb 2005, Henk Vergonet wrote:
+> This post was originally posted to the kernel-janitors list. After which
+> I learned there was an active development-list for linux-framebuffer stuff. 
+
+I'm afraid you will never see this reply, as rememberme@systol.god.lan won't
+resolve....
+
+> I want to propose to localize the maintenance and registration of the
+> FB_ACCEL_ id's and remove it from the public fb.h include file.
 > 
-> Ahhh, good catch ! I though that was fixed long ago, looks like I was
-> wrong.
+> Motivation:
+> - This removes an unneeded dependency to fb.h if an additional cards/chips are
+>   introduced. (These id's are only interesting for the driver anyhow. 
+>   Only fbset will print out the id, but I'll doubt this is used by anyone.)
 
-Yep, I was surprised by this bug as well...
+Yes, it's used by userspace apps that need to know the graphics card type (e.g.
+DirectFB and the good old XF68_FBDev).
 
 Gr{oetje,eeting}s,
 

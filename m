@@ -1,17 +1,17 @@
 From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: Mirrored and shiftet fonts and logos
-Date: 15 Dec 2002 05:30:10 +0500
+Subject: Re: Mirrored Display?
+Date: 15 Dec 2002 05:29:33 +0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1039911145.1008.41.camel@localhost.localdomain>
-References: <004501c2a3ab$015a5eb0$ee3c078b@nb1>
+Message-ID: <1039911076.1000.39.camel@localhost.localdomain>
+References: <200212131733.42340.kaufmann@sohard.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from willow.compass.com.ph ([202.70.96.38])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18NJwn-0002HL-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 14 Dec 2002 13:35:45 -0800
-In-Reply-To: <004501c2a3ab$015a5eb0$ee3c078b@nb1>
+	id 18NJwO-0002GJ-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 14 Dec 2002 13:35:20 -0800
+In-Reply-To: <200212131733.42340.kaufmann@sohard.de>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,32 +21,37 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: =?ISO-8859-1?Q?Andr=E9?= Stierenberg <stierenberg@gmx.de>
+Content-Type: text/plain; charset="us-ascii"
+To: Michael Kaufmann <kaufmann@sohard.de>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sun, 2002-12-15 at 00:53, Andr=C3=A9 Stierenberg wrote:
-> Now the characters are printed correctly. And in the linux logo, the
-> pinguin, something is also wrong. It seems the some pixels are mirrored t=
-oo
-> whereas other pixels are correct.
->=20
-> What could this be and in what way can i fix the problem?
->=20
-The logo is drawn directly to the framebuffer by fbcon_show_logo() in
-linux/drivers/video/fbcon.c.
+On Fri, 2002-12-13 at 23:33, Michael Kaufmann wrote:
+> Hello,
+> 
+> i would like to use a mono LCD with a framebuffer driver.
+> 
+> I've modified existing drivers, and after a lot of work i now have a clear
+> picture on my display. Unfortunately, the complete picture is mirrored.
+> The Bootlogo is top/right instead of top/left and the ascii output starts from 
+> right to left. 
+> 
+> Where is the right place to modify this behaviour? 
+> I'm also looking for a possibility to rotate the picture.
+> Because my videocontroller can emulate 15 grayscales, i'm useing 4bpp.
+> 
+> It would be very nice, if someone can guide me in the right direction.
+> 
+Are you using fbcon-cfb4.c to draw the characters?  Is the whole display
+mirrored, including individual characters?  If you run an fb-based app
+(like fbtest for instance), is the display also mirrored?
 
-In your case, (is this cfb4?), the code segment is enclosed by this
-conditional:
-
-#if defined(CONFIG_FBCON_CFB4)
-...
-#endif
-
-You can apply the same reversal techniques to correct your problem.
+If it's the whole display, maybe your hardware supports mirroring (some
+hardware with video overlay need this to support YUV formats that are
+either vertically or horizontally mirrored).  Maybe it has something
+like that.  Otherwise, it will be difficult to correct this without
+rewriting practically everything.
 
 Tony
-
 
 
 

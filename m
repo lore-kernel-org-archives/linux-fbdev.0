@@ -1,31 +1,33 @@
-From: James Simmons <jsimmons@www.infradead.org>
-Subject: Re: Resource management.
-Date: Tue, 22 Feb 2005 05:13:07 +0000 (GMT)
-Message-ID: <Pine.LNX.4.56.0502220450190.22255@pentafluge.infradead.org>
-References: <Pine.LNX.4.56.0502211908520.14500@pentafluge.infradead.org> 
- <200502220653.01286.adaplas@hotpop.com>  <Pine.LNX.4.56.0502212313160.18148@pentafluge.infradead.org>
-  <9e473391050221170111610521@mail.gmail.com> 
- <Pine.LNX.4.56.0502220319330.20949@pentafluge.infradead.org>
- <21d7e99705022120462cb9494c@mail.gmail.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [Linux-fbdev-devel] Resource management.
+Date: Tue, 22 Feb 2005 00:23:52 -0500
+Message-ID: <9e47339105022121234d0f7f73@mail.gmail.com>
+References: <Pine.LNX.4.56.0502211908520.14500@pentafluge.infradead.org>
+	 <200502220653.01286.adaplas@hotpop.com>
+	 <Pine.LNX.4.56.0502212313160.18148@pentafluge.infradead.org>
+	 <9e473391050221170111610521@mail.gmail.com>
+	 <Pine.LNX.4.56.0502220319330.20949@pentafluge.infradead.org>
+	 <21d7e99705022120462cb9494c@mail.gmail.com>
+Reply-To: Jon Smirl <jonsmirl@gmail.com>
 Mime-Version: 1.0
-In-Reply-To: <21d7e99705022120462cb9494c@mail.gmail.com>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+In-Reply-To: <21d7e99705022120462cb9494c@mail.gmail.com>
+Sender: dri-devel-admin@lists.sourceforge.net
+Errors-To: dri-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
+	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:dri-devel@lists.sourceforge.net>
+List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
+	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=dri-devel>
+Content-Type: text/plain; charset="us-ascii"
 To: Dave Airlie <airlied@gmail.com>
-Cc: James Simmons <jsimmons@pentafluge.infradead.org>, Jon Smirl <jonsmirl@gmail.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, adaplas@pol.net, dri-devel@lists.sourceforge.net, xorg@lists.freedesktop.org, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: James Simmons <jsimmons@www.infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, adaplas@pol.net, dri-devel@lists.sourceforge.net, xorg@lists.freedesktop.org, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-
+On Tue, 22 Feb 2005 15:46:03 +1100, Dave Airlie <airlied@gmail.com> wrote:
+> >
 > > 1. Lots of work that would take lots of time. To my knowledge all fbdev
 > >    developers work in there spare free time. No one does this for a
 > >    living.
@@ -34,7 +36,8 @@ Cc: James Simmons <jsimmons@pentafluge.infradead.org>, Jon Smirl <jonsmirl@gmail
 > Eric Anholt does and I think us three have been the largest
 > contributers apart from new driver submissions...
 
-Ug :-( That is sad!!!
+As far as I know none of the significant contributors on either fbdev
+or DRM are being paid to work on the project.
 
 > > 2. Sharing of headers. The dri headers are isolated in the drm directory.
 > >    I totally understand why :-) It makes merging easier for them. The
@@ -44,7 +47,10 @@ Ug :-( That is sad!!!
 > I get around to it, just some minor issues.. Arjan asked me for this
 > ages ago as well...
 
-Okay. Where will they go? include/video ?
+I'd like to take this further and move the stuff in drivers/video to
+drivers/video/fb and then
+move drm from drivers/char/drm to drivers/video/drm. I'd also like to
+consolidate drm and fbdev Kconfig menus.
 
 > > 3. DRM has way to much functionality for most embedded devices. I have
 > >    talked to embedded guys before and they want a simple api to work with.
@@ -55,20 +61,21 @@ Okay. Where will they go? include/video ?
 > 
 > Well crap on that, the old DRM didn't build everything in people
 > complained aw this code is too messy, build everything in, now you
-> want to revert? damn you all!!! :-), 
-
-Ha Ha. I didn't know the history. 
-
-> I understand I'm just saying we
+> want to revert? damn you all!!! :-), I understand I'm just saying we
 > can't have it both ways.. and too be honest I'm an embedded person and
 > I just want it to work, with a Linux kernel you rarely get to an every
 > byte counts embedded env, of if you are you aren't using the stock
 > Linus kernel....
 
-I can live with this issue as long it would not increase the complexity of 
-framebuffer only devices. Simple api is very important to me. The current
-fbdev api is designed to be very simple for the most common cases. It can 
-get complex tho with exotic hardware.
+If you removed the EXPORT_SYMBOLs and compiled everything in, won't
+the compiler just eliminate the dead code for you?
+
+PCI Express is a big reason for the new core/personality split. There
+are Nforce4 motherboards now with 16 16x sockets. That means you can
+plug 16 different video cards in if you want. The days of a single AGP
+slot are over. If someone will send me one (with the four Opteron
+chips) I'll write drivers for it.
+
 
 > > 4. Which comes to the next point. The code is not modular enough. Take
 > >    drm_bufs.c. Everything is a ioctl function. This has a few disadvantages.
@@ -81,17 +88,8 @@ get complex tho with exotic hardware.
 > that we can't bind to the PCI device as we break things.. this is the
 > root of a lot of our problems...
 
-Is this because you want to be OS portable? This makes things very very 
-hard to merge. Fbdev attempts to take advantage the most powerful linux
-kernel features.
-
-> > 5. The license issue. The DRI code is GPL and additional rights. What is that?
-> Nope the drm code is BSD... there should be no GPL anywhere near it...
-> it is GPL in the kernel as of course it is imported into a GPL work..
-> but the code is available for BSD uses....
-
-If it is GPL in the kernel then that is fine. We can work with that. I 
-don't care about userland code.
+This not binding to the PCI device has to be fixed. DRM can not
+support hotplug or suspend/resume without a device to bind to.
 
 > Jon's last plan - was like to have a radeon basic module, with fb and
 > drm personalities and in fact any number of personalities..taking
@@ -101,7 +99,19 @@ don't care about userland code.
 > fb: adds accelerated fb functions using CP locking.
 > drm: adds drm functionality on top of base module, drm ioctl interfaces etc..
 
-That will be a huge amount of work! BTW what does CP stand for?  
+I have already coded most of this up and it works for me.
+Unfortunately I derived it from the DRM codebase instead of the fbdev
+one. fbdev has changed too much in the last six months to allow a
+simple merge. Now I'm regenerating patches against fbdev using my
+prior code.
+
+A smaller step is to just treat radeonfb as the base module. This will
+eat up extra memory for x86 users and they will complain, but we can
+split it into three pieces later.
+
+I think good first step would simply be to get DRM and fbdev both into
+drivers/video and get the DRM h files into include/linux.
+
 
 > I've looked at Alans ideas on a vga_class driver and have decided they
 > are unworkable due to the massive initial changes they involve in
@@ -109,21 +119,23 @@ That will be a huge amount of work! BTW what does CP stand for?
 > magnitude without fb people being involved and the chances of breaking
 > a lot of stuff.. maybe a 2.7 thing but I don't think we'll ever have a
 > 2.7 for this stuff...
-> 
+
+My head hurts thinking about how much editing this would involve.
+
 > What I do think though is that ideas of a the vga class driver could
 > be made into a helper module that the base graphics driver uses to do
 > some standard things, like reset and stuff..
 > 
 > I'm hoping to get a better handle on these ideas and write something
 > up.. but they are mostly Jons ideas better presented :-)
+> 
+> Dave.
+> 
 
-As for the VGA class driver. We already have something like that for the 
-fbdev layer. Take a look at vgastate.c. It was written originally so you 
-could go from vgacon to fbdev without fbcon and back to vgacon state 
-again. It also has common functions for all the drivers to work with. I 
-already asked Jon to merge his work with that code. That code could also 
-be very useful for vgacon in the future. We need vga core management in 
-the kernel.
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
 
 
 -------------------------------------------------------
@@ -131,3 +143,4 @@ SF email is sponsored by - The IT Product Guide
 Read honest & candid reviews on hundreds of IT Products from real users.
 Discover which products truly live up to the hype. Start reading now.
 http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
+--

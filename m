@@ -1,24 +1,28 @@
-From: Otto Wyss <otto.wyss@orpatec.ch>
+From: David Eger <eger@havoc.gtf.org>
 Subject: Re: Framebuffer drivers maintainers
-Date: Sat, 28 Aug 2004 15:48:52 +0200
+Date: Sat, 28 Aug 2004 11:05:10 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <41308D44.8A57100B@orpatec.ch>
-References: <41270AD0.FE6C7970@orpatec.ch> <20040828043938.GA1150@havoc.gtf.org>
+Message-ID: <20040828150510.GA20778@havoc.gtf.org>
+References: <41270AD0.FE6C7970@orpatec.ch> <20040828043938.GA1150@havoc.gtf.org> <41308D44.8A57100B@orpatec.ch>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C13Zq-0008AV-4D
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 28 Aug 2004 06:49:06 -0700
-Received: from mail.xor.ch ([212.55.210.163])
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.34)
-	id 1C13Zo-0007Xo-CO
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 28 Aug 2004 06:49:06 -0700
-Received: from orpatec.ch (217.162.130.125)
-          by mail.xor.ch with MERCUR Mailserver (v4.03.03 NjYtMjMxMS00NjIy)
-          for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 28 Aug 2004 15:53:56 +0200
+	id 1C14lb-000709-MW
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 28 Aug 2004 08:05:19 -0700
+Received: from havoc.gtf.org ([216.162.42.101])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1C14la-000296-NN
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 28 Aug 2004 08:05:19 -0700
+Received: from havoc.gtf.org (havoc.gtf.org [127.0.0.1])
+	by havoc.gtf.org (Postfix) with ESMTP id 7635676D8
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 28 Aug 2004 11:05:10 -0400 (EDT)
+Received: (from eger@localhost)
+	by havoc.gtf.org (8.12.10/8.12.10/Submit) id i7SF5A7n021092
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 28 Aug 2004 11:05:10 -0400
+Content-Disposition: inline
+In-Reply-To: <41308D44.8A57100B@orpatec.ch>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,35 +33,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
 
-David Eger wrote:
-> 
-> radeonfb:
->    Ben Herrenschmidt took over from Ani Joshi for 2.6, though he's pretty busy,
->    so radeonfb maintainership tends to be a group effort.  I ported copyarea()
->    and fillrect() from the X radeon driver, so that accel code is my fault ;-)
-> 
-I can easily list several persons, but prefer just one. Of course anyone
-can develop. Anytime in the future all the lastest driver sources should
-be available via the driver list, so anybody can build a driver with
-kbuild and test it on his station. IMO it makes much more sense to use
-kbuild instead of patching and building the full source.
+On Sat, Aug 28, 2004 at 03:48:52PM +0200, Otto Wyss wrote:
+> David Eger wrote:
+> > 
+> > radeonfb:
+> >    Ben Herrenschmidt took over from Ani Joshi for 2.6, though he's pretty busy,
+> >    so radeonfb maintainership tends to be a group effort.  I ported copyarea()
+> >    and fillrect() from the X radeon driver, so that accel code is my fault ;-)
+> > 
+> BTW have you seen my thread in the users lists
+> "http://sourceforge.net/mailarchive/forum.php?thread_id=5425101&forum_id=2358"
+> ? Do you have a solution or a workaround?
 
-> cirrusfb:
->    I ported this to 2.6 after several years of bit rot, so I guess that makes me
->    the de facto maintainer ;-)
-> 
-Corrected.
+I'm in the middle of moving to Pittsburgh and starting graduate school;  
+I saw some posts on lkml where BenH found that the Radeon 7500 worked OK 
+if you told it to use noaccel, so that does sound like a problem in my code.  
+Unfortunately (fortunately?) I don't see the issue on my Radeon 9000, so 
+it'll be hard for me to track down, and I won't really have free time for
+a few weeks :-/
 
-BTW have you seen my thread in the users lists
-"http://sourceforge.net/mailarchive/forum.php?thread_id=5425101&forum_id=2358"
-? Do you have a solution or a workaround?
-
-O. Wyss
-
--- 
-See a huge pile of work at "http://wyodesktop.sourceforge.net/"
+-David
 
 
 -------------------------------------------------------

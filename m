@@ -1,10 +1,11 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
+From: Ian Romanick <idr@us.ibm.com>
 Subject: Re: [Linux-fbdev-devel] OLS and console rearchitecture
-Date: Wed, 28 Jul 2004 17:23:01 -0700 (PDT)
+Date: Wed, 28 Jul 2004 17:44:11 -0700
 Sender: dri-devel-admin@lists.sourceforge.net
-Message-ID: <20040729002301.50488.qmail@web14922.mail.yahoo.com>
-References: <1091055478.31913.7.camel@localhost.localdomain>
+Message-ID: <4108485B.2060204@us.ibm.com>
+References: <20040728185346.36263.qmail@web14921.mail.yahoo.com>	 <20040728213102.GB26087@dreamland.darkstar.lan> <1091055478.31913.7.camel@localhost.localdomain>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <dri-devel-admin@lists.sourceforge.net>
 In-Reply-To: <1091055478.31913.7.camel@localhost.localdomain>
 Errors-To: dri-devel-admin@lists.sourceforge.net
@@ -16,33 +17,24 @@ List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
 	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=dri-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>, Kronos <kronos@people.it>
-Cc: fb-devel <linux-fbdev-devel@lists.sourceforge.net>, DRI Devel <dri-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+Cc: DRI Devel <dri-devel@lists.sourceforge.net>
 
---- Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > sysfs? I sent a patch a while ago but didn't get much feedback.
+Alan Cox wrote:
+
+> On Mer, 2004-07-28 at 22:31, Kronos wrote:
 > 
-> How do you atomically tie sysfs objects to fbdev and X permissions
-> models ?
+>>Btw, how do we POST non-x86 (eg. ppc) video boards? I don't think that
+>>there's x86 code in their ROM...
+> 
+> Same way X does - x86emu
 
-I think the plan here is for ROM export to be implemented by the PCI
-driver not the video ones since other things besides video cards have
-ROMs. For example some SCSI cards have a ROM so they can be boot
-devices. Reading the ROM from sysfs will require root. But since all of
-the hotplug events run in root context this is not a problem.
-
-=====
-Jon Smirl
-jonsmirl@yahoo.com
+I think he meant using OpenFirmware video cards on x86 boxes.  Does 
+x86emu take care of that?  In any case, that's probably much less common 
+than people wanting to use x86 cards on OpenFirmware systems.
 
 
-		
-__________________________________
-Do you Yahoo!?
-New and Improved Yahoo! Mail - Send 10MB messages!
-http://promotions.yahoo.com/new_mail 
 
 
 -------------------------------------------------------

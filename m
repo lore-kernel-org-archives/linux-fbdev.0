@@ -1,22 +1,21 @@
 From: James Simmons <jsimmons@www.infradead.org>
-Subject: Re: Framebuffer and non-PCI devices
-Date: Tue, 22 Feb 2005 04:01:31 +0000 (GMT)
-Message-ID: <Pine.LNX.4.56.0502220401120.21388@pentafluge.infradead.org>
-References: <9e47339105021910257461d4cc@mail.gmail.com>
- <Pine.LNX.4.62.0502191937500.3355@numbat.sonytel.be>
- <9e473391050219135923cc6455@mail.gmail.com> <200502200738.37022.adaplas@hotpop.com>
+Subject: Re: [PATCH] Provide control of active VGA device
+ on PCI systems
+Date: Tue, 22 Feb 2005 04:07:23 +0000 (GMT)
+Message-ID: <Pine.LNX.4.56.0502220401580.21388@pentafluge.infradead.org>
+References: <9e47339105021921507545d084@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D3REu-0002MU-1s
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 20:01:36 -0800
+	id 1D3RKc-0002lT-LX
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 20:07:30 -0800
 Received: from pentafluge.infradead.org ([213.146.154.40])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1D3REs-0004xG-81
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 20:01:35 -0800
-In-Reply-To: <200502200738.37022.adaplas@hotpop.com>
+	id 1D3RKb-0002pa-7E
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 20:07:30 -0800
+In-Reply-To: <9e47339105021921507545d084@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,22 +28,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Jon Smirl <jonsmirl@gmail.com>
+To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Jesse Barnes <jbarnes@sgi.com>
 
 
-> On Sunday 20 February 2005 05:59, Jon Smirl wrote:
-> > I started editing all of the drivers to make assigning fb_info->device
-> > explicit.  Does this look like it is useful? I was surprised some
-> > architectures don't make use of 'struct device'. If this is
-> > interesting there are about ten more drivers that I need to patch.  I
-> > did find several drivers which have device struct's that are not
-> > assigning them to fb_info->device.
+> This patch adds a 'vga' attribute to each framebuffer device on PCI
+> systems. For non-PCI hardware it does nothing.
 > 
-> No, don't do this.  Either convert the driver to use framebuffer_alloc()/
-> framebuffer_release(), or let the driver explicitly set info->device.
+> If you have multiple VGA cards loaded, and you have framebuffer
+> drivers loaded for each, you can then set 0/1 into the VGA attributes
+> to move VGA console around to the different screens.
+> 
+> This is almost everything needed to implement reset of secondary
+> cards. ROM access is already in the kernel. This code is needed to
+> make sure you don't end up with multiple VGA devices enabled. All that
+> is left is to construct the proper hotplug event and fix up my user
+> space reset program.
 
-Ug. Most fbdev drivers are not PCI devices.
+This is not a bad patch but could you please merge that code into 
+vgastate.c and uses the vga io functions in include/video/vga.h
+This way drivers can choose to link to the vga functions themselves.
+The bonus is there is code in vgastate.c to save the state and restore 
+the vga text state with a fbdev device. You can for example with the 
+NVIDIA fbdev driver load it and do a open on /dev/fbX and it will go to 
+the graphics state. On the last close of /dev/fbX it will go back to the 
+vga text state it was in before the first open. With your code it would 
+make it even more functional.
 
 
 

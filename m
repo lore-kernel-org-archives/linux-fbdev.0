@@ -1,23 +1,22 @@
-From: Kronos <kronos@kronoz.cjb.net>
-Subject: Re: Re: [RADEON] Connector type
-Date: Fri, 29 Aug 2003 17:14:28 +0200
+From: Thiemo Seufer <ica2_ts@csv.ica.uni-stuttgart.de>
+Subject: Re: Re: [macro@ds2.pg.gda.pl: Re: PMAG-A support?]
+Date: Sat, 30 Aug 2003 02:57:21 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030829151428.GA1534@dreamland.darkstar.lan>
-References: <20030828162025.GA7317@dreamland.darkstar.lan> <1062090156.612.144.camel@gaston> <1062113236.14324.46.camel@thor.holligenstrasse29.lan>
-Reply-To: kronos@kronoz.cjb.net
+Message-ID: <20030830005721.GF27332@rembrandt.csv.ica.uni-stuttgart.de>
+References: <20030814022906.GH10792@rembrandt.csv.ica.uni-stuttgart.de> <Pine.GSO.3.96.1030814140520.14241D-100000@delta.ds2.pg.gda.pl>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19skyO-0001Du-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 29 Aug 2003 08:15:36 -0700
-Received: from mail-1.tiscali.it ([195.130.225.147])
+	id 19su4V-000118-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 29 Aug 2003 17:58:31 -0700
+Received: from iris1.csv.ica.uni-stuttgart.de ([129.69.118.2])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 19skyM-0003Jv-UY
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Aug 2003 08:15:35 -0700
+	id 19su4T-00052w-QK
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Aug 2003 17:58:30 -0700
 Content-Disposition: inline
-In-Reply-To: <1062113236.14324.46.camel@thor.holligenstrasse29.lan>
+In-Reply-To: <Pine.GSO.3.96.1030814140520.14241D-100000@delta.ds2.pg.gda.pl>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -29,32 +28,32 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: michel@daenzer.net
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Jon Smirl <jonsmirl@yahoo.com>
+To: "Maciej W. Rozycki" <macro@ds2.pg.gda.pl>
+Cc: Thiemo Seufer <ica2_ts@csv.ica.uni-stuttgart.de>, Karsten Merker <karsten@excalibur.cologne.de>, Martin Schulze <joey@infodrom.org>, linux-fbdev-devel@lists.sourceforge.net
 
-Il Fri, Aug 29, 2003 at 01:27:16AM +0200, Michel D?nzer ha scritto: 
-> On Thu, 2003-08-28 at 19:02, Benjamin Herrenschmidt wrote:
-> > On Thu, 2003-08-28 at 18:20, Kronos wrote:
-> > > Hi,
-> > > currently DDCReg in  radeonfb is hardcoded to CRT  port (secondary port,
-> > > primary DAC).
-> > > 
-> > > I've working code to detect connector type. On my board it finds the CRT
-> > > port  and  DVI  port. The  latter is  ignored  because  dviDisp_type  is
-> > > MT_NONE. If crtDisp_type is MT_NONE then it will use the DVI port.
+Maciej W. Rozycki wrote:
+> On Thu, 14 Aug 2003, Thiemo Seufer wrote:
 > 
-> BTW, do you do this the same way as or differently than the XFree86
-> driver?
+> > >  I've looked at the patch and have changed the barriers as I deem
+> > > appropriate.  But while doing this, I've noticed the code is insonsistent
+> > > in a few places -- has it been successfully verified on real hardware?
 
-Same way. If both port are in use DVI is considered primary and VGA
-secondary.
+There are some mb() calls in your patch, I believe a rmb()/wmb() is
+enough in those cases.
 
-Luca
--- 
-Reply-To: kronos@kronoz.cjb.net
-Home: http://kronoz.cjb.net
-Io mi ricordo sempre il compleanno della mia ragazza:
-cade il giorno dopo di quando lei me lo ricorda
+> > It works on my /260. Which parts look weird to you?
+> 
+> 1. bt431_write_reg_inc() uses u16 for value, even though it only uses 8
+> bits (which of course makes all the calls in bt431_init_cursor() dubious). 
+>
+> 2. bt431_load_cursor_sprite() loads control registers instead of the
+> cursor map. 
+
+The hardware cursor is still unused. The code there is very experimental,
+and your version is surely an imporvement. :-)
+
+
+Thiemo
 
 
 -------------------------------------------------------

@@ -1,25 +1,11 @@
-From: Andrew Walrond <andrew@walrond.org>
-Subject: fbutils
-Date: Tue, 22 Jun 2004 16:52:25 +0100
+From: "Merrill Cramer" <m_cramer_yv@onemail.com.sg>
+Subject: $23221
+Date: Tue, 22 Jun 2004 17:34:02 +0000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200406221652.26147.andrew@walrond.org>
+Message-ID: <5fa901c4587f$53a4142a$9ebd3a83__17032.0931858898$1087925861@snppal.fr>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BcnhY-0005V0-Af
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Jun 2004 09:00:48 -0700
-Received: from host213-160-108-25.dsl.vispa.com ([213.160.108.25] helo=cenedra.walrond.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1BcnhX-0008Rf-DQ
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Jun 2004 09:00:47 -0700
-Received: from [192.168.0.2] (helo=bob.mobile)
-	by cenedra.walrond.org with esmtp (Exim 4.34)
-	id 1BcnhN-0002uo-Br
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Jun 2004 17:00:37 +0100
-Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,15 +16,27 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+To: linux-usb-users@lists.sourceforge.net, linux-usb-devel@lists.sourceforge.net, linux-ntfs-dev@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net
 
-Is this really the newest version of fbutils?
+Hello,
+I sent you an email a few days ago, because you now qualify for a new mortgage.
+You could get $300,000 for as little as $700 a month!
+Bad credit is no problem, you can pull cash out or refinance.
 
-  http://home.tvd.be/cr26864/Linux/fbdev/fbutils_19990802.tar.gz
+Please click on this link:
+http://www.refifast.biz/aff/affiliate.php?uid=71
 
-Is there a newer version maintained somewhere?
+Best Regards,
+Steve Morris
 
-Andrew Walrond
+
+---- system information ----
+non-Java Claim(s) intermediaries implies Publication locale-affected patterns
+this 
+cite control personalization Because complex describing marks Specifying
+
+formats important request usage Group solely reasonable Locale] 
+
 
 
 -------------------------------------------------------

@@ -1,17 +1,21 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Subject: Re: fbset and X
-Date: 14 May 2002 19:41:24 +0200
+From: James Simmons <jsimmons@transvirtual.com>
+Subject: penguin drawing program.
+Date: Fri, 17 May 2002 11:16:03 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1021398084.11250.1017.camel@tibook>
-References: <1021378265.8186.17.camel@zeus>
+Message-ID: <Pine.LNX.4.10.10205171115140.364-100000@www.transvirtual.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [193.135.153.233] (helo=tibook)
-	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 177gIC-0006ur-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 14 May 2002 10:40:56 -0700
-In-Reply-To: <1021378265.8186.17.camel@zeus>
+Received: from www.transvirtual.com ([206.14.214.140])
+	by usw-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 178mGv-0001MK-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 17 May 2002 11:16:09 -0700
+Received: from www.transvirtual.com (jsimmons@localhost [127.0.0.1])
+        by localhost (8.12.0.Beta7/8.12.0.Beta7/Debian 8.12.0.Beta7-1) with ESMTP id g4HIG4XT003237
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 17 May 2002 11:16:04 -0700
+Received: from localhost (jsimmons@localhost)
+        by www.transvirtual.com (8.12.0.Beta7/8.12.0.Beta7/Debian 8.12.0.Beta7-1) with ESMTP id g4HIG4KR003233
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 17 May 2002 11:16:04 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,27 +25,24 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Frederick Lefebvre <flefebvre@irg.ca>
-Cc: linux-fbdev dev <linux-fbdev-devel@lists.sourceforge.net>
-
-On Tue, 2002-05-14 at 14:11, Frederick Lefebvre wrote:
-
-> Does anybody ever had succes switching fbdev resolution while running a
-> X server.  I am running Xfbdev (from kdrive) over a fbdev and I get
-> screen corruption everytime I switch resolution.=20
-
-Why do you expect changing things behind the X server's back to work?
-
-Can't Xfbdev use several resolutions and switch between them, like the
-'real' XFree86 server can?
+Content-Type: TEXT/PLAIN; charset="windows-1252"
+Content-Transfer-Encoding: quoted-printable
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
---=20
-Earthling Michel D=E4nzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
-XFree86 and DRI project member   /  CS student, Free Software enthusiast
+Does anyone have a framebuffer drawing program that dfisplays the penguin
+at any color depth?
+
+   . ---
+   |o_o |
+   |:_/ |   Give Micro$oft the Bird!!!!
+  //   \ \  Use Linux!!!!
+ (|     | )
+ /'_   _/`\
+ ___)=3D(___/
+
 
 _______________________________________________________________
 
-Have big pipes? SourceForge.net is looking for download mirrors. We supply
-the hardware. You get the recognition. Email Us: bandwidth@sourceforge.net
+Hundreds of nodes, one monster rendering program.
+Now that=92s a super model! Visit http://clustering.foundries.sf.net/

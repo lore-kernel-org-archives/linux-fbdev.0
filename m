@@ -1,16 +1,18 @@
-From: James Simmons <captain_delete@yahoo.com>
-Subject: Re: radeonfb and dvi support
-Date: Mon, 5 Aug 2002 23:30:14 -0700 (PDT)
+From: Miles Lane <miles@megapathdsl.net>
+Subject: PPC -- radeonfb / XFree86 (ati) support for 1280x854-16 with
+ Radeon Mobility M7 LW (new Apple Titanium)?
+Date: 06 Aug 2002 00:01:46 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20020806063014.91902.qmail@web13001.mail.yahoo.com>
-References: <1028602312.1221.5.camel@tiger>
+Message-ID: <1028617305.3298.55.camel@turbulence.megapathdsl.net>
+References: <20020806063014.91902.qmail@web13001.mail.yahoo.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from web13001.mail.yahoo.com ([216.136.174.11])
-	by usw-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17bxrD-00040u-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 05 Aug 2002 23:30:15 -0700
-In-Reply-To: <1028602312.1221.5.camel@tiger>
+Received: from front1.mail.megapathdsl.net ([66.80.60.31])
+	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17bySq-0003VK-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 06 Aug 2002 00:09:08 -0700
+In-Reply-To: <20020806063014.91902.qmail@web13001.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,24 +23,28 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Louis Garcia <louisg00@bellsouth.net>, linux-fbdev-devel@lists.sourceforge.net
-Cc: Ani Joshi <ajoshi@unixbox.com>
+To: James Simmons <captain_delete@yahoo.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Ani Joshi <ajoshi@unixbox.com>
 
+A few questions:
 
---- Louis Garcia <louisg00@bellsouth.net> wrote:
-> Is the radeonfb driver going to have support for the
-> dvi port any time soon.
-> I'm talking about the 2.4.x kernels.
+1)  What is the current state of syncing between benh's kernel
+    tree with 2.4 (latest vanilla and ac) and with 2.5 (
+    latest vanilla and dj)?  Should the 2.5 kernels have any
+    chance of working with the newest Apple Titanium (88MHz)?
 
-You have to ask Ani Joshi. I doubt it tho.
+2)  Ani, what's the status with XFree86 support?  Should the
+    radeonfb driver enable the XFree86 fbdev driver to operate
+    at 16 bpp?  Where can I get the latest/best radeonfb code?
 
+3)  What are the pros and cons of using fbdev verses the 
+    XFree86 ati driver?
 
+If anyone has new code they'd like me to test, please let me know.
 
-__________________________________________________
-Do You Yahoo!?
-Yahoo! Health - Feel better, live better
-http://health.yahoo.com
+Thanks,
+	Miles
+
 
 
 -------------------------------------------------------

@@ -1,20 +1,24 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] Cleanup pixmap locking
-Date: Sun, 11 Jan 2004 18:33:11 +1100
+Subject: Re: Re: New FBDev patch (a little report)
+Date: Sun, 11 Jan 2004 18:35:57 +1100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1073806391.765.99.camel@gaston>
+Message-ID: <1073806556.765.103.camel@gaston>
+References: <20040108231217.GB7085@louise.pinerecords.com>
+	 <Pine.LNX.4.44.0401090035080.17957-100000@phoenix.infradead.org>
+	 <20040110141540.0f4e3204.jvillavicencio@arnet.com.ar>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AfaAU-0001QH-F1
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 10 Jan 2004 23:37:54 -0800
+	id 1AfaDB-0001W2-88
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 10 Jan 2004 23:40:41 -0800
 Received: from pentafluge.infradead.org ([213.86.99.235])
 	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1AfaAT-0006an-MY
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 10 Jan 2004 23:37:54 -0800
+	id 1AfaD6-0007Cm-RW
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 10 Jan 2004 23:40:37 -0800
+In-Reply-To: <20040110141540.0f4e3204.jvillavicencio@arnet.com.ar>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,153 +29,26 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@infradead.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Javier Villavicencio <jvillavicencio@arnet.com.ar>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@infradead.org>
 
-Hi James !
+On Sun, 2004-01-11 at 04:15, Javier Villavicencio wrote:
+> Hi, I've tested this patch (after the radeon patch update), and it's working
+> almost perfect with just one problem: going back from X the framebuffer
+> screen is completely distorted, but it can be corrected changing the depth
+> with fbset (-depth 8/16/32 and back to the working depth).
 
-As we discussed, the current pixmap locking scheme doesn't work and
-is actually rendered useless by the fact that we are going to be
-entirely protected by the console semaphore, at least in 2.6.
+We need to add a callback to the fbdev when restoring the console
+from KD_GRAPHICS to KD_TEXT, maybe a special case of "switch".
 
-This patch removes it, and re-implements fb_get_buffer_offset()
-based on these assumption:
-
- - a FB_PIXMAP_IO buffer is considered as residing in VRAM, we
-sync before letting the common code access it, we do no sharing
-
- - a buffer in memory is allowed to be shared. We do not race on
-buffer usage, but we can have a pending DMA from the buffer to the
-card, which is what I call sharing. If we run out of buffer space,
-and the pixmap has FB_PIXMAP_SYNC set, we assume the pixmap can be
-the source of a DMA, thus we sync before resetting the offset.
-
-A card that does DMA, but synchronously, doesn't need to set FB_PIXMAP_SYNC.
-Note that in most cases (non-DMA or synchronous DMA), the actual offset thing
-is useless, we could just use the beginning of the pixmap each time. I find
-the current FB_PIXMAP_* semantics confusing anyway, so you are welcome to do
-even more cleanup in there, I just
-did the minimum I feel is necessary.
-
-I added the console semaphore around the whole fb_ioctl as well and
-around the fbcon cursor operations.
-
-The patch is against your fbdev-2.5 tree and is untested at this
-point (no test config at hand until tomorrow). Please consider applying
-if it works for you though.
-
-Once that's in, I'll send you my fixes to the fbcon resize stuf, though
-those require the FB_ACTIVATE_FIND to work really properly, at least
-without that, it's still better than what we have now. I'm still chasing
-a crasher in the stty code path though.
+James, I suggest turning that into a set_par call with a flag for
+'forcing' the mode to be re-applied fully even if it already matches
+the HW. (Currently, set_par in some drivers like my new radeonfb,
+for obvious perfs reasons, will not touch the HW if the var and the
+par are matching already).
 
 Ben.
-
-
-===== drivers/video/fbmem.c 1.102 vs edited =====
---- 1.102/drivers/video/fbmem.c	Sat Nov  1 08:10:46 2003
-+++ edited/drivers/video/fbmem.c	Sun Jan 11 18:16:51 2004
-@@ -466,22 +466,30 @@
- 	u32 offset, count = 1000;
- 	char *addr = buf->addr;
  
--	spin_lock(&buf->lock);
--	if (!(buf->flags & FB_PIXMAP_IO)) { 
--		offset = buf->offset + align;
--		offset &= ~align;
--		if (offset + size > buf->size) {
--			while (atomic_read(&buf->count) && count--);
--			if (info->fbops->fb_sync && (buf->flags & FB_PIXMAP_SYNC))
--				info->fbops->fb_sync(info);
--			offset = 0;
--		}
--		buf->offset = offset + size;
--		addr += offset;	
-+	/* If IO mapped, we need to sync before access, no sharing of
-+	 * the pixmap is done
-+	 */
-+	if (buf->flags & FB_PIXMAP_IO) {
-+		if (info->fbops->fb_sync && (buf->flags & FB_PIXMAP_SYNC))
-+			info->fbops->fb_sync(info);
-+		return addr;
- 	}
--	atomic_inc(&buf->count);
--	smp_mb__after_atomic_inc();
--	spin_unlock(&buf->lock);
-+
-+	/* See if we fit in the remaining pixmap space */
-+	offset = buf->offset + align;
-+	offset &= ~align;
-+	if (offset + size > buf->size) {
-+		/* We do not fit. In order to be able to re-use the buffer,
-+		 * we must ensure no asynchronous DMA'ing or whatever operation
-+		 * is in progress, we sync for that.
-+		 */
-+		if (info->fbops->fb_sync && (buf->flags & FB_PIXMAP_SYNC))
-+			info->fbops->fb_sync(info);
-+		offset = 0;
-+	}
-+	buf->offset = offset + size;
-+	addr += offset;	
-+
- 	return addr;
- }
- 
-===== drivers/video/console/fbcon.c 1.124 vs edited =====
---- 1.124/drivers/video/console/fbcon.c	Wed Jan  7 13:42:58 2004
-+++ edited/drivers/video/console/fbcon.c	Sun Jan 11 18:18:34 2004
-@@ -197,8 +197,10 @@
- 
- 	if (!info)
- 		return;
--	info->cursor.enable ^= 1;
-+	acquire_console_sem();
-+	info->cursor.enable ^= 1;	
- 	info->fbops->fb_cursor(info, &info->cursor);
-+	release_console_sem();
- }
- 
- #if (defined(__arm__) && defined(IRQ_VSYNCPULSE)) || defined(CONFIG_ATARI) || defined(CONFIG_MAC)
-@@ -398,8 +400,6 @@
- 		info->fbops->fb_imageblit(info, &image);
- 		image.dx += cnt * vc->vc_font.width;
- 		count -= cnt;
--		atomic_dec(&info->pixmap.count);
--		smp_mb__after_atomic_dec();
- 	}
- }
- 
-@@ -913,8 +913,6 @@
- 	move_buf_aligned(info, &info->pixmap, dst, pitch, src, width, image.height);
- 
- 	info->fbops->fb_imageblit(info, &image);
--	atomic_dec(&info->pixmap.count);
--	smp_mb__after_atomic_dec();
- }
- 
- static void fbcon_putcs(struct vc_data *vc, const unsigned short *s,
-@@ -1064,8 +1062,6 @@
- 		}
- 		info->fbops->fb_cursor(info, &cursor);
- 		info->cursor.enable = 1;
--		atomic_dec(&info->sprite.count);
--		smp_mb__after_atomic_dec();
- 		mod_timer(&cursor_timer, jiffies + HZ/5);
- 		vbl_cursor_cnt = CURSOR_DRAW_DELAY;
- 	}
-===== include/linux/fb.h 1.62 vs edited =====
---- 1.62/include/linux/fb.h	Thu Oct 30 17:20:52 2003
-+++ edited/include/linux/fb.h	Sun Jan 11 18:15:50 2004
-@@ -375,8 +375,6 @@
- 	u32 scan_align;		/* alignment per scanline 		*/
- 	u32 access_align;	/* alignment per read/write		*/
- 	u32 flags;		/* see FB_PIXMAP_* 			*/
--	spinlock_t lock;	/* spinlock 				*/
--	atomic_t count;
- 	/* access methods */
- 	void (*outbuf)(struct fb_info *info, u8 *addr, u8 *src, unsigned int size); 
- 	u8   (*inbuf) (u8 *addr);
-
 
 
 

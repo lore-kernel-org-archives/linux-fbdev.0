@@ -1,20 +1,23 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: [2.6 patch] edid.h cleanups
-Date: Thu, 24 Mar 2005 04:10:19 +0100
-Message-ID: <20050324031019.GU1948@stusta.de>
-References: <20050320192915.GR4449@stusta.de> <200503210453.43894.adaplas@hotpop.com>
+From: Luigi Gangitano <luigi@debian.org>
+Subject: Re: Re: [Fwd: AtyFB in 2.6.10, still not
+	perfect]
+Date: Thu, 24 Mar 2005 17:06:56 +0100
+Message-ID: <1111680416.6116.6.camel@willis>
+References: <200503151826.46073.adaplas@hotpop.com>
+	 <200503191615.32610.alex.kern@gmx.de> <1111521961.6402.4.camel@willis>
+	 <200503232235.31597.alex.kern@gmx.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-WAg8Z6fABEmqJDT4v2R0"
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DEIkc-000301-TY
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Mar 2005 19:11:14 -0800
-Received: from mailout.stusta.mhn.de ([141.84.69.5])
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
-	id 1DEIkc-0000R4-5R
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Mar 2005 19:11:14 -0800
-Content-Disposition: inline
-In-Reply-To: <200503210453.43894.adaplas@hotpop.com>
+	id 1DEUrV-0002Fw-JS
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 24 Mar 2005 08:07:09 -0800
+Received: from [193.205.140.225] (helo=seneca.lugroma3.org)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1DEUrR-00024L-QY
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 24 Mar 2005 08:07:09 -0800
+In-Reply-To: <200503232235.31597.alex.kern@gmx.de>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -25,107 +28,288 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-
-On Mon, Mar 21, 2005 at 04:53:43AM +0800, Antonino A. Daplas wrote:
-
-> Not this one.  Code that grabs the EDID block using the video BIOS is in video.S.
-> Currently, there's no driver that uses this but it's an acceptable backup for drivers
-> that want the EDID block but has no i2c, or i2c probing fails.
-
-OK, below are only the other parts of my patch.
-
-> Tony
-
-cu
-Adrian
+To: Alexander Kern <alex.kern@gmx.de>
+Cc: linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@hotpop.com>
 
 
+--=-WAg8Z6fABEmqJDT4v2R0
+Content-Type: multipart/mixed; boundary="=-DJUyZXR4Ib6OXbusnUC2"
 
-<--  snip  -->
+
+--=-DJUyZXR4Ib6OXbusnUC2
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+Il giorno mer, 23-03-2005 alle 22:35 +0100, Alexander Kern ha scritto:
+> > > And if you try any fixes from Tony, you see mclk 100 xclk 100 in your
+> > > dmesg, bur screen is steel garbage?
+> >
+> > Yes. dmesg reports the setting passed on cmdline and screen is still
+> > garbled. Setting xclk to 100 makes things worse.
+> >
+> > Regards,
+> Ok, try this patch...
+>=20
+> or in combination with setting mclk and xclk to 100
+
+Great. This patch mostly solved the problem. Now I have all the columns
+right and the screen shows no corruption.
+
+I still get some minor corruption during screen redrawing (each time a
+line is added), small white dots vertically aligned. When redrawing is
+finished the screen is ok.
+
+Using X this corruption is more frequent and constantly visible.
+
+Setting mclk and xclk to 100 doesn't make any visible difference.
+Attached you can find the last dmesg and fbset -i output. Still the
+difference with the original 2.6.8 output is 'hsync high' missing. Don't
+know if this makes sense to you.
+
+Thank you very much. You help has been great!
+
+Regards,
+
+--=20
+ Luigi Gangitano -- <luigi@debian.org> -- <gangitano@lugroma3.org>
+ GPG: 1024D/924C0C26: 12F8 9C03 89D3 DB4A 9972  C24A F19B A618 924C 0C26
+
+--=-DJUyZXR4Ib6OXbusnUC2
+Content-Disposition: attachment; filename=2.6.10-patched-dmesg
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; name=2.6.10-patched-dmesg; charset=ISO-8859-15
+
+UFJPTUxJQjogU3VuIElFRUUgQm9vdCBQcm9tIDQuMC40NSAyMDAxLzAyLzA4IDE0OjMzDQpMaW51
+eCB2ZXJzaW9uIDIuNi4xMCAocm9vdEBnbGFkaW8pIChnY2MgdmVyc2lvbiAzLjMuNSAoRGViaWFu
+IDE6My4zLjUtMTIpKSAjMSBUaHUgTWFyIDI0IDE2OjEwOjA5IENFVCAyMDA1DQpBUkNIOiBTVU40
+VQ0KRXRoZXJuZXQgYWRkcmVzczogMDA6MDM6YmE6MTE6NzY6M2QNCk9uIG5vZGUgMCB0b3RhbHBh
+Z2VzOiA5NzUwMw0KICBETUEgem9uZTogOTc1MDMgcGFnZXMsIExJRk8gYmF0Y2g6OA0KICBOb3Jt
+YWwgem9uZTogMCBwYWdlcywgTElGTyBiYXRjaDoxDQogIEhpZ2hNZW0gem9uZTogMCBwYWdlcywg
+TElGTyBiYXRjaDoxDQpCdWlsdCAxIHpvbmVsaXN0cw0KS2VybmVsIGNvbW1hbmQgbGluZTogcm9v
+dD0vZGV2L2hkYzIgcm8gdmlkZW89YXR5ZmI6bWNsazoxMDAseGNsazoxMDANClBJRCBoYXNoIHRh
+YmxlIGVudHJpZXM6IDQwOTYgKG9yZGVyOiAxMiwgMTMxMDcyIGJ5dGVzKQ0KQ29uc29sZTogY29s
+b3VyIGR1bW15IGRldmljZSA4MHgyNQ0KRGVudHJ5IGNhY2hlIGhhc2ggdGFibGUgZW50cmllczog
+MTMxMDcyIChvcmRlcjogNywgMTA0ODU3NiBieXRlcykNCklub2RlLWNhY2hlIGhhc2ggdGFibGUg
+ZW50cmllczogNjU1MzYgKG9yZGVyOiA2LCA1MjQyODggYnl0ZXMpDQpNZW1vcnk6IDc2ODk2MGsg
+YXZhaWxhYmxlICgyNjA4ayBrZXJuZWwgY29kZSwgOTUyayBkYXRhLCAxNDRrIGluaXQpIFtmZmZm
+ZjgwMDAwMDAwMDAwLDAwMDAwMDAwNGZlY2MwMDBdDQpDYWxpYnJhdGluZyBkZWxheSBsb29wLi4u
+IDk5Ny4zNyBCb2dvTUlQUyAobHBqPTQ5ODY4OCkNCk1vdW50LWNhY2hlIGhhc2ggdGFibGUgZW50
+cmllczogNTEyIChvcmRlcjogMCwgODE5MiBieXRlcykNCk5FVDogUmVnaXN0ZXJlZCBwcm90b2Nv
+bCBmYW1pbHkgMTYNClBDSTogUHJvYmluZyBmb3IgY29udHJvbGxlcnMuDQpQQ0k6IEZvdW5kIFNB
+QlJFLCBtYWluIHJlZ3MgYXQgMDAwMDAxZmUwMDAwMDAwMCwgd3N5bmMgYXQgMDAwMDAxZmUwMDAw
+MWMyMA0KU0FCUkU6IFNoYXJlZCBQQ0kgY29uZmlnIHNwYWNlIGF0IDAwMDAwMWZlMDEwMDAwMDAN
+ClNBQlJFOiBEVk1BIGF0IGMwMDAwMDAwIFsyMDAwMDAwMF0NClBDSS1JUlE6IFJvdXRpbmcgYnVz
+WyAwXSBzbG90WyA4XSBtYXBbMF0gdG8gSU5PWzIzXQ0KUENJLUlSUTogUm91dGluZyBidXNbIDBd
+IHNsb3RbIGNdIG1hcFswXSB0byBJTk9bMDZdDQpQQ0ktSVJROiBSb3V0aW5nIGJ1c1sgMF0gc2xv
+dFsgY10gbWFwWzBdIHRvIElOT1sxY10NClBDSS1JUlE6IFJvdXRpbmcgYnVzWyAwXSBzbG90WyBj
+XSBtYXBbMF0gdG8gSU5PWzI0XQ0KUENJLUlSUTogUm91dGluZyBidXNbIDBdIHNsb3RbIGRdIG1h
+cFswXSB0byBJTk9bMGNdDQpQQ0ktSVJROiBSb3V0aW5nIGJ1c1sgMF0gc2xvdFsxM10gbWFwWzBd
+IHRvIElOT1swZl0NClBDSS1JUlE6IFJvdXRpbmcgYnVzWyAxXSBzbG90WyAwXSBtYXBbMF0gdG8g
+SU5PWzE5XQ0KUENJLUlSUTogUm91dGluZyBidXNbIDFdIHNsb3RbIDJdIG1hcFswXSB0byBJTk9b
+MTVdDQpQQ0ktSVJROiBSb3V0aW5nIGJ1c1sgMl0gc2xvdFsgMF0gbWFwWzFdIHRvIElOT1sxYl0N
+ClBDSS1JUlE6IFJvdXRpbmcgYnVzWyAyXSBzbG90WyAxXSBtYXBbMV0gdG8gSU5PWzBiXQ0KUENJ
+LUlSUTogUm91dGluZyBidXNbIDJdIHNsb3RbIDJdIG1hcFsxXSB0byBJTk9bMWFdDQpQQ0ktSVJR
+OiBSb3V0aW5nIGJ1c1sgMl0gc2xvdFsgM10gbWFwWzFdIHRvIElOT1swYV0NClBDSTAoUEJNQSk6
+IEJ1cyBydW5uaW5nIGF0IDMzTUh6DQppc2EwOiBbZG1hIC0+IChmbG9wcHkpIChwYXJhbGxlbCld
+IFtwb3dlcl0gW3NlcmlhbF0gW3NlcmlhbF0NCmVidXMwOiBbZmxhc2hwcm9tXSBbZWVwcm9tXSBb
+aWRwcm9tXQ0KdXNiY29yZTogcmVnaXN0ZXJlZCBuZXcgZHJpdmVyIHVzYmZzDQp1c2Jjb3JlOiBy
+ZWdpc3RlcmVkIG5ldyBkcml2ZXIgaHViDQpWRlM6IERpc2sgcXVvdGFzIGRxdW90XzYuNS4xDQpE
+cXVvdC1jYWNoZSBoYXNoIHRhYmxlIGVudHJpZXM6IDEwMjQgKG9yZGVyIDAsIDgxOTIgYnl0ZXMp
+DQpJbml0aWFsaXppbmcgQ3J5cHRvZ3JhcGhpYyBBUEkNCkFjdGl2YXRpbmcgSVNBIERNQSBoYW5n
+IHdvcmthcm91bmRzLg0KYXR5ZmI6IDNEIFJBR0UgWEwgKE1hY2g2NCBHUiwgUENJLTMzTUh6KSBb
+MHg0NzUyIHJldiAweDI3XQ0KYXR5ZmI6IDhNIFNEUkFNICgxOjEpLCAyOS40OTg5MjggTUh6IFhU
+QUwsIDIzMCBNSHogUExMLCAxMDAgTWh6IE1DTEssIDEwMCBNSHogWENMSw0KYXR5ZmI6IHNldHRp
+bmcgdXAgQ1JUQw0KYXR5ZmI6IHNldCBwcmltYXJ5IENSVCB0byAxMTUyeDkwMCBOTiBjb21wb3Np
+dGUgUA0KYXR5ZmI6IENSVENfSF9UT1RBTF9ESVNQOiA4ZjAwYmUNCmF0eWZiOiBDUlRDX0hfU1lO
+Q19TVFJUX1dJRDogMzAwMjk2DQphdHlmYjogQ1JUQ19WX1RPVEFMX0RJU1A6IDM4MzAzYTgNCmF0
+eWZiOiBDUlRDX1ZfU1lOQ19TVFJUX1dJRDogMjQwMzg1DQphdHlmYjogQ1JUQ19PRkZfUElUQ0g6
+IDI0MDAwMDAwDQphdHlmYjogQ1JUQ19WTElORV9DUk5UX1ZMSU5FOiAwDQphdHlmYjogQ1JUQ19H
+RU5fQ05UTDogYjAwMDIxMA0KYXR5ZmI6IGF0eWZiX3NldF9wYXINCmF0eWZiOiAgU2V0IFZpc2li
+bGUgTW9kZSB0byAxMTUyeDkwMC04DQphdHlmYjogIFZpcnR1YWwgcmVzb2x1dGlvbiAxMTUyeDcy
+NDYsIHBpeGNsb2NrX2luX3BzIDEwNjQ0IChjYWxjdWxhdGVkIDEwNjQ0KQ0KYXR5ZmI6ICBEb3Qg
+Y2xvY2s6ICAgICAgICAgICA5MyBNSHoNCmF0eWZiOiAgSG9yaXpvbnRhbCBzeW5jOiAgICAgNjEg
+a0h6DQphdHlmYjogIFZlcnRpY2FsIHJlZnJlc2g6ICAgIDY1IEh6DQphdHlmYjogIHggIHN0eWxl
+OiA5My4xMDEwOCAxMTUyIDEyMTAgMTMzOCAxNTI4ICAgOTAwIDkwMiA5MDYgOTM3DQphdHlmYjog
+IGZiIHN0eWxlOiAxMDY0NCAgMTkwIDExNTIgNTggMTI4IDMxIDkwMCAyIDQNCmRlYnVnIGF0eWZi
+OiBNYWNoNjQgbm9uLXNoYWRvdyByZWdpc3RlciB2YWx1ZXM6DQpkZWJ1ZyBhdHlmYjogMHgyMDAw
+OiAgMDA4RjAwQkUgMDAzMDAyOTYgMDM4MzAzQTggMDAyNDAzODUNCmRlYnVnIGF0eWZiOiAweDIw
+MTA6ICAwMzg4MDAwMCAyNDAwMDAwMCAwODAwMDAwMSAwQjAwMjIxMA0KZGVidWcgYXR5ZmI6IDB4
+MjAyMDogIDAwNEEwNDQxIDAwOTAwNDE2IDAwMDAwMDAwIDAwMDAwMDAwDQpkZWJ1ZyBhdHlmYjog
+MHgyMDMwOiAgMDAwMDAwMDAgMDAxMTAyMDIgMDAwMDAwMDAgMDAwMEMwMDENCmRlYnVnIGF0eWZi
+OiAweDIwNDA6ICAwMDAwMDAwMCAwMDAwMDAwMCAwMDAwMDAwMCAwMDAwMDAwMA0KZGVidWcgYXR5
+ZmI6IDB4MjA1MDogIDAwMDAwMDAwIDAwMDAwMDAwIDAwMDAwMDAwIDAwMDAwMDAwDQpkZWJ1ZyBh
+dHlmYjogMHgyMDYwOiAgMzZBMTMxMzEgMjRGQkExMjEgMDAwMDAwMDAgMDAwMDAwMDANCmRlYnVn
+IGF0eWZiOiAweDIwNzA6ICAwMDAwMDAwMCAwMDAwMDAwMCAwMTAwMzMwMCAwMDA1MDAwMA0KZGVi
+dWcgYXR5ZmI6IDB4MjA4MDogIDAwMDAwMDAwIDAwMDAwMDAwIDAwMDAwMDAwIDAwMDAwMDAwDQpk
+ZWJ1ZyBhdHlmYjogMHgyMDkwOiAgMDA4MDMwMDAgMDAwMDAwMDAgMDAwMDAxMDAgMDAwMDAwMDAN
+CmRlYnVnIGF0eWZiOiAweDIwQTA6ICA3QjIzQTA0MCAwMDAwMDEwMSAwMDdGODA5MSBFNTAwMEM4
+MQ0KZGVidWcgYXR5ZmI6IDB4MjBCMDogIDEwNzUxQTNCIDAwMDEwMDAwIDAwMDEwMDAwIDAwMDAw
+MDAwDQpkZWJ1ZyBhdHlmYjogMHgyMEMwOiAgMDBGRjAwMDAgODYwMTAxODIgMDAwMDAwMDAgMDAw
+MDAwMDANCmRlYnVnIGF0eWZiOiAweDIwRDA6ICAwMDAwMDEwMCAwMDAwMDAwOCAwMDAwMDAwMCAw
+MDAwMDBDMg0KZGVidWcgYXR5ZmI6IDB4MjBFMDogIDI3MDA0NzUyIDAwNDAwMDE0IDAwMDAwMDAw
+IDAwMDAwMDAwDQpkZWJ1ZyBhdHlmYjogMHgyMEYwOiAgMDAwMDAwMDAgMDAwMEI4NEQgMDM3RkZD
+RjggMDAwMDAwMDANCg0KZGVidWcgYXR5ZmI6IE1hY2g2NCBQTEwgcmVnaXN0ZXIgdmFsdWVzOg0K
+ZGVidWcgYXR5ZmI6IDB4MDA6ICBBREQ1NDExNCBEQzAzMDFDRiA4RTlFNjUwMSA4MDFCMDAwMA0K
+ZGVidWcgYXR5ZmI6IDB4MTA6ICAwNkNGNDAwMCAxMEY2QUMwMyA0MDgwMjRGRCAwMDAwMDAwMg0K
+ZGVidWcgYXR5ZmI6IDB4MjA6ICAwNkFDMDZBQyAxNDI0RkQwMCAwMDI1NTUwMCAwMDAwMDAwMA0K
+ZGVidWcgYXR5ZmI6IDB4MzA6ICAwMDAwMDAwMCAwMDAwMDAwMCAwMDAwMDAwMCAwMDAwMDAwMA0K
+DQpDb25zb2xlOiBzd2l0Y2hpbmcgdG8gY29sb3VyIGZyYW1lIGJ1ZmZlciBkZXZpY2UgMTQ0eDU2
+DQphdHlmYjogZmIwOiBBVFkgTWFjaDY0IGZyYW1lIGJ1ZmZlciBkZXZpY2Ugb24gUENJDQpydGNf
+aW5pdDogbm8gUEMgcnRjIGZvdW5kDQp0dHlTMCBhdCBNTUlPIDB4MWZlMDIwMDAzZjggKGlycSA9
+IDgxMDY5NzYpIGlzIGEgMTY1NTBBDQp0dHlTMSBhdCBNTUlPIDB4MWZlMDIwMDAyZTggKGlycSA9
+IDgxMDY5NzYpIGlzIGEgMTY1NTBBDQppbyBzY2hlZHVsZXIgbm9vcCByZWdpc3RlcmVkDQppbyBz
+Y2hlZHVsZXIgYW50aWNpcGF0b3J5IHJlZ2lzdGVyZWQNCmlvIHNjaGVkdWxlciBkZWFkbGluZSBy
+ZWdpc3RlcmVkDQppbyBzY2hlZHVsZXIgY2ZxIHJlZ2lzdGVyZWQNCmVsZXZhdG9yOiB1c2luZyBh
+bnRpY2lwYXRvcnkgYXMgZGVmYXVsdCBpbyBzY2hlZHVsZXINClVuaWZvcm0gTXVsdGktUGxhdGZv
+cm0gRS1JREUgZHJpdmVyIFJldmlzaW9uOiA3LjAwYWxwaGEyDQppZGU6IEFzc3VtaW5nIDMzTUh6
+IHN5c3RlbSBidXMgc3BlZWQgZm9yIFBJTyBtb2Rlczsgb3ZlcnJpZGUgd2l0aCBpZGVidXM9eHgN
+CkFMSTE1WDM6IElERSBjb250cm9sbGVyIGF0IFBDSSBzbG90IDAwMDA6MDA6MGQuMA0KQUxJMTVY
+MzogY2hpcHNldCByZXZpc2lvbiAxOTUNCkFMSTE1WDM6IDEwMCUgbmF0aXZlIG1vZGUgb24gaXJx
+IDQsN2NjDQogICAgaWRlMDogQk0tRE1BIGF0IDB4MWZlMDIwMDBhMjAtMHgxZmUwMjAwMGEyNywg
+QklPUyBzZXR0aW5nczogaGRhOnBpbywgaGRiOnBpbw0KICAgIGlkZTE6IEJNLURNQSBhdCAweDFm
+ZTAyMDAwYTI4LTB4MWZlMDIwMDBhMmYsIEJJT1Mgc2V0dGluZ3M6IGhkYzpwaW8sIGhkZDpwaW8N
+ClByb2JpbmcgSURFIGludGVyZmFjZSBpZGUwLi4uDQpoZGE6IFNUMzIwMDExQSwgQVRBIERJU0sg
+ZHJpdmUNCmhkYjogTFRONDg2UywgQVRBUEkgQ0QvRFZELVJPTSBkcml2ZQ0KaWRlMCBhdCAweDFm
+ZTAyMDAwYTAwLTB4MWZlMDIwMDBhMDcsMHgxZmUwMjAwMGExYSBvbiBpcnEgNCw3Y2MNClByb2Jp
+bmcgSURFIGludGVyZmFjZSBpZGUxLi4uDQpoZGM6IEZVSklUU1UgTVBFMzE3MEFULCBBVEEgRElT
+SyBkcml2ZQ0KaWRlMSBhdCAweDFmZTAyMDAwYTEwLTB4MWZlMDIwMDBhMTcsMHgxZmUwMjAwMGEw
+YSBvbiBpcnEgNCw3Y2MNCmhkYTogbWF4IHJlcXVlc3Qgc2l6ZTogMTI4S2lCDQpoZGE6IDM5MTAy
+MzM2IHNlY3RvcnMgKDIwMDIwIE1CKSB3LzIwNDhLaUIgQ2FjaGUsIENIUz0zODc5Mi8xNi82Mywg
+VURNQSg2NikNCmhkYTogY2FjaGUgZmx1c2hlcyBub3Qgc3VwcG9ydGVkDQogaGRhOiBoZGExIGhk
+YTIgaGRhMyBoZGE4DQpoZGM6IG1heCByZXF1ZXN0IHNpemU6IDEyOEtpQg0KaGRjOiAzMzM2MDU4
+MCBzZWN0b3JzICgxNzA4MCBNQikgdy8yMDQ4S2lCIENhY2hlLCBDSFM9MzMwOTUvMTYvNjMsIFVE
+TUEoMzMpDQpoZGM6IGNhY2hlIGZsdXNoZXMgbm90IHN1cHBvcnRlZA0KIGhkYzogaGRjMSBoZGMy
+IGhkYzMgaGRjNA0KaGRiOiBBVEFQSSA0OFggQ0QtUk9NIGRyaXZlLCAxMjBrQiBDYWNoZQ0KVW5p
+Zm9ybSBDRC1ST00gZHJpdmVyIFJldmlzaW9uOiAzLjIwDQp1c2Jjb3JlOiByZWdpc3RlcmVkIG5l
+dyBkcml2ZXIgdXNiaGlkDQpkcml2ZXJzL3VzYi9pbnB1dC9oaWQtY29yZS5jOiB2Mi4wOlVTQiBI
+SUQgY29yZSBkcml2ZXINCm1pY2U6IFBTLzIgbW91c2UgZGV2aWNlIGNvbW1vbiBmb3IgYWxsIG1p
+Y2UNCk5FVDogUmVnaXN0ZXJlZCBwcm90b2NvbCBmYW1pbHkgMg0KSVA6IHJvdXRpbmcgY2FjaGUg
+aGFzaCB0YWJsZSBvZiAxNjM4NCBidWNrZXRzLCAxMjhLYnl0ZXMNClRDUDogSGFzaCB0YWJsZXMg
+Y29uZmlndXJlZCAoZXN0YWJsaXNoZWQgMTMxMDcyIGJpbmQgNjU1MzYpDQpORVQ6IFJlZ2lzdGVy
+ZWQgcHJvdG9jb2wgZmFtaWx5IDENCk5FVDogUmVnaXN0ZXJlZCBwcm90b2NvbCBmYW1pbHkgMTcN
+CkVYVDMtZnM6IElORk86IHJlY292ZXJ5IHJlcXVpcmVkIG9uIHJlYWRvbmx5IGZpbGVzeXN0ZW0u
+DQpFWFQzLWZzOiB3cml0ZSBhY2Nlc3Mgd2lsbCBiZSBlbmFibGVkIGR1cmluZyByZWNvdmVyeS4N
+ClNBQlJFMDogVW5jb3JyZWN0YWJsZSBFcnJvciwgcHJpbWFyeSBlcnJvciB0eXBlW0RNQSBXcml0
+ZTpUcmFuc2xhdGlvbiBFcnJvcl0NClNBQlJFMDogYnl0ZW1hc2tbMDBmZl0gZHdvcmRfb2Zmc2V0
+WzBdIHdhc19ibG9jaygwKQ0KU0FCUkUwOiBVRSBBRkFSIFswMDAwMDAwMDRmNGZjMDAwXQ0KU0FC
+UkUwOiBVRSBTZWNvbmRhcnkgZXJyb3JzIFsobm9uZSldDQpTQUJSRTA6IElPTU1VIEVycm9yLCB0
+eXBlW0ludmFsaWQgRXJyb3JdDQpTQUJSRTA6IElPTU1VIFRBRygxKVtSQVcoMDAwMDAwMDAwMGM2
+ZjgwMCllcnJvcihJbnZhbGlkIEVycm9yKXdyKDApc3ooOEspdnBnKGRmMDAwMDAwKV0NClNBQlJF
+MDogSU9NTVUgREFUQSgxKVtSQVcoMDAwMDAwMDA2ZmUyN2YzYyl2YWxpZCgxKXVzZWQoMSljYWNo
+ZSgwKXBwZygwMDAwMDAwMDRmZTc4MDAwKQ0KRVhUMy1mczogaGRjMjogb3JwaGFuIGNsZWFudXAg
+b24gcmVhZG9ubHkgZnMNCmV4dDNfb3JwaGFuX2NsZWFudXA6IGRlbGV0aW5nIHVucmVmZXJlbmNl
+ZCBpbm9kZSA0MTA4MjUNCmV4dDNfb3JwaGFuX2NsZWFudXA6IGRlbGV0aW5nIHVucmVmZXJlbmNl
+ZCBpbm9kZSA0MTA4MjQNCmV4dDNfb3JwaGFuX2NsZWFudXA6IGRlbGV0aW5nIHVucmVmZXJlbmNl
+ZCBpbm9kZSA0MTA4MjMNCmV4dDNfb3JwaGFuX2NsZWFudXA6IGRlbGV0aW5nIHVucmVmZXJlbmNl
+ZCBpbm9kZSA0MTA4MjINCkVYVDMtZnM6IGhkYzI6IDQgb3JwaGFuIGlub2RlcyBkZWxldGVkDQpF
+WFQzLWZzOiByZWNvdmVyeSBjb21wbGV0ZS4NCmtqb3VybmFsZCBzdGFydGluZy4gIENvbW1pdCBp
+bnRlcnZhbCA1IHNlY29uZHMNCkVYVDMtZnM6IG1vdW50ZWQgZmlsZXN5c3RlbSB3aXRoIG9yZGVy
+ZWQgZGF0YSBtb2RlLg0KVkZTOiBNb3VudGVkIHJvb3QgKGV4dDMgZmlsZXN5c3RlbSkgcmVhZG9u
+bHkuDQpBZGRpbmcgNzM3MzM2ayBzd2FwIG9uIC9kZXYvaGRjNC4gIFByaW9yaXR5Oi0xIGV4dGVu
+dHM6MQ0KRVhUMyBGUyBvbiBoZGMyLCBpbnRlcm5hbCBqb3VybmFsDQpram91cm5hbGQgc3RhcnRp
+bmcuICBDb21taXQgaW50ZXJ2YWwgNSBzZWNvbmRzDQpFWFQzIEZTIG9uIGhkYzEsIGludGVybmFs
+IGpvdXJuYWwNCkVYVDMtZnM6IG1vdW50ZWQgZmlsZXN5c3RlbSB3aXRoIG9yZGVyZWQgZGF0YSBt
+b2RlLg0KYWxpMTV4M19zbWJ1cyAwMDAwOjAwOjAzLjA6IEFMSTE1WDNfc21iIHJlZ2lvbiB1bmlu
+aXRpYWxpemVkIC0gdXBncmFkZSBCSU9TIG9yIHVzZSBmb3JjZV9hZGRyPTB4YWRkcg0KYWxpMTV4
+M19zbWJ1cyAwMDAwOjAwOjAzLjA6IEFMSTE1WDMgbm90IGRldGVjdGVkLCBtb2R1bGUgbm90IGlu
+c2VydGVkLg0Kc3VuZ2VtLmM6djAuOTggOC8yNC8wMyBEYXZpZCBTLiBNaWxsZXIgKGRhdmVtQHJl
+ZGhhdC5jb20pDQpldGgwOiBTdW4gR0VNIChQQ0kpIDEwLzEwMC8xMDAwQmFzZVQgRXRoZXJuZXQg
+MDA6MDM6YmE6MTE6NzY6M2QgDQpQSFkgSUQ6IDQzNzQyMSwgYWRkcjogMQ0KZXRoMDogRm91bmQg
+R2VuZXJpYyBNSUkgUEhZDQppZWVlMTM5NDogSW5pdGlhbGl6ZWQgY29uZmlnIHJvbSBlbnRyeSBg
+aXAxMzk0Jw0Kb2hjaTEzOTQ6ICRSZXY6IDEyMjMgJCBCZW4gQ29sbGlucyA8YmNvbGxpbnNAZGVi
+aWFuLm9yZz4NCm9oY2kxMzk0OiBmdy1ob3N0MDogT0hDSS0xMzk0IDEuMCAoUENJKTogSVJRPVsx
+MCw3ZGNdICBNTUlPPVsxZmYwMDQyMDAwMC0xZmYwMDQyMDdmZl0gIE1heCBQYWNrZXQ9WzIwNDhd
+DQpvaGNpX2hjZDogMjAwNCBOb3YgMDggVVNCIDEuMSAnT3BlbicgSG9zdCBDb250cm9sbGVyIChP
+SENJKSBEcml2ZXIgKFBDSSkNCm9oY2lfaGNkIDAwMDA6MDA6MGMuMzogU3VuIE1pY3Jvc3lzdGVt
+cyBDb21wdXRlciBDb3JwLiBSSU8gVVNCDQpvaGNpX2hjZCAwMDAwOjAwOjBjLjM6IGlycSA5LDdl
+NCwgcGNpIG1lbSAweDFmZjAyMDAwMDAwDQpvaGNpX2hjZCAwMDAwOjAwOjBjLjM6IG5ldyBVU0Ig
+YnVzIHJlZ2lzdGVyZWQsIGFzc2lnbmVkIGJ1cyBudW1iZXIgMQ0KaHViIDEtMDoxLjA6IFVTQiBo
+dWIgZm91bmQNCmh1YiAxLTA6MS4wOiA0IHBvcnRzIGRldGVjdGVkDQp1c2IgMS0zOiBuZXcgbG93
+IHNwZWVkIFVTQiBkZXZpY2UgdXNpbmcgb2hjaV9oY2QgYW5kIGFkZHJlc3MgMg0KaW5wdXQ6IFVT
+QiBISUQgdjEuMTAgTW91c2UgWzA0MzA6MDEwMF0gb24gdXNiLTAwMDA6MDA6MGMuMy0zDQppZWVl
+MTM5NDogSG9zdCBhZGRlZDogSUQ6QlVTWzAtMDA6MTAyM10gIEdVSURbMDAwM2JhZmZmZTExNzYz
+ZF0NCnVzYiAxLTQ6IG5ldyBsb3cgc3BlZWQgVVNCIGRldmljZSB1c2luZyBvaGNpX2hjZCBhbmQg
+YWRkcmVzcyAzDQppbnB1dDogVVNCIEhJRCB2MS4wMCBLZXlib2FyZCBbMDQzMDowMDA1XSBvbiB1
+c2ItMDAwMDowMDowYy4zLTQNCmV0aDEzOTQ6ICRSZXY6IDEyMjQgJCBCZW4gQ29sbGlucyA8YmNv
+bGxpbnNAZGViaWFuLm9yZz4NCmV0aDEzOTQ6IGV0aDE6IElFRUUtMTM5NCBJUHY0IG92ZXIgMTM5
+NCBFdGhlcm5ldCAoZnctaG9zdDApDQpyODE2OSBHaWdhYml0IEV0aGVybmV0IGRyaXZlciAxLjIg
+bG9hZGVkDQpyODE2OTogTkFQSSBlbmFibGVkDQpldGgyOiBJZGVudGlmaWVkIGNoaXAgdHlwZSBp
+cyAnUlRMODE2OXMvODExMHMnLg0KZXRoMjogUlRMODE2OSBhdCAweDFmZjA0MDAwMDAwLCAwMDpj
+MDo0OTpmMjo4ZToxMCwgSVJRIDgxMDY0MDANCnN1bmhtZS5jOnYyLjAyIDI0L0F1Zy8yMDAzIERh
+dmlkIFMuIE1pbGxlciAoZGF2ZW1AcmVkaGF0LmNvbSkNCmV0aDM6IEhBUFBZIE1FQUwgKFBDSS9D
+aGVlcklPKSAxMC8xMDBCYXNlVCBFdGhlcm5ldCAwMDowMzpiYToxMTo3NjozZCANCmV0aDQ6IEhB
+UFBZIE1FQUwgKFBDSS9DaGVlcklPKSAxMC8xMDBCYXNlVCBFdGhlcm5ldCAwMDowMzpiYToxMTo3
+NjozZCANCmV0aDU6IEhBUFBZIE1FQUwgKFBDSS9DaGVlcklPKSAxMC8xMDBCYXNlVCBFdGhlcm5l
+dCAwMDowMzpiYToxMTo3NjozZCANCmV0aDY6IEhBUFBZIE1FQUwgKFBDSS9DaGVlcklPKSAxMC8x
+MDBCYXNlVCBFdGhlcm5ldCAwMDowMzpiYToxMTo3NjozZCANClBIWSBJRDogNDM3NDIxLCBhZGRy
+OiAxDQpldGgwOiBMaW5rIGlzIHVwIGF0IDEwMCBNYnBzLCBmdWxsLWR1cGxleC4NCmV0aDA6IFBh
+dXNlIGlzIGRpc2FibGVkDQpuZnMgd2FybmluZzogbW91bnQgdmVyc2lvbiBvbGRlciB0aGFuIGtl
+cm5lbA0KaW9jdGwzMihhbWl4ZXI6Mjg1Mik6IFVua25vd24gY21kIGZkKDMpIGNtZCg0MDA0NTUw
+MCl7MDB9IGFyZyhlZmZmZjdmNCkgb24gL2Rldi9zbmQvY29udHJvbEMwDQppb2N0bDMyKGFtaXhl
+cjoyODY3KTogVW5rbm93biBjbWQgZmQoMykgY21kKDQwMDQ1NTAwKXswMH0gYXJnKGVmZmZmN2Y0
+KSBvbiAvZGV2L3NuZC9jb250cm9sQzANCmlvY3RsMzIoYW1peGVyOjI4NzApOiBVbmtub3duIGNt
+ZCBmZCgzKSBjbWQoNDAwNDU1MDApezAwfSBhcmcoZWZmZmY3ZjQpIG9uIC9kZXYvc25kL2NvbnRy
+b2xDMA0KaW9jdGwzMihhbWl4ZXI6Mjg3Myk6IFVua25vd24gY21kIGZkKDMpIGNtZCg0MDA0NTUw
+MCl7MDB9IGFyZyhlZmZmZjdmNCkgb24gL2Rldi9zbmQvY29udHJvbEMwDQppb2N0bDMyKGFtaXhl
+cjoyODc2KTogVW5rbm93biBjbWQgZmQoMykgY21kKDQwMDQ1NTAwKXswMH0gYXJnKGVmZmZmN2Y0
+KSBvbiAvZGV2L3NuZC9jb250cm9sQzANCmlvY3RsMzIoYW1peGVyOjI4NzkpOiBVbmtub3duIGNt
+ZCBmZCgzKSBjbWQoNDAwNDU1MDApezAwfSBhcmcoZWZmZmY3ZjQpIG9uIC9kZXYvc25kL2NvbnRy
+b2xDMA0KaW9jdGwzMihhbWl4ZXI6Mjg4Mik6IFVua25vd24gY21kIGZkKDMpIGNtZCg0MDA0NTUw
+MCl7MDB9IGFyZyhlZmZmZjdmNCkgb24gL2Rldi9zbmQvY29udHJvbEMwDQppb2N0bDMyKGFtaXhl
+cjoyODg1KTogVW5rbm93biBjbWQgZmQoMykgY21kKDQwMDQ1NTAwKXswMH0gYXJnKGVmZmZmN2Y0
+KSBvbiAvZGV2L3NuZC9jb250cm9sQzANCmlvY3RsMzIoYW1peGVyOjI4ODgpOiBVbmtub3duIGNt
+ZCBmZCgzKSBjbWQoNDAwNDU1MDApezAwfSBhcmcoZWZmZmY3ZjQpIG9uIC9kZXYvc25kL2NvbnRy
+b2xDMA0KaW9jdGwzMihhbWl4ZXI6Mjg5MSk6IFVua25vd24gY21kIGZkKDMpIGNtZCg0MDA0NTUw
+MCl7MDB9IGFyZyhlZmZmZjdlNCkgb24gL2Rldi9zbmQvY29udHJvbEMwDQppb2N0bDMyKGFtaXhl
+cjoyODk0KTogVW5rbm93biBjbWQgZmQoMykgY21kKDQwMDQ1NTAwKXswMH0gYXJnKGVmZmZmN2Y0
+KSBvbiAvZGV2L3NuZC9jb250cm9sQzANCmlvY3RsMzIoYW1peGVyOjI4OTcpOiBVbmtub3duIGNt
+ZCBmZCgzKSBjbWQoNDAwNDU1MDApezAwfSBhcmcoZWZmZmY3ZjQpIG9uIC9kZXYvc25kL2NvbnRy
+b2xDMA0KaW9jdGwzMihhbWl4ZXI6MjkwMCk6IFVua25vd24gY21kIGZkKDMpIGNtZCg0MDA0NTUw
+MCl7MDB9IGFyZyhlZmZmZjdmNCkgb24gL2Rldi9zbmQvY29udHJvbEMwDQppb2N0bDMyKGFtaXhl
+cjoyOTAzKTogVW5rbm93biBjbWQgZmQoMykgY21kKDQwMDQ1NTAwKXswMH0gYXJnKGVmZmZmN2Y0
+KSBvbiAvZGV2L3NuZC9jb250cm9sQzANCmlvY3RsMzIoYW1peGVyOjI5MDYpOiBVbmtub3duIGNt
+ZCBmZCgzKSBjbWQoNDAwNDU1MDApezAwfSBhcmcoZWZmZmY3ZjQpIG9uIC9kZXYvc25kL2NvbnRy
+b2xDMA0KaW9jdGwzMihhbWl4ZXI6MjkwOSk6IFVua25vd24gY21kIGZkKDMpIGNtZCg0MDA0NTUw
+MCl7MDB9IGFyZyhlZmZmZjdlNCkgb24gL2Rldi9zbmQvY29udHJvbEMwDQpscDogZHJpdmVyIGxv
+YWRlZCBidXQgbm8gZGV2aWNlcyBmb3VuZA0K
 
 
-This patch contains the following cleanups:
-- remove unneeded #include <video/edid.h>'s
-- include/video/edid.h: kill two stale function prototypes
+--=-DJUyZXR4Ib6OXbusnUC2
+Content-Disposition: attachment; filename=2.6.10-patched-fbset
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; name=2.6.10-patched-fbset; charset=ISO-8859-15
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+DQptb2RlICIxMTUyeDkwMC02NiINCiAgICAjIEQ6IDkzLjk1MCBNSHosIEg6IDYxLjQ4NSBrSHos
+IFY6IDY1LjYxOSBIeg0KICAgIGdlb21ldHJ5IDExNTIgOTAwIDExNTIgNzI0NiA4DQogICAgdGlt
+aW5ncyAxMDY0NCAxOTAgNTggMzEgMiAxMjggNA0KICAgIGNzeW5jIGhpZ2gNCiAgICBhY2NlbCB0
+cnVlDQogICAgcmdiYSA4LzAsOC8wLDgvMCwwLzANCmVuZG1vZGUNCg0KRnJhbWUgYnVmZmVyIGRl
+dmljZSBpbmZvcm1hdGlvbjoNCiAgICBOYW1lICAgICAgICA6IEFUWSBNYWNoNjQNCiAgICBBZGRy
+ZXNzICAgICA6IDB4MzgwMDAwMA0KICAgIFNpemUgICAgICAgIDogODM3MjIyNA0KICAgIFR5cGUg
+ICAgICAgIDogUEFDS0VEIFBJWEVMUw0KICAgIFZpc3VhbCAgICAgIDogUFNFVURPQ09MT1INCiAg
+ICBYUGFuU3RlcCAgICA6IDgNCiAgICBZUGFuU3RlcCAgICA6IDENCiAgICBZV3JhcFN0ZXAgICA6
+IDANCiAgICBMaW5lTGVuZ3RoICA6IDExNTINCiAgICBNTUlPIEFkZHJlc3M6IDB4MzdmZjgwMA0K
+ICAgIE1NSU8gU2l6ZSAgIDogMjA0OA0KICAgIEFjY2VsZXJhdG9yIDogQVRJIE1hY2g2NEdUDQo=
 
----
 
- arch/i386/boot/compressed/misc.c |    1 -
- drivers/video/fbmon.c            |    1 -
- drivers/video/vesafb.c           |    3 ---
- include/video/edid.h             |    9 ---------
- 4 files changed, 14 deletions(-)
+--=-DJUyZXR4Ib6OXbusnUC2--
 
---- linux-2.6.11-mm4-full/drivers/video/fbmon.c.old	2005-03-20 20:03:56.000000000 +0100
-+++ linux-2.6.11-mm4-full/drivers/video/fbmon.c	2005-03-20 20:04:27.000000000 +0100
-@@ -34,7 +34,6 @@
- #include <asm/prom.h>
- #include <asm/pci-bridge.h>
- #endif
--#include <video/edid.h>
- #include "edid.h"
- 
- /* 
---- linux-2.6.11-mm4-full/drivers/video/vesafb.c.old	2005-03-20 20:04:12.000000000 +0100
-+++ linux-2.6.11-mm4-full/drivers/video/vesafb.c	2005-03-20 20:04:18.000000000 +0100
-@@ -19,9 +19,6 @@
- #include <linux/fb.h>
- #include <linux/ioport.h>
- #include <linux/init.h>
--#ifdef __i386__
--#include <video/edid.h>
--#endif
- #include <asm/io.h>
- #include <asm/mtrr.h>
- 
---- linux-2.6.11-mm4-full/arch/i386/boot/compressed/misc.c.old	2005-03-20 20:05:55.000000000 +0100
-+++ linux-2.6.11-mm4-full/arch/i386/boot/compressed/misc.c	2005-03-20 20:05:58.000000000 +0100
-@@ -12,7 +12,6 @@
- #include <linux/linkage.h>
- #include <linux/vmalloc.h>
- #include <linux/tty.h>
--#include <video/edid.h>
- #include <asm/io.h>
- #include <asm/page.h>
- 
---- linux-2.6.12-rc1-mm1-full/include/video/edid.h.old	2005-03-24 01:37:07.000000000 +0100
-+++ linux-2.6.12-rc1-mm1-full/include/video/edid.h	2005-03-24 01:37:27.000000000 +0100
-@@ -4,9 +4,6 @@
- #ifdef __KERNEL__
- 
- #include <linux/config.h>
--#ifdef CONFIG_PPC_OF
--#include <linux/pci.h>
--#endif
- 
- #ifdef CONFIG_X86
- struct edid_info {
-@@ -14,14 +11,8 @@
- };
- 
- extern struct edid_info edid_info;
--extern char *get_EDID_from_BIOS(void *);
--
- #endif /* CONFIG_X86 */
- 
--#ifdef CONFIG_PPC_OF
--extern char *get_EDID_from_OF(struct pci_dev *pdev);
--#endif
--
- #endif /* __KERNEL__ */
- 
- #endif /* __linux_video_edid_h__ */
+--=-WAg8Z6fABEmqJDT4v2R0
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: Questa parte del messaggio =?ISO-8859-1?Q?=E8?= firmata
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.0 (GNU/Linux)
+
+iD8DBQBCQuWg8ZumGJJMDCYRAq/JAJ9WY08/DfZBO4Lgoz+P7g2NdoieVgCeOhj4
+Q0aGuBsTG6jtS02lOl8a8ow=
+=vlsd
+-----END PGP SIGNATURE-----
+
+--=-WAg8Z6fABEmqJDT4v2R0--
 
 
 -------------------------------------------------------
-This SF.net email is sponsored by Microsoft Mobile & Embedded DevCon 2005
-Attend MEDC 2005 May 9-12 in Vegas. Learn more about the latest Windows
-Embedded(r) & Windows Mobile(tm) platforms, applications & content.  Register
-by 3/29 & save $300 http://ads.osdn.com/?ad_id=6883&alloc_id=15149&op=click
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

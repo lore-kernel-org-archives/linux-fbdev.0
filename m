@@ -1,19 +1,16 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: cfb_copyarea()
-Date: Sun, 25 Aug 2002 17:19:07 +0200 (MEST)
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: radeonfb compile errors in 2.5.32
+Date: Tue, 27 Aug 2002 23:15:24 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0208251716120.17500-100000@vervain.sonytel.be>
-References: <Pine.GSO.4.21.0208191109290.12594-100000@vervain.sonytel.be>
+Message-ID: <30316.2370379598$1030515908@news.gmane.org>
+References: <20020827215710.GA6905@taniwha.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+Received: from swan.mail.pas.earthlink.net ([207.217.120.123])
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17izAc-0004st-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 25 Aug 2002 08:19:19 -0700
-Received: from vervain.sonytel.be (mail.sonytel.be [10.17.0.26])
-	by mail.sonytel.be (8.9.0/8.8.6) with ESMTP id RAA09234
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 25 Aug 2002 17:19:07 +0200 (MET DST)
-In-Reply-To: <Pine.GSO.4.21.0208191109290.12594-100000@vervain.sonytel.be>
+	id 17jwCs-0006dz-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 27 Aug 2002 23:21:35 -0700
+In-Reply-To: <20020827215710.GA6905@taniwha.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -25,51 +22,50 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Bill Currie <bill@taniwha.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Mon, 19 Aug 2002, Geert Uytterhoeven wrote:
-> On Mon, 19 Aug 2002, Geert Uytterhoeven wrote:
-> > In cfb_copyarea(), `tmp' must be unsigned long because it is used to store
-> > unsigned long values (see patch at the end).
-> > 
-> > cfb_copyarea() also doesn't clear the bits to modify in the first and last
-> > words of a line, e.g. it does
-> > 
-> > |	last = (FB_READ(src) & start_mask);
-> > |
-> > |	if (shift > 0) 
-> > |		FB_WRITE(FB_READ(dst) | (last >> shift_right), dst);
-> >                          ^^^^^^^^^^^^
-> > After this read, the bits to modify must be cleared first, before the OR!
-> > 
-> > I'm working on a version of cfb_copyarea() that fixes this and handles _all_
-> > possible values of var.bits_per_pixel (the current code assumes
-> > var.bits_per_pixel is a multiple of 8). Stay tuned!
->                         ^^^^^^^^^^^^^^^
-> Oops, actually 8, 16, or 32 only (and 24 after Antonino Daplas' patch). I also
-> plan on relaxing the current limitation that line_size must be a multiple of
-> sizeof(unsigned long).
 
-A very first version is available in fbtest (module `fbtest' in linux-fbdev's
-CVS at sourceforge.net).
+> This is with radeonfb compiled into the kernel. I'm not on the list, so please
+> CC any replies to me.
+>
+> radeonfb.c:605: unknown field `fb_get_fix' specified in initializer
+> radeonfb.c:605: warning: initialization from incompatible pointer type
+> radeonfb.c:606: unknown field `fb_get_var' specified in initializer
+> radeonfb.c:606: warning: initialization from incompatible pointer type
+> radeonfb.c: In function `radeon_set_dispsw':
+> radeonfb.c:1385: structure has no member named `type'
+> radeonfb.c:1386: structure has no member named `type_aux'
+> radeonfb.c:1387: structure has no member named `ypanstep'
+> radeonfb.c:1388: structure has no member named `ywrapstep'
+> radeonfb.c:1397: structure has no member named `visual'
+> radeonfb.c:1398: structure has no member named `line_length'
+> [snip repeats]
+> radeonfb.c:2487: warning: `fbcon_radeon8' defined but not used
+> radeonfb.c:598: warning: `radeon_read_OF' declared `static' but never defined
+> radeonfb.c:1710: warning: `radeonfb_set_cmap' defined but not used
+> make[2]: *** [radeonfb.o] Error 1
+> make[1]: *** [video] Error 2
+> make: *** [drivers] Error 2
 
-More optimizations (e.g. cached first/last masks) to be released later...
+This is normal. The framebuffer layer is moving to a new api. The next set
+of changes will finish the port over to this new api. Unfortunely it will
+break most drivers. It is up to the driver maintainters to update there
+drivers.
 
-Gr{oetje,eeting}s,
+MS: (n) 1. A debilitating and surprisingly widespread affliction that
+renders the sufferer barely able to perform the simplest task. 2. A disease.
 
-						Geert
+James Simmons  [jsimmons@users.sf.net] 	                ____/|
+fbdev/console/gfx developer                             \ o.O|
+http://www.linux-fbdev.org                               =(_)=
+http://linuxgfx.sourceforge.net                            U
+http://linuxconsole.sourceforge.net
 
-P.S. Yes, I work in userspace right know ;-)
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 
 
 -------------------------------------------------------
-This sf.net email is sponsored by: OSDN - Tired of that same old
-cell phone?  Get a new here for FREE!
-https://www.inphonic.com/r.asp?r=sourceforge1&refcode1=vs3390
+This sf.net email is sponsored by: Jabber - The world's fastest growing 
+real-time communications platform! Don't just IM. Build it in! 
+http://www.jabber.com/osdn/xim

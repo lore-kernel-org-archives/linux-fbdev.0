@@ -1,16 +1,17 @@
-From: "Maciej W. Rozycki" <macro@ds2.pg.gda.pl>
+From: Martin Schulze <joey@infodrom.org>
 Subject: Re: Re: [macro@ds2.pg.gda.pl: Re: PMAG-A support?]
-Date: Tue, 12 Aug 2003 17:26:47 +0200 (MET DST)
+Date: Tue, 12 Aug 2003 17:53:39 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.3.96.1030812171748.7029I-100000@delta.ds2.pg.gda.pl>
-References: <Pine.GSO.4.21.0308121602420.20533-100000@vervain.sonytel.be>
+Message-ID: <20030812155339.GC8511@finlandia.infodrom.north.de>
+References: <20030812063707.GC23104@rembrandt.csv.ica.uni-stuttgart.de> <Pine.GSO.3.96.1030812170254.7029H-100000@delta.ds2.pg.gda.pl>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from delta.ds2.pg.gda.pl ([213.192.72.1] ident=macro)
+Received: from luonnotar.infodrom.org ([195.124.48.78])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19mb3C-0006vQ-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 12 Aug 2003 08:27:06 -0700
-In-Reply-To: <Pine.GSO.4.21.0308121602420.20533-100000@vervain.sonytel.be>
+	id 19mbWk-0004AM-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 12 Aug 2003 08:57:38 -0700
+Content-Disposition: inline
+In-Reply-To: <Pine.GSO.3.96.1030812170254.7029H-100000@delta.ds2.pg.gda.pl>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,35 +21,32 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Thiemo Seufer <ica2_ts@csv.ica.uni-stuttgart.de>, Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>, Karsten Merker <karsten@excalibur.cologne.de>, Martin Schulze <joey@infodrom.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: "Maciej W. Rozycki" <macro@ds2.pg.gda.pl>
+Cc: Thiemo Seufer <ica2_ts@csv.ica.uni-stuttgart.de>, Karsten Merker <karsten@excalibur.cologne.de>, linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 12 Aug 2003, Geert Uytterhoeven wrote:
+Maciej W. Rozycki wrote:
+> On Tue, 12 Aug 2003, Thiemo Seufer wrote:
+> 
+> > Anyway, the AA driver is appended as a diff against current linux-mips
+> > CVS. I hope it doesn't deviate too much from whatever fbdev uses.
+> 
+>  Hmm, I can only see PMAG-A-specific changes here -- does it mean the
+> driver now works as is with no changes to the generic fb code?  If that is
+> the case, I'll apply the patch to the MIPS CVS right now.
 
-> > Ah, I haven't heard about this option yet. Well, the LK keymaps as
-> 
-> It was added in 1995 to support various m68k boxes :-)
-> 
-> > distributed with X seem to want RAW, I'll just try what happens with
-> > CustomKeycodes enabled.
-> 
-> So far everyone who tried MEDIUM_RAW mode on PC said it worked fine, and that
-> he wanted to make it the default mode, but apparently that never happened ;-(
+The changes to generic code were sent in a separate mail.  I've resent
+it to an archive: http://www.infodrom.org/Mail-Archive/misc/2003/0010.html
 
- Well, X11 seems to have quite an extensive knowledge of various keyboards
-out there, so the advantage of using MEDIUM_RAW is epsilon.  OTOH, using
-the RAW mode gives the X-server a possibility to fully control the
-keyboard, beyond what is sufficient for the kernel for console operation. 
-And all the world is not a PC (nor a VAX, which the LK201, etc. keyboards
-might seem to imply ;-) ). 
+Regards,
+
+	Joey
 
 -- 
-+  Maciej W. Rozycki, Technical University of Gdansk, Poland   +
-+--------------------------------------------------------------+
-+        e-mail: macro@ds2.pg.gda.pl, PGP key available        +
+GNU GPL: "The source will be with you... always."
 
+Please always Cc to me when replying to me on the lists.
 
 
 -------------------------------------------------------

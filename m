@@ -1,22 +1,24 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: fglrx + radeonfb leads to crashes?
-Date: Thu, 18 Mar 2004 02:23:17 +0100
+Date: Thu, 18 Mar 2004 12:15:49 +1100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1079572996.13243.10.camel@thor.asgaard.local>
+Message-ID: <1079572548.911.18.camel@gaston>
 References: <200403172018.i2HKI5E0002012@napali.hpl.hp.com>
 	 <1079569590.909.12.camel@gaston>
+	 <1079572996.13243.10.camel@thor.asgaard.local>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B3mFk-0004vK-88
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Mar 2004 17:23:20 -0800
-Received: from netline-mail1.netline.ch ([195.141.226.27])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B3mFj-00052u-30
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Mar 2004 17:23:19 -0800
-In-Reply-To: <1079569590.909.12.camel@gaston>
+	id 1B3mMH-0006Ce-SK
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Mar 2004 17:30:05 -0800
+Received: from gate.crashing.org ([63.228.1.57] ident=root)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.30)
+	id 1B3mMF-0000Fa-1y
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Mar 2004 17:30:03 -0800
+In-Reply-To: <1079572996.13243.10.camel@thor.asgaard.local>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,47 +28,19 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
 Cc: davidm@hpl.hp.com, ajoshi@shell.unixbox.com, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, 2004-03-18 at 01:26, Benjamin Herrenschmidt wrote:=20
-> On Thu, 2004-03-18 at 07:18, David Mosberger wrote:
-> >=20
-> > I have a machine here with an ATI FireGL Z1 card.  It works fine with
-> > the ATI fglrx binary-only driver on 2.6.5-rc1.  However, if radeonfb
-> > is enabled and I try to stop the X server or switch away from it to
-> > another virtual console, then the screen display gets all messed up
-> > and the machine gets stuck.  When this hapens, I periodically see this
-> > kind of message:
-> >=20
-> >   radeonfb: FIFO Timeout !
-> >=20
-> > Now, this is on ia64 machine so at this point I'm just wondering
-> > whether this problem also shows up on other machines.  If it's an
-> > ia64-specific problem, I can look into it.  Otherwise, I guess I'll
-> > just disable radeonfp for now.
->=20
-> This is a known problem. I'm not sure at this point what ATI binary
-> driver is doing, I think it messes up the card internal memory map,
-> among others, and it definitely doesn't restore things properly when
-> beeing switched out.
->=20
-> I only have PPC machines so I can't experiment with it myself though.
-> The "fix" might be as simple as restoring MC_FB_LOCATION,
-> MC_AGP_LOCATION and the various offset when re-initing the mode (the
-> latest fbdev will trigger a mode restore & engine reset when switching
-> out from a KD_GRAPHICS console).
 
-Note that I don't have problems switching between radeonfb and an X
-server from DRI CVS which sets up the card memory layout in the
-recommended way and never restores it. Am I missing something?
+> Note that I don't have problems switching between radeonfb and an X
+> server from DRI CVS which sets up the card memory layout in the
+> recommended way and never restores it. Am I missing something?
 
+I'm not completely sure what ATI binary does...
 
---=20
-Earthling Michel D=C3=A4nzer      |     Debian (powerpc), X and DRI develop=
-er
-Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=3Ddaenzer
+Ben.
+
 
 
 
@@ -74,4 +48,4 @@ Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=3Ddaenzer
 This SF.Net email is sponsored by: IBM Linux Tutorials
 Free Linux tutorial presented by Daniel Robbins, President and CEO of
 GenToo technologies. Learn everything from fundamentals to system
-administration.http://ads.osdn.com/?ad_id=3D1470&alloc_id=3D3638&op=3Dclick
+administration.http://ads.osdn.com/?ad_id=1470&alloc_id=3638&op=click

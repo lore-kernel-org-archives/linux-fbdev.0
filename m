@@ -1,22 +1,21 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: patch to radeonfb accel functions
-Date: Fri, 23 Apr 2004 20:18:08 +1000
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [PATCH] neofb patches
+Date: Fri, 23 Apr 2004 17:07:33 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1082715487.10628.6.camel@gaston>
-References: <4088C014.7030505@undead.cc>
+Message-ID: <Pine.LNX.4.44.0404231707040.3463-100000@phoenix.infradead.org>
+References: <20040423040313.GA4403@foogod.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BGxnZ-0002bX-C9
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 03:20:45 -0700
-Received: from gate.crashing.org ([63.228.1.57] ident=root)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	id 1BH3DF-0003uI-Tj
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 09:07:37 -0700
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1BGxnZ-0002cG-0K
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 03:20:45 -0700
-In-Reply-To: <4088C014.7030505@undead.cc>
+	id 1BH3DF-00020p-G4
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 09:07:37 -0700
+In-Reply-To: <20040423040313.GA4403@foogod.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,28 +25,32 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: John Zielinski <grim@undead.cc>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Alex Stewart <alex@foogod.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-On Fri, 2004-04-23 at 17:04, John Zielinski wrote:
-> I haven't seen anything about this on the list so I'm posting it.  The 
-> first change adds the pseudo_palette lookup to the fillrect function 
-> which cleans up the ugliness when running make menuconfig among other 
-> things.  The second change I'm not 100% sure if it's right but I'm quite 
-> sure what was originally there isn't right.  DP_SRC_RECT has the same 
-> value as GMC_DST_8BPP and is listed in the DP_MIX section and not the 
-> GMC section .  I'm assuming it should have been GMC_DP_SRC_RECT .  Can 
-> someone else confirm this?
 
-Your first patch wasn't lost, it's in my queue, I was planning to submit
-it along with other fixes as soon as we have sorted out the fbcon accel
-setting issue.
+Applied. I wonder if this means that the neofb can go back and forth to 
+vga text mode :-)
 
-I'll look at this other question tomorrow hopefully
+On Thu, 22 Apr 2004, Alex Stewart wrote:
 
-Ben.
-
+> Well, I downloaded your diff for the neofb driver and tried it out.  I did
+> notice there appears to be a slight bug in it.  Whenever anything (such as
+> fbset) closes /dev/fb0, the driver clobbers the device registers (resulting in
+> a blank screen).
+> 
+> I'm assuming the attached correction is more what was intended..
+> 
+> I'm currently merging our two sets of patches into one driver.  I do note that
+> patch gets a little confused when trying to do it itself and places a couple of
+> bits of code in really odd places, which might have been part of why it didn't
+> work for you.  I think I should have an updated patchset ready to post later
+> tonight..
+> 
+> -alex
+> 
 
 
 

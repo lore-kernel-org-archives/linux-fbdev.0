@@ -1,22 +1,22 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: FBDEV 2.6.0-test7 updates.
-Date: Wed, 15 Oct 2003 16:17:05 -0700
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: ioremap problem on highmem
+Date: Thu, 16 Oct 2003 00:17:47 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20031015161705.221a579b.akpm@osdl.org>
-References: <Pine.LNX.4.44.0310152345210.13660-100000@phoenix.infradead.org>
+Message-ID: <Pine.LNX.4.44.0310160012230.13660-100000@phoenix.infradead.org>
+References: <20031014175939.2616.qmail@web14916.mail.yahoo.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1A9usw-0004Un-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 15 Oct 2003 16:16:54 -0700
-Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 1A9usv-00059g-OH
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 15 Oct 2003 16:16:53 -0700
-In-Reply-To: <Pine.LNX.4.44.0310152345210.13660-100000@phoenix.infradead.org>
+	id 1A9utv-0004Y4-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 15 Oct 2003 16:17:55 -0700
+Received: from [213.86.99.234] (helo=phoenix.infradead.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.22)
+	id 1A9uts-0005NB-Jp
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 15 Oct 2003 16:17:52 -0700
+In-Reply-To: <20031014175939.2616.qmail@web14916.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -26,57 +26,34 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Chris Heath <chris@heathens.co.nz>
-
-James Simmons <jsimmons@infradead.org> wrote:
->
-> Here is the latest fbdev patches. Please test!!! Many new enhancements. 
-> Several fixes. The patch is against 2.6.0-test7
-> 
-> http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
-
-Cool.  I've had the below fix floating about for a while.  Is it still
-relevant?
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: Otto Solares <solca@guug.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
+> My main motivation for this is to have a single driver controlling the 
+> graphics hardware on DRI supported systems. This will eliminate the problem 
+> with saving hardware state between VT's. 
 
-From: Chris Heath <chris@heathens.co.nz>
+Unless you disable the VT console system you still have to to deal with 
+switching from KDTEXT to KDGRAPHICS and back again. Its also userlands 
+responiblity to save the console state and restore it.
 
-I am still seeing a lot of cursors being left behind.  It is not a race
-condition or anything -- in the TTY line editor, it happens about 50% of
-the time when you press backspace.
+> Another issue I am having trouble with is having mode setting/EDID code in a
+> device driver. That is a lot of seldom used code sitting in a device driver.
 
-What appears to be happening is the cursor is flashing twice as slowly
-as the driver thinks it is, so of course it's wrong half the time when
-it comes to erase the cursor.
+Prehaps but on platforms lacking firmware that sets the video mode this is 
+a problem. A good example is most mips boxes. The prom almost nevers 
+initializes the graphics cards. You have to set the video mode yourself. 
+No way around it. 
 
-The patch below fixes it for me.
+> I'd rather see it in a user space library. Some hardware (Rage128) can only
+> read EDID info from user space becuase of real mode INT10 problems.
 
+Read it using i2c. I have code for the aty128 driver that reads EDID 
+information. No problems with it.
 
-
- drivers/video/softcursor.c |    6 ++++++
- 1 files changed, 6 insertions(+)
-
-diff -puN drivers/video/softcursor.c~cursor-flashing-fix drivers/video/softcursor.c
---- 25/drivers/video/softcursor.c~cursor-flashing-fix	2003-08-16 14:01:15.000000000 -0700
-+++ 25-akpm/drivers/video/softcursor.c	2003-08-16 14:01:15.000000000 -0700
-@@ -74,6 +74,12 @@ int soft_cursor(struct fb_info *info, st
- 
- 	if (info->cursor.image.data)
- 		info->fbops->fb_imageblit(info, &info->cursor.image);
-+
-+	if (!info->cursor.enable) {
-+		for (i = 0; i < size; i++)
-+			dst[i] ^= info->cursor.mask[i];
-+	}
-+
- 	return 0;
- }
- 
-
-_
 
 
 

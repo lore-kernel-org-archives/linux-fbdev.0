@@ -1,18 +1,21 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: VGA routing
-Date: Sat, 6 Dec 2003 23:34:48 -0800 (PST)
+From: John Zielinski <grim@undead.cc>
+Subject: Re: 2.6 fbcon and 15/16 bpp
+Date: Wed, 10 Dec 2003 01:43:41 -0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20031207073448.83488.qmail@web14911.mail.yahoo.com>
+Message-ID: <3FD6C09D.50807@undead.cc>
+References: <1070348676.4311.39.camel@gaston>  <3FCC4018.4020503@undead.cc>	 <1070403757.4300.75.camel@gaston>  <3FCD17D5.4040804@undead.cc> <1070410792.21174.83.camel@gaston>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AStRI-0001eu-LH
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 06 Dec 2003 23:34:48 -0800
-Received: from web14911.mail.yahoo.com ([216.136.225.249])
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.24)
-	id 1AStRI-0004NS-Bx
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 06 Dec 2003 23:34:48 -0800
+	id 1ATy4i-0007KP-PZ
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Dec 2003 22:43:56 -0800
+Received: from gw-undead3.tht.net ([216.126.84.18] helo=mail.undead.cc)
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.24)
+	id 1ATy4i-0005RM-BH
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Dec 2003 22:43:56 -0800
+In-Reply-To: <1070410792.21174.83.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -22,39 +25,29 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-My machine has three busses.
-1) on chip
-2) AGP
-3) PCI
+Benjamin Herrenschmidt wrote:
 
-My primary display is on a PCI card.
-When I boot the VGA ports are routed through the PCI bridge.
-I'm running X on the PCI card.
+>>Little.  It's an single processor Athalon box.  I'll do the test later 
+>>tonight as I don't want to reboot the other machine at the moment.
+>>    
+>>
+>
+>Ok, so this isn't an endian problem in the cfb_ routines. Thanks.
+>I'll try to figure out what's up here as well later this week, I'm
+>a bit too busy with other things at the moment.
+>
+>  
+>
+The riva driver doesn't have a switch to disable acceleration.  I tried 
+changing the source but I keep crashing the machine.
 
-Now I load a device driver that enables the AGP card. After doing this the VGA
-ports are routed to the AGP bus. Where does this happen?
-
-Now if I do a VT switch the VGA ports get routed back to the PCI bridge. Where
-does this happen?
-
-Thanks for the help. I'm trying to figure out the right way to initialize a
-secondary card by jumping to C000:0003 in it's BIOS. Does Xfree jump to
-C000:0003? I can't find where it does that in the source.
-
+John
 
 
-=====
-Jon Smirl
-jonsmirl@yahoo.com
-
-__________________________________
-Do you Yahoo!?
-New Yahoo! Photos - easier uploading and sharing.
-http://photos.yahoo.com/
 
 
 -------------------------------------------------------

@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 3/7] fbcon: Call set_par per fb_info once during init
-Date: Sun, 20 Mar 2005 21:09:01 +0800
-Message-ID: <200503202109.01132.adaplas@hotpop.com>
+Subject: [PATCH 1/7] nvidiafb: Process boot options earlier
+Date: Sun, 20 Mar 2005 21:08:29 +0800
+Message-ID: <200503202108.31573.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DD0CW-0001Ff-Ff
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Mar 2005 05:10:40 -0800
+	id 1DD0CV-0001Fe-Jj
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Mar 2005 05:10:39 -0800
 Received: from smtp-out.hotpop.com ([38.113.3.71])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DD0CV-0002EW-LB
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Mar 2005 05:10:40 -0800
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DD0CS-0007lZ-Ru
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Mar 2005 05:10:39 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 70CD014CE652
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 20 Mar 2005 13:10:32 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id 38FBF14CE796
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 20 Mar 2005 13:10:25 +0000 (UTC)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -31,90 +31,41 @@ Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-  Currently, fbcon will unconditionally do set_par's
-  on all info's mapped to each console.  This results in
-  repetetive hardware initialization when one is enough. Fix
-  this by skipping all fbdev's that already underwent
-  initialization.
+  A few options, such as noscale, are processed after hardware
+  has been configured which render them useless. This manifest
+  as failure of DVI displays to scale.
+
+  Process them earlier.
 
 From: Antonino Daplas <adaplas@pol.net>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- fbcon.c |   16 ++++++++++++----
- fbcon.h |    3 +++
- 2 files changed, 15 insertions(+), 4 deletions(-)
+ nvidia.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff -Nru a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
---- a/drivers/video/console/fbcon.c	2005-03-16 07:07:15 +08:00
-+++ b/drivers/video/console/fbcon.c	2005-03-16 07:39:24 +08:00
-@@ -599,9 +599,10 @@
+diff -Nru a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
+--- a/drivers/video/nvidia/nvidia.c	2005-03-20 20:09:13 +08:00
++++ b/drivers/video/nvidia/nvidia.c	2005-03-15 18:42:12 +08:00
+@@ -1353,8 +1353,6 @@
+ 	if (!hwcur)
+ 		info->fbops->fb_cursor = soft_cursor;
+ 	info->var.accel_flags = (!noaccel);
+-	par->FpScale = (!noscale);
+-	par->paneltweak = paneltweak;
  
- 	ops->currcon = fg_console;
+ 	switch (par->Architecture) {
+ 	case NV_ARCH_04:
+@@ -1486,6 +1484,8 @@
+ 		printk(KERN_INFO PFX "flatpanel support enabled\n");
  
--	if (info->fbops->fb_set_par)
-+	if (info->fbops->fb_set_par && !(ops->flags & FBCON_FLAGS_INIT))
- 		info->fbops->fb_set_par(info);
+ 	par->CRTCnumber = forceCRTC;
++	par->FpScale = (!noscale);
++	par->paneltweak = paneltweak;
  
-+	ops->flags |= FBCON_FLAGS_INIT;
- 	ops->graphics = 0;
- 
- 	if (vc)
-@@ -900,6 +901,7 @@
- static void fbcon_init(struct vc_data *vc, int init)
- {
- 	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
-+	struct fbcon_ops *ops;
- 	struct vc_data **default_mode = vc->vc_display_fg;
- 	struct vc_data *svc = *default_mode;
- 	struct display *t, *p = &fb_display[vc->vc_num];
-@@ -950,6 +952,8 @@
- 	new_cols = info->var.xres / vc->vc_font.width;
- 	new_rows = info->var.yres / vc->vc_font.height;
- 	vc_resize(vc, new_cols, new_rows);
-+
-+	ops = info->fbcon_par;
- 	/*
- 	 * We must always set the mode. The mode of the previous console
- 	 * driver could be in the same resolution but we are using different
-@@ -957,10 +961,14 @@
- 	 *
- 	 * We need to do it in fbcon_init() to prevent screen corruption.
- 	 */
--	if (CON_IS_VISIBLE(vc) && info->fbops->fb_set_par)
--		info->fbops->fb_set_par(info);
-+	if (CON_IS_VISIBLE(vc)) {
-+		if (info->fbops->fb_set_par &&
-+		    !(ops->flags & FBCON_FLAGS_INIT))
-+			info->fbops->fb_set_par(info);
-+		ops->flags |= FBCON_FLAGS_INIT;
-+	}
- 
--	((struct fbcon_ops *) info->fbcon_par)->graphics = 0;
-+	ops->graphics = 0;
- 
- 	if ((cap & FBINFO_HWACCEL_COPYAREA) &&
- 	    !(cap & FBINFO_HWACCEL_DISABLED))
-diff -Nru a/drivers/video/console/fbcon.h b/drivers/video/console/fbcon.h
---- a/drivers/video/console/fbcon.h	2005-03-16 07:07:15 +08:00
-+++ b/drivers/video/console/fbcon.h	2005-03-16 07:39:24 +08:00
-@@ -18,6 +18,8 @@
- 
- #include <asm/io.h>
- 
-+#define FBCON_FLAGS_INIT 1
-+
-    /*
-     *    This is the interface between the low-level console driver and the
-     *    low-level frame buffer device
-@@ -69,6 +71,7 @@
- 	int    cursor_reset;
- 	int    blank_state;
- 	int    graphics;
-+	int    flags;
- 	char  *cursor_data;
- };
-     /*
+ 	/* enable IO and mem if not already done */
+ 	pci_read_config_word(pd, PCI_COMMAND, &cmd);
+
 
 
 

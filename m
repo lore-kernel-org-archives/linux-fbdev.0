@@ -1,16 +1,16 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: 2.5.42 compiler error in video/vga16fb.c
-Date: Fri, 18 Oct 2002 09:47:34 -0700 (PDT)
+Subject: Re: [BK PATCHS] fbdev updates.
+Date: Fri, 18 Oct 2002 09:48:09 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.33.0210180944520.10832-100000@maxwell.earthlink.net>
-References: <20021013015301.GB1508@ppc.vc.cvut.cz>
+Message-ID: <Pine.LNX.4.33.0210180948070.10832-100000@maxwell.earthlink.net>
+References: <Pine.GSO.4.21.0210151036400.25245-100000@vervain.sonytel.be>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from avocet.mail.pas.earthlink.net ([207.217.120.50])
+Received: from pintail.mail.pas.earthlink.net ([207.217.120.122])
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 182aNz-0003Bz-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Oct 2002 09:54:07 -0700
-In-Reply-To: <20021013015301.GB1508@ppc.vc.cvut.cz>
+	id 182aOX-0003Gp-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Oct 2002 09:54:41 -0700
+In-Reply-To: <Pine.GSO.4.21.0210151036400.25245-100000@vervain.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,28 +22,58 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Petr Vandrovec <vandrove@vc.cvut.cz>
-Cc: Bob Billson <reb@bhive.dhs.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
+Done.
 
-> It looks like that nobody is interested in VGA anymore. Are there
-> any objections against patch below? It is for current 2.5.42-bk,
-> and it fixes vga16fb compilability, and adds -depth 8 (to get 320x200, or
-> 360x480 in planar mode) and -depth 0 (to get fast textmode) to the vga16fb.
+MS: (n) 1. A debilitating and surprisingly widespread affliction that
+renders the sufferer barely able to perform the simplest task. 2. A disease.
 
-I'm working on it.
+James Simmons  [jsimmons@users.sf.net] 	                ____/|
+fbdev/console/gfx developer                             \ o.O|
+http://www.linux-fbdev.org                               =(_)=
+http://linuxgfx.sourceforge.net                            U
+http://linuxconsole.sourceforge.net
 
-> If there are no objections, I'll split it up and send to Linus. But as
+On Tue, 15 Oct 2002, Geert Uytterhoeven wrote:
 
-Wait. I have your work already in the fbdev BK tree. I'm porting it to the
-new api. I just need to write up a fillrect and copy area function for vga
-planes mode.
-
-> I already said (and already asked), I'm not going to be vga16fb maintainer
-> (because of I use matroxfb everywhere), so if there is somebody else
-> who has vga16fb fixes, or who wants to maintain vga16fb, please step up...
-
-I guess I can do it. I need to rewrite vgacon in the near future anyways.
+> On Mon, 14 Oct 2002, James Simmons wrote:
+> > > On Sun, 13 Oct 2002, James Simmons wrote:
+> > > > This is nearly the last of the fbdev api changes (90% of them). Alot of
+> > > > driver fixes as well. The console related stuff in each fbdev driver
+> > > > is nearly gone!!! Please do a pull. Thank you.
+> > > >
+> > > > bk://fbdev.bkbits.net/fbdev-2.5
+> > >
+> > > Please add the output of diffstat, so we know which files you changed.
+> >
+> > Better yet here is the BK patch via email.
+> > @@ -220,12 +218,7 @@
+> >     bool '  Advanced low level driver options' CONFIG_FBCON_ADVANCED
+> >     if [ "$CONFIG_FBCON_ADVANCED" = "y" ]; then
+> >        tristate '    Monochrome support' CONFIG_FBCON_MFB
+>
+> CONFIG_FBCON_MFB can be deleted, because of this change to the Makefile:
+>
+> > -obj-$(CONFIG_FBCON_MFB)           += fbcon-mfb.o
+>
+> >  #      tristate '    Atari interleaved bitplanes (16 planes) support' CONFIG_FBCON_IPLAN2P16
+>
+> FBCON_IPLAN2P16 can be deleted, since it doesn't exist.
+>
+> Gr{oetje,eeting}s,
+>
+> 						Geert
+>
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+>
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+> 							    -- Linus Torvalds
+>
+>
 
 
 

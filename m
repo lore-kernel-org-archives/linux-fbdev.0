@@ -1,54 +1,94 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: Re: [PATCH 5/5] s1d13xxxfb: Add support for
- Epson S1D13806 FB
-Date: Mon, 14 Mar 2005 22:10:24 -0800
-Message-ID: <20050314221024.4f2a9bf4.akpm@osdl.org>
-References: <200503150706.27357.adaplas@hotpop.com>
-	<20050314184049.2ed12443.akpm@osdl.org>
-	<200503151401.17297.adaplas@hotpop.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: FB model basic issues (WAS: radeon, apertures & memory mapping)
+Date: Tue, 15 Mar 2005 17:45:16 +1100
+Message-ID: <1110869116.29137.78.camel@gaston>
+References: <1110677744.19810.80.camel@gaston>
+	<9e47339105031219223e606a52@mail.gmail.com>
+	<1110696189.5787.100.camel@gaston>
+	<1110774523.4003.511.camel@localhost>
+	<1110784327.5787.288.camel@gaston>
+	<1110817205.4004.527.camel@localhost>
+	<1110837171.5863.16.camel@gaston> <1110838356.4003.548.camel@localhost>
+	<1110839873.5673.41.camel@gaston> <1110862777.4044.592.camel@localhost>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DB5Gc-0004VI-CZ
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Mar 2005 22:10:58 -0800
-Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.41)
-	id 1DB5Ga-00071R-MD
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Mar 2005 22:10:58 -0800
-In-Reply-To: <200503151401.17297.adaplas@hotpop.com>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <1110862777.4044.592.camel@localhost>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: adaplas@pol.net
-Cc: adaplas@hotpop.com, linux-fbdev-devel@lists.sourceforge.net, varenet@esiee.fr
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
+	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/xorg>
+List-Post: <mailto:xorg@lists.freedesktop.org>
+List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
+	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
+Sender: xorg-bounces@lists.freedesktop.org
+Errors-To: xorg-bounces@lists.freedesktop.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Cc: dri-devel@lists.sourceforge.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, xorg@lists.freedesktop.org, Jon Smirl <jonsmirl@yahoo.com>
 
-"Antonino A. Daplas" <adaplas@hotpop.com> wrote:
->
-> Anyway, would you like to me to follow the format below to make it
->  easier for you?
+On Mon, 2005-03-14 at 23:59 -0500, Michel D=E4nzer wrote:
+> On Tue, 2005-03-15 at 09:37 +1100, Benjamin Herrenschmidt wrote:
+> > > Be that as it may, it remains a fact that such a change would break
+> > > existing installations...
+> > >=20
+> > > I think that mode setting and memory allocation should be separated=
+. X
+> > > will always reserve enough video RAM for the largest resolution it =
+uses
+> > > for the screen contents.
+> >=20
+> > But X has no control on where fbdev will allocate memory.=20
+>=20
+> My understanding is that so far, the fbdev API has pretty much implied
+> that any mode scans out the beginning of the memory accessed via the
+> framebuffer device, unless the panning ioctl is used. IIRC at least
+> DirectFB makes basically the same assumptions as X there.
 
-Please.  The patches which I send to Linus are in what I consider to be
-"canonical form".  If I receive a patch which starts out with
+But that will not be true with dual head unless I put the second
+framebuffer into some fixed location in memory, thus making life more
+difficult for the allocator.
 
-From: John Doe <john@doe.com>
+> I'm not suggesting that, but I do think that tying together mode
+> switching and memory allocation would be a big mistake.
+>=20
+> The EGL API for this is currently being discussed on the dri-egl list
+> (http://lists.freedesktop.org/mailman/listinfo/dri-egl), you may want t=
+o
+> join in there.
 
-Then I'll arrange for John to propagate into bk as the submitter.
+I'll try, I'm near by bandwidth limit already though.
 
+> > We'll need to find a way to deal with that. An idea would be for me t=
+o=20
+> > do the clearing only when I come from a different bit depth or from t=
+ext=20
+> > mode. That is, what i want to avoid, is those artifacts caused by=20
+> > incorrect bit depth content. A strict mode change isn't an issue in t=
+his=20
+> > case. That would solve my immediate problem.
+>=20
+> Sounds good.
+>=20
+> > _BUT_ in the long run, X will have to be smarter. Current UseFBDev or=
+ X
+> > "fbdev" can't support dual head properly on top of fbdev anyway,=20
+>=20
+> Agreed for UseFBDev, but what's the problem with fbdev?
 
+Read the rest of the email.
+>=20
+> > But until all clients are DRI clients, we have a problem.
+>=20
+> Keep in mind that basically the only driver-independent API exposed by
+> the DRI is OpenGL, so I'm afraid it's unlikely that all fbdev
+> applications will take that route.
 
--------------------------------------------------------
-SF email is sponsored by - The IT Product Guide
-Read honest & candid reviews on hundreds of IT Products from real users.
-Discover which products truly live up to the hype. Start reading now.
-http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
+I meant DRM. That is some arbitration & locking. There is simply _NO_
+way we can have something that works with both independant multiple
+heads and direct banging of the framebuffer without arbitration. There
+is no magic here. It _can_ be made to work in _some_ cases using the
+separate swappers, but that won't help if one of the heads try to do
+accel....
+
+Ben.

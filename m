@@ -1,17 +1,16 @@
-From: Antonino Daplas <adaplas@pol.net>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: fb_imageblit semantic
-Date: 17 Mar 2003 20:07:19 +0800
+Date: Mon, 17 Mar 2003 13:18:01 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1047902787.2599.11.camel@localhost.localdomain>
-References: <130293E23DB3@vcnet.vc.cvut.cz>
+Message-ID: <Pine.GSO.4.21.0303171312590.17453-100000@vervain.sonytel.be>
+References: <1047902787.2599.11.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from pine.compass.com.ph ([202.70.96.37])
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18utS0-0002qK-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Mar 2003 04:10:44 -0800
-In-Reply-To: <130293E23DB3@vcnet.vc.cvut.cz>
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18utaR-0005ii-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Mar 2003 04:19:27 -0800
+In-Reply-To: <1047902787.2599.11.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,53 +20,74 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Petr Vandrovec <vandrove@vc.cvut.cz>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Petr Vandrovec <vandrove@vc.cvut.cz>, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Mon, 2003-03-17 at 18:40, Petr Vandrovec wrote:
-> On 17 Mar 03 at 11:31, Geert Uytterhoeven wrote:
-> > On 17 Mar 2003, Antonino Daplas wrote:
-> > > As Geert said, it's not just trivial, but logical to split fb_imageblit
-> > > into two.
-> > 
-> > So, are we gonna split it? This will also make hardware acceleration support
-> > more clean. E.g. most sbus drivers do color expansion in hardware, and fall
-> > back to cfb_imageblit() for the logo.
-> > 
-
-It's up to James, though I vote for it.  And I don't think any driver
-has accelerated versions of fb_imageblit for the logo, since any
-performance gained is probably minimal and it will involve too much work
-for something that's going to be done only once.
-  
-> > > > OK, so rule is that if depth=0, input is 1bpp with palette in bgcol/fgcol,
-> > > > while if depth != 0, then palette is in info->pseudo_palette ?
+On 17 Mar 2003, Antonino Daplas wrote:
+> On Mon, 2003-03-17 at 18:40, Petr Vandrovec wrote:
+> > On 17 Mar 03 at 11:31, Geert Uytterhoeven wrote:
+> > > On 17 Mar 2003, Antonino Daplas wrote:
+> > > > As Geert said, it's not just trivial, but logical to split fb_imageblit
+> > > > into two.
 > > > 
-> > > Yes.  You can also say that if image->depth != var->bits_per_pixel, do
-> > > color expansion or reduction, whatever the case may be.
-> > 
-> > Hmmm... Note that image->depth can be larger than 8, while the image data is
-> > still 8-bit. This is an inconsistency.
-
-I was thinking that if image->depth=8 and var->bits_per_pixel=4, then
-the driver is in danger of going out of bounds when referring to the
-pseudo_palette.  But I forgot that the fb_show_logo() takes care of
-avoiding that :-)  And yes, current usage of image->depth is pretty
-inconsistent and basically useless.
-
+> > > So, are we gonna split it? This will also make hardware acceleration support
+> > > more clean. E.g. most sbus drivers do color expansion in hardware, and fall
+> > > back to cfb_imageblit() for the logo.
 > 
-> image->depth for logo must change to 8. Or remove depth completely after
-> splitting imageblit to paintchar & paintlogo, as currently depth is
-> useless anyway: target format is defined by framebuffer layout, not
-> by image->depth, and source format is hardwired to the code.
+> It's up to James, though I vote for it.  And I don't think any driver
+> has accelerated versions of fb_imageblit for the logo, since any
+> performance gained is probably minimal and it will involve too much work
+> for something that's going to be done only once.
 
-You're correct.  If it's going to be split, image->depth becomes
-redundant.
+Wait until someone wants 256-color fonts ;-)
 
-Tony
+> > > > > OK, so rule is that if depth=0, input is 1bpp with palette in bgcol/fgcol,
+> > > > > while if depth != 0, then palette is in info->pseudo_palette ?
+> > > > 
+> > > > Yes.  You can also say that if image->depth != var->bits_per_pixel, do
+> > > > color expansion or reduction, whatever the case may be.
+> > > 
+> > > Hmmm... Note that image->depth can be larger than 8, while the image data is
+> > > still 8-bit. This is an inconsistency.
+> 
+> I was thinking that if image->depth=8 and var->bits_per_pixel=4, then
+> the driver is in danger of going out of bounds when referring to the
+> pseudo_palette.  But I forgot that the fb_show_logo() takes care of
+> avoiding that :-)  And yes, current usage of image->depth is pretty
+> inconsistent and basically useless.
+> 
+> > image->depth for logo must change to 8. Or remove depth completely after
+> > splitting imageblit to paintchar & paintlogo, as currently depth is
+> > useless anyway: target format is defined by framebuffer layout, not
+> > by image->depth, and source format is hardwired to the code.
+> 
+> You're correct.  If it's going to be split, image->depth becomes
+> redundant.
 
+That depends... How do we draw the monochrome penguin? Using image->depth is 1
+or 8? The latter (current method) is slower, since we need to expand the
+monochrome logo to 8-bit first, and (usually) compress it to 1-bit in the fbdev
+driver afterwards.
 
+And perhaps we may want to draw 32-bit ARGB images later?
+
+So I see the following possible valid values for image->depth:
+  - 8 (logo with up to 256 colors and LUT)
+  - optional 1 (monochrome logo, if we don't want to expand?)
+  - optional 32 (ARGB image, dithering left to the driver?)
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

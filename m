@@ -1,19 +1,20 @@
-From: "Luiz Fernando N. Capitulino" <lcapitulino@prefeitura.sp.gov.br>
-Subject: [PATCH] - video/imsttfb.c. warning fix.
-Date: Mon, 19 Apr 2004 17:13:12 -0300
+From: Helge Deller <deller@gmx.de>
+Subject: fbset not working with tridentfb on 2.6.x kernels
+Date: Tue, 20 Apr 2004 01:00:47 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040419171312.49cbc731.lcapitulino@prefeitura.sp.gov.br>
+Message-ID: <200404200100.47906.deller@gmx.de>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BFfBs-0001dG-BZ
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 19 Apr 2004 13:16:28 -0700
-Received: from sampa7.prodam.sp.gov.br ([200.230.190.107])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BFfBr-0003V8-Ty
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 19 Apr 2004 13:16:28 -0700
+	id 1BFhl3-0005aJ-Mo
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 19 Apr 2004 16:00:57 -0700
+Received: from mail.gmx.net ([213.165.64.20])
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
+	id 1BFhl3-0004Bt-6o
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 19 Apr 2004 16:00:57 -0700
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -24,47 +25,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: akpm@osdl.org
-Cc: jsimmons@infradead.org, linux-fbdev-devel@lists.sf.net
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
+Hi,
 
- Hi,
+I've tried the tridentfb a few times with the last 2.6 kernel series (e.g. 2.6.6-rc1, 2.6.5, 2.6.4, 2.6.3) and with none of those kernels switching resolution with fbset worked. Everytime just screen was just scrambled with weired random graphics pixel stuff.
 
- The patch fixes this warning:
+modprobe tridentfb on 2.6.6-rc1 gives:
+tridentfb: Trident framebuffer 0.7.8-NEWAPI initializing
+tridentfb: framebuffer size = 8192 Kb
+tridentfb: 0000:01:00.0 board found
+tridentfb: 1024x768 flat panel found
+tridentfb: fb0: Trident frame buffer device 640x480-8bpp
 
-drivers/video/imsttfb.c:1089: warning: `imsttfb_load_cursor_image' defined but not used
-drivers/video/imsttfb.c:1159: warning: `imstt_set_cursor' defined but not used
+My system is a IBM R30 laptop with the following lspci output:
+01:00.0 VGA compatible controller: Trident Microsystems CyberBlade/i1 (rev 5d) (prog-if 00 [VGA])
+        Subsystem: IBM ThinkPad T30
+        Flags: bus master, 66Mhz, medium devsel, latency 32, IRQ 11
+        Memory at 80800000 (32-bit, non-prefetchable)
+        Memory at 80500000 (32-bit, non-prefetchable)
+        Memory at 81000000 (32-bit, non-prefetchable)
+        Capabilities: [80] AGP version 1.0
+        Capabilities: [90] Power Management version 1
 
- In that case the code will be commented, the patch is:
+I'm willing to test any patches to get this think working correctly....
 
- drivers/video/imsttfb.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
-
-
-diff -X dontdiff -Nparu a/drivers/video/imsttfb.c a~/drivers/video/imsttfb.c
---- a/drivers/video/imsttfb.c	2003-10-20 08:11:34.000000000 -0200
-+++ a~/drivers/video/imsttfb.c	2004-04-19 16:02:58.000000000 -0300
-@@ -1084,6 +1084,7 @@ imsttfb_copyarea(struct fb_info *info, c
- 	while(read_reg_le32(par->dc_regs, SSTATUS) & 0x40);
- }
- 
-+#if 0
- static int
- imsttfb_load_cursor_image(struct imstt_par *par, int width, int height, __u8 fgc)
- {
-@@ -1191,7 +1192,6 @@ imstt_set_cursor(struct imstt_par *par, 
- 	}
- }
- 
--#if 0
- static int 
- imsttfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
- {
-
--- 
-Luiz Fernando N. Capitulino
-<lcapitulino@prefeitura.sp.gov.br>
-<http://www.telecentros.sp.gov.br>
+Helge
 
 
 -------------------------------------------------------

@@ -1,23 +1,21 @@
-From: viro@parcelfarce.linux.theplanet.co.uk
-Subject: Re: fbdev driver and sysfs question.
-Date: Wed, 11 Feb 2004 22:57:24 +0000
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: atyfb expert needed
+Date: Thu, 12 Feb 2004 10:29:10 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040211225724.GN21151@parcelfarce.linux.theplanet.co.uk>
-References: <Pine.LNX.4.44.0402112225360.25659-100000@phoenix.infradead.org>
+Message-ID: <Pine.GSO.4.58.0402121024540.7297@waterleaf.sonytel.be>
+References: <1076537453.868.123.camel@gaston>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Ar3JB-0005qN-OZ
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 11 Feb 2004 14:58:17 -0800
-Received: from parcelfarce.linux.theplanet.co.uk
-	([195.92.249.252] helo=www.linux.org.uk ident=93)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1Ar3IO-0008QG-Ly
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 11 Feb 2004 14:57:28 -0800
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0402112225360.25659-100000@phoenix.infradead.org>
+	id 1ArDAt-0000zS-Ba
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 12 Feb 2004 01:30:23 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1ArD7x-0003jG-2Y
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 12 Feb 2004 01:27:21 -0800
+In-Reply-To: <1076537453.868.123.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,36 +25,45 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="iso-8859-1"
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, =?iso-8859-15?Q?Dani=EBl_Mantione?= <daniel@deadlock.et.tudelft.nl>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, Feb 11, 2004 at 10:26:45PM +0000, James Simmons wrote:
-> +	info = framebuffer_alloc(0, &dev->dev); 
-> +	if (!info)
-> +		return -ENOMEM;
-> +	dev_set_drvdata(&dev->dev, info);
-> +	
-> +        info->screen_base = ioremap(vesafb_fix.smem_start, vesafb_fix.smem_len);
-> +	if (!info->screen_base) {
->  		release_mem_region(vesafb_fix.smem_start, vesafb_fix.smem_len);
->  		printk(KERN_ERR
->  		       "vesafb: abort, cannot ioremap video memory 0x%x @ 0x%lx\n",
+On Thu, 12 Feb 2004, Benjamin Herrenschmidt wrote:
+> The current driver in James tree (with generic lcd support) breaks
+> the display on the LT-G chip of the powerbook wallstreet. I don't
+> have time at the moment to dig into every change (there's a lot).
+>
+> The "effect" is that the screen appears to be cut in vertical bands,
+> each of them displaying a slightly offseted version of what should be
+> there with some noise near the right edge.
+>
+> If that symptom rings any bell about what registers can be wrong,
+> that would help me a lot figuring out what's up.
 
-	Who will free info?
+Sounds like a problem with DSP_CONFIG and DSP_ON_OFF.
 
-> -	fb_alloc_cmap(&fb_info.cmap, video_cmap_len, 0);
-> +	fb_alloc_cmap(&info->cmap, video_cmap_len, 0);
->  
-> -	if (register_framebuffer(&fb_info)<0)
-> +	if (register_framebuffer(info) < 0)
+Check aty_dsp_gt(), either the value of fifo_size or the dsp_* values.
 
-	Who will undo allocations?  BTW, that applies to the old code too -
-even if fb_alloc_cmap() doesn't require any actions on cleanup, ioremap()
-definitely does.
+BTW, according to Dani=EBl Mantione the DSP calculations in atyfb have al=
+ways
+been wrong (but apparently worked on most machines due to sheer luck ;-),=
+ so
+you may want to compare with aty_dsp_gt() in current 2.4.
 
->  		return -EINVAL;
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m6=
+8k.org
+
+In personal conversations with technical people, I call myself a hacker. =
+But
+when I'm talking to journalists I just say "programmer" or something like=
+ that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

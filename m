@@ -1,17 +1,20 @@
-From: James Simmons <jsimmons@transvirtual.com>
-Subject: Re: radeonfb 0.1.5 testing
-Date: Tue, 4 Jun 2002 13:24:41 -0700 (PDT)
+From: Louis Garcia <louisg00@bellsouth.net>
+Subject: radeon 7500 flat panel support
+Date: 04 Jun 2002 18:12:19 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0206041323300.1200-100000@www.transvirtual.com>
-References: <Pine.BSF.4.44.0206031931450.11992-200000@shell.unixbox.com>
+Message-ID: <1023228740.3799.5.camel@tiger>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from www.transvirtual.com ([206.14.214.140])
-	by usw-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17FKrG-0006WT-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 04 Jun 2002 13:24:46 -0700
-In-Reply-To: <Pine.BSF.4.44.0206031931450.11992-200000@shell.unixbox.com>
+Received: from mail100.mail.bellsouth.net ([205.152.58.40] helo=imf00bis.bellsouth.net)
+	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17FMWk-0000Po-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 04 Jun 2002 15:11:42 -0700
+Received: from tiger ([208.61.40.226]) by imf00bis.bellsouth.net
+          (InterMail vM.5.01.04.05 201-253-122-122-105-20011231) with ESMTP
+          id <20020604221302.DGUJ1202.imf00bis.bellsouth.net@tiger>
+          for <linux-fbdev-devel@lists.sourceforge.net>;
+          Tue, 4 Jun 2002 18:13:02 -0400
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,42 +24,18 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Ani Joshi <ajoshi@shell.unixbox.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
+
+The radeonfb driver in kernel-2.4.18 does not work with the radeon 7500 QW.
+I have a digital flat screen connected to the dvi port and X works great. I just
+see a blank screen when the system boots up. Is this a known issue? Is their
+an more recent driver floating around? I got this card because I needed a
+dvi connection, is their another card I should get.
 
 
-BTW are the pieces of extra code in the DJ tree valid for the Riva
-fbdev driver?
+Thanks, --Lou
 
-
-P.S
-
-   I plan to port that driver over to the new api code soon. I have a
-Nvidia card here at work.
-
-   . ---
-   |o_o |
-   |:_/ |   Give Micro$oft the Bird!!!!
-  //   \ \  Use Linux!!!!
- (|     | )
- /'\_   _/`\
- \___)=(___/
-
-On Mon, 3 Jun 2002, Ani Joshi wrote:
-
->
-> Hi all,
->
-> Attatched is a patch against 2.4.19-pre9 which fixes a host of problems
-> with radeonfb, for those experiencing problems please test and give
-> feedback, thanks!
->
->
->
-> ani
->
 
 
 _______________________________________________________________

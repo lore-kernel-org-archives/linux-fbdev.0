@@ -1,24 +1,24 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: fbcon VT (mode) switching issue
-Date: Wed, 28 Apr 2004 08:49:30 +0800
+Subject: Re: [PATCH] radeonfb(): memmove() fix -- this one works ;-)
+Date: Wed, 28 Apr 2004 08:47:55 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200404280846.13888.adaplas@pol.net>
-References: <10040.159.37.7.44.1083099594.squirrel@www.foogod.com>
+Message-ID: <200404280818.49915.adaplas@pol.net>
+References: <Pine.LNX.4.44.0404240035400.5826-100000@phoenix.infradead.org> <1083025364.11575.4.camel@gaston> <Pine.GSO.4.58.0404271050540.14434@waterleaf.sonytel.be>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIdGR-0008UK-Jw
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 17:49:27 -0700
-Received: from babyruth.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIdGR-0002Ir-87
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 17:49:27 -0700
+	id 1BIdG3-0008OD-Su
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 17:49:03 -0700
+Received: from snickers.hotpop.com ([38.113.3.51])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BIdG3-0008WV-PU
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 17:49:03 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by babyruth.hotpop.com (Postfix) with SMTP id 19B5C3B4467
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 28 Apr 2004 00:25:44 +0000 (UTC)
-In-Reply-To: <10040.159.37.7.44.1083099594.squirrel@www.foogod.com>
+	by snickers.hotpop.com (Postfix) with SMTP id 7D3AA70EBA
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 28 Apr 2004 00:03:31 +0000 (UTC)
+In-Reply-To: <Pine.GSO.4.58.0404271050540.14434@waterleaf.sonytel.be>
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,35 +30,33 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Alex Stewart <alex@foogod.com>, linux-fbdev-devel@lists.sourceforge.net
+To: Geert Uytterhoeven <geert@linux-m68k.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: James Simmons <jsimmons@infradead.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wednesday 28 April 2004 04:59, Alex Stewart wrote:
-> I'm still trying to sort out a few of the little "annoyance" issues still
-> present in the neofb driver.  One of these is the following:
+On Tuesday 27 April 2004 16:51, Geert Uytterhoeven wrote:
+> On Tue, 27 Apr 2004, Benjamin Herrenschmidt wrote:
+> > On Tue, 2004-04-27 at 10:19, James Simmons wrote:
+> > > Okay. This is my first attempt to address this problem. There is not
+> > > test for accelerated copyarea or image drawing as we lack the flag. I
+> > > haven't figured where to put it yet. We have 3 choices.
+> > >
+> > >
+> > > fb_var_screeninfo
+> > > fb_fix_screeninfo
+> > > fb_info
+> >
+> > Well... fix is what gets filled after a mode is set, let's put it in
+> > there along with the linewidth etc...
 >
-> If I change VT from XFree86 (using its own neomagic driver, not through
-> fb) to a framebuffer console, and the resolution/bitdepth of the console
-> screen is different from what the X server was using, the screen is not
-> initially repainted correctly.
+> Indeed. BTW, no comments on my proposal to add
+> fb_fix_screeninfo.capabilities?
 >
 
-That's because in 2.6, it's fbcon that decides if the hardware needs to be 
-touched again (by calling set_par).  This decision is based on a compare 
-between info->var and the var passed to fb_check_var.  If there's none, then 
-set_par is not called.  So switching from X to the original console will not 
-cause a change in var, so set_par is not called (incorrectly).
-
-There are several solutions:
-
-1. 2.4 approach. Unconditionally call set_par in check_var. (In 2.4, drivers 
-decide when to touch the hardware, not fbcon).
-
-2. Find some kind of flag to indicate that hardware has been touched by other 
-apps besides fbcon.  KD_TEXT and KD_GRAPHICS, as discussed in a previous 
-thread, seems to be a good bet.
+Since accelerated drawing functions have no relevence whatsoever in userspace, 
+placing it in fb_info is better.  But I won't disagree if it's placed in 
+fb_fix_screeninfo.
 
 Tony
-
 
 
 

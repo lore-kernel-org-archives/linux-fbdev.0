@@ -1,21 +1,22 @@
-From: Otto Solares <solca@guug.org>
-Subject: Re: [PATCH] radeonfb(): memmove() fix -- this one works ;-)
-Date: Thu, 29 Apr 2004 14:13:16 -0600
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] neofb patches
+Date: Fri, 30 Apr 2004 07:57:20 +1000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040429201316.GA26704@guug.org>
-References: <1083199850.20089.110.camel@gaston> <Pine.LNX.4.44.0404291848170.1327-100000@phoenix.infradead.org> <20040429181142.GB26608@guug.org> <20040429194813.GA8799@dreamland.darkstar.lan>
+Message-ID: <1083275840.21436.148.camel@gaston>
+References: <Pine.LNX.4.44.0404291740560.1327-100000@phoenix.infradead.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BJHuQ-0003Xf-HT
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 29 Apr 2004 13:13:26 -0700
-Received: from guug.galileo.edu ([168.234.203.30] helo=guug.org)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BJHuP-0006Oe-Uz
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 29 Apr 2004 13:13:26 -0700
-Content-Disposition: inline
-In-Reply-To: <20040429194813.GA8799@dreamland.darkstar.lan>
+	id 1BJJeW-0003BI-DZ
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 29 Apr 2004 15:05:08 -0700
+Received: from gate.crashing.org ([63.228.1.57] ident=root)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.30)
+	id 1BJJeV-00010O-Vi
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 29 Apr 2004 15:05:08 -0700
+In-Reply-To: <Pine.LNX.4.44.0404291740560.1327-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,54 +27,21 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Kronos <kronos@kronoz.cjb.net>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Otto Solares <solca@guug.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, Apr 29, 2004 at 09:48:13PM +0200, Kronos wrote:
-> Il Thu, Apr 29, 2004 at 12:11:42PM -0600, Otto Solares ha scritto: 
-> > On Thu, Apr 29, 2004 at 07:01:00PM +0100, James Simmons wrote:
-> > > 
-> > > > > No we don't. We have the default modedb. I already tested a patch using 
-> > > > > modedb. It works like a charm :-) I can stty all I want!!!! 
-> > > > 
-> > > > On your monitor... then most TFT owners will curse you :)
-> > > 
-> > > As we move from ioctls to sysfs we will also move from using 
-> > > fb_var_screeninfo as the userland interface to using mode strings.
-> > > That means when someone creates a string  like
-> > > 
-> > > 834x721@81 
-> > > 
-> > > then for non TFT monitors it should fail. For TFT monitors it will work.
-> > > If someoone using stty ask for exotic mode then if the monitor is TFT then 
-> > > it should work. Else it should fail. 
-> > 
-> > James: I have seen sysfs support for fbdev in the -mm series
-> > from Kronoz I think, this sysfs interface that will obsolete
-> > var_screeninfo and fix_screeninfo is 2.6 material?
+
+> > Finally, the geometry of screens is something that has nothing to
+> > do in the kernel imho.
 > 
-> Well, my patch uses class_simple to expose the framebuffer device so
-> that udev can create /dev/fbN. Drivers can't touch the class_device
-> (yet), for example radeonfb attaches edid info to the pci device, not to
-> the framebuffer device. After the exams I will cook up a patch that
-> should improve that.
+> I don't like micro kernel designs. This is way micro kernels handle this 
+> problem.
 
-Excellent news!
+This has nothing to do with microkernel design and everything to do with
+not bloating the kernel with things that don't to be there.
 
-> > or we have to wait until 2.7 starts?
-> 
-> I think that for fully dynamic fb_info we should wait 2.7, the rest can
-> go in 2.6. Resolution change via sysfs shouln't have a big impact on
-> fbdev core.
+Ben.
 
-I just would suggest as userspace fbdev consumer that is a pain to
-do development using two different interfaces, if sysfs interface
-will obsolete the ioctl one, it must have all the mechanics that
-are present in the ioctl one so no mix of interfaces would be
-required.
-
--otto
 
 
 

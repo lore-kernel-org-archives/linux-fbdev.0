@@ -1,21 +1,25 @@
-From: James Simmons <jsimmons@infradead.org>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
 Subject: Re: [PATCH]: rivafb DDC2/I2C
-Date: Mon, 12 Jan 2004 23:24:52 +0000 (GMT)
+Date: 13 Jan 2004 09:09:15 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0401122312550.5232-100000@phoenix.infradead.org>
-References: <1073947811.763.175.camel@gaston>
+Message-ID: <1073956162.14430.17.camel@localhost.localdomain>
+References: <1110.203.177.116.240.1073919544.squirrel@webmail.po.com> 
+	<20040112173853.GA2176@dreamland.darkstar.lan>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AgBQY-0006Y6-5M
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 12 Jan 2004 15:24:58 -0800
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.30)
-	id 1AgBQX-0000Qf-Gg
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 12 Jan 2004 15:24:57 -0800
-In-Reply-To: <1073947811.763.175.camel@gaston>
+	id 1AgD4j-0006xX-PI
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 12 Jan 2004 17:10:33 -0800
+Received: from twix.hotpop.com ([38.113.3.71])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1AgD4j-0006CL-EC
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 12 Jan 2004 17:10:33 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by twix.hotpop.com (Postfix) with SMTP id 1A003BDF295
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 13 Jan 2004 01:03:52 +0000 (UTC)
+In-Reply-To: <20040112173853.GA2176@dreamland.darkstar.lan>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,38 +29,60 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: adaplas@pol.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: kronos@kronoz.cjb.net
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-
-> James: Are you still around ? Got my previous set of patches ?
-
-Yes. I applied your pixmap locking fix. Its in the BK tree. This weekend I 
-setup most of my machines. I have my sparc/ix86 and indy running and 
-ready for testing :-) I also pulled out my few dozen video cards. 
-
-> I think it's time to start feeding Andrew (though I'd rather
-> add the FB_ACTIVATE_FIND first, but that can always get in later
-> if we really want it).
+On Tue, 2004-01-13 at 01:38, Kronos wrote:
+>
+>                         *mode = vesa_modes[i];
+> -                       return 1;
+> +                       mode->flag |= MODE_IS_STANDARD;
+> +                       break;
+> +               } else {
+> +                       calc_mode_timings(xres, yres, refresh, mode);
+> +                       mode->flag = MODE_IS_STANDARD | MODE_IS_CALCULATED;
+> +                       break;
+>                 }
+>         }
 > 
-> Note that I reproduced cases of console resize via stty blowing
-> up in accel_clear_margins on an x86, I think that's unrelated to
-> the changes I did though, but I haven't figured out what's going
-> on exactly yet. It blows up after the resize, apparently in a
-> call to fbcon_switch()...
+> This won't work. It will exit after the first iteration in any case. You
+> reintroduced the same bug you spotted some time ago ;)
 
-Strange. Is this a specific driver issue or in general. I think it should 
-be okay otherwise. Will test in the next few days a few different cards.
+Thanks :-).  Fixed.
 
+> Also, I see that you introduced fb_sqrt, we already have int_sqrt (see
+> lib/int_sqrt.c). If the only issue was the return value you can change
+> fb_sqrt to:
+> 
+> static inline u32 fb_sqrt(int x) {
+>         return (u32)int_sqrt(x);
+> }
+> 
 
+No issue.  Fixed.
+
+>  
+> > 2. modedb.c
+> > - removed __init for fb_find_mode().
+> 
+> You have to change the prototype in fb.h. fb_find_mode was implemented
+> in a different way if MODULE was defined.
+
+Ok.
 
 > 
-> Ben.
+> And if we are keeping modedb (~2.7KB) after initialization we should
+> merge it with vesa_modes (we still have MODE_IS_VESA flag) and remove 
+> duplicates.
 > 
-> 
-> 
+
+Possibly.  Will be on my TODO.
+
+Tony
+
+
+
 
 
 

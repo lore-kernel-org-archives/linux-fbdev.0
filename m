@@ -1,28 +1,59 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [BK fbdev updates]
-Date: Wed, 15 Jan 2003 00:30:45 +0000 (GMT)
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.44.0301130226560.18576-100000@phoenix.infradead.org>
-References: <20030112150744.GH14017@suse.de>
+From: Jon Smirl <jonsmirl@yahoo.com>
+Subject: Using UML to work on framebuffers
+Date: Tue, 14 Jan 2003 16:31:27 -0800 (PST)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <20030115003127.97146.qmail@web14907.mail.yahoo.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <20030112150744.GH14017@suse.de>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from web14907.mail.yahoo.com ([216.136.225.59])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18YbSp-0004Sj-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 14 Jan 2003 16:31:27 -0800
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jens Axboe <axboe@suse.de>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+
+I have a patch for 2.5 that allows some framebuffers
+drivers (non-dma ones) to run unmodified on UML. I'm
+still working on DMA and IRQ support.
+
+UML - user mode linux. UML runs the Linux kernel as a
+process. For example my PC is booted on 2.4 and the
+UML runs 2.5.
+
+The advantage to this is that you can use gdb/ddd to
+debug the fb driver code. It's actually kind of neat.
+I use one gdb inside of UML to control the fbtest app
+and another gdb to step the code inside of the fb
+driver. 
+
+Is anyone interested in trying this out? 
+
+You need two video cards in your machine one for X and
+one for the target framebuffer.  I am using AGP for X
+and targeting a PCI Rage128.
+
+=====
+Jon Smirl
+jonsmirl@yahoo.com
+
+__________________________________________________
+Do you Yahoo!?
+Yahoo! Mail Plus - Powerful. Affordable. Sign up now.
+http://mailplus.yahoo.com
 
 
-> > Linus, please do a
-> 
-> James,
-> 
-> 2.5 still doesn't work on my vaio (I think I told you about this 3-4
-> months ago) with the neofb. It just crashes with a black screen. If you
-> don't have any clues what the problem is, I can hook the machine up to a
-> serial console and see if anything interesting pops up. Using vesafb
-> does make it boot, however the screen stays pitch black until X loads...
-
-VESA doesn't work either. Can you check to see if you have framebuffer 
-console enabled. Yes I'm curious to see why your neofb doesn't work.
+-------------------------------------------------------
+This SF.NET email is sponsored by: Take your first step towards giving 
+your online business a competitive advantage. Test-drive a Thawte SSL 
+certificate - our easy online guide will show you how. Click here to get 
+started: http://ads.sourceforge.net/cgi-bin/redirect.pl?thaw0027en

@@ -1,23 +1,21 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH 3/5] fbdev: Various mach64 changes
-Date: Fri, 22 Oct 2004 00:57:22 -0700
+From: Jim Hague <jim.hague@acm.org>
+Subject: [PATCH 1/2] pm2fb: Blanking fixes
+Date: Fri, 22 Oct 2004 10:54:32 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20041022005722.6f90d3c4.akpm@osdl.org>
-References: <200410200815.41690.adaplas@hotpop.com>
-	<20041022005531.28218795.akpm@osdl.org>
+Message-ID: <20041022105432.06df798a@hagrid.bear-cave.org.uk>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CKuKU-0007Tz-Od
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Oct 2004 00:59:18 -0700
-Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CKuKU-0002bc-2b
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Oct 2004 00:59:18 -0700
-In-Reply-To: <20041022005531.28218795.akpm@osdl.org>
+	id 1CKw8A-0005Iv-I8
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Oct 2004 02:54:42 -0700
+Received: from cpc1-oxfd2-6-0-cust43.oxfd.cable.ntl.com ([81.103.191.43] helo=fluffy.bear-cave.org.uk)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1CKw89-0003xF-PT
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Oct 2004 02:54:42 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,64 +26,58 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: adaplas@pol.net, adaplas@hotpop.com, linux-fbdev-devel@lists.sourceforge.net, alex.kern@gmx.de, arnaud.fontaine@free.fr, geert@linux-m68k.org, jsimmons@infradead.org, nsouch@free.fr, syrjala@sci.fi
+To: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>
 
 
-Actually, I'll use the below patch just to make it compile.
+- Current blanking code forces +ve (h|v)sync. Correct, match 2.4
+  behaviour, and introduce VESA constants for clarity.
 
+Signed-off-by: Jim Hague <jim.hague@acm.org>
 
-
-Signed-off-by: Andrew Morton <akpm@osdl.org>
----
-
- 25-sparc64-akpm/drivers/video/aty/atyfb_base.c |   12 +++++++-----
- 1 files changed, 7 insertions(+), 5 deletions(-)
-
-diff -puN drivers/video/aty/atyfb_base.c~fbdev-various-mach64-changes-sparc64-fix drivers/video/aty/atyfb_base.c
---- 25-sparc64/drivers/video/aty/atyfb_base.c~fbdev-various-mach64-changes-sparc64-fix	2004-10-22 00:47:03.000000000 -0700
-+++ 25-sparc64-akpm/drivers/video/aty/atyfb_base.c	2004-10-22 00:56:18.377055112 -0700
-@@ -2746,9 +2746,11 @@ static int atyfb_setcolreg(u_int regno, 
+diff -u -p -r1.24 pm2fb.c
+--- drivers/video/pm2fb.c	23 Sep 2004 01:19:45 -0000	1.24
++++ drivers/video/pm2fb.c	19 Oct 2004 08:51:23 -0000
+@@ -973,24 +971,26 @@ static int pm2fb_blank(int blank_mode, s
  
- #ifdef __sparc__
+ 	DPRINTK("blank_mode %d\n", blank_mode);
  
--static int __devinit atyfb_setup_sparc(struct pci_dev *pdev, struct fb_indo *info, unsigned long addr)
-+extern void (*prom_palette) (int);
-+
-+static int __devinit atyfb_setup_sparc(struct pci_dev *pdev,
-+			struct fb_info *info, unsigned long addr)
- {
--	extern void (*prom_palette) (int);
- 	extern int con_is_present(void);
- 
- 	struct atyfb_par *par = info->par;
-@@ -2764,7 +2766,7 @@ static int __devinit atyfb_setup_sparc(s
- 	/*
- 	 * Map memory-mapped registers.
- 	 */
--	par->ati_regbase = addr + 0x7ffc00UL;
-+	par->ati_regbase = (void *)addr + 0x7ffc00UL;
- 	info->fix.mmio_start = addr + 0x7ffc00UL;
- 
- 	/*
-@@ -2782,7 +2784,7 @@ static int __devinit atyfb_setup_sparc(s
- 	j = i + 4;
- 
- 	par->mmap_map = kmalloc(j * sizeof(*par->mmap_map), GFP_ATOMIC);
--	if (!_par->mmap_map) {
-+	if (!par->mmap_map) {
- 		PRINTKE("atyfb_setup_sparc() can't alloc mmap_map\n");
- 		return -ENOMEM;
+-	/* Turn everything on, then disable as requested. */
+-	video |= (PM2F_VIDEO_ENABLE | PM2F_HSYNC_MASK | PM2F_VSYNC_MASK);
+-
+ 	switch (blank_mode) {
+-	case 0: 	/* Screen: On; HSync: On, VSync: On */
++	case 0:
++		/* Screen: On */
++		video |= PM2F_VIDEO_ENABLE;
+ 		break;
+-	case 1: 	/* Screen: Off; HSync: On, VSync: On */
++	case VESA_NO_BLANKING + 1:
++		/* Screen: Off */
+ 		video &= ~PM2F_VIDEO_ENABLE;
+ 		break;
+-	case 2: /* Screen: Off; HSync: On, VSync: Off */
+-		video &= ~(PM2F_VIDEO_ENABLE | PM2F_VSYNC_MASK | PM2F_BLANK_LOW );
+-		break;
+-	case 3: /* Screen: Off; HSync: Off, VSync: On */
+-		video &= ~(PM2F_VIDEO_ENABLE | PM2F_HSYNC_MASK | PM2F_BLANK_LOW );
+-		break;
+-	case 4: /* Screen: Off; HSync: Off, VSync: Off */
+-		video &= ~(PM2F_VIDEO_ENABLE | PM2F_VSYNC_MASK | PM2F_HSYNC_MASK|
+-			   PM2F_BLANK_LOW);
++	case VESA_VSYNC_SUSPEND + 1:
++		/* VSync: Off */
++		video &= ~(PM2F_VSYNC_MASK | PM2F_BLANK_LOW );
++		break;
++	case VESA_HSYNC_SUSPEND + 1:
++		/* HSync: Off */
++		video &= ~(PM2F_HSYNC_MASK | PM2F_BLANK_LOW );
++		break;
++	case VESA_POWERDOWN + 1:
++		/* HSync: Off, VSync: Off */
++		video &= ~(PM2F_VSYNC_MASK | PM2F_HSYNC_MASK| PM2F_BLANK_LOW);
+ 		break;
  	}
-@@ -3394,7 +3396,7 @@ static int __devinit atyfb_pci_probe(str
- 	par->mmap_map[0].prot_mask = _PAGE_CACHE;
- 	par->mmap_map[0].prot_flag = _PAGE_E;
- 	par->mmap_map[1].voff = par->mmap_map[0].voff + info->fix.smem_len;
--	par->mmap_map[1].poff = par->ati_regbase & PAGE_MASK;
-+	par->mmap_map[1].poff = (long)par->ati_regbase & PAGE_MASK;
- 	par->mmap_map[1].size = PAGE_SIZE;
- 	par->mmap_map[1].prot_mask = _PAGE_CACHE;
- 	par->mmap_map[1].prot_flag = _PAGE_E;
-_
+ 	set_video(par, video);
 
 
 

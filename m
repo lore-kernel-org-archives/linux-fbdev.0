@@ -1,21 +1,22 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: 2.6.7 fbcon: set_con2fb on current console
- = crash
-Date: Sat, 19 Jun 2004 11:28:00 +0200 (MEST)
+From: Andrew Morton <akpm@osdl.org>
+Subject: Fw: Matroxfb in 2.6 still doesn't work in 2.6.7
+Date: Sat, 19 Jun 2004 02:56:28 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0406191127250.23356@waterleaf.sonytel.be>
-References: <20040618215047.GA4723@satan.blackhosts> <200406191413.44439.adaplas@hotpop.com>
+Message-ID: <20040619025628.3322f744.akpm@osdl.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bbc8q-0003Eq-8N
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 19 Jun 2004 02:28:04 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bbc8p-0004g7-M4
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 19 Jun 2004 02:28:03 -0700
-In-Reply-To: <200406191413.44439.adaplas@hotpop.com>
+	id 1BbcbB-0005j0-PC
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 19 Jun 2004 02:57:21 -0700
+Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BbcbB-0001k3-Aw
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 19 Jun 2004 02:57:21 -0700
+Received: from bix (build.pdx.osdl.net [172.20.1.2])
+	by mail.osdl.org (8.11.6/8.11.6) with SMTP id i5J9vKr06667
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 19 Jun 2004 02:57:20 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,31 +26,71 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: Jakub Bogusz <qboosh@pld-linux.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, pld-kernel@pld-linux.org
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Sat, 19 Jun 2004, Antonino A. Daplas wrote:
-> Thanks.  Actually there's still a critical flaw in the set_con2fbmap code.
-> For one, con2fb_map is never initialized.  It's just fortunate that this
-> array happens to be  filled with zeroes so con2fb_map[n] will always return
-> zero and registered_fb[0] happens to contain a valid info.  So it works, by
-> accident.
 
-According to the C standard, global variables are initialized to zero, unless
-specified otherwise.
 
-Gr{oetje,eeting}s,
+Begin forwarded message:
 
-						Geert
+Date: Fri, 18 Jun 2004 23:10:31 +0200
+From: Tomasz Torcz <zdzichu@irc.pl>
+To: vandrove@vc.cvut.cz
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Matroxfb in 2.6 still doesn't work in 2.6.7
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+
+ Hi,
+
+I am constantly having problems with my G550 matrox card.
+I'm trying to get same video mode in framebuffer as in XFree.
+I'm using 1280x1024x16 in XFree but this mode in fb don't work.
+My LCD monitor turns black and slowly change into all white.
+There is some very bright white area in lower right corner of monitor.
+
+% dmesg | grep -i matrox
+Kernel command line: root=/dev/hda4 acpi=force ro video=matroxfb:1280x1024-16@60
+matroxfb: Matrox G550 detected
+matroxfb: MTRR's turned on
+matroxfb: 1280x1024x16bpp (virtual: 1280x6553)
+matroxfb: framebuffer at 0xE8000000, mapped to 0xd080b000, size 33554432
+fb0: MATROX frame buffer device
+[drm] Initialized mga 3.1.0 20021029 on minor 0: Matrox Graphics, Inc. MGA G550 AGP
+matroxfb_crtc2: secondary head of fb0 was registered as fb1
+
+
+ Modeline used by XFree (if it helps):
+(**) MGA(0): *Default mode "1280x1024": 108.0 MHz, 64.0 kHz, 60.0 Hz
+(II) MGA(0): Modeline "1280x1024"  108.00  1280 1328 1440 1688  1024 1025 1028 1066 +hs
+ync +vsync
+
+ My card is:
+01:00.0 VGA compatible controller: Matrox Graphics, Inc. MGA G550 AGP (rev 01) (prog-if 00 [VGA])
+        Subsystem: Matrox Graphics, Inc. Millennium G550 Dual Head DDR 32Mb
+        Flags: bus master, medium devsel, latency 64, IRQ 11
+        Memory at e8000000 (32-bit, prefetchable) [size=32M]
+        Memory at e4000000 (32-bit, non-prefetchable) [size=16K]
+        Memory at e5000000 (32-bit, non-prefetchable) [size=8M]
+        Expansion ROM at <unassigned> [disabled] [size=128K]
+        Capabilities: [dc] Power Management version 2
+        Capabilities: [f0] AGP version 2.0
+
+ I have LCD plugged into analog output (my LCD does not have DVI in).
+
+ It stopped working somewhere in 2.5.x series. It still doesn't
+work in
+Linux version 2.6.7 (zdzichu@mother) (gcc version 3.4.0) #1 Fri Jun 18 22:39:14 CEST 2004
+
+-- 
+Tomasz Torcz                 "God, root, what's the difference?" 
+zdzichu@irc.-nie.spam-.pl         "God is more forgiving."   
+
+-
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
 
 
 -------------------------------------------------------

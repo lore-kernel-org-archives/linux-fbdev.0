@@ -1,18 +1,21 @@
-From: Nicholas Wourms <nwourms@myrealbox.com>
-Subject: matroxfb patch for bk current?
-Date: Thu, 17 Apr 2003 18:36:25 -0400
+From: Benoit Peccatte <benoit.peccatte@enst-bretagne.fr>
+Subject: Matrox fb
+Date: 20 Apr 2003 10:24:39 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3E9F2C69.2080109@myrealbox.com>
+Message-ID: <1050827079.1008.4.camel@peck>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from main.gmane.org ([80.91.224.249])
+Received: from laposte.enst-bretagne.fr ([192.108.115.3])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 196IEr-00065u-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 17 Apr 2003 15:52:18 -0700
-Received: from root by main.gmane.org with local (Exim 3.35 #1 (Debian))
-	id 196IDD-0006zi-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Apr 2003 00:50:35 +0200
+	id 197A8B-0005yH-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 20 Apr 2003 01:24:59 -0700
+Received: from resel.enst-bretagne.fr (maisel-gw.enst-bretagne.fr [192.44.76.8])
+	by laposte.enst-bretagne.fr (8.11.6p2/8.11.6/2003.04.01) with ESMTP id h3K8Opl21617
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 20 Apr 2003 10:24:51 +0200
+Received: from localhost.localdomain (peck.maisel.enst-bretagne.fr [172.16.19.180])
+	by resel.enst-bretagne.fr (8.12.3/8.12.3/Debian-6.3) with ESMTP id h3K8Oewi032313
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 20 Apr 2003 10:24:40 +0200
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,18 +25,19 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Petr,
+Hi,
 
-Could you please provide a patch for the matroxfb which can 
-be used with the changes that James just had committed? 
-James, perhaps you might merge in the matroxfb fixes so that 
-we can have a usable driver in the mainline?
+I've juste given a try on the 2.5.67 kernel and
+found that matroxfb didn't even compile.
+Is there anybody working on it ? Is there somewhere
+a full description of what changed between the old
+framebuffer structure and the new one ?
 
-Cheers,
-Nicholas
+Thank you,
+Benoit
 
 
 

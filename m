@@ -1,23 +1,23 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: tdfx & multiple voodoo cards : supposed   
- to work ?
-Date: Thu, 30 Oct 2003 18:41:29 +0000 (GMT)
+Subject: Re: tdfx & multiple voodoo cards : supposed to
+ work ?
+Date: Thu, 30 Oct 2003 18:42:53 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0310301839310.5296-100000@phoenix.infradead.org>
-References: <20031030123418.7005615CA9@mail03.powweb.com>
+Message-ID: <Pine.LNX.4.44.0310301841430.5296-100000@phoenix.infradead.org>
+References: <20031030124835.GA7367@iliana>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1AFHjg-0005si-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 30 Oct 2003 10:41:32 -0800
+	id 1AFHl3-000626-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 30 Oct 2003 10:42:57 -0800
 Received: from [213.86.99.234] (helo=phoenix.infradead.org)
 	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.24)
-	id 1AFHjf-0000mS-Uj
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 30 Oct 2003 10:41:32 -0800
-In-Reply-To: <20031030123418.7005615CA9@mail03.powweb.com>
+	id 1AFHl2-000113-Hb
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 30 Oct 2003 10:42:56 -0800
+In-Reply-To: <20031030124835.GA7367@iliana>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -29,26 +29,23 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Drummond <evilrich@rcdrummond.net>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Sven Luther <sven.luther@wanadoo.fr>
+To: Sven Luther <sven.luther@wanadoo.fr>
+Cc: Richard Drummond <evilrich@rcdrummond.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> Voodoo4/5 has a different method of byte-swizzling for big-endian hardware than 
-> the Voodoo3 - which isn't supported by the current tdxfb driver or by XFree86. I 
-> have been working on a fix for tdfxfb, and have had some success - but since I 
-> don't have any documentation, it's involved a lot of guess-work. I haven't looked 
-> at this for a while, but I could dig out the code again and supply a patch against
-> what I have got so far.
+> Yep, that would be nice. I have already included a voodoo patch, but i
+> suppose it only works for the older voodoos. I have neither specs nor
+> hardware for them though.
 
-I have docs on Voodoo3 but I never got a hold of docs on Voodoo4/5. if 
-someone has docs I really like to have them.
+I can post the specs for the some of the cards.
 
-> As to your other problem, I have two Voodoos working on my Mac with 2.6, so I 
-> would expect such a set-up to work on the Pegasos too. On PPC hardware, 
-> there should be no problem of conflicting VGA ports since the PCI sub-system can 
-> remap I/O ports on the PPC.
+> Mmm, that sounds nice. do you have OF based drivers for them in your
+> mac ? I need to port the pegasos patches to 2.6.x first though.
 
-Nice :-)
+P.S
+
+   I have a patch to make color maps work with the OpenFirmware fbdev 
+driver and 3Dfx cards. I just haven't got around to appling it.
 
 
 

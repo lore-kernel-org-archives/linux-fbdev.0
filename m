@@ -1,17 +1,25 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: radeonfb and 16bit color problem
-Date: Mon, 24 Jun 2002 07:41:46 +0200
+From: "Manoj Sharma" <manoj.sharma@wipro.com>
+Subject: video mode selection for monochrome
+Date: Thu, 27 Jun 2002 10:59:12 +0530 (IST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20020624054147.21846@192.168.4.1>
-References: <20020625104117.A31689@bokeoa.com>
+Message-ID: <Pine.LNX.4.33.0206241658280.11784-100000@localhost.localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from n147.ols.wavesec.net ([209.151.19.147] helo=zion.wanadoo.fr)
+Received: from wiprom2mx1.wipro.com ([203.197.164.41])
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17MtiJ-0007cZ-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 25 Jun 2002 10:02:47 -0700
-In-Reply-To: <20020625104117.A31689@bokeoa.com>
+	id 17NRyb-0008IZ-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 26 Jun 2002 22:37:53 -0700
+Received: from m2vwall5.wipro.com (m2vwall5.wipro.com [10.115.50.5])
+	by wiprom2mx1.wipro.com (8.11.3/8.11.3) with SMTP id g5R5bbe00833
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 27 Jun 2002 11:07:37 +0530 (IST)
+Received: from kaveri.wipro.com ([192.6.8.155]) by
+          ec2mail.mail.wipro.com (Netscape Messaging Server 4.15) with
+          ESMTP id GYCNM200.KVW for
+          <linux-fbdev-devel@lists.sourceforge.net>; Thu, 27 Jun 2002
+          11:07:17 +0530 
+Received: from localhost (manoj.sharma@localhost)
+	by kaveri.wipro.com (8.11.6/8.11.2) with ESMTP id g5R5TDO02962
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 27 Jun 2002 10:59:13 +0530
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,40 +29,26 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Bryan Stillwell <bryan@bokeoa.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net
 
->I thought that piece of code looked weird because it's setting green
->equal to rinfo->palette[regno<<1].green, but doesn't seem to ever use
->green during the rest of the function...
+Hi,
 
-It should about 2 lines below ... at least in my tree.
+I am trying to use framebuffer with a monochrome display (1bpp).  I need
+to specify a suitable video mode at the boot time. I tried to use 'scan'
+on the video mode prompt but didn't find anything for the monochrome.  
+There is vesa mode for 640x480x8, Is there anything for 640x480x1 ?
 
->BTW, don't you mean 64 palette entries for green (being that it's 6
->bits)? 
+The video card is S3 Trio 3D/2X.
 
-Yah, sorry, typing too fast ;)
+Thanks,
+Manoj.
 
->Anyways, I took some time this weekend to look over the code
->some more, and I really doubt my problems originates in that function.
->As I understand it, the palette (colormap?) will only be used when
->displaying colors in text mode.
 
-Hrm... there HW colormap is used in all modes in recent drivers, thus
-you can actually set a gamma table. The driver should set it to a
-linear ramp by default though that may be broken.
-
->My problem seems to affect many more colors (practically all 65536 of
->them), but I've yet to track it down.  I put in a request on ATI's
->website to get access to the specs (hoping that'll help me), but I
->haven't heard anything back from them yet.
-
-Ben.
 
 
 
 -------------------------------------------------------
-This sf.net email is sponsored by: Jabber Inc.
-Don't miss the IM event of the season | Special offer for OSDN members! 
-JabConf 2002, Aug. 20-22, Keystone, CO http://www.jabberconf.com/osdn
+Sponsored by:
+ThinkGeek at http://www.ThinkGeek.com/

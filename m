@@ -1,92 +1,95 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [PATCH] fbdev: Fix crash if fb_set_var() called before register_framebuffer()
-Date: Sat, 27 Nov 2004 12:43:38 +0800
-Message-ID: <200411271243.40230.adaplas@hotpop.com>
-References: <200411250115.50895.adaplas@hotpop.com> <200411271056.53598.adaplas@hotpop.com> <1101528953.4668.7.camel@gaston>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Linux 2.4.29-pre1 (was: Re: [PATCH] vga16fb: Fix frame buffer bad
+ memory mapping)
+Date: Sat, 27 Nov 2004 16:54:12 +0100 (MET)
+Message-ID: <Pine.GSO.4.61.0411271640560.13674@waterleaf.sonytel.be>
+References: <200411252301.iAPN1mo4023046@hera.kernel.org>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261230AbUK0Pyp@vger.kernel.org>
+In-Reply-To: <200411252301.iAPN1mo4023046@hera.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CXuR9-0001t9-Do
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 26 Nov 2004 20:43:55 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.71])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CXuR6-0005dx-5b
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 26 Nov 2004 20:43:55 -0800
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 65F17123F960
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 27 Nov 2004 04:43:42 +0000 (UTC)
-In-Reply-To: <1101528953.4668.7.camel@gaston>
-Content-Disposition: inline
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, adaplas@pol.net
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: vince@arm.linux.org.uk, Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Saturday 27 November 2004 12:15, Benjamin Herrenschmidt wrote:
-> On Sat, 2004-11-27 at 10:56 +0800, Antonino A. Daplas wrote:
-> > 1. Lack of per-display var which prevents full restore of the console on
-> > mode switch
-> > 2. the stty utility does not work correctly for drivers that do not have
-> > mode validation
->
-> Ok, good.
->
->  .../...
->
-> > 3.  For each correct fbset, (accepted by both driver and user), if
-> > the timings are unique, this will be also be added to the modelist. Also,
-> > in the unfortunate case that an illegal mode timing is accidentally
-> > entered into the modelist, there is a mechanism to remove that entry.
->
-> Ok, though I'm not too fan of this one, I'd rather have an explicit flag
-> in the var passed by fbset trigger the "remember" thing... oh well,
-> we'll see how things goes.
+On Thu, 25 Nov 2004, Linux Kernel Mailing List wrote:
+> ChangeSet 1.1543, 2004/11/25 13:16:49-02:00, vince@arm.linux.org.uk
+> 
+> 	[PATCH] vga16fb: Fix frame buffer bad memory mapping
+> 	
+> 	The vga16fb driver uses a direct ioremap on 0xa00000 to gain access to
+> 	the vga card. This is wrong on architectures other than x86, every
+> 	other driver uses VGA_MAP_MEM macro from vga.h to ensure the correct
+> 	memory mapping.
+> 	
+> 	All this patch does is add the mapping macro this has been tested and
+> 	works on ARM systems The driver no longer maps parts of kernel
+> 	workspace and modifies it.
 
-You mean the mode entry deletion? That's okay, the code is minor, still
-unused, and was submitted as optional, but still got merged.  It can be
-easily removed.
+This fix is not correct!
 
->
-> > Therefore, when doing an stty, fbcon will only look at info->modelist,
-> > finds the best matching mode, builds a var from that particular entry
-> > and passes the var to the driver.  There is no guesswork involved, and
-> > drivers will always operate on known working mode timings.
->
-> Yah, I know that problem, this looks like a good solution.
->
-> > Also, the graphics states per console are also preserved.  However,
-> > instead of saving a var per console, we only save a part of the var, the
-> > graphics state. The mode timings are saved as pointers to entries in
-> > info->modelist. In effect, we have the full functionality of a
-> > per-display var, but we save half the memory, that's around 5K.
->
-> I dislike the pointers tho. Remember that one day, we'll do monitor
-> hotswap, which means that at one point, the driver will
-> remove/add/rebuild modelist...
+> diff -Nru a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
+> --- a/drivers/video/vga16fb.c	2004-11-25 15:01:51 -08:00
+> +++ b/drivers/video/vga16fb.c	2004-11-25 15:01:51 -08:00
+> @@ -142,7 +142,7 @@
+>  	memset(fix, 0, sizeof(struct fb_fix_screeninfo));
+>  	strcpy(fix->id,"VGA16 VGA");
+>  
+> -	fix->smem_start = VGA_FB_PHYS;
+> +	fix->smem_start = VGA_MAP_MEM(VGA_FB_PHYS);
+>  	fix->smem_len = VGA_FB_PHYS_LEN;
+>  	fix->type = FB_TYPE_VGA_PLANES;
+>  	fix->visual = FB_VISUAL_PSEUDOCOLOR;
 
-Removing/adding/rebuilding the modelist should be doable with pointers. But
-in the case people don't want pointers, this can be easily changed.  The
-conversion code is entirely in display_to_var() and var_to_display() helpers.
-  
-Tony
+fix->smem_start: Although I agree VGA_FB_PHYS is not the correct value on
+machines other than PC, VGA_MAP_MEM(VGA_FB_PHYS) is not appropriate either,
+because fix->smem_start is supposed to be a CPU _physical_ address, not a
+virtual address.
 
+However, this value isn't really used, except by (very rare) userspace that
+wants to mmap the frame buffer through /dev/mem instead of /dev/fb*, so an
+incorrect value doesn't really harm.
 
+> @@ -896,7 +896,7 @@
+>  
+>  	/* XXX share VGA_FB_PHYS region with vgacon */
+>  
+> -        vga16fb.video_vbase = ioremap(VGA_FB_PHYS, VGA_FB_PHYS_LEN);
+> +        vga16fb.video_vbase = ioremap(VGA_MAP_MEM(VGA_FB_PHYS), VGA_FB_PHYS_LEN);
+>  	if (!vga16fb.video_vbase) {
+>  		printk(KERN_ERR "vga16fb: unable to map device\n");
+>  		return -ENOMEM;
 
+ioremap(): VGA_MAP_MEM() already a _virtual_ address:
 
--------------------------------------------------------
-SF email is sponsored by - The IT Product Guide
-Read honest & candid reviews on hundreds of IT Products from real users.
-Discover which products truly live up to the hype. Start reading now. 
-http://productguide.itmanagersjournal.com/
+| include/asm-alpha/vga.h:#define VGA_MAP_MEM(x)   ((unsigned long) ioremap((x), 0))
+| include/asm-arm/vga.h:#define VGA_MAP_MEM(x)     (PCIMEM_BASE + (x))
+| include/asm-i386/vga.h:#define VGA_MAP_MEM(x) (unsigned long)phys_to_virt(x)
+| include/asm-ia64/vga.h:#define VGA_MAP_MEM(x)    ((unsigned long) ioremap((x), 0))
+| include/asm-mips/vga.h:#define VGA_MAP_MEM(x) ((unsigned long)0xb0000000 + (unsigned long)(x))
+| include/asm-ppc/vga.h:#define VGA_MAP_MEM(x) (x + vgacon_remap_base)
+| include/asm-ppc64/vga.h:#define VGA_MAP_MEM(x) ((unsigned long) ioremap((x), 0))
+| include/asm-sparc64/vga.h:#define VGA_MAP_MEM(x) (x)
+| include/asm-x86_64/vga.h:#define VGA_MAP_MEM(x) (unsigned long)phys_to_virt(x)
+
+Doing a double ioremap(), or ioremap(phys_to_virt()) will break for sure...
+
+BTW, on (PReP/CHRP) PPC ioremap() on ISA memory space `just works' because
+__ioremap() adds _ISA_MEM_BASE to the passed pointer if it's smaller than
+16*1024*1024. And yes, vga16fb used to work fine on my CHRP LongTrail
+(before the machine itself died :-(.
+
+Yes, ISA memory space is a mess to do right in a portable way...
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds

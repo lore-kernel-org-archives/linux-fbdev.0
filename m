@@ -1,17 +1,17 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: Possible Bug in radeonfb (?)
-Date: 26 Feb 2003 16:02:55 +0800
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: Logo updates
+Date: Wed, 26 Feb 2003 19:29:15 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1046246472.11751.44.camel@localhost.localdomain>
-References: <20030225182115.GB2487@elitel.biz>
+Message-ID: <Pine.LNX.4.44.0302261929100.12126-100000@phoenix.infradead.org>
+References: <Pine.GSO.4.21.0302231333090.28532-100000@vervain.sonytel.be>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from pine.compass.com.ph ([202.70.96.37])
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18nwWE-0005HV-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 26 Feb 2003 00:02:23 -0800
-In-Reply-To: <20030225182115.GB2487@elitel.biz>
+Received: from phoenix.infradead.org ([195.224.96.167])
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18o7FX-0004va-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 26 Feb 2003 11:29:52 -0800
+In-Reply-To: <Pine.GSO.4.21.0302231333090.28532-100000@vervain.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,24 +21,13 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Andrea Mazzoleni <amadvance@users.sourceforge.net>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-On Wed, 2003-02-26 at 02:21, Andrea Mazzoleni wrote:
-> In radeonfb (2.4.20) I have found a possible inconsistency.
-> 
-> In the PLL clock computation the initial range check compares the
-> requested clock with the value pll_min/12. But immeditially later
-> I see that the higher PLL post divider is 16 and not 12.
-> 
-> Is it correct ? Or the check should use 16 instead of 12 ?
-> 
 
-Probably does not matter, unless you intend to use very, very low
-dotclocks (< 10MHz).
-
-Tony
+Applied :-)
 
 
 

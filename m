@@ -1,21 +1,21 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: S3triofb, pm3fb, retz3fb: abandoned?
-Date: Thu, 13 May 2004 16:42:05 +0200 (MEST)
+From: MAILER-DAEMON@ssh.com
+Subject: failure notice
+Date: 13 May 2004 16:48:36 -0000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0405131640100.9790@waterleaf.sonytel.be>
-References: <Pine.GSO.4.58.0405031952180.27296@waterleaf.sonytel.be>
- <Pine.LNX.4.58.0405131607090.24805@rosencrantz.theboonies.us>
-Mime-Version: 1.0
+Message-ID: <200405131648.i4DGmbQs028872@fw.hel.fi.ssh.com>
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BOHPW-0008H6-RI
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 07:42:10 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BOHPU-00066u-PT
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 07:42:08 -0700
-In-Reply-To: <Pine.LNX.4.58.0405131607090.24805@rosencrantz.theboonies.us>
+	id 1BOJNw-0004tk-Hz
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 09:48:40 -0700
+Received: from fw.hel.fi.ssh.com ([195.20.116.97])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1BOJNv-0005M1-7Z
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 09:48:39 -0700
+Received: from viikuna.hel.fi.ssh.com (viikuna.hel.fi.ssh.com [10.1.0.46])
+	by fw.hel.fi.ssh.com (SSH-1.16) with SMTP id i4DGmbQs028872
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 13 May 2004 19:48:37 +0300 (EEST)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,43 +25,81 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: David Eger <eger-dated-1085062396.5ba703@theboonies.us>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/m68k <linux-m68k@lists.linux-m68k.org>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, 13 May 2004, David Eger wrote:
-> I ran across some interesting things grepping for "scrollmode" in the
-> fb sources.  The framebuffer drivers shouldn't know about the console
-> (at least any more), so references to "scrollmode" says something's up.
-> I found the following:
->
-> drivers/video/sis/sis_main.c:          /* display->scrollmode = 0;  */
-> drivers/video/sis/sis_main.c:          display->scrollmode = SCROLL_YREDRAW;
-> drivers/video/S3triofb.c:    disp.scrollmode = fb_var.accel_flags & FB_ACCELF_TEXT ? 0 : SCROLL_YREDRAW;
-> drivers/video/pm3fb.c:     disp[l_fb_info->board_num].scrollmode = 0;      /* SCROLL_YNOMOVE; *//* 0 means "let fbcon choose" */
-> drivers/video/retz3fb.c:   display->scrollmode = SCROLL_YREDRAW;
->
-> Now sis_main tries to be both the 2.4 and 2.6 driver in one file, and
-> messing with scrollmode happens in the Linux 2.4 portion.  But for
-> the other three drivers here -- S3triofb, pm3fb, and retz3fb, they
-> just haven't been updated in recent memory.  Their code is still the
-> old interface where all the console cruft is intermingled with video
-> card settings.  Does anyone still care about these drivers?
+Hi. This is the qmail-send program at ssh.com.
+I'm afraid I wasn't able to deliver your message to the following addresses.
+This is a permanent error; I've given up. Sorry it didn't work out.
 
-Retz3fb is used on Amigas with a Retina Z III graphics cards, and I accept
-patches to fix it.
 
-Gr{oetje,eeting}s,
 
-						Geert
+<esp@ssh.com>:
+Sorry, no mailbox here by that name. (#5.1.1)
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+--- Below this line is a copy of the message.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Return-Path: <linux-fbdev-devel@lists.sourceforge.net>
+Received: (qmail 10446 invoked by alias); 13 May 2004 16:48:32 -0000
+Delivered-To: ipsec-esp@ssh.com
+Received: (qmail 10416 invoked by alias); 13 May 2004 16:48:29 -0000
+Delivered-To: alias-sshfi-ipsec-esp@ssh.fi
+Received: (qmail 10402 invoked from network); 13 May 2004 16:48:27 -0000
+Received: from unknown (HELO fw.hel.fi.ssh.com) ([10.1.0.48]) (envelope-sender <linux-fbdev-devel@lists.sourceforge.net>)
+          by viikuna.hel.fi.ssh.com (qmail-ldap-1.03) with SMTP
+          for <ipsec-esp@ssh.fi>; 13 May 2004 16:48:27 -0000
+Received: from manage.24online (comtech-10-158-16-del.qtelcomtech.com [61.16.158.10] (may be forged))
+	by fw.hel.fi.ssh.com (SSH-1.16) with ESMTP id i4DGmMQs028808
+	for <ipsec-esp@ssh.fi>; Thu, 13 May 2004 19:48:23 +0300 (EEST)
+Received: from ssh.fi ([172.16.4.34])
+	by manage.24online (8.9.3p2/8.9.3) with ESMTP id WAA13863
+	for <ipsec-esp@ssh.fi>; Thu, 13 May 2004 22:15:08 +0530
+From: linux-fbdev-devel@lists.sourceforge.net
+Message-Id: <200405131645.WAA13863@manage.24online>
+To: ipsec-esp@ssh.com
+Subject: Re: Here
+Date: Fri, 13 May 2005 22:14:27 +0530
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_0000_00000E4B.00003CC4"
+X-Priority: 3
+X-MSMail-Priority: Normal
+
+This is a multi-part message in MIME format.
+
+------=_NextPart_000_0000_00000E4B.00003CC4
+Content-Type: text/plain;
+	charset="Windows-1252"
+Content-Transfer-Encoding: 7bit
+
+Please read the attached file.
+
+------=_NextPart_000_0000_00000E4B.00003CC4
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+
+---  Virus Warning Message
+
+yours.pif is removed from here because it contains a virus.
+
+---
+------=_NextPart_000_0000_00000E4B.00003CC4
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+---  Virus Warning Message
+
+Found virus WORM_NETSKY.D in file yours.pif
+The file yours.pif is moved to /etc/iscan/virus/virGGCgdb4cP.
+
+---
+
+------=_NextPart_000_0000_00000E4B.00003CC4--
+
+
 
 
 -------------------------------------------------------

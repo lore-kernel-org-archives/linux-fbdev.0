@@ -1,16 +1,16 @@
 From: James Simmons <captain_delete@yahoo.com>
 Subject: Re: 2.5 atyfb on Sparc question
-Date: Thu, 8 Aug 2002 11:16:47 -0700 (PDT)
+Date: Thu, 8 Aug 2002 11:21:42 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20020808181647.41028.qmail@web13001.mail.yahoo.com>
-References: <1524395023D@vcnet.vc.cvut.cz>
+Message-ID: <20020808182142.93437.qmail@web13007.mail.yahoo.com>
+References: <20020807104334.1b1ba554.jani@iv.ro>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from web13001.mail.yahoo.com ([216.136.174.11])
+Received: from web13007.mail.yahoo.com ([216.136.174.17])
 	by usw-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17crq3-0003Qt-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 08 Aug 2002 11:16:47 -0700
-In-Reply-To: <1524395023D@vcnet.vc.cvut.cz>
+	id 17crup-00060q-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 08 Aug 2002 11:21:43 -0700
+In-Reply-To: <20020807104334.1b1ba554.jani@iv.ro>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,15 +22,23 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Petr Vandrovec <VANDROVE@vc.cvut.cz>, Jani Monoses <jani@iv.ro>
-Cc: bruce.holzrichter@monster.com, linux-fbdev-devel@lists.sourceforge.net, jsimmons@users.sourceforge.net
+To: Jani Monoses <jani@iv.ro>
+Cc: bruce.holzrichter@monster.com, linux-fbdev-devel@lists.sourceforge.net, jsimmons@infradead.org
 
-> I also hope that performance problems will be solved
-> before we are
-> forced to not use putcs.
 
-It will be :-) I need to one align the data. Second I
-plan to implement the patch recently posted here. 
+--- Jani Monoses <jani@iv.ro> wrote:
+> On Tue, 6 Aug 2002 09:06:48 -0700 (PDT)
+> James Simmons <captain_delete@yahoo.com> wrote:
+> > I push stuff. The next set of patches will break
+> alot
+> > of drivers but I need to do this to get people to
+> port
+> > there stuff over to the new api.
+> 
+> Could you outline what the next set of patches will
+> change?
+> Thanks
+> Jani.
 
 __________________________________________________
 Do You Yahoo!?

@@ -1,104 +1,26 @@
-From: Olaf Hering <olh@suse.de>
-Subject: Re: 2.6.11-rc5
-Date: Fri, 25 Feb 2005 18:29:45 +0100
-Message-ID: <20050225172945.GA31211@suse.de>
-References: <Pine.LNX.4.58.0502232014190.18997@ppc970.osdl.org> <20050224145049.GA21313@suse.de> <1109287708.15026.25.camel@gaston> <20050225070813.GA13735@suse.de> <1109316551.14993.63.camel@gaston>
+From: James Simmons <jsimmons@www.infradead.org>
+Subject: Re: [Linux-fbdev-devel] Re: 2.6.11-rc5
+Date: Fri, 25 Feb 2005 17:59:04 +0000 (GMT)
+Message-ID: <Pine.LNX.4.56.0502251758370.20213@pentafluge.infradead.org>
+References: <Pine.LNX.4.58.0502232014190.18997@ppc970.osdl.org>
+ <20050224145049.GA21313@suse.de> <1109287708.15026.25.camel@gaston>
+ <20050225070813.GA13735@suse.de> <1109316551.14993.63.camel@gaston>
+ <20050225172945.GA31211@suse.de>
 Mime-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <1109316551.14993.63.camel@gaston>
+In-Reply-To: <20050225172945.GA31211@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Kernel Mailing List <linux-kernel@vger.kernel.org>
 
- On Fri, Feb 25, Benjamin Herrenschmidt wrote:
 
-> On Fri, 2005-02-25 at 08:08 +0100, Olaf Hering wrote:
-> >  On Fri, Feb 25, Benjamin Herrenschmidt wrote:
-> > 
-> > > On Thu, 2005-02-24 at 15:50 +0100, Olaf Hering wrote:
-> > > >  On Wed, Feb 23, Linus Torvalds wrote:
-> > > > 
-> > > > > This time it's really supposed to be a quickie, so people who can, please 
-> > > > > check it out, and we'll make the real 2.6.11 asap.
-> > > > 
-> > > > radeonfb oopses on intel.
-> > > > Havent checked yet when it started with it.
-> > > > 
-> > > > ACPI: PCI interrupt 0000:00:12.0[A] -> GSI 11 (level, low) -> IRQ 11
-> > > > eth0: VIA Rhine II at 0x1c400, 00:11:5b:83:1e:76, IRQ 11.
-> > > > eth0: MII PHY found at address 1, status 0x7869 advertising 05e1 Link 45e1.
-> > > > usb 5-1: new low speed USB device using uhci_hcd and address 2
-> > > > ACPI: PCI interrupt 0000:01:00.0[A] -> GSI 11 (level, low) -> IRQ 11
-> > > > radeonfb: Found Intel x86 BIOS ROM Image
-> > > > radeonfb: Retreived PLL infos from BIOS
-> > > > radeonfb: Reference=27.00 MHz (RefDiv=60) Memory=133.00 Mhz, System=133.00 MHz
-> > > > radeonfb: PLL min 12000 max 35000
-> > > > NET: Registered protocol family 23
-> > > > radeonfb: Monitor 1 type DFP found
-> > > > radeonfb: EDID probed
-> > > > radeonfb: Monitor 2 type no found
-> > > > radeonfb: Assuming panel size 8x1
-> > > 
-> > > Hrm... that's totally bogus. What machine is this ?
-> > 
-> > Some i386 box with radeon 7000.
+> cfb_imageblit(320) dst1 fa51a800 base e0b80000 bitstart 1999a800
+> fast_imageblit(237) s daea4000 dst1 fa51a800
+> fast_imageblit(269) j 1 fa51a800 0
+> Unable to handle kernel paging request at virtual address fa51a800
 > 
-> It seem to detect the flat panel incorrectly, or the EDID data is bogus,
-> maybe that's wrecking something in the new modelist management in
-> fbdev ? It might be causing us to use a bogus mode that itself casues
-> atyfb to crash. Tried forcing a mode ?
+> is bitstart incorrect or is the thing just not (yet) mapped?
 
-cfb_imageblit(320) dst1 fa51a800 base e0b80000 bitstart 1999a800
-fast_imageblit(237) s daea4000 dst1 fa51a800
-fast_imageblit(269) j 1 fa51a800 0
-Unable to handle kernel paging request at virtual address fa51a800
-
-is bitstart incorrect or is the thing just not (yet) mapped?
-
-radeonfb: Found Intel x86 BIOS ROM Image
-radeonfb: Retreived PLL infos from BIOS
-radeonfb: Reference=27.00 MHz (RefDiv=60) Memory=133.00 Mhz, System=133.00 MHz
-radeonfb: PLL min 12000 max 35000
-radeonfb: Monitor 1 type DFP found
-radeonfb: EDID probed
-radeonfb: Monitor 2 type no found
-radeonfb: Assuming panel size 8x1
-radeonfb: Can't find mode for panel size, going back to CRT
-cfb_imageblit(320) dst1 fa51a800 base e0b80000 bitstart 1999a800
-fast_imageblit(237) s daea4000 dst1 fa51a800
-fast_imageblit(269) j 1 fa51a800 0
-Unable to handle kernel paging request at virtual address fa51a800
- printing eip:
-c020f17e
-*pde = 00000000
-Oops: 0002 [#1]
-Modules linked in: ohci1394 ieee1394 radeonfb i2c_algo_bit i2c_core ehci_hcd uhci_hcd capability usbcore
-CPU:    0
-EIP:    0060:[<c020f17e>]    Tainted: G     U VLI
-EFLAGS: 00010282   (2.6.11-rc5-20050225-default)
-EIP is at cfb_imageblit+0x57e/0x67c
-eax: 00000000   ebx: 00000001   ecx: 00000000   edx: fa51a800
-esi: fa51a804   edi: daea4000   ebp: 00000004   esp: dcae9c14
-ds: 007b   es: 007b   ss: 0068
-Process modprobe (pid: 2080, threadinfo=dcae8000 task=dc4a7550)
-Stack: c01110ac 00000001 c0321d60 dcae9c20 dcae9c20 c01303a2 00000001 c03c87a8
-       0000000a dae23ca8 c011c783 00000046 00000000 dc202000 00000046 dcae9c64
-       c010513d 0000384d dc202290 00000007 c032db20 daea4000 00000000 0000000f
-Call Trace:
- [<c01110ac>] smp_local_timer_interrupt+0xc/0x50
- [<c01303a2>] handle_IRQ_event+0x32/0x70
- [<c011c783>] __do_softirq+0x43/0xa0
- [<c010513d>] do_IRQ+0x3d/0x60
- [<c020d790>] soft_cursor+0x190/0x200
- [<c02043cc>] bit_cursor+0x48c/0x4f0
- [<e0b26c01>] radeonfb_prim_fillrect+0xf1/0x120 [radeonfb]
- [<c012043f>] msleep+0x2f/0x40
- [<c01fff28>] fbcon_cursor+0x1a8/0x280
- [<c023ad08>] hide_cursor+0x18/0x30
- [<c023b014>] redraw_screen+0x174/0x200
- [<c01fed4a>] fbcon_prepare_logo+0x39a/0x3a0
- [<c01ff8a0>] fbcon_init+0x2b0/0x370
- [<c023b1a9>] visual_init+0xe9/0x170
+Looks like the screen_base is not mapped to.

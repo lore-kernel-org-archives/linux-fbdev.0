@@ -1,25 +1,25 @@
 From: =?utf-8?q?Pawe=C5=82_Sikora?= <pluto@pld-linux.org>
 Subject: Re: [linux-2.6.10] radeonfb / oops
-Date: Sat, 12 Feb 2005 21:59:09 +0100
-Message-ID: <200502122159.10425.pluto@pld-linux.org>
-References: <200502121639.14542.pluto@pld-linux.org> <20050212173459.GA8195@dreamland.darkstar.lan>
+Date: Sun, 13 Feb 2005 10:53:59 +0100
+Message-ID: <200502131053.59562.pluto@pld-linux.org>
+References: <200502121639.14542.pluto@pld-linux.org> <20050212173459.GA8195@dreamland.darkstar.lan> <200502122159.10425.pluto@pld-linux.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Content-Transfer-Encoding: quoted-printable
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D04MK-00035n-Rt
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 12 Feb 2005 12:59:20 -0800
+	id 1D0GSC-0006pG-93
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Feb 2005 01:54:12 -0800
 Received: from chello081018222206.chello.pl ([81.18.222.206] helo=plus.ds14.agh.edu.pl)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1D04MJ-0002SC-6Q
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 12 Feb 2005 12:59:20 -0800
+	id 1D0GSA-0006cg-Od
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Feb 2005 01:54:12 -0800
 Received: from localhost ([127.0.0.1])
 	by plus.ds14.agh.edu.pl with esmtp (Exim 4.42)
-	id 1D04MC-0005za-5S
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 12 Feb 2005 21:59:12 +0100
-In-Reply-To: <20050212173459.GA8195@dreamland.darkstar.lan>
+	id 1D0GS1-0000J3-7c
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Feb 2005 10:54:01 +0100
+In-Reply-To: <200502122159.10425.pluto@pld-linux.org>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -31,55 +31,56 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="windows-1252"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-On Saturday 12 of February 2005 18:34, Kronos wrote:
-
-> It looks like this (in fbsplash_init):
+On Saturday 12 of February 2005 21:59, Pawe=C5=82 Sikora wrote:
+> On Saturday 12 of February 2005 18:34, Kronos wrote:
+> > It looks like this (in fbsplash_init):
+> >
+> >                 vc->vc_splash.theme =3D kmalloc((strlen(fbsplash_theme)=
++1)
+> > * sizeof(char), GFP_KERNEL); strcpy(vc->vc_splash.theme, fbsplash_theme=
+);
+> >
+> > IMHO kmalloc failed and strcpy used the NULL pointer. Try to change the
+> > code in this way:
+> >
+> > vc->vc_splash.theme =3D kmalloc((strlen(fbsplash_theme)+1), GFP_KERNEL);
+> > if (!vc->vc_splash.theme) {
+> >         misc_deregister(&splash_dev);
+> >         printk(KERN_ERR "fbsplash_init: ZOMG!!! Out of mem!\n");
+> >         return -ENOMEM;
+> > }
+> > strcpy(vc->vc_splash.theme, fbsplash_theme);
 >
->                 vc->vc_splash.theme = kmalloc((strlen(fbsplash_theme)+1) *
-> sizeof(char), GFP_KERNEL); strcpy(vc->vc_splash.theme, fbsplash_theme);
+> You're right.
 >
-> IMHO kmalloc failed and strcpy used the NULL pointer. Try to change the
-> code in this way:
+> (...)
+> pldworkstation Console: switching to colour frame buffer device 80x30
+> pldworkstation fbsplash_init: ZOMG!!! Out of mem!
+> (...)
 >
-> vc->vc_splash.theme = kmalloc((strlen(fbsplash_theme)+1), GFP_KERNEL);
-> if (!vc->vc_splash.theme) {
->         misc_deregister(&splash_dev);
->         printk(KERN_ERR "fbsplash_init: ZOMG!!! Out of mem!\n");
->         return -ENOMEM;
-> }
-> strcpy(vc->vc_splash.theme, fbsplash_theme);
+> btw).
 >
+> Bellows fix (from Spock) should help for kmalloc.
+> I'll test it tomorrow...
+>
+> --- a/drivers/video/fbsplash.c.orig  2005-02-12 21:14:47.000000000 +0100
+> +++ b/drivers/video/fbsplash.c       2005-02-12 21:15:34.272313976 +0100
+> @@ -59,7 +59,7 @@
+>
+> int fbsplash_mode =3D 0;
+> char fbsplash_path[KMOD_PATH_LEN] =3D "/sbin/splash_helper";
+> -static char fbsplash_theme[FB_SPLASH_THEME_LEN] __initdata =3D "default";
+> +static char fbsplash_theme[FB_SPLASH_THEME_LEN] =3D "default";
+>
+> int fbsplash_call_helper(char* cmd, unsigned short vc)
+> {
 
-You're right.
+It helped. Case closed :-)
 
-(...)
-pldworkstation Console: switching to colour frame buffer device 80x30
-pldworkstation fbsplash_init: ZOMG!!! Out of mem!
-(...)
-
-btw).
-
-Bellows fix (from Spock) should help for kmalloc.
-I'll test it tomorrow...
-
---- a/drivers/video/fbsplash.c.orig  2005-02-12 21:14:47.000000000 +0100
-+++ b/drivers/video/fbsplash.c       2005-02-12 21:15:34.272313976 +0100
-@@ -59,7 +59,7 @@
-
-int fbsplash_mode = 0;
-char fbsplash_path[KMOD_PATH_LEN] = "/sbin/splash_helper";
--static char fbsplash_theme[FB_SPLASH_THEME_LEN] __initdata = "default";
-+static char fbsplash_theme[FB_SPLASH_THEME_LEN] = "default";
-
-int fbsplash_call_helper(char* cmd, unsigned short vc)
-{
-
-
-
--- 
+=2D-=20
 /* Copyright (C) 2003, SCO, Inc. This is valuable Intellectual Property. */
 
                            #define say(x) lie(x)

@@ -1,54 +1,35 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: vertical stripes under OpenFirmware and offb
-Date: Wed, 2 Apr 2003 23:12:45 +0100 (BST)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0304022311440.3919-100000@phoenix.infradead.org>
-References: <20030328110528.GA2403@gajba.net>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [Linux-fbdev-devel] [PATCH]: EDID parser
+Date: 03 Apr 2003 00:20:54 +0200
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <1049322054.578.3.camel@zion.wanadoo.fr>
+References: <Pine.LNX.4.44.0304022245520.2488-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 190qTv-00015q-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 02 Apr 2003 14:13:20 -0800
-In-Reply-To: <20030328110528.GA2403@gajba.net>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Boris Bezlaj <boris@gajba.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44.0304022245520.2488-100000@phoenix.infradead.org>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@infradead.org>
+Cc: Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Petr <vandrove@vc.cvut.cz>
 
 
-> Hello,
-> 
-> could anyone explain what kind of misconfiguration of framebuffer in OpenFirmware
-> or in general would cause the vertical stripes effect? White stripes, width about the
-> same as the width of characters and some garbage pixels between lines on black background.
-> If the white stripes would stick together, the screen with letters would look in order.
+> Let really good. I applied it to my local tree but haven't passed it to BK 
+> fbdev yet. The only thing I like to see changed is get_EDID. At present it 
+> accepts a struct pci_dev. Now for generic support for the intel platform 
+> we can get this from the BIOS. You already have a patch that does this. 
+> It doesn't need a struct pci_dev in this case. It is possible to get this 
+> info from the i2c bus but I never seen any drivers do this. What data would
+> we have to pass in get the EDID inforamtion? So the question is how 
+> generic will get_EDID end up being or will we have to have driver specfic 
+> hooks since I don't pitcure i2c approaches being the same for each video 
+> card. Petr didn't you attempt this with the matrox driver at one time?
 
-Which kernel are you using? What is configuration?
- 
-> AFAIK, OF doesn't initialize the video card (IMS TT 128mb8) and i get the same under
-> offb driver(unless i use the hacked version of imsttfb).
-> 
-> In what should i look into to fix that? I have the documentation for TVP3030 ramdac.
+get_EDID() has to be a driver specific hook
 
-A IMS card user. Could you try out the imsttfb driver as well. I liek to 
-know how well it works in 2.5.X.
+EDID via BIOS is a way to get it, BIOS emulation in userland is another,
+on PPC, I can retreive it from the firmware device-tree in a different
+way with some cards, and finally, I plan to implement i2c sooner or
+later with some drivers...
 
-
-
-
--------------------------------------------------------
-This SF.net email is sponsored by: ValueWeb: 
-Dedicated Hosting for just $79/mo with 500 GB of bandwidth! 
-No other company gives more support or power for your dedicated server
-http://click.atdmt.com/AFF/go/sdnxxaff00300020aff/direct/01/
+Ben.

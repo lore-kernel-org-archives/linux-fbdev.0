@@ -1,69 +1,57 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: implementing vga16fb
-Date: Tue, 23 Mar 2004 10:47:17 +0100 (MET)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0403231045120.4928@waterleaf.sonytel.be>
-References: <405FCB00.2070601@GameBox.net>
+From: Jan De Luyck <lkml@kcore.org>
+Subject: Re: [Linux-fbdev-devel] Re: [PATCH] Sysfs for framebuffer
+Date: Tue, 23 Mar 2004 12:11:00 +0100
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <200403231211.09334.lkml@kcore.org>
+References: <20040320174956.GA3177@dreamland.darkstar.lan> <1079909446.911.165.camel@gaston> <20040322195720.GA27480@kroah.com>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B5iVI-0003Gk-Lg
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 23 Mar 2004 01:47:24 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1B5iVG-0000Ms-OR
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 23 Mar 2004 01:47:22 -0800
-In-Reply-To: <405FCB00.2070601@GameBox.net>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Suresh Chandra Mannava <Mannava@GameBox.net>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7BIT
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <20040322195720.GA27480@kroah.com>
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: Text/Plain; charset="us-ascii"
+To: linux-kernel@vger.kernel.org
+Cc: Greg KH <greg@kroah.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Kronos <kronos@kronoz.cjb.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@osdl.org>
 
-On Tue, 23 Mar 2004, Suresh Chandra Mannava wrote:
-> I read that VESAfb is only for Intel(x86) platforms, has any body
-> implemented Vesafb on other platforms?
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Vesafb relies on the BIOS setting up the video mode _before_ the kernel is
-started.
+On Monday 22 March 2004 20:57, Greg KH wrote:
+> On Mon, Mar 22, 2004 at 09:50:46AM +1100, Benjamin Herrenschmidt wrote:
+> > > I prefere graphics myself. Display sounds to generic. That is what
+> > > video and graphics output is piped to. Since fbdev doesn't handle video
+> > > ouput normally this is kind of fuzzy sounding.
+> >
+> > I still prefer display...
+>
+> Bah, I don't want to argue here.  I've applied Kronos's patch as is to
+> my device-2.6 tree which will end up in the next -mm release.
+>
+> I'll hold off forwarding this patch to Linus until after 2.6.5 is out,
+> so that gives everyone a few days in which to argue the name a bunch and
+> then send me a patch that changes it to the decided apon name (if it is
+> to be changed.)
 
-> Is vga16fb a CPU architecture dependent? Even though I didn't find any
-> architecture dependent sections in the code, Is there any code section
-> that to be modified in vga16fb.c?
+- From a users point of view: if there are only to be framebuffer devices listed 
+in this class, why not call it just what it is: "Framebuffer" ? Naming it 
+after something it is only in a broad sense makes no sense to me. I'd be 
+looking in /sys/.../framebuffer instead of /sys/.../graphics or /display.
 
-I used vga16fb on PPC a while ago. Make sure the video RAM address in ISA
-memory space is correct.
+Display would be the EDID info of my screen (physical), and graphics... 
+well... I'd half expect something like capture cards to be there...
 
-> And lastly, we are testing this framebuffer on 2.6Mhz FPGA(0.16
-> Bogomips) with kernel 2.4.7. Are there any other methods (solutions) for
-> debugging framebuffer code with out using printk's?
+Just my 0.02EUR.
 
-I assume you mean `printk() on the frame buffer'.
-printk() on a serial port?
+Jan
 
-Gr{oetje,eeting}s,
+- -- 
+patent:
+	A method of publicizing inventions so others can copy them.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
-
--------------------------------------------------------
-This SF.Net email is sponsored by: IBM Linux Tutorials
-Free Linux tutorial presented by Daniel Robbins, President and CEO of
-GenToo technologies. Learn everything from fundamentals to system
-administration.http://ads.osdn.com/?ad_id=1470&alloc_id=3638&op=click
+iD8DBQFAYBtMUQQOfidJUwQRAugBAJ4jSuhjpzr2jySPGmc6yk4lYflILgCfTB0M
+nA8OHiWcRfjRllgoxC/KJBY=
+=I8ag
+-----END PGP SIGNATURE-----

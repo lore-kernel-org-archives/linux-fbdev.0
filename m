@@ -1,59 +1,75 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: radeon, apertures & memory mapping
-Date: Sun, 13 Mar 2005 11:19:35 -0500
-Message-ID: <9e473391050313081937cde207@mail.gmail.com>
-References: <1110677744.19810.80.camel@gaston> <20050313082216.GA7362@sci.fi>
-	<1110705646.14684.126.camel@gaston> <20050313103936.GA11002@sci.fi>
-	<1110715499.14684.132.camel@gaston>
-Reply-To: Jon Smirl <jonsmirl@gmail.com>
+From: Alexander Kern <alex.kern@gmx.de>
+Subject: Re: excessive atyfb debug messages in 2.6.11
+Date: Sun, 13 Mar 2005 17:03:10 +0100
+Message-ID: <200503131703.10436.alex.kern@gmx.de>
+References: <Pine.LNX.4.21.0503111206270.32544-100000@hal.pp.fishpool.fi>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-In-Reply-To: <1110715499.14684.132.camel@gaston>
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_+QGNCozUnrNDjeq"
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1DAVxm-0001jI-Ip
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Mar 2005 08:29:10 -0800
+Received: from pop.gmx.de ([213.165.64.20] helo=mail.gmx.net)
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
+	id 1DAVxk-0003Ag-Uk
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Mar 2005 08:29:10 -0800
+In-Reply-To: <Pine.LNX.4.21.0503111206270.32544-100000@hal.pp.fishpool.fi>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/xorg>
-List-Post: <mailto:xorg@lists.freedesktop.org>
-List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
-Sender: xorg-bounces@lists.freedesktop.org
-Errors-To: xorg-bounces@lists.freedesktop.org
-Content-Type: text/plain; charset="us-ascii"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: =?ISO-8859-1?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>, Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, dri-devel@lists.sourceforge.net, xorg@lists.freedesktop.org
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+To: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net
+Cc: =?iso-8859-1?q?Martin-=C9ric?= Racine <q-funk@iki.fi>
 
-On Sun, 13 Mar 2005 23:04:59 +1100, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> 
-> > AGP as it's currently used is pretty much pointless for software fallbacks
-> > since reading from AGP memory is nearly as slow as reading from video
-> > memory.
-> 
-> Hrm.. I wouldn't expect _that_ slow. It's uncacheable, right, but still
-> on a faster bus. Especially if we use it the way we do on ppc where we
-> actually map the RAM pages directly instead of having processes go
-> through the GART.
+--Boundary-00=_+QGNCozUnrNDjeq
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I asked at the Xdev conference if there were page table tricks that
-would work for accessing GART memory.  Everybody said no but I'm still
-wondering if there are any.
+Am Freitag, 11. M=E4rz 2005 11:18 schrieb Martin-=C9ric Racine:
+> I keep on getting the following both directly to the console and to
+> several logs (debug, kern.log, messages, syslog), every time I switch
+> virtual console (this particular exerpt from syslog):
+It seems to be unneeded last time. Driver is pretty stable.
 
-For example the ppc has an instruction for flushing specific pages
-from cache, unlike the x86 where you can only flush everything.
+Signed-off-by: Alexander Kern <alex.kern@gmx.de>
 
-So on the ppc you could leave the GART memory mapped normally and
-cached. Do all of your fallback calculations, then flush the address
-range from cache. Now tell the GPU to go use it.
+--Boundary-00=_+QGNCozUnrNDjeq
+Content-Type: text/x-diff;
+  charset="iso-8859-1";
+  name="atyfb_undef_debug.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="atyfb_undef_debug.patch"
 
-Can't GART memory be normally cached RAM as long as we flush the cache
-before telling the GPU to use it?
+--- drivers/video/aty/atyfb_base.c.orig	2005-03-13 16:46:45.000000000 +0100
++++ drivers/video/aty/atyfb_base.c	2005-03-13 16:51:40.776418368 +0100
+@@ -100,8 +100,8 @@
+ /*
+  * Debug flags.
+  */
+-/*#undef DEBUG*/
+-#define DEBUG
++#undef DEBUG
++/*#define DEBUG*/
+ 
+ /* Make sure n * PAGE_SIZE is protected at end of Aperture for GUI-regs */
+ /*  - must be large enough to catch all GUI-Regs   */
 
-If you are doing fallback calculations in a 6MB buffer that is 1,500
-pages. Accessing all of this effectively flushes the data cache. Once
-you are done with it you probably don't want those pages in the cache
-anyway.
+--Boundary-00=_+QGNCozUnrNDjeq--
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

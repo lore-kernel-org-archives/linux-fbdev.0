@@ -1,131 +1,151 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Fix u32 vs. pm_message_t confusion in framebuffers
-Date: Tue, 15 Feb 2005 01:54:33 +0100
-Message-ID: <20050215005433.GG5415@elf.ucw.cz>
-References: <1108359808.12611.37.camel@desktop.cunningham.myip.net.au> <20050214213400.GF12235@elf.ucw.cz> <20050214134658.324076c9.akpm@osdl.org>
+From: Frans Pop <aragorn@tiscali.nl>
+Subject: Re: [atyfb] No display on Sparc Ultra 10 with kernel 2.6.10-rc2 or later
+Date: Tue, 15 Feb 2005 07:22:15 +0100
+Message-ID: <200502150722.24770.aragorn@tiscali.nl>
+References: <200502140251.00645.aragorn@tiscali.nl> <200502141855.29202.aragorn@tiscali.nl> <200502150741.01702.adaplas@hotpop.com>
 Mime-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <20050214134658.324076c9.akpm@osdl.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: multipart/signed;
+  boundary="nextPart2466069.y69fcxfPBt";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@osdl.org>, adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net
-Cc: ncunningham@cyclades.com, bernard@blackham.com.au, torvalds@osdl.org, linux-kernel@vger.kernel.org
+In-Reply-To: <200502150741.01702.adaplas@hotpop.com>
+Resent-Message-ID: <lhuyhD.A.1GC.kUZECB@murphy>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:debian-sparc@lists.debian.org>
+List-Help: <mailto:debian-sparc-request@lists.debian.org?subject=help>
+List-Subscribe: <mailto:debian-sparc-request@lists.debian.org?subject=subscribe>
+List-Unsubscribe: <mailto:debian-sparc-request@lists.debian.org?subject=unsubscribe>
+List-Archive: <http://lists.debian.org/debian-sparc/>
+To: adaplas@pol.net
+Cc: debian-sparc@lists.debian.org, sparclinux@vger.kernel.org, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi!
+--nextPart2466069.y69fcxfPBt
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-This should fix u32 vs pm_message_t confusion in framebuffers, and do
-no code changes. Please apply,
+Hi Tony,
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
-								Pavel
+I've tried your suggestions and the one about using fbset resulted in a=20
+breakthrough. 'fbset -depth' gave no results, but comparing the output of=20
+'fbset -i' from a working kernel and a new one gave me something to try.
 
---- clean-mm/drivers/video/aty/aty128fb.c	2005-02-15 00:46:41.000000000 +0100
-+++ linux-mm/drivers/video/aty/aty128fb.c	2005-02-15 01:04:11.000000000 +0100
-@@ -166,7 +166,7 @@
- static int aty128_probe(struct pci_dev *pdev,
-                                const struct pci_device_id *ent);
- static void aty128_remove(struct pci_dev *pdev);
--static int aty128_pci_suspend(struct pci_dev *pdev, u32 state);
-+static int aty128_pci_suspend(struct pci_dev *pdev, pm_message_t state);
- static int aty128_pci_resume(struct pci_dev *pdev);
- static int aty128_do_resume(struct pci_dev *pdev);
- 
-@@ -2330,7 +2330,7 @@
- 	}
- }
- 
--static int aty128_pci_suspend(struct pci_dev *pdev, u32 state)
-+static int aty128_pci_suspend(struct pci_dev *pdev, pm_message_t state)
- {
- 	struct fb_info *info = pci_get_drvdata(pdev);
- 	struct aty128fb_par *par = info->par;
-@@ -2413,7 +2413,7 @@
- 	par->lock_blank = 0;
- 	aty128fb_blank(0, info);
- 
--	pdev->dev.power.power_state = 0;
-+	pdev->dev.power.power_state = PMSG_ON;
- 
- 	printk(KERN_DEBUG "aty128fb: resumed !\n");
- 
---- clean-mm/drivers/video/aty/atyfb_base.c	2005-02-15 00:34:40.000000000 +0100
-+++ linux-mm/drivers/video/aty/atyfb_base.c	2005-02-15 01:04:11.000000000 +0100
-@@ -2016,7 +2016,7 @@
- 	return timeout ? 0 : -EIO;
- }
- 
--static int atyfb_pci_suspend(struct pci_dev *pdev, u32 state)
-+static int atyfb_pci_suspend(struct pci_dev *pdev, pm_message_t state)
- {
- 	struct fb_info *info = pci_get_drvdata(pdev);
- 	struct atyfb_par *par = (struct atyfb_par *) info->par;
-@@ -2091,7 +2091,7 @@
- 
- 	release_console_sem();
- 
--	pdev->dev.power.power_state = 0;
-+	pdev->dev.power.power_state = PMSG_ON;
- 
- 	return 0;
- }
---- clean-mm/drivers/video/aty/radeon_pm.c	2005-02-15 00:46:41.000000000 +0100
-+++ linux-mm/drivers/video/aty/radeon_pm.c	2005-02-15 01:04:11.000000000 +0100
-@@ -2663,7 +2663,7 @@
- 	else if (rinfo->dynclk == 0)
- 		radeon_pm_disable_dynamic_mode(rinfo);
- 
--	pdev->dev.power.power_state = 0;
-+	pdev->dev.power.power_state = PMSG_ON;
- 
-  bail:
- 	release_console_sem();
---- clean-mm/drivers/video/aty/radeonfb.h	2005-02-15 00:46:41.000000000 +0100
-+++ linux-mm/drivers/video/aty/radeonfb.h	2005-02-15 01:04:11.000000000 +0100
-@@ -624,7 +624,7 @@
- extern int radeon_probe_i2c_connector(struct radeonfb_info *rinfo, int conn, u8 **out_edid);
- 
- /* PM Functions */
--extern int radeonfb_pci_suspend(struct pci_dev *pdev, u32 state);
-+extern int radeonfb_pci_suspend(struct pci_dev *pdev, pm_message_t state);
- extern int radeonfb_pci_resume(struct pci_dev *pdev);
- extern void radeonfb_pm_init(struct radeonfb_info *rinfo, int dynclk);
- extern void radeonfb_pm_exit(struct radeonfb_info *rinfo);
---- clean-mm/drivers/video/cyber2000fb.c	2005-02-15 00:34:40.000000000 +0100
-+++ linux-mm/drivers/video/cyber2000fb.c	2005-02-15 01:04:11.000000000 +0100
-@@ -1665,7 +1665,7 @@
- 	}
- }
- 
--static int cyberpro_pci_suspend(struct pci_dev *dev, u32 state)
-+static int cyberpro_pci_suspend(struct pci_dev *dev, pm_message_t state)
- {
- 	return 0;
- }
---- clean-mm/drivers/video/i810/i810_main.c	2005-02-15 00:46:41.000000000 +0100
-+++ linux-mm/drivers/video/i810/i810_main.c	2005-02-15 01:04:11.000000000 +0100
-@@ -1524,7 +1524,7 @@
- 		pci_disable_device(dev);
- 	}
- 	pci_save_state(dev);
--	pci_set_power_state(dev, state);
-+	pci_set_power_state(dev, pci_choose_state(dev, state));
- 
- 	return 0;
- }
---- clean-mm/drivers/video/i810/i810_main.h	2004-04-05 10:45:24.000000000 +0200
-+++ linux-mm/drivers/video/i810/i810_main.h	2005-02-15 01:04:11.000000000 +0100
-@@ -18,7 +18,7 @@
- 				       const struct pci_device_id *entry);
- static void __exit i810fb_remove_pci(struct pci_dev *dev);
- static int i810fb_resume(struct pci_dev *dev);
--static int i810fb_suspend(struct pci_dev *dev, u32 state);
-+static int i810fb_suspend(struct pci_dev *dev, pm_message_t state);
- 
- /*
-  * voffset - framebuffer offset in MiB from aperture start address.  In order for
+=46rom 2.6.8 kernel (working framebuffer):
+mode "1152x900-66"
+    # D: 93.870 MHz, H: 61.433 kHz, V: 65.564 Hz
+    geometry 1152 900 1152 1792 8
+    timings 10653 190 58 31 2 128 4
+    hsync high
+    csync high
+    accel true
+    rgba 8/0,8/0,8/0,0/0
+endmode
 
--- 
-People were complaining that M$ turns users into beta-testers...
-...jr ghea gurz vagb qrirybcref, naq gurl frrz gb yvxr vg gung jnl!
+=46rame buffer device information:
+    Name        : ATY Mach64
+    Address     : 0xe1800000
+    Size        : 2088960
+    Type        : PACKED PIXELS
+    Visual      : PSEUDOCOLOR
+    XPanStep    : 8
+    YPanStep    : 1
+    YWrapStep   : 0
+    LineLength  : 1152
+    MMIO Address: 0xfffffc00
+    MMIO Size   : 2048
+    Accelerator : ATI Mach64GT
+<end>
+
+=46rom 2.6.10-rc2 (not working):
+mode "1024x768-70"
+    # D: 74.778 MHz, H: 56.308 kHz, V: 69.862 Hz
+    geometry 1024 768 1024 2016 8
+    timings 13373 144 24 29 3 136 6
+    accel true
+    rgba 8/0,8/0,8/0,0/0
+endmode
+
+=46rame buffer device information:
+    Name        : ATY Mach64
+    Address     : 0xe1800000
+    Size        : 2088960
+    Type        : PACKED PIXELS
+    Visual      : PSEUDOCOLOR
+    XPanStep    : 8
+    YPanStep    : 1
+    YWrapStep   : 0
+    LineLength  : 1024
+    MMIO Address: 0xe17ff800
+    MMIO Size   : 2048
+    Accelerator : ATI Mach64GT
+<end>
+
+The significant difference is in the settings for hsync and csync. After=20
+setting both 'high' (hsync alone did nothing) from a SSH terminal the=20
+monitor turned on :-D
+
+I hope this will be enough of a clue for those who know the driver code to=
+=20
+work out a patch.
+
+These values also tell that the old default mode was 1152x900-66,=20
+resulting in a 144x56 textconsole. My personal opinion is that that is=20
+very high for a default mode. The 1024x768-70 (resulting in 128x48) I've=20
+been using now (or maybe even something a bit lower) seems more=20
+reasonable to me.
+
+=46or completeness sake I've included the answers to your questions below.
+
+Cheers,
+=46rans
+
+On Tuesday 15 February 2005 00:40, Antonino A. Daplas wrote:
+> Try editing drivers/video/console/fbcon.c, look for the function
+> fbcon_startup(). After the line 'ops->currcon =3D -1;', insert this line:
+>
+> ops->blank_state =3D -1;
+
+Hmm. Results in a compilation error when I tried that in -rc2: no such=20
+variable in that structure.
+I checked 2.6.11-rc3-bk2 and noticed it was added there, so I tested this=20
+suggestion with that version. No difference.
+
+> Also, try changing the graphics state such as doing an
+> fbset -depth 16 or the like.
+
+I tried that from my ssh terminal and only -depth 8 was accepted.
+Both 16 and 24 gave the same result:
+# fbset -depth 16 -fb /dev/fb0
+ioctl FBIOPUT_VSCREENINFO: Invalid argument
+
+> What happens if you switch consoles?
+
+Nothing at all. Hitting keys does nothing either, also not after leaving=20
+the system alone for a long time.
+
+> You can also try commenting out .fb_blank =3D atyfb_blank from
+> static struct fb_ops atyfb_ops and disable CONFIG_PM from your kernel
+> config.
+
+The first suggestion makes no difference.
+As to the CONFIG_PM: there is no such setting in my .config for sparc64=20
+(i386 does have it). I do have CONFIG_FB_PM2, but that is not set.
+
+> I'll CC fbdev-devel list.
+
+Thanks.
+
+--nextPart2466069.y69fcxfPBt
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.5 (GNU/Linux)
+
+iD8DBQBCEZUggm/Kwh6ICoQRAsLRAJ9Y04fpaZN6fu6gBFFmf6Ta2Yl53ACeOk8P
+e2eDrZBoofjpMuXC58AXFA8=
+=Dasa
+-----END PGP SIGNATURE-----
+
+--nextPart2466069.y69fcxfPBt--

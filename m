@@ -1,25 +1,25 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: (no subject)
-Date: Fri, 28 May 2004 15:42:16 +0800
+Subject: Re: [ PATCH-LINK ] fb accel capabilities - take 2
+Date: Fri, 28 May 2004 15:42:12 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200405281542.16461.adaplas@hotpop.com>
-References: <PMEKJGJGKKPHMBEGKNMIEEBKCCAA.xuhaoz@neonetech.com>
+Message-ID: <200405281542.13028.adaplas@hotpop.com>
+References: <40B691DF.4060509@winischhofer.net> <1085715488.40b6b42062e3c@mail.theboonies.us>
 Reply-To: adaplas@pol.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BTc0b-0002Rf-2z
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 May 2004 00:42:29 -0700
-Received: from babyruth.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BTc0a-0002K4-IH
+	id 1BTc0a-0002Re-Im
 	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 May 2004 00:42:28 -0700
+Received: from snickers.hotpop.com ([38.113.3.51])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BTc0Z-0002Iv-TJ
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 May 2004 00:42:27 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by babyruth.hotpop.com (Postfix) with SMTP id 657B751603B
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 28 May 2004 07:10:01 +0000 (UTC)
-In-Reply-To: <PMEKJGJGKKPHMBEGKNMIEEBKCCAA.xuhaoz@neonetech.com>
+	by snickers.hotpop.com (Postfix) with SMTP id B472B72BA4
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 28 May 2004 06:47:58 +0000 (UTC)
+In-Reply-To: <1085715488.40b6b42062e3c@mail.theboonies.us>
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,46 +31,28 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: xuhaoz <xuhaoz@neonetech.com>, linux-fbdev-devel@lists.sourceforge.net
+To: David Eger <eger-dated-1086320292.98e266@theboonies.us>, David Eger <eger-sender-da68b9@theboonies.us>, Thomas Winischhofer <thomas@winischhofer.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Wednesday 26 May 2004 17:00, xuhaoz wrote:
-> hi all
-> 	how can i config the framebuffer to be an available console?,i want the
-> boot message to display onto the board lcd screen .i use uclinux2.4, arm7no
-> mmu
->
+On Friday 28 May 2004 11:38, David Eger wrote:
+> Thomas Winischhofer eloquently put:
+> > David Eger wrote:
 
-1. If you are developing your own driver, you will need the following hooks.  
-(You may not need all of them if you don't plan on changing video modes after 
-initialization. Or at least provide a stub).
+> It's all part of fixing bugs ;-)  When my "accelerated" fb driver is still
+> super-slow, i consider that a bug.  And it's a bug of the framebuffer
+> subsystem, not really of the drivers.  Your lovely
 
-static struct fb_ops xxxfb_ops = {
-	owner:		THIS_MODULE,
-	fb_get_fix:		xxxfb_get_fix,
-	fb_get_var:	xxxfb_get_var,
-	fb_set_var:	xxxfb_set_var,
-	fb_get_cmap:	xxxfb_get_cmap,
-	fb_set_cmap:	xxxfb_set_cmap,
-	fb_pan_display:	xxxfb_pan_display,
-};
+There is also another cause for the slowdown.  Although 2.6 fbcon is slightly 
+faster than 2.4 fbcon (not considering other variables such as panning), the 
+speed can be increased further more (around 30-50%).  
 
-Then in your init, something like this:
+This is mainly due to the use of sys_inbuf and sys_outbuf, which are used a 
+lot, for transferring data from the pixmap when creating the monochrome 
+bitmap (for use by xxx_imageblit).  I guess we just need to use standard 
+memcopy (or similar), possibly inlined, if the pixmap is in system RAM, and 
+only use sys_inbuf and sys_outbuf when the pixmap is in video/DMA/etc memory.
 
-info->fb_ops = &xxxfb_ops;
-
-2. Add this to fbmem.c, (in static struct fb_drivers[]):
-
-#ifdef CONFIG_FB_PVR2
-	{ "xxx", xxxfb_init, xxxfb_setup },
-#endif
-
-xxxfb_setup can be NULL.
-
-3.  If you can use one of the generic drawing functions, (see any of the 
-fbcon_cfb*.c files). If not, you have to create those too.
-  
-Tony
-
+Tony 
 
 
 

@@ -1,51 +1,34 @@
-From: Dave Jones <davej@redhat.com>
-Subject: vga16fb mode change.
-Date: Fri, 23 Jan 2004 15:33:54 +0000
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040123153354.GB19002@redhat.com>
+From: James Simmons <jsimmons@infradead.org>
+Subject: fbdev documentation patch
+Date: Mon, 26 Jan 2004 22:05:34 +0000 (GMT)
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <Pine.LNX.4.44.0401262202280.5445-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Al3Wg-0003xU-Qy
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 26 Jan 2004 01:59:26 -0800
-Received: from delerium.codemonkey.org.uk ([81.187.208.145])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1Ak3L4-00049D-Ex
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Jan 2004 07:35:18 -0800
-Received: from delerium.codemonkey.org.uk (localhost.localdomain [127.0.0.1])
-	by delerium.codemonkey.org.uk (8.12.10/8.12.10) with ESMTP id i0NFXs5h026748
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 23 Jan 2004 15:33:54 GMT
-Received: (from davej@localhost)
-	by delerium.codemonkey.org.uk (8.12.10/8.12.10/Submit) id i0NFXstH026746
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Jan 2004 15:33:54 GMT
-Content-Disposition: inline
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-
-Guys,
- How come the 2.6 vga16fb driver doesn't change the display
-to the framebuffer when it's modprobe'd any more like the 2.4
-used to ?
-
-Is this an intentional change, or a regression?
-
-		Dave
+To: Linus Torvalds <torvalds@transmeta.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
--------------------------------------------------------
-The SF.Net email is sponsored by EclipseCon 2004
-Premiere Conference on Open Tools Development and Integration
-See the breadth of Eclipse activity. February 3-5 in Anaheim, CA.
-http://www.eclipsecon.org/osdn
+Hi!
+
+  The below patch updates the framebuffer docs to reflect the requirement 
+that all driver names must end in fb. Please apply.
+
+--- linus-2.6/Documentation/fb/modedb.txt	2004-01-26 13:31:19.000000000 -0800
++++ fbdev-2.6/Documentation/fb/modedb.txt	2004-01-26 16:32:23.000000000 -0800
+@@ -51,10 +51,10 @@
+     Drivers that support modedb boot options
+     Boot Name	  Cards Supported
+ 
+-    ami		- Amiga chipset frame buffer
++    amifb	- Amiga chipset frame buffer
+     aty128fb	- ATI Rage128 / Pro frame buffer
+     atyfb	- ATI Mach64 frame buffer
+-    tdfx	- 3D Fx frame buffer
++    tdfxfb	- 3D Fx frame buffer
+     tridentfb	- Trident (Cyber)blade chipset frame buffer
+ 
+ BTW, only a few drivers use this at the moment. Others are to follow

@@ -1,25 +1,24 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Fw: [Bugme-new] [Bug 4217] New: radeonfb makes system hang and
- LCD "burn"
-Date: Thu, 17 Feb 2005 19:41:37 +1100
-Message-ID: <1108629697.5425.75.camel@gaston>
-References: <20050215121555.54c63ed2.akpm@osdl.org>
-	 <1108502142.13394.2.camel@gaston> <87fyzxsdo7.fsf@kataplop.net>
-	 <1108504143.13376.14.camel@gaston> <87r7jggxc7.fsf@kataplop.net>
-	 <1108592133.5533.6.camel@gaston>  <87brajlim7.fsf@kataplop.net>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Re: Fw: [Bugme-new] [Bug 4218] New: Radeon
+ fb doesn't have correct resolution for lcd screen
+Date: Thu, 17 Feb 2005 10:15:54 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0502171015260.30106@numbat.sonytel.be>
+References: <20050215133933.61769fd0.akpm@osdl.org> <1108504048.13376.11.camel@gaston>
+ <200502160948.51781.bart@verwilst.be> <Pine.LNX.4.56.0502161955370.23410@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D1hEg-0004xO-7X
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 00:42:10 -0800
-Received: from gate.crashing.org ([63.228.1.57])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1D1hEe-0005EP-KF
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 00:42:10 -0800
-In-Reply-To: <87brajlim7.fsf@kataplop.net>
+	id 1D1hlT-0006aW-TJ
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 01:16:03 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1D1hlS-0000Yz-86
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 01:16:03 -0800
+Received: from numbat.sonytel.be (mail.sonytel.be [43.221.60.197])
+	by witte.sonytel.be (8.12.10/8.12.10) with ESMTP id j1H9FvGU028366
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 17 Feb 2005 10:15:58 +0100 (MET)
+In-Reply-To: <Pine.LNX.4.56.0502161955370.23410@pentafluge.infradead.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,42 +29,25 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Marc =?ISO-8859-1?Q?Poulhi=E8s?= <marc.poulhies@epfl.ch>
-Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, 2005-02-17 at 09:02 +0100, Marc Poulhi=E8s wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
->=20
-> > On Wed, 2005-02-16 at 19:43 +0100, Marc Poulhi=E8s wrote:
-> >> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> >>=20
-> >> > Try building radeonfb in the kernel and booting with
-> >> > radeonfb.default_dynclk=3D-1, let me know if that works. fbdev's i=
-n
-> >> > modules have always been sort-of dodgy....
-> >>=20
-> >> Ok, did that. Same result. The only thing displayed is the system
-> >> caret. I can see it moving left and right while the system boots and
-> >> "displays" the messages (X is working nicely).
-> >
-> > Well... looks like radeonfb is actually working ... You can try booti=
-ng
-> > with radeonfb.noaccel=3D1 on your kernel command line and tell me wha=
-t's
-> > up ? I looks like your fbcon is having trouble actually. Not sure wha=
-t's
-> > up, I haven't had any report of that so far.
->=20
-> Same result as without (screen "burns").
+On Wed, 16 Feb 2005, James Simmons wrote:
+> Be careful. Don't run radeonfb and vesa fb at the same time!!!
 
-Well, I sent a patch that might fix the "burning" effect, if you could
-get the latest bk, and try again...
+So vesafb should start checking request_mem_region() again, to avoid this.
 
-Thanks,
-Ben.
+Gr{oetje,eeting}s,
 
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

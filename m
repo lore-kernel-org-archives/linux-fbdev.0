@@ -1,26 +1,24 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [PATCH] Fix fb.h breaking compilation of userspace programs
-Date: Sun, 5 Sep 2004 05:42:34 +0800
+From: Otto Wyss <otto.wyss@orpatec.ch>
+Subject: Re: framebuffer ioctl (fwd)
+Date: Sat, 04 Sep 2004 23:44:22 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200409050542.35195.adaplas@hotpop.com>
-References: <20040904163516.GA23640@spock.one.pl>
+Message-ID: <413A3735.9E7D2F11@orpatec.ch>
+References: <Pine.GSO.4.58.0409041304080.3434@waterleaf.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C3iIz-0006No-24
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 04 Sep 2004 14:42:41 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.51])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1C3iIw-0005GO-Ex
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 04 Sep 2004 14:42:40 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id C8E3872A0A
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat,  4 Sep 2004 21:42:25 +0000 (UTC)
-In-Reply-To: <20040904163516.GA23640@spock.one.pl>
-Content-Disposition: inline
+	id 1C3iKq-0006zi-IU
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 04 Sep 2004 14:44:36 -0700
+Received: from mail.xor.ch ([212.55.210.163])
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.34)
+	id 1C3iKn-0003bB-87
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 04 Sep 2004 14:44:36 -0700
+Received: from orpatec.ch (217.162.130.125)
+          by mail.xor.ch with MERCUR Mailserver (v4.03.03 NjYtMjMxMS00NjIy)
+          for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 4 Sep 2004 23:49:32 +0200
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,25 +29,26 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, Michal Januszewski <spock@gentoo.org>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Sunday 05 September 2004 00:35, Michal Januszewski wrote:
-> Hi,
->
-> The latest changes introduced to the fb structs in linux/fb.h make
-> compilation of userspace programs break with:
->
-> include/linux/fb.h:305: error: field `modelist' has incomplete type
->
-> This is caused by struct list_head not being seen from userspace. The
-> attached patch is a possible fix for this problem.
+Geert Uytterhoeven wrote:
+> 
+> Would there be any major opposition to my adding
+> some additional functions to the framebuffer ioctl
+> interface? I want to add basic drawing functions,
+> nothing too fancy, but enough to do away with things
+> like SVGAlib.
+> Zack
+> 
+IMO it should only be done if all of the graphic libs like SVGAlib, GGI,
+DirectFB can profit from it. IMO it's very important that the future API
+of the framebuffer in kernel 2.7.x is discussed before such changes are
+done. Maybe a wish list should be started.
 
-Thanks.  Instead of making struct list_head visible to userspace,  I'll just 
-move modelist out of struct fb_monspecs.
+O. Wyss
 
-Tony
-
-
+-- 
+See a huge pile of work at "http://wyodesktop.sourceforge.net/"
 
 
 -------------------------------------------------------

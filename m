@@ -1,48 +1,67 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: xxx_check_var
-Date: 11 Dec 2002 00:13:48 +0100
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [TRIVIAL PATCH] FBDEV: Small impact patch for fbdev
+Date: Tue, 10 Dec 2002 21:59:51 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1039562028.3373.32.camel@zion>
-References: <15862.27978.670448.901111@argo.ozlabs.ibm.com>
+Message-ID: <Pine.LNX.4.33.0212102155280.2617-100000@maxwell.earthlink.net>
+References: <1039558622.1054.32.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <15862.27978.670448.901111@argo.ozlabs.ibm.com>
+In-Reply-To: <1039558622.1054.32.camel@localhost.localdomain>
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-To: Paul Mackerras <paulus@samba.org>
-Cc: James Simmons <jsimmons@infradead.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Tue, 2002-12-10 at 23:40, Paul Mackerras wrote:
-> When I look at atyfb_check_var or aty128fb_check_var, I see that they
-> will alter the contents of *info->par.  Isn't this a bad thing?  My
 
-Yes, this wrong, and afaik, it's your original port to 2.5 that did that
-;)
+> Here's a diff to correct several small things that escaped through the
+> cracks.
 
-> understanding was that after calling check_var, you don't necessarily
-> call set_par next (particularly if check_var returned an error).
-> Also I notice that atyfb_set_par and aty128fb_set_par don't look at
-> info->var, they simply set the hardware state based on the contents of
-> *info->par.
+Ug. Now that a wider test base is being done and more drivers actually
+compile we are going to see more cracks.
 
-Which is wrong too indeed
+> 1.  The YNOMOVE scrollmode for non-accelerated drivers is just very slow
+> because of a lot of block moves (leads to slow and jerky scrolling in
+> vesafb with ypanning enabled).  Depending on var->accel_flags, set the
+> scrollmode to either YREDRAW or YNOMOVE. For drivers with hardware
+> acceleration, set var->accel_flags to nonzero for max speed.
 
-> Looking at skeletonfb.c, it seems that this is the wrong behaviour.  I
-> had fixed the aty128fb.c driver in the linuxppc-2.5 tree.  James, if
-> you let me know whether the current behaviour is wrong or not, I'll
-> fix them and send you the patch.
+Thanks. I have had several emails complementing the speed improvements.
+Another speed boost will be a plus.
 
-I _think_ my radeonfb (in linuxppc-2.5) is right in this regard too.
-Look at the initialization too, iirc, you had some non necessary stuff
-in there (calling gen_set_disp, gen_set_var is plenty enough).
+> 2.  fb_pan_display() always returns an error.  User apps will complain.
 
-Ben.
+Fixed. Actually I used the following code.
 
- 
-> Paul.
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+int fb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
+{
+        int xoffset = var->xoffset;
+        int yoffset = var->yoffset;
+        int err;
+
+        if (xoffset < 0 || yoffset < 0 || info->fbops->fb_pan_display ||
+            xoffset + info->var.xres > info->var.xres_virtual ||
+            yoffset + info->var.yres > info->var.yres_virtual)
+                return -EINVAL;
+        if ((err = info->fbops->fb_pan_display(var, info)))
+                return err;
+        info->var.xoffset = var->xoffset;
+        info->var.yoffset = var->yoffset;
+        if (var->vmode & FB_VMODE_YWRAP)
+
+instead. The reason is I didn't like the idea of xoffset and yoffset being
+changed even if the hardware panning function failed. Comments?
+
+> 3.  case FBIO_GETCMAP in fb_ioctl does not return immediately.  User
+> apps will complain.
+
+Fixed.
+
+> 4.  vgastate.c is not saving the correct blocks.
+
+Fixed.
+
+> 5.  logo drawing for monochrome displays is just incorrect.(alterations
+> were done by eyeballing only, no hardware for testing).
+
+Will test on hgafb driver.

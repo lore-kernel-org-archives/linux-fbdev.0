@@ -1,16 +1,16 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: Re: EDID for radeonfb
-Date: Thu, 21 Aug 2003 14:21:07 -0700 (PDT)
+From: "Galen C. Hunt"  <gchunt@cs.rochester.edu>
+Subject: I no longer read email sent to this address
+Date: Thu, 21 Aug 2003 22:01:48 -0400 (EDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030821212107.55742.qmail@web14915.mail.yahoo.com>
-References: <1061500246.18043.15.camel@gaston>
+Message-ID: <200308220201.h7M21mK28641@slate.cs.rochester.edu>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from web14915.mail.yahoo.com ([216.136.225.228])
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19pwrk-00083L-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 21 Aug 2003 14:21:08 -0700
-In-Reply-To: <1061500246.18043.15.camel@gaston>
+Received: from gate.cs.rochester.edu ([192.5.53.207])
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19q1Uw-0006Js-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 21 Aug 2003 19:17:54 -0700
+Received: from slate.cs.rochester.edu (slate.cs.rochester.edu [192.5.53.101]) by gate.cs.rochester.edu (8.11.6+Sun/004) with ESMTP id h7M21ns26706 for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 21 Aug 2003 22:01:49 -0400 (EDT)
+Received: (from gchunt@localhost) by slate.cs.rochester.edu (8.11.6+Sun/004) id h7M21mK28641 for linux-fbdev-devel@lists.sourceforge.net; Thu, 21 Aug 2003 22:01:48 -0400 (EDT)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,58 +22,18 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: kronos@kronoz.cjb.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@infradead.org>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-The list of modes supported by the board has to get worked into this too. Who
-should do the diff'ing to determine valid modes? The list of legal monitor
-modes might be from EDID or the fbmode database.
+Due to a large volume of SPAM, I no longer read email sent to this account.
+Your message regarding "Your details" will not be read.
 
-Should sysfs have one entry for legal board modes and one for legal monitor
-modes? Or should it just have a single entry for legal combos?
+If you wish to contact me, please use my new email address:
 
---- Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> On Thu, 2003-08-21 at 22:51, Jon Smirl wrote:
-> > Is GregKH designing the EDID thorough sysfs scheme? I haven't seen a
-> proposal
-> > on how it is going to work. We need to coordinate with that so that we
-> don't
-> > end up with a different EDID scheme for every card.
-> 
-> Imho, the fbdev should be a separate device from the monitor:
-> 
-> fbdev -> fbmon -> EDID
-> 
-> The EDID should be a property of the monitor
-> 
-> So fbdev should instanciate a monitor object for each head after
-> detection. It's still unclear for me how to deal with the various
-> types of monitors though
-> 
->  - EDID available
->  - Mac old style "sense code" available
->  - fixed mode known based on motherboard (old mac laptops among others,
->    probably some embedded)
->  - unknown
-> 
-> The EDID shall be used to build a modedb of available modes for this
-> display, the driver doing validation based on that, though a flag to
-> set_var would still be useful to force a mode that doesn't pass
-> validation (EDIDs can be wrong...)
-> 
-> 
-> Ben.
-> 
+         g a l e n h @ m i c r o s o f t . c o m
 
+Thanks.
+galen
 
-=====
-Jon Smirl
-jonsmirl@yahoo.com
-
-__________________________________
-Do you Yahoo!?
-Yahoo! SiteBuilder - Free, easy-to-use web site design software
-http://sitebuilder.yahoo.com
 
 
 -------------------------------------------------------

@@ -1,22 +1,24 @@
-From: Thomas Jahns <Thomas.Jahns@epost.de>
-Subject: Re: New fbdev patch.
-Date: Fri, 2 Jul 2004 13:01:48 +0200
+From: <kiran.tigadi@wipro.com>
+Subject: Smart LCD Linux driver
+Date: Fri, 2 Jul 2004 16:50:44 +0530
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040702110148.GE21418@mercury.jahnsnet.de>
-References: <Pine.LNX.4.56.0406231859390.27210@pentafluge.infradead.org> <40DC328C.9010707@bitworks.com> <20040629214850.GC2871@mercury.jahnsnet.de> <40E1ECCD.7080501@bitworks.com> <Pine.LNX.4.56.0406301753470.29465@pentafluge.infradead.org>
+Message-ID: <DC91351678E31E4FB24B551221F507ECB771E4@blr-itp-msg.wipro.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C46026.9DD43AE3"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BgLpF-0004Kx-OY
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 02 Jul 2004 04:03:25 -0700
-Received: from mail.epost.de ([193.28.100.151])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1BgLpF-0002Gd-9S
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 02 Jul 2004 04:03:25 -0700
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.56.0406301753470.29465@pentafluge.infradead.org> (from jsimmons@pentafluge.infradead.org on Wed, Jun 30, 2004 at 18:57:28 +0200)
+	id 1BgM6I-0006HF-VH
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 02 Jul 2004 04:21:02 -0700
+Received: from wiproecmx2.wipro.com ([164.164.31.6])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
+	id 1BgM6G-0002wA-ST
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 02 Jul 2004 04:21:02 -0700
+Received: from ec-vwall-wd (ec-vwall-wd.wipro.com [10.200.52.125])
+	by wiproecmx2.wipro.com (8.12.9-20031013/8.12.9) with SMTP id i62BKkNC017165
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 2 Jul 2004 16:50:47 +0530 (IST)
+content-class: urn:content-classes:message
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,81 +28,53 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; format="Flowed"; delsp="Yes"; charset="us-ascii"
-To: jsimmons@pentafluge.infradead.org
-Cc: Richard Smith <rsmith@bitworks.com>, Thomas.Jahns@epost.de, fbdev <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
+
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01C46026.9DD43AE3
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
 Hi,
+=20
+I am working on Smart LCD Linux driver interfaced Asynchronous Display
+controller. I want info in this regard.
+=20
+Thanks
+Kiran.T
+=20
 
-On 06/30/04 18:57:28, jsimmons@pentafluge.infradead.org wrote:
-> The correct patch is here.
-> 
-> http://www.infradead.org/~jsimmons/changes.diff.gz
+------_=_NextPart_001_01C46026.9DD43AE3
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-that does apply cleanly, but won't compile (see below). Is it perhaps
-possible to access your kernel source tree so I can search for the
-header in need of patching myself? Should set_palette(vc) have read
-fbcon_set_palette(vc, color_table)?
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD><TITLE>Message</TITLE>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 5.50.4807.2300" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D796452011-02072004>Hi,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D796452011-02072004></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D796452011-02072004>I am =
+working on=20
+Smart LCD Linux driver interfaced Asynchronous Display controller. I =
+want info=20
+in this regard.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D796452011-02072004></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D796452011-02072004>Thanks</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D796452011-02072004>Kiran.T</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV></BODY></HTML>
 
-/usr/bin/make -j2 EXTRAVERSION=-tungsten  ARCH=ppc \
-                    CROSS_COMPILE=powerpc-linux- zImage
-make[1]: Entering directory `/home/tjahns/tmp/debian_stuff/kernel-
-compile/2.6.7/linux-2.6.7'
-make[2]: `arch/ppc/kernel/asm-offsets.s' is up to date.
-  CHK     include/asm-ppc/offsets.h
-  CHK     include/linux/compile.h
-  CC      drivers/video/console/fbcon.o
-drivers/video/console/fbcon.c: In function `fbcon_init':
-drivers/video/console/fbcon.c:640: error: `SCROLL_ACCEL' undeclared
-(first use in this function)
-drivers/video/console/fbcon.c:640: error: (Each undeclared identifier
-is reported only once
-drivers/video/console/fbcon.c:640: error: for each function it appears
-in.)
-drivers/video/console/fbcon.c:642: error: `SCROLL_REDRAW' undeclared
-(first use in this function)
-drivers/video/console/fbcon.c: In function `fbcon_scroll':
-drivers/video/console/fbcon.c:1274: error: `SCROLL_ACCEL' undeclared
-(first use in this function)
-drivers/video/console/fbcon.c:1281: error: `SCROLL_WRAP' undeclared
-(first use in this function)
-drivers/video/console/fbcon.c:1299: error: `SCROLL_PAN' undeclared
-(first use in this function)
-drivers/video/console/fbcon.c:1322: error: `SCROLL_REDRAW' undeclared
-(first use in this function)
-drivers/video/console/fbcon.c: In function `updatescrollmode':
-drivers/video/console/fbcon.c:1483: error: `SCROLL_WRAP' undeclared
-(first use in this function)
-drivers/video/console/fbcon.c:1483: error: `SCROLL_PAN' undeclared
-(first use in this function)
-drivers/video/console/fbcon.c:1485: error: `SCROLL_REDRAW' undeclared
-(first use in this function)
-drivers/video/console/fbcon.c:1488: error: `SCROLL_ACCEL' undeclared
-(first use in this function)
-drivers/video/console/fbcon.c: In function `fbcon_switch':
-drivers/video/console/fbcon.c:1568: error: `SCROLL_WRAP' undeclared
-(first use in this function)
-drivers/video/console/fbcon.c:1571: error: `SCROLL_PAN' undeclared
-(first use in this function)
-drivers/video/console/fbcon.c: In function `fbcon_scrolldelta':
-drivers/video/console/fbcon.c:2145: error: `SCROLL_WRAP' undeclared
-(first use in this function)
-drivers/video/console/fbcon.c:2148: error: `SCROLL_PAN' undeclared
-(first use in this function)
-drivers/video/console/fbcon.c: In function `fbcon_modechanged':
-drivers/video/console/fbcon.c:2200: error: `SCROLL_WRAP' undeclared
-(first use in this function)
-drivers/video/console/fbcon.c:2203: error: `SCROLL_PAN' undeclared
-(first use in this function)
-drivers/video/console/fbcon.c:2215: warning: passing arg 1 of
-`set_palette' makes integer from pointer without a cast
-make[4]: *** [drivers/video/console/fbcon.o] Error 1
-make[3]: *** [drivers/video/console] Error 2
-make[2]: *** [drivers/video] Error 2
-make[1]: *** [drivers] Error 2
-make[1]: Leaving directory `/home/tjahns/tmp/debian_stuff/kernel-
-compile/2.6.7/linux-2.6.7'
-make: *** [stamp-build] Error 2
+------_=_NextPart_001_01C46026.9DD43AE3--
 
 
 -------------------------------------------------------

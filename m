@@ -1,21 +1,23 @@
-From: Otto Solares <solca@guug.org>
-Subject: Re: [PATCH] radeonfb(): memmove() fix -- this one works ;-)
-Date: Wed, 28 Apr 2004 18:38:52 -0600
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
+	one works ;-)
+Date: Thu, 29 Apr 2004 10:50:51 +1000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040429003852.GB24584@guug.org>
-References: <1083194942.21436.96.camel@gaston> <Pine.LNX.4.44.0404290106150.3125-100000@phoenix.infradead.org>
+Message-ID: <1083199850.20089.110.camel@gaston>
+References: <Pine.LNX.4.44.0404290100490.3125-100000@phoenix.infradead.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIzaD-0001W4-Db
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 17:39:21 -0700
-Received: from guug.org ([168.234.203.30])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIzaD-0002uh-2I
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 17:39:21 -0700
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0404290106150.3125-100000@phoenix.infradead.org>
+	id 1BIzrw-0004jG-V2
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 17:57:40 -0700
+Received: from gate.crashing.org ([63.228.1.57] ident=root)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.30)
+	id 1BIzrw-0006n7-IB
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 17:57:40 -0700
+In-Reply-To: <Pine.LNX.4.44.0404290100490.3125-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,22 +28,27 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: James Simmons <jsimmons@infradead.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, John Zielinski <grim@undead.cc>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, John Zielinski <grim@undead.cc>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, Apr 29, 2004 at 01:26:57AM +0100, James Simmons wrote:
-> I plan to put in sysfs a way to cat a string to
-> change the resolution using modedb.
+On Thu, 2004-04-29 at 10:02, James Simmons wrote:
+> > > How do you feel about using modedb handling in fbcon. Let me create this 
+> > > patch and test it out. If it works then we can resolve this issue.
+> > 
+> > No, no, no...
+> > 
+> > First, we would have to fix all drivers to properly probe monitors or
+> > provide some valid monitor data for things that cannot be probed. Then,
+> > I don't think modedb is really an fbcon matter. I completely agree with
+> > Geert here, I think the current scheme is backward.
+> 
+> No we don't. We have the default modedb. I already tested a patch using 
+> modedb. It works like a charm :-) I can stty all I want!!!! 
 
-nice!.
+On your monitor... then most TFT owners will curse you :)
 
-> Then you add to the modedb. Right now we lack that functionalty.
+Ben.
 
-Is not modedb marked __init so it's lost to userspace?  If not how
-can i use modedb from userspace?
-
--otto
 
 
 

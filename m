@@ -1,24 +1,22 @@
-From: Otto Wyss <otto.wyss@orpatec.ch>
-Subject: Re: Generic framebuffer driver
-Date: Sat, 21 Aug 2004 11:02:53 +0200
+From: Romain Dolbeau <dolbeau@irisa.fr>
+Subject: Re: Framebuffer drivers maintainers
+Date: Sat, 21 Aug 2004 11:24:51 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <41270FBE.88832BF8@orpatec.ch>
-References: <41261BF3.19B87A64@orpatec.ch> <Pine.GSO.4.58.0408201805270.6741@waterleaf.sonytel.be>
+Message-ID: <412714E3.4070803@irisa.fr>
+References: <41270AD0.FE6C7970@orpatec.ch>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1ByRmC-0006nh-R9
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 21 Aug 2004 02:03:04 -0700
-Received: from mail.xor.ch ([212.55.210.163])
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.34)
-	id 1ByRmA-0001mk-WC
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 21 Aug 2004 02:03:04 -0700
-Received: from orpatec.ch (217.162.130.125)
-          by mail.xor.ch with MERCUR Mailserver (v4.03.03 NjYtMjMxMS00NjIy)
-          for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 21 Aug 2004 11:07:49 +0200
+	id 1ByS7N-0001ZF-U6
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 21 Aug 2004 02:24:57 -0700
+Received: from smtp.irisa.fr ([131.254.254.26])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
+	id 1ByS7L-0004DR-F6
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 21 Aug 2004 02:24:57 -0700
+In-Reply-To: <41270AD0.FE6C7970@orpatec.ch>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,52 +26,30 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Geert Uytterhoeven wrote:
-> 
-> On Fri, 20 Aug 2004, Otto Wyss wrote:
-> > I guess this is a common feature of the digital interface and might be
-> > available for any graphic card/monitor with DVI. Does anyone know for
-> > sure? If yes this feature would allow to create a generic framebuffer
-> 
-> It can work for normal monitors as well, using DDC.
-> 
-Maybe, but then I'm wondering why it only works with DVI in the
-radeonfb. Has anyone tried a DVI cable with other cards and can post information?
+Otto Wyss wrote:
 
-> > driver which could be built into the kernel and used right from the
-> > start. How nice would it be to have a shiny startup screen right from
-> > the start of Linux! All the startup messages could be shown in a decent
-> > font (maybe even configurable) and might be surrounded by a nice window.
-> > What a difference would it make against the current DOS-like look.
-> 
-> Like what e.g. SUSE does?
-> 
-Unfortunately I don't have Suse, is there link to an image? Anyway I
-though more like the Mac, besides the Mac shows that such a solution is possible.
+> For each driver its maintainer should be listed possibly with its
+> sourceforge.net user account in brackets. I'd like if only current
+> maintainers, who really take care of their drivers, are listed and none
+> who has done so in the past. Please any maintainer post a message to
+> linux-fbdev-devel or tell me where I can retrieve reliable information.
 
-> > Do you also think such a generic driver should exist? Is anyone able to
-> > create it, maybe simply extract it from the radeonfb?
-> 
-> This generic driver does not exist. And it's not simple to write, since it's
-> hardware dependent.
-> 
-> The closest thing to such a generic driver is the existing vesafb. Perhaps on
-> some cards the BIOS uses DDC as well to find a nice video mode?
-> 
-The vesafb proves that there is a common base for framebuffer driver.
-IMO any card having a DVI plug also has to have a common protocol which
-can be used for a generic driver without being too hardware dependent
-and also without using BIOS calls. It might be possible to create such a
-driver for all cards but it shouldn't be too difficult to create it for
-i.e. 80%.
+for pm3fb (3Dlabs Permedia3 chipset), I'm still the
+maintainer for 2.4.x. The entry in the MAINTAINERS
+file is still valid:
 
-O. Wyss
+PERMEDIA 3 FRAMEBUFFER DRIVER
+P:      Romain Dolbeau
+M:      dolbeau@caps-entreprise.com
+L:      linux-fbdev-devel@lists.sourceforge.net
+W:      http://www.caps-entreprise.com/private/dolbeau/pm3fb/pm3fb.html
+S:      Maintained
 
 -- 
-See a huge pile of work at "http://wyodesktop.sourceforge.net/"
+Romain Dolbeau
 
 
 -------------------------------------------------------

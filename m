@@ -1,20 +1,20 @@
 From: Sven Luther <sven.luther@wanadoo.fr>
 Subject: Re: monitor detection through ddc/edid stuff.
-Date: Sun, 12 Sep 2004 12:31:46 +0200
+Date: Sun, 12 Sep 2004 15:54:09 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040912103146.GA27867@pegasos>
+Message-ID: <20040912135409.GA31005@pegasos>
 References: <20040910111627.GA14811@pegasos> <200409121732.45011.adaplas@hotpop.com> <20040912100407.GB27133@pegasos> <200409121811.01426.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C6RcL-0007zP-Ah
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 12 Sep 2004 03:29:57 -0700
-Received: from smtp2.wanadoo.fr ([193.252.22.29] helo=mwinf0207.wanadoo.fr)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1C6RcK-0006yA-OY
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 12 Sep 2004 03:29:57 -0700
+	id 1C6Um9-00017Q-Fo
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 12 Sep 2004 06:52:17 -0700
+Received: from smtp5.wanadoo.fr ([193.252.22.26] helo=mwinf0504.wanadoo.fr)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
+	id 1C6Um9-0007Wj-53
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 12 Sep 2004 06:52:17 -0700
 Content-Disposition: inline
 In-Reply-To: <200409121811.01426.adaplas@hotpop.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -28,8 +28,8 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: adaplas@pol.net
-Cc: Sven Luther <sven.luther@wanadoo.fr>, linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Sven Luther <sven.luther@wanadoo.fr>, adaplas@pol.net
 
 On Sun, Sep 12, 2004 at 06:11:01PM +0800, Antonino A. Daplas wrote:
 > On Sunday 12 September 2004 18:04, Sven Luther wrote:
@@ -56,7 +56,9 @@ On Sun, Sep 12, 2004 at 06:11:01PM +0800, Antonino A. Daplas wrote:
 > 
 > int fb_get_color_depth(struct fb_info *)
 
-Yes, thanks, this will do nicely.
+Another question now, left_margin and co, they are no more in picos value, but
+in actual pixels, right ? and the pixclock field contains how much each pixel
+is in picos.
 
 Friendly,
 

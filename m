@@ -1,65 +1,87 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel-otUistvHUpPR7s880joybQ@public.gmane.org>
-Subject: Re: Current discussion about the future of free software graphics
-Date: Tue, 11 May 2004 15:24:24 +0200
-Sender: xserver-bounces-CC+yJ3UmIYqDUpFQwHEjaQ@public.gmane.org
-Message-ID: <1084281863.807.73.camel@thor.asgaard.local>
-References: <A98078D7EF5BEA4D8D8FD797FFBBC75F0742A3A6@fmsmsx402.fm.intel.com>
-	<200405102120.48640.ajax@nwnk.net>
-Reply-To: "Xserver development list." <xserver-CC+yJ3UmIYqDUpFQwHEjaQ@public.gmane.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Sun Blade 100 with 2 pgx64 (ATi Mach64 ?) framebuffers (fwd)
+Date: Tue, 11 May 2004 16:20:37 +0200 (MEST)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.GSO.4.58.0405111620100.27719@waterleaf.sonytel.be>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <xserver-bounces-CC+yJ3UmIYqDUpFQwHEjaQ@public.gmane.org>
-In-Reply-To: <200405102120.48640.ajax-TAsg7VrFCGc@public.gmane.org>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BNY7e-0004np-6O
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 11 May 2004 07:20:42 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BNY7d-0003bo-MC
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 11 May 2004 07:20:41 -0700
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://freedesktop.org/mailman/listinfo/xserver>,
-	<mailto:xserver-request-CC+yJ3UmIYr06gljFB5M2x44fDD1xmscxSRez2wfwdukMgtKGq/v6w@public.gmane.org>
-List-Archive: <http://freedesktop.org/pipermail/xserver>
-List-Post: <mailto:xserver-CC+yJ3UmIYqDUpFQwHEjaQ@public.gmane.org>
-List-Help: <mailto:xserver-request-CC+yJ3UmIYr06gljFB5M2x44fDD1xmsccn+ig0pBZCw@public.gmane.org>
-List-Subscribe: <http://freedesktop.org/mailman/listinfo/xserver>,
-	<mailto:xserver-request-CC+yJ3UmIYr06gljFB5M2x44fDD1xmscuCKOA6ERizqzQB+pC5nmwQ@public.gmane.org>
-Errors-To: xserver-bounces-CC+yJ3UmIYqDUpFQwHEjaQ@public.gmane.org
-Content-Type: text/plain; charset="iso-8859-1"
-To: Adam Jackson <ajax-TAsg7VrFCGc@public.gmane.org>
-Cc: xserver-CC+yJ3UmIYqDUpFQwHEjaQ@public.gmane.org, "Sottek, Matthew J" <matthew.j.sottek-ral2JQCrhuEAvxtiuMwx3w@public.gmane.org>, dri-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, mesa3d-dev-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Admar Schoonen <admar@luon.net>
+
+---------- Forwarded message ----------
+Date: Tue, 11 May 2004 16:11:30 +0200
+From: Admar Schoonen <admar@luon.net>
+To: geert@linux-m68k.org
+Subject: Sun Blade 100 with 2 pgx64 (ATi Mach64 ?) framebuffers
+
+Dear Geert Uytterhoeven,
+
+I have a Sun Blade 100 ultra sparc with 2 pgx64 framebuffers, one on
+board and one pci. The machine is running an up to date Debian GNU/Linux
+unstable. With linux 2.4.24, both cards work fine (I can move consoles
+around with con2fbmap and XFree86 sees 2 cards and starts an X server on
+both screens (I haven't tried xinerama though)).
+
+With 2.6.6, this doesn't work anymore. dmesg output seems good:
+$ dmesg |grep -i aty
+atyfb: 3D RAGE (XL) [0x4752 rev 0x27] 8M SDRAM, 29.498928 MHz XTAL, 230
+MHz PLL, 100 Mhz MCLK
+fb0: ATY Mach64 frame buffer device on PCI
+atyfb: 3D RAGE (XL) [0x4752 rev 0x27] 8M SGRAM, 29.498928 MHz XTAL, 230
+MHz PLL, 100 Mhz MCLK
+
+but the second head stays black if I try to move consoles. Also, XFree86
+only sees my onboard card.
+
+I don't know how I should debug this issue, but I hope you can give me
+some clues.
+
+Best regards
+
+Admar Schoonen
+---------- Forwarded message ----------
+Date: Tue, 11 May 2004 16:18:51 +0200
+From: Admar Schoonen <admar@luon.net>
+To: geert@linux-m68k.org
+Subject: Sun Blade 100 with 2 pgx64 (ATi Mach64 ?) framebuffers
+
+Hi Geert Uytterhoeven,
+
+Sorry, but I forgot to add that I had to apply a small patch to 2.6 to
+make it recognize the on board pgx64 in first place. The patch is a one
+liner to get around the fact that XFree86 not knowing the new 2.6 pci
+device naming scheme, and I don't think it is causing the problem I have
+with 2 pgx64 framebuffers.
+
+The patch is at
+http://lists.debian.org/debian-sparc/2004/02/msg00013.html
+
+Best regards
+
+Admar
 
 
-[ Please remove any subject tags when following up ]
-
-On Tue, 2004-05-11 at 04:20, Adam Jackson wrote:
->=20
-> You only need to trust the user if the operation could have security=20
-> implications.
-
-[...]
-
-> mode setting isn't sensitive because changing the display mode isn't goin=
-g=20
-> to stomp on kernel data structures or on the address space of other runni=
-ng=20
-> processes.
-
-You're assuming that the user programs a valid mode, but the proposed
-interface allows to program any combination of mode register values, of
-which valid modes are probably just a small subset, depending on the
-hardware. Combinations outside that set might cause unwanted effects
-such as lockups or even hardware damage, which is bad enough IMHO.
-System RAM access via DMA probably isn't an issue here with the hardware
-I'm familiar with, but it might be with others.
-
-
-> The mechanism _should_ be masked behind a library that abstracts away=20
-> the device and implementation details as much as possible so the user=20
-> (where here "user" equals X11 Classic, Y-Windows, Mesa Solo, whatever)=20
-> doesn't have to care, and also so each new user doesn't have to write=20
-> the same code again.
-
-Yes, an ALSA-style model is probably the way to go. I'm just pointing
-out that the interface between the library and the kernel probably can't
-be simply an unrestricted ioctl to dump a bunch of register values.
-
-
---=20
-Earthling Michel D=C3=A4nzer      |     Debian (powerpc), X and DRI develop=
-er
-Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=3Ddaenzer
+-------------------------------------------------------
+This SF.Net email is sponsored by Sleepycat Software
+Learn developer strategies Cisco, Motorola, Ericsson & Lucent use to 
+deliver higher performing products faster, at low TCO.
+http://www.sleepycat.com/telcomwpreg.php?From=osdnemail3

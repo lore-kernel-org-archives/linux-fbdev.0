@@ -1,13 +1,13 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: [ACPI] inappropriate use of in_atomic()
-Date: Fri, 11 Mar 2005 01:46:01 -0800
-Message-ID: <20050311014601.166ae43d.akpm@osdl.org>
-References: <20050310204006.48286d17.akpm@osdl.org>
-	<20050311091142.GB22415@fi.muni.cz>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: "remap_page_range" i810 compile time problem ..
+Date: Fri, 11 Mar 2005 19:05:26 +0800
+Message-ID: <200503111905.27355.adaplas@hotpop.com>
+References: <4EE0CBA31942E547B99B3D4BFAB348113A49D2@mail.esn.co.in>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-In-Reply-To: <20050311091142.GB22415@fi.muni.cz>
+In-Reply-To: <4EE0CBA31942E547B99B3D4BFAB348113A49D2@mail.esn.co.in>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -19,16 +19,92 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Jan Kasprzak <kas@fi.muni.cz>
-Cc: paulus@samba.org, jt@bougret.hpl.hp.com, javier@tudela.mad.ttd.net, linux-fbdev-devel@lists.sourceforge.net, acpi-devel@lists.sourceforge.net, linux1394-devel@lists.sourceforge.net, roland@topspin.com, linux-kernel@vger.kernel.org
+To: linux-fbdev-devel@lists.sourceforge.net, "Mukund JB." <mukundjb@esntechnologies.co.in>, adaplas@pol.net, linux-fbdev-users@lists.sourceforge.net
 
-Jan Kasprzak <kas@fi.muni.cz> wrote:
+On Friday 11 March 2005 14:36, Mukund JB. wrote:
+> Hi adaplas,
 >
-> This may be the cause of 
-> 
->  http://bugme.osdl.org/show_bug.cgi?id=4150
+> Thankful to u for making things clear at every level.
+>
+> > > But when I try this without accel=1 rotation fails. Can u just
+>
+> narrate
+>
+> > > me what is accel accentually doing?
+> >
+> > Because if accel is on, the driver is using it's own version of
+>
+> drawing
+>
+> > functions which are flexible enough that additional features can be
+>
+> added,
+>
+> > such as screen rotation.
+> >
+> > If accel is off, the driver will use the generic functions which
+>
+> cannot do
+>
+> > screen rotation.  Of course, one can write a software version that can
+>
+> do
+>
+> > screen rotation.
+>
+> So, u mean the i810fb driver will process the command line parameters &
+> if finds the accel is "1" in the list, it will use its own functions or
+> else it will use the generic functions provided in the fbgen.c file.
 
-Looks that way, yes.
+Above is correct, except that i810fb, if accel is disabled will use the
+functions in fbcon-cfb*.c, not fbgen.c.
+
+>
+> This is my understanding about fb driver architecture
+>
+> 			Application
+> 			-----------
+> 		  XFree86 / Directfb (Embedded)
+> 			-----------
+> 			 FB driver
+> 			-----------
+> 			 HARDWARE
+>
+> Are these files below a part of fb driver or do they come under a
+> different level in fb driver architecture?
+
+The above is correct, assuming that XFree86 uses the 'fbdev' driver.
+
+>
+> fbcon.c - low level framebuffer based console driver
+> fbcon-cfb* - low level framebuffer based operations for 8 bpp packed
+> pixels
+> How do I differentiate between the above two?
+
+fbcon.c is the glue between console and fbdev.  fbcon-cfb* contains
+generic drawing functions for framebuffers with packed pixel format.
+
+>
+> fbcmap.c 	- It handles color mapping
+> fbcon-plan2p*
+>
+> I find fbdevhw.a & I find groups referring to it.
+
+fbdevhw, if I'm not mistaken, came from XFree86/Xorg.  It contains
+helper functions used by XFree86 to talk to fbdev.
+
+> I think it is a library. If so, give me some inputs where we can use it.
+> Please do correct if I am going OFF-TRACK understanding FB drivers.
+>
+> Where exactly should I place the fbdevhw.a in the above shown
+> architecture?
+
+Probably between  XFree86 and fbdev.
+
+Tony
+
+
+
 
 
 -------------------------------------------------------

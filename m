@@ -1,24 +1,26 @@
 From: Andrew Walrond <andrew@walrond.org>
-Subject: x86_64 64bit kernel rivafb broke between 2.6.8.1 and linus bk as of today
-Date: Tue, 16 Nov 2004 22:44:37 +0000
-Message-ID: <200411162244.37709.andrew@walrond.org>
+Subject: Re: x86_64 64bit kernel rivafb broke between 2.6.8.1 and linus bk as of today
+Date: Tue, 16 Nov 2004 23:29:27 +0000
+Message-ID: <200411162329.27230.andrew@walrond.org>
+References: <200411162244.37709.andrew@walrond.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CUC4L-0003SQ-DM
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 16 Nov 2004 14:45:01 -0800
+	id 1CUClY-0006xl-3R
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 16 Nov 2004 15:29:40 -0800
 Received: from [62.24.231.113] (helo=cenedra.walrond.org)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1CUC4J-0007yp-6c
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 16 Nov 2004 14:45:01 -0800
+	id 1CUClU-0007Tx-11
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 16 Nov 2004 15:29:39 -0800
 Received: from [62.24.231.115] (helo=orac.walrond.org)
 	by cenedra.walrond.org with esmtp (Exim 4.34)
-	id 1CUC41-0005xu-5F
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 16 Nov 2004 22:44:42 +0000
+	id 1CUClL-00062I-1d
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 16 Nov 2004 23:29:27 +0000
+In-Reply-To: <200411162244.37709.andrew@walrond.org>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -33,23 +35,16 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Hi guys,
+On Tuesday 16 Nov 2004 22:44, Andrew Walrond wrote:
+> Hi guys,
+>
+> I just upgraded my kernel to linus latest bk head, booting with a built in
+> rivafb as usual, but I get a corrupted display.
+>
+> 2.6.8.1 worked just fine.
+>
 
-I just upgraded my kernel to linus latest bk head, booting with a built in 
-rivafb as usual, but I get a corrupted display.
-
-2.6.8.1 worked just fine.
-
-The two pengiun logos seem fine (but ontop of garbage), but the text is 
-totally screwed and spread all over the screen in little chunks
-
-Before I start hunting down the problem, has anybody got any ideas/fixes?
-
-This is a 64bit kernel on a dual opteron system.
-
-TIA
-
-Andrew Walrond
+2.6.9 is also fine. I'll try and narrow it down some more...
 
 
 -------------------------------------------------------

@@ -1,18 +1,16 @@
-From: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH] intelfb fixes
-Date: Mon, 24 Mar 2003 20:15:47 +0100
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: PPC64 prom logo
+Date: Mon, 24 Mar 2003 20:21:29 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030324201546.A11416@lst.de>
-References: <20030321193703.A12179@lst.de> <1048537227.25652.33.camel@irongate.swansea.linux.org.uk>
+Message-ID: <Pine.GSO.4.21.0303242020520.20509-100000@vervain.sonytel.be>
+References: <Pine.LNX.4.44.0303241856480.22808-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from verein.lst.de ([212.34.181.86])
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18xXQc-0005ca-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 24 Mar 2003 11:16:15 -0800
-Content-Disposition: inline
-In-Reply-To: <1048537227.25652.33.camel@irongate.swansea.linux.org.uk>; from alan@lxorguk.ukuu.org.uk on Mon, Mar 24, 2003 at 08:20:27PM +0000
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18xXWa-0007n7-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 24 Mar 2003 11:22:24 -0800
+In-Reply-To: <Pine.LNX.4.44.0303241856480.22808-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,26 +20,41 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Marcelo Tosatti <marcelo@conectiva.com.br>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/PPC64 Development <linuxppc64-dev@lists.linuxppc.org>
 
-On Mon, Mar 24, 2003 at 08:20:27PM +0000, Alan Cox wrote:
-> On Fri, 2003-03-21 at 18:37, Christoph Hellwig wrote:
-> > It looks like someone is trying to make the kernel looling as messy
-> > as XFree..
+On Mon, 24 Mar 2003, James Simmons wrote:
+> > --- linux-2.5.x/arch/ppc64/kernel/prom.c.orig	Sun Mar 23 11:37:52 2003
+> > +++ linux-2.5.x/arch/ppc64/kernel/prom.c	Sun Mar 23 11:39:35 2003
+> > @@ -1271,7 +1271,8 @@
+> >  
+> >  #ifdef CONFIG_FB_LOGO_LINUX_CLUT224
+> >  		clut = RELOC(RELOC(&logo_linux_clut224)->clut);
+> > -		for (i = 0; i < logo_linux_clut224.clutsize; i++, clut += 3)
+> > +		for (i = 0; i < RELOC(&logo_linux_clut224)->clutsize;
+> > +		     i++, clut += 3)
+> >  			if (prom_set_color(ih, i + 32, clut[0], clut[1],
+> >  					   clut[2]) != 0)
+> >  				break;
 > > 
-> > Remove the silly symlinking rules from the intelfb makefile and remove
-> > one of the copies of the private copy of modedb in intelfb.  Maybe
-> > someone who actually has the hardware could fix it to properly use
-> > modedb directly.
 > 
-> No longer compiles with that change
+> Shoudln't that be clut = RELOC(&logo_linux_clut2 instead?
 
-It _does_ compile (after actually adding intelfb to Config.in) in
-Marcelo's tree.  You're probably hit by the symlink braindamage in
-the original driver tarball..
+I don't think so. First the logo_linux_clut224 symbol has to be relocated,
+followed by the pointer to the CLUT.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

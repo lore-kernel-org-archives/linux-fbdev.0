@@ -1,21 +1,21 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Fix softcursor in 2.6.X
-Date: Thu, 8 Jan 2004 01:13:39 +0000 (GMT)
+From: John Zielinski <grim@undead.cc>
+Subject: Re: Changing modes with fbset
+Date: Wed, 07 Jan 2004 21:06:10 -0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0401072045500.31020-100000@phoenix.infradead.org>
-References: <20040103153310.GA617@elf.ucw.cz>
+Message-ID: <3FFCBB12.9000107@undead.cc>
+References: <Pine.LNX.4.44.0401060005511.7347-100000@phoenix.infradead.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AeOkB-0002OT-Lh
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 07 Jan 2004 17:13:51 -0800
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.30)
-	id 1AeOkB-0003nr-3p
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 07 Jan 2004 17:13:51 -0800
-In-Reply-To: <20040103153310.GA617@elf.ucw.cz>
+	id 1AePYi-0004R4-E6
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 07 Jan 2004 18:06:04 -0800
+Received: from ns2.undead.cc ([216.126.84.18] helo=mail.undead.cc)
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
+	id 1AePYh-0000vW-V9
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 07 Jan 2004 18:06:04 -0800
+In-Reply-To: <Pine.LNX.4.44.0401060005511.7347-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,22 +25,21 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, jgarzik@pobox.com, Rusty trivial patch monkey Russell <trivial@rustcorp.com.au>, Andrew Morton <akpm@zip.com.au>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: James Simmons <jsimmons@infradead.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
+James Simmons wrote:
 
-> Hi!
-> 
-> Softcursor was broken for half of 2.5 series. This fixes it by first
-> hiding cursor _then_ hiding softcursor. Very simple mistake... Please
-> apply,
+>Applied. Thanks for finding that.
+>  
+>
 
-Just tested with vgacon, fbcon with software cursor and hardware cursor. 
-It worked!!!!! 
+No problem.  BTW, do you have a CVS repository?  I'm just grabbing that 
+fbdev.diff.gz at the location that was posted in this list a while back.
 
-Thank you, Thank you.
+John
+
 
 
 

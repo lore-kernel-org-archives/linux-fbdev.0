@@ -1,25 +1,22 @@
-From: amavisd-new <postmaster@postfix1.intermedia.net>
-Subject: BANNED FILENAME (bill.htm.com) IN MAIL FROM YOU
-Date: Mon, 29 Mar 2004 18:42:44 -0800 (PST)
+From: Unknown <unknown@unknown.invalid>
+Subject: Undeliverable message returned to sender
+Date: Tue, 30 Mar 2004 06:53:00 +0000 (UCT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <VS01397-14@postfix1.intermedia.net>
-References: <20040330024239.1998E375E2@postfix1.intermedia.net>
-Mime-Version: 1.0
-Content-Type: multipart/report; report-type=delivery-status;
-    boundary="----------=_1080614564-1397-1"
+Message-ID: <20040330065300.BC05B2B49B3@mail23-res-R.bigfish.com>
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B89DA-0007VQ-PD
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 18:42:44 -0800
-Received: from postfixr.intermedia.net ([64.78.61.220])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B89DA-0006WM-MC
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 18:42:44 -0800
-Received: from localhost (postfix1.intermedia.net [127.0.0.1])
-	by postfix1.intermedia.net (Postfix) with ESMTP id 410E437620
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 29 Mar 2004 18:42:44 -0800 (PST)
-In-Reply-To: <20040330024239.1998E375E2@postfix1.intermedia.net>
+	id 1B8D7c-0002aa-KT
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 22:53:16 -0800
+Received: from mail-res.bigfish.com ([63.161.60.61] helo=mail23-res-R.bigfish.com)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.30)
+	id 1B8D7c-0002Wc-8Z
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 22:53:16 -0800
+Received: from localhost.localdomain (localhost.localdomain [127.0.0.1])
+	by mail23-res-R.bigfish.com (Postfix) with ESMTP id BC05B2B49B3
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 30 Mar 2004 06:53:00 +0000 (UCT)
+From: Content Filter <>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,83 +26,41 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
 
-This is a multi-part message in MIME format...
+This message was created automatically by mail delivery software.
 
-------------=_1080614564-1397-1
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Delivery failed for the following recipients(s):
+ 	support@altera.com
 
-BANNED FILENAME ALERT
+The message you sent contained an attachment which the recipient has chosen to block.
+Usually these sort of attachments are blocked to prevent malicious software from
+being sent to the recipient in question.
 
-Our content checker found
-    banned name: bill.htm.com
-in email presumably from you (<linux-fbdev-devel@lists.sourceforge.net>), to the following recipient:
--> eugene.surovegin@zultys.com
+The name(s) of the blocked file(s) follow:
+	message.scr
 
-Please check your system,
-or ask your system administrator to do so.
+To send this file, please place it in a compressed archive using WinZip (http://www.winzip.com) or the archive software of your choice.
 
-Delivery of the email was stopped!
-
-
-For your reference, here are headers from your email:
-------------------------- BEGIN HEADERS -----------------------------
-Return-Path: <linux-fbdev-devel@lists.sourceforge.net>
-Received: from zultys.com (unknown [219.137.79.14])
-	by postfix1.intermedia.net (Postfix) with ESMTP id 1998E375E2
-	for <eugene.surovegin@zultys.com>; Mon, 29 Mar 2004 18:42:39 -0800 (PST)
+----- Original Message Header -----
+Received: by mail23-res (MessageSwitch) id 1080629580741512_31213; Tue, 30 Mar 2004 06:53:00 +0000 (UCT)
+Received: from altera.com (unknown [61.150.43.30])
+	by mail23-res.bigfish.com (Postfix) with ESMTP id CFE922B4AD9
+	for <support@altera.com>; Tue, 30 Mar 2004 06:52:15 +0000 (UCT)
 From: linux-fbdev-devel@lists.sourceforge.net
-To: eugene.surovegin@zultys.com
-Subject: Re: excuse me
-Date: Tue, 30 Mar 2004 10:37:42 +0800
+To: support@altera.com
+Subject: Mail Delivery (failure support@altera.com)
+Date: Tue, 30 Mar 2004 14:53:28 +0800
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0011_000008A2.00000251"
+Content-Type: multipart/related;
+	type="multipart/alternative";
+	boundary="----=_NextPart_000_001B_01C0CA80.6B015D10"
 X-Priority: 3
 X-MSMail-Priority: Normal
-Message-Id: <20040330024239.1998E375E2@postfix1.intermedia.net>
--------------------------- END HEADERS ------------------------------
-
-------------=_1080614564-1397-1
-Content-Type: message/delivery-status
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Description: Delivery error report
-
-Reporting-MTA: dns; postfix1.intermedia.net
-Received-From-MTA: smtp; postfix1.intermedia.net ([127.0.0.1])
-Arrival-Date: Mon, 29 Mar 2004 18:42:44 -0800 (PST)
-
-Final-Recipient: rfc822; eugene.surovegin@zultys.com
-Action: failed
-Status: 5.7.1
-Diagnostic-Code: smtp; 550 5.7.1 Message content rejected, id=01397-14 - BANNED: bill.htm.com
-Last-Attempt-Date: Mon, 29 Mar 2004 18:42:44 -0800 (PST)
-
-------------=_1080614564-1397-1
-Content-Type: text/rfc822-headers
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Description: Undelivered-message headers
-
-Received: from zultys.com (unknown [219.137.79.14])
-	by postfix1.intermedia.net (Postfix) with ESMTP id 1998E375E2
-	for <eugene.surovegin@zultys.com>; Mon, 29 Mar 2004 18:42:39 -0800 (PST)
-From: linux-fbdev-devel@lists.sourceforge.net
-To: eugene.surovegin@zultys.com
-Subject: Re: excuse me
-Date: Tue, 30 Mar 2004 10:37:42 +0800
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0011_000008A2.00000251"
-X-Priority: 3
-X-MSMail-Priority: Normal
-Message-Id: <20040330024239.1998E375E2@postfix1.intermedia.net>
-
-------------=_1080614564-1397-1--
+Message-Id: <20040330065215.CFE922B4AD9@mail23-res.bigfish.com>
 
 
 -------------------------------------------------------

@@ -1,10 +1,16 @@
-From: Alex Thiel <stderr@web.de>
-Subject: vesafb and ypan
-Date: Tue, 12 Aug 2003 11:09:38 +0200
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Re: [macro@ds2.pg.gda.pl: Re: PMAG-A support?]
+Date: Tue, 12 Aug 2003 11:36:50 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <m3ptjb6y3x.fsf@spock.alex.net>
+Message-ID: <Pine.GSO.4.21.0308121136020.20533-100000@vervain.sonytel.be>
+References: <20030812084009.GH23104@rembrandt.csv.ica.uni-stuttgart.de>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from mail2.sonytel.be ([195.0.45.172] helo=witte.sonytel.be)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19mVbY-0000Va-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 12 Aug 2003 02:38:12 -0700
+In-Reply-To: <20030812084009.GH23104@rembrandt.csv.ica.uni-stuttgart.de>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -14,28 +20,58 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@sourceforge.net
+To: Thiemo Seufer <ica2_ts@csv.ica.uni-stuttgart.de>
+Cc: Karsten Merker <karsten@excalibur.cologne.de>, Martin Schulze <joey@infodrom.org>, "Maciej W. Rozycki" <macro@ds2.pg.gda.pl>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Hello,
+On Tue, 12 Aug 2003, Thiemo Seufer wrote:
+> Geert Uytterhoeven wrote:
+> > On Tue, 12 Aug 2003, Thiemo Seufer wrote:
+> > > Karsten Merker wrote:
+> > > > ----- Forwarded message from "Maciej W. Rozycki" <macro@ds2.pg.gda.pl> -----
+> > > [snip]
+> > > > > What's missing is support *in* XFree86.  That where I lost time.
+> > > > 
+> > > >  That's the second step anyway.
+> > > 
+> > > The PMAG-AA basically works for me, but it is not too useful without
+> > > working keyboard support. XFree86 preprocesses the xkbd input in order
+> > > to handle PC keyboard's key sequences, this breaks the LK keyboard
+> > > support.
+> > 
+> > Ugh, so it sill uses RAW instead of MEDIUM_RAW?
+> 
+> AFAIK all XFree86/Linux flavours want RAW.
 
-I was wondering if the ypan et al. options to the VESA framebuffer
-device are broken in the 2.5 series.
+Tss...
 
-Looking at the source, it seems that var.accel_flags is left
-uninitialized in struct fb_var_screeninfo, in my setup accel_flags has
-a value of 0. This in turn causes the scrollmode to be set to
-SCROLL_REDRAW in fbcon_init(). Now in updatescrollmode() the
-expression (p->scrollmode & __SCROLL_YFIXED) always evaluates to true,
-and the scrollmode is never changed to ypan.
+> > There's a BK, but only for 2.[56].x.
+> 
+> Mind to tell the URL? :-)
 
-Am I missing something here? Can anyone confirm that ypan is actually
-working with vesafb (i.e. is actually calling vesafb_pan_display)?
+http://fbdev.bkbits.net/
 
-Cheers,
+> > > Anyway, the AA driver is appended as a diff against current linux-mips
+> > > CVS. I hope it doesn't deviate too much from whatever fbdev uses.
+> > 
+> > This is against 2.4.x, right?
+> 
+> Yes. There's currently no working DECstation support in 2.6. The ZS
+> serial driver is not yet ported forward.
 
-        Alex
+IC...
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

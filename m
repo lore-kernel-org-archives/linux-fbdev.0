@@ -1,95 +1,446 @@
 From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: fbmem.c : FBIOGETCMAP
-Date: 08 Jan 2003 11:49:19 +0800
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1041997586.927.80.camel@localhost.localdomain>
-References: <Pine.LNX.4.44.0301072230180.17129-100000@phoenix.infradead.org>
+Subject: Re: [Linux-fbdev-devel] [RFC][PATCH][FBDEV]: Setting fbcon's
+	windows size
+Date: 08 Jan 2003 13:02:50 +0800
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <1042000922.1049.101.camel@localhost.localdomain>
+References: <1041864838.955.68.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from willow.compass.com.ph ([202.70.96.38])
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18W7QM-0008Ro-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 07 Jan 2003 20:02:38 -0800
-In-Reply-To: <Pine.LNX.4.44.0301072230180.17129-100000@phoenix.infradead.org>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <1041864838.955.68.camel@localhost.localdomain>
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@infradead.org>
-Cc: Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel List <linux-kernel@vger.kernel.org>
 
-On Wed, 2003-01-08 at 06:37, James Simmons wrote:
-> 
-> > I can run the fb color map tests now if you had a
-> > chance to fix the code.
-> > 
-> > I am just running fbtest from the sourceforge fb cvs.
-> 
-> I'm CC the fbdev list because the fb color map code is a mess. I like to 
-> know what the best approach would be to clean it up.
-> 
-> FIrst the main bug. In fb_copy_cmap we should be testing to see if 
-> copy_from[to]_user fails. We don't. The other issue is for fb_copy_cmap
-> We handle memcpy, copy_from_user, and copy)to_user. Now in fb_set_cmap
-> we use get_user also without any checks. 
-> 
-> So we could have fb_copy_cmap keep handling all these issues and remove 
-> get_user from fb_set_cmap. We would just pass in fbcmap we got from 
-> fb_copy_cmap and pass into fb_set_cmap. The other approach is to 
-> remove copy_from_user in fb_copy_cmap and place it int fb_set_cmap. 
-> 
-> What do you think is the best approach to this?
-> 
-> 
-I don't know, it looks okay to me except for the following:
+Hi James, 
 
-1.  In case FBIOPUTCMAP, fb_set_cmap() must pass 1 (to imply get info
-from user space).
+Here's an improved GTF implementation.  I was a bit delayed because I
+was trying to find a way to do square roots without using floating
+point.  The diff is against linux-2.5.54 + your latest fbdev.diff.
 
-2.  In case FBIOGETCMAP, fb_copy_cmap() must pass 2 (to imply copy cmap
-from kernel space to user space)
+static int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo
+		       *var, struct fb_info *info);
 
-3.  no checks when doing the user access functions (should have no
-effect really, except for the extra processing).
+if flags == 0:  maximize timings
+            1:  vrefresh rate driven calculation
+            2.  hscan rate driven calculation
+	    3.  pixelclock driven calculation.
 
-I think fb_set_cmap() is a bit misleading.  It mostly implies set the hardware 
-DAC based on the color information in fb_cmap.  fb_cmap is either in kernel 
-space or user space.  There is no need to copy the actual cmap to kernel 
-space and we just let the user app keep a copy of its own.
+The parameter 'val' depends on the parameter 'flags':  ignored if flags
+== 0, in Hz if 1 and 2, in picoseconds if 3.
 
-So fb_copy_cmap() is not necessary when doing an fb_set_cmap() because
-you have to allocate memory for it, which has to be deallocated after
-doing an fb_set_cmap().  We cannot use info->cmap because it might be of
-different length, and it will clobber the console cmap.
+The flags are useful for cases such as a fixed-frequency monitor (pass
+flags = 2) or for hardware which only have several sets of dotclocks to
+use.  In this case, it will run the GTF first, get the resulting
+pixelclock to select a dotclock from the driver's own set, then rerun
+the GTF using flags=3, and val = selected dotclock.
 
-The copy_from_user() of fb_copy_cmap() may not be needed unless we
-have support for it.  If this is the case, then we have to find a way of
-saving info->cmap first then allocate memory for the new cmap.  Then
-deallocate the new cmap and restore the default cmap to info->cmap
-afterwards.  You will need additional code for this. In any case, info->cmap
-is driver-private anyway, and user apps have no business replacing
-info->cmap with its own.
+Probably still has precision errors, like converting KHZ to picoseconds,
+but is more or less usable.  Tested with i810fb and rivafb. (For rivafb,
+I have to use a hacked version. The latest one does not work for the
+riva128).
 
-I think the main use of those 2 ioctls is this:
+BTW, I downloaded the source code of read-edid, and it seems that the
+following monitor limits are parsable from the EDID block: HorizSync,
+VertRefresh, DotClock, and GTF capability. We may change info->monspecs
+to match that. Also, the EDID contains a list of supported modes, but
+there's only 4 of them(?).  
 
-1. save kernel cmap by doing FBIOGETCMAP,
-2. set hardware DAC based on user app's cmap using FBIOPUTCMAP,
-3. upon exit of the app, restore hardware DAC by doing FBIOPUTCMAP using
-the cmap taken from FBIOGETCMAP.
+Tony
 
-Tony 
-
-
-
-
--------------------------------------------------------
-This SF.NET email is sponsored by:
-SourceForge Enterprise Edition + IBM + LinuxWorld = Something 2 See!
-http://www.vasoftware.com
+diff -Naur linux-2.5.54/drivers/video/fbmon.c linux/drivers/video/fbmon.c
+--- linux-2.5.54/drivers/video/fbmon.c	2003-01-08 04:19:48.000000000 +0000
++++ linux/drivers/video/fbmon.c	2003-01-08 04:18:11.000000000 +0000
+@@ -289,7 +289,376 @@
+ }
+ #endif
+ 
++/* 
++ * VESA Generalized Timing Formula (GTF) 
++ */
++
++#define FLYBACK                     550
++#define V_FRONTPORCH                1
++#define H_OFFSET                    40
++#define H_SCALEFACTOR               20
++#define H_BLANKSCALE                128
++#define H_GRADIENT                  600
++#define C_VAL                       30
++#define M_VAL                       300
++
++struct __fb_timings {
++	u32 dclk;
++	u32 hfreq;
++	u32 vfreq;
++	u32 hactive;
++	u32 vactive;
++	u32 hblank;
++	u32 vblank;
++	u32 htotal;
++	u32 vtotal;
++};
++
++/*
++ * a simple function to get the square root of integers 
++ */
++static u32 fb_sqrt(int x)
++{
++	register int op, res, one;
++
++	op = x;
++	res = 0;
++
++	one = 1 << 30;
++	while (one > op) one >>= 2;
++
++	while (one != 0) {
++		if (op >= res + one) {
++			op = op - (res + one);
++			res = res +  2 * one;
++		}
++		res /= 2;
++		one /= 4;
++	}
++	return((u32) res);
++}
++
++/**
++ * fb_get_vblank - get vertical blank time
++ * @hfreq: horizontal freq
++ *
++ * DESCRIPTION:
++ * vblank = right_margin + vsync_len + left_margin 
++ *
++ *    given: right_margin = 1 (V_FRONTPORCH)
++ *           vsync_len    = 3
++ *           flyback      = 550
++ *
++ *                          flyback * hfreq
++ *           left_margin  = --------------- - vsync_len
++ *                           1000000
++ */
++static u32 fb_get_vblank(u32 hfreq)
++{
++	u32 vblank;
++
++	vblank = (hfreq * FLYBACK)/1000; 
++	vblank = (vblank + 500)/1000;
++	return (vblank + V_FRONTPORCH);
++}
++
++/** 
++ * fb_get_hblank_by_freq - get horizontal blank time given hfreq
++ * @hfreq: horizontal freq
++ * @xres: horizontal resolution in pixels
++ *
++ * DESCRIPTION:
++ *
++ *           xres * duty_cycle
++ * hblank = ------------------
++ *           100 - duty_cycle
++ *
++ * duty cycle = percent of htotal assigned to inactive display
++ * duty cycle = C - (M/Hfreq)
++ *
++ * where: C = ((offset - scale factor) * blank_scale)
++ *            -------------------------------------- + scale factor
++ *                        256 
++ *        M = blank_scale * gradient
++ *
++ */
++static u32 fb_get_hblank_by_hfreq(u32 hfreq, u32 xres)
++{
++	u32 c_val, m_val, duty_cycle, hblank;
++
++	c_val = (((H_OFFSET - H_SCALEFACTOR) * H_BLANKSCALE)/256 + 
++		 H_SCALEFACTOR) * 1000;
++	m_val = (H_BLANKSCALE * H_GRADIENT)/256;
++	m_val = (m_val * 1000000)/hfreq;
++	duty_cycle = c_val - m_val;
++	hblank = (xres * duty_cycle)/(100000 - duty_cycle);
++	return (hblank);
++}
++
++/** 
++ * fb_get_hblank_by_dclk - get horizontal blank time given pixelclock
++ * @dclk: pixelclock in Hz
++ * @xres: horizontal resolution in pixels
++ *
++ * DESCRIPTION:
++ *
++ *           xres * duty_cycle
++ * hblank = ------------------
++ *           100 - duty_cycle
++ *
++ * duty cycle = percent of htotal assigned to inactive display
++ * duty cycle = C - (M * h_period)
++ * 
++ * where: h_period = SQRT(100 - C + (0.4 * xres * M)/dclk) + C - 100
++ *                   -----------------------------------------------
++ *                                    2 * M
++ *        M = 300;
++ *        C = 30;
++
++ */
++static u32 fb_get_hblank_by_dclk(u32 dclk, u32 xres)
++{
++	u32 duty_cycle, h_period, hblank;;
++
++	dclk /= 1000;
++	h_period = 100 - C_VAL;
++	h_period *= h_period;
++	h_period += (M_VAL * xres * 2 * 1000)/(5 * dclk);
++	h_period *=10000; 
++
++	h_period = fb_sqrt((int) h_period);
++	h_period -= (100 - C_VAL) * 100;
++	h_period *= 1000; 
++	h_period /= 2 * M_VAL;
++
++	duty_cycle = C_VAL * 1000 - (M_VAL * h_period)/100;
++	hblank = (xres * duty_cycle)/(100000 - duty_cycle) + 8;
++	hblank &= ~15;
++	return (hblank);
++}
++	
++/**
++ * fb_get_hfreq - estimate hsync
++ * @vfreq: vertical refresh rate
++ * @yres: vertical resolution
++ *
++ * DESCRIPTION:
++ *
++ *          (yres + front_port) * vfreq * 1000000
++ * hfreq = -------------------------------------
++ *          (1000000 - (vfreq * FLYBACK)
++ * 
++ */
++
++static u32 fb_get_hfreq(u32 vfreq, u32 yres)
++{
++	u32 divisor, hfreq;
++	
++	divisor = (1000000 - (vfreq * FLYBACK))/1000;
++	hfreq = (yres + V_FRONTPORCH) * vfreq  * 1000;
++	return (hfreq/divisor);
++}
++
++static void fb_timings_vfreq(struct __fb_timings *timings)
++{
++	timings->hfreq = fb_get_hfreq(timings->vfreq, timings->vactive);
++	timings->vblank = fb_get_vblank(timings->hfreq);
++	timings->vtotal = timings->vactive + timings->vblank;
++	timings->hblank = fb_get_hblank_by_hfreq(timings->hfreq, 
++						 timings->hactive);
++	timings->htotal = timings->hactive + timings->hblank;
++	timings->dclk = timings->htotal * timings->hfreq;
++}
++
++static void fb_timings_hfreq(struct __fb_timings *timings)
++{
++	timings->vblank = fb_get_vblank(timings->hfreq);
++	timings->vtotal = timings->vactive + timings->vblank;
++	timings->vfreq = timings->hfreq/timings->vtotal;
++	timings->hblank = fb_get_hblank_by_hfreq(timings->hfreq, 
++						 timings->hactive);
++	timings->htotal = timings->hactive + timings->hblank;
++	timings->dclk = timings->htotal * timings->hfreq;
++}
++
++static void fb_timings_dclk(struct __fb_timings *timings)
++{
++	timings->hblank = fb_get_hblank_by_dclk(timings->dclk, 
++						timings->hactive);
++	timings->htotal = timings->hactive + timings->hblank;
++	timings->hfreq = timings->dclk/timings->htotal;
++	timings->vblank = fb_get_vblank(timings->hfreq);
++	timings->vtotal = timings->vactive + timings->vblank;
++	timings->vfreq = timings->hfreq/timings->vtotal;
++}
++
++/*
++ * fb_get_mode - calculates video mode using VESA GTF
++ * @flags: if: 0 - maximize vertical refresh rate
++ *             1 - vrefresh-driven calculation;
++ *             2 - hscan-driven calculation;
++ *             3 - pixelclock-driven calculation;
++ * @val: depending on @flags, ignored, vrefresh, hsync or pixelclock
++ * @var: pointer to fb_var_screeninfo
++ * @info: pointer to fb_info
++ *
++ * DESCRIPTION:
++ * Calculates video mode based on monitor specs using VESA GTF. 
++ * The GTF is best for VESA GTF compliant monitors but is 
++ * specifically formulated to work for older monitors as well.
++ *
++ * If @flag==0, the function will attempt to maximize the 
++ * refresh rate.  Otherwise, it will calculate timings based on
++ * the flag and accompanying value.  
++ *
++ * All calculations are based on the VESA GTF Spreadsheet
++ * available at VESA's public ftp (http://www.vesa.org).
++ * 
++ * NOTES:
++ * The timings generated by the GTF will be different from VESA
++ * DMT.  It might be a good idea to keep a table of standard
++ * VESA modes as well.  The GTF may also not work for some displays,
++ * such as, and especially, analog TV.
++ *   
++ * REQUIRES:
++ * A valid info->monspecs, otherwise 'safe numbers' will be used.
++ */ 
++int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var, struct fb_info *info)
++{
++	struct __fb_timings timings;
++	u32 interlace = 1, dscan = 1;
++	u32 hfmin, hfmax, vfmin, vfmax;
++
++	/* 
++	 * If monspecs are invalid, use values that are enough
++	 * for 640x480@60
++	 */
++	if ((!info->monspecs.hfmax && !info->monspecs.vfmax) ||
++	    info->monspecs.hfmax < info->monspecs.hfmin ||
++	    info->monspecs.vfmax < info->monspecs.vfmin) {
++		hfmin = 29000; hfmax = 30000;
++		vfmin = 60; vfmax = 60;
++	} else {
++		hfmin = info->monspecs.hfmin;
++		hfmax = info->monspecs.hfmax;
++		vfmin = info->monspecs.vfmin;
++		vfmax = info->monspecs.vfmax;
++	}
++
++	memset(&timings, 0, sizeof(struct __fb_timings));
++	timings.hactive = var->xres;
++	timings.vactive = var->yres;
++	if (var->vmode & FB_VMODE_INTERLACED) { 
++		timings.vactive /= 2;
++		interlace = 2;
++	}
++	if (var->vmode & FB_VMODE_DOUBLE) {
++		timings.vactive *= 2;
++		dscan = 2;
++	}
++
++	switch (flags) {
++	case 0: /* maximize refresh rate */
++		timings.hfreq = hfmax;
++		fb_timings_hfreq(&timings);
++		if (timings.vfreq > vfmax) {
++			timings.vfreq = vfmax;
++			fb_timings_vfreq(&timings);
++		}
++		break;
++	case 1: /* vrefresh driven */
++		timings.vfreq = val;
++		fb_timings_vfreq(&timings);
++		break;
++	case 2: /* hsync driven */
++		timings.hfreq = val;
++		fb_timings_hfreq(&timings);
++		break;
++	case 3: /* pixelclock driven */
++		timings.dclk = PICOS2KHZ(val) * 1000;
++		fb_timings_dclk(&timings);
++		break;
++	default:
++		return -EINVAL;
++		
++	} 
++	
++	if (timings.vfreq < vfmin || timings.vfreq > vfmax || 
++	    timings.hfreq < hfmin || timings.hfreq > hfmax)
++		return -EINVAL;
++
++
++	var->pixclock = KHZ2PICOS(timings.dclk/1000);
++	var->hsync_len = (timings.htotal * 8)/100;
++	var->right_margin = (timings.hblank/2) - var->hsync_len;
++	var->left_margin = timings.hblank - var->right_margin - var->hsync_len;
++	
++	var->vsync_len = (3 * interlace)/dscan;
++	var->lower_margin = (1 * interlace)/dscan;
++	var->upper_margin = (timings.vblank * interlace)/dscan - 
++		(var->vsync_len + var->lower_margin);
++	
++	return 0;
++}
++	
++/*
++ * fb_validate_mode - validates var against monitor capabilities
++ * @var: pointer to fb_var_screeninfo
++ * @info: pointer to fb_info
++ *
++ * DESCRIPTION:
++ * Validates video mode against monitor capabilities specified in
++ * info->monspecs.
++ *
++ * REQUIRES:
++ * A valid info->monspecs.
++ */
++int fb_validate_mode(struct fb_var_screeninfo *var, struct fb_info *info)
++{
++	u32 hfreq, vfreq, htotal, vtotal, pixclock;
++	u32 hfmin, hfmax, vfmin, vfmax;
++
++	/* 
++	 * If monspecs are invalid, use values that are enough
++	 * for 640x480@60
++	 */
++	if ((!info->monspecs.hfmax && !info->monspecs.vfmax) ||
++	    info->monspecs.hfmax < info->monspecs.hfmin ||
++	    info->monspecs.vfmax < info->monspecs.vfmin) {
++		hfmin = 29000; hfmax = 30000;
++		vfmin = 60; vfmax = 60;
++	} else {
++		hfmin = info->monspecs.hfmin;
++		hfmax = info->monspecs.hfmax;
++		vfmin = info->monspecs.vfmin;
++		vfmax = info->monspecs.vfmax;
++	}
++
++	if (!var->pixclock)
++		return -EINVAL;
++	pixclock = PICOS2KHZ(var->pixclock) * 1000;
++	   
++	htotal = var->xres + var->right_margin + var->hsync_len + 
++		var->left_margin;
++	vtotal = var->yres + var->lower_margin + var->vsync_len + 
++		var->upper_margin;
++
++	if (var->vmode & FB_VMODE_INTERLACED)
++		vtotal /= 2;
++	if (var->vmode & FB_VMODE_DOUBLE)
++		vtotal *= 2;
++
++	hfreq = pixclock/htotal;
++	vfreq = hfreq/vtotal;
++
++	return (vfreq < vfmin || vfreq > vfmax || 
++		hfreq < hfmin || hfreq > hfmax) ?
++		-EINVAL : 0;
++}
++
+ EXPORT_SYMBOL(parse_edid);
+ #ifdef CONFIG_PCI
+ EXPORT_SYMBOL(get_EDID);
+ #endif
++EXPORT_SYMBOL(fb_get_mode);
++EXPORT_SYMBOL(fb_validate_mode);
+diff -Naur linux-2.5.54/include/linux/fb.h linux/include/linux/fb.h
+--- linux-2.5.54/include/linux/fb.h	2003-01-08 04:20:07.000000000 +0000
++++ linux/include/linux/fb.h	2003-01-08 04:19:26.000000000 +0000
+@@ -468,6 +468,10 @@
+ extern int fbmon_valid_timings(u_int pixclock, u_int htotal, u_int vtotal,
+ 			       const struct fb_info *fb_info);
+ extern int fbmon_dpms(const struct fb_info *fb_info);
++extern int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var,
++		       struct fb_info *info);
++extern int fb_validate_mode(struct fb_var_screeninfo *var,
++			    struct fb_info *info);
+ 
+ /* drivers/video/fbcmap.c */
+ extern int fb_alloc_cmap(struct fb_cmap *cmap, int len, int transp);

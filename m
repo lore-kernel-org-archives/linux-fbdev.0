@@ -1,16 +1,18 @@
-From: henne.ii@arcor.de
-Subject: SED1335 embedded LCD
-Date: Fri, 14 Feb 2003 20:57:07 +0100 (MET)
+From: Kronos <kronos@kronoz.cjb.net>
+Subject: Re: [2.5.59] radeonfb not working
+Date: Fri, 14 Feb 2003 23:33:33 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <2904013.1045252627630.JavaMail.ngmail@mx10.arcor-online.net>
+Message-ID: <20030214223333.GA745@dreamland.darkstar.lan>
+References: <20030129152703.GA539@dreamland.darkstar.lan> <Pine.LNX.4.44.0302122003230.31435-100000@phoenix.infradead.org>
+Reply-To: kronos@kronoz.cjb.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mx03.nexgo.de ([151.189.8.98])
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18jlxO-0004S3-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 14 Feb 2003 11:57:11 -0800
+Received: from mail-3.tiscali.it ([195.130.225.149] helo=mail.tiscali.it)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18joPl-0000iG-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 14 Feb 2003 14:34:37 -0800
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44.0302122003230.31435-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,29 +23,25 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Transfer-Encoding: 7bit
+To: James Simmons <jsimmons@infradead.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Hello!
+Il Wed, Feb 12, 2003 at 08:04:19PM +0000, James Simmons ha scritto: 
+> > If   I  append   a  specific   video  mode   I'll  get   "out  of   scan
+> > range"   or  "no   signal"  depending   on  the   video  mode. This   is
+> > "video=radeon:640x480-16@85" (no signal):
+> 
+> Ug. The default mode in the modeb must be not supported by your card. Can 
+> you try lowering the value for 85.
 
-Virtual Framebuffer for monochrome embedded LCD with Epson controller SED1335 (S1D13305) are available.
+I tried 75, 70, 60 without success. Btw both monitor and video card can
+handle 640x480@85Hz (the monitor can go up to 100Hz).
 
-ftp://ssv-embedded.de/ssv/products/trm916/sample/x86/linux/fbdev/
-
-Routines using monochrome RAM of CPU or Pseudocolor RAM and update this to LCD hardware in timer interval.
-This is a special embedded application. But all other users can use this skelet for other LC displays without memory mapped video ram. Such a graphic LCD on LPT port.
-
-In this case, I hope you will not delete the monochrome LOGO in your new logo code!
-
-Henry
-
-Gruss
-Henne.II@BigFoot.com----------------------------------------------------------------------------
-Schlagen Sie sofort zu - mit Arcor und eBay
-Viele Artikel zum Sofort Kaufen!
-http://www.arcor.de/auk/ebay_sk.php
------------------------------------------------------------------------
-
+Luca
+-- 
+Reply-To: kronos@kronoz.cjb.net
+Home: http://kronoz.cjb.net
 
 
 -------------------------------------------------------

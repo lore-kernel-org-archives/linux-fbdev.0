@@ -1,78 +1,40 @@
-From: Jim Hague <jim.hague@acm.org>
-Subject: [PATCH 2/2] pm2fb: Colour palette fixes
-Date: Fri, 22 Oct 2004 10:54:37 +0100
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20041022105437.4e5cebf0@hagrid.bear-cave.org.uk>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Stefan =?iso-8859-1?q?D=F6singer?= <stefandoesinger@gmx.at>
+Subject: Re: [Linux-fbdev-devel] Re: Generic VESA framebuffer driver and Video card BOOT?
+Date: Fri, 22 Oct 2004 14:57:41 +0200
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <200410221457.41542.stefandoesinger@gmx.at>
+References: <88056F38E9E48644A0F562A38C64FB6003287A2A@scsmsx403.amr.corp.intel.com>
+Reply-To: stefandoesinger@gmx.at
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CKw8D-0005J6-RZ
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Oct 2004 02:54:45 -0700
-Received: from cpc1-oxfd2-6-0-cust43.oxfd.cable.ntl.com ([81.103.191.43] helo=fluffy.bear-cave.org.uk)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.41)
-	id 1CKw8D-0003xg-3W
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Oct 2004 02:54:45 -0700
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S271318AbUJVNIH@vger.kernel.org>
+In-Reply-To: <88056F38E9E48644A0F562A38C64FB6003287A2A@scsmsx403.amr.corp.intel.com>
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Kendall Bennett <KendallB@scitechsoft.com>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
+> Right now I am using call_usermodehelper() to call the
+> emulator during resume and the video comes back just fine on this
+> system where Ole's patch didn't work.
+Can you explain me how you do this? call_usermodehelper() doesn't work =
+for me=20
+at resume time.
 
-- Hardware CLUT only needs setting on pseudocolor.
-- Pseudo palette values need to be 32bit wide for cfb_*().
+BTW, I had a look at the radeon card's resume code at 0xc000:3 and atte=
+mpted=20
+to implement it in a kernel module. The code is pretty simple, but it's=
+ quite=20
+long. My module isn't finished, it only turns off the display and reset=
+s the=20
+memory. I had to stop because I've a lot of things to do for school now=
+=2E
 
-Signed-off-by: Jim Hague <jim.hague@acm.org>
+Ole Rohne meant that the code is potentially dangerous because it pokes=
+ around=20
+with undocumented PLL registers, so I will not send it to the list: I w=
+ill=20
+send it only to those who explicitly ask for it.
 
-diff -u -p -r1.24 pm2fb.c
---- drivers/video/pm2fb.c	23 Sep 2004 01:19:45 -0000	1.24
-+++ drivers/video/pm2fb.c	22 Oct 2004 09:36:32 -0000
-@@ -877,7 +877,6 @@ static int pm2fb_setcolreg(unsigned regn
- 		green = CNVT_TOHW(green, info->var.green.length);
- 		blue = CNVT_TOHW(blue, info->var.blue.length);
- 		transp = CNVT_TOHW(transp, info->var.transp.length);
--		set_color(par, regno, red, green, blue);
- 		break;
- 	case FB_VISUAL_DIRECTCOLOR:
- 		/* example here assumes 8 bit DAC. Might be different 
-@@ -904,12 +903,8 @@ static int pm2fb_setcolreg(unsigned regn
- 
- 		switch (info->var.bits_per_pixel) {
- 		case 8:
--			/* Yes some hand held devices have this. */ 
--           		((u8*)(info->pseudo_palette))[regno] = v;
- 			break;	
-    		case 16:
--           		((u16*)(info->pseudo_palette))[regno] = v;
--			break;
- 		case 24:
- 		case 32:	
-            		((u32*)(info->pseudo_palette))[regno] = v;
-@@ -917,7 +912,9 @@ static int pm2fb_setcolreg(unsigned regn
- 		}
- 		return 0;
- 	}
--	/* ... */
-+	else if (info->fix.visual == FB_VISUAL_PSEUDOCOLOR)
-+		set_color(par, regno, red, green, blue);
-+
- 	return 0;
- }
- 
-
-
--------------------------------------------------------
-This SF.net email is sponsored by: IT Product Guide on ITManagersJournal
-Use IT products in your business? Tell us what you think of them. Give us
-Your Opinions, Get Free ThinkGeek Gift Certificates! Click to find out more
-http://productguide.itmanagersjournal.com/guidepromo.tmpl
+Stefan D=F6singer

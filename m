@@ -1,47 +1,50 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [2.6.11 Permedia-2 Framebuffer] driver broken (?).
-Date: Tue, 22 Mar 2005 00:40:34 +0100 (CET)
-Message-ID: <Pine.LNX.4.60.0503220030230.12537@poirot.grange>
-References: <Pine.LNX.4.60.0503052355320.12643@poirot.grange>
- <20050321145936.6f742d89.akpm@osdl.org>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: Tridentfb troubles
+Date: Mon, 21 Mar 2005 16:09:35 -0800
+Message-ID: <20050321160935.280b54fb.akpm@osdl.org>
+References: <pan.2005.03.20.21.53.36.929746@brick.flying-brick.caverock.net.nz>
+	<20050320164129.44d3a065.akpm@osdl.org>
+	<20050321072601.GA31826@flying-brick.caverock.net.nz>
+	<20050320233227.2c7b8013.akpm@osdl.org>
+	<20050321202546.GA7281@flying-brick.caverock.net.nz>
+	<20050321124426.53d75b3e.akpm@osdl.org>
+	<20050321232657.GB7281@flying-brick.caverock.net.nz>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-In-Reply-To: <20050321145936.6f742d89.akpm@osdl.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, jim.hague@acm.org, linux-fbdev-devel@lists.sourceforge.net
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1DDWxk-0000iu-CU
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Mar 2005 16:09:36 -0800
+Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1DDWxg-0007Yo-Tg
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Mar 2005 16:09:36 -0800
+In-Reply-To: <20050321232657.GB7281@flying-brick.caverock.net.nz>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: viking <viking@flying-brick.caverock.net.nz>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Mon, 21 Mar 2005, Andrew Morton wrote:
+viking <viking@flying-brick.caverock.net.nz> wrote:
+>
+> Andrew - you still wish to be CC:ed on this video issue?
 
-> Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
-> >
-> > Hi
-> > 
-> > Worked on 2.6.10-rc2. With 2.6.11 during boot upon switching to fb, text 
-> > becomes orange, penguins look sick (not sharp). X starts and runs normal 
-> > (doesn't use fb), switching to vt not possible any more. Disabling 
-> > fb-console in kernel config fixes VTs. Reverting pm2fb.c fixes the 
-> > problem.
-> 
-> Guennadi, could you please confirm that
-> 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.12-rc1/2.6.12-rc1-mm1/broken-out/pm2fb-x-and-vt-switching-crash-fix.patch
-> 
-> fixes this one?
+Yes please.
 
-As discussed with Jim on linux-fbdev-devel this patch fixes the vt / X 
-switching problem. We still don't know why starting with 2.4.11 I have to 
-switch CONFIG_FB_PM2_FIFO_DISCONNECT off to restore colours / images. Jim 
-says it is doubtful that this option brings any optimisations at all, 
-still, it is a bit worrying, that something that worked with earlier 
-kernels stopped working now. I traced this breakage down to the patch to 
-pm2fb.c after 2.6.10-rc2. Jim wanted to try to reproduce this problem with 
-my fb-geometry / colour settings, but I haven't heard from him since then, 
-Jim?
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

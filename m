@@ -1,68 +1,38 @@
-From: Joshua Kwan <joshk@ludicrus.ath.cx>
-Subject: Re: [Linux-fbdev-devel] Radeonfb in 2.5.54bk (now 2.5.55)
-Date: Thu, 9 Jan 2003 12:19:59 -0800
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [Linux-fbdev-devel] Re: 2.5 fbdev & driver initial mode
+Date: Thu, 9 Jan 2003 20:34:55 +0000 (GMT)
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20030109121959.605cd0c1.joshk@ludicrus.ath.cx>
-References: <20030107154141.259f84c3.joshk@ludicrus.ath.cx>
-	<Pine.LNX.4.44.0301091816340.5660-100000@phoenix.infradead.org>
+Message-ID: <Pine.LNX.4.44.0301092025120.5660-100000@phoenix.infradead.org>
+References: <1042108748.567.20.camel@zion.wanadoo.fr>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="pgp-sha1"; boundary="=.ITFKQl30RzIlu4"
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44.0301091816340.5660-100000@phoenix.infradead.org>
+In-Reply-To: <1042108748.567.20.camel@zion.wanadoo.fr>
 List-Id: <fbdev-devel.lists.sourceforge.net
-To: James Simmons <jsimmons@infradead.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-
---=.ITFKQl30RzIlu4
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Geert Uytterhoeven <geert@sonycom.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Same problem. 2.5.55bk with pulled fbdev-2.5 and -dj
 
-Regards
-Josh
-
-Rabid cheeseburgers forced James Simmons <jsimmons@infradead.org> to
-write this on Thu, 9 Jan 2003 18:17:08 +0000 (GMT):	
-
+> > Note: on some platforms graphics chips with VGA cores are _not_ initialized to
+> > VGA mode by the firmware. So great care should be taken when not explicitly
+> > switching to graphics mode on those platforms.
 > 
-> > Latest patch? If it's the one you pushed to BK a day or two ago,
-> > that is what I used in the compilation of my kernel. Hence it
-> > doesn't quite work.
-> > 
-> > (to be precise, i issued:
-> > bk clone http://linux.bkbits.net:8080/linux-2.5
-> > bk -r get
-> > bk pull http://fbdev.bkbits.net:8080/fbdev-2.5)
-> > 
-> > Anything wrong there? Do I have to bk -r get again?
-> > 
-> > Looks like I am subscribing to this list then. Sigh... too many
-> > lists to take care of!! :(
-> 
-> More changes happened. Can you try another pull.
-> 
-> 
+> Yup. This is typically the case of PowerMacs where the VGA memory isn't
+> even reachable on the PCI/AGP bus. 
 
+Here are the case we will have.
 
--- 
-Joshua Kwan
-joshk@mspencer.net
-pgp public key at http://joshk.mspencer.net/pubkey_gpg.asc
- 
-It's hard to keep your shirt on when you're getting something off your
-chest. 
+1) Embedded devices. People here have a tendency to want to use serial 
+   console and just want fbdev without fbcon. Fbcon set the graphics state  
+   in fbcon_startup. Now the developers want to know if the hardware 
+   actually worked. So they can call fb_set_var and fb_show_logo 
+   themselves in there drivers. They want to fully bring up the hardware.
+  
+2) Now say the above want to use fbcon. Then they don't need to set the 
+   graphics state in there driver. Fbcon will do it for them. 
 
---=.ITFKQl30RzIlu4
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.1 (GNU/Linux)
-
-iD8DBQE+Hdlx6TRUxq22Mx4RAhHSAKCp5OLVVCM6h73PT4h3pHJFWVYWKACghW8L
-H+N6AQJcYXz9J/j7geKxEas=
-=I9yJ
------END PGP SIGNATURE-----
-
---=.ITFKQl30RzIlu4--
+3) The graphics card has some kind of default text mode state. For the 
+   case  where we want to use /dev/fb without fbcon and the text mode then
+   we don't want to change the graphics state in the intialization code. 
+   It is done in the first open and the last close.

@@ -1,18 +1,17 @@
-From: Fredrik Noring <noring@nocrew.org>
-Subject: [PATCH] Funny sync calculation correction
-Date: 25 Jan 2003 00:17:23 +0100
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: rivafb "Badness" using fbdev.diff.gz and
+ 2.5.5[45]
+Date: Sat, 25 Jan 2003 10:00:32 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1043450243.10711.41.camel@h9n1fls20o980.telia.com>
+Message-ID: <Pine.GSO.4.21.0301250955070.27544-100000@vervain.sonytel.be>
+References: <Pine.LNX.4.44.0301242252410.2597-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mailf.telia.com ([194.22.194.25])
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18cD3s-00078l-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 24 Jan 2003 15:16:36 -0800
-Received: from h9n1fls20o980.telia.com (h9n1fls20o980.telia.com [213.65.208.9])
-	by mailf.telia.com (8.12.5/8.12.5) with ESMTP id h0ONG2TW028074
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 25 Jan 2003 00:16:02 +0100 (CET)
+	id 18cMC8-0004qS-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 25 Jan 2003 01:01:45 -0800
+In-Reply-To: <Pine.LNX.4.44.0301242252410.2597-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,47 +21,48 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: James Simmons <jsimmons@infradead.org>
+Cc: Antonino Daplas <adaplas@pol.net>, Jak <rfjak@eircom.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-I've been digging around in the rivafb module to find out why some
-modes converted from XFree86 4.2 don't work on some display devices.
-Here's a funny part of the riva_load_video_mode function (Linux
-2.4.21-pre2):
+On Fri, 24 Jan 2003, James Simmons wrote:
+> > > The only problem right now is how do you pass the monitor info to the
+> > > driver?  The best way is to parse the EDID block and use I2C/DDC. 
+> > > Personally, I think passing the monitor info as a boot/module option is
+> > > the simplest and safest method.
+> > 
+> > Through sysfs? echo MY_MONITOR_LIMITS > /proc/...?
+> > 
+> > Since ioctls are considered evil these days, changing the resolution etc. could
+> > work in a similar way as well.
+> 
+> Can you do this with sysfs? This is what I have been waiting for!!! The 
+> proc thing is don't care for tho.
 
-	hStart = (hDisplaySize + video_mode->right_margin) / 8 + 2;
-	hEnd   = (hDisplaySize + video_mode->right_margin +
-		 video_mode->hsync_len) / 8 - 1;
+Yes, you can create a fbdev filesystem, which shows frame buffers and
+information about them. By changing the contents of those virtual files (e.g. a
+file that corresponds to struct fb_var_screeninfo), you can change the video
+mode.  This can also solve the burden of maintaining backwards compatibility in
+struct fb_var_screeninfo. You want a new field? Just add a new virtual file to
+the filesystem.
 
-Please notice how "hsync_len" does not actually represent the length
-of the sync. Rather, it's compensated with 24 pixels. The corresponding
-code in the XFree86 4.2 (nv_dac.c) contains no such compensation:
+One thing I'm still wondering about is how to keep things synchronized. You
+don't want to put all fields of struct fb_var_screeninfo in one file, you want
+separate files for resolution, timings, .... But in the end you usually want to
+change a video mode by changing all parameters at once, so you want the changes
+to the different virtual files to be synchronized. Perhaps some lock file?
 
-    int horizStart      = (mode->CrtcHSyncStart/8) - 1;
-    int horizEnd        = (mode->CrtcHSyncEnd/8)   - 1;
+Gr{oetje,eeting}s,
 
-The difference seems to be almost insignificant for modern multisync
-screens, but devices such as TV:s get confused by the current version.
-Is there a reason for the difference in calculations?
+						Geert
 
-The attached patch corrects the calculations in accordance with XFree86
-and works better with the modelines I've tested. 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Please give it a try. Thanks,
-
-	Fredrik
-
---- linux-2.4.21-pre2/drivers/video/riva/fbdev.c.orig	2003-01-24 23:59:56.000000000 +0100
-+++ linux-2.4.21-pre2/drivers/video/riva/fbdev.c	2003-01-25 00:00:24.000000000 +0100
-@@ -874,7 +874,7 @@
- 	width = video_mode->xres_virtual;
- 	hDisplaySize = video_mode->xres;
- 	hDisplay = (hDisplaySize / 8) - 1;
--	hStart = (hDisplaySize + video_mode->right_margin) / 8 + 2;
-+	hStart = (hDisplaySize + video_mode->right_margin) / 8 - 1;
- 	hEnd = (hDisplaySize + video_mode->right_margin +
- 		video_mode->hsync_len) / 8 - 1;
- 	hTotal = (hDisplaySize + video_mode->right_margin +
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

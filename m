@@ -1,20 +1,22 @@
-From: Zack Smith <plinius@comcast.net>
-Subject: Re: Fw: 2.6.11, framebuffer
-Date: Mon, 14 Feb 2005 14:19:02 -0500
-Message-ID: <4210F9A6.4060302@comcast.net>
-References: <20050214100348.3542b897.akpm@osdl.org>
+From: Sergey Vlasov <vsu@altlinux.ru>
+Subject: [PATCH 2.6 2/2] Fix documentation build failure
+Date: Mon, 14 Feb 2005 23:10:10 +0300
+Message-ID: <20050214201009.GB29201@sirius.home>
+References: <20050214200017.GA29201@sirius.home>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="ZoaI/ZTpAVc4A5k6"
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D0ln9-0004Ij-VR
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Feb 2005 11:21:55 -0800
-Received: from sccrmhc12.comcast.net ([204.127.202.56])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1D0ln8-0004nQ-Es
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Feb 2005 11:21:55 -0800
-In-Reply-To: <20050214100348.3542b897.akpm@osdl.org>
+	id 1D0mY5-00076I-GC
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Feb 2005 12:10:25 -0800
+Received: from mail.murom.net ([213.177.124.17] helo=ns1.murom.ru)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1D0mY3-0003gU-SQ
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Feb 2005 12:10:25 -0800
+Content-Disposition: inline
+In-Reply-To: <20050214200017.GA29201@sirius.home>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -25,29 +27,73 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
 
-> I cannot start a frame buffer on 2.6,11x using
-> hardware with the
->     intel 915g 
-> chip. Either it crashes or nothing happens, depending on modules,
-> kernel compilation etc. Nothing works.
+--ZoaI/ZTpAVc4A5k6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Similarly:
+Hello!
 
-With kernel 2.6.9 using an Intel 82852/82855 (not sure which)
-and compiling the kernel with the VESA framebuffer, starting
-up with vga requested at 1024x768 16bit, the framebuffer
-console doesn't start.
+In linux-2.6.11-rc4-bk2 building of the documentation (make htmldocs)
+fails on "DOCPROC Documentation/DocBook/kernel-api.sgml" because of
+these errors:
 
-I also tried the Intel framebuffer and that didn't work either.
+Error(/home/vsu/src/linux-2.6.11-rc4-bk2/include/linux/skbuff.h:936): canno=
+t understand prototype: '#ifndef CONFIG_HAVE_ARCH_DEV_ALLOC_SKB '
+Error(/home/vsu/src/linux-2.6.11-rc4-bk2/drivers/video/fbmem.c:1265): canno=
+t understand prototype: 'const char *global_mode_option; '
 
-Both start up as text.
+This patch fixes htmldocs build failure on drivers/video/fbmem.c.
+I think this patch (or an equivalent one) should be merged before the
+2.6.11 release.
 
-Zack Smith
+Signed-off-by: Sergey Vlasov <vsu@altlinux.ru>
 
+
+--- linux-2.6.11-rc4-bk2/drivers/video/fbmem.c.doc-build	2005-02-14 20:12:3=
+3 +0300
++++ linux-2.6.11-rc4-bk2/drivers/video/fbmem.c	2005-02-14 23:02:45 +0300
+@@ -1261,9 +1261,6 @@ int fb_get_options(char *name, char **op
+  *	Returns zero.
+  *
+  */
+-
+-extern const char *global_mode_option;
+-
+ int __init video_setup(char *options)
+ {
+ 	int i, global =3D 0;
+@@ -1277,6 +1274,8 @@ int __init video_setup(char *options)
+  	}
+=20
+  	if (!global && !strstr(options, "fb:")) {
++		extern const char *global_mode_option;
++
+  		global_mode_option =3D options;
+  		global =3D 1;
+  	}
+
+
+--=20
+Sergey Vlasov
+
+--ZoaI/ZTpAVc4A5k6
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.5 (GNU/Linux)
+
+iD8DBQFCEQWgW82GfkQfsqIRAmlqAJ0ahaEYp3aK96NpqV2ZvVjrXaTgHwCfewCo
+uvD76GxbGvoyAZNFjX4a7Vo=
+=vqEa
+-----END PGP SIGNATURE-----
+
+--ZoaI/ZTpAVc4A5k6--
 
 
 -------------------------------------------------------

@@ -1,48 +1,140 @@
-From: Zack <plinius@comcast.net>
-Subject: neofb not working
-Date: Fri, 17 Sep 2004 12:59:34 -0700
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <414B4226.1000904@comcast.net>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: [PATCH 1/4] fbdev: Add iomem annotations to fbmem.c
+Date: Sat, 18 Sep 2004 11:47:57 +0800
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <200409181134.32510.adaplas@hotpop.com>
+Reply-To: adaplas@pol.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C8Ore-0003sn-OT
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 17 Sep 2004 12:57:50 -0700
-Received: from rwcrmhc12.comcast.net ([216.148.227.85])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1C8Ore-0004QI-9x
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 17 Sep 2004 12:57:50 -0700
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S269109AbUIRDrg@vger.kernel.org>
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, linux-kernel@vger.kernel.org
 
-For what it's worth, neofb is proving incompatible with
-my Thinkpad's Neomagic NM2160 i.e Magicgraph 128XD.
-It's a PCI-only part.
+Add iomem annotations to fbmem.c
 
-During boot-up the screen goes blank and never recovers.
-I've got the most up-to-date BIOS in flash.
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
+---
 
-If I could find a datasheet for the NM2160 I'd take a look
-at fixing it myself. I didn't find it on the neomagic
-website.
+fbmem.c |   43 +++++++++++++++++++++++++++----------------
+ 1 files changed, 27 insertions(+), 16 deletions(-)
 
-Zack
-
-
--------------------------------------------------------
-This SF.Net email is sponsored by: YOU BE THE JUDGE. Be one of 170
-Project Admins to receive an Apple iPod Mini FREE for your judgement on
-who ports your project to Linux PPC the best. Sponsored by IBM.
-Deadline: Sept. 24. Go here: http://sf.net/ppc_contest.php
+diff -uprN linux-2.6.9-rc2-mm1-orig/drivers/video/fbmem.c linux-2.6.9-rc2-mm1/drivers/video/fbmem.c
+--- linux-2.6.9-rc2-mm1-orig/drivers/video/fbmem.c	2004-09-16 19:40:05.000000000 +0800
++++ linux-2.6.9-rc2-mm1/drivers/video/fbmem.c	2004-09-18 11:25:10.855986768 +0800
+@@ -507,7 +507,8 @@ fb_read(struct file *file, char __user *
+ 	struct inode *inode = file->f_dentry->d_inode;
+ 	int fbidx = iminor(inode);
+ 	struct fb_info *info = registered_fb[fbidx];
+-	u32 *buffer, *dst, *src;
++	u32 *buffer, *dst;
++	u32 __iomem *src;
+ 	int c, i, cnt = 0, err = 0;
+ 	unsigned long total_size;
+ 
+@@ -537,7 +538,7 @@ fb_read(struct file *file, char __user *
+ 	if (!buffer)
+ 		return -ENOMEM;
+ 
+-	src = (u32 *) (info->screen_base + p);
++	src = (u32 __iomem *) (info->screen_base + p);
+ 
+ 	if (info->fbops->fb_sync)
+ 		info->fbops->fb_sync(info);
+@@ -549,12 +550,12 @@ fb_read(struct file *file, char __user *
+ 			*dst++ = fb_readl(src++);
+ 		if (c & 3) {
+ 			u8 *dst8 = (u8 *) dst;
+-			u8 *src8 = (u8 *) src;
++			u8 __iomem *src8 = (u8 __iomem *) src;
+ 
+ 			for (i = c & 3; i--;)
+ 				*dst8++ = fb_readb(src8++);
+ 
+-			src = (u32 *) src8;
++			src = (u32 __iomem *) src8;
+ 		}
+ 
+ 		if (copy_to_user(buf, buffer, c)) {
+@@ -578,7 +579,8 @@ fb_write(struct file *file, const char _
+ 	struct inode *inode = file->f_dentry->d_inode;
+ 	int fbidx = iminor(inode);
+ 	struct fb_info *info = registered_fb[fbidx];
+-	u32 *buffer, *dst, *src;
++	u32 *buffer, *src;
++	u32 __iomem *dst;
+ 	int c, i, cnt = 0, err;
+ 	unsigned long total_size;
+ 
+@@ -610,7 +612,7 @@ fb_write(struct file *file, const char _
+ 	if (!buffer)
+ 		return -ENOMEM;
+ 
+-	dst = (u32 *) (info->screen_base + p);
++	dst = (u32 __iomem *) (info->screen_base + p);
+ 
+ 	if (info->fbops->fb_sync)
+ 		info->fbops->fb_sync(info);
+@@ -626,12 +628,12 @@ fb_write(struct file *file, const char _
+ 			fb_writel(*src++, dst++);
+ 		if (c & 3) {
+ 			u8 *src8 = (u8 *) src;
+-			u8 *dst8 = (u8 *) dst;
++			u8 __iomem *dst8 = (u8 __iomem *) dst;
+ 
+ 			for (i = c & 3; i--; )
+ 				fb_writeb(*src8++, dst8++);
+ 
+-			dst = (u32 *) dst8;
++			dst = (u32 __iomem *) dst8;
+ 		}
+ 		*ppos += c;
+ 		buf += c;
+@@ -657,7 +659,8 @@ fb_load_cursor_image(struct fb_info *inf
+ 	u8 *data = (u8 *) info->cursor.image.data;
+ 
+ 	if (info->sprite.outbuf)
+-	    info->sprite.outbuf(info, info->sprite.addr, data, width);
++	    info->sprite.outbuf(info, info->sprite.addr, data,
++				width);
+ 	else
+ 	    memcpy(info->sprite.addr, data, width);
+ }
+@@ -851,20 +854,28 @@ int
+ fb_blank(struct fb_info *info, int blank)
+ {	
+ 	/* ??? Variable sized stack allocation.  */
+-	u16 black[info->cmap.len];
+ 	struct fb_cmap cmap;
++	u16 *black = NULL;
++	int err = 0;
+ 	
+ 	if (info->fbops->fb_blank && !info->fbops->fb_blank(blank, info))
+ 		return 0;
+ 	if (blank) { 
+-		memset(black, 0, info->cmap.len * sizeof(u16));
+-		cmap.red = cmap.green = cmap.blue = black;
+-		cmap.transp = info->cmap.transp ? black : NULL;
+-		cmap.start = info->cmap.start;
+-		cmap.len = info->cmap.len;
++		black = kmalloc(sizeof(u16) * info->cmap.len, GFP_KERNEL);
++		if (!black) {
++			memset(black, 0, info->cmap.len * sizeof(u16));
++			cmap.red = cmap.green = cmap.blue = black;
++			cmap.transp = info->cmap.transp ? black : NULL;
++			cmap.start = info->cmap.start;
++			cmap.len = info->cmap.len;
++		}
+ 	} else
+ 		cmap = info->cmap;
+-	return fb_set_cmap(&cmap, info);
++
++	err = fb_set_cmap(&cmap, info);
++	kfree(black);
++
++	return err;
+ }
+ 
+ static int 

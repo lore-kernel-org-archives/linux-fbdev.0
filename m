@@ -1,92 +1,61 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH 1/5]: logo fix
-Date: Sun, 16 Feb 2003 16:40:06 +0000 (GMT)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0302161640010.10755-100000@phoenix.infradead.org>
-References: <1045393909.1214.2.camel@localhost.localdomain>
+From: Adrian Bunk <bunk@fs.tum.de>
+Subject: 2.5.61: drivers/video: multiple definition of linux_logo*
+Date: Sun, 16 Feb 2003 17:48:35 +0100
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <20030216164835.GD20159@fs.tum.de>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18kRqM-0005zN-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 16 Feb 2003 08:40:43 -0800
-In-Reply-To: <1045393909.1214.2.camel@localhost.localdomain>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: jsimmons@infradead.org, geert@linux-m68k.org, linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
 
+I get the following error while compiling 2.5.61:
 
-Applied.
+<--  snip  -->
 
-On 16 Feb 2003, Antonino Daplas wrote:
+...
+   ld -m elf_i386  -r -o drivers/video/built-in.o 
+drivers/video/console/built-in.o drivers/video/fbmem.o 
+drivers/video/fbmon.o drivers/video/fbcmap.o drivers/video/modedb.o 
+drivers/video/softcursor.o drivers/video/aty128fb.o 
+drivers/video/cfbfillrect.o drivers/video/cfbcopyarea.o 
+drivers/video/cfbimgblt.o drivers/video/radeonfb.o drivers/video/neofb.o 
+drivers/video/tdfxfb.o drivers/video/tridentfb.o drivers/video/vesafb.o 
+drivers/video/vga16fb.o drivers/video/vgastate.o 
+drivers/video/riva/built-in.o drivers/video/aty/built-in.o 
+drivers/video/i810/built-in.o drivers/video/hgafb.o drivers/video/vfb.o 
+drivers/video/sstfb.o
+drivers/video/hgafb.o(.init.data+0x0): multiple definition of 
+`linux_logo_red'
+drivers/video/fbmem.o(.init.data+0x0): first defined here
+drivers/video/hgafb.o(.init.data+0xbb): multiple definition of 
+`linux_logo_green'
+drivers/video/fbmem.o(.init.data+0xbb): first defined here
+drivers/video/hgafb.o(.init.data+0x176): multiple definition of 
+`linux_logo_blue'
+drivers/video/fbmem.o(.init.data+0x176): first defined here
+drivers/video/hgafb.o(.init.data+0x231): multiple definition of 
+`linux_logo'
+drivers/video/fbmem.o(.init.data+0x231): first defined here
+drivers/video/hgafb.o(.init.data+0x1b31): multiple definition of 
+`linux_logo_bw'
+drivers/video/fbmem.o(.init.data+0x1b31): first defined here
+drivers/video/hgafb.o(.init.data+0x1e51): multiple definition of 
+`linux_logo16'
+drivers/video/fbmem.o(.init.data+0x1e51): first defined here
+make[2]: *** [drivers/video/built-in.o] Error 1
 
-> On Sun, 2003-02-16 at 14:08, Antonino Daplas wrote:
-> > The attached patch (linux-2.5.61 + James' fbdev.diff) fixes the following:
-> > 
-> > 1. compile error because of missing scripts/pmntologo.  
-> > 
-> > 2. Break up of fb_show_logo() to fb_prepare_logo()/fb_show_logo() to fix
-> > weird "double drawing" or the "single draw, erase in a flash" of the
-> > logo.
-> > 
-> > 3. Fixed all drivers affected by the (image.depth == 0) is color
-> > expansion.
-> > 
-> 
-> Here's an incremental diff to protect logo drawing code with an
-> #ifdef CONFIG_FB_LOGO
-> 
-> Tony
-> 
-> diff -Naur linux-2.5.61-fbdev/drivers/video/fbmem.c linux-2.5.61-ad/drivers/video/fbmem.c
-> --- linux-2.5.61-fbdev/drivers/video/fbmem.c	2003-02-16 11:08:40.000000000 +0000
-> +++ linux-2.5.61-ad/drivers/video/fbmem.c	2003-02-16 11:08:19.000000000 +0000
-> @@ -41,7 +41,6 @@
->  #include <asm/pgtable.h>
->  
->  #include <linux/fb.h>
-> -#include <linux/linux_logo.h>
->  
->  #ifdef CONFIG_FRAMEBUFFER_CONSOLE
->  #include "console/fbcon.h"
-> @@ -369,6 +368,9 @@
->  	return n < 0 ? d >> -n : d << n;
->  }
->  
-> +#ifdef CONFIG_FB_LOGO
-> +#include <linux/linux_logo.h>
-> +
->  static void __init fb_set_logocmap(struct fb_info *info,
->  				   const struct linux_logo *logo)
->  {
-> @@ -656,6 +658,10 @@
->  		kfree(logo_new);
->  	return fb_logo.logo->height;
->  }
-> +#else
-> +int fb_prepare_logo(struct fb_info *info) { return 0; }
-> +int fb_show_logo(struct fb_info *info) { return 0; }
-> +#endif /* CONFIG_FB_LOGO */
->  
->  static int fbmem_read_proc(char *buf, char **start, off_t offset,
->  			   int len, int *eof, void *private)
-> 
-> 
+<--  snip  -->
 
+cu
+Adrian
 
+-- 
 
--------------------------------------------------------
-This sf.net email is sponsored by:ThinkGeek
-Welcome to geek heaven.
-http://thinkgeek.com/sf
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed

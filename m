@@ -1,25 +1,13 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: Re: [PATCH] atyfb (2.6): Add RGB565 support
-Date: Wed, 12 May 2004 21:57:24 +0300
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Re: Current discussion about the future of
+ free software graphics
+Date: Wed, 12 May 2004 21:00:09 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040512185724.GA825@sci.fi>
-References: <20040511213607.GB6854@sci.fi> <Pine.GSO.4.58.0405121110360.19967@waterleaf.sonytel.be>
+Message-ID: <Pine.GSO.4.58.0405122058350.29476@waterleaf.sonytel.be>
+References: <Pine.LNX.4.44.0405121705550.30331-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BNyv2-0004SD-PK
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 May 2004 11:57:28 -0700
-Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BNyv2-0003sT-Jf
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 May 2004 11:57:28 -0700
-Received: from kuori.saunalahti.fi (kuori.saunalahti.fi [195.197.175.23])
-	by gw01.mail.saunalahti.fi (Postfix) with ESMTP id 0FA361147D0A
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 12 May 2004 21:57:25 +0300 (EEST)
-Content-Disposition: inline
-In-Reply-To: <Pine.GSO.4.58.0405121110360.19967@waterleaf.sonytel.be>
+In-Reply-To: <Pine.LNX.4.44.0405121705550.30331-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,26 +17,31 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: James Simmons <jsimmons@infradead.org>
+Cc: Jon Smirl <jonsmirl@yahoo.com>, Ian Romanick <idr@us.ibm.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, dri-devel@lists.sourceforge.net
 
-On Wed, May 12, 2004 at 11:11:21AM +0200, Geert Uytterhoeven wrote:
-> On Wed, 12 May 2004, Ville [iso-8859-1] Syrj=E4l=E4 wrote:
-> > This patch adds RGB565 support to atyfb.
->=20
-> Nice! Have you tried fbtest on it?
->=20
-> I once tried to implement it myself, but it didn't work reliably.
+On Wed, 12 May 2004, James Simmons wrote:
+> I understand you point of the mode switching code being huge. The embedded
+> guys require really lean kernels. I have no problem making the mode switching
+> code modular. I just want to avoid the above overhead.
 
-I just tried fbtest and most tests look ok. The penguin images are wrong=20
-(green instead of white stuff aroung the penguin) and the test009 looks=20
-wrong too. Are you sure fbtest is doing the right thing with rgb565=20
-directcolor visuals? DirectFB or mplayer don't have any problems.
+And for an embedded device with a fixed LCD screen you can easily make the mode
+setting code __init, and disallow mode changes after boot up. One device
+driver, just one more kernel config option. Some code has to do the mode
+setting anyway, so better keep it in one place.
 
---=20
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

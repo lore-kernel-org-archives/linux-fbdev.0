@@ -1,27 +1,24 @@
-From: "Carlo E. Prelz" <fluido@fluido.as>
-Subject: Re: how to activate X with famebuffer
-Date: Mon, 27 Sep 2004 07:48:53 +0200
+From: "Mukund JB." <mukundjb@esntechnologies.co.in>
+Subject: RE: how to activate X with famebuffer
+Date: Mon, 27 Sep 2004 14:58:50 +0530
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040927054853.GA17151@epio.fluido.as>
-References: <4EE0CBA31942E547B99B3D4BFAB34811107F50@mail.esn.co.in>
+Message-ID: <4EE0CBA31942E547B99B3D4BFAB34811107FC2@mail.esn.co.in>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CBoNe-0002bA-Ni
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Sep 2004 22:48:58 -0700
-Received: from a205017.upc-a.chello.nl
-	([62.163.205.17] helo=casa.fluido.as ident=Debian-exim)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:RC4-SHA:128)
-	(Exim 4.41)
-	id 1CBoNd-0006ro-9R
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Sep 2004 22:48:58 -0700
-Received: from fluido by casa.fluido.as with local (Exim 4.34)
-	id 1CBoNZ-0004sP-PZ
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 27 Sep 2004 07:48:53 +0200
-Content-Disposition: inline
-In-Reply-To: <4EE0CBA31942E547B99B3D4BFAB34811107F50@mail.esn.co.in>
+	id 1CBrm8-0004hn-AP
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 27 Sep 2004 02:26:28 -0700
+Received: from [202.125.86.130] (helo=ns2.astrainfonets.net)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1CBrm5-0004lN-Py
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 27 Sep 2004 02:26:28 -0700
+Received: from mail.esn.co.in ([202.125.80.34])
+	by ns2.astrainfonets.net (8.12.8p1/8.12.8) with ESMTP id i8R9LeUE025317
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 27 Sep 2004 09:21:40 GMT
+Content-class: urn:content-classes:message
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,50 +29,75 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
 
-	Subject: [Linux-fbdev-devel] how to activate X with famebuffer
-	Date: Mon, Sep 27, 2004 at 10:45:25AM +0530
 
-Quoting Mukund JB. (mukundjb@esntechnologies.co.in):
+Hello,
+Thanks for responding.
 
-> How to activate X with framebuffer.
 
-I am not much of an expert, but I see noone is answering...
-First of all, you must be sure that the framebuffer level is
-working. What does  /proc/fb contain? There should be one or more
-line. For example, mine has
+> > How to activate X with framebuffer.
+>=20
+> I am not much of an expert, but I see noone is answering...
+> First of all, you must be sure that the framebuffer level is
+> working. What does  /proc/fb contain? There should be one or more
+> line. For example, mine has
+>=20
+> 0 ATI Radeon Yd
 
-0 ATI Radeon Yd
+Yes, u r right.
+cat /proc/fb says
+0 RIVA_VTNT2
 
-which means that I have one framebuffer unit available. 
+>
+> which means that I have one framebuffer unit available.
+>=20
+> Then, have a look at man fbdev. Specifically, the Driver line in your
+> device section should be
+>=20
+> Driver "fbdev"
+This statement will load the default framebuffer driver which comes with
+XFree86 package. Xorg also provides a GENERIC framebuffer driver i.e.
+fbdev.
+This works on my system. I have no probelsm with this.
+But my requirement is to activate X on rivafb (Nvidia CARD SPECIFIC
+DRIVER) module.
 
-Then, have a look at man fbdev. Specifically, the Driver line in your
-device section should be 
- 
-Driver "fbdev"
- 
-There should be another way. Set 
+>=20
+> There should be another way. Set
+>=20
+> Driver "nv"
+I think, saying so in XF86Config file will not activate X based on the
+framebuffer driver. This works on my system even when I have not loaded
+the rivafb (Nvidia card specific driver) module.
+Even if the rivafb module is loaded, it is not invoked at startx (debug
+message are not appearing ). I think, this edition of XF86Config file
+will activate a normal video driver but not framebuffer driver.
 
-Driver "nv"
+> (for nvidia cards, including riva ones) and set
+>=20
+> Option "UseFBDev" "on"
+>=20
+I don't why to use this? If u know please provide with the info
+> I have no clear idea about what the difference is. Anyway, Have a look
+> at man nv and man fbdevhw.
+>=20
+> ALL THIS IS PURELY THEORETICAL from my point of view!! You need to
+> experiment a bit.
+>=20
+> Carlo
 
-(for nvidia cards, including riva ones) and set 
 
-Option "UseFBDev" "on"
 
-I have no clear idea about what the difference is. Anyway, Have a look
-at man nv and man fbdevhw. 
 
-ALL THIS IS PURELY THEORETICAL from my point of view!! You need to
-experiment a bit. 
+Please suggest me how to activate X so that it uses rivafb (card
+specific fb driver )module.
 
-Carlo
+Thanks a lot for being the first one to help.
 
--- 
-  *         Se la Strada e la sua Virtu' non fossero state messe da parte,
-* K * Carlo E. Prelz - fluido@fluido.as             che bisogno ci sarebbe
-  *               di parlare tanto di amore e di rettitudine? (Chuang-Tzu)
+Regards,
+Mukund jampala
+
 
 
 -------------------------------------------------------

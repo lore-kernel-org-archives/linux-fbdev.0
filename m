@@ -1,16 +1,17 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: RE: Framebuffer with banked memory
-Date: Thu, 31 Oct 2002 13:48:08 -0800 (PST)
+From: Antonino Daplas <adaplas@pol.net>
+Subject: Re: Framebuffer with banked memory
+Date: 01 Nov 2002 05:16:22 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.33.0210311345270.1721-100000@maxwell.earthlink.net>
-References: <2B4461BF89BAD511A86100508B66D53804E4FA67@fmsmsx112.fm.intel.com>
+Message-ID: <1036098840.654.6.camel@daplas>
+References: <Pine.LNX.4.33.0210311343390.1721-100000@maxwell.earthlink.net>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from albatross.mail.pas.earthlink.net ([207.217.120.120] helo=albatross.prod.itd.earthlink.net)
+Received: from [203.167.79.9] (helo=willow.compass.com.ph)
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 187MLB-0000ca-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 31 Oct 2002 12:54:57 -0800
-In-Reply-To: <2B4461BF89BAD511A86100508B66D53804E4FA67@fmsmsx112.fm.intel.com>
+	id 187Mkt-0005jv-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 31 Oct 2002 13:21:31 -0800
+In-Reply-To: <Pine.LNX.4.33.0210311343390.1721-100000@maxwell.earthlink.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,39 +21,34 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Sottek, Matthew J" <matthew.j.sottek@intel.com>
-Cc: 'alain volmat' <avolmat@yahoo.fr>, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@infradead.org>
+Cc: alain volmat <avolmat@yahoo.fr>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
+On Fri, 2002-11-01 at 05:44, James Simmons wrote:
+> 
+> > On Thu, 2002-10-31 at 12:02, alain volmat wrote:
+> > >
+> > > What about adding fb_write / fb_read function in the
+> > > framebuffer (device dependant) driver. The same way as
+> > > for fb_mmap. I saw that at the beginning of fb_mmap in
+> > > fbmem.c, there is a test to see if the device driver
+> > > contains its own fb_mmap function, if so the device
+> > > driver fb_mmap will be used instead of the "generic"
+> > > fb_mmap. What about doing the same thing for fb_write
+> > > / fb_read.
+> > >
+> > I've seen a post by James sometimes ago about adding fb_write and
+> > fb_read to info->fbops.
+> 
+> Correct. The next set of fbdev changes will include this plus I added
+> fb_sync!!! Iknow this will make you happy:-)
+> 
 
->   The short answer to your problem is that, sadly, much of the 2.4
-> framebuffer is badly implemented, allowing device independent code to
-> directly access device memory etc. Some of this is cleaned up for 2.5, but
-> as I've not looked at it lately I'm not sure how much.  Here are some
-> pointers as to what is required for 2.4.
->
-> #1 The Boot penguin code directly accesses your video memory. If you have
-> banked memory this will likely fall off the end of a pointer and oops the
-> kernel or worse.
+Indeed :-), not just me, but others too, I guess. Selective hardware
+syncs will maximize the graphics instruction pipeline.
 
-Fixed in 2.5.X. You use the image drawing function to draw the penguin.
-
-> #2 Read/Write Access video memory directly. I had added a read/write
-> handler to the fb_ops to hook these out and switch banks.
-> Read/write are also incorrect if your pitch != width.
-
-Fixed. I have hooks now. I didn't notice the pitch != width problem. Give
-me time to fix up a patch, unless someone bets me to the punch.
-
-> #3 Memory map can't be done. I had coded up a working version that would
-> map a single back and page fault in the banks as necessary. This worked
-> but would get hung up on unaligned accesses where one instruction accessed
-> two memory banks at the same time. So memory map isn't possible.
-
-:-( Even with providing your own mmap function you still couldn't get it
-to work.
-
+Tony
 
 
 

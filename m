@@ -1,21 +1,24 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 0/3] fb accel capabilities (aka fast
- radeon fb, the right way)
-Date: Thu, 13 May 2004 13:15:08 +0200 (MEST)
+From: David Eger <eger-sender-da68b9@theboonies.us>
+Subject: [PATCH 4/3] fb accel capabilities (more fb.h flags)
+Date: Thu, 13 May 2004 13:39:09 +0200 (CEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0405131309030.9790@waterleaf.sonytel.be>
+Message-ID: <Pine.LNX.4.58.0405131333190.22615@rosencrantz.theboonies.us>
 References: <Pine.LNX.4.58.0405130131460.2282@rosencrantz.theboonies.us>
+	<Pine.LNX.4.58.0405130146300.2282@rosencrantz.theboonies.us>
+	<Pine.LNX.4.58.0405130149210.2282@rosencrantz.theboonies.us>
+Reply-To: David Eger <eger-dated-1085052875.d1102d@theboonies.us>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BOEBM-0006CR-9g
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 04:15:20 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BOEBL-0007nh-En
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 04:15:19 -0700
-In-Reply-To: <Pine.LNX.4.58.0405130131460.2282@rosencrantz.theboonies.us>
+	id 1BOEU0-0000Hr-Uu
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 04:34:36 -0700
+Received: from not.theboonies.us ([66.139.79.224])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1BOEU0-0000zq-Gn
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 04:34:36 -0700
+In-Reply-To: <Pine.LNX.4.58.0405130149210.2282@rosencrantz.theboonies.us>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,50 +30,60 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: David Eger <eger-dated-1085010079.06feaf@theboonies.us>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, jsimmons@infradead.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-On Thu, 13 May 2004, David Eger wrote:
-> I fleshed out Geert's idea from the last radeonfb thread on bringing
-> fbcon's interaction with the underlying framebuffer drivers up-to-date.
-> Now fbcon should be smart and actually *use* fb-driver provided accel
-> functions ;-)
 
-Nice!
+I guess I needed a few more flags for hwaccel ;-)
+And I guess there will be more than three patches in this series... ;-)
 
-> Specifically, I've added a .hwaccel field to fb_fix_screeninfo, which
-> should serve as the way framebuffers pass hints to higher layers.
+-dte
 
-I think we agreed to put it in fb_info instead, since it doesn't really matter
-for user space.
-
-> This should totally obsolete the accel_flags in var (which till now has
-> had one half-heartedly used value FB_ACCELF_TEXT).
-
-Well, we still need a way to know when the fbdev has to reinitialize its accel
-engine, when switching the console from graphics mode (user space does accel)
-to text mode (kernel uses accel). Currently this is done when FB_ACCELF_TEXT is
-set.
-
-BTW, we've been talking about allowing kernel messages (mainly oops and panic)
-to show up under X. Since we cannot use the accel engine for that, perhaps we
-need different routines for fb_{fillrect,copyarea,imageblit}() for the
-accelerated vs. non-accelerated cases? And fbcon could compare the function
-pointers, instead of looking at .hwaccel.
-
-(Yes, I know it's still possible to lock up your card when using unaccelerated
- drawing while an accelerated operation is in progress on some cards).
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+# This is a BitKeeper generated diff -Nru style patch.
+#
+# ChangeSet
+#   2004/05/13 13:25:46+02:00 eger@rosencrantz.theboonies.us 
+#   update fb.h with some new flags needed during ATI upgrade
+#   to new fix.hwaccel semantics
+# 
+# include/linux/fb.h
+#   2004/05/13 13:25:22+02:00 eger@rosencrantz.theboonies.us +4 -2
+#   added some FB_HWACCEL_ flags: DISABLED, IMAGEBLIT
+#   marked var.accel_flags obsolete
+# 
+diff -Nru a/include/linux/fb.h b/include/linux/fb.h
+--- a/include/linux/fb.h	Thu May 13 13:28:07 2004
++++ b/include/linux/fb.h	Thu May 13 13:28:07 2004
+@@ -109,9 +109,11 @@
+ #define FB_ACCEL_NEOMAGIC_NM2360 97	/* NeoMagic NM2360              */
+ #define FB_ACCEL_NEOMAGIC_NM2380 98	/* NeoMagic NM2380              */
+ 
++#define FB_HWACCEL_DISABLED	0x0000
+ #define FB_HWACCEL_COPYAREA	0x0001
+ #define FB_HWACCEL_FILLRECT	0x0002
+ #define FB_HWACCEL_ROTATE	0x0004
++#define FB_HWACCEL_IMAGEBLIT	0x0008
+ 
+ struct fb_fix_screeninfo {
+ 	char id[16];			/* identification string eg "TT Builtin" */
+@@ -160,7 +162,7 @@
+ #define FB_ACTIVATE_ALL	       64	/* change all VCs on this fb	*/
+ #define FB_ACTIVATE_FORCE     128	/* force apply even when no change*/
+ 
+-#define FB_ACCELF_TEXT		1	/* text mode acceleration */
++#define FB_ACCELF_TEXT		1	/* text mode acceleration (OBSOLETE) */
+ 
+ #define FB_SYNC_HOR_HIGH_ACT	1	/* horizontal sync high active	*/
+ #define FB_SYNC_VERT_HIGH_ACT	2	/* vertical sync high active	*/
+@@ -206,7 +208,7 @@
+ 	__u32 height;			/* height of picture in mm    */
+ 	__u32 width;			/* width of picture in mm     */
+ 
+-	__u32 accel_flags;		/* acceleration flags (hints)	*/
++	__u32 accel_flags;		/* (OBSOLETE) see fix.hwaccel	*/
+ 
+ 	/* Timing: All values in pixclocks, except pixclock (of course) */
+ 	__u32 pixclock;			/* pixel clock in ps (pico seconds) */
 
 
 -------------------------------------------------------

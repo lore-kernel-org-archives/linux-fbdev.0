@@ -1,36 +1,24 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: [Linux-fbdev-devel] Re: FBdev updates.
-Date: Fri, 21 Feb 2003 10:04:19 +0100 (MET)
+Date: Fri, 21 Feb 2003 10:09:45 +0100 (MET)
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.GSO.4.21.0302211003250.9232-100000@vervain.sonytel.be>
-References: <1045791900.21577.5.camel@rth.ninka.net>
+Message-ID: <Pine.GSO.4.21.0302211007080.9232-100000@vervain.sonytel.be>
+References: <1045778401.1201.17.camel@localhost.localdomain>
 Mime-Version: 1.0
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <1045791900.21577.5.camel@rth.ninka.net>
+In-Reply-To: <1045778401.1201.17.camel@localhost.localdomain>
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "David S. Miller" <davem@redhat.com>
+To: Antonino Daplas <adaplas@pol.net>
 Cc: James Simmons <jsimmons@infradead.org>, Petr Vandrovec <vandrove@vc.cvut.cz>, Dave Jones <davej@codemonkey.org.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On 20 Feb 2003, David S. Miller wrote:
-> On Thu, 2003-02-20 at 11:58, James Simmons wrote:
-> > > (3) persuade me that I want to write matroxcon and forget about fbcon at all, or
-> > 
-> > This is the best solution. 
+On 21 Feb 2003, Antonino Daplas wrote:
+> Note: I cannot test with 12x22 fonts in 2.4 because some/most drivers do
+> not support it.
 
-Huh?
-
-> And then we will have sbuscon as well, thus two places where
-> putcs() is necessary.
-> 
-> I don't understand, but I do hope that at some point it will be
-> realized that maybe allowing fbcon to generically handle putcs()
-> hardware is beneficial.
-> 
-> I can dream. :-)
-
-Don't worry, tile blitting will be there (eventually)...
+Which specific drivers are you talking about? All drivers for popular cards
+support fontwidth 12 (Matrox, ATI, nVidia, 3Dfx, Permedia, VESA, ...).
 
 Gr{oetje,eeting}s,
 

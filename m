@@ -1,17 +1,17 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH 2/5]: vga16fb fixes
-Date: Sun, 16 Feb 2003 16:37:53 +0000 (GMT)
+Subject: Re: [PATCH 4/5]: i810fb fixes
+Date: Sun, 16 Feb 2003 16:39:52 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0302161637440.10755-100000@phoenix.infradead.org>
-References: <1045375686.1823.73.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44.0302161639430.10755-100000@phoenix.infradead.org>
+References: <1045375698.1823.77.camel@localhost.localdomain>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from phoenix.infradead.org ([195.224.96.167])
+Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18kRoG-0005UA-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 16 Feb 2003 08:38:32 -0800
-In-Reply-To: <1045375686.1823.73.camel@localhost.localdomain>
+	id 18kRq7-0005uq-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 16 Feb 2003 08:40:28 -0800
+In-Reply-To: <1045375698.1823.77.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,9 +27,15 @@ To: Antonino Daplas <adaplas@pol.net>
 Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-Applied.
+> Attached is a patch (linux-2.5.61 + James' fbdev.diff) to update i810fb:
+> 
+> 1.  added suspend/resume hooks to pci_driver.  This is needed to
+> save/recover GART mappings during suspends/resumes.  These are also
+> necessary for swsusp (software suspend) to work.
+> 
+> 2.  Fix compilation warnings.
 
-> Attached is a patch (linux-2.5.61 + James' fbdev.diff) to fix compile warnings.
+Applied.
 
 
 

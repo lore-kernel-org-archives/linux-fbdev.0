@@ -1,22 +1,22 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 2/4] fbdev: Fix lockup when switching to/from X/console
-Date: Mon, 22 Nov 2004 07:16:51 +0800
-Message-ID: <200411220716.51948.adaplas@hotpop.com>
+Subject: [PATCH 1/4] fbdev: Fix screen corruption in neofb
+Date: Mon, 22 Nov 2004 07:16:45 +0800
+Message-ID: <200411220716.48307.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CW10T-0002XU-Np
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 21 Nov 2004 15:20:33 -0800
+	id 1CW10Q-0002XT-NI
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 21 Nov 2004 15:20:30 -0800
 Received: from smtp-out.hotpop.com ([38.113.3.61])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CW106-0005TJ-Cs
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 21 Nov 2004 15:20:33 -0800
+	id 1CW102-0005SH-Uz
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 21 Nov 2004 15:20:30 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 94F55A17D18
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 21 Nov 2004 23:19:56 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id AE1869777E4
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 21 Nov 2004 23:19:51 +0000 (UTC)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -32,70 +32,36 @@ Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-- Do a set_par very late instead of during fbcon_blank by setting the
-  FBINFO_MISC_MODESWITCHLATE flag which should help prevent
-  lockups when switching from X
-- Shorten chipset names that were missed before
-- Do not validate modeline if monitor specifications are not available
+This patch fixes the screen corruption resulting from neofb cleanup.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
---- 
+---
 
- savagefb.c |   16 +++++++++-------
- 1 files changed, 9 insertions(+), 7 deletions(-)
+ neofb.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
-diff -Nru a/drivers/video/savage/savagefb.c b/drivers/video/savage/savagefb.c
---- a/drivers/video/savage/savagefb.c	2004-11-17 18:15:21 +08:00
-+++ b/drivers/video/savage/savagefb.c	2004-11-22 06:44:00 +08:00
-@@ -719,7 +719,8 @@
- 		return -EINVAL;
- 	}
+diff -Nru a/drivers/video/neofb.c b/drivers/video/neofb.c
+--- a/drivers/video/neofb.c	2004-11-10 06:15:06 +08:00
++++ b/drivers/video/neofb.c	2004-11-20 09:25:43 +08:00
+@@ -1481,7 +1481,7 @@
+ 	int s_pitch = (image->width * image->depth + 7) >> 3;
+ 	int scan_align = info->pixmap.scan_align - 1;
+ 	int buf_align = info->pixmap.buf_align - 1;
+-	int bltCntl_flags, d_pitch, data_len, i;
++	int bltCntl_flags, d_pitch, data_len;
  
--	if (!fb_validate_mode(var, info))
-+	if (!info->monspecs.hfmax || !info->monspecs.vfmax ||
-+	    !info->monspecs.dclkmax || !fb_validate_mode(var, info))
- 		mode_valid = 1;
+ 	// The data is padded for the hardware
+ 	d_pitch = (s_pitch + scan_align) & ~scan_align;
+@@ -1533,8 +1533,7 @@
+ 	writel((image->height << 16) | (image->width & 0xffff),
+ 	       &par->neo2200->xyExt);
  
- 	/* calculate modeline if supported by monitor */
-@@ -1801,23 +1802,23 @@
- 	switch (info->fix.accel) {
- 	case FB_ACCEL_SUPERSAVAGE:
- 		par->chip = S3_SUPERSAVAGE;
--		snprintf (info->fix.id, 16, "S3 SuperSavage");
-+		snprintf (info->fix.id, 16, "SuperSavage");
- 		break;
- 	case FB_ACCEL_SAVAGE4:
- 		par->chip = S3_SAVAGE4;
--		snprintf (info->fix.id, 16, "S3 Savage4");
-+		snprintf (info->fix.id, 16, "Savage4");
- 		break;
- 	case FB_ACCEL_SAVAGE3D:
- 		par->chip = S3_SAVAGE3D;
--		snprintf (info->fix.id, 16, "S3 Savage3D");
-+		snprintf (info->fix.id, 16, "Savage3D");
- 		break;
- 	case FB_ACCEL_SAVAGE3D_MV:
- 		par->chip = S3_SAVAGE3D;
--		snprintf (info->fix.id, 16, "S3 Savage3D-MV");
-+		snprintf (info->fix.id, 16, "Savage3D-MV");
- 		break;
- 	case FB_ACCEL_SAVAGE2000:
- 		par->chip = S3_SAVAGE2000;
--		snprintf (info->fix.id, 16, "S3 Savage2000");
-+		snprintf (info->fix.id, 16, "Savage2000");
- 		break;
- 	case FB_ACCEL_SAVAGE_MX_MV:
- 		par->chip = S3_SAVAGE_MX;
-@@ -1882,7 +1883,8 @@
- 	info->fbops          = &savagefb_ops;
- 	info->flags          = FBINFO_DEFAULT |
- 		               FBINFO_HWACCEL_YPAN |
--		               FBINFO_HWACCEL_XPAN;
-+		               FBINFO_HWACCEL_XPAN |
-+	                       FBINFO_MISC_MODESWITCHLATE;
+-	for (i = 0; i < data_len; i++)
+-		writeb(image->data[i], par->mmio_vbase + 0x100000 + i);
++	memcpy_toio(par->mmio_vbase + 0x100000, image->data, data_len);
+ }
  
- 	info->pseudo_palette = par->pseudo_palette;
- 
+ static void
 
 
 

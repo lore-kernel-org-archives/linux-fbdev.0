@@ -1,19 +1,15 @@
 From: Fredrik Noring <noring@nocrew.org>
-Subject: Re: rivafb "Badness" using fbdev.diff.gz and
-	2.5.5[45]
-Date: 19 Jan 2003 12:29:41 +0100
+Subject: [PATCH] rivafb sync polarity problem?
+Date: 19 Jan 2003 13:55:42 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1042975785.1296.31.camel@h9n1fls20o980.telia.com>
+Message-ID: <1042980943.12192.34.camel@h9n1fls20o980.telia.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mailf.telia.com ([194.22.194.25])
+Received: from maile.telia.com ([194.22.190.16])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18aDdA-0004yp-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 19 Jan 2003 03:28:48 -0800
-Received: from h9n1fls20o980.telia.com (h9n1fls20o980.telia.com [213.65.208.9])
-	by mailf.telia.com (8.12.5/8.12.5) with ESMTP id h0JBSERq009367
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 19 Jan 2003 12:28:14 +0100 (CET)
+	id 18aEyM-0000ix-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 19 Jan 2003 04:54:46 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -25,33 +21,58 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Ani Joshi <ajoshi@shell.unixbox.com>
 
 Hi,
 
-> To summarise:
->  insmod rivafb causes "Badness in kobject_register" every time 
->    ( after pci_register_driver() in rivafb_init(),see below )
->  after insmod rivafb, I have a green screen, which can be cleared by fbset
->   ( fbset now changes resolution of all VTs, this is different from 2.4.x )
->  after clearing green screen using fbset, text colours are wrong
+It seems the mode below doesn't work with rivafb in Linux 2.4.21-pre2,
+the RGB (TV) screen fail to sync properly. (The equivalent modeline in
+XFree86 4.2 works.)
 
-I get similar results, but I have to run and stop XFree86 4.2 before 
-"insmod rivafb". Otherwise the screen will not be cleared by fbset.
+    mode "768x288"
+        geometry   768 288   768 288   32
+        timings    62500   120 80   20 2   54 2
+        hsync low
+        vsync low
+    endmode
 
->  now ( 2.5.59 ), I can insmod fbcon, and screen looks OK again ( apart from
->   the left-hand-most column of screen appears at right-hand side of screen )
+I suspect it may have something to do with the sync polarity, as it
+does not seem to be implemented fully in the rivafb driver? (Then again,
+it seems the polarity always is forced low by the driver, I'm not sure.)
 
-With 2.5.59 with and without the patch Antonino Daplas sent to the
-kernel list (17 Jan), loading fbcon only displays garbage on the screen.
-The graphics card is TNT AGP.
+Looking at http://web.inter.nl.net/hcc/S.Weijgers/FreeVGA/vga/extreg.htm
+and reading XFree86 source code indicate it should be fairly simple to
+solve this, given that the correct bits are set/cleared of course. :)
 
-The rivafb module works pretty well in Linux 2.4.21-pre2, except that
-certain modes involving sync polarity and interlace don't work (these
-modes work fine with XFree86 4.2). I was hoping that these would work
-with rivafb in 2.5.59. Any thoughts?
+The patch below tries to set the proper polarity. The mode still doesn't
+work though, since misc_output already is 0xEB by default. I don't know
+if the patch is wrong or which additional problems the rivafb driver
+might have with the mode.
+
+Any ideas?
+
+Thanks
 
 	Fredrik
 
+--- linux-2.4.21-pre2.old/drivers/video/riva/fbdev.c	2002-08-03 02:39:45.000000000 +0200
++++ linux-2.4.21-pre2.new/drivers/video/riva/fbdev.c	2003-01-19 13:21:46.000000000 +0100
+@@ -920,6 +920,15 @@
+ 	newmode.ext.width = width;
+ 	newmode.ext.height = height;
+ 
++	if(video_mode->sync & FB_SYNC_HOR_HIGH_ACT)
++		newmode.misc_output &= ~0x40;
++	else
++		newmode.misc_output |= 0x40;
++	if(video_mode->sync & FB_SYNC_VERT_HIGH_ACT)
++		newmode.misc_output &= ~0x80;
++	else
++		newmode.misc_output |= 0x80;
++	
+ 	rinfo->riva.CalcStateExt(&rinfo->riva, &newmode.ext, bpp, width,
+ 				  hDisplaySize, hDisplay, hStart, hEnd,
+ 				  hTotal, height, vDisplay, vStart, vEnd,
 
 
 

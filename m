@@ -1,20 +1,31 @@
-From: Sven Luther <luther@dpt-info.u-strasbg.fr>
-Subject: Re: [Linux-fbdev-devel] [PATCH]: EDID parser
-Date: Thu, 3 Apr 2003 18:21:23 +0200
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20030403162123.GA17123@iliana>
-References: <4E5C514B42@vcnet.vc.cvut.cz> <20030403141530.GA8858@iliana> <1049383273.11742.0.camel@dhcp22.swansea.linux.org.uk>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH]: EDID parser
+Date: Thu, 3 Apr 2003 18:33:17 +0200 (MEST)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.GSO.4.21.0304031831030.23642-100000@vervain.sonytel.be>
+References: <1049383273.11742.0.camel@dhcp22.swansea.linux.org.uk>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-Content-Disposition: inline
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 1917fQ-0000K4-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 03 Apr 2003 08:34:21 -0800
 In-Reply-To: <1049383273.11742.0.camel@dhcp22.swansea.linux.org.uk>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Cc: Sven Luther <luther@dpt-info.u-strasbg.fr>, Petr Vandrovec <VANDROVE@vc.cvut.cz>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Thu, Apr 03, 2003 at 04:21:14PM +0100, Alan Cox wrote:
+On 3 Apr 2003, Alan Cox wrote:
 > On Iau, 2003-04-03 at 15:15, Sven Luther wrote:
 > > > Read is not enough. If you have connected one /dev/fbx to two monitors,
 > > > you must find highest common denominator for them, and use this one.
@@ -31,8 +42,27 @@ On Thu, Apr 03, 2003 at 04:21:14PM +0100, Alan Cox wrote:
 > Classic example is a SiS 6326 driving monitor and TV. You need to keep
 > the display to TV acceptable ranges.
 
-You mean, driving both display with the same ramdac ?
+I don't know whether that's a good example...
 
-Friendly,
+I assume the signal for the TV is different from the signal for the monitor
+(these days you don't find many monitors that do 15.6 kHz / 50 Hz)? In that
+case it's just the resolution that has to be more or less compatible.
 
-Sven Luther
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
+
+
+-------------------------------------------------------
+This SF.net email is sponsored by: ValueWeb: 
+Dedicated Hosting for just $79/mo with 500 GB of bandwidth! 
+No other company gives more support or power for your dedicated server
+http://click.atdmt.com/AFF/go/sdnxxaff00300020aff/direct/01/

@@ -1,21 +1,21 @@
-From: Florian Lohoff <flo@rfc822.org>
-Subject: Radeonfb v/hsync polarity defaults
-Date: Sun, 8 Feb 2004 21:07:47 +0100
+From: Alexander Kern <alex.kern@gmx.de>
+Subject: Re: Re: still ..Confused about atyfb and M1
+Date: Sun, 8 Feb 2004 21:42:02 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040208200747.GA1359@paradigm.rfc822.org>
+Message-ID: <200402082142.02820.alex.kern@gmx.de>
+References: <Pine.LNX.4.44.0401302147390.22830-100000@phoenix.infradead.org> <4023F579.7030701@bitworks.com> <Pine.GSO.4.58.0402071852500.19574@waterleaf.sonytel.be>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="YZ5djTAD1cGYuMQK"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1ApvDq-00065y-Ic
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Feb 2004 12:08:06 -0800
-Received: from noose.gt.owl.de ([62.52.19.4])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.30)
-	id 1ApvDp-0007jy-Tf
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Feb 2004 12:08:06 -0800
+	id 1Apvkx-000503-Cn
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Feb 2004 12:42:19 -0800
+Received: from pop.gmx.de ([213.165.64.20] helo=mail.gmx.net)
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
+	id 1Apvkw-0006Cc-N2
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Feb 2004 12:42:18 -0800
+In-Reply-To: <Pine.GSO.4.58.0402071852500.19574@waterleaf.sonytel.be>
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,81 +26,54 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: ajoshi@kernel.crashing.org
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
+
+Am Samstag, 7. Februar 2004 18:54 schrieb Geert Uytterhoeven:
+> On Fri, 6 Feb 2004, Richard Smith wrote:
+> > Geert Uytterhoeven wrote:
+> > > 01:00.0 VGA compatible controller: ATI Technologies Inc Rage Mobility
+> > > P/M AGP 2x (rev 64) (prog-if 00 [VGA]) Subsystem: Sony Corporation:
+> > > Unknown device 80c7
+> > >         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+> > > ParErr- Stepping+ SERR- FastB2B- Status: Cap+ 66Mhz- UDF- FastB2B+
+> > > ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- Latency:
+> > > 66 (2000ns min), Cache Line Size: 0x08 (32 bytes) Interrupt: pin A
+> > > routed to IRQ 9
+> > >         Region 0: Memory at fd000000 (32-bit, non-prefetchable)
+> > > [size=16M]
+> >
+> > I don't think your chip is an M1.  The M1 is limited to 8 Megs of memory
+> > which is on chip and not expandable so I don't see how you can have
+> > 16Megs.
+>
+> It has 8 MiB of RAM.
+>
+> All Mach64 PCI/AGP variants show 16 MiB of PCI memory space, for up to 8
+> MiB of video RAM. The second 8 MiB is the big endian aperture.
+>
+> Gr{oetje,eeting}s,
+>
+> 						Geert
+Hallo all,
+
+I'm not understand, what a problem is, who is problem reporter and why
+he don't ask me?
+
+I work on this driver for 2.6 kernel and it works good on my ARMADA E500
+It's 15" 1400x1050 natural with
+ATI Technologies Inc Rage Mobility P/M AGP 2x (rev 64)
+
+good means all resolutions, from 320x200 to 1600x1200(that one only on CRT).
+
+Regards Alex
+
+P.S.
+If everybody has a problem, please be sure, you use the last code from James's 
+fbdev.diff.gz, than switch debug define in atyfb_base.c on and
+send me a log.
 
 
---YZ5djTAD1cGYuMQK
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-
-Hi,
-i was just trying 2.6.2 on my Vaio C1MHP. It uses a RadeonM6 with a
-1280x600 panel size. As on 2.4 it hs the same default problem of wrong
-set v/hsync polarity. The radeonfb makes exactly the opposite
-assumptions about default polarity as XFree does. I debugged this when
-having the exact same problem on 2.4. I cooked the following patch
-against a 2.4 version. This wrong polarity causes the display to shift
-up by about 4-6 pixels which causes the top line to be unreadable while
-at the bottom we have 4-6 unused rows.
-
-I would like to see this fixed on 2.6 too so i am sending this again.
-The patch does not apply to 2.6 as too much has changed but you get the
-point.
-
---- radeonfb.c.orig	Wed Apr 30 19:22:55 2003
-+++ radeonfb.c	Wed Apr 30 19:31:46 2003
-@@ -1353,12 +1353,11 @@
- 	var->hsync_len =3D rinfo->hSync_width;
- 	var->vsync_len =3D rinfo->vSync_width;
- 	var->sync =3D 0;
--	if (rinfo->synct =3D=3D 3) {
--		if (rinfo->hAct_high)
--			var->sync |=3D FB_SYNC_HOR_HIGH_ACT;
--		if (rinfo->vAct_high)
--			var->sync |=3D FB_SYNC_VERT_HIGH_ACT;
--	}
-+
-+	if (rinfo->hAct_high)
-+		var->sync |=3D FB_SYNC_HOR_HIGH_ACT;
-+	if (rinfo->vAct_high)
-+		var->sync |=3D FB_SYNC_VERT_HIGH_ACT;
-=20
- 	var->vmode =3D 0;
- 	if (rinfo->interlaced)
-@@ -1404,6 +1403,11 @@
- 			rinfo->vOver_plus =3D (readw(tmp0+28) & 0x7ff) - readw(tmp0+26);
- 			rinfo->vSync_width =3D (readw(tmp0+28) & 0xf800) >> 11;
- 			rinfo->clock =3D readw(tmp0+9);
-+
-+			/* We don't know that the H/V sync active level should be
-+			   make the same assumptions as XFree does - High Active */
-+			rinfo->vAct_high=3D1;
-+			rinfo->hAct_high=3D1;
-=20
- 			rinfo->got_dfpinfo =3D 1;
- 			return 1;
-
-Flo
---=20
-Florian Lohoff                  flo@rfc822.org             +49-171-2280134
-                        Heisenberg may have been here.
-
---YZ5djTAD1cGYuMQK
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.1 (GNU/Linux)
-
-iD8DBQFAJpcTUaz2rXW+gJcRAjPxAKDWDaG+93l4JGwWuFLdsMJBKpC1SACgymbb
-nPbOMJH5S77DvBUCOhh6eR8=
-=9Gcy
------END PGP SIGNATURE-----
-
---YZ5djTAD1cGYuMQK--
 
 
 -------------------------------------------------------

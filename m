@@ -1,23 +1,22 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] fbdev: workaround for broken X
- servers
-Date: Fri, 5 Nov 2004 16:21:00 +0100 (MET)
-Message-ID: <Pine.GSO.4.61.0411051619170.15464@waterleaf.sonytel.be>
-References: <1099448020.900.25.camel@gaston> <200411052055.17316.adaplas@hotpop.com>
- <Pine.GSO.4.61.0411051357050.15464@waterleaf.sonytel.be>
- <200411052115.07646.adaplas@hotpop.com> <Pine.LNX.4.58L.0411051453110.25345@blysk.ds.pg.gda.pl>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Subject: Re: [PATCH] fbdev: workaround for broken X servers
+Date: Fri, 5 Nov 2004 17:30:27 +0200
+Message-ID: <20041105153027.GA207@sci.fi>
+References: <1099448020.900.25.camel@gaston> <20041103032613.GA3677@sci.fi> <1099633776.9260.160.camel@gaston> <20041105093618.GA15762@sci.fi> <Pine.GSO.4.61.0411051052490.15464@waterleaf.sonytel.be> <1099655227.3946.17.camel@gaston> <Pine.GSO.4.61.0411051313130.15464@waterleaf.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CQ5tj-0005Mq-Dt
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Nov 2004 07:21:07 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CQ5ti-0001Sc-2q
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Nov 2004 07:21:07 -0800
-In-Reply-To: <Pine.LNX.4.58L.0411051453110.25345@blysk.ds.pg.gda.pl>
+	id 1CQ62q-0007hH-AW
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Nov 2004 07:30:32 -0800
+Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CQ62p-0000Oa-Ia
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Nov 2004 07:30:32 -0800
+Content-Disposition: inline
+In-Reply-To: <Pine.GSO.4.61.0411051313130.15464@waterleaf.sonytel.be>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,42 +27,43 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, "Antonino A. Daplas" <adaplas@hotpop.com>
 
-On Fri, 5 Nov 2004, Maciej W. Rozycki wrote:
-> On Fri, 5 Nov 2004, Antonino A. Daplas wrote:
-> > > > And make it black is usually done in software (by memsetting the screen
-> > > > with the black color).
-> > >
-> > > Or by setting all color palette registers to black, if available, since
-> > > it's cheaper...
-> > 
-> > Ok. So, if pseudocolor/directcolor, set palette to all black, otherwise memset
-> > the screen.
-> 
->  Still not there -- some RAMDACs can be asked to do blanking themselves.  
+On Fri, Nov 05, 2004 at 01:15:35PM +0100, Geert Uytterhoeven wrote:
+> On Fri, 5 Nov 2004, Benjamin Herrenschmidt wrote:
+> > > But every existing application that uses (shiver) the kernel header=
+s will break
+> > > after this change...
+> >=20
+> > Geert, can you explain the whole story please ?
+>=20
+> The story about the +1 or the story about the breakage?
+>=20
+> The Story About The +1
+> ----------------------
+> Since the VESA levels do not provide a way to blank (`make it black') t=
+he
+> screen, the +1 is introduced. Hence 0 means unblank, 1 means black scre=
+en, 2
+> means lowest power save level, and so on...
+>=20
+> The Story About The Breakage
+> ----------------------------
+> Every application that passes VESA_*+1 will break when recompiled, sinc=
+e (most
+> of) the VESA_* values are incremented by 1 by the patch.
 
-In that case fb_info->fb_ops->fb_blank() should not be NULL and take care of
-blanking, so no fallback to software blanking is necessary.
+My proposed patch doesn't touch the VESA_* values. It just adds new=20
+constants which match the VESA_*+1 convention. That way old apps will=20
+continue to work and developers don't have to guess what values are=20
+actully legal.
 
-> And there are these interesting implementations like the Bt463 that have a
-> palette even though using the truecolor mode.
-
-Doesn't that one do directcolor instead of truecolor?
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+--=20
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
 
 
 -------------------------------------------------------

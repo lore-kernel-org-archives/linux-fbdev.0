@@ -1,27 +1,23 @@
-From: Thomas Jahns <Thomas.Jahns@epost.de>
-Subject: State of pm3fb driver
-Date: Sun, 3 Oct 2004 14:53:43 +0200
+From: Gerd Knorr <kraxel@bytesex.org>
+Subject: Re: [PATCH] fbdev: fix framebuffer memory calculation for vesafb
+Date: Mon, 4 Oct 2004 13:56:05 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20041003125343.GA7675@mercury.jahnsnet.de>
+Message-ID: <20041004115604.GA8827@bytesex>
+References: <200410040923.49817.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="zYM0uCDKw75PZbzx"
-Content-Transfer-Encoding: 8bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CEQ2M-0003Mz-L2
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 04 Oct 2004 03:25:46 -0700
-Received: from mail.epost.de ([193.28.100.151])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CEQ2K-0004v9-V3
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 04 Oct 2004 03:25:46 -0700
-Received: from mercury.jahnsnet.de (149.225.18.36) by mail.epost.de (7.2.033.1)
-        id 4160A238000094FD for linux-fbdev-devel@lists.sourceforge.net; Mon, 4 Oct 2004 12:18:32 +0200
-Received: from mercury (tjahns@localhost [127.0.0.1])
-	by mercury.jahnsnet.de (8.13.1/8.13.1/Debian-12) with ESMTP id i93Crh8i024630
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 3 Oct 2004 14:53:43 +0200
+	id 1CERZc-0007Gl-QG
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 04 Oct 2004 05:04:12 -0700
+Received: from hirsch.in-berlin.de ([192.109.42.6] ident=root)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1CERZa-0005uP-CP
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 04 Oct 2004 05:04:12 -0700
 Content-Disposition: inline
+In-Reply-To: <200410040923.49817.adaplas@hotpop.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,80 +27,154 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: Linux Fbdev <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: adaplas@pol.net
+Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Aurelien Jacobs <aurel@gnuage.org>
 
+> - separately calculate the memory required for a video mode, memory to be
+>   remapped, and total memory (for MTRR). From Gerd Knorr
+>   <kraxel@bytesex.org>.
+> 
+> - the 'vram' option is for memory to be remapped, not total memory.
 
---zYM0uCDKw75PZbzx
-Content-Type: text/plain; Format=Flowed; DelSp=Yes; charset=ISO-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
+IMHO the the only sane thing is to have two options for total + remapped
+memory as well.  Otherwise we'll end up changing that back and forth like
+it happened for the size calculation stuff for quite some time ...
 
-Hello,
+The patch below does just that and also has the other vmode fix
+(vmode = yres * linelength /* instead of yres * xres * depth >> 3 */).
 
-after I was quite unhappy with the support for my ATI Mach64 adapter in  
-my Powermac 7500 I aquired a Formac Proformance III adapter that  
-supposedly uses a Permedia 3 chip. Unfortunately it seems that the  
-driver is broken in kernel 2.6.8 (at least to my incomplete  
-understanding of the subject) for the following reasons:
+  Gerd
 
-a) drivers/video/pm3fb.c uses a number of includes no more present
-	(I could fix that as shown in the attached patch)
-b) even if I fixed the compile time errors the resulting kernel does  
-not display anything to the console (but works without problems  
-otherwise). Also the kernel log is flooded with repetitions of the  
-following line (but that might have other reasons, because I noticed it  
-also happens when I boot an older kernel without the pm3 driver:
-IN from bad port 64 at c01a22a
-
-c) drivers/video/pm3fb.c and include/video/pm3fb.h contain a number of  
-#ifdef statements that check for KERNEL_2_2 and similar vars, but never  
-for KERNEL_2_6. So I assume the source has not seen any maintainance in  
-2.6?
-
-The card identifies itself as follows in lspci -v -s 00:0e.0:
-
-0000:00:0e.0 Display controller: 3DLabs GLINT R3 (rev 01)
-        Subsystem: 3DLabs GLINT R3
-        Flags: bus master, 66MHz, medium devsel, latency 32, IRQ 24
-        Memory at 80880000 (32-bit, non-prefetchable) [size=128K]
-        Memory at 84000000 (32-bit, prefetchable) [size=64M]
-        Memory at 90000000 (32-bit, prefetchable) [size=64M]
-        I/O ports at 0800 [disabled] [size=16]
-        Expansion ROM at 80840000 [disabled] [size=64K]
-        Capabilities: <available only to root>
-
-Any comments what I should try from here?
-
-Ciao, Thomas Jahns
--- 
-"Computers are good at following instructions,
- but not at reading your mind."
-D. E. Knuth, The TeXbook, Addison-Wesley 1984, 1986, 1996, p. 9
-
---zYM0uCDKw75PZbzx
-Content-Type: text/x-patch; charset=unknown-8bit
-Content-Disposition: attachment; filename="pm3_includes.patch"
-
---- /tmp/kernel-source-2.6.8/drivers/video/pm3fb.c	2004-08-14 07:36:32.000000000 +0200
-+++ /home/tjahns/tmp/debian_stuff/kernel-compile/2.6.8/kernel-source-2.6.8/drivers/video/pm3fb.c	2004-10-03 14:15:42.000000000 +0200
-@@ -68,14 +68,7 @@
- #include <linux/pci.h>
- #include <linux/ioport.h>
+Index: linux-2.6.9-rc3/drivers/video/vesafb.c
+===================================================================
+--- linux-2.6.9-rc3.orig/drivers/video/vesafb.c	2004-10-04 11:49:25.000000000 +0200
++++ linux-2.6.9-rc3/drivers/video/vesafb.c	2004-10-04 13:33:15.000000000 +0200
+@@ -49,7 +49,8 @@ static struct fb_fix_screeninfo vesafb_f
  
--#include <video/fbcon.h>
--#include <video/fbcon-mfb.h>
--#include <video/fbcon-cfb2.h>
--#include <video/fbcon-cfb4.h>
--#include <video/fbcon-cfb8.h>
--#include <video/fbcon-cfb16.h>
--#include <video/fbcon-cfb24.h>
--#include <video/fbcon-cfb32.h>
-+#include "console/fbcon.h"
- #include <video/pm3fb.h>
+ static int             inverse   = 0;
+ static int             mtrr      = 1;
+-static int	       vram __initdata = 0; /* Set amount of memory to be used */
++static int	       vram_remap __initdata = 0; /* Set amount of memory to be used */
++static int	       vram_total __initdata = 0; /* Set total amount of memory */
+ static int             pmi_setpal = 0;	/* pmi for palette changes ??? */
+ static int             ypan       = 0;  /* 0..nothing, 1..ypan, 2..ywrap */
+ static unsigned short  *pmi_base  = NULL;
+@@ -209,8 +210,10 @@ int __init vesafb_setup(char *options)
+ 			mtrr=1;
+ 		else if (! strcmp(this_opt, "nomtrr"))
+ 			mtrr=0;
+-		else if (! strncmp(this_opt, "vram:", 5))
+-			vram = simple_strtoul(this_opt+5, NULL, 0);
++		else if (! strncmp(this_opt, "vtotal:", 7))
++			vram_total = simple_strtoul(this_opt+7, NULL, 0);
++		else if (! strncmp(this_opt, "vremap:", 7))
++			vram_remap = simple_strtoul(this_opt+7, NULL, 0);
+ 	}
+ 	return 0;
+ }
+@@ -220,6 +223,9 @@ static int __init vesafb_probe(struct de
+ 	struct platform_device *dev = to_platform_device(device);
+ 	struct fb_info *info;
+ 	int i, err;
++	unsigned int size_vmode;
++	unsigned int size_remap;
++	unsigned int size_total;
  
- #include <asm/io.h>
-
---zYM0uCDKw75PZbzx--
+ 	if (screen_info.orig_video_isVGA != VIDEO_TYPE_VLFB)
+ 		return -ENXIO;
+@@ -231,32 +237,41 @@ static int __init vesafb_probe(struct de
+ 	vesafb_defined.xres = screen_info.lfb_width;
+ 	vesafb_defined.yres = screen_info.lfb_height;
+ 	vesafb_fix.line_length = screen_info.lfb_linelength;
+-
+-	/* Allocate enough memory for double buffering */
+-	vesafb_fix.smem_len = screen_info.lfb_width * screen_info.lfb_height * vesafb_defined.bits_per_pixel >> 2;
+-
+-	/* check that we don't remap more memory than old cards have */
+-	if (vesafb_fix.smem_len > (screen_info.lfb_size * 65536))
+-		vesafb_fix.smem_len = screen_info.lfb_size * 65536;
+-
+-	/* Set video size according to vram boot option */
+-	if (vram)
+-		vesafb_fix.smem_len = vram * 1024 * 1024;
+-
+ 	vesafb_fix.visual   = (vesafb_defined.bits_per_pixel == 8) ?
+ 		FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
+ 
+-	/* limit framebuffer size to 16 MB.  Otherwise we'll eat tons of
+-	 * kernel address space for nothing if the gfx card has alot of
+-	 * memory (>= 128 MB isn't uncommon these days ...) */
+-	if (vesafb_fix.smem_len > 16 * 1024 * 1024)
+-		vesafb_fix.smem_len = 16 * 1024 * 1024;
++	/*   size_vmode -- that is the amount of memory needed for the
++	 *                 used video mode, i.e. the minimum amount of
++	 *                 memory we need. */
++	size_vmode = vesafb_defined.yres * vesafb_fix.line_length;
++
++	/*   size_total -- all video memory we have. Used for mtrr
++	 *                 entries, ressource allocation and bounds
++	 *                 checking. */
++	size_total = screen_info.lfb_size * 65536;
++	if (vram_total)
++		size_total = vram_total * 1024 * 1024;
++	if (size_total < size_vmode)
++		size_total = size_vmode;
++
++	/*   size_remap -- the amount of video memory we are going to
++	 *                 use for vesafb.  With modern cards it is no
++	 *                 option to simply use size_total as that
++	 *                 wastes plenty of kernel address space. */
++	size_remap  = size_vmode * 2;
++	if (vram_remap)
++		size_remap = vram_remap * 1024 * 1024;
++	if (size_remap < size_vmode)
++		size_remap = size_vmode;
++	if (size_remap > size_total)
++		size_remap = size_total;
++	vesafb_fix.smem_len = size_remap;
+ 
+ #ifndef __i386__
+ 	screen_info.vesapm_seg = 0;
+ #endif
+ 
+-	if (!request_mem_region(vesafb_fix.smem_start, vesafb_fix.smem_len, "vesafb")) {
++	if (!request_mem_region(vesafb_fix.smem_start, size_total, "vesafb")) {
+ 		printk(KERN_WARNING
+ 		       "vesafb: abort, cannot reserve video memory at 0x%lx\n",
+ 			vesafb_fix.smem_start);
+@@ -281,8 +296,10 @@ static int __init vesafb_probe(struct de
+ 		goto err;
+ 	}
+ 
+-	printk(KERN_INFO "vesafb: framebuffer at 0x%lx, mapped to 0x%p, size %dk\n",
+-	       vesafb_fix.smem_start, info->screen_base, vesafb_fix.smem_len/1024);
++	printk(KERN_INFO "vesafb: framebuffer at 0x%lx, mapped to 0x%p, "
++	       "using %dk, total %dk\n",
++	       vesafb_fix.smem_start, info->screen_base,
++	       size_remap/1024, size_total/1024);
+ 	printk(KERN_INFO "vesafb: mode is %dx%dx%d, linelength=%d, pages=%d\n",
+ 	       vesafb_defined.xres, vesafb_defined.yres, vesafb_defined.bits_per_pixel, vesafb_fix.line_length, screen_info.pages);
+ 
+@@ -362,7 +379,7 @@ static int __init vesafb_probe(struct de
+ 	request_region(0x3c0, 32, "vesafb");
+ 
+ 	if (mtrr) {
+-		int temp_size = vesafb_fix.smem_len;
++		int temp_size = size_total;
+ 		/* Find the largest power-of-two */
+ 		while (temp_size & (temp_size - 1))
+                 	temp_size &= (temp_size - 1);
+@@ -393,7 +410,7 @@ static int __init vesafb_probe(struct de
+ 	return 0;
+ err:
+ 	framebuffer_release(info);
+-	release_mem_region(vesafb_fix.smem_start, vesafb_fix.smem_len);
++	release_mem_region(vesafb_fix.smem_start, size_total);
+ 	return err;
+ }
+ 
 
 
 -------------------------------------------------------

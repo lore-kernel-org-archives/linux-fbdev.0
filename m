@@ -1,12 +1,21 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: New Permedia2 framebuffer driver.
-Date: Tue, 9 Mar 2004 14:04:52 +0100 (MET)
+From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
+Subject: Framebuffers and VC setup (via fbcon.c)
+Date: Tue, 9 Mar 2004 15:39:51 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0403091400530.28127@waterleaf.sonytel.be>
-References: <Pine.LNX.4.44.0403032220410.30666-100000@phoenix.infradead.org>
+Message-ID: <20040309143950.GS17857@lug-owl.de>
 Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="E1BPhOSoTthPQdPL"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-In-Reply-To: <Pine.LNX.4.44.0403032220410.30666-100000@phoenix.infradead.org>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1B0ifG-0005mc-5n
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Mar 2004 06:57:02 -0800
+Received: from dvmwest.gt.owl.de ([62.52.24.140])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1B0iOl-0006nc-6L
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Mar 2004 06:39:59 -0800
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -16,217 +25,89 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux/m68k <linux-m68k@lists.linux-m68k.org>, Linux/PPC on APUS development <linux-apus-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 3 Mar 2004, James Simmons wrote:
-> This patch fixes the permedia2 framebuffer driver. Currently it doesn't
-> event compile. This patch only touches the current permedia driver.
-> Regular patch is valiable at
->
-> http://phoenix.infradead.org/~jsimmons/pm2fb.diff
 
-I suggest the following changes:
-  - Mark FB_PM2 broken on Amiga, until somebody fixes it (pm2fb.c explicitly
-    tests for CONFIG_PCI right now)
-  - Always use the standard barrier macros (they do exist on m68k, and map to
-    barrier())
-  - Fix set_aperture() on big endian (pm2fb_par->depth doesn't exist)
+--E1BPhOSoTthPQdPL
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
---- linux-2.6.4-rc2/drivers/video/Kconfig	2004-03-04 11:31:17.000000000 +0100
-+++ linux-m68k-2.6.4-rc2/drivers/video/Kconfig	2004-03-04 16:35:00.000000000 +0100
-@@ -55,7 +55,7 @@
+Hi!
 
- config FB_PM2
- 	tristate "Permedia2 support"
--	depends on FB && (AMIGA || PCI)
-+	depends on FB && ((AMIGA && BROKEN) || PCI)
- 	help
- 	  This is the frame buffer device driver for the Permedia2 AGP frame
- 	  buffer card from ASK, aka `Graphic Blaster Exxtreme'.  There is a
---- linux-2.6.4-rc2/drivers/video/pm2fb.c	2004-03-04 11:31:17.000000000 +0100
-+++ linux-m68k-2.6.4-rc2/drivers/video/pm2fb.c	2004-03-04 16:30:48.000000000 +0100
-@@ -62,17 +62,6 @@
- #define DPRINTK(a,b...)
- #endif
+I've got some trouble getting a local FB console to work, maybe you've
+got some suggestions...
 
--/* Memory barriers. */
--#ifdef __mc68000__
--#define DEFW()
--#define DEFR()
--#define DEFRW()
--#else
--#define DEFW()		wmb()
--#define DEFR()		rmb()
--#define DEFRW()		mb()
--#endif
--
- /*
-  * Driver data
-  */
-@@ -182,7 +171,7 @@
- 		index = PM2VR_RD_INDEXED_DATA;
- 		break;
- 	}
--	DEFRW();
-+	mb();
- 	return pm2_RD(p, index);
- }
+This all happens on a VAX 4000 Model 46. I've already done the FB driver
+(http://cvs.sourceforge.net/viewcvs.py/linux-vax/kernel-2.5/drivers/video/v=
+axlcgfb.c)
+which basically works - cat'ting a properly prepared image to it
+produces a proper display output.
 
-@@ -198,21 +187,21 @@
- 		index = PM2VR_RD_INDEXED_DATA;
- 		break;
- 	}
--	DEFRW();
-+	mb();
- 	pm2_WR(p, index, v);
- }
+Now I tried to bring CONFIG_VT and CONFIG_FRAMEBUFFER_CONSOLE into the
+game. However, I end up with no working FB console. No penguin image, no
+login prompt. This is because vc->vc_bottom ends up being 0, while it
+should be at around 60.
 
- inline static u32 pm2v_RDAC_RD(struct pm2fb_par* p, s32 idx)
- {
- 	pm2_WR(p, PM2VR_RD_INDEX_LOW, idx & 0xff);
--	DEFRW();
-+	mb();
- 	return pm2_RD(p, PM2VR_RD_INDEXED_DATA);
- }
+Adding some printk()s and initcall_debug, here is what happens:
 
- inline static void pm2v_RDAC_WR(struct pm2fb_par* p, s32 idx, u32 v)
- {
- 	pm2_WR(p, PM2VR_RD_INDEX_LOW, idx & 0xff);
--	DEFRW();
-+	mb();
- 	pm2_WR(p, PM2VR_RD_INDEXED_DATA, v);
- }
+  tty_class_init()
+  chr_dev_init()
+    vaxlcgfb_init()
+  tty_init()
+    vty_init()
+      fb_console_init()
+			"fbcon_startup: mode: VAX LCGfb"
+			"fbcon_startup: visual: 3"
+			"fbcon_startup: res: 1280x1024-8"
+			"Console: switching to frame buffer device"
+  pty_init()
+  fb_console_init()
+  			"Console: switching to frame buffer device"
+  ...
+  vc_init():
+  			currcons=3D0, rows=3D64, cols=3D160, clear=3D1
+			then colors 0..15 are set
 
-@@ -222,7 +211,7 @@
- inline static void WAIT_FIFO(struct pm2fb_par* p, u32 a)
- {
- 	while( pm2_RD(p, PM2R_IN_FIFO_SPACE) < a );
--	DEFRW();
-+	mb();
- }
- #endif
+Two things look odd to me:
 
-@@ -342,7 +331,7 @@
+	- fb_console_init is called twice. Once from
+	  tty_init() -> vty_init() -> fb_console_init(), second time
+	  directly as a "normal" __init / module_init() call.
+	- Despite the fact that (quite late in the boot process)
+	  vc_init() is called (with correct looking arguments), I think
+	  it should have been called quite some time earlier. With other
+	  (PC based) graphic cards, the machine just switches to FB mode
+	  after the FB driver is initialized. All further output is put
+	  there. But not here...
 
- 	WAIT_FIFO(p, 1);
- 	pm2_WR(p, PM2R_RD_PALETTE_WRITE_ADDRESS, 0);
--	DEFW();
-+	wmb();
- 	while (i--) {
- 		WAIT_FIFO(p, 3);
- 		pm2_WR(p, PM2R_RD_PALETTE_DATA, 0);
-@@ -366,14 +355,14 @@
- 	if (p->type == PM2_TYPE_PERMEDIA2V)
- 		pm2_WR(p, PM2VR_RD_INDEX_HIGH, 0);
- 	pm2_WR(p, PM2R_RESET_STATUS, 0);
--	DEFRW();
-+	mb();
- 	while (pm2_RD(p, PM2R_RESET_STATUS) & PM2F_BEING_RESET)
- 		;
--	DEFRW();
-+	mb();
- #ifdef CONFIG_FB_PM2_FIFO_DISCONNECT
- 	DPRINTK("FIFO disconnect enabled\n");
- 	pm2_WR(p, PM2R_FIFO_DISCON, 1);
--	DEFRW();
-+	mb();
- #endif
- }
- #endif
-@@ -434,14 +423,14 @@
- 	pm2_RDAC_WR(p, PM2I_RD_BLUE_KEY, 0);
- }
+I haven't yet really understood how FB and console code work together,
+so it would be nice to have some hints there :)
 
--static void set_aperture(struct pm2fb_par* p)
-+static void set_aperture(struct pm2fb_par *p, u32 depth)
- {
- 	WAIT_FIFO(p, 4);
- #ifdef __LITTLE_ENDIAN
- 	pm2_WR(p, PM2R_APERTURE_ONE, 0);
- 	pm2_WR(p, PM2R_APERTURE_TWO, 0);
- #else
--	switch (p->depth) {
-+	switch (depth) {
- 	case 8:
- 	case 24:
- 		pm2_WR(p, PM2R_APERTURE_ONE, 0);
-@@ -464,11 +453,11 @@
- {
- 	WAIT_FIFO(p, 4);
- 	pm2_WR(p, PM2R_RD_PALETTE_WRITE_ADDRESS, regno);
--	DEFW();
-+	wmb();
- 	pm2_WR(p, PM2R_RD_PALETTE_DATA, r);
--	DEFW();
-+	wmb();
- 	pm2_WR(p, PM2R_RD_PALETTE_DATA, g);
--	DEFW();
-+	wmb();
- 	pm2_WR(p, PM2R_RD_PALETTE_DATA, b);
- }
+MfG, JBG
 
-@@ -482,14 +471,14 @@
- 		pm2_mnp(clk, &m, &n, &p);
- 		WAIT_FIFO(par, 8);
- 		pm2_RDAC_WR(par, PM2I_RD_PIXEL_CLOCK_A3, 0);
--		DEFW();
-+		wmb();
- 		pm2_RDAC_WR(par, PM2I_RD_PIXEL_CLOCK_A1, m);
- 		pm2_RDAC_WR(par, PM2I_RD_PIXEL_CLOCK_A2, n);
--		DEFW();
-+		wmb();
- 		pm2_RDAC_WR(par, PM2I_RD_PIXEL_CLOCK_A3, 8|p);
--		DEFW();
-+		wmb();
- 		pm2_RDAC_RD(par, PM2I_RD_PIXEL_CLOCK_STATUS);
--		DEFR();
-+		rmb();
- 		for (i = 256;
- 		     i && !(pm2_RD(par, PM2R_RD_INDEXED_DATA) & PM2F_PLL_LOCKED);
- 		     i--)
-@@ -744,9 +733,9 @@
- 		pm2_WR(par, PM2VR_RD_INDEX_HIGH, 0);
- 	}
+--=20
+   Jan-Benedict Glaw       jbglaw@lug-owl.de    . +49-172-7608481
+   "Eine Freie Meinung in  einem Freien Kopf    | Gegen Zensur | Gegen Krieg
+    fuer einen Freien Staat voll Freier B=FCrger" | im Internet! |   im Ira=
+k!
+   ret =3D do_actions((curr | FREE_SPEECH) & ~(NEW_COPYRIGHT_LAW | DRM | TC=
+PA));
 
--	set_aperture(par);
-+	set_aperture(par, depth);
+--E1BPhOSoTthPQdPL
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
--	DEFRW();
-+	mb();
- 	WAIT_FIFO(par, 19);
- 	pm2_RDAC_WR(par, PM2I_RD_COLOR_KEY_CONTROL,
- 		    ( depth == 8 ) ? 0 : PM2F_COLOR_KEY_TEST_OFF);
-@@ -794,13 +783,13 @@
- 	pm2_WR(par, PM2R_VS_END, vsend);
- 	pm2_WR(par, PM2R_VB_END, vbend);
- 	pm2_WR(par, PM2R_SCREEN_STRIDE, stride);
--	DEFW();
-+	wmb();
- 	pm2_WR(par, PM2R_WINDOW_ORIGIN, 0);
- 	pm2_WR(par, PM2R_SCREEN_SIZE, (height << 16) | width);
- 	pm2_WR(par, PM2R_SCISSOR_MODE, PM2F_SCREEN_SCISSOR_ENABLE);
--	DEFW();
-+	wmb();
- 	pm2_WR(par, PM2R_SCREEN_BASE, base);
--	DEFW();
-+	wmb();
- 	set_video(par, video);
- 	WAIT_FIFO(par, 4);
- 	switch (par->type) {
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
 
-Gr{oetje,eeting}s,
+iD8DBQFATdc2Hb1edYOZ4bsRAluGAKCCf4d6HqFuRzgTdubkQfHpiYiCdACfUMJn
+pAYia4qt4wMUPXWpe7PXYyo=
+=wyKT
+-----END PGP SIGNATURE-----
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+--E1BPhOSoTthPQdPL--
 
 
 -------------------------------------------------------

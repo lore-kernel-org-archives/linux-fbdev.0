@@ -1,23 +1,26 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: URGENT: status of atyfb
-Date: Wed, 04 Aug 2004 07:25:40 +1000
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: Re: vesafb on Savage4
+Date: Wed, 4 Aug 2004 05:26:19 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1091568340.1900.14.camel@gaston>
-References: <1091417497.7393.63.camel@gaston>
-	 <1091424085.7387.68.camel@gaston>  <200408032257.51111.alex.kern@gmx.de>
+Message-ID: <200408040524.21663.adaplas@hotpop.com>
+References: <cenq8o$lkv$1@sea.gmane.org> <200408032022.51173.adaplas@hotpop.com> <ceo1s0$7c3$1@sea.gmane.org>
+Reply-To: adaplas@pol.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bs6nG-0002W3-5n
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 03 Aug 2004 14:25:58 -0700
-Received: from gate.crashing.org ([63.228.1.57])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.34)
-	id 1Bs6nF-0007q1-Nq
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 03 Aug 2004 14:25:58 -0700
-In-Reply-To: <200408032257.51111.alex.kern@gmx.de>
+	id 1Bs6og-0002nh-O6
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 03 Aug 2004 14:27:26 -0700
+Received: from smtp-out.hotpop.com ([38.113.3.71])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
+	id 1Bs6og-0000FH-Cq
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 03 Aug 2004 14:27:26 -0700
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id 012CE104632A
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue,  3 Aug 2004 21:02:37 +0000 (UTC)
+In-Reply-To: <ceo1s0$7c3$1@sea.gmane.org>
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,40 +31,36 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Alexander Kern <alex.kern@gmx.de>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+To: Miernik <miernik@ctnet.pl>, linux-fbdev-devel@lists.sourceforge.net
 
+On Tuesday 03 August 2004 20:53, Miernik wrote:
+> Antonino A. Daplas <adaplas@hotpop.com> wrote:
+> > On Tuesday 03 August 2004 18:43, Miernik wrote:
+> >> Aug  3 13:52:19 localhost kernel: vesafb: probe of vesafb0 failed with
+> >> error -6
+> >
+> > The error is -ENXIO and in vesafb it means that your graphics card
+> > failed to go to graphics mode.
+> >
+> > Can you post your dmesg and kernel config?
+>
+> http://www.miernik.ctnet.pl/problems/savage4-fb/
+>
+> It finally worked, when I added
+> vga=0x314 video=vesa:mtrr,ywrap
+> to my kernel parameters.
+>
+> With only vga=8 as a kernel parameters, and then trying
+> modprobe vesafb
+> fbset
+> it didn't want to work, should it?
 
-> Hi, I do not have any information or hardware about PPC. Should it own 
-> something like OpenFirmware? In this case it is possible to read clock 
-> information from this.
+No, the stock kernel vesafb cannot be compiled as a module, nor can you use 
+fbset, unless the distribution patched the kernel with a modified vesafb (ie, 
+vesafb-tng).
 
-On some models, yes, on some no. Older machines have a firmware that
-won't tell you anything, the MacOS driver back then was hard coding the
-values.
+Tony
 
-Anyway, the clocks are ok, apparently (maybe not the engine one though,
-see later), the problem was that the DLL magic was reverted for the
-LT-G, plus some minor issues with the driver blowing up on non-BIOS
-machines that I can fix.
-
-The engine tends to lockup quickly though, I'll do experiments.
-
-> I found, that we change a little behaviour. Please give a try for this 
-> patch...
-
-Your patch seem to address the DLL issue, I did that too, fixes the display,
-I'll toy around and let you know.
-
-Also, when just dropping the existing driver into the current linus tree, the
-cursor code is blowing up, I don't know why yet, I suppose some changes to the
-common code in the fbdev tree. I'll have a look.
-
-I really want this new driver to be sent upstream ASAP. What I may do is once
-I get it working well enough, I'll send it to andrew for the -mm tree and
-leave it there for a while to get it properly tested.
-
-Ben.
 
 
 

@@ -1,143 +1,76 @@
-From: Michal Januszewski <spock@gentoo.org>
-Subject: Re: [announce 7/7] fbsplash - documentation
-Date: Wed, 9 Mar 2005 03:05:28 +0100
-Message-ID: <20050309020527.GA20294@spock.one.pl>
-References: <20050308021706.GH26249@spock.one.pl> <200503080418.08804.arnd@arndb.de> <20050308223728.GA11065@spock.one.pl> <200503090117.12755.arnd@arndb.de>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: [announce 0/7] fbsplash - The Framebuffer Splash
+Date: Wed, 9 Mar 2005 13:01:15 +0800
+Message-ID: <200503091301.15832.adaplas@hotpop.com>
+References: <20050308015731.GA26249@spock.one.pl>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="vkogqOf2sHV7VnPd"
+Content-Transfer-Encoding: 7bit
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1D8tKT-00035N-3m
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 08 Mar 2005 21:01:53 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1D8tKR-0004Yg-H3
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 08 Mar 2005 21:01:53 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id 5E76EF3746D
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed,  9 Mar 2005 05:01:24 +0000 (UTC)
+In-Reply-To: <20050308015731.GA26249@spock.one.pl>
 Content-Disposition: inline
-In-Reply-To: <200503090117.12755.arnd@arndb.de>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: Michal Januszewski <spock@gentoo.org>, linux-kernel@vger.kernel.org
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-
---vkogqOf2sHV7VnPd
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, Mar 09, 2005 at 01:17:11AM +0100, Arnd Bergmann wrote:
-
-> You also shouldn't create a class device every time you want to call
-> kobject_hotplug. Note that every character device already has a class
-> device associated with it, so you might be able to just use that to
-> call kobject_hotplug on it.
->=20
-> If there is no obvious way to do that, just leave the code as it is
-> for calling the helper.
-
-OK, thanks forthe explanation and advice. I'll look into it.
-
-> > The reason for calling init in that place is the ability to use the
-> > userspace helper to display a nice picture while the kernel is still
-> > loading. Sure, you can just drop it and use the 'quiet' command line
-> > option, but that will give you a black screen for a good few seconds.=
-=20
-> > And people who want eye-candy like fbsplash generally don't like
-> > that.=20
+On Tuesday 08 March 2005 09:57, Michal Januszewski wrote:
+> Fbsplash - The Framebuffer Splash - is a feature that allows displaying
+> images in the background of consoles that use fbcon. The project is
+> partially descended from bootsplash.
 >
-> Ok, understood. I think you should make that an extra patch and completely
-> remove that feature from the base patchset in order to make it less
-> controversial.
-
-That can be done. The funny thing is, a week ago or so, it was proposed
-in a thread about bootsplash that the code for the initial call could be
-merged first and serve as a base for merging fbsplash :)
-
-> > > That sounds really dangerous. Can you guarantee that nothing
-> > > unexpected happens when a malicious user calls the ioctls with
-> > > FB_SPLASH_IO_ORIG_KERNEL from a  regular user process?
-> >=20
-> > This is pretty nasty, right, but I just can't see a way around it.
-> > The thing is, when the splash helper is called from the kernel, the
-> > console semaphore is already held so we have to avoid trying to acquire=
-=20
-> > it again. And we can't just release it prior to calling the helper, as
-> > it would break things badly.
->=20
-> I don't understand. Does the kernel code need to wait for the helper
-> to finish while holding the semaphore? AFAICS, the helper is
-> completely asynchronous, so it can simply do its job when the kernel=20
-> has given up the semaphore.
-
-> >                                     And we can't do ioctls on ttys when=
-=20
-> >   answering a kernel request because to the console sem problems
-> >   (opening a tty =3D a call to acquire_console_sem(), which we need to
-> >   avoid).
->=20
-> Hmm. One of us has misunderstood the interaction between=20
-> call_usermodehelper() and acquire_console_sem(). If I'm the one
-> who's wrong, please tell me where that semaphore is held.
-
-It think this will be best explained with an example. Consider the
-following situation - we have two ttys - tty1 and tty2. tty1 is using
-theme 'foo' an it's the foreground console. tty2 is using theme 'bar'.
-Fbsplash is enabled on both these ttys.
-
-Now the user decides to switch to tty2. He/she presses Alt+F2. The
-keypress is handled somewhere and an item is added to the console_work
-workqueue. console_callback() gets called asynchronously.
-acquire_console_sem() is the first thing done in that function.
-
-Now we have the following call stack (all done with the console sem
-held):
-
-change_console()
-complete_change_console()
-switch_screen() =3D=3D redraw_screen()
-con_switch() =3D=3D fbcon_switch()
-
-=46rom inside fbcon_switch(), we need to call the splash helper to get a
-new picture for the theme 'bar' which is used on tty2. The splash helper
-does an ioctl and we're back in the kernel.. with the console semaphore
-already held.
-
-> > The original idea behind this was to group the fields that are
-> > common to all fbsplash ioctl calls (ie. vc and origin) in one place.=20
-> > Of course, it can be changed to three differents structs, each=20
-> > containing the vc and origin fields and an int/struct vc_splash/struct=
-=20
-> > fb_image, if that is the preferred way of doing things.
+> Unlike bootsplash, fbsplash has no in-kernel image decoder. Picture
+> decompression is handled by a userspace helper which provides raw image
+> data to the kernel. There is also no support for things like the silent
+> mode and progress bars, as these are best handled by userspace programs.
 >
-> It definitely is. Actually, it would be preferred to have only a
-> single value as ioctl argument (or even better, no ioctl at all),=20
-> but if you need to pass an aggregate data type, it should at least=20
-> have an identical layout for all architectures. That means every=20
-> member should be naturally aligned and you can't use pointers or other
-> types that have sizeof(x) =3D=3D sizeof(long).
 
-What are the alternatives to the ioctl? A relatively clean way of
-feeding the data back to the kernel would be using sysfs. However, to
-make it sane we would have to export the various components of struct
-vc_splash in /sys/class/tty/tty<x> (otherwise, we would probabky have
-to pass aggreaget data types through a sysfs entry -- something that is
-IMO much worse than an ioctl). That however could be a little
-problematic -- tty_class is currently defined as a class_simple.
-To add entries other than the standard 'dev' we would have to define a
-completely new class, right? That sounds like a rather intrusive
-change..
+If splash support is really, really, really wanted in the kernel, it's probably better
+to just add minimal Overlay support for the framebuffer.  If overlay is added, it
+won't be necessary to modify fbcon and the drivers, just core fb.
 
-Live long and prosper.
---=20
-Michal 'Spock' Januszewski                        Gentoo Linux Developer
-cell: +48504917690                         http://dev.gentoo.org/~spock/
-JID: spock@im.gentoo.org               freenode: #gentoo-dev, #gentoo-pl
+We can have 3 levels of support.  In it's most basic form, we have the display
+layer (what get's shown in your monitor) plus 2 buffers in system ram, the
+primary layer (where the console output is written) and the overlay, the
+static image in raw framebuffer format.  Then we replace the basic
+framebuffer operations (imageblit, fillrect and copyarea) with ones that
+will read the contents of both buffers, do basic raster ops (colorkey, alpha
+blend, etc) before writing to the actual display buffer.
+
+The next level is both buffers are in video ram. This will need basic driver 
+support, at least to subdivide the framebuffer memory to display, primary,
+and overlay.  We can use the drivers accelerated drawing functions to
+write to the primary layer, then use software to write the processed
+contents to the display layer.
+
+Finally, we can enable full hardware video overlay. 
+
+Tony
 
 
---vkogqOf2sHV7VnPd
-Content-Type: application/pgp-signature
-Content-Disposition: inline
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.0 (GNU/Linux)
 
-iD8DBQFCLlnnaQ0HSaOUe+YRAkzvAJ4uZIe8V/0qJZWwx3a4FS6WvvpIYQCgg2oG
-p0E3mWM6cuaWfrjOAB2LZSs=
-=ljDb
------END PGP SIGNATURE-----
-
---vkogqOf2sHV7VnPd--
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

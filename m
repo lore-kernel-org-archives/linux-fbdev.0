@@ -1,44 +1,46 @@
-From: "Petr Vandrovec" <VANDROVE@vc.cvut.cz>
-Subject: Re: [Linux-fbdev-devel] [PATCH]: EDID parser
-Date: Thu, 3 Apr 2003 12:05:13 +0100
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <4A83DF6367@vcnet.vc.cvut.cz>
+From: "Jurriaan Kalkman" <thunder7@xs4all.nl>
+Subject: will the new edid functionality allow vesafb to set a frequency?
+Date: Thu, 3 Apr 2003 14:02:11 +0200 (CEST)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <24510.212.153.94.193.1049371331.squirrel@webmail.xs4all.nl>
+Reply-To: thunder7@xs4all.nl
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from mxzilla3.xs4all.nl ([194.109.6.49])
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 1913Q6-0006cY-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 03 Apr 2003 04:02:14 -0800
+Received: from webmail4.xs4all.nl (webmail4.xs4all.nl [194.109.127.38])
+	by mxzilla3.xs4all.nl (8.12.3/8.12.3) with ESMTP id h33C2BRs072723
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 3 Apr 2003 14:02:11 +0200 (CEST)
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Sven Luther <luther@dpt-info.u-strasbg.fr>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, linux-kernel@vger.kernel.org, adaplas@pol.net
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On  3 Apr 03 at 9:40, Sven Luther wrote:
-> On Thu, Apr 03, 2003 at 03:07:33AM +0100, Petr Vandrovec wrote:
-> > On  2 Apr 03 at 22:55, James Simmons wrote:
-> > 
-> > > It doesn't need a struct pci_dev in this case. It is possible to get this 
-> > > info from the i2c bus but I never seen any drivers do this. What data would
-> > > we have to pass in get the EDID inforamtion? So the question is how 
-> > > generic will get_EDID end up being or will we have to have driver specfic 
-> > > hooks since I don't pitcure i2c approaches being the same for each video 
-> > > card. Petr didn't you attempt this with the matrox driver at one time?
-> > 
-> > Yes, matroxfb provides one i2c (DDC) bus for each output videocard has.
-> > I ended with only this support (and userspace EDID parser) as i2c was
-> > initialized loong after framebuffer at that time... Now when i2c is usable
-> > when fbdev initializes, it looks much better.
-> > 
-> > Only get_EDID interface I need is one which gets i2c bus as argument. But
-> > I have no idea how I should handle situation where you have connected
-> > two different monitors to both crtc1 outputs... Like 50Hz PAL TV &
-> > 60+Hz VGA monitor. Currently it is user responsibility to resolve such
-> > situation...
-> 
-> Is the EDID reading stuff not done per head ?
+As the owner of a NVidia card, whose evil proprietary driver won't work
+with rivafb, but would possibly work with vesafb (I see mixed messages
+on usenet about this), I have the following question:
 
-No. With matroxfb, you have two framebuffer devices, /dev/fb0 & /dev/fb1,
-which can be connected to any of three outputs: analog primary, analog
-secondary and DVI. Analog primary & DVI share same pair of DDC cables,
-and analog secondary has its own... And user can interconnect fb* with
-outputs in almost any way he wants, as long as hardware supports it.
-                                                        Petr Vandrovec
-                                                        
+will the new edid-functionality that is currently in heavy development
+allow linux (somewhere in the future) to set a vertical refresh frequency
+with vesafb? I did notice that this Ti500 card has a VESA/VBE 3.0
+compatible BIOS, so it should be possible.
+
+Kind regards,
+Jurriaan
+
+
+-------------------------------------------------------
+This SF.net email is sponsored by: ValueWeb: 
+Dedicated Hosting for just $79/mo with 500 GB of bandwidth! 
+No other company gives more support or power for your dedicated server
+http://click.atdmt.com/AFF/go/sdnxxaff00300020aff/direct/01/

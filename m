@@ -1,32 +1,52 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Scott Robert Ladd <coyote@coyotegulch.com>
 Subject: Re: Framebuffer updates.
-Date: 26 Mar 2003 14:16:11 +0100
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1048684571.10476.40.camel@zion.wanadoo.fr>
-References: <Pine.LNX.4.44.0303252049550.6228-100000@phoenix.infradead.org>
+Date: Wed, 26 Mar 2003 09:03:03 -0500
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <3E81B317.3080504@coyotegulch.com>
+References: <Pine.LNX.4.33.0303251032320.4272-100000@maxwell.earthlink.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44.0303252049550.6228-100000@phoenix.infradead.org>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from relay02.valueweb.net ([216.219.253.236])
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18yBVq-00041F-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 26 Mar 2003 06:04:18 -0800
+In-Reply-To: <Pine.LNX.4.33.0303251032320.4272-100000@maxwell.earthlink.net>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: James Simmons <jsimmons@infradead.org>
-Cc: Florin Iucha <florin@iucha.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tue, 2003-03-25 at 21:50, James Simmons wrote:
+James Simmons wrote:
+> As usually I have a patch avalaible at 
+> The patch has updates for the ATI Rage 128, Control, and Platnium 
+> framebuffer driver. The Radeon patch adds PLL times for the R* series of
+> cards. Memory is now safe to allocate for the software cursor and inside 
+> fbcon. There still are issues with syncing which cause the cursor on some 
+> systems to become corrupt sometimes. 
 
-> Try using stty. I see most people will continue to use fbset so I guess I 
-> need to patch it up to do the right thing.
+ From your description, this doesn't sound like these patches solve the 
+problem with radeonfb not detecting a DFP connected to the DVI. I posted 
+a message about this bug a week ago, and am more than willing to look 
+into fixing it myself if it isn't on your schedule.
 
-Well, I don't like the fbdev magially picking modes like this,
-those modes may just not be supported by the display. At least,
-fbset allows me to setup the proper timings for 'special'
-displays like iMac fixed hoziontal frequency for example.
+-- 
+Scott Robert Ladd
+Coyote Gulch Productions (http://www.coyotegulch.com)
 
-Ultimately, we really need a "monitor" driver on top of the
-fbdev that does DDC/EDID when the low level fbdev can provide
-an i2c bus or EDID information via some different way and
-that can be tweaked to deal with special monitors when we
-know we are using these.
 
-Ben.
+
+
+-------------------------------------------------------
+This SF.net email is sponsored by:
+The Definitive IT and Networking Event. Be There!
+NetWorld+Interop Las Vegas 2003 -- Register today!
+http://ads.sourceforge.net/cgi-bin/redirect.pl?keyn0001en

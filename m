@@ -1,58 +1,61 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Sven Luther <luther@dpt-info.u-strasbg.fr>
 Subject: Re: [Linux-fbdev-devel] [PATCH]: EDID parser
-Date: 03 Apr 2003 14:20:24 +0200
+Date: Thu, 3 Apr 2003 14:38:03 +0200
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1049372424.796.21.camel@zion.wanadoo.fr>
+Message-ID: <20030403123803.GD7131@iliana>
 References: <4A83DF6367@vcnet.vc.cvut.cz>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+Content-Disposition: inline
 In-Reply-To: <4A83DF6367@vcnet.vc.cvut.cz>
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Petr Vandrovec <VANDROVE@vc.cvut.cz>
 Cc: Sven Luther <luther@dpt-info.u-strasbg.fr>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, linux-kernel@vger.kernel.org, adaplas@pol.net
 
-
+On Thu, Apr 03, 2003 at 12:05:13PM +0100, Petr Vandrovec wrote:
+> On  3 Apr 03 at 9:40, Sven Luther wrote:
+> > On Thu, Apr 03, 2003 at 03:07:33AM +0100, Petr Vandrovec wrote:
+> > > On  2 Apr 03 at 22:55, James Simmons wrote:
+> > > 
+> > > > It doesn't need a struct pci_dev in this case. It is possible to get this 
+> > > > info from the i2c bus but I never seen any drivers do this. What data would
+> > > > we have to pass in get the EDID inforamtion? So the question is how 
+> > > > generic will get_EDID end up being or will we have to have driver specfic 
+> > > > hooks since I don't pitcure i2c approaches being the same for each video 
+> > > > card. Petr didn't you attempt this with the matrox driver at one time?
+> > > 
+> > > Yes, matroxfb provides one i2c (DDC) bus for each output videocard has.
+> > > I ended with only this support (and userspace EDID parser) as i2c was
+> > > initialized loong after framebuffer at that time... Now when i2c is usable
+> > > when fbdev initializes, it looks much better.
+> > > 
+> > > Only get_EDID interface I need is one which gets i2c bus as argument. But
+> > > I have no idea how I should handle situation where you have connected
+> > > two different monitors to both crtc1 outputs... Like 50Hz PAL TV &
+> > > 60+Hz VGA monitor. Currently it is user responsibility to resolve such
+> > > situation...
+> > 
+> > Is the EDID reading stuff not done per head ?
+> 
 > No. With matroxfb, you have two framebuffer devices, /dev/fb0 & /dev/fb1,
 > which can be connected to any of three outputs: analog primary, analog
 > secondary and DVI. Analog primary & DVI share same pair of DDC cables,
 > and analog secondary has its own... And user can interconnect fb* with
 > outputs in almost any way he wants, as long as hardware supports it.
->                                                         Petr Vandrovec
 
-It's +/- similar on radeon's and r128's...
+Mmm, i have not been into fbdev much lately, but for my X devel work, i
+believe thta it is a good thing to separate the framebuffer issues from
+the output issues, and thus, for the card i have at least, have one
+function where the per chip things are done (memory detection, bypass
+unit handling, framebuffer and memory management) and another set of
+functions which would be head, that is output, specific. This way, you
+would configure the /dev/fbx and when the user which to use this or that
+output, the DDC will be connected to the output, not the framebuffer.
+This seems a reasonable way of doing this and should solve your problem,
+no ?
 
-I think at this point, we really need to add a structure defining
-an "output" along with a few calls so the driver can tell us about
-the "default" output/head mapping and can be changed from userland.
+Friendly,
 
-That way, the "struct fb_connection" would then be the parameter
-passed to those EDID routines...
-
-The driver would setup a default policy at boot based on what
-have been probed. But userland would be able to
-
- - Request connection info from all outputs. Note that these contains
-more than just EDID. Some drivers can "probe" for the presence of
-something in the VGA or S-Video connectors by sensing the load on
-the signals, even if that "thing" cannot provide an EDID. So we need
-a bit more than just the EDID, something like
-
-  struct fb_connection_info {
-	int	index;	/* Absolute index of output on this card */
-	int	type;	/* FB_VGA, FB_DVI, FB_ADC, FB_LVDS, ... */
- 	int	flags;	/* FB_CONN_PRESENCE, FB_VALID_EDID, ... */
-	u8	edid[128];
-  }
-
- - Ask/Set output<->head mapping. Possibly by an ioctl to the head
-that sets the connection index. Of course, the driver may fail if
-the combo isn't supported. Also, the policy isn't defined on what
-happens to the head's current mode. I beleive the head should try to
-keep it's current mode unless it's not suitable to whatever have been
-detected on that connection.
-
-What do you think ?
-
-Ben.
+Sven Luther

@@ -1,100 +1,70 @@
-From: Sven Luther <luther@dpt-info.u-strasbg.fr>
-Subject: Re: [Linux-fbdev-devel] [PATCH] FBDev: vga16fb port
-Date: Wed, 4 Dec 2002 17:47:46 +0100
+From: "Petr Vandrovec" <VANDROVE@vc.cvut.cz>
+Subject: Re: [PATCH 1/3: FBDEV: VGA State Save/Restore module
+Date: Wed, 4 Dec 2002 19:41:09 +0100
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20021204164746.GA4261@iliana>
-References: <Pine.LNX.4.44.0212022027510.18805-100000@phoenix.infradead.org> <1038917280.1228.7.camel@localhost.localdomain> <20021204073218.GA1025@iliana> <1039003565.1079.67.camel@localhost.localdomain> <20021204102820.GA1841@iliana> <1039020239.1093.61.camel@localhost.localdomain>
+Message-ID: <962842B4859@vcnet.vc.cvut.cz>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7BIT
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1039020239.1093.61.camel@localhost.localdomain>
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: Antonino Daplas <adaplas@pol.net>
-Cc: Sven Luther <luther@dpt-info.u-strasbg.fr>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, Dec 04, 2002 at 10:27:21PM +0500, Antonino Daplas wrote:
-> On Wed, 2002-12-04 at 15:28, Sven Luther wrote:
-> > > 
-> > > Most cards with a VGA core needs to disable the VGA output before going
-> > > to graphics mode.  Disabling VGA output is hardware specific, and is
-> > > usually automatic when you go to graphics mode.
-> > 
-> > So there is no common zqy of doing this, my docs say something about a
-> > vga control register zhich is accesses trough the sequencer regs. Does
-> > vgafb (or textmode or whatever) not call this when giving the hand to
-> > the fbdev ?
-> No, when a video card goes to graphics mode, it's up to the driver to
-> program the registers.  vgacon/vga16fb only touches the standard VGA
+On  4 Dec 02 at 22:26, Antonino Daplas wrote:
+> +static void vga_cleanup(struct fb_vgastate *state)
+> +{
+> +   if (state->fbbase)
+> +       iounmap(state->fbbase);
+> +}
 
-So we will have a repeat of the exact same code snipplet in all the
-drivers ? I thought the new API was about having all the common code in
-common and not duplicated in all the drivers. Could we have at least a
-gen_disable_vga function or something such that we could call ?
+Nobody is setting state->fbbase to NULL, so 
+"save_vga(SAVE_FONT); restore_vga(); save_vga(0); restore_vga();"
+will badly die. I think that you should change save prototype to
+int fb_save_vga(int whattosave, struct fb_vgastate* state);, and at
+the beginning of save you should do "memset(state, 0, sizeof(*state));"
 
-> registers (crtc[25], attr[21], seq[5], gfx[9], misc[1]). Usage is pretty
+And fbbase should not be in state variable, as this value is valid
+only during duration of save or restore, not outside of them. Pass it
+to function which needs it as an explicit argument.
 
-Well, i need to disable the vga output in seq[5], more exactly bit 3
-called "enable VGA display", need to be reset.
+It looks easier to me to make fb_vgastate larger structure with
+crt/seq/cmap fields embeded, instead of kmallocing these portions.
+Or at least allocate them together depending on 'whattosave' flag,
+doing four kmalloc() to allocate about 64 bytes is waste of resources.
 
-> much uniform across all hardware. Any registers past those indices are
-> considered extended registers and usage is hardware specific.  In
-> graphics mode, you will probably use both the standard and the extended
-> registers, and disabling the VGA mode/enabling graphics mode is most
-> probably in one of the extended registers.
+And do not use kmalloc() for > 4KB regions, use vmalloc (in
+fonts save).
 
-Err, it is seq[5], called VGAControlRegister, so it is beyond the
-standard seq registers (seq[0] to seq[5]), right ?
+> +       state->attr = kmalloc(state->num_attr, GFP_KERNEL);
+> +       state->crtc = kmalloc(state->num_crtc, GFP_KERNEL);
+> +       state->gfx = kmalloc(state->num_gfx, GFP_KERNEL);
+> +       state->seq = kmalloc(state->num_seq, GFP_KERNEL);
+...
+> +       state->vga_font0 = kmalloc(8192 * 8, GFP_KERNEL);
+...
+> +       state->vga_font1 = kmalloc(8192 * 8, GFP_KERNEL);
+...
+> +       state->vga_text = kmalloc(8192 * 4, GFP_KERNEL);
 
-> > > Because James wrote the fb framework to be very modular, then you must
-> > > be careful to save/restore the initial video state  when loading or
-> > > unloading.  Theoretically, a driver should load, but not go to graphics
-> > > mode immediately.  Only upon a call to xxxfb_set_par() should the driver
-> > > do so.  Before going to graphics mode, that's were you save the initial
-> > > state.  Have a reference count or something to keep track of the number
-> > > of users, and when this reference count becomes zero, restore the
-> > > initial state.  You should be able to do this by hooking these routines
-> > > in fb_open() and fb_release().
-> > 
-> > Mmm, what about interaction with X ? X also does a save/restore of the
-> > previous (text) mode, when a X driver is _not_ fbdev aware, it will
-> > save/restore the things twice, right ?
-> > 
-> Not twice just the current mode it was in when X launched, although it
-> always assumes text mode.  Same thing for fbdev, it should only restore
+And if my VGA documentation is correct, you are saving random
+data into vga_text: first 8192 chars interleaved with
+8192 bytes of garbage, plus attributes from chars 8192-16383 interleaved
+with 8192 bytes of garbage. 
 
-Well, but fbdev will save its state and X will save it again, so the
-saving done in the X driver is not all that important, and i could
-ignore it at first if i already have an fbdev.
+When you program hardware to get access to planes (vga 16 color 
+graphics mode), every second byte from plane 0 contains character, 
+and every second byte from plane 1 contains character attribute 
+(it is that way because of bit A0 selects plane, while A15-A1.0 
+selects memory address, so odd in memory addresses are unreachable 
+in vga text mode).
 
-Does this also apply to vesafb ?
-
-> the state when reference count becomes zero. If the framebuffer console
-> is loaded, the reference count will never be zero unless it is
-> unloaded.  If the framebuffer console is not loaded, the only time you
-> will save and restore the state is when some fb-based application
-> attempts to open/close /dev/fbx.
-
-Ok, ...
-
-> > > The one I submitted (and a revised one I'm going to submit soon) should
-> > > be able to restore the VGA text/graphics mode.  Complement this with
-> > > your hardware's extended state save and restore routines and you should
-> > > be able to load/use/unload your driver repeatedly :-).
-> > 
-> > Ok, i will try.
-> 
-> This is optional though.  You can still adopt the 2.4 method of always
-> setting the video mode.  Just take note that fbdev can be loaded without
-> fbcon, and if you get into graphics mode without fbcon, you just messed
-> up your user's console.  I think this can be avoided by munging the
-> configuration file (ie, always depend on fbcon and make your module
-> unsafe to unload).
-
-Anyway, i need to play with it some and experiment before i can do more
-comments.
-
-Friendly,
-
-Sven Luther
+And if you are using standard hardware, then font data live only in
+plane 2, plane 3 is unused on VGA hardware in text mode. I think that
+you should either save whole 256KB of memory, without deeper understanding,
+or you should just save FONT 0 (first 32*256 bytes from plane 2) if you
+want to save memory and you know that console was driven by vgacon in
+text mode.
+                                                Petr Vandrovec
+                                                vandrove@vc.cvut.cz
+                                                

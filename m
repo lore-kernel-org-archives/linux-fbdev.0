@@ -1,40 +1,92 @@
-From: Russ Dill <russ.dill@gmail.com>
-Subject: Re: Backlight support
-Date: Tue, 30 Nov 2004 15:40:58 -0700
-Message-ID: <f9d2a5e1041130144074ca5507@mail.gmail.com>
-References: <40ED4FAC.70406@ticino.com> <1089274696.4740.3.camel@localhost>
-	<41AB2E71.8080809@imc-berlin.de>
-	<f9d2a5e104112916252c253a2b@mail.gmail.com>
-	<017c01c4d6f9$a34fc010$0f01a8c0@max>
-Reply-To: Russ Dill <russ.dill@gmail.com>
+From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Subject: Re: Linux 2.4.29-pre1 (was: Re: [PATCH] vga16fb: Fix frame buffer bad memory mapping)
+Date: Tue, 30 Nov 2004 09:29:47 -0200
+Message-ID: <20041130112947.GB3041@dmt.cyclades>
+References: <200411252301.iAPN1mo4023046@hera.kernel.org> <Pine.GSO.4.61.0411271640560.13674@waterleaf.sonytel.be>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk>
-In-Reply-To: <017c01c4d6f9$a34fc010$0f01a8c0@max>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
-	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.arm.linux.org.uk/pipermail/linux-arm-kernel>
-List-Post: <mailto:linux-arm-kernel@lists.arm.linux.org.uk>
-List-Help: <mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=help>
-List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
-	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
-Sender: linux-arm-kernel-bounces@lists.arm.linux.org.uk
-Errors-To: linux-arm-kernel-bounces+linux-arm-kernel=m.gmane.org@lists.arm.linux.org.uk
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261178AbULAAjl@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.GSO.4.61.0411271640560.13674@waterleaf.sonytel.be>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Steven Scholz <steven.scholz@imc-berlin.de>, linux-arm-kernel@lists.arm.linux.org.uk
+Content-Transfer-Encoding: 7bit
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: vince@arm.linux.org.uk, Linux Kernel Development <linux-kernel@vger.kernel.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-> I'm keen to get this sorted out and I agree its an ideal use of sysfs. I'm
-> still getting up to speed on sysfs though...
->
+On Sat, Nov 27, 2004 at 04:54:12PM +0100, Geert Uytterhoeven wrote:
+> On Thu, 25 Nov 2004, Linux Kernel Mailing List wrote:
+> > ChangeSet 1.1543, 2004/11/25 13:16:49-02:00, vince@arm.linux.org.uk
+> > 
+> > 	[PATCH] vga16fb: Fix frame buffer bad memory mapping
+> > 	
+> > 	The vga16fb driver uses a direct ioremap on 0xa00000 to gain access to
+> > 	the vga card. This is wrong on architectures other than x86, every
+> > 	other driver uses VGA_MAP_MEM macro from vga.h to ensure the correct
+> > 	memory mapping.
+> > 	
+> > 	All this patch does is add the mapping macro this has been tested and
+> > 	works on ARM systems The driver no longer maps parts of kernel
+> > 	workspace and modifies it.
+> 
+> This fix is not correct!
+> 
+> > diff -Nru a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
+> > --- a/drivers/video/vga16fb.c	2004-11-25 15:01:51 -08:00
+> > +++ b/drivers/video/vga16fb.c	2004-11-25 15:01:51 -08:00
+> > @@ -142,7 +142,7 @@
+> >  	memset(fix, 0, sizeof(struct fb_fix_screeninfo));
+> >  	strcpy(fix->id,"VGA16 VGA");
+> >  
+> > -	fix->smem_start = VGA_FB_PHYS;
+> > +	fix->smem_start = VGA_MAP_MEM(VGA_FB_PHYS);
+> >  	fix->smem_len = VGA_FB_PHYS_LEN;
+> >  	fix->type = FB_TYPE_VGA_PLANES;
+> >  	fix->visual = FB_VISUAL_PSEUDOCOLOR;
+> 
+> fix->smem_start: Although I agree VGA_FB_PHYS is not the correct value on
+> machines other than PC, VGA_MAP_MEM(VGA_FB_PHYS) is not appropriate either,
+> because fix->smem_start is supposed to be a CPU _physical_ address, not a
+> virtual address.
+> 
+> However, this value isn't really used, except by (very rare) userspace that
+> wants to mmap the frame buffer through /dev/mem instead of /dev/fb*, so an
+> incorrect value doesn't really harm.
+> 
+> > @@ -896,7 +896,7 @@
+> >  
+> >  	/* XXX share VGA_FB_PHYS region with vgacon */
+> >  
+> > -        vga16fb.video_vbase = ioremap(VGA_FB_PHYS, VGA_FB_PHYS_LEN);
+> > +        vga16fb.video_vbase = ioremap(VGA_MAP_MEM(VGA_FB_PHYS), VGA_FB_PHYS_LEN);
+> >  	if (!vga16fb.video_vbase) {
+> >  		printk(KERN_ERR "vga16fb: unable to map device\n");
+> >  		return -ENOMEM;
+> 
+> ioremap(): VGA_MAP_MEM() already a _virtual_ address:
+> 
+> | include/asm-alpha/vga.h:#define VGA_MAP_MEM(x)   ((unsigned long) ioremap((x), 0))
+> | include/asm-arm/vga.h:#define VGA_MAP_MEM(x)     (PCIMEM_BASE + (x))
+> | include/asm-i386/vga.h:#define VGA_MAP_MEM(x) (unsigned long)phys_to_virt(x)
+> | include/asm-ia64/vga.h:#define VGA_MAP_MEM(x)    ((unsigned long) ioremap((x), 0))
+> | include/asm-mips/vga.h:#define VGA_MAP_MEM(x) ((unsigned long)0xb0000000 + (unsigned long)(x))
+> | include/asm-ppc/vga.h:#define VGA_MAP_MEM(x) (x + vgacon_remap_base)
+> | include/asm-ppc64/vga.h:#define VGA_MAP_MEM(x) ((unsigned long) ioremap((x), 0))
+> | include/asm-sparc64/vga.h:#define VGA_MAP_MEM(x) (x)
+> | include/asm-x86_64/vga.h:#define VGA_MAP_MEM(x) (unsigned long)phys_to_virt(x)
+> 
+> Doing a double ioremap(), or ioremap(phys_to_virt()) will break for sure...
+> 
+> BTW, on (PReP/CHRP) PPC ioremap() on ISA memory space `just works' because
+> __ioremap() adds _ISA_MEM_BASE to the passed pointer if it's smaller than
+> 16*1024*1024. And yes, vga16fb used to work fine on my CHRP LongTrail
+> (before the machine itself died :-(.
+> 
+> Yes, ISA memory space is a mess to do right in a portable way...
 
-The sysfs interface should probably tell you about the backlight too,
-like, does it need to be on, or is ambient light enough. Possibly
-recommended power modes, standardized power modes, or recommendations
-based on ambient light.
+Geert, 
 
--------------------------------------------------------------------
-Subscription options: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-FAQ:       http://www.arm.linux.org.uk/armlinux/mlfaq.php
-Etiquette: http://www.arm.linux.org.uk/armlinux/mletiquette.php
+I'll guest I'll just revert the whole change then... Do you have a
+better suggestion? 
+
+Thanks!

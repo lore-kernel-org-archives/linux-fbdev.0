@@ -1,21 +1,21 @@
-From: jsimmons@pentafluge.infradead.org
-Subject: Re: Where is the latest work for fbdev
-Date: Wed, 23 Jun 2004 19:35:30 +0100 (BST)
+From: biatx@portugalmail.com
+Subject: Re: Issues with radeonfb (new) in widescreen displays
+Date: Wed, 23 Jun 2004 19:16:14 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.56.0406231932030.27210@pentafluge.infradead.org>
-References: <200406192227.47534.alex.kern@gmx.de>
+Message-ID: <1088014574.40d9c8eee32ad@webmail.portugalmail.pt>
+References: <1087949171.40d8c97373b9e@webmail.portugalmail.pt> <200406230904.20399.adaplas@hotpop.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BdCax-000331-2e
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 11:35:39 -0700
-Received: from [213.146.154.40] (helo=pentafluge.infradead.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1BdCav-0007S2-AZ
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 11:35:38 -0700
-In-Reply-To: <200406192227.47534.alex.kern@gmx.de>
+	id 1BdCjA-0003u0-1e
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 11:44:08 -0700
+Received: from galadriel.portugalmail.pt ([195.245.179.73])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BdCj9-0001YV-IK
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 11:44:07 -0700
+In-Reply-To: <200406230904.20399.adaplas@hotpop.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,38 +25,46 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Alexander Kern <alex.kern@gmx.de>
-Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
+To: "adaplas@pol.net" <adaplas@pol.net>
+Cc: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+
+When I run "stty -F /dev/tty7 cols 80 rows 30" the problem seems gone and
+radeonfb acts perfect...hope you can fix it definitively then.
+
+Thank you a lot
+
+Carlos Silva
 
 
-Sorry about the delay. Work has been keeping me boged down. In fact I will 
-be leaving saturday for the UK for one week for work. I did manage to 
-create a new patch. COudl you try the atyfb_base.c.new and tell me if it 
-works?
+"Antonino A. Daplas" <adaplas@hotpop.com> wrote:
+
+ A workaround which may or may not work is to set the tty where X is loca=
+ted
+ to a different size as compared to the tty's where your console is mappe=
+d.
+=20
+ So if X is in /dev/tty7, you can do something like this:
+=20
+ stty -F /dev/tty7 cols 80 rows 30
+=20
+ (Use the latest BK or mm release.  stty will fail in 2.6.7)
+=20
+ The above will set tty7 to 640x480.  This way, when you switch to any of=
+=20
+ your consoles (assuming they are not in 640x480), the framebuffer consol=
+e
+ will "reinitialize" the hardware.=20
+=20
+ A more definitive fix is in the works.
+=20
+ Tony
 
 
-On Sat, 19 Jun 2004, Alexander Kern wrote:
 
-> Hello James,
-> 
-> I would one more time to appeal to you, PLEASE post latest diff between kernel 
-> tree and your. Your site( http://www.infradead.org/~jsimmons/ ) is steel 
-> EMPTY, since months. I dont like to send my work to blackhole.
-> 
-> Anybody other has a diff?
-> 
-> Regards Alex Kern
-> 
-> P.S.
-> What about submitting to mainline
-> 
-> <[Linux-fbdev-devel] Newest fbdev patch to go mainline.
->  <(James Simmons, Kopie: Linux Kernel Mailing List, Tue Feb 10 07:36:03 2004)
-> 
-> Today is 19 Jun!
-> 
+__________________________________________________________
+Continua a preferir gastar mais? Adira =E0 liga=E7=E3o Portugalmail.
+http://acesso.portugalmail.pt/compare
 
 
 -------------------------------------------------------

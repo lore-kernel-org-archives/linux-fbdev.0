@@ -1,65 +1,48 @@
-From: David Eger <eger-sender-da68b9@theboonies.us>
-Subject: Re: Re: [PATCH] sisfb accel capabilities
-Date: Thu,  3 Jun 2004 12:08:46 -0500
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1086282526.40bf5b1e52eca@mail.theboonies.us>
-References: <20040603024412.GE20951@havoc.gtf.org>
-	<40BEF4ED.7090909@winischhofer.net>
-	<1086269209.40bf27191fe1c@mail.theboonies.us>
-	<40BF5482.7080900@winischhofer.net>
-Reply-To: David Eger <eger-dated-1086887330.ffe1f7@theboonies.us>
+From: David Eger <eger@theboonies.us>
+Subject: Re: [Linux-fbdev-devel] [PATCH] fb accel capabilities (resend against
+	2.6.7-rc2)
+Date: Thu,  3 Jun 2004 13:01:18 -0500
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <1086285678.40bf676e1da4d@mail.theboonies.us>
+References: <20040603023653.GA20951@havoc.gtf.org>
+	<200406032307.13121.adaplas@hotpop.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BVvhz-0003iJ-OQ
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 03 Jun 2004 10:08:51 -0700
-Received: from not.theboonies.us ([66.139.79.224])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.30)
-	id 1BVvhz-0002P4-Cq
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 03 Jun 2004 10:08:51 -0700
-In-Reply-To: <40BF5482.7080900@winischhofer.net>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Transfer-Encoding: 7BIT
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org-S263733AbUFCSB0@vger.kernel.org>
+In-Reply-To: <200406032307.13121.adaplas@hotpop.com>
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Thomas Winischhofer <thomas@winischhofer.net>
-Cc: David Eger <eger@havoc.gtf.org>, linux-fbdev-devel@lists.sourceforge.net
+To: adaplas@pol.net
+Cc: David Eger <eger@havoc.gtf.org>, Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Thomas Winischhofer <thomas@winischhofer.net>
 
+Quoting "Antonino A. Daplas" <adaplas@hotpop.com>:
 
-I guess I shouldn't mark it "stupid shit" until I actually have the replacement
-code ready ;-)  You want me to revise the name of the #define?
+> 1. SCROLL_ACCEL = no panning + copyarea;
+> 2. SCROLL_REDRAW = no panning + imageblit;
+> 3. SCROLL_PAN/SCROLL_WRAP = pan/wrap + copyarea;
 
-Basically, I think the name FB_ACCELF_TEXT is silly and misleading:
-+ it means the kernel is enabling the acceleration engine; not really to do with
-_TEXT
-+ it's not really a flag, since it and zero are the only valid settings
-+ it doesn't really belong with the mode settings (i.e. 1024x768, 60 Hz 32bpp) 
-which is what var is, mainly
+Correct.
 
-But it is how things are done now.  So yes, fbset -accel 0 => var.accel_flags =
-FB_ACCELF_TEXT => set_par() is still the only path that the drivers have to
-enable/disable acceleration.  You'll note that the main patch does #define this
-to be true for now.
+> Personally, the pseudocode below might be better.
+>
+> If (pan/wrap is available) {
+> 	if (fb reading is fast || accel copyarea is available)
+> 		SCROLL_PAN/WRAP;
+> 	else
+> 		SCROLL_REDRAW; /* since SCROLL_PAN/WRAP_REDRAW not available */
+> } else {
+> 	if (fb_reading is fast || accel copyarea is available)
+> 		SCROLL_ACCEL;
+> 	else
+> 		SCROLL_REDRAW;
+> }
 
-I'm generating an alternate kernel at the moment with Antonino's logic to see
-how panning and accel compares on my chip.  If it's faster, I should have a
-patch with revised logic (favoring panning if there's sufficient yres_virtual)
-by tomorrow..
+I coded your pseudocode up, and I'm convinced now that you and Thomas are right.
+ We should prefer panning when it's available
+cat /usr/src/linux/MAINTAINERS is 0.3 seconds instead of 1.5 seconds.
 
--David
+On the down side, panning makes screen corruption for me... time to investigate
+to see if fbcon or radeonfb is to blame... perhaps panning is just incompatible
+with accel engine at all in radeon...
 
-
--------------------------------------------------------
-This SF.Net email is sponsored by the new InstallShield X.
-From Windows to Linux, servers to mobile, InstallShield X is the one
-installation-authoring solution that does it all. Learn more and
-evaluate today! http://www.installshield.com/Dev2Dev/0504
+-dte

@@ -1,26 +1,26 @@
-From: "ICICI Bank Customer Care" <customer.care@icicibank.com>
-Subject: <AUTO> {ICICICARE#008-405-897}Secure SMTP Message
-Date: Sat, 10 Jul 2004 03:25:57 +0530
+From: System Administrator <postmaster@L-3com.com>
+Subject: Undeliverable: denied!
+Date: Thu, 8 Jul 2004 18:06:34 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <41395.5447300852$1089410536@news.gmane.org>
+Message-ID: <4322247ACDE7D711A3D900D0B7B0C41D060B92A0@america.envnet.com>
 Mime-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_NextPart_188223739_boundary"
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_000_01C46537.D5410E47"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bj3Q3-0005aV-G1
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Jul 2004 15:00:35 -0700
-Received: from [203.199.32.107] (helo=trend6.abc.com)
+	id 1Bj3Sj-0005wf-5f
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Jul 2004 15:03:21 -0700
+Received: from mail5.l-3com.com ([148.104.5.3])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1Bj3Q2-00012D-JW
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Jul 2004 15:00:35 -0700
-Received: from masssmtp.icicibank.com ()
-	by trend6.abc.com  with ESMTP id i69LxJ9U008207
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 10 Jul 2004 03:30:26 +0530
-Received: from andtl02 ()
-	by masssmtp.icicibank.com  with ESMTP id i69LtoSo031197
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 10 Jul 2004 03:25:56 +0530
+	id 1Bj3Si-0001Yc-OE
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Jul 2004 15:03:21 -0700
+Received: from avgw1.L-3com.com (avgw1.L-3com.com [128.170.244.115])
+	by mail5.L-3com.com (8.11.7p1+Sun/8.11.7) with SMTP id i69M3EJ16826
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 9 Jul 2004 17:03:14 -0500 (CDT)
+Received: from hub2.mailhub2.l-3com.com ([166.20.84.109])
+ by avgw1.L-3com.com (SAVSMTP 3.1.5.43) with SMTP id M2004070816122203781
+ for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 08 Jul 2004 16:12:24 -0600
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,106 +30,67 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-This is a multi-part message in MIME format.
+This message is in MIME format. Since your mail reader does not understand
+this format, some or all of this message may not be legible.
 
-------_NextPart_188223739_boundary
+------_=_NextPart_000_01C46537.D5410E47
 Content-Type: text/plain;
-	charset="UTF-8"
-Content-Transfer-Encoding: base64
+	charset="iso-8859-1"
 
-DQoNClRoYW5rIHlvdSBmb3Igd3JpdGluZyB0byB1cy4gV2UgYXNzdXJlIHlvdSB0aGF0IHdlIGFy
-ZSB3b3JraW5nIG9uIHlvdXIgcmVxdWVzdCBhbmQgc2hhbGwgcmV2ZXJ0IHdpdGggYW4gYXBwcm9w
-cmlhdGUgcmVzcG9uc2Ugc29vbi5NZWFud2hpbGUsIHNob3VsZCB5b3Ugd2FudCB0byBzcGVhayB3
-aXRoIHVzLCBwbGVhc2UgZmVlbCBmcmVlIHRvIGNhbGwgb24gb3VyIDI0IGhvdXIgQ3VzdG9tZXIg
-Q2FyZSBudW1iZXJzLiBUbyBoZWxwIHVzIHNlcnZlIHlvdSBiZXR0ZXIsIGtpbmRseSBtZW50aW9u
-IHlvdXIgY29tcGxldGUgYWNjb3VudCBudW1iZXIgYW5kIGFueSByZWZlcmVuY2UgbnVtYmVyIHlv
-dSBtYXkgaGF2ZSB3aXRoIHJlc3BlY3QgdG8geW91ciBxdWVyeSBpbiBhbGwgZnV0dXJlIGNvcnJl
-c3BvbmRlbmNlLiANCiBLaW5kbHkgdmlzaXQgb3VyIHdlYnNpdGUgd3d3LmljaWNpYmFuay5jb20g
-Zm9yIGNvbXByZWhlbnNpdmUgaW5mb3JtYXRpb24gb24gb3VyIHByb2R1Y3RzIGFuZCBzZXJ2aWNl
-cy4gIFdpdGggcmVnYXJkcywNCg0KQ3VzdG9tZXIgQ2FyZSBJQ0lDSSBCYW5rIExpbWl0ZWQNCg0K
-VGhpcyBjb21tdW5pY2F0aW9uIGJlaW5nIHNlbnQgYnkgSUNJQ0kgQmFuayBMdGQuIGlzIHByaXZp
-bGVnZWQgYW5kIGNvbmZpZGVudGlhbCwgYW5kIGlzIGRpcmVjdGVkIHRvIGFuZCBmb3IgdGhlIHVz
-ZSBvZiB0aGUgYWRkcmVzc2VlIG9ubHkuIElmIHRoaXMgbWVzc2FnZSByZWFjaGVzIGFueW9uZSBv
-dGhlciB0aGFuIHRoZSBpbnRlbmRlZCByZWNpcGllbnQsIHdlIHJlcXVlc3QgdGhlIHJlYWRlciBu
-b3QgdG8gcmVwcm9kdWNlLCBjb3B5LCBkaXNzZW1pbmF0ZSBvciBpbiBhbnkgbWFubmVyIGRpc3Ry
-aWJ1dGUgaXQuIFdlIGZ1cnRoZXIgcmVxdWVzdCBzdWNoIHJlY2lwaWVudCB0byBub3RpZnkgdXMg
-aW1tZWRpYXRlbHkgYnkgcmV0dXJuIGVtYWlsIGFuZCBkZWxldGUgdGhlIG9yaWdpbmFsIG1lc3Nh
-Z2UuIElDSUNJIEJhbmsgTHRkLiBkb2VzIG5vdCBndWFyYW50ZWUgdGhlIHNlY3VyaXR5IG9mIGFu
-eSBpbmZvcm1hdGlvbiB0cmFuc21pdHRlZCBlbGVjdHJvbmljYWxseSBhbmQgaXMgbm90IGxpYWJs
-ZSBmb3IgdGhlIHByb3BlciwgdGltZWx5IGFuZCBjb21wbGV0ZSB0cmFuc21pc3Npb24gdGhlcmVv
-Zi4gQmVmb3JlIG9wZW5pbmcgYW55IGF0dGFjaG1lbnRzIHBsZWFzZSBjaGVjayB0aGVtIGZvciB2
-aXJ1c2VzIGFuZCBkZWZlY3RzLg0KDQoNCg0K
-------_NextPart_188223739_boundary
-Content-Type: text/HTML;
-	charset="UTF-8"
-Content-Transfer-Encoding: base64
+Your message
 
-PEhUTUw+PEhFQUQ+PE1FVEEgTkFNRT0iR0VORVJBVE9SIiBDb250ZW50PSJNaWNyb3NvZnQgREhU
-TUwgRWRpdGluZyBDb250cm9sIj48VElUTEU+PC9USVRMRT48L0hFQUQ+PEJPRFk+PEZPTlQgc2l6
-ZT0zPjxTUEFOIHN0eWxlPSJGT05ULVNJWkU6IDExcHQ7IENPTE9SOiBibGFjazsgRk9OVC1GQU1J
-TFk6ICdadXJpY2ggQlQnOyBtc28tYmlkaS1mb250LXNpemU6IDEwLjBwdDsgbXNvLWJpZGktZm9u
-dC1mYW1pbHk6IEFyaWFsIj48UD48U1BBTiBzdHlsZT0iRk9OVC1TSVpFOiAxMXB0OyBDT0xPUjog
-YmxhY2s7IEZPTlQtRkFNSUxZOiAnWnVyaWNoIEJUJzsgbXNvLWJpZGktZm9udC1zaXplOiAxMC4w
-cHQ7IG1zby1iaWRpLWZvbnQtZmFtaWx5OiBBcmlhbCI+VGhhbmsgeW91IGZvciB3cml0aW5nJm5i
-c3A7dG8gdXMuIFdlJm5ic3A7YXNzdXJlJm5ic3A7eW91IHRoYXQgd2UmbmJzcDthcmUgd29ya2lu
-ZyBvbiB5b3VyJm5ic3A7cmVxdWVzdCBhbmQgc2hhbGwmbmJzcDtyZXZlcnQmbmJzcDt3aXRoIGFu
-IGFwcHJvcHJpYXRlIHJlc3BvbnNlIHNvb24uPD94bWw6bmFtZXNwYWNlIHByZWZpeCA9IG8gbnMg
-PSAidXJuOnNjaGVtYXMtbWljcm9zb2Z0LWNvbTpvZmZpY2U6b2ZmaWNlIiAvPjxvOnA+PC9vOnA+
-PC9TUEFOPjwvUD48UCBjbGFzcz1Nc29Ob3JtYWwgc3R5bGU9Ik1BUkdJTjogMGluIDBpbiAwcHQi
-PjxTUEFOIHN0eWxlPSJDT0xPUjogYmxhY2s7IG1zby1iaWRpLWZvbnQtZmFtaWx5OiBBcmlhbCI+
-TWVhbndoaWxlLCBzaG91bGQgeW91IHdhbnQgdG8gc3BlYWsgd2l0aCZuYnNwO3VzLCZuYnNwO3Bs
-ZWFzZSBmZWVsIGZyZWUgdG8gY2FsbCBvbiBvdXImbmJzcDs8ST48QSBocmVmPSJodHRwOi8vd3d3
-LmljaWNpYmFuay5jb20vcGZzdXNlci9jdXN0b21lci9jdXNjYXJlbm9zLmh0bSI+MjQgaG91ciBD
-dXN0b21lciBDYXJlIG51bWJlcnM8L0E+PC9JPi48bzpwPjwvbzpwPjwvU1BBTj48L1A+PFAgY2xh
-c3M9TXNvTm9ybWFsIHN0eWxlPSJNQVJHSU46IDBpbiAwaW4gMHB0Ij48U1BBTiBzdHlsZT0iQ09M
-T1I6IGJsYWNrOyBtc28tYmlkaS1mb250LWZhbWlseTogQXJpYWwiPiZuYnNwOzxvOnA+PC9vOnA+
-PC9TUEFOPjwvUD48UCBjbGFzcz1Nc29Cb2R5VGV4dDIgc3R5bGU9Ik1BUkdJTjogMGluIDBpbiAw
-cHQiPlRvIGhlbHAgdXMgc2VydmUgeW91IGJldHRlciwga2luZGx5IG1lbnRpb24geW91ciBjb21w
-bGV0ZSBhY2NvdW50IG51bWJlciBhbmQgYW55IHJlZmVyZW5jZSBudW1iZXIgeW91IG1heSBoYXZl
-IHdpdGggcmVzcGVjdCB0byB5b3VyIHF1ZXJ5IGluIGFsbCBmdXR1cmUgY29ycmVzcG9uZGVuY2Uu
-Jm5ic3A7PEJSPiZuYnNwOzwvUD48UCBjbGFzcz1Nc29Ob3JtYWwgc3R5bGU9Ik1BUkdJTjogMGlu
-IDBpbiAwcHQiPjxTUEFOIHN0eWxlPSJDT0xPUjogYmxhY2s7IG1zby1iaWRpLWZvbnQtZmFtaWx5
-OiBBcmlhbCI+S2luZGx5IHZpc2l0IG91ciB3ZWJzaXRlIDxBIGhyZWY9Imh0dHA6Ly93d3cuaWNp
-Y2liYW5rLmNvbSI+d3d3LmljaWNpYmFuay5jb208L0E+IGZvciBjb21wcmVoZW5zaXZlIGluZm9y
-bWF0aW9uIG9uIG91ciBwcm9kdWN0cyBhbmQgc2VydmljZXMuIDxvOnA+PC9vOnA+PC9TUEFOPjwv
-UD48UCBjbGFzcz1Nc29Ob3JtYWwgc3R5bGU9Ik1BUkdJTjogMGluIDBpbiAwcHQiPiZuYnNwOzxv
-OnA+PC9vOnA+PC9QPjxQIGNsYXNzPU1zb05vcm1hbCBzdHlsZT0iTUFSR0lOOiAwaW4gMGluIDBw
-dCI+PFNUUk9ORz48U1BBTiBzdHlsZT0iRk9OVC1XRUlHSFQ6IG5vcm1hbDsgQ09MT1I6IGJsYWNr
-OyBtc28tYmlkaS1mb250LWZhbWlseTogQXJpYWwiPldpdGg8L1NQQU4+PC9TVFJPTkc+PEI+PFNQ
-QU4gc3R5bGU9IkNPTE9SOiBibGFjazsgbXNvLWJpZGktZm9udC1mYW1pbHk6IEFyaWFsIj4mbmJz
-cDs8L1NQQU4+PC9CPjxTVFJPTkc+PFNQQU4gc3R5bGU9IkZPTlQtV0VJR0hUOiBub3JtYWw7IENP
-TE9SOiBibGFjazsgbXNvLWJpZGktZm9udC1mYW1pbHk6IEFyaWFsIj5yZWdhcmRzLDwvU1BBTj48
-L1NUUk9ORz48Qj48U1BBTiBzdHlsZT0iQ09MT1I6IGJsYWNrOyBtc28tYmlkaS1mb250LWZhbWls
-eTogQXJpYWwiPjxvOnA+PC9vOnA+PC9TUEFOPjwvQj48L1A+PFA+PFNQQU4gc3R5bGU9IkZPTlQt
-U0laRTogMTFwdDsgQ09MT1I6IGJsYWNrOyBGT05ULUZBTUlMWTogJ1p1cmljaCBCVCc7IG1zby1i
-aWRpLWZvbnQtc2l6ZTogMTAuMHB0OyBtc28tYmlkaS1mb250LWZhbWlseTogQXJpYWwiPkN1c3Rv
-bWVyJm5ic3A7Q2FyZSZuYnNwOzxvOnA+PC9vOnA+PC9TUEFOPjwvUD48UCBzdHlsZT0iTUFSR0lO
-LUJPVFRPTTogMTJwdCI+PFNQQU4gc3R5bGU9IkZPTlQtU0laRTogMTFwdDsgQ09MT1I6IGJsYWNr
-OyBGT05ULUZBTUlMWTogJ1p1cmljaCBCVCc7IG1zby1iaWRpLWZvbnQtc2l6ZTogMTAuMHB0OyBt
-c28tYmlkaS1mb250LWZhbWlseTogQXJpYWwiPklDSUNJIEJhbmsgTGltaXRlZDxCUj48QlI+PC9T
-UEFOPjxTUEFOIHN0eWxlPSJGT05ULVNJWkU6IDcuNXB0OyBDT0xPUjogYmxhY2s7IEZPTlQtRkFN
-SUxZOiAnWnVyaWNoIEJUJzsgbXNvLWJpZGktZm9udC1mYW1pbHk6IEFyaWFsIj5UaGlzIGNvbW11
-bmljYXRpb24gYmVpbmcgc2VudCBieSBJQ0lDSSBCYW5rIEx0ZC4gaXMgcHJpdmlsZWdlZCBhbmQg
-Y29uZmlkZW50aWFsLCBhbmQgaXMgZGlyZWN0ZWQgdG8gYW5kIGZvciB0aGUgdXNlIG9mIHRoZSBh
-ZGRyZXNzZWUgb25seS4gSWYgdGhpcyBtZXNzYWdlIHJlYWNoZXMgYW55b25lIG90aGVyIHRoYW4g
-dGhlIGludGVuZGVkIHJlY2lwaWVudCwgd2UgcmVxdWVzdCB0aGUgcmVhZGVyIG5vdCB0byByZXBy
-b2R1Y2UsIGNvcHksIGRpc3NlbWluYXRlIG9yIGluIGFueSBtYW5uZXIgZGlzdHJpYnV0ZSBpdC4g
-V2UgZnVydGhlciByZXF1ZXN0IHN1Y2ggcmVjaXBpZW50IHRvIG5vdGlmeSB1cyBpbW1lZGlhdGVs
-eSBieSByZXR1cm4gZW1haWwgYW5kIGRlbGV0ZSB0aGUgb3JpZ2luYWwgbWVzc2FnZS4gSUNJQ0kg
-QmFuayBMdGQuIGRvZXMgbm90IGd1YXJhbnRlZSB0aGUgc2VjdXJpdHkgb2YgYW55IGluZm9ybWF0
-aW9uIHRyYW5zbWl0dGVkIGVsZWN0cm9uaWNhbGx5IGFuZCBpcyBub3QgbGlhYmxlIGZvciB0aGUg
-cHJvcGVyLCB0aW1lbHkgYW5kIGNvbXBsZXRlIHRyYW5zbWlzc2lvbiB0aGVyZW9mLiBCZWZvcmUg
-b3BlbmluZyBhbnkgYXR0YWNobWVudHMgcGxlYXNlIGNoZWNrIHRoZW0gZm9yIHZpcnVzZXMgYW5k
-IGRlZmVjdHMuPC9TUEFOPjxTUEFOIHN0eWxlPSJGT05ULVNJWkU6IDhwdDsgQ09MT1I6IGJsYWNr
-OyBGT05ULUZBTUlMWTogJ1p1cmljaCBCVCc7IG1zby1iaWRpLWZvbnQtc2l6ZTogNy41cHQ7IG1z
-by1iaWRpLWZvbnQtZmFtaWx5OiBBcmlhbCI+PG86cD48L286cD48L1NQQU4+PC9QPjxQPjwvU1BB
-Tj48L1A+PC9GT05UPjwvQk9EWT48L0hUTUw+
+  To:      towfiq@microdyne.com
+  Subject: denied!
+  Sent:    Thu, 8 Jul 2004 18:06:34 -0400
 
-------_NextPart_188223739_boundary--
+did not reach the following recipient(s):
+
+c=US;a= ;p=Organization;o=MOI-AUGUSTA;dda:SMTP=TOWFIQ@MICRODYNE.COM; on Thu,
+8 Jul 2004 18:06:32 -0400
+    The recipient name is not recognized
+	The MTS-ID of the original message is: c=us;a=
+;p=organization;l=AMERICA0407082206N5QDVZKH
+    MSEXCH:IMS:Organization:MOI-AUGUSTA:AMERICA 0 (000C05A6) Unknown
+Recipient
 
 
+
+------_=_NextPart_000_01C46537.D5410E47
+Content-Type: message/rfc822
+
+From: linux-fbdev-devel@lists.sourceforge.net
+To: towfiq@microdyne.com
+Subject: denied!
+Date: Thu, 8 Jul 2004 18:06:34 -0400 
+MIME-Version: 1.0
+X-Mailer: Internet Mail Service (5.5.2657.72)
+X-MS-Embedded-Report: 
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_002_01C46537.D5410E47"
+
+
+------_=_NextPart_002_01C46537.D5410E47
+Content-Type: text/plain;
+	charset="iso-8859-1"
+
+here is the document.
+
+
+------_=_NextPart_002_01C46537.D5410E47
+Content-Type: text/plain;
+	name="DELETED0.TXT"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment;
+	filename="DELETED0.TXT"
+
+File attachment: visa.com=0A=
+The file attached to this email was removed
+because the file name is not allowed.
+------_=_NextPart_002_01C46537.D5410E47--
+
+------_=_NextPart_000_01C46537.D5410E47--
 
 
 -------------------------------------------------------

@@ -1,21 +1,21 @@
-From: License@windriver.com
-Subject: Licensing has received your request
-Date: Tue, 26 Aug 2003 01:54:20 -0700 (PDT)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Driver replacement
+Date: Tue, 26 Aug 2003 10:19:24 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200308260854.BAA24407@mail.wrs.com>
+Message-ID: <Pine.GSO.4.21.0308261018090.615-100000@waterleaf.sonytel.be>
+References: <200308252056.13587.gkajmowi@tbaytel.net>
+Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19rZbp-0003vI-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 26 Aug 2003 01:55:25 -0700
-Received: from unknown-1-11.wrs.com ([147.11.1.11] helo=mail.wrs.com)
+	id 19rZ47-0006Vy-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 26 Aug 2003 01:20:35 -0700
+Received: from mail2.sonytel.be ([195.0.45.172] helo=witte.sonytel.be)
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 19rZbm-0001Jg-Sa
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 26 Aug 2003 01:55:22 -0700
-Received: (from license@localhost)
-	by mail.wrs.com (8.9.3/8.9.1) id BAA24407
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 26 Aug 2003 01:54:20 -0700 (PDT)
+	id 19rZ45-0008Vu-MB
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 26 Aug 2003 01:20:33 -0700
+In-Reply-To: <200308252056.13587.gkajmowi@tbaytel.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -25,20 +25,37 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Garrett Kajmowicz <gkajmowi@tbaytel.net>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Thank you for purchasing Wind River products.
- 
-Your email request has been received. 
-We will send your license key(s) within 24 hours, or someone 
-will contact you if we need additional information.
- 
-Thank you.
-Licensing Department
-1-800-872-4977 option #2
+On Mon, 25 Aug 2003, Garrett Kajmowicz wrote:
+> I am working on a thin-client system, and ahve the following problem:
+> 
+> I would like to boot up using VESA, but replace the driver if other hardware 
+> is supported (ie Riva TNT).  Unfortunately, from the few tests that I have 
+> done, all that happens is a second fb device is created which displays to a 
+> non-existant video card.  Those were the results from con2fb, anyways.
+
+Currently it's not possible to `promote' a device to a better driver, although
+it would be useful for generic drivers like  vesafb, vga16fb, and offb.
+
+> I would consider not using VESA if there was another option (like VGA256).
+
+http://www.google.com/search?q=vga256fb
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 
 -------------------------------------------------------

@@ -1,75 +1,133 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: Re: Rage1128
-Date: Tue, 14 Jan 2003 13:59:47 -0800 (PST)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030114215947.28884.qmail@web14908.mail.yahoo.com>
-References: <1042579023.20959.14.camel@12-235-123-161.client.attbi.com>
+From: James Simmons <jsimmons@infradead.org>
+Subject: [FB BK updates]
+Date: Tue, 14 Jan 2003 17:05:07 -0800 (PST)
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <Pine.LNX.4.33.0301141701180.3048-100000@maxwell.earthlink.net>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from web14908.mail.yahoo.com ([216.136.225.60])
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18YZ64-0000JA-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 14 Jan 2003 13:59:48 -0800
-In-Reply-To: <1042579023.20959.14.camel@12-235-123-161.client.attbi.com>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Brad Douglas <brad@neruo.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
-
---- Brad Douglas <brad@neruo.com> wrote:
-> ATI does not give out initialization information
-> about their chipsets.
-
-I got one email from them offering me the Rage128 SDK.
-Since then I haven't heard anything.  I don't know if
-the SDK has the needed info.
-
-I see that the cards can vary in type and amount of
-VRAM. But this info must be in the ROM or a register
-somewhere.  The ROM code needs to read this info from
-somewhere at boot time.  I was hoping the the
-protected mode code could  get this info out of the
-ROM too.
-
-I found this at Rage Underground:
-The simple answer is that you should NOT flash your
-Rage128 BIOS! The reason is that there are over 50
-revisions of the Rage 128 card.
-
-Do you think ATI can provide the info needs for
-writing an init routine that can handle the 50
-variations? Has ATI written a unified Rage128 BIOS
-that will work in all the cards? I have a hard time
-imagining that they are keeping 50 separate source
-code projects for the BIOS.
-
-Another solution to this would be to modify the kernel
-to initialize secondary video cards via Int10 very
-early in the boot process; before it gets so hard to
-get into vm86 mode. This would still leave DDC without
-a solution. Has anyone tried this approach?
-
-=====
-Jon Smirl
-jonsmirl@yahoo.com
-
-__________________________________________________
-Do you Yahoo!?
-Yahoo! Mail Plus - Powerful. Affordable. Sign up now.
-http://mailplus.yahoo.com
+To: Linus Torvalds <torvalds@transmeta.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
 
--------------------------------------------------------
-This SF.NET email is sponsored by: Take your first step towards giving 
-your online business a competitive advantage. Test-drive a Thawte SSL 
-certificate - our easy online guide will show you how. Click here to get 
-started: http://ads.sourceforge.net/cgi-bin/redirect.pl?thaw0027en
+More updates and fixes for the framebuffer layer.
+
+The standard diff is at
+
+http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
+
+Linus, please do a
+
+	bk pull http://fbdev.bkbits.net:8080/fbdev-2.5
+
+This will update the following files:
+
+ drivers/video/tridentfb.h        |  169 ----
+ include/video/font.h             |   24
+ arch/m68k/kernel/m68k_defs.c     |    2
+ drivers/video/Kconfig            |    2
+ drivers/video/Makefile           |    9
+ drivers/video/aty/atyfb.h        |    1
+ drivers/video/aty/atyfb_base.c   |   93 --
+ drivers/video/aty/mach64_accel.c |   12
+ drivers/video/cfbcopyarea.c      |   85 +-
+ drivers/video/cfbfillrect.c      |   22
+ drivers/video/cfbimgblt.c        |  146 +--
+ drivers/video/console/Kconfig    |   14
+ drivers/video/console/fbcon.c    |   95 +-
+ drivers/video/console/sticon.c   |  101 +-
+ drivers/video/console/sticore.c  |  159 ++--
+ drivers/video/fbmem.c            |   17
+ drivers/video/fbmon.c            |  411 ++++++++++
+ drivers/video/i810/i810.h        |    2
+ drivers/video/i810/i810_accel.c  |   11
+ drivers/video/i810/i810_dvt.c    |    2
+ drivers/video/i810/i810_main.c   |   51 -
+ drivers/video/i810/i810_main.h   |   79 --
+ drivers/video/riva/Makefile      |    2
+ drivers/video/riva/fbdev.c       | 1470 ++++++++++++++++++---------------------
+ drivers/video/riva/nv_driver.c   |  212 +++++
+ drivers/video/riva/riva_hw.c     |  350 +++++++--
+ drivers/video/riva/rivafb.h      |   15
+ drivers/video/sstfb.c            |  711 +++++++++---------
+ drivers/video/sstfb.h            |   31
+ drivers/video/sticore.h          |   58 -
+ drivers/video/stifb.c            |  103 ++
+ drivers/video/tdfxfb.c           |   12
+ drivers/video/tridentfb.c        | 1213 +++++++++++++++-----------------
+ include/linux/fb.h               |   13
+ include/linux/font.h             |   30
+ include/video/trident.h          |  175 ++++
+ 36 files changed, 3352 insertions(+), 2550 deletions(-)
+
+through these ChangeSets:
+
+<jsimmons@maxwell.earthlink.net> (03/01/14 1.898)
+   [GENERIC IMAGEBLIT ACCEL]
+
+   a) Fix for cfb_imagblit so it can handle monochrome bitmaps with widths
+      not multiples of 8.
+
+   b) Further optiminzation of fast_imageblit by removing unnecessary steps
+      from its main loop.
+
+   c) fast_imageblit show now work for bitmaps widths which are least
+      divisible by 4. 4x6 and 12x22 shoudl use fast_imageblit now.
+
+   d) Use hadrware syncing method of hardware if present.
+
+   e) trivial: wrap text at 80 columns.
+
+   [RIVA and 3DFX] imageblit functions busted for large images. Use generic
+                   functions for now.
+
+   Several syncing issues fixed between the accel engine and access to the
+   framebuffer in several files.
+
+<jsimmons@maxwell.earthlink.net> (03/01/11 1.891)
+   [TRIDENT FBDEV] Driver ported to the new api.
+
+<jsimmons@maxwell.earthlink.net> (03/01/10 1.887.1.4)
+   Final updates to the GTF code. Now the code can gnerate GTF timings
+   regardless of the validity of info->monospecs.
+
+   [ATYFB] Updates to the aty driver.
+
+<jsimmons@maxwell.earthlink.net> (03/01/08 1.887.1.1)
+   Remove fb_set_var. Some how it was missed in a merge conflict.
+
+<jsimmons@kozmo.(none)> (03/01/08 1.889)
+   [ATY] Somehow a merge mistake happened. We removed fb_set_var.
+
+<jsimmons@maxwell.earthlink.net> (03/01/08 1.887)
+   [MONITOR support] GTF support for VESA complaint monitors. Here we
+   calculate the general timings needed so we don't over step the bounds
+   for a monitor.
+
+   [fbmem.c cleanup] Name change to make the code easier to read.
+
+<jsimmons@maxwell.earthlink.net> (03/01/07 1.879.2.95)
+   Updates from Helge Deller for the console/fbdev drivers for the PARISC
+   platform. Small fix for clearing the screen and a string typo for the
+   Voodoo 1/2 driver.
+
+<jsimmons@maxwell.earthlink.net> (03/01/06 1.879.2.93)
+   [RIVA FBDEV] Driver now uses its own fb_open and fb_release function again.
+   It has no ill effects. The drivers uses strickly hardware acceleration
+   so we don't need cfb_fillrect and cfb_copyarea.
+
+   Cleaned up font.h. Geerts orignal patch broke them up into a font.h in
+   video and one in  linux. Now I put them back together again in
+   include/linux. The m68k platform has been updated for this change.
+
+<jsimmons@maxwell.earthlink.net> (03/01/06 1.879.2.92)
+   Added resize support for the framebuffer console. Now you can change the
+   console size via stty. Also support for color palette changing on VC
+   switch is supported.
+
+<jsimmons@maxwell.earthlink.net> (03/01/06 1.879.2.91)
+   I810 fbdev updates. Cursor fix for ati mach 64 cards on big endian
+   machines. Buffer over flow fix for fbcon putcs function. C99 initializers
+   for the STI console drivers.Voodoo 1/2 and NVIDIA driver updates.

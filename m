@@ -1,24 +1,21 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
-	one works ;-)
-Date: Wed, 28 Apr 2004 09:14:03 +1000
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [PATCH] neofb patches
+Date: Wed, 28 Apr 2004 00:21:13 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1083107642.16476.46.camel@gaston>
-References: <Pine.LNX.4.44.0404272330480.23153-100000@phoenix.infradead.org>
-	 <408EE5EB.6080705@undead.cc>
+Message-ID: <Pine.LNX.4.44.0404280019070.23153-100000@phoenix.infradead.org>
+References: <1083107454.16544.42.camel@gaston>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIbrj-0008Mv-Fq
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:19:51 -0700
-Received: from gate.crashing.org ([63.228.1.57] ident=root)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	id 1BIbt8-0000HS-Gs
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:21:18 -0700
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1BIbrj-0001vj-2k
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:19:51 -0700
-In-Reply-To: <408EE5EB.6080705@undead.cc>
+	id 1BIbt7-0002DM-Tc
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:21:18 -0700
+In-Reply-To: <1083107454.16544.42.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,30 +25,32 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: John Zielinski <grim@undead.cc>
-Cc: James Simmons <jsimmons@infradead.org>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: John Zielinski <grim@undead.cc>, Geert Uytterhoeven <geert@linux-m68k.org>, Alex Stewart <alex@foogod.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> So if a fb program restores the mode properly then we should do nothing 
-> but if it doesn't either because of a bad programming or an unexpected 
-> termination then we should reset the mode to what the user has selected 
-> for their console.
+> > I can see how vgacon and fbcon would walk all over each other but how 
+> > would a serial console
+> > mess things up?
+> 
+> Same question... Where is the problem ?
 
-Which is why I've been adding calls from the VT subsystem to the console
-when a program enter/leaves KD_GRAPHICS (via the blank() callback to which
-I added a parameter) so fbcon can reprogram the mode & the engine. That
-fixed various problems with XFree not cleaning things properly.
+Say two people are logged in. One on a serial console and another on the 
+framebuffer console. The person starts X fbdev from the serial console. 
+Ooops the fbcon user lost his console.
 
-The proper policy here is simple. Whoever gets control of a console is
-responsible for setting it up the way he needs. When leaving, it is not
-requires to restore the mode it got on entry, but it should try at least
-to leave the card in a sane state (accel engine not running). Though we
-should probably add more security there to the fbdev's so they actually
-make sure of that since it's always possible to kill a userland program
-without letting it cleanup.
+> We need several level of arbitration, I'm not sure hwo to do that at
+> this point and I don't have time to dive into the DRI side of things.
+> 
+> Jon Smirl has been working on embedded mesa & moving DRI outside of
+> X. Unfortunately, last I heard, he was still on his trip of re-inventing
+> everything including replacing the fbdev's with his own stuff instead
+> of moving from what we have ...
 
-Ben.
+Ug. This is sad :-(
+
 
 
 

@@ -1,13 +1,17 @@
-From: Alex Thiel <stderr@web.de>
-Subject: Re: Neomagic fb driver oopses with linux 2.5
-Date: Tue, 29 Jul 2003 22:14:19 +0200
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [PATCH] Framebuffer: client notification mecanism & PM
+Date: Tue, 29 Jul 2003 22:31:30 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <m34r15ks4k.fsf@spock.alex.net>
-References: <Pine.LNX.4.44.0307291811080.5874-100000@phoenix.infradead.org>
+Message-ID: <Pine.LNX.4.44.0307292231180.5874-100000@phoenix.infradead.org>
+References: <1059510171.8538.53.camel@gaston>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-In-Reply-To: <Pine.LNX.4.44.0307291811080.5874-100000@phoenix.infradead.org> (James
- Simmons's message of "Tue, 29 Jul 2003 18:14:02 +0100 (BST)")
+Received: from pub234.cambridge.redhat.com ([213.86.99.234] helo=phoenix.infradead.org)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19hc4m-0003Wt-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 29 Jul 2003 14:32:09 -0700
+In-Reply-To: <1059510171.8538.53.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -17,28 +21,20 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: linux-fbdev-devel@sourceforge.net
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Petr Vandrovec <VANDROVE@vc.cvut.cz>, linux-kernel mailing list <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-James Simmons <jsimmons@infradead.org> writes:
 
->> I noticed that ksymoops complained about not being able to open
->> /proc/ksyms which seems to have gone in 2.5. Can this cause a
->> misinterpretation of the raw oops data?
->> 
->> Anyway, I managed to connect to the laptop via a serial line and hope
->> to be able to track down the problem a little more this way.
->
-> Hm. It has changed again. Anyone know the current method for backtracing.
+> > I knew it was a matter of time before "client" management would happen. 
+> > Is this a 2.6.X thing tho or shoudl we wait for the next developement 
+> > cycle. I don't mind working on experimental stuff.
+> 
+> We need that now for proper power management.
 
-I have recompiled the kernel with debugging symbols included, and gdb
-thinks the oops occurs at line 264 in cfbimgblt.c. I don't know how
-accurate this is, though, since this line is in function
-fast_imageblit() while the backtrace rather pointed at cfb_imageblit().
+Okay. 
 
-                 Alex
 
 
 

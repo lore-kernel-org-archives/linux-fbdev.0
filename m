@@ -1,23 +1,21 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: still ..Confused about atyfb and M1
-Date: Wed, 4 Feb 2004 16:35:52 +0100 (MET)
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: fb.h header fix.
+Date: Wed, 4 Feb 2004 18:58:31 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0402041634100.22483@waterleaf.sonytel.be>
-References: <Pine.LNX.4.44.0401302147390.22830-100000@phoenix.infradead.org>
- <401FF39B.7090406@bitworks.com> <Pine.GSO.4.58.0402041003560.20790@waterleaf.sonytel.be>
- <40210CEA.5080102@bitworks.com>
+Message-ID: <Pine.LNX.4.44.0402041857210.20659-100000@phoenix.infradead.org>
+References: <1075867994.1747.1.camel@gaston>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AoPBc-0001oW-Rc
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 04 Feb 2004 07:43:32 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1AoPBa-0001Ah-6g
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 04 Feb 2004 07:43:30 -0800
-In-Reply-To: <40210CEA.5080102@bitworks.com>
+	id 1AoSER-0001Fv-Am
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 04 Feb 2004 10:58:39 -0800
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1AoSEQ-0000TQ-LX
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 04 Feb 2004 10:58:38 -0800
+In-Reply-To: <1075867994.1747.1.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,64 +25,25 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="iso-8859-1"
-To: Richard Smith <rsmith@bitworks.com>
-Cc: James Simmons <jsimmons@infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Alexander Kern <alex.kern@gmx.de>, Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Andrew Morton <akpm@osdl.org>, torvalds@transmeta.com, Linux Kernel list <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 4 Feb 2004, Richard Smith wrote:
-> > On Tue, 3 Feb 2004, Richard Smith wrote:
-> >
-> >>new untested hardware booting a half-ass videobios running an unknown
-> >>driver.  Gee... wonder why it dosen't work? *grin*
->
->  >Geert Uytterhoeven wrote:
->
-> > Indeed, atyfb needs BIOS (or OpenFirmware) initialization. It has
-> >
-> How much?  Are things like the ammount and type of RAM autodetected or
-> just read from registers that the BIOS is supposed to set?
 
-Atyfb reads them from the registers.
+> > > The XFree86 fbdev server build breaks with the current fb.h. This patch 
+> > >  fixes that.
+> > 
+> > The previous version of this patch caused the ppc64 build to fail.  Did
+> > that get addressed?
+> 
+> Not yet, it's a ppc64 bug, I haven't had time to fix it, for some
+> reason, ppc64 doesn't have readq/writeq nor __raw_ IO accessors.
 
-> > My Vaio Z600TEK (Z505 in US/JP) has a M1. It works with atyfb in rece=
-nt 2.4,
-> > but it took Dani=EBl Mantione quite a bit of work to make it work on =
-this
-> > particular machine...
->
-> What device ID is your M1?
+This means more than the fbdev layer will break on the ppc64.
+Ben you you post a patch for the ppc64 so the fbdev patch can go in?
 
-1002:4c4d
 
-> Any idea what he had to do?  Most of DM's code seems to deal with
-
-IIRC, programming an extra shadow register.
-
-> makeing it work properly with a LCD.  Right now I just have a CRT hooke=
-d
-> up.  LCD will comes later.
->
-> > Let's say atyfb in 2.4 works on most M1s these days.
->
-> So which one should I work with? 2.4 or 2.6 with fbdiff?
-
-I think 2.4 is the safest. I don't know whether James' tree already conta=
-ins
-all Mobility support from 2.4.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m6=
-8k.org
-
-In personal conversations with technical people, I call myself a hacker. =
-But
-when I'm talking to journalists I just say "programmer" or something like=
- that.
-							    -- Linus Torvalds
 
 
 -------------------------------------------------------

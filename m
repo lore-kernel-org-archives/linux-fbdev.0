@@ -1,28 +1,22 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [patch] radeonfb: FB_WAITFORVSYNC
 	implementation
-Date: Sun, 13 Mar 2005 10:23:31 +1100
-Message-ID: <1110669811.19810.46.camel@gaston>
+Date: Sun, 13 Mar 2005 10:30:30 +1100
+Message-ID: <1110670230.19810.51.camel@gaston>
 References: <1110636406.5997.86.camel@atlantis.netenviron.com>
-	 <9e473391050312073314dcb39f@mail.gmail.com> <20050312155139.GA28135@sci.fi>
-	 <9e47339105031208003cd3d834@mail.gmail.com> <20050312161040.GA28469@sci.fi>
-	 <9e4733910503120821469e9b61@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Content-Transfer-Encoding: 7bit
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DAFxn-0000Ve-DN
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 12 Mar 2005 15:24:07 -0800
+	id 1DAG4Y-0000vg-R8
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 12 Mar 2005 15:31:06 -0800
 Received: from gate.crashing.org ([63.228.1.57])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1DAFxl-0003fr-Si
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 12 Mar 2005 15:24:07 -0800
-Received: from gaston (localhost [127.0.0.1])
-	by gate.crashing.org (8.12.8/8.12.8) with ESMTP id j2CNLrgJ026004
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 12 Mar 2005 17:21:54 -0600
-In-Reply-To: <9e4733910503120821469e9b61@mail.gmail.com>
+	id 1DAG4X-0002LY-9u
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 12 Mar 2005 15:31:06 -0800
+In-Reply-To: <1110636406.5997.86.camel@atlantis.netenviron.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -33,38 +27,36 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Torgeir Veimo <torgeir@pobox.com>
 
-On Sat, 2005-03-12 at 11:21 -0500, Jon Smirl wrote:
-> On Sat, 12 Mar 2005 18:10:40 +0200, Ville Syrj=E4l=E4 <syrjala@sci.fi> =
-wrote:
-> > On Sat, Mar 12, 2005 at 11:00:56AM -0500, Jon Smirl wrote:
-> > > On Sat, 12 Mar 2005 17:51:39 +0200, Ville Syrj=E4l=E4 <syrjala@sci.=
-fi> wrote:
-> > > > It's not a problem if one doesn't use X.Org/XFree86. Also this pa=
-tch
-> > > > should not affect X.Org/XFree86 users unless they manage to call =
-the
-> > > > FBIO_WAITFORVSYNC ioctl. matroxfb and atyfb both have similar int=
-errupt
-> > > > support and X can still be used with both.
-> > >
-> > > Almost all PPC Linux boxes are running radeonfb with Xorg.
-> >=20
-> > What's your point? I doubt X.Org uses FBIO_WAITFORSYNC so the patch
-> > should not interfere with anything.
->=20
-> Run something on one VT that uses radeonfb with FBIO_WAITFORSYNC.
-> Switch to VT with xorg.
-> Reboot box.
+On Sat, 2005-03-12 at 14:06 +0000, Torgeir Veimo wrote:
+> This is an implementation of the FB_WAITFORVSYNC ioctl for the radeonfb.
+> A small test application is attached at the end. This patch is against
+> vanilla 2.6.11.
+> 
+> Signed-off-by: Torgeir Veimo <torgeir@pobox.com>
 
-Not necessarily. We have the concept of active VT. FBIO_WAITFORSYNC only
-need to enable interrupts during the ioctl execution, and mail stop
-waiting and return an error if blank/set_var is called (and thus a VT
-switch happens).
+Please, put patches inline in the mail, not as attachment, it makes
+dealing with them simpler and possible to quote them with any mailer.
+
+The patch definitely needs a lot of cleanups. A few things are wrong
+too, like using test_and_set_* as a mean of locking. This doesn't work
+on relaxed ordering architectures.
+
+Besides, the entire fbdev subsystem is protected by the console
+semaphore, so you shouldn't need anything else. You need to acquire it
+yourself in the driver ioctl() routine though.
+
+In order to avoid conflicting with other apps, you should probably
+"abort" the operation if a console switch happens while you are waiting.
+That is, a set_var() and/or a blank(). Return -EINTR or something like
+that.
 
 Ben.
+
+
 
 
 

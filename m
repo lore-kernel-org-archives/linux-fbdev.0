@@ -1,17 +1,19 @@
-From: Sven Luther <luther@dpt-info.u-strasbg.fr>
-Subject: Re: Re: FBdev updates.
-Date: Thu, 6 Mar 2003 08:35:08 +0100
+From: Antonino Daplas <adaplas@pol.net>
+Subject: Re: Feature Freeze?
+Date: 06 Mar 2003 15:54:46 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030306073508.GA1734@iliana>
-References: <20030303203500.GA2916@vana.vc.cvut.cz> <Pine.LNX.4.44.0303052015250.27760-100000@phoenix.infradead.org>
+Message-ID: <1046937244.1209.22.camel@localhost.localdomain>
+References: <Pine.LNX.4.44.0303051829450.27760-100000@phoenix.infradead.org>
+	<1046913396.1227.176.camel@localhost.localdomain> 
+	<20030306070343.GA24575@casa.fluido.as>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from smtp-out-4.wanadoo.fr ([193.252.19.23] helo=mel-rto4.wanadoo.fr)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18qpwH-0006ap-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 23:37:13 -0800
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0303052015250.27760-100000@phoenix.infradead.org>
+Received: from pine.compass.com.ph ([202.70.96.37])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18qqC1-0002sL-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 23:53:30 -0800
+In-Reply-To: <20030306070343.GA24575@casa.fluido.as>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,46 +24,82 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Petr Vandrovec <vandrove@vc.cvut.cz>, Antonino Daplas <adaplas@pol.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: "Carlo E. Prelz" <fluido@fluido.as>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, Mar 05, 2003 at 08:22:26PM +0000, James Simmons wrote:
+On Thu, 2003-03-06 at 15:03, Carlo E. Prelz wrote:
+> I see there currently is much activity on the list. I would like to
+> present the point of view of a heavy framebuffer user: I write
+> multimedia code for artists, and I generally generate video via the
+> framebuffer layer, and trusted old matrox cards (from the Millennium
+> II to the G550). The general process is:
 > 
-> > Hi,
-> >   while waiting on these updates I updated matroxfb a bit
-> > (ftp://platan.vc.cvut.cz/pub/linux/matrox-latest/matroxfb-2.5.63.gz),
-> > so that it now uses fb_* for cfb modes, and putcs/... hooks for
-> > text mode. I have still dozen of changes in fbcon.c which I have
-> > to eliminate (mainly logo painting and cursor handling - for now
-> > I still use revc method, mainly because of I did not make into it yet).
-> 
-> I grabbed your latest patch and started to merge it with my latest work on 
-> the matrox driver. As soon as I'm done merging my matrox changes I will 
-> send you a patch right away.
-> 
-> >   My main concern now is 12x22 font... Accelerator setup
-> > is so costly for each separate painted character that for 8bpp 
-> > accelerated version is even slower than unaccelerated one :-(
-> > (and almost twice as slow when compared with 2.4.x).
-> 
-> Try the latest patch I released.
->  
-> >   And one (or two...) generic questions: why is not pseudo_palette
-> > u32* pseudo_palette, or even directly u32 pseudo_palette[17] ?
-> 
-> pseudo_palette was originally designed to be a pointer to some kind of 
-> data for color register programming. For example many PPC graphics cards 
-> have a color register region. Now you could have that point to 
+> - open the framebuffer unit
+> - FBIOGET_VSCREENINFO
+> - change the appropriate values in fb_var_screeninfo
+> - FBIOPUT_VSCREENINFO
+> - mmap
+> - happily write pixels to the memory area
 
-Does this correspond to the LUT i have in my boards ?
+All of the above should still work with the 2.5.  Care was taken to
+prevent user application breakage. 
 
-BTW, what is the point in having a pseudo_palette if you can store
-the colors in the onchip LUT table.
+> 
+> This, multiplied for all the video heads that I use within the same
+> program (up to 5 per PC, up to now, *including* the console screen -
+> in this case I control the machine from a network connection).
+> 
+> I am especially in need to change the BPP value (often using 16BPP
+> mode), and in a couple of occasions (the latest 2 weeks ago) I had to
+> feed the output of old G200's to large monitors who are only capable
+> of TV resolution. This means setting the framebuffer to 768x576 (PAL)
+> and *interlaced*. The framebuffer model that still survives in 2.4
+> allows me to obtain all this. 
 
-Friendly,
+You can still do it for the 2.5, except that the matroxfb is not ported
+yet.
 
-Sven Luther
+> 
+> I am not much familiar with all the terminology that is used for the
+> new layer. Actually, this framebuffer revolution is what keeps me from
+> enjoying (!) the kernel bleeding edge, as I used to do since almost 10
+> years ago. 
+> 
+> Can I poll the list's huge knowledge to find out if and how I can
+> obtain the same result with the new layer?
+> 
+
+You still can, in general, use the framebuffer as you would use it in
+the 2.2.- 2.4 versions.  The main difference is console window
+resizing.  As you probably know, in 2.4, resizing was done through the
+fbdev layer and then the information is transmitted to the console.  In
+2.5, it is currently the opposite way, from the console to fbdev.  The
+only application that I know of that is able to do that is stty, which
+in its current incarnation has very limited capability.  However, you
+can still use fbset to change other parameters (color depth,
+acceleration, etc), anything that will not affect the window size.
+
+So the debate really is, should fbset support for console resizing be
+reimplemented? Or should console resizing through stty be made more
+powerful, at least to create a video mode that is usable, and then just
+use fbset later on to fine tune the new video mode? The former is easy,
+the latter is saner but more difficult to code.
+
+The matroxfb on the other hand, is the most complicated fb driver
+around, so it is perfectly understandable that rewriting the driver for
+the 2.5 will take some time.  Temporarily, you can use Petr's patches
+until it is ported over to 2.5.  
+
+ftp://platan.vc.cvut.cz/pub/linux/matrox-latest/matroxfb-2.5.63.gz
+
+
+The new layer may not produce something tangible in terms of user
+experience (except perhaps for a faster console), but it should pave the
+way for better things in the future.
+
+Tony
+
+
 
 
 -------------------------------------------------------

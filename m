@@ -1,17 +1,17 @@
-From: "Sunil Kumar T" <t.sunilkumar@bplmail.com>
-Subject: Display driver.
-Date: Sun, 13 Oct 2002 14:32:41 -0700
+From: Sven LUTHER <luther@dpt-info.u-strasbg.fr>
+Subject: Re: 2.5 atyfb on Sparc question
+Date: Mon, 14 Oct 2002 12:04:38 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <00ec01c27300$0f31a060$990d0a0a@bpldj7ls7op535>
-References: <Pine.GSO.4.21.0210141020550.9580-100000@vervain.sonytel.be>
+Message-ID: <20021014100438.GA2086@iliana>
+References: <61DB42B180EAB34E9D28346C11535A780112FDED@nocmail101.ma.tmpw.net> <Pine.LNX.4.33.0210131307110.5997-100000@maxwell.earthlink.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [203.200.31.3] (helo=btlmail.bplmail.com)
-	by usw-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1811EG-0007Vj-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 14 Oct 2002 02:09:37 -0700
+Received: from smtp-out-4.wanadoo.fr ([193.252.19.23] helo=mel-rto4.wanadoo.fr)
+	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 1811we-0001pB-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 14 Oct 2002 02:55:28 -0700
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.33.0210131307110.5997-100000@maxwell.earthlink.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,42 +22,42 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchives/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Petr Vandrovec <vandrove@vc.cvut.cz>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+To: James Simmons <jsimmons@infradead.org>
+Cc: "Holzrichter, Bruce" <bruce.holzrichter@monster.com>, linux-fbdev-devel@lists.sourceforge.net
 
-Hi,
-I am planning to write a display  driver for the chip(MD2406)  which is
-having ARM7TDMI core.
-This chip is having a display interface and JPEG engine.
+On Sun, Oct 13, 2002 at 01:08:08PM -0700, James Simmons wrote:
+> 
+> Sorry I have been going threw alot of chabnges recently. Try my lastest
+> tree. I just updated it and I'm nearly done change the api.
 
-The purpose is to take JPEG file from user space decode the JPEG file using
-hardware decoder in the chip. Display the the jpeg file.
+BTW, i tried this WE to look at porting the pm3fb driver to the new API,
+doing a complete rewrite (well, basically starting again from tridentff,
+tdfxfb and skeletonfb, and getting the code as needed from current
+pm3fb, which has a lot of unneeded stuff in it). I have not much time
+though, so it will go slowly.
 
-I would like to know from you experts, Should I go for Frame Buffer driver
-for this function.
+I thought i may as well write a little HOWTO or something such on the
+way of doing this. Since i have not much fbdev writing experience, maybe
+i am a good candidate for writing such a thing.
 
-Its able to do the display of jpeg file only from the processor without
-using linux.
-I am new to display driver. Can I by pass frame buffer method and do the
-SDRAM (Display ram) memory acesses directly and acomplish the task. I mean
-can I do this driver by using ioctl, and write statement alone. As a normal
-charactor driver.
-Is there any problem in doing so.
-Regards
+I wanted, in the first step, to do just a basic unaccelerated fbdev
+driver, without mode changes and anything fancy, and once this works,
+add things incrementally. I believe this approach will be good for
+future fbdev driver writters.
 
+Anyway, now for my question.
 
-SunilKumar.T
-Sr. Design Engineer
-Software and Embedded Systems Group,
-BPL TELECOM LTD.
-11th K. M., Bannerghatta Road,
-Bangalore 560076.
-Ph. No.91-80- 6589080 etx.2058
+skeletonfb says that check_var, set_par, setcolreg, pan_display and
+blank functions are optional or not required. Is that true, and in case
+i don't want to provide them, whay do i put in the fb_ops structure ?
 
+Later, in the fb_ops structure, only set_par, blank and pan_display are
+labeled as optional.
 
+Friendly,
 
-
-
+Sven Luther
 
 
 -------------------------------------------------------

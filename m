@@ -1,21 +1,21 @@
 From: Otto Solares <solca@guug.org>
 Subject: Re: Changing modes with fbset
-Date: Mon, 5 Jan 2004 20:06:53 -0600
+Date: Mon, 5 Jan 2004 20:24:21 -0600
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040106020653.GE442@guug.org>
-References: <3FDBB97F.4070207@undead.cc> <Pine.LNX.4.44.0401060005511.7347-100000@phoenix.infradead.org> <20040106002822.GB442@guug.org> <1073349349.780.181.camel@gaston> <20040106010852.GC442@guug.org> <1073351384.781.202.camel@gaston> <20040106014414.GD442@guug.org> <1073353478.9499.204.camel@gaston>
+Message-ID: <20040106022421.GA3689@guug.org>
+References: <3FDBB97F.4070207@undead.cc> <Pine.LNX.4.44.0401060005511.7347-100000@phoenix.infradead.org> <20040106002822.GB442@guug.org> <1073349349.780.181.camel@gaston> <20040106010852.GC442@guug.org> <1073351384.781.202.camel@gaston> <20040106014414.GD442@guug.org> <1073353478.9499.204.camel@gaston> <20040106020653.GE442@guug.org> <1073354986.761.208.camel@gaston>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1Adgdg-0006I1-LC
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 18:08:12 -0800
+	id 1AdguZ-0006xY-Sa
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 18:25:39 -0800
 Received: from [168.234.203.30] (helo=guug.galileo.edu)
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Adgdg-0004Lm-Ag
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 18:08:12 -0800
+	id 1AdguZ-0007JS-Gx
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 18:25:39 -0800
 Content-Disposition: inline
-In-Reply-To: <1073353478.9499.204.camel@gaston>
+In-Reply-To: <1073354986.761.208.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,25 +30,20 @@ Content-Transfer-Encoding: 7bit
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tue, Jan 06, 2004 at 12:44:39PM +1100, Benjamin Herrenschmidt wrote:
+On Tue, Jan 06, 2004 at 01:09:47PM +1100, Benjamin Herrenschmidt wrote:
 > 
-> > Ben, you that know the internals of fbdev's, it would be difficult to
-> > implement the busid stuff?  Maybe that info is already known by the
-> > drivers somewhere... It could even work for sparcs with sbus or others
-> > archs with differents buses, as the busid nomenclature is very standarized
-> > i think.
+> > Agree.  Problem is that sysfs stuff is very invasive i think and it
+> > will be hard to push even on development trees like -mm ones.  An
+> > ioctl could be something simple as passing a pointer to a buffer
+> > of fixed length, the best imho would be extend fb_fix_screeninfo
+> > struct to accomodate a 'char busid[16];' but that could break
+> > binary compatibility.  If 2.6 break from 2.4 we could put it
+> > there as anyway apps need to recompile.  Shame that there are
+> > not sufficient 'reserved' bits.
 > 
-> Fairly easy, though it would be even better to do it based on the
-> sysfs stuff rather than an ioctl. 
+> We can just add it to fb_info and return if from an ioctl...
 
-Agree.  Problem is that sysfs stuff is very invasive i think and it
-will be hard to push even on development trees like -mm ones.  An
-ioctl could be something simple as passing a pointer to a buffer
-of fixed length, the best imho would be extend fb_fix_screeninfo
-struct to accomodate a 'char busid[16];' but that could break
-binary compatibility.  If 2.6 break from 2.4 we could put it
-there as anyway apps need to recompile.  Shame that there are
-not sufficient 'reserved' bits.
+Great! hopefully James will agree!.. :)
 
 -solca
 

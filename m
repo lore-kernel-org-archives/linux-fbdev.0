@@ -1,15 +1,17 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: [PATCH]: Various fbdev fixes:
-Date: 16 Jan 2003 11:49:27 +0800
+From: Sven Luther <luther@dpt-info.u-strasbg.fr>
+Subject: Re: video dir reorg
+Date: Thu, 16 Jan 2003 11:38:08 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1042688316.970.21.camel@localhost.localdomain>
+Message-ID: <20030116103808.GA1965@iliana>
+References: <1042666710.3186.40.camel@thor> <20030116035231.36507.qmail@web14910.mail.yahoo.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from willow.compass.com.ph ([202.70.96.38])
+Received: from smtp-out-4.wanadoo.fr ([193.252.19.23] helo=mel-rto4.wanadoo.fr)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18Z1AG-0006t6-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 15 Jan 2003 19:58:01 -0800
+	id 18Z7QJ-0001LW-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 16 Jan 2003 02:38:59 -0800
+Content-Disposition: inline
+In-Reply-To: <20030116035231.36507.qmail@web14910.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,253 +22,120 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>, James Simmons <jsimmons@infradead.org>, Sven Luther <luther@dpt-info.u-strasbg.fr>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi James,
+On Wed, Jan 15, 2003 at 07:52:31PM -0800, Jon Smirl wrote:
+> --- Michel D?nzer <michel@daenzer.net> wrote:
+> > While I hope there will be some form of cooperation
+> > between framebuffer
+> > devices and the DRM in the future, I do think they
+> > basically serve very
+> > different purposes so I don't think merging them
+> > makes sense.
+> 
+> Some areas of cooperation.....
+> 
+> 1) We have two drivers for the same hardware. They
+> should be sharing the same include files describing
+> the hardware.
+> 2) Bug fixing, in some cases the same hardware bug
+> would need to be fixed in two places.
+> 3) State saving.  When the virtual terminal is changed
+> is the complete state of the DRM driver saved? What if
+> one of the other virtual terminals plays with 3D mode?
 
-It seems that the 32/64-bit patch for fast_imageblit() and the
-"non-divisible by 8 width" fix for slow_imageblit() did not completely
-take.  So here's an updated patch against linux-2.5.58 + your latest
-fbdev.diff:
+Currently, mostly the state saving code is in the X server anyway, so it
+would not help here.
 
-a.  Fix for fast_imageblit() being unclean on 64-bit and higher
-machines:  With the change, the 32-bit tables will be accessed 2 (or
-more) times  on >= 64-bit machines before doing a single FB_WRITEL. 
-Because the extra tests and bit packing impose a performance penalty for
-32-bit machines, 32-bit machines undergo a different, faster, and
-simpler path.
+> 4) DDC and secondary reset support. I was looking at
+> adding this to some of the framebuffer drivers. The X
+> driver can't share this code.
+> 5) General kernel config. The same peice of hardware
+> appears in two different places.
 
-c.  Fix for slow_imageblit() being unclean for bitmaps with widths not
-divisible by 8.
+Also, i believe that some discution about the sharing of fb memory and
+other such may be in common.
 
-d.  Fix for fbcon_resize().  Update display.vrows after fb_set_var(). 
-This should fix console problems when fb_var_screeninfo.yres_virtual is
-changed and y-panning is enabled. Only activated when fbcon_switch() is
-called.
+Also, there could be the possibility (remote possiblity though) that the
+fbdev driver author and the DRI author is the same person.
 
-e.  Trivial:  info->fbops->fb_sync() may not be necessary in
-accel_putcs().
+> There is no immediate reason for merging. I am just
+> thinking about where this will be in three to five
+> years. 
+> 
+> A more general question, what should be the
+> capabilities of an in kernel video driver?
+> 
+> Required:
+> 1) Complete state save on VT switch
 
-Tony
+This is done in the X server right now, altough i believe the fbdev also
+does save its state on VT exit.
 
-diff -Naur linux-2.5.58-fbdev/drivers/video/cfbimgblt.c linux/drivers/video/cfbimgblt.c
---- linux-2.5.58-fbdev/drivers/video/cfbimgblt.c	2003-01-16 03:09:59.000000000 +0000
-+++ linux/drivers/video/cfbimgblt.c	2003-01-16 03:31:41.000000000 +0000
-@@ -73,26 +73,36 @@
- 	0x00000000, 0xffffffff
- };
- 
--#if BITS_PER_LONG == 32
--#define FB_WRITEL fb_writel
--#define FB_READL  fb_readl
--#else
--#define FB_WRITEL fb_writeq
--#define FB_READL  fb_readq
--#endif 
--
- #if defined (__BIG_ENDIAN)
- #define LEFT_POS(bpp)          (BITS_PER_LONG - bpp)
--#define NEXT_POS(pos, bpp)     ((pos) -= (bpp))
- #define SHIFT_HIGH(val, bits)  ((val) >> (bits))
- #define SHIFT_LOW(val, bits)   ((val) << (bits))
- #else
- #define LEFT_POS(bpp)          (0)
--#define NEXT_POS(pos, bpp)     ((pos) += (bpp))
- #define SHIFT_HIGH(val, bits)  ((val) << (bits))
- #define SHIFT_LOW(val, bits)   ((val) >> (bits))
- #endif
- 
-+#if BITS_PER_LONG == 32
-+#define FB_WRITEL        fb_writel
-+#define FB_READL         fb_readl
-+#define INIT_FASTPATH    {}
-+#define FASTPATH         fb_writel((end_mask & eorx)^bgx, dst++)
-+#else
-+#define FB_WRITEL        fb_writeq
-+#define FB_READL         fb_readq
-+#define INIT_FASTPATH    unsigned val = 0, bpl = 0 
-+#define FASTPATH {                                     \
-+	val |= SHIFT_HIGH((end_mask & eorx)^bgx, bpl); \
-+	bpl += 32;                                     \
-+	bpl &= BITS_PER_LONG - 1;                      \
-+	if (!bpl) {                                    \
-+		FB_WRITEL(val, dst++);                 \
-+		val = 0;                               \
-+	}                                              \
-+}                                                      
-+#endif 
-+
- static inline void color_imageblit(struct fb_image *image, struct fb_info *p, 
- 				   u8 *dst1, unsigned long start_index,
- 				   unsigned long pitch_index)
-@@ -160,29 +170,28 @@
- 	unsigned long shift, color, bpp = p->var.bits_per_pixel;
- 	unsigned long *dst, *dst2, val, pitch = p->fix.line_length;
- 	unsigned long null_bits = BITS_PER_LONG - bpp;
--	u8 *src = image->data, *s;
-+	unsigned long spitch = (image->width+7)/8;
-+	u8 *s = image->data, *src;
- 	
- 	dst2 = (unsigned long *) dst1;
- 
- 	for (i = image->height; i--; ) {
--		shift = 0;
--		val = 0;
-+		shift = val = 0;
-+		l = 8;
- 		j = image->width;
- 		dst = (unsigned long *) dst1;
--
-+		src = s;
- 		/* write leading bits */
- 		if (start_index) {
--			unsigned long start_mask = ~(SHIFT_HIGH(~0UL, start_index));
-+			unsigned long start_mask = ~(SHIFT_HIGH(~0UL, 
-+								start_index));
- 
- 			val = FB_READL(dst) & start_mask;
- 			shift = start_index;
- 		}
- 		while (j--) {
- 			l--;
--			if (*src & (1 << l)) 
--				color = fgcolor;
--			else 
--				color = bgcolor;
-+			color = (*src & (1 << l)) ? fgcolor : bgcolor;
- 			color <<= LEFT_POS(bpp);
- 			val |= SHIFT_HIGH(color, shift);
- 			
-@@ -192,7 +201,8 @@
- 				if (shift == null_bits)
- 					val = 0;
- 				else
--					val = SHIFT_LOW(color, BITS_PER_LONG - shift);
-+					val = SHIFT_LOW(color, 
-+							BITS_PER_LONG - shift);
- 			}
- 			shift += bpp;
- 			shift &= (BITS_PER_LONG - 1);
-@@ -205,7 +215,7 @@
- 			FB_WRITEL((FB_READL(dst) & end_mask) | val, dst);
- 		}
- 		dst1 += pitch;	
--
-+		s += spitch;
- 		if (pitch_index) {
- 			dst2 += pitch;
- 			dst1 = (char *) dst2;
-@@ -227,17 +237,16 @@
-  *           beginning and end of a scanline is dword aligned
-  */
- static inline void fast_imageblit(struct fb_image *image, struct fb_info *p, 
--				  u8 *dst1, unsigned long fgcolor, 
--				  unsigned long bgcolor) 
-+				  u8 *dst1, u32 fgcolor, u32 bgcolor) 
- {
--	unsigned long fgx = fgcolor, bgx = bgcolor, bpp = p->var.bits_per_pixel;
--	unsigned long ppw = BITS_PER_LONG/bpp, spitch = (image->width + 7)/8;
--	unsigned long bit_mask, end_mask, eorx, shift;
--	char *s = image->data, *src;
--	unsigned long *dst;
-+	int i, j, k; 
-+	u32 bit_mask, end_mask, eorx, shift; 
-+	u32 fgx = fgcolor, bgx = bgcolor, bpp = p->var.bits_per_pixel;
-+	u32 ppw = 32/bpp, spitch = (image->width + 7)/8;
- 	u32 *tab = NULL;
--	int i, j, k;
--		
-+	unsigned long *dst;
-+	char *s = image->data, *src;
-+
- 	switch (bpp) {
- 	case 8:
- 		tab = cfb_tab8;
-@@ -262,19 +271,19 @@
- 	k = image->width/ppw;
- 
- 	for (i = image->height; i--; ) {
--		dst = (unsigned long *) dst1, shift = 8; src = s;
--		
-+		INIT_FASTPATH;
-+		dst = (unsigned long *) dst1; shift = 8; src = s;
- 		for (j = k; j--; ) {
- 			shift -= ppw;
--			end_mask = tab[(*src >> shift) & bit_mask];
--			FB_WRITEL((end_mask & eorx)^bgx, dst++);
--			if (!shift) { shift = 8; src++; }		
-+			end_mask = tab[(*src >> shift) & bit_mask]; 
-+			FASTPATH;
-+			if (!shift) { shift = 8; src++; }
- 		}
- 		dst1 += p->fix.line_length;
- 		s += spitch;
- 	}
- }	
--	
-+
- void cfb_imageblit(struct fb_info *p, struct fb_image *image)
- {
- 	unsigned long fgcolor, bgcolor, start_index, bitstart, pitch_index = 0;
-@@ -322,12 +331,13 @@
- 			bgcolor = image->bg_color;
- 		}	
- 		
--		if (BITS_PER_LONG % bpp == 0 && !start_index && !pitch_index && 
-+		if (BITS_PER_LONG % bpp==0 && !start_index && !pitch_index &&
- 		    ((image->width & (BITS_PER_LONG/bpp-1)) == 0) &&
- 		    bpp >= 8 && bpp <= 32) 			
- 			fast_imageblit(image, p, dst1, fgcolor, bgcolor);
- 		else 
--			slow_imageblit(image, p, dst1, fgcolor, bgcolor, start_index, pitch_index);
-+			slow_imageblit(image, p, dst1, fgcolor, bgcolor, 
-+				       start_index, pitch_index);
- 	}
- 	else if (image->depth == bpp) 
- 		color_imageblit(image, p, dst1, start_index, pitch_index);
-diff -Naur linux-2.5.58-fbdev/drivers/video/console/fbcon.c linux/drivers/video/console/fbcon.c
---- linux-2.5.58-fbdev/drivers/video/console/fbcon.c	2003-01-16 03:10:12.000000000 +0000
-+++ linux/drivers/video/console/fbcon.c	2003-01-16 03:10:35.000000000 +0000
-@@ -399,7 +399,7 @@
- 
- 	if (!(vc->vc_font.width & 7)) {
- 		unsigned int pitch, cnt, i, j, k;
--		unsigned int maxcnt = FB_PIXMAPSIZE/(vc->vc_font.height * width);
-+		unsigned int maxcnt = FB_PIXMAPSIZE/cellsize;
- 		char *src, *dst, *dst0;
- 
- 		image.data = pixmap;
-@@ -437,8 +437,6 @@
- 			image.dx += vc->vc_font.width;
- 		}	
- 	}
--	if (info->fbops->fb_sync)
--		info->fbops->fb_sync(info);
- }
- 
- void accel_clear_margins(struct vc_data *vc, struct display *p,
-@@ -1883,10 +1881,11 @@
- 	var.activate = FB_ACTIVATE_NOW;
- 
- 	err = fb_set_var(&var, info);
--	return  (err || var.xres != info->var.xres ||
--		 var.yres != info->var.yres) ?
--		-EINVAL : 0;
--	  
-+	if (err || var.xres != info->var.xres ||
-+	    var.yres != info->var.yres)
-+		return -EINVAL;
-+	p->vrows = info->var.yres_virtual/vc->vc_font.height;
-+	return 0;
- }
- 
- static int fbcon_switch(struct vc_data *vc)
+> 2) Security and control of DMA hardware
 
+done in the drm module.
+
+> Maybe required:
+> 1) Reset and initialize hardware
+> 2) Video mode change
+> 3) Power saving
+
+Currently duplicated in the X server and the fbdev driver. Mmm, maybe X
+does not know about power saving, since i think the dri/ati people leave the
+X VT  for fbdev before going in power saving mode.
+
+> Not clear if better in user or kernel space:
+> 1) copy, fill, blit, etc in current fb interface
+
+This is common between X and fbdev. The architecture and the needs are
+different, though, so i don't believe there will be anything shareable
+here.
+
+Also i thought Linus would not accept anything beyond console
+acceleration stuff in the kernel anyway.
+
+> Where is the right place to draw the link between
+> kernel and user space for video drivers?
+
+All accel except basic console driving code we have right now go to
+userspace.
+
+DMA, security control and irq handling need to be in the kernel though.
+
+Friendly,
+
+Sven Luther
+> 
+> 
+> 
+> 
+> 
+> =====
+> Jon Smirl
+> jonsmirl@yahoo.com
+> 
+> __________________________________________________
+> Do you Yahoo!?
+> Yahoo! Mail Plus - Powerful. Affordable. Sign up now.
+> http://mailplus.yahoo.com
+> 
+> 
+> -------------------------------------------------------
+> This SF.NET email is sponsored by: A Thawte Code Signing Certificate 
+> is essential in establishing user confidence by providing assurance of 
+> authenticity and code integrity. Download our Free Code Signing guide:
+> http://ads.sourceforge.net/cgi-bin/redirect.pl?thaw0028en
+> _______________________________________________
+> Linux-fbdev-devel mailing list
+> Linux-fbdev-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
 
 
 -------------------------------------------------------
-This SF.NET email is sponsored by: A Thawte Code Signing Certificate 
-is essential in establishing user confidence by providing assurance of 
-authenticity and code integrity. Download our Free Code Signing guide:
-http://ads.sourceforge.net/cgi-bin/redirect.pl?thaw0028en
+This SF.NET email is sponsored by: Thawte.com
+Understand how to protect your customers personal information by implementing
+SSL on your Apache Web Server. Click here to get our FREE Thawte Apache 
+Guide: http://ads.sourceforge.net/cgi-bin/redirect.pl?thaw0029en

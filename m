@@ -1,26 +1,20 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: Re: [RFC] Video Mode Handling
-Date: Mon, 9 Aug 2004 16:41:00 +0800
+From: Jon Smirl <jonsmirl@yahoo.com>
+Subject: Re: [RFC] Video Mode Handling
+Date: Mon, 9 Aug 2004 07:56:49 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200408091641.00570.adaplas@hotpop.com>
-References: <200408090944.01414.adaplas@hotpop.com> <Pine.GSO.4.58.0408090920511.14159@waterleaf.sonytel.be> <20040809010326.305620a7.akpm@osdl.org>
-Reply-To: adaplas@pol.net
+Message-ID: <20040809145649.7829.qmail@web14925.mail.yahoo.com>
+References: <200408091559.18436.adaplas@hotpop.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bu5iU-0000Rg-Dw
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Aug 2004 01:41:14 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.71])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1Bu5iU-0002wt-3K
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Aug 2004 01:41:14 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 290A6105E552
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  9 Aug 2004 08:14:36 +0000 (UTC)
-In-Reply-To: <20040809010326.305620a7.akpm@osdl.org>
-Content-Disposition: inline
+	id 1BuBZx-0001Lb-Ap
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Aug 2004 07:56:49 -0700
+Received: from web14925.mail.yahoo.com ([216.136.225.11])
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.34)
+	id 1BuBZx-0007Ao-1C
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Aug 2004 07:56:49 -0700
+In-Reply-To: <200408091559.18436.adaplas@hotpop.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,31 +25,48 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>, Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+To: adaplas@pol.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Morton <akpm@osdl.org>
 
-On Monday 09 August 2004 16:03, Andrew Morton wrote:
+--- "Antonino A. Daplas" <adaplas@hotpop.com> wrote:
+> I guess most people will agree that writing to the hardware belongs
+> in the kernel, while choosing the correct values to write belongs to
+> userspace.  The unanswered question is the middle part, who does the
+> verification?
 
-> >   - private modedb:
-> >       - increase memory footprint by full mode database per driver.
-> >       - more complex (and larger) code
-> >       - subtle differences with 2.4, because not the whole var is saved
-> >         (BTW, which fields do you want to save, and which not, so I can
-> > 	 evaluate the impact on some drivers?)
->
-> Well gee.  If we're talking about 3k, or even 10k or 30k, let's go with the
-> simplest code?
->
+At OLS we talk about a system like this:
+1) user owns graphics devices
+2) user sets mode with string (or similar) format using ioctl common to
+all drivers.
+3) driver is locked to prevent multiple mode sets
+4) common code takes this string and does a hotplug event with it.
+5) hotplug event runs root context in user space 
+6) mode is decoded and verified, this may involve a little process that
+maintains the DDC database and reads a file of legal modes. Other
+schemes are possible.
+7a) mode is set using VBIOS and vm86, signal driver mode is set
+7b) the register values needed to set the mode are passed into a root
+priv ioctl.
+8) driver is unlocked.
 
-The simplest code is adding per-display var and removing stty/resize support.
-If stty/resize support is needed, then we need a per-driver mode database.
-Using fb_find_mode() + default modedb is no guarantee.
+In this model all of the verification happens in user space. If you
+want to set modes other than the ones from DDC you have to add them to
+the config file. There is no need for DDC support and mode verification
+in the kernel.
 
-Best to wait for the other developers to respond.
+To give credit this is Alan Cox's design.
 
-Tony
+=====
+Jon Smirl
+jonsmirl@yahoo.com
 
 
+		
+__________________________________
+Do you Yahoo!?
+New and Improved Yahoo! Mail - Send 10MB messages!
+http://promotions.yahoo.com/new_mail 
 
 
 -------------------------------------------------------

@@ -1,75 +1,35 @@
 From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: Framebuffer fixes.
-Date: 27 Mar 2003 11:01:17 +0800
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1048734021.982.4.camel@localhost.localdomain>
-References: <Pine.LNX.4.44.0303261951090.21188-100000@phoenix.infradead.org>
+Subject: Re: [Linux-fbdev-devel] Much better framebuffer fixes.
+Date: 27 Mar 2003 11:29:26 +0800
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <1048735712.1047.10.camel@localhost.localdomain>
+References: <Pine.LNX.4.44.0303270017180.25001-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from pine.compass.com.ph ([202.70.96.37])
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18yNsE-0005b7-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 26 Mar 2003 19:16:14 -0800
-In-Reply-To: <Pine.LNX.4.44.0303261951090.21188-100000@phoenix.infradead.org>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44.0303270017180.25001-100000@phoenix.infradead.org>
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@infradead.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, 2003-03-27 at 03:57, James Simmons wrote: 
+On Thu, 2003-03-27 at 08:18, James Simmons wrote:
 > 
-> Okay. Here you go. This patch is against 2.5.66 vanialla. I tested to see 
-> if it applied. It does. Basically I added back in the static buffers in 
-> accel_cursor in fbcon.c. Now the cursor will work just like it did before. 
-> The draw back is that if you have more than one framebuffer then the 
-> cursors will be messed up. So for single headed frmaebuffer systems it 
-> will work perfectly. It is not that big of a deal since the console layer 
-> is broken for multi-head and pre-emptive support anyways. Plus fbcon has 
-> issues as well. The proper fix would require a huge amount of work. 
-> I have a few updated drivers as well. Please test.
+> Okay. Here are more framebuffer fixes. Please try these fixes and let me 
+> know how they work out for you.
+> 
 
-James, 
+This is a resend of the patch I previously sent.  I see that you have
+made changes to the logo drawing code targeted for monochrome logo
+drawing to use mono expansion.  You still need a few changes though,
+image->bg_color and image->fg_color must be initialized correctly when
+image->depth == 1.
 
-1 The patch still has the atomic_dec(...) in fb_show_logo().  It's not
-needed and is actually disruptive. 
-
-2. You can still avoid static buffers by just pre-allocating them per
-device during fbcon_startup().  We therefore avoid multiple devices
-using the same buffers.   
-
-3. We can now use a more "lightweight" lock (spin_lock/unlock, instead
-of spin_lock_irqsave/unlock_irqrestore) in fb_get_buffer_offset. 
-
-4 A new bit definition, FB_CUR_SETFLASH for fb_cursor.set to mean that
-the command came from fb_callback/fb_vbl_handler.  Drivers can test this
-flag and if set, can ignore the entire command if it has support for
-hardware cursor blinking.  
-
-5. logo fixes 
-	- forgotten case statement for FB_VISUAL_PSEUDOCOLOR. 
- 
-       - image->depth should be representative of the data depth
-(currently, either 8 or 1).  If image->depth == 1, color expansion can
-now be used to draw the logo, thus there's no need to differentiate
-between mono logo drawing and monochrome expansion.
-
-
-The patch is against 2.5.66 + fbdev.diff.gz. 
-
-Tony 
+Tony
 
 diff -Naur linux-2.5.66-orig/drivers/video/cfbimgblt.c linux-2.5.66/drivers/video/cfbimgblt.c
---- linux-2.5.66-orig/drivers/video/cfbimgblt.c	2003-03-26 23:46:32.000000000 +0000
-+++ linux-2.5.66/drivers/video/cfbimgblt.c	2003-03-27 02:44:35.000000000 +0000
+--- linux-2.5.66-orig/drivers/video/cfbimgblt.c	2003-03-27 03:06:10.000000000 +0000
++++ linux-2.5.66/drivers/video/cfbimgblt.c	2003-03-27 03:09:09.000000000 +0000
 @@ -346,7 +346,7 @@
  		else 
  			slow_imageblit(image, p, dst1, fgcolor, bgcolor,
@@ -80,8 +40,8 @@ diff -Naur linux-2.5.66-orig/drivers/video/cfbimgblt.c linux-2.5.66/drivers/vide
  }
  
 diff -Naur linux-2.5.66-orig/drivers/video/console/fbcon.c linux-2.5.66/drivers/video/console/fbcon.c
---- linux-2.5.66-orig/drivers/video/console/fbcon.c	2003-03-26 23:46:32.000000000 +0000
-+++ linux-2.5.66/drivers/video/console/fbcon.c	2003-03-27 00:31:27.000000000 +0000
+--- linux-2.5.66-orig/drivers/video/console/fbcon.c	2003-03-27 03:06:10.000000000 +0000
++++ linux-2.5.66/drivers/video/console/fbcon.c	2003-03-27 03:09:09.000000000 +0000
 @@ -172,7 +172,7 @@
   *  Internal routines
   */
@@ -355,7 +315,7 @@ diff -Naur linux-2.5.66-orig/drivers/video/console/fbcon.c linux-2.5.66/drivers/
  static int scrollback_current = 0;
 diff -Naur linux-2.5.66-orig/drivers/video/console/fbcon.h linux-2.5.66/drivers/video/console/fbcon.h
 --- linux-2.5.66-orig/drivers/video/console/fbcon.h	2003-03-26 02:25:01.000000000 +0000
-+++ linux-2.5.66/drivers/video/console/fbcon.h	2003-03-26 23:49:28.000000000 +0000
++++ linux-2.5.66/drivers/video/console/fbcon.h	2003-03-27 03:09:09.000000000 +0000
 @@ -36,6 +36,15 @@
  };
  
@@ -373,14 +333,11 @@ diff -Naur linux-2.5.66-orig/drivers/video/console/fbcon.h linux-2.5.66/drivers/
  extern void set_con2fb_map(int unit, int newidx);
  
 diff -Naur linux-2.5.66-orig/drivers/video/fbmem.c linux-2.5.66/drivers/video/fbmem.c
---- linux-2.5.66-orig/drivers/video/fbmem.c	2003-03-26 23:46:32.000000000 +0000
-+++ linux-2.5.66/drivers/video/fbmem.c	2003-03-27 02:51:20.000000000 +0000
-@@ -454,14 +454,13 @@
- u32 fb_get_buffer_offset(struct fb_info *info, u32 size)
- {
+--- linux-2.5.66-orig/drivers/video/fbmem.c	2003-03-27 03:06:10.000000000 +0000
++++ linux-2.5.66/drivers/video/fbmem.c	2003-03-27 03:25:41.000000000 +0000
+@@ -456,8 +456,7 @@
  	u32 align = info->pixmap.buf_align - 1;
--	u32 offset, count = 1000;
-+	u32 offset;
+ 	u32 offset, count = 1000;
  
 -	spin_lock_irqsave(&info->pixmap.lock,
 -			  info->pixmap.lock_flags);
@@ -388,33 +345,17 @@ diff -Naur linux-2.5.66-orig/drivers/video/fbmem.c linux-2.5.66/drivers/video/fb
  	offset = info->pixmap.offset + align;
  	offset &= ~align;
  	if (offset + size > info->pixmap.size) {
--		while (atomic_read(&info->pixmap.count) && count--);
-+		while (atomic_read(&info->pixmap.count));
- 		if (info->fbops->fb_sync && 
- 		    info->pixmap.flags & FB_PIXMAP_SYNC)
- 			info->fbops->fb_sync(info);
 @@ -472,8 +471,7 @@
  	atomic_inc(&info->pixmap.count);	
  	smp_mb__after_atomic_inc();
  
 -	spin_unlock_irqrestore(&info->pixmap.lock,
 -			       info->pixmap.lock_flags);
-+	spin_unlock(&info->pixmap.lock);
++	spin_unlock_irqrestore(&info->pixmap.lock);
  	return offset;
  }
  
-@@ -568,9 +566,8 @@
- 			       const struct linux_logo *logo, u8 *dst,
- 			       int depth)
- {
--	int i, j, shift;
-+	int i, j;
- 	const u8 *src = logo->data;
--	u8 d, xor = 0;
- 
- 	switch (depth) {
- 	case 4:
-@@ -584,20 +581,6 @@
+@@ -584,20 +582,6 @@
  				}
  			}
  		break;
@@ -435,33 +376,33 @@ diff -Naur linux-2.5.66-orig/drivers/video/fbmem.c linux-2.5.66/drivers/video/fb
  	}
  }
  
-@@ -667,6 +650,7 @@
- 	case FB_VISUAL_MONO10:
- 		fb_logo.needs_logo = 1;
- 		break;
-+	case FB_VISUAL_PSEUDOCOLOR:
- 	case FB_VISUAL_STATIC_PSEUDOCOLOR:
- 		if (info->var.bits_per_pixel >= 8) {
- 			fb_logo.needs_logo = 8;
-@@ -701,7 +685,7 @@
- 	if (!info->fbops->fb_imageblit || fb_logo.logo == NULL)
- 		return 0;
- 
--	image.depth = fb_logo.depth;
-+	image.depth = 8;
- 	image.data = fb_logo.logo->data;
- 
- 	if (fb_logo.needs_cmapreset)
-@@ -722,7 +706,7 @@
- 		info->pseudo_palette = palette;
+@@ -619,13 +603,13 @@
+  * The number of colors just matches the console colors, thus there is no need
+  * to set the DAC or the pseudo_palette.  However, the bitmap is packed, ie,
+  * each byte contains color information for two pixels (upper and lower nibble).
+- * To be consistent with fb_imageblit() usage, we therefore separate the two
+- * nibbles into separate bytes. The "depth" flag will be set to 4.
++ * Each 4 bits are expanded to a byte. The "depth" flag will be set to 8.
+  *
+  * Case 3 - linux_logo_mono:
+- * This is similar with Case 2.  Each byte contains information for 8 pixels.
+- * We isolate each bit and expand each into a byte. The "depth" flag will
+- * be set to 1.
++ * Each byte contains information for 8 pixels.  We just pass the data to 
++ * fb_imageblit unchanged, using the monochrome expansion routine.  In order for
++ * color expansion to work, image->fg_color and image->bg_color must
++ * be properly initialized.  The "depth" flag will be set to 1.
+  */
+ static struct logo_data {
+ 	int depth;
+@@ -716,18 +700,32 @@
+ 		}
+ 		image.data = logo_new;
+ 		fb_set_logo(info, fb_logo.logo, logo_new, fb_logo.depth);
++		image.depth = 8;
  	}
  
--	if (fb_logo.needs_logo != 8) {
-+	if (fb_logo.needs_logo == 4) {
- 		logo_new = kmalloc(fb_logo.logo->width * fb_logo.logo->height, 
- 				   GFP_KERNEL);
- 		if (logo_new == NULL) {
-@@ -740,12 +724,27 @@
+ 	image.width = fb_logo.logo->width;
  	image.height = fb_logo.logo->height;
  	image.dy = 0;
  
@@ -473,12 +414,10 @@ diff -Naur linux-2.5.66-orig/drivers/video/fbmem.c linux-2.5.66/drivers/video/fb
 +	case FB_VISUAL_MONO10:
 +		image.fg_color = (u32) (~(~0UL << fb_logo.depth));
 +		image.bg_color = 0;
-+		image.depth = 1;
 +		break;
 +	case FB_VISUAL_MONO01:
 +		image.bg_color = (u32) (~(~0UL << fb_logo.depth));
 +		image.fg_color = 0;
-+		image.depth = 1;
 +		break;
 +	}
 +
@@ -492,8 +431,8 @@ diff -Naur linux-2.5.66-orig/drivers/video/fbmem.c linux-2.5.66/drivers/video/fb
  	
  	if (palette != NULL)
 diff -Naur linux-2.5.66-orig/drivers/video/softcursor.c linux-2.5.66/drivers/video/softcursor.c
---- linux-2.5.66-orig/drivers/video/softcursor.c	2003-03-26 23:46:32.000000000 +0000
-+++ linux-2.5.66/drivers/video/softcursor.c	2003-03-26 23:49:41.000000000 +0000
+--- linux-2.5.66-orig/drivers/video/softcursor.c	2003-03-27 03:06:10.000000000 +0000
++++ linux-2.5.66/drivers/video/softcursor.c	2003-03-27 03:09:09.000000000 +0000
 @@ -19,46 +19,53 @@
  
  int soft_cursor(struct fb_info *info, struct fb_cursor *cursor)
@@ -574,8 +513,8 @@ diff -Naur linux-2.5.66-orig/drivers/video/softcursor.c linux-2.5.66/drivers/vid
  MODULE_DESCRIPTION("Generic software cursor");
  MODULE_LICENSE("GPL");
 diff -Naur linux-2.5.66-orig/include/linux/fb.h linux-2.5.66/include/linux/fb.h
---- linux-2.5.66-orig/include/linux/fb.h	2003-03-26 23:46:32.000000000 +0000
-+++ linux-2.5.66/include/linux/fb.h	2003-03-26 23:50:07.000000000 +0000
+--- linux-2.5.66-orig/include/linux/fb.h	2003-03-27 03:06:10.000000000 +0000
++++ linux-2.5.66/include/linux/fb.h	2003-03-27 03:09:09.000000000 +0000
 @@ -312,8 +312,8 @@
  #define FB_CUR_SETSHAPE 0x10
  #define FB_CUR_SETSIZE	0x20
@@ -615,11 +554,3 @@ diff -Naur linux-2.5.66-orig/include/linux/fb.h linux-2.5.66/include/linux/fb.h
     /* From here on everything is device dependent */
     void *par;	
  };
-
-
-
--------------------------------------------------------
-This SF.net email is sponsored by:
-The Definitive IT and Networking Event. Be There!
-NetWorld+Interop Las Vegas 2003 -- Register today!
-http://ads.sourceforge.net/cgi-bin/redirect.pl?keyn0001en

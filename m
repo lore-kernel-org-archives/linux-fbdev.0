@@ -1,20 +1,20 @@
 From: Kronos <kronos@kronoz.cjb.net>
-Subject: [PATCH] p9100: New framebuffer_alloc API and class_dev changes
-Date: Mon, 15 Sep 2003 22:47:42 +0200
+Subject: [PATCH] radeonfb: New framebuffer_alloc API and class_dev changes
+Date: Mon, 15 Sep 2003 22:47:49 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030915204742.GE23294@dreamland.darkstar.lan>
+Message-ID: <20030915204749.GF23294@dreamland.darkstar.lan>
 Reply-To: kronos@kronoz.cjb.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19z0H1-0000r2-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 15 Sep 2003 13:48:39 -0700
-Received: from mail-3.tiscali.it ([195.130.225.149])
+	id 19z0GW-0000pZ-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 15 Sep 2003 13:48:08 -0700
+Received: from mail-7.tiscali.it ([195.130.225.153])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 19z0H0-0001lo-27
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 15 Sep 2003 13:48:38 -0700
+	id 19z0GV-00014R-Ld
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 15 Sep 2003 13:48:07 -0700
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
@@ -27,151 +27,257 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: davem@redhat.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>
 
 Hi,
-this patch converts driver/video/p9100.c to framebuffer_alloc:
+this patch converts driver/video/radeonfb.c to framebuffer_alloc:
 
-======== drivers/video/p9100.c 1.8 ========
-D 1.8 03/09/14 00:01:06+02:00 kronos@kronoz.cjb.net 9 8 35/29/348
-P drivers/video/p9100.c
+======== drivers/video/radeonfb.c 1.33 ========
+D 1.33 03/09/15 18:21:29+02:00 kronos@kronoz.cjb.net 34 33 38/33/3142
+P drivers/video/radeonfb.c
 C switch to framebuffer_alloc
 ------------------------------------------------
 
-===== drivers/video/p9100.c 1.7 vs 1.8 =====
---- 1.7/drivers/video/p9100.c	Fri Aug 22 08:34:52 2003
-+++ 1.8/drivers/video/p9100.c	Sun Sep 14 00:01:06 2003
-@@ -34,6 +34,7 @@
- static int p9100_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
- static int p9100_ioctl(struct inode *, struct file *, unsigned int,
- 		       unsigned long, struct fb_info *);
-+static void release_p9100fb(struct fb_info *info);
+===== drivers/video/radeonfb.c 1.32 vs 1.33 =====
+--- 1.32/drivers/video/radeonfb.c	Fri Sep  5 00:20:13 2003
++++ 1.33/drivers/video/radeonfb.c	Mon Sep 15 18:21:29 2003
+@@ -345,7 +345,7 @@
  
- /*
-  *  Frame buffer operations
-@@ -138,6 +139,7 @@
- 	unsigned long		fbsize;
  
- 	struct sbus_dev		*sdev;
-+	struct fb_info		*info;
- 	struct list_head	list;
- };
- 
-@@ -269,64 +271,66 @@
- 
- static void p9100_init_one(struct sbus_dev *sdev)
- {
--	struct all_info *all;
+ struct radeonfb_info {
+-	struct fb_info info;
 +	struct fb_info *info;
-+	struct p9100_par *par;
- 	int linebytes;
  
--	all = kmalloc(sizeof(*all), GFP_KERNEL);
--	if (!all) {
-+	info = framebuffer_alloc(sizeof(*par), NULL);
-+	if (!info) {
- 		printk(KERN_ERR "p9100: Cannot allocate memory.\n");
- 		return;
- 	}
--	memset(all, 0, sizeof(*all));
-+	info->release = &release_p9100fb;
-+	par = info->par;
-+	par->info = info;
+ 	struct radeon_regs state;
+ 	struct radeon_regs init_state;
+@@ -730,6 +730,7 @@
  
--	INIT_LIST_HEAD(&all->list);
-+	INIT_LIST_HEAD(&par->list);
+ #endif /* CONFIG_PPC_OF */
  
--	spin_lock_init(&all->par.lock);
--	all->par.sdev = sdev;
-+	spin_lock_init(&par->lock);
-+	par->sdev = sdev;
++static void release_radeonfb(struct fb_info *info);
  
- 	/* This is the framebuffer and the only resource apps can mmap.  */
--	all->par.physbase = sdev->reg_addrs[2].phys_addr;
-+	par->physbase = sdev->reg_addrs[2].phys_addr;
+ static char *radeon_find_rom(struct radeonfb_info *rinfo)
+ {       
+@@ -1286,7 +1287,7 @@
  
- 	sbusfb_fill_var(&all->info.var, sdev->prom_node, 8);
+ static int __devinit radeon_init_disp (struct radeonfb_info *rinfo)
+ {
+-        struct fb_info *info = &rinfo->info;
++        struct fb_info *info = rinfo->info;
+ 	struct fb_var_screeninfo var;
  
- 	linebytes = prom_getintdefault(sdev->prom_node, "linebytes",
--				       all->info.var.xres);
--	all->par.fbsize = PAGE_ALIGN(linebytes * all->info.var.yres);
-+				       info->var.xres);
-+	par->fbsize = PAGE_ALIGN(linebytes * info->var.yres);
- 
--	all->par.regs = (struct p9100_regs *)
-+	par->regs = (struct p9100_regs *)
- 		sbus_ioremap(&sdev->resource[0], 0,
- 			     sizeof(struct p9100_regs), "p9100 regs");
- 
--	all->info.flags = FBINFO_FLAG_DEFAULT;
--	all->info.fbops = &p9100_ops;
-+	info->flags = FBINFO_FLAG_DEFAULT;
-+	info->fbops = &p9100_ops;
- #ifdef CONFIG_SPARC32
--	all->info.screen_base = (char *)
-+	info->screen_base = (char *)
- 		prom_getintdefault(sdev->prom_node, "address", 0);
+         var = radeonfb_default_var;
+@@ -1309,7 +1310,7 @@
+ {
+ #ifndef MODULE
+         if (mode_option)
+-                fb_find_mode (var, &rinfo->info, mode_option,
++                fb_find_mode (var, rinfo->info, mode_option,
+                               NULL, 0, NULL, 8);
+         else
  #endif
--	if (!all->info.screen_base)
--		all->info.screen_base = (char *)
-+	if (!info->screen_base)
-+		info->screen_base = (char *)
- 			sbus_ioremap(&sdev->resource[2], 0,
--				     all->par.fbsize, "p9100 ram");
--	all->info.par = &all->par;
-+				     par->fbsize, "p9100 ram");
+@@ -1318,7 +1319,7 @@
+ 		*var = radeonfb_default_var;
+ 	else
  
--	p9100_blank(0, &all->info);
-+	p9100_blank(0, info);
+-                fb_find_mode (var, &rinfo->info, "640x480-8@60",
++                fb_find_mode (var, rinfo->info, "640x480-8@60",
+                               NULL, 0, NULL, 0);
  
--	if (fb_alloc_cmap(&all->info.cmap, 256, 0)) {
-+	if (fb_alloc_cmap(&info->cmap, 256, 0)) {
- 		printk(KERN_ERR "p9100: Could not allocate color map.\n");
- 		kfree(all);
- 		return;
+ 	if (noaccel)
+@@ -1502,7 +1503,7 @@
+ static int radeonfb_pan_display (struct fb_var_screeninfo *var,
+                                  struct fb_info *info)
+ {
+-        struct radeonfb_info *rinfo = (struct radeonfb_info *) info;
++        struct radeonfb_info *rinfo = info->par;
+ 
+         if ((var->xoffset + var->xres > var->xres_virtual)
+ 	    || (var->yoffset + var->yres > var->yres_virtual))
+@@ -1520,7 +1521,7 @@
+ static int radeonfb_ioctl (struct inode *inode, struct file *file, unsigned int cmd,
+                            unsigned long arg, struct fb_info *info)
+ {
+-        struct radeonfb_info *rinfo = (struct radeonfb_info *) info;
++        struct radeonfb_info *rinfo = info->par;
+ 	unsigned int tmp;
+ 	u32 value = 0;
+ 	int rc;
+@@ -1608,7 +1609,7 @@
+ 
+ static int radeonfb_blank (int blank, struct fb_info *info)
+ {
+-        struct radeonfb_info *rinfo = (struct radeonfb_info *) info;
++        struct radeonfb_info *rinfo = info->par;
+         u32 val = INREG(CRTC_EXT_CNTL);
+ 	u32 val2 = INREG(LVDS_GEN_CNTL);
+ 
+@@ -1660,7 +1661,7 @@
+ static int radeonfb_setcolreg (unsigned regno, unsigned red, unsigned green,
+                              unsigned blue, unsigned transp, struct fb_info *info)
+ {
+-        struct radeonfb_info *rinfo = (struct radeonfb_info *) info;
++        struct radeonfb_info *rinfo = info->par;
+ 	u32 pindex, vclk_cntl;
+ 	unsigned int i;
+ 	
+@@ -2232,13 +2233,14 @@
+ {
+ 	struct fb_info *info;
+ 
+-	info = &rinfo->info;
++	info = rinfo->info;
+ 
+ 	info->par = rinfo;
+ 	info->pseudo_palette = rinfo->pseudo_palette;
+         info->flags = FBINFO_FLAG_DEFAULT;
+         info->fbops = &radeonfb_ops;
+         info->screen_base = (char *)rinfo->fb_base;
++	info->release = &release_radeonfb;
+ 
+ 	/* Fill fix common fields */
+ 	strlcpy(info->fix.id, rinfo->name, sizeof(info->fix.id));
+@@ -2792,6 +2794,7 @@
+ 				  const struct pci_device_id *ent)
+ {
+ 	struct radeonfb_info *rinfo;
++	struct fb_info *fb_info;
+ 	struct radeon_chip_info *rci = &radeon_chip_info[ent->driver_data];
+ 	u32 tmp;
+ 
+@@ -2803,14 +2806,14 @@
+ 		return -ENODEV;
  	}
  
--	p9100_init_fix(&all->info, linebytes);
-+	p9100_init_fix(info, linebytes);
- 
--	if (register_framebuffer(&all->info) < 0) {
-+	if (register_framebuffer(info) < 0) {
- 		printk(KERN_ERR "p9100: Could not register framebuffer.\n");
--		fb_dealloc_cmap(&all->info.cmap);
--		kfree(all);
-+		fb_dealloc_cmap(&info->cmap);
-+		kfree(info);
- 		return;
+-	rinfo = kmalloc (sizeof (struct radeonfb_info), GFP_KERNEL);
+-	if (!rinfo) {
++	fb_info = framebuffer_alloc(sizeof(struct radeonfb_info),  &pdev->dev);
++	if (!fb_info) {
+ 		printk ("radeonfb: could not allocate memory\n");
+ 		return -ENODEV;
  	}
  
--	list_add(&all->list, &p9100_list);
-+	list_add(&par->list, &p9100_list);
+-	memset (rinfo, 0, sizeof (struct radeonfb_info));
+-	//info = &rinfo->info;
++	rinfo = fb_info->par;
++	rinfo->info = fb_info;
+ 	rinfo->pdev = pdev;
+ 	strcpy(rinfo->name, rci->name);
+ 	rinfo->arch = rci->arch;
+@@ -2823,7 +2826,7 @@
+ 	if (!request_mem_region (rinfo->fb_base_phys,
+ 				 pci_resource_len(pdev, 0), "radeonfb")) {
+ 		printk ("radeonfb: cannot reserve FB region\n");
+-		kfree (rinfo);
++		kfree (fb_info);
+ 		return -ENODEV;
+ 	}
  
- 	printk("p9100: %s at %lx:%lx\n",
- 	       sdev->prom_name,
-@@ -347,16 +351,18 @@
+@@ -2832,7 +2835,7 @@
+ 		printk ("radeonfb: cannot reserve MMIO region\n");
+ 		release_mem_region (rinfo->fb_base_phys,
+ 				    pci_resource_len(pdev, 0));
+-		kfree (rinfo);
++		kfree (fb_info);
+ 		return -ENODEV;
+ 	}
+ 
+@@ -2844,7 +2847,7 @@
+ 				    pci_resource_len(pdev, 2));
+ 		release_mem_region (rinfo->fb_base_phys,
+ 				    pci_resource_len(pdev, 0));
+-		kfree (rinfo);
++		kfree (fb_info);
+ 		return -ENODEV;
+ 	}
+ 
+@@ -2969,7 +2972,7 @@
+ 					    pci_resource_len(pdev, 2));
+ 			release_mem_region (rinfo->fb_base_phys,
+ 					    pci_resource_len(pdev, 0));
+-			kfree (rinfo);
++			kfree (fb_info);
+ 			return -ENODEV;
+ 		}
+ 	}
+@@ -2982,7 +2985,7 @@
+ 				    pci_resource_len(pdev, 2));
+ 		release_mem_region (rinfo->fb_base_phys,
+ 				    pci_resource_len(pdev, 0));
+-		kfree (rinfo);
++		kfree (fb_info);
+ 		return -ENODEV;
+ 	}
+ 
+@@ -3031,9 +3034,8 @@
+ 	pci_set_drvdata(pdev, rinfo);
+ 	rinfo->next = board_list;
+ 	board_list = rinfo;
+-	rinfo->info.dev = &pdev->dev;
+ 
+-	if (register_framebuffer ((struct fb_info *) rinfo) < 0) {
++	if (register_framebuffer (rinfo->info) < 0) {
+ 		printk ("radeonfb: could not register framebuffer\n");
+ 		iounmap ((void*)rinfo->fb_base);
+ 		iounmap ((void*)rinfo->mmio_base);
+@@ -3041,7 +3043,7 @@
+ 				    pci_resource_len(pdev, 2));
+ 		release_mem_region (rinfo->fb_base_phys,
+ 				    pci_resource_len(pdev, 0));
+-		kfree (rinfo);
++		kfree (fb_info);
+ 		return -ENODEV;
+ 	}
+ 
+@@ -3082,15 +3084,10 @@
  	return 0;
  }
  
-+static void release_p9100fb(struct fb_info *info) {
-+	fb_dealloc_cmap(&info->cmap);
++static void release_radeonfb(struct fb_info *info) {
++	struct radeonfb_info *rinfo = info->par;
++	struct pci_dev *pdev = rinfo->pdev;
+ 
+-
+-static void __devexit radeonfb_pci_unregister (struct pci_dev *pdev)
+-{
+-        struct radeonfb_info *rinfo = pci_get_drvdata(pdev);
+- 
+-        if (!rinfo)
+-                return;
+- 
+ 	/* restore original state
+ 	 * 
+ 	 * Doesn't quite work yet, possibly because of the PPC hacking
+@@ -3103,8 +3100,6 @@
+ 		mtrr_del(rinfo->mtrr_hdl, 0, 0);
+ #endif
+ 
+-        unregister_framebuffer ((struct fb_info *) rinfo);
+-                
+         iounmap ((void*)rinfo->mmio_base);
+         iounmap ((void*)rinfo->fb_base);
+  
+@@ -3112,8 +3107,18 @@
+ 			    pci_resource_len(pdev, 2));
+ 	release_mem_region (rinfo->fb_base_phys,
+ 			    pci_resource_len(pdev, 0));
+-        
+-        kfree (rinfo);
 +}
 +
- void __exit p9100_exit(void)
- {
- 	struct list_head *pos, *tmp;
- 
- 	list_for_each_safe(pos, tmp, &p9100_list) {
--		struct all_info *all = list_entry(pos, typeof(*all), list);
-+		struct p9100_par *par = list_entry(pos, typeof(*par), list);
- 
--		unregister_framebuffer(&all->info);
--		fb_dealloc_cmap(&all->info.cmap);
--		kfree(all);
-+		unregister_framebuffer(par->info);
- 	}
++static void __devexit radeonfb_pci_unregister (struct pci_dev *pdev)
++{
++        struct radeonfb_info *rinfo = pci_get_drvdata(pdev);
++ 
++        if (!rinfo)
++                return;
++ 
++        unregister_framebuffer (rinfo->info);
++
++	pci_set_drvdata(pdev, NULL);
  }
+ 
  
 
 
@@ -179,11 +285,8 @@ Luca
 -- 
 Reply-To: kronos@kronoz.cjb.net
 Home: http://kronoz.cjb.net
-"I've seen things you people wouldn't believe...
- Attack Ships on fire off the shores of Orion.
- I've watched C-beams glitter in the dark off of Tanhauser Gate.
- All those moments will be lost in time...like tears, in rain.
- Time to die." -- Roy Batty (played by Rutger Hauer)
+La differenza fra l'intelligenza e la stupidita`?
+All'intelligenza c'e` un limite.
 
 
 -------------------------------------------------------

@@ -1,20 +1,25 @@
-From: Jesse Barnes <jbarnes@engr.sgi.com>
-Subject: [PATCH] fix radeon, r128 host & BAR value confusion
-Date: Mon, 13 Dec 2004 15:19:46 -0800
-Message-ID: <200412131519.46398.jbarnes@engr.sgi.com>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: Re: [PATCH] GeForce 5200 on rivafb
+Date: Tue, 14 Dec 2004 20:02:54 +0800
+Message-ID: <200412142002.56081.adaplas@hotpop.com>
+References: <200412120511.31725.adaplas@hotpop.com> <200412140452.19873.adaplas@hotpop.com> <7vllc1tzdn.fsf@assigned-by-dhcp.cox.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_SOivBJtpFmWPqIj"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CdzU5-0003VF-7j
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 13 Dec 2004 15:20:05 -0800
-Received: from omx3-ext.sgi.com ([192.48.171.20] helo=omx3.sgi.com)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CdzU3-0002ZO-7F
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 13 Dec 2004 15:20:05 -0800
+	id 1CeBOm-0008Du-Vx
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 14 Dec 2004 04:03:24 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1CeBOm-0002Gg-8r
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 14 Dec 2004 04:03:24 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id 9D23FB81AE7
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 14 Dec 2004 12:03:18 +0000 (UTC)
+In-Reply-To: <7vllc1tzdn.fsf@assigned-by-dhcp.cox.net>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -25,107 +30,49 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: ajoshi@shell.unixbox.com, linux-fbdev-devel@lists.sourceforge.net
-Cc: benh@kernel.crashing.org
+Content-Type: text/plain; charset="us-ascii"
+To: Junio C Hamano <junkio@cox.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
---Boundary-00=_SOivBJtpFmWPqIj
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Tuesday 14 December 2004 09:57, Junio C Hamano wrote:
+> >>>>> "AAD" == Antonino A Daplas <adaplas@hotpop.com> writes:
+>
+> AAD> Can you try this patch and enable nvidiafb-i2c. It adds
+> AAD> your monitor model to the database of displays with broken
+> AAD> edid's and attempts a fix. It checks first if the monitor
+> AAD> is GTF capable, and if it is, sets the input type from
+> AAD> digital to analog. (I don't think digital inputs can be GTF
+> AAD> capable).
+>
+> Sorry, but I do not know what GTF is.  I'll trust you with that
+> detection logic ;-).
 
-On some platforms, the values in the resource structures are not equivalent to 
-what's in the BARs, so you need to distinguish between them.  This patch 
-fixes both of the drivers to use the BAR value where appropriate to 
-enable/disable ROM space access and also prevents the destruction of the ROM 
-BAR value as it may be needed if the card needs to be posted again.  Please 
-Cc me on any replies as I'm not on linux-fbdev-devel.
+Generalized Timing Formula.  It's a VESA standard that allows mode setting
+given just the horizontal and vertical resolutions, and any of the following:
 
-Signed-off-by: Jesse Barnes <jbarnes@sgi.com>
+vertical refresh,
+horizontal frequency, or
+dotclock.
 
-Thanks,
-Jesse
+Meaning, no need for mode tables, and it can support practically any combination
+of xres, yres and refresh rates.
 
---Boundary-00=_SOivBJtpFmWPqIj
-Content-Type: text/plain;
-  charset="us-ascii";
-  name="aty-rom-enable-fixes.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="aty-rom-enable-fixes.patch"
+>
+> AAD> However, do you know if your monitor model does support digital input?
+>
+> I looked at the back of the monitor last night.  There is a hole
+> about 1cm in diameter, which is covered.  Presumably their
+> slightly different model that shares the same enclosure uses the
+> hole for digital input cable?  But not the one I have.  The
+> datasheet I have on PF775 also says it is an anolog monitor with
+> D-sub connector and nothing else.
 
-===== drivers/video/aty/aty128fb.c 1.52 vs edited =====
---- 1.52/drivers/video/aty/aty128fb.c	2004-11-12 11:40:39 -08:00
-+++ edited/drivers/video/aty/aty128fb.c	2004-12-13 15:13:55 -08:00
-@@ -791,6 +791,7 @@
- static void __init aty128_unmap_ROM(struct pci_dev *dev, void __iomem * rom)
- {
- 	struct resource *r = &dev->resource[PCI_ROM_RESOURCE];
-+	u32 val;
- 	
- 	iounmap(rom);
- 	
-@@ -801,8 +802,9 @@
- 		r->end -= r->start;
- 		r->start = 0;
- 	}
--	/* This will disable and set address to unassigned */
--	pci_write_config_dword(dev, dev->rom_base_reg, 0);
-+	/* This will disable it again */
-+	pci_read_config_dword(dev, dev->rom_base_reg, &val);
-+	pci_write_config_dword(dev, dev->rom_base_reg, val & ~PCI_ROM_ADDRESS_ENABLE);
- }
- 
- 
-@@ -830,8 +832,10 @@
- 	
- 	/* enable if needed */
- 	if (!(r->flags & PCI_ROM_ADDRESS_ENABLE)) {
-+		u32 val;
-+		pci_read_config_dword(dev, dev->rom_base_reg, &val);
- 		pci_write_config_dword(dev, dev->rom_base_reg,
--				       r->start | PCI_ROM_ADDRESS_ENABLE);
-+				       val | PCI_ROM_ADDRESS_ENABLE);
- 		r->flags |= PCI_ROM_ADDRESS_ENABLE;
- 	}
- 	
-===== drivers/video/aty/radeon_base.c 1.35 vs edited =====
---- 1.35/drivers/video/aty/radeon_base.c	2004-11-11 00:39:04 -08:00
-+++ edited/drivers/video/aty/radeon_base.c	2004-12-13 15:11:56 -08:00
-@@ -265,6 +265,7 @@
- {
- 	// leave it disabled and unassigned
- 	struct resource *r = &dev->resource[PCI_ROM_RESOURCE];
-+	u32 val;
- 	
- 	if (!rinfo->bios_seg)
- 		return;
-@@ -277,8 +278,9 @@
- 		r->end -= r->start;
- 		r->start = 0;
- 	}
--	/* This will disable and set address to unassigned */
--	pci_write_config_dword(dev, dev->rom_base_reg, 0);
-+	/* This will disable it again */
-+	pci_read_config_dword(dev, dev->rom_base_reg, &val);
-+	pci_write_config_dword(dev, dev->rom_base_reg, val & ~PCI_ROM_ADDRESS_ENABLE);
- }
- 
- static int __devinit radeon_map_ROM(struct radeonfb_info *rinfo, struct pci_dev *dev)
-@@ -310,8 +312,10 @@
- 	
- 	/* enable if needed */
- 	if (!(r->flags & PCI_ROM_ADDRESS_ENABLE)) {
-+		u32 val;
-+		pci_read_config_dword(dev, dev->rom_base_reg, &val);
- 		pci_write_config_dword(dev, dev->rom_base_reg,
--				       r->start | PCI_ROM_ADDRESS_ENABLE);
-+				       val | PCI_ROM_ADDRESS_ENABLE);
- 		r->flags |= PCI_ROM_ADDRESS_ENABLE;
- 	}
- 	
+Ok.  I would presume that the model that does support digital input will also
+have a different model id in its EDID block.
 
---Boundary-00=_SOivBJtpFmWPqIj--
+Tony
+
+
 
 
 -------------------------------------------------------

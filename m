@@ -1,21 +1,18 @@
-From: "Luiz Fernando N. Capitulino" <lcapitulino@prefeitura.sp.gov.br>
-Subject: Re: Re: [PATCH] - video/tdfxfb.c warning fix.
-Date: Mon, 3 May 2004 13:09:19 -0300
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Missing radeonfb documentation in kernel doc (fwd)
+Date: Mon, 3 May 2004 19:52:42 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040503160919.GC1219@lorien.prodam>
-References: <20040430180451.GA3119@lorien.prodam> <20040430213513.7bafde36.akpm@osdl.org> <Pine.GSO.4.58.0405012045070.25805@waterleaf.sonytel.be> <20040501120852.139b4ac1.akpm@osdl.org> <Pine.GSO.4.58.0405012115260.25805@waterleaf.sonytel.be>
+Message-ID: <Pine.GSO.4.58.0405031952180.27296@waterleaf.sonytel.be>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BKg1N-0007K2-Bm
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 03 May 2004 09:10:21 -0700
-Received: from sampa7.prodam.sp.gov.br ([200.230.190.107])
+	id 1BKhd8-0007KR-8P
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 03 May 2004 10:53:26 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BKg0r-0002ek-7z
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 03 May 2004 09:09:49 -0700
-Content-Disposition: inline
-In-Reply-To: <Pine.GSO.4.58.0405012115260.25805@waterleaf.sonytel.be>
+	id 1BKhcc-0005d9-0L
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 03 May 2004 10:52:54 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,44 +22,31 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Dominique Dumont <domi.dumont@free.fr>
+
+---------- Forwarded message ----------
+Date: Mon, 03 May 2004 19:15:40 +0200
+From: Dominique Dumont <domi.dumont@free.fr>
 To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Andrew Morton <akpm@osdl.org>, lcapitulino@prefeitura.sp.gov.br, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Subject: Missing radeonfb documentation in kernel doc
 
-Em Sat, May 01, 2004 at 09:16:29PM +0200, Geert Uytterhoeven escreveu:
 
-| On Sat, 1 May 2004, Andrew Morton wrote:
-| > Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-| > >  > You've taken a bunch of previously-working 3d acceleration functions and
-| > >  > made them configurable, dependent upon CONFIG_EXPERIMENTAL.
-| > >  >
-| > >  > What on earth for?  Will this not gratuitously break people's
-| > >  > previously-working 3d setups?
-| > >
-| > >  No, tdfxfb_cursor() was not used before, causing a compiler warning.
-| > >  tdfxfb_cursor() may work, but we don't know, so we didn't dare to enable it by
-| > >  default. Now the user (he who has the hardware) can enable it, and tell us
-| > >  whether it works or not.
-| >
-| > OK, thanks.  As you can see, it really helps if people explain this sort of
-| > thing in their initial patch (sigh).
-| >
-| > Does the same argument apply to this patch?
-| 
-| Yes. All these patches should enable the currently unused acceleration routines
-| if the corresponding config option is set, and kill the compiler warnings if
-| its not set.
+Hello Geert
 
- Humm, my fault. I thought my comments was enough, will try to make
-better in next time.
+I'm wrestling with radeonfb for my Radeon 9200 board.
 
-PS: Andrew, I always need to think about "be very clear" vs "Andrew's time
-to read e-mails". It is not a easy task. :-)
+I've finally found some interesting doc [1]. Unfortunately, its
+licence [2] does not permit a copy in the kernel sources, but could
+you please at least mention the URL ?
 
--- 
-Luiz Fernando N. Capitulino
-<http://www.telecentros.sp.gov.br>
+Thanks
+
+
+[1] http://thesapphirecat.iwarp.com/present/program/radeonfb.html
+[2] http://thesapphirecat.iwarp.com/present/legal.html
 
 
 -------------------------------------------------------

@@ -1,164 +1,151 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: [2.6 patch] drivers/video/intelfb/intelfbdrv.h
-Date: Sun, 20 Mar 2005 20:44:41 +0100
-Message-ID: <20050320194441.GT4449@stusta.de>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: [-mm patch] kill include/video/edid.h
+Date: Mon, 21 Mar 2005 04:53:43 +0800
+Message-ID: <200503210453.43894.adaplas@hotpop.com>
+References: <20050320192915.GR4449@stusta.de>
+Reply-To: adaplas@pol.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-Transfer-Encoding: 7bit
+In-Reply-To: <20050320192915.GR4449@stusta.de>
 Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Ingo Oeser <ioe-lkml@axxeo.de>
+Content-Type: text/plain; charset="us-ascii"
+To: Adrian Bunk <bunk@stusta.de>, adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-Ingo Oeser noticed that all that intelfbdrv.h contains are prototypes=20
-for static functions - and such prototypes don't belong into header=20
-files.
+On Monday 21 March 2005 03:29, Adrian Bunk wrote:
+> This patch removes some completely unused code.
+>
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+>
+> ---
+>
+>  arch/i386/boot/compressed/misc.c |    1 -
+>  arch/i386/kernel/setup.c         |    4 ----
+>  arch/x86_64/kernel/setup.c       |    3 ---
+>  drivers/video/fbmon.c            |    1 -
+>  drivers/video/vesafb.c           |    3 ---
+>  include/asm-i386/setup.h         |    1 -
+>  include/asm-x86_64/bootsetup.h   |    1 -
+>  include/video/edid.h             |   27 ---------------------------
+>  8 files changed, 41 deletions(-)
+>
+> --- linux-2.6.11-mm4-full/arch/i386/kernel/setup.c.old	2005-03-20
+> 20:06:06.000000000 +0100 +++
+> linux-2.6.11-mm4-full/arch/i386/kernel/setup.c	2005-03-20
+> 20:06:45.000000000 +0100 @@ -43,8 +43,6 @@
+>  #include <linux/nodemask.h>
+>  #include <linux/kexec.h>
+>
+> -#include <video/edid.h>
+> -
+>  #include <asm/apic.h>
+>  #include <asm/e820.h>
+>  #include <asm/mpspec.h>
+> @@ -118,7 +116,6 @@
+>  	unsigned short length;
+>  	unsigned char table[0];
+>  };
+> -struct edid_info edid_info;
+>  struct ist_info ist_info;
+>  struct e820map e820;
+>
+> @@ -1468,7 +1465,6 @@
+>   	ROOT_DEV = old_decode_dev(ORIG_ROOT_DEV);
+>   	drive_info = DRIVE_INFO;
+>   	screen_info = SCREEN_INFO;
+> -	edid_info = EDID_INFO;
+>  	apm_info.bios = APM_BIOS_INFO;
+>  	ist_info = IST_INFO;
+>  	saved_videomode = VIDEO_MODE;
+> --- linux-2.6.11-mm4-full/arch/x86_64/kernel/setup.c.old	2005-03-20
+> 20:04:42.000000000 +0100 +++
+> linux-2.6.11-mm4-full/arch/x86_64/kernel/setup.c	2005-03-20
+> 20:07:11.000000000 +0100 @@ -48,7 +48,6 @@
+>  #include <asm/smp.h>
+>  #include <asm/msr.h>
+>  #include <asm/desc.h>
+> -#include <video/edid.h>
+>  #include <asm/e820.h>
+>  #include <asm/dma.h>
+>  #include <asm/mpspec.h>
+> @@ -100,7 +99,6 @@
+>  	unsigned char table[0];
+>  };
+>
+> -struct edid_info edid_info;
+>  struct e820map e820;
+>
+>  extern int root_mountflags;
+> @@ -523,7 +521,6 @@
+>   	ROOT_DEV = old_decode_dev(ORIG_ROOT_DEV);
+>   	drive_info = DRIVE_INFO;
+>   	screen_info = SCREEN_INFO;
+> -	edid_info = EDID_INFO;
+>  	saved_video_mode = SAVED_VIDEO_MODE;
+>  	bootloader_type = LOADER_TYPE;
+>
+> --- linux-2.6.11-mm4-full/drivers/video/fbmon.c.old	2005-03-20
+> 20:03:56.000000000 +0100 +++
+> linux-2.6.11-mm4-full/drivers/video/fbmon.c	2005-03-20 20:04:27.000000000
+> +0100 @@ -34,7 +34,6 @@
+>  #include <asm/prom.h>
+>  #include <asm/pci-bridge.h>
+>  #endif
+> -#include <video/edid.h>
+>  #include "edid.h"
+>
+>  /*
+> --- linux-2.6.11-mm4-full/drivers/video/vesafb.c.old	2005-03-20
+> 20:04:12.000000000 +0100 +++
+> linux-2.6.11-mm4-full/drivers/video/vesafb.c	2005-03-20 20:04:18.000000000
+> +0100 @@ -19,9 +19,6 @@
+>  #include <linux/fb.h>
+>  #include <linux/ioport.h>
+>  #include <linux/init.h>
+> -#ifdef __i386__
+> -#include <video/edid.h>
+> -#endif
+>  #include <asm/io.h>
+>  #include <asm/mtrr.h>
+>
+> --- linux-2.6.11-mm4-full/arch/i386/boot/compressed/misc.c.old	2005-03-20
+> 20:05:55.000000000 +0100 +++
+> linux-2.6.11-mm4-full/arch/i386/boot/compressed/misc.c	2005-03-20
+> 20:05:58.000000000 +0100 @@ -12,7 +12,6 @@
+>  #include <linux/linkage.h>
+>  #include <linux/vmalloc.h>
+>  #include <linux/tty.h>
+> -#include <video/edid.h>
+>  #include <asm/io.h>
+>  #include <asm/page.h>
+>
+> --- linux-2.6.11-mm4-full/include/asm-x86_64/bootsetup.h.old	2005-03-20
+> 20:07:33.000000000 +0100 +++
+> linux-2.6.11-mm4-full/include/asm-x86_64/bootsetup.h	2005-03-20
+> 20:07:44.000000000 +0100 @@ -25,7 +25,6 @@
+>  #define KERNEL_START (*(unsigned int *) (PARAM+0x214))
+>  #define INITRD_START (*(unsigned int *) (PARAM+0x218))
+>  #define INITRD_SIZE (*(unsigned int *) (PARAM+0x21c))
+> -#define EDID_INFO (*(struct edid_info *) (PARAM+0x140))
+>  #define EDD_NR     (*(unsigned char *) (PARAM+EDDNR))
+>  #define EDD_MBR_SIG_NR (*(unsigned char *) (PARAM+EDD_MBR_SIG_NR_BUF))
+>  #define EDD_MBR_SIGNATURE ((unsigned int *) (PARAM+EDD_MBR_SIG_BUF))
+> --- linux-2.6.11-mm4-full/include/asm-i386/setup.h.old	2005-03-20
+> 20:07:52.000000000 +0100 +++
+> linux-2.6.11-mm4-full/include/asm-i386/setup.h	2005-03-20
+> 20:07:55.000000000 +0100 @@ -55,7 +55,6 @@
+>  #define KERNEL_START (*(unsigned long *) (PARAM+0x214))
+>  #define INITRD_START (*(unsigned long *) (PARAM+0x218))
+>  #define INITRD_SIZE (*(unsigned long *) (PARAM+0x21c))
+> -#define EDID_INFO   (*(struct edid_info *) (PARAM+0x140))
+>  #define EDD_NR     (*(unsigned char *) (PARAM+EDDNR))
+>  #define EDD_MBR_SIG_NR (*(unsigned char *) (PARAM+EDD_MBR_SIG_NR_BUF))
+>  #define EDD_MBR_SIGNATURE ((unsigned int *) (PARAM+EDD_MBR_SIG_BUF))
 
-This patch therefore removes drivers/video/intelfb/intelfbdrv.h and=20
-moves the prototypes to intelfbdrv.c .
+Not this one.  Code that grabs the EDID block using the video BIOS is in video.S.
+Currently, there's no driver that uses this but it's an acceptable backup for drivers
+that want the EDID block but has no i2c, or i2c probing fails.
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-
----
-
- drivers/video/intelfb/intelfbdrv.c |   40 ++++++++++++++++-
- drivers/video/intelfb/intelfbdrv.h |   68 ----------------------------=
--
- 2 files changed, 39 insertions(+), 69 deletions(-)
-
---- linux-2.6.11-mm4-full/drivers/video/intelfb/intelfbdrv.c.old	2005-0=
-3-20 03:39:30.000000000 +0100
-+++ linux-2.6.11-mm4-full/drivers/video/intelfb/intelfbdrv.c	2005-03-20=
- 03:44:03.000000000 +0100
-@@ -135,9 +135,47 @@
- #endif
-=20
- #include "intelfb.h"
--#include "intelfbdrv.h"
- #include "intelfbhw.h"
-=20
-+
-+static void __devinit get_initial_mode(struct intelfb_info *dinfo);
-+static void update_dinfo(struct intelfb_info *dinfo,
-+			 struct fb_var_screeninfo *var);
-+static int intelfb_get_fix(struct fb_fix_screeninfo *fix,
-+			   struct fb_info *info);
-+
-+static int intelfb_check_var(struct fb_var_screeninfo *var,
-+			     struct fb_info *info);
-+static int intelfb_set_par(struct fb_info *info);
-+static int intelfb_setcolreg(unsigned regno, unsigned red, unsigned gr=
-een,
-+			     unsigned blue, unsigned transp,
-+			     struct fb_info *info);
-+
-+static int intelfb_blank(int blank, struct fb_info *info);
-+static int intelfb_pan_display(struct fb_var_screeninfo *var,
-+			       struct fb_info *info);
-+
-+static void intelfb_fillrect(struct fb_info *info,
-+			     const struct fb_fillrect *rect);
-+static void intelfb_copyarea(struct fb_info *info,
-+			     const struct fb_copyarea *region);
-+static void intelfb_imageblit(struct fb_info *info,
-+			      const struct fb_image *image);
-+static int intelfb_cursor(struct fb_info *info,
-+			   struct fb_cursor *cursor);
-+
-+static int intelfb_sync(struct fb_info *info);
-+
-+static int intelfb_ioctl(struct inode *inode, struct file *file,
-+			 unsigned int cmd, unsigned long arg,
-+			 struct fb_info *info);
-+
-+static int __devinit intelfb_pci_register(struct pci_dev *pdev,
-+					  const struct pci_device_id *ent);
-+static void __devexit intelfb_pci_unregister(struct pci_dev *pdev);
-+static int __devinit intelfb_set_fbinfo(struct intelfb_info *dinfo);
-+
-+
- /*
-  * Limiting the class to PCI_CLASS_DISPLAY_VGA prevents function 1 of =
-the
-  * mobile chipsets from being registered.
---- linux-2.6.11-mm4-full/drivers/video/intelfb/intelfbdrv.h	2005-03-16=
- 18:55:25.000000000 +0100
-+++ /dev/null	2005-03-19 22:42:59.000000000 +0100
-@@ -1,68 +0,0 @@
--#ifndef _INTELFBDRV_H
--#define _INTELFBDRV_H
--
--/*
-- *********************************************************************=
-*********
-- * intelfb
-- *
-- * Linux framebuffer driver for Intel(R) 830M/845G/852GM/855GM/865G/91=
-5G
-- * integrated graphics chips.
-- *
-- * Copyright =A9 2004 Sylvain Meyer
-- *
-- * Author: Sylvain Meyer
-- *
-- *********************************************************************=
-*********
-- *    This program is free software; you can redistribute it and/or mo=
-dify
-- *    it under the terms of the GNU General Public License as publishe=
-d by
-- *    the Free Software Foundation; either version 2 of the License, o=
-r
-- *    (at your option) any later version.
-- *
-- *    This program is distributed in the hope that it will be useful,
-- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
-- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- *    GNU General Public License for more details.
-- *
-- *    You should have received a copy of the GNU General Public Licens=
-e
-- *    along with this program; if not, write to the Free Software
-- *    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
--*/
--
--static void __devinit get_initial_mode(struct intelfb_info *dinfo);
--static void update_dinfo(struct intelfb_info *dinfo,
--			 struct fb_var_screeninfo *var);
--static int intelfb_get_fix(struct fb_fix_screeninfo *fix,
--			   struct fb_info *info);
--
--static int intelfb_check_var(struct fb_var_screeninfo *var,
--			     struct fb_info *info);
--static int intelfb_set_par(struct fb_info *info);
--static int intelfb_setcolreg(unsigned regno, unsigned red, unsigned gr=
-een,
--			     unsigned blue, unsigned transp,
--			     struct fb_info *info);
--
--static int intelfb_blank(int blank, struct fb_info *info);
--static int intelfb_pan_display(struct fb_var_screeninfo *var,
--			       struct fb_info *info);
--
--static void intelfb_fillrect(struct fb_info *info,
--			     const struct fb_fillrect *rect);
--static void intelfb_copyarea(struct fb_info *info,
--			     const struct fb_copyarea *region);
--static void intelfb_imageblit(struct fb_info *info,
--			      const struct fb_image *image);
--static int intelfb_cursor(struct fb_info *info,
--			   struct fb_cursor *cursor);
--
--static int intelfb_sync(struct fb_info *info);
--
--static int intelfb_ioctl(struct inode *inode, struct file *file,
--			 unsigned int cmd, unsigned long arg,
--			 struct fb_info *info);
--
--static int __devinit intelfb_pci_register(struct pci_dev *pdev,
--					  const struct pci_device_id *ent);
--static void __devexit intelfb_pci_unregister(struct pci_dev *pdev);
--static int __devinit intelfb_set_fbinfo(struct intelfb_info *dinfo);
--
--#endif
+Tony

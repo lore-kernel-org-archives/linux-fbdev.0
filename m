@@ -1,46 +1,36 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: [Linux-fbdev-devel] Re: New logo code (fwd)
-Date: Thu, 6 Feb 2003 10:19:56 +0100 (MET)
+Date: Thu, 6 Feb 2003 10:22:45 +0100 (MET)
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.GSO.4.21.0302061017330.3301-100000@vervain.sonytel.be>
-References: <1044428068.1170.10.camel@localhost.localdomain>
+Message-ID: <Pine.GSO.4.21.0302061020450.3301-100000@vervain.sonytel.be>
+References: <1044472678.1321.388.camel@rohan.arnor.net>
 Mime-Version: 1.0
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <1044428068.1170.10.camel@localhost.localdomain>
+In-Reply-To: <1044472678.1321.388.camel@rohan.arnor.net>
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
+To: Torrey Hoffman <thoffman@arnor.net>
 Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-On 5 Feb 2003, Antonino Daplas wrote:
-> On Wed, 2003-02-05 at 20:37, Geert Uytterhoeven wrote:
-> > Come on, is there really no one to comment on this??
+On 5 Feb 2003, Torrey Hoffman wrote:
+> Other options that might be useful, but less important: 
+> - Single logo option for SMP
+> - A "no logo" option, while still including framebuffer support
+
+FB_LOGO=n?
+
+This still includes the logo code (not the images), but that can be fixed.
+
+> - Logo positioning (centered horizontally, vertically, both)
+> - Background and foreground text color options.  
 > 
-> Actually, I tried the patch before, but it was erased so fast that I
-> never got to see the logo :-)
-> 
-> Anyway, I think it's because logo_lines require logo_height in
-> fbcon_set_display().  logo_height is returned by fb_show_logo(), however
-> fb_show_logo() is called after computing logo_lines.
+> A combination of these features would make it possible to do a smaller
+> logo (say, 256 x 128) centered on the screen with a matching background
+> color that would make it look like a full-screen logo, while not
+> bloating the kernel image much.
 
-I always see the logo twice. The first time it's erased by the text (because
-initially fbcon thinks logo_height = 0), the second time it's displayed
-correctly.
-
-So I also wondered why it's drawn twice?
-
-> So, how about breaking up fb_show_logo() into fb_prepare_logo() and
-> fb_show_logo()?  We can call fb_prepare_logo() to get the logo height
-> for the logo_lines, then do an fb_show_logo() for the actual drawing.
-
-OK for me.
-
-> Overall, I like it, though it does add some kilobytes to the kernel
-> image size.
-
-Why would it increase kernel size that much? The logos were there before as
-well (unless you enable all of them, of course :-).
+Just two extra fields in fb_logo.
 
 Gr{oetje,eeting}s,
 

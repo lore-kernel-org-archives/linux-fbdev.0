@@ -1,14 +1,17 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: EGL_MESA_screen_surface proposal
-Date: Tue, 15 Mar 2005 11:28:33 -0500
-Message-ID: <9e4733910503150828ecf5a1b@mail.gmail.com>
-References: <4236F0A8.4000004@tungstengraphics.com>
-	<9e47339105031507064a68630f@mail.gmail.com>
-	<4236FC79.5000909@tungstengraphics.com>
-Reply-To: Jon Smirl <jonsmirl@gmail.com>
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Subject: Re: FB model basic issues (WAS: radeon, apertures & memory mapping)
+Date: Tue, 15 Mar 2005 12:17:09 -0500
+Message-ID: <1110907029.4001.624.camel@localhost>
+References: <1110677744.19810.80.camel@gaston>
+	<9e47339105031219223e606a52@mail.gmail.com>
+	<1110696189.5787.100.camel@gaston>	<1110774523.4003.511.camel@localhost>
+	<1110784327.5787.288.camel@gaston>	<1110817205.4004.527.camel@localhost>
+	<1110837171.5863.16.camel@gaston>	<1110838356.4003.548.camel@localhost>
+	<1110839873.5673.41.camel@gaston>	<1110862777.4044.592.camel@localhost>
+	<20050315060138.GA13064@sci.fi>  <4236C770.8020101@hispeed.ch>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-In-Reply-To: <4236FC79.5000909@tungstengraphics.com>
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <4236C770.8020101@hispeed.ch>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
 	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
@@ -19,50 +22,36 @@ List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
 	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
 Sender: xorg-bounces@lists.freedesktop.org
 Errors-To: xorg-bounces@lists.freedesktop.org
-Content-Type: text/plain; charset="us-ascii"
-To: Brian Paul <brian.paul@tungstengraphics.com>
-Cc: Xserver development <xorg@freedesktop.org>, fbdev <linux-fbdev-devel@lists.sourceforge.net>, DRI-EGL <dri-egl@lists.freedesktop.org>
+Content-Type: text/plain; charset="utf-8"
+To: Roland Scheidegger <rscheidegger_lists@hispeed.ch>
+Cc: Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, dri-devel@lists.sourceforge.net, xorg@lists.freedesktop.org
 
-I cc'd this onto the other lists to get more opinions. Maybe we can
-turn this into a workable concept.
+On Tue, 2005-03-15 at 12:30 +0100, Roland Scheidegger wrote:
+> Ville Syrj=C3=A4l=C3=A4 wrote:
+>   > I think that making the assumption that all memory is preserved when=20
+> the
+> > memory layout (virtual resolution and depth) doesn't change is perfectl=
+y=20
+> > valid too. That would allow X to do it's Ctrl-Alt-+ and - things withou=
+t=20
+> > repainting the whole screen.
+> I'm not sure I agree here, as it's not always true. For instance, the=20
+> radeon has some restrictions whether it can use tiling or not with a=20
+> certain mode (interlace/double scan) thus you need to redraw everything=20
+> anyway (which is exactly why I implemented a driver workaround to=20
+> repaint everything when that happens - in fact the workaround also gets=20
+> rid of the offscreen contents, which is not necessary, but was much=20
+> easier to implement, since I couldn't find an easy way to "invalidate=20
+> the framebuffer"). What's the big deal with repainting everything? It's=20
+> not like you would do 100 mode changes per second so it would be=20
+> performance-critical...
 
-On Tue, 15 Mar 2005 08:17:13 -0700, Brian Paul
-<brian.paul@tungstengraphics.com> wrote:
-> Perhaps the eglShowSurface() and eglScreenMode() functions should be
-> combined so the new surface and new display mode can be validated
-> together.  That way, the undefined state between setting the new
-> surface and new mode can be avoided.
-
-In one of the other threads (on x.org&fbdev) people are arguing that
-mode setting and surface selection should not be combined. I think
-their concern comes from mode setting code is in fbdev and their
-allocation code is somewhere else.
-
-The problem is that fbdev doesn't have a memory manager so it has no
-concept of where the surfaces are. It relies on some other piece of
-software manage the surfaces. Maybe we should teach fbdev about the
-concept of surfaces.
-
-Initially the radeonfb dev driver would only know about two surfaces,
-one for each head. Name them default. Setting the mode on either head
-would have an implied parameter surface=default. surface=default is a
-special case since the surface type is mutable into what ever the mode
-requires.
-
-fbdev could then be extended to have a plugable API for enumerating
-surfaces. DRM would add other surfaces to this list each with a name.
-Now you can set the mode and specific surface=my_new_surface. If the
-mode and surface are incompatible you get an error.
-
-Another twist would be to set the mode just by specificing the surface
-name. That would cause a mode to be picked that can display the
-surface.
+It's ugly, but that's not the point. The point is that all deployed
+versions of X (and even current X.org CVS head still, in fact) make this
+assumption.
 
 
-
-
-
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+--=20
+Earthling Michel D=C3=A4nzer      |     Debian (powerpc), X and DRI develop=
+er
+Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=3Ddaenzer

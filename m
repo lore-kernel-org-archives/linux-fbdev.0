@@ -1,23 +1,26 @@
-From: Alexander Kern <alex.kern@gmx.de>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
 Subject: Re: latest patch for atyfb, even more patches
-Date: Sat, 16 Oct 2004 23:47:59 +0200
+Date: Sun, 17 Oct 2004 06:20:56 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200410162347.59630.alex.kern@gmx.de>
-References: <200410120024.50968.alex.kern@gmx.de> <200410122042.53878.adaplas@hotpop.com> <200410152125.55255.alex.kern@gmx.de>
+Message-ID: <200410170620.58883.adaplas@hotpop.com>
+References: <200410120024.50968.alex.kern@gmx.de> <200410152125.55255.alex.kern@gmx.de> <200410162347.59630.alex.kern@gmx.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_PcZcBKYloDM+pEf"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CIwPQ-0007i9-EU
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 16 Oct 2004 14:48:16 -0700
-Received: from imap.gmx.net ([213.165.64.20] helo=mail.gmx.net)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
-	id 1CIwPP-0003tB-Gl
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 16 Oct 2004 14:48:16 -0700
-In-Reply-To: <200410152125.55255.alex.kern@gmx.de>
+	id 1CIwpF-0007a1-Se
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 16 Oct 2004 15:14:57 -0700
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CIwpE-0000sx-Qw
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 16 Oct 2004 15:14:57 -0700
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id 5817D902474
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 16 Oct 2004 22:14:43 +0000 (UTC)
+In-Reply-To: <200410162347.59630.alex.kern@gmx.de>
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,150 +30,72 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: adaplas@pol.net, Arnaud FONTAINE <arnaud.fontaine@free.fr>, =?utf-8?q?Dani=C3=ABl_Mantione?= <daniel@deadlock.et.tudelft.nl>, Geert Uytterhoeven <geert@linux-m68k.org>, James Simmons <jsimmons@infradead.org>, Nicolas Souchu <nsouch@free.fr>, Ville =?utf-8?q?Syrj=C3=A4l=C3=A4?= <syrjala@sci.fi>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net, Alexander Kern <alex.kern@gmx.de>
+Cc: adaplas@pol.net, Arnaud FONTAINE <arnaud.fontaine@free.fr>, =?iso-8859-1?q?Dani=EBl=20Mantione?= <daniel@deadlock.et.tudelft.nl>, Geert Uytterhoeven <geert@linux-m68k.org>, James Simmons <jsimmons@infradead.org>, Nicolas Souchu <nsouch@free.fr>, Ville =?iso-8859-1?q?Syrj=E4l=E4?= <syrjala@sci.fi>
 
---Boundary-00=_PcZcBKYloDM+pEf
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-Am Freitag, 15. Oktober 2004 21:25 schrieb Alexander Kern:
-> Am Dienstag, 12. Oktober 2004 14:42 schrieb Antonino A. Daplas:
-> > BTW, can you send me a changelog?
-> >
-> > Tony
+On Sunday 17 October 2004 05:47, Alexander Kern wrote:
+> Am Freitag, 15. Oktober 2004 21:25 schrieb Alexander Kern:
+> > Am Dienstag, 12. Oktober 2004 14:42 schrieb Antonino A. Daplas:
 >
-> Alphabetical sort, please if I forgot something, add you comment.
+> Hi,  here is more patches to go
 >
-> Alex Kern
-> [PATCH] port Daniel Mantione 2.4 driver to 2.6
-> [PATCH] add more pci_id number
-> [PATCH] add accelerated imgblit
-> [PATCH] revert SDRAM_MAGIC_PLL to old behaviour
-> [PATCH] do a "from BIOS" initialisation only by __i386__
+> Our cursor API is a bit understandable, 80 % of drivers given up, and using
+> soft_cursor (see a comment in ffb.c#61).
 >
-> Arnaud FONTAINE
-> [PATCH atyfb] correction for 3D Rage Mobility L
+> Three drivers made an error and use cursor->enable insted of
+> info->cursor.enable.
 >
-> Geert Uytterhoeven
-> [PATCH atyfb] Atari Atyfb fixes
-> [PATCH atyfb] Atyfb on Mach64 GX or Atari
-> [PATCH 468] m68k sparse floating point
+> [PATCH atyfb] fix hw cursor breakage
 >
-> James Simmons
-> [PATCH add] port to framebuffer_alloc api
+> [PATCH g364fb] fix hw cursor breakage
 >
-> Nicolas Souchu
-> [PATCH] I do not found a copy, but it was incorporated too
+> [PATCH imsttfb] fix hw cursor breakage
 >
-> Ville Syrj=E4l=E4
-> [PATCH] fix pan with doublescan
-> [PATCH] another double scan fix
-> [PATCH] disable linear aperture register access
-> [PATCH] Memory type correction
-> [PATCH] atyfb (2.6): Fix mmio_start
-> [PATCH] atyfb (2.6): Fix mem_refresh_rate for Mobility
-> [PATCH] atyfb (2.6): Add RGB565 support
-> [PATCH] atyfb: Blank LCD by turning off backlight voltage
-> [PATCH] atyfb: Rage LT LCD register access
-> [PATCH] atyfb: vblank irq support
-> [PATCH] atyfb: MTRR support
+> And tdfxfb is in my mind, broken as a hell.
+> cut from tdfxfb_cursor function
 >
-Hi,  here is more patches to go
+> #ifdef TDFX_HARDWARE_CURSOR <-- not defined at all
 
-Our cursor API is a bit understandable, 80 % of drivers given up, and using=
-=20
-soft_cursor (see a comment in ffb.c#61).
+Yep, tdfxfb_cursor() doesn't get compiled as it's seriously broken.
 
-Three drivers made an error and use cursor->enable insted of
-info->cursor.enable.
+> static int tdfxfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+> {
+> ......
+> 	if (info->cursor.enable) {    < Hey it's right
+> ......
+> 	/* Turn the cursor on */
+> 	cursor->enable = 1;
+> 	info->cursor = *cursor;    < Outch!
+> }
+> #endif
+>
 
-[PATCH atyfb] fix hw cursor breakage
+Yep, the cursor API, IMHO is very confusing, some fields are taken from
+info->cursor (ie, mask, enable, rop), the rest from the passed fb_cursor
+structure. There are also a lot of short-circuits in the cursor code path.
 
-[PATCH g364fb] fix hw cursor breakage
+I've cleaned all this up in my tree so all drivers will use fields in the
+passed fb_cursor structure _only_. Also, drivers need not store the changed
+fields in info->cursor, fbcon will do that for you.  The end result is that
+drivers don't have to look at info->cursor at all.  
 
-[PATCH imsttfb] fix hw cursor breakage
+Driver changes should be minimal, all references to info->cursor will just
+be changed to cursor.  And things like this can be removed:
 
-And tdfxfb is in my mind, broken as a hell.
-cut from tdfxfb_cursor function
+if (cursor->set & FB_CUR_BLAH)
+	info->cursor.blah = cursor->blah; <-- this line can be removed
 
-#ifdef TDFX_HARDWARE_CURSOR
-static int tdfxfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
-{
-=2E.....
-	if (info->cursor.enable) {    < Hey it's right
-=2E.....
-	/* Turn the cursor on */
-	cursor->enable =3D 1;
-	info->cursor =3D *cursor;    < Outch!
-}
-#endif
+I'll document all of this in skeletenfb.c.
 
-Regards Alex
+Other changes: cleaned up the cursor code path.
 
---Boundary-00=_PcZcBKYloDM+pEf
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="cursor-atyfb.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="cursor-atyfb.patch"
+I'll submit the cursor API patches (including my attempt to modify
+drivers) when 2.6.9 comes out.
 
---- linux-2.6.8/drivers/video/aty/mach64_cursor.c	2004-10-15 22:25:16.000000000 +0200
-+++ linux-2.6.head/drivers/video/aty/mach64_cursor.c	2004-10-16 22:57:34.434688080 +0200
-@@ -198,7 +198,7 @@ int atyfb_cursor(struct fb_info *info, s
- 	    }
- 	}	
- 	
--	if (cursor->enable) {
-+	if (info->cursor.enable) {
- 		wait_for_fifo(1, par);
- 		aty_st_le32(GEN_TEST_CNTL, aty_ld_le32(GEN_TEST_CNTL, par)
- 			    | HWCURSOR_ENABLE, par);
+Tony
 
---Boundary-00=_PcZcBKYloDM+pEf
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="cursor-g364fb.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="cursor-g364fb.patch"
 
---- linux-2.6.8/drivers/video/g364fb.c	2004-10-15 22:19:15.000000000 +0200
-+++ linux-2.6.head/drivers/video/g364fb.c	2004-10-16 23:11:33.687102320 +0200
-@@ -128,7 +128,7 @@ static struct fb_ops g364fb_ops = {
- int g364fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
- {
- 	
--	switch (cursor->enable) {
-+	switch (info->cursor.enable) {
- 	case CM_ERASE:
- 		*(unsigned int *) CTLA_REG |= CURS_TOGGLE;
- 		break;
-
---Boundary-00=_PcZcBKYloDM+pEf
-Content-Type: text/x-diff;
-  charset="iso-8859-1";
-  name="cursor-imsttfb.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="cursor-imsttfb.patch"
-
---- linux-2.6.8/drivers/video/imsttfb.c	2004-10-15 22:21:24.000000000 +0200
-+++ linux-2.6.head/drivers/video/imsttfb.c	2004-10-16 23:12:28.787725752 +0200
-@@ -1249,7 +1249,7 @@ imsttfb_cursor(struct fb_info *info, str
- 
- 		imsttfb_load_cursor_image(par, xx, yy, fgc);
- 	}
--	if (cursor->enable)
-+	if (info->cursor.enable)
- 		imstt_set_cursor(info, cursor, 1);
- 	return 0;
- }
-
---Boundary-00=_PcZcBKYloDM+pEf--
 
 
 -------------------------------------------------------

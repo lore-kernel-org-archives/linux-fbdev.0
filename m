@@ -1,17 +1,17 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: Patches for fbtest
-Date: Sun, 1 Dec 2002 14:03:32 -0800 (PST)
+From: Nico Schottelius <schottelius@wdt.de>
+Subject: aty support
+Date: Sun, 1 Dec 2002 22:35:08 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20021201220332.27006.qmail@web14910.mail.yahoo.com>
-References: <20582D3416EEFC429CAAFBD42278DBC60328F4E4@eatpsv02.dmt.de>
+Message-ID: <20021201213508.GJ338@schottelius.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="0-367547184-1038780212=:26428"
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="BtNCO5h84ExDStzY"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from web14910.mail.yahoo.com ([216.136.225.62])
+Received: from dialin-145-254-148-098.arcor-ip.net ([145.254.148.98] helo=schottelius.net)
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18IcBZ-00032m-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 01 Dec 2002 14:03:33 -0800
-In-Reply-To: <20582D3416EEFC429CAAFBD42278DBC60328F4E4@eatpsv02.dmt.de>
+	id 18IblZ-0004VF-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 01 Dec 2002 13:36:41 -0800
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,145 +22,72 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: geert@linux-m68k.org
 
---0-367547184-1038780212=:26428
+
+--BtNCO5h84ExDStzY
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-This patch fixes the syntax in fbtest so that gcc 3.2
-is happy. I also adjusted the libs for the current
-version of libnetpbm.
+Hello Guys!
 
-I went searching for libnetpnm which doesn't seem to
-exist standalone any more. It is part of libnetpbm
-now.
+I tried to get my notebook running with a framebuffer device,but
+after hours trying around I got only vesa-fb running.
+
+Which is in fact nice, but _slow_.
+
+I tried to use aty128fb and atyfb with Linux 2.4.19 and 2.5.47-50.
+I never achieved something 'displayable'.
+
+Can you tell me,=20
+
+   a) is my chipset compatible with the atyfb/aty128fb driver ?
+   b) what todo exactly to get it working ?
+   (i know howto compile kernel, patch around code,...
+   what I need are informations, whether
+   append=3D"video=3Daty128fb:accel,<640x480@8bpp>"
+   or=20
+   append=3D"video=3Datyfb:<800x600-16bpp>"
+
+   are correct, whether to pass vga=3D options to the kernel
+   is senseful and so on...)
 
 
+If possible I would like to use the 1024x768x24 framebuffer device,
+perhaps loadable via module.
 
+My chipset:
 
+01:00.0 VGA compatible controller: ATI Technologies Inc 3D Rage P/M Mobilit=
+y AGP 2x (rev 64)
+01:00.0 Class 0300: 1002:4c4d (rev 64)
 
-=====
-Jon Smirl
-jonsmirl@yahoo.com
+Please tell me whether I should sent more informations or if you
+need to see .config and so on.
 
-__________________________________________________
-Do you Yahoo!?
-Yahoo! Mail Plus - Powerful. Affordable. Sign up now.
-http://mailplus.yahoo.com
---0-367547184-1038780212=:26428
-Content-Type: application/octet-stream; name="gcc3.2"
-Content-Transfer-Encoding: base64
-Content-Description: gcc3.2
-Content-Disposition: attachment; filename="gcc3.2"
+Sincerly,
 
-SW5kZXg6IGNvbG9yLmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQpSQ1MgZmls
-ZTogL2N2c3Jvb3QvbGludXgtZmJkZXYvZmJ0ZXN0L2NvbG9yLmMsdgpyZXRy
-aWV2aW5nIHJldmlzaW9uIDEuNApkaWZmIC11IC1yMS40IGNvbG9yLmMKLS0t
-IGNvbG9yLmMJMzEgTWF5IDIwMDEgMTE6MDQ6NTQgLTAwMDAJMS40CisrKyBj
-b2xvci5jCTEgRGVjIDIwMDIgMjE6NTQ6MjQgLTAwMDAKQEAgLTExLDYgKzEx
-LDcgQEAKIAogI2luY2x1ZGUgInR5cGVzLmgiCiAjaW5jbHVkZSAiY29sb3Iu
-aCIKKyNpbmNsdWRlIDxzdGRsaWIuaD4KIAogCiAgICAgLyoKSW5kZXg6IG1h
-aW4uYwo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09ClJDUyBmaWxlOiAvY3Zzcm9v
-dC9saW51eC1mYmRldi9mYnRlc3QvbWFpbi5jLHYKcmV0cmlldmluZyByZXZp
-c2lvbiAxLjYKZGlmZiAtdSAtcjEuNiBtYWluLmMKLS0tIG1haW4uYwk1IE9j
-dCAyMDAyIDE1OjI4OjE1IC0wMDAwCTEuNgorKysgbWFpbi5jCTEgRGVjIDIw
-MDIgMjE6NTQ6MjQgLTAwMDAKQEAgLTExLDYgKzExLDggQEAKIAogI2luY2x1
-ZGUgPHN0ZGlvLmg+CiAjaW5jbHVkZSA8c2lnbmFsLmg+CisjaW5jbHVkZSA8
-c3RkbGliLmg+CisjaW5jbHVkZSA8c3RyaW5nLmg+CiAKICNpbmNsdWRlICJ0
-eXBlcy5oIgogI2luY2x1ZGUgInV0aWwuaCIKSW5kZXg6IHRlc3RzLmMKPT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PQpSQ1MgZmlsZTogL2N2c3Jvb3QvbGludXgt
-ZmJkZXYvZmJ0ZXN0L3Rlc3RzLmMsdgpyZXRyaWV2aW5nIHJldmlzaW9uIDEu
-OQpkaWZmIC11IC1yMS45IHRlc3RzLmMKLS0tIHRlc3RzLmMJMyBOb3YgMjAw
-MiAyMTowMDozNCAtMDAwMAkxLjkKKysrIHRlc3RzLmMJMSBEZWMgMjAwMiAy
-MTo1NDoyNCAtMDAwMApAQCAtMTAsNiArMTAsNyBAQAogICovCiAKICNpbmNs
-dWRlIDxzdGRpby5oPgorI2luY2x1ZGUgPHN0cmluZy5oPgogCiAjaW5jbHVk
-ZSAidHlwZXMuaCIKICNpbmNsdWRlICJmYi5oIgpJbmRleDogdXRpbC5jCj09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT0KUkNTIGZpbGU6IC9jdnNyb290L2xpbnV4
-LWZiZGV2L2ZidGVzdC91dGlsLmMsdgpyZXRyaWV2aW5nIHJldmlzaW9uIDEu
-NApkaWZmIC11IC1yMS40IHV0aWwuYwotLS0gdXRpbC5jCTkgTWF5IDIwMDEg
-MjA6MjE6MzMgLTAwMDAJMS40CisrKyB1dGlsLmMJMSBEZWMgMjAwMiAyMTo1
-NDoyNSAtMDAwMApAQCAtMTMsNiArMTMsNyBAQAogI2luY2x1ZGUgPHN0ZGlv
-Lmg+CiAjaW5jbHVkZSA8dGltZS5oPgogI2luY2x1ZGUgPHVuaXN0ZC5oPgor
-I2luY2x1ZGUgPHN0ZGxpYi5oPgogCiAjaW5jbHVkZSAidHlwZXMuaCIKICNp
-bmNsdWRlICJmYi5oIgpJbmRleDogZHJhd29wcy9pbml0LmMKPT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PQpSQ1MgZmlsZTogL2N2c3Jvb3QvbGludXgtZmJkZXYv
-ZmJ0ZXN0L2RyYXdvcHMvaW5pdC5jLHYKcmV0cmlldmluZyByZXZpc2lvbiAx
-LjcKZGlmZiAtdSAtcjEuNyBpbml0LmMKLS0tIGRyYXdvcHMvaW5pdC5jCTI3
-IE5vdiAyMDAyIDIyOjU2OjI5IC0wMDAwCTEuNworKysgZHJhd29wcy9pbml0
-LmMJMSBEZWMgMjAwMiAyMTo1NDoyNSAtMDAwMApAQCAtNDMsOCArNDMsOCBA
-QAogICAgICAqLwogCiAjZGVmaW5lIFBSRVNFTlRfT1JfU0VUX0dFTkVSSUMo
-b3ApCQlcCi0gICAgaWYgKCFkcmF3b3BzLiAjIyBvcCkJCQlcCi0JZHJhd29w
-cy4gIyMgb3AgPSBnZW5lcmljXyAjIyBvcDsKKyAgICBpZiAoIWRyYXdvcHMu
-b3ApICAgICAgICAgICAgICAgICAgICAgICAgICAgIFwKKwlkcmF3b3BzLm9w
-ID0gZ2VuZXJpY18jI29wOwogCiBpbnQgZHJhd29wc19pbml0KHZvaWQpCiB7
-CkluZGV4OiBwbm10b2hleC9NYWtlZmlsZQo9PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09ClJDUyBmaWxlOiAvY3Zzcm9vdC9saW51eC1mYmRldi9mYnRlc3QvcG5t
-dG9oZXgvTWFrZWZpbGUsdgpyZXRyaWV2aW5nIHJldmlzaW9uIDEuMgpkaWZm
-IC11IC1yMS4yIE1ha2VmaWxlCi0tLSBwbm10b2hleC9NYWtlZmlsZQk4IEF1
-ZyAyMDAyIDE4OjE4OjU1IC0wMDAwCTEuMgorKysgcG5tdG9oZXgvTWFrZWZp
-bGUJMSBEZWMgMjAwMiAyMTo1NDoyNSAtMDAwMApAQCAtMyw3ICszLDcgQEAK
-IAogVEFSR0VUID0gcG5tdG9oZXgKIAotTElCUyArPSAtbG5ldHBubSAtbG5l
-dHBibSAtbG5ldHBnbSAtbG5ldHBwbQorTElCUyArPSAtbG5ldHBibSAKIAog
-aW5jbHVkZSAkKFRPUERJUikvUnVsZXMubWFrZQogCkluZGV4OiB0ZXN0cy90
-ZXN0MDEwLmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQpSQ1MgZmlsZTogL2N2
-c3Jvb3QvbGludXgtZmJkZXYvZmJ0ZXN0L3Rlc3RzL3Rlc3QwMTAuYyx2CnJl
-dHJpZXZpbmcgcmV2aXNpb24gMS4yCmRpZmYgLXUgLXIxLjIgdGVzdDAxMC5j
-Ci0tLSB0ZXN0cy90ZXN0MDEwLmMJMTAgTm92IDIwMDIgMjE6Mjk6MjkgLTAw
-MDAJMS4yCisrKyB0ZXN0cy90ZXN0MDEwLmMJMSBEZWMgMjAwMiAyMTo1NDoy
-NSAtMDAwMApAQCAtMjMsNDUgKzIzLDQ1IEBACiB7CiAgICAgY29uX2luaXQo
-JnN1bjEyeDIyKTsKICAgICBjb25fcHV0cygiSGVsbG8sIHdvcmxkIVxuIik7
-Ci0gICAgY29uX3B1dHMoIgotCi0vKgotICogIFRlc3QwMTAKLSAqCi0gKiAg
-KEMpIENvcHlyaWdodCAyMDAyIEdlZXJ0IFV5dHRlcmhvZXZlbgotICoKLSAq
-ICBUaGlzIGZpbGUgaXMgc3ViamVjdCB0byB0aGUgdGVybXMgYW5kIGNvbmRp
-dGlvbnMgb2YgdGhlIEdOVSBHZW5lcmFsIFB1YmxpYwotICogIExpY2Vuc2Uu
-IFNlZSB0aGUgZmlsZSBDT1BZSU5HIGluIHRoZSBtYWluIGRpcmVjdG9yeSBv
-ZiB0aGlzIGFyY2hpdmUgZm9yCi0gKiAgbW9yZSBkZXRhaWxzLgotICovCi0K
-LSNpbmNsdWRlIDx1bmlzdGQuaD4KLQotI2luY2x1ZGUgXCJ0eXBlcy5oXCIK
-LSNpbmNsdWRlIFwiZm9udC5oXCIKLSNpbmNsdWRlIFwiY29uc29sZS5oXCIK
-LSNpbmNsdWRlIFwidmlzdWFsLmhcIgotI2luY2x1ZGUgXCJ0ZXN0LmhcIgot
-I2luY2x1ZGUgXCJ1dGlsLmhcIgotCi0KLXN0YXRpYyBlbnVtIHRlc3RfcmVz
-IHRlc3QwMTBfZnVuYyh2b2lkKQotewotICAgIGNvbl9pbml0KCZzdW4xMngy
-Mik7Ci0gICAgY29uX3B1dHMoXCJIZWxsbywgd29ybGQhXFxuXCIpOwotICAg
-IHdhaXRfZm9yX2tleSgxMCk7Ci0gICAgcmV0dXJuIFRFU1RfT0s7Ci19Ci0K
-LWNvbnN0IHN0cnVjdCB0ZXN0IHRlc3QwMTAgPSB7Ci0gICAgLm5hbWUgPSAg
-ICAgICAgICAgICBcInRlc3QwMTBcIiwKLSAgICAuZGVzYyA9ICAgICAgICAg
-ICAgIFwiSGVsbG8gd29ybGRcIiwKLSAgICAudmlzdWFsID0gICAgICAgICAg
-IFZJU1VBTF9QU0VVRE9DT0xPUiwKLSAgICAucmVxcyA9ICAgICAgICAgICAg
-IFJFUUZfbnVtX2NvbG9ycywKLSAgICAubnVtX2NvbG9ycyA9ICAgICAgIDE2
-LAotICAgIC5mdW5jID0gICAgICAgICAgICAgdGVzdDAxMF9mdW5jLAotfTsK
-LQorICAgIGNvbl9wdXRzKCJcblwKK1xuXAorLypcblwKKyAqICBUZXN0MDEw
-XG5cCisgKlxuXAorICogIChDKSBDb3B5cmlnaHQgMjAwMiBHZWVydCBVeXR0
-ZXJob2V2ZW5cblwKKyAqXG5cCisgKiAgVGhpcyBmaWxlIGlzIHN1YmplY3Qg
-dG8gdGhlIHRlcm1zIGFuZCBjb25kaXRpb25zIG9mIHRoZSBHTlUgR2VuZXJh
-bCBQdWJsaWNcblwKKyAqICBMaWNlbnNlLiBTZWUgdGhlIGZpbGUgQ09QWUlO
-RyBpbiB0aGUgbWFpbiBkaXJlY3Rvcnkgb2YgdGhpcyBhcmNoaXZlIGZvclxu
-XAorICogIG1vcmUgZGV0YWlscy5cblwKKyAqL1xuXAorXG5cCisjaW5jbHVk
-ZSA8dW5pc3RkLmg+XG5cCitcblwKKyNpbmNsdWRlIFwidHlwZXMuaFwiXG5c
-CisjaW5jbHVkZSBcImZvbnQuaFwiXG5cCisjaW5jbHVkZSBcImNvbnNvbGUu
-aFwiXG5cCisjaW5jbHVkZSBcInZpc3VhbC5oXCJcblwKKyNpbmNsdWRlIFwi
-dGVzdC5oXCJcblwKKyNpbmNsdWRlIFwidXRpbC5oXCJcblwKK1xuXAorXG5c
-CitzdGF0aWMgZW51bSB0ZXN0X3JlcyB0ZXN0MDEwX2Z1bmModm9pZClcblwK
-K3tcblwKKyAgICBjb25faW5pdCgmc3VuMTJ4MjIpO1xuXAorICAgIGNvbl9w
-dXRzKFwiSGVsbG8sIHdvcmxkIVxcblwiKTtcblwKKyAgICB3YWl0X2Zvcl9r
-ZXkoMTApO1xuXAorICAgIHJldHVybiBURVNUX09LO1xuXAorfVxuXAorXG5c
-Citjb25zdCBzdHJ1Y3QgdGVzdCB0ZXN0MDEwID0ge1xuXAorICAgIC5uYW1l
-ID0gICAgICAgICAgICAgXCJ0ZXN0MDEwXCIsXG5cCisgICAgLmRlc2MgPSAg
-ICAgICAgICAgICBcIkhlbGxvIHdvcmxkXCIsXG5cCisgICAgLnZpc3VhbCA9
-ICAgICAgICAgICBWSVNVQUxfUFNFVURPQ09MT1IsXG5cCisgICAgLnJlcXMg
-PSAgICAgICAgICAgICBSRVFGX251bV9jb2xvcnMsXG5cCisgICAgLm51bV9j
-b2xvcnMgPSAgICAgICAxNixcblwKKyAgICAuZnVuYyA9ICAgICAgICAgICAg
-IHRlc3QwMTBfZnVuYyxcblwKK307XG5cCitcblwKICIpOwogICAgIHdhaXRf
-Zm9yX2tleSgxMCk7CiAgICAgcmV0dXJuIFRFU1RfT0s7Cg==
+Nico
 
---0-367547184-1038780212=:26428--
+--=20
+Please send your messages pgp-signed and/or pgp-encrypted (don't encrypt ma=
+ils
+to mailing list!). If you don't know what pgp is visit www.gnupg.org.
+(public pgp key: ftp.schottelius.org/pub/familiy/nico/pgp-key)
+
+--BtNCO5h84ExDStzY
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.0.7 (GNU/Linux)
+
+iD8DBQE96oCMtnlUggLJsX0RAn7kAKCdkG/xIwsq3sKeB55wvHGeWQtIYQCgmdya
+G0SlMw8ogaQncfITwEXNLjY=
+=tBDV
+-----END PGP SIGNATURE-----
+
+--BtNCO5h84ExDStzY--
 
 
 -------------------------------------------------------

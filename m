@@ -1,26 +1,11 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: Telling libSDL that my fbdev can do acclerated fills
-Date: Wed, 30 Jun 2004 14:14:57 +0800
+From: "Gilberto Joseph" <joseph_bo@elf.stuba.sk>
+Subject: Get $200 bonus at our Casino!
+Date: Wed, 30 Jun 2004 09:11:23 -0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200406301414.57345.adaplas@hotpop.com>
-References: <200406301047.57423.adaplas@hotpop.com> <200406301238.06406.adaplas@hotpop.com> <40E24551.2030008@bitworks.com>
-Reply-To: adaplas@pol.net
+Message-ID: <b0bf01c45e92$5cf5301b$e0056ada__17581.1499743306$1088593943@khnp.co.kr>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BfYMy-0000dM-6P
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Jun 2004 23:14:56 -0700
-Received: from babyruth.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1BfYMx-00006S-SA
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Jun 2004 23:14:56 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by babyruth.hotpop.com (Postfix) with SMTP id 3A932692D57
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 30 Jun 2004 05:32:56 +0000 (UTC)
-In-Reply-To: <40E24551.2030008@bitworks.com>
-Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,21 +16,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Richard Smith <rsmith@bitworks.com>, adaplas@pol.net
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-usb-users@lists.sourceforge.net, linux-usb-devel@lists.sourceforge.net, linux-ntfs-dev@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net
 
-On Wednesday 30 June 2004 12:45, Richard Smith wrote:
->
-> The documentation says that it runs on top of the linux framebuffer
-> device.  If it runs on top of fbdev but fbdev only does  assisted stuff
-> for the console then how does that work?
+Hi, 
+I have a special offer available for you at our casino.
 
-fbdev exports the register space and framebuffer to userspace, DirectFB
-uses those to create hardware specific drawing functions via the 
-gfxdrivers.
+$20 to try our internet casino, no deposit is necessary!
+At the casino software's cashier enter bonus code: FR93P
 
-Tony
+$200 bonus on your first deposit!
+At the casino software's cashier enter bonus code: FMJKU
 
+Allow us to show you our quality operation, fast payouts,
+generous bonuses, and super friendly around-the-clock
+customer support.
+
+Click here: http://gocasino-dollar.com
+
+Best regards,
+Jamie Zawinsky
+
+
+
+No thanks: http://gocasino-dollar.com/u
 
 
 

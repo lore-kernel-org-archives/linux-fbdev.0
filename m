@@ -1,18 +1,20 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Re: FB model basic issues (WAS: radeon,
- apertures & memory mapping)
-Date: Tue, 15 Mar 2005 09:51:40 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0503150946180.30569@numbat.sonytel.be>
-References: <1110677744.19810.80.camel@gaston> <9e47339105031219223e606a52@mail.gmail.com>
- <1110696189.5787.100.camel@gaston> <1110774523.4003.511.camel@localhost>
- <1110784327.5787.288.camel@gaston> <1110817205.4004.527.camel@localhost>
- <1110837171.5863.16.camel@gaston> <1110838356.4003.548.camel@localhost>
- <1110839873.5673.41.camel@gaston> <1110862777.4044.592.camel@localhost>
- <20050315060138.GA13064@sci.fi>
+Subject: Re: Reworking sysfs attributes for fbdev
+Date: Tue, 15 Mar 2005 09:55:20 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0503150954500.30569@numbat.sonytel.be>
+References: <200503111331.41352.ajax@nwnk.net> <9e473391050314091173cfbd0d@mail.gmail.com>
+ <9e47339105031419437348829a@mail.gmail.com> <200503151449.59874.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584334533-432997379-1110876700=:30569"
-In-Reply-To: <20050315060138.GA13064@sci.fi>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1DB7qL-0007Y1-8C
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Mar 2005 00:56:01 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DB7qK-000705-8f
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Mar 2005 00:56:00 -0800
+In-Reply-To: <200503151449.59874.adaplas@hotpop.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -23,77 +25,62 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, dri-devel@lists.sourceforge.net, xorg@lists.freedesktop.org, Jon Smirl <jonsmirl@yahoo.com>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Jon Smirl <jonsmirl@gmail.com>, dri-egl@lists.freedesktop.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Tue, 15 Mar 2005, Antonino A. Daplas wrote:
+> On Tuesday 15 March 2005 11:43, Jon Smirl wrote:
+> > Some discussion on the dri-egl list points out that the new mode
+> > setting sysfs attributes for fbdev are too limited. Below is a
+> > proposal I made on the dri-egl list.
+> >
+> > To implement this for fbdev I need to know the right set of of
+> > attribute value pairs. Some obvious ones are:
+> >
+> > name=string
+> > width=number
+> > height=number
+> > depth=number
+> > refresh=number
+> > interlace= yes | no | double
+> > type = detailed|standard|vesa|user
+> > sync = horizonatal_high | vertical_high | external | composite |
+> > broadcast | green
+> > left=number
+> > right=number
+> > lower=number
+> > upper=number
+> > hsync=number
+> > vsync=number
+> > pixclock=number
+> >
+> > Right now fb0/modes is set by passing in an array of fb_videomode
+> > structs. To convert this to attribute value pair I needs the full set
+> > so that no info is lost.
+> >
+> > If the mode and depth are independent variables we can end up with a
+> > combo that exceeds monitor or hardware bandwidth. Would it be better
+> > to combine the depth into the modes list? or if you try to set a
+> 
+> We can do that, vesa's mode id's are like that. Although I prefer that mode
+> setting should be separated from the framebuffer format setting (ie, depth), it's
+> currently difficult to make this work safely the reason being that not all
+> check_var() functions can be relied upon.
 
----584334533-432997379-1110876700=:30569
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-MIME-Autoconverted: from 8bit to quoted-printable by witte.sonytel.be id j2F8pqGU024271
-
-On Tue, 15 Mar 2005, Ville [iso-8859-1] Syrj=E4l=E4 wrote:
-> I think that making the assumption that all memory is preserved when th=
-e=20
-> memory layout (virtual resolution and depth) doesn't change is perfectl=
-y=20
-> valid too. That would allow X to do it's Ctrl-Alt-+ and - things withou=
-t=20
-> repainting the whole screen.
-
-Indeed. The `geometry' part of the screen isn't changed, only the `timing=
-s'
-part (cfr. the split of fb_var_screeninfo parameters I did in fbutils (wh=
-ich
-BTW wasn't ever finished).
-
-> If radeonfb will allocate the buffer for the second head from the top o=
-f=20
-> the memory users would basically have to guess it's location. matroxfb=20
-> simply cuts the memory in two pieces and allocates the buffers from the=
-=20
-> start of each piece. I don't really like that approach. Adding a simple=
-=20
-> byte_offset field to fb_var_screeninfo would solve the problem quite=20
-> nicely but I don't know if such API changes are acceptable at this stag=
-e.
-
-You wouldn't have to guess its location, look at fix.smem_start.
-
-I once did a similar thing for an embedded prototype: take a fixed amount=
- of
-memory for both frame buffers (this was a UMA system), fb0 starts from th=
-e top,
-fb1 starts from the bottom. You can enlarge each frame buffer, until you =
-read
-the memory of the other. Each fix.smem_{start,len} corresponds exactly to=
- the
-memory allocated to each frame buffer.
-
-Of course, if you also want off-screen memory (i.e. memory beyond
-xres_virtual*yres_virtual*bpp/8), things get more complicated, since curr=
-ently
-there's no way for the application to ask for a minimum amount of off-scr=
-een
-memory. Perhaps a new field in fb_var_screeninfo (and zero means `I don't
-care', for backwards compatibility).
+So should we separate into geometry, timings, visual (cfr. fbutils)?
 
 Gr{oetje,eeting}s,
 
 						Geert
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m6=
-8k.org
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. =
-But
-when I'm talking to journalists I just say "programmer" or something like=
- that.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
 							    -- Linus Torvalds
----584334533-432997379-1110876700=:30569--
 
 
 -------------------------------------------------------

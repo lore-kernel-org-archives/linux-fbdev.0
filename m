@@ -1,17 +1,14 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: FB model basic issues (WAS: radeon, apertures & memory mapping)
-Date: Wed, 16 Mar 2005 10:49:11 +1100
-Message-ID: <1110930551.649.47.camel@gaston>
+Subject: Re: [Linux-fbdev-devel] Re: FB model basic issues (WAS: radeon,
+	apertures & memory mapping)
+Date: Wed, 16 Mar 2005 10:50:52 +1100
+Message-ID: <1110930652.649.50.camel@gaston>
 References: <1110696189.5787.100.camel@gaston>
-	<1110774523.4003.511.camel@localhost>
-	<1110784327.5787.288.camel@gaston>
-	<1110817205.4004.527.camel@localhost> <1110837171.5863.16.camel@gaston>
-	<1110838356.4003.548.camel@localhost> <1110839873.5673.41.camel@gaston>
-	<1110862777.4044.592.camel@localhost> <20050315060138.GA13064@sci.fi>
-	<1110926659.25201.11.camel@gaston>  <20050315230522.GA1444@sci.fi>
+	<Pine.LNX.4.62.0503150946180.30569@numbat.sonytel.be>
+	<20050315133628.GA16051@sci.fi> <200503160737.04850.adaplas@hotpop.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20050315230522.GA1444@sci.fi>
+In-Reply-To: <200503160737.04850.adaplas@hotpop.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
 	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
@@ -23,30 +20,40 @@ List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
 Sender: xorg-bounces@lists.freedesktop.org
 Errors-To: xorg-bounces@lists.freedesktop.org
 Content-Type: text/plain; charset="iso-8859-1"
-To: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Cc: Jon Smirl <jonsmirl@yahoo.com>, Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>, dri-devel@lists.sourceforge.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, xorg@lists.freedesktop.org
+To: adaplas@pol.net
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Jon Smirl <jonsmirl@yahoo.com>, xorg@lists.freedesktop.org, dri-devel@lists.sourceforge.net, Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
 
-On Wed, 2005-03-16 at 01:05 +0200, Ville Syrj=E4l=E4 wrote:
+On Wed, 2005-03-16 at 07:37 +0800, Antonino A. Daplas wrote:
+> On Tuesday 15 March 2005 21:36, Ville Syrj=E4l=E4 wrote:
+> > On Tue, Mar 15, 2005 at 09:51:40AM +0100, Geert Uytterhoeven wrote:
+> > > On Tue, 15 Mar 2005, Ville [iso-8859-1] Syrj??wrote:
+> > > > If radeonfb will allocate the buffer for the second head from the=
+ top
+> > > > of the memory users would basically have to guess it's location.
+> > > > matroxfb simply cuts the memory in two pieces and allocates the b=
+uffers
+> > > > from the start of each piece. I don't really like that approach. =
+Adding
+> > > > a simple byte_offset field to fb_var_screeninfo would solve the p=
+roblem
+> > > > quite nicely but I don't know if such API changes are acceptable =
+at
+> > > > this stage.
+> > >
+> > > You wouldn't have to guess its location, look at fix.smem_start.
+> >
+> > But how would someone mmap() the whole memory then? matroxfb already =
+plays
+>=20
+> This is multi-head, right?  That implies one fb per head.  So,  can't y=
+ou do
+> separate mmaps?  fb0->fix.smem_start|len and fb1->fix.smem_start|len.
 
-> True. Currently DirectFB doesn't handle this correctly. But that could =
-be=20
-> easily fixed if only line_length wasn't totally misplaced. It really=20
-> belongs to fb_var_screeninfo. We could first test the mode with=20
-> FB_ACTIVATE_TEST and actually see how much memory it needs and could=20
-> evict enough offscreen surfaces to make room before actually setting th=
-e=20
-> mode. Currently it would need some guesswork.
-
-Agreed. line_lenght was misplaced... I suppose there may be interest in
-making a v2 of the var structure and using a flag to indicate wether we
-are passing a v1 or a v2 one...
-
-In the meantime, can you tell me more about your arbitration scheme ?
-Arbitration is what I'm trying to solve. There are two main issues:
-multiple card arbitration (that is, the VGA cruft to deal with) and
-arbitration between access on X heads of the same card (which would be
-nice, but not mandatory, DirectFB may take over all heads of the card,
-doing that wuld require proper use of the DRM lock & engine context
-switch, more of a long term goal).
+Sure, re-read the thread :) Also, he's worried about management of
+offscreen memory. (which is an issue too because of possible problems
+with the setup of the apertures -> start of the discussion, and because
+it seems that directFB has only been tested on little endian machines
+(damn them !) and thus doesn't understand the problem with swapper on
+framebuffer access).
 
 Ben.

@@ -1,15 +1,10 @@
 From: James Simmons <jsimmons@transvirtual.com>
-Subject: [PATCH] fbdev updates.
-Date: Mon, 1 Jul 2002 10:48:41 -0700 (PDT)
+Subject: [PATCH] New Console system BK
+Date: Mon, 1 Jul 2002 12:52:00 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0207011041320.23794-100000@www.transvirtual.com>
+Message-ID: <afqca1$961$2@main.gmane.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from www.transvirtual.com ([206.14.214.140])
-	by usw-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17P5I6-0000mO-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 01 Jul 2002 10:48:46 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,98 +17,58 @@ List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux console project <linuxconsole-dev@lists.sourceforge.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
+Since 2.5.1 I have placed into the kernel part of the new console system
+code into the DJ tree. So it has been well tested. I was hoping to have
+all the keyboard devices ported over to the input api and the fbdev
+drivers over to the new api. Unfortunely due to time restraints this will
+not be the case. So here goes the first installment of the new console
+system. Please test it yourselves and I will push it to Linus soon.
 
-Here are the latest updates to the framebuffer layer. Please test it outso
-I can push it as soon as possible to Linus. Here is what has changes. The
-* are tested drivers. As a note there are a few issues with a few of the
-drivers but time is running out so I need to push the changes then fix any
-remaining bugs. Links to the chnages are:
+The goal is to create a system we can use keyboards without the console
+system and the same true for framebuffer devices. This is most helpful on
+embedded devices. The other goals to make the VT console system more
+modular and lighter weight. The other goal is to make the VT tty system
+multi-desktop.
 
-BK:            http://www.fbdev.bkbits.net/fbdev-2.5
+Here are the changes so far:
 
-diff:		http://www.transvirtual.com/~jsimmons/fbdev.diff.gz
+I) Removal of struct kbd_struct from the sysrq handler. Why drag itr along
+   when only two sysrq functions actually use it.
+
+II) Massive rewrite and cleanup of keybaord.c.
+
+III) Place struct tty_struct into struct vc_data. This sets up a one to
+     one relationship. Avoids the nasty tricks of playing with fields from
+     console_driver.
+
+IV) Cleanup of VT tty/console initialization. A vty_init function to make
+    it cleaner.
+
+diffstat:
+
+ arch/i386/kernel/apm.c         |    2
+ arch/ppc/xmon/start.c          |    2
+ arch/ppc64/xmon/start.c        |    2
+ drivers/acpi/system.c          |    2
+ drivers/char/console.c         |   82 ++--
+ drivers/char/keyboard.c        |  779 +++++++++++++++++++++--------------------
+ drivers/char/sysrq.c           |   46 +-
+ drivers/char/tty_io.c          |   15
+ include/linux/console_struct.h |    1
+ include/linux/sysrq.h          |   13
+ 11 files changed, 485 insertions(+), 459 deletions(-)
 
 
-P.S
-       Note I removed the old fbgen stuff so some drivers are going to
-break. Well with time running out I need to push ahead. Sorry but I have
-to choose.
+The BK patch is at:
 
+ http://linuxconsole.bkbits.net/dev
 
- Documentation/fb/README-sstfb.txt     |   87
- arch/i386/boot/video.S                |    4    *
- arch/ppc/Config.help                  |    6
- arch/ppc/config.in                    |    3
- drivers/char/vt.c                     |   66    *
- drivers/video/Config.help             |   22    *
- drivers/video/Config.in               |   80    *
- drivers/video/Makefile                |   15    *
- drivers/video/S3triofb.c              |   19
- drivers/video/acornfb.c               |    3
- drivers/video/amifb.c                 |   81
- drivers/video/atafb.c                 |  376 ++-
- drivers/video/aty/atyfb.h             |   18               *
- drivers/video/aty/atyfb_base.c        |  348 +--           *
- drivers/video/aty/mach64.h            | 1158 ------------  *
- drivers/video/aty/mach64_accel.c      |    2               *
- drivers/video/aty/mach64_ct.c         |    4 		    *
- drivers/video/aty/mach64_cursor.c     |   12               *
- drivers/video/aty/mach64_gx.c         |    2 		    *
- drivers/video/aty128.h                |  352 ---	    *
- drivers/video/aty128fb.c              | 3272
-++++++++++++++-------------------- *
- drivers/video/chipsfb.c               |   29
- drivers/video/controlfb.c             |   21
- drivers/video/dnfb.c                  |   19
- drivers/video/fbcon-mac.c             |  483 -----
- drivers/video/fbcon-vga.c             |  213 --
- drivers/video/fbcon.c                 |    2                	*
- drivers/video/fbgen.c                 |  347 ---		*
- drivers/video/fbmem.c                 |    2 			*
- drivers/video/fm2fb.c                 |    3
- drivers/video/fonts.c                 |    4
- drivers/video/hpfb.c                  |    3
- drivers/video/imsttfb.c               |   56
- drivers/video/macfb.c                 |  463 +---
- drivers/video/macmodes.c              |  171 -
- drivers/video/matrox/matroxfb_base.c  |   43
- drivers/video/matrox/matroxfb_base.h  |    6
- drivers/video/matrox/matroxfb_crtc2.c |   19
- drivers/video/modedb.c                |    4
- drivers/video/neofb.c                 |    7 			*
- drivers/video/offb.c                  | 1130 ++++-------
- drivers/video/platinumfb.c            |   26
- drivers/video/q40fb.c                 |    8
- drivers/video/retz3fb.c               |    4
- drivers/video/riva/Makefile           |    2 			*
- drivers/video/riva/accel.c            |  427 ----		*
- drivers/video/riva/fbdev.c            | 1531 ++++++---------	*
- drivers/video/riva/riva_hw.c          |   38 			*
- drivers/video/riva/riva_hw.h          |    2 			*
- drivers/video/riva/rivafb.h           |   60 			*
- drivers/video/sa1100fb.c              |  813 ++------		*
- drivers/video/sa1100fb.h              |   17 			*
- drivers/video/sgivwfb.c               | 1432 ++++++--------
- drivers/video/sgivwfb.h               |  660 ------
- drivers/video/sstfb.c                 |  958 +++++----
- drivers/video/sstfb.h                 |   73
- drivers/video/tdfxfb.c                |   55 			*
- drivers/video/tx3912fb.c              |    2
- drivers/video/valkyriefb.c            |   26
- drivers/video/vesafb.c                |   12 			*
- drivers/video/vfb.c                   |    4
- include/asm-ppc/vc_ioctl.h            |   46
- include/asm-ppc64/vc_ioctl.h          |   50
- include/linux/fb.h                    |   52
- include/linux/pci_ids.h               |    1
- include/linux/tty.h                   |    3
- include/video/aty128.h                |  419 ++++
- include/video/mach64.h                | 1158 ++++++++++++
- include/video/sgivw.h                 |  660 ++++++
- 70 files changed, 6886 insertions(+), 10608 deletions(-)
+diff:
+
+ http://www.transvirtual.com/~jsimmons/console.diff.gz
 
    . ---
    |o_o |
@@ -122,6 +77,7 @@ to choose.
  (|     | )
  /'\_   _/`\
  \___)=(___/
+
 
 
 

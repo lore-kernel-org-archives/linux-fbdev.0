@@ -1,82 +1,90 @@
-From: Alexander Kern <alex.kern@gmx.de>
-Subject: Re: latest patch for atyfb
-Date: Fri, 15 Oct 2004 21:25:54 +0200
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200410152125.55255.alex.kern@gmx.de>
-References: <200410120024.50968.alex.kern@gmx.de> <200410122042.53878.adaplas@hotpop.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: Generic VESA framebuffer driver and Video card BOOT?
+Date: Fri, 15 Oct 2004 16:19:16 -0400
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <9e4733910410151319159482ce@mail.gmail.com>
+References: <416E8322.25700.29ACC2F1@localhost>
+	 <1097843969.9863.8.camel@localhost.localdomain>
+	 <416FB275.6425.1C3D985@localhost>
+Reply-To: Jon Smirl <jonsmirl@gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CIXiK-0005UT-4b
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Oct 2004 12:26:08 -0700
-Received: from imap.gmx.net ([213.165.64.20] helo=mail.gmx.net)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
-	id 1CIXiE-0002EI-6a
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Oct 2004 12:26:08 -0700
-In-Reply-To: <200410122042.53878.adaplas@hotpop.com>
-Content-Disposition: inline
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: adaplas@pol.net
-Cc: Arnaud FONTAINE <arnaud.fontaine@free.fr>, =?iso-8859-1?q?Dani=EBl_Mantione?= <daniel@deadlock.et.tudelft.nl>, Geert Uytterhoeven <geert@linux-m68k.org>, James Simmons <jsimmons@infradead.org>, Nicolas Souchu <nsouch@free.fr>, Ville =?iso-8859-1?q?Syrj=E4l=E4?= <syrjala@sci.fi>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S267998AbUJOUTV@vger.kernel.org>
+In-Reply-To: <416FB275.6425.1C3D985@localhost>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: Kendall Bennett <kendallb@scitechsoft.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-Am Dienstag, 12. Oktober 2004 14:42 schrieb Antonino A. Daplas:
+On Fri, 15 Oct 2004 11:20:21 -0700, Kendall Bennett
+<kendallb@scitechsoft.com> wrote:
+> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> 
+> > On Iau, 2004-10-14 at 21:46, Kendall Bennett wrote:
+> > > a way to spawn a user mode process that early in the boot sequence (it
+> > > would have to come from the initrd image I expect) then the only option
+> > > is to compile it into the kernel.
+> >
+> > There is exactly that in 2.6 - the hotplug interfaces allow the
+> > kernel to fire off userspace programs. Jon Smirl (who you should
+> > definitely talk to about this stuff) has been hammering out a
+> > design for moving almost all the mode switching into user space for
+> > kernel video.
+> 
+> That is awesome! I am all for moving this outside of the kernel, as it
+> would allow the use of ream vm86() services for VGA/VESA BIOS access on
+> x86 and the user of the emulator for non-x86 platforms.
+> 
+> The only catch would be making sure this stuff is available really early
+> in the boot sequence. As it stands right now the solution we have brings
+> up the video almost imediately after you see the 'uncompressing kernel
+> image' message on the serial port. The other solution of course is to get
+> this into the boot loader which is what the AmigaOne folks did for their
+> machines (U-Boot brings up the video). We are working with those guys to
+> update their BIOS emulator to the latest version as the one they have
+> doesn't work that reliably.
+> 
+> Anyway how do I find out more about this in 2.6?
+> 
+> Also I assume the code would need to end up in the initrg image, correct?
+> Can you point me at some resources to learn more about how to get custom
+> code into the initrd image?
 
-> BTW, can you send me a changelog?
->
-> Tony
+The plan for this in 2.6 is to first write a VGA device driver. This
+driver is responsible for identifying all of the VGA devices in a
+system and ensuring only one of them gets enabled a time. I started
+writing this but I haven't finished. This driver would be compiled
+into the kernel. I can send source if you are interested.
 
-Alphabetical sort, please if I forgot something, add you comment.
-=20
-Alex Kern
-[PATCH] port Daniel Mantione 2.4 driver to 2.6
-[PATCH] add more pci_id number
-[PATCH] add accelerated imgblit
-[PATCH] revert SDRAM_MAGIC_PLL to old behaviour
-[PATCH] do a "from BIOS" initialisation only by __i386__
+I have added hooks to the PCI subsystem to record the boot video
+device. If the VGA driver finds VGA devices other than the boot one it
+will generate hotplug events on them. Initramfs should contain a reset
+program for using X86 mode to reset these cards. To do this you need
+two things from the kernel: 1) a way to make sure only a single VGA
+device is active (VGA driver, allow you to disable the current VGA
+device, reset the card, restore the active VGA device) and 2) a way to
+get the ROM image. There is a patch in -mm that makes the ROMs visible
+in sysfs that should be in the kernel shortly.
 
-Arnaud FONTAINE
-[PATCH atyfb] correction for 3D Rage Mobility L
+So, when you first boot you have two choices, 1) use a display the
+boot ROM setup, such as VGAcon or PROMcon. or 2) have no display.
+People want this both ways. VGAcon/PROMcon will let you get output
+very early in the boot process.
 
-Geert Uytterhoeven
-[PATCH atyfb] Atari Atyfb fixes
-[PATCH atyfb] Atyfb on Mach64 GX or Atari
-[PATCH 468] m68k sparse floating point
+Next the VGA driver will initialize. This will trigger user space
+resets using the program on initramfs. Now it is possible to use all
+of your displays. To control this from something like resume, the
+driver sets a lock that is cleared by the reset app and the end of
+reset. This will keep other processes out of the driver until reset is
+finished.
 
-James Simmons
-[PATCH add] port to framebuffer_alloc api
+Right now I am working on a merged fbdev/DRM that supports multi-head
+adapters. It's turning out to be much more work than I though because
+neither DRM or fbdev handle multihead at the device driver level. You
+can get snapshots of the code at mesa3d.bkbits.net but it doesn't work
+right yet. This driver is designed to run after the VGAdriver has
+reset the hardware.
 
-Nicolas Souchu
-[PATCH] I do not found a copy, but it was incorporated too
-
-Ville Syrj=E4l=E4
-[PATCH] fix pan with doublescan
-[PATCH] another double scan fix
-[PATCH] disable linear aperture register access
-[PATCH] Memory type correction
-[PATCH] atyfb (2.6): Fix mmio_start
-[PATCH] atyfb (2.6): Fix mem_refresh_rate for Mobility
-[PATCH] atyfb (2.6): Add RGB565 support
-[PATCH] atyfb: Blank LCD by turning off backlight voltage
-[PATCH] atyfb: Rage LT LCD register access
-[PATCH] atyfb: vblank irq support
-[PATCH] atyfb: MTRR support
-
-
-
--------------------------------------------------------
-This SF.net email is sponsored by: IT Product Guide on ITManagersJournal
-Use IT products in your business? Tell us what you think of them. Give us
-Your Opinions, Get Free ThinkGeek Gift Certificates! Click to find out more
-http://productguide.itmanagersjournal.com/guidepromo.tmpl
+-- 
+Jon Smirl
+jonsmirl@gmail.com

@@ -1,17 +1,11 @@
-From: MAILER-DAEMON@mars.net-itech.com
-Subject: failure notice
-Date: 16 Jun 2004 12:10:00 -0000
+From: "Charlotte L. Galindo" <c.galindorp@hotspace.net.au>
+Subject: Powerful weightloss now available where you are.
+Date: Wed, 16 Jun 2004 14:11:58 -0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <E1BaZEx-0001wM-Uv@sc8-sf-mx1.sourceforge.net>
+Message-ID: <00fb01c453bc$f20e8671$2afc5f66__6923.09305673024$1087402422@interquad.co.uk>
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BaZEy-0001mn-SY
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 05:10:04 -0700
-Received: from ptr-64-201-187-81.ptr.terago.ca ([64.201.187.81] helo=mars.net-itech.com)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1BaZEx-0001wM-Uv
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 05:10:04 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -21,70 +15,36 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-usb-users@lists.sourceforge.net, linux-usb-devel@lists.sourceforge.net, linux-ntfs-dev@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net
 
-Hi. This is the qmail-send program at mars.net-itech.com.
-I'm afraid I wasn't able to deliver your message to the following addresses.
-This is a permanent error; I've given up. Sorry it didn't work out.
-
-<linux-fbdev-devel@lists.sourceforge.net>:
-66.35.250.206 does not like recipient.
-Remote host said: 550-"This appears to be a forged message, attempting to appear to be
-550-from the SourceForge.net staff.  If this message has been banned
-550-in error, please send a copy of this message to
-550 postmaster@sourceforge.net"
-Giving up on 66.35.250.206.
-
---- Below this line is a copy of the message.
-
-Return-Path: <linux-fbdev-devel@lists.sourceforge.net>
-Received: (qmail 26312 invoked from network); 16 Jun 2004 12:09:59 -0000
-Date: Wed, 16 Jun 2004 16:09:59 +0400
-From: Virus Scanner <postmaster@net-itech.com>
-Subject: Net Integrator Virus Alert
-MIME-Version: 1.0
-Content-type: multipart/mixed;
- boundary="------Virus_Scanned_/**()^#$)(@@*A#*&&/5152782031955084156"
-
-
-This is a multi-part message in MIME format.
-
---------Virus_Scanned_/**()^#$)(@@*A#*&&/5152782031955084156
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-
-WARNING: a virus (probably I-Worm.NetSky.b) or suspicious attachment was detected and removed from the following message from linux-fbdev-devel@lists.sourceforge.net to apenwarr@worldvisions.ca.
-Some of the content may still be readable.
-
---------Virus_Scanned_/**()^#$)(@@*A#*&&/5152782031955084156
-Content-Type: message/rfc822;  name=original.eml
-Content-Disposition: inline;  filename=original.eml
-
-Received: from unknown (HELO worldvisions.ca) (61.233.55.110)
-  by all.mars.net-itech.com with SMTP; 16 Jun 2004 12:09:52 -0000
-From: linux-fbdev-devel@lists.sourceforge.net
-To: apenwarr@worldvisions.ca
-Subject: stolen
-Date: Fri, 16 Jul 2004 20:11:09 +0800
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="64045574"
+Hello, I have a special offer for you...
+WANT TO LOSE WEIGHT?
+The most powerful weightloss is now available
+without prescription. All natural Adipren720
+100% Money Back Guarant=E9e!
+- Lose up to 19% Total Body Weight.
+- Loss of 20-35% abdominal Fat.
+- Up to 300% more Weight Loss while dieting.
+- Increase metabolic rate by 76.9% without Exercise.
+- Reduction of 40-70% overall Fat under skin.
+- Suppresses appetite for sugar.
+- Burns calorized fat.
+- Boost your Confidence level and Self Esteem.
+Get the facts about all-natural Adipren720 <http://diet40.com/>
 
 
 
---64045574
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+---- system information ----
+Most provider) directories Negotiation] define systems identifiers support
 
-information about you
+instead designers example Web default might preferences class=20
+users called revised generic similar-looking regard cannot model=20
+RFC3066 subject culturally individual progress acceptable vary numbering
 
-
-
---64045574--
-
---------Virus_Scanned_/**()^#$)(@@*A#*&&/5152782031955084156--
+public-i18n-ws@w3org sounds weekday/weekend user's logic submitted publicat=
+ions
+Group's=20
 
 
 

@@ -1,23 +1,24 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Fw: [Bugme-new] [Bug 4218] New: Radeon fb doesn't have correct
- resolution for lcd screen
-Date: Thu, 17 Feb 2005 09:12:56 +1100
-Message-ID: <1108591976.5533.4.camel@gaston>
-References: <20050215133933.61769fd0.akpm@osdl.org>
-	 <1108504048.13376.11.camel@gaston>  <200502160948.51781.bart@verwilst.be>
+Subject: Re: Fw: [Bugme-new] [Bug 4217] New: radeonfb makes system hang and
+ LCD "burn"
+Date: Thu, 17 Feb 2005 09:15:33 +1100
+Message-ID: <1108592133.5533.6.camel@gaston>
+References: <20050215121555.54c63ed2.akpm@osdl.org>
+	 <1108502142.13394.2.camel@gaston> <87fyzxsdo7.fsf@kataplop.net>
+	 <1108504143.13376.14.camel@gaston>  <87r7jggxc7.fsf@kataplop.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Content-Transfer-Encoding: quoted-printable
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D1XR0-00056c-Bx
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 14:14:14 -0800
+	id 1D1XTX-0005EK-QQ
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 14:16:51 -0800
 Received: from gate.crashing.org ([63.228.1.57])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1D1XQy-0002KC-PA
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 14:14:14 -0800
-In-Reply-To: <200502160948.51781.bart@verwilst.be>
+	id 1D1XTW-00026W-9P
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 14:16:51 -0800
+In-Reply-To: <87r7jggxc7.fsf@kataplop.net>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,40 +29,39 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Bart Verwilst <bart@verwilst.be>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Marc =?ISO-8859-1?Q?Poulhi=E8s?= <marc.poulhies@epfl.ch>
 Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 2005-02-16 at 09:48 +0100, Bart Verwilst wrote:
-> Hi!
-> 
-> Hm, i'm not sure wether it's radeonfb or not 
-> 
-> ----
-> 
-> vesafb: framebuffer at 0xe0000000, mapped to 0xdc880000, using 1875k, total 
-> 65472k
-> vesafb: mode is 800x600x16, linelength=1600, pages=67
-> vesafb: protected mode interface info at c000:51a9
-> vesafb: scrolling: redraw
-> vesafb: Truecolor: size=0:5:6:5, shift=0:11:5:0
-> bootsplash 3.1.4-2004/02/19: looking for picture.... silentjpeg size 14554 
-> bytes, found (800x600, 14506 bytes, v3).
-> Console: switching to colour frame buffer device 92x32
-> fb0: VESA VGA frame buffer device
-> 
-> ---
-> 
-> Is radeonfb a driver for vesafb? Or are they unrelated?
-> 
-> Could you give me some more pointers for me what i could do to test more? Or 
-> will enabling radeonfb debug support still be helpful?
+On Wed, 2005-02-16 at 19:43 +0100, Marc Poulhi=E8s wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+>=20
+> > Try building radeonfb in the kernel and booting with
+> > radeonfb.default_dynclk=3D-1, let me know if that works. fbdev's in
+> > modules have always been sort-of dodgy....
+> >
+> > The "dynclk" thing has issues, the upstream code from ATI has some bu=
+gs
+> > plus there is something weird going on which I suspect might be a
+> > miscompile of a bit of code in there. I'll send a patch working aroun=
+d
+> > that today.
+> >
+> > Ben.
+>=20
+> Ok, did that. Same result. The only thing displayed is the system
+> caret. I can see it moving left and right while the system boots and
+> "displays" the messages (X is working nicely).
+>=20
+> I did compile debug support, so I'm including the output.
 
-They are unrelated, so your problem is probably not related to
-radeonfb...
+Well... looks like radeonfb is actually working ... You can try booting
+with radeonfb.noaccel=3D1 on your kernel command line and tell me what's
+up ? I looks like your fbcon is having trouble actually. Not sure what's
+up, I haven't had any report of that so far.
 
 Ben.
- 
+
 
 
 

@@ -1,33 +1,23 @@
-From: Jim Hague <jim.hague@acm.org>
-Subject: New API and X option UseFBDev
-Date: Tue, 09 Sep 2003 07:49:55 +0100 (BST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Re: New radeonfb 0.2.0 (take 2)
+Date: Tue, 09 Sep 2003 09:58:30 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <XFMail.20030909074955.jim.hague@acm.org>
+Message-ID: <1063094309.675.11.camel@gaston>
+References: <20030909031908.58173.qmail@web14903.mail.yahoo.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19wcK8-0005W3-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 08 Sep 2003 23:50:00 -0700
-Received: from mta02-svc.ntlworld.com ([62.253.162.42])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 19wcK7-0000NG-9S
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 08 Sep 2003 23:49:59 -0700
-Received: from fluffy.bear-cave.org.uk ([81.103.192.171])
-          by mta02-svc.ntlworld.com
-          (InterMail vM.4.01.03.37 201-229-121-137-20020806) with ESMTP
-          id <20030909064955.RDHQ20614.mta02-svc.ntlworld.com@fluffy.bear-cave.org.uk>
-          for <linux-fbdev-devel@lists.sourceforge.net>;
-          Tue, 9 Sep 2003 07:49:55 +0100
-Received: from hagrid ([192.168.1.1] helo=hagrid.bear-cave.org.uk)
-	by fluffy.bear-cave.org.uk with esmtp (Exim 3.35 #1 (Debian))
-	id 19wcK4-0001o8-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 09 Sep 2003 07:49:56 +0100
-Received: from jim by hagrid.bear-cave.org.uk with local (Exim 3.36 #1 (Debian))
-	id 19wcK3-00028k-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 09 Sep 2003 07:49:55 +0100
+	id 19wdOp-0006Ri-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 09 Sep 2003 00:58:55 -0700
+Received: from pentafluge.infradead.org ([213.86.99.235])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.22)
+	id 19wdOo-0000B3-G7
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Sep 2003 00:58:54 -0700
+In-Reply-To: <20030909031908.58173.qmail@web14903.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -38,48 +28,44 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Kronos <kronos@kronoz.cjb.net>
 
-I've been moving the pm2fb driver to the new API (currently working under
-2.6.0-test3). I've got it working unaccelerated; still need to add acceleration
-and option handling and tidy up.
+On Tue, 2003-09-09 at 05:19, Jon Smirl wrote:
+> Just a thought, but what do you think about splitting radeonfb into two peices?
+> Sort of like the way this Rage128 driver is split, http://www.saftware.de/.
+> 
+> First piece does PCI IDs, EDID, mode setting, command parsing, maybe hardware
+> cursor.
+> Second does fbcon support such as mapping fb to kernel space, fb accels, etc.
+> 
+> My idea is that this model could evolve over time into having a base driver for
+> each card, and then the FB or DRI drivers would plug into the base. This would
+> provide a common place to put locking and state saving code.
 
-I have a problem when I try and run X (Debian 4.2.1-11 20030829103906). My
-config uses the Glint driver with UseFBDev true, and works fine on 2.4.22. It
-fails on 2.6 like this:
+Currently, I have split it in:
 
-(II) Setting vga for screen 0.
-(**) GLINT(0): Depth 16, (--) framebuffer bpp 16
-(==) GLINT(0): RGB weight 565
-(==) GLINT(0): Default visual is TrueColor
-(==) GLINT(0): Using gamma correction (1.0, 1.0, 1.0)
-(**) GLINT(0): Option "UseFBDev" "true"
-(==) GLINT(0): Using HW cursor
-(II) Loading sub module "fbdevhw"
-(II) LoadModule: "fbdevhw"
-(II) Loading /usr/X11R6/lib/modules/linux/libfbdevhw.a
-(II) Module fbdevhw: vendor="The XFree86 Project"
-        compiled for 4.2.1.1, module version = 0.0.2
-        ABI class: XFree86 Video Driver, version 0.5
-(**) GLINT(0): Using Linux framebuffer device
-(--) GLINT(0): Chipset: "ti_pm2"
-(--) GLINT(0): Linear framebuffer at 0xCE800000
-(--) GLINT(0): MMIO registers at 0xCFFE0000
-(EE) GLINT(0): mmap mmio: Invalid argument
-(EE) GLINT(0): mmap mmio: Invalid argument
- 
-Fatal server error:
-Caught signal 11.  Server aborting
+ - radeon_base : basic PCI registration, CRTC setting (CRTC1 only for now,
+if/when I implement CRTC2, I'll move it to a spearate file), and all other
+normal driver operations
 
-The lfb and MMIO addresses are correct. Now, I've new to this game and may have
-missed filling out a structure field somewhere. But I'm dammed if I can see
-what.
+ - radeon_i2c : the i2c interface low level & EDID DDC2 code
 
-It's occurred to me that maybe this just doesn't work and I need an updated
-fbdevhw. Do I? Or should it really Just Work?
+ - radeon_monitor : monitor probing logic & modedb building. This code probes
+both heads, eventually uses the i2c code and/or BIOS/OF provided informations
 
--- 
-Jim Hague - jim.hague@acm.org          Never trust a computer you can't lift.
+ - radeon_pm : the power management code (mostly used on PowerBooks for now)
+
+I suppose radeon_base could be further split, though you may now that there
+is no longer any dependency on fbcon in the fbdev driver per se, most of this
+have been removed from 2.6 drivers, so there isn't much point in splitting
+the fbcon related part outside of the driver...
+
+What I want to do though is, if/when I add accel back, a separate radeon_accel
+file with the accelerated primitives.
+
+Ben.
+
 
 
 -------------------------------------------------------

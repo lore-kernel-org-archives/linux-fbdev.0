@@ -1,16 +1,14 @@
 From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: Re: Rage128 as secondary adapter
-Date: Thu, 9 Jan 2003 10:56:42 -0800 (PST)
+Subject: Rage1128
+Date: Thu, 9 Jan 2003 11:34:46 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030109185642.33243.qmail@web14914.mail.yahoo.com>
-References: <20030109183921.GB21501@suse.de>
+Message-ID: <20030109193447.78391.qmail@web14906.mail.yahoo.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from web14914.mail.yahoo.com ([216.136.225.241])
+Received: from web14906.mail.yahoo.com ([216.136.225.58])
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18Whr8-0001Bq-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 09 Jan 2003 10:56:42 -0800
-In-Reply-To: <20030109183921.GB21501@suse.de>
+	id 18WiRz-0008J3-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 09 Jan 2003 11:34:47 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,20 +20,13 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stefan Reinauer <stepan@suse.de>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
+To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-ATI has already released the much more sensitive data
-of how to drive their Rage128 3D engine. It's all been
-incorporated into X and is open source. 
+Does anyone on this list have a Rage128 manual? 
 
-I doubt if the procedure for resetting the board is
-considered a trade secret. The problem is in getting
-ATIs attention long enough to tell how to do it. It
-may be as simple as poking an output port with a
-special value. Hopefully someone with a manual can
-tell me.
-
-
+Can anyone point me to source code for directly
+reseting a Rage128? I already have the emulate real
+mode and call C000:3 method.
 
 =====
 Jon Smirl

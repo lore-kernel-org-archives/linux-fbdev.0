@@ -1,31 +1,57 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: Dreamcast framebuffer updates.
-Date: Sat, 17 May 2003 17:09:12 -0500
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20030517220912.GA16800@linux-sh.org>
-References: <20030517215102.A21395@infradead.org> <Pine.LNX.4.44.0305172159090.21274-100000@phoenix.infradead.org>
+From: Jon Smirl <jonsmirl@yahoo.com>
+Subject: insmod and aty128fb
+Date: Mon, 19 May 2003 10:41:24 -0700 (PDT)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <20030519174124.98259.qmail@web14912.mail.yahoo.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0305172159090.21274-100000@phoenix.infradead.org>
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from web14912.mail.yahoo.com ([216.136.225.248])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19HodY-0005lH-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 19 May 2003 10:41:24 -0700
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sat, May 17, 2003 at 09:59:35PM +0100, James Simmons wrote:
-> > >  #ifdef CONFIG_MTRR
-> > > -  #include <asm/mtrr.h>
-> > > +#include <asm/mtrr.h>
-> > >  #endif
-> > 
-> > how can CONFIG_MTRR ever be set for sh?
-> 
-> Paul ???   Is it possible? 
-> 
-No, its not possible. Things were originally written with generic pvr2
-hardware in mind (including PVR2 PCI boards like the Neon 250).
-Unfortunately I don't have any of that hardware, so these days its all
-SH specific. As such, the MTRR stuff can be removed without any
-problems.
+I can't get aty128fb to initialize if I insmod it. It
+works fine on the same machine if I compile it in. I
+added a printk to the probe function and probe is not
+getting called. Is is behaving like the PCI ID for my
+card is not supported, but it is - PD 1002:5044
+(Rage128 AIW PCI). insmod fails if the card is either
+primary or secondary.
+
+I can modprobe radeonfb on the same system (2.5.69)
+without trouble.
+
+As card as I can tell no aty128fb code is getting
+called. This seems to be something to do with the
+kernel not thinking there is a Rage card in the system
+and thus not initializing the driver. 
+
+Any ideas?
+
+=====
+Jon Smirl
+jonsmirl@yahoo.com
+
+__________________________________
+Do you Yahoo!?
+The New Yahoo! Search - Faster. Easier. Bingo.
+http://search.yahoo.com
+
+
+-------------------------------------------------------
+This SF.net email is sponsored by: If flattening out C++ or Java
+code to make your application fit in a relational database is painful, 
+don't do it! Check out ObjectStore. Now part of Progress Software.
+http://www.objectstore.net/sourceforge

@@ -1,18 +1,16 @@
-From: Sven Luther <luther@lambda.u-strasbg.fr>
+From: Romain Dolbeau <dolbeau@irisa.fr>
 Subject: Re: pm3fb driver is ok in 2.5.24
-Date: Tue, 2 Jul 2002 08:35:49 +0200
+Date: Tue, 02 Jul 2002 10:36:39 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20020702063549.GB30388@lambda.u-strasbg.fr>
-References: <3D200B7D.7436FF5F@irisa.fr> <Pine.LNX.4.44.0207010957410.21874-100000@www.transvirtual.com>
+Message-ID: <3D216617.C0F8BE90@irisa.fr>
+References: <3D200B7D.7436FF5F@irisa.fr> <Pine.LNX.4.44.0207010957410.21874-100000@www.transvirtual.com> <20020702063549.GB30388@lambda.u-strasbg.fr>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from dpt-info.u-strasbg.fr ([130.79.44.193])
-	by usw-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17PH7H-0002Ww-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 01 Jul 2002 23:26:23 -0700
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0207010957410.21874-100000@www.transvirtual.com>
+Received: from sky.irisa.fr ([131.254.60.147])
+	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17PJ9h-00085K-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 02 Jul 2002 01:37:01 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,36 +21,30 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@transvirtual.com>
-Cc: Romain Dolbeau <dolbeau@irisa.fr>, linux-fbdev-devel@lists.sourceforge.net
+To: Sven Luther <luther@lambda.u-strasbg.fr>
+Cc: James Simmons <jsimmons@transvirtual.com>, linux-fbdev-devel@lists.sourceforge.net
 
-On Mon, Jul 01, 2002 at 09:59:16AM -0700, James Simmons wrote:
+Sven Luther wrote:
+
+> > api. I'm going to removal the old fbgen code soon.
 > 
-> > > still is problem with the copying of the text console data at bootup,
-> > > but apart from that everything is fine.
-> > >
-> > > Should i send over a patch for adding it to the Config.xxx files ?
-> >
-> > Please send me the patch, I'll submit them for inclusion
-> 
-> Good news. I already included Config.help and Config.in entries for the
-> PM3 driver. As a note please consider porting it over to the new fbgen
+> how soon, and is there documentation or sample code for the changed api
+> ?
 
-nice :)))
+According from a recent message by James Simmons on LKML:
 
-> api. I'm going to removal the old fbgen code soon.
+>        Note I removed the old fbgen stuff so some drivers are going to
+> break. Well with time running out I need to push ahead. Sorry but I have
+> to choose.
 
-how soon, and is there documentation or sample code for the changed api
-?
+So pm3fb won't work anymore I guess (due to the ultimate brokenness
+of linux on PowerPC I haven't yet ported pm3fb to the new API).
 
-BTW, i suppose now it will be easier to implement dual head with a dual
-output board ?
-
-Friendly,
-
-Sven Luther
-> 
+-- 
+DOLBEAU Romain               | Nothing is real but the way that I feel  
+ENS Cachan / Ker Lann        | And I feel like going down, down, down   
+Thesard IRISA / CAPS         |   -- Rainbow,                            
+dolbeaur@club-internet.fr    |                 'Self Portrait'
 
 
 -------------------------------------------------------

@@ -1,120 +1,190 @@
-From: "Nitin Mahajan" <Nitin@soc-soft.com>
-Subject: (no subject)
-Date: Thu, 17 Jul 2003 17:55:03 +0530
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <E519BE9E8DAC6A4B89DA4AD1D2A155B7214374@soc-mail.soc-soft.com>
+From: Richard Drummond <lists@rcdrummond.net>
+Subject: [PATCH] Big-endian fixes for tdfxfb in 2.4.21
+Date: Sat, 19 Jul 2003 01:39:14 -0500
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <200307190131.46394.lists@rcdrummond.net>
+Reply-To: lists@rcdrummond.net
 Mime-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C34C5E.72C05FE0"
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [202.138.125.53] (helo=vscrn3.securesynergyonline.com)
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19d7pE-00073U-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 17 Jul 2003 05:25:33 -0700
-Received: from mail.soc-soft.com (202.56.254.199) by vscrn3.securesynergyonline.com (202.138.125.53), id <1058444184754.26653709.vscrn3.securesynergyonline.com>
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 17 Jul 2003 18:16:24 +0600
-content-class: urn:content-classes:message
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_SeOG/GYk5y0PhT9"
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+List-Id: <fbdev-devel.lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: xfree86@XFree86.Org, Geert.Uytterhoeven@sonycom.com, adrian@humboldt.co.uk, devel@xfree86.org, =?iso-8859-1?Q?Fredrik_S=F6derqvist?= <freso326@student.liu.se>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C34C5E.72C05FE0
+--Boundary-00=_SeOG/GYk5y0PhT9
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Hello !
+The following patch fixes some long-standing problems that I have been 
+experiencing with the tdfxfb driver in kernel 2.4 when running on a PPC Mac.
 
-I have written a driver for 69030 card and was able to program the =
-BitBLT engine .
+Specifically, it fixes:
 
-Now I want to play MPEG4 video on the card.I will get input as RGB not =
-the YUV data initially.
+1) Endian problems when blitting font glyphs. I have enabled byte-swizzling 
+when blitting, so text on the console is now readable.
 
-I need a very high frame rate of around 25-30fps. What part of hardware =
-I need to program additionally other than BitBLT engine and how to =
-achieve this rate? Will the way of using fbmem into pages help inthis =
-regard? Will utilisation of double buffering helpin this regard???=20
+2) Endian issues with 24-bit framebuffer. I've disabled byte-swizzled access 
+to 24-bit framebuffers. This now suits the byte-ordering of framebuffers with 
+this depth (at least on my hardware).
 
-Thanking u in advance
+3) Endian problems with hwcursor. The cursor should now appear at the cursor 
+position, that is, actually at the insertion point. It was simply a question 
+of getting the right byte-ordering for each framebuffer depth.
 
-Regards,
+4) Disabled I/O ports when booting from OF (rather than via MacOS) preventing 
+use. The driver  now calls pci_enable_device() during init - which should 
+enable I/O ports - and checks to see that I/O space is accessible before 
+proceeding.
 
-=20
-Nitin Mahajan
-mail:nitin@soc-soft.com
-Ph:51101667. Mobile : 9886099925
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-The Lord gave us two ends -- one to sit on and the other to think with. =
-Success depends on which one we use the most.
-=20
+I've tested this patch extensively both on a Voodoo3 and a Voodoo4 on several 
+(OldWorld) Macs. I don't have an x86 3dfx card to verify that it still works 
+there, but the changes shouldn't affect little-endian machines at all.
 
-------_=_NextPart_001_01C34C5E.72C05FE0
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+A couple of problems still remain:
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<TITLE>Message</TITLE>
+1) Resource management still needs to be implemented (A corollary is that offb 
+will claim the card before tdfxfb - if you have the offb driver built in as 
+well - and then tdfxfb will also claim it. Solution: you need to supply the 
+kernel option video=offb:off to use tdfxfb). This will be trivial to do.
 
-<META content=3D"MSHTML 6.00.2800.1141" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV>
-<P>H<SPAN class=3D054222112-17072003>ello !</SPAN></P>
-<P>I&nbsp;<SPAN class=3D054222112-17072003>have written a driver for =
-69030 card=20
-and </SPAN>was able to program the BitBLT engine&nbsp;.</P>
-<P>Now I want to play MPEG4 video on the card.I will get input as RGB =
-not the=20
-YUV data initially.</P>
-<P>I need a very high frame rate of around 25-30fps. What part of =
-hardware I=20
-need to program additionally other than BitBLT engine and how to achieve =
-this=20
-rate? Will the way of using fbmem into pages help inthis regard? Will=20
-utilisation of double buffering helpin this regard??? </P>
-<P>Thanking u in advance</P>
-<P>Regards,</P></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV align=3Dleft><FONT face=3DVerdana size=3D2>Nitin =
-Mahajan</FONT></DIV>
-<DIV align=3Dleft><FONT face=3DVerdana size=3D2>
-<DIV align=3Dleft><FONT face=3DVerdana=20
-size=3D2>mail:nitin@soc-soft.com</FONT></DIV></FONT></DIV>
-<DIV align=3Dleft><FONT face=3DVerdana size=3D2>Ph:51101667. Mobile :=20
-9886099925</FONT></DIV>
-<DIV align=3Dleft><FONT face=3DVerdana=20
-size=3D2>=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D</FONT></DIV>
-<DIV align=3Dleft><FONT face=3DVerdana size=3D2>The Lord gave us two =
-ends -- one to=20
-sit on and the other to think with. Success depends on which one we use =
-the=20
-most.</FONT></DIV>
-<DIV>&nbsp;</DIV></BODY></HTML>
+2) Hardware cursor works fine if I boot via MacOS with BootX, but is invisible 
+if I boot from OF with Quik. Not sure why - still needs investigation. 
+Solution: turn off hwcursor. (Make that kernel option above 
+video=offb:off,tdfx:nohwcursor=1 if you boot from OF.)
 
-------_=_NextPart_001_01C34C5E.72C05FE0--
-Scanned by SecureSynergy VirusScreen Service. 
-For more information log on to : http://www.securesynergyonline.com or http://www.securesynergy.com
+3) Memory on Voodoo4 is incorrectly detected. It reports 64MB, but the Voodoo4 
+only has 32MB. I don't have any documentation on the Voodoo4/5, so I don't 
+know the proper way to detect it.  XFree86 uses the same algorithm as tdfxfb, 
+so also gets it wrong.
+
+I have taken a cursory glance at the tdfxfb in 2.5/2.6-test and similar 
+changes will need to be applied there too. I intend to look at this when I 
+have time.
+
+I'd welcome comments on this patch, particulary from anybody running tdfxfb on 
+a big-endian platform other than the Mac.
+
+Cheers,
+Rich
 
 
--------------------------------------------------------
-This SF.net email is sponsored by: VM Ware
-With VMware you can run multiple operating systems on a single machine.
-WITHOUT REBOOTING! Mix Linux / Windows / Novell virtual machines at the
-same time. Free trial click here: http://www.vmware.com/wl/offer/345/0
+--Boundary-00=_SeOG/GYk5y0PhT9
+Content-Type: text/x-diff;
+  charset="us-ascii";
+  name="tdfxfb-20030719.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="tdfxfb-20030719.diff"
+
+--- drivers/video/tdfxfb.c.orig	2003-06-27 08:49:54.000000000 -0500
++++ drivers/video/tdfxfb.c	2003-07-18 16:25:56.000000000 -0500
+@@ -764,7 +764,11 @@
+    tdfx_outl(SRCXY,     0);
+    tdfx_outl(DSTXY,     xx | (yy << 16));
+    tdfx_outl(COMMAND_2D, COMMAND_2D_H2S_BITBLT | (ROP_COPY << 24));
++#ifdef __BIG_ENDIAN
++   tdfx_outl(SRCFORMAT, 0x400000 | BIT(20) );   
++#else
+    tdfx_outl(SRCFORMAT, 0x400000);
++#endif
+    tdfx_outl(DSTFORMAT, fmt);
+    tdfx_outl(DSTSIZE,   fontwidth(p) | (fontheight(p) << 16));
+    i=fontheight(p);
+@@ -822,7 +826,11 @@
+    tdfx_outl(COMMAND_3D, COMMAND_3D_NOP);
+    tdfx_outl(COLORFORE, fgx);
+    tdfx_outl(COLORBACK, bgx);
++#ifdef __BIG_ENDIAN
++   tdfx_outl(SRCFORMAT, 0x400000 | BIT(20) );   
++#else
+    tdfx_outl(SRCFORMAT, 0x400000);
++#endif   
+    tdfx_outl(DSTFORMAT, fmt);
+    tdfx_outl(DSTSIZE, w | (h << 16));
+    tdfx_outl(SRCXY,     0);
+@@ -1475,6 +1483,7 @@
+ #if defined(__BIG_ENDIAN)
+   switch (par->bpp) {
+     case 8:
++    case 24:
+       reg.miscinit0 &= ~(1 << 30);
+       reg.miscinit0 &= ~(1 << 31);
+       break;
+@@ -1482,7 +1491,6 @@
+       reg.miscinit0 |= (1 << 30);
+       reg.miscinit0 |= (1 << 31);
+       break;
+-    case 24:
+     case 32:
+       reg.miscinit0 |= (1 << 30);
+       reg.miscinit0 &= ~(1 << 31);
+@@ -1635,10 +1643,6 @@
+     v.blue.length  = 5;
+     break;
+   case 24:
+-    v.red.offset=16;
+-    v.green.offset=8;
+-    v.blue.offset=0;
+-    v.red.length = v.green.length = v.blue.length = 8;
+   case 32:
+     v.red.offset   = 16;
+     v.green.offset = 8;
+@@ -1942,6 +1946,12 @@
+ 			break;
+ 	}
+ 	
++        if (pci_enable_device(pdev)) 
++        {
++                printk(KERN_WARNING "fb: Unable to enable %s PCI device.\n", name);
++                return -ENXIO;
++        }
++
+ 	fb_info.regbase_phys = pci_resource_start(pdev, 0);
+ 	fb_info.regbase_size = 1 << 24;
+ 	fb_info.regbase_virt = ioremap_nocache(fb_info.regbase_phys, 1 << 24);
+@@ -1970,6 +1980,13 @@
+ 
+ 	fb_info.iobase = pci_resource_start (pdev, 2);
+       
++        if (!fb_info.iobase) {
++	        printk(KERN_WARNING "fb: Can't access %s I/O ports.\n", name);
++		iounmap(fb_info.regbase_virt);
++		iounmap(fb_info.bufbase_virt);
++                return -ENXIO;
++	}
++   
+ 	printk("fb: %s memory = %ldK\n", name, fb_info.bufbase_size >> 10);
+ 
+ #ifdef CONFIG_MTRR
+@@ -2363,10 +2380,25 @@
+    unsigned int h,to;
+ 
+    tdfxfb_createcursorshape(p);
+-   xline = ~((1 << (32 - fb_info.cursor.w)) - 1);
++   xline = (~0) << (32 - fb_info.cursor.w);
+ 
+ #ifdef __LITTLE_ENDIAN
+    xline = swab32(xline);
++#else
++   switch (p->var.bits_per_pixel) {
++      case 8:
++      case 24:
++         xline = swab32(xline);
++         break;
++      case 16:
++         xline = ((xline & 0xff000000 ) >> 16 )
++               | ((xline & 0x00ff0000 ) >> 16 )
++               | ((xline & 0x0000ff00 ) << 16 )
++               | ((xline & 0x000000ff ) << 16 );
++         break;
++      case 32:
++         break;
++   }
+ #endif
+ 
+    cursorbase=(u8*)fb_info.bufbase_virt;
+
+--Boundary-00=_SeOG/GYk5y0PhT9--

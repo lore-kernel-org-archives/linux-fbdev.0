@@ -1,18 +1,20 @@
-From: Alex Deucher <agd5f@yahoo.com>
-Subject: S3 virge/Savage question
-Date: Mon, 12 Apr 2004 16:53:22 -0700 (PDT)
+From: System Administrator <postmaster@barco.com>
+Subject: Undeliverable: Mail System (kmg@barco.be)
+Date: Tue, 13 Apr 2004 06:14:11 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040412235322.99636.qmail@web11304.mail.yahoo.com>
+Message-ID: <2C195EB6D1C9AB43BF3CFFF18958CAB004F77353@kuurex03.barco.com>
 Mime-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_000_01C4210D.C6392CC6"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BDBFE-000487-4F
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 12 Apr 2004 16:53:40 -0700
-Received: from web11304.mail.yahoo.com ([216.136.131.207])
+	id 1BDFJU-00058e-3z
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 12 Apr 2004 21:14:20 -0700
+Received: from unknown.barco.com ([194.7.240.10] helo=kuuvir04.barco.com)
 	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1BDBFE-00012J-2f
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 12 Apr 2004 16:53:40 -0700
+	id 1BDFJT-0001su-HT
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 12 Apr 2004 21:14:19 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -22,48 +24,74 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Sorry this is off topic, but I'm at a loss at the moment and I'm hoping
-someone here can help me.  I'm trying to add dualhead support (duoview)
-to the xfree86/XORG savage and virge drivers for savage mx/ix and virge
-mx.  I don't have databooks, but I found some incomplete info on the
-virge mx and I've figured out how it's supposed to work for the most
-part.  I can program both dot clocks and set the mode on both crtcs,
-but I can't get the second crtc to actually display anything. when I
-drive an output with crtc2, the attached device just goes into
-powersave mode.  I'm guessing there must be an additonal "screen off"
-bit or crtc2 enable bit I'm missing.  Is sr1 bit 5 (screen off) global,
-or specific to crtc1? Also both dot clocks work so that doesn't seem to
-be the issue.
+This message is in MIME format. Since your mail reader does not understand
+this format, some or all of this message may not be legible.
 
-CRTC  DCLK  Output      Result
----------------------------------------
-crtc1 dclk1 FP/CRT/Both Works
-crtc1 dclk2 FP/CRT/Both Works
-crtc2 dclk1 FP/CRT/Both No signal
-crtc2 dclk2 FP/CRT/Both No signal 
+------_=_NextPart_000_01C4210D.C6392CC6
+Content-Type: text/plain;
+	charset="iso-8859-1"
 
-Additional info about how duoview works (what I've been able to figure
-out):
-http://www.botchco.com/alex/new-savage/savage/DUOVIEW.txt
-Current status of my savage duoview code:
-http://www.botchco.com/alex/new-savage/html/
-Any help would be much appreciated. Please cc: me directly as I'm not
-on linux-kernel.
+Your message
 
-Thanks,
+  To:      kmg@barco.be
+  Subject: Mail System (kmg@barco.be)
+  Sent:    Tue, 13 Apr 2004 05:44:07 +0200
 
-Alex Deucher
-http://dri.sourceforge.net/cgi-bin/moin.cgi/AlexDeucher
+did not reach the following recipient(s):
 
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+KMG@BARCO.BE on Tue, 13 Apr 2004 06:14:08 +0200
+    The recipient name is not recognized
+	The MTS-ID of the original message is:
+c=be;a=rtt;p=barco;l=KUUREX0304041304142STTFXAM
+    MSEXCH:IMS:BARCO:BE1:KUUREX03 0 (000C05A6) Unknown Recipient
+
+
+
+------_=_NextPart_000_01C4210D.C6392CC6
+Content-Type: message/rfc822
+
+Message-ID: <E1BDEqz-0003jQ-Tg@bru5eusosrv29.bru.ops.eu.uu.net>
+From: linux-fbdev-devel@lists.sourceforge.net
+To: kmg@barco.be
+Subject: Mail System (kmg@barco.be)
+Date: Tue, 13 Apr 2004 05:44:07 +0200
+Importance: high
+X-Priority: 1
+MIME-Version: 1.0
+X-Mailer: Internet Mail Service (5.5.2657.72)
+X-MS-Embedded-Report: 
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_002_01C4210D.C6392CC6"
+
+
+------_=_NextPart_002_01C4210D.C6392CC6
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+Delivery Agent - Translation failed
+------------- failed message -------------
+%Po-PKf&'zvC0h<Fsts1S=F6yjHN<L<c;2|PG-kc=E4rP8P)2
+VHJqm=F6Hz=FCG3=DFZ=E4$_g%cFG=F6=FCB=DFFWhE<M8=DFSCs;LMj+C7=DF+
+GqNQj=FC1IBmvyk~7T9gtBC!&C5?lQw>GgIeIG'y%_l)
+0hvq;HmhX%r;g7fK7_<;bFm9<=E4igqZ*?2Ds$
+Modified message has been sent as a binary attachment.
+
+
+------_=_NextPart_002_01C4210D.C6392CC6
+Content-Type: text/plain;
+	name="WARNING0.txt"
+Content-Disposition: attachment;
+	filename="WARNING0.txt"
+
+Network Associates WebShield SMTP V4.5 MR1a on kuuvir04 detected virus
+W32/Netsky.q@MM in attachment data10464.pif from <linux-fbdev-devel@lists.sourceforge.net> and it
+was Deleted and Quarantined.
+------_=_NextPart_002_01C4210D.C6392CC6--
+
+------_=_NextPart_000_01C4210D.C6392CC6--
 
 
 -------------------------------------------------------

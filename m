@@ -1,15 +1,15 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Framebuffer fix 1
-Date: Tue, 13 May 2003 22:45:06 +0100 (BST)
+Subject: Riva Framebuffer update.
+Date: Tue, 13 May 2003 22:46:32 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0305132242030.12672-100000@phoenix.infradead.org>
+Message-ID: <Pine.LNX.4.44.0305132245140.12672-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19Fhag-00018h-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 13 May 2003 14:45:43 -0700
+	id 19Fhc5-0002dY-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 13 May 2003 14:47:10 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,59 +22,39 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Linus Torvalds <torvalds@transmeta.com>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-This removed EDID support for VESA. The EDID code needs more developement
-which can be done on the side. 
+This kills off warnings about unused variables. Please apply.
 
 # This is a BitKeeper generated patch for the following project:
 # Project Name: Linux kernel tree
 # This patch format is intended for GNU patch command version 2.5 or higher.
 # This patch includes the following deltas:
-#	           ChangeSet	1.1078  -> 1.1079 
-#	drivers/video/vesafb.c	1.31    -> 1.32   
+#	           ChangeSet	1.1079  -> 1.1080 
+#	drivers/video/riva/fbdev.c	1.45    -> 1.46   
 #
 # The following is the BitKeeper ChangeSet Log
 # --------------------------------------------
-# 03/05/12	jsimmons@maxwell.earthlink.net	1.1079
-# [VESA FBDEV] Removed the EDID code. The results where mixed. It worked for some but not for others.
+# 03/05/12	jsimmons@maxwell.earthlink.net	1.1080
+# [RIVA FBDEV] Removal of exccess variable. Kills off a few warnings.
 # --------------------------------------------
 #
-diff -Nru a/drivers/video/vesafb.c b/drivers/video/vesafb.c
---- a/drivers/video/vesafb.c	Mon May 12 14:26:05 2003
-+++ b/drivers/video/vesafb.c	Mon May 12 14:26:05 2003
-@@ -215,7 +215,6 @@
- int __init vesafb_init(void)
+diff -Nru a/drivers/video/riva/fbdev.c b/drivers/video/riva/fbdev.c
+--- a/drivers/video/riva/fbdev.c	Mon May 12 14:53:32 2003
++++ b/drivers/video/riva/fbdev.c	Mon May 12 14:53:32 2003
+@@ -1469,10 +1469,10 @@
+ static int rivafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
  {
- 	int video_cmap_len;
--	char *edid = 0;
- 	int i;
+ 	struct riva_par *par = (struct riva_par *) info->par;
+-	int i, j, d_idx = 0, s_idx = 0;
+ 	u8 data[MAX_CURS * MAX_CURS/8];
+ 	u8 mask[MAX_CURS * MAX_CURS/8];
+ 	u16 fg, bg;
++	int i;
  
- 	if (screen_info.orig_video_isVGA != VIDEO_TYPE_VLFB)
-@@ -300,18 +299,10 @@
- 		ypan = 0;
- 	}
+ 	par->riva.ShowHideCursor(&par->riva, 0);
  
--#ifdef __i386__
--	edid = get_EDID_from_BIOS(0);
--	if (edid)
--		parse_edid(edid, &vesafb_defined);	
--	else		
--#endif
--	{	
--		/* some dummy values for timing to make fbset happy */
--		vesafb_defined.pixclock     = 10000000 / vesafb_defined.xres * 1000 / vesafb_defined.yres;
--		vesafb_defined.left_margin  = (vesafb_defined.xres / 8) & 0xf8;
--		vesafb_defined.hsync_len    = (vesafb_defined.xres / 8) & 0xf8;
--	}
-+	/* some dummy values for timing to make fbset happy */
-+	vesafb_defined.pixclock     = 10000000 / vesafb_defined.xres * 1000 / vesafb_defined.yres;
-+	vesafb_defined.left_margin  = (vesafb_defined.xres / 8) & 0xf8;
-+	vesafb_defined.hsync_len    = (vesafb_defined.xres / 8) & 0xf8;
- 	
- 	if (vesafb_defined.bits_per_pixel > 8) {
- 		vesafb_defined.red.offset    = screen_info.red_pos;
 
 
 

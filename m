@@ -1,17 +1,17 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: clipping
-Date: Sun, 29 Dec 2002 22:21:13 +0100 (MET)
+Subject: const fb_{fillrect,copyarea,image}?
+Date: Mon, 30 Dec 2002 11:31:25 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0212292215130.17739-100000@vervain.sonytel.be>
+Message-ID: <Pine.GSO.4.21.0212301127150.18122-100000@vervain.sonytel.be>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18Sksa-0005JZ-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 29 Dec 2002 13:21:52 -0800
+	id 18SxDP-0006FX-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 30 Dec 2002 02:32:12 -0800
 Received: from vervain.sonytel.be (mail.sonytel.be [10.17.0.27])
-	by mail.sonytel.be (8.9.0/8.8.6) with ESMTP id WAA29704
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 29 Dec 2002 22:21:13 +0100 (MET)
+	by mail.sonytel.be (8.9.0/8.8.6) with ESMTP id LAA25151
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 30 Dec 2002 11:31:25 +0100 (MET)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -26,18 +26,14 @@ Content-Transfer-Encoding: 7bit
 To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
 
-cfb_imageblit() takes care of clipping, but forgets to update fb_image.data if
-fb_image.d[xy] was changed.
+Wouldn't it make sense to make the fb_{fillrect,copyarea,image} parameters of
+the fb_ops.fb_{fillrect,copyarea,image}() operations const? This would protect
+us against side effects when reusing the fb_{fillrect,copyarea,image} structs
+without reinitializing their contents (as is currently done by the logo drawing
+code in fbcon_show_logo() on SMP).
 
-BTW, do we really need clipping in fb_ops.fb_{fillrect,copyarea,imageblit}()?
-
-If these calls are accessible from user space through ioctl() (if anyone really
-wants to do that?!?), I guess the answer is yes. For calls from kernel space,
-I'd say it's not necessary since calling them with out-of-range parameters is a
-bug anyway.
-So we could move the clipping to the generic ioctl() handling in fbmem.c, if we
-ever want to provide that functionality. Or is there a too high speed penalty
-for graphics chips that do implement clipping in hardware?
+Of course this means that we have to modify the clipping code, which currently
+just modifies the passed structure.
 
 Gr{oetje,eeting}s,
 

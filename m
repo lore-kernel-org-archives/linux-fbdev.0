@@ -1,21 +1,25 @@
-From: "Richard Purdie" <rpurdie@rpsys.net>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
 Subject: Re: [PATCH 4/9] fbcon/fbdev: Add blanking notification
-Date: Wed, 12 Jan 2005 10:43:08 -0000
-Message-ID: <009001c4f893$87964630$0f01a8c0@max>
-References: <20041221213648.89B701A0278@smtp-1.hotpop.com>
+Date: Thu, 13 Jan 2005 04:24:05 +0800
+Message-ID: <200501130424.11594.adaplas@hotpop.com>
+References: <20041221213648.89B701A0278@smtp-1.hotpop.com> <009001c4f893$87964630$0f01a8c0@max>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CofyG-00039C-At
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 Jan 2005 02:43:24 -0800
-Received: from tim.rpsys.net ([194.106.48.114] ident=0)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1CofyE-0005ii-Jp
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 Jan 2005 02:43:24 -0800
+	id 1Cop5c-0006ch-AJ
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 Jan 2005 12:27:36 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.71])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1Cop5U-0005SX-Hd
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 Jan 2005 12:27:31 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id 68B4E133E130
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 12 Jan 2005 20:26:49 +0000 (UTC)
+In-Reply-To: <009001c4f893$87964630$0f01a8c0@max>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,36 +30,33 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; format="flowed"; charset="us-ascii"; reply-type="original"
-To: adaplas@pol.net
+Content-Type: text/plain; charset="us-ascii"
+To: Richard Purdie <rpurdie@rpsys.net>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Tony,
+On Wednesday 12 January 2005 18:43, Richard Purdie wrote:
+> Tony,
+>
+> I've just switched to using this patch when I updated to 2.6.11-rc1 and
+> I've noticed a problem. Basically my code which is monitoring
+> FB_EVENT_BLANK events doesn't see any.
 
-I've just switched to using this patch when I updated to 2.6.11-rc1 and I've 
-noticed a problem. Basically my code which is monitoring FB_EVENT_BLANK 
-events doesn't see any.
+If fb_blank is directly called by fbcon_blank, it might proceed into an unending
+cycle...
 
-> diff -Nru a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-> --- a/drivers/video/console/fbcon.c 2004-11-17 18:15:17 +08:00
-> +++ b/drivers/video/console/fbcon.c 2004-12-21 05:55:41 +08:00
-[...]
-> + if (ops->blank_state != blank) {
-> + if (info->fbops->fb_blank &&
-> +     info->fbops->fb_blank(blank, info))
-> + fbcon_generic_blank(vc, info, blank);
-> +
-> + ops->blank_state = blank;
-> + }
+fb_blank()->blank_event_notify->do_blank_screen()->fbcon_blank()->fb_blank()
 
-I think this is the problem (in fbcon.c). Instead of calling 
-info->fbops->fb_blank(blank, info)), I think this should call fb_blank(info, 
-blank) (in fbmem.c) which can then make the fbops call itself.
+...however, we do store the current blank state in ops->blank_state, so the above
+is probably an imaginary problem.
 
-If you agree, I'll send a patch (or you can patch it - I don't mind). Let me 
-know...
+I'll do the call to fb_blank() instead of info->fbops->fb_blank() instead.
 
-Richard 
+(I'm still in the process of resyncing my tree and merging pending patches,
+just came back from a break).
+
+Tony
+
+
 
 
 

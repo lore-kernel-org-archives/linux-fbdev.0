@@ -1,172 +1,100 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 2/3] fbdev: Arrange driver order in Makefile
-Date: Mon, 13 Sep 2004 23:18:37 +0800
+Subject: [PATCH 3/3] fbdev: fix scrolling corruption
+Date: Mon, 13 Sep 2004 23:18:43 +0800
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <200409132209.15788.adaplas@hotpop.com>
+Message-ID: <200409132210.25202.adaplas@hotpop.com>
 Reply-To: adaplas@pol.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S268070AbUIMPWB@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S268474AbUIMPZK@vger.kernel.org>
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, linux-kernel@vger.kernel.org
 
-This patch arranges driver order in 'driver/video/Makefile' so it closely,
-but not exactly, follows the previous order in 'drivers/video/fbmem.c'.
+This patches fixes the following:
+
+- scrolling corruption if scrolling mode is SCROLL_PAN_MOVE. This bug
+  was introduced by the tile blitting patch.
+
+- flashing cursor even when console is blanked
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- Makefile |  117 ++++++++++++++++++++++++++++++++-------------------------------
- 1 files changed, 61 insertions(+), 56 deletions(-)
+ fbcon.c |   20 ++++++++++++--------
+ 1 files changed, 12 insertions(+), 8 deletions(-)
 
-diff -uprN linux-2.6.9-rc1-mm5-orig/drivers/video/Makefile linux-2.6.9-rc1-mm5/drivers/video/Makefile
---- linux-2.6.9-rc1-mm5-orig/drivers/video/Makefile	2004-09-13 19:50:17.000000000 +0800
-+++ linux-2.6.9-rc1-mm5/drivers/video/Makefile	2004-09-13 20:11:10.661372528 +0800
-@@ -13,83 +13,88 @@ ifeq ($(CONFIG_FB),y)
- obj-$(CONFIG_PPC)                 += macmodes.o
- endif
+diff -uprN linux-2.6.9-rc1-mm5-orig/drivers/video/console/fbcon.c linux-2.6.9-rc1-mm5/drivers/video/console/fbcon.c
+--- linux-2.6.9-rc1-mm5-orig/drivers/video/console/fbcon.c	2004-09-13 21:49:01.000000000 +0800
++++ linux-2.6.9-rc1-mm5/drivers/video/console/fbcon.c	2004-09-13 22:24:33.027181792 +0800
+@@ -1160,10 +1160,11 @@ static __inline__ void ypan_up(struct vc
+ {
+ 	struct fb_info *info = registered_fb[(int) con2fb_map[vc->vc_num]];
+ 	struct display *p = &fb_display[vc->vc_num];
+-	
++	struct fbcon_ops *ops = (struct fbcon_ops *) info->fbcon_par;
++
+ 	p->yscroll += count;
+ 	if (p->yscroll > p->vrows - vc->vc_rows) {
+-		fbcon_bmove(vc, p->vrows - vc->vc_rows,
++		ops->bmove(vc, info, p->vrows - vc->vc_rows,
+ 			    0, 0, 0, vc->vc_rows, vc->vc_cols);
+ 		p->yscroll -= p->vrows - vc->vc_rows;
+ 	}
+@@ -1207,10 +1208,11 @@ static __inline__ void ypan_down(struct 
+ {
+ 	struct fb_info *info = registered_fb[(int) con2fb_map[vc->vc_num]];
+ 	struct display *p = &fb_display[vc->vc_num];
++	struct fbcon_ops *ops = (struct fbcon_ops *) info->fbcon_par;
+ 	
+ 	p->yscroll -= count;
+ 	if (p->yscroll < 0) {
+-		fbcon_bmove(vc, 0, 0, p->vrows - vc->vc_rows,
++		ops->bmove(vc, info, 0, 0, p->vrows - vc->vc_rows,
+ 			    0, vc->vc_rows, vc->vc_cols);
+ 		p->yscroll += p->vrows - vc->vc_rows;
+ 	}
+@@ -1461,6 +1463,7 @@ static int fbcon_scroll(struct vc_data *
+ {
+ 	struct fb_info *info = registered_fb[(int) con2fb_map[vc->vc_num]];
+ 	struct display *p = &fb_display[vc->vc_num];
++	struct fbcon_ops *ops = (struct fbcon_ops *) info->fbcon_par;
+ 	int scroll_partial = info->flags & FBINFO_PARTIAL_PAN_OK;
  
--obj-$(CONFIG_FB_ARMCLCD)	  += amba-clcd.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
--obj-$(CONFIG_FB_ACORN)            += acornfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+# Hardware specific drivers go first
-+obj-$(CONFIG_FB_RETINAZ3)         += retz3fb.o
- obj-$(CONFIG_FB_AMIGA)            += amifb.o c2p.o
-+obj-$(CONFIG_FB_CLPS711X)         += clps711xfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+obj-$(CONFIG_FB_CYBER)            += cyberfb.o
-+obj-$(CONFIG_FB_CYBER2000)        += cyber2000fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
- obj-$(CONFIG_FB_PM2)              += pm2fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
- obj-$(CONFIG_FB_PM3)		  += pm3fb.o
--obj-$(CONFIG_FB_APOLLO)           += dnfb.o cfbfillrect.o cfbimgblt.o
--obj-$(CONFIG_FB_Q40)              += q40fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
--obj-$(CONFIG_FB_ATARI)            += atafb.o
--obj-$(CONFIG_FB_68328)            += 68328fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+
-+obj-$(CONFIG_FB_MATROX)		  += matrox/ cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+obj-$(CONFIG_FB_RIVA)		  += riva/ cfbimgblt.o vgastate.o
-+obj-$(CONFIG_FB_ATY)		  += aty/ cfbcopyarea.o cfbfillrect.o cfbimgblt.o
-+obj-$(CONFIG_FB_ATY128)		  += aty/ cfbcopyarea.o cfbfillrect.o cfbimgblt.o
-+obj-$(CONFIG_FB_RADEON)		  += aty/ cfbcopyarea.o cfbfillrect.o cfbimgblt.o
-+obj-$(CONFIG_FB_SIS)		  += sis/ cfbcopyarea.o cfbfillrect.o cfbimgblt.o
-+obj-$(CONFIG_FB_KYRO)             += kyro/ cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+
-+obj-$(CONFIG_FB_I810)             += cfbcopyarea.o cfbfillrect.o cfbimgblt.o \
-+				     vgastate.o
- obj-$(CONFIG_FB_RADEON_OLD)	  += radeonfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
- obj-$(CONFIG_FB_NEOMAGIC)         += neofb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o vgastate.o
--obj-$(CONFIG_FB_IGA)              += igafb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
--obj-$(CONFIG_FB_CONTROL)          += controlfb.o macmodes.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
--obj-$(CONFIG_FB_PLATINUM)         += platinumfb.o macmodes.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
--obj-$(CONFIG_FB_VALKYRIE)         += valkyriefb.o macmodes.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
--obj-$(CONFIG_FB_CT65550)          += chipsfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
--obj-$(CONFIG_FB_CLPS711X)         += clps711xfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
--obj-$(CONFIG_FB_CYBER)            += cyberfb.o
--obj-$(CONFIG_FB_CYBER2000)        += cyber2000fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
--obj-$(CONFIG_FB_GBE)              += gbefb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
--obj-$(CONFIG_FB_SGIVW)            += sgivwfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+obj-$(CONFIG_FB_VIRGE)            += virgefb.o
- obj-$(CONFIG_FB_3DFX)             += tdfxfb.o cfbimgblt.o
- ifneq ($(CONFIG_FB_3DFX_ACCEL),y)
- obj-$(CONFIG_FB_3DFX)             += cfbfillrect.o cfbcopyarea.o
- endif
--obj-$(CONFIG_FB_MAC)              += macfb.o macmodes.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o 
--obj-$(CONFIG_FB_HP300)            += hpfb.o cfbfillrect.o cfbimgblt.o
-+obj-$(CONFIG_FB_CONTROL)          += controlfb.o macmodes.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+obj-$(CONFIG_FB_PLATINUM)         += platinumfb.o macmodes.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+obj-$(CONFIG_FB_VALKYRIE)         += valkyriefb.o macmodes.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+obj-$(CONFIG_FB_CT65550)          += chipsfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
- obj-$(CONFIG_FB_IMSTT)            += imsttfb.o cfbimgblt.o
--obj-$(CONFIG_FB_RETINAZ3)         += retz3fb.o
--obj-$(CONFIG_FB_CIRRUS)		  += cirrusfb.o cfbfillrect.o cfbimgblt.o cfbcopyarea.o
--obj-$(CONFIG_FB_TRIDENT)	  += tridentfb.o cfbfillrect.o cfbimgblt.o cfbcopyarea.o
- obj-$(CONFIG_FB_S3TRIO)           += S3triofb.o
--obj-$(CONFIG_FB_TGA)              += tgafb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o 
--obj-$(CONFIG_FB_VIRGE)            += virgefb.o
--obj-$(CONFIG_FB_G364)             += g364fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
- obj-$(CONFIG_FB_FM2)              += fm2fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+obj-$(CONFIG_FB_TRIDENT)	  += tridentfb.o cfbfillrect.o cfbimgblt.o cfbcopyarea.o
- obj-$(CONFIG_FB_STI)              += stifb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
--obj-$(CONFIG_FB_PMAG_BA)          += pmag-ba-fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
--obj-$(CONFIG_FB_PMAGB_B)          += pmagb-b-fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
--obj-$(CONFIG_FB_MAXINE)           += maxinefb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
--obj-$(CONFIG_FB_TX3912)           += tx3912fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
--
--obj-$(CONFIG_FB_MATROX)		  += matrox/ cfbfillrect.o cfbcopyarea.o cfbimgblt.o
--obj-$(CONFIG_FB_RIVA)		  += riva/ cfbimgblt.o vgastate.o 
--obj-$(CONFIG_FB_SIS)		  += sis/ cfbcopyarea.o cfbfillrect.o cfbimgblt.o
--obj-$(CONFIG_FB_ATY)		  += aty/ cfbcopyarea.o cfbfillrect.o cfbimgblt.o
--obj-$(CONFIG_FB_ATY128)		  += aty/ cfbcopyarea.o cfbfillrect.o cfbimgblt.o
--obj-$(CONFIG_FB_RADEON)		  += aty/ cfbcopyarea.o cfbfillrect.o cfbimgblt.o
--obj-$(CONFIG_FB_I810)             += cfbcopyarea.o cfbfillrect.o cfbimgblt.o \
--				     vgastate.o
--obj-$(CONFIG_FB_SUN3)             += sun3fb.o
-+obj-$(CONFIG_FB_FFB)              += ffb.o sbuslib.o cfbimgblt.o cfbcopyarea.o
-+obj-$(CONFIG_FB_CG6)              += cg6.o sbuslib.o cfbimgblt.o cfbcopyarea.o
-+obj-$(CONFIG_FB_CG3)              += cg3.o sbuslib.o cfbimgblt.o cfbcopyarea.o \
-+				     cfbfillrect.o
-+obj-$(CONFIG_FB_BW2)              += bw2.o sbuslib.o cfbimgblt.o cfbcopyarea.o \
-+				     cfbfillrect.o
-+obj-$(CONFIG_FB_CG14)             += cg14.o sbuslib.o cfbimgblt.o cfbcopyarea.o \
-+				     cfbfillrect.o
-+obj-$(CONFIG_FB_P9100)            += p9100.o sbuslib.o cfbimgblt.o cfbcopyarea.o \
-+				     cfbfillrect.o
-+obj-$(CONFIG_FB_TCX)              += tcx.o sbuslib.o cfbimgblt.o cfbcopyarea.o \
-+				     cfbfillrect.o
-+obj-$(CONFIG_FB_LEO)              += leo.o sbuslib.o cfbimgblt.o cfbcopyarea.o \
-+				     cfbfillrect.o
-+obj-$(CONFIG_FB_SGIVW)            += sgivwfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+obj-$(CONFIG_FB_ACORN)            += acornfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+obj-$(CONFIG_FB_ATARI)            += atafb.o
-+obj-$(CONFIG_FB_MAC)              += macfb.o macmodes.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
- obj-$(CONFIG_FB_HGA)              += hgafb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o 
-+obj-$(CONFIG_FB_IGA)              += igafb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+obj-$(CONFIG_FB_APOLLO)           += dnfb.o cfbfillrect.o cfbimgblt.o
-+obj-$(CONFIG_FB_Q40)              += q40fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+obj-$(CONFIG_FB_TGA)              += tgafb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+obj-$(CONFIG_FB_HP300)            += hpfb.o cfbfillrect.o cfbimgblt.o
-+obj-$(CONFIG_FB_G364)             += g364fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
- obj-$(CONFIG_FB_SA1100)           += sa1100fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+obj-$(CONFIG_FB_SUN3)             += sun3fb.o
- obj-$(CONFIG_FB_HIT)              += hitfb.o cfbfillrect.o cfbimgblt.o
-+obj-$(CONFIG_FB_TX3912)           += tx3912fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
- obj-$(CONFIG_FB_EPSON1355)	  += epson1355fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
- obj-$(CONFIG_FB_PVR2)             += pvr2fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
--obj-$(CONFIG_FB_KYRO)             += kyro/ cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+obj-$(CONFIG_FB_PMAG_BA)          += pmag-ba-fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+obj-$(CONFIG_FB_PMAGB_B)          += pmagb-b-fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+obj-$(CONFIG_FB_MAXINE)           += maxinefb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
- obj-$(CONFIG_FB_VOODOO1)          += sstfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+obj-$(CONFIG_FB_ARMCLCD)	  += amba-clcd.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+obj-$(CONFIG_FB_68328)            += 68328fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+obj-$(CONFIG_FB_GBE)              += gbefb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+obj-$(CONFIG_FB_CIRRUS)		  += cirrusfb.o cfbfillrect.o cfbimgblt.o cfbcopyarea.o
- obj-$(CONFIG_FB_ASILIANT)	  += asiliantfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-+obj-$(CONFIG_FB_PXA)		  += pxafb.o cfbimgblt.o cfbcopyarea.o cfbfillrect0.o
+ 	if (!info->fbops->fb_blank && console_blanked)
+@@ -1487,10 +1490,10 @@ static int fbcon_scroll(struct vc_data *
+ 			goto redraw_up;
+ 		switch (p->scrollmode) {
+ 		case SCROLL_MOVE:
+-			fbcon_bmove(vc, t + count, 0, t, 0,
++			ops->bmove(vc, info, t + count, 0, t, 0,
+ 				    b - t - count, vc->vc_cols);
+-			fbcon_clear(vc, b - count, 0, count,
+-					 vc->vc_cols);
++			ops->clear(vc, info, b - count, 0, count,
++				  vc->vc_cols);
+ 			break;
  
--obj-$(CONFIG_FB_FFB)               += ffb.o sbuslib.o cfbimgblt.o cfbcopyarea.o
--obj-$(CONFIG_FB_CG6)               += cg6.o sbuslib.o cfbimgblt.o cfbcopyarea.o
--obj-$(CONFIG_FB_CG3)               += cg3.o sbuslib.o cfbimgblt.o cfbcopyarea.o \
--				      cfbfillrect.o
--obj-$(CONFIG_FB_BW2)               += bw2.o sbuslib.o cfbimgblt.o cfbcopyarea.o \
--				      cfbfillrect.o
--obj-$(CONFIG_FB_CG14)              += cg14.o sbuslib.o cfbimgblt.o cfbcopyarea.o \
--				      cfbfillrect.o
--obj-$(CONFIG_FB_P9100)             += p9100.o sbuslib.o cfbimgblt.o cfbcopyarea.o \
--				      cfbfillrect.o
--obj-$(CONFIG_FB_TCX)               += tcx.o sbuslib.o cfbimgblt.o cfbcopyarea.o \
--				      cfbfillrect.o
--obj-$(CONFIG_FB_LEO)               += leo.o sbuslib.o cfbimgblt.o cfbcopyarea.o \
--				      cfbfillrect.o
--obj-$(CONFIG_FB_PXA)		   += pxafb.o cfbimgblt.o cfbcopyarea.o cfbfillrect.o
-+# Platform or fallback drivers go here
-+obj-$(CONFIG_FB_VESA)             += vesafb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
- obj-$(CONFIG_FB_VGA16)            += vga16fb.o cfbfillrect.o cfbcopyarea.o \
- 	                             cfbimgblt.o vgastate.o
--obj-$(CONFIG_FB_VESA)             += vesafb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
--obj-$(CONFIG_FB_VIRTUAL)          += vfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
- obj-$(CONFIG_FB_OF)               += offb.o cfbfillrect.o cfbimgblt.o cfbcopyarea.o
-+
-+# the test framebuffer is last
-+obj-$(CONFIG_FB_VIRTUAL)          += vfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+ 		case SCROLL_WRAP_MOVE:
+@@ -1571,9 +1574,9 @@ static int fbcon_scroll(struct vc_data *
+ 			count = vc->vc_rows;
+ 		switch (p->scrollmode) {
+ 		case SCROLL_MOVE:
+-			fbcon_bmove(vc, t, 0, t + count, 0,
++			ops->bmove(vc, info, t, 0, t + count, 0,
+ 				    b - t - count, vc->vc_cols);
+-			fbcon_clear(vc, t, 0, count, vc->vc_cols);
++			ops->clear(vc, info, t, 0, count, vc->vc_cols);
+ 			break;
+ 
+ 		case SCROLL_WRAP_MOVE:
+@@ -1948,6 +1951,7 @@ static int fbcon_blank(struct vc_data *v
+ 	}
+ 
+ 	fbcon_cursor(vc, blank ? CM_ERASE : CM_DRAW);
++	info->cursor.flash = (!blank);
+ 
+ 	if (!info->fbops->fb_blank) {
+ 		if (blank) {

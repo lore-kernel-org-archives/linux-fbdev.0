@@ -1,23 +1,26 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Fw: [Bugme-new] [Bug 3078] New: radeonfb, switching from X to
- console locks up system.
-Date: Thu, 15 Jul 2004 10:55:38 -0700
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: query (critical problem)
+Date: Fri, 16 Jul 2004 07:07:43 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040715105538.168da136.akpm@osdl.org>
+Message-ID: <200407160707.46619.adaplas@hotpop.com>
+References: <004a01c46a64$af896ef0$7c04b40a@dlh.st.com>
+Reply-To: adaplas@pol.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BlBdF-00028N-SM
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 15 Jul 2004 12:11:01 -0700
-Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1BlBdF-0007n7-BI
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 15 Jul 2004 12:11:01 -0700
-Received: from akpm-1 (build.pdx.osdl.net [172.20.1.2])
-	by mail.osdl.org (8.11.6/8.11.6) with SMTP id i6FJAwk27593
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 15 Jul 2004 12:10:58 -0700
+	id 1BlFLM-0005XQ-LV
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 15 Jul 2004 16:08:48 -0700
+Received: from babyruth.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1BlFLM-0007Nj-Av
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 15 Jul 2004 16:08:48 -0700
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by babyruth.hotpop.com (Postfix) with SMTP id D6C73693A15
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 15 Jul 2004 22:22:15 +0000 (UTC)
+In-Reply-To: <004a01c46a64$af896ef0$7c04b40a@dlh.st.com>
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,57 +31,40 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Manish RATHI <manish.rathi@st.com>, linux-fbdev-devel@lists.sourceforge.net
+
+On Thursday 15 July 2004 20:10, Manish RATHI wrote:
+> Hi,
+> I've ported linux on our chip using  linux kernel 2.4.20. On chip we have a
+> display interface on which epson panel is attached. We've written a display
+> driver using framebuffer driver as a upper layer.
+>
+> Problem with this driver is that due to framebuffer concept we don't know
+> when data is updated in framebuffer as this is done by application.
+>
+> So we don't know when to transfer data from framebuffer to panel memory.
+> how a driver can know this trigger.
+>
+> B'coz of this we have only one option left that is always transfer data
+> to dif panel from fraembuffer irrespective of any trigger.
+>
+> This will create power problem.
+>
+> As i understand microwindows/qt or any graphics package call open, mmap
+> from framebuffer. Whenever it draw a line it doesn't call any driver
+> interface.
+>
+> Is there any solution?
+> Is there any standard interface of application with driver which tell
+> that data is to be updated from frmebuffer to panel memory?
+
+You can try file read and write instead of mmap to access the framebuffer.
+Otherwise, you can try trapping all accesses to the memory, but this wil
+involve hacking kernel internals.
+
+Tony
 
 
-
-Begin forwarded message:
-
-Date: Thu, 15 Jul 2004 11:35:17 -0700
-From: bugme-daemon@osdl.org
-To: bugme-new@lists.osdl.org
-Subject: [Bugme-new] [Bug 3078] New: radeonfb, switching from X to console locks up system.
-
-
-http://bugme.osdl.org/show_bug.cgi?id=3078
-
-           Summary: radeonfb, switching from X to console locks up system.
-    Kernel Version: 2.6.8-rc1
-            Status: NEW
-          Severity: high
-             Owner: jsimmons@infradead.org
-         Submitter: jose.l.cordova@seagate.com
-
-
-Distribution: FC2
-Hardware Environment: Intel D865GLX, 3.2 GHz hyperthreaded P4, ATI Radeon 9600SE
-Software Environment: fb consoles, gnome
-
-Problem Description:
-I have upgraded to 2.6.7 with patch-2.6.8-rc1.bz2 (earlier versions seem to have
-other radeonfb problems). After fixing the kernel oops reported in
-https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=125841
-using patch
-https://bugzilla.redhat.com/bugzilla/attachment.cgi?id=101570&action=view,
-I could  install the new kernel with built-in radeonfb support. But now, the
-system crashes when exiting from an X-session.
-
-Steps to reproduce:
-The system boots up and looks perfect, with two cute penguins and all. The
-following happens regardless of whether I start at init 3 and run startx from a
-console or go directly into init5. My Gnome session starts flawlessly, and if I
-cat /proc/fb I get the 9600 information. The problem is when I either log out
-from gnome, or try to access a console via ctrl-alt-f#. The consoles are pure
-garbage, and the system is hard-locked, requiring the reset button.
-
-For the x drivers I am running with module support for agp, agp_intel, and dri,
-but I am using the proprietary ATI driver fglrx to get 3D acceleration (this, by
-the way, also works well using both the kernel of the internal agp support).
-
-I don't know how to get logs for this, since the system dies completely.
-
-------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
 
 
 -------------------------------------------------------

@@ -1,17 +1,16 @@
-From: "Marijn Kruisselbrink" <marijnk@gmx.net>
-Subject: RE: PROBLEM: really strange behavior with rivafb in kernel 2.5.64
-Date: Tue, 18 Mar 2003 02:03:44 +0100
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Reading the EDID block for x86 machines
+Date: Tue, 18 Mar 2003 10:06:24 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <HJEOKOJLKINBOCDGFDOOCENPCCAA.marijnk@gmx.net>
-References: <HJEOKOJLKINBOCDGFDOOCECPCCAA.marijnk@gmx.co.uk>
+Message-ID: <Pine.GSO.4.21.0303181005390.17808-100000@vervain.sonytel.be>
+References: <20030317234143.79388.qmail@web14914.mail.yahoo.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from pop.gmx.de ([213.165.65.60] helo=mail.gmx.net)
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18v5W6-0002eQ-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Mar 2003 17:03:46 -0800
-In-Reply-To: <HJEOKOJLKINBOCDGFDOOCECPCCAA.marijnk@gmx.co.uk>
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18vD55-00069K-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 18 Mar 2003 01:08:23 -0800
+In-Reply-To: <20030317234143.79388.qmail@web14914.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,19 +20,35 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: Antonino Daplas <adaplas@pol.net>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-> I don't have a clue what could cause this problem... Perhaps anybody else
-> has any ideas?
-Hmmz, It looks like nobody has anuyy ideas what I could be doing wrong?
-I don't have any ideas...
+On Mon, 17 Mar 2003, Jon Smirl wrote:
+> Plan B is to copy the ROM to something like 8000 or
+> 9000. But the question there is, are VBIOS ROMs still
+> written to run position independent give the PCI C000
+> requirement?
 
-Marijn Kruisselbrink 
+Probably. Some drivers are even compressed, since they don't fit in the ROM.
+So they have to be decompressed elsewhere.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 
 -------------------------------------------------------
-This SF.net email is sponsored by:Crypto Challenge is now open! 
-Get cracking and register here for some mind boggling fun and 
-the chance of winning an Apple iPod:
-http://ads.sourceforge.net/cgi-bin/redirect.pl?thaw0031en
+This SF.net email is sponsored by: Does your code think in ink? 
+You could win a Tablet PC. Get a free Tablet PC hat just for playing. 
+What are you waiting for?
+http://ads.sourceforge.net/cgi-bin/redirect.pl?micr5043en

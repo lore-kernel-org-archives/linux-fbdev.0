@@ -1,18 +1,18 @@
 From: David Eger <eger@havoc.gtf.org>
-Subject: [PATCH] radeonfb accel capabilities
-Date: Wed, 2 Jun 2004 22:38:35 -0400
+Subject: [PATCH] atyfb accel capabilities
+Date: Wed, 2 Jun 2004 22:40:52 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040603023835.GB20951@havoc.gtf.org>
+Message-ID: <20040603024052.GC20951@havoc.gtf.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BVi7u-00024k-Cm
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 02 Jun 2004 19:38:42 -0700
+	id 1BViAD-0002Pu-RL
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 02 Jun 2004 19:41:05 -0700
 Received: from havoc.gtf.org ([216.162.42.101])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BVi7t-0001wY-Uh
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 02 Jun 2004 19:38:42 -0700
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BViAD-0007TX-93
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 02 Jun 2004 19:41:05 -0700
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -25,181 +25,235 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Dear Ben,
 
-The following patch updates radeonfb for the new fb accel capabilities
-patch I'm sending upstream.  I've tested this on my box, and it gives me
-a nice fast console.  Please apply and send up stream once Andrew accepts
-the core patch.
+Dear Geert,
 
-defect: "$ fbset -accel 0" doesn't work for radeonfb -- disabling accel
-will only work from the kernel boot argument :-/
+The following patch updates atyfb for the new fb accel capabilities
+patch I'm sending upstream.  Please test the core patch + this patch,
+and let me know it works for you.  You ought to be able to use fbset
+to turn the acceleration on and off, though i think the current state
+of things is a hack...  sysfs is the way to really do this...
 
 -dte
 
-# This is a BitKeeper generated diff -Nru style patch.
-#
-# ChangeSet
-#   2004/05/30 12:30:12+02:00 eger@rosencrantz.theboonies.us 
-#   Update radeonfb to advertise its acceleration capabilities via fbinfo.flags
-#     yay fast console!
-#
-#	 Signed-off-by: David Eger <eger@havoc.gtf.org>
-#	 cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+atyfb (Mach 64): update to advertise acceleration capabilities via fbinfo.flags
+    yay fast console!
+   
+Signed-off-by: David Eger <eger@havoc.gtf.org>
+
 # 
-diff -Nru a/drivers/video/aty/radeon_accel.c b/drivers/video/aty/radeon_accel.c
---- a/drivers/video/aty/radeon_accel.c	Sun May 30 12:32:10 2004
-+++ b/drivers/video/aty/radeon_accel.c	Sun May 30 12:32:10 2004
-@@ -30,7 +30,7 @@
-   
- 	if (info->state != FBINFO_STATE_RUNNING)
- 		return;
--	if (radeon_accel_disabled()) {
-+	if (info->flags & FBINFO_HWACCEL_DISABLED) {
- 		cfb_fillrect(info, region);
- 		return;
- 	}
-@@ -96,7 +96,7 @@
-   
- 	if (info->state != FBINFO_STATE_RUNNING)
- 		return;
--	if (radeon_accel_disabled()) {
-+	if (info->flags & FBINFO_HWACCEL_DISABLED) {
- 		cfb_copyarea(info, area);
- 		return;
- 	}
-diff -Nru a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
---- a/drivers/video/aty/radeon_base.c	Sun May 30 12:32:10 2004
-+++ b/drivers/video/aty/radeon_base.c	Sun May 30 12:32:10 2004
-diff -Nru a/drivers/video/aty/radeon_pm.c b/drivers/video/aty/radeon_pm.c
-@@ -242,8 +242,6 @@
- static int nomtrr = 0;
- #endif
+# drivers/video/aty/mach64_gx.c
+#   2004/06/02 22:31:14+02:00 eger@rosencrantz.theboonies.us +5 -8
+#   atyfb (Mach 64): update to advertise acceleration capabilities via fbinfo.flags
+#       yay fast console!
+#   
+#   Signed-off-by: David Eger <eger@havoc.gtf.org>
+#   cc: Geert Uytterhoeven <geert@linux-m68k.org>
+# 
+# drivers/video/aty/mach64_accel.c
+#   2004/06/02 22:31:14+02:00 eger@rosencrantz.theboonies.us +2 -2
+#   atyfb (Mach 64): update to advertise acceleration capabilities via fbinfo.flags
+#       yay fast console!
+#   
+#   Signed-off-by: David Eger <eger@havoc.gtf.org>
+#   cc: Geert Uytterhoeven <geert@linux-m68k.org>
+# 
+# drivers/video/aty/atyfb_base.c
+#   2004/06/02 22:31:14+02:00 eger@rosencrantz.theboonies.us +20 -14
+#   atyfb (Mach 64): update to advertise acceleration capabilities via fbinfo.flags
+#       yay fast console!
+#   
+#   Signed-off-by: David Eger <eger@havoc.gtf.org>
+#   cc: Geert Uytterhoeven <geert@linux-m68k.org>
+# 
+# drivers/video/aty/atyfb.h
+#   2004/06/02 22:31:14+02:00 eger@rosencrantz.theboonies.us +1 -2
+#   atyfb (Mach 64): update to advertise acceleration capabilities via fbinfo.flags
+#       yay fast console!
+#   
+#   Signed-off-by: David Eger <eger@havoc.gtf.org>
+#   cc: Geert Uytterhoeven <geert@linux-m68k.org>
+# 
+diff -Nru a/drivers/video/aty/atyfb.h b/drivers/video/aty/atyfb.h
+--- a/drivers/video/aty/atyfb.h	Wed Jun  2 22:38:17 2004
++++ b/drivers/video/aty/atyfb.h	Wed Jun  2 22:38:17 2004
+@@ -79,7 +79,6 @@
+ 	u8 ram_type;
+ 	u8 mem_refresh_rate;
+ 	u8 blitter_may_be_busy;
+-	u32 accel_flags;
+ #ifdef __sparc__
+ 	struct pci_mmap_map *mmap_map;
+ 	u8 mmaped;
+@@ -195,7 +194,7 @@
  
--int radeonfb_noaccel = 0;
--
- /*
-  * prototypes
-  */
-@@ -810,9 +808,8 @@
- 	/* XXX I'm adjusting xres_virtual to the pitch, that may help XFree
- 	 * with some panels, though I don't quite like this solution
- 	 */
--  	if (radeon_accel_disabled()) {
-+  	if (rinfo->info->flags & FBINFO_HWACCEL_DISABLED) {
- 		v.xres_virtual = v.xres_virtual & ~7ul;
--		v.accel_flags = 0;
- 	} else {
- 		pitch = ((v.xres_virtual * ((v.bits_per_pixel + 1) / 8) + 0x3f)
-  				& ~(0x3f)) >> 6;
-@@ -1524,7 +1521,7 @@
- 	newmode.crtc_v_sync_strt_wid = (((vSyncStart - 1) & 0xfff) |
- 					 (vsync_wid << 16) | (v_sync_pol  << 23));
+ struct aty_dac_ops {
+ 	int (*set_dac) (const struct fb_info * info,
+-			const union aty_pll * pll, u32 bpp, u32 accel);
++			const union aty_pll * pll, u32 bpp);
+ };
  
--	if (!radeon_accel_disabled()) {
-+	if (!(info->flags & FBINFO_HWACCEL_DISABLED)) {
- 		/* We first calculate the engine pitch */
- 		rinfo->pitch = ((mode->xres_virtual * ((mode->bits_per_pixel + 1) / 8) + 0x3f)
-  				& ~(0x3f)) >> 6;
-@@ -1672,12 +1669,11 @@
- 	if (!rinfo->asleep) {
- 		radeon_write_mode (rinfo, &newmode);
- 		/* (re)initialize the engine */
--		if (!radeon_accel_disabled())
-+		if (!(info->flags & FBINFO_HWACCEL_DISABLED))
- 			radeonfb_engine_init (rinfo);
--	
- 	}
- 	/* Update fix */
--	if (!radeon_accel_disabled())
+ extern const struct aty_dac_ops aty_dac_ibm514;	/* IBM RGB514 */
+diff -Nru a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
+--- a/drivers/video/aty/atyfb_base.c	Wed Jun  2 22:38:17 2004
++++ b/drivers/video/aty/atyfb_base.c	Wed Jun  2 22:38:17 2004
+@@ -779,7 +779,12 @@
+ 					var->bits_per_pixel, &par->pll)))
+ 		return err;
+ 
+-	par->accel_flags = var->accel_flags;	/* hack */
++#ifdef STUPID_ACCELF_TEXT_SHIT
++	if (var->accel_flags == FB_ACCELF_TEXT)
++		info->flags &= ~FBINFO_HWACCEL_DISABLED;
++	else
++		info->flags |= FBINFO_HWACCEL_DISABLED;
++#endif
+ 
+ 	if (par->blitter_may_be_busy)
+ 		wait_for_idle(par);
+@@ -789,8 +794,7 @@
+ 	/* better call aty_StrobeClock ?? */
+ 	aty_st_8(CLOCK_CNTL + par->clk_wr_offset, CLOCK_STROBE, par);
+ 
+-	par->dac_ops->set_dac(info, &par->pll, var->bits_per_pixel,
+-			      par->accel_flags);
++	par->dac_ops->set_dac(info, &par->pll, var->bits_per_pixel);
+ 	par->pll_ops->set_pll(info, &par->pll);
+ 
+ 	if (!M64_HAS(INTEGRATED)) {
+@@ -850,7 +854,7 @@
+ 		FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_DIRECTCOLOR;
+ 
+ 	/* Initialize the graphics engine */
+-	if (par->accel_flags & FB_ACCELF_TEXT)
 +	if (!(info->flags & FBINFO_HWACCEL_DISABLED))
-         	info->fix.line_length = rinfo->pitch*64;
-         else
- 		info->fix.line_length = mode->xres_virtual
-@@ -1782,9 +1778,13 @@
- 	info->currcon = -1;
- 	info->par = rinfo;
- 	info->pseudo_palette = rinfo->pseudo_palette;
--        info->flags = FBINFO_FLAG_DEFAULT;
--        info->fbops = &radeonfb_ops;
--        info->screen_base = (char *)rinfo->fb_base;
+ 		aty_init_engine(par, info);
+ 
+ #ifdef CONFIG_BOOTX_TEXT
+@@ -947,10 +951,6 @@
+ 				 * correctly.
+ 				 */
+ 				var = default_var;
+-				if (noaccel)
+-					var.accel_flags &= ~FB_ACCELF_TEXT;
+-				else
+-					var.accel_flags |= FB_ACCELF_TEXT;
+ 				if (var.yres == var.yres_virtual) {
+ 					u32 vram =
+ 					    (info->fix.smem_len -
+@@ -1412,7 +1412,7 @@
+ 			if (par->blitter_may_be_busy)
+ 				wait_for_idle(par);
+ 			/* Stop accel engine (stop bus mastering) */
+-			if (par->accel_flags & FB_ACCELF_TEXT)
++			if (!(info->flags & FBINFO_HWACCEL_DISABLED))
+ 				aty_reset_engine(par);
+ 
+ 			/* Backup fb content */
+@@ -1787,7 +1787,17 @@
+ 
+ 	info->fbops = &atyfb_ops;
+ 	info->pseudo_palette = pseudo_palette;
+-	info->flags = FBINFO_FLAG_DEFAULT;
 +	info->flags = FBINFO_DEFAULT
-+		    | FBINFO_HWACCEL_COPYAREA
 +		    | FBINFO_HWACCEL_FILLRECT
++		    | FBINFO_HWACCEL_COPYAREA
 +		    | FBINFO_HWACCEL_XPAN
 +		    | FBINFO_HWACCEL_YPAN;
-+	info->fbops = &radeonfb_ops;
-+	info->screen_base = (char *)rinfo->fb_base;
- 
- 	/* Fill fix common fields */
- 	strlcpy(info->fix.id, rinfo->name, sizeof(info->fix.id));
-@@ -1798,17 +1798,11 @@
-         info->fix.type_aux = 0;
-         info->fix.mmio_start = rinfo->mmio_base_phys;
-         info->fix.mmio_len = RADEON_REGSIZE;
--	if (radeon_accel_disabled())
--	        info->fix.accel = FB_ACCEL_NONE;
--	else
--		info->fix.accel = FB_ACCEL_ATI_RADEON;
- 
- 	fb_alloc_cmap(&info->cmap, 256, 0);
--
--	if (radeon_accel_disabled())
--		info->var.accel_flags &= ~FB_ACCELF_TEXT;
--	else
--		info->var.accel_flags |= FB_ACCELF_TEXT;
-+	
 +	if (noaccel)
 +		info->flags |= FBINFO_HWACCEL_DISABLED;
++
++#ifdef STUPID_ACCELF_TEXT_SHIT
++	var.accel_flags = noaccel ? 0 : FB_ACCELF_TEXT;
++#endif
  
-         return 0;
+ #ifdef CONFIG_PMAC_BACKLIGHT
+ 	if (M64_HAS(G3_PB_1_1) && machine_is_compatible("PowerBook1,1")) {
+@@ -1863,10 +1873,6 @@
+ #endif				/* !__sparc__ */
+ #endif				/* !CONFIG_PPC */
+ #endif				/* !MODULE */
+-	if (noaccel)
+-		var.accel_flags &= ~FB_ACCELF_TEXT;
+-	else
+-		var.accel_flags |= FB_ACCELF_TEXT;
+ 
+ 	if (var.yres == var.yres_virtual) {
+ 		u32 vram = (info->fix.smem_len - (PAGE_SIZE << 2));
+diff -Nru a/drivers/video/aty/mach64_accel.c b/drivers/video/aty/mach64_accel.c
+--- a/drivers/video/aty/mach64_accel.c	Wed Jun  2 22:38:17 2004
++++ b/drivers/video/aty/mach64_accel.c	Wed Jun  2 22:38:17 2004
+@@ -179,7 +179,7 @@
+ 
+ 	if (!area->width || !area->height)
+ 		return;
+-	if (!par->accel_flags) {
++	if (info->flags & FBINFO_HWACCEL_DISABLED) {
+ 		if (par->blitter_may_be_busy)
+ 			wait_for_idle(par);
+ 		cfb_copyarea(info, area);
+@@ -223,7 +223,7 @@
+ 
+ 	if (!rect->width || !rect->height)
+ 		return;
+-	if (!par->accel_flags) {
++	if (info->flags & FBINFO_HWACCEL_DISABLED) {
+ 		if (par->blitter_may_be_busy)
+ 			wait_for_idle(par);
+ 		cfb_fillrect(info, rect);
+diff -Nru a/drivers/video/aty/mach64_gx.c b/drivers/video/aty/mach64_gx.c
+--- a/drivers/video/aty/mach64_gx.c	Wed Jun  2 22:38:17 2004
++++ b/drivers/video/aty/mach64_gx.c	Wed Jun  2 22:38:17 2004
+@@ -78,7 +78,7 @@
  }
-@@ -2424,7 +2418,6 @@
  
- int __init radeonfb_init (void)
+ static int aty_set_dac_514(const struct fb_info *info,
+-			   const union aty_pll *pll, u32 bpp, u32 accel)
++			   const union aty_pll *pll, u32 bpp)
  {
--	radeonfb_noaccel = noaccel;
- 	return pci_module_init (&radeonfb_driver);
- }
+ 	struct atyfb_par *par = (struct atyfb_par *) info->par;
+ 	static struct {
+@@ -204,8 +204,7 @@
+      */
  
-@@ -2446,7 +2439,7 @@
- 			continue;
+ static int aty_set_dac_ATI68860_B(const struct fb_info *info,
+-				  const union aty_pll *pll, u32 bpp,
+-				  u32 accel)
++				  const union aty_pll *pll, u32 bpp)
+ {
+ 	struct atyfb_par *par = (struct atyfb_par *) info->par;
+ 	u32 gModeReg, devSetupRegA, temp, mask;
+@@ -237,7 +236,7 @@
+ 		break;
+ 	}
  
- 		if (!strncmp(this_opt, "noaccel", 7)) {
--			noaccel = radeonfb_noaccel = 1;
-+			noaccel = 1;
- 		} else if (!strncmp(this_opt, "mirror", 6)) {
- 			mirror = 1;
- 		} else if (!strncmp(this_opt, "force_dfp", 9)) {
---- a/drivers/video/aty/radeon_pm.c	Sun May 30 12:32:10 2004
-+++ b/drivers/video/aty/radeon_pm.c	Sun May 30 12:32:10 2004
-@@ -859,7 +859,7 @@
- 
- 	fb_set_suspend(info, 1);
- 
--	if (!radeon_accel_disabled()) {
+-	if (!accel) {
 +	if (!(info->flags & FBINFO_HWACCEL_DISABLED)) {
- 		/* Make sure engine is reset */
- 		radeon_engine_idle();
- 		radeonfb_engine_reset(rinfo);
-diff -Nru a/drivers/video/aty/radeonfb.h b/drivers/video/aty/radeonfb.h
---- a/drivers/video/aty/radeonfb.h	Sun May 30 12:32:10 2004
-+++ b/drivers/video/aty/radeonfb.h	Sun May 30 12:32:10 2004
-@@ -516,12 +516,6 @@
- 	printk(KERN_ERR "radeonfb: Idle Timeout !\n");
- }
+ 		gModeReg = 0x80;
+ 		devSetupRegA = 0x61;
+ 	}
+@@ -287,8 +286,7 @@
+      */
  
--static inline int radeon_accel_disabled(void)
--{
--	extern int radeonfb_noaccel;
--	return radeonfb_noaccel;
--}
--
- #define radeon_engine_idle()		_radeon_engine_idle(rinfo)
- #define radeon_fifo_wait(entries)	_radeon_fifo_wait(rinfo,entries)
+ static int aty_set_dac_ATT21C498(const struct fb_info *info,
+-				 const union aty_pll *pll, u32 bpp,
+-				 u32 accel)
++				 const union aty_pll *pll, u32 bpp)
+ {
+ 	struct atyfb_par *par = (struct atyfb_par *) info->par;
+ 	u32 dotClock;
+@@ -883,8 +881,7 @@
+      */
+ 
+ static int aty_set_dac_unsupported(const struct fb_info *info,
+-				   const union aty_pll *pll, u32 bpp,
+-				   u32 accel)
++				   const union aty_pll *pll, u32 bpp)
+ {
+ 	struct atyfb_par *par = (struct atyfb_par *) info->par;
  
 
 

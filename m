@@ -1,22 +1,25 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Fw: [Bugme-new] [Bug 3698] New: vesafb doesn't work anymore
-Date: Thu, 4 Nov 2004 10:34:47 -0800
-Message-ID: <20041104103447.526c0587.akpm@osdl.org>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: Is framebufer driver a replacement for video driver?
+Date: Fri, 5 Nov 2004 04:49:12 +0800
+Message-ID: <200411050449.14468.adaplas@hotpop.com>
+References: <4EE0CBA31942E547B99B3D4BFAB348111ECB1B@mail.esn.co.in>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CPmRg-0004ie-Mc
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 Nov 2004 10:34:52 -0800
-Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
+	id 1CPoY3-0006K6-1j
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 Nov 2004 12:49:35 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.61])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CPmRf-0003ow-1Y
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 Nov 2004 10:34:52 -0800
-Received: from bix (build.pdx.osdl.net [172.20.1.2])
-	by mail.osdl.org (8.11.6/8.11.6) with SMTP id iA4IYn929011
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 4 Nov 2004 10:34:50 -0800
+	id 1CPoY0-0004LL-8z
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 Nov 2004 12:49:34 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id 9DF479A8688
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu,  4 Nov 2004 20:49:19 +0000 (UTC)
+In-Reply-To: <4EE0CBA31942E547B99B3D4BFAB348111ECB1B@mail.esn.co.in>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,49 +31,60 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net, "Mukund JB." <mukundjb@esntechnologies.co.in>
+Cc: tonnerre@thundrix.ch
+
+On Friday 05 November 2004 00:29, Mukund JB. wrote:
+> Hi all,
+>
+> I have a small query. I may be silly, but please help by make it clear.
+>
+> Framebuffer definition :-
+>
+> The frame buffer device provides an abstraction for the graphics
+> hardware. It represents the frame buffer of some video hardware and
+> allows application software to access the graphics hardware through a
+> well-defined interface, so the software doesn't need to know anything
+> about the low-level (hardware register) stuff.
+>
+> Does a framebuffer driver directly interact with the hardware registers
+> of the video card?
+
+Yes.
+
+> 					or
+>
+> Is there a generic low level driver that will interact with the
+> hardware?
+
+Yes and No. Yes, because there are platform drivers that may work with
+many cards (VESA, VGA16, OF).  You can consider them as generic.
+
+However, the hardware specific specific driver will work only with a
+particular chipset.
+
+>
+> What happens when I say startx at command prompt with XF86Config-4 file
+> configured for framebuffer driver?
+>
+> Is it like, When I say startx with XF86Config-4 file configured for
+> framebuffer driver, the video we get is a result of X server using the
+> framebuffer driver directly? Right?
+>
+
+Yes.
+
+> In this case, Is there a video driver involved in getting the video
+> apart from the framebuffer driver?
+>
+
+The framebuffer driver itself touches the hardware, and usually it's one
+driver per chipset.  However, the interface that is used by the application
+is standard.
+
+Tony
 
 
-
-Begin forwarded message:
-
-Date: Thu, 4 Nov 2004 05:55:57 -0800
-From: bugme-daemon@osdl.org
-To: bugme-new@lists.osdl.org
-Subject: [Bugme-new] [Bug 3698] New: vesafb doesn't work anymore
-
-
-http://bugme.osdl.org/show_bug.cgi?id=3698
-
-           Summary: vesafb doesn't work anymore
-    Kernel Version: 2.6.9
-            Status: NEW
-          Severity: normal
-             Owner: jsimmons@infradead.org
-         Submitter: dilorenzo@kmfms.com
-
-
-Distribution:
- Debian Sarge
-
-Hardware Environment: 
- Dell Inspiron 8600 notebook / nvidia geforce graphic
-
-Problem Description:
- I used vesafb with mode 0x314 (in lilo vga=788) until kernel 2.6.7.
- Now I decided to upgrade to 2.6.9, I did it as always: 
- make oldconfig and so on...
- But when I restart, the screen blanks, I tried it with vga=ask, but
- it didn't work with the 3xx modes, the normal modes work, but
- as I work a lot with the console I need a 'nice' one, like mode 314.
- I compared the bootlogs in /var/log/kern.log and found that with the
- 2.6.7 kernel there were some lines with 'vesafb: ...' and after that
- there was a line :
- 'Console: switching to colour frame buffer device 100x37'.
- But with the 2.6.9 kernel these lines don't appear.
-
-------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
 
 
 -------------------------------------------------------

@@ -1,16 +1,15 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: "Petr Vandrovec" <VANDROVE@vc.cvut.cz>
 Subject: Re: [PATCH]: EDID parser
-Date: Thu, 3 Apr 2003 18:33:17 +0200 (MEST)
+Date: Thu, 3 Apr 2003 18:38:44 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0304031831030.23642-100000@vervain.sonytel.be>
-References: <1049383273.11742.0.camel@dhcp22.swansea.linux.org.uk>
+Message-ID: <51136F3B7C@vcnet.vc.cvut.cz>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7BIT
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+Received: from mailgw.cvut.cz ([147.32.3.235])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1917fQ-0000K4-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 03 Apr 2003 08:34:21 -0800
-In-Reply-To: <1049383273.11742.0.camel@dhcp22.swansea.linux.org.uk>
+	id 1917kM-0001K6-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 03 Apr 2003 08:39:26 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,44 +19,38 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Sven Luther <luther@dpt-info.u-strasbg.fr>, Petr Vandrovec <VANDROVE@vc.cvut.cz>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Sven Luther <luther@dpt-info.u-strasbg.fr>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On 3 Apr 2003, Alan Cox wrote:
-> On Iau, 2003-04-03 at 15:15, Sven Luther wrote:
-> > > Read is not enough. If you have connected one /dev/fbx to two monitors,
-> > > you must find highest common denominator for them, and use this one.
+On  3 Apr 03 at 18:21, Sven Luther wrote:
+> On Thu, Apr 03, 2003 at 04:21:14PM +0100, Alan Cox wrote:
+> > On Iau, 2003-04-03 at 15:15, Sven Luther wrote:
+> > > > Read is not enough. If you have connected one /dev/fbx to two
+> > > > monitors, you must find highest common denominator for them, and use
+> > > > this one.
+> > > 
+> > > Err, i don't understand this ? Do you mean you are outputing to two
+> > > monitors at the same time ?
+
+Yes. With matroxfb you can output same signal to all three outputs.
+It is default if you have g450 or g550 with recent driver.
+
+> > > If that is so maybe you mean, speaking in graphic card terminology, and
+> > > not in fbdev one, that you are sharing one common framebuffer between
+> > > two outputs, right, possibly doing mirroring tricks or something such ?
 > > 
-> > Err, i don't understand this ? Do you mean you are outputing to two
-> > monitors at the same time ?
+> > Classic example is a SiS 6326 driving monitor and TV. You need to keep the
+> > display to TV acceptable ranges.
 > 
-> I think you mean lowest common denominator.
-> 
-> > If that is so maybe you mean, speaking in graphic card terminology, and
-> > not in fbdev one, that you are sharing one common framebuffer between
-> > two outputs, right, possibly doing mirroring tricks or something such ?
-> 
-> Classic example is a SiS 6326 driving monitor and TV. You need to keep
-> the display to TV acceptable ranges.
+> You mean, driving both display with the same ramdac ?
 
-I don't know whether that's a good example...
+See http://www.bglug.ca/matrox_tvout/g450.jpg. Two inputs, three outputs,
+and almost any possible connection between them.
 
-I assume the signal for the TV is different from the signal for the monitor
-(these days you don't find many monitors that do 15.6 kHz / 50 Hz)? In that
-case it's just the resolution that has to be more or less compatible.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+                                                Petr Vandrovec
+                                                vandrove@vc.cvut.cz
+                                                
 
 
 

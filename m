@@ -1,20 +1,24 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [linux-2.6.7] Bootup logo patch
-Date: Wed, 4 Aug 2004 23:26:01 +0200 (MEST)
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: [PATCH][FBDEV]: Find correct logo for directcolor < 24bpp
+Date: Thu, 5 Aug 2004 07:53:01 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0408042324040.15861@waterleaf.sonytel.be>
-References: <200408031854.23635@brute.world.of.dreams>
+Message-ID: <200408050753.02074.adaplas@hotpop.com>
+Reply-To: adaplas@pol.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BsTH1-0007a3-90
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 04 Aug 2004 14:26:11 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1BsTH0-0007ah-Mo
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 04 Aug 2004 14:26:11 -0700
-In-Reply-To: <200408031854.23635@brute.world.of.dreams>
+	id 1BsVbX-0002QI-Aa
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 04 Aug 2004 16:55:31 -0700
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
+	id 1BsVbW-00010E-Pj
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 04 Aug 2004 16:55:31 -0700
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id 72336764A53
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed,  4 Aug 2004 23:03:15 +0000 (UTC)
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -24,37 +28,76 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Piotr Horzycki <mediaworks@tlen.pl>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tue, 3 Aug 2004, Piotr Horzycki wrote:
-> The purpose of this patch is to add a possibility of applying custom
-> 224-color bootup image without overwriting the existing ones. User
-> needs to create a separate PPM file
-> (drivers/video/logo/logo_custom_clut224.ppm), which will be
-> automatically converted to .c and then linked. I needed to alter the
-> Makefile to add the .o file, and Kconfig to allow enabling the new
+Hi Andrew,
 
-While it sounds interesting to have this feature, I'm a bit afraid about its
-implementation. In the current state, an `allyesconfig' kernel will fail to
-build, since drivers/video/logo/logo_custom_clut224.ppm is missing by default.
+Current algorithm does not choose correct logo type for directcolor < 24 bpp.
+It chooses logo_224, but this is too deep for bpp < 24.  This should fix the
+problem.
 
-> feature during kernel configuration. I added short help for CONFIG_LOGO
+Tony
 
-Thanks for the help text!
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
+---
 
-Gr{oetje,eeting}s,
+ fbmem.c |   31 ++++++++++++++++++++-----------
+ 1 files changed, 20 insertions(+), 11 deletions(-)
 
-						Geert
+diff -uprN linux-2.6.8-rc2-mm2-orig/drivers/video/fbmem.c linux-2.6.8-rc2-mm2/drivers/video/fbmem.c
+--- linux-2.6.8-rc2-mm2-orig/drivers/video/fbmem.c	2004-08-04 23:37:26.339174664 +0000
++++ linux-2.6.8-rc2-mm2/drivers/video/fbmem.c	2004-08-04 23:37:40.785978416 +0000
+@@ -734,26 +734,35 @@ static struct logo_data {
+ 
+ int fb_prepare_logo(struct fb_info *info)
+ {
++	int depth = fb_get_color_depth(info);
++
+ 	memset(&fb_logo, 0, sizeof(struct logo_data));
+ 
+-	switch (info->fix.visual) {
+-	case FB_VISUAL_TRUECOLOR:
+-		if (info->var.bits_per_pixel >= 8)
++	if (info->fix.visual == FB_VISUAL_DIRECTCOLOR) {
++		depth = info->var.blue.length;
++		if (info->var.red.length < depth)
++			depth = info->var.red.length;
++		if (info->var.green.length < depth)
++			depth = info->var.green.length;
++	}
++
++	if (depth >= 8) {
++		switch (info->fix.visual) {
++		case FB_VISUAL_TRUECOLOR:
+ 			fb_logo.needs_truepalette = 1;
+-		break;
+-	case FB_VISUAL_DIRECTCOLOR:
+-		if (info->var.bits_per_pixel >= 24) {
++			break;
++		case FB_VISUAL_DIRECTCOLOR:
+ 			fb_logo.needs_directpalette = 1;
+ 			fb_logo.needs_cmapreset = 1;
++			break;
++		case FB_VISUAL_PSEUDOCOLOR:
++			fb_logo.needs_cmapreset = 1;
++			break;
+ 		}
+-		break;
+-	case FB_VISUAL_PSEUDOCOLOR:
+-		fb_logo.needs_cmapreset = 1;
+-		break;
+ 	}
+ 
+ 	/* Return if no suitable logo was found */
+-	fb_logo.logo = fb_find_logo(fb_get_color_depth(info));
++	fb_logo.logo = fb_find_logo(depth);
+ 	
+ 	if (!fb_logo.logo || fb_logo.logo->height > info->var.yres) {
+ 		fb_logo.logo = NULL;
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 
 -------------------------------------------------------

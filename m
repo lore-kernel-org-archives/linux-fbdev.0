@@ -1,36 +1,48 @@
-From: Linus Torvalds <torvalds@transmeta.com>
-Subject: Re: [BK fbdev] Yet again more fbdev updates.
-Date: Fri, 13 Dec 2002 16:14:29 -0800 (PST)
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.44.0212131611490.6750-100000@home.transmeta.com>
-References: <Pine.LNX.4.44.0212132355040.19622-100000@phoenix.infradead.org>
+From: James Simmons <jsimmons@infradead.org>
+Subject: test
+Date: Fri, 13 Dec 2002 17:41:13 -0800 (PST)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.LNX.4.33.0212131741060.1882-100000@maxwell.earthlink.net>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44.0212132355040.19622-100000@phoenix.infradead.org>
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from hawk.mail.pas.earthlink.net ([207.217.120.22])
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18N0UJ-0004Ae-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 13 Dec 2002 16:49:03 -0800
+Received: from user-112vp86.biz.mindspring.com ([66.47.229.6] helo=[192.168.1.101])
+	by hawk.mail.pas.earthlink.net with esmtp (Exim 3.33 #1)
+	id 18N0Tn-00077R-00
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 13 Dec 2002 16:48:31 -0800
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+
+
+test
+
+
+MS: (n) 1. A debilitating and surprisingly widespread affliction that
+renders the sufferer barely able to perform the simplest task. 2. A disease.
+
+James Simmons  [jsimmons@users.sf.net] 	                ____/|
+fbdev/console/gfx developer                             \ o.O|
+http://www.linux-fbdev.org                               =(_)=
+http://linuxgfx.sourceforge.net                            U
+http://linuxconsole.sourceforge.net
 
 
 
-On Sat, 14 Dec 2002, James Simmons wrote:
->
-> Calling scrup is out of place. It is only called by lf() and csi_M() in
-> the vt.c. lf() is used in vt_console_print but it is called before
-> set_cursor(). Also vgacon_cursor doesn't call vgacon_scroll. It can call
-> vgacon_scrolldelta. Now scrup does call vgacon_scroll. It looks like The
-> code jumped from the middle of vt_console_print to scrup. Do you get the
-> same error all the time? Also do you have Preemptible Kernel turned on?
-
-This is UP, and not preemptible. And the backtrace may be corrupt, because
-when the page fault happens, it will actually page fault _again_ as part
-of trying to print out the oops, so the whole thing scrolls largely off
-the screen..
-
-I only see this on one of my laptops, and even there it seems to be
-timing-dependent or something (I think it only happens when I press a key,
-and because the backtrace isn't trustworthy ..)
-
-		Linus
+-------------------------------------------------------
+This sf.net email is sponsored by:
+With Great Power, Comes Great Responsibility 
+Learn to use your power at OSDN's High Performance Computing Channel
+http://hpc.devchannel.org/

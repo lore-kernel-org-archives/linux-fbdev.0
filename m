@@ -1,17 +1,17 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Feature Freeze?
-Date: Wed, 5 Mar 2003 23:59:41 +0000 (GMT)
+Subject: Re: Some questions
+Date: Thu, 6 Mar 2003 00:18:48 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0303052358500.32553-100000@phoenix.infradead.org>
-References: <20030305211727.GA3839@g-kabel.si>
+Message-ID: <Pine.LNX.4.44.0303060006030.394-100000@phoenix.infradead.org>
+References: <3E66785D.1070202@winischhofer.net>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
+Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18qio4-00055i-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 16:00:16 -0800
-In-Reply-To: <20030305211727.GA3839@g-kabel.si>
+	id 18qj6a-0003Rw-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 16:19:24 -0800
+In-Reply-To: <3E66785D.1070202@winischhofer.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,23 +23,47 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Boris Bezlaj <boris@gajba.net>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Thomas Winischhofer <thomas@winischhofer.net>
+Cc: Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> On Wed, Mar 05, 2003 at 06:34:45PM +0000, James Simmons wrote:
-> > 
-> > imsttfb.c    <- I have a nearly done driver. The old driver doesn't work 
-> > 		on ix86. I tried it. Oh wells.
-> 
-> Is this patch in the bk/main patch ? If not, could you send it to me for
-> testing purposes? I have some problems under 2.4 and i haven't tried 2.5
-> on ppc yet.
+> Excuse me that I dare to comment on this as a total fbdev-rookie:
 
-I just placed it into the BK repository. I will soon be making a new 
-patch. I have a bunch of new changes including some fb_pixmap cleanups.
-Fbdev developement has picked up some steam the last few days.
+No problem. Its rare I take things personally. So I don't mind people 
+critizing my work. You have to have a thick skin for this line of work.
+ 
+> Please think about usability, too. Forcing people to fiddle with rows 
+> and cols, requiring knowledge about font sizes and stuff is at least 
+> inappropriate. Folks are used to think in resolutions, that's what they 
+> understand, and that's what is most obvious. I can't imagine anyone 
+> caring about the amount of rows or columns on a text screen.
 
+Actually it is normal. Changing a console via stty has been around 
+forever. When you ask what size is your VGA console you say 80x25. Now why 
+is that. The main thing is people think of it as a text mode and second
+you really can't change it or boot to to many different size resolutions.
+Does this mean VGA console should be limited? NO!!! I plan to make vgacon 
+some day changable in window size. So the final answer is:
+
+Portablity. 
+
+You could use stty or some other program using the tty layer to change the 
+resolution on any type of hardware running any type of console driver. The 
+next best thing is some day we can get ride of con_switch in the upper 
+console layers. We can just use set_font and vc_resize on VT switching 
+since that is all you are doing on vc_switching. 
+
+P.S
+   If you look at struct winsize you have a ws_xpixel and a ws_ypixel 
+field. The question is now do we place the exact size of the screen in 
+pixels or vc->font.width[height]*width[height]. So it is stty program 
+that is limiting and not the tty layer. In theory you could write fbset to 
+use the proper tty ioctl to do this.
+ 
+> BTW: What happens currently if I instruct console to replace the current 
+> font with a bigger one (if that's possible at run-time at all) ?
+
+It should work.
 
 
 

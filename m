@@ -1,19 +1,28 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: Merge of Luca and Ben's sysfs work for Radeon
-Date: Wed, 24 Sep 2003 23:05:24 -0700 (PDT)
+From: Hetz Ben Hamo <hetz@softier.com>
+Subject: question about frame buffer "emulation"
+Date: Thu, 25 Sep 2003 10:14:35 +0300
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030925060524.24191.qmail@web14909.mail.yahoo.com>
+Message-ID: <200309251014.35544.hetz@softier.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1A2PFl-0008CN-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 24 Sep 2003 23:05:25 -0700
-Received: from web14909.mail.yahoo.com ([216.136.225.61])
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.22)
-	id 1A2PFk-0005Cg-OV
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 24 Sep 2003 23:05:24 -0700
+	id 1A2QWW-0005q4-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 25 Sep 2003 00:26:48 -0700
+Received: from sphere.barak.net.il ([212.150.48.98])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
+	id 1A2QWV-0002fT-TF
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Sep 2003 00:26:48 -0700
+Received: from abu-fatma.softier.local ([62.90.245.250])
+          by sphere.barak.net.il
+          (InterMail vK.4.04.00.00 201-232-137 license 858186d517cc18a2ca9cf19e4d4c6a54)
+          with ESMTP
+          id <20030925071335.HMEO22161.sphere@abu-fatma.softier.local>
+          for <linux-fbdev-devel@lists.sourceforge.net>;
+          Thu, 25 Sep 2003 10:13:35 +0300
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -24,55 +33,19 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Here is a sample of what sysfs looks like with the new radeon driver. I have an
-Intel 875 chipset so there are three buses: 0 - system, 1 - AGP, 2 - PCI. Note
-that the EDID block is available.
+Hi people,
 
-I was thinking about adding these attributes to the fb device: geometry,
-timings, interlaced, hsync, vsync. and then writing a new fbset command.
+I'm looking for a frame buffer "emulation" layer/app that can be shown inside 
+X11, so I can write an application for frame-buffer and use this emulation 
+for testing without switching back and forth from X11 to FB...
 
-[jonsmirl@smirl sys]$ ls
-block  bus  cdev  class  devices  firmware  power
-[jonsmirl@smirl sys]$ ls bus/pci/devices
-0000:00:00.0  0000:00:1d.1  0000:00:1d.7  0000:00:1f.1  0000:00:1f.5 
-0000:02:01.0
-0000:00:01.0  0000:00:1d.2  0000:00:1e.0  0000:00:1f.2  0000:01:00.0 
-0000:02:02.0
-0000:00:1d.0  0000:00:1d.3  0000:00:1f.0  0000:00:1f.3  0000:01:00.1 
-0000:02:0c.0
-[jonsmirl@smirl sys]$ ls bus/pci/drivers
-agpgart-intel  Intel ICH           parport_pc  radeonfb    uhci-hcd
-e1000          Intel ICH Joystick  PCI IDE     RZ1000 IDE
-ehci_hcd       ohci1394            PIIX IDE    serial
-[jonsmirl@smirl sys]$ ls bus/pci/drivers/radeonfb
-0000:01:00.0  0000:01:00.1  new_id
-[jonsmirl@smirl sys]$ ls class
-graphics  i2c-adapter  input  net  scsi_device  scsi_host  tty  usb  usb_host
-[jonsmirl@smirl sys]$ ls class/graphics
-fb0
-[jonsmirl@smirl sys]$ ls class/graphics/fb0
-dev  device  driver
-[jonsmirl@smirl sys]$  ls class/graphics/fb0/device
-class   detach_state  edid1  i2c-1  i2c-3  power     subsystem_device  vendor
-config  device        i2c-0  i2c-2  irq    resource  subsystem_vendor
-[jonsmirl@smirl sys]$ ls class/graphics/fb0/driver
-0000:01:00.0  0000:01:00.1  new_id
-[jonsmirl@smirl sys]$
+Does anyone know about such an application?
 
+Thanks a lot,
+Hetz
 
-
-
-=====
-Jon Smirl
-jonsmirl@yahoo.com
-
-__________________________________
-Do you Yahoo!?
-The New Yahoo! Shopping - with improved product search
-http://shopping.yahoo.com
 
 
 -------------------------------------------------------

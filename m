@@ -1,151 +1,89 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [-mm patch] kill include/video/edid.h
-Date: Mon, 21 Mar 2005 04:53:43 +0800
-Message-ID: <200503210453.43894.adaplas@hotpop.com>
-References: <20050320192915.GR4449@stusta.de>
-Reply-To: adaplas@pol.net
+Subject: Re: [PATCH 6/7] [RESEND] neofb: mmio fixes
+Date: Mon, 21 Mar 2005 05:05:36 +0800
+Message-ID: <200503210505.36493.adaplas@hotpop.com>
+References: <200503202109.43080.adaplas@hotpop.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-In-Reply-To: <20050320192915.GR4449@stusta.de>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1DD7dD-0007GJ-4s
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Mar 2005 13:06:43 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DD7dB-00039v-HY
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Mar 2005 13:06:43 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id BE2CAFDDC3E
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 20 Mar 2005 21:06:25 +0000 (UTC)
+In-Reply-To: <200503202109.43080.adaplas@hotpop.com>
 Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Adrian Bunk <bunk@stusta.de>, adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Marek Marczykowski <marmarek@staszic.waw.pl>
 
-On Monday 21 March 2005 03:29, Adrian Bunk wrote:
-> This patch removes some completely unused code.
->
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
->
-> ---
->
->  arch/i386/boot/compressed/misc.c |    1 -
->  arch/i386/kernel/setup.c         |    4 ----
->  arch/x86_64/kernel/setup.c       |    3 ---
->  drivers/video/fbmon.c            |    1 -
->  drivers/video/vesafb.c           |    3 ---
->  include/asm-i386/setup.h         |    1 -
->  include/asm-x86_64/bootsetup.h   |    1 -
->  include/video/edid.h             |   27 ---------------------------
->  8 files changed, 41 deletions(-)
->
-> --- linux-2.6.11-mm4-full/arch/i386/kernel/setup.c.old	2005-03-20
-> 20:06:06.000000000 +0100 +++
-> linux-2.6.11-mm4-full/arch/i386/kernel/setup.c	2005-03-20
-> 20:06:45.000000000 +0100 @@ -43,8 +43,6 @@
->  #include <linux/nodemask.h>
->  #include <linux/kexec.h>
->
-> -#include <video/edid.h>
-> -
->  #include <asm/apic.h>
->  #include <asm/e820.h>
->  #include <asm/mpspec.h>
-> @@ -118,7 +116,6 @@
->  	unsigned short length;
->  	unsigned char table[0];
->  };
-> -struct edid_info edid_info;
->  struct ist_info ist_info;
->  struct e820map e820;
->
-> @@ -1468,7 +1465,6 @@
->   	ROOT_DEV = old_decode_dev(ORIG_ROOT_DEV);
->   	drive_info = DRIVE_INFO;
->   	screen_info = SCREEN_INFO;
-> -	edid_info = EDID_INFO;
->  	apm_info.bios = APM_BIOS_INFO;
->  	ist_info = IST_INFO;
->  	saved_videomode = VIDEO_MODE;
-> --- linux-2.6.11-mm4-full/arch/x86_64/kernel/setup.c.old	2005-03-20
-> 20:04:42.000000000 +0100 +++
-> linux-2.6.11-mm4-full/arch/x86_64/kernel/setup.c	2005-03-20
-> 20:07:11.000000000 +0100 @@ -48,7 +48,6 @@
->  #include <asm/smp.h>
->  #include <asm/msr.h>
->  #include <asm/desc.h>
-> -#include <video/edid.h>
->  #include <asm/e820.h>
->  #include <asm/dma.h>
->  #include <asm/mpspec.h>
-> @@ -100,7 +99,6 @@
->  	unsigned char table[0];
->  };
->
-> -struct edid_info edid_info;
->  struct e820map e820;
->
->  extern int root_mountflags;
-> @@ -523,7 +521,6 @@
->   	ROOT_DEV = old_decode_dev(ORIG_ROOT_DEV);
->   	drive_info = DRIVE_INFO;
->   	screen_info = SCREEN_INFO;
-> -	edid_info = EDID_INFO;
->  	saved_video_mode = SAVED_VIDEO_MODE;
->  	bootloader_type = LOADER_TYPE;
->
-> --- linux-2.6.11-mm4-full/drivers/video/fbmon.c.old	2005-03-20
-> 20:03:56.000000000 +0100 +++
-> linux-2.6.11-mm4-full/drivers/video/fbmon.c	2005-03-20 20:04:27.000000000
-> +0100 @@ -34,7 +34,6 @@
->  #include <asm/prom.h>
->  #include <asm/pci-bridge.h>
->  #endif
-> -#include <video/edid.h>
->  #include "edid.h"
->
->  /*
-> --- linux-2.6.11-mm4-full/drivers/video/vesafb.c.old	2005-03-20
-> 20:04:12.000000000 +0100 +++
-> linux-2.6.11-mm4-full/drivers/video/vesafb.c	2005-03-20 20:04:18.000000000
-> +0100 @@ -19,9 +19,6 @@
->  #include <linux/fb.h>
->  #include <linux/ioport.h>
->  #include <linux/init.h>
-> -#ifdef __i386__
-> -#include <video/edid.h>
-> -#endif
->  #include <asm/io.h>
->  #include <asm/mtrr.h>
->
-> --- linux-2.6.11-mm4-full/arch/i386/boot/compressed/misc.c.old	2005-03-20
-> 20:05:55.000000000 +0100 +++
-> linux-2.6.11-mm4-full/arch/i386/boot/compressed/misc.c	2005-03-20
-> 20:05:58.000000000 +0100 @@ -12,7 +12,6 @@
->  #include <linux/linkage.h>
->  #include <linux/vmalloc.h>
->  #include <linux/tty.h>
-> -#include <video/edid.h>
->  #include <asm/io.h>
->  #include <asm/page.h>
->
-> --- linux-2.6.11-mm4-full/include/asm-x86_64/bootsetup.h.old	2005-03-20
-> 20:07:33.000000000 +0100 +++
-> linux-2.6.11-mm4-full/include/asm-x86_64/bootsetup.h	2005-03-20
-> 20:07:44.000000000 +0100 @@ -25,7 +25,6 @@
->  #define KERNEL_START (*(unsigned int *) (PARAM+0x214))
->  #define INITRD_START (*(unsigned int *) (PARAM+0x218))
->  #define INITRD_SIZE (*(unsigned int *) (PARAM+0x21c))
-> -#define EDID_INFO (*(struct edid_info *) (PARAM+0x140))
->  #define EDD_NR     (*(unsigned char *) (PARAM+EDDNR))
->  #define EDD_MBR_SIG_NR (*(unsigned char *) (PARAM+EDD_MBR_SIG_NR_BUF))
->  #define EDD_MBR_SIGNATURE ((unsigned int *) (PARAM+EDD_MBR_SIG_BUF))
-> --- linux-2.6.11-mm4-full/include/asm-i386/setup.h.old	2005-03-20
-> 20:07:52.000000000 +0100 +++
-> linux-2.6.11-mm4-full/include/asm-i386/setup.h	2005-03-20
-> 20:07:55.000000000 +0100 @@ -55,7 +55,6 @@
->  #define KERNEL_START (*(unsigned long *) (PARAM+0x214))
->  #define INITRD_START (*(unsigned long *) (PARAM+0x218))
->  #define INITRD_SIZE (*(unsigned long *) (PARAM+0x21c))
-> -#define EDID_INFO   (*(struct edid_info *) (PARAM+0x140))
->  #define EDD_NR     (*(unsigned char *) (PARAM+EDDNR))
->  #define EDD_MBR_SIG_NR (*(unsigned char *) (PARAM+EDD_MBR_SIG_NR_BUF))
->  #define EDD_MBR_SIGNATURE ((unsigned int *) (PARAM+EDD_MBR_SIG_BUF))
+Forgot to sign off.
 
-Not this one.  Code that grabs the EDID block using the video BIOS is in video.S.
-Currently, there's no driver that uses this but it's an acceptable backup for drivers
-that want the EDID block but has no i2c, or i2c probing fails.
+  Changes in neo_map_mmio to make neofb working on NM2070,
+  NM2090, NM2093.
 
-Tony
+From: Marek Marczykowski <marmarek@staszic.waw.pl>
+Signed-off-by: Marek Marczykowski <marmarek@staszic.waw.pl>
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
+---
+
+ neofb.c |   22 +++++++++++++++++++++-
+ 1 files changed, 21 insertions(+), 1 deletion(-)
+
+diff -Nru a/drivers/video/neofb.c b/drivers/video/neofb.c
+--- a/drivers/video/neofb.c	2005-03-12 23:23:15 +08:00
++++ b/drivers/video/neofb.c	2005-03-19 05:33:32 +08:00
+@@ -1691,7 +1691,27 @@
+ 
+ 	DBG("neo_map_mmio");
+ 
+-	info->fix.mmio_start = pci_resource_start(dev, 1);
++	switch (info->fix.accel) {
++		case FB_ACCEL_NEOMAGIC_NM2070:
++			info->fix.mmio_start = pci_resource_start(dev, 0)+
++				0x100000;
++			break;
++		case FB_ACCEL_NEOMAGIC_NM2090:
++		case FB_ACCEL_NEOMAGIC_NM2093:
++			info->fix.mmio_start = pci_resource_start(dev, 0)+
++				0x200000;
++			break;
++		case FB_ACCEL_NEOMAGIC_NM2160:
++		case FB_ACCEL_NEOMAGIC_NM2097:
++		case FB_ACCEL_NEOMAGIC_NM2200:
++		case FB_ACCEL_NEOMAGIC_NM2230:
++		case FB_ACCEL_NEOMAGIC_NM2360:
++		case FB_ACCEL_NEOMAGIC_NM2380:
++			info->fix.mmio_start = pci_resource_start(dev, 1);
++			break;
++		default:
++			info->fix.mmio_start = pci_resource_start(dev, 0);
++	}
+ 	info->fix.mmio_len = MMIO_SIZE;
+ 
+ 	if (!request_mem_region
+
+
+
+
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

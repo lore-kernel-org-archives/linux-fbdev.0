@@ -1,18 +1,24 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: [2.6 patch] drivers/video/console/fbcon.c: fix a check after use
-Date: Sun, 27 Mar 2005 22:41:19 +0200
-Message-ID: <20050327204119.GY4285@stusta.de>
+From: Miles Lane <miles.lane@gmail.com>
+Subject: Re: 2.6.12-rc1-mm2 -- nvidiafb driver gives black screen
+Date: Fri, 25 Mar 2005 23:50:56 -0500
+Message-ID: <a44ae5cd050325205012399ccc@mail.gmail.com>
+References: <a44ae5cd0503242023233dc23f@mail.gmail.com>
+	 <20050324203118.345c6004.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DFeZa-00048t-H8
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 27 Mar 2005 12:41:26 -0800
-Received: from emailhub.stusta.mhn.de ([141.84.69.5] helo=mailout.stusta.mhn.de)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
-	id 1DFeZZ-0000OV-Lp
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 27 Mar 2005 12:41:26 -0800
-Content-Disposition: inline
+	id 1DF3GJ-0003Y4-Bd
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 25 Mar 2005 20:51:03 -0800
+Received: from wproxy.gmail.com ([64.233.184.192])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1DF3GH-0005Wu-Uw
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 25 Mar 2005 20:51:03 -0800
+Received: by wproxy.gmail.com with SMTP id 69so873507wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 25 Mar 2005 20:50:56 -0800 (PST)
+In-Reply-To: <20050324203118.345c6004.akpm@osdl.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -24,32 +30,52 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: Andrew Morton <akpm@osdl.org>
+Cc: khali@linux-fr.org, linux-fbdev-devel@lists.sourceforge.net
 
-This patch fixes a check after use found by the Coverity checker.
+On Thu, 24 Mar 2005 20:31:18 -0800, Andrew Morton <akpm@osdl.org> wrote:
+> 
+> (Added the mailing list - trust that's ok)
+> 
+> Miles Lane <miles.lane@gmail.com> wrote:
+> >
+> > Kernel command line: BOOT_IMAGE=Linux ro root=306 video=nvidiafb
+> > init=/etc/init lang=us apm=power-off nomce
+> > nvidiafb: nVidia device/chipset 10DE0312
+> > nvidiafb: nVidia Corporation NV31 [GeForce FX 5600]
+> > nvidiafb: CRTC0 found
+> > nvidiafb: CRTC1 not found
+> > nvidiafb: EDID found from BUS1
+> > nvidiafb: CRTC 0 appears to have a CRT attached
+> > nvidiafb: Using CRT on CRTC 0
+> >
+> > >> I am wondering whether the following two lines point to the problem.
+> >
+> > allocation failed: out of vmalloc space - use vmalloc=<size> to increase size.
+> > nvidiafb: cannot ioremap FB base
+> 
+> Quite possibly.
+> 
+> I'll do rc2-mm3 tonight - please test that.  It has fixes.
 
-Signed-off-by: Adrian Bunk <bunk@fs.tum.de>
+Hello Andrew,
 
---- linux-2.6.12-rc1-mm1-full/drivers/video/console/fbcon.c.old	2005-03-23 04:53:20.000000000 +0100
-+++ linux-2.6.12-rc1-mm1-full/drivers/video/console/fbcon.c	2005-03-23 04:53:44.000000000 +0100
-@@ -906,10 +906,13 @@ static void fbcon_init(struct vc_data *v
- 	struct vc_data *svc = *default_mode;
- 	struct display *t, *p = &fb_display[vc->vc_num];
- 	int logo = 1, new_rows, new_cols, rows, cols, charcnt = 256;
--	int cap = info->flags;
-+	int cap;
- 
- 	if (info_idx == -1 || info == NULL)
- 	    return;
-+
-+	cap = info->flags;
-+
- 	if (vc != svc || logo_shown == FBCON_LOGO_DONTSHOW ||
- 	    (info->fix.type == FB_TYPE_TEXT))
- 		logo = 0;
+mm3 did not fix the problem.  I still get a blank framebuffer console.
+I still get these two errors:
+allocation failed: out of vmalloc space - use vmalloc=<size> to increase size.
+nvidiafb: cannot ioremap FB base
+Also, I still get the /sys listing Oops when listing the i2c entries
+for the nvidiafb.
+Lastly, I get the Oops that halts booting if I include certain other
+i2c drivers in the build.
+Removing nvidiafb from the build allows me to get a completely usable
+build of 2.6.12-rc1-mm3.
 
+I haven't heard anything from the author of the nvidiafb driver about
+the various issues I have reported.
+
+Thanks,
+               Miles
 
 
 -------------------------------------------------------

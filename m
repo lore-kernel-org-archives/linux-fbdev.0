@@ -1,23 +1,21 @@
-From: Jurriaan <thunder7@xs4all.nl>
-Subject: accelerated radeonfb produces artifacts on scrolling in 2.6.7
-Date: Wed, 16 Jun 2004 20:24:15 +0200
+From: David Eger <eger@havoc.gtf.org>
+Subject: Re: accelerated radeonfb produces artifacts on scrolling in 2.6.7
+Date: Wed, 16 Jun 2004 14:41:45 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040616182415.GA8286@middle.of.nowhere>
-Reply-To: Jurriaan <thunder7@xs4all.nl>
+Message-ID: <20040616184145.GA12673@havoc.gtf.org>
+References: <20040616182415.GA8286@middle.of.nowhere>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Baf5e-0001pt-Kz
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 11:24:50 -0700
-Received: from smtp-out2.xs4all.nl ([194.109.24.12])
+	id 1BafM9-0004Ck-TF
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 11:41:53 -0700
+Received: from havoc.gtf.org ([216.162.42.101])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Baf5e-0002EB-22
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 11:24:50 -0700
-Received: from zeeotter.xs4all.nl (zeeotter.xs4all.nl [80.126.31.149])
-	by smtp-out2.xs4all.nl (8.12.10/8.12.10) with ESMTP id i5GIOkb0033578
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 16 Jun 2004 20:24:47 +0200 (CEST)
+	id 1BafM9-0006Nj-Ji
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 11:41:53 -0700
 Content-Disposition: inline
+In-Reply-To: <20040616182415.GA8286@middle.of.nowhere>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,41 +27,28 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
+To: Jurriaan <thunder7@xs4all.nl>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-The radeonfb driver in 2.6.7 produces some interesting artifacts on
-scrolling, both scrolling horizontally and vertically.
+On Wed, Jun 16, 2004 at 08:24:15PM +0200, Jurriaan wrote:
+> The radeonfb driver in 2.6.7 produces some interesting artifacts on
+> scrolling, both scrolling horizontally and vertically.
 
-When scrolling vertically (in mutt, in slrn, in less) some lines
-move horizontally, and corruption occurs. Not all scrolling produces
-artifacts, but fairly often.
+The corruption you are talking about is, I believe, caused by a couple of things:
 
-When scrolling horizontally (most obvious in angband -mcu with the
-option 'keep the screen centered' on) corruption appears at once.
+(1) we're not issuing enough fifo_wait()'s around our accel engine
+    and pan register writes.
+(2) there's some disconnect between writing to fb memory, panning, and
+    copyarea()/fillrect() calls
 
-Booting with 'noaccel' fixes the problems, but is slow, of course.
+I sent a hack of a fix for this to Ben a week ago, adding a call to radeonfb_sync()
+at the end of radeonfb_copyarea() and radeonfb_fillrect().  This seems to fix the
+problem for me, but you *shouldn't* have to do this.  
 
-0000:01:00.0 VGA compatible controller: ATI Technologies Inc RV350 AQ [Radeon 9600]
+I haven't tracked it any further than this.  My next guess would be auditing register 
+writes and making sure there are enough fifo_wait()'s...
 
-Kernel command line: root=/dev/md3 video=radeonfb:1600x1200-16@85
-radeonfb: Found Intel x86 BIOS ROM Image
-radeonfb: Retreived PLL infos from BIOS
-radeonfb: Reference=27.00 MHz (RefDiv=12) Memory=324.00 Mhz, System=182.00 MHz
-radeonfb: Monitor 1 type CRT found
-radeonfb: EDID probed
-radeonfb: Monitor 2 type no found
-radeonfb: ATI Radeon AQ  SDR SGRAM 128 MB
-Console: switching to colour frame buffer device 133x54
-
-Any hints would be appreciated.
-
-Jurriaan
--- 
-All lies all lies all schemes all schemes
-Every winner means a loser in the western dream.
-	News Model Army - Western Dream
-Debian (Unstable) GNU/Linux 2.6.7-rc3-mm2 2x6078 bogomips load load 1.74
+-dte
 
 
 -------------------------------------------------------

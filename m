@@ -1,23 +1,12 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: Re: [PATCH 5/10] nvidiafb: Fix i2c error handling
-Date: Wed, 9 Mar 2005 13:01:13 +0800
-Message-ID: <200503091301.13272.adaplas@hotpop.com>
-References: <200503060816.43987.adaplas@hotpop.com> <7v8y51k08t.fsf@assigned-by-dhcp.cox.net>
+Subject: Re: [Linux-fbdev-users] RE: Crosstool for EBD9312..
+Date: Wed, 9 Mar 2005 13:47:19 +0800
+Message-ID: <200503091347.19442.adaplas@hotpop.com>
+References: <4EE0CBA31942E547B99B3D4BFAB348113A4797@mail.esn.co.in>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D8tKX-00035Z-6y
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 08 Mar 2005 21:01:57 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.71])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1D8tKV-0004YE-RL
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 08 Mar 2005 21:01:57 -0800
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 7EE6C149412E
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed,  9 Mar 2005 05:01:18 +0000 (UTC)
-In-Reply-To: <7v8y51k08t.fsf@assigned-by-dhcp.cox.net>
+In-Reply-To: <4EE0CBA31942E547B99B3D4BFAB348113A4797@mail.esn.co.in>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -30,15 +19,58 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Junio C Hamano <junkio@cox.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-users@lists.sourceforge.net, "Mukund JB." <mukundjb@esntechnologies.co.in>, linux-fbdev-devel@lists.sourceforge.net
+Cc: geert@linux-m68k.org, Michael Burian <dynmail1@gassner-waagen.at>, komal_shah802003@yahoo.com
 
-On Sunday 06 March 2005 09:54, Junio C Hamano wrote:
-> Could you tell me (and the list) what version of the source tree
-> these patches are relative to?  I do not think Linux 2.6.11 has
-> merged nvidiafb yet.
+On Monday 07 March 2005 21:36, Mukund JB. wrote:
+> Hi all,
+>
+> I also have a doubt regarding Accelarated Display driver.
+> Would u define an Accelerated display driver?
 
-The diff is against 2.6.11-mm1.
+An accelerated driver means that most of the drawing is done by
+the GPU (the processor of the graphics card) while an unaccelerated driver
+implies that drawing is done by the main CPU.
+
+>
+> Is it the driver to a Accelerated display card?
+
+The driver is implementing the features of the card.
+
+>
+> 			Or
+>
+> Is it like accelerated display driver has a different meaning. I mean,
+> it has the set features which will not be there on a normal driver for
+> the same card?
+>
+
+The effect of software versus accelerated is the same.  The main difference
+is that the GPU does the work if accelerated, the CPU if not.  And the CPU
+version will be slower because it has to do other work besides drawing, and
+the data that is processed by the CPU has to go to and from the bus.  The
+GPU has no such constraints.
+
+> How can I implement a accelerated driver?
+
+You need to know the details of the particular chipset you are working on.
+
+> Can I use the existing code of a framebuffer driver & do that? I heard
+
+Yes, if the framebuffer driver implements console acceleration.
+
+> in the groups saying framebuffer driver is not an accelerated driver.
+>
+
+Yes, the framebuffer driver only implements acceleration for the console.
+
+> Please take the pain of explaining how a framebuffer driver is different
+> form accelerated driver?
+
+Essentially, a framebuffer driver only exposes the video memory to its
+clients, period.  You can read from or write to this memory, but you have
+to use the CPU to do this.  In order to implement acceleration, you need
+to know how to talk to the GPU.
 
 Tony
 

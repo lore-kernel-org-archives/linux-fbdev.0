@@ -1,25 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: rivafb / DDC/CI problem
-Date: Wed, 15 Sep 2004 05:15:14 +0800
+Subject: [PATCH] fbdev: rivafb I2C timings too fast
+Date: Wed, 15 Sep 2004 05:53:20 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200409150515.15015.adaplas@hotpop.com>
-References: <1095177461.7045.24.camel@tom>
+Message-ID: <200409150553.20272.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C7Kdp-00021q-Rn
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 14 Sep 2004 14:15:09 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1C7Kdn-0008CZ-8m
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 14 Sep 2004 14:15:09 -0700
+	id 1C7LFW-000160-5z
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 14 Sep 2004 14:54:06 -0700
+Received: from smtp-out.hotpop.com ([38.113.3.51])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
+	id 1C7LFV-0000nh-FC
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 14 Sep 2004 14:54:06 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 8239783CF02
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 14 Sep 2004 21:14:54 +0000 (UTC)
-In-Reply-To: <1095177461.7045.24.camel@tom>
+	by smtp-out.hotpop.com (Postfix) with SMTP id 093C9720EF
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 14 Sep 2004 21:53:51 +0000 (UTC)
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,25 +29,36 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Nicolas Boichat <nicolas@boichat.ch>, adaplas@pol.net
-Cc: akpm@osdl.org, torvalds@osdl.org, linux-fbdev-devel@lists.sourceforge.net, Greg KH <greg@kroah.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Nicolas Boichat <nicolas@boichat.ch>
 
-On Tuesday 14 September 2004 23:57, Nicolas Boichat wrote:
-> Hello,
->
-> I have a problem with this patch :
-> rivafb-directcolor-mode-and-miscellaneous-fixes.patch
->
-> It has been included in 2.6.8.1-mm1, and in 2.6.9-rc1.
->
-> The following part of the patch breaks DDC/CI implementation (monitor
-> control by software, see http://sourceforge.net/projects/ddccontrol/),
-> as bits are sent too fast to the monitor on the I2C bus:
->
+The timings in rivafb's i2c, although enough for EDID reading, are too fast
+for some user applications. Reported by Nicolas Boichat
+<nicolas@boichat.ch>.
 
-Ok, will reverse.
+This patch increases the timeouts.
 
-Tony
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
+---
+
+ rivafb-i2c.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
+
+diff -uprN linux-2.6.9-rc1-mm5-orig/drivers/video/riva/rivafb-i2c.c linux-2.6.9-rc1-mm5/drivers/video/riva/rivafb-i2c.c
+--- linux-2.6.9-rc1-mm5-orig/drivers/video/riva/rivafb-i2c.c	2004-09-13 19:50:17.000000000 +0800
++++ linux-2.6.9-rc1-mm5/drivers/video/riva/rivafb-i2c.c	2004-09-15 05:38:19.307344544 +0800
+@@ -105,9 +105,8 @@ static int riva_setup_i2c_bus(struct riv
+ 	chan->algo.setscl		= riva_gpio_setscl;
+ 	chan->algo.getsda		= riva_gpio_getsda;
+ 	chan->algo.getscl		= riva_gpio_getscl;
+-	chan->algo.udelay		= 5;
+-	chan->algo.mdelay               = 5;
+-	chan->algo.timeout		= 10;
++	chan->algo.udelay		= 40;
++	chan->algo.timeout		= 20;
+ 	chan->algo.data 		= chan;
+ 
+ 	i2c_set_adapdata(&chan->adapter, chan);
 
 
 

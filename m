@@ -1,52 +1,63 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [Linux-fbdev-devel] Re: [PATCH] vesafb memory size mismatch
-Date: Sat, 2 Oct 2004 04:22:14 +0800
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <200410020422.15936.adaplas@hotpop.com>
-References: <20041001153624.267a808b@homer.gnuage.org> <87acv6l9ru.fsf@bytesex.org>
-Reply-To: adaplas@pol.net
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Problem about FB on an iBook G4
+Date: Sat, 2 Oct 2004 16:59:54 +0200 (MEST)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.GSO.4.61.0410021657100.11545@waterleaf.sonytel.be>
+References: <3535634202.3420235356@huawei.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1CDlNn-0007Xp-2P
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 02 Oct 2004 08:01:11 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1CDlMj-0003yR-Ea
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 02 Oct 2004 08:01:10 -0700
+In-Reply-To: <3535634202.3420235356@huawei.com>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S266460AbUJAUXw@vger.kernel.org>
-In-Reply-To: <87acv6l9ru.fsf@bytesex.org>
-Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, Gerd Knorr <kraxel@bytesex.org>, linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>
+To: jiangning 39481 <jiangnuts@huawei.com>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Friday 01 October 2004 23:48, Gerd Knorr wrote:
-> +	/*   size_vmode -- that is the amount of memory needed for the
-> +	 *                 used video mode, i.e. the minimum amount of
-> +	 *                 memory we need. */
-> +	size_vmode = (vesafb_defined.xres * vesafb_defined.yres *
-> +		vesafb_defined.bits_per_pixel) >> 3;
-> +
-> +	/*   size_total -- all video memory we have. Used for mtrr
-> +	 *                 entries and bounds checking. */
-> +	size_total = screen_info.lfb_size * 65536;
-> +	if (size_total < size_vmode)
-> +		size_total = size_vmode;
-> +	if (vram)
-> +		size_total = vram * 1024 * 1024;
-> +
-> +	/*   size_remap -- the amount of video memory we are going to
-> +	 *                 use for vesafb.  With modern cards it is no
-> +	 *                 option to simply use size_total as that
-> +	 *                 wastes plenty of kernel address space. */
-> +	size_remap  = size_vmode * 2;
-> +	if (size_remap > size_total)
-> +		size_remap = size_total;
-> +	vesafb_fix.smem_len = size_remap;
+On Sat, 2 Oct 2004, jiangning 39481 wrote:
+> > The radeonfb in that kernel may be too old for your Radeon. What 
+> > does `lspci
+> > -v' say?
+> > 
+> Part of 'lspci -v' I think useful are as follows:
+> 00:0b.0 Host bridge:Apple Computer Inc.UniNarth 2 AGP
+>             Flags:bus master,66Mhz,medium devsel,latency 16
+> 00:10.0 VGA compatible controller:ATI Technologies Inc:Unknown devce 5c63 (rev 01) (prog-if 00 [VGA])
 
-Probably a typo, but shouldn't it be...
+This Radeon chip is not even recognized by the latest radeonfb in 2.6.9-rc3.
 
-size_remap = size_vmode * 2;
-if (vram)
-	size_remap = vram * 1024 * 1024;
-if (size_remap > size_total)
-	size_remap = size_total
+Gr{oetje,eeting}s,
 
-... so vram doesn't mess up with mtrr and user and fbcon can multibuffer
-> size_vmode?
+						Geert
 
-Tony  
+P.S. Please don't remove linux-fbdev-devel@lists.sourceforge.net from the CC
+     list.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
+
+-------------------------------------------------------
+This SF.net email is sponsored by: IT Product Guide on ITManagersJournal
+Use IT products in your business? Tell us what you think of them. Give us
+Your Opinions, Get Free ThinkGeek Gift Certificates! Click to find out more
+http://productguide.itmanagersjournal.com/guidepromo.tmpl

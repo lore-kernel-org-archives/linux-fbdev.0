@@ -1,17 +1,15 @@
 From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: Much better framebuffer fixes.
-Date: 28 Mar 2003 03:15:23 +0800
+Subject: [PATCH]: vesafb - vram option
+Date: 28 Mar 2003 04:20:12 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1048792147.1086.28.camel@localhost.localdomain>
-References: <Pine.GSO.4.21.0303271016300.26358-100000@vervain.sonytel.be>
+Message-ID: <1048796361.977.6.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from pine.compass.com.ph ([202.70.96.37])
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18yd8a-0007hB-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 27 Mar 2003 11:34:09 -0800
-In-Reply-To: <Pine.GSO.4.21.0303271016300.26358-100000@vervain.sonytel.be>
+	id 18ye9G-0003zY-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 27 Mar 2003 12:38:54 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,29 +20,64 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, 2003-03-27 at 17:18, Geert Uytterhoeven wrote:
-> On Thu, 27 Mar 2003, James Simmons wrote:
-> >  drivers/video/logo/logo.c       |   69 +++++------
-> 
-> Are you sure the change from logo type to logo depth in (fb_)find_logo() won't
-> have any side effects? After this change, you may receive a different type of
-> logo than you requested.
-> 
+Attached is a diff against linux-2.5.66.
 
+- Added vesafb option to specify amount of video RAM to remap.  This is
+perhaps useful for people with machines with large amounts of system and
+graphics RAM and vesafb fails to load due to failure to ioremap.
 
-I agree.  Take the case of Directcolor. At 16-bpp, it needs
-linux_logo_vga16, not linux_logo_clut224. Also, monochrome at 8bpp needs
-linux_logo_mono, certainly not linux_logo_clut224.  There are obviously
-other similar cases.
+To use:  to remap only 1MiB of ram, add the ff. in your boot option:
 
-I think the original logo code in both logo.c and fbmem.c, though a bit
-more confusing, provides better ways of choosing the correct logo.
+video=vesafb:vram:1,<your other options>
 
 Tony
 
+diff -Naur linux-2.5.66-orig/Documentation/fb/vesafb.txt linux-2.5.66/Documentation/fb/vesafb.txt
+--- linux-2.5.66-orig/Documentation/fb/vesafb.txt	2003-03-26 02:24:54.000000000 +0000
++++ linux-2.5.66/Documentation/fb/vesafb.txt	2003-03-27 20:10:01.000000000 +0000
+@@ -146,7 +146,9 @@
+ 
+ mtrr	setup memory type range registers for the vesafb framebuffer.
+ 
+-
++vram:n  remap 'n' MiB of video RAM. If 0 or not specified, remap all
++	available video RAM. 
++  
+ Have fun!
+ 
+   Gerd
+diff -Naur linux-2.5.66-orig/drivers/video/vesafb.c linux-2.5.66/drivers/video/vesafb.c
+--- linux-2.5.66-orig/drivers/video/vesafb.c	2003-02-16 00:49:23.000000000 +0000
++++ linux-2.5.66/drivers/video/vesafb.c	2003-03-27 20:01:11.000000000 +0000
+@@ -50,7 +50,7 @@
+ 
+ static int             inverse   = 0;
+ static int             mtrr      = 0;
+-
++static int        vram __initdata = 0;
+ static int             pmi_setpal = 0;	/* pmi for palette changes ??? */
+ static int             ypan       = 0;  /* 0..nothing, 1..ypan, 2..ywrap */
+ static unsigned short  *pmi_base  = 0;
+@@ -206,6 +206,8 @@
+ 			pmi_setpal=1;
+ 		else if (! strcmp(this_opt, "mtrr"))
+ 			mtrr=1;
++		else if (! strncmp(this_opt, "vram:", 5))
++			vram = simple_strtoul(this_opt+5, NULL, 0);
+ 	}
+ 	return 0;
+ }
+@@ -226,6 +228,8 @@
+ 	vesafb_defined.yres = screen_info.lfb_height;
+ 	vesafb_fix.line_length = screen_info.lfb_linelength;
+ 	vesafb_fix.smem_len = screen_info.lfb_size * 65536;
++	if (vram && vram * 1024 * 1024 < vesafb_fix.smem_len)
++		vesafb_fix.smem_len = vram * 1024 * 1024;
+ 	vesafb_fix.visual   = (vesafb_defined.bits_per_pixel == 8) ?
+ 		FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
+ 
 
 
 

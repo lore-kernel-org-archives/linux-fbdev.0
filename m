@@ -1,96 +1,64 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: Re: [Linux-fbdev-devel] DRM and pci_driver conversion
-Date: Thu, 23 Oct 2003 14:31:44 -0700 (PDT)
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20031023213144.66685.qmail@web14916.mail.yahoo.com>
-References: <1066943415.662.9.camel@leguin>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [FBDEV UPDATE] Newer patch.
+Date: Thu, 23 Oct 2003 23:50:48 +0100 (BST)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.LNX.4.44.0310232343410.21561-100000@phoenix.infradead.org>
+References: <20031023144315.GA667@phunnypharm.org>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <1066943415.662.9.camel@leguin>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 1ACoOy-0005RH-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 23 Oct 2003 15:57:56 -0700
+Received: from [213.86.99.234] (helo=phoenix.infradead.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.22)
+	id 1ACoIH-0008NF-6z
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Oct 2003 15:51:01 -0700
+In-Reply-To: <20031023144315.GA667@phunnypharm.org>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Eric Anholt <eta@lclark.edu>, kronos@kronoz.cjb.net
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, dri-devel <dri-devel@lists.sourceforge.net>
+To: Ben Collins <bcollins@debian.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-I don't think DRM drivers are doing things correctly yet. DRM is missing the
-code for marking PCI resources as being in use while DRM is using them. This
-could lead to problems with hotplug.  XFree is also mapping PCI ROMs in without
-informing the kernel and that can definitely cause problems. I'm looking at
-adding the resource marking code right now.
 
-I am not a fan of having two device drivers (DRM and FB) trying to control the
-same piece of hardware, but if we are going to insist on doing it we need to do
-it in a way where both drivers work and mark the resources in use independent
-of the order in which they are loaded.
+> The cursor has changed from a nice underline to a solid white block. 
 
-So I think we need to implement both the old and new PCI ID schemes and
-fallback to the
-old one if the other driver is present. DRM also needs to add code marking
-resources in use which will also conflict with framebuffer. 
+I seen the problem. Its the wrong color for the background color for the 
+cursor. I haven't been able to figure out why it went wrong. The specs are 
+not to clear on this.
 
-It would flow something like this:
-new style probe
-if (new probe has device)
-   mark resources in use
-else
-   do old style probe (make sure card is really there)
-   assume other driver has marked resources in use
+> Not only that,
+> but the block is bigger than the font it is over (if I am on top of
+> adjacent letters, it covers the entire letter I am on, plus a couple of
+> pixels of the letter to the right).
 
-The framebuffer drivers that have DRM parallels would need to implement the
-same code. That way it won't matter what order things get loaded.
+Ug. That code is straight from the old driver. Will fix.
 
-A second possibility would be to implement a tiny stub for just attaching to
-the PCI ID and resources. Then framebuffer and DRM could both share the stub.
+> In additition, the cursor now disappears while typing, and navigating
+> around (on the command line left and right, or even in an editor when
+> moving the cursor up and down). This disappearing while typing or
+> navigating is _really_ annoying. If I go left or right a lot, I have to
+> keep stopping to see where the cursor actually is.
 
-A third scheme would disallow mixing DRM and FB. A DRM-console module would be
-written to replace FB console. Accelerated console could be written using DRM
-since it already knows about the 3D hardware. This would fix the problem with
-radeonfb mapping upto 256K of memory into the 1GB kernel space and pushing all
-the page tables high. Everything would be coordinated in a single drive so
-there is no state saving on VT switch problem either.
+I seen this problem last night with the NVIDIA fbdev driver. I think I 
+know what the problem is. I will try a fix tonight. 
 
---- Eric Anholt <eta@lclark.edu> wrote:
-> On Thu, 2003-10-23 at 12:04, Kronos wrote:
-> > Il Mon, Oct 20, 2003 at 07:31:56PM -0700, Eric Anholt ha scritto: 
-> > > I recently committed a change to the DRM for Linux in DRI CVS that
-> > > converted it to use pci_driver and that probe system.  Unfortunately,
-> > > we've found that there is a conflict between the DRM now and at least
-> > > the radeon framebuffer.  Both want to attach to the same device, and
-> > > with pci_driver, the second one to come along doesn't get probe called
-> > > for that device.  Is there any way to mark things shared, or in some
-> > > other way get the DRM to attach to a device that's already attached to,
-> > > in the new model?
-> > 
-> > AFAIK no,  pci_dev only  stores one pointer  to the  driver. Two drivers
-> > fiddling with the same hw can be dangerous. What will happen if radeonfb
-> > starts using hw  accel, touching registers without  DRM knowing it? What
-> > is (IMHO) needed is a common  layer that works with hardware and exposes
-> > an interface to both radeonfb and DRM. I think that Jon Smirl is working
-> > on something like this.
-> 
-> Apparently loading DRM after radeonfb is okay.  Loading radeonfb after
-> DRM is okay as long as the DRM is not in use.  For some cards, the fb
-> after the DRM would still be okay (sis, tdfx at the moment, for
-> example), but it isn't the case on radeon, apparently.  Other than that
-> there aren't any issues I know of.
-> 
-> I've moved the Linux DRM to old-style probing as pci.txt described,
-> which hopefully restores the ability of fb and drm to coexist as well as
-> they have in the past.  I hope some linux developers can get this all
-> done right so that the two can coexist better.
-> 
-> -- 
-> Eric Anholt                                eta@lclark.edu          
-> http://people.freebsd.org/~anholt/         anholt@FreeBSD.org
-> 
-> 
 
-=====
-Jon Smirl
-jonsmirl@yahoo.com
 
-__________________________________
-Do you Yahoo!?
-The New Yahoo! Shopping - with improved product search
-http://shopping.yahoo.com
+
+-------------------------------------------------------
+This SF.net email is sponsored by: The SF.net Donation Program.
+Do you like what SourceForge.net is doing for the Open
+Source Community?  Make a contribution, and help us add new
+features and functionality. Click here: http://sourceforge.net/donate/

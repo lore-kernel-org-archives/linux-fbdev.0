@@ -1,10 +1,10 @@
-From: "Donny L. Sellers" <donny_lsellers_cw@gsf.fi>
-Subject: We have a cialapren offer for you.
-Date: Tue, 29 Jun 2004 20:59:01 -0100
+From: "Gracie S. Green" <graciegreenif@at.com.au>
+Subject: $23221
+Date: Tue, 29 Jun 2004 17:01:17 -0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1cec01c45e24$794e80b8$e8079b00__26160.7746979736$1088545420@iway.na>
+Message-ID: <f43901c45e24$b55fd9cb$c4ecb609__14945.4673090533$1088546213@iron.com.br>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -15,32 +15,31 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 To: linux-usb-users@lists.sourceforge.net, linux-usb-devel@lists.sourceforge.net, linux-ntfs-dev@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net
 
-Hi,
+Hello,
+I sent you an email a few days ago, because you now qualify for a new mortgage.
+You could get $300,000 for as little as $700 a month!
+Bad credit is no problem, you can pull cash out or refinance.
 
-We have a Cialapren offer for you.
+Please click on this link:
+http://www.fast-loanz.com/e4/e7.php?weo=71
 
-The world's most effect=ECve male enhancem=E9nt p=EDll!
-100% Natural botanicals gathered from every corner of the world, only 2 p=
-=EDlls daily
+Best Regards,
+Steve Morris
 
-Increase the length of your manhood by 2-5 full inches
-Thicken your manhood and make it much fuller & harder
 
-Boost your confidence level & self-esteem
-Screw your lover like never before
+---- system information ----
+dates cannot read Negotiation] processing using consistently zh 
+updated parsing repeated Discussion regime requirements intended several
 
-Get all-natural Cialpren here <http://www.enhance69.com/>
-
-Regards,
-Audrey Jones
+Scenarios than sort Java and wildly varies several 
 
 
 
 -------------------------------------------------------
 This SF.Net email sponsored by Black Hat Briefings & Training.
-Attend Black Hat Briefings & Training, Las Vegas July 24-29 -=20
-digital self defense, top technical experts, no vendor pitches,=20
+Attend Black Hat Briefings & Training, Las Vegas July 24-29 - 
+digital self defense, top technical experts, no vendor pitches, 
 unmatched networking opportunities. Visit www.blackhat.com

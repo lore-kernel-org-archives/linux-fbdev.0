@@ -1,25 +1,23 @@
-From: Jurriaan <thunder7@xs4all.nl>
-Subject: Re: 2.6.7mm5: switching from X to fbdev gives wrong vertical frequency
-Date: Sun, 4 Jul 2004 18:25:07 +0200
+From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
+Subject: Re: Smart LCD Linux driver
+Date: Sun, 4 Jul 2004 21:41:11 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040704162507.GA16521@middle.of.nowhere>
-References: <20040704133625.GA30035@middle.of.nowhere> <200407042347.53584.adaplas@hotpop.com>
-Reply-To: Jurriaan <thunder7@xs4all.nl>
+Message-ID: <20040704194111.GT18841@lug-owl.de>
+References: <DC91351678E31E4FB24B551221F507ECB771EA@blr-itp-msg.wipro.com>
 Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="LqInKle6vr1NBc7W"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bh9rG-0005RA-GY
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 04 Jul 2004 09:28:50 -0700
-Received: from smtp-out5.xs4all.nl ([194.109.24.6])
+	id 1BhDQq-0006cl-RI
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 04 Jul 2004 13:17:48 -0700
+Received: from dvmwest.gt.owl.de ([62.52.24.140])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1Bh9oL-0001Lg-L6
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 04 Jul 2004 09:28:50 -0700
-Received: from zeeotter.xs4all.nl (zeeotter.xs4all.nl [80.126.31.149])
-	by smtp-out5.xs4all.nl (8.12.10/8.12.10) with ESMTP id i64GPRUa014770
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 4 Jul 2004 18:25:32 +0200 (CEST)
+	id 1BhDNw-0007Dn-Ru
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 04 Jul 2004 13:17:47 -0700
 Content-Disposition: inline
-In-Reply-To: <200407042347.53584.adaplas@hotpop.com>
+In-Reply-To: <DC91351678E31E4FB24B551221F507ECB771EA@blr-itp-msg.wipro.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,41 +27,63 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: adaplas@pol.net
+To: kiran.tigadi@wipro.com
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-From: Antonino A. Daplas <adaplas@hotpop.com>
-Date: Sun, Jul 04, 2004 at 11:47:53PM +0800
-> On Sunday 04 July 2004 21:36, Jurriaan wrote:
-> > I boot my kernel like this:
-> >
-> > kernel /boot/vmlinuz-267mm5 root=/dev/md3 video=radeonfb:1600x1200-16@85
-> > softrepeat=1
-> >
-> > and that works fine in 2.6.7-mm5 with Davids 16bpp copyarea fix.
-> >
-> > XFree also works fine (latest debian version:)
-> >
-> > xfree86-common 4.3.0.dfsg.1-5 X Window System (XFree86) infrastructure
-> > xserver-xfree8 4.3.0.dfsg.1-5 the XFree86 X server
-> >
-> > In 2.6.7 both worked fine, and I could switch from X to fb and back
-> > without any problem. Now, when I switch from X to fb, my 85 Hz refresh
-> > is changed to 60. That looks really awful.
-> >
-> 
-> Can you try this patch?
-> 
-This patch solves my problem, I can switch back-and-forth between X and
-the framebuffer with 2.6.7-mm5 without any problems.
 
-Thanks,
-Jurriaan
--- 
-Join=20the=20campaign=20against=20excessive=20use=20of=20MIME=2e
-Debian (Unstable) GNU/Linux 2.6.7-mm5 2x6078 bogomips load 3.60
+--LqInKle6vr1NBc7W
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Fri, 2004-07-02 19:16:15 +0530, kiran.tigadi@wipro.com <kiran.tigadi@wip=
+ro.com>
+wrote in message <DC91351678E31E4FB24B551221F507ECB771EA@blr-itp-msg.wipro.=
+com>:
+> Hi,
+>=20
+> Overview Smart LCD panel
+> ??262144 colors, 65536 colors, 4096 colors and 8 colors display is availa=
+ble by PWM driving.
+> ??Direct data display by video data RAM (normally-white LCD)
+> ??Partial display function Power saving by pausing display process on par=
+t of the screen.
+> ??Built-in RAM capacity 6=D7540=D7288=3D933120 bit
+> ??MPU interface Directly connectable to an 16-bit or 8-bit parallel MPU o=
+f 80 series
+> ??Plenty of command functions
+> ??Built-in oscillating circuit
+
+So you need a shadow/bounce framebuffer if you *really* want to provide
+it as a framebuffer; registering as a console might be simpler, but
+won't provide graphic capabilities.
+
+MfG, JBG
+PS: Please include correct Message-IDs and don't write text above
+full-quote...
+
+--=20
+   Jan-Benedict Glaw       jbglaw@lug-owl.de    . +49-172-7608481
+   "Eine Freie Meinung in  einem Freien Kopf    | Gegen Zensur | Gegen Krieg
+    fuer einen Freien Staat voll Freier B=FCrger" | im Internet! |   im Ira=
+k!
+   ret =3D do_actions((curr | FREE_SPEECH) & ~(NEW_COPYRIGHT_LAW | DRM | TC=
+PA));
+
+--LqInKle6vr1NBc7W
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+
+iD8DBQFA6F1WHb1edYOZ4bsRAkIpAJ4obnu5sp1Du4hvrfJ7y+e7zFxa3wCdE7gK
+n2TKgjQ1xPOfhUXBKtC1sZQ=
+=sRWO
+-----END PGP SIGNATURE-----
+
+--LqInKle6vr1NBc7W--
 
 
 -------------------------------------------------------

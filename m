@@ -1,21 +1,11 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [announce 0/7] fbsplash - The Framebuffer
- Splash
-Date: Wed, 9 Mar 2005 10:34:59 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0503091033400.22598@numbat.sonytel.be>
-References: <20050308015731.GA26249@spock.one.pl> <200503091301.15832.adaplas@hotpop.com>
- <9e473391050308220218cc26a3@mail.gmail.com>
+From: "Mukund JB." <mukundjb@esntechnologies.co.in>
+Subject: RE: [Linux-fbdev-users] RE: Crosstool for EBD9312..
+Date: Wed, 9 Mar 2005 15:53:00 +0530
+Message-ID: <4EE0CBA31942E547B99B3D4BFAB348113A486A@mail.esn.co.in>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D8xb3-0006aS-Jw
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 09 Mar 2005 01:35:17 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1D8xb1-0003Lr-VN
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 09 Mar 2005 01:35:17 -0800
-In-Reply-To: <9e473391050308220218cc26a3@mail.gmail.com>
+Content-Transfer-Encoding: quoted-printable
+Content-class: urn:content-classes:message
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,29 +16,37 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Michal Januszewski <spock@gentoo.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>, "Antonino A. Daplas" <adaplas@hotpop.com>
+Content-Type: text/plain; charset="us-ascii"
+To: adaplas@pol.net, linux-fbdev-users@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net
+Cc: geert@linux-m68k.org, Michael Burian <dynmail1@gassner-waagen.at>, komal_shah802003@yahoo.com
 
-On Wed, 9 Mar 2005, Jon Smirl wrote:
-> Another idea would be to build a console is user space. Think of it as
-> a full screen xterm. A user space console has access to full hardware
-> acceleration using the DRM interface.
 
-Yep. And that's what Alan Cox wanted to do. Console in userspace, eye candy
-(using Porter-Duff blending) as much as you want, full UTF-8 support, ...
+Hi adalpas,
 
-Gr{oetje,eeting}s,
+Thanks for the 810fb info.
 
-						Geert
+I have D/W the i810fb patch "linux-2.4.20-i810fb.diff".
+These were some rejects & I found some ".ref" in linux, video & i810
+directories when I tried patched it to the kernel tree. I just tried to
+see if it works apart form the rejects & make bzImage was successful and
+"make modules" command FAILED saying:-
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+i810_main.c: 643: warning: passing arg 1 of 'remap_page_range_R2baf18f2'
+makes pointer from integer without a cast
+i810_main.c: 643: incompatible type for argument 4 of
+'remap_page_range_R2baf18f2'
+i810_main.c: 643: too few arguments to function
+'remap_page_range_R2baf18f2'
+Make[3]: *** [I810_main.c] Error 1
+........
+......
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+I am looking into code, I thought mailing u this will be helpful.
+What could be the problem?
+I am running redhat 9 Linux.
+
+Regards,
+Mukund jampala
 
 
 -------------------------------------------------------

@@ -1,23 +1,24 @@
-From: Andrew Walrond <andrew@walrond.org>
-Subject: Re: Dual screen framebuffer development advice
-Date: Wed, 8 Dec 2004 23:02:07 +0000
-Message-ID: <200412082302.07989.andrew@walrond.org>
-References: <200406191455.56574.andrew@walrond.org> <200411222135.55027.andrew@walrond.org> <200411230614.03946.adaplas@hotpop.com>
+From: Junio C Hamano <junkio@cox.net>
+Subject: Re: Re: [PATCH] GeForce 5200 on rivafb
+Date: Wed, 15 Dec 2004 13:22:09 -0800
+Message-ID: <7vmzwf8dfi.fsf@assigned-by-dhcp.cox.net>
+References: <200412120511.31725.adaplas@hotpop.com>
+	<200412140547.22222.adaplas@hotpop.com>
+	<7vr7lt8gii.fsf@assigned-by-dhcp.cox.net>
+	<200412160402.39863.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CetJt-0004Xq-UX
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 16 Dec 2004 02:57:17 -0800
-Received: from [62.24.231.113] (helo=cenedra.walrond.org)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1CetJr-0000Za-MH
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 16 Dec 2004 02:57:17 -0800
-In-Reply-To: <200411230614.03946.adaplas@hotpop.com>
-Content-Disposition: inline
+	id 1CenGp-0003eo-Ts
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 15 Dec 2004 20:29:43 -0800
+Received: from fed1rmmtai03.cox.net ([68.230.241.56])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CenGp-00006X-AJ
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 15 Dec 2004 20:29:43 -0800
+In-Reply-To: <200412160402.39863.adaplas@hotpop.com> (Antonino A. Daplas's
+ message of "Thu, 16 Dec 2004 04:02:38 +0800")
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,37 +30,28 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: "Antonino A. Daplas" <adaplas@hotpop.com>
+Content-Transfer-Encoding: 7bit
+To: adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Monday 22 Nov 2004 22:14, Antonino A. Daplas wrote:
-> On Tuesday 23 November 2004 05:35, Andrew Walrond wrote:
-> >
-> > I've got this working nicely now. I have a recent agp nvidia card and an
-> > old pci matrox millenium in this dual opteron machine running 64bit
-> > linux. I boot into a console on the matrox using the built-in matroxfb
-> > driver, then startx which runs on the nvidia card using the nv driver. I
-> > can then work on my fb application in X, viewing the output on the second
-> > monitor via the matrox card. Nice!
->
+>>>>> "AAC" == Antonino A Daplas <adaplas@hotpop.com> writes:
 
-I've just done a bk pull from linus and build a new kernel (was using post rc2 
-before) and now this nice scheme (see above) fails to work:
+AAC> On Tuesday 14 December 2004 15:51, Junio C Hamano wrote:
 
-When I 'startx', the X log complains about no core keyboard, my usb keyboard 
-stops responding and both screens go blank. I can only get access by ssh from 
-another machine.
+>> Overall, it is as
+>> if I am using your nvidiafb driver without nvidia-i2c ;-).
 
-Nothing changed other than kernel; using same .config.
+AAC> No, of course not.
 
-If I boot on rivafb console instead of matroxfb, startx and keyboard work 
-fine.
+Sorry, I did not mean 'as if I am running without it and not
+getting any benefit from it'.  What I meant was 'without the
+unpleasantness I experienced last time with it, which was coming
+from the broken EDID block'.  Thanks for the fixup code.
 
-Before I start hunting down the problem; Do any recent changes spring to mind?
+AAC> There are certain advantages:
 
-Thanks
+Yes, all true.  Thanks.
 
-Andrew
 
 
 -------------------------------------------------------

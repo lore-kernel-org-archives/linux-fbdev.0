@@ -1,21 +1,18 @@
-From: Jurriaan <thunder7@xs4all.nl>
-Subject: Re: Request for donation
-Date: Fri, 25 Jul 2003 07:12:21 +0200
+From: Simeon Walker <simeon@sbs.bangor.ac.uk>
+Subject: 2.4 atyfb blank screen on Tyan MB
+Date: Fri, 25 Jul 2003 16:27:16 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030725051221.GB6978@middle.of.nowhere>
-References: <200307210138.34164.alex.kern@gmx.de>
-Reply-To: thunder7@xs4all.nl
+Message-ID: <3F214C54.3030502@sbs.bangor.ac.uk>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from smtpzilla5.xs4all.nl ([194.109.127.141])
+Received: from vogon.bangor.ac.uk ([147.143.42.78])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19fusa-0006c0-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 24 Jul 2003 22:12:32 -0700
-Received: from zeeotter.xs4all.nl (zeeotter.xs4all.nl [80.126.31.149])
-	by smtpzilla5.xs4all.nl (8.12.9/8.12.9) with ESMTP id h6P5CTET080928
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 25 Jul 2003 07:12:29 +0200 (CEST)
-Content-Disposition: inline
-In-Reply-To: <200307210138.34164.alex.kern@gmx.de>
+	id 19g4TU-00032P-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 25 Jul 2003 08:27:17 -0700
+Received: from sbs.bangor.ac.uk (milliways [147.143.41.38])
+	by vogon.bangor.ac.uk (Postfix) with ESMTP id 5B216C4E8
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 25 Jul 2003 16:27:14 +0100 (BST)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -25,38 +22,46 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Alexander Kern <alex.kern@gmx.de>
-Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-From: Alexander Kern <alex.kern@gmx.de>
-Date: Mon, Jul 21, 2003 at 01:38:34AM +0200
-> Hello list,
-> 
-> I am trying to add support for ATI Rage 3D Mobility M1, and have some success 
-> on my notebook. I have god tree another species from Ebay too, Rage 3D IIc, 
-> Rage Turbo Pro and Rage Pro. All are AGP. I need one "Pre RAGE 3D" mach64 for 
-> testing.
-> 
-> Unfortunately I don't found anything on Ebay. If anybody have one from these 
-> cards:
-> 
-> "mach64GX (ATI888GX00)", "mach64CX (ATI888CX00)" - only PCI, I don't have ISA 
-> slots anymore.
-> 
-> "mach64CT (ATI264CT)", "mach64ET (ATI264ET)", "mach64VTA3 (ATI264VT)", 
-> "mach64VTA4 (ATI264VT)", "mach64VTB (ATI264VTB)", "mach64VT4 (ATI264VT4)"
-> 
-I'm trying to acquire a Mach64VT card (PCI), which I hope will be one of
-the above models.
+Hi,
 
-Jurriaan
+I am having trouble getting the frame buffer device working on
+a machine with A Tyan S2723 motherboard, this has an Intel
+i7501 chipset and lspci -v reports the following for the onboard
+ATI chip:
+
+01:02.0 VGA compatible controller: ATI Technologies Inc Rage XL (rev 27) 
+(prog-if 00 [VGA])
+        Subsystem: ATI Technologies Inc: Unknown device 8008
+        Flags: bus master, stepping, medium devsel, latency 64, IRQ 18
+        Memory at fd000000 (32-bit, non-prefetchable) [size=16M]
+        I/O ports at b800 [size=256]
+        Memory at fe7ff000 (32-bit, non-prefetchable) [size=4K]
+        Expansion ROM at fe7c0000 [disabled] [size=128K]
+        Capabilities: [5c] Power Management version 2
+ 
+The problem is that no matter what I try the screen goes
+blank when the atyfb module is loaded. If compiled in then the
+screen goes blank during boot up. Everything else works fine.
+
+Even fbset seems to work, the monitor will indicate the appropriate
+changes in resolution/refresh rate but the screen is always blank.
+
+I have tried kernels from stock 2.4.21 to 2.4.22-pre6-ac1 with
+no change in the results. Any suggestions?
+
+Regards,
+Simeon
+
 -- 
-Someone on IRC was very sad about the uptime of his machine wrapping
-from 497 days to 0.
-	linux-kernel
-Debian (Unstable) GNU/Linux 2.6.0-test1-ac2 4112 bogomips load av: 0.05 0.08 0.13
+Simeon Walker,                      email: simeon@sbs.bangor.ac.uk
+School of Biological Sciences,      phone: +44 (0)1248 383702
+University of Wales, Bangor,        fax: +44 (0)1248 382569
+Gwynedd, LL57 2UW, UK.              www: http://biology.bangor.ac.uk/
+
+
 
 
 -------------------------------------------------------

@@ -1,14 +1,14 @@
 From: Thiemo Seufer <ica2_ts@csv.ica.uni-stuttgart.de>
-Subject: [PATCH, 2,4] Avoid distorting mono attributes
-Date: Sun, 27 Apr 2003 00:48:46 +0200
+Subject: [PATCH, 2.5] Avoid distorting mono attributes
+Date: Sun, 27 Apr 2003 00:58:17 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030426224846.GB31642@rembrandt.csv.ica.uni-stuttgart.de>
+Message-ID: <20030426225817.GC31642@rembrandt.csv.ica.uni-stuttgart.de>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from iris1.csv.ica.uni-stuttgart.de ([129.69.118.2])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 199YTw-0004Sq-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 26 Apr 2003 15:49:21 -0700
+	id 199Yd8-00075n-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 26 Apr 2003 15:58:50 -0700
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
@@ -33,10 +33,9 @@ the color handling.
 Thiemo
 
 
-diff -BurpNX /bigdisk/src/dontdiff linux-orig/drivers/char/console.c linux/drivers/char/console.c
---- linux-orig/drivers/char/console.c	Sat Jan 11 22:54:24 2003
-+++ linux/drivers/char/console.c	Sat Apr 12 15:44:11 2003
-@@ -1046,7 +1046,8 @@ static void default_attr(int currcons)
+--- linux-2.5.68/drivers/char/vt.c~	Sun Apr 27 00:15:49 2003
++++ linux-2.5.68/drivers/char/vt.c	Sun Apr 27 00:40:02 2003
+@@ -1052,7 +1052,8 @@ static void default_attr(int currcons)
  	underline = 0;
  	reverse = 0;
  	blink = 0;
@@ -46,7 +45,7 @@ diff -BurpNX /bigdisk/src/dontdiff linux-orig/drivers/char/console.c linux/drive
  }
  
  /* console_sem is held */
-@@ -1119,7 +1120,8 @@ static void csi_m(int currcons)
+@@ -1125,7 +1126,8 @@ static void csi_m(int currcons)
  				  * with white underscore (Linux - use
  				  * default foreground).
  				  */
@@ -56,7 +55,7 @@ diff -BurpNX /bigdisk/src/dontdiff linux-orig/drivers/char/console.c linux/drive
  				underline = 1;
  				break;
  			case 39: /* ANSI X3.64-1979 (SCO-ish?)
-@@ -1127,11 +1129,13 @@ static void csi_m(int currcons)
+@@ -1133,19 +1135,23 @@ static void csi_m(int currcons)
  				  * Reset colour to default? It did this
  				  * before...
  				  */
@@ -67,12 +66,28 @@ diff -BurpNX /bigdisk/src/dontdiff linux-orig/drivers/char/console.c linux/drive
  				break;
  			case 49:
 -				color = (def_color & 0xf0) | foreground;
-+			  	if (can_do_color)
++			        if (can_do_color)
 +					color = (def_color & 0xf0) | foreground;
  				break;
  			default:
- 				if (par[i] >= 30 && par[i] <= 37)
-@@ -1274,9 +1278,11 @@ static void setterm_command(int currcons
+-				if (par[i] >= 30 && par[i] <= 37)
+-					color = color_table[par[i]-30]
+-						| background;
+-				else if (par[i] >= 40 && par[i] <= 47)
+-					color = (color_table[par[i]-40]<<4)
+-						| foreground;
++			        if (can_do_color) {
++					if (par[i] >= 30 && par[i] <= 37)
++						color = color_table[par[i]-30]
++							| background;
++					else if (par[i] >= 40 && par[i] <= 47)
++						color = (color_table[par[i]-40]<<4)
++							| foreground;
++				}
+ 				break;
+ 		}
+ 	update_attr(currcons);
+@@ -1280,9 +1286,11 @@ static void setterm_command(int currcons
  			}
  			break;
  		case 8:	/* store colors as defaults */

@@ -1,20 +1,16 @@
-From: idalton@ferret.dyndns.org
-Subject: Re: 3dfx framebuffer driver borked in 2.5.19 kernel
-Date: Thu, 6 Jun 2002 10:52:59 -0700
+From: andrew may <acmay@acmay.homeip.net>
+Subject: Re: Radeon video in PowerBook G4 800
+Date: Thu, 6 Jun 2002 13:31:30 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20020606175259.GB14272@ahrairah.internal.aom.geek>
-References: <20020530165031.GA18544@kira.glasswings.com.au> <Pine.LNX.4.10.10205301139260.9282-100000@www.transvirtual.com>
+Message-ID: <20020606133130.A28991@ecam.san.rr.com>
+References: <20020605160346.B25385@ecam.san.rr.com> <20020605221731.23001@smtp.wanadoo.fr>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="/04w6evG8XlLl3ft"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from 24-205-207-61.cs-dyn.charterpipeline.net ([24.205.207.61] helo=tarot.internal.aom.geek)
-	by usw-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17G1SL-0001rT-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 06 Jun 2002 10:53:55 -0700
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.10.10205301139260.9282-100000@www.transvirtual.com>
+Received: from 24-25-196-177.san.rr.com ([24.25.196.177] helo=acmay.homeip.net)
+	by usw-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17G3uv-0000U0-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 06 Jun 2002 13:31:33 -0700
+In-Reply-To: <20020605221731.23001@smtp.wanadoo.fr>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -24,53 +20,46 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: andrew may <acmay@acmay.homeip.net>, ajoshi@unixbox.com, Linux fbdev <linux-fbdev-devel@lists.sourceforge.net>, "May, Andrew" <amay@viasat.com>
 
+On Thu, Jun 06, 2002 at 12:17:31AM +0200, Benjamin Herrenschmidt wrote:
+> >----- Forwarded message from andrew may <acmay@acmay.homeip.net> -----
+> >
+> >Date: Wed, 5 Jun 2002 15:55:04 -0700
+> >From: andrew may <acmay@acmay.homeip.net>
+> >To: bh40@calva.net
+> >Cc: Ani Joshi <ajoshi@shell.unixbox.com>,
+> >  Linux fbdev <linux-fbdev-devel@lists.sourceforge.net>
+> >Subject: Radeon video in PowerBook G4 800
+> >
+> >I am having problems with the radeon fb driver in BenH's 2.4.19-pre10
+> >kernel. When it boots I get a strange grayish red blob that covers most
+> >of the screen starting from the bottom right side.
+> >
+> >I tried Xfree 4.20 and saw a similar effect.
+> >
+> >Here is a dump from the init with DEBUG turned on in the driver.
+> >
+> >The BenH kernel has some fixes from the 0.1.4 radeon driver and
+> >I have not been able to get the 0.1.5 patch from the archieves 
+> >to try.
+> 
+> Hrm, weird. Some users are running it without problem. 
+> 
+> Ani, any clue ?
 
---/04w6evG8XlLl3ft
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Well I did get the 0.1.5 patch and I applied it. It did not seem
+to help any. I had to merge things by hand at some parts since
+the benh kernel did already have some stuff in there. 
 
-On Thu, May 30, 2002 at 11:40:14AM -0700, James Simmons wrote:
->=20
-> > With the port to the new fbdev interface in kernel
-> > 2.5.19 the system now only displays a few unchanging coloured pixels
-> > on the first line of the screen.  The rest of the screen remains black
-> > until X11 starts.  I am using append=3D"video=3Dtdfx:1024x768" in LILO.
->=20
-> I'm tracking down the bug you are experiencing. Almost done.=20
+Can I get a copy of the 0.1.5 instead of a patch so we can be sure
+we are on the same page.
 
-Does the new interface handle multihead any better? I have a dual tdfx
-system..
-
-Am interested in testing patches. Head up?
-
---=20
-Ferret
-
--- Support your government, give Echelon / Carnivore something to parse --
-classfield top-secret government restricted data  information project  CIA
-Microsoft terrorist Allah Natasha Gregori destroy destruct attack will own
-send Russia bank system compromise  World Trade Center  international rule
-presidental elections  policital foreign fnord embassy  takeover democracy
---------------------------------------------------------------------------
-
---/04w6evG8XlLl3ft
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.0.6 (GNU/Linux)
-Comment: For info see http://www.gnupg.org
-
-iD8DBQE8/6F7e0DNEkH06HMRAvGiAKCCEiiNuCc9vdRbirudy9dUCdAVUACgwijQ
-iL4FRjnqxXgL+T7vKMqhLX4=
-=a3tI
------END PGP SIGNATURE-----
-
---/04w6evG8XlLl3ft--
+Ben, do you have any an email of someone that has it working
+so we can try to compare some things?
 
 _______________________________________________________________
 

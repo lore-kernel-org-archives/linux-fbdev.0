@@ -1,26 +1,21 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: how to activate X with famebuffer
-Date: Wed, 29 Sep 2004 05:33:51 +0800
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Problem about FB on an iBook G4
+Date: Thu, 30 Sep 2004 12:29:25 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200409290533.51839.adaplas@hotpop.com>
-References: <4EE0CBA31942E547B99B3D4BFAB3481110808C@mail.esn.co.in>
+Message-ID: <Pine.GSO.4.61.0409301227560.9524@waterleaf.sonytel.be>
+References: <c854a4.54a4c8@huawei.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CCPen-0005WX-S2
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 28 Sep 2004 14:37:09 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CCPel-0002zJ-6H
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 28 Sep 2004 14:37:09 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id C8FF286B82F
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 28 Sep 2004 21:36:05 +0000 (UTC)
-In-Reply-To: <4EE0CBA31942E547B99B3D4BFAB3481110808C@mail.esn.co.in>
-Content-Disposition: inline
+	id 1CCyC6-0006qg-Ro
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 30 Sep 2004 03:29:50 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CCyBy-0007Zo-0c
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 30 Sep 2004 03:29:50 -0700
+In-Reply-To: <c854a4.54a4c8@huawei.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,85 +25,32 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="utf-8"
-To: linux-fbdev-devel@lists.sourceforge.net, "Mukund JB." <mukundjb@esntechnologies.co.in>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: jiangning 39481 <jiangnuts@huawei.com>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tuesday 28 September 2004 19:27, Mukund JB. wrote:
->
-> ACCORDING TO FRAMEBUFFER DEFINITION :-
-> A framebuffer device is an abstraction for the graphic hardware. It
-> represents the frame buffer of some video hardware, and allows application
-> software to access the graphic hardware through a well=E2=88=92defined in=
-terface,
-> so that the software doesn't need to know anything about the low=E2=88=92=
-level
-> interface stuff
->
-> This is taken from Geert Uytterhoeven's framebuffer.txt in the linux kern=
-el
-> sources. In the above definition what is an Application? Is it the X
-> server, Applications above it?
+	Hi,
 
-'Application' is any process, user or kernel, that directly runs on top of =
-the=20
-framebuffer. It can be X, or the framebuffer console.  It can be a process=
-=20
-that totally bypasses X, such as directfb or mplayer -vo fbdev. Any process=
-=20
-that does not run directly on top of the framebuffer is not considered as=20
-part of the 'Application' layer, such as kwrite on X on fbdev, or 'mplayer=
-=20
-=2Dvo directfb' on directfb on fbdev.
+> I bought an Apple iBook G4 with RV280M9+(Mobility Radeon 9200) one month ago.And I installed Yellow Dog Linux 3.01 on it.But I can't set the resolution with "fbset" in console mode and "startx" give me info like "(EE) FBDEV FBIOPUT invalid argument" while depth != 8."dmesg" says something like "Using unsupported 1024x768 Open Firmware FrameBuffer...".The output of "fbset -i" is
+> NAME OFfb ATY,Via A
 
-But X on fbdev or direcfb on fbdev or mplayer on fbdev are all considered p=
-art=20
-of the 'Application' layer.
+That's offb, the Open Firmware Frame Buffer device, which is used as a fallback
+for unsupported graphics cards.
 
->
-> Suppose there is a kwrite application, obviously running over X server.
-> Looking at this angle the flow is as follows:-
->
->
-> 	NORMAL Applications ( Kwrite)
-> 	-------------------
-> 		X Server
-> 	-------------------
-> 	Framebuffer Driver
-> 	-------------------
-> 		HARDWARE
->
+What kernel version does Yellow Dog Linux 3.01 use? Does it include radeonfb?
+Recent versions of radeonfb should recognize your Mobility Radeon 9200.
 
-Yes, above is how it works.  In this case, Kwrite doesn't know a thing abou=
-t=20
-the framebuffer, as it runs on top of X.  Or more properly, something like=
-=20
-this:
+Gr{oetje,eeting}s,
 
-NORMAL Applications such as X, DirectFB, mplayer, etc
-=2D------------------
-=46ramebuffer Driver
-=2D------------------
-HARDWARE
+						Geert
 
-The X server is considered as part of 'NORMAL Applications'.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-> Is it Applications like Kwrite should support Framebuffer in order the X
-> server makes use of it. If this is the case, the flow will be as follows:-
->
-> 	NORMAL Applications (Apps instructs X server - Use fb or don't use)
->    -------------------------
-> 		X Server
->    -------------------------
-> Framebuffer / NON-Framebuffer
-> 		 Driver
->    -------------------------
-> 		HARDWARE
-
-No, the above is not the case.
-
-Tony
-
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

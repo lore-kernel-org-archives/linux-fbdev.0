@@ -1,13 +1,14 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Re: [Dri-devel] Re: [Linux-fbdev-devel] Redesign
- of kernel graphics interface
-Date: Mon, 10 May 2004 22:05:57 +0100 (BST)
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [Dri-devel] Re: [Linux-fbdev-devel] Redesign of kernel
+ graphics interface
+Date: Mon, 10 May 2004 20:33:11 +0100
 Sender: mesa3d-dev-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0405102202230.6312-100000@phoenix.infradead.org>
-References: <20040510182940.14049.qmail@web14924.mail.yahoo.com>
+Message-ID: <1084217590.24759.10.camel@localhost.localdomain>
+References: <Pine.LNX.4.44.0405101708310.4338-100000@phoenix.infradead.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <mesa3d-dev-admin@lists.sourceforge.net>
-In-Reply-To: <20040510182940.14049.qmail@web14924.mail.yahoo.com>
+In-Reply-To: <Pine.LNX.4.44.0405101708310.4338-100000@phoenix.infradead.org>
 Errors-To: mesa3d-dev-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
 	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=unsubscribe>
@@ -17,29 +18,21 @@ List-Help: <mailto:mesa3d-dev-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
 	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=mesa3d-dev>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jon Smirl <jonsmirl@yahoo.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Nicolas Souchu <nsouch@free.fr>, dri-devel <dri-devel@lists.sourceforge.net>, mesa3d-dev <mesa3d-dev@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@infradead.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Nicolas Souchu <nsouch@free.fr>, Jon Smirl <jonsmirl@yahoo.com>, DRI Devel <dri-devel@lists.sourceforge.net>, mesa3d-dev <mesa3d-dev@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
+On Llu, 2004-05-10 at 17:14, James Simmons wrote:
+> Speaking of bloat in the kernel. When will the crypto and TCP/IP stack be 
+> moved to userspace. The networking code alone is over 17 megs in size. 
 
-> It's not just bloat, the network code is used millions of times per second. 
-> Mode setting happens occaisonally. 
- 
-Using that logic then Sound cards shouldn't be in the kernel at all. I 
-never use my sound card continuely. I use it as a module. Would it be 
-acceptable if the mode setting was modular?  
+Not on my box. Nothing like it. Although to answer that question with a
+definitive example ELKS (a Linux like 8086 kernel in 64K) has IP demux
+in kernel space and tcp in user space. The v7 NCP stack also had much of
+the protocol in user space.
 
-> The other problem is memory management. What is going to happen when fbdev
-> starts setting the mode for both heads? Who is going to mananage the VRAM when
-> the buffers get resized? OpenGL has a very complex memory management scheme
-> where things can migrate from VRAM to AGP to system memory.
-
-I know problems like this are going to exist. So I guess the idea of the 
-kernel supporting multi-desktops is out then. The ruby (linuxconsole) 
-project has two independent workstations running on the G400 dual head 
-cards. I guess that has to go :-( 
-
+So its a perfectly valid argument to build such hybrid systems for
+display management too
 
 
 

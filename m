@@ -1,25 +1,25 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: patch fixing background next to penguin logo in monochrome
-Date: Sun, 15 Aug 2004 00:43:02 +0000 (UTC)
+Subject: Re: tty open screws X color palette
+Date: Sun, 15 Aug 2004 01:09:15 +0000 (UTC)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200409150839.00693.adaplas@hotpop.com>
-References: <1092254183.4209.16.camel@joy.home> <200409130746.32631.adaplas@hotpop.com> <Pine.GSO.4.58.0408131002030.28832@waterleaf.sonytel.be>
+Message-ID: <200409150902.27378.adaplas@hotpop.com>
+References: <20040813114713.GA2168@suse.de>
 Reply-To: adaplas@pol.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bw93v-0000g3-B9
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 14 Aug 2004 17:39:51 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.61])
+	id 1Bw9Qk-0005cn-PM
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 14 Aug 2004 18:03:26 -0700
+Received: from smtp-out.hotpop.com ([38.113.3.71])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1Bw93u-0002nA-Vo
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 14 Aug 2004 17:39:51 -0700
+	id 1Bw9Qk-00075n-Ec
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 14 Aug 2004 18:03:26 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id D3E06798B8C
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 14 Aug 2004 23:44:41 +0000 (UTC)
-In-Reply-To: <Pine.GSO.4.58.0408131002030.28832@waterleaf.sonytel.be>
+	by smtp-out.hotpop.com (Postfix) with SMTP id C5204106CDB0
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 15 Aug 2004 00:34:41 +0000 (UTC)
+In-Reply-To: <20040813114713.GA2168@suse.de>
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,36 +30,26 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Date: Wed, 15 Sep 2004 08:38:58 +0800
+Date: Wed, 15 Sep 2004 09:02:25 +0800
 Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Petr Stehlik <pstehlik@sophics.cz>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, "Christian T. Steigies" <cts@debian.org>
+To: Olaf Hering <olh@suse.de>, linux-fbdev-devel@lists.sourceforge.net
 
-On Friday 13 August 2004 16:05, Geert Uytterhoeven wrote:
-> >
-> > diff -uprN linux-2.4-orig/drivers/video/fbcon.c
-> > linux-2.4/drivers/video/fbcon.c ---
-> > linux-2.4-orig/drivers/video/fbcon.c	2004-09-13 07:40:18.194333488 +0800
-> > +++ linux-2.4/drivers/video/fbcon.c	2004-09-13 07:41:52.302026944 +0800
-> > @@ -1930,6 +1930,7 @@ static int fbcon_switch(struct vc_data *
-> >  	(*info->switch_con)(unit, info);
-> >      if (p->dispsw->clear_margins && vt_cons[unit]->vc_mode == KD_TEXT)
-> >  	p->dispsw->clear_margins(conp, p, 0);
-> > +    conp->vc_can_do_color = p->var.bits_per_pixel != 1;
-> >      if (logo_shown == -2) {
-> >  	/* G.S.: Display a line above the Boot Logo to state what
-> >  	* version of the kernel we are booting.
+On Friday 13 August 2004 19:47, Olaf Hering wrote:
+> An 'echo foo > /dev/tty42' while X runs will screw the color palette, if
+> tty42 wasnt in use before. Tested on ibook G3 and G4.
+> This will happen with rage128 and radeonfb in 2.6.5 and later,
+> X version is 4.3.99.
 >
-> I don't think it's needed: I saw no artifacts when switching between a
-> monochrome and a color VC or vice versa.
->
-> When looking at the source, conp->vc_can_do_color is initialized in
-> fbcon_setup(), which is called from fbcon_changevar(), which is called by
-> the fbdev if the resolution or color depth was changed.
->
+> X runs usually with a different color depth than the kernel framebuffer
+> console.
+> How can this be fixed? tty open should not touch the hardware if the tty
+> is not active.
 
-Okay.  I wasn't too sure of that since I'm not very familiar with the 2.4
-code.
+I tried the above and nothing happens to X.  My setup is X86 nVidia AGP
+on rivafb linux-2.6.8-rc4-mm1.
+
+There are a bunch of framebuffer patches in rc4-mm1, perhaps those will
+help.  Otherwise, it's probably a driver or arch specific problem.
 
 Tony
 

@@ -1,24 +1,23 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [RFC] Does fbdev need a cursor API for
- userland?
-Date: Mon, 18 Oct 2004 14:10:58 +0200 (MEST)
+From: Gerd Knorr <kraxel@bytesex.org>
+Subject: Re: Generic VESA framebuffer driver and Video card BOOT?
+Date: Mon, 18 Oct 2004 14:10:33 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.61.0410181409480.23486@waterleaf.sonytel.be>
-References: <200410172347.15516.adaplas@hotpop.com> <200410181447.44492.adaplas@hotpop.com>
- <Pine.GSO.4.61.0410181133300.23486@waterleaf.sonytel.be>
- <200410181905.56602.adaplas@hotpop.com> <Pine.GSO.4.61.0410181359040.23486@waterleaf.sonytel.be>
+Message-ID: <20041018121033.GB5106@bytesex>
+References: <416E6ADC.3007.294DF20D@localhost> <87d5zkqj8h.fsf@bytesex.org> <Pine.GSO.4.61.0410151437050.10040@waterleaf.sonytel.be> <87y8i8p1jq.fsf@bytesex.org> <20041017120728.GC10532@admingilde.org> <20041018083632.GE3065@bytesex> <20041018113929.GB3618@admingilde.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CJWLx-00020u-It
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 05:11:05 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CJWLv-0008KY-3q
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 05:11:04 -0700
-In-Reply-To: <Pine.GSO.4.61.0410181359040.23486@waterleaf.sonytel.be>
+	id 1CJWUt-0003Lq-7n
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 05:20:19 -0700
+Received: from hirsch.in-berlin.de ([192.109.42.6] ident=root)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1CJWUs-0000tk-I6
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 05:20:19 -0700
+Content-Disposition: inline
+In-Reply-To: <20041018113929.GB3618@admingilde.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,45 +27,29 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: adaplas@pol.net, Jon Smirl <jonsmirl@gmail.com>
+To: linux-fbdev-devel@lists.sourceforge.net, Linux Kernel Development <linux-kernel@vger.kernel.org>, penguinppc-team@lists.penguinppc.org
 
-On Mon, 18 Oct 2004, Geert Uytterhoeven wrote:
-> On Mon, 18 Oct 2004, Antonino A. Daplas wrote:
-> > On Monday 18 October 2004 17:35, Geert Uytterhoeven wrote:
-> > > On Mon, 18 Oct 2004, Antonino A. Daplas wrote:
-> > > > The restore_fb_contents/save_fb_contents cannot be done generically.  Not
-> > > > all framebuffers have a linear format, there are some that are planar
-> > > > such as amifb and vga16fb.  This means that we need to add per-driver
-> > > > hooks just to save and restore the framebuffer contents.
-> > >
-> > > Can't we use fb_imageblit() for restore? 
-> > 
-> > fb_imageblit() is limited because it uses the pseudo_palette.  Even if
-> > we expand the palette to 256 entries, it won't be able to handle formats >
-> > 8bpp. More than 256 is not practical. Plus, fb_imageblit is limited to
-> > 1->bpp, and 8->bpp expansion.
+On Mon, Oct 18, 2004 at 01:39:29PM +0200, Martin Waitz wrote:
+> hi :)
 > 
-> What about expanding fb_imageblit() to handle 32-bit ARGB as well? Then it can
-> handle most canonical formats (1 bpp monochrome, 8-bit CLUT, 32-bit
-> ARGB). We still would have problems with e.g. 10-bit CLUT.
+> > Whenever writing to the gfx memory before finishing the initialization
+> > is harmless or not probably depends on the hardware, I'd better not
+> > count on it ...
+> 
+> when the application tries to access the framebuffer memory then
+> the driver is asked to map the corresponding page.
 
-BTW, for save/restore this doesn't matter much. As long as restore/save match,
-it's OK, so it would be possible to save the 10-bit CLUT pixel data in a
-32-bit ARGB block.
+On first access only, and even that only if the driver doesn't map the
+pages at mmap() time already.  Not a single fb driver seems to map the
+pages lazy today, grepping in drivers/video for nopage handles shows
+nothing.  I'm not sure you can actually do that for iomem mappings.
 
-Gr{oetje,eeting}s,
+  Gerd
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+return -ENOSIG;
 
 
 -------------------------------------------------------

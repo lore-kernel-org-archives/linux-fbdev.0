@@ -1,50 +1,35 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: [Linux-fbdev-devel] [PATCH] fix endian problem in
-	color_imageblit
-Date: 15 Dec 2002 06:05:24 +0500
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [BK fbdev] Yet again more fbdev updates.
+Date: Sat, 14 Dec 2002 15:08:04 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1039914261.1131.70.camel@localhost.localdomain>
-References: <15864.1386.543811.337732@argo.ozlabs.ibm.com>
+Message-ID: <Pine.LNX.4.44.0212142204520.9829-100000@phoenix.infradead.org>
+References: <Pine.LNX.4.44.0212131707350.6750-100000@home.transmeta.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <15864.1386.543811.337732@argo.ozlabs.ibm.com>
+In-Reply-To: <Pine.LNX.4.44.0212131707350.6750-100000@home.transmeta.com>
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-To: Paul Mackerras <paulus@samba.org>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linus Torvalds <torvalds@transmeta.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, 2002-12-12 at 08:41, Paul Mackerras wrote:
-> This patch fixes the endian problems in color_imageblit().  With this
-> patch, I get the penguin drawn properly on boot.
-> 
-> The main change is that on big-endian systems, when we load a pixel
-> from the source, we now shift it to the left-hand (most significant)
-> end of the word.  With this change the rest of the logic is correct on
-> big-endian systems.  This may not be the most efficient way to do
-> things but it is a simple change that works and avoids disturbing the
-> rest of the code.
-> 
-Nice catch :-)  We also need a similar fix for slow_imageblit(), so
-James can you apply the attached patch also:
 
-Also, I noticed that some drivers load the pseudo_palette with entries 
-whose length matches the length of the pixel.  The cfb_* functions 
-always assume that each pseudo_palette entry is an "unsigned long", so 
-bpp16 will segfault, and so will bpp24/32 for 64-bit machines.
+> > 1) Its the same place on the screen or a different place every time?
+>
+> I think it's at the last line of the screen every time.
 
-Tony
+I think I might now what the problem is. scrup is using memcpy even when
+the memory areas src, dest overlap. The key is to use memmove which
+handles overlapping memory gracefully. Tell me if the following patch
+works for you.
 
-diff -Naur linux-2.5.51/drivers/video/cfbimgblt.c linux/drivers/video/cfbimgblt.c
---- linux-2.5.51/drivers/video/cfbimgblt.c	2002-12-15 00:54:04.000000000 +0000
-+++ linux/drivers/video/cfbimgblt.c	2002-12-15 00:54:21.000000000 +0000
-@@ -189,6 +189,7 @@
- 				color = fgcolor;
- 			else 
- 				color = bgcolor;
-+			color <<= LEFT_POS(bpp);
- 			val |= SHIFT_HIGH(color, shift);
- 			
- 			/* Did the bitshift spill bits to the next long? */
-
-Tony
+--- vt.c.orig	Sat Dec 14 13:32:42 2002
++++ vt.c	Sat Dec 14 13:34:46 2002
+@@ -262,7 +262,7 @@
+ 		return;
+ 	d = (unsigned short *) (origin+video_size_row*t);
+ 	s = (unsigned short *) (origin+video_size_row*(t+nr));
+-	scr_memcpyw(d, s, (b-t-nr) * video_size_row);
++	scr_memmovew(d, s, (b-t-nr) * video_size_row);
+ 	scr_memsetw(d + (b-t-nr) * video_num_columns, video_erase_char, video_size_row*nr);
+ }

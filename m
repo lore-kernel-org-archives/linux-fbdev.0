@@ -1,33 +1,47 @@
-From: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [Linux-fbdev-devel] Generic VESA framebuffer driver and Video card BOOT?
-Date: Mon, 18 Oct 2004 22:42:04 +0200
+From: Richard Smith <rsmith@bitworks.com>
+Subject: Re: [Linux-fbdev-devel] Generic VESA framebuffer driver and Video
+ card BOOT?
+Date: Mon, 18 Oct 2004 16:04:50 -0500
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <200410182242.04749.oliver@neukum.org>
-References: <416E6ADC.3007.294DF20D@localhost> <20041018121033.GB5106@bytesex> <20041018202147.GA28720@hh.idb.hist.no>
+Message-ID: <41742FF2.9090409@bitworks.com>
+References: <4173B865.26539.117B09BD@localhost> <4173C981.13925.11BDE111@localhost>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S267367AbUJRUtf@vger.kernel.org>
-In-Reply-To: <20041018202147.GA28720@hh.idb.hist.no>
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S267378AbUJRVHS@vger.kernel.org>
+In-Reply-To: <4173C981.13925.11BDE111@localhost>
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: Helge Hafting <helgehaf@aitel.hist.no>
-Cc: Gerd Knorr <kraxel@bytesex.org>, linux-fbdev-devel@lists.sourceforge.net, Linux Kernel Development <linux-kernel@vger.kernel.org>, penguinppc-team@lists.penguinppc.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: KendallB@scitechsoft.com
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-Am Montag, 18. Oktober 2004 22:21 schrieb Helge Hafting:
-> > On first access only, and even that only if the driver doesn't map =
-the
-> > pages at mmap() time already. =A0Not a single fb driver seems to ma=
-p the
-> > pages lazy today, grepping in drivers/video for nopage handles show=
-s
-> > nothing. =A0I'm not sure you can actually do that for iomem mapping=
-s.
-> >=20
-> Isn't it possible for the driver to unmap the mapping when
-> suspending? =A0Then you're guaranteed to get that first access.
+Kendall Bennett wrote:
 
-But what would you do then? Block everything that is using a terminal?
+> Richard Smith <rsmith@bitworks.com> wrote:
+> 
+> Good, so my assumption was incorrect which I am happy about. Since it 
+> makes the work we did more useful ;-)
+> 
+> Anyway in your case do you need diagnostic messages just from the kernel 
+> or from the firmware as well?
 
-	Regards
-		Oliver
+Firmware messages are the most critical since none of the app code is 
+running yet and can't self-heal or cry for help.
+
+Some units boot off of a compact flash.  Try as we might to make these 
+babies robust they do fail.  So in that case the boot message from the 
+firmware needs to be displayed.  In other cases the system net boots 
+which increases the firmware error message level by about a factor of 10.
+
+ > To get it in the firmware the video boot
+ > code would need to be ported there (U-Boot has a version of it already,
+ > but it is the only firmware I am aware of that supports this).
+
+LinuxBIOS has some suport for this.  Not by emulation though.  It uses 
+the bios from the BOCHS project as a payload.  Some glue drops the 
+system back into real mode and runs the BOCHS bios which scans the 
+legacy regions for ROM expansion modules.  So as long as I copy my video 
+bios up int 0x0C0000 prior to this I get video.  Otherwise I have to 
+wait until X comes up and soft-boots the display device.
+
+-- 
+Richard A. Smith

@@ -1,14 +1,17 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: new logo drawing code
-Date: Sun, 29 Dec 2002 21:07:39 +0100 (MET)
+Subject: clipping
+Date: Sun, 29 Dec 2002 22:21:13 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0212292057180.17739-100000@vervain.sonytel.be>
+Message-ID: <Pine.GSO.4.21.0212292215130.17739-100000@vervain.sonytel.be>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18Sjju-0003uK-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 29 Dec 2002 12:08:50 -0800
+	id 18Sksa-0005JZ-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 29 Dec 2002 13:21:52 -0800
+Received: from vervain.sonytel.be (mail.sonytel.be [10.17.0.27])
+	by mail.sonytel.be (8.9.0/8.8.6) with ESMTP id WAA29704
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 29 Dec 2002 22:21:13 +0100 (MET)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,57 +23,21 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
 
-Did anyone actually test fbcon_set_logo() on monochrome hardware?
+cfb_imageblit() takes care of clipping, but forgets to update fb_image.data if
+fb_image.d[xy] was changed.
 
-I admit I haven't tried it myself yet (still fighting with amifb), but this
-looks more reasonable:
-  - Use index i*8+j instead of i*2
-  - Replace conditionals by straight code without branches (bit 7 of needs_logo
-    is either 0 (normal) or 1 (reverse), and perhaps we should kill the default
-    case?).
+BTW, do we really need clipping in fb_ops.fb_{fillrect,copyarea,imageblit}()?
 
-The second part is an indentation fix.
-
-BTW, most of the new fbdev code looks really ugly in vim with `let
-c_space_errors=1', due to the exorbitant use of superfluous whitespace
-characters.
-
---- linux-2.5.53/drivers/video/console/fbcon.c	Tue Dec 10 13:41:40 2002
-+++ linux-geert-2.5.53/drivers/video/console/fbcon.c	Sun Dec 29 20:54:30 2002
-@@ -2631,12 +2632,12 @@
- 	case 1:
- 	case ~1:
- 	default:
--		for (i = 0; i < (LOGO_W * LOGO_H)/8; i++) 
--			for (j = 0; j < 8; j++) 
--				logo[i*2] = (linux_logo_bw[i] &  (7 - j)) ? 
--					((needs_logo == 1) ? 1 : 0) :
--					((needs_logo == 1) ? 0 : 1);
--				
-+		for (i = 0; i < (LOGO_W * LOGO_H)/8; i++) {
-+			u8 d = linux_logo_bw[i];
-+			for (j = 0; j < 8; j++, d <<= 1)
-+				logo[i*8+j] = ((d ^ needs_logo) >> 7) & 1;
-+		}
-+
- 		break;
- 	} 
- }	
-@@ -2668,8 +2669,8 @@
-  * be set to 1.
-  */
- static int __init fbcon_show_logo(void)
--	{
--		struct display *p = &fb_display[fg_console];	/* draw to vt in foreground */
-+{
-+	struct display *p = &fb_display[fg_console];	/* draw to vt in foreground */
- 	struct fb_info *info = p->fb_info;
- 	struct vc_data *vc = info->display_fg;
- 	struct fb_image image;
+If these calls are accessible from user space through ioctl() (if anyone really
+wants to do that?!?), I guess the answer is yes. For calls from kernel space,
+I'd say it's not necessary since calling them with out-of-range parameters is a
+bug anyway.
+So we could move the clipping to the generic ioctl() handling in fbmem.c, if we
+ever want to provide that functionality. Or is there a too high speed penalty
+for graphics chips that do implement clipping in hardware?
 
 Gr{oetje,eeting}s,
 

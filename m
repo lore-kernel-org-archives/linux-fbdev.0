@@ -1,20 +1,23 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Fw: [Bugme-new] [Bug 4386] New: tridentfb with ACCEL leaves
- artefacts when scrolling
-Date: Tue, 22 Mar 2005 12:45:01 -0800
-Message-ID: <20050322124501.6c4573a1.akpm@osdl.org>
+From: Luigi Gangitano <luigi@debian.org>
+Subject: Re: Re: [Fwd: AtyFB in 2.6.10, still not
+	perfect]
+Date: Tue, 22 Mar 2005 21:06:00 +0100
+Message-ID: <1111521961.6402.4.camel@willis>
+References: <200503151826.46073.adaplas@hotpop.com>
+	 <1110928841.6491.0.camel@willis> <200503160749.19151.adaplas@hotpop.com>
+	 <200503191615.32610.alex.kern@gmx.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ndFqd47PDCbagsVRJsWG"
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DDqG6-0005dm-Mm
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Mar 2005 12:45:50 -0800
-Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.41)
-	id 1DDqFm-0005KJ-RU
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Mar 2005 12:45:50 -0800
+	id 1DDpe3-0003pT-6l
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Mar 2005 12:06:31 -0800
+Received: from [193.205.140.229] (helo=localhost.localdomain)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1DDpdj-0001X0-79
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Mar 2005 12:06:31 -0800
+In-Reply-To: <200503191615.32610.alex.kern@gmx.de>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -25,49 +28,54 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: jochen@jochen.org
+Cc: "Antonino A. Daplas" <adaplas@hotpop.com>, Alexander Kern <alex.kern@gmx.de>
 
 
-Jochen, it would be useful if you could test 2.6.12-rc1-mm1.
+--=-ndFqd47PDCbagsVRJsWG
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Also, did this driver work OK in earlier kernels?  If so, which versions?
+Il giorno sab, 19-03-2005 alle 16:15 +0100, Alexander Kern ha scritto:
+> Copyed from oldest mail...=20
+>=20
+> > (as known) with 2.6.10. Latest 2.6.10 source in
+> > debian adds the fix that
+> > was integrated in 2.6.11, from
+> >=20
+> > =20
+> > http://lists.debian.org/debian-sparc/2005/02/msg00063.html
+>=20
+> It's mean you run 2.6.10 + "always hsync on SPARC" patch ?
 
+Right. Same behaviour with 2.6.11, however.
 
+> And if you try any fixes from Tony, you see mclk 100 xclk 100 in your dme=
+sg,=20
+> bur screen is steel garbage?
 
-Begin forwarded message:
+Yes. dmesg reports the setting passed on cmdline and screen is still
+garbled. Setting xclk to 100 makes things worse.
 
-Date: Tue, 22 Mar 2005 08:15:18 -0800
-From: bugme-daemon@osdl.org
-To: bugme-new@lists.osdl.org
-Subject: [Bugme-new] [Bug 4386] New: tridentfb with ACCEL leaves artefacts when scrolling
+Regards,
 
+--=20
+ Luigi Gangitano -- <luigi@debian.org> -- <gangitano@lugroma3.org>
+ GPG: 1024D/924C0C26: 12F8 9C03 89D3 DB4A 9972  C24A F19B A618 924C 0C26
 
-http://bugme.osdl.org/show_bug.cgi?id=4386
+--=-ndFqd47PDCbagsVRJsWG
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: Questa parte del messaggio =?ISO-8859-1?Q?=E8?= firmata
 
-           Summary: tridentfb with ACCEL leaves artefacts when scrolling
-    Kernel Version: 2.6.11.5
-            Status: NEW
-          Severity: normal
-             Owner: jsimmons@infradead.org
-         Submitter: jochen@jochen.org
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.0 (GNU/Linux)
 
+iD8DBQBCQHqo8ZumGJJMDCYRAn9cAJ9Vjj1s9rYwsISe5AxA8K6FssjCNQCeL9Jo
+0tZQu8IBjYhPeXlD2mN4qJI=
+=AeOa
+-----END PGP SIGNATURE-----
 
-Distribution: Debian/sarge
-Hardware Environment: Mini-ITX with trident on board, C3 CPU
-Problem Description:
-When compiling tridentfb with
-CONFIG_FB_TRIDENT=y
-CONFIG_FB_TRIDENT_ACCEL=y
-booting leaves the end of long lines in the last line on screen when scrolling.
-When X is running, scrolling puts garbage on the screen (looks like X data)
-Console switch fixes the screen.
-Behaviour seems to be identical with noaccel and without on the video=tridentfb
-parameter in lilo.conf.
-
-------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
+--=-ndFqd47PDCbagsVRJsWG--
 
 
 -------------------------------------------------------

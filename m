@@ -1,31 +1,44 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [Linux-fbdev-devel] Re: also frustrated with the framebuffer
- and your matrox-card in 2.5.53? hack/patch available!
-Date: Fri, 27 Dec 2002 12:05:38 +0100 (MET)
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.GSO.4.21.0212271128120.17037-100000@vervain.sonytel.be>
-References: <20021227023943.GC1412@ppc.vc.cvut.cz>
+Subject: Re: Screen Capturing
+Date: Fri, 27 Dec 2002 12:33:18 +0100 (MET)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.GSO.4.21.0212271225240.17067-100000@vervain.sonytel.be>
+References: <005401c2ad82$cef8c9c0$bd00000a@abhilash>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <20021227023943.GC1412@ppc.vc.cvut.cz>
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18Rskg-0007pN-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 27 Dec 2002 03:34:06 -0800
+In-Reply-To: <005401c2ad82$cef8c9c0$bd00000a@abhilash>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Petr Vandrovec <vandrove@vc.cvut.cz>
-Cc: James Simmons <jsimmons@infradead.org>, Jurriaan <thunder7@xs4all.nl>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Abhilash <abhilash@avenir.net>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Fri, 27 Dec 2002, Petr Vandrovec wrote:
-> On Thu, Dec 26, 2002 at 07:47:52PM +0000, James Simmons wrote:
-> > Petr is expressing his political view. It has nothing to do with technical 
-> > arguments. In fact I place a bet. I will port the matrox driver and it 
-> > will have the same functionality as the previous driver except for text 
-> > mode support. If I can't do it I will not only revert the changes but I 
+On Fri, 27 Dec 2002, Abhilash wrote:
+> I need to capture the screen .For that I use mirror driver in Windows for
+> capturing screen.
+> ie, its basically overloading the driver functions.
 > 
-> Yes. Without text mode support. But without textmode support that driver is
-> of no use for me because of it is not compatible with VMware then.
+> So in case of Linux, is there any method like this or which is the best
+> method?
+> In Xlib there are some functions to capture screen and also heard abt VESA
+> which is better?
 
-What exactly in the new fbdev API is preventing you from having text mode
-support?
+If you are using a frame buffer device, you can capture the contents of
+/dev/fb*. Either read from /dev/fb*, or mmap() it. The data you receive are in
+the native format of the graphics chip. For CLUT modes, you have to use an
+ioctl() to get the colormap.
 
 Gr{oetje,eeting}s,
 
@@ -37,3 +50,10 @@ Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 In personal conversations with technical people, I call myself a hacker. But
 when I'm talking to journalists I just say "programmer" or something like that.
 							    -- Linus Torvalds
+
+
+
+-------------------------------------------------------
+This sf.net email is sponsored by:ThinkGeek
+Welcome to geek heaven.
+http://thinkgeek.com/sf

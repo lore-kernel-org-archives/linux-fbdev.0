@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: Reworking sysfs attributes for fbdev
-Date: Wed, 16 Mar 2005 04:27:04 +0800
-Message-ID: <200503160427.04940.adaplas@hotpop.com>
-References: <200503111331.41352.ajax@nwnk.net> <200503151449.59874.adaplas@hotpop.com> <Pine.LNX.4.62.0503150954500.30569@numbat.sonytel.be>
+Subject: Re: Re: [Fwd: AtyFB in 2.6.10, still not perfect]
+Date: Wed, 16 Mar 2005 04:39:05 +0800
+Message-ID: <200503160439.05644.adaplas@hotpop.com>
+References: <200503151826.46073.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DBIdP-00081H-GW
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Mar 2005 12:27:23 -0800
+	id 1DBIou-0000HC-Fi
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Mar 2005 12:39:16 -0800
 Received: from smtp-out.hotpop.com ([38.113.3.71])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1DBIdN-0007pL-PM
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Mar 2005 12:27:23 -0800
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1DBIor-0000F1-PD
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Mar 2005 12:39:16 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 0838314AE91A
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 15 Mar 2005 20:27:07 +0000 (UTC)
-In-Reply-To: <Pine.LNX.4.62.0503150954500.30569@numbat.sonytel.be>
+	by smtp-out.hotpop.com (Postfix) with SMTP id 3AE0D14BD29A
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 15 Mar 2005 20:39:00 +0000 (UTC)
+In-Reply-To: <200503151826.46073.adaplas@hotpop.com>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -30,61 +30,34 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Jon Smirl <jonsmirl@gmail.com>, dri-egl@lists.freedesktop.org
+To: Luigi Gangitano <luigi@debian.org>
+Cc: Alexander Kern <alex.kern@gmx.de>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tuesday 15 March 2005 16:55, Geert Uytterhoeven wrote:
-> On Tue, 15 Mar 2005, Antonino A. Daplas wrote:
-> > On Tuesday 15 March 2005 11:43, Jon Smirl wrote:
-> > > Some discussion on the dri-egl list points out that the new mode
-> > > setting sysfs attributes for fbdev are too limited. Below is a
-> > > proposal I made on the dri-egl list.
-> > >
-> > > To implement this for fbdev I need to know the right set of of
-> > > attribute value pairs. Some obvious ones are:
-> > >
-> > > name=string
-> > > width=number
-> > > height=number
-> > > depth=number
-> > > refresh=number
-> > > interlace= yes | no | double
-> > > type = detailed|standard|vesa|user
-> > > sync = horizonatal_high | vertical_high | external | composite |
-> > > broadcast | green
-> > > left=number
-> > > right=number
-> > > lower=number
-> > > upper=number
-> > > hsync=number
-> > > vsync=number
-> > > pixclock=number
-> > >
-> > > Right now fb0/modes is set by passing in an array of fb_videomode
-> > > structs. To convert this to attribute value pair I needs the full set
-> > > so that no info is lost.
-> > >
-> > > If the mode and depth are independent variables we can end up with a
-> > > combo that exceeds monitor or hardware bandwidth. Would it be better
-> > > to combine the depth into the modes list? or if you try to set a
-> >
-> > We can do that, vesa's mode id's are like that. Although I prefer that
-> > mode setting should be separated from the framebuffer format setting (ie,
-> > depth), it's currently difficult to make this work safely the reason
-> > being that not all check_var() functions can be relied upon.
+On Tuesday 15 March 2005 18:26, Antonino A. Daplas wrote:
+> --- Luigi Gangitano <luigi@debian.org> wrote:
+
+> 4.  Can you post the dmesg, config and fbset -i of both the
+> working and non-working kernel?
 >
-> So should we separate into geometry, timings, visual (cfr. fbutils)?
 
-Ideally, yes, but the problem with fbsysfs is that a regular user can change
-the mode. Once we do the separation, combinations will exist that can be 
-illegal.
+The dmesg log you sent me showed this:
 
-ie echo 1024x768@60 > fb0/mode
-   echo 32 > fb0/depth
+working:
+atyfb: 3D RAGE (XL) [0x4752 rev 0x27] 8M SDRAM, 29.498928 MHz XTAL, 230 
+MHz PLL, 100 Mhz MCLK
 
-The second set may not be compatible with the preceeding one.  Although
-drivers do have a check_var(), I don't think all are robust enough to 
-screen out illegal combinations.
+not working:
+atyfb: 3D RAGE XL (Mach64 GR, PCI-33MHz) [0x4752 rev 0x27]
+atyfb: 8M SDRAM (1:1), 29.498928 MHz XTAL, 230 MHz PLL, 83 Mhz MCLK, 63 
+MHz XCLK
+
+The MCLK value is different.  Can you try booting with
+
+video=atyfb:mclk:100
+
+You can also experiment with xclk:
+
+video=atyfb:mclk:100,xclk:63
 
 Tony
 

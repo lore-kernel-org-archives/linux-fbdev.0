@@ -1,61 +1,45 @@
 From: Petr Vandrovec <vandrove@vc.cvut.cz>
-Subject: Re: [PATCH][FBDEV]: fb_putcs() and fb_setfont() methods
-Date: Sun, 5 Jan 2003 00:17:29 +0100
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030104231729.GA1188@ppc.vc.cvut.cz>
-References: <20030104204131.GD1319@ppc.vc.cvut.cz> <Pine.LNX.4.44.0301042109340.24903-100000@phoenix.infradead.org>
+Subject: Re: [Linux-fbdev-devel] [PATCH][FBDEV]: fb_putcs() and fb_setfont() methods
+Date: Sun, 5 Jan 2003 00:30:08 +0100
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <20030104233008.GB1188@ppc.vc.cvut.cz>
+References: <1041672313.958.17.camel@localhost.localdomain> <Pine.LNX.4.44.0301042058240.24903-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from r2l120.mistral.cz
-	([62.245.75.120] helo=ppc.vc.cvut.cz ident=root)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18UxYN-0005Tq-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 04 Jan 2003 15:18:07 -0800
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0301042109340.24903-100000@phoenix.infradead.org>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+In-Reply-To: <Pine.LNX.4.44.0301042058240.24903-100000@phoenix.infradead.org>
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: James Simmons <jsimmons@infradead.org>
 Cc: Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel List <linux-kernel@vger.kernel.org>
 
-On Sat, Jan 04, 2003 at 09:12:24PM +0000, James Simmons wrote:
+On Sat, Jan 04, 2003 at 09:07:29PM +0000, James Simmons wrote:
 > 
-> > I'll be happier with character coordinates for text mode. 
-> 
-> Yuck!! Using fbcon for text modes is just bloat. For hardware text mode it 
-> is much better to write a nice small console driver like newport_con.c
+> Rejected. I have put thought into it and the whole point was to not allow 
+> the fbdev layer to touch console data. I stand firm on this!!! The reason 
+> being is the core console layer is going to change the next development 
+> cycle. We have to change to deal with things like the PC9800 type hardware 
+> that support more than 512 fonts. Do we realy want to break every fbdev 
+> driver again. This way the breakage is once and for all. Its is also a 
 
-When I said before christmas that I'll have to write matroxcon to get
-reasonable functionality, you laughed... Now, it is clear that there is
-no other way...
- 
-> > could decide on case-by-case basis whether it will use its own code or 
-> > generic without touching pointer (without modifying potentially constant
-> > fb_ops structure common to all fbdev instances).
-> 
-> The patch was rejected. I working on your driver. I can throw in a text 
-> mode driver as well. 
+Why? (a) only those which will use putcs, and (b) I see no 512 chars limit
+anywhere in new code. And in old code it is there only because of passed
+data are only 16bit, not 32bit wide... With simple search&replace you can
+extend it to any size you want, as long as you'll not use sparse font
+bitmap.
 
-You can throw anything in and out, of course... It is GPL, after all.
-Only question left is whether I'll be satisfied with functionality you
-offer.
+> pandoras box. If we place these hooks in we end up with the same crappy 
+> driver problem we had before. I never heard anyone every say the old api 
+> we clean. 
+
+I believe that I repeatedly said that I see no problem with old API which
+cannot be solved by incremental updates and without removing functionality.
+
+It is like with modules - some believe in evolution, and some in revolution...
+Fortunately modules situation finally settled down and it is enough just install
+new app to handle module loading/unloading. With current fbdev even trivial
+console resizing does not do anything useful (thanks, Antonio).
 						Best regards,
 							Petr Vandrovec
 							vandrove@vc.cvut.cz
- 
-
-
--------------------------------------------------------
-This sf.net email is sponsored by:ThinkGeek
-Welcome to geek heaven.
-http://thinkgeek.com/sf

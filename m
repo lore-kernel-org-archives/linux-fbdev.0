@@ -1,17 +1,17 @@
-From: Sven Luther <luther@dpt-info.u-strasbg.fr>
-Subject: Re: Radeon 9000 on a linux 2.4.18 kernel.
-Date: Sat, 25 Jan 2003 12:40:51 +0100
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [PATCH] Funny sync calculation correction
+Date: Sat, 25 Jan 2003 19:13:22 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030125114051.GA558@iliana>
-References: <20030124090423.GA1690@iliana> <Pine.LNX.4.44.0301242258440.2597-100000@phoenix.infradead.org>
+Message-ID: <Pine.LNX.4.44.0301251912560.2597-100000@phoenix.infradead.org>
+References: <1043450243.10711.41.camel@h9n1fls20o980.telia.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from smtp-out-3.wanadoo.fr ([193.252.19.233] helo=mel-rto3.wanadoo.fr)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18cOgm-00046J-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 25 Jan 2003 03:41:32 -0800
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0301242258440.2597-100000@phoenix.infradead.org>
+Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18cVkb-0000H4-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 25 Jan 2003 11:13:58 -0800
+In-Reply-To: <1043450243.10711.41.camel@h9n1fls20o980.telia.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,25 +21,38 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Sven Luther <luther@dpt-info.u-strasbg.fr>, linux-fbdev-devel@lists.sourceforge.net
+To: Fredrik Noring <noring@nocrew.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, Jan 24, 2003 at 10:59:05PM +0000, James Simmons wrote:
+> I've been digging around in the rivafb module to find out why some
+> modes converted from XFree86 4.2 don't work on some display devices.
+> Here's a funny part of the riva_load_video_mode function (Linux
+> 2.4.21-pre2):
 > 
-> >   3) Are the 2.5.x kernel working on powerpc, and if yes, is the
-> >   radeonfb driver ported ?
+> 	hStart = (hDisplaySize + video_mode->right_margin) / 8 + 2;
+> 	hEnd   = (hDisplaySize + video_mode->right_margin +
+> 		 video_mode->hsync_len) / 8 - 1;
 > 
-> Yes and yes to the last time I checked. 
+> Please notice how "hsync_len" does not actually represent the length
+> of the sync. Rather, it's compensated with 24 pixels. The corresponding
+> code in the XFree86 4.2 (nv_dac.c) contains no such compensation:
+> 
+>     int horizStart      = (mode->CrtcHSyncStart/8) - 1;
+>     int horizEnd        = (mode->CrtcHSyncEnd/8)   - 1;
+> 
+> The difference seems to be almost insignificant for modern multisync
+> screens, but devices such as TV:s get confused by the current version.
+> Is there a reason for the difference in calculations?
+> 
+> The attached patch corrects the calculations in accordance with XFree86
+> and works better with the modelines I've tested. 
+> 
+> Please give it a try. Thanks,
 
-:)))
+Works fine. I applied it to the 2.5.X tree.
 
-Now, i only need that the POP patches are ported to 2.5.x.
-
-Friendly,
-
-Sven Luther
 
 
 -------------------------------------------------------

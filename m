@@ -1,21 +1,18 @@
-From: Sven Luther <sven.luther@wanadoo.fr>
-Subject: radeonfb on pegasos powerpc motherboard and X endianess problem
-Date: Wed, 4 Jun 2003 16:54:23 +0200
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Subject: Re: radeonfb on pegasos powerpc motherboard
+	and X endianess problem
+Date: 04 Jun 2003 17:27:00 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030604145423.GA22876@iliana>
+Message-ID: <1054740419.27389.332.camel@thor.holligenstrasse29.lan>
+References: <20030604145423.GA22876@iliana>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from smtp3.wanadoo.fr ([193.252.22.25] helo=mwinf0601.wanadoo.fr)
+Received: from [195.141.226.27] (helo=netline-mail1.netline.ch)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19NZer-0002M3-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 04 Jun 2003 07:54:33 -0700
-Received: from iliana (unknown [81.49.168.167])
-	by mwinf0601.wanadoo.fr (SMTP Server) with ESMTP id 89FF03400159
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed,  4 Jun 2003 16:54:24 +0200 (CEST)
-Received: from luther by iliana with local (Exim 3.36 #1 (Debian))
-	id 19NZeh-0005yF-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 04 Jun 2003 16:54:23 +0200
-Content-Disposition: inline
+	id 19NaAM-00059I-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 04 Jun 2003 08:27:06 -0700
+In-Reply-To: <20030604145423.GA22876@iliana>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -25,55 +22,39 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"
+To: Sven Luther <sven.luther@wanadoo.fr>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Hello,
+On Wed, 2003-06-04 at 16:54, Sven Luther wrote:
+>=20
+> I finally have a working pegasos motherboard as well as a working kernel
+> with a 1.6 radeonfb. I have also installed Daniel Stone's X 4.3.0
+> debian/sid packages, and notice the following :
+>=20
+>   1) radeonfb works fine in 8bpp and 32bpp but depth 15 and 16 only give
+>   me some very dark grey.
+>=20
+>   2) when running X with the UseFBDev option the colors are bad, i guess
+>   it is an endianess problem. (with and without accel)
 
-I finally have a working pegasos motherboard as well as a working kernel
-with a 1.6 radeonfb. I have also installed Daniel Stone's X 4.3.0
-debian/sid packages, and notice the following :
+You want radeonfb from a recent benh kernel, anything else is more or
+less broken.
 
-  1) radeonfb works fine in 8bpp and 32bpp but depth 15 and 16 only give
-  me some very dark grey.
+>   3) When running X without the UseFBDev option, the colors are good,
+>   but i get garbage when i return to the console. Not exactly garbage,
+>   at first it is ok, but when i enter a line or somehow pan the screen,
+>   the corruption start. Doing a vt switch and back redraws a clean
+>   screen.
 
-  2) when running X with the UseFBDev option the colors are bad, i guess
-  it is an endianess problem. (with and without accel)
+Sounds like the radeon driver doesn't restore the framebuffer aperture
+byte swapping correctly.
 
-  3) When running X without the UseFBDev option, the colors are good,
-  but i get garbage when i return to the console. Not exactly garbage,
-  at first it is ok, but when i enter a line or somehow pan the screen,
-  the corruption start. Doing a vt switch and back redraws a clean
-  screen.
 
-So, i think something is wrong. The kernel was forked around the
-2.4.18-rc4 time in a messy way, i am actually working on bringing the
-patch in sync with the newer ppc trees. Matroxfb also had problems and
-Petr told me that it probably was an endianess issue back then. I am
-using a Radeon 9000 board.
+--=20
+Earthling Michel D=E4nzer   \  Debian (powerpc), XFree86 and DRI developer
+Software libre enthusiast  \     http://svcs.affero.net/rm.php?r=3Ddaenzer
 
-So, since this is a pegasos, based on the pop specification, which in
-turn are related to the chrp ones, and i was told that most chrp
-motherboard did endianess inversion in the northbridge or something
-such, and i believe that the pegasos doesn't do so, is it possible that
-this is the cause, and that XFree86 know how to program the graphic card
-to do endianess conversion, and fbdev knows not, or maybe that the
-XFree86 radeon driver doesn't know how to act exactly and accidentally
-reverts the endianess conversion or something such.
-
-Using the fbdev driver in xfree86, i get a seemingly working X, but the
-background X image is yellowish and the mode is not set correctly it is
-correct, but the image is a bit smaller than the screen, and centered or
-moved to the right.
-
-Does someone know with more exactitude what the situation is exactly
-with regard the kernel and endianess conversion with the different
-powerpc subarches.
-
-Friendly,
-
-Sven Luther
 
 
 -------------------------------------------------------

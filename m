@@ -1,23 +1,23 @@
-From: Alexander Kern <alex.kern@gmx.de>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: URGENT: status of atyfb
-Date: Tue, 3 Aug 2004 22:57:51 +0200
+Date: Wed, 04 Aug 2004 07:25:40 +1000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200408032257.51111.alex.kern@gmx.de>
-References: <1091417497.7393.63.camel@gaston> <1091424085.7387.68.camel@gaston>
+Message-ID: <1091568340.1900.14.camel@gaston>
+References: <1091417497.7393.63.camel@gaston>
+	 <1091424085.7387.68.camel@gaston>  <200408032257.51111.alex.kern@gmx.de>
 Mime-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_Px/DBmhW1uB2Hd4"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bs6Me-0004xf-HL
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 03 Aug 2004 13:58:28 -0700
-Received: from mail.gmx.de ([213.165.64.20] helo=mail.gmx.net)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.34)
-	id 1Bs6Md-00081g-TL
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 03 Aug 2004 13:58:28 -0700
-In-Reply-To: <1091424085.7387.68.camel@gaston>
-Content-Disposition: inline
+	id 1Bs6nG-0002W3-5n
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 03 Aug 2004 14:25:58 -0700
+Received: from gate.crashing.org ([63.228.1.57])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.34)
+	id 1Bs6nF-0007q1-Nq
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 03 Aug 2004 14:25:58 -0700
+In-Reply-To: <200408032257.51111.alex.kern@gmx.de>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,60 +27,42 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Ville =?utf-8?q?Syrj=C3=A4l=C3=A4?= <syrjala@sci.fi>
+Content-Type: text/plain; charset="us-ascii"
+To: Alexander Kern <alex.kern@gmx.de>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
 
 
---Boundary-00=_Px/DBmhW1uB2Hd4
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+> Hi, I do not have any information or hardware about PPC. Should it own 
+> something like OpenFirmware? In this case it is possible to read clock 
+> information from this.
 
-Am Montag, 2. August 2004 07:21 schrieb Benjamin Herrenschmidt:
-> Ok, I built an upstream tree with just the new atyfb in, and it breaks
-> on the wallstreet powerbook (LT-G) here. I'm not sure what is wrong at
-> this point, I'd say the clock stuff is incorrectly calculated.
->
-> On PPC, you do not have access to BIOS tables. So driver starts with
-> blowing up since the code for retreiving that from BIOS is unconditional
-> (it should be X86 only).
->
-> I disabled that, but then, the default values (which are the same as the
-> old driver afaik) don't seem to be enough anymore to produce a correct
-> output.
->
-> Ben.
-Hi, I do not have any information or hardware about PPC. Should it own 
-something like OpenFirmware? In this case it is possible to read clock 
-information from this.
+On some models, yes, on some no. Older machines have a firmware that
+won't tell you anything, the MacOS driver back then was hard coding the
+values.
 
-I found, that we change a little behaviour. Please give a try for this 
-patch...
+Anyway, the clocks are ok, apparently (maybe not the engine one though,
+see later), the problem was that the DLL magic was reverted for the
+LT-G, plus some minor issues with the driver blowing up on non-BIOS
+machines that I can fix.
 
-Regards Alex
+The engine tends to lockup quickly though, I'll do experiments.
 
---Boundary-00=_Px/DBmhW1uB2Hd4
-Content-Type: text/x-diff;
-  charset="iso-8859-15";
-  name="atyfb_base_difference.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="atyfb_base_difference.patch"
+> I found, that we change a little behaviour. Please give a try for this 
+> patch...
 
---- atyfb_base.c	2004-08-01 00:23:53.000000000 +0200
-+++ atyfb_base.c.ppc	2004-08-03 22:54:17.211890752 +0200
-@@ -336,7 +336,7 @@
- 
- #define ATI_CHIP_264GTB    (ATI_MODERN_SET) 
- /*#define ATI_CHIP_264GTDVD  ?*/
--#define ATI_CHIP_264LTG    (ATI_MODERN_SET)
-+#define ATI_CHIP_264LTG    (M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_EXTRA_BRIGHT)
- 
- #define ATI_CHIP_264GT2C   (ATI_MODERN_SET | M64F_HW_TRIPLE)
- #define ATI_CHIP_264GTPRO  (ATI_MODERN_SET | M64F_HW_TRIPLE | M64F_FIFO_32 | M64F_RESET_3D)
+Your patch seem to address the DLL issue, I did that too, fixes the display,
+I'll toy around and let you know.
 
---Boundary-00=_Px/DBmhW1uB2Hd4--
+Also, when just dropping the existing driver into the current linus tree, the
+cursor code is blowing up, I don't know why yet, I suppose some changes to the
+common code in the fbdev tree. I'll have a look.
+
+I really want this new driver to be sent upstream ASAP. What I may do is once
+I get it working well enough, I'll send it to andrew for the -mm tree and
+leave it there for a while to get it properly tested.
+
+Ben.
+
 
 
 -------------------------------------------------------

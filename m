@@ -1,17 +1,15 @@
-From: Antonino Daplas <adaplas@pol.net>
+From: Jon Smirl <jonsmirl@yahoo.com>
 Subject: Re: Reading the EDID block for x86 machines
-Date: 12 Mar 2003 05:47:37 +0800
+Date: Tue, 11 Mar 2003 14:05:39 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1047419211.1186.32.camel@localhost.localdomain>
-References: <Pine.LNX.4.44.0303111537420.23668-100000@phoenix.infradead.org> 
-	<1047418384.1100.5.camel@localhost.localdomain>
+Message-ID: <20030311220539.20321.qmail@web14912.mail.yahoo.com>
+References: <1047418384.1100.5.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from pine.compass.com.ph ([202.70.96.37])
+Received: from web14912.mail.yahoo.com ([216.136.225.248])
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18srec-0007LL-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 Mar 2003 13:51:22 -0800
+	id 18srsS-0002ar-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 Mar 2003 14:05:40 -0800
 In-Reply-To: <1047418384.1100.5.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
@@ -23,133 +21,44 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Antonino Daplas <adaplas@pol.net>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: Antonino Daplas <adaplas@pol.net>, James Simmons <jsimmons@infradead.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 2003-03-12 at 05:33, Antonino Daplas wrote:
+If your in messing with the early boot sequence, why
+don't you make the kernel initialize all of the video
+cards in the system instead of only the primary one.
 
-> I think I found a chunk of around 500 bytes between INITRD and EDD, so
-> we can squeeze in EDID in there :-)  Although I'm confident on this,
-> I'll feel better if someone who boots with initrd can test it.
+Alsom is it really better to continue messing with
+these real mode X86 BIOS calls, or would it just be
+better to try and extract the info from the card
+vendors on how to do reset or get the DDC info? If we
+had the info about the cards we could just ignore the
+VBIOS and write this code into the protected mode FB
+drivers where it belongs. This problem just keeps
+recurring over and over on the non-X86 platforms; it's
+stupid having to carry around an X86 emulator just to
+run the VBIOS code.
 
-Forgot the patch :-)
+Personally I'd like to be able to insmod a fb driver
+for a secondary card. If the card needs it, it would
+get initialized, read the DDC data, and come up in a
+mode that makes sense.
 
-Tony
+I have a user space program that can reset secondary
+cards using their VBIOS and emulating X86 real mode.
+It can probably be easily modified to get the DDC info
+and then IOCTL it into the fb driver. I'll post it if
+you want.
 
-diff -Naur linux-2.5.64-fbdev/arch/i386/boot/compressed/misc.c linux-2.5.64/arch/i386/boot/compressed/misc.c
---- linux-2.5.64-fbdev/arch/i386/boot/compressed/misc.c	2003-03-11 21:19:34.000000000 +0000
-+++ linux-2.5.64/arch/i386/boot/compressed/misc.c	2003-03-11 21:07:24.000000000 +0000
-@@ -91,7 +91,7 @@
- #define ALT_MEM_K   (*(unsigned long *)(real_mode + 0x1e0))
- #endif
- #define SCREEN_INFO (*(struct screen_info *)(real_mode+0))
--#define EDID_INFO   (*(struct edid_info   *)(real_mode+0x600))
-+#define EDID_INFO   (*(struct edid_info   *)(real_mode+0x440))
- 
- extern char input_data[];
- extern int input_len;
-diff -Naur linux-2.5.64-fbdev/arch/i386/boot/video.S linux-2.5.64/arch/i386/boot/video.S
---- linux-2.5.64-fbdev/arch/i386/boot/video.S	2003-03-11 21:19:34.000000000 +0000
-+++ linux-2.5.64/arch/i386/boot/video.S	2003-03-11 21:07:24.000000000 +0000
-@@ -1888,7 +1888,6 @@
- 	popw	%ax
- 	ret
- 
--#if defined(CONFIG_EDID)
- 	store_edid:
- 	pushw	%es				# just save all affected 
- 	pushw	%ax				# affected registers
-@@ -1914,21 +1913,22 @@
- store_edid_magic:	
- 	movb	$0x13, %al 
- 	movw    $128, %cx
--	movw	$0x600, %di
-+	movw	$0x440, %di
- 	cld
- 	rep 
- 	stosb  
- 	ret
-+#if defined(CONFIG_EDID)
- read_edid:	
- 	movw	$0x4f15, %ax
- 	movw	$0x01, %bx
- 	movw	$0x00, %cx
- 	movw    $0x01, %dx
--	movw	$0x600, %di
-+	movw	$0x440, %di
- 	int	$0x10	
- 	ret
- #else
--store_edid:
-+read_edid:
- 	ret
- #endif
- 
-diff -Naur linux-2.5.64-fbdev/arch/i386/kernel/setup.c linux-2.5.64/arch/i386/kernel/setup.c
---- linux-2.5.64-fbdev/arch/i386/kernel/setup.c	2003-03-11 21:19:34.000000000 +0000
-+++ linux-2.5.64/arch/i386/kernel/setup.c	2003-03-11 21:07:24.000000000 +0000
-@@ -496,23 +496,6 @@
- #define copy_edd() do {} while (0)
- #endif
- 
--#if defined(CONFIG_EDID)
--/*
-- * Since empty_zero_page has a limited size, we are going to use the
-- * same offset as EDD.  Thus, copying of the EDID block will only be
-- * enabled if EDD is disabled.  
-- */
--static inline void copy_edid(void)
--{
--	edid_info = EDID_INFO;
--}
--#else
--static inline void copy_edid(void)
--{
--	memset(&edid_info, 0x13, 128);
--}
--#endif
--
- /*
-  * Do NOT EVER look at the BIOS memory size location.
-  * It does not work on many machines.
-@@ -880,7 +863,7 @@
-  	ROOT_DEV = ORIG_ROOT_DEV;
-  	drive_info = DRIVE_INFO;
-  	screen_info = SCREEN_INFO;
--	copy_edid();
-+	edid_info = EDID_INFO;
- 	apm_info.bios = APM_BIOS_INFO;
- 	saved_videomode = VIDEO_MODE;
- 	printk("Video mode to be used for restore is %lx\n", saved_videomode);
-diff -Naur linux-2.5.64-fbdev/drivers/video/Kconfig linux-2.5.64/drivers/video/Kconfig
---- linux-2.5.64-fbdev/drivers/video/Kconfig	2003-03-11 21:19:34.000000000 +0000
-+++ linux-2.5.64/drivers/video/Kconfig	2003-03-11 21:07:47.000000000 +0000
-@@ -6,7 +6,7 @@
- 
- config EDID
- 	bool "Get EDID block from VBE"
--	depends on X86 && !EDD
-+	depends on X86
-           
- config FB
- 	bool "Support for frame buffer devices"
-diff -Naur linux-2.5.64-fbdev/include/asm-i386/setup.h linux-2.5.64/include/asm-i386/setup.h
---- linux-2.5.64-fbdev/include/asm-i386/setup.h	2003-03-11 21:19:34.000000000 +0000
-+++ linux-2.5.64/include/asm-i386/setup.h	2003-03-11 21:07:25.000000000 +0000
-@@ -37,10 +37,10 @@
- #define KERNEL_START (*(unsigned long *) (PARAM+0x214))
- #define INITRD_START (*(unsigned long *) (PARAM+0x218))
- #define INITRD_SIZE (*(unsigned long *) (PARAM+0x21c))
-+#define EDID_INFO   (*(struct edid_info *) (PARAM+0x440))
-+#define EDID_SIZE   128
- #define EDD_NR     (*(unsigned char *) (PARAM+EDDNR))
- #define EDD_BUF     ((struct edd_info *) (PARAM+EDDBUF))
--/* Note: EDID_INFO uses the same offset as EDD_BUF */
--#define EDID_INFO   (*(struct edid_info *) (PARAM+EDDBUF))
- #define COMMAND_LINE ((char *) (PARAM+2048))
- #define COMMAND_LINE_SIZE 256
- 
+=====
+Jon Smirl
+jonsmirl@yahoo.com
 
+__________________________________________________
+Do you Yahoo!?
+Yahoo! Web Hosting - establish your business online
+http://webhosting.yahoo.com
 
 
 -------------------------------------------------------

@@ -1,14 +1,21 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH] vgastate warning
-Date: Mon, 23 Jun 2003 22:16:49 +0200 (MEST)
+From: Warren Turkal <wturkal@cbu.edu>
+Subject: radeon framebuffer
+Date: Mon, 23 Jun 2003 21:45:01 -0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0306232215511.28300-100000@vervain.sonytel.be>
+Message-ID: <200306232145.01589.wturkal@cbu.edu>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=witte.sonytel.be)
+Received: from cpe-024-165-217-216.midsouth.rr.com
+	([24.165.217.216] helo=braindead ident=foobar)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19UXkn-0006Hc-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 23 Jun 2003 13:17:29 -0700
+	id 19Udnt-0001Hl-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 23 Jun 2003 19:45:05 -0700
+Received: from braindead ([127.0.0.1])
+	by braindead with esmtp (Exim 3.36 #1 (Debian))
+	id 19Udnr-0001lQ-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 23 Jun 2003 21:45:03 -0500
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -18,35 +25,17 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
 
+I just wanted to make sure that the developers of this list know that the 
+radeon framebuffer only works enough to completely white out my screen when 
+doing anything other than text mode stuff in 2.5.73.
 
-vgastate: add missing include for v{malloc,free}() prototypes
-
---- linux-2.5.72/drivers/video/vgastate.c.orig	Wed Jun 18 12:16:26 2003
-+++ linux-2.5.72/drivers/video/vgastate.c	Mon Jun 23 21:45:31 2003
-@@ -17,6 +17,7 @@
- #include <linux/module.h>
- #include <linux/slab.h>
- #include <linux/fb.h>
-+#include <linux/vmalloc.h>
- #include <video/vga.h>
- 
- struct regstate {
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Thanks, Warren
+-- 
+Treasurer, GOLUM, Inc.
+http://www.golum.org
 
 
 

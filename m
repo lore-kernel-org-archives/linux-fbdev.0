@@ -1,18 +1,19 @@
-From: Russell King <rmk@arm.linux.org.uk>
-Subject: Re: [BK PATCHS] fbdev updates.
-Date: Fri, 18 Oct 2002 19:32:46 +0100
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Subject: Re: Re: Status of radeonfb in 2.5?
+Date: 18 Oct 2002 21:28:40 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20021018193245.A15827@flint.arm.linux.org.uk>
-References: <20021015103833.C9771@flint.arm.linux.org.uk> <Pine.LNX.4.33.0210181018470.10832-100000@maxwell.earthlink.net>
+Message-ID: <1034969321.1126.2251.camel@tibook>
+References: <3DACA222.5030409@netscape.net>
+	<20021016223613.17897@192.168.4.1> <3DADD22F.9030508@netscape.net>
+	<1034808341.1229.282.camel@tibook>  <aopfrg$aln$1@main.gmane.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from caramon.arm.linux.org.uk ([212.18.232.186])
-	by usw-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 182bvg-0005Wo-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Oct 2002 11:33:01 -0700
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.33.0210181018470.10832-100000@maxwell.earthlink.net>; from jsimmons@infradead.org on Fri, Oct 18, 2002 at 10:27:59AM -0700
+Received: from netline-be1.netline.ch ([195.141.226.32])
+	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 182cne-0002gH-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Oct 2002 12:28:46 -0700
+In-Reply-To: <aopfrg$aln$1@main.gmane.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,34 +23,52 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="iso-8859-1"
+To: nwourms@netscape.net
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, Oct 18, 2002 at 10:27:59AM -0700, James Simmons wrote:
-> Yes the drivers should always have priority. The other stuff is there
-> only if the drivers have no power management of any kind. I leave it up to
-> the driver write to implement a fb_blank function that handles different
-> cases.
+On Fre, 2002-10-18 at 19:21, Nicholas Wourms wrote:
+> Michel D=E4nzer wrote:
+>=20
+> > On Mit, 2002-10-16 at 22:55, Nicholas Wourms wrote:
+> >>=20
+> >> A) Is it (or will it ever be) possible to run dual head
+> >> using two different cards (like radeon & riva-tnt2)?  I know
+> >> there is still much work to be done, but I was curious if
+> >> this was even remotely possible.
+> >=20
+> > I think it should theoretically work, but as always the only way to tel=
+l
+> > is to try it. :)
+>=20
+> Well there isn't much on multiheading in the documentation, so I was hopi=
+ng=20
+> for some hints or key insights into how to set this up.
 
-The drivers don't have priority though.  You call set_par, and then
-wander off into the internals of fbgen.c to set can_soft_blank youself,
-without giving the drivers any look-in to set that correctly.
+Something like video=3Dradeonfb video=3Driva ?
 
-> > There is also the argument about wanting soft blanking, but hardware power
-> > saving.
-> 
-> Hm. True unfortunely the fbdev layer lacks handling details like that. The
-> console system is even worse. This is why a single flag like
-> can_soft_blank can actually be a limitation.
 
-Well, it needs to be fixed.  We've lost functionality that was present in
-2.4, and therefore I call it a bug.
+> >> B) Does anyone have a painless, yet precise way of
+> >> generating modelines for fb.modes if you are using
+> >> XFree-4.2?  I only ask because the XFree modelines are all
+> >> determined by i2c DDC probing, thus there are none in the
+> >> XF86Config file.
+> >=20
+> > If the X driver supports Option "UseFBDev", you should be able to use
+> > fbset with that.
+> >=20
+>=20
+> Huh?  The problem is that fbset will not work because I need to populate=20
+> fb.modes with proper mode lines.  So at the moment fbset won't work at al=
+l. =20
 
--- 
-Russell King (rmk@arm.linux.org.uk)                The developer of ARM Linux
-             http://www.arm.linux.org.uk/personal/aboutme.html
+I was thinking of running X with Option "UseFBDev" and getting
+information about the modes with fbset.
+
+
+--=20
+Earthling Michel D=E4nzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
+XFree86 and DRI project member   /  CS student, Free Software enthusiast
 
 
 

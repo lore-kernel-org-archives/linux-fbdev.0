@@ -1,17 +1,16 @@
-From: Sven Luther <luther@dpt-info.u-strasbg.fr>
-Subject: Re: video dir reorg
-Date: Tue, 14 Jan 2003 22:26:47 +0100
+From: Jon Smirl <jonsmirl@yahoo.com>
+Subject: Re: Rage1128
+Date: Tue, 14 Jan 2003 13:59:47 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030114212646.GA3731@iliana>
-References: <20030114091308.GA17392@iliana> <20030114172236.69468.qmail@web14905.mail.yahoo.com>
+Message-ID: <20030114215947.28884.qmail@web14908.mail.yahoo.com>
+References: <1042579023.20959.14.camel@12-235-123-161.client.attbi.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from smtp-out-2.wanadoo.fr ([193.252.19.254] helo=mel-rto2.wanadoo.fr)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18YYaF-0002JO-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 14 Jan 2003 13:26:56 -0800
-Content-Disposition: inline
-In-Reply-To: <20030114172236.69468.qmail@web14905.mail.yahoo.com>
+Received: from web14908.mail.yahoo.com ([216.136.225.60])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18YZ64-0000JA-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 14 Jan 2003 13:59:48 -0800
+In-Reply-To: <1042579023.20959.14.camel@12-235-123-161.client.attbi.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,46 +22,50 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jon Smirl <jonsmirl@yahoo.com>
-Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+To: Brad Douglas <brad@neruo.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, Jan 14, 2003 at 09:22:36AM -0800, Jon Smirl wrote:
-> --- Sven Luther <luther@dpt-info.u-strasbg.fr> wrote:
-> > I think Linus rejected this last time James
-> > submitted it.
-> 
-> Didn't the last patch just move the DRM directory from
-> driver/char into the video directory.?
+--- Brad Douglas <brad@neruo.com> wrote:
+> ATI does not give out initialization information
+> about their chipsets.
 
-There is a response of linus in the mailing list archive about this, i
-don't remember nor checked if it was only the first time, or not. I
-think the objection was about complicate to supervise diffs.
+I got one email from them offering me the Rage128 SDK.
+Since then I haven't heard anything.  I don't know if
+the SDK has the needed info.
 
-> This could be done in two steps. First split out the
-> fb console driver files into their own directory and
-> then sort out the hardware drivers more. Then if the
-> DRM merge gets ok'd everything will be ready.
-> 
-> In the config system I don't like how you have to
-> enable driver support for the same piece of hardware
-> in two different places. I also don't like looking in
-> two different places for the source to drivers for the
-> same hardware.
-> 
-> What is Linus' take on merging a card's fb and drm
-> drivers into a single module in the long run?
+I see that the cards can vary in type and amount of
+VRAM. But this info must be in the ROM or a register
+somewhere.  The ROM code needs to read this info from
+somewhere at boot time.  I was hoping the the
+protected mode code could  get this info out of the
+ROM too.
 
-Well, the problem is that the fb drivers are maintained by us, and the
-drm drivers are maintained by the DRI.
+I found this at Rage Underground:
+The simple answer is that you should NOT flash your
+Rage128 BIOS! The reason is that there are over 50
+revisions of the Rage 128 card.
 
-Also, i think the drm drivers should compile not only on linux, but on
-other oses too (BSDs at least).
+Do you think ATI can provide the info needs for
+writing an init routine that can handle the 50
+variations? Has ATI written a unified Rage128 BIOS
+that will work in all the cards? I have a hard time
+imagining that they are keeping 50 separate source
+code projects for the BIOS.
 
-Also, i believe some of the XFree86 guys don't like fbdevs.
+Another solution to this would be to modify the kernel
+to initialize secondary video cards via Int10 very
+early in the boot process; before it gets so hard to
+get into vm86 mode. This would still leave DDC without
+a solution. Has anyone tried this approach?
 
-Friendly,
+=====
+Jon Smirl
+jonsmirl@yahoo.com
 
-Sven Luther
+__________________________________________________
+Do you Yahoo!?
+Yahoo! Mail Plus - Powerful. Affordable. Sign up now.
+http://mailplus.yahoo.com
 
 
 -------------------------------------------------------

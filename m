@@ -1,17 +1,17 @@
 From: James Simmons <jsimmons@transvirtual.com>
-Subject: Re: [PATCH] 2.5.24 matroxfb off by one error
-Date: Mon, 1 Jul 2002 10:05:47 -0700 (PDT)
+Subject: Re: [PATCH] 2.5.24 matroxfb memory corruption
+Date: Mon, 1 Jul 2002 10:12:49 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0207011005350.21874-100000@www.transvirtual.com>
-References: <20020630003410.GH25118@ppc.vc.cvut.cz>
+Message-ID: <afq2n7$if1$2@main.gmane.org>
+References: <20020630002834.GG25118@ppc.vc.cvut.cz>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from www.transvirtual.com ([206.14.214.140])
 	by usw-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17P4ca-0002cY-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 01 Jul 2002 10:05:52 -0700
-In-Reply-To: <20020630003410.GH25118@ppc.vc.cvut.cz>
+	id 17P4jM-0003j7-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 01 Jul 2002 10:12:52 -0700
+In-Reply-To: <20020630002834.GG25118@ppc.vc.cvut.cz>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,55 +27,14 @@ To: Petr Vandrovec <vandrove@vc.cvut.cz>
 Cc: torvalds@transmeta.com, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
 
-Applyed to the fbdev BK tree.
+> do_install_cmap(), he blindly changed also matroxfb, which happily
+> uses fbcon.currcon == -1. This caused memory corruption because of
+> memory before fb_display[] array was overwritten.
+>   Default do_install_cmap() also installed invalid default color map
+> in some matroxfb resolutions. Not all world have >= 4bpp.
 
-   . ---
-   |o_o |
-   |:_/ |   Give Micro$oft the Bird!!!!
-  //   \ \  Use Linux!!!!
- (|     | )
- /'\_   _/`\
- \___)=(___/
+Applied to BK tree.
 
-On Sun, 30 Jun 2002, Petr Vandrovec wrote:
-
-> Hi Linus,
->    please apply patch below.
->
->    It fixes off by one error in getcolreg/setcolreg in matroxfb's
-> secondary head driver.
-> 					Thanks,
-> 						Petr Vandrovec
-> 						vandrove@vc.cvut.cz
->
->
-> diff -urdN linux/drivers/video/matrox/matroxfb_crtc2.c linux/drivers/video/matrox/matroxfb_crtc2.c
-> --- linux/drivers/video/matrox/matroxfb_crtc2.c	Fri Jun 21 00:53:48 2002
-> +++ linux/drivers/video/matrox/matroxfb_crtc2.c	Sat Jun 29 00:09:09 2002
-> @@ -29,7 +29,7 @@
->  static int matroxfb_dh_getcolreg(unsigned regno, unsigned *red, unsigned *green,
->  		unsigned *blue, unsigned *transp, struct fb_info* info) {
->  #define m2info ((struct matroxfb_dh_fb_info*)info)
-> -	if (regno > 16)
-> +	if (regno >= 16)
->  		return 1;
->  	*red = m2info->palette[regno].red;
->  	*blue = m2info->palette[regno].blue;
-> @@ -44,7 +44,7 @@
->  #define m2info ((struct matroxfb_dh_fb_info*)info)
->  	struct display* p;
->
-> -	if (regno > 16)
-> +	if (regno >= 16)
->  		return 1;
->  	m2info->palette[regno].red = red;
->  	m2info->palette[regno].blue = blue;
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
 
 
 

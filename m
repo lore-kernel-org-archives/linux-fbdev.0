@@ -1,27 +1,19 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Any patches against the most recent kernel?
-Date: Tue, 25 May 2004 20:29:58 +0800
+From: "xuhaoz" <xuhaoz@neonetech.com>
+Subject: (no subject)
+Date: Wed, 26 May 2004 17:00:00 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200405252029.58481.adaplas@hotpop.com>
-Reply-To: adaplas@pol.net
+Message-ID: <PMEKJGJGKKPHMBEGKNMIEEBKCCAA.xuhaoz@neonetech.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BSb4E-00089R-Cb
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 25 May 2004 05:30:02 -0700
-Received: from babyruth.hotpop.com ([38.113.3.61])
+	id 1BSuHO-0002XD-07
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 26 May 2004 02:00:54 -0700
+Received: from [211.155.249.251] (helo=nnt.neonetech.com)
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BSb4E-0006ti-0p
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 25 May 2004 05:30:02 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by babyruth.hotpop.com (Postfix) with SMTP id 0AFA6512E7B
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 25 May 2004 11:58:23 +0000 (UTC)
-Received: from 203.177.116.91 (unknown [203.177.116.91])
-	by smtp-1.hotpop.com (Postfix) with ESMTP id 50AEC1A01D8
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 25 May 2004 11:36:20 +0000 (UTC)
-Content-Disposition: inline
+	id 1BSuHN-0000X5-Fr
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 26 May 2004 02:00:53 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,17 +24,23 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Hi James,
 
-I would like to work again on fbdev development.  I don't have BK, so I'm 
-relying on your occasional fbdev.diff.gz.  Even if the latest changes are 
-broken, can you create one against the latest standard kernel?
+hi all
+	how can i config the framebuffer to be an available console?,i want the
+boot message to display onto the board lcd screen .i use uclinux2.4, arm7no
+mmu
 
-Thanks.
+		thanks ,
+		xuhaoz on 2004-05-26
 
-Tony
+
+_________________________________________
+zhang xuhao
+ICQ#: 116926669
+More ways to contact me: http://wwp.icq.com/116926669
+_________________________________________
 
 
 

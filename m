@@ -1,16 +1,16 @@
 From: syrjala@sci.fi
-Subject: [PATCH 0/8] Some atyfb patches
-Date: Thu, 17 Mar 2005 08:31:03 +0200 (EET)
-Message-ID: <20050317063103.6C6A77A@kuori.saunalahti.fi>
+Subject: [PATCH 2/8] atyfb: Fix interlaced modes
+Date: Thu, 17 Mar 2005 08:31:04 +0200 (EET)
+Message-ID: <20050317063104.1892E7A@kuori.saunalahti.fi>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DBoXC-0006FY-KQ
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Mar 2005 22:31:06 -0800
-Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1DBoXB-0001DM-5L
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Mar 2005 22:31:06 -0800
+	id 1DBoXD-0006Fo-BX
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Mar 2005 22:31:07 -0800
+Received: from gw02.mail.saunalahti.fi ([195.197.172.116])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1DBoXB-00049I-N6
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Mar 2005 22:31:07 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,15 +27,34 @@ Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
 Cc: alex.kern@gmx.de
 
-Here's a collection of patches for atyfb.
+Fix interlaced display modes.
 
-I'm pretty sure patches 1-5 are fine as is.
+Signed-off-by: Ville Syrjala <syrjala@sci.fi>
+---
 
-Patches 6 and 7 change some of the chip descriptions. I'm not 100% sure 
-about the changes so I'd appreciate any comments.
+ atyfb_base.c |   10 ----------
+ 1 files changed, 10 deletions(-)
 
-Patch 8 changes the power management code so I really need some comments 
-on it. I don't want to break any working setups.
+diff -urN linux/drivers/video/aty/atyfb_base.c linux/drivers/video/aty/atyfb_base.c
+--- linux/drivers/video/aty/atyfb_base.c	2005-03-16 16:46:41.000000000 +0200
++++ linux/drivers/video/aty/atyfb_base.c	2005-03-16 18:58:33.000000000 +0200
+@@ -979,16 +979,6 @@
+ 		vdisplay = yres;
+ 		if(vmode & FB_VMODE_DOUBLE)
+ 			vdisplay <<= 1;
+-		if(vmode & FB_VMODE_INTERLACED) {
+-			vdisplay >>= 1;
+-
+-			/* The prefered mode for the lcd is not interlaced, so disable it if
+-			   it was enabled. For doublescan there is no problem, because we can
+-			   compensate for it in the hardware stretching (we stretch half as much)
+-			 */
+-			vmode &= ~FB_VMODE_INTERLACED;
+-			/*crtc->gen_cntl &= ~CRTC_INTERLACE_EN;*/
+-		}
+ 		crtc->gen_cntl &= ~(CRTC2_EN | CRTC2_PIX_WIDTH);
+ 		crtc->lcd_gen_cntl &= ~(HORZ_DIVBY2_EN | DIS_HOR_CRT_DIVBY2 |
+ 			/*TVCLK_PM_EN | VCLK_DAC_PM_EN |*/
 
 
 

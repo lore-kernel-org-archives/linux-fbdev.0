@@ -1,24 +1,24 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [PATCH 4/9] fbcon/fbdev: Add blanking notification
-Date: Thu, 13 Jan 2005 04:24:05 +0800
-Message-ID: <200501130424.11594.adaplas@hotpop.com>
-References: <20041221213648.89B701A0278@smtp-1.hotpop.com> <009001c4f893$87964630$0f01a8c0@max>
+Subject: Re: [patch][revision #2] Add w100 framebuffer driver
+Date: Thu, 13 Jan 2005 08:22:23 +0800
+Message-ID: <200501130822.26095.adaplas@hotpop.com>
+References: <200501081837.08883.rpurdie@rpsys.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Cop5c-0006ch-AJ
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 Jan 2005 12:27:36 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.71])
+	id 1CoslL-0002Bm-0M
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 Jan 2005 16:22:55 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.51])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1Cop5U-0005SX-Hd
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 Jan 2005 12:27:31 -0800
+	id 1CoslJ-0005JS-BC
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 Jan 2005 16:22:54 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 68B4E133E130
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 12 Jan 2005 20:26:49 +0000 (UTC)
-In-Reply-To: <009001c4f893$87964630$0f01a8c0@max>
+	by smtp-out.hotpop.com (Postfix) with SMTP id 7E97970179
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 13 Jan 2005 00:22:40 +0000 (UTC)
+In-Reply-To: <200501081837.08883.rpurdie@rpsys.net>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -31,31 +31,18 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Richard Purdie <rpurdie@rpsys.net>, "adaplas@hotpop.com" <adaplas@hotpop.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, kronos@people.it
 
-On Wednesday 12 January 2005 18:43, Richard Purdie wrote:
-> Tony,
->
-> I've just switched to using this patch when I updated to 2.6.11-rc1 and
-> I've noticed a problem. Basically my code which is monitoring
-> FB_EVENT_BLANK events doesn't see any.
+On Sunday 09 January 2005 02:37, Richard Purdie wrote:
+> +static void w100fb_clear_screen(uint32_t mode, long int offset);
 
-If fb_blank is directly called by fbcon_blank, it might proceed into an unending
-cycle...
+I'll submit the patch but would it be better to use u32/u32* and family?
 
-fb_blank()->blank_event_notify->do_blank_screen()->fbcon_blank()->fb_blank()
-
-...however, we do store the current blank state in ops->blank_state, so the above
-is probably an imaginary problem.
-
-I'll do the call to fb_blank() instead of info->fbops->fb_blank() instead.
-
-(I'm still in the process of resyncing my tree and merging pending patches,
-just came back from a break).
+BTW, I'm also submitting Andrew's backlight/lcd patch to akpm. Do you think
+you can port your backlight driver to this framework?
 
 Tony
-
 
 
 

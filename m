@@ -1,49 +1,64 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH][FBDEV]: fb_putcs() and fb_setfont()
- methods
-Date: Thu, 9 Jan 2003 18:09:58 +0000 (GMT)
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.44.0301090034020.4976-100000@phoenix.infradead.org>
-References: <1042050026.982.172.camel@localhost.localdomain>
+Subject: Re: const fb_{fillrect,copyarea,image}?
+Date: Thu, 9 Jan 2003 18:16:17 +0000 (GMT)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.LNX.4.44.0301091814550.5660-100000@phoenix.infradead.org>
+References: <Pine.GSO.4.21.0301072227110.21057-100000@vervain.sonytel.be>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <1042050026.982.172.camel@localhost.localdomain>
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18WhEb-0002Rl-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 09 Jan 2003 10:16:54 -0800
+In-Reply-To: <Pine.GSO.4.21.0301072227110.21057-100000@vervain.sonytel.be>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Petr Vandrovec <vandrove@vc.cvut.cz>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel List <linux-kernel@vger.kernel.org>, davidm@redhat.com
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> :-) I did not want prolong the discussion, but...
+> drivers/video/fbmem.c:fb_show_logo() initializes only image.dx in each loop
+> iteration:
 > 
-> Geert is correct that the functions are generic. The fb_putcs() and
-> fb_setfont() can be compared to Tile blitting.  Tile blitting is a
-> common operation in some games such as Warcraft, Starcraft, and most
-> RPG's. I'm think there is Tile Blitting support in DirectFB.
-> 
-> In a tile-based game, the basic unit is a Tile which is just a bitmap
-> with a predefined width and height. The game has several tiles stored in
-> memory each with it's own unique id.  To draw the background/layer, a
-> TileMap is constructed which is basically another array.  Its format is
-> something like this -  TileMap[x] = y which means draw Tile y at screen
-> position x.
-> 
-> In the fbcon perspective, we can think of each character as a Tile, and
-> fontdata as the collection of tiles. fb_char.data is basically a
-> TileMap.  Of course, tile blitting in games is more complicated than
-> this, since games have multiple layers for the background, so layer
-> position, transparency, etc has to be considered.
-> 
-> So maybe if we can rename fb_putcs() to fb_tileblit(), fb_setfont() to
-> fb_loadtiles(), struct fb_chars to struct fb_tilemap and struct
-> fb_fontdata to struct fb_tiledata, maybe it will be more acceptable?
-> 
-> It can be even be expanded by including fb_tiledata.depth
-> fb_tiledata.cmap so we can support multi-colored tiled blitting.
+> | for (x = 0; x < num_online_cpus() * (LOGO_W + 8) &&
+> |      x < info->var.xres - (LOGO_W + 8); x += (LOGO_W + 8)) {
+> |         image.dx = x;
+> |         info->fbops->fb_imageblit(info, &image);
+> |         done = 1;
+> | }
 
-This I have no problem with. I'm willing to accept this. As long as data 
-from the console layer is not touched. As for loadtiles one thing I like 
-to address is memory allocation. It probable is good idea to do things 
-like place the tile data in buffers allocated by pci_alloc_consistent.
-The other fear is it will only support so many tiles. 
+Oh.
+ 
+> > > Of course this means that we have to modify the clipping code, which currently
+> > > just modifies the passed structure.
+> > 
+> > :-( That is done to prevent someone from passing data that is larger than 
+> > the framebuffer.
+> 
+> You can still do clipping without modifying the passed structure, right?
+
+Probable it can be arranged this way.
+ 
+> BTW, is it possible that someone passes data that is larger (except for bugs)?
+> We have control over what happens in the kernel. Data passed from userspace is
+> a different issue, of course.
+
+Yes. Soon the standard ioctl for a cursor will be truly in place. This 
+means cfb_imageblit could be a issue from userland.
+
+
+
+-------------------------------------------------------
+This SF.NET email is sponsored by:
+SourceForge Enterprise Edition + IBM + LinuxWorld = Something 2 See!
+http://www.vasoftware.com

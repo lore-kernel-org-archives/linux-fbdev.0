@@ -1,22 +1,22 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
- one works ;-)
-Date: Wed, 28 Apr 2004 17:38:43 +0100 (BST)
+From: Mail Delivery Service <postmaster@iol.it>
+Subject: Delivery Status Notification
+Date: Thu, 29 Apr 2004 09:22:31 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0404281733170.1187-100000@phoenix.infradead.org>
-References: <408F0225.4000408@undead.cc>
+Message-ID: <408696F20198AC78@smtp8.libero.it>
 Mime-Version: 1.0
+Content-Type: Multipart/Report; report-type=delivery-status; boundary="========/408696F20198AC77/smtp8.libero.it"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIs5U-0000GO-PY
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 09:39:08 -0700
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.30)
-	id 1BIs5T-0006I6-1P
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 09:39:08 -0700
-In-Reply-To: <408F0225.4000408@undead.cc>
+	id 1BJ5sU-0000FM-72
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 29 Apr 2004 00:22:38 -0700
+Received: from smtp8.libero.it ([193.70.192.92])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BJ5sT-0000iq-P6
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 29 Apr 2004 00:22:37 -0700
+Received: from smtp8.libero.it (193.70.192.92) by smtp8.libero.it (7.0.027-DD01)
+        id 4086970100482D94 for linux-fbdev-devel@lists.sourceforge.net; Thu, 29 Apr 2004 09:22:31 +0200
+Received: by smtp8.libero.it (7.0.027-DD01) id 408696F20198AC7A for linux-fbdev-devel@lists.sourceforge.net; Thu, 29 Apr 2004 09:22:31 +0200
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,36 +26,51 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: John Zielinski <grim@undead.cc>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
+
+This multi-part MIME message contains a Delivery Status Notification.
+If you can see this text, your mail client may not be able to understand MIME
+formatted messages or DSNs (see RFC 2045 through 2049 for general MIME
+information and RFC 1891 through 1894 for DSN specific information).
+
+--========/408696F20198AC77/smtp8.libero.it
+Content-Type: text/plain; charset=iso-8859-1
+
+Your message was refused by recipient's server filtering program.
+Reason given was as follows:
+
+Disallowed attach type
+
+--========/408696F20198AC77/smtp8.libero.it
+Content-Type: Message/Delivery-Status
+
+Reporting-MTA: dns; smtp8.libero.it
+Received-from-MTA: dns; libero.it (201.2.210.122)
+Arrival-Date: Thu, 29 Apr 2004 09:22:31 +0200
+
+Final-Recipient: rfc822; r.ragusa@libero.it
+Action: Failed
+Status: 5.7.1 (delivery not authorized, message refused)
+
+--========/408696F20198AC77/smtp8.libero.it
+Content-Type: Text/RFC822-headers
+
+Return-Path: <linux-fbdev-devel@lists.sourceforge.net>
+Received: from libero.it (201.2.210.122) by smtp8.libero.it (7.0.027-DD01)
+        id 408696F20198AC77 for r.ragusa@libero.it; Thu, 29 Apr 2004 09:22:31 +0200
+From: linux-fbdev-devel@lists.sourceforge.net
+To: r.ragusa@libero.it
+Subject: Mail Delivery (failure r.ragusa@libero.it)
+Date: Wed, 21 Apr 2004 00:01:36 -0300
+MIME-Version: 1.0
+Content-Type: multipart/related;
+	type="multipart/alternative";
+	boundary="----=_NextPart_000_001B_01C0CA80.6B015D10"
+X-Priority: 3
+X-MSMail-Priority: Normal
 
 
-> >No. Look the logic should go from the upper VT layer to the lower driver 
-> >to accomplish something. Not the reverse.
-> >
-> >struct vc_data -> native console driver structure --> fbdev
-> >
-> >  
-> >
-> The problem with that is how would something like fbset work in that 
-> situation?   The current way of selecing number of rows/columns through 
-> the vt layer and hoping for the best in what mode you actually get is 
-> way too limited to be the only mechanism.
-> 
-> Don't misunderstand me here.  I do want to be able to tell the vt to 
-> switch to 1024x768@85-32 and have it propagate down and set the right 
-> mode.  This shouldn't be a problem once we get a mechanism in place to 
-> load a user's mode database into the kernel at run time.  Then the 
-> timings will be exactly what I want when I say 1024x768@85-32.
-
-But we do have that mechanism. Its call modedb. The only thing missing in 
-the VT layer is the depth value whcich we should have anyways. BTW VT220 
-did support different depths. I have t find out what the esc code was for 
-that. I have the manual here. The other piece of data is the frequency. 
-That is harder to deal with.I have to talk to a friend who use to program 
-Vt220 about this. 
+--========/408696F20198AC77/smtp8.libero.it--
 
 
 

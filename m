@@ -1,24 +1,22 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [PATCH][RFC] Add support for Epson S1D13806 FB
-Date: Mon, 14 Mar 2005 21:13:57 +0800
-Message-ID: <200503142113.57518.adaplas@hotpop.com>
-References: <20050314130014.55A073658E8@mail.esiee.fr>
+From: Paul Mundt <lethal@linux-sh.org>
+Subject: Re: Re: [PATCH][RFC] Add support for Epson S1D13806 FB
+Date: Mon, 14 Mar 2005 15:18:39 +0200
+Message-ID: <20050314131839.GB2695@linux-sh.org>
+References: <qkX0zxQn.1110795218.6236360.varenet@localhost> <200503142015.14749.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="ZoaI/ZTpAVc4A5k6"
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DApOq-0008IF-Pt
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Mar 2005 05:14:24 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DApOp-0004ES-Cd
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Mar 2005 05:14:24 -0800
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 62EEAFAA297
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 14 Mar 2005 13:14:02 +0000 (UTC)
-In-Reply-To: <20050314130014.55A073658E8@mail.esiee.fr>
+	id 1DApT1-00008r-OO
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Mar 2005 05:18:43 -0800
+Received: from smtp2.pp.htv.fi ([213.243.153.35])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DApSz-0006n0-GR
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Mar 2005 05:18:42 -0800
 Content-Disposition: inline
+In-Reply-To: <200503142015.14749.adaplas@hotpop.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,36 +27,42 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Thibaut VARENE <varenet@esiee.fr>
-Cc: Thibaut VARENE <T-Bone@parisc-linux.org>, linux-fbdev-devel@lists.sourceforge.net, Antonino Daplas <adaplas@pol.net>, Ben Dooks <ben-linux-arm@fluff.org>
-
-On Monday 14 March 2005 21:00, Thibaut VARENE wrote:
-> > 3. You can use pci_resource_len()/pci_resource_start() instead of
->
-> Actually I don't think so: this chip is often found on embedded
-> platforms that don't have PCI bus. Hence all the
-> platform_device/platform_data glue in the driver. My understanding is
-> that pci_resource_* macros are only available when CONFIG_PCI is
-> enabled. As far as I can tell from the documentation, there's no PCI
-> version of that chip family. That's also the reason why the Kconfig
-> option only depends on CONFIG_FB.
-
-Ok then.
-
->
-> > No need, I'll take care of merging the driver.
->
-> Thanks! Please let me know if the attached patch is suitable for
-> inclusion into mainline :)
->
-
-Should be okay. I'll push it to the mm tree first, and eventually, to
-mainline.
-
-Tony
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Thibaut VARENE <T-Bone@parisc-linux.org>, Antonino Daplas <adaplas@pol.net>, Ben Dooks <ben-linux-arm@fluff.org>
 
 
+--ZoaI/ZTpAVc4A5k6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, Mar 14, 2005 at 08:15:13PM +0800, Antonino A. Daplas wrote:
+> 3. You can use pci_resource_len()/pci_resource_start() instead of
+>=20
+> +	info->fix.mmio_start =3D pdev->resource[1].start;
+> +	info->fix.mmio_len =3D pdev->resource[1].end - pdev->resource[1].start;
+> +	info->fix.smem_start =3D pdev->resource[0].start;
+> +	info->fix.smem_len =3D pdev->resource[0].end - pdev->resource[0].start;
+> +
+>=20
+No, the pdev here refers to a platform device, not a pci device.
+
+While the pci_resource_xxx() routines would still technically do the
+right thing, this is purely coincidental.
+
+--ZoaI/ZTpAVc4A5k6
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.6 (GNU/Linux)
+
+iD8DBQFCNY8v1K+teJFxZ9wRAsSWAJ9XVlQx8t8585+AxQeI4FcXrXjaDwCZAe8P
+6FNb7oERROKPmdhlPtMFkUM=
+=i40d
+-----END PGP SIGNATURE-----
+
+--ZoaI/ZTpAVc4A5k6--
 
 
 -------------------------------------------------------

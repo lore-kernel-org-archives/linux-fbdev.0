@@ -1,13 +1,19 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: Re: FB model basic issues (WAS: radeon, apertures & memory mapping)
-Date: Wed, 16 Mar 2005 01:05:22 +0200
-Message-ID: <20050315230522.GA1444@sci.fi>
-References: <1110696189.5787.100.camel@gaston> <1110774523.4003.511.camel@localhost> <1110784327.5787.288.camel@gaston> <1110817205.4004.527.camel@localhost> <1110837171.5863.16.camel@gaston> <1110838356.4003.548.camel@localhost> <1110839873.5673.41.camel@gaston> <1110862777.4044.592.camel@localhost> <20050315060138.GA13064@sci.fi> <1110926659.25201.11.camel@gaston>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Re: FB model basic issues (WAS: radeon,
+	apertures & memory mapping)
+Date: Wed, 16 Mar 2005 10:33:02 +1100
+Message-ID: <1110929582.25201.34.camel__26263.5802421302$1110929893$gmane$org@gaston>
+References: <1110696189.5787.100.camel@gaston>
+	 <1110774523.4003.511.camel@localhost> <1110784327.5787.288.camel@gaston>
+	 <1110817205.4004.527.camel@localhost> <1110837171.5863.16.camel@gaston>
+	 <1110838356.4003.548.camel@localhost> <1110839873.5673.41.camel@gaston>
+	 <1110862777.4044.592.camel@localhost> <20050315060138.GA13064@sci.fi>
+	 <Pine.LNX.4.62.0503150946180.30569@numbat.sonytel.be>
+	 <20050315133628.GA16051@sci.fi>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-In-Reply-To: <1110926659.25201.11.camel@gaston>
+Content-Transfer-Encoding: 7bit
+In-Reply-To: <20050315133628.GA16051@sci.fi>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -18,38 +24,37 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>, dri-devel@lists.sourceforge.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, xorg@lists.freedesktop.org, Jon Smirl <jonsmirl@yahoo.com>
+Content-Type: text/plain; charset="us-ascii"
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>, dri-devel@lists.sourceforge.net, xorg@lists.freedesktop.org, Jon Smirl <jonsmirl@yahoo.com>
 
-On Wed, Mar 16, 2005 at 09:44:19AM +1100, Benjamin Herrenschmidt wrote:
->=20
-> > DirectFB assumes all memory outside var.yres_virtual * fix.line_lengt=
-h is=20
-> > preserved. A totally valid assumption in my opinion.=20
->=20
-> Except that you can't know in advance how much fix.line_length will be.
-> The "fix" isn't really "fixed". Different cards will have different
-> requirements depending on the bit depth for example. On radeonfb, the
-> line_length will vary due to alignment constraints related to the
-> engine, or due to tiling, etc.... etc...
->=20
-> So you basically don't know in advance what will be preserved... (And
-> you can't, unless you start having all sort of card specific knowledge)=
-.
 
-True. Currently DirectFB doesn't handle this correctly. But that could be=
-=20
-easily fixed if only line_length wasn't totally misplaced. It really=20
-belongs to fb_var_screeninfo. We could first test the mode with=20
-FB_ACTIVATE_TEST and actually see how much memory it needs and could=20
-evict enough offscreen surfaces to make room before actually setting the=20
-mode. Currently it would need some guesswork.
+> > I once did a similar thing for an embedded prototype: take a fixed amount of
+> > memory for both frame buffers (this was a UMA system), fb0 starts from the top,
+> > fb1 starts from the bottom. You can enlarge each frame buffer, until you read
+> > the memory of the other. Each fix.smem_{start,len} corresponds exactly to the
+> > memory allocated to each frame buffer.
+> > 
+> > Of course, if you also want off-screen memory (i.e. memory beyond
+> > xres_virtual*yres_virtual*bpp/8), things get more complicated, since currently
+> > there's no way for the application to ask for a minimum amount of off-screen
+> > memory. Perhaps a new field in fb_var_screeninfo (and zero means `I don't
+> > care', for backwards compatibility).
+> 
+> Offscreen memory is pretty much essential for DirectFB.
 
---=20
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+I still tend to think that offscreen memory is busted on mode
+switches...
+
+Now, I agree that cutting the vram in half, and reserving  both halves
+to the "offscreen" needs to each head may help avoiding mode switch on
+one head busting things used by whoever works on the second head, but
+I'm not sure that fits the DRM needs very well..
+
+
+Ben.
+
+
 
 
 -------------------------------------------------------

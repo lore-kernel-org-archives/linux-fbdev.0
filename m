@@ -1,22 +1,26 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: FB_MODE_HELPERS
-Date: Tue, 24 Aug 2004 16:05:51 +0200 (MEST)
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: FB_MODE_HELPERS
+Date: Tue, 24 Aug 2004 23:21:46 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0408241603250.26345@waterleaf.sonytel.be>
+Message-ID: <200408242321.46901.adaplas@hotpop.com>
+References: <Pine.GSO.4.58.0408241603250.26345@waterleaf.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bzbw6-0005kj-LR
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Aug 2004 07:06:06 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1Bzbw0-0000AK-F7
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Aug 2004 07:06:06 -0700
-Received: from waterleaf.sonytel.be (mail.sonytel.be [43.221.60.197])
-	by witte.sonytel.be (8.12.10/8.12.10) with ESMTP id i7OE5pn1013348
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 24 Aug 2004 16:05:53 +0200 (MEST)
+	id 1Bzd7J-0002tg-VU
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Aug 2004 08:21:45 -0700
+Received: from smtp-out.hotpop.com ([38.113.3.71])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
+	id 1Bzd7H-0005av-CN
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Aug 2004 08:21:45 -0700
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id BDFA4109857F
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 24 Aug 2004 15:21:34 +0000 (UTC)
+In-Reply-To: <Pine.GSO.4.58.0408241603250.26345@waterleaf.sonytel.be>
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,26 +30,21 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net, Geert Uytterhoeven <geert@linux-m68k.org>
+
+On Tuesday 24 August 2004 22:05, Geert Uytterhoeven wrote:
+> Since drivers that depend on FB_MODE_HELPERS now select it automatically,
+> shouldn't FB_MODE_HELPERS default to n in Kconfig?
+>
+> Or am I missing something?
+>
+
+Yes, it should default to 'n'.
+
+Tony
 
 
-Since drivers that depend on FB_MODE_HELPERS now select it automatically,
-shouldn't FB_MODE_HELPERS default to n in Kconfig?
-
-Or am I missing something?
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 
 -------------------------------------------------------

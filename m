@@ -1,17 +1,14 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Re: kernel: matrox fb - missing files,
- doesn't compile
-Date: Sun, 22 Dec 2002 09:44:43 +0100 (MET)
+Subject: new fbdev
+Date: Sun, 22 Dec 2002 09:47:09 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0212220943000.11631-100000@vervain.sonytel.be>
-References: <1039974225.1214.59.camel@localhost.localdomain>
+Message-ID: <Pine.GSO.4.21.0212220944490.11631-100000@vervain.sonytel.be>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18Q1jl-0000y0-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 22 Dec 2002 00:45:29 -0800
-In-Reply-To: <1039974225.1214.59.camel@localhost.localdomain>
+	id 18Q1mQ-00017t-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 22 Dec 2002 00:48:14 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,28 +20,17 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: Petr Vandrovec <vandrove@vc.cvut.cz>, Ariel <aslinux@dsgml.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On 15 Dec 2002, Antonino Daplas wrote:
-> On Sun, 2002-12-15 at 03:44, Petr Vandrovec wrote:
-> > What if I'll decide to paint characters through busmastering? Then
-> > I need font data in buffers allocated by pci_alloc_consistent...
-> > In the past it was not a win to use busmastering, but now, when
-> > upper layers might prepare images much larger than 8x16, it may be 
-> > worth of rechecking that...
-> 
-> True, using kmalloc() to cache a good-sized pixmap is probably not the
-> best idea in all cases (in my case, it is best when the pixmap is in
-> graphics memory). I submitted a proposal before that allows more
-> flexibility: it will let the drivers decide on how it wants the buffers
-> allocated, the size of the buffer, specific alignment requirements, or
-> if it even actually needs one. Other driver-specific needs can probably
-> be added if necessary.
 
-Add address/size fields in fb_info to let the driver tell it already allocated
-a suitable buffer? If those are NULL, fbcon can fall back to its own buffer
-(e.g. static and fixed 8 kiB buffer).
+Just returned from a long trip, I'm trying to get m68k to work with >
+2.5.50 again.
+
+Issues/questions:
+  o drivers/video/console/font.h is needed by arch/m68k/kernel/m68k_defs.c
+    (for struct font_desc)
+  o What is (or will be) CONFIG_PCI_CONSOLE used for?
 
 Gr{oetje,eeting}s,
 

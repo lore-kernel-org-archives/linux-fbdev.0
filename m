@@ -1,8 +1,8 @@
 From: Jon Smirl <jonsmirl@gmail.com>
 Subject: Re: framebuffer ioctl
-Date: Mon, 6 Sep 2004 15:33:54 -0400
+Date: Mon, 6 Sep 2004 15:33:11 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <9e473391040906123379c94dbd@mail.gmail.com>
+Message-ID: <9e47339104090612334b3623ee@mail.gmail.com>
 References: <Pine.GSO.4.58.0409041304080.3434@waterleaf.sonytel.be>
 	 <413A3735.9E7D2F11@orpatec.ch> <413B4925.5000706@comcast.net>
 	 <20040906184306.GA29544@guug.org>
@@ -14,14 +14,14 @@ Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C4PFT-0001GB-Rd
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Sep 2004 12:33:55 -0700
-Received: from rproxy.gmail.com ([64.233.170.193] helo=mproxy.gmail.com)
+	id 1C4PEm-00019W-Tj
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Sep 2004 12:33:12 -0700
+Received: from rproxy.gmail.com ([64.233.170.202] helo=mproxy.gmail.com)
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1C4PFS-0003oQ-US
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Sep 2004 12:33:55 -0700
-Received: by mproxy.gmail.com with SMTP id 76so141454rnl
-        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 06 Sep 2004 12:33:54 -0700 (PDT)
+	id 1C4PEm-0003gL-IH
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Sep 2004 12:33:12 -0700
+Received: by mproxy.gmail.com with SMTP id 77so141424rnl
+        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 06 Sep 2004 12:33:11 -0700 (PDT)
 In-Reply-To: <20040906192400.GB29544@guug.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -35,8 +35,12 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-mesa-solo works just fine from user space. It's the in kernel support
-and mode setting that is missing.
+It is still being worked on. The have been a lot of changes to DRM
+recently. The PCI ROM patch is finished and waiting to go into the
+kernel. I'm starting on the VGA driver next. Jess@sgi is working on
+the user space reset app.
+
+After all that is done we can start on printk support.
 
 
 On Mon, 6 Sep 2004 13:24:00 -0600, Otto Solares <solca@guug.org> wrote:

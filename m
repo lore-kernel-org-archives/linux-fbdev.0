@@ -1,17 +1,17 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: new logo drawing code
-Date: Sun, 5 Jan 2003 20:46:33 +0000 (GMT)
+Subject: Re: fbmem.c : FBIOGETCMAP
+Date: Sun, 5 Jan 2003 20:52:37 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0301052044530.24903-100000@phoenix.infradead.org>
-References: <Pine.GSO.4.21.0212292057180.17739-100000@vervain.sonytel.be>
+Message-ID: <Pine.LNX.4.44.0301052048270.24903-100000@phoenix.infradead.org>
+References: <20030105204033.19207.qmail@web14904.mail.yahoo.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18VHfo-00006C-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 05 Jan 2003 12:47:08 -0800
-In-Reply-To: <Pine.GSO.4.21.0212292057180.17739-100000@vervain.sonytel.be>
+	id 18VHlf-0001E2-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 05 Jan 2003 12:53:12 -0800
+In-Reply-To: <20030105204033.19207.qmail@web14904.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,22 +23,32 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sun, 29 Dec 2002, Geert Uytterhoeven wrote:
 
->   - Replace conditionals by straight code without branches (bit 7 of needs_logo
->     is either 0 (normal) or 1 (reverse), and perhaps we should kill the default
->     case?).
+> It needs a copy_to_user too to work. Probably doesn't
+> need the copy_from_user.
+> 
+> Is the right fix?
+> 
+> 	case FBIOGETCMAP:
+> 		fb_copy_cmap(&info->cmap, &cmap, 0);
+> 		if (copy_to_user((void *) arg, &cmap, sizeof(cmap)))
+> 			return -EFAULT;
+> 		return 0;
 
-Applied.
+Oops. I see the problem. It should be 
 
-> BTW, most of the new fbdev code looks really ugly in vim with `let
-> c_space_errors=1', due to the exorbitant use of superfluous whitespace
-> characters.
+  fb_copy_cmap(&info->cmap, &cmap, 2);
 
-??? I use indent -kr -i8 to handle indenting.
+This tells it to use copy_to_user. I see a few mistakes here. Fixing...
+
+There are several bugs here. I have to cleanup it up. FOr example in 
+fb_copy_cmap there is test for a EFAULT for any copy_* function. This is 
+just broken. It has been broken for a long time. Will fix. Will you test 
+my patch as soon as it is ready?
+
 
 
 

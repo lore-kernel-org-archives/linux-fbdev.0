@@ -1,93 +1,42 @@
-From: "Kendall Bennett" <KendallB@scitechsoft.com>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: Generic VESA framebuffer driver and Video card BOOT?
-Date: Tue, 19 Oct 2004 10:54:50 -0700
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <4174F27A.8234.1645ECBF@localhost>
-References: <41740384.5783.12A07B14@localhost>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+Date: Tue, 19 Oct 2004 23:09:06 +0200
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <20041019210906.GB1142@elf.ucw.cz>
+References: <416FB275.6425.1C3D985@localhost> <9e4733910410151319159482ce@mail.gmail.com> <416FEB4B.9875.2A1DBFE@localhost> <9e47339104101516027860bb1e@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CJyCO-0005RW-Li
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 19 Oct 2004 10:55:04 -0700
-Received: from mail.scitechsoft.com ([63.195.13.67])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.41)
-	id 1CJyCN-0005Wl-NB
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 19 Oct 2004 10:55:04 -0700
-In-reply-to: <4174704B.9050601@bitworks.com>
-Content-description: Mail message body
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S267638AbUJSVRL@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <9e47339104101516027860bb1e@mail.gmail.com>
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Richard Smith <rsmith@bitworks.com>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: Kendall Bennett <kendallb@scitechsoft.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-Richard Smith <rsmith@bitworks.com> wrote:
+Hi!
 
-> Kendall Bennett wrote:
+> > What about non-x86 platforms such as PowerPC and MIPS embedded devices
+> > that want video (TiVo type platforms, media players etc). How would these
+> > fit into the picture? Would this require the boot loader (ie: U-Boot or
+> > whatever) to have the ability to POST the card?
 > 
-> > Actually there is nothing wrong with the x86 BIOS from the perspective of 
-> > functionality and useability (or bloat for that matter). It contains all 
-> > the functionality we need and armed with something like the x86 emulator 
-> > we can use it for what we need on any platform.
+> There is the assumption that whatever BIOS the device has can get up a
+> very early console that can output critical error messages before the
+> kernel and early user space is loaded. For example the "I can't find
+> the kernel" or  "initramfs is missing" error message. This also
+> assumes that the BIOS can post whatever display it is using.
 > 
-> > IMHO that is the best solution to the problem because it will be using 
-> > code that has been heavily tested by the vendor. The one thing x86 Video 
-> > BIOS'es can do reliably is POST the graphics card ;-)
-> 
-> I'm just going to take your word on this since you have messed
-> with far more video bioses than I.  I've just got a few too many
-> scars over the years from trying to make the whole BIOS sub-system
-> robust enough for embedded standards. 
+> I'm not trying to fix the problem of getting early boot messages out
+> of a Mac with an x86 card plugged into it. The card will work after
+> early user space initializes. The right way to fix that would be to
+> switch to something like LinuxBIOS and build the x86 emulator into
+> it.
 
-Most BIOS'es are relatively good, but there are some terrible ones. We 
-have one a lot of work over the years making our VESA VBE drivers work 
-well with all the BIOS'es out there, working around the issues in the 
-broken ones. I plan to use that same module for the kernel VESA driver 
-when I get around to re-writing it.
-
-> > lot of code bloat. But if you do that, then you would need this code in 
-> > the kernel since now it would be the boot loader as well ;-)
-> 
-> Exactly. Which is why I like your project and I think its a good
-> thing. The only reason I have to carry around the legacy BIOS
-> baggage is for video. 
-
-Yep.
-
-> How big is your in-kernel implementation?
-
-Right now the compiled x86 code is about 100K in size. PowerPC code 
-appears to be about twice that size and x86-64 is about 130K I think. I 
-have no idea how big an Open Firmware interpreter would be for comparison 
-purposes because I have never seen an Open Source implementation of one.
-
-Regards,
-
----
-Kendall Bennett
-Chief Executive Officer
-SciTech Software, Inc.
-Phone: (530) 894 8400
-http://www.scitechsoft.com
-
-~ SciTech SNAP - The future of device driver technology! ~
-
-
-
-
--------------------------------------------------------
-This SF.net email is sponsored by: IT Product Guide on ITManagersJournal
-Use IT products in your business? Tell us what you think of them. Give us
-Your Opinions, Get Free ThinkGeek Gift Certificates! Click to find out more
-http://productguide.itmanagersjournal.com/guidepromo.tmpl
+That still does not solve resume from suspend-to-RAM. We need to post
+VGA there. We probably could do it late in userspace... but it makes
+debugging resume pretty hard.
+								Pavel
+-- 
+People were complaining that M$ turns users into beta-testers...
+...jr ghea gurz vagb qrirybcref, naq gurl frrz gb yvxr vg gung jnl!

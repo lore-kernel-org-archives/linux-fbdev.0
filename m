@@ -1,20 +1,20 @@
 From: James Simmons <jsimmons@www.infradead.org>
 Subject: Re: [PATCH] Provide control of active VGA device
  on PCI systems
-Date: Tue, 22 Feb 2005 04:07:23 +0000 (GMT)
-Message-ID: <Pine.LNX.4.56.0502220401580.21388@pentafluge.infradead.org>
+Date: Tue, 22 Feb 2005 04:13:02 +0000 (GMT)
+Message-ID: <Pine.LNX.4.56.0502220411560.21388@pentafluge.infradead.org>
 References: <9e47339105021921507545d084@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D3RKc-0002lT-LX
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 20:07:30 -0800
+	id 1D3RQ3-0003Br-LB
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 20:13:07 -0800
 Received: from pentafluge.infradead.org ([213.146.154.40])
 	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1D3RKb-0002pa-7E
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 20:07:30 -0800
+	id 1D3RQ2-0003Jy-29
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 20:13:07 -0800
 In-Reply-To: <9e47339105021921507545d084@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -45,15 +45,8 @@ Cc: Jesse Barnes <jbarnes@sgi.com>
 > is left is to construct the proper hotplug event and fix up my user
 > space reset program.
 
-This is not a bad patch but could you please merge that code into 
-vgastate.c and uses the vga io functions in include/video/vga.h
-This way drivers can choose to link to the vga functions themselves.
-The bonus is there is code in vgastate.c to save the state and restore 
-the vga text state with a fbdev device. You can for example with the 
-NVIDIA fbdev driver load it and do a open on /dev/fbX and it will go to 
-the graphics state. On the last close of /dev/fbX it will go back to the 
-vga text state it was in before the first open. With your code it would 
-make it even more functional.
+Also please place the class_device for vga under /sys/class/graphics/ for 
+cleaness.
 
 
 

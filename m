@@ -1,17 +1,17 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Logo updates
-Date: Wed, 26 Feb 2003 19:29:15 +0000 (GMT)
+Subject: Re: [PATCH]: More optimization for accel_putcs()
+Date: Wed, 26 Feb 2003 19:29:41 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0302261929100.12126-100000@phoenix.infradead.org>
-References: <Pine.GSO.4.21.0302231333090.28532-100000@vervain.sonytel.be>
+Message-ID: <Pine.LNX.4.44.0302261929360.12126-100000@phoenix.infradead.org>
+References: <1045998151.1188.2.camel@localhost.localdomain>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from phoenix.infradead.org ([195.224.96.167])
+Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18o7FX-0004va-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 26 Feb 2003 11:29:52 -0800
-In-Reply-To: <Pine.GSO.4.21.0302231333090.28532-100000@vervain.sonytel.be>
+	id 18o7Fx-00051x-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 26 Feb 2003 11:30:18 -0800
+In-Reply-To: <1045998151.1188.2.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,11 +23,12 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-Applied :-)
+Applied.
+
 
 
 

@@ -1,21 +1,25 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: RE: Is framebufer driver a replacement for video
- driver?
-Date: Fri, 5 Nov 2004 13:24:11 +0100 (MET)
-Message-ID: <Pine.GSO.4.61.0411051317470.15464@waterleaf.sonytel.be>
-References: <4EE0CBA31942E547B99B3D4BFAB348111ECB8A@mail.esn.co.in>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: [PATCH] fbdev: workaround for broken X servers
+Date: Fri, 5 Nov 2004 20:55:14 +0800
+Message-ID: <200411052055.17316.adaplas@hotpop.com>
+References: <1099448020.900.25.camel@gaston> <1099655227.3946.17.camel@gaston> <Pine.GSO.4.61.0411051313130.15464@waterleaf.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CQ38Y-0008Vb-0i
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Nov 2004 04:24:14 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CQ38X-00083c-1j
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Nov 2004 04:24:13 -0800
-In-Reply-To: <4EE0CBA31942E547B99B3D4BFAB348111ECB8A@mail.esn.co.in>
+	id 1CQ3dy-0006Je-Cy
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Nov 2004 04:56:42 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1CQ3dx-0007c9-G2
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Nov 2004 04:56:42 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id A2FAB988617
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri,  5 Nov 2004 12:55:24 +0000 (UTC)
+In-Reply-To: <Pine.GSO.4.61.0411051313130.15464@waterleaf.sonytel.be>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,99 +30,44 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: adaplas@pol.net, tonnerre@thundrix.ch
+Content-Type: text/plain; charset="us-ascii"
+To: Geert Uytterhoeven <geert@linux-m68k.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Fri, 5 Nov 2004, Mukund JB. wrote:
-> > > Are you talking about the vesafb driver? This being  a generic
-> driver,
-> > > Will this driver work on any video card?
-> > 
-> > Yep, `VESA' means the vesafb driver. It works on any video card with a
-> > VESA 2.0
-> > compliant BIOS.
-> 
-> If vesafb module works for any card, what are the situations that make
-> me write a new framebuffer driver for a new video hardware in the
-> market?
+On Friday 05 November 2004 20:15, Geert Uytterhoeven wrote:
+> On Fri, 5 Nov 2004, Benjamin Herrenschmidt wrote:
+> > > But every existing application that uses (shiver) the kernel headers
+> > > will break after this change...
+> >
+> > Geert, can you explain the whole story please ?
 >
-> Is it like, the vesafb driver does not explore the card to the fullest
-> extent? 
-> A framebuffer driver specific to Video card is just to explore the card
-> features to maximum.
+> The story about the +1 or the story about the breakage?
+>
+> The Story About The +1
+> ----------------------
+> Since the VESA levels do not provide a way to blank (`make it black') the
+> screen, the +1 is introduced. Hence 0 means unblank, 1 means black screen,
+> 2 means lowest power save level, and so on...
 
-Yes.
+And make it black is usually done in software (by memsetting the screen with
+the black color).  
 
-Limitations of vesafb:
-  - Since the video mode must be changed by calling the BIOS, vesafb cannot
-    change the video mode after boot up (the video mode is set just _before_
-    the Linux kernel is started).
-  - Limited to the video modes (and refresh rates) in the BIOS.
-  - No text console acceleration.
+So why not this:  In fbcon_blank(), if the blank parameter is:
 
-A `native' driver removes these limitations.
+0 - unblank the screen, and call info->fbops->fb_blank(VESA_NO_BLANKING), 
+     then return a nonzero value to force a redraw.
+1,2,3,4 - clear the screen with all black
+2,3,4 - call info->fbops->fb_blank(blank - 1);
 
-> Can u please tell me why to call "scr_readw" in accel.c file of riva
-> directory doing?
+Similarly, we can do the same thing in fbmem.c:fb_blank(), but without the software
+blanking.
 
-scr_readw() is used to read the data (character value + attributes) for a text
-mode character cell from the shadow screen that is used to implement virtual
-consoles.
+Drivers will just need to follow the VESA_* defines in fb.h (which happens to be also
+defined in console.h)
 
-> Also, I found NO readl, writel calls in the riva directory( framebuffer
-> driver). Then, who is responsible for accessing the hardware here?
+Tony 
 
-Probably rivafb still accesses the hardware by direct pointer manipulation,
-which is not portable.
 
-> > > Let's make this clearer.
-> > > The video I get after startx is running just on framebuffer driver?
-> > > There is no other video driver involved in the running video.right?
-> > 
-> > For unaccelerated operation, yes.
-> 
-> If accelerated operation is needed, then do we need video driver (nv for
-> nvidia card) apart from the framebuffer driver to manage the video?
-
-Yes. But I don't know whether nv supports that mode of operation.
-
-> > If you want hardware accelerated drawing operations, the X server
-> still
-> > has to
-> > known how to program the graphics chip. The frame buffer device takes
-> care
-> > about setting the video mode and color palette, and mapping video RAM
-> > only.
-> 
-> My question in this regard is : 
-> Is there a video driver involved apart from the framebuffer driver why I
-> get the video from the startx command?
-> 
-> Ohh, Do u mean, to program the graphics chip in case of accelerated
-> operations we need a video driver apart from the framebuufer driver?
-
-You need a chipset-specific driver to issue drawing commands to the
-acceleration engine. The frame buffer device provides an abstraction for the
-frame buffer (= bunch of memory that represents the screen image) only.
-
-> If so, is framebuffer driver not capable of programming the graphic card
-> for accelerated operations?
-
-Indeed. The sole exception is in-kernel accelerated drawing to increase the
-emulated text console performance.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 
 -------------------------------------------------------

@@ -1,45 +1,71 @@
-From: Petr Vandrovec <vandrove@vc.cvut.cz>
-Subject: Re: [Linux-fbdev-devel] [PATCH][FBDEV]: fb_putcs() and fb_setfont() methods
-Date: Sun, 5 Jan 2003 00:30:08 +0100
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20030104233008.GB1188@ppc.vc.cvut.cz>
-References: <1041672313.958.17.camel@localhost.localdomain> <Pine.LNX.4.44.0301042058240.24903-100000@phoenix.infradead.org>
+From: Nico Schottelius <schottelius@wdt.de>
+Subject: atyfb: 2.5.54
+Date: Sun, 5 Jan 2003 12:55:07 +0100
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <20030105115507.GC167@schottelius.org>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="kfjH4zxOES6UT95V"
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from dialin-145-254-143-010.arcor-ip.net ([145.254.143.10] helo=schottelius.net)
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18VC9C-0003Xv-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 05 Jan 2003 06:53:06 -0800
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0301042058240.24903-100000@phoenix.infradead.org>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel List <linux-kernel@vger.kernel.org>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Sat, Jan 04, 2003 at 09:07:29PM +0000, James Simmons wrote:
-> 
-> Rejected. I have put thought into it and the whole point was to not allow 
-> the fbdev layer to touch console data. I stand firm on this!!! The reason 
-> being is the core console layer is going to change the next development 
-> cycle. We have to change to deal with things like the PC9800 type hardware 
-> that support more than 512 fonts. Do we realy want to break every fbdev 
-> driver again. This way the breakage is once and for all. Its is also a 
 
-Why? (a) only those which will use putcs, and (b) I see no 512 chars limit
-anywhere in new code. And in old code it is there only because of passed
-data are only 16bit, not 32bit wide... With simple search&replace you can
-extend it to any size you want, as long as you'll not use sparse font
-bitmap.
+--kfjH4zxOES6UT95V
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> pandoras box. If we place these hooks in we end up with the same crappy 
-> driver problem we had before. I never heard anyone every say the old api 
-> we clean. 
+Hello dear list!
 
-I believe that I repeatedly said that I see no problem with old API which
-cannot be solved by incremental updates and without removing functionality.
+With 2.5.54 there is something like success with my hardware.
+Now I get a cursor at the right position. I can't see what I type,
+but I see the cursor moving correctly.
+After unloading atyfb the console still behaves this way, nothing
+changes.
 
-It is like with modules - some believe in evolution, and some in revolution...
-Fortunately modules situation finally settled down and it is enough just install
-new app to handle module loading/unloading. With current fbdev even trivial
-console resizing does not do anything useful (thanks, Antonio).
-						Best regards,
-							Petr Vandrovec
-							vandrove@vc.cvut.cz
+Are there some options I should set ? I am currently just loading
+atyfb (with recognizes my card as PCI although it's AGP; seen in dmesg).
+
+Greetings,
+
+Nico
+
+--=20
+Please send your messages pgp-signed and/or pgp-encrypted (don't encrypt ma=
+ils
+to mailing list!). If you don't know what pgp is visit www.gnupg.org.
+(public pgp key: ftp.schottelius.org/pub/familiy/nico/pgp-key)
+
+--kfjH4zxOES6UT95V
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.0.7 (GNU/Linux)
+
+iD8DBQE+GB0btnlUggLJsX0RAlbNAJ42A7h+NZw4yLTEaji3kXEocBK3AACdFfQG
+0H0iyuWFykKB7ZB0FJTq684=
+=O46Y
+-----END PGP SIGNATURE-----
+
+--kfjH4zxOES6UT95V--
+
+
+-------------------------------------------------------
+This sf.net email is sponsored by:ThinkGeek
+Welcome to geek heaven.
+http://thinkgeek.com/sf

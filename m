@@ -1,26 +1,22 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: Telling libSDL that my fbdev can do acclerated fills
-Date: Wed, 30 Jun 2004 12:38:06 +0800
+From: Richard Smith <rsmith@bitworks.com>
+Subject: Re: Telling libSDL that my fbdev can do acclerated
+ fills
+Date: Tue, 29 Jun 2004 23:45:05 -0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200406301238.06406.adaplas@hotpop.com>
-References: <200406301047.57423.adaplas@hotpop.com> <1088564019.1922.12.camel@gaston> <40E239F8.7070909@bitworks.com>
-Reply-To: adaplas@pol.net
+Message-ID: <40E24551.2030008@bitworks.com>
+References: <200406301047.57423.adaplas@hotpop.com> <1088564019.1922.12.camel@gaston> <40E239F8.7070909@bitworks.com> <200406301238.06406.adaplas@hotpop.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BfWrN-0008P1-OG
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Jun 2004 21:38:13 -0700
-Received: from twix.hotpop.com ([38.113.3.71])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1BfWrN-0000Py-DQ
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Jun 2004 21:38:13 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by twix.hotpop.com (Postfix) with SMTP id BAB92FCA958
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 30 Jun 2004 04:20:19 +0000 (UTC)
-In-Reply-To: <40E239F8.7070909@bitworks.com>
-Content-Disposition: inline
+	id 1BfWy9-0000st-Vz
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Jun 2004 21:45:13 -0700
+Received: from b44.xdsl.pgtc.com ([198.70.248.44] helo=bitworks.com)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1BfWy8-000184-PD
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Jun 2004 21:45:13 -0700
+In-Reply-To: <200406301238.06406.adaplas@hotpop.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,39 +26,26 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Richard Smith <rsmith@bitworks.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: adaplas@pol.net
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wednesday 30 June 2004 11:56, Richard Smith wrote:
-> I'm working on a app that runs on the STPC Atlas and uses libSDL with
-> the stpcfb from STPC.  Kernel 2.4.x. I'm currently using 2.4.23 but any
-> of later kernels will work.
->
-> The Atlas video accelerator supports hardware assisted fills.  I've been
-> looking over the stpcfb code and some of the other framebuffer drivers
-> and its not obvious to me how the fb system exports out what kind of
-> graphics hardware assisted abilities it has.  Or even how you would call
-> those abilities if you knew they were avaiable.
->
-> All I see is stuff for text related console work.
->
-> The STPC is a pretty slow device and my app needs all the speed help it
-> can get. libSDL is currently doing software fills since it dosen't know
-> otherwise.
->
-> I see in the libSDL source code that the FillHWRect funciton pointer for
-> the fb driver is set to NULL as if its not possible to realize hardware
-> assisted graphics functions via fbdev.
->
-> Is this the case or what am I missing?
->
+Antonino A. Daplas wrote:
 
-All hardware-assisted drawing functions in fbdev are for use by the console
-only.  You might want to try DirectFB (www.directfb.org), I believe they have
-ported a lot of libs, including SDL.  However, I doubt they have a gfxdriver for
-your hardware though.
+> 
+> All hardware-assisted drawing functions in fbdev are for use by the console
+> only.  You might want to try DirectFB (www.directfb.org), I believe they have
+> ported a lot of libs, including SDL.  However, I doubt they have a gfxdriver for
+> your hardware though.
 
-Tony
+I'm looking at that now.  Yes they have a SDL driver.  No they don't 
+have anything for my hardware.  I'll have to do a port if I want directfb.
+
+The documentation says that it runs on top of the linux framebuffer 
+device.  If it runs on top of fbdev but fbdev only does  assisted stuff 
+for the console then how does that work?
+
+
 
 
 

@@ -1,23 +1,18 @@
-From: David Eger <eger-sender-da68b9@theboonies.us>
-Subject: scrollmode, accel_flags, fbcon.c ...
-Date: Fri, 26 Mar 2004 01:14:11 +0100 (CET)
+From: "MailScanner" <postmaster@solucorp.qc.ca>
+Subject: Warning: E-mail viruses detected
+Date: Wed, 24 Mar 2004 11:50:24 -0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.58.0403260040100.7037@rosencrantz.theboonies.us>
-References: <Pine.LNX.4.58.0403081323040.32244@rosencrantz.theboonies.us>
-	<Pine.GSO.4.58.0403091111540.26626@waterleaf.sonytel.be>
-Reply-To: David Eger <eger-dated-1080865620.ef4dea@theboonies.us>
-Mime-Version: 1.0
+Message-ID: <200403241650.i2OGoOKb000970@remtk.solucorp.qc.ca>
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B6fBg-0006FC-2J
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Mar 2004 16:27:04 -0800
-Received: from not.theboonies.us ([66.139.79.224])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1B6Xoc-0002Fq-V0
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Mar 2004 08:34:46 -0800
+Received: from route3.unigiciel.com ([206.162.172.138] helo=remtk.solucorp.qc.ca)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1B6fBe-0000g6-RM
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Mar 2004 16:27:02 -0800
-In-Reply-To: <Pine.GSO.4.58.0403091111540.26626@waterleaf.sonytel.be>
+	id 1B6Xob-0008PE-4w
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Mar 2004 08:34:45 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,31 +22,31 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Jakub Jelinek <jj@ultra.linux.cz>, linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+
+Our virus detector has just been triggered by a message you sent:-
+  To: jack@localhost
+  Subject: Re: Your product
+  Date: Wed Mar 24 11:50:24 2004
+
+One or more of the attachments (your_product.pif) are on
+the list of unacceptable attachments for this site and will not have
+been delivered.
+
+Consider renaming the files to avoid this constraint.
+
+The virus detector said this about the message:
+Report: MailScanner: Shortcuts to MS-Dos programs are very dangerous in email (your_product.pif)
 
 
-are scrollmode or accel_flags meaningful to anyone here?
-
-Paging through fbcon.c, I've realized why the radeonfb driver is still 
-slow -- the accelerated functions are never being called!  
-
-Hardwiring scrollmode to __SCROLL_YMOVE in updatescrollmode() makes my 
-console go a lot faster :)
-
-So within fbcon.c why is there a "scrollmode" variable which can be set
-to:  __SCROLL_YWRAP, __SCROLL_YPAN, __SCROLL_YREDRAW, or __SCROLL_YMOVE?
-
-Also accel_flags actually useful to anyone?  I see in the fb code some
-half-hearted attempts to test for FB_ACCELF_TEXT, but it's not clear at
-all to me where these accel flags are supposed to be set... are they even
-relevant with the new accel interface?  It seems all this is properly
-replaced by filling in the fbops to either the driver's custom fillrect()
-or cfb_fillrect(), no?
-
--dte
-
+-- 
+MailScanner
+Email Virus Scanner
+www.mailscanner.info
+MailScanner thanks transtec Computers for their support
 
 
 -------------------------------------------------------

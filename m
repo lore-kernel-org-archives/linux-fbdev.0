@@ -1,49 +1,54 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: Re: RFC: disallow modular framebuffers
-Date: Thu, 3 Mar 2005 17:56:49 +0100
-Message-ID: <20050303165649.GF4608@stusta.de>
-References: <20050301024118.GF4021@stusta.de> <200503012115.29023.adaplas@hotpop.com>
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: Who is stomping PCI config space?
+Date: Thu, 3 Mar 2005 14:03:43 -0500
+Message-ID: <9e4733910503031103552514b9@mail.gmail.com>
+Reply-To: Jon Smirl <jonsmirl@gmail.com>
 Mime-Version: 1.0
-Content-Disposition: inline
-In-Reply-To: <200503012115.29023.adaplas@hotpop.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
+	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/xorg>
+List-Post: <mailto:xorg@lists.freedesktop.org>
+List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
+	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
+Sender: xorg-bounces@lists.freedesktop.org
+Errors-To: xorg-bounces@lists.freedesktop.org
+Content-Type: text/plain; charset="us-ascii"
+To: Xserver development <xorg@freedesktop.org>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tue, Mar 01, 2005 at 09:15:27PM +0800, Antonino A. Daplas wrote:
-> On Tuesday 01 March 2005 10:41, Adrian Bunk wrote:
-> > Hi,
-> >
-> > while looking how to fix modular FB_SAVAGE_* (both FB_SAVAGE_I2C=m and
-> > FB_SAVAGE_ACCEL=m are currently broken) I asked myself:
-> 
-> BTW, what's the problem with the above?
+I have two video cards:
+PCI Rage128
+AGP Radeon
 
-  #if defined(CONFIG_FB_SAVAGE_ACCEL)
+X is loaded on the Rage128 on VT7
+X is not configured to support the radeon
 
-doesn't work with FB_SAVAGE_ACCEL=m, and
+I switch to VT1 and load radeonfb
+This works fine.
 
-  #if defined(CONFIG_FB_SAVAGE_ACCEL) || defined(CONFIG_FB_SAVAGE_ACCEL_MODULE)
+Now I switch to VT7 and dump PCI config space for the radeon
 
-would break with FB_SAVAGE=y and FB_SAVAGE_ACCEL=m.
+[root@jonsmirl 0000:01:00.0]# hexdump config >/foo
+[root@jonsmirl 0000:01:00.0]# diff /foo /bar
+1c1
+< 0000000 1002 4966 0080 02b0 0001 0300 4010 0080
+---
+> 0000000 1002 4966 0083 02b0 0001 0300 4010 0080
+4c4
+< 0000030 0000 fea0 0058 0000 0000 0000 010b 0008
+---
+> 0000030 0000 fe90 0058 0000 0000 0000 010b 0008
+[root@jonsmirl 0000:01:00.0]#
 
+Somebody is changing PCI command from 83 to 80 and disabling my
+radeon's memory and iospace. Who is doing this? It has to be X since
+it doesn't happen if I switch to VT6 or VT8.
 
-Is there any reason for these being three modules?
-It seems the best solution would be to make this one module composed of 
-up to three object files?
-
-
-> Tony
-
-cu
-Adrian
+Why is X mucking with a card it doesn't have a driver loaded for? 
+Where is this happening in the X code?
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Jon Smirl
+jonsmirl@gmail.com

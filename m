@@ -1,21 +1,19 @@
-From: David Eger <eger@havoc.gtf.org>
-Subject: Re: cirrusfb status report
-Date: Thu, 17 Jun 2004 15:54:30 -0400
+From: Thomas Winischhofer <thomas@winischhofer.net>
+Subject: 2.6.7 still garbage upon start
+Date: Fri, 18 Jun 2004 00:41:53 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040617195430.GA4682@havoc.gtf.org>
-References: <20040615185355.GA12307@havoc.gtf.org> <Pine.LNX.4.56.0406152328230.4653@pentafluge.infradead.org>
+Message-ID: <40D21E31.5070904@winischhofer.net>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bb2y5-00022e-TZ
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Jun 2004 12:54:37 -0700
-Received: from havoc.gtf.org ([216.162.42.101])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bb2y5-0003Jh-K8
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Jun 2004 12:54:37 -0700
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.56.0406152328230.4653@pentafluge.infradead.org>
+	id 1Bb5b4-0003Fs-4h
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Jun 2004 15:43:02 -0700
+Received: from [213.229.38.18] (helo=home.winischhofer.net)
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
+	id 1Bb5b3-0004iB-Fc
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Jun 2004 15:43:01 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,28 +23,30 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: jsimmons@pentafluge.infradead.org
-Cc: Jeff Garzik <garzik@havoc.gtf.org>, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, Jun 15, 2004 at 11:28:38PM +0100, jsimmons@pentafluge.infradead.org wrote:
-> 
-> I just bought this card so I'm willing to give it a try.
 
-The cirrusfb driver is for some old cards.  Garage sale? ;-)
-I finally tracked down a screen corruption issue.. you have to wait
-till BLT's are done to do a pan().  This probably affects 2.4 as well.
+modprobing fbcon still paints a white rectangle. Difference to 2.6.6 is 
+that this rectangle now fills the entire screen instead of a smaller 
+area. As before, text is shown all correctly (painted upon the 
+rectangle), and the white rectangle scrolls up just like text and in the 
+end vanishes.
 
-The patch is at:
+Switching to another VT while in X still leaves you with a blank screen 
+and a blinking cursor. If one presses return, the screen contents is 
+restored.
 
-http://www.yak.net/random/fbdev-patches/cirrusfb-2.6-update.patch
+Hm?
 
-ZORRO is still busted, and my monitor freaks out when I try anything
-but 640x480x8.  Is this something that modedb could help out with?
-If you can figure it, I'd gladly accept a patch for it :-D
+(fbdev driver: sisfb 1.7.13 as of current -mm; kernel vanilla 2.6.7. 
+Don't see any relevant changes in the -mm tree either.)
 
--dte
+-- 
+Thomas Winischhofer
+Vienna/Austria
+thomas AT winischhofer DOT net          http://www.winischhofer.net/
+twini AT xfree86 DOT org
 
 
 -------------------------------------------------------

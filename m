@@ -1,49 +1,78 @@
 From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/3: FBDEV: VGA State Save/Restore
-	module
-Date: 06 Dec 2002 05:47:06 +0500
+Subject: Re: [Linux-fbdev-devel] [PATCH] FBDev: vga16fb port
+Date: 06 Dec 2002 06:36:31 +0500
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1039135574.1032.17.camel@localhost.localdomain>
-References: <Pine.LNX.4.44.0212051729230.31967-100000@phoenix.infradead.org>
+Message-ID: <1039138551.1024.43.camel@localhost.localdomain>
+References: <20021205180314.GA860@iliana>
+	<Pine.LNX.4.44.0212052035330.31967-100000@phoenix.infradead.org> 
+	<20021205204442.GA1103@iliana>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44.0212051729230.31967-100000@phoenix.infradead.org>
+In-Reply-To: <20021205204442.GA1103@iliana>
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Sven Luther <luther@dpt-info.u-strasbg.fr>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Thu, 2002-12-05 at 22:31, James Simmons wrote:
-> 
-> > Limitations:
-> > 1.  Restoring the VGA state from high-resolution graphics mode may
-> > result in a corrupt display which can be corrected by switching
-> > consoles.  May need a screen redraw at this point.  Restoring from VGA
-> > graphics mode to text mode and vice versa is okay.
+On Fri, 2002-12-06 at 01:44, Sven Luther wrote: 
+> On Thu, Dec 05, 2002 at 08:37:08PM +0000, James Simmons wrote:
 > > 
-> > 2. Assumes some things about the hardware which is not universally
-> > correct:  VGA memory base is at 0xA0000, memory size is 64KB, the
-> > hardware palette is readable, etc. 
+> > > > Not really. When X closes /dev/fb then fb_release is called which if the 
+> > > 
+> > > That supposes X is fbdev aware (either using the fbdev driver or the
+> > > UseFBDev option), right ? What if X knows nothing about fbdev, it will
+> > > try restoring stuff as if it was in text mode.
 > > 
-> > Any comments welcome.
+> > That is what X will try. 
 > 
-> One thing I like to suggest. I like to move the vga code in fb.h to vga.h. 
-> Alot of fbdev devices don't have a VGA core. 
+> Mmm, is it enough for X to just save/restore the registers it modifies ?
 > 
+Life will be easy if native X does that always.  However, it does not
+always restore all the registers it modifies. Common example, the cursor
+registers.  If fbdev is also using a hardware cursor, you will see X's
+cursor replacing your console's block cursor when switching from X to
+the console.
+
+Some ATI cards freezes the system when native X and fbdev are running
+concurrently.
+
+James,
+
+Without the set_var hook 2.5 as is in 2.4, this will become more of a
+problem. Most drivers in 2.4 refreshes their registers during set_var.
+
+> Also, i suppose if i am comming from fbdev, what X saves or restores
+> does not really count, since fbdev knows what relevant thing to save.
+
+Yes, the same thing too if the X driver supports Option "Usefbdev". Instead
+of restoring the hardware registers, X (or XFBdev) will call fb_set_var 
+to restore fbcon's state.
+
+> 
+> Still i sense that there may be some issues involved here, especially
+> if you switch from text mode to fbdev or between fbdevs while not in X.
 > 
 
-Only the structure definition of fb_vgastate is in fb.h.  For drivers
-without a vga core, they'll just won't link to it and it won't be
-compiled.  Plus, vga.h is not a common header (not located in
-include/asm or include/linux) and it contains a lot of declarations and
-definitions which are irrelevant to most drivers or are already
-duplicated.  This will be messier, I think.  
+State saves and restores are pertinent only for state changes within a single card.
+Ie, the state of the vga core and the graphics state. Thus, this is relevant to
+vgacon, vga16fb, the native fbdev driver, and of course X since all can coexist 
+in one card. I have already run vgacon, vga16fb and native fbdev simultaneously
+already.  Fortunately, the X driver was nice too, so I was able to run X also.  
 
-Maybe we can just enclose it in a macro, something like:
+In multiple fbdev's with each on it's own hardware, this does not matter since 
+the state of the other hopefully does not affect the other. The only problem I can think
+of is that one card is the primary (thus with an active vga core) and the others are
+non primary (thus with an inactive vga core).  If the non-primary drivers are not
+careful, they may attempt to save/restore the VGA state that they have no business of
+knowing.  There can be several solutions to this:
 
-#ifdef FBDEV_HAS_VGACORE
-...
-#endif
+1.  There is probably a flag somewhere that says that the hardware's vga core is 
+inactive, and if so, do not attempt to save/restore the state..
+
+2.  Most hardware with a vga core most probably has the VGA registers memory mapped. 
+If this is the case, all it needs to do is fill up fb_vgastate.vgabase, and the 
+save/restore module will instead do mmio instead of pio, leaving the actual VGA registers
+untouched.
 
 Tony

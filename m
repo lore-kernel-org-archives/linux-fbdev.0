@@ -1,23 +1,23 @@
 From: James Simmons <jsimmons@www.infradead.org>
-Subject: test
-Date: Wed, 19 Jan 2005 20:56:06 +0000 (GMT)
-Message-ID: <Pine.LNX.4.56.0501192055520.21536@pentafluge.infradead.org>
+Subject: Long time and new work.
+Date: Wed, 19 Jan 2005 20:59:14 +0000 (GMT)
+Message-ID: <Pine.LNX.4.56.0501192059010.21536@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CrMs6-0005uJ-RU
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 19 Jan 2005 12:56:10 -0800
+	id 1CrMv8-00060G-9s
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 19 Jan 2005 12:59:18 -0800
 Received: from pentafluge.infradead.org ([213.146.154.40])
 	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1CrMs5-00085R-A7
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 19 Jan 2005 12:56:10 -0800
+	id 1CrMv6-0008TJ-DM
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 19 Jan 2005 12:59:17 -0800
 Received: from jsimmons (helo=localhost)
 	by pentafluge.infradead.org with local-esmtp (Exim 4.43 #1 (Red Hat Linux))
-	id 1CrMs2-0005bO-Se
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 19 Jan 2005 20:56:07 +0000
+	id 1CrMv4-0005c0-2y
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 19 Jan 2005 20:59:14 +0000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -33,8 +33,12 @@ Content-Transfer-Encoding: 7bit
 To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-etst
+Hi!
 
+	Sorry for being gone for so long. I needed to take time away. I 
+have new work to present so the patches will be coming. As for being 
+maintainer again I don't know about that. For now I will just submit 
+patches. 
 
 
 -------------------------------------------------------

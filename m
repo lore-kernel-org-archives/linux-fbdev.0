@@ -1,16 +1,18 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: Re: EDID for radeonfb
-Date: Thu, 21 Aug 2003 13:39:31 -0700 (PDT)
+From: rio500-users-admin@lists.sourceforge.net
+Subject: Your message to Rio500-users awaits moderator approval
+Date: Thu, 21 Aug 2003 22:52:02 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030821203931.55804.qmail@web14910.mail.yahoo.com>
-References: <1061496982.18043.4.camel@gaston>
-Mime-Version: 1.0
+Message-ID: <E19q4qg-0002OM-00@sc8-sf-list2.sourceforge.net>
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from web14910.mail.yahoo.com ([216.136.225.62])
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19pwdL-0004ZT-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 21 Aug 2003 14:06:15 -0700
-In-Reply-To: <1061496982.18043.4.camel@gaston>
+Received: from sc8-sf-list2-b.sourceforge.net ([10.3.1.14] helo=sc8-sf-list2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19q4qB-00030N-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 21 Aug 2003 22:52:03 -0700
+Received: from sc8-sf-list1-b.sourceforge.net ([10.3.1.13] helo=sc8-sf-list1.sourceforge.net)
+	by sc8-sf-list2.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19q4qg-0002OM-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 21 Aug 2003 22:52:34 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,52 +22,23 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, kronos@kronoz.cjb.net
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@infradead.org>, Jon Smirl <jonsmirl@yahoo.com>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-The EDID code will allow the driver to ignore the BIOS copy in low RAM and use
-the ROM instead. Ben, could you make sure that the code to enable/access the
-ROM works on your Macs since I don't own one? Did you finish merging what was
-left of the Rage/Radeon PCI IDs from my patch?
+Your mail to 'Rio500-users' with the subject
 
-EDID plus ROM will solve both problems: multiple adpaters and Mac portables
-needing EDID.
+    Re: That movie
 
---- Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> 
-> > Ok, I've a working implementation of the I2C code for radeonfb :)
-> > The bug was very stupid: 0x50 became 0x20 and I spent a couple of weeks
-> > wondering why it didn't work...
-> > 
-> > I've tested the code on a R300 board but it should work on any radeon. I
-> > need a couple of day to merge  it into radeonfb and to test. I'll send a
-> > patch ASAP.
-> 
-> Hi !
-> 
-> It would be real cool if you could start from the radeonfb version
-> that is at bk://ppc.bkbits.net/linuxppc-2.5-benh (It needs my previously
-> posted Power Management patch to fbdev to build, but you can just
-> comment out 2 lines to make it build & run without it).
-> 
-> I'm currently having maintainership of this driver and I'll have an
-> update sent to James rsn based on that tree, so that would simplify
-> the merging significantly.
-> 
-> Ben.
-> 
+Is being held until the list moderator can review it for approval.
 
+The reason it is being held:
 
-=====
-Jon Smirl
-jonsmirl@yahoo.com
+    Message body is too big: 102296 bytes but there's a limit of 40 KB
 
-__________________________________
-Do you Yahoo!?
-Yahoo! SiteBuilder - Free, easy-to-use web site design software
-http://sitebuilder.yahoo.com
+Either the message will get posted to the list, or you will receive
+notification of the moderator's decision.
 
 
 -------------------------------------------------------

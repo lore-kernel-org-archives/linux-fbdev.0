@@ -1,21 +1,21 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: tgafb broken in 2.6test9 compile
-Date: Mon, 24 Nov 2003 17:38:52 +0100 (MET)
+From: "Michael McLagan" <mmclagan@invlogic.com>
+Subject: Bug in register_framebuffer ??
+Date: Tue, 25 Nov 2003 16:20:42 -0500 (EST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0311241110150.14603-100000@waterleaf.sonytel.be>
-References: <20031123225306.GC4146@mail.nuclear-dawn.com>
+Message-ID: <200311252120.hAPLKipU000562@utility.invlogic.com>
+Reply-To: "Michael McLagan" <mmclagan@invlogic.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1AOJjm-0008E0-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 24 Nov 2003 08:38:58 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
+	id 1AOkc8-0002ZO-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 25 Nov 2003 13:20:52 -0800
+Received: from utility.invlogic.com ([198.182.196.8] ident=root)
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AOJjl-0006I8-Jt
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 24 Nov 2003 08:38:57 -0800
-In-Reply-To: <20031123225306.GC4146@mail.nuclear-dawn.com>
+	id 1AOkc7-0004gK-W7
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 25 Nov 2003 13:20:52 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -25,56 +25,55 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dan Field <danf@nuclear-dawn.com>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+Cc: "nufan_wfk@yahoo.com" <nufan_wfk@yahoo.com>, "ivtv@kernel.dk" <ivtv@kernel.dk>
 
-On Sun, 23 Nov 2003, Dan Field wrote:
-> I'm trying to compile 2.6.0test9 and ran into the following error:
-> 
-> make[1]: `arch/alpha/kernel/asm-offsets.s' is up to date.
->   CHK     include/linux/compile.h
->     CC      drivers/video/tgafb.o
->     drivers/video/tgafb.c:83: `tgafb_pci_unregister' undeclared here
->     (not in a function)
->     drivers/video/tgafb.c:83: initializer element is not constant
->     drivers/video/tgafb.c:83: (near initialization for
->     `tgafb_driver.remove')
->     drivers/video/tgafb.c:84: initializer element is not constant
->     drivers/video/tgafb.c:84: (near initialization for `tgafb_driver')
->     drivers/video/tgafb.c: In function `tgafb_set_par':
->     drivers/video/tgafb.c:233: `color_table' undeclared (first use in
->     this function)
->     drivers/video/tgafb.c:233: (Each undeclared identifier is reported
->     only once
->     drivers/video/tgafb.c:233: for each function it appears in.)
->     drivers/video/tgafb.c:234: `default_red' undeclared (first use in
->     this function)
->     drivers/video/tgafb.c:236: `default_grn' undeclared (first use in
->     this function)
->     drivers/video/tgafb.c:238: `default_blu' undeclared (first use in
->     this function)
->     make[2]: *** [drivers/video/tgafb.o] Error 1
->     make[1]: *** [drivers/video] Error 2
->     make: *** [drivers] Error 2
+Hello,
 
-Tgafb wasn't converted to the new fbdev frame work yet. It should be fixed in
-James Simmons' tree:
+   I'm looking into a problem with the ivtv (Hauppauge PVR) frame buffer
+driver and I came across this piece of code in fbmem.c, line 782, v2.4.22:
 
-    http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
-    bk://fbdev.bkbits.net/fbdev-2.5
+>		for (j = 0; j < MAX_NR_CONSOLES; j++)
+>			if (con2fb_map[j] == i) {
+>				if (owner)
+>					__MOD_INC_USE_COUNT(owner);
+>				if (!fb_info->fbops->fb_open)
+>					continue;
+>				if (!fb_info->fbops->fb_open(fb_info,0))
+>					continue;
+>				if (owner)
+>					__MOD_DEC_USE_COUNT(owner);
+>			}
+>		fb_ever_opened[i] = 1;
 
-Gr{oetje,eeting}s,
+  I believe this is causing us a problem with the module usage count
+being incremented despite there being no visible use on the system.  
+Since the driver doesn't define fb_open, it looks like the above will
+increment the use count without decrementing it.
 
-						Geert
+Should it be coded:
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+		for (j = 0; j < MAX_NR_CONSOLES; j++)
+			if ((con2fb_map[j] == i) && fb_info->fbops->fb_open) {
+			    if (owner) {
+				__MOD_INC_USE_COUNT(owner);
+			        if (!fb_info->fbops->fb_open(fb_info,0))
+				    __MOD_DEC_USE_COUNT(owner);
+			    } else {
+				fb_info->fbops->fb_open(fb_info,0);
+			    }
+			}
+		fb_ever_opened[i] = 1;
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Seems to me that does the same thing without artificially inflating
+the module usage count.
+
+If that makes sense, could someone either let me know or pass it on 
+to Marcelo and Linus (assuming 2.6 uses the same piece of code)?
+
+   Michael
+
 
 
 

@@ -1,25 +1,22 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [PATCH] radeonfb(): memmove() fix -- this one works ;-)
-Date: Wed, 28 Apr 2004 08:47:55 +0800
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: fbcon VT (mode) switching issue
+Date: Wed, 28 Apr 2004 10:44:02 +1000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200404280818.49915.adaplas@pol.net>
-References: <Pine.LNX.4.44.0404240035400.5826-100000@phoenix.infradead.org> <1083025364.11575.4.camel@gaston> <Pine.GSO.4.58.0404271050540.14434@waterleaf.sonytel.be>
+Message-ID: <1083113041.20092.17.camel@gaston>
+References: <10040.159.37.7.44.1083099594.squirrel@www.foogod.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIdG3-0008OD-Su
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 17:49:03 -0700
-Received: from snickers.hotpop.com ([38.113.3.51])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIdG3-0008WV-PU
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 17:49:03 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by snickers.hotpop.com (Postfix) with SMTP id 7D3AA70EBA
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 28 Apr 2004 00:03:31 +0000 (UTC)
-In-Reply-To: <Pine.GSO.4.58.0404271050540.14434@waterleaf.sonytel.be>
-Content-Disposition: inline
+	id 1BIdGp-0000Bb-OC
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 17:49:51 -0700
+Received: from gate.crashing.org ([63.228.1.57] ident=root)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.30)
+	id 1BIdGp-0002NW-9q
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 17:49:51 -0700
+In-Reply-To: <10040.159.37.7.44.1083099594.squirrel@www.foogod.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,33 +27,37 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: James Simmons <jsimmons@infradead.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Alex Stewart <alex@foogod.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tuesday 27 April 2004 16:51, Geert Uytterhoeven wrote:
-> On Tue, 27 Apr 2004, Benjamin Herrenschmidt wrote:
-> > On Tue, 2004-04-27 at 10:19, James Simmons wrote:
-> > > Okay. This is my first attempt to address this problem. There is not
-> > > test for accelerated copyarea or image drawing as we lack the flag. I
-> > > haven't figured where to put it yet. We have 3 choices.
-> > >
-> > >
-> > > fb_var_screeninfo
-> > > fb_fix_screeninfo
-> > > fb_info
-> >
-> > Well... fix is what gets filled after a mode is set, let's put it in
-> > there along with the linewidth etc...
->
-> Indeed. BTW, no comments on my proposal to add
-> fb_fix_screeninfo.capabilities?
->
 
-Since accelerated drawing functions have no relevence whatsoever in userspace, 
-placing it in fb_info is better.  But I won't disagree if it's placed in 
-fb_fix_screeninfo.
+> This appears to be due to the fact that when changing VTs, set_par (which
+> is where neofb changes the hardware video mode) isn't called until
+> sometime after the fbcon code uses imageblit to transfer the console text
+> to the screen.  The result is that the accelerated imageblit is done with
+> the hardware still set to the old screen resolution/depth, and thus the
+> neomagic chip writes the data to memory in a form appropriate for the old
+> mode, not the new one that we're switching to.
 
-Tony
+That's weird, we should get a call to fbcon_blank() triggering an
+FB_ACTIVATE_FORCE call before anything is drawn (on the switch from
+KD_GRAPHICS to KD_TEXT more specifically).
+
+> I've tried to figure out how this whole process works and what the best
+> fix for this problem is, but to be honest, trying to follow some of the
+> code paths in the framebuffer console system is rather like trying to
+> follow Brer Rabbit through the briar patch..  I could use the help of
+> somebody a bit more familiar with this part of things, I think.
+> 
+> I have determined that adding a call to set_par at the beginning of
+> fbcon_switch does fix the problem.  Of course it also ends up calling
+> set_par twice during the overall switching procedure (with noticeable
+> flicker), and I'm not really sure this is the right place to put it
+> anyway, so I wanted to get people's opinion as to what the right fix is..
+
+That's not the right fix.
+
+Ben.
 
 
 

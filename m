@@ -1,16 +1,20 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: EDID through sysfs
-Date: Sun, 17 Aug 2003 10:34:07 -0700 (PDT)
+From: =?iso-8859-1?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>
+Subject: Re: EDID through sysfs
+Date: Mon, 18 Aug 2003 02:36:50 +0300
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030817173407.16010.qmail@web14907.mail.yahoo.com>
-References: <20030817144528.GA843@dreamland.darkstar.lan>
+Message-ID: <20030818023650.B16366@sci.fi>
+References: <20030817144528.GA843@dreamland.darkstar.lan> <20030817173407.16010.qmail@web14907.mail.yahoo.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from web14907.mail.yahoo.com ([216.136.225.59])
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19oRQA-0005gz-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 17 Aug 2003 10:34:26 -0700
-In-Reply-To: <20030817144528.GA843@dreamland.darkstar.lan>
+Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19oX1c-0002wk-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 17 Aug 2003 16:33:28 -0700
+Received: from simpukka.saunalahti.fi (simpukka.saunalahti.fi [195.74.0.20])
+	by gw01.mail.saunalahti.fi (Postfix) with ESMTP id 0A039247A3B
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 18 Aug 2003 02:33:26 +0300 (EEST)
+In-Reply-To: <20030817173407.16010.qmail@web14907.mail.yahoo.com>; from jonsmirl@yahoo.com on Sun, Aug 17, 2003 at 10:34:07AM -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,53 +24,28 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: kronos@kronoz.cjb.net
-Cc: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
+To: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
---- Kronos <kronos@kronoz.cjb.net> wrote:
-> > Somewhat complete I2C driver code exists in the
-> KATOS
-> Cool. I'm coding something  like this but I'm unable
-> to  get an ACK back
-> from the  card. I'll look  at this  code and see  if
-> I  can speak  to my
-> board.
+On Sun, Aug 17, 2003 at 10:34:07AM -0700, Jon Smirl wrote:
+> Does anyone know how other vendors handle the EDID/DDC
+> info? Do other cards use I2C?
 
-Post as soon as you get something working. No sense
-duplicating effort, I can spend the time working on
-standalone OpenGL.
+DDC2 uses I2C. There's aready a module that reads EDID via DDC2 in
+lm_sensors. It does require a working i2c adapter driver for the graphics
+card. matroxfb has the i2c driver included and lm_sensors has a driver fo=
+r
+voodoo3. Not sure about other cards but maybe that katos driver has
+something for ATI cards...
 
-Exporting EDID info through sysfs is probably the best
-universal solution. That way we can have a standard
-utility for setting modes instead of having a custom
-solution for each card. It also be fun to play with
-all of the other devices on my All-in-Wonder.
+In DDC1 mode the monitor transmits the EDID continuously with vsync actin=
+g
+as the clock. I don't think that any driver supports DDC1.
 
-How is I2C code in Katos vs the 2.6 kernel? Katos is
-four years old, I'm sure I2C support has improved
-since then.
-
-> sysfs to set a new mode. I think that Greg KH is
-> working on it.
-Point Greg at the Katos code, it may same him some
-effort.
-
-Does anyone know how other vendors handle the EDID/DDC
-info? Do other cards use I2C? Will sysfs work as a
-universal solution?
-
-
-
-=====
-Jon Smirl
-jonsmirl@yahoo.com
-
-__________________________________
-Do you Yahoo!?
-Yahoo! SiteBuilder - Free, easy-to-use web site design software
-http://sitebuilder.yahoo.com
+--=20
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
 
 
 -------------------------------------------------------

@@ -1,75 +1,57 @@
-From: Michael Kummer <michael@kummer.cc>
-Subject: Linux 2.5.47 compile error
-Date: Mon, 11 Nov 2002 11:04:22 +0100 (CET)
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.44.0211111103130.246-100000@epo>
-References: <Pine.LNX.4.44.0211090103270.14371-100000@phoenix.infradead.org>
-Reply-To: michael@kummer.cc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: atyfb and radeonfb
+Date: 13 Nov 2002 00:09:44 +0100
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <1037142584.2774.230.camel@zion>
+References: <3DCBD804.8050109@ntlworld.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44.0211090103270.14371-100000@phoenix.infradead.org>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from amarseille-201-1-2-234.abo.wanadoo.fr ([193.253.217.234] helo=zion.wanadoo.fr)
+	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18Bk9x-0000bE-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 12 Nov 2002 15:09:29 -0800
+In-Reply-To: <3DCBD804.8050109@ntlworld.com>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: Steven Newbury <steven.newbury1@ntlworld.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-make -f scripts/Makefile.build obj=drivers/video/riva
-  gcc -Wp,-MD,drivers/video/riva/.fbdev.o.d -D__KERNEL__ -Iinclude -Wall
--Wstrict-prototypes -Wno-trigraphs -O2 -fomit-frame-pointer
--fno-strict-aliasing -fno-common -pipe -mpreferred-stack-boundary=2
--march=i686 -malign-functions=4 -Iarch/i386/mach-generic -nostdinc
--iwithprefix include    -DKBUILD_BASENAME=fbdev   -c -o
-drivers/video/riva/fbdev.o drivers/video/riva/fbdev.c
-drivers/video/riva/fbdev.c: In function `riva_set_dispsw':
-drivers/video/riva/fbdev.c:665: structure has no member named `type'
-drivers/video/riva/fbdev.c:666: structure has no member named `type_aux'
-drivers/video/riva/fbdev.c:667: structure has no member named `ypanstep'
-drivers/video/riva/fbdev.c:668: structure has no member named `ywrapstep'
-drivers/video/riva/fbdev.c:677: structure has no member named
-`line_length'
-drivers/video/riva/fbdev.c:678: structure has no member named `visual'
-drivers/video/riva/fbdev.c:686: structure has no member named
-`line_length'
-drivers/video/riva/fbdev.c:687: structure has no member named `visual'
-drivers/video/riva/fbdev.c:695: structure has no member named
-`line_length'
-drivers/video/riva/fbdev.c:696: structure has no member named `visual'
-drivers/video/riva/fbdev.c: In function `rivafb_get_fix':
-drivers/video/riva/fbdev.c:1294: structure has no member named `type'
-drivers/video/riva/fbdev.c:1295: structure has no member named `type_aux'
-drivers/video/riva/fbdev.c:1296: structure has no member named `visual'
-drivers/video/riva/fbdev.c:1302: structure has no member named
-`line_length'
-drivers/video/riva/fbdev.c: In function `rivafb_pan_display':
-drivers/video/riva/fbdev.c:1611: structure has no member named
-`line_length'
-drivers/video/riva/fbdev.c:1586: warning: `base' might be used
-uninitialized in this function
-drivers/video/riva/fbdev.c: At top level:
-drivers/video/riva/fbdev.c:1748: unknown field `fb_get_fix' specified in
-initializer
-drivers/video/riva/fbdev.c:1748: warning: initialization from incompatible
-pointer type
-drivers/video/riva/fbdev.c:1749: unknown field `fb_get_var' specified in
-initializer
-drivers/video/riva/fbdev.c:1749: warning: initialization from incompatible
-pointer type
-make[3]: *** [drivers/video/riva/fbdev.o] Error 1
-make[2]: *** [drivers/video/riva] Error 2
-make[1]: *** [drivers/video] Error 2
-make: *** [drivers] Error 2
+On Fri, 2002-11-08 at 16:28, Steven Newbury wrote:
+> Is atyfb in 2.4 known to work with recent Mach64 chips like Rage XL? 
+> When I install the driver it detects the chip but results in just a 
+> black screen.  I also noticed that it detects WRAM, whereas I am certain 
+> it should be SGRAM.  The XFree86 driver detects everything ok and just 
+> works.
+
+Well, I don't know if Geert still have much time to maintain
+this driver, any help implementing the missing features would
+be nice ;)
+
+> I have also noticed that the radeonfb driver lacks support for 
+> initialising the card if the BIOS hasn't already done it.  I have 
+> recently changed from a matrox setup where the matroxfb driver would 
+> initialise any matrox cards found irrespective of whether the BIOS 
+> decided to do it unless it was told not to.  Is there any chance that 
+> this functionality is going to be added to the radeonfb driver?  In 
+> 2.5/6 perhaps?
+
+If you can get ATI to provide POST code for every single ASIC
+rev. out there, that may be a good start.
+
+Ben.
 
 
--- 
-best regards
 
-
-Michael Kummer
-
---
-Michael Kummer - [A]ustrian [E]lite [S]printer
-Lieferinger-Hauptstrasse 47 - A 5020 Salzburg
-Mobile: +43 664 3333995
-EMail: michael@kummer.cc
-Web: http://www.sprinter.cc
+-------------------------------------------------------
+This sf.net email is sponsored by: To learn the basics of securing 
+your web site with SSL, click here to get a FREE TRIAL of a Thawte 
+Server Certificate: http://www.gothawte.com/rd524.html

@@ -1,21 +1,21 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH] kyrofb support
-Date: Thu, 15 Jan 2004 00:36:12 +0000 (GMT)
+From: Richard Smith <rsmith@bitworks.com>
+Subject: Rage Mobility M1 devid  4c52
+Date: Thu, 15 Jan 2004 01:44:16 -0600
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0401150035050.335-100000@phoenix.infradead.org>
-References: <20040114022816.GA9990@linux-sh.org>
+Message-ID: <400644D0.1060500@bitworks.com>
+Reply-To: rsmith@bitworks.com
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AgvUe-0000UB-IV
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Jan 2004 16:36:16 -0800
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.30)
-	id 1AgvUd-0003YD-UP
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Jan 2004 16:36:16 -0800
-In-Reply-To: <20040114022816.GA9990@linux-sh.org>
+	id 1Ah2Be-0001m2-Dg
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Jan 2004 23:45:06 -0800
+Received: from b44.xdsl.pgtc.com ([198.70.248.44] helo=bitworks.com)
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
+	id 1Ah2Be-0003My-2C
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Jan 2004 23:45:06 -0800
+Received: from bitworks.com [192.168.1.22] by bitworks.com [127.0.0.1] with SMTP (MDaemon.v2.7.SP4.R) for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 15 Jan 2004 01:42:32 -0600
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,26 +25,25 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
+
+I'm trying to run the atyfb on a board that has a ATI Rage Mobility M1 
+on it.  Grepping the driver source yeilds some refererences to a 
+Mobility M1 as though its supported but my device id of 0x4c52 does not 
+show up in the table of known devices and the driver fails to detect my 
+chip.
+
+If I copy the PCI Rage Mobililty like and change the device ID to 0x4c52 
+then I get atyfb messages but some of the info is wrong.  For example it 
+says I have 4M of wram but an M1 has 8M of sdram.
+
+Is the Mobility M1 really suppported?
 
 
-> No particular reason, really. I hadn't been following some of the recent fbdev
-> changes, so I wasn't sure if this was necessary or not (I was using tdfxfb as
-> a reference when tracking API changes, and noticed that it did the #ifdef
-> MODULE stuff which it never did earlier). I'll happily drop the #ifdef MODULE
-> bits if this isn't necessary. James?
-
-Yes. You can drop the MODULE ifdef. The latest modedb code can work with 
-modules and well as without.
-
-> I'll send you another patch for this as soon as I hear back from James or
-> someone else about the modedb / #ifdef MODULE stuff, I don't see any reason
-> why it would be required, though.
-
-Drop it and send me another patch.
+-- 
+Richard A. Smith
+rsmith@bitworks.com
 
 
 

@@ -1,25 +1,22 @@
-From: Manousaridis Angelos <amanous@inaccessnetworks.com>
-Subject: Re: FB device without console support
-Date: Thu, 30 Oct 2003 10:38:35 +0200
+From: Pavel Machek <pavel@suse.cz>
+Subject: Re: Cursor problems still in test9
+Date: Thu, 30 Oct 2003 10:09:34 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3FA0CE0B.6020805@inaccessnetworks.com>
-References: <Pine.LNX.4.44.0310292004250.21040-100000@phoenix.infradead.org>
+Message-ID: <20031030090934.GC295@elf.ucw.cz>
+References: <20031028094907.GA1319@elf.ucw.cz> <Pine.LNX.4.44.0310300436440.28721-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1AF8KC-0007K6-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 30 Oct 2003 00:38:37 -0800
-Received: from node3.inaccessnetworks.com ([212.205.200.118] helo=inaccessnetworks.com)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AF8KC-0000Jk-4X
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 30 Oct 2003 00:38:36 -0800
-Received: from inaccessnetworks.com (firewall [212.205.200.117])
-	by inaccessnetworks.com (8.12.1/8.12.1) with ESMTP id h9U8cYMJ020269
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 30 Oct 2003 10:38:34 +0200
-In-Reply-To: <Pine.LNX.4.44.0310292004250.21040-100000@phoenix.infradead.org>
+	id 1AF8oa-0001u6-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 30 Oct 2003 01:10:00 -0800
+Received: from gprs197-81.eurotel.cz ([160.218.197.81] helo=amd.ucw.cz)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.24)
+	id 1AF8oW-0004Wl-IA
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 30 Oct 2003 01:09:58 -0800
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44.0310300436440.28721-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -29,28 +26,50 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: James Simmons <jsimmons@infradead.org>
+Cc: kernel list <linux-kernel@vger.kernel.org>, geert@linux-m68k.org, linux-fbdev-devel@lists.sourceforge.net
 
-James Simmons wrote:
-> Yes. Take a look at the latest 2.6.0-testX kernels. 
+Hi!
+
+> > [And they get worse in fbcon-test patches I tried].
+> > 
+> > Try this on 2.4 (with vesafb).
+> > 
+> > echo -e "\33[10;5000]\33[11;50]\33[?18;0;136c\33[?102m"
+> > 
+> > ...then try it on 2.6, type foo in bash then delete it using
+> > backspace; ghost cursors stay there. Run emacs and quit it (it sets
+> > cursor to very visible). Boom, special cursor settings are gone.
 > 
-> On Wed, 29 Oct 2003, Manousaridis Angelos wrote:
+> I experimented with the above. I tried it out on vgacon, fbcon 2.4.X and 
+> fbcon 2.6.X. All give different results. What are suppose to see? 
+
+Well, we certainly do not want to see artifacts leaved behind cursor,
+which is what 2.6 currently does. (Type something in bash, backspace
+over it).
+
+Making it behave like it does now with 2.6, but with cursor properly
+deleted after after backspace, it would be okay.
+
+[It should behave the same way on 2.4 vgacon and fbcon... with
+possible difference that "bright background" might cause characters to
+blink on vgacon. That depends on vga card setting and is not really
+important.]
+
+> > And now, use gpm on text console to select some text. Hold down left
+> > button, move mouse a bit. Sometimes cursor gets corrupted and stays
+> > there.
 > 
-> 
->>Hello all,
->>
->>Is it possible to implement a fremebuffer device without console 
->>support? All I want is to access the graphics card buffer memory to 
->>display some graphics.
->>Can I find source code example for this?
+> Will try.
 
-Is it possible with a 2.4.xx kernel?
-Upgrading would be a nighmare fom me, I am targeting an embedded platform.
+Were you able to reproduce it?
+								Pavel
 
---
-Manousaridis Angelos
-
+-- 
+When do you have a heart between your knees?
+[Johanka's followup: and *two* hearts?]
 
 
 -------------------------------------------------------

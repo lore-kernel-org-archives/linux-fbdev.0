@@ -1,90 +1,62 @@
-From: Jon Smirl <jonsmirl@gmail.com>
+From: Helge Hafting <helgehaf@aitel.hist.no>
 Subject: Re: Generic VESA framebuffer driver and Video card BOOT?
-Date: Fri, 15 Oct 2004 16:19:16 -0400
+Date: Fri, 15 Oct 2004 23:44:51 +0200
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <9e4733910410151319159482ce@mail.gmail.com>
-References: <416E8322.25700.29ACC2F1@localhost>
-	 <1097843969.9863.8.camel@localhost.localdomain>
-	 <416FB275.6425.1C3D985@localhost>
-Reply-To: Jon Smirl <jonsmirl@gmail.com>
+Message-ID: <20041015214451.GA4739@hh.idb.hist.no>
+References: <416E6ADC.3007.294DF20D@localhost> <416FB624.31033.1D23BE5@localhost>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S267998AbUJOUTV@vger.kernel.org>
-In-Reply-To: <416FB275.6425.1C3D985@localhost>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S268468AbUJOVj1@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <416FB624.31033.1D23BE5@localhost>
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Kendall Bennett <kendallb@scitechsoft.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: Kendall Bennett <KendallB@scitechsoft.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, penguinppc-team@lists.penguinppc.org, linuxconsole-dev@lists.sourceforge.net
 
-On Fri, 15 Oct 2004 11:20:21 -0700, Kendall Bennett
-<kendallb@scitechsoft.com> wrote:
-> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+On Fri, Oct 15, 2004 at 11:36:04AM -0700, Kendall Bennett wrote:
+> Helge Hafting <helgehaf@aitel.hist.no> wrote:
 > 
-> > On Iau, 2004-10-14 at 21:46, Kendall Bennett wrote:
-> > > a way to spawn a user mode process that early in the boot sequence (it
-> > > would have to come from the initrd image I expect) then the only option
-> > > is to compile it into the kernel.
-> >
-> > There is exactly that in 2.6 - the hotplug interfaces allow the
-> > kernel to fire off userspace programs. Jon Smirl (who you should
-> > definitely talk to about this stuff) has been hammering out a
-> > design for moving almost all the mode switching into user space for
-> > kernel video.
+[...]
+> > Having video BOOT would be great, and please make it independent of
+> > the framebuffer drivers.  
 > 
-> That is awesome! I am all for moving this outside of the kernel, as it
-> would allow the use of ream vm86() services for VGA/VESA BIOS access on
-> x86 and the user of the emulator for non-x86 platforms.
+> Right now it is independent but I added a single line of code to the 
+> Radeon driver to init the card prior to initing the rest of the driver. 
+
+That's fine.  What I meant, was please make it independent
+of the VESA framebuffer driver, because one might want to use an
+acellerated driver when one is available.
+
+> It can be done earlier than that inside fbmem.c, but I wasn't sure how to 
+> set up the code so it would only POST each card as it is needed as I 
+> don't want to bring up secondary controllers unless the user actually 
+> wants this.
 > 
-> The only catch would be making sure this stuff is available really early
-> in the boot sequence. As it stands right now the solution we have brings
-> up the video almost imediately after you see the 'uncompressing kernel
-> image' message on the serial port. The other solution of course is to get
-> this into the boot loader which is what the AmigaOne folks did for their
-> machines (U-Boot brings up the video). We are working with those guys to
-> update their BIOS emulator to the latest version as the one they have
-> doesn't work that reliably.
+Selecting which cards to "boot" can probably be done with a
+kernel parameter?  The default could be to bring up all cards
+except the one the bios brought up already.  Wanting to _not_
+bring up some cards seems to be the unusual case to me.
+
+> How does the framebuffer console system handle secondary controllers 
+> right now? It seems from my look at the code that it only brings up the 
+> primary and not the secondary?
 > 
-> Anyway how do I find out more about this in 2.6?
-> 
-> Also I assume the code would need to end up in the initrg image, correct?
-> Can you point me at some resources to learn more about how to get custom
-> code into the initrd image?
+The stock 2.6.x fbcon only use one framebuffer console.  I use the ruby
+patch which supports multiple consoles.  The ruby patch for
+2.6.7 support multiple fbcons so you can have several keyboards
+attached to separate framebuffers thus supporting several users.
+(VT1-VT16 is the first kbd on the first fbcon,
+VT17-VT32 is the second kbd on the second fbcon, and so on.)
 
-The plan for this in 2.6 is to first write a VGA device driver. This
-driver is responsible for identifying all of the VGA devices in a
-system and ensuring only one of them gets enabled a time. I started
-writing this but I haven't finished. This driver would be compiled
-into the kernel. I can send source if you are interested.
+The ruby patch for 2.6.8.1 is somewhat broken, and doesn't work with fbcon.
+It still support multiple keyboards and multiple framebuffers, so
+I can support several users with separate xservers but currently not
+gettys on separate fbcons.
 
-I have added hooks to the PCI subsystem to record the boot video
-device. If the VGA driver finds VGA devices other than the boot one it
-will generate hotplug events on them. Initramfs should contain a reset
-program for using X86 mode to reset these cards. To do this you need
-two things from the kernel: 1) a way to make sure only a single VGA
-device is active (VGA driver, allow you to disable the current VGA
-device, reset the card, restore the active VGA device) and 2) a way to
-get the ROM image. There is a patch in -mm that makes the ROMs visible
-in sysfs that should be in the kernel shortly.
+Note that soft-booting the "extra" video card in order to support
+a framebuffer driver is nice even if it doesn't attach to 
+the console, because there is other software that can utilize
+a framebuffer.  X is the most well-known of them.
 
-So, when you first boot you have two choices, 1) use a display the
-boot ROM setup, such as VGAcon or PROMcon. or 2) have no display.
-People want this both ways. VGAcon/PROMcon will let you get output
-very early in the boot process.
-
-Next the VGA driver will initialize. This will trigger user space
-resets using the program on initramfs. Now it is possible to use all
-of your displays. To control this from something like resume, the
-driver sets a lock that is cleared by the reset app and the end of
-reset. This will keep other processes out of the driver until reset is
-finished.
-
-Right now I am working on a merged fbdev/DRM that supports multi-head
-adapters. It's turning out to be much more work than I though because
-neither DRM or fbdev handle multihead at the device driver level. You
-can get snapshots of the code at mesa3d.bkbits.net but it doesn't work
-right yet. This driver is designed to run after the VGAdriver has
-reset the hardware.
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Helge Hafting

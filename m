@@ -1,21 +1,21 @@
 From: Alexander Kern <alex.kern@gmx.de>
-Subject: [PATCH 1/7]
-Date: Sun, 21 Mar 2004 20:37:04 +0100
+Subject: [PATCH 4/7]
+Date: Sun, 21 Mar 2004 20:38:36 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200403212037.04337.alex.kern@gmx.de>
+Message-ID: <200403212038.36230.alex.kern@gmx.de>
 References: <200403212033.39808.alex.kern@gmx.de>
 Mime-Version: 1.0
 Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_g7eXAM99duI7DnC"
+  boundary="Boundary-00=_88eXAMVuD0K+aqy"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B58l4-0001SU-QY
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 21 Mar 2004 11:37:18 -0800
-Received: from pop.gmx.de ([213.165.64.20] helo=mail.gmx.net)
+	id 1B58mX-0001oR-24
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 21 Mar 2004 11:38:49 -0800
+Received: from imap.gmx.net ([213.165.64.20] helo=mail.gmx.net)
 	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1B58l2-0001zG-IW
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 21 Mar 2004 11:37:16 -0800
+	id 1B58mU-0002lI-Rh
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 21 Mar 2004 11:38:47 -0800
 In-Reply-To: <200403212033.39808.alex.kern@gmx.de>
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -31,7 +31,7 @@ To: linux-fbdev-devel@lists.sourceforge.net
 Cc: James Simmons <jsimmons@infradead.org>
 
 
---Boundary-00=_g7eXAM99duI7DnC
+--Boundary-00=_88eXAMVuD0K+aqy
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
@@ -39,531 +39,409 @@ Content-Disposition: inline
 
 
 
---Boundary-00=_g7eXAM99duI7DnC
+--Boundary-00=_88eXAMVuD0K+aqy
 Content-Type: text/x-diff;
   charset="utf-8";
-  name="01_mach64-add.diff"
+  name="04_mach64-bios.diff"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment;
-	filename="01_mach64-add.diff"
+	filename="04_mach64-bios.diff"
 
-diff -U 3 -H -d -p -r -N -- linux-2.6.4/drivers/video/aty/atyfb.h linux-2.6.alex/drivers/video/aty/atyfb.h
---- linux-2.6.4/drivers/video/aty/atyfb.h	2004-03-11 16:47:33.000000000 +0100
-+++ linux-2.6.alex/drivers/video/aty/atyfb.h	2004-03-13 21:27:34.000000000 +0100
-@@ -168,6 +168,7 @@ struct atyfb_par {
- #define M64F_LT_SLEEP		0x00040000
- #define M64F_XL_DLL		0x00080000
- #define M64F_MFB_FORCE_4	0x00100000
-+#define M64F_NO_HW_TRIPLE	0x00200000
+diff -U 3 -H -d -I '*.o' -p -r -- linux-2.6.4/drivers/video/aty/atyfb_base.c linux-2.6.alex/drivers/video/aty/atyfb_base.c
+--- linux-2.6.4/drivers/video/aty/atyfb_base.c	2004-03-18 20:02:44.000000000 +0100
++++ linux-2.6.alex/drivers/video/aty/atyfb_base.c	2004-03-18 20:12:51.000000000 +0100
+@@ -2766,124 +2766,33 @@ static int __devinit atyfb_setup_sparc(s
  
-     /*
-      *  Register access
-diff -U 3 -H -d -p -r -N -- linux-2.6.4/drivers/video/aty/atyfb_base.c linux-2.6.alex/drivers/video/aty/atyfb_base.c
---- linux-2.6.4/drivers/video/aty/atyfb_base.c	2004-03-11 16:47:33.000000000 +0100
-+++ linux-2.6.alex/drivers/video/aty/atyfb_base.c	2004-03-13 21:23:57.000000000 +0100
-@@ -125,6 +125,7 @@ static u32 aty_ld_lcd(int index, const s
- 	/* read the register value */
- 	return aty_ld_le32(LCD_DATA, par);
- }
-+#endif /* defined(CONFIG_PM) || defined(CONFIG_PMAC_BACKLIGHT) || defined (CONFIG_FB_ATY_GENERIC_LCD) */
+ #else /* __sparc__ */
  
- /*
-  * ATIReduceRatio --
-@@ -149,8 +150,6 @@ static void ATIReduceRatio(int *Numerato
-     *Denominator /= Divider;
- }
- 
--#endif /* defined(CONFIG_PM) || defined(CONFIG_PMAC_BACKLIGHT) || defined (CONFIG_FB_ATY_GENERIC_LCD) */
--
-     /*
-      *  The Hardware parameters for each card
-      */
-@@ -235,6 +234,12 @@ struct fb_var_screeninfo default_var = {
- 	0, FB_VMODE_NONINTERLACED
- };
- 
-+static struct fb_videomode defmode = {
-+	/* 640x480 @ 60 Hz, 31.5 kHz hsync */
-+	NULL, 60, 640, 480, 39721, 40, 24, 32, 11, 96, 2,
-+	0, FB_VMODE_NONINTERLACED
-+};
-+
- static struct fb_ops atyfb_ops = {
- 	.owner		= THIS_MODULE,
- 	.fb_open	= atyfb_open,
-@@ -316,36 +321,38 @@ static struct {
- } aty_chips[] __initdata = {
- #ifdef CONFIG_FB_ATY_GX
- 	/* Mach64 GX */
--	{ 0x4758, 0x00d7, 0x00, 0x00, m64n_gx, 135, 50, 50, M64F_GX },
--	{ 0x4358, 0x0057, 0x00, 0x00, m64n_cx, 135, 50, 50, M64F_GX },
-+	{ 0x4758, 0x00d7, 0x00, 0x00, m64n_gx, 135, 50, 50, M64F_GX | M64F_NO_HW_TRIPLE },
-+	{ 0x4358, 0x0057, 0x00, 0x00, m64n_cx, 135, 50, 50, M64F_GX | M64F_NO_HW_TRIPLE },
- #endif /* CONFIG_FB_ATY_GX */
- 
- #ifdef CONFIG_FB_ATY_CT
- 	/* Mach64 CT */
--	{ 0x4354, 0x4354, 0x00, 0x00, m64n_ct, 135, 60, 60, M64F_CT | M64F_INTEGRATED | M64F_CT_BUS | M64F_MAGIC_FIFO },
--	{ 0x4554, 0x4554, 0x00, 0x00, m64n_et, 135, 60, 60, M64F_CT | M64F_INTEGRATED | M64F_CT_BUS | M64F_MAGIC_FIFO },
-+	{ 0x4354, 0x4354, 0x00, 0x00, m64n_ct, 135, 60, 60, M64F_CT | M64F_INTEGRATED | M64F_CT_BUS | M64F_MAGIC_FIFO | M64F_NO_HW_TRIPLE },
-+	{ 0x4554, 0x4554, 0x00, 0x00, m64n_et, 135, 60, 60, M64F_CT | M64F_INTEGRATED | M64F_CT_BUS | M64F_MAGIC_FIFO | M64F_NO_HW_TRIPLE },
- 
- 	/* Mach64 VT */
--	{ 0x5654, 0x5654, 0xc7, 0x00, m64n_vta3, 170, 67, 67, M64F_VT | M64F_INTEGRATED | M64F_VT_BUS | M64F_MAGIC_FIFO | M64F_FIFO_24 },
--	{ 0x5654, 0x5654, 0xc7, 0x40, m64n_vta4, 200, 67, 67, M64F_VT | M64F_INTEGRATED | M64F_VT_BUS | M64F_MAGIC_FIFO | M64F_FIFO_24 | M64F_MAGIC_POSTDIV },
--	{ 0x5654, 0x5654, 0x00, 0x00, m64n_vtb, 200, 67, 67, M64F_VT | M64F_INTEGRATED | M64F_VT_BUS | M64F_GTB_DSP | M64F_FIFO_24 },
--	{ 0x5655, 0x5655, 0x00, 0x00, m64n_vtb, 200, 67, 67, M64F_VT | M64F_INTEGRATED | M64F_VT_BUS | M64F_GTB_DSP | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL },
--	{ 0x5656, 0x5656, 0x00, 0x00, m64n_vt4, 230, 83, 83, M64F_VT | M64F_INTEGRATED | M64F_GTB_DSP },
-+	{ 0x5654, 0x5654, 0xc7, 0x00, m64n_vta3, 170, 67, 67, M64F_VT | M64F_INTEGRATED | M64F_VT_BUS | M64F_MAGIC_FIFO | M64F_FIFO_24 | M64F_NO_HW_TRIPLE },
-+	{ 0x5654, 0x5654, 0xc7, 0x40, m64n_vta4, 200, 67, 67, M64F_VT | M64F_INTEGRATED | M64F_VT_BUS | M64F_MAGIC_FIFO | M64F_FIFO_24 | M64F_NO_HW_TRIPLE | M64F_MAGIC_POSTDIV },
-+	{ 0x5654, 0x5654, 0x00, 0x00, m64n_vtb, 200, 67, 67, M64F_VT | M64F_INTEGRATED | M64F_VT_BUS | M64F_GTB_DSP | M64F_FIFO_24 | M64F_NO_HW_TRIPLE },
-+	{ 0x5655, 0x5655, 0x00, 0x00, m64n_vtb, 200, 67, 67, M64F_VT | M64F_INTEGRATED | M64F_VT_BUS | M64F_GTB_DSP | M64F_FIFO_24 | M64F_NO_HW_TRIPLE | M64F_SDRAM_MAGIC_PLL },
-+	{ 0x5656, 0x5656, 0x00, 0x00, m64n_vt4, 230, 83, 83, M64F_VT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_FIFO_24 | M64F_NO_HW_TRIPLE },
-+
-+	/* Mach64 LT */
-+	{ 0x4c54, 0x4c54, 0x00, 0x00, m64n_lt, 135, 63, 63, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_FIFO_24 | M64F_NO_HW_TRIPLE },
-+	{ 0x4c47, 0x4c47, 0x00, 0x00, m64n_ltg, 230, 63, 63, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT | M64F_LT_SLEEP | M64F_G3_PB_1024x768 | M64F_NO_HW_TRIPLE },
- 
- 	/* Mach64 GT (3D RAGE) */
--	{ 0x4754, 0x4754, 0x07, 0x00, m64n_gt, 135, 63, 63, M64F_GT | M64F_INTEGRATED | M64F_MAGIC_FIFO | M64F_FIFO_24 | M64F_EXTRA_BRIGHT },
--	{ 0x4754, 0x4754, 0x07, 0x01, m64n_gt, 170, 67, 67, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT },
--	{ 0x4754, 0x4754, 0x07, 0x02, m64n_gt, 200, 67, 67, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT },
--	{ 0x4755, 0x4755, 0x00, 0x00, m64n_gtb, 200, 67, 67, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT },
-+	{ 0x4754, 0x4754, 0x07, 0x00, m64n_gt, 135, 63, 63, M64F_GT | M64F_INTEGRATED | M64F_MAGIC_FIFO | M64F_FIFO_24 | M64F_EXTRA_BRIGHT | M64F_NO_HW_TRIPLE },
-+	{ 0x4754, 0x4754, 0x07, 0x01, m64n_gt, 170, 67, 67, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT | M64F_NO_HW_TRIPLE },
-+	{ 0x4754, 0x4754, 0x07, 0x02, m64n_gt, 200, 67, 67, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT | M64F_NO_HW_TRIPLE },
-+	{ 0x4755, 0x4755, 0x00, 0x00, m64n_gtb, 200, 67, 67, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT | M64F_NO_HW_TRIPLE },
-+
-+	/* Mach64 RAGE 3D IIc, first chip with hardware tripple */
- 	{ 0x4756, 0x4756, 0x00, 0x00, m64n_iic_p, 230, 83, 83, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT },
- 	{ 0x4757, 0x4757, 0x00, 0x00, m64n_iic_a, 230, 83, 83, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT },
- 	{ 0x4759, 0x4759, 0x00, 0x00, m64n_iic_p, 230, 83, 83, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT },
- 	{ 0x475a, 0x475a, 0x00, 0x00, m64n_iic_a, 230, 83, 83, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT },
- 
--	/* Mach64 LT */
--	{ 0x4c54, 0x4c54, 0x00, 0x00, m64n_lt, 135, 63, 63, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP },
--	{ 0x4c47, 0x4c47, 0x00, 0x00, m64n_ltg, 230, 63, 63, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT | M64F_LT_SLEEP | M64F_G3_PB_1024x768 },
--
- 	/* Mach64 GTC (3D RAGE PRO) */
- 	{ 0x4742, 0x4742, 0x00, 0x00, m64n_gtc_ba, 230, 100, 100, M64F_GT | M64F_INTEGRATED | M64F_RESET_3D | M64F_GTB_DSP | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT },
- 	{ 0x4744, 0x4744, 0x00, 0x00, m64n_gtc_ba1, 230, 100, 100, M64F_GT | M64F_INTEGRATED | M64F_RESET_3D | M64F_GTB_DSP | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT },
-@@ -404,6 +411,22 @@ static char *aty_ct_ram[8] __initdata = 
- };
- #endif /* CONFIG_FB_ATY_CT */
- 
-+static u32 atyfb_get_pixclock(struct fb_var_screeninfo *var, struct atyfb_par *par)
-+{
-+	u32 pixclock = var->pixclock;
+-static int __devinit atyfb_setup_generic(struct pci_dev *pdev, struct fb_info *info, unsigned long addr)
 +#ifdef CONFIG_FB_ATY_GENERIC_LCD
-+	u32 lcd_on_off;
-+	par->pll.ct.xres = 0;
-+	if (par->lcd_table != 0) {
-+		lcd_on_off = aty_ld_lcd(LCD_GEN_CNTL, par);
-+		if(lcd_on_off & LCD_ON) {
-+			par->pll.ct.xres = var->xres;
-+			pixclock = par->lcd_pixclock;
-+		}
-+	}
-+#endif
-+	return pixclock;
-+}
- 
- #if defined(CONFIG_PPC)
- 
-@@ -578,9 +601,11 @@ static int aty_var_to_crtc(const struct 
- 	u32 sync, vmode;
- 	u32 h_total, h_disp, h_sync_strt, h_sync_end, h_sync_dly, h_sync_wid, h_sync_pol;
- 	u32 v_total, v_disp, v_sync_strt, v_sync_end, v_sync_wid, v_sync_pol, c_sync;
--	u32 pix_width, dp_pix_width, dp_chain_mask, lcd_on_off = 0;
--	int VScan = 1, VScanmode = 0;
--
-+	u32 pix_width, dp_pix_width, dp_chain_mask;
-+#ifdef CONFIG_FB_ATY_GENERIC_LCD
-+	int VScan = 1;
-+	u32 lcd_on_off = 0;
-+#endif
- 	/* input */
- 	xres = var->xres;
- 	yres = var->yres;
-@@ -691,7 +716,11 @@ static int aty_var_to_crtc(const struct 
- 		v_sync_end = v_sync_strt + par->lcd_vsync_len / VScan;
- 		v_total = v_disp + par->lcd_vblank_len / VScan;
- 	} else {
--#endif
-+#endif /* CONFIG_FB_ATY_GENERIC_LCD */
-+		if((xres > 1600) || (yres > 1200)) {
-+		    FAIL("MACH64 chips are designed for max 1600x1200\n"
-+			"select anoter resolution.");
-+		}
- 		h_sync_strt = h_disp + var->right_margin;
- 		h_sync_end = h_sync_strt + var->hsync_len;
- 		h_sync_dly  = var->right_margin & 7;
-@@ -715,7 +744,7 @@ static int aty_var_to_crtc(const struct 
- 	FAIL_MAX("h_sync_wid too large", h_sync_wid, 0x1f);
- 	FAIL_MAX("h_total too large", h_total, 0x1ff);
- 
--	if (vmode & FB_VMODE_DOUBLE || VScanmode > 1) {
-+	if (vmode & FB_VMODE_DOUBLE) {
- 		v_disp <<= 1;
- 		v_sync_strt <<= 1;
- 		v_sync_end <<= 1;
-@@ -777,7 +806,7 @@ static int aty_var_to_crtc(const struct 
- 	crtc->gen_cntl |= CRTC_VGA_LINEAR;
- 
- 	/* Enable doublescan mode if requested */
--	if (vmode & FB_VMODE_DOUBLE || VScanmode > 1)
-+	if (vmode & FB_VMODE_DOUBLE)
- 		crtc->gen_cntl |= CRTC_DBL_SCAN_EN;
- 	/* Enable interlaced mode if requested */
- 	if (vmode & FB_VMODE_INTERLACED)
-@@ -787,8 +816,6 @@ static int aty_var_to_crtc(const struct 
- 		int VDisplay = yres;
- 		if(vmode & FB_VMODE_DOUBLE)
- 			VDisplay <<= 1;
--		if(VScanmode > 1)
--			VDisplay *= VScanmode;
- 		if(vmode & FB_VMODE_INTERLACED) {
- 			VDisplay >>= 1;
- 
-@@ -804,14 +831,10 @@ static int aty_var_to_crtc(const struct 
- 		crtc->lcd_gen_cntl &= ~(HORZ_DIVBY2_EN | DIS_HOR_CRT_DIVBY2 | SCLK_SEL | USE_SHADOWED_VEND | SHADOW_EN);
- 		crtc->lcd_gen_cntl |= (DONT_SHADOW_VPAR);
- */
--		if(1) { /* only LT PRO and newer */
--			crtc->horz_stretching = aty_ld_lcd(HORZ_STRETCHING, par);
--			crtc->ext_vert_stretch = aty_ld_lcd(EXT_VERT_STRETCH, par) &
--				~(AUTO_VERT_RATIO | VERT_STRETCH_MODE | VERT_STRETCH_RATIO3);
--		} else { /* LT*/
--			/* crtc->horz_stretching = aty_ld_le32(LCD_HORZ_STRETCHING, par); */
--			FAIL("LT unsupported");
--		}
-+		/* MOBILITY M1 tested, FIXME: LT */
-+		crtc->horz_stretching = aty_ld_lcd(HORZ_STRETCHING, par);
-+		crtc->ext_vert_stretch = aty_ld_lcd(EXT_VERT_STRETCH, par) &
-+			~(AUTO_VERT_RATIO | VERT_STRETCH_MODE | VERT_STRETCH_RATIO3);
- 
- 		crtc->horz_stretching &=
- 			~(HORZ_STRETCH_RATIO | HORZ_STRETCH_LOOP | AUTO_HORZ_RATIO |
-@@ -1076,17 +1099,8 @@ static int atyfb_set_par(struct fb_info 
- 	if ((err = aty_var_to_crtc(info, var, &par->crtc)))
- 		return err;
- 
--	pixclock = var->pixclock;
--#ifdef CONFIG_FB_ATY_GENERIC_LCD
--	par->pll.ct.xres = 0;
--	if (par->lcd_table != 0) {
--		tmp = aty_ld_lcd(LCD_GEN_CNTL, par);
--		if(tmp & LCD_ON) {
--			par->pll.ct.xres = var->xres;
--			pixclock = par->lcd_pixclock;
--		}
--	}
--#endif
-+	pixclock = atyfb_get_pixclock(var, par);
-+
- 	if (pixclock == 0) {
- 		FAIL("Invalid pixclock");
- 	} else {
-@@ -1111,7 +1125,7 @@ static int atyfb_set_par(struct fb_info 
- 		pixclock_in_ps = 0;
- 
- 	if(0 == pixclock_in_ps) {
--		printk("ALERT ops->pll_to_var get 0\n");
-+		printk(KERN_CRIT "ALERT ops->pll_to_var get 0\n");
- 		pixclock_in_ps = pixclock;
- 	}
- 
-@@ -1274,24 +1288,15 @@ static int atyfb_check_var(struct fb_var
- 	int err;
- 	struct crtc crtc;
- 	union aty_pll pll;
--	u32 pixclock, lcd_on_off;
-+	u32 pixclock;
- 
- 	memcpy(&pll, &(par->pll), sizeof(pll));
- 
- 	if((err = aty_var_to_crtc(info, var, &crtc)))
- 		return err;
- 
--	pixclock = var->pixclock;
--#ifdef CONFIG_FB_ATY_GENERIC_LCD
--	pll.ct.xres = 0;
--	if (par->lcd_table != 0) {
--		lcd_on_off = aty_ld_lcd(LCD_GEN_CNTL, par);
--		if(lcd_on_off & LCD_ON) {
--			pll.ct.xres = var->xres;
--			pixclock = par->lcd_pixclock;
--		}
--	}
--#endif
-+	pixclock = atyfb_get_pixclock(var, par);
-+
- 	if (pixclock == 0) {
- 		FAIL("Invalid pixclock");
- 	} else {
-@@ -1394,6 +1399,8 @@ static int atyfb_pan_display(struct fb_v
- 
- 	xres = (((par->crtc.h_tot_disp >> 16) & 0xff) + 1) * 8;
- 	yres = ((par->crtc.v_tot_disp >> 16) & 0x7ff) + 1;
-+	if (par->crtc.gen_cntl & CRTC_DBL_SCAN_EN)
-+		yres >>= 1;
- 	xoffset = (var->xoffset + 7) & ~7;
- 	yoffset = var->yoffset;
- 	if (xoffset + xres > par->crtc.vxres || yoffset + yres > par->crtc.vyres)
-@@ -2168,8 +2175,7 @@ static int __init aty_init(struct fb_inf
- 		info->fix.mmio_start = -0x400;
- 		info->fix.mmio_len = 0x800;
- 		info->fix.accel = FB_ACCEL_ATI_MACH64VT;
--	} else {		/* if (M64_HAS(GT)) */
--
-+	} else {/* GT */
- 		info->fix.mmio_start = -0x400;
- 		info->fix.mmio_len = 0x800;
- 		info->fix.accel = FB_ACCEL_ATI_MACH64GT;
-@@ -2180,8 +2186,7 @@ static int __init aty_init(struct fb_inf
- 	       info->fix.smem_len == 0x80000 ? 'K' : 'M', ramname, xtal, pll,
- 	       mclk, xclk);
- 
--#ifdef DEBUG
--#ifdef CONFIG_ATY_CT	
-+#if defined(DEBUG) && defined(CONFIG_ATY_CT)
- 	if (M64_HAS(INTEGRATED)) {
- 		int i;
- 		printk("BUS_CNTL DAC_CNTL MEM_CNTL EXT_MEM_CNTL CRTC_GEN_CNTL "
-@@ -2197,7 +2202,6 @@ static int __init aty_init(struct fb_inf
- 		printk("\n");
- 	}
- #endif
--#endif	
- 	if(par->pll_ops->init_pll)
- 		par->pll_ops->init_pll(info, &par->pll);
- 
-@@ -2224,14 +2228,10 @@ static int __init aty_init(struct fb_inf
- 		aty_st_lcd(POWER_MANAGEMENT,
- 			   aty_ld_lcd(POWER_MANAGEMENT, par)
- 			   | (USE_F32KHZ | TRISTATE_MEM_EN), par);
--	}
--	if (M64_HAS(MOBIL_BUS))
-+	} else if (M64_HAS(MOBIL_BUS))
- 		register_backlight_controller(&aty_backlight_controller, info, "ati");
- #endif /* CONFIG_PMAC_BACKLIGHT */
- 
--#ifdef MODULE
--	var = default_var;
--#else /* !MODULE */
- 	memset(&var, 0, sizeof(var));
- #ifdef CONFIG_PPC
- 	if (_machine == _MACH_Pmac) {
-@@ -2240,8 +2240,7 @@ static int __init aty_init(struct fb_inf
- 		 *         applies to all Mac video cards
- 		 */
- 		if (mode_option) {
--			if (!mac_find_mode
--			    (&var, info, mode_option, 8))
-+			if (!mac_find_mode(&var, info, mode_option, 8))
- 				var = default_var;
- 		} else {
- 			if (default_vmode == VMODE_CHOOSE) {
-@@ -2257,38 +2256,21 @@ static int __init aty_init(struct fb_inf
- 				else
- 					default_vmode = VMODE_640_480_67;
- 				sense = read_aty_sense(par);
--				printk(KERN_INFO
--				       "atyfb: monitor sense=%x, mode %d\n",
--				       sense,
--				       mac_map_monitor_sense(sense));
-+				printk(KERN_INFO "atyfb: monitor sense=%x, mode %d\n",
-+					sense,  mac_map_monitor_sense(sense));
- 			}
--			if (default_vmode <= 0
--			    || default_vmode > VMODE_MAX)
-+			if (default_vmode <= 0 || default_vmode > VMODE_MAX)
- 				default_vmode = VMODE_640_480_60;
--			if (default_cmode < CMODE_8
--			    || default_cmode > CMODE_32)
-+			if (default_cmode < CMODE_8 || default_cmode > CMODE_32)
- 				default_cmode = CMODE_8;
--			if (mac_vmode_to_var
--			    (default_vmode, default_cmode, &var))
-+			if (mac_vmode_to_var(default_vmode, default_cmode, &var))
- 				var = default_var;
- 		}
- 	} else
--	    if (!fb_find_mode
--		(&var, info, mode_option, NULL, 0, NULL, 8))
--		var = default_var;
--#else /* !CONFIG_PPC */
--#ifdef __sparc__
--	if (mode_option) {
--		if (!fb_find_mode(&var, info, mode_option, NULL, 0, NULL, 8))
--			var = default_var;
--	} else
--		var = default_var;
--#else
--	if (!fb_find_mode(&var, info, mode_option, NULL, 0, NULL, 8))
--		var = default_var;
--#endif /* !__sparc__ */
- #endif /* !CONFIG_PPC */
--#endif /* !MODULE */
-+	if (!fb_find_mode(&var, info, mode_option, NULL, 0, &defmode, 8))
-+		var = default_var;
-+
- 	if (noaccel)
- 		var.accel_flags &= ~FB_ACCELF_TEXT;
- 	else
-@@ -2296,14 +2278,13 @@ static int __init aty_init(struct fb_inf
- 
- 	if (var.yres == var.yres_virtual) {
- 		u32 vram = (info->fix.smem_len - (PAGE_SIZE << 2));
--		var.yres_virtual =
--		    ((vram * 8) / var.bits_per_pixel) / var.xres_virtual;
-+		var.yres_virtual = ((vram * 8) / var.bits_per_pixel) / var.xres_virtual;
- 		if (var.yres_virtual < var.yres)
- 			var.yres_virtual = var.yres;
- 	}
- 
- 	if (atyfb_check_var(&var, info)) {
--		printk("atyfb: can't set default video mode\n");
-+		printk(KERN_CRIT "atyfb: can't set default video mode\n");
- 		return 0;
- 	}
- 
-diff -U 3 -H -d -p -r -N -- linux-2.6.4/drivers/video/aty/mach64_accel.c linux-2.6.alex/drivers/video/aty/mach64_accel.c
---- linux-2.6.4/drivers/video/aty/mach64_accel.c	2004-03-11 16:47:33.000000000 +0100
-+++ linux-2.6.alex/drivers/video/aty/mach64_accel.c	2004-03-13 19:12:50.000000000 +0100
-@@ -13,7 +13,7 @@
-      *  Generic Mach64 routines
-      */
-      
--/* this is for DMA GUI engine! work to be continue */
-+/* this is for DMA GUI engine! work in progress */
- typedef struct {
- 	u32 frame_buf_offset;
- 	u32 system_mem_addr;
-@@ -279,7 +279,7 @@ void atyfb_fillrect(struct fb_info *info
- void atyfb_imageblit(struct fb_info *info, const struct fb_image *image)
++void aty_init_lcd(struct atyfb_par *par, u32 bios_base)
  {
- 	struct atyfb_par *par = (struct atyfb_par *) info->par;
--	u32 dwords, dx = image->dx, dy = image->dy, width = image->width;
-+	u32 src_bytes, dx = image->dx, dy = image->dy, width = image->width;
- 	u32 pix_width_save, pix_width, host_cntl, rotation = 0, src, mix;
- 
- 	if (par->asleep)
-@@ -341,15 +341,15 @@ void atyfb_imageblit(struct fb_info *inf
- 		pix_width &= ~DST_MASK;
- 		pix_width |= DST_8BPP;
- 
--		/* ab IIC we have DP_HOST_TRIPLE_EN bit */
--		/* FIXME: 24bpp + SUN12x22 corruption
--		if (image->width % 8 == 0) */
-+		/* 
-+		 * since Rage 3D IIc we have DP_HOST_TRIPLE_EN bit
-+		 * this hwaccelerated triple has an issue with not aligned data
-+		 */
-+		if (!M64_HAS(NO_HW_TRIPLE) && image->width % 8 == 0)
- 			pix_width |= DP_HOST_TRIPLE_EN;
- 	}
- 
--	dwords = (((((image->width * image->depth) + 7) / 8) * image->height * image->depth)+ 3) / 4 ;
+-	struct atyfb_par *par = info->par;
+-	u16 tmp;
+-	unsigned long raddr;
+-	struct resource *rrp;
+-#if defined(CONFIG_FB_ATY_GENERIC_LCD)
+-	u32 driv_inf_tab, sig, rom_addr;
++	u32 driv_inf_tab, sig;
+ 	u16 lcd_ofs;
+-#endif
 -
--	if(image->depth == 1) {
-+	if (image->depth == 1) {
- 		u32 fg, bg;
- 		if (info->fix.visual == FB_VISUAL_TRUECOLOR ||
- 		    info->fix.visual == FB_VISUAL_DIRECTCOLOR) {
-@@ -379,20 +379,19 @@ void atyfb_imageblit(struct fb_info *inf
- 	aty_st_le32(DST_CNTL, DST_Y_TOP_TO_BOTTOM | DST_X_LEFT_TO_RIGHT | rotation, par);
- 
- 	draw_rect(dx, dy, width, image->height, par);
-+	src_bytes = (((image->width * image->depth) + 7) / 8) * image->height;
- 
--	/* manual triple each pixel, freezes the box */
--	if (0 && info->var.bits_per_pixel == 24 && !(pix_width & DP_HOST_TRIPLE_EN)) {
-+	/* manual triple each pixel */
-+	if (info->var.bits_per_pixel == 24 && !(pix_width & DP_HOST_TRIPLE_EN)) {
- 		int inbit, outbit, mult24, byte_id_in_dword, width;
--		u8 *pbitmapin, *pbitmapout;
-+		u8 *pbitmapin = (u8*)image->data, *pbitmapout;
- 		u32 hostdword;
- 
--		pbitmapin = (u8*)image->data;
+-	raddr = addr + 0x7ff000UL;
+-	rrp = &pdev->resource[2];
+-	if ((rrp->flags & IORESOURCE_MEM) && request_mem_region(rrp->start, rrp->end - rrp->start + 1, "atyfb")) {
+-		par->aux_app = 1;
+-		raddr = rrp->start;
+-		printk(KERN_INFO "atyfb: using auxiliary register aperture\n");
+-	}
 -
--		for(width = image->width, inbit = 7, mult24 = 0; dwords; dwords--) {
--			for(hostdword = 0, pbitmapout = (u8*)&hostdword, byte_id_in_dword = 0;
--				byte_id_in_dword < 4;
-+		for (width = image->width, inbit = 7, mult24 = 0; src_bytes; ) {
-+			for (hostdword = 0, pbitmapout = (u8*)&hostdword, byte_id_in_dword = 0;
-+				byte_id_in_dword < 4 && src_bytes;
- 				byte_id_in_dword++, pbitmapout++) {
--				for(outbit = 7; outbit >= 0; outbit--) {
-+				for (outbit = 7; outbit >= 0; outbit--) {
- 					*pbitmapout |= (((*pbitmapin >> inbit) & 1) << outbit);
- 					mult24++;
- 					/* next bit */
-@@ -404,10 +403,11 @@ void atyfb_imageblit(struct fb_info *inf
- 
- 					/* next byte */
- 					if (inbit < 0 || width == 0) {
-+						src_bytes--;	
- 						pbitmapin++;
- 						inbit = 7;
- 
--						if(width == 0) {
-+						if (width == 0) {
- 						    width = image->width;
- 						    outbit = 0;
- 						}
-@@ -418,10 +418,10 @@ void atyfb_imageblit(struct fb_info *inf
- 			aty_st_le32(HOST_DATA0, hostdword, par);
+-	info->fix.mmio_start = raddr;
+-	par->ati_regbase = (unsigned long)ioremap(info->fix.mmio_start, 0x1000);
+-	if (par->ati_regbase == 0)
+-		return -ENOMEM;
+-
+-	info->fix.mmio_start += par->aux_app ? 0x400 : 0xc00;
+-	par->ati_regbase += par->aux_app ? 0x400 : 0xc00;
+-
+-	/*
+-	 * Enable memory-space accesses using config-space
+-	 * command register.
+-	 */
+-	pci_read_config_word(pdev, PCI_COMMAND, &tmp);
+-	if (!(tmp & PCI_COMMAND_MEMORY)) {
+-		tmp |= PCI_COMMAND_MEMORY;
+-		pci_write_config_word(pdev, PCI_COMMAND, tmp);
+-	}
+-#ifdef __BIG_ENDIAN
+-	/* Use the big-endian aperture */
+-	addr += 0x800000;
+-#endif
+-
+-	/* Map in frame buffer */
+-	info->fix.smem_start = addr;
+-	info->screen_base = (char *)ioremap(addr, 0x800000);
+-	if (info->screen_base == NULL) {
+-		iounmap((void *)par->ati_regbase);
+-		par->ati_regbase = 0;
+-		return -ENOMEM;
+-	}
+-
+-#ifdef CONFIG_FB_ATY_GENERIC_LCD
++	
+ 	/* To support an LCD panel, we should know it's dimensions and
+-	 * it's desired pixel clock.
++	 *  it's desired pixel clock.
+ 	 * There are two ways to do it:
+-	 * - Check the startup video mode and calculate the panel
+-	 *   size from it. This is unreliable.
+-	 * - Read it from the driver information table in the video BIOS, that
+-	 *   works only on x86
+-	 *
+-	 * So, we try to find a BIOS and get access to it.
+-	 */
+-	rom_addr = 0xc0000 + ((aty_ld_le32(SCRATCH_REG1, par) & 0x7f) << 11);
+-	par->bios_base_phys = rom_addr;
+-	par->bios_base = (unsigned long)ioremap(rom_addr, 0x10000);
+-
+-	/* The BIOS starts with 0xaa55. */
+-	if (*((u16 *)par->bios_base) == 0xaa55) {
+-		printk(KERN_INFO "atyfb: Mach64 BIOS is located at %x, mapped at %x.\n",
+-		       (u32)par->bios_base_phys, (u32)par->bios_base);
+-
+-		/* check for frequncy table */
+-		if (1) {
+-			u8 *bios_ptr;
+-			u16 rom_table_offset, freq_table_offset, XCLK_pwd, XCLK_dram, XCLK_vram, ref_freq, ref_divider, sclk;
+-			u32 min_freq, max_freq;
+-
+-			bios_ptr = (u8*)par->bios_base;
+-			rom_table_offset = (u16)(bios_ptr[0x48] | (bios_ptr[0x49] << 8));
+-			printk(KERN_INFO "atyfb: rom table offset is %d\n", rom_table_offset);
+-
+-			freq_table_offset = bios_ptr[rom_table_offset + 16] | (bios_ptr[rom_table_offset + 17] << 8);
+-			printk(KERN_INFO "atyfb: frequency table offset is %d\n", freq_table_offset);
+-
+-			min_freq = bios_ptr[freq_table_offset + 2] | (bios_ptr[freq_table_offset + 3] << 8);
+-			max_freq = bios_ptr[freq_table_offset + 4] | (bios_ptr[freq_table_offset + 5] << 8);
+-			ref_freq = bios_ptr[freq_table_offset + 8] | (bios_ptr[freq_table_offset + 9] << 8);
+-			ref_divider = bios_ptr[freq_table_offset + 10] | (bios_ptr[freq_table_offset + 11] << 8);
+-
+-			XCLK_pwd = bios_ptr[freq_table_offset + 14] | (bios_ptr[freq_table_offset + 15] << 8);
+-			XCLK_dram = bios_ptr[freq_table_offset + 16] | (bios_ptr[freq_table_offset + 17] << 8);
+-			XCLK_vram = bios_ptr[freq_table_offset + 18] | (bios_ptr[freq_table_offset + 19] << 8);
+-			sclk = bios_ptr[freq_table_offset + 20] | (bios_ptr[freq_table_offset + 21] << 8);
+-
+-			printk(KERN_INFO "atyfb: BIOS frequency table:\n");
+-			printk(KERN_INFO "       XCLK_pwd %d, XCLK_dram %d, XCLK_vram %d\n", XCLK_pwd, XCLK_dram, XCLK_vram);
+-			printk(KERN_INFO "       ref_clk %d, ref_divider %d\n", ref_freq, ref_divider);
+-			printk(KERN_INFO "       vpll_min %d, vpll_max %d\n", min_freq, max_freq);
+-			printk(KERN_INFO "       sclk %d\n", sclk);
+-
+-			par->ref_clk_per = 100000000UL / ref_freq;
+-			par->xclk_per  = 100000000UL / XCLK_vram;
+-			par->pll_per = 100000000UL / max_freq;
+-		}
+-
+-		/* Address of driver information table is at offset 0x78. */
+-		driv_inf_tab = par->bios_base + *((u16 *)(par->bios_base+0x78));
+-
+-		/* Check for the driver information table signature. */
+-		sig = (*(u32 *)driv_inf_tab);
+-		if ((sig == 0x54504c24) || /* Rage LT pro */
+-		    (sig == 0x544d5224) || /* Rage mobility */
+-		    (sig == 0x54435824) || /* Rage XC */
+-		    (sig == 0x544c5824)) { /* Rage XL */
+-			printk(KERN_INFO "atyfb: BIOS contains driver information table.\n");
+-			lcd_ofs = (*(u16 *)(driv_inf_tab + 10));
+-			par->lcd_table = 0;
+-			if (lcd_ofs != 0)
+-				par->lcd_table = par->bios_base + lcd_ofs;
++	 *  - Check the startup video mode and calculate the panel
++	 *    size from it. This is unreliable.
++	 *  - Read it from the driver information table in the video BIOS.
++	*/
++	/* Address of driver information table is at offset 0x78. */
++	driv_inf_tab = bios_base + *((u16 *)(bios_base+0x78));
++	
++	/* Check for the driver information table signature. */
++	sig = (*(u32 *)driv_inf_tab);
++	if ((sig == 0x54504c24) || /* Rage LT pro */
++		(sig == 0x544d5224) || /* Rage mobility */
++		(sig == 0x54435824) || /* Rage XC */
++		(sig == 0x544c5824)) { /* Rage XL */
++		printk(KERN_INFO "atyfb: BIOS contains driver information table.\n");
++		lcd_ofs = (*(u16 *)(driv_inf_tab + 10));
++		par->lcd_table = 0;
++		if (lcd_ofs != 0) {
++			par->lcd_table = bios_base + lcd_ofs;
  		}
- 	} else {
--		u32 *pbitmap;
--		for(pbitmap = (u32*)(image->data); dwords; dwords--, pbitmap++) {
-+		u32 *pbitmap, dwords = (src_bytes + 3) / 4;
-+		for (pbitmap = (u32*)(image->data); dwords; dwords--, pbitmap++) {
- 			wait_for_fifo(1, par);
--			aty_st_le32(HOST_DATA0, *pbitmap, par);
-+			aty_st_le32(HOST_DATA0, le32_to_cpup(pbitmap), par);
+ 	}
+ 
+@@ -2900,7 +2809,6 @@ static int __devinit atyfb_setup_generic
+ 		u16 *lcdmodeptr;
+ 		u32 format;
+ 		u8 lcd_refresh_rates[16] = {50,56,60,67,70,72,75,76,85,90,100,120,140,150,160,200};
+-
+ 		/* The most important information is the panel size at
+ 		 * offset 25 and 27, but there's some other nice information
+ 		 * which we print to the screen.
+@@ -2908,7 +2816,7 @@ static int __devinit atyfb_setup_generic
+ 		id = *(u8 *)par->lcd_table;
+ 		strncpy(model,(char *)par->lcd_table+1,24);
+ 		model[23]=0;
+-
++	
+ 		width = par->lcd_width = *(u16 *)(par->lcd_table+25);
+ 		height = par->lcd_height = *(u16 *)(par->lcd_table+27);
+ 		panel_type = *(u16 *)(par->lcd_table+29);
+@@ -2980,7 +2888,7 @@ static int __devinit atyfb_setup_generic
+ 			}
+ 		}
+ 		printk(KERN_INFO "atyfb: %s%s %s monitor detected: %s\n        id=%d, %dx%d pixels, %s\n",
+-		       txtdual ,txtcolour, txtmonitor, model, id, width, height, txtformat);
++			txtdual ,txtcolour, txtmonitor, model, id, width, height, txtformat);
+ 		refresh_rates_buf[0] = 0;
+ 		refresh_rates = *(u16 *)(par->lcd_table+62);
+ 		m = 1;
+@@ -2999,14 +2907,13 @@ static int __devinit atyfb_setup_generic
+ 		}
+ 		default_refresh_rate = (*(u8 *)(par->lcd_table+61) & 0xf0) >> 4;
+ 		printk(KERN_INFO "        supports refresh rates [%s], default %d Hz\n",
+-		       refresh_rates_buf, lcd_refresh_rates[default_refresh_rate]);
++			refresh_rates_buf, lcd_refresh_rates[default_refresh_rate]);
+ 		par->lcd_refreshrate = lcd_refresh_rates[default_refresh_rate];
+-
+ 		/* We now need to determine the crtc parameters for the
+ 		 * lcd monitor. This is tricky, because they are not stored
+ 		 * individually in the BIOS. Instead, the BIOS contains a
+ 		 * table of display modes that work for this monitor.
+-		 *  
++		 *
+ 		 * The idea is that we search for a mode of the same dimensions
+ 		 * as the dimensions of the lcd monitor. Say our lcd monitor
+ 		 * is 800x600 pixels, we search for a 800x600 monitor.
+@@ -3017,11 +2924,11 @@ static int __devinit atyfb_setup_generic
+ 		while (*lcdmodeptr != 0) {
+ 			u32 modeptr;
+ 			u16 mwidth, mheight, lcd_hsync_start, lcd_vsync_start;
+-			modeptr = par->bios_base + *lcdmodeptr;
+-
++			modeptr = bios_base + *lcdmodeptr;
++	
+ 			mwidth = *((u16 *)(modeptr+0));
+ 			mheight = *((u16 *)(modeptr+2));
+-
++	
+ 			if (mwidth == width && mheight == height) {
+ 				par->lcd_pixclock = 100000000 / *((u16 *)(modeptr+9));
+ 				par->lcd_htotal = *((u16 *)(modeptr+17)) & 511;
+@@ -3029,26 +2936,28 @@ static int __devinit atyfb_setup_generic
+ 				lcd_hsync_start = *((u16 *)(modeptr+21)) & 511;
+ 				par->lcd_hsync_dly = (*((u16 *)(modeptr+21)) >> 9) & 7;
+ 				par->lcd_hsync_len = *((u8 *)(modeptr+23)) & 63;
++	
+ 				par->lcd_vtotal = *((u16 *)(modeptr+24)) & 2047;
+ 				par->lcd_vdisp = *((u16 *)(modeptr+26)) & 2047;
+ 				lcd_vsync_start = *((u16 *)(modeptr+28)) & 2047;
+ 				par->lcd_vsync_len = (*((u16 *)(modeptr+28)) >> 11) & 31;
++	
+ 				par->lcd_htotal = (par->lcd_htotal + 1) * 8;
+ 				par->lcd_hdisp = (par->lcd_hdisp + 1) * 8;
+ 				lcd_hsync_start = (lcd_hsync_start + 1) * 8;
+ 				par->lcd_hsync_len = par->lcd_hsync_len * 8;
+-
++	
+ 				par->lcd_vtotal++;
+ 				par->lcd_vdisp++;
+ 				lcd_vsync_start++;
+-				
++	
+ 				par->lcd_right_margin = lcd_hsync_start - par->lcd_hdisp;
+ 				par->lcd_lower_margin = lcd_vsync_start - par->lcd_vdisp;
+ 				par->lcd_hblank_len = par->lcd_htotal - par->lcd_hdisp;
+ 				par->lcd_vblank_len = par->lcd_vtotal - par->lcd_vdisp;
+ 				break;
+ 			}
+-
++	
+ 			lcdmodeptr++;
+ 		}
+ 		if (*lcdmodeptr == 0) {
+@@ -3056,29 +2965,133 @@ static int __devinit atyfb_setup_generic
+ 			/* To do: Switch to CRT if possible. */
+ 		} else {
+ 			printk(KERN_INFO "        LCD CRTC parameters: %d.%d  %d %d %d %d  %d %d %d %d\n",
+-			       1000000 / par->lcd_pixclock, 1000000 % par->lcd_pixclock,
+-			       par->lcd_hdisp,
+-			       par->lcd_hdisp + par->lcd_right_margin,
+-			       par->lcd_hdisp + par->lcd_right_margin + par->lcd_hsync_dly + par->lcd_hsync_len,
+-			       par->lcd_htotal,
+-			       par->lcd_vdisp,
+-			       par->lcd_vdisp + par->lcd_lower_margin,
+-			       par->lcd_vdisp + par->lcd_lower_margin + par->lcd_vsync_len,
+-			       par->lcd_vtotal);
++				1000000 / par->lcd_pixclock, 1000000 % par->lcd_pixclock,
++				par->lcd_hdisp,
++				par->lcd_hdisp + par->lcd_right_margin,
++				par->lcd_hdisp + par->lcd_right_margin
++					+ par->lcd_hsync_dly + par->lcd_hsync_len,
++				par->lcd_htotal,
++				par->lcd_vdisp,
++				par->lcd_vdisp + par->lcd_lower_margin,
++				par->lcd_vdisp + par->lcd_lower_margin + par->lcd_vsync_len,
++				par->lcd_vtotal);
+ 			printk(KERN_INFO "                           : %d %d %d %d %d %d %d %d %d\n",
+-			       par->lcd_pixclock,
+-			       par->lcd_hblank_len - (par->lcd_right_margin + par->lcd_hsync_dly + par->lcd_hsync_len),
+-			       par->lcd_hdisp,
+-			       par->lcd_right_margin,
+-			       par->lcd_hsync_len,
+-			       par->lcd_vblank_len - (par->lcd_lower_margin + par->lcd_vsync_len),
+-			       par->lcd_vdisp,
+-			       par->lcd_lower_margin,
+-			       par->lcd_vsync_len);
++				par->lcd_pixclock,
++				par->lcd_hblank_len - (par->lcd_right_margin +
++					par->lcd_hsync_dly + par->lcd_hsync_len),
++				par->lcd_hdisp,
++				par->lcd_right_margin,
++				par->lcd_hsync_len,
++				par->lcd_vblank_len - (par->lcd_lower_margin + par->lcd_vsync_len),
++				par->lcd_vdisp,
++				par->lcd_lower_margin,
++				par->lcd_vsync_len);
  		}
  	}
++}
+ #endif /* CONFIG_FB_ATY_GENERIC_LCD */
  
-diff -U 3 -H -d -p -r -N -- linux-2.6.4/drivers/video/aty/mach64_ct.c linux-2.6.alex/drivers/video/aty/mach64_ct.c
---- linux-2.6.4/drivers/video/aty/mach64_ct.c	2004-03-11 16:47:33.000000000 +0100
-+++ linux-2.6.alex/drivers/video/aty/mach64_ct.c	2004-03-13 17:23:47.000000000 +0100
-@@ -477,18 +477,17 @@ int __init aty_init_pll_ct(const struct 
- 		pll->ct.dsp_loop_latency = (dsp_config & DSP_LOOP_LATENCY) >> 16;
- #if 0
- 	FIXME: is it relevant for us?
--	if ((!dsp_on_off && (Chip < ATI_CHIP_264GTPRO)) ||
-+	if ((!dsp_on_off && !M64_HAS(RESET_3D)) ||
- 		((dsp_on_off == vga_dsp_on_off) &&
- 		(!dsp_config || !((dsp_config ^ vga_dsp_config) & DSP_XCLKS_PER_QW)))) {
--		if (ATIDivide(GetBits(vga_dsp_on_off, VGA_DSP_OFF),
--			GetBits(vga_dsp_config, VGA_DSP_XCLKS_PER_QW), 5, 1) > 24)
-+		vga_dsp_on_off &= VGA_DSP_OFF;
-+		vga_dsp_config &= VGA_DSP_XCLKS_PER_QW;
-+		if (ATIDivide(vga_dsp_on_off, vga_dsp_config, 5, 1) > 24)
- 			pll->ct.fifo_size = 32;
- 		else
- 			pll->ct.fifo_size = 24;
- 	}
- #endif
--	/* end BIOS */
--
- 	/* Exit if the user does not want us to tamper with the clock
- 	rates of her chip. */
- 	if (par->mclk_per == 0) {
-@@ -549,7 +548,7 @@ int __init aty_init_pll_ct(const struct 
- 		* The chip clock is not equal to the memory clock.
- 		* Therefore we will use sclk to clock the chip.
- 		*/
--		pll->ct.pll_gen_cntl |= (6 << 4); /* mclk == sclk*/
-+		pll->ct.pll_gen_cntl |= (6 << 4); /* mclk == sclk */
- 
- 		q = par->ref_clk_per * pll->ct.pll_ref_div * 4 / par->mclk_per;
- 		if (q < 16*8 || q > 255*8) {
++static int __devinit init_from_bios(struct atyfb_par *par)
++{
++	u32 bios_base, rom_addr;
++	int ret;
++
++	rom_addr = 0xc0000 + ((aty_ld_le32(SCRATCH_REG1, par) & 0x7f) << 11);
++	bios_base = (unsigned long)ioremap(rom_addr, 0x10000);
++
++	/* The BIOS starts with 0xaa55. */
++	if (*((u16 *)bios_base) == 0xaa55) {
++
++		u8 *bios_ptr;
++		u16 rom_table_offset, freq_table_offset;
++		PLL_BLOCK_MACH64 pll_block;
++		
++		printk(KERN_INFO "atyfb: Mach64 BIOS is located at %x, mapped at %x.\n", rom_addr, bios_base);
++
++		/* check for frequncy table */
++		bios_ptr = (u8*)bios_base;
++		rom_table_offset = (u16)(bios_ptr[0x48] | (bios_ptr[0x49] << 8));
++		freq_table_offset = bios_ptr[rom_table_offset + 16] | (bios_ptr[rom_table_offset + 17] << 8);
++		memcpy(&pll_block, bios_ptr + freq_table_offset, sizeof(PLL_BLOCK_MACH64));
++
++		printk(KERN_INFO "atyfb: BIOS frequency table:\n");
++		printk(KERN_INFO " PCLK_min_freq %d, PCLK_max_freq %d, ref_freq %d, ref_divider %d\n",
++			pll_block.PCLK_min_freq, pll_block.PCLK_max_freq,
++			pll_block.ref_freq, pll_block.ref_divider);
++		printk(KERN_INFO " MCLK_pwd %d, MCLK_max_freq %d, XCLK_max_freq %d, SCLK_freq %d\n",
++			pll_block.MCLK_pwd, pll_block.MCLK_max_freq,
++			pll_block.XCLK_max_freq, pll_block.SCLK_freq);
++
++		par->pll_limits.pll_min = pll_block.PCLK_min_freq/100;
++		par->pll_limits.pll_max = pll_block.PCLK_max_freq/100;
++		par->pll_limits.ref_clk = pll_block.ref_freq/100;
++		par->pll_limits.ref_div = pll_block.ref_divider;
++		par->pll_limits.sclk = pll_block.SCLK_freq/100;
++		par->pll_limits.mclk = pll_block.MCLK_max_freq/100;
++		par->pll_limits.mclk_pm = pll_block.MCLK_pwd/100;
++		par->pll_limits.xclk = pll_block.XCLK_max_freq/100;
++#ifdef CONFIG_FB_ATY_GENERIC_LCD
++		aty_init_lcd(par, bios_base);
++#endif
++		ret = 0;
++	} else {
++		printk(KERN_CRIT "atyfb: no BIOS frequency table found, use parameters\n");
++		ret = -ENXIO;
++	}
++	iounmap((void*)bios_base);
++
++	return ret;
++}
++
++static int __devinit atyfb_setup_generic(struct pci_dev *pdev, struct fb_info *info, unsigned long addr)
++{
++	struct atyfb_par *par = info->par;
++	u16 tmp;
++	unsigned long raddr;
++	struct resource *rrp;
++
++	raddr = addr + 0x7ff000UL;
++	rrp = &pdev->resource[2];
++	if ((rrp->flags & IORESOURCE_MEM) && request_mem_region(rrp->start, rrp->end - rrp->start + 1, "atyfb")) {
++		par->aux_app = 1;
++		raddr = rrp->start;
++		printk(KERN_INFO "atyfb: using auxiliary register aperture\n");
++	}
++
++	info->fix.mmio_start = raddr;
++	par->ati_regbase = (unsigned long)ioremap(info->fix.mmio_start, 0x1000);
++	if (par->ati_regbase == 0)
++		return -ENOMEM;
++
++	info->fix.mmio_start += par->aux_app ? 0x400 : 0xc00;
++	par->ati_regbase += par->aux_app ? 0x400 : 0xc00;
++
++	/*
++	 * Enable memory-space accesses using config-space
++	 * command register.
++	 */
++	pci_read_config_word(pdev, PCI_COMMAND, &tmp);
++	if (!(tmp & PCI_COMMAND_MEMORY)) {
++		tmp |= PCI_COMMAND_MEMORY;
++		pci_write_config_word(pdev, PCI_COMMAND, tmp);
++	}
++#ifdef __BIG_ENDIAN
++	/* Use the big-endian aperture */
++	addr += 0x800000;
++#endif
++
++	/* Map in frame buffer */
++	info->fix.smem_start = addr;
++	info->screen_base = (char *)ioremap(addr, 0x800000);
++	if (info->screen_base == NULL) {
++		iounmap((void *)par->ati_regbase);
++		par->ati_regbase = 0;
++		return -ENOMEM;
++	}
++
++	/* always succeeded ? */
++	init_from_bios(par);
++
+ 	if (!(aty_ld_le32(CRTC_GEN_CNTL, par) & CRTC_EXT_DISP_EN))
+ 		par->clk_wr_offset = (inb(R_GENMO) & 0x0CU) >> 2;
+ 	else
 
---Boundary-00=_g7eXAM99duI7DnC--
+--Boundary-00=_88eXAMVuD0K+aqy--
 
 
 -------------------------------------------------------

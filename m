@@ -1,22 +1,22 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 1/8] fbdev: Fix IO access in rivafb (part 2)
-Date: Sun, 7 Nov 2004 22:41:36 +0800
-Message-ID: <20041107213313.B9C9311C6021@smtp-3.hotpop.com>
+Subject: [PATCH 8/8] fbdev: Fix broken fb_blank() implementation.
+Date: Mon, 8 Nov 2004 05:27:11 +0800
+Message-ID: <200411080526.50550.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CQufh-00046X-Lw
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Nov 2004 13:34:01 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CQuff-0008G8-5K
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Nov 2004 13:34:01 -0800
+	id 1CQufn-00048e-2s
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Nov 2004 13:34:07 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.71])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CQufl-00075N-20
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Nov 2004 13:34:07 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id D51D49BF046
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun,  7 Nov 2004 21:33:19 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id C30E511C60DB
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun,  7 Nov 2004 21:33:50 +0000 (UTC)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -30,193 +30,270 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Convert direct pointer manipulation to NV_RD*/NV_WR* in nv_driver.c
+This patch fixes some of the drivers' fb_blank() implementation which got
+the usage of the VESA_* constants incorrectly and converts them to use the
+new FB_BLANK-* constants.
+
+I'm not sure if what I did is correct for all drivers, so maintainers,
+please review.
+
+(Note: For most of the drivers, FB_BLANK_NORMAL is treated as
+FB_BLANK_UNBLANK, but returns a nonzero so fbcon will do a soft_blank).
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- nv_driver.c |   87 +++++++++++++++++++++++++++++++++---------------------------
- 1 files changed, 49 insertions(+), 38 deletions(-)
+ aty/radeon_base.c |   22 +++++++++++++---------
+ cirrusfb.c        |   18 +++++++++++-------
+ epson1355fb.c     |   13 ++++++++-----
+ i810/i810_main.c  |   17 ++++++++++++-----
+ radeonfb.c        |   12 +++++++-----
+ 5 files changed, 51 insertions(+), 31 deletions(-)
 
-diff -Nru a/drivers/video/riva/nv_driver.c b/drivers/video/riva/nv_driver.c
---- a/drivers/video/riva/nv_driver.c	2004-10-30 19:10:42 +08:00
-+++ b/drivers/video/riva/nv_driver.c	2004-11-06 17:42:25 +08:00
-@@ -56,32 +56,33 @@
- static Bool 
- riva_is_connected(struct riva_par *par, Bool second)
- {
--	volatile U032 *PRAMDAC = par->riva.PRAMDAC0;
-+	volatile U032 __iomem *PRAMDAC = par->riva.PRAMDAC0;
- 	U032 reg52C, reg608;
- 	Bool present;
- 
- 	if(second) PRAMDAC += 0x800;
- 
--	reg52C = PRAMDAC[0x052C/4];
--	reg608 = PRAMDAC[0x0608/4];
-+	reg52C = NV_RD32(PRAMDAC, 0x052C);
-+	reg608 = NV_RD32(PRAMDAC, 0x0608);
- 
--	PRAMDAC[0x0608/4] = reg608 & ~0x00010000;
-+	NV_WR32(PRAMDAC, 0x0608, reg608 & ~0x00010000);
- 
--	PRAMDAC[0x052C/4] = reg52C & 0x0000FEEE;
-+	NV_WR32(PRAMDAC, 0x052C, reg52C & 0x0000FEEE);
- 	mdelay(1); 
--	PRAMDAC[0x052C/4] |= 1;
-+	NV_WR32(PRAMDAC, 0x052C, NV_RD32(PRAMDAC, 0x052C) | 1);
- 
--	par->riva.PRAMDAC0[0x0610/4] = 0x94050140;
--	par->riva.PRAMDAC0[0x0608/4] |= 0x00001000;
-+	NV_WR32(par->riva.PRAMDAC0, 0x0610, 0x94050140);
-+	NV_WR32(par->riva.PRAMDAC0, 0x0608, 0x00001000);
- 
- 	mdelay(1);
- 
--	present = (PRAMDAC[0x0608/4] & (1 << 28)) ? TRUE : FALSE;
-+	present = (NV_RD32(PRAMDAC, 0x0608) & (1 << 28)) ? TRUE : FALSE;
- 
--	par->riva.PRAMDAC0[0x0608/4] &= 0x0000EFFF;
-+	NV_WR32(par->riva.PRAMDAC0, 0x0608,
-+		NV_RD32(par->riva.PRAMDAC0, 0x0608) & 0x0000EFFF);
- 
--	PRAMDAC[0x052C/4] = reg52C;
--	PRAMDAC[0x0608/4] = reg608;
-+	NV_WR32(PRAMDAC, 0x052C, reg52C);
-+	NV_WR32(PRAMDAC, 0x0608, reg608);
- 
- 	return present;
- }
-@@ -139,13 +140,14 @@
- 		}
- 	} else {
- 		if(riva_is_connected(par, 0)) {
--			if(par->riva.PRAMDAC0[0x0000052C/4] & 0x100)
-+
-+			if (NV_RD32(par->riva.PRAMDAC0, 0x0000052C) & 0x100)
- 				par->SecondCRTC = TRUE;
- 			else
- 				par->SecondCRTC = FALSE;
- 		} else 
- 		if (riva_is_connected(par, 1)) {
--			if(par->riva.PRAMDAC0[0x0000252C/4] & 0x100)
-+			if(NV_RD32(par->riva.PRAMDAC0, 0x0000252C) & 0x100)
- 				par->SecondCRTC = TRUE;
- 			else
- 				par->SecondCRTC = FALSE;
-@@ -165,13 +167,13 @@
- 
- 	switch (chip->Architecture) {
- 	case NV_ARCH_03:
--		if (chip->PFB[0x00000000/4] & 0x00000020) {
--			if (((chip->PMC[0x00000000/4] & 0xF0) == 0x20)
--			    && ((chip->PMC[0x00000000/4] & 0x0F) >= 0x02)) {
-+		if (NV_RD32(chip->PFB, 0x00000000) & 0x00000020) {
-+			if (((NV_RD32(chip->PMC, 0x00000000) & 0xF0) == 0x20)
-+			    && ((NV_RD32(chip->PMC, 0x00000000)&0x0F)>=0x02)) {
- 				/*
- 				 * SDRAM 128 ZX.
- 				 */
--				switch (chip->PFB[0x00000000/4] & 0x03) {
-+				switch (NV_RD32(chip->PFB,0x00000000) & 0x03) {
- 				case 2:
- 					memlen = 1024 * 4;
- 					break;
-@@ -189,7 +191,7 @@
- 			/*
- 			 * SGRAM 128.
- 			 */
--			switch (chip->PFB[0x00000000/4] & 0x00000003) {
-+			switch (NV_RD32(chip->PFB, 0x00000000) & 0x00000003) {
- 			case 0:
- 				memlen = 1024 * 8;
- 				break;
-@@ -203,11 +205,11 @@
- 		}        
+diff -Nru a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
+--- a/drivers/video/aty/radeon_base.c	2004-11-06 06:21:26 +08:00
++++ b/drivers/video/aty/radeon_base.c	2004-11-06 18:03:09 +08:00
+@@ -947,15 +947,16 @@
+         val &= ~(CRTC_DISPLAY_DIS | CRTC_HSYNC_DIS |
+                  CRTC_VSYNC_DIS);
+         switch (blank) {
+-	case VESA_NO_BLANKING:
++	case FB_BLANK_UNBLANK:
++	case FB_BLANK_NORMAL:
  		break;
- 	case NV_ARCH_04:
--		if (chip->PFB[0x00000000/4] & 0x00000100) {
--			memlen = ((chip->PFB[0x00000000/4] >> 12) & 0x0F) * 
-+		if (NV_RD32(chip->PFB, 0x00000000) & 0x00000100) {
-+			memlen = ((NV_RD32(chip->PFB, 0x00000000)>>12)&0x0F) *
- 				1024 * 2 + 1024 * 2;
- 		} else {
--			switch (chip->PFB[0x00000000/4] & 0x00000003) {
-+			switch (NV_RD32(chip->PFB, 0x00000000) & 0x00000003) {
- 			case 0:
- 				memlen = 1024 * 32;
- 				break;
-@@ -237,7 +239,8 @@
- 			pci_read_config_dword(dev, 0x84, &amt);
- 			memlen = (((amt >> 4) & 127) + 1) * 1024;
- 		} else {
--			switch ((chip->PFB[0x0000020C/4] >> 20) & 0x000000FF){
-+			switch ((NV_RD32(chip->PFB, 0x0000020C) >> 20) &
-+				0x000000FF){
- 			case 0x02:
- 				memlen = 1024 * 2;
- 				break;
-@@ -276,9 +279,9 @@
- 
- 	switch (chip->Architecture) {
- 	case NV_ARCH_03:
--		if (chip->PFB[0x00000000/4] & 0x00000020) {
--			if (((chip->PMC[0x00000000/4] & 0xF0) == 0x20)
--			    && ((chip->PMC[0x00000000/4] & 0x0F) >= 0x02)) {   
-+		if (NV_RD32(chip->PFB, 0x00000000) & 0x00000020) {
-+			if (((NV_RD32(chip->PMC, 0x00000000) & 0xF0) == 0x20)
-+			    && ((NV_RD32(chip->PMC,0x00000000)&0x0F) >= 0x02)) {
- 				/*
- 				 * SDRAM 128 ZX.
- 				 */
-@@ -297,7 +300,7 @@
- 	case NV_ARCH_10:
- 	case NV_ARCH_20:
- 	case NV_ARCH_30:
--		switch ((chip->PFB[0x00000000/4] >> 3) & 0x00000003) {
-+		switch ((NV_RD32(chip->PFB, 0x00000000) >> 3) & 0x00000003) {
- 		case 3:
- 			dclk = 800000;
+-	case VESA_VSYNC_SUSPEND:
++	case FB_BLANK_VSYNC_SUSPEND:
+ 		val |= (CRTC_DISPLAY_DIS | CRTC_VSYNC_DIS);
+ 		break;
+-	case VESA_HSYNC_SUSPEND:
++	case FB_BLANK_HSYNC_SUSPEND:
+ 		val |= (CRTC_DISPLAY_DIS | CRTC_HSYNC_DIS);
+ 		break;
+-	case VESA_POWERDOWN:
++	case FB_BLANK_POWERDOWN:
+ 		val |= (CRTC_DISPLAY_DIS | CRTC_VSYNC_DIS |
+ 			CRTC_HSYNC_DIS);
+ 		break;
+@@ -967,7 +968,8 @@
+ 	case MT_DFP:
+ 		if (mode_switch)
  			break;
-@@ -314,17 +317,25 @@
- riva_common_setup(struct riva_par *par)
- {
- 	par->riva.EnableIRQ = 0;
--	par->riva.PRAMDAC0 = (unsigned *)(par->ctrl_base + 0x00680000);
--	par->riva.PFB = (unsigned *)(par->ctrl_base + 0x00100000);
--	par->riva.PFIFO = (unsigned *)(par->ctrl_base + 0x00002000);
--	par->riva.PGRAPH = (unsigned *)(par->ctrl_base + 0x00400000);
--	par->riva.PEXTDEV = (unsigned *)(par->ctrl_base + 0x00101000);
--	par->riva.PTIMER = (unsigned *)(par->ctrl_base + 0x00009000);
--	par->riva.PMC = (unsigned *)(par->ctrl_base + 0x00000000);
--	par->riva.FIFO = (unsigned *)(par->ctrl_base + 0x00800000);
--	par->riva.PCIO0 = (U008 *)(par->ctrl_base + 0x00601000);
--	par->riva.PDIO0 = (U008 *)(par->ctrl_base + 0x00681000);
--	par->riva.PVIO = (U008 *)(par->ctrl_base + 0x000C0000);
-+	par->riva.PRAMDAC0 =
-+		(volatile U032 __iomem *)(par->ctrl_base + 0x00680000);
-+	par->riva.PFB =
-+		(volatile U032 __iomem *)(par->ctrl_base + 0x00100000);
-+	par->riva.PFIFO =
-+		(volatile U032 __iomem *)(par->ctrl_base + 0x00002000);
-+	par->riva.PGRAPH =
-+		(volatile U032 __iomem *)(par->ctrl_base + 0x00400000);
-+	par->riva.PEXTDEV =
-+		(volatile U032 __iomem *)(par->ctrl_base + 0x00101000);
-+	par->riva.PTIMER =
-+		(volatile U032 __iomem *)(par->ctrl_base + 0x00009000);
-+	par->riva.PMC =
-+		(volatile U032 __iomem *)(par->ctrl_base + 0x00000000);
-+	par->riva.FIFO =
-+		(volatile U032 __iomem *)(par->ctrl_base + 0x00800000);
-+	par->riva.PCIO0 = par->ctrl_base + 0x00601000;
-+	par->riva.PDIO0 = par->ctrl_base + 0x00681000;
-+	par->riva.PVIO = par->ctrl_base + 0x000C0000;
+-		if (blank == VESA_NO_BLANKING)
++		if (blank == FB_BLANK_UNBLANK ||
++		    blank == FB_BLANK_NORMAL)
+ 			OUTREGP(FP_GEN_CNTL, (FP_FPON | FP_TMDS_EN),
+ 				~(FP_FPON | FP_TMDS_EN));
+ 		else
+@@ -975,7 +977,8 @@
+ 		break;
+ 	case MT_LCD:
+ 		val = INREG(LVDS_GEN_CNTL);
+-		if (blank == VESA_NO_BLANKING) {
++		if (blank == FB_BLANK_UNBLANK ||
++		    blank == FB_BLANK_NORMAL) {
+ 			u32 target_val = (val & ~LVDS_DISPLAY_DIS) | LVDS_BLON | LVDS_ON
+ 				| LVDS_ON | (rinfo->init_state.lvds_gen_cntl & LVDS_DIGON);
+ 			if ((val ^ target_val) == LVDS_DISPLAY_DIS)
+@@ -1023,7 +1026,8 @@
+ 		break;
+ 	}
  
- 	par->riva.IO = (MISCin(par) & 0x01) ? 0x3D0 : 0x3B0;
+-	return 0;
++	/* let fbcon do a soft blank for us */
++	return (blank == FB_BLANK_NORMAL) ? -EINVAL : 0;
+ }
+ 
+ int radeonfb_blank (int blank, struct fb_info *info)
+@@ -1265,7 +1269,7 @@
+ 
+ 	del_timer_sync(&rinfo->lvds_timer);
+ 
+-	radeon_screen_blank(rinfo, VESA_POWERDOWN, 1);
++	radeon_screen_blank(rinfo, FB_BLANK_POWERDOWN, 1);
+ 	msleep(100);
+ 
+ 	radeon_fifo_wait(31);
+@@ -1308,7 +1312,7 @@
+ 		OUTREG(TMDS_TRANSMITTER_CNTL, mode->tmds_transmitter_cntl);
+ 	}
+ 
+-	radeon_screen_blank(rinfo, VESA_NO_BLANKING, 1);
++	radeon_screen_blank(rinfo, FB_BLANK_UNBLANK, 1);
+ 
+ 	radeon_fifo_wait(2);
+ 	OUTPLL(VCLK_ECP_CNTL, mode->vclk_ecp_cntl);
+diff -Nru a/drivers/video/cirrusfb.c b/drivers/video/cirrusfb.c
+--- a/drivers/video/cirrusfb.c	2004-11-06 06:21:26 +08:00
++++ b/drivers/video/cirrusfb.c	2004-11-06 18:03:09 +08:00
+@@ -1727,7 +1727,8 @@
+ 	}
+ 
+ 	/* Undo current */
+-	if (current_mode != VESA_NO_BLANKING) {
++	if (current_mode == FB_BLANK_NORMAL ||
++	    current_mode == FB_BLANK_UNBLANK) {
+ 		/* unblank the screen */
+ 		val = vga_rseq (cinfo->regbase, VGA_SEQ_CLOCK_MODE);
+ 		vga_wseq (cinfo->regbase, VGA_SEQ_CLOCK_MODE, val & 0xdf);	/* clear "FullBandwidth" bit */
+@@ -1736,22 +1737,23 @@
+ 	}
+ 
+ 	/* set new */
+-	if(blank_mode != VESA_NO_BLANKING) {
++	if(blank_mode > FB_BLANK_NORMAL) {
+ 		/* blank the screen */
+ 		val = vga_rseq (cinfo->regbase, VGA_SEQ_CLOCK_MODE);
+ 		vga_wseq (cinfo->regbase, VGA_SEQ_CLOCK_MODE, val | 0x20);	/* set "FullBandwidth" bit */
+ 	}
+ 
+ 	switch (blank_mode) {
+-	case VESA_NO_BLANKING:
++	case FB_BLANK_UNBLANK:
++	case FB_BLANK_NORMAL:
+ 		break;
+-	case VESA_VSYNC_SUSPEND:
++	case FB_BLANK_VSYNC_SUSPEND:
+ 		vga_wgfx (cinfo->regbase, CL_GRE, 0x04);
+ 		break;
+-	case VESA_HSYNC_SUSPEND:
++	case FB_BLANK_HSYNC_SUSPEND:
+ 		vga_wgfx (cinfo->regbase, CL_GRE, 0x02);
+ 		break;
+-	case VESA_POWERDOWN:
++	case FB_BLANK_POWERDOWN:
+ 		vga_wgfx (cinfo->regbase, CL_GRE, 0x06);
+ 		break;
+ 	default:
+@@ -1761,7 +1763,9 @@
+ 
+ 	cinfo->blank_mode = blank_mode;
+ 	DPRINTK ("EXIT, returning 0\n");
+-	return 0;
++
++	/* Let fbcon do a soft blank for us */
++	return (blank_mode == FB_BLANK_NORMAL) ? 1 : 0;
+ }
+ /**** END   Hardware specific Routines **************************************/
+ /****************************************************************************/
+diff -Nru a/drivers/video/epson1355fb.c b/drivers/video/epson1355fb.c
+--- a/drivers/video/epson1355fb.c	2004-10-19 20:21:38 +08:00
++++ b/drivers/video/epson1355fb.c	2004-11-06 18:03:09 +08:00
+@@ -288,22 +288,25 @@
+ 	struct epson1355_par *par = info->par;
+ 
+ 	switch (blank_mode) {
+-	case VESA_NO_BLANKING:
++	case FB_BLANK_UNBLANKING:
++	case FB_BLANK_NORMAL:
+ 		lcd_enable(par, 1);
+ 		backlight_enable(1);
+ 		break;
+-	case VESA_VSYNC_SUSPEND:
+-	case VESA_HSYNC_SUSPEND:
++	case FB_BLANK_VSYNC_SUSPEND:
++	case FB_BLANK_HSYNC_SUSPEND:
+ 		backlight_enable(0);
+ 		break;
+-	case VESA_POWERDOWN:
++	case FB_BLANK_POWERDOWN:
+ 		backlight_enable(0);
+ 		lcd_enable(par, 0);
+ 		break;
+ 	default:
+ 		return -EINVAL;
+ 	}
+-	return 0;
++
++	/* let fbcon do a soft blank for us */
++	return (blank_mode == FB_BLANK_NORMAL) ? 1 : 0;
+ }
+ 
+ /* ------------------------------------------------------------------------- */
+diff -Nru a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_main.c
+--- a/drivers/video/i810/i810_main.c	2004-11-07 21:31:13 +08:00
++++ b/drivers/video/i810/i810_main.c	2004-11-06 18:03:10 +08:00
+@@ -1323,23 +1323,28 @@
  	
+ 	pwr = i810_readl(PWR_CLKC, mmio);
+ 
+-	switch(blank_mode) {
+-	case VESA_NO_BLANKING:
++	switch (blank_mode) {
++	case FB_BLANK_UNBLANK:
+ 		mode = POWERON;
+ 		pwr |= 1;
+ 		scr_off = ON;
+ 		break;
+-	case VESA_VSYNC_SUSPEND:
++	case FB_BLANK_NORMAL:
++		mode = POWERON;
++		pwr |= 1;
++		scr_off = OFF;
++		break;
++	case FB_BLANK_VSYNC_SUSPEND:
+ 		mode = STANDBY;
+ 		pwr |= 1;
+ 		scr_off = OFF;
+ 		break;
+-	case VESA_HSYNC_SUSPEND:
++	case FB_BLANK_HSYNC_SUSPEND:
+ 		mode = SUSPEND;
+ 		pwr |= 1;
+ 		scr_off = OFF;
+ 		break;
+-	case VESA_POWERDOWN:
++	case FB_BLANK_POWERDOWN:
+ 		mode = POWERDOWN;
+ 		pwr &= ~1;
+ 		scr_off = OFF;
+@@ -1347,9 +1352,11 @@
+ 	default:
+ 		return -EINVAL; 
+ 	}
++
+ 	i810_screen_off(mmio, scr_off);
+ 	i810_writel(HVSYNC, mmio, mode);
+ 	i810_writel(PWR_CLKC, mmio, pwr);
++
+ 	return 0;
+ }
+ 
+diff -Nru a/drivers/video/radeonfb.c b/drivers/video/radeonfb.c
+--- a/drivers/video/radeonfb.c	2004-11-06 06:21:26 +08:00
++++ b/drivers/video/radeonfb.c	2004-11-06 18:03:10 +08:00
+@@ -1629,15 +1629,16 @@
+ 	val2 &= ~(LVDS_DISPLAY_DIS);
+ 
+         switch (blank) {
+-                case VESA_NO_BLANKING:
++	        case FB_BLANK_UNBLANK:
++	        case FB_BLANK_NORMAL:
+                         break;
+-                case VESA_VSYNC_SUSPEND:
++                case FB_BLANK_VSYNC_SUSPEND:
+                         val |= (CRTC_DISPLAY_DIS | CRTC_VSYNC_DIS);
+                         break;
+-                case VESA_HSYNC_SUSPEND:
++                case FB_BLANK_HSYNC_SUSPEND:
+                         val |= (CRTC_DISPLAY_DIS | CRTC_HSYNC_DIS);
+                         break;
+-                case VESA_POWERDOWN:
++                case FB_BLANK_POWERDOWN:
+                         val |= (CRTC_DISPLAY_DIS | CRTC_VSYNC_DIS | 
+                                 CRTC_HSYNC_DIS);
+ 			val2 |= (LVDS_DISPLAY_DIS);
+@@ -1654,7 +1655,8 @@
+ 			break;
+ 	}
+ 
+-	return 0;
++	/* let fbcon do a soft blank for us */
++	return (blank == FB_BLANK_NORMAL) ? 1 : 0;
+ }
+ 
+ 
 
 
 

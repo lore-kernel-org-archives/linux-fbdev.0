@@ -1,23 +1,25 @@
-From: Alexander Kern <alex.kern@gmx.de>
-Subject: Re: Framebuffer drivers maintainers
-Date: Sun, 22 Aug 2004 19:28:04 +0200
+From: Otto Wyss <otto.wyss@orpatec.ch>
+Subject: Framebuffer functionality chart (was Re: [Linux-fbdev-users] Project
+ update, new website)
+Date: Mon, 23 Aug 2004 19:20:41 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200408221928.05205.alex.kern@gmx.de>
-References: <41270AD0.FE6C7970@orpatec.ch>
+Message-ID: <412A276A.1A944B74@orpatec.ch>
+References: <41250552.F3C8E8A9@orpatec.ch> <1092946501.10923.45.camel@atlantis.netenviron.com> <41261949.27CD3CB4@orpatec.ch> <200408212037.31786.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Byw8s-0004Xc-Ah
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 22 Aug 2004 10:28:30 -0700
-Received: from imap.gmx.net ([213.165.64.20] helo=mail.gmx.net)
+	id 1BzIV3-0000cG-Ls
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 23 Aug 2004 10:20:53 -0700
+Received: from mail.xor.ch ([212.55.210.163])
 	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.34)
-	id 1Byw8r-0000p3-M7
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 22 Aug 2004 10:28:30 -0700
-In-Reply-To: <41270AD0.FE6C7970@orpatec.ch>
-Content-Disposition: inline
+	id 1BzIV2-00033Q-Qp
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 23 Aug 2004 10:20:53 -0700
+Received: from orpatec.ch (217.162.130.125)
+          by mail.xor.ch with MERCUR Mailserver (v4.03.03 NjYtMjMxMS00NjIy)
+          for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 23 Aug 2004 19:25:39 +0200
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,27 +30,54 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Otto Wyss <otto.wyss@orpatec.ch>, 'linux-kernel' <linux-kernel@vger.kernel.org>
+To: adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Am Samstag, 21. August 2004 10:41 schrieb Otto Wyss:
-> I've now updated the framebuffer driver list and hopefully listed each
-> current driver. It may not show the correct name so please suggest
-> corrections.
->
-> For each driver its maintainer should be listed possibly with its
-> sourceforge.net user account in brackets. I'd like if only current
-> maintainers, who really take care of their drivers, are listed and none
-> who has done so in the past. Please any maintainer post a message to
-> linux-fbdev-devel or tell me where I can retrieve reliable information.
->
-> I'd like to form a QA team which task is mostly to take care of not
-> maintained drivers. If you want to volunteer just leave me a message.
->
-> O. Wyss
-HI, I'm care about atyfb driver in 2.6.x
+"Antonino A. Daplas" wrote:
+> 
+> On Friday 20 August 2004 23:31, Otto Wyss wrote:
+> > I intend to change the status page into a functionality chart. First I
+> > have to know which functionality exists and are important enough to be
+> > listed. Any imput is welcomed.
+> >
+> Suggestion:
+> 
+> A.  Common to all:
+> 
+> Hardware:
+> 1. color depths and color visuals supported
+> 2. can the driver pan on the y-axis?
+> 3. can the driver pan on the x-axis?
+> 4. can the hardware state be changed (ie with fbset)?
+> 5. access to framebuffer (fb_read/fb_write/mmap)
+> 6. access to MMIO space
+> 
+> Console:
+> 1. can it accelerate imageblit (font drawing)
+> 2. can it accelerate copyarea (block transfers)
+> 3. can it accelerate fillrect (block sets)
+> 
+> Video Mode setting:
+> 1. How is the video mode set (more than 1 can be chosen)?
+>         a. at driver load
+>         b. user-specified modelines (ie. fbset)
+>         c. global mode database
+>         d. EDID/private mode database
+>         e. EDID/GTF calculation
+>         f. driver-specific method
+> 
+> B. Miscellaneous:
+>         a. support for interrupts on vsync/vblank
+>         b. ioctl for vsync/vblank
+> 
+Comments from other developers? Can these points be divided into two
+groups ("essential" for minimal functionality and "advanced" for speed
+improvements, nice to have features?
 
-bye Alex Kern
+O. Wyss
+
+-- 
+See a huge pile of work at "http://wyodesktop.sourceforge.net/"
 
 
 -------------------------------------------------------

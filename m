@@ -1,21 +1,11 @@
-From: Unknown <unknown@unknown.invalid>
-Subject: Virus Detected by Network Associates, Inc. Webshield SMTP V4.5 MR1a
-Date: Mon, 28 Jun 2004 16:47:50 +0000 (UTC)
+From: "Alyson Houston" <alysonhouston_ae@pbh.domino.de>
+Subject: $91823
+Date: Tue, 29 Jun 2004 02:48:04 +0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040628162826.BB25C37E@corpmailsmtp02.digitalnetworksna.com>
+Message-ID: <305f01c45d48$2f13cde1$05e2504f__32119.8868485682$1088452650@mail.lrz-muenchen.de>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Beyzg-0000qX-O3
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 28 Jun 2004 09:28:32 -0700
-Received: from corpmailsmtp02.digitalnetworksna.com ([209.10.223.203])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1Beyzg-0002pV-Gr
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 28 Jun 2004 09:28:32 -0700
-Received: from corpvirus1.sc.sonicblue.com (unknown [10.6.2.49])
-	by corpmailsmtp02.digitalnetworksna.com (Postfix) with SMTP id BB25C37E
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 28 Jun 2004 09:28:26 -0700 (PDT)
-From: <>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,15 +15,26 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Date: Mon Jun 28 09:40:11 2004
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+To: linux-usb-devel@lists.sourceforge.net, linux-ntfs-dev@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net, linux-decnet-user@lists.sourceforge.net
 
-Network Associates WebShield SMTP V4.5 MR1a on corpvirus1 detected virus
-W32/Netsky.p@MM!zip in attachment details_hugo.zip from <linux-fbdev-devel@lists.sourceforge.net>
-and it was Deleted.
+Hello,
+I sent you an email a few days ago, because you now qualify for a new mortgage.
+You could get $300,000 for as little as $700 a month!
+Bad credit is no problem, you can pull cash out or refinance.
+
+Please click on this link:
+http://www.fast-loanz.com/e4/e7.php?weo=71
+
+Best Regards,
+Steve Morris
+
+
+---- system information ----
+locale-determined as must standard be more reasonable same 
+entities transport encompasses offer encompasses suggesting lies of 
+depending affected it varies preferences rules Semantics: mailing 
+
 
 
 -------------------------------------------------------

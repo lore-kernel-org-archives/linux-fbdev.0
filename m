@@ -1,17 +1,16 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: const fb_{fillrect,copyarea,image}?
-Date: Mon, 30 Dec 2002 11:31:25 +0100 (MET)
+From: "Abhilash" <abhilash@avenir.net>
+Subject: Re: Screen Capturing
+Date: Mon, 30 Dec 2002 17:20:31 +0530
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0212301127150.18122-100000@vervain.sonytel.be>
+Message-ID: <021201c2aff9$ac6da6e0$bd00000a@abhilash>
+References: <Pine.GSO.4.21.0212271225240.17067-100000@vervain.sonytel.be>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+Received: from [205.242.250.76] (helo=avenir1.avenir.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18SxDP-0006FX-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 30 Dec 2002 02:32:12 -0800
-Received: from vervain.sonytel.be (mail.sonytel.be [10.17.0.27])
-	by mail.sonytel.be (8.9.0/8.8.6) with ESMTP id LAA25151
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 30 Dec 2002 11:31:25 +0100 (MET)
+	id 18SyKn-0006Wz-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 30 Dec 2002 03:43:53 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,30 +20,60 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+
+Hello,
+
+Thank you very much.
+Let me check this.
+
+Thank you,
+Abhilash.
+
+----- Original Message -----
+From: "Geert Uytterhoeven" <geert@linux-m68k.org>
+To: "Abhilash" <abhilash@avenir.net>
+Cc: "Linux Frame Buffer Device Development"
+<linux-fbdev-devel@lists.sourceforge.net>
+Sent: Friday, December 27, 2002 5:03 PM
+Subject: Re: [Linux-fbdev-devel] Screen Capturing
 
 
-Wouldn't it make sense to make the fb_{fillrect,copyarea,image} parameters of
-the fb_ops.fb_{fillrect,copyarea,image}() operations const? This would protect
-us against side effects when reusing the fb_{fillrect,copyarea,image} structs
-without reinitializing their contents (as is currently done by the logo drawing
-code in fbcon_show_logo() on SMP).
+> On Fri, 27 Dec 2002, Abhilash wrote:
+> > I need to capture the screen .For that I use mirror driver in Windows
+for
+> > capturing screen.
+> > ie, its basically overloading the driver functions.
+> >
+> > So in case of Linux, is there any method like this or which is the best
+> > method?
+> > In Xlib there are some functions to capture screen and also heard abt
+VESA
+> > which is better?
+>
+> If you are using a frame buffer device, you can capture the contents of
+> /dev/fb*. Either read from /dev/fb*, or mmap() it. The data you receive
+are in
+> the native format of the graphics chip. For CLUT modes, you have to use an
+> ioctl() to get the colormap.
+>
+> Gr{oetje,eeting}s,
+>
+> Geert
+>
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 --
+geert@linux-m68k.org
+>
+> In personal conversations with technical people, I call myself a hacker.
+But
+> when I'm talking to journalists I just say "programmer" or something like
+that.
+>     -- Linus Torvalds
+>
 
-Of course this means that we have to modify the clipping code, which currently
-just modifies the passed structure.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 
 

@@ -1,16 +1,17 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: Re: Reading the EDID block for x86 machines
-Date: Mon, 17 Mar 2003 16:00:52 -0800 (PST)
+From: "Marijn Kruisselbrink" <marijnk@gmx.net>
+Subject: RE: PROBLEM: really strange behavior with rivafb in kernel 2.5.64
+Date: Tue, 18 Mar 2003 02:03:44 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030318000052.33674.qmail@web14903.mail.yahoo.com>
-References: <1047940105.3693.40.camel@localhost.localdomain>
+Message-ID: <HJEOKOJLKINBOCDGFDOOCENPCCAA.marijnk@gmx.net>
+References: <HJEOKOJLKINBOCDGFDOOCECPCCAA.marijnk@gmx.co.uk>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from web14903.mail.yahoo.com ([216.136.225.55])
+Received: from pop.gmx.de ([213.165.65.60] helo=mail.gmx.net)
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18v4XF-0001QF-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Mar 2003 16:00:53 -0800
-In-Reply-To: <1047940105.3693.40.camel@localhost.localdomain>
+	id 18v5W6-0002eQ-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Mar 2003 17:03:46 -0800
+In-Reply-To: <HJEOKOJLKINBOCDGFDOOCECPCCAA.marijnk@gmx.co.uk>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,25 +22,14 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-This describes a BIOS INT for controlling the write
-protect on the shadow RAM.
+> I don't have a clue what could cause this problem... Perhaps anybody else
+> has any ideas?
+Hmmz, It looks like nobody has anuyy ideas what I could be doing wrong?
+I don't have any ideas...
 
-http://216.239.33.100/search?q=cache:ekBz42QrBngC:www.digital-logic.de/support/download/Treiber/misc/pcchip/c%26t/INT1F.TXT+shadow+BIOS+write+protect+int&hl=en&ie=UTF-8
-
-Unsure if this is a standard BIOS feature.
-
-=====
-Jon Smirl
-jonsmirl@yahoo.com
-
-__________________________________________________
-Do you Yahoo!?
-Yahoo! Platinum - Watch CBS' NCAA March Madness, live on your desktop!
-http://platinum.yahoo.com
+Marijn Kruisselbrink 
 
 
 -------------------------------------------------------

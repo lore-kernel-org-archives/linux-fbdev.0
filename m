@@ -1,20 +1,19 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] Fix softcursor issues
-Date: Mon, 09 Feb 2004 17:56:10 +1100
+From: Dirk Behme <dirk.behme@de.bosch.com>
+Subject: 2.6.1 fb.h patch for userland application
+Date: Mon, 09 Feb 2004 11:44:43 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1076309769.986.4.camel@gaston>
+Message-ID: <4027649B.5010208@de.bosch.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Aq5LD-0006WX-Kz
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Feb 2004 22:56:23 -0800
-Received: from gate.crashing.org ([63.228.1.57] ident=root)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1Aq5LD-0007Lw-4x
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Feb 2004 22:56:23 -0800
+	id 1Aq8x9-0005jj-QK
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Feb 2004 02:47:47 -0800
+Received: from gwa11.fe.bosch.de ([194.39.219.249])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1Aq8x9-0005YQ-Af
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Feb 2004 02:47:47 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -24,100 +23,54 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: jsimmons@infradead.org, geert@linux-m68k.org
 
-Hi James !
+Hello,
 
-I'm having troubles with softcursor in the new tree. It can tap
-outside of the ioremap'ed region of the framebuffer because it
-doesn't properly crop the saved area at the bottom of the screen.
+I had problems to use linux/fb.h from 2.6.1 to compile userland 
+application microwindows. I made some changes to get microwindows 0.90 
+to compile, please see patch below.
 
-Here's a quick fix that works for me with offb (offb ioremap's just
-the exact size of the framebuffer and so would trigger it).
+The include files atomic.h and spinlock.h are necessary for spinlock_t 
+and atomic_t. workqueue.h doesn't compile for userspace application and 
+doesn't seem to be necessary at all (?). u8 is undefined while compiling 
+for userspace, use __u8 instead.
 
-I also added calls to fb_sync since we are touching the framebuffer,
-we must make sure pending accel operations are properly completed.
+Is this patch OK?
 
-Ben.
+Dirk
 
-diff -urN fbdev-2.5/drivers/video/softcursor.c linuxppc-2.5-benh/drivers/video/softcursor.c
---- fbdev-2.5/drivers/video/softcursor.c	2004-01-28 16:50:07.000000000 +1100
-+++ linuxppc-2.5-benh/drivers/video/softcursor.c	2004-02-09 17:51:13.338387792 +1100
-@@ -29,9 +29,10 @@
- {
- 	unsigned int scan_align = info->sprite.scan_align - 1;
- 	u8 *addr = info->sprite.addr, *dst;
--	unsigned int size, i, j;
-+	unsigned int size, i, j, ysize;
- 	unsigned long *save;
--	
-+	int needsync = 1;
-+
- 	if (cursor->image.height > 32 || cursor->image.width > 32)
- 		return -ENXIO;
- 
-@@ -63,14 +64,20 @@
- 		fb_load_cursor_image(info);
- 		
- 	if (!cursor->enable || (info->cursor.enable && (cursor->set & FB_CUR_SETPOS))) {
-+		if (needsync && info->fbops->fb_sync) {
-+			info->fbops->fb_sync(info);
-+			needsync = 0;
-+		}
- 		// Draw saved area
- 		i = (info->cursor.image.width * info->var.bits_per_pixel + 7) >> 3;
- 		size = (i + scan_align) & ~scan_align;
- 		i = (info->cursor.image.dx * info->var.bits_per_pixel >> 3);
- 		dst = info->screen_base + info->cursor.image.dy * info->fix.line_length + i;
--		
-+		ysize = 32;
-+		if ((info->cursor.image.dy + ysize) > info->var.yres_virtual)
-+			ysize = info->var.yres_virtual - info->cursor.image.dy;
- 		save = (unsigned long *) (addr + info->sprite.size/2);
--		for (i = 0; i < 32; i++) {
-+		for (i = 0; i < ysize; i++) {
- 			unsigned long *dst0 = (unsigned long *) dst;
- 			for (j = 0; j < size; j++) {
- 				FB_WRITEL(FB_READL(save++), dst0++);
-@@ -80,14 +87,21 @@
- 	}
- 	
- 	if (!info->cursor.enable || (cursor->set & FB_CUR_SETPOS)) {
-+		if (needsync && info->fbops->fb_sync) {
-+			info->fbops->fb_sync(info);
-+			needsync = 0;
-+		}
- 		// Save the area under the cursor
- 		i = (info->cursor.image.width * info->var.bits_per_pixel + 7) >> 3;
- 		size = (i + scan_align) & ~scan_align;
- 		i = (info->cursor.image.dx * info->var.bits_per_pixel >> 3);
- 		dst = info->screen_base + info->cursor.image.dy * info->fix.line_length + i;
- 		
-+		ysize = 32;
-+		if ((info->cursor.image.dy + ysize) > info->var.yres_virtual)
-+			ysize = info->var.yres_virtual - info->cursor.image.dy;
- 		save = (unsigned long *) (addr + info->sprite.size/2);
--		for (i = 0; i < 32; i++) {
-+		for (i = 0; i < ysize; i++) {
- 			unsigned long *dst0 = (unsigned long *) dst;
- 			for (j = 0; j < size; j++) {
- 				FB_WRITEL(FB_READL(dst0++), save++);
-@@ -96,10 +110,8 @@
- 		}
- 	}
- 
--	if (cursor->enable) {
--		//info->cursor.image.data = addr;
-+	if (cursor->enable)
- 		info->fbops->fb_imageblit(info, &info->cursor.image);
--	}
- 	return 0;
- }
- 
+--- linux/include/linux/fb.h_orig     2003-12-30 19:58:12.000000000 +0100
++++ linux/include/linux/fb.h        2004-02-04 10:11:59.000000000 +0100
+@@ -2,8 +2,9 @@
+  #define _LINUX_FB_H
 
+  #include <linux/tty.h>
+-#include <linux/workqueue.h>
++#include <linux/spinlock.h>
+  #include <asm/types.h>
++#include <asm/atomic.h>
+  #include <asm/io.h>
 
+  /* Definitions of frame buffers 
+          */
+@@ -339,8 +340,8 @@ struct fb_pixmap {
+         __u32 scan_align;                 /* alignment per scanline 
+     */
+         __u32 flags;                      /* see FB_PIXMAP_* 
+     */
+                                           /* access methods 
+     */
+-       void (*outbuf)(u8 *dst, u8 *addr, unsigned int size);
+-       u8   (*inbuf) (u8 *addr);
++       void (*outbuf)(__u8 *dst, __u8 *addr, __u32 size);
++       __u8 (*inbuf) (__u8 *addr);
+         spinlock_t lock;                  /* spinlock 
+     */
+         atomic_t count;
+  };
 
 
 -------------------------------------------------------

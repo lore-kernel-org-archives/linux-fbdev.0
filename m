@@ -1,18 +1,16 @@
-From: Nicolas Souchu <nsouch@free.fr>
-Subject: matrox ported to new framework?
-Date: Sat, 24 May 2003 19:54:29 +0000
+From: Jon Smirl <jonsmirl@yahoo.com>
+Subject: Re: matrox ported to new framework?
+Date: Sat, 24 May 2003 10:48:46 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030524195429.A2238@armor.free.fr>
+Message-ID: <20030524174846.49900.qmail@web14913.mail.yahoo.com>
+References: <20030524195429.A2238@armor.free.fr>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from postfix4-1.free.fr ([213.228.0.62])
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19Jd04-0007YL-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 24 May 2003 10:40:08 -0700
-Received: from armor.fastether (nas-cbv-7-62-147-155-250.dial.proxad.net [62.147.155.250])
-	by postfix4-1.free.fr (Postfix) with SMTP id 62E2839EC1
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 24 May 2003 19:40:06 +0200 (CEST)
-Content-Disposition: inline
+Received: from web14913.mail.yahoo.com ([216.136.225.240])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19Jd8Q-0002zj-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 24 May 2003 10:48:46 -0700
+In-Reply-To: <20030524195429.A2238@armor.free.fr>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -24,28 +22,36 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+To: Nicolas Souchu <nsouch@free.fr>
+Cc: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+
+--- Nicolas Souchu <nsouch@free.fr> wrote:
+> Also, I have a AIW (Rage128) 32MB that is neither
+> supported by
+> 2.4.9 nor by 2.5.69. Any hint?
+> 
+Not all of the Rage128 PCI ids are in the id table.
+Just try adding all of the ones from the kernel
+include file. I have yet to find one that didn't work.
+I believe the ID for the AGP AIW is missing from the
+driver's table.
+
+I have the PCI AIW 1002:5044. Something is strange
+with the driver on 2.5.69. It will work if compiled
+in, but it won't initialize with a modprobe. There is
+probably something wrong in the driver's PCID table
+which needs to be updated for 2.5.69.
 
 
-The Matrox fb does not compile on my 2.5.69, I guess its port
-to the new fbdev API is not complete. Is a patch in the pipe
-for a near release?
 
-Also, I have a AIW (Rage128) 32MB that is neither supported by
-2.4.9 nor by 2.5.69. Any hint?
+=====
+Jon Smirl
+jonsmirl@yahoo.com
 
-Actually, I have a bunch of boards I'd like to see working:
-G450, Matrox MilleniumII, AIW128 32MB, RageMobility, MACH64GX, G200.
-
-Seems ok for Matroxes, but that's all :(
-
-What's the status of HW support? Any rating about happyness of
-users?
-
-Nicholas
-
--- 
-Nicholas Souchu - nsouch@free.fr
+__________________________________
+Do you Yahoo!?
+The New Yahoo! Search - Faster. Easier. Bingo.
+http://search.yahoo.com
 
 
 -------------------------------------------------------

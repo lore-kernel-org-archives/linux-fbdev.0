@@ -1,21 +1,21 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Re: [PATCH] - video/tridentfb.c warning fix.
-Date: Fri, 16 Apr 2004 21:31:50 +0100 (BST)
+Subject: Re: neofb patches
+Date: Fri, 16 Apr 2004 21:35:39 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0404162131300.9917-100000@phoenix.infradead.org>
-References: <Pine.GSO.4.58.0404162138230.26173@waterleaf.sonytel.be>
+Message-ID: <Pine.LNX.4.44.0404162135120.9917-100000@phoenix.infradead.org>
+References: <Pine.GSO.4.58.0404161013040.20787@waterleaf.sonytel.be>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BEa0s-00018N-95
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 16 Apr 2004 13:32:38 -0700
+	id 1BEa4U-0001yz-FS
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 16 Apr 2004 13:36:22 -0700
 Received: from phoenix.infradead.org ([213.86.99.234])
 	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1BEa0r-0000M1-Lq
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 16 Apr 2004 13:32:38 -0700
-In-Reply-To: <Pine.GSO.4.58.0404162138230.26173@waterleaf.sonytel.be>
+	id 1BEa4T-0001Ku-Pe
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 16 Apr 2004 13:36:22 -0700
+In-Reply-To: <Pine.GSO.4.58.0404161013040.20787@waterleaf.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,63 +28,25 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Luiz Fernando N. Capitulino" <lcapitulino@prefeitura.sp.gov.br>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Alex Stewart <alex@foogod.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
 
-Thats even better. We will gladly take those changes.
-
+Yes please. I have a newer driver as well. I like to see what fixes you 
+have.
 
 On Fri, 16 Apr 2004, Geert Uytterhoeven wrote:
 
-> On Fri, 16 Apr 2004, Luiz Fernando N. Capitulino wrote:
-> > --- a/drivers/video/Kconfig	2004-04-16 15:02:28.000000000 -0300
-> > +++ a~/drivers/video/Kconfig	2004-04-16 14:46:48.000000000 -0300
-> > @@ -772,6 +772,13 @@ config FB_TRIDENT
-> >  	  To compile this driver as a module, choose M here: the
-> >  	  module will be called tridentfb.
+> On Thu, 15 Apr 2004, Alex Stewart wrote:
+> > I recently tried using the Neomagic framebuffer driver (from kernel 2.6.5) with
+> > my laptop, and noticed it seemed to have a few ...issues. :)
 > >
-> > +config FB_TRIDENT_ACCEL
-> > +	bool "Trident Acceleration functions (EXPERIMENTAL)"
-> > +	depends on FB_TRIDENT
-> > +	---help---
-> > +	This will compile FB_TRIDENT with acceleration functions.
->                           ^^^^^^^^^^
-> the Trident frame buffer device?
+> > So over the past few days I decided to go through and fix a bunch of the
+> > problems I found, and have put together quite a few patches for submission.  Is
+> > this list the right place to send patches for this driver, or is there
+> > somewhere else which would be more appropriate?
 > 
-> > --- a/drivers/video/tridentfb.c	2004-04-16 15:02:36.000000000 -0300
-> > +++ a~/drivers/video/tridentfb.c	2004-04-16 14:36:00.000000000 -0300
-> > @@ -450,7 +450,7 @@ static struct accel_switch accel_image =
-> >  /*
-> >   * Accel functions called by the upper layers
-> >   */
-> > -
-> > +#ifdef FB_TRIDENT_ACCEL
-> >  static void tridentfb_fillrect(struct fb_info * info, const struct fb_fillrect *fr)
-> >  {
-> >  	int bpp = info->var.bits_per_pixel;
-> > @@ -474,6 +474,7 @@ static void tridentfb_copyarea(struct fb
-> >  	acc->copy_rect(ca->sx,ca->sy,ca->dx,ca->dy,ca->width,ca->height);
-> >  	acc->wait_engine();
-> >  }
-> > +#endif
-> 
-> Alternatively, you can do
-> 
->     #else /* !FB_TRIDENT_ACCEL */
->     #define tridentfb_fillrect	cfb_fillrect
->     #define tridentfb_copyarea	cfb_copyarea
->     #endif /* !FB_TRIDENT_ACCEL */
-> 
-> here, and get rid of the #ifdef in tridentfb_ops.
-> 
-> if FB_TRIDENT_ACCEL is not set, and get rid of the second #ifdef
-> FB_TRIDENT_ACCEL.
-> 
-> >  I don't know if it is good, but It will be temporary anyway,
-> > (just util the code is tested). The warning is gone, and the code
-> > can be tested.
-> 
-> Looks fine!
+> Yes it is. You may want to CC James Simmons <jsimmons@infradead.org> to make
+> sure it gets his attention.
 > 
 > Gr{oetje,eeting}s,
 > 

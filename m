@@ -1,78 +1,57 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Framebuffer console fix
-Date: Tue, 13 May 2003 22:48:18 +0100 (BST)
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.44.0305132246450.12672-100000@phoenix.infradead.org>
+Subject: RE: [PATCH 2.5.68] Epson 1355 Rewrite for 2.5
+Date: Tue, 13 May 2003 23:32:39 +0100 (BST)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.LNX.4.44.0305132326190.12672-100000@phoenix.infradead.org>
+References: <Pine.GSO.4.21.0305080731520.12135-100000@vervain.sonytel.be>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19FiKk-0001Gz-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 13 May 2003 15:33:18 -0700
+In-Reply-To: <Pine.GSO.4.21.0305080731520.12135-100000@vervain.sonytel.be>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@transmeta.com>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Christopher Hoover <ch@murgatroid.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
 
-This patch fixes a oops that happens when we map a framebuffer device to 
-a non-existant console. Please apply.
+> > I have put alot of though and even tested some raw code for this. The 
+> > issue with just replacing the FB_WRITE and FB_READ stuff is more than one 
+> > card could be present and each would require a different FB_WRITE. This 
+> > would conflict. So what do we do? Ah the answer is use struct pixmap to 
+> 
+> It would not conflict with multiple cards, since if you set some defines and
+> #include the cfb* sources, you would get routines with slightly different
+> names, cfr. Christopher's approach.
 
-# This is a BitKeeper generated patch for the following project:
-# Project Name: Linux kernel tree
-# This patch format is intended for GNU patch command version 2.5 or higher.
-# This patch includes the following deltas:
-#	           ChangeSet	1.1081  -> 1.1082 
-#	drivers/video/console/fbcon.c	1.101   -> 1.102  
-#	drivers/video/console/fbcon.h	1.30    -> 1.31   
-#
-# The following is the BitKeeper ChangeSet Log
-# --------------------------------------------
-# 03/05/12	jsimmons@maxwell.earthlink.net	1.1082
-# [FBCON] set_con2fb_map wasn't testing to see the VC we where mapping to actually exist. Now it does. 
-# 
-#         I add code to fbcon_cursor to reset the hotspot if it was changed by userland. 
-# --------------------------------------------
-#
-diff -Nru a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
---- a/drivers/video/console/fbcon.c	Mon May 12 16:38:57 2003
-+++ b/drivers/video/console/fbcon.c	Mon May 12 16:38:57 2003
-@@ -294,13 +294,16 @@
-  *	Maps a virtual console @unit to a frame buffer device
-  *	@newidx.
-  */
--void set_con2fb_map(int unit, int newidx)
-+int set_con2fb_map(int unit, int newidx)
- {
- 	struct vc_data *vc = vc_cons[unit].d;
+  I have some code but I realized it is more of a challege than I thought. 
+I don't see how one can nearly use the same code as in cfb*.c files for 16 
+bit access since the whole idea behind the cfb*.c files is to write 32/64 
+bit data at a time to the framebuffer. It would require a very different 
+logic. There is just to many BITS_PER_LONG and stuff in the code. 
+  At present I moved the code over to using the struct pixmap fields. In 
+theory just changing the scan_align value should work. It doesn't tho :-(
+Chris coudl you send me what you have tho. Just merge in your version of 
+the cfb* functions into your driver for now. 
+  Currently I'm trying to push a bunch to Linus. So I like to push your 
+driver.
  
-+	if (!vc)
-+		return -ENODEV;
- 	con2fb_map[unit] = newidx;
- 	fbcon_is_default = (vc->vc_sw == &fb_con) ? 1 : 0;
- 	take_over_console(&fb_con, unit, unit, fbcon_is_default);
-+	return 0;
- }
- 
- /*
-@@ -990,6 +993,11 @@
- 			cursor.image.height = vc->vc_font.height;
- 			cursor.image.width = vc->vc_font.width;
- 			cursor.set |= FB_CUR_SETSIZE;
-+		}
-+
-+		if (info->cursor.hot.x || info->cursor.hot.y) {
-+			cursor.hot.x = cursor.hot.y = 0;
-+			cursor.set |= FB_CUR_SETHOT;
- 		}
- 
- 		if ((cursor.set & FB_CUR_SETSIZE) || ((vc->vc_cursor_type & 0x0f) != p->cursor_shape)) {
-diff -Nru a/drivers/video/console/fbcon.h b/drivers/video/console/fbcon.h
---- a/drivers/video/console/fbcon.h	Mon May 12 16:38:57 2003
-+++ b/drivers/video/console/fbcon.h	Mon May 12 16:38:57 2003
-@@ -38,7 +38,7 @@
- 
- /* drivers/video/console/fbcon.c */
- extern char con2fb_map[MAX_NR_CONSOLES];
--extern void set_con2fb_map(int unit, int newidx);
-+extern int set_con2fb_map(int unit, int newidx);
- 
-     /*
-      *  Attribute Decoding
+
+
+
+-------------------------------------------------------
+Enterprise Linux Forum Conference & Expo, June 4-6, 2003, Santa Clara
+The only event dedicated to issues related to Linux enterprise solutions
+www.enterpriselinuxforum.com

@@ -1,42 +1,56 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [Linux-fbdev-devel] Re: FBdev updates.
-Date: Fri, 21 Feb 2003 12:02:38 +0100 (MET)
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.GSO.4.21.0302211159000.9232-100000@vervain.sonytel.be>
-References: <1045824362.1202.4.camel@localhost.localdomain>
+From: henryn@arcor.de
+Subject: How create monochrome Palette with 8bpp
+Date: Fri, 21 Feb 2003 12:31:02 +0100 (CET)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <1132297.1045827063117.JavaMail.ngmail@webmail02.arcor-online.net>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <1045824362.1202.4.camel@localhost.localdomain>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: James Simmons <jsimmons@infradead.org>, Petr Vandrovec <vandrove@vc.cvut.cz>, Dave Jones <davej@codemonkey.org.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from mx02.nexgo.de ([151.189.8.97])
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18mBOV-0008NC-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 21 Feb 2003 03:31:07 -0800
+Received: from webmail02.arcor-online.net (webmail02.arcor-online.net [151.189.8.80])
+	by mx02.nexgo.de (Postfix) with ESMTP id 1E3459F6B7
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 21 Feb 2003 12:31:03 +0100 (CET)
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On 21 Feb 2003, Antonino Daplas wrote:
-> On Fri, 2003-02-21 at 17:09, Geert Uytterhoeven wrote:
-> > On 21 Feb 2003, Antonino Daplas wrote:
-> > > Note: I cannot test with 12x22 fonts in 2.4 because some/most drivers do
-> > > not support it.
-> > 
-> > Which specific drivers are you talking about? All drivers for popular cards
-> > support fontwidth 12 (Matrox, ATI, nVidia, 3Dfx, Permedia, VESA, ...).
-> >
-> You're absolutely correct, I'm wondering why I thought that :-)  Here's
-> a benchmark for 12x22, and it's 2x slower than 8x16, 2.4.x or 2.5.x. 
-> Still, the 2.5.x version is slower than 2.4.x.
+Hello all!
 
-Because accel_putcs() falls back to individual character drawing if the
-fontwidth is not a multiple of 8. Using one fb_imageblit() for other fontwidths
-too would speed this up a lot (but needs some additional coding first).
+We design new framebuffers for monochrome LCD 1bpp and 8bpp, based on skeletonfb.c and vfb.c All works in text-console.
 
-Gr{oetje,eeting}s,
+If we start Xfbdev from Kdrive we have only a cleared black screen.
 
-						Geert
+How we shold handled palette registers for a real black and white LC Display?
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+It's very ugly to understand functions ...encode_fix, ...decode_var, ...encode_var, ...get_par and  ...set_par. How can we find more detail info about this functions?
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+ftp://ssv-embedded.de/ssv/products/trm916/sample/x86/linux/fbdev/linux-2.4.20-fb916-20.patch.gz
+
+Thanks Henry
+
+
+----------------------------------------------------------------------------
+Schlagen Sie sofort zu - mit Arcor und eBay
+Viele Artikel zum Sofort Kaufen!
+http://www.arcor.de/auk/ebay_sk.php
+-----------------------------------------------------------------------
+
+
+
+-------------------------------------------------------
+This SF.net email is sponsored by: SlickEdit Inc. Develop an edge.
+The most comprehensive and flexible code editor you can use.
+Code faster. C/C++, C#, Java, HTML, XML, many more. FREE 30-Day Trial.
+www.slickedit.com/sourceforge

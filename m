@@ -1,25 +1,19 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [PATCH 8/8] fbdev: Set correct mclk/xclk values for aty in ibook
-Date: Tue, 2 Nov 2004 20:20:35 +0800
-Message-ID: <200411022020.35889.adaplas@hotpop.com>
-References: <200411021946.29343.adaplas@hotpop.com>
+From: "Petr Vandrovec" <VANDROVE@vc.cvut.cz>
+Subject: Re: [PATCH 6/8] fbcon/fbdev: Remove fbc
+Date: Tue, 2 Nov 2004 13:46:56 +0200
+Message-ID: <82235870BEB@vcnet.vc.cvut.cz>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1COxf5-0000Cr-Or
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Nov 2004 04:21:19 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1COxf4-0003t2-W3
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Nov 2004 04:21:19 -0800
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id B04238EC01C
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue,  2 Nov 2004 12:21:11 +0000 (UTC)
-In-Reply-To: <200411021946.29343.adaplas@hotpop.com>
-Content-Disposition: inline
+	id 1COy2E-0005z7-Dx
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Nov 2004 04:45:14 -0800
+Received: from mailgw.cvut.cz ([147.32.3.235])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1COy2D-00074W-B1
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Nov 2004 04:45:14 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,48 +25,60 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Olaf Hering <olh@suse.de>
+To: "Antonino A. Daplas" <adaplas@hotpop.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, akpm@osdl.org
 
-The patch has extraneous characters introduced. Take this one instead
+On  2 Nov 04 at 19:46, Antonino A. Daplas wrote:
 
-Tony
+> diff -Nru a/drivers/video/matrox/matroxfb_base.c b/drivers/video/matrox/matroxfb_base.c
+> --- a/drivers/video/matrox/matroxfb_base.c  2004-10-23 02:52:37 +08:00
+> +++ b/drivers/video/matrox/matroxfb_base.c  2004-11-01 08:32:54 +08:00
+> @@ -1877,16 +1876,21 @@
+>     }
+>     printk("fb%d: %s frame buffer device\n",
+>            ACCESS_FBINFO(fbcon.node), ACCESS_FBINFO(fbcon.fix.id));
+> -   if (ACCESS_FBINFO(fbcon.currcon) < 0) {
+> -       /* there is no console on this fb... but we have to initialize hardware
+> -        * until someone tells me what is proper thing to do */
+> -       printk(KERN_INFO "fb%d: initializing hardware\n",
+> -           ACCESS_FBINFO(fbcon.node));
+> -       /* We have to use FB_ACTIVATE_FORCE, as we had to put vesafb_defined to the fbcon.var
+> -        * already before, so register_framebuffer works correctly. */
+> -       vesafb_defined.activate |= FB_ACTIVATE_FORCE;
+> -       fb_set_var(&ACCESS_FBINFO(fbcon), &vesafb_defined);
+> -   }
+> +   /*
+> +    * Tony: If this driver is to be mapped to the console, then
+> +    *       fbcon will automatically do a set_par for us.  The code below
+> +    *       may not be needed.
+> +    */
 
-The first iBook needs special mclk/xclk values, or the screen will show
-only garbage. A patch like this went into 2.4.23. It stopped working
-after 2.6.10-rc1.
+Code below (which you made unconditional now) was executed if and only if
+there is no fbcon attached to this device.  If there is fbcon attached
+to this device, fbcon.currcon would be >= 0 after register_framebuffer()
+(and fbcon's startup already did needed set_*).  If there is no fbcon,
+this adapter is secondary, and it must be initialized too before leaving 
+driver.  But it must not be initialized before call to register_framebuffer,
+as otherwise taking over vgacon won't work correctly.
 
-http://linux.bkbits.net:8080/linux-2.4/cset@3f966ca7mqKxZorh7Uw2SBAuVbv3mA
+You could put some 'ACCESS_FBINFO(flags.hw_initialized) = 1' somewhere
+into matroxfb's set_par and then test this flag instead of fbcon.currcon.
 
-It was discussed here:
-http://marc.theaimsgroup.com/?t=106345749200001&r=1&w=4
+But your current code probably does not work very well on primary adapter.
+                                                    Petr
 
-Signed-off-by: Olaf Hering <olh@suse.de>
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
-
- atyfb_base.c |    8 ++++++++
- 1 files changed, 8 insertions(+)
-
-diff -Nru a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
---- a/drivers/video/aty/atyfb_base.c	2004-10-30 19:10:42 +08:00
-+++ b/drivers/video/aty/atyfb_base.c	2004-11-02 20:14:48 +08:00
-@@ -2191,6 +2191,14 @@
- 	par->aty_cmap_regs =
- 	    (struct aty_cmap_regs __iomem *) (par->ati_regbase + 0xc0);
- 
-+#ifdef CONFIG_PPC_PMAC
-+	/* The Apple iBook1 uses non-standard memory frequencies. We detect it
-+	 * and set the frequency manually. */
-+	if (machine_is_compatible("PowerBook2,1")) {
-+		par->pll_limits.mclk = 70;
-+		par->pll_limits.xclk = 53;
-+	}
-+#endif
- 	if (pll)
- 		par->pll_limits.pll_max = pll;
- 	if (mclk)
-
+> +   /* there is no console on this fb... but we have to initialize hardware
+> +    * until someone tells me what is proper thing to do */
+> +   printk(KERN_INFO "fb%d: initializing hardware\n",
+> +          ACCESS_FBINFO(fbcon.node));
+> +   /* We have to use FB_ACTIVATE_FORCE, as we had to put vesafb_defined to the fbcon.var
+> +    * already before, so register_framebuffer works correctly. */
+> +   vesafb_defined.activate |= FB_ACTIVATE_FORCE;
+> +   fb_set_var(&ACCESS_FBINFO(fbcon), &vesafb_defined);
+> +
+>     return 0;
+>  failVideoIO:;
+>     matroxfb_g450_shutdown(PMINFO2);
 
 
 

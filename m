@@ -1,24 +1,51 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: [BK updates] fbdev updates.
-Date: Fri, 6 Dec 2002 21:25:02 +0000 (GMT)
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.44.0212062121590.10225-100000@phoenix.infradead.org>
+From: "Greg Haerr" <greg@censoft.com>
+Subject: Re: [PATCH] FBDev: vga16fb port
+Date: Wed, 4 Dec 2002 21:40:37 -0800
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <0ad001c29c20$d704fcb0$6401a8c0@gregnewport>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@transmeta.com>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux console project <linuxconsole-dev@lists.sourceforge.net>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from 42dbce0a.leased.aros.net ([66.219.206.10] helo=censoft.com)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18Jolo-0000mP-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 04 Dec 2002 21:41:56 -0800
+Received: from [63.206.141.80] (account greg@viewml.com HELO gregnewport)
+  by censoft.com (CommuniGate Pro SMTP 3.4.2)
+  with ESMTP id 1997744 for linux-fbdev-devel@lists.sourceforge.net; Wed, 04 Dec 2002 22:41:03 -0700
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
 
 
-Hi!!!
+> I question whether thats something that belongs anywhere near the
+> kernel. Ben Pfaff wrote a fine library for vga16 hackery (BOGL) and it
+> combines very nicely with the fb driver.
 
-  After much work and many fixes the final api for the framebuffer layer 
-is complete and alot of new functionality has been added. Several drivers 
-have been ported. Still several more to go. Could you grab the latest 
-changes from 
+> Out of curiousity where is this library.
 
-bk://fbdev.bkbits.net/fbdev-2.5
+BOGL is referenced at http://www.msu.edu/user/pfaffben/projects.html
+but I think it's not maintained anymore.  I used BOGL originally,
+and used it for a complete rewrite of a VGA16 driver for Microwindows,
+with a C version for Linux framebuffer..
+See http://microwindows.org Source Code for more details.
 
-Please sync it up to your latest tree. Thank you.
+Regards,
+
+Greg
+Founder & Maintainer, The Microwindows Project
+
+
+
+-------------------------------------------------------
+This sf.net email is sponsored by:ThinkGeek
+Welcome to geek heaven.
+http://thinkgeek.com/sf

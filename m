@@ -1,22 +1,20 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Re: mode setting and console locking, nvidia
- failure
-Date: Mon, 17 May 2004 23:56:14 +0100 (BST)
+From: Jon Smirl <jonsmirl@yahoo.com>
+Subject: Re: Re: mode setting and console locking, nvidia failure
+Date: Mon, 17 May 2004 16:26:38 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0405172351550.796-100000@phoenix.infradead.org>
-References: <20040517050315.90926.qmail@web14926.mail.yahoo.com>
+Message-ID: <20040517232638.88688.qmail@web14926.mail.yahoo.com>
+References: <Pine.LNX.4.44.0405172351550.796-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BPr1v-0006sK-GC
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 17 May 2004 15:56:19 -0700
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.30)
-	id 1BPr1v-0004Dg-32
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 17 May 2004 15:56:19 -0700
-In-Reply-To: <20040517050315.90926.qmail@web14926.mail.yahoo.com>
+	id 1BPrVH-00041T-2V
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 17 May 2004 16:26:39 -0700
+Received: from web14926.mail.yahoo.com ([216.136.225.84])
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
+	id 1BPrVG-0007AE-HU
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 17 May 2004 16:26:38 -0700
+In-Reply-To: <Pine.LNX.4.44.0405172351550.796-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,29 +24,41 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jon Smirl <jonsmirl@yahoo.com>
+To: James Simmons <jsimmons@infradead.org>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
+I'll on vanilla 2.6 bk so I'll get the patch a try.
 
-> There is nothing wrong with fbset on rivafb. It's the same problem I'm having
-> with radeonfb. Swaping between text->gfx on the primary monitor mess up the chip
-> registers of the secondary card. In this case the PLL reads zero after the VT
-> swap and that causes the divide by zero.
-> 
-> This has got to be some problem in fb since I am sure my X does not have an
-> Nvidia driver loaded.
+This is another theory I had but it doesn't seem to be true....
 
-Jon are you using a vanilla 2.6.6 kernel. If you are could you try this 
-patch.
+My new theory is that when I reset the secondary card it left two active VGA
+devices. Then when I VT swap vgacon writes to the primary one but it is really
+setting the registers to both cards. 
 
-http://phoenix.infradead.org/~jsimmons/mode.diff
+But I have some data against this theory.
+1) I compiled vgacon out, compiled fbcon in. problem still happens
+2) If it both VGAs were active, why can I switch from X to console and back to X
+and still have fbset from xterm work?  The two VT switches would have caused the
+primary card's VGA setting to get written into the secondary card.
 
-It might solve your problem. It might be a cons2fb mapping issue.
+After I reset the secondary card I can look at VGA bus routing using lspci and
+see that VGA is still routed to my primary card and only a single VGA routing is
+enabled.
 
 
+=====
+Jon Smirl
+jonsmirl@yahoo.com
 
+
+	
+		
+__________________________________
+Do you Yahoo!?
+SBC Yahoo! - Internet access at a great low price.
+http://promo.yahoo.com/sbc/
 
 
 -------------------------------------------------------

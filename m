@@ -1,25 +1,22 @@
 From: David Eger <eger-sender-da68b9@theboonies.us>
-Subject: Re: [PATCH 0/3] fb accel capabilities (aka fast
-	radeon fb, the right way)
-Date: Thu, 13 May 2004 08:26:44 -0400
+Subject: S3triofb, pm3fb, retz3fb: abandoned?
+Date: Thu, 13 May 2004 16:17:55 +0200 (CEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1084451204.40a369846f626@mail.theboonies.us>
-References: <Pine.LNX.4.58.0405130131460.2282@rosencrantz.theboonies.us>
-	<Pine.GSO.4.58.0405131309030.9790@waterleaf.sonytel.be>
-Reply-To: David Eger <eger-dated-1085056009.2e1759@theboonies.us>
+Message-ID: <Pine.LNX.4.58.0405131607090.24805@rosencrantz.theboonies.us>
+References: <Pine.GSO.4.58.0405031952180.27296@waterleaf.sonytel.be>
+Reply-To: David Eger <eger-dated-1085062396.5ba703@theboonies.us>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BOFIY-0000Nl-TN
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 05:26:50 -0700
+	id 1BOGxb-0000b8-HN
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 07:13:19 -0700
 Received: from not.theboonies.us ([66.139.79.224])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1BOFIY-0002h7-GN
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 05:26:50 -0700
-In-Reply-To: <Pine.GSO.4.58.0405131309030.9790@waterleaf.sonytel.be>
+	id 1BOGxb-0000Ws-13
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 07:13:19 -0700
+In-Reply-To: <Pine.GSO.4.58.0405031952180.27296@waterleaf.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,46 +26,33 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Quoting Geert Uytterhoeven <geert@linux-m68k.org>:
 
-> > Specifically, I've added a .hwaccel field to fb_fix_screeninfo, which
-> > should serve as the way framebuffers pass hints to higher layers.
->
-> I think we agreed to put it in fb_info instead, since it doesn't really
-> matter for user space.
+I ran across some interesting things grepping for "scrollmode" in the
+fb sources.  The framebuffer drivers shouldn't know about the console
+(at least any more), so references to "scrollmode" says something's up.
+I found the following:
 
-It doesn't so much matter to me.  I just saw some built-in padding in
-fb_fix_screeninfo I could steal..
+drivers/video/sis/sis_main.c:          /* display->scrollmode = 0;  */
+drivers/video/sis/sis_main.c:          display->scrollmode = SCROLL_YREDRAW;
+drivers/video/S3triofb.c:    disp.scrollmode = fb_var.accel_flags & FB_ACCELF_TEXT ? 0 : SCROLL_YREDRAW;
+drivers/video/pm3fb.c:     disp[l_fb_info->board_num].scrollmode = 0;      /* SCROLL_YNOMOVE; *//* 0 means "let fbcon choose" */
+drivers/video/retz3fb.c:   display->scrollmode = SCROLL_YREDRAW;
 
-> > This should totally obsolete the accel_flags in var (which till now has
-> > had one half-heartedly used value FB_ACCELF_TEXT).
->
-> Well, we still need a way to know when the fbdev has to reinitialize its
-> accel engine, when switching the console from graphics mode (user space
-> does accel) to text mode (kernel uses accel). Currently this is done when
-> FB_ACCELF_TEXT is set.
-
-thought this was changed to KD_GRAPHICS and KD_TEXT...
-
-> BTW, we've been talking about allowing kernel messages (mainly oops and
-> panic) to show up under X. Since we cannot use the accel engine for that,
-> perhaps we need different routines for fb_{fillrect,copyarea,imageblit}()
-> for the accelerated vs. non-accelerated cases? And fbcon could compare
-> the function pointers, instead of looking at .hwaccel.
-
-If we want the console to display an oops under X then the drawing functions
-need to be smart enough to grok the current mode/state of the accel engine and
-not rely on var.  Is that what we want?
-
-Comparing pointers just won't work, though.  For example, the radeon driver
-decides whether to call the cfb_fillrect() functions or do real hw accel from
-within radeonfb_fillrect().
+Now sis_main tries to be both the 2.4 and 2.6 driver in one file, and
+messing with scrollmode happens in the Linux 2.4 portion.  But for
+the other three drivers here -- S3triofb, pm3fb, and retz3fb, they
+just haven't been updated in recent memory.  Their code is still the
+old interface where all the console cruft is intermingled with video
+card settings.  Does anyone still care about these drivers?
 
 -dte
+
+---
+getting bounce messages from me? let me know and you'll go on my whitelist
 
 
 -------------------------------------------------------

@@ -1,23 +1,22 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
-	one works ;-)
-Date: Wed, 28 Apr 2004 09:25:11 +1000
+Subject: Re: [PATCH] neofb patches
+Date: Wed, 28 Apr 2004 09:25:59 +1000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1083108311.16476.56.camel@gaston>
-References: <Pine.LNX.4.44.0404280013210.23153-100000@phoenix.infradead.org>
+Message-ID: <1083108358.16544.58.camel@gaston>
+References: <Pine.LNX.4.44.0404280019070.23153-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIc2X-0002SU-P6
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:31:01 -0700
+	id 1BIc3L-0002dp-2z
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:31:51 -0700
 Received: from gate.crashing.org ([63.228.1.57] ident=root)
 	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1BIc2X-0003wv-BV
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:31:01 -0700
-In-Reply-To: <Pine.LNX.4.44.0404280013210.23153-100000@phoenix.infradead.org>
+	id 1BIc3K-00044j-Lc
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:31:50 -0700
+In-Reply-To: <Pine.LNX.4.44.0404280019070.23153-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,34 +28,48 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@infradead.org>
-Cc: John Zielinski <grim@undead.cc>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: John Zielinski <grim@undead.cc>, Geert Uytterhoeven <geert@linux-m68k.org>, Alex Stewart <alex@foogod.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 2004-04-28 at 09:18, James Simmons wrote:
-> > a regression from 2.4 and I don't think his patch will be more invasive
-> > than the rest of the changes you have been doing lately ;)
+On Wed, 2004-04-28 at 09:21, James Simmons wrote:
+> > > I can see how vgacon and fbcon would walk all over each other but how 
+> > > would a serial console
+> > > mess things up?
 > > 
-> > Face it, the current fbcon resize mecanism is just broken. It cannot
-> > work properly without full mode management in all drivers. A per-VT var
-> > along with fbcon properly adapting it's size to the VT's var would bring
-> > us back to 2.4 level of functionality at least, which is a good thing.
+> > Same question... Where is the problem ?
 > 
-> I refuse to have hacks to deal with a cripple VT system. What is 
-> acceptable is that we add what we need to struct vc_data. You do that and 
-> I have no problem then. From what I can see we need the following.
+> Say two people are logged in. One on a serial console and another on the 
+> framebuffer console. The person starts X fbdev from the serial console. 
+> Ooops the fbcon user lost his console.
+
+And ? Where is the problem ? I can do that today with ssh ... That's
+normal console switch. X will trigger a console switch to a new VT,
+it will not just tap on the current console "as is".
+
+> > We need several level of arbitration, I'm not sure hwo to do that at
+> > this point and I don't have time to dive into the DRI side of things.
+> > 
+> > Jon Smirl has been working on embedded mesa & moving DRI outside of
+> > X. Unfortunately, last I heard, he was still on his trip of re-inventing
+> > everything including replacing the fbdev's with his own stuff instead
+> > of moving from what we have ...
 > 
-> 1) Color depth.
-> 2) Frequency.
-> 3) Over scan color.
-
-No, no, no ... We don't need those, we need a var structure, that's all.
-
-> Anything else? 
+> Ug. This is sad :-(
 > 
-> Personally I rather add these to struct vc_data. Consider if we ever had 
-> hardware that supported different hardware text modes. Say some at 
-> different color depths. I rather do this!!
-
-
+> 
+> 
+> 
+> 
+> -------------------------------------------------------
+> This SF.Net email is sponsored by: Oracle 10g
+> Get certified on the hottest thing ever to hit the market... Oracle 10g. 
+> Take an Oracle 10g class now, and we'll give you the exam FREE. 
+> http://ads.osdn.com/?ad_id=3149&alloc_id=8166&op=click
+> _______________________________________________
+> Linux-fbdev-devel mailing list
+> Linux-fbdev-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+-- 
+Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 
 

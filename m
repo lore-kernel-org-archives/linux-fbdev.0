@@ -1,20 +1,18 @@
 From: Henk Vergonet <rememberme@systol.god.lan>
 Subject: Re: PATCH Proposal make FB_ACCEL_ private to the driver
-Date: Sun, 27 Feb 2005 23:17:15 +0100
-Message-ID: <20050227221715.GA16837@systol.god.lan>
-References: <20050227032611.GB14968@systol.god.lan> <Pine.LNX.4.62.0502271926560.3143@numbat.sonytel.be>
+Date: Mon, 28 Feb 2005 10:28:00 +0100
+Message-ID: <20050228092800.GA18001@systol.god.lan>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D5Wj6-0007Nq-9x
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 27 Feb 2005 14:17:24 -0800
+	id 1D5hC8-0006qf-Az
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 28 Feb 2005 01:28:04 -0800
 Received: from god.demon.nl ([83.160.164.11] helo=god.dyndns.org)
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1D5Wj4-0008Ss-0u
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 27 Feb 2005 14:17:23 -0800
+	id 1D5hC7-0000f5-E0
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 28 Feb 2005 01:28:04 -0800
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.62.0502271926560.3143@numbat.sonytel.be>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,

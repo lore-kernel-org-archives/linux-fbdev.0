@@ -1,22 +1,21 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: fbdev upstream
-Date: Tue, 06 Jan 2004 12:03:27 +1100
+From: Otto Solares <solca@guug.org>
+Subject: Re: Changing modes with fbset
+Date: Mon, 5 Jan 2004 19:08:52 -0600
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1073351006.780.200.camel@gaston>
-References: <Pine.LNX.4.44.0401060049180.7347-100000@phoenix.infradead.org>
+Message-ID: <20040106010852.GC442@guug.org>
+References: <3FDBB97F.4070207@undead.cc> <Pine.LNX.4.44.0401060005511.7347-100000@phoenix.infradead.org> <20040106002822.GB442@guug.org> <1073349349.780.181.camel@gaston>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AdfeS-0002Mt-Ab
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 17:04:56 -0800
-Received: from pentafluge.infradead.org ([213.86.99.235])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1AdfeR-0008NI-JR
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 17:04:56 -0800
-In-Reply-To: <Pine.LNX.4.44.0401060049180.7347-100000@phoenix.infradead.org>
+	id 1AdfjX-0003pC-IJ
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 17:10:11 -0800
+Received: from [168.234.203.30] (helo=guug.galileo.edu)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1AdfjX-0001lg-1z
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 17:10:11 -0800
+Content-Disposition: inline
+In-Reply-To: <1073349349.780.181.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,43 +26,36 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: John Zielinski <grim@undead.cc>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tue, 2004-01-06 at 11:51, James Simmons wrote:
-> > Of course, that means we'll have to update more drivers, and platforms
-> > with fixed display, like embedded etc... will need some way to deal
-> > with that properly in their drivers.
+On Tue, Jan 06, 2004 at 11:35:49AM +1100, Benjamin Herrenschmidt wrote:
+> On Tue, 2004-01-06 at 11:28, Otto Solares wrote:
+> > On Tue, Jan 06, 2004 at 12:06:04AM +0000, James Simmons wrote:
+> > > 
+> > > Applied. Thanks for finding that.
+> > 
+> > Hi James! now that you are back again, i would like to suggest
+> > a modification to fbdev core, i am having problems guessing
+> > which card is attached to a fb device.  I need this info to
+> > solve the 'more than 1 card' situation.  This could be easily
+> > fixed if the fbdev api provides the busid of the card, like
+> > "pci:0000:01:0.0".  That would solve a lot of things in the
+> > HAL detection routines.  Maybe that could be exported via
+> > sysfs but i have been waiting for sysfs for a while and don't
+> > see it coming to a reality.  Maybe an ioctl is enough.
 > 
-> Fixed screen size drivers should provide there own modedb. 
+> Right, we need that and some way to know which heads are "coupled" for
+> dual head drivers. One of the reasons I haven't done dual head support
+> in radeonfb yet is that to get it working properly with X, I need to
+> update X too, and add a way for X to know which /dev/fb's are actually
+> "together" as 2 heads of the same card.
 
-Or just single mode... currently drivers don't export a modedb, they
-keep one internally and do the validation... though it would make sense
-to expose a modedb to userland, so we can have some nice GUI tools
-showing you the available modes :) It would make sense for MacOnLinux
-too which currently rely on the user to setup the list of modes
-available to MacOS.
+Finding "coupled" cards could be as easy as checking if the fbdev
+api returns the same busid for both fbdev's.
 
-> > I don't know about that one. It would be interesting to redo some
-> > comparison between XFree CVS "nv" driver and rivafb. I don't have any
-> > nvidia HW at hand for now though. 
-> 
-> The changes have been alot. It would require me reworking the driver 
-> again.
-
-Heh, been there, done that in 2.4... quite painful indeed. We can
-probably first get what we have merged upstream now, and think about
-it later...
-
-> > Also, we just completely lack proper locking, we should at least take
-> > the console semaphore around all these operations, which we don't do
-> > and thus are racy as hell... the HW cursor and blanking timers are
-> > by definition racy too, we need to fix that some way.
-> 
-> The fbcon system has always lacked locking :-( Now it can be fixed.
-> k
--- 
-Benjamin Herrenschmidt <benh@kernel.crashing.org>
+-solca
 
 
 

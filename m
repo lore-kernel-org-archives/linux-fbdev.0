@@ -1,14 +1,15 @@
-From: Siim Vahtre <siim@pld.ttu.ee>
-Subject: bug in i810_init_cursor
-Date: Sun, 13 Apr 2003 10:30:48 +0300 (EET DST)
+From: Antonino Daplas <adaplas@pol.net>
+Subject: Re: vm86 patch updated to 2.5.67 / oops in blank_screen()?
+Date: Sun, 13 Apr 2003 04:14:08 -0400 (EDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.53.0304131005420.17774@pitsa.pld.ttu.ee>
+Message-ID: <200304130814.h3D8E8H00330@web3.po.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from wall.ttu.ee ([193.40.254.238])
+Received: from tom.po.com ([65.112.157.17])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 194bxW-000414-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 13 Apr 2003 00:31:26 -0700
+	id 194ccx-0002s3-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 13 Apr 2003 01:14:15 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -18,99 +19,142 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+To: Jurriaan <thunder7@xs4all.nl>, linux-fbdev-devel@lists.sourceforge.net
+
+I believe I've seen that "oops" tracing before.  It is due to console 
+blanking routines calling a lot of functions (fb_blank, fb_setcolreg, 
+etc), all of which are done when "sleeping" is not allowed.  
+However, /dev/vm86 will always sleep, and this causes the oops.
+
+Calling fb_blank via an ioctl is pretty safe though (ie, when xfree86 
+uses fb_blank ioctls for XFree86 DPMS).
+
+I worked around this by doing deferred execution of fb_blank (also 
+using a workqueue), and differentiating if fb_blank() was called from 
+fbcon_blank() or from fb_ioctl().  I think I've also included these 
+fixes in vm86d-0.1.tar.gz (md5sum 10fa0ad4647ea6a8a002998196ce6cd9)
+
+Anyway, as a quick workaround, you can make vbe_blank() in vbe.c 
+return 0 always.  This will not blank the screen, but it will at 
+least prevent the oops.
+
+Tony 
 
 
-Hello.
+------------------ Reply Separator --------------------
+Originally From: Jurriaan <thunder7@xs4all.nl>
+Subject: [Linux-fbdev-devel] vm86 patch updated to 2.5.67 / oops in 
+blank_screen()?
+Date: 04/12/2003 02:55pm
 
-The kernel is 2.5.67-bk3 with latest fbdev patches (Apr 11).
 
-I loaded the fbdev like that:
-modprobe i810fb mtrr=1 accel=1 xres=640 yres=480 hsync1=30 hsync2=60 vsync1=50 vsync2=100 bpp=16 dcolor=1
-modprobe fbcon
+I've been playing with Antonino Daplas' vm86 patch.
 
-And got:
-PCI: Found IRQ 11 for device 00:02.0
-I810FB: fb0         : Intel(R) 815 (Internal Graphics with AGP)
-Framebuffer Device v0.9.0
-I810FB: Video RAM   : 4096K
-I810FB: Monitor     : H: 30-60 KHz V: 50-100 Hz
-I810FB: Mode        : 640x480-16bpp@99Hz
-Console: switching to colour frame buffer device 80x30
+First of all, the /dev/vm86 device should read:
 
-And now as soon as the "login: " came I did:
-fbset mode -a
-(the mode can be anything)
+crw-------    1 root     root      10, 201 Apr 10 07:07 /dev/vm86
 
-And I got following:
--------------------------------------------------------------------------
-Unable to handle kernel NULL pointer dereference at virtual address
-00000000
- printing eip:
-c02459b4
-*pde = 00000000
-Oops: 0000 [#1]
-CPU:    0
-EIP:    0060:[soft_cursor+420/544]    Not tainted
-EFLAGS: 00010287
-EIP is at soft_cursor+0x1a4/0x220
-eax: 00000000   ebx: 00000010   ecx: c7a534c0   edx: 00000000
-esi: 00000000   edi: fffffff8   ebp: c79d7800   esp: c1153cb8
-ds: 007b   es: 007b   ss: 0068
-Process events/0 (pid: 3, threadinfo=c1152000 task=c115cc40)
-Stack: c79d7800 00000010 c1153cdc 00000001 00000001 00000010 c7864c80
-00000001
-       00000001 00000000 00000000 00000000 00000000 00000001 c79d7800
-c0109c4a
-       c79d7800 08158001 08158001 c79d7908 c1203800 c1152000 cc974000
-c010007b
-Call Trace:
- [apic_timer_interrupt+26/32] apic_timer_interrupt+0x1a/0x20
- [<c896be55>] i810_init_cursor+0x25/0x50 [i810fb]
- [<c896ccfc>] i810fb_cursor+0x5c/0x250 [i810fb]
- [update_wall_time+22/64] update_wall_time+0x16/0x40
- [do_timer+224/240] do_timer+0xe0/0xf0
- [timer_interrupt+119/336] timer_interrupt+0x77/0x150
- [<c895761f>] +0x61f/0x640 [cfbimgblt]
- [do_IRQ+253/288] do_IRQ+0xfd/0x120
- [__rmqueue+193/272] __rmqueue+0xc1/0x110
- [buffered_rmqueue+177/336] buffered_rmqueue+0xb1/0x150
- [__alloc_pages+160/720] __alloc_pages+0xa0/0x2d0
- [<cc9fd4bb>] putcs_aligned+0x17b/0x1d0 [fbcon]
- [copy_process+2150/2928] copy_process+0x866/0xb70
- [cache_grow+318/544] cache_grow+0x13e/0x220
- [do_fork+160/352] do_fork+0xa0/0x160
- [__kfree_skb+105/240] __kfree_skb+0x69/0xf0
- [netlink_broadcast+328/672] netlink_broadcast+0x148/0x2a0
- [kernel_thread+142/176] kernel_thread+0x8e/0xb0
- [wait_for_helper+0/112] wait_for_helper+0x0/0x70
- [schedule+425/944] schedule+0x1a9/0x3b0
- [<cc9fd047>] +0x47/0x50 [fbcon]
- [worker_thread+491/736] worker_thread+0x1eb/0x2e0
- [<cc9fd000>] +0x0/0x50 [fbcon]
- [default_wake_function+0/32] default_wake_function+0x0/0x20
- [ret_from_fork+6/20] ret_from_fork+0x6/0x14
- [default_wake_function+0/32] default_wake_function+0x0/0x20
- [worker_thread+0/736] worker_thread+0x0/0x2e0
- [kernel_thread_helper+5/24] kernel_thread_helper+0x5/0x18
+Then, I split the patch in a vm86 and a edid-vbe patch, and dropped 
+all
+refereces to the non-vesa framebuffers. There were a number of other
+changes in the patch which made it difficult to port since it affected
+all other framebuffers.
 
-Code: 32 04 32 88 44 14 24 42 39 da 0f 83 6c ff ff ff eb ea 89 d9
--------------------------------------------------------------------------
+The resulting patches worked quite well, I'm testing here on a single
+CPU system with linux-2.5.67 and a Matrox G450 video-card. Once I'm
+satisfied it works, I hope to get my Elsa GeForce 3 Ti500 working with
+vesa framebuffer and nvidia proprietary drivers.
 
-After that, the console is a bit scrambled (although mode is set) and
-I can't see anything I am writing or doing. I simply use SysRq to reboot.
+But, while I was away for some lunch, the computer decided to spoil 
+the
+general good feeling; it oopsed.
 
-However, if I delay with fbset a bit it seem to work as expected... but
-that might be a total random aswell.
+The backtrace was like this:
 
-Oh.. and if I get it running correctly the cursor is pretty strange
-(somekind of red dots are falling down inside the transparent cursor
-block). If I play with cursor as described in VGA-softcursor.txt, I
-will be able to get a normal cursor.
+sys_sched_yield
+vm86_exec
+vbe_writedac
+vbe_setcolreg
+fb_set_cmap
+fb_blank
+timer_do_blank
+blank_screen
 
-Otherwise everything is just perfect :-)
+Could anyone look at the patch (I've appended my version below) and 
+tell
+me what's going on? I'm no expert in locking in linux. I've tried 
+adding
+a disable_preempt() calls in vm86_exec(), but that got me lots of
+'scheduling while atomic' backtraces.
+
+I suspect this routine isn't quite good:
+
+/**
+ * vm86_exec - execute instructions
+ * @request: pointer to instruction request data
+ * @buffer: 1024-byte min sized buffer for extra data
+ *
+ * ON ENTRY: @buffer must point to a valid buffer (1024 bytes).
+ * ON EXIT: @request contains results of x86 instructions.  @request-
+>buffer
+ *          may contain additional data, depending on the code.  Check
+ *          @request->buf_len.
+ * WARNING:
+ * Will sleep
+ */
+int vm86_exec(struct vm86_request *request, void *buffer)
+{
+        int len;
+
+        if (!info || !info->enabled)
+                return -ENODEV;
+
+        if (request->flags & VM86_TEST)
+                return 0;
+
+        len = sizeof(struct vm86_request) + request->buf_len;
+        if (len > 1024)
+                return -EINVAL;
+
+        down(&vm86_sem);
+
+        info->request = *request;
+        info->buffer = buffer;
+        info->error = 0;
+        info->event = 1;
+        info->poll_mask = POLLIN | POLLRDNORM;
+        kill_fasync(&info->async_queue, SIGIO, POLL_IN);  /* send 
+signal */
+
+        wake_up(&vm86_wait);
+        while (info->event)
+                yield();
+
+        info->request.flags = (info->error) ?
+                VM86_FAILED : VM86_SUCCESS;
+        *request = info->request;
+
+        up(&vm86_sem);
+
+        return 0;
+}
+
+The call to yield() seems not to happen to often in the kernel, but I
+don't know how to change this.
+
+The patch below is against linux-2.5.67 (vanilla). There's some 
+residual
+printk's in there, btw.
+
+I appreciate your help!
+
+Thanks,
+Jurriaan
+-- 
+Debian (Unstable) GNU/Linux 2.5.67-ac1 1970 bogomips load av: 0.04 
+0.32 0.33
+
 
 
 

@@ -1,20 +1,23 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: sysfs support for framebuffer
-Date: Fri, 18 Feb 2005 17:35:25 -0500
-Message-ID: <9e4733910502181435f60371c@mail.gmail.com>
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Subject: Re: Re: Hotplug blacklist and video devices
+Date: Fri, 18 Feb 2005 17:58:51 -0500
+Message-ID: <1108767531.5631.29.camel@thor.asgaard.local>
+References: <9e4733910502181251ea2b95e@mail.gmail.com>
+	 <20050218210822.GB8588@nostromo.devel.redhat.com>
+	 <9e47339105021813146cf69759@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Content-Transfer-Encoding: quoted-printable
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D2Gj3-0000Ei-Nx
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Feb 2005 14:35:53 -0800
-Received: from rproxy.gmail.com ([64.233.170.192])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1D2Gj1-0001uY-04
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Feb 2005 14:35:53 -0800
-Received: by rproxy.gmail.com with SMTP id j1so860rnf
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Feb 2005 14:35:26 -0800 (PST)
+	id 1D2H5k-0001Ps-LU
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Feb 2005 14:59:20 -0800
+Received: from mail-res.bigfish.com ([63.161.60.61] helo=mail31-res-R.bigfish.com)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1D2H5j-0001we-A2
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Feb 2005 14:59:20 -0800
+In-Reply-To: <9e47339105021813146cf69759@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -25,42 +28,36 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Jon Smirl <jonsmirl@gmail.com>, lkml <linux-kernel@vger.kernel.org>
 
-What are the attributes needed for framebuffers in sysfs? 
-This is the list I came up with, are there more?
+On Fri, 2005-02-18 at 16:14 -0500, Jon Smirl wrote:
+> On Fri, 18 Feb 2005 16:08:22 -0500, Bill Nottingham <notting@redhat.com> =
+wrote:
+> > Under Fedora (and RHEL), they're there because we generally
+> > don't want to load them unless the user asked for them.
+>=20
+> Is there a specific reason why they are blocked?=20
 
-bits_per_pixel - r/w color depth
-blank - w set the vesa blank state
-color_map - r/w control the color map
-console - r/w? map of console number to fb device
-cursor - r/w x/y position of the cursor
-mode - r/w set the display mode
-modes - list of valid modes
-pan - r/w x/y of the pan offset
-virtual_size - r/w x/y of the virtual size
+One reaseon might be that the framebuffer devices can cause problems,
+e.g. with proprietary X drivers.
 
-modes is designed to let a user space root app set the list of valid
-modes into the driver
-ownership of all other attributes are assigned by pam to the display user
-mode must be an entry from the list of modes, this prevents a user
-from setting in a damaging mode
+> For example I'm looking at making changes to DRM such that DRM will
+> require the corresponding framebuffer driver to be loaded.
 
-The list is based on the current fbdev IOCTLs. All attributes appear
-in /sys/class/graphics/fb0/xxxx
-Current patch is in the "Patch to add mode setting to sysfs" thread.
+Ignoring my suspicion that people won't like stuff getting forced down
+their throats like this (why would a DRM _require_ a framebuffer
+device?), does the hotplug blacklisting of the framebuffer devices
+matter at all if the DRM depends on them, i.e. won't they be loaded
+regardless when the DRM is loaded?
 
-fbdev also needs to generate events to let the xserver know if things
-have been changed. These can come up through hotplug to dbus.
 
-bits_per_pixel, mode, virtual_size - mode event
-blank - blank event
-modes - modes event
+--=20
+Earthling Michel D=C3=A4nzer      |     Debian (powerpc), X and DRI develop=
+er
+Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=3Ddaenzer
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
 
 
 -------------------------------------------------------

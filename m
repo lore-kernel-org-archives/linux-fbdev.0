@@ -1,17 +1,19 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Some questions
-Date: Tue, 11 Mar 2003 16:29:27 +0000 (GMT)
+From: Antonino Daplas <adaplas@pol.net>
+Subject: Re: How can I test my console driver?
+Date: 12 Mar 2003 04:07:48 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0303111628240.23668-100000@phoenix.infradead.org>
-References: <1046941303.1209.38.camel@localhost.localdomain>
+Message-ID: <1047407682.1033.178.camel@localhost.localdomain>
+References: <1047376355.5640.5.camel@cambridge.braddahead>
+	<1047387515.984.44.camel@localhost.localdomain> 
+	<1047392898.2262.4.camel@cambridge.braddahead>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18smdf-0006L6-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 Mar 2003 08:30:04 -0800
-In-Reply-To: <1046941303.1209.38.camel@localhost.localdomain>
+Received: from pine.compass.com.ph ([202.70.96.37])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18sq5R-0005DA-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 Mar 2003 12:10:57 -0800
+In-Reply-To: <1047392898.2262.4.camel@cambridge.braddahead>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,19 +23,31 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Thomas Winischhofer <thomas@winischhofer.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Alex Bennee <kernel-hacker@bennee.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+On Tue, 2003-03-11 at 22:28, Alex Bennee wrote:
+> > Why not just use take_over_console() with first and last equal to a tty
+> > you can switch to?  If something bad happens, just switch to a working
+> > console.
+> 
+> I tried that. It seems the first time I do a Ctrl-Alt-5 (for example) I
+> loose the ability to use my keyboard. The only way I can recover
+> anything is to re-boot my machine. This strikes me as a little odd as I
+> thought the console was soley interested in output.
+> 
+> Is there anyway to write unbuffered output to the console? After all the
+> only way I'm going to know anything is working is through dmesg and/or
+> the screen image I read from my debugging proc interface.
+> 
 
-> So, I think fbcon should also detect if the previous console is not
-> fbcon (ie previous con > last_fbvc || previous con < first_fbvc), and if
-> it isn't, force an fb_set_par.
+Maybe you can create dummy methods first, con_startup, con_init (used
+during take_over_console), as well as the putc/s, scroll, clear, bmove,
+etc.  Then you can implement them one by one and see which method
+actually triggerred the lockup.
 
-This whole idea of mapping a specific VC to a specific piece of hardware 
-is just plain dumb and overly complex. The new console system will 
-allocate a set of 16 console to each independent VT.
+Tony 
 
 
 

@@ -1,93 +1,53 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [HINTS] Re:  More radeonfb fixes
-Date: 01 May 2003 12:23:23 +0200
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1051784603.10240.53.camel@gaston>
-References: <1050062592.562.14.camel@zion.wanadoo.fr>
-	 <20030501011950.GA641@pasky.ji.cz>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH, 2.4] Add logo drawing support for 8-bit mono
+Date: Thu, 1 May 2003 15:19:57 +0200 (MEST)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.GSO.4.21.0305011518360.5297-100000@vervain.sonytel.be>
+References: <20030426233557.GF31642@rembrandt.csv.ica.uni-stuttgart.de>
 Mime-Version: 1.0
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19BDzo-0006Bi-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 01 May 2003 06:21:09 -0700
+In-Reply-To: <20030426233557.GF31642@rembrandt.csv.ica.uni-stuttgart.de>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <20030501011950.GA641@pasky.ji.cz>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-To: Petr Baudis <pasky@ucw.cz>
-Cc: linux-kernel mailing list <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Thiemo Seufer <ica2_ts@csv.ica.uni-stuttgart.de>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-
+On Sun, 27 Apr 2003, Thiemo Seufer wrote:
+> this patch adds logo drawing support for mono visuals with 8 bits
+> per pixel. The DECstation's PMAG-AA is such a card.
 > 
-> thanks a lot, this patch solved my quite annoying framebuffer problems with the
-> stock 2.4.21rc1 radeonfb driver on ATI Radeon 7000 w/ 64MB RAM :-).
+> 2.4 only, the 2.5 logo code is very different.
 
-Good ;)
+BTW, does it also work if you write 0xff (i.e. (1<<var.bits_per_pixel)-1)
+instead of 1 to the frame buffer? Since this is what 2.5 does/will do.
 
-> If you are interested in some bugreports and don't want to read the following
-> semi-minihowto, please just look for the [PERHAPS-BUGREPORT] string.
-> 
-> In order to give advice to the fellow googlers possibly seeing this in
-> archives: if you have annoying long delays when switching between consoles or
-> the video mode you specify on the cmdline carefully results in just an ugly
-> mess,
+Gr{oetje,eeting}s,
 
-Known. I have to work on this next
+						Geert
 
-> [PERHAPS-BUGREPORT]
-> 
->   - BE CAREFUL when specifying depth! This is basically where I was most burnt,
->     I kept specifying 24 but for some strange reason, this did very strange
->     things here. If you will specify some other depth (8,15,16,32,...), you may
->     experience problems with cursor (or it just won't work at all ;) --- it
->     could have different colors (which will change by time), eventually
->     disappearing completely (this could mean it just went black..?).
-> 
->     The best solution is probably not to specify the depth at all. Apparently,
->     24 is used by default, but it seems to work when chosen defaultly :^).
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-8 is the default and works fine. 15,16 and 32 work but the cursor isn't
-properly rendered, this is a known fbdev problem in 2.4, I'll probably
-fix it by implementing HW cursor support in radeonfb. 24 bpp is a weird
-mode that isn't really supported by the driver
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
-> * when you will have your Radeon in some weird state (after trying to run some
->   svgalibish application or naively selecting vesa video output in mplayer or
->   so..), you can either:
-> 
-> [PERHAPS-BUGREPORT]
-> 
->   - startx or switch to X and back if you have it already running. This will
->     repair it, but it won't reset all the flags (ie. accel), so you will get
->     delays when switching to the affected console caused by video mode changes.
-> 
->   - fbset on the affected console, which will also properly reset all these
->     flags. You can obviously first get usable console by letting X to reset it
->     and then running fbset on it, if you like to see what are you typing. Note
->     that you should reset the console to the same mode you are running on the
->     other consoles, otherwise you won't get rid of that delays.
 
-What is a bug ? the delays ? The fact that some apps leave garbage ? The
-former is normal when an actual mode switch occurs. The later is a
-problem with apps that bang the HW (and with X as well in some cases as
-it will occasionally fuck up the accel engine configuration).
 
-The problem is that currently, the fbcon/fbdev interface doesn't provide
-a hook for fbdev's to force a restore of the mode & engine setting when
-an app leaves the KD_GRAPHICS mode.
- 
-> [PERHAPS-BUGREPORT]
-> 
-> * you will have that ugly video mode change also the first time you switch to
->   some console. This appears to be a bug, I think it could be fixed quite
->   easily. You can either live with it or fix it or workaround it by doing
->   something smart with for, seq and chvt in your rc scripts (let this be a
->   homework ;-).
-
-The "new" consoles aren't initialized, thus the driver do a mode change
-when switching to them. Well... I can try to fix that...
-> 
-> It is just a mix of generic fb usage advices and Radeon-specific ones... well,
-> what I had to discover by myself in the last few hours ;-). Perhaps it could
-> find a comfortable place in Documentation/fb/, dunno.
-> 
-> Kind regards,
--- 
-Benjamin Herrenschmidt <benh@kernel.crashing.org>
+-------------------------------------------------------
+This sf.net email is sponsored by:ThinkGeek
+Welcome to geek heaven.
+http://thinkgeek.com/sf

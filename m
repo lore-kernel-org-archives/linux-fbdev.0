@@ -1,24 +1,24 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [2.6.10-rc2] Regression in cursor code
-Date: Sat, 20 Nov 2004 05:12:20 +0800
-Message-ID: <200411200512.22249.adaplas@hotpop.com>
-References: <20041119174542.GA5002@dreamland.darkstar.lan>
+Subject: Re: Rivafb won't work with DVI connector
+Date: Sat, 20 Nov 2004 06:08:30 +0800
+Message-ID: <200411200608.30821.adaplas@hotpop.com>
+References: <200411191137.14649.andrew@walrond.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CVGHY-0007fE-9Z
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Nov 2004 13:27:04 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.51])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CVGHU-0000XT-Ig
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Nov 2004 13:27:03 -0800
+	id 1CVGvw-0002wd-TW
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Nov 2004 14:08:48 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.71])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1CVGvt-0005a3-BX
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Nov 2004 14:08:48 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 8BA04769FB
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 19 Nov 2004 21:26:43 +0000 (UTC)
-In-Reply-To: <20041119174542.GA5002@dreamland.darkstar.lan>
+	by smtp-out.hotpop.com (Postfix) with SMTP id 7E98611F4630
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 19 Nov 2004 22:08:30 +0000 (UTC)
+In-Reply-To: <200411191137.14649.andrew@walrond.org>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -31,30 +31,51 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, Kronos <kronos@people.it>
+To: linux-fbdev-devel@lists.sourceforge.net, Andrew Walrond <andrew@walrond.org>
 
-On Saturday 20 November 2004 01:45, Kronos wrote:
-> Hi,
-> I just tried 2.6.10-rc2 and there's a regression in cursor code. The
-> cursor disappear when I start a ncurses-based application and the switch
-> to another console.
+On Friday 19 November 2004 19:37, Andrew Walrond wrote:
+> I have a TFT LCD screen (1600x1200) with both D-Sub and DVI inputs, and a
+> NV25 [GeForce4 Ti 4600] with same outputs.
 >
-> Step to reproduce:
-> 1) Start a ncurses application (like tin, mutt, alsamixer)
-> 2) Switch vt: cursor is gone.
+> Using the old D-Sub cable works fine:
 >
-> With tin, mutt, alsamixer it's 100% reproducible. It doesn't happen with
-> ViM though...
+>  rivafb: nVidia device/chipset 10DE0250
+>  rivafb: nVidia Corporation NV25 [GeForce4 Ti 4600]
+>  rivafb: Detected CRTC controller 0 being used
+>  rivafb: RIVA MTRR set to ON
+>  rivafb: Found EDID Block from BUS 2
+>  rivafb: setting virtual Y resolution to 83886
+>  Console: switching to colour frame buffer device 200x75
+>  rivafb: PCI nVidia NV25 framebuffer ver 0.9.5b (128MB @ 0xE0000000)
 >
-> I'm using radeonfb (new one) on a R300; I tried with and without X and
-> it doesn't make any difference.
+> but with the DVI cable (dsub disconnected) I get a blank screen as soon as
+> rivafb takes over:
 >
-> I'm sorry that I can't be more precise about the bug but I'm very busy.
-> I can try to track it down next week if it's needed.
+>  rivafb: nVidia device/chipset 10DE0250
+>  rivafb: nVidia Corporation NV25 [GeForce4 Ti 4600]
+>  rivafb: Detected CRTC controller 0 being used
+>  rivafb: RIVA MTRR set to ON
+>  rivafb: Found EDID Block from BUS 3
+>  EDID checksum failed, aborting
+>  rivafb: setting virtual Y resolution to 209715
+>  Console: switching to colour frame buffer device 80x30
+>  rivafb: PCI nVidia NV25 framebuffer ver 0.9.5b (128MB @ 0xE0000000)
+>
+> I then have to plug the d-sub back in to see the output.
+> [side note: 2.6.8.1 shows only garbage on reconnecting dsub, so rc2 is an
+> improvement.]
+>
+> No I don't understand the lingo here, but I assume EDID/BUS2/BUS3 and the
+> checksum failure are the bits I'm interested in here.
 
-Try 2.6.10-rc2-mm1 or apply this particular changeset:
+You can try the following:
 
-http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.10-rc1/2.6.10-rc1-mm5/broken-out/fbcon-disable-fbcon-cursor-if-vt-softcursor-is-enabled.patch
+1. turn on verbose debug output in drivers/video/fbmon.c
+
+2. Try just grabbing the EDID from BUS2, since the EDID checksum failed from
+BUS3.
+
+3. if you can, send me your EDID block.  You can use the utility 'read-edid'. 
 
 Tony
 

@@ -1,64 +1,48 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: fbdev broken in current bk for PPC
-Date: Fri, 10 Sep 2004 10:07:09 +0200 (MEST)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0409101004320.93@waterleaf.sonytel.be>
-References: <1094783022.2667.106.camel@gaston> <200409101328.57431.adaplas@hotpop.com>
- <1094796002.14398.118.camel@gaston>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: [Linux-fbdev-devel] fbdev broken in current bk for PPC
+Date: Fri, 10 Sep 2004 16:35:16 +0800
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <200409101635.16803.adaplas@hotpop.com>
+References: <1094783022.2667.106.camel@gaston> <200409101328.57431.adaplas@hotpop.com> <1094796002.14398.118.camel@gaston>
+Reply-To: adaplas@pol.net
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C5gTn-0002WM-5S
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Sep 2004 01:09:59 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1C5gTT-0002Qh-0W
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Sep 2004 01:09:46 -0700
-In-Reply-To: <1094796002.14398.118.camel@gaston>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Antonino Daplas <adaplas@pol.net>, Linux Kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S267248AbUIJIeI@vger.kernel.org>
+In-Reply-To: <1094796002.14398.118.camel@gaston>
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, adaplas@pol.net
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
 
-On Fri, 10 Sep 2004, Benjamin Herrenschmidt wrote:
+On Friday 10 September 2004 14:00, Benjamin Herrenschmidt wrote:
+> On Fri, 2004-09-10 at 15:28, Antonino A. Daplas wrote:
+> > If fb_get_options returns an error, drivers will not proceed with their
+> > initialization. The second method is more compatible with the
+> > previous setup semantics.
+> >
+> > I told Geert that if the changes did bite us, then I have no choice
+> > but to add support for the second method.
+> >
+> > So, if you think that the first method is not enough, then I will add the
+> > second method. Let me know.
+>
 > I submited a patch moving offb to the bottom of the Makefile to at
 > least restore normal drivers. For ofonly, a bit more hackish, but
-
-Just in case they aren't, vesafb and vga16fb should also be at the bottom, cfr.
-the old order in fbmem.c.
-
 > what about failing register_framebuffer for anything but offb ?
 
-Humm, indeed hackerish...
+Yes, that should solve the ofonly problem, with the offb in the very last of 
+the Makefile, though as you said, it's a little hackish, but very simple to 
+implement.  This will work for ofonly though, since 
+info->fix.name is not necessarily equal to "xxxfb".  For instance, offb set 
+"OFfb" in info->fix.name, but the boot option is "offb".
 
-But the advantage of this is that we can finally exercise the failure path of
-many frame buffer device drivers in the wild ;-)
+After giving it some thought, I think method 2 might be the best since it 
+provides compatibility with the old syntax.  Especially if users expect 
+video=xxxfb:off to work.  Also, this brings more flexibility in the offchance 
+we decide to add more options to "video=".
 
-Gr{oetje,eeting}s,
+I'm willing to work on this, but if you don't like it, then I'll do the 'fail 
+at register_framebuffer".
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
-
--------------------------------------------------------
-This SF.Net email is sponsored by: YOU BE THE JUDGE. Be one of 170
-Project Admins to receive an Apple iPod Mini FREE for your judgement on
-who ports your project to Linux PPC the best. Sponsored by IBM. 
-Deadline: Sept. 13. Go here: http://sf.net/ppc_contest.php
+Tony

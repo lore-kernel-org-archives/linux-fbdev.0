@@ -1,50 +1,46 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: RFC: disallow modular framebuffers
-Date: Wed, 2 Mar 2005 14:17:44 +0200
-Message-ID: <20050302121744.GA2871@linux-sh.org>
-References: <20050301024118.GF4021@stusta.de>
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: waitforVBlank, how does this even work?
+Date: Wed, 2 Mar 2005 00:55:03 -0500
+Message-ID: <9e47339105030121553cd4c02f@mail.gmail.com>
+References: <9e473391050301215019081bce@mail.gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="IS0zKkzwUGydFO0o"
-Content-Disposition: inline
-In-Reply-To: <20050301024118.GF4021@stusta.de>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-To: Adrian Bunk <bunk@stusta.de>
-Cc: adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7bit
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1D6Mp6-0000hV-Bu
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 01 Mar 2005 21:55:04 -0800
+Received: from rproxy.gmail.com ([64.233.170.201])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1D6Mp5-0003kU-TQ
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 01 Mar 2005 21:55:04 -0800
+Received: by rproxy.gmail.com with SMTP id z35so120169rne
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 01 Mar 2005 21:55:03 -0800 (PST)
+In-Reply-To: <9e473391050301215019081bce@mail.gmail.com>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: fbdev <linux-fbdev-devel@lists.sourceforge.net>, DRI developer's list <dri-devel@lists.sourceforge.net>
+
+Ok I see now how it works. The fbdev support is only on the Rage not
+the Rage128. But this is really confusing trying to track down who is
+actually controlling the interrupts.
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
 
 
---IS0zKkzwUGydFO0o
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, Mar 01, 2005 at 03:41:18AM +0100, Adrian Bunk wrote:
-> Do modular framebuffers really make sense?
->=20
-Yes, at least these are quite common with embedded systems, quite often
-without fbcon. It makes little sense to keep the driver constantly loaded
-if the device is not being used as a console and is only seeing
-occasional use.
-
-It seems more sensible to just fix up the drivers that don't do this
-right.. most of the broken drivers seem to be geared at x86 anyways where
-people generally don't seem to care.
-
-It may not make a lot of sense with distributions on x86, though it is
-useful if you are doing driver development on a secondary device. This is
-certainly a corner case though.
-
---IS0zKkzwUGydFO0o
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.6 (GNU/Linux)
-
-iD8DBQFCJa7o1K+teJFxZ9wRAmzXAKCGjNhPV3QJclqFGwKkOofuc6U2uQCdHAbt
-Qka7Zg9YoBwLEQZNVPMTgP4=
-=zZ2e
------END PGP SIGNATURE-----
-
---IS0zKkzwUGydFO0o--
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

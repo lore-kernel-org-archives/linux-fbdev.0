@@ -1,23 +1,23 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
 	one works ;-)
-Date: Wed, 28 Apr 2004 09:53:28 +1000
+Date: Wed, 28 Apr 2004 10:12:54 +1000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1083110007.20091.5.camel@gaston>
-References: <Pine.LNX.4.44.0404280039460.23153-100000@phoenix.infradead.org>
+Message-ID: <1083111174.20089.8.camel@gaston>
+References: <Pine.LNX.4.44.0404280051480.23153-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIcTv-0006yO-2D
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:59:19 -0700
+	id 1BIcml-0001yE-QS
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 17:18:47 -0700
 Received: from gate.crashing.org ([63.228.1.57] ident=root)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1BIcTu-0006Wi-So
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:59:19 -0700
-In-Reply-To: <Pine.LNX.4.44.0404280039460.23153-100000@phoenix.infradead.org>
+	id 1BIcml-0004oG-C0
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 17:18:47 -0700
+In-Reply-To: <Pine.LNX.4.44.0404280051480.23153-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,36 +31,27 @@ Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@infradead.org>
 Cc: John Zielinski <grim@undead.cc>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-
-> No. Look the logic should go from the upper VT layer to the lower driver 
-> to accomplish something. Not the reverse.
+On Wed, 2004-04-28 at 09:57, James Simmons wrote:
+> > Nah, it's a lot easier to restore the state you need than to
+> > save/restore everything. It's not even always possible to save/restore
+> > everything (think: write only registers).
 > 
-> struct vc_data -> native console driver structure --> fbdev
-
-But the upper VT layer has no clue about what a graphic mode can be and
-we know well enough that we _need_ to be able to enforce graphics mode
-or want to play with them by manipulating var structures, without losing
-the console.
-
-Your logic is only ever valid once every single fbdev is capable of
-doing proper mode management & validation. And even then, there isn't
-a 1:1 relationchip between a mode and an fbcon size.
-
-> Not.
+> If this is true then it would be better if we have the below logic.
 > 
-> fbdev --> native console driver --> struct vc_data.
+> struct vc_data --> native driver layer --> fbdev.
 > 
-> This was the way it uses to be. If this is the case then I suggest we 
-> write our own vt.c and vt_ioctl.c for the fbcon layer. We shouldn't even
-> use struct vc_data then. In fact each fbdev driver should be independent 
-> console drivers. That is how 2.4.X was. Each driver was nearly its own 
-> console driver. We need to go one way or the other. 
+> instead of save/restore the var for each VC.
 
-I agree we need to go away and I'm not proposing adding anything to
-fb_info nor whatever in this regard. It has to be all self-contained
-in the console subsystem, that is fbcon. And we already have a data
-structure holding per-console fbcon-specific data, it's called
-struct display.
+I think we are not understanding eachother....
+
+The save/restore thing is a different matter than the var thing
+altogether....
+
+The var for each vc is simply having a different mode for each VC
+and not relying on the doggy magic mode setting done by fbcon to
+set a mode matching the VC size. fbcon is responsible for setting
+the proper mode for each VC upon entry to that VC, and so with the
+above, that mean just having a var per VC.
 
 Ben.
 

@@ -1,15 +1,15 @@
-From: "zvblistasegmentada kdh" <uzllistasegmentada@ig.com.br>
-Subject: zhm2003 ymr
-Date: Wed, 09 Apr 2003 23:08:00 -0700
+From: James Simmons <jsimmons@infradead.org>
+Subject: [FBDEV updates] Newest framebuffer fixes.
+Date: Thu, 10 Apr 2003 20:09:41 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <E193VE7-0007HL-00@sc8-sf-list1.sourceforge.net>
+Message-ID: <Pine.LNX.4.44.0304102005330.23030-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [211.250.153.252] (helo=wallstreetfitness.com.br)
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 193VE7-0007HL-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 09 Apr 2003 23:08:00 -0700
+Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 193hRD-0004K6-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 10 Apr 2003 12:10:20 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -19,52 +19,106 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: linux-fbdev-devel@lists.sourceforge.net
-
-ACADEMIA WALL STREET FITNESS.
-
-GANHE SEM QUALQUER CUSTO VOC=CA E SUA FAMILIA:
-
-UMA SEMANA DE GIN=C1STICA=20
-(local, Step, Alongamento, Abdominal, Pump, Aeroboxe, Aer=F3bia).=20
-UMA SEMANA DE SAUNA.
-UMA SEMANA DE MUSCULA=C7=C3O.
-UMA SEMANA DE SPINNING.
-UMA SEMANA DE JIU-JITSU.
-UMA SEMANA DE CAPOEIRA.
-DUAS SEMANAS DE KRAV-MAG=C1.
-
-N=C3O COBRAMOS MATRICULA,
-E VOC=CA GANHA TAMB=C9M UMA CARTEIRINHA DA ACADEMIA.
-
-SE VOC=CA GOSTAR E TORNAR-SE  ALUNO,
-NO M=CAS DO SEU ANIVERSARIO A  ACADEMIA LHE PRESENTEIA COM UM M=CAS DE GIN=
-=C1STICA E MUSCULA=C7=C3O DE  GRA=C7A.
-
-(temos o menor pre=E7o da cidade a partir de R$ 1,73 reais ao dia, valido p=
-ara muscula=E7=E3o, gin=E1stica e sauna, todos os dias hor=E1rios livre de =
-06:00 =E1s 22:00 horas)
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Geert Uytterhoeven <geert@linux-m68k.org>, adaplas@pol.net
 
 
-WALL STREET FITNESS
-AV: DO CONTORNO 8000 PRIMEIRO ANDAR.
-BAIRRO STO AGOSTINHO (em frente ao Col=E9gio Loyola).
-Temos convenio com os estacionamentos: (REALPARK e MULTIPARK R$ 1.20 A HORA=
-).
-BELO HORIZONTE MG
-TEL: 33357227 E 32916590.
+Hi!
 
-Outgoing mail is certified Virus Free.
-Checked by AVG anti-virus system (http://www.grisoft.com).
-Version: 6.0.463 / Virus Database: 262 - Release Date: 08/4/2003
+  Here are the latest framebuffer changes. Some driver updates and a 
+massive cleanup of teh cursor code. Tony please test it on the i810 
+chipset. I tested it on the Riva but there is one bug I can't seem to 
+find. Please test this patch. It is against 2.5.67 BK. It shoudl work 
+against 2.5.67 as well. 
+
+Please test. 
+
+Standard patch is at 
+
+http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
+
+and you can do a bk pull http://fbdev.bkbits.net/fbdev-2.5
+
+Linus, please do a
+
+	bk pull http://gkernel.bkbits.net/fbdev-2.5
+
+This will update the following files:
+
+ Documentation/devices.txt       |    7 
+ drivers/video/aty/aty128fb.c    |   16 -
+ drivers/video/cfbimgblt.c       |    4 
+ drivers/video/console/fbcon.c   |  548 ++++++++++++++++++----------------------
+ drivers/video/console/fbcon.h   |    1 
+ drivers/video/controlfb.c       |   18 -
+ drivers/video/fbcmap.c          |   33 +-
+ drivers/video/fbmem.c           |  159 ++++++-----
+ drivers/video/i810/i810.h       |    6 
+ drivers/video/i810/i810_accel.c |  140 +++++-----
+ drivers/video/i810/i810_dvt.c   |    3 
+ drivers/video/i810/i810_gtf.c   |    7 
+ drivers/video/i810/i810_main.c  |  135 ++++-----
+ drivers/video/i810/i810_main.h  |    4 
+ drivers/video/logo/logo.c       |   69 ++---
+ drivers/video/platinumfb.c      |   28 --
+ drivers/video/radeonfb.c        |   10 
+ drivers/video/riva/fbdev.c      |    2 
+ drivers/video/softcursor.c      |  198 +++++++-------
+ drivers/video/tdfxfb.c          |   18 -
+ drivers/video/tgafb.c           |    2 
+ drivers/video/vga16fb.c         |    6 
+ include/linux/fb.h              |   16 -
+ include/linux/linux_logo.h      |    2 
+ 24 files changed, 690 insertions(+), 742 deletions(-)
+
+through these ChangeSets:
+
+<jsimmons@kozmo.(none)> (03/04/02 1.991.1.2)
+   [FBDEV SOFT CURSOR] Test to see if kmalloc failed.
+   
+   [FBCON] Test to see if the user priovides there own work queue.
+
+<jsimmons@kozmo.(none)> (03/04/02 1.991.1.1)
+   [FBDEV] Final cursor code cleanups. Now the burden of handling the cursor code lies on the driver side. The reason for this is that a invalid cursor might come from userland.
+
+<jsimmons@kozmo.(none)> (03/03/31 1.990)
+   [FBDEV] Massive cleanups of the cursor api.
+
+<jsimmons@maxwell.earthlink.net> (03/03/26 1.986)
+   [FBDEV] Documentation on the device numbers of /dev/fb being mulitples of 32 is no longer true. Removed that info.
+   
+   [FBDEV] Logo fixes. Now we can display different color logos on screens of different color depths.
+   
+   [VGA16 FBDEV] Small compile error. Fixed it now.
+
+<jsimmons@maxwell.earthlink.net> (03/03/26 1.984)
+   [I810 FBDEV] Driver updates.
+   
+   [FBCON] Reversed some of my cursor changes.
+
+<jsimmons@kozmo.(none)> (03/03/25 1.983)
+   [FBDEV] The image color depth of zero hack has been killed.
+
+<jsimmons@maxwell.earthlink.net> (03/03/25 1.982)
+   [FBCON] Now we use workqueues so framebuffer code can always work in a process context.
+   
+   [GENERIC CURSOR] Safety check in case kmalloc failes
+
+<jsimmons@maxwell.earthlink.net> (03/03/25 1.981)
+   [FBCON] Could be called outside of a process context. This fixes that.
+
+<jsimmons@maxwell.earthlink.net> (03/03/25 1.979)
+   [RAGE 128/CONTROL/PLATNIUM FBDEV] PPC updates.
+   
+   [RADEON FBDEV] PLL fix for specific type of card.
+
 
 
 
 -------------------------------------------------------
-This SF.net email is sponsored by: Etnus, makers of TotalView, The debugger=
-=20
-for complex code. Debugging C/C++ programs can leave you feeling lost and=20
-disoriented. TotalView can help you find your way. Available on major UNIX =
-
+This SF.net email is sponsored by: Etnus, makers of TotalView, The debugger 
+for complex code. Debugging C/C++ programs can leave you feeling lost and 
+disoriented. TotalView can help you find your way. Available on major UNIX 
 and Linux platforms. Try it free. www.etnus.com

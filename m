@@ -1,20 +1,20 @@
-From: Johann Hanne <jhanne@gmx.de>
-Subject: [patch] triviial: add PCI id to atyfb
-Date: Thu, 25 Dec 2003 19:13:07 +0100
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: 2.6 fbcon and 15/16 bpp
+Date: Fri, 26 Dec 2003 12:01:51 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200312251913.07445.jhanne@gmx.de>
+Message-ID: <Pine.GSO.4.21.0312261200120.2029-100000@waterleaf.sonytel.be>
+References: <1072305863.15477.15.camel@gaston>
 Mime-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_ziy6/3kh492W66V"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AZZz5-0002ny-9b
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Dec 2003 10:13:19 -0800
-Received: from imap.gmx.net ([213.165.64.20] helo=mail.gmx.net)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.24)
-	id 1AZZz4-0008N1-ND
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Dec 2003 10:13:18 -0800
+	id 1AZpjG-0003TH-CB
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 26 Dec 2003 03:02:02 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.24)
+	id 1AZpjF-0006F0-Ss
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 26 Dec 2003 03:02:02 -0800
+In-Reply-To: <1072305863.15477.15.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -24,45 +24,34 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
-
-
---Boundary-00=_ziy6/3kh492W66V
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: John Zielinski <grim@undead.cc>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi,
+On Thu, 25 Dec 2003, Benjamin Herrenschmidt wrote:
+> On Thu, 2003-12-25 at 08:34, John Zielinski wrote:
+> > I've done some digging and it's definitely because of how many palette 
+> > entries are updated for the 565 mode.  What's the proper number of 
+> > entries that need to be updated for 565 mode, 32 or 64?   I'll have to 
+> > check what the nvidia driver expects.  I can't test 24 bpp as the driver 
+> > won't do that currently.
+> 
+> 64 but with only green mattering above 32 iirc, look what XFree does.
 
-the PCI id in this patch is used on an HP NetServer LH3000, where I've also 
-successfully tested it.
-00:07.0 VGA compatible controller: ATI Technologies Inc 3D Rage IIC (rev 7a)
-00:07.0 Class 0300: 1002:4759 (rev 7a)
+Yep, I can confirm that. The number of entries is 2 <<
+max({red,green,blue,transp}.length).
 
-Cheers, Johann
+Gr{oetje,eeting}s,
 
---Boundary-00=_ziy6/3kh492W66V
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="patch-2.4.23-kzviati"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="patch-2.4.23-kzviati"
+						Geert
 
-diff -uNr linux-2.4.23/drivers/video/aty/atyfb_base.c linux-2.4.23-kzviati/drivers/video/aty/atyfb_base.c
---- linux-2.4.23/drivers/video/aty/atyfb_base.c	2003-12-17 14:07:39.000000000 +0100
-+++ linux-2.4.23-kzviati/drivers/video/aty/atyfb_base.c	2003-12-17 14:11:20.000000000 +0100
-@@ -353,6 +353,7 @@
-     { 0x4755, 0x4755, 0x00, 0x00, m64n_gtb,     200,  67,  67, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT },
-     { 0x4756, 0x4756, 0x00, 0x00, m64n_iic_p,   230,  83,  83, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT },
-     { 0x4757, 0x4757, 0x00, 0x00, m64n_iic_a,   230,  83,  83, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT },
-+    { 0x4759, 0x4759, 0x00, 0x00, m64n_iic_p,   230,  83,  83, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT },
-     { 0x475a, 0x475a, 0x00, 0x00, m64n_iic_a,   230,  83,  83, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT },
- 
-     /* Mach64 LT */
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
---Boundary-00=_ziy6/3kh492W66V--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

@@ -1,24 +1,26 @@
-From: Kronos <kronos@people.it>
-Subject: Re: kbuild
-Date: Fri, 24 Sep 2004 19:03:15 +0200
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: aty128fb problems on iMac, kernel 2.8.1 (fwd)
+Date: Thu, 23 Sep 2004 19:14:41 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040924170315.GA11905@dreamland.darkstar.lan>
-References: <4152FE4A.732A42BB@orpatec.ch>
+Message-ID: <200409231914.41279.adaplas@hotpop.com>
+References: <Pine.GSO.4.61.0409231022110.7127@waterleaf.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from [10.3.1.12] (helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CAtTb-0006er-VY
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Sep 2004 10:03:19 -0700
-Received: from mail-relay-3.tiscali.it ([213.205.33.43])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CAtTY-0004wE-QJ
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Sep 2004 10:03:19 -0700
-Received: from dreamland.darkstar.lan (82.84.183.132) by mail-relay-3.tiscali.it (7.1.021.3)
-        id 4111154D00C25323 for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Sep 2004 19:03:06 +0200
+	id 1CARZJ-00017l-Qp
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Sep 2004 04:15:21 -0700
+Received: from smtp-out.hotpop.com ([38.113.3.71])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CARZJ-0004Vx-FC
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Sep 2004 04:15:22 -0700
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id A3F23110A167
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 23 Sep 2004 11:15:04 +0000 (UTC)
+In-Reply-To: <Pine.GSO.4.61.0409231022110.7127@waterleaf.sonytel.be>
 Content-Disposition: inline
-In-Reply-To: <4152FE4A.732A42BB@orpatec.ch>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,60 +31,38 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net, Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Theodore Kilgore <kilgota@banach.math.auburn.edu>
 
-Il Thu, Sep 23, 2004 at 06:48:10PM +0200, Otto Wyss ha scritto: 
-> *This message was transferred with a trial version of CommuniGate(tm) Pro*
-> IMO kbuild makes it easy to test new framebuffer drivers by anyone. So
-> I've started to document the tester's part on the web
-> "http://linux-fvdev.sourceforge.net/index.php?page=kbuilddocs.html". Now
-> it would be nice if someone could create a correct Makefile for a
-> framebuffer (preferable radeonfb) and send it to me, so I can put it
-> into the linux-fbdev CVS.
+>
+> mac_find_mode  undefined
+>
+> and
+>
+> mac_vmode_to_var  undefined.
+>
 
-It's very simple, a skeleton would be like that:
+Those functions are in macmodes.c but they are not exportable.
 
-obj-m += myfb.o
+You can try changing this line in drivers/video/Makefile:
 
-If the object is composed by 2 or more files:
+obj-$(CONFIG_FB_ATY128)           += aty128fb.o
 
-obj-m += myfb.o
-myfb-objs := file1.o file2.o file3.o
+to
 
-Note that this will build a module regardless of what the user has in his
-.config file. For drivers that has suboptions (like I2C bus for
-radeonfb) you can either:
-- rely on the .config from user. In this case you can just copy and
-  adapt a bit the Makefile from the kernel tree. For radeonfb:
+obj-$(CONFIG_FB_ATY128)           += aty128fb.o macmodes.o
 
-obj-m += radeonfb.o
+Possibly, you may need to remove these lines if the compile complains
+of duplicate symbols:
 
-radeonfb-y                              := radeon_base.o radeon_pm.o radeon_monitor.o radeon_accel.o
-radeonfb-$(CONFIG_FB_RADEON_I2C)        += radeon_i2c.o
-radeonfb-objs                           := $(radeonfb-y)
+# Only include macmodes.o if we have FB support and are PPC
+ifeq ($(CONFIG_FB),y)
+obj-$(CONFIG_PPC)                 += macmodes.o
+endif
 
-- force some options. In this case you may have to define some symbols
-  manualy. Like this:
+Tony
 
-obj-m += radeonfb.o
 
-# Force CONFIG_FB_RADEON_I2C
-EXTRA_CFLAGS := -DCONFIG_FB_RADEON_I2C
-
-radeonfb-objs   := radeon_base.o radeon_pm.o radeon_monitor.o radeon_accel.o radeon_i2c.o
-
-Also note that some driver may need some header not present in the build
-directory nor in the the standard include path. radeonfb, for example,
-include "../edid.h".
-
-HTH,
-Luca
--- 
-Home: http://kronoz.cjb.net
-Se il  destino di un uomo  e` annegare, anneghera` anche  in un bicchier
-d'acqua.
-Proverbio yddish
 
 
 -------------------------------------------------------

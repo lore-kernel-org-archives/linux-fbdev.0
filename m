@@ -1,20 +1,20 @@
 From: James Simmons <jsimmons@infradead.org>
 Subject: Re: [PATCH] - video/tridentfb.c warning fix.
-Date: Wed, 14 Apr 2004 19:06:28 +0100 (BST)
+Date: Wed, 14 Apr 2004 19:06:00 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0404141906060.13481-100000@phoenix.infradead.org>
+Message-ID: <Pine.LNX.4.44.0404141905520.13481-100000@phoenix.infradead.org>
 References: <20040413164729.2eba2e6e.lcapitulino@prefeitura.sp.gov.br>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BDomP-0001dm-Np
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Apr 2004 11:06:33 -0700
+	id 1BDolw-0001XU-Af
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Apr 2004 11:06:04 -0700
 Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1BDomP-0000oy-8s
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Apr 2004 11:06:33 -0700
+	id 1BDolv-0004Qw-GE
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Apr 2004 11:06:03 -0700
 In-Reply-To: <20040413164729.2eba2e6e.lcapitulino@prefeitura.sp.gov.br>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,8 +30,8 @@ Content-Transfer-Encoding: 7bit
 To: "Luiz Fernando N. Capitulino" <lcapitulino@prefeitura.sp.gov.br>
 Cc: benh@kernel.crashing.org, linux-fbdev-devel@lists.sf.net
 
-I meant ow about someone test and fix the acceleration code. Unfortunely I 
-don't hvae this card.
+
+ANyone want to test this?
 
 
 On Tue, 13 Apr 2004, Luiz Fernando N. Capitulino wrote:

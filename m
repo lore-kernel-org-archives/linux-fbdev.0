@@ -1,12 +1,17 @@
 From: James Simmons <jsimmons@transvirtual.com>
-Subject: Re: tx3912 Re: [PATCH] fbdev updates.
-Date: Mon, 17 Jun 2002 13:04:39 -0700 (PDT)
+Subject: Re: problem with gen_update_var
+Date: Mon, 17 Jun 2002 13:38:49 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0206171304110.31825-100000@www.transvirtual.com>
-References: <20020606211252.GA1112@elf.ucw.cz>
+Message-ID: <Pine.LNX.4.44.0206171335050.31825-100000@www.transvirtual.com>
+References: <1024343964.14222.0.camel@daplas>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-In-Reply-To: <20020606211252.GA1112@elf.ucw.cz>
+Received: from www.transvirtual.com ([206.14.214.140])
+	by usw-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17K3H5-0006fv-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Jun 2002 13:38:55 -0700
+In-Reply-To: <1024343964.14222.0.camel@daplas>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -18,20 +23,34 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-mips@oss.sgi.com, linux-mips-kernel@lists.sourceforge.net
+To: Antonino Daplas <adaplas@pol.net>
+Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> Hi!
+> In ywrap_up in fbcon.c, it has this code:
 >
-> >    This patch includes the latest in the fbdev BK repository. I have
-> > modified several fbdev drivers (maxinefb, tx3912fb, pmag drivers) to the
-> > new api. Please test these changes out before I submit them to linus.
-> > Thank you. It is against the latest BK tree and 2.5.20.
+>     p->var.xoffset = 0;
+>     p->var.yoffset = p->yscroll*fontheight(p);
+>     p->var.vmode |= FB_VMODE_YWRAP;
+>     p->fb_info->updatevar(unit, p->fb_info);
 >
-> Does the code even boot on any machine having tx3912fb?
+> (*p is struct display).  gen_update_var will call pan_display(info->var,
+> con, info).
 
-Yes :-) Also a few other types of MIPS devices use this framebuffer.
+Only if con == currcon.
+
+> But as can be seen, info->var is not updated by ywrap_up.
+
+Your right. I will fix that.
+
+> Unless, the low-level driver's implementation is to get the offsets
+> from fb_display[con].var, that's the only time it will work.  But it
+> will break userland apps that will call pan_display(var, con, info)
+> expecting that the offsets contained in the passed var parameter will be
+> updated.
+
+Don't worry about userland apps. They can't pan non foreground consoles.
+Only fbcon inside the kernel can.
 
 
 _______________________________________________________________

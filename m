@@ -1,22 +1,30 @@
-From: Otto Solares <solca@guug.org>
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
 Subject: Re: [PATCH] neofb patches
-Date: Thu, 29 Apr 2004 19:18:16 -0600
+Date: Fri, 30 Apr 2004 03:28:57 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040430011816.GC26704@guug.org>
-References: <20040428002037.GE22495@guug.org> <1083112565.20473.10.camel@gaston> <20040428070832.GA23411@guug.org> <1083147416.18416.24.camel@thor.asgaard.local> <20040428163730.GA24448@guug.org> <1083191201.18413.73.camel@thor.asgaard.local> <20040429010725.GD24584@guug.org> <1083243672.18413.148.camel@thor.asgaard.local> <20040429175201.GA26608@guug.org> <1083280337.8281.181.camel@thor.asgaard.local>
+Message-ID: <1083288536.18410.198.camel@thor.asgaard.local>
+References: <20040428002037.GE22495@guug.org>
+	 <1083112565.20473.10.camel@gaston> <20040428070832.GA23411@guug.org>
+	 <1083147416.18416.24.camel@thor.asgaard.local>
+	 <20040428163730.GA24448@guug.org>
+	 <1083191201.18413.73.camel@thor.asgaard.local>
+	 <20040429010725.GD24584@guug.org>
+	 <1083243672.18413.148.camel@thor.asgaard.local>
+	 <20040429175201.GA26608@guug.org>
+	 <1083280337.8281.181.camel@thor.asgaard.local>
+	 <20040430011816.GC26704@guug.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BJMf9-0003kP-P9
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 29 Apr 2004 18:17:59 -0700
-Received: from guug.galileo.edu ([168.234.203.30] helo=guug.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BJMf7-0007zz-4y
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 29 Apr 2004 18:17:57 -0700
-Content-Disposition: inline
-In-Reply-To: <1083280337.8281.181.camel@thor.asgaard.local>
+	id 1BJMpp-00054E-JV
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 29 Apr 2004 18:29:01 -0700
+Received: from netline-mail1.netline.ch ([195.141.226.27])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BJMpo-0007qh-RT
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 29 Apr 2004 18:29:01 -0700
+In-Reply-To: <20040430011816.GC26704@guug.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,69 +34,50 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Content-Type: text/plain; charset="euc-kr"
+To: Otto Solares <solca@guug.org>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Fri, Apr 30, 2004 at 01:12:17AM +0200, Michel D=E4nzer wrote:
-> On Thu, 2004-04-29 at 19:52, Otto Solares wrote:
-> > On Thu, Apr 29, 2004 at 03:01:13PM +0200, Michel D=E4nzer wrote:
-> > > On Thu, 2004-04-29 at 03:07, Otto Solares wrote:
-> > > > On Thu, Apr 29, 2004 at 12:26:41AM +0200, Michel D=E4nzer wrote:
-> > > >=20
-> > > > > A small low-level driver could handle this, which both the frameb=
-uffer
-> > > > > device and the DRM use. Linus has proposed this approach, and I m=
-ust say
-> > > > > I like it.
-> > > >=20
-> > > > That should be fbdev without fbcon.
-> > >=20
-> > > I'm not sure that works: keep in mind that the DRM works on other OSs
-> > > than Linux, and even on Linux some people may want to use the DRM
-> > > without a framebuffer device. Neither should be a problem with a mini=
-mal
-> > > base driver which does nothing more than hardware resource management
-> > > and arbitration.
-> >=20
-> > Differents OSs have differents sources for DRM kernel side so
-> > that's not a problem nor will affect others OSs than linux.
->=20
-> Nope. Most of the code in the DRI CVS drm module is shared between OSs.
-> Most of the shared code is hardware specific though, so if you change
-> the interface to the hardware, either all the OSs will have to provide
-> the new interface, or the code can no longer be shared, which would get
-> us back to the code duplication horrors. I'd very much like to avoid
-> that.
-
-I don't see your point, nothing prevents using the shared code,
-the idea is not to change the interface, just to have a single
-graphics layer that handle that same interface.  I know it could be
-a pain to duplicate the fbdev into the cvs drm module, but with
-proper file separations there could live the fbdev's drm code.
-
-> > Yes, a minimal driver would do the work _NOW_.
->=20
-> Why wouldn't it in the future?
-
-Because we need a single and unified graphics layer for linux
-in the very same way like the sound and input layers exists now.
-
-A proper graphics layer based on fbdev_sysfs + libraries like the
-ones Ben or Jon are working on + dri + hotplug + hal + udev + dbus
-+ a good graphics servers (based on the unified layer) + toolkits
-=3D a chance for linux to compete in the future with longhorn and
-OSX.  The graphics layer I am describing here is low-level and
-must contain the basics needed for a graphics server.  I am
-working on one but i'm sure it would be useful to any Xserver
-like the xserver from fd.o.
-
--otto
-
-
-
--------------------------------------------------------
-This SF.Net email is sponsored by: Oracle 10g
-Get certified on the hottest thing ever to hit the market... Oracle 10g.=20
-Take an Oracle 10g class now, and we'll give you the exam FREE.=20
-http://ads.osdn.com/?ad_id=3D3149&alloc_id=3D8166&op=3Dclick
+T24gRnJpLCAyMDA0LTA0LTMwIGF0IDAzOjE4LCBPdHRvIFNvbGFyZXMgd3JvdGU6Cj4gT24gRnJp
+LCBBcHIgMzAsIDIwMDQgYXQgMDE6MTI6MTdBTSArMDIwMCwgTWljaGVsIETDpG56ZXIgd3JvdGU6
+Cj4gPiBPbiBUaHUsIDIwMDQtMDQtMjkgYXQgMTk6NTIsIE90dG8gU29sYXJlcyB3cm90ZToKPiA+
+ID4gT24gVGh1LCBBcHIgMjksIDIwMDQgYXQgMDM6MDE6MTNQTSArMDIwMCwgTWljaGVsIETDpG56
+ZXIgd3JvdGU6Cj4gPiA+ID4gT24gVGh1LCAyMDA0LTA0LTI5IGF0IDAzOjA3LCBPdHRvIFNvbGFy
+ZXMgd3JvdGU6Cj4gPiA+ID4gPiBPbiBUaHUsIEFwciAyOSwgMjAwNCBhdCAxMjoyNjo0MUFNICsw
+MjAwLCBNaWNoZWwgRMOkbnplciB3cm90ZToKPiA+ID4gPiA+IAo+ID4gPiA+ID4gPiBBIHNtYWxs
+IGxvdy1sZXZlbCBkcml2ZXIgY291bGQgaGFuZGxlIHRoaXMsIHdoaWNoIGJvdGggdGhlIGZyYW1l
+YnVmZmVyCj4gPiA+ID4gPiA+IGRldmljZSBhbmQgdGhlIERSTSB1c2UuIExpbnVzIGhhcyBwcm9w
+b3NlZCB0aGlzIGFwcHJvYWNoLCBhbmQgSSBtdXN0IHNheQo+ID4gPiA+ID4gPiBJIGxpa2UgaXQu
+Cj4gPiA+ID4gPiAKPiA+ID4gPiA+IFRoYXQgc2hvdWxkIGJlIGZiZGV2IHdpdGhvdXQgZmJjb24u
+Cj4gPiA+ID4gCj4gPiA+ID4gSSdtIG5vdCBzdXJlIHRoYXQgd29ya3M6IGtlZXAgaW4gbWluZCB0
+aGF0IHRoZSBEUk0gd29ya3Mgb24gb3RoZXIgT1NzCj4gPiA+ID4gdGhhbiBMaW51eCwgYW5kIGV2
+ZW4gb24gTGludXggc29tZSBwZW9wbGUgbWF5IHdhbnQgdG8gdXNlIHRoZSBEUk0KPiA+ID4gPiB3
+aXRob3V0IGEgZnJhbWVidWZmZXIgZGV2aWNlLiBOZWl0aGVyIHNob3VsZCBiZSBhIHByb2JsZW0g
+d2l0aCBhIG1pbmltYWwKPiA+ID4gPiBiYXNlIGRyaXZlciB3aGljaCBkb2VzIG5vdGhpbmcgbW9y
+ZSB0aGFuIGhhcmR3YXJlIHJlc291cmNlIG1hbmFnZW1lbnQKPiA+ID4gPiBhbmQgYXJiaXRyYXRp
+b24uCj4gPiA+IAo+ID4gPiBEaWZmZXJlbnRzIE9TcyBoYXZlIGRpZmZlcmVudHMgc291cmNlcyBm
+b3IgRFJNIGtlcm5lbCBzaWRlIHNvCj4gPiA+IHRoYXQncyBub3QgYSBwcm9ibGVtIG5vciB3aWxs
+IGFmZmVjdCBvdGhlcnMgT1NzIHRoYW4gbGludXguCj4gPiAKPiA+IE5vcGUuIE1vc3Qgb2YgdGhl
+IGNvZGUgaW4gdGhlIERSSSBDVlMgZHJtIG1vZHVsZSBpcyBzaGFyZWQgYmV0d2VlbiBPU3MuCj4g
+PiBNb3N0IG9mIHRoZSBzaGFyZWQgY29kZSBpcyBoYXJkd2FyZSBzcGVjaWZpYyB0aG91Z2gsIHNv
+IGlmIHlvdSBjaGFuZ2UKPiA+IHRoZSBpbnRlcmZhY2UgdG8gdGhlIGhhcmR3YXJlLCBlaXRoZXIg
+YWxsIHRoZSBPU3Mgd2lsbCBoYXZlIHRvIHByb3ZpZGUKPiA+IHRoZSBuZXcgaW50ZXJmYWNlLCBv
+ciB0aGUgY29kZSBjYW4gbm8gbG9uZ2VyIGJlIHNoYXJlZCwgd2hpY2ggd291bGQgZ2V0Cj4gPiB1
+cyBiYWNrIHRvIHRoZSBjb2RlIGR1cGxpY2F0aW9uIGhvcnJvcnMuIEknZCB2ZXJ5IG11Y2ggbGlr
+ZSB0byBhdm9pZAo+ID4gdGhhdC4KPiAKPiBJIGRvbid0IHNlZSB5b3VyIHBvaW50LCBub3RoaW5n
+IHByZXZlbnRzIHVzaW5nIHRoZSBzaGFyZWQgY29kZSwKPiB0aGUgaWRlYSBpcyBub3QgdG8gY2hh
+bmdlIHRoZSBpbnRlcmZhY2UsIGp1c3QgdG8gaGF2ZSBhIHNpbmdsZQo+IGdyYXBoaWNzIGxheWVy
+IHRoYXQgaGFuZGxlIHRoYXQgc2FtZSBpbnRlcmZhY2UuICBJIGtub3cgaXQgY291bGQgYmUKPiBh
+IHBhaW4gdG8gZHVwbGljYXRlIHRoZSBmYmRldiBpbnRvIHRoZSBjdnMgZHJtIG1vZHVsZSwgYnV0
+IHdpdGgKPiBwcm9wZXIgZmlsZSBzZXBhcmF0aW9ucyB0aGVyZSBjb3VsZCBsaXZlIHRoZSBmYmRl
+didzIGRybSBjb2RlLgoKSSBkb24ndCBzZWUgaG93IHRoYXQgY2FuIGJlIGRvbmUgd2l0aG91dCBj
+aGFuZ2luZyB0aGUgc2hhcmVkIGNvZGUsCmVmZmVjdGl2ZWx5IHVuLXNoYXJpbmcgaXQuIENvdWxk
+IGp1c3QgYmUgbWUgdGhvdWdoLgoKCi0tIApFYXJ0aGxpbmcgTWljaGVsIETDpG56ZXIgICAgICB8
+ICAgICBEZWJpYW4gKHBvd2VycGMpLCBYIGFuZCBEUkkgZGV2ZWxvcGVyCkxpYnJlIHNvZnR3YXJl
+IGVudGh1c2lhc3QgICAgfCAgIGh0dHA6Ly9zdmNzLmFmZmVyby5uZXQvcm0ucGhwP3I9ZGFlbnpl
+cgoKCgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tClRoaXMgU0YuTmV0IGVtYWlsIGlzIHNwb25zb3JlZCBieTogT3JhY2xlIDEwZwpHZXQgY2Vy
+dGlmaWVkIG9uIHRoZSBob3R0ZXN0IHRoaW5nIGV2ZXIgdG8gaGl0IHRoZSBtYXJrZXQuLi4gT3Jh
+Y2xlIDEwZy4gClRha2UgYW4gT3JhY2xlIDEwZyBjbGFzcyBub3csIGFuZCB3ZSdsbCBnaXZlIHlv
+dSB0aGUgZXhhbSBGUkVFLiAKaHR0cDovL2Fkcy5vc2RuLmNvbS8/YWRfaWQ9MzE0OSZhbGxvY19p
+ZD04MTY2Jm9wPWNsaWNr

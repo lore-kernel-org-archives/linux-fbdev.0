@@ -1,25 +1,19 @@
-From: Otto Wyss <otto.wyss@orpatec.ch>
-Subject: Re: Re: [PATCH 4/5][RFC] fbdev: Clean up framebuffer 
- initialization
-Date: Sat, 04 Sep 2004 09:46:24 +0200
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: framebuffer ioctl (fwd)
+Date: Sat, 4 Sep 2004 13:04:22 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <413972D0.EAC13CC4@orpatec.ch>
-References: <200409041108.40276.adaplas@hotpop.com> <41393829.6020302@winischhofer.net> <200409041453.01644.adaplas@hotpop.com>
+Message-ID: <Pine.GSO.4.58.0409041304080.3434@waterleaf.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C3VFt-0008VW-78
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 04 Sep 2004 00:46:37 -0700
-Received: from mail.xor.ch ([212.55.210.163])
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.34)
-	id 1C3VFr-0003A0-Ck
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 04 Sep 2004 00:46:37 -0700
-Received: from orpatec.ch (217.162.130.125)
-          by mail.xor.ch with MERCUR Mailserver (v4.03.03 NjYtMjMxMS00NjIy)
-          for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 4 Sep 2004 09:51:34 +0200
+	id 1C3YLQ-0001yt-Cp
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 04 Sep 2004 04:04:32 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1C3YLN-0004pP-3v
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 04 Sep 2004 04:04:31 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,24 +23,24 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Zack <plinius@comcast.net>
 
-"Antonino A. Daplas" wrote:
-> 
-> Mainly cleanup, but also point #5.  The i810fb, for instance, depends on agpgart, but
-> agpgart gets initialized way after fbdev.  The workaround is for i810fb to explicitly
-> call intel_agp_init().  Besides the ugliness, forcibly initializing the agpgart subsystem
-> out of sequence may cause problems.
-> 
-Sorry if I interrupt without deeper knowledge but doesn't this sound
-very strange? Why is a subsystem initialized much later than the one
-which depends on it? Doesn't this look like a design error?
+---------- Forwarded message ----------
+Date: Fri, 03 Sep 2004 16:37:16 -0700
+From: Zack <plinius@comcast.net>
+To: geert@linux-m68k.org, jsimmons@infradead.org
+Subject: framebuffer ioctl
 
-O. Wyss
-
--- 
-See a huge pile of work at "http://wyodesktop.sourceforge.net/"
+Hello,
+Would there be any major opposition to my adding
+some additional functions to the framebuffer ioctl
+interface? I want to add basic drawing functions,
+nothing too fancy, but enough to do away with things
+like SVGAlib.
+Zack
 
 
 -------------------------------------------------------

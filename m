@@ -1,61 +1,35 @@
-From: Stephane Wirtel <stephane.wirtel@belgacom.net>
-Subject: Compile Error with RivaFB in 2.5.44
-Date: Mon, 28 Oct 2002 13:23:55 +0100
+From: James Simmons <jsimmons@infradead.org>
+Subject: [BK console updates]
+Date: Mon, 28 Oct 2002 16:24:58 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20021028122355.GA18064@debian>
+Message-ID: <Pine.LNX.4.33.0210281622010.1970-100000@maxwell.earthlink.net>
 Mime-Version: 1.0
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux console project <linuxconsole-dev@lists.sourceforge.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-Hi !
+Hi folks!!!
 
-KERNEL : 2.5.44
+   After several lonng days of syncing up my new console code I'm nearly
+done. Unfortunely I have let the code code rot while it sat in Dave Jones
+tree. So I have updates it but now it has several bugs. Tonight I'm going
+to track them done but if people like to try this new code out and help me
+track the new bugs I would be very happy. You can grab the latest code via
+bitkeeper at
 
+bk://linuxconsole.bkbits.net/stable.
 
-Here is a compile error with the frame buffer and the rivafb.
+I will make a diff in the next few hours. Thank you.
 
- drivers/video/riva/fbdev.c: In function `riva_set_dispsw':
- drivers/video/riva/fbdev.c:665: structure has no member named `type'
- drivers/video/riva/fbdev.c:666: structure has no member named `type_aux'
- drivers/video/riva/fbdev.c:667: structure has no member named `ypanstep'
- drivers/video/riva/fbdev.c:668: structure has no member named `ywrapstep'
- drivers/video/riva/fbdev.c:686: structure has no member named `line_length'
- drivers/video/riva/fbdev.c:687: structure has no member named `visual'
- drivers/video/riva/fbdev.c:695: structure has no member named `line_length'
- drivers/video/riva/fbdev.c:696: structure has no member named `visual'
- drivers/video/riva/fbdev.c: In function `rivafb_setcolreg':
- drivers/video/riva/fbdev.c:1202: warning: unused variable `chip'
- drivers/video/riva/fbdev.c: In function `rivafb_get_fix':
- drivers/video/riva/fbdev.c:1294: structure has no member named `type'
- drivers/video/riva/fbdev.c:1295: structure has no member named `type_aux'
- drivers/video/riva/fbdev.c:1296: structure has no member named `visual'
- drivers/video/riva/fbdev.c:1302: structure has no member named `line_length'
- drivers/video/riva/fbdev.c: In function `rivafb_pan_display':
- drivers/video/riva/fbdev.c:1611: structure has no member named `line_length'
- drivers/video/riva/fbdev.c: At top level:
- drivers/video/riva/fbdev.c:1748: unknown field `fb_get_fix' specified in initializer
- drivers/video/riva/fbdev.c:1748: warning: initialization from incompatible pointer type
- drivers/video/riva/fbdev.c:1749: unknown field `fb_get_var' specified in initializer
- drivers/video/riva/fbdev.c:1749: warning: initialization from incompatible pointer type
- drivers/video/riva/fbdev.c:732: warning: `riva_wclut' defined but not used
- make[3]: *** [drivers/video/riva/fbdev.o] Error 1
- make[2]: *** [drivers/video/riva] Error 2
- make[1]: *** [drivers/video] Error 2
- make: *** [drivers] Error 2
- stef@stargate ~/kernel/linux-2.5.44 -- 13:26 
- 
-Best regards
+MS: (n) 1. A debilitating and surprisingly widespread affliction that
+renders the sufferer barely able to perform the simplest task. 2. A disease.
 
-
-Stephane Wirtel
- 
-
--- 
-Stephane Wirtel <stephane.wirtel@belgacom.net>
-GPG ID : 1024D/C9C16DA7 | 5331 0B5B 21F0 0363 EACD  B73E 3D11 E5BC C9C1 6DA7
+James Simmons  [jsimmons@users.sf.net] 	                ____/|
+fbdev/console/gfx developer                             \ o.O|
+http://www.linux-fbdev.org                               =(_)=
+http://linuxgfx.sourceforge.net                            U
+http://linuxconsole.sourceforge.net

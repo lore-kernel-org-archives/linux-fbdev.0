@@ -1,17 +1,17 @@
 From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: Some questions
-Date: 06 Mar 2003 09:18:15 +0800
+Subject: Re: Feature Freeze?
+Date: 06 Mar 2003 09:18:07 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1046913407.1227.184.camel@localhost.localdomain>
-References: <Pine.LNX.4.44.0303051858250.27760-100000@phoenix.infradead.org>
+Message-ID: <1046913396.1227.176.camel@localhost.localdomain>
+References: <Pine.LNX.4.44.0303051829450.27760-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from pine.compass.com.ph ([202.70.96.37])
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18qk0E-0007A9-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 17:16:54 -0800
-In-Reply-To: <Pine.LNX.4.44.0303051858250.27760-100000@phoenix.infradead.org>
+	id 18qk06-00076x-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 17:16:46 -0800
+In-Reply-To: <Pine.LNX.4.44.0303051829450.27760-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,30 +23,38 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@infradead.org>
-Cc: Thomas Winischhofer <thomas@winischhofer.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, 2003-03-06 at 03:02, James Simmons wrote:
-> > Yes, this is a limitation of stty.  It calls con_resize twice (one for
-> > row and another for cols, depending on the order of the options) so it
-> > will not work if the driver only supports a fixed set of modes.  Another
-> > reason to bring back fbset resizing.
+On Thu, 2003-03-06 at 02:34, James Simmons wrote:
 > 
-> ???? stty rows 128 cols 48 works for me. It should'nt calling con_resize 
-> twice. 
+> > > 1. Text mode support?
+> > 
+> > Required by at least davem and petr
 > 
+> Just Petr. I'm working to seperate the text code out into a matroxcon.c 
+> file. Needs alot more work tho.
+> 
+> > > 2. console resizing using fbset (besides stty)?
+> > 
+> > Nice, if it's not too much work.
+> 
+> :-( I hope to improve fbcon to handle this.
+>  
 
-It does.  You probably won't notice it if the driver supports flexible
-video mode changing.  For drivers that don't it will fail.  For
-instance, if a driver supports 800x600 and 1024x768 only, and stty is
-used to change the mode from 1024x768 to 800x600, it will be done like
-this:
+If you're really against using fbset to resize the console, then the
+first step is to protect the console from the "dangers" of fbset. 
+Secondly, we can have fbcon_resize() validate the mode instead of just
+blindly calling fb_set_var().  If it's not valid, then it can also fetch
+a working mode for it.  The user can then fine tune the timings using
+fbset afterwards.
 
-resize to 800x768 <--- because no mode matches this, resizing fails
-resize to 800x600
 
-If you don't believe me, do an strace stty cols 80 rows 30.
+So, do we allow fbcon to handle mode validating and fetching, or do we
+just leave all this to fbdev? At least let's bring out some ideas on how
+to go about doing this.  Having a working idea, even if dumb, should
+interest other developers in contributing. 
 
-Tony
+Tony  
 
 
 

@@ -1,69 +1,80 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Re: waitforVBlank, how does this even work?
-Date: Sat, 05 Mar 2005 09:35:00 +1100
-Message-ID: <1109975700.5679.301.camel@gaston>
-References: <9e473391050301215019081bce@mail.gmail.com>
-	 <Pine.LNX.4.62.0503021128001.14333@node2.an-vo.com>
-	 <1109806955.5610.129.camel@gaston>
-	 <Pine.LNX.4.62.0503022003090.17679@node2.an-vo.com>
-	 <1109816602.5610.153.camel@gaston>
-	 <Pine.LNX.4.62.0503022159440.17679@node2.an-vo.com>
-	 <20050303075559.GA7469@sci.fi> <1109887707.5679.214.camel@gaston>
-	 <20050304131858.GA18821@sci.fi>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [Linux-fbdev-devel] Re: Who is stomping PCI config space?
+Date: Sat, 05 Mar 2005 09:42:36 +1100
+Message-ID: <1109976157.5680.309.camel@gaston>
+References: <9e4733910503031103552514b9@mail.gmail.com>
+	<1109891245.5611.246.camel@gaston>
+	<9e473391050303161559c17955@mail.gmail.com>
+	<9e47339105030319037f083f7@mail.gmail.com>
+	<1109918459.5610.273.camel@gaston>
+	<16936.20345.249542.65736@xf14.local>
+	<9e47339105030409352803c7e1@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20050304131858.GA18821@sci.fi>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+Content-Transfer-Encoding: 7bit
+In-Reply-To: <9e47339105030409352803c7e1@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Vladimir Dergachev <volodya@mindspring.com>, Jon Smirl <jonsmirl@gmail.com>, DRI developer's list <dri-devel@lists.sourceforge.net>
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
+	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/xorg>
+List-Post: <mailto:xorg@lists.freedesktop.org>
+List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
+	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
+Sender: xorg-bounces@lists.freedesktop.org
+Errors-To: xorg-bounces@lists.freedesktop.org
+Content-Type: text/plain; charset="us-ascii"
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: Egbert Eich <eich@suse.de>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Xserver development <xorg@freedesktop.org>, Egbert Eich <eich@pdx.freedesktop.org>
 
-On Fri, 2005-03-04 at 15:18 +0200, Ville Syrj=E4l=E4 wrote:
-> On Fri, Mar 04, 2005 at 09:08:27AM +1100, Benjamin Herrenschmidt wrote:
-> >=20
-> > > > Oh, but I was not suggesting that. I just meant that interrupt ha=
-ndling=20
-> > > > code is self-contained and can easily serve several consumers.
-> > >=20
-> > > I'm with you here. And the same should IMHO hold for DMA handling. =
-And for=20
-> > > memory management of course.
-> >=20
-> > DMA handling is the main piece of what the DRM does,
->=20
-> The actual bits that feed DMA buffers to the hardware are very small. A=
-nd=20
-> I just meant that like the IRQ code those need to be easily accessible=20
-> from other components (fbdev, video capture module etc.)
 
-"Feeding DMA buffers" in what sense ? The buffers are matches with
-various functions. For AGP buffers, you have to get into the whole
-allocation mecanism, pure PCI DMA isn't always possible on some hosts.
+> Ok, now I see what X is doing. It is making sure there is only one
+> active VGA device in the system.  However, my framebuffer driver is
+> not using VGA mode.
+> 
+> I have similar code in my VGA support patch but I only shut down the
+> card mem/io long enough to turn off VGA support. I don't leave the
+> whole card turned off. I also see now that I should shut interrupts
+> off while doing this.
 
-Also, those buffers are what ? Data for blits ? textures ? they always
-belong to some sort of command, which we want to eventually validate in
-a way by the kernel unless you want your client to be root...
+Shut interrupts off never works. It only affects one CPU, you can still
+take the interrupt on the other CPU. Unless you switch interrupt
+emission on the card itself, or use some kind of spinlock to put IRQs
+"on hold" while you are doing the shutdown...
+ 
+> pci_read_config_word(pdev, PCI_COMMAND, &command);
+> pci_write_config_word(pdev, PCI_COMMAND, command | PCI_COMMAND_IO |
+> PCI_COMMAND_MEMORY);
+> 
+> vga_io_w(0x3C3, ~0x01 & vga_io_r(0x3C3));
+> vga_io_w(0x46e8, ~0x08 & vga_io_r(0x46e8));
+> vga_io_w(0x102, ~0x01 & vga_io_r(0x102));
+> 
+> pci_write_config_word(pdev, PCI_COMMAND, command);
+> 
+> If we leave the whole card turned off I can't access the interrupt
+> status registers to acknowledge the interrupt and shut it off.
 
-No, honestly, I don't see the point in breaking up our current DRM/fbdev
-thing.
+Also, some cards won't let you switch VGA access decoding off.
+
+> Does this approach work for X? Where is the code that does this at VT
+> switch time?
+> 
+> On VT enter X would need to:
+> 1) shut off interrupts
+
+Not possible (system interrupts). Unless it does it on the card itself,
+which is a per-driver thing.
+
+> 2) disable IO/MEM on all VGA cards - remember IO/mem state
+> 3) turn the cards on one at a time and disable VGA - remember VGA enable state
+> 4) restore IO/MEM state to all cards
+> 5) turn interrupts back on
+> 
+> On VT exit:
+> 1) shut off interrupts
+> 2) disable IO/MEM on all VGA cards - remember IO/mem state
+> 3) restore VGA enable state
+> 4) restore IO/MEM state to all cards
+> 5) turn interrupts back on
 
 Ben.
-
-
-
-
--------------------------------------------------------
-SF email is sponsored by - The IT Product Guide
-Read honest & candid reviews on hundreds of IT Products from real users.
-Discover which products truly live up to the hype. Start reading now.
-http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

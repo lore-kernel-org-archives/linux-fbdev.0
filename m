@@ -1,20 +1,21 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Trying to sync -> nightmare
-Date: Mon, 24 May 2004 12:05:10 +1000
+From: John Zielinski <grim@undead.cc>
+Subject: Re: fbcon & resize
+Date: Sun, 23 May 2004 22:10:57 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1085364309.15025.19.camel@gaston>
+Message-ID: <40B159B1.9050108@undead.cc>
+References: <1085360912.15281.7.camel@gaston>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BS4sI-0005Ws-9R
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 23 May 2004 19:07:34 -0700
-Received: from gate.crashing.org ([63.228.1.57] ident=root)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1BS4sH-0003mu-TM
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 23 May 2004 19:07:34 -0700
+	id 1BS4vj-0005x8-7n
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 23 May 2004 19:11:07 -0700
+Received: from ghoul.undead.cc ([216.126.84.18] helo=mail.undead.cc)
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
+	id 1BS4vi-0004Hn-OC
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 23 May 2004 19:11:06 -0700
+In-Reply-To: <1085360912.15281.7.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -24,22 +25,40 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Ok, it's really a total mess. I'm trying (again) to sync my tree with
-fbdev-2.5, but that's almost impossible. Between the changes going
-upstream that don't match what is in fbdev-2.5 (and this one not beeing
-updated), like find_logo -> fb_find_logo plus various other stuffs,
-the apparently broken removeal of outbuf/inbuf in pixmaps, and other
-crap like that, it's just impossible to follow the fbdev-2.5 tree.
+Benjamin Herrenschmidt wrote:
 
-James _PLEASE_, try to get things a bit more in shape, right now,
-it's near to impossible to sync anything with that tree, making it
-difficult to help in development.
+>I still think the whole resize stuff is broken, despite your latest
+>changes. The main problem is blindly using the modedb and not whatever
+>mode list is provided by the driver (but we need an interface for that).
+>
+>  
+>
+How about making the modedb more like a real database.  It would contain 
+the built in standard, vesa, and macmodes lists as well as lists 
+provided by the driver and custom lists from the user.  A temp list 
+would contain any tweaked modes created by a tweak utility (fbset, etc) 
+and also for modes for displays that can take any resolution.  The mode 
+displayed on each VT and modes set by applications would just be 
+pointers into the database so checking if a mode switch would be very easy.
 
-Ben.
+And it need not be limited to geometries but could also include bit 
+formats, supported virtual resolutions, etc.
+
+This is the current approach I'm taking in my own project.
+
+>We need to cleanup and generalize a function for matching a mode to
+>the mode list to be used by drivers for validation in check_var() too,
+>my current algorithm in radeonfb is a bit broken for CRTs for example,
+>and has the nasty habit of refusing modes rather than "adapting" them.
+>  
+>
+I'm curious as to what you mean by "adapting" them.
+
+John
 
 
 

@@ -1,21 +1,23 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: fbdev upstream
-Date: Tue, 6 Jan 2004 11:08:02 +0100 (MET)
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Subject: Re: Changing modes with fbset
+Date: Tue, 06 Jan 2004 12:38:52 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0401061107350.5485@waterleaf.sonytel.be>
-References: <Pine.LNX.4.44.0401060049180.7347-100000@phoenix.infradead.org>
- <1073351006.780.200.camel@gaston>
+Message-ID: <1073389131.25197.30.camel@thor.asgaard.local>
+References: <3FDBB97F.4070207@undead.cc>
+	 <Pine.LNX.4.44.0401060005511.7347-100000@phoenix.infradead.org>
+	 <20040106002822.GB442@guug.org>  <1073349349.780.181.camel@gaston>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1Ado89-0007FH-5C
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 02:08:09 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
+	id 1AdpY0-0002EN-TC
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 03:38:56 -0800
+Received: from netline-mail1.netline.ch ([195.141.226.27])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1Ado88-0003E3-LN
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 02:08:08 -0800
-In-Reply-To: <1073351006.780.200.camel@gaston>
+	id 1AdpY0-0006zx-BO
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 03:38:56 -0800
+In-Reply-To: <1073349349.780.181.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,42 +27,45 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: James Simmons <jsimmons@infradead.org>, John Zielinski <grim@undead.cc>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Otto Solares <solca@guug.org>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tue, 6 Jan 2004, Benjamin Herrenschmidt wrote:
-> On Tue, 2004-01-06 at 11:51, James Simmons wrote:
-> > > Of course, that means we'll have to update more drivers, and platforms
-> > > with fixed display, like embedded etc... will need some way to deal
-> > > with that properly in their drivers.
-> >
-> > Fixed screen size drivers should provide there own modedb.
->
-> Or just single mode... currently drivers don't export a modedb, they
-> keep one internally and do the validation... though it would make sense
-> to expose a modedb to userland, so we can have some nice GUI tools
-> showing you the available modes :) It would make sense for MacOnLinux
-> too which currently rely on the user to setup the list of modes
-> available to MacOS.
+On Tue, 2004-01-06 at 01:35, Benjamin Herrenschmidt wrote:
+> On Tue, 2004-01-06 at 11:28, Otto Solares wrote:
+> >=20
+> > Hi James! now that you are back again, i would like to suggest
+> > a modification to fbdev core, i am having problems guessing
+> > which card is attached to a fb device.  I need this info to
+> > solve the 'more than 1 card' situation.  This could be easily
+> > fixed if the fbdev api provides the busid of the card, like
+> > "pci:0000:01:0.0".  That would solve a lot of things in the
+> > HAL detection routines.  Maybe that could be exported via
+> > sysfs but i have been waiting for sysfs for a while and don't
+> > see it coming to a reality.  Maybe an ioctl is enough.
+>=20
+> Right, we need that and some way to know which heads are "coupled" for
+> dual head drivers. One of the reasons I haven't done dual head support
+> in radeonfb yet is that to get it working properly with X, I need to
+> update X too, and add a way for X to know which /dev/fb's are actually
+> "together" as 2 heads of the same card.
+>=20
+> Then, we probably want some way to also enable mirroring instead of
+> dual head...
 
-And how to export it? Sysfs again, I guess...
+Crazy idea: What would break if it defaulted to mirroring? :) You could
+achieve true multihead via panning or something...
 
-Gr{oetje,eeting}s,
 
-						Geert
+--=20
+Earthling Michel D=C3=A4nzer      |     Debian (powerpc), X and DRI develop=
+er
+Software libre enthusiast    |   http://svcs.affero.net/rm.php?r=3Ddaenzer
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 
 -------------------------------------------------------
 This SF.net email is sponsored by: IBM Linux Tutorials.
 Become an expert in LINUX or just sharpen your skills.  Sign up for IBM's
 Free Linux Tutorials.  Learn everything from the bash shell to sys admin.
-Click now! http://ads.osdn.com/?ad_id=1278&alloc_id=3371&op=click
+Click now! http://ads.osdn.com/?ad_id=3D1278&alloc_id=3D3371&op=3Dclick

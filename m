@@ -1,24 +1,19 @@
-From: System Administrator <postmaster@quark.co.in>
-Subject: Undeliverable: Your day
-Date: Tue, 8 Jun 2004 19:37:09 +0530
+From: MAILER-DAEMON@mailfe04.swip.net
+Subject: Undeliverable mail: Re: read it immediately
+Date: Wed, 09 Jun 2004 06:10:31 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <7D5800A5B6E26644B2EB7A862856B0D4116D9AEB@SARASWATI>
+Message-ID: <receipt-60138053@mailfe04.swip.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----_=_NextPart_000_01C44D61.E30FC226"
+Content-Type: multipart/report; report-type="delivery-status"; boundary="_===60138053====mailfe04.swip.net===_"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BXhK3-0005Ht-8I
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 08 Jun 2004 07:11:27 -0700
-Received: from [203.190.154.117] (helo=squidsrv.quark.co.in)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1BXhK1-0003AB-J4
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 08 Jun 2004 07:11:26 -0700
-Received: from indus.quark.co.in ([10.91.0.16])
-	by squidsrv.quark.co.in (8.12.8/8.12.8) with ESMTP id i58ExfHA008939
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 8 Jun 2004 20:29:43 +0530
+	id 1BXuQ5-00027A-Iv
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 08 Jun 2004 21:10:33 -0700
+Received: from mailfe04.swip.net ([212.247.154.97])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BXuQ5-0006NE-6Q
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 08 Jun 2004 21:10:33 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,75 +25,44 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 To: linux-fbdev-devel@lists.sourceforge.net
 
-This message is in MIME format. Since your mail reader does not understand
-this format, some or all of this message may not be legible.
 
-------_=_NextPart_000_01C44D61.E30FC226
-Content-Type: text/plain;
-	charset="windows-1252"
+--_===60138053====mailfe04.swip.net===_
+Content-Type: text/plain; charset="utf-8"
 
-Your message
-
-  To:      aruah@quark.co.in
-  Subject: Your day
-  Sent:    Tue, 8 Jun 2004 19:43:16 +0530
-
-did not reach the following recipient(s):
-
-aruah@quark.co.in on Tue, 8 Jun 2004 19:37:36 +0530
-    The recipient name is not recognized
-	The MTS-ID of the original message is: c=in;a=
-;l=SARASWATI0406081407MQP3GMSC
-    MSEXCH:IMS:Quark:INDIA:SARASWATI 0 (000C05A6) Unknown Recipient
+Failed to deliver to 'mats.petersson@mbox301.swipnet.se'
+SMTP module(domain old.swip.net) reports:
+ host old.swip.net says:
+ 550 Invalid recipient: <mats.petersson@mbox301.swipnet.se>
 
 
+--_===60138053====mailfe04.swip.net===_
+Content-Type: message/delivery-status
 
-------_=_NextPart_000_01C44D61.E30FC226
-Content-Type: message/rfc822
+Reporting-MTA: dns; mailfe04.swip.net
 
+Original-Recipient: rfc822;<mats.petersson@mbox301.swipnet.se>
+Final-Recipient: rfc822;<mats.petersson@mbox301.swipnet.se>
+Action: failed
+Status: 5.0.0
+
+--_===60138053====mailfe04.swip.net===_
+Content-Type: text/rfc822-headers
+
+Received: from [67.122.203.155] (HELO mbox301.swipnet.se)
+  by mailfe04.swip.net (CommuniGate Pro SMTP 4.2b4a)
+  with ESMTP id 60138055 for mats.petersson@mbox301.swipnet.se; Wed, 09 Jun 2004 06:10:26 +0200
 From: linux-fbdev-devel@lists.sourceforge.net
-To: aruah@quark.co.in
-Subject: Your day
-Date: Tue, 8 Jun 2004 19:43:16 +0530 
+To: mats.petersson@mbox301.swipnet.se
+Subject: Re: read it immediately
+Date: Tue, 8 Jun 2004 20:55:39 -0700
 MIME-Version: 1.0
-X-Mailer: Internet Mail Service (5.5.2656.59)
-X-MS-Embedded-Report: 
 Content-Type: multipart/mixed;
-	boundary="----_=_NextPart_002_01C44D61.E30FC226"
+	boundary="----=_NextPart_000_0016----=_NextPart_000_0016"
+X-Priority: 3
+X-MSMail-Priority: Normal
+Message-ID: <auto-000060138055@mailfe04.swip.net>
 
-
-------_=_NextPart_002_01C44D61.E30FC226
-Content-Type: text/plain;
-	charset="windows-1252"
-
-Congratulations!,
-
- your best friend.
-
-
-
-------_=_NextPart_002_01C44D61.E30FC226
-Content-Type: application/octet-stream;
-	name="alert_OA658_1086703656_SARASWATI_3#postcard.doc                                                                   .exe.txt"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
-	filename="alert_OA658_1086703656_SARASWATI_3#postcard.doc                                                                   .exe.txt"
-
-********   McAfee GroupShield for Microsoft Exchange    **********
-**********************************************************************
-
-Alert generated on: Tuesday, June 08, 2004 07:37:36 PM India Standard =
-Time
-
-
-The file postcard.doc                                                   =
-                .exe has been replaced. Reason: The file met the =
-blocking options set in the anti-virus system.
-Please consult your administrator for further help quoting your ticket =
-number: OA658_1086703656_SARASWATI_3
-------_=_NextPart_002_01C44D61.E30FC226--
-
-------_=_NextPart_000_01C44D61.E30FC226--
+--_===60138053====mailfe04.swip.net===_--
 
 
 -------------------------------------------------------

@@ -1,24 +1,26 @@
-From: "Antonino A. Daplas" <adaplas@pol.net>
-Subject: Re: Re: [PATCH 1/4][RESEND][FBDEV]: Core fbcon fixes
-Date: Thu, 24 Jun 2004 09:11:05 +0800 (PHT)
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: Sane behavior of fbset
+Date: Thu, 24 Jun 2004 10:17:37 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <61276.10.250.10.1.1088039465.squirrel@sq03.pol.net>
-References: <200406220638.34214.adaplas@hotpop.com>
-        <Pine.LNX.4.56.0406240112270.609@pentafluge.infradead.org>
+Message-ID: <200406241017.37503.adaplas@hotpop.com>
+References: <200406180945.12444.adaplas@hotpop.com> <200406191413.28339.adaplas@hotpop.com> <1088006149.1832.145.camel@gaston>
 Reply-To: adaplas@pol.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BdIlm-0000vB-8H
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 18:11:14 -0700
-Received: from mxresolver.pol.net ([63.240.86.230] helo=sq03.pol.net)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1BdIll-0000c6-Oz
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 18:11:13 -0700
-In-Reply-To: <Pine.LNX.4.56.0406240112270.609@pentafluge.infradead.org>
+	id 1BdJrU-0007pV-9k
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 19:21:12 -0700
+Received: from babyruth.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BdJrR-0005c3-Pa
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 19:21:09 -0700
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by babyruth.hotpop.com (Postfix) with SMTP id 85E946426B8
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 24 Jun 2004 01:40:58 +0000 (UTC)
+In-Reply-To: <1088006149.1832.145.camel@gaston>
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,48 +31,59 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: jsimmons@pentafluge.infradead.org
-Cc: adaplas@pol.net, akpm@osdl.org, linux-fbdev-devel@lists.sourceforge.net
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: David Eger <eger@havoc.gtf.org>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+On Wednesday 23 June 2004 23:55, Benjamin Herrenschmidt wrote:
+> > The flow of fbset is upstream:  fbset->fbdev->fbcon->vc (2.4 code)
+> > The flow of stty is downstream: stty->vc->fbcon->fbdev (2.6 code)
+> >
+> > I don't know how radeonfb does it though.
 >
-> Wow. That is a big patch. I will loook it over. I had some ideas I like
-
-It is a big patch.
-
-Needed because fb_console_init and set_con2fbmap are just plain broken. 
-Really, you need to adjust module reference counts, re/deinitialize the
-cursor timer, initialize/reinitialize the global arrays, preserve user
-fonts, consider that you can have multiple fbdevs mapped to different
-consoles, consider that you can load/unload fbdev modules at will, etc.
-All the above complexities were introduced because fbdev was separated
-from fbcon.  Not doing/taking note of any of the above is just asking for
-trouble. (The 2.4 framework is simpler because fbcon is automatically
-initialized with fbdev).
-
-Plus, the patch also combined the changes needed to prevent screen
-corruption at boot time.  Note that the logo code is actually simplified
-by the changes.
-
-> to  try myslef. I like to have you be able to map the fbdevs to teh
-> correct  VCs at boot time. If one is modular as soon as you load that
-> module it  maps to fbcon automatically :-) Like in 2.4.X.
+> I still think (didn't I repeat it often enough) that the whole idea
+> of stty "inventing" modes based on console size is broken. We simply
+> can't rely on good enough monitor detection & mode list building to
+> be able to pick proper modes. Not only our code is far from ready for
+> that, but it will also call all sort of problems to users (remember
+> you monitors that need different subtle geometry settings for each
+> different mode you use ?)
+>
+> It may have looked like a nice idea, but I think it's just wrong.
 >
 
-Setcon2fbmap is already fixed so you can use it to choose which
-framebuffers to load.
+It started out like this, during 2.5 development. The discussions were
+not very clear cut, as ironing bugs was the main concerned, but basically
+it all boils down to the following points:
 
-Choosing which fbdev to map to a console at boot time is as simple as
-adding a boot parameter and use that in fb_console_init.
+a. fbset functionality was lost (or removed), so how do we change the
+resolution of fbdev?
 
-As for the 2.4 behavior of automatically initializing fbcon when an fb
-module is loaded, that is also simple.  Add another notifier event which
-is called during register_framebuffer that will subsequently call
-fb_console_init().
+b. what should be the correct behavior of stty?  
 
-However you implement it, with this patch, the framework is already in place.
+So there were 2 ideas:
+
+1. An stty call will just have to modify the video mode. This will require
+that fbdev must be able to handle mode change requests independently.
+
+2. stty will just have to produce a smaller or larger viewport, without
+changing the resolution of the video mode. This will involve that fbcon
+must be able to do clipping, otherwise it will attempt to write past fb
+memory if vc size > fbdev size.
+
+So, I submitted 2 patches.
+
+For 1, I added a hook for con_resize. And for 2,  I added clipping code
+for all the accel_* functions, no con_resize hook.
+
+You probably guessed correctly which got merged, 1. And 
+because 1 requires fbdev to handle mode changes independently, it's
+unavoidable that we need functions to help drivers validate and choose
+the correct modelines.  So, EDID parsing,  GTF calculation, and mode
+validation were introduced in fbmon.c
+
+(fbset behavior remained undefined until this thread)
 
 Tony
-
 
 
 

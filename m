@@ -1,16 +1,14 @@
-From: Linus Torvalds <torvalds@transmeta.com>
-Subject: Re: [FBDEV BK] Updates and fixes.
-Date: Mon, 14 Apr 2003 12:15:35 -0700 (PDT)
+From: Justin Ducote <justinduc@yahoo.com>
+Subject: Linux Intel FB Question
+Date: Mon, 14 Apr 2003 21:21:04 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0304141209420.19302-100000@home.transmeta.com>
-References: <Pine.LNX.4.44.0304140545010.10446-100000@phoenix.infradead.org>
+Message-ID: <20030415042104.88847.qmail@web41603.mail.yahoo.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from neon-gw-l3.transmeta.com ([63.209.4.196] helo=neon-gw.transmeta.com)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1959Qm-0003d5-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 14 Apr 2003 12:15:52 -0700
-In-Reply-To: <Pine.LNX.4.44.0304140545010.10446-100000@phoenix.infradead.org>
+Received: from web41603.mail.yahoo.com ([66.218.93.103])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 195HwW-0008Tx-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 14 Apr 2003 21:21:12 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,59 +18,49 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: justinduc@yahoo.com
 
+Hi guys..
 
-On Mon, 14 Apr 2003, James Simmons wrote:
-> 
-> Linus, please do a
-> 
-> 	bk pull http://fbdev.bkbits.net/fbdev-2.5
+I would like to use the RADEON frame buffer, with
+that said I am restricting this senario to the VESA
+driver ONLY to try and clear up some of my confusion..
 
-This seems to cause
+When I boot linux/grub (Redhat 9.0) with the following
+line:
 
-	arch/i386/boot/setup.o(.text+0x9a4): In function `video':
-	: undefined reference to `store_edid'
+vga=792
 
-which is apparently because I don't configure VIDEO_SELECT.
+Everything works great, I get 1024x768x16m and it uses
+the VESA Framebuffer (I think) and everything is
+great. 
 
-I did this to make it compile, but you should check what the real issue 
-is.
+If I try and use this line instead:
 
-		Linus
-----
-# This is a BitKeeper generated patch for the following project:
-# Project Name: Linux kernel tree
-# This patch format is intended for GNU patch command version 2.5 or higher.
-# This patch includes the following deltas:
-#	           ChangeSet	1.1034  -> 1.1035 
-#	arch/i386/boot/video.S	1.6     -> 1.7    
-#
-# The following is the BitKeeper ChangeSet Log
-# --------------------------------------------
-# 03/04/14	torvalds@home.transmeta.com	1.1035
-# Store EDID only when CONFIG_VIDEO_SELECT is set and edid
-# function actually exists.
-# --------------------------------------------
-#
-diff -Nru a/arch/i386/boot/video.S b/arch/i386/boot/video.S
---- a/arch/i386/boot/video.S	Mon Apr 14 12:14:46 2003
-+++ b/arch/i386/boot/video.S	Mon Apr 14 12:14:46 2003
-@@ -133,9 +133,9 @@
- #ifdef CONFIG_VIDEO_RETAIN
- 	call	restore_screen			# Restore screen contents
- #endif /* CONFIG_VIDEO_RETAIN */
-+	call	store_edid
- #endif /* CONFIG_VIDEO_SELECT */
- 	call	mode_params			# Store mode parameters
--	call	store_edid
- 	popw	%ds				# Restore original DS
- 	ret
- 
+video=vesa:mode:1024x768-24@60
 
+NOTHING happens.. 
+
+My understanding was that those two
+lines should yield the exact same result in theory. I
+thought they are doing the same thing but the video
+line does nothing so I am confused and I do not
+understand whats going on. 
+
+Additionally, 
+I would like to know what is the relationship
+between VGA= and VIDEO= 
+
+Thank you for your time.
+Justin Ducote
+
+__________________________________________________
+Do you Yahoo!?
+The New Yahoo! Search - Faster. Easier. Bingo
+http://search.yahoo.com
 
 
 -------------------------------------------------------

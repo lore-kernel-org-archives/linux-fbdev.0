@@ -1,19 +1,22 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: /usr/src/linux/Documentation/fb/aty128fb.txt (fwd)
-Date: Mon, 4 Oct 2004 21:19:43 +0200 (MEST)
+From: Michal 'hramrach' Suchanek <hramrach@centrum.cz>
+Subject: Re: A strange question for LCD
+Date: Mon, 4 Oct 2004 21:39:11 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.61.0410042119240.19047@waterleaf.sonytel.be>
+Message-ID: <20041004193911.GC16840@uvt316-2.ruk.cuni.cz>
+References: <BAY17-F22jQHtMFauky00016eb2@hotmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CEYNQ-0005Hb-Sg
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 04 Oct 2004 12:20:04 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CEYN8-0007Os-7O
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 04 Oct 2004 12:20:04 -0700
+	id 1CEYiv-000225-WF
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 04 Oct 2004 12:42:18 -0700
+Received: from dec59.ruk.cuni.cz ([195.113.2.17])
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
+	id 1CEYiu-0007qX-RI
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 04 Oct 2004 12:42:17 -0700
+Content-Disposition: inline
+In-Reply-To: <BAY17-F22jQHtMFauky00016eb2@hotmail.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -23,37 +26,17 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Eric Pretorious <eric@pretorious.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
----------- Forwarded message ----------
-Date: Mon, 4 Oct 2004 11:59:47 -0700
-From: Eric Pretorious <eric@pretorious.net>
-To: Brad Douglas <brad@neruo.com>
-Cc: geert@linux-m68k.org
-Subject: /usr/src/linux/Documentation/fb/aty128fb.txt
-
-Hi, Brad:
-
-One other nitpick: In the "Configuration" section you wrote...
-
->Accepted options:
->
-><XxX@X>  - selects startup videomode. See modedb.txt for detailed
->           explanation. Default is 640x480x8bpp.
-
-Should the values be enclosed - as illustrated - in brackets? (I've been 
-passing the value using the "vga=0x317".) The framebuffer.txt file describes 
-it like this...
-
->To specify a video mode at bootup, use the following boot options:
->    video=<driver>:<xres>x<yres>[-<bpp>][@refresh]
-
--- 
-Eric P.,
-Sunnyvale, CA
+On Mon, Oct 04, 2004 at 03:15:40PM +0000, z g wrote:
+> I have a LCD(LQ035q7db02). It supports 240X320(H X W). I have a frame 
+> buffer driver for it and it works well. But I have to change the display 
+> mode in 320X240 (H X W) . I don't know whether I can change the frame 
+> buffer driver to implement it. If can, how to change the driver. If anyone 
+> can help me? Thanks!
+Perhaps you want fbset?
 
 
 -------------------------------------------------------

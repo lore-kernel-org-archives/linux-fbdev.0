@@ -1,53 +1,50 @@
-From: Eric Anholt <eta@lclark.edu>
-Subject: DRM and pci_driver conversion
-Date: Mon, 20 Oct 2003 19:31:56 -0700
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1066703516.646.24.camel__10617.616287391$1066713459@leguin>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: 2.6.0-test8 - CONFIG_PCI_CONSOLE
+Date: Tue, 21 Oct 2003 19:07:06 +0100 (BST)
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <Pine.LNX.4.44.0310211906240.32738-100000@phoenix.infradead.org>
+References: <200310210120.h9L1K3Fg002814@turing-police.cc.vt.edu>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <200310210120.h9L1K3Fg002814@turing-police.cc.vt.edu>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1ABorG-000754-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 20 Oct 2003 22:15:03 -0700
-Received: from paclaw.org ([149.175.1.5] helo=lewis.lclark.edu)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.22)
-	id 1ABoNc-0005Ay-NL
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 20 Oct 2003 21:44:24 -0700
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-kernel@vger.kernel.org
-Cc: linux-fbdev-devel@lists.sourceforge.net
-
-I recently committed a change to the DRM for Linux in DRI CVS that
-converted it to use pci_driver and that probe system.  Unfortunately,
-we've found that there is a conflict between the DRM now and at least
-the radeon framebuffer.  Both want to attach to the same device, and
-with pci_driver, the second one to come along doesn't get probe called
-for that device.  Is there any way to mark things shared, or in some
-other way get the DRM to attach to a device that's already attached to,
-in the new model?
-
-Please CC me on replies as I'm not subscribed to these lists.
-
--- 
-Eric Anholt                                eta@lclark.edu          
-http://people.freebsd.org/~anholt/         anholt@FreeBSD.org
+To: Valdis.Kletnieks@vt.edu
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
+I have had the question. It appears to be dead code. unless someone speaks 
+up I will remove that code.
 
 
--------------------------------------------------------
-This SF.net email is sponsored by OSDN developer relations
-Here's your chance to show off your extensive product knowledge
-We want to know what you know. Tell us and you have a chance to win $100
-http://www.zoomerang.com/survey.zgi?HRPT1X3RYQNC5V4MLNSV3E54
+On Mon, 20 Oct 2003 Valdis.Kletnieks@vt.edu wrote:
+
+> in drivers/video/console/Kconfig, we have:
+> 
+> config PCI_CONSOLE
+>         bool
+>         depends on FRAMEBUFFER_CONSOLE
+>         default y
+> 
+> However, it's unclear what this variable actually *DOES*:
+> 
+> [/usr/src/linux-2.6.0-test8-mm1-a]2 find . ! -name '*.o' | xargs grep PCI_CONS
+> ./drivers/video/console/Kconfig:config PCI_CONSOLE
+> ./arch/ppc/configs/power3_defconfig:CONFIG_PCI_CONSOLE=y
+> ./arch/ppc/configs/common_defconfig:CONFIG_PCI_CONSOLE=y
+> ./arch/ppc/configs/sandpoint_defconfig:CONFIG_PCI_CONSOLE=y
+> ./arch/ppc/configs/ibmchrp_defconfig:CONFIG_PCI_CONSOLE=y
+> ./arch/ppc/configs/pmac_defconfig:CONFIG_PCI_CONSOLE=y
+> ./arch/ppc/defconfig:CONFIG_PCI_CONSOLE=y
+> ./arch/sparc64/defconfig:CONFIG_PCI_CONSOLE=y
+> ./arch/ia64/defconfig:CONFIG_PCI_CONSOLE=y
+> ./arch/ppc64/defconfig:CONFIG_PCI_CONSOLE=y
+> ./arch/parisc/defconfig:CONFIG_PCI_CONSOLE=y
+> ./.config.old:CONFIG_PCI_CONSOLE=y
+> ./config.old:CONFIG_PCI_CONSOLE=y
+> 
+> References in defconfig files, and in my .config, and that's about it...
+> 
+> It's been apparently dead code at least as far back as -test5-mm3.
+> 

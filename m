@@ -1,13 +1,13 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH] Macfb compile fixes
-Date: Sun, 15 Jun 2003 20:38:39 +0200
+Subject: [PATCH] fbcon fixes
+Date: Sun, 15 Jun 2003 21:10:30 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200306151838.h5FIcdw5008298@callisto.of.borg>
+Message-ID: <200306151910.h5FJAU0S008580@callisto.of.borg>
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from amsfep13-int.chello.nl ([213.46.243.24])
+Received: from amsfep14-int.chello.nl ([213.46.243.22])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19RcS4-0008Ew-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 15 Jun 2003 11:42:04 -0700
+	id 19Rcwt-00075l-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 15 Jun 2003 12:13:55 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,95 +20,70 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@transmeta.com>
-Cc: Linux Fbdev <linux-fbdev-devel@lists.sourceforge.net>, Geert Uytterhoeven <geert@linux-m68k.org>
+To: Marcelo Tosatti <marcelo@conectiva.com.br>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Linux Fbdev <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-Macfb compile fixes
+Fbcon:
+  - Make PROC_CONSOLE() return -1 when the virtual console does not belong to
+    the specified fbdev. This way we prevent messing with the wrong fb_info[i]
+    later when running fbset from the `wrong' virtual console on multi-headed
+    systems.
+  - Validate the current cursor position before undrawing the cursor in
+    fbcon_cursor(). If we just shrank the frame buffer size, the old cursor
+    position may now lay outside the frame buffer region.
 
---- linux-2.5.x/drivers/video/macfb.c	Mon May  5 10:32:15 2003
-+++ linux-m68k-2.5.x/drivers/video/macfb.c	Sun Jun  8 11:24:51 2003
-@@ -233,11 +233,11 @@
- 		
- 		/* Loop until we get to the register we want */
- 		for (i = 0; i < regno; i++) {
--			nubus_writeb(info->cmap[i].red >> 8, &dafb_cmap_regs->lut);
-+			nubus_writeb(info->cmap.red[i] >> 8, &dafb_cmap_regs->lut);
- 			nop();
--			nubus_writeb(info->cmap[i].green >> 8, &dafb_cmap_regs->lut);
-+			nubus_writeb(info->cmap.green[i] >> 8, &dafb_cmap_regs->lut);
- 			nop();
--			nubus_writeb(info->cmap[i].blue >> 8, &dafb_cmap_regs->lut);
-+			nubus_writeb(info->cmap.blue[i] >> 8, &dafb_cmap_regs->lut);
- 			nop();
- 		}
- 	}
-@@ -528,10 +528,10 @@
- 	 *  != 0 for invalid regno.
- 	 */
- 	
--	if (regno >= info->cmap.len)
-+	if (regno >= fb_info->cmap.len)
- 		return 1;
+--- linux-2.4.x/drivers/video/fbcon.c.orig	Wed Apr  2 13:26:09 2003
++++ linux-2.4.x/drivers/video/fbcon.c	Wed Apr  9 15:33:07 2003
+@@ -272,23 +272,22 @@
+ int PROC_CONSOLE(const struct fb_info *info)
+ {
+         int fgc;
+-        
+-        if (info->display_fg != NULL)
+-                fgc = info->display_fg->vc_num;
+-        else
+-                return -1;
+-                
+-        if (!current->tty)
+-                return fgc;
+-
+-        if (current->tty->driver.type != TTY_DRIVER_TYPE_CONSOLE)
+-                /* XXX Should report error here? */
+-                return fgc;
  
--	switch (info->var.bits_per_pixel) {
-+	switch (fb_info->var.bits_per_pixel) {
- 	case 1:
- 		/* We shouldn't get here */
- 		break;
-@@ -539,21 +539,21 @@
- 	case 4:
- 	case 8:
- 		if (macfb_setpalette)
--			macfb_setpalette(regno, red, green, blue, info);
-+			macfb_setpalette(regno, red, green, blue, fb_info);
- 		else
- 			return 1;
- 		break;
- 	case 16:
--		if (info->var.red.offset == 10) {
-+		if (fb_info->var.red.offset == 10) {
- 			/* 1:5:5:5 */
--			((u32*) (info->pseudo_palette))[regno] =
-+			((u32*) (fb_info->pseudo_palette))[regno] =
- 					((red   & 0xf800) >>  1) |
- 					((green & 0xf800) >>  6) |
- 					((blue  & 0xf800) >> 11) |
- 					((transp != 0) << 15);
- 		} else {
- 			/* 0:5:6:5 */
--			((u32*) (info->pseudo_palette))[regno] =
-+			((u32*) (fb_info->pseudo_palette))[regno] =
- 					((red   & 0xf800)      ) |
- 					((green & 0xfc00) >>  5) |
- 					((blue  & 0xf800) >> 11);
-@@ -565,19 +565,19 @@
- 		red   >>= 8;
- 		green >>= 8;
- 		blue  >>= 8;
--		((u32 *)(info->pseudo_palette))[regno] =
--			(red   << info->var.red.offset)   |
--			(green << info->var.green.offset) |
--			(blue  << info->var.blue.offset);
-+		((u32 *)(fb_info->pseudo_palette))[regno] =
-+			(red   << fb_info->var.red.offset)   |
-+			(green << fb_info->var.green.offset) |
-+			(blue  << fb_info->var.blue.offset);
- 		break;
- 	case 32:
- 		red   >>= 8;
- 		green >>= 8;
- 		blue  >>= 8;
--		((u32 *)(info->pseudo_palette))[regno] =
--			(red   << info->var.red.offset)   |
--			(green << info->var.green.offset) |
--			(blue  << info->var.blue.offset);
-+		((u32 *)(fb_info->pseudo_palette))[regno] =
-+			(red   << fb_info->var.red.offset)   |
-+			(green << fb_info->var.green.offset) |
-+			(blue  << fb_info->var.blue.offset);
- 		break;
-     }
-     return 0;
+-        if (MINOR(current->tty->device) < 1)
+-                return fgc;
++	if (info->display_fg == NULL)
++		return -1;
+ 
+-        return MINOR(current->tty->device) - 1;
++        if (!current->tty ||
++	    current->tty->driver.type != TTY_DRIVER_TYPE_CONSOLE ||
++	    MINOR(current->tty->device) < 1)
++		fgc = info->display_fg->vc_num;
++	else
++		fgc = MINOR(current->tty->device)-1;
++
++	/* Does this virtual console belong to the specified fbdev? */
++	if (fb_display[fgc].fb_info != info)
++		return -1;
++
++	return fgc;
+ }
+ 
+ 
+@@ -925,8 +924,9 @@
+ 	return;
+ 
+     cursor_on = 0;
+-    if (cursor_drawn)
+-        p->dispsw->revc(p, p->cursor_x, real_y(p, p->cursor_y));
++    if (cursor_drawn && p->cursor_x < conp->vc_cols &&
++	p->cursor_y < conp->vc_rows)
++	p->dispsw->revc(p, p->cursor_x, real_y(p, p->cursor_y));
+ 
+     p->cursor_x = conp->vc_x;
+     p->cursor_y = y;
 
 Gr{oetje,eeting}s,
 

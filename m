@@ -1,59 +1,90 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: vesafb with special resolution?
-Date: Sat, 16 Oct 2004 05:52:20 +0800
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200410160552.20443.adaplas@hotpop.com>
-References: <20041015190606.GN30583@charite.de>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: "Kendall Bennett" <KendallB@scitechsoft.com>
+Subject: Re: Generic VESA framebuffer driver and Video card BOOT?
+Date: Fri, 15 Oct 2004 15:12:25 -0700
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <416FE8D9.18954.2984F7A@localhost>
+References: <416FB624.31033.1D23BE5@localhost>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CIZzd-0008Vf-2p
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Oct 2004 14:52:09 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CIZzc-0001Md-8L
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Oct 2004 14:52:09 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 5BE478E9747
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 15 Oct 2004 21:51:54 +0000 (UTC)
-In-Reply-To: <20041015190606.GN30583@charite.de>
-Content-Disposition: inline
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Transfer-Encoding: 7BIT
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261724AbUJOWMv@vger.kernel.org>
+In-reply-to: <20041015214451.GA4739@hh.idb.hist.no>
+Content-description: Mail message body
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
+To: Helge Hafting <helgehaf@aitel.hist.no>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, penguinppc-team@lists.penguinppc.org, linuxconsole-dev@lists.sourceforge.net
 
-On Saturday 16 October 2004 03:06, Ralf Hildebrandt wrote:
-> I have a 16:10 screen on my laptop (1280x768). vesafb runs OK with a
-> 1024x768 resolution, but is 1280x768 also possible?
+Helge Hafting <helgehaf@aitel.hist.no> wrote:
 
-With the current vesafb incarnation, no. The vesafb driver currently selects
-the mode from a table of standard vesa modes provided by the BIOS, and  
-1280x768 is not standard.
+> On Fri, Oct 15, 2004 at 11:36:04AM -0700, Kendall Bennett wrote:
+> > Helge Hafting <helgehaf@aitel.hist.no> wrote:
+> > 
+> [...]
+> > > Having video BOOT would be great, and please make it independent of
+> > > the framebuffer drivers.  
+> > 
+> > Right now it is independent but I added a single line of code to the 
+> > Radeon driver to init the card prior to initing the rest of the driver. 
+> 
+> That's fine.  What I meant, was please make it independent of the
+> VESA framebuffer driver, because one might want to use an
+> acellerated driver when one is available. 
 
-Try vesafb-tng if you need a non-vesa standard mode.
+Oh, it already is. The VESA driver is not actually done yet so the only 
+drivers using VideoBoot right now are the accelerated ones ;-)
 
-http://dev.gentoo.org/~spock/projects/vesafb-tng/
+> > It can be done earlier than that inside fbmem.c, but I wasn't sure how to 
+> > set up the code so it would only POST each card as it is needed as I 
+> > don't want to bring up secondary controllers unless the user actually 
+> > wants this.
+> 
+> Selecting which cards to "boot" can probably be done with a kernel
+> parameter?  The default could be to bring up all cards except the
+> one the bios brought up already.  Wanting to _not_ bring up some
+> cards seems to be the unusual case to me. 
 
-Tony
+Not really. In many cases there may be a secondary controller on the 
+system that is not wanted, such as when the user has an i915G or other 
+chipset with integrated video but has plugged a different video card into 
+the system. The integrated video can still be active so trying to bring 
+it up may be problematic unless it is really wanted.
 
-PS:  A mode settable vesafb may happen soon enough...
+> > How does the framebuffer console system handle secondary controllers 
+> > right now? It seems from my look at the code that it only brings up the 
+> > primary and not the secondary?
+> 
+> The stock 2.6.x fbcon only use one framebuffer console.  I use the
+> ruby patch which supports multiple consoles.  The ruby patch for
+> 2.6.7 support multiple fbcons so you can have several keyboards
+> attached to separate framebuffers thus supporting several users.
+> (VT1-VT16 is the first kbd on the first fbcon, VT17-VT32 is the
+> second kbd on the second fbcon, and so on.) 
+> 
+> The ruby patch for 2.6.8.1 is somewhat broken, and doesn't work
+> with fbcon. It still support multiple keyboards and multiple
+> framebuffers, so I can support several users with separate xservers
+> but currently not gettys on separate fbcons. 
 
+Cool. So this stuff is not yet in the official kernel trees. Is that 
+going to happen or is the project to move the video out of the kernel 
+going to happen first?
 
+> Note that soft-booting the "extra" video card in order to support a
+> framebuffer driver is nice even if it doesn't attach to the
+> console, because there is other software that can utilize a
+> framebuffer.  X is the most well-known of them. 
 
+Yes, but if you don't need a framebuffer console on the card then X or 
+whatever can bring up the secondary controller from user space once the 
+kernel has booted.
 
--------------------------------------------------------
-This SF.net email is sponsored by: IT Product Guide on ITManagersJournal
-Use IT products in your business? Tell us what you think of them. Give us
-Your Opinions, Get Free ThinkGeek Gift Certificates! Click to find out more
-http://productguide.itmanagersjournal.com/guidepromo.tmpl
+Regards,
+
+---
+Kendall Bennett
+Chief Executive Officer
+SciTech Software, Inc.
+Phone: (530) 894 8400
+http://www.scitechsoft.com
+
+~ SciTech SNAP - The future of device driver technology! ~

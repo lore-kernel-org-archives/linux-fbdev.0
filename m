@@ -1,22 +1,25 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] neofb patches
-Date: Tue, 27 Apr 2004 10:56:00 +0200 (MEST)
+From: David Eger <eger-sender-da68b9@theboonies.us>
+Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
+	one works ;-)
+Date: Tue, 27 Apr 2004 11:43:57 +0200 (CEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0404271054530.14434@waterleaf.sonytel.be>
-References: <60004.64.139.3.221.1082827760.squirrel@www.foogod.com>
- <Pine.LNX.4.44.0404250138120.15965-100000@phoenix.infradead.org>
- <10078.171.72.5.226.1083003170.squirrel@www.foogod.com>
+Message-ID: <Pine.LNX.4.58.0404271119001.31905@rosencrantz.theboonies.us>
+References: <Pine.LNX.4.44.0404240035400.5826-100000@phoenix.infradead.org>
+	<1083025364.11575.4.camel@gaston>
+	<Pine.GSO.4.58.0404271050540.14434@waterleaf.sonytel.be>
+Reply-To: David Eger <eger-dated-1083663529.7e8c27@theboonies.us>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIONw-0003dE-2K
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 01:56:12 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIONv-0006Ne-PV
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 01:56:11 -0700
-In-Reply-To: <10078.171.72.5.226.1083003170.squirrel@www.foogod.com>
+	id 1BIP3H-0002d3-90
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 02:38:55 -0700
+Received: from not.theboonies.us ([66.139.79.224])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1BIP3G-0005Pj-Vr
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 02:38:55 -0700
+In-Reply-To: <Pine.GSO.4.58.0404271050540.14434@waterleaf.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,30 +31,44 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alex Stewart <alex@foogod.com>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, James Simmons <jsimmons@infradead.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Mon, 26 Apr 2004, Alex Stewart wrote:
-> yres_virtual does need to be set larger than yres in order for ypanning to
-> function, last I checked.  In order to set it to the correct value for the
-> particular card, we set it to 30000 (very large), and then call check_var
-> to have it scale it down to what the hardware can handle (this seems
+Geert wrote:
+> Indeed. BTW, no comments on my proposal to add fb_fix_screeninfo.capabilities?
 
-Hmm, but the `rules' are to round _up_ a value if it doesn't fit, or return an
-error.
+referring to his earlier post where he suggested:
+> What we really want to know here is whether redrawing is faster than
+> copying, i.e. whether reading from the frame buffer is fast or slow,
+> and whether fb_copyarea and fb_imageblit are fast or slow.
+> 
+> Right now we have in fb_fix_screeninfo:
+>  - [xy]panstep, for hardware panning
+>  - ywrapstep, for hardware ywrap
+> 
+> We can add a capability field with some flags that indicates that
+> - fb_copyarea is accelerated or not
+> - fb_imageblit is accelerated or not
+> - fb_write is much faster than fb_read
+> (I don't think it matters much to announce an accelerated fb_fillrect, 
+> although we may want to do that for consistency)
+> 
+> I chose the above so we have reasonable defaults if the capability field 
+> is 0.
+> 
+> All other logic can be derived by fbcon from these capabilities, right?
 
-Rounding down violates this rule.
+I like the approach.  It sounds like this is the sensible replacement for
+the vague semantics we have now in var.accel_flags / FB_ACCELF_TEXT. 
 
-Gr{oetje,eeting}s,
+I'm currently running through the radeon code trying to figure who all 
+twiddles var before it gets set to registers and how to rework fbcon to be
+sensible...
 
-						Geert
+-dte
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+---
+getting bounce messages from me? let me know and you'll go on my whitelist
 
 
 -------------------------------------------------------

@@ -1,18 +1,16 @@
-From: Antonino Daplas <adaplas@pol.net>
+From: Jon Smirl <jonsmirl@yahoo.com>
 Subject: Re: [ANNOUNCE]: VM86 Daemon
-Date: 01 Apr 2003 09:27:36 +0800
+Date: Mon, 31 Mar 2003 20:01:06 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1049160350.1059.39.camel@localhost.localdomain>
-References: <1049104351.1037.53.camel@localhost.localdomain> 
-	<3E886C5F.28140.1013B3CA@localhost>
+Message-ID: <20030401040106.65664.qmail@web14906.mail.yahoo.com>
+References: <1049158940.1059.21.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from pine.compass.com.ph ([202.70.96.37])
+Received: from web14906.mail.yahoo.com ([216.136.225.58])
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 190Acl-0006MI-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 31 Mar 2003 17:31:39 -0800
-In-Reply-To: <3E886C5F.28140.1013B3CA@localhost>
+	id 190CxO-0006pP-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 31 Mar 2003 20:01:06 -0800
+In-Reply-To: <1049158940.1059.21.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,36 +21,48 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Kendall Bennett <KendallB@scitechsoft.com>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Kendall Bennett <KendallB@scitechsoft.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, DirectFB-devel <directfb-dev@directfb.org>
 
-On Tue, 2003-04-01 at 08:27, Kendall Bennett wrote:
-> Jon Smirl <jonsmirl@yahoo.com> wrote:
-> 
-> > I didn't read through the code yet, is this being implemented by
-> > adding some new IOCTLs to the fb interface? For example an IOCTL to
-> > get the legal modes or to reset the card. 
-> 
-> We definitely want some new IOCTL's to allow the apps to find out what 
-> modes are available, if this has not been added.
+--- Antonino Daplas <adaplas@pol.net> wrote:
+> A new device seems more powerful and more generic. 
+> Generic in a sense
+> that other subsystems besides fbdev can use it to
+> access the BIOS or
 
-Actually, the fbdev has its own ioctl, FBIOSETVAR (or something like
-that).  You place the desired mode in struct fb_var_screeninfo (var),
-then set var->activate = FB_ACTIVATE_TEST.  If there's no error, the var
-should now contain the best mode (not necessarily the same) which was
-requested. 
+The new device is going to need to sort out multiple
+adapters. Using /dev/fbX avoids that problem. You'll
+also be able to get the /dev/fb code into the kernel.
+Getting a driver in that creates /dev/vm86 is going to
+be harder. 
 
-All this is automatically incorporated to vesafb when vm86d is loaded. 
-The new vesafb driver has additional methods for:
+I'm not clear on what /dev/vm86 does. Why couldn't the
+radeon driver exec vm86d with a parameter of /dev/fb0.
+vm86d would then open/IOCTL the radeon driver to
+identify the PCI device and what actions are needed.
+After it resets and gets the EDID data it would IOCTL
+them back into /dev/fb0 and exit. You need to know
+which PCI device so that you can set up the right
+VBIOS ROM. Each adapter would get it's own vm86d, but
+they wouldn't hang around long.
 
-fb_check_var()
-fb_set_par()
-fb_pan_display()
-fb_setcolreg()
-fb_blank() -- currently a dummy method
+I haven't played with this yet but the vm86d should
+use the new klibc. That would allow it to run early in
+the boot process. The driver could then exec it if
+needed. It would also make vm86d tiny.
 
-Tony
+The Radeon and Rage128 cards need a reset if they are
+reporting zero VRAM.
 
+=====
+Jon Smirl
+jonsmirl@yahoo.com
+
+__________________________________________________
+Do you Yahoo!?
+Yahoo! Tax Center - File online, calculators, forms, and more
+http://platinum.yahoo.com
 
 
 -------------------------------------------------------

@@ -1,118 +1,81 @@
-From: Alexander Kern <alex.kern@gmx.de>
-Subject: Fwd: [PATCH 2.5.59] fix for fbcon.c
-Date: Sun, 19 Jan 2003 19:56:33 +0100
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200301191956.33826.alex.kern@gmx.de>
+From: Russell King <rmk@arm.linux.org.uk>
+Subject: fbcon scrolling + initialisation oddity
+Date: Sun, 19 Jan 2003 20:03:40 +0000
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <20030119200340.A13758@flint.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="------------Boundary-00=_9Y5ZDSBVNUHQ0ADT6RCH"
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail.gmx.net ([213.165.64.20])
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18aKcu-0006Dv-00
-	for <Linux-fbdev-devel@lists.sourceforge.net>; Sun, 19 Jan 2003 10:57:01 -0800
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: Linux-fbdev-devel@lists.sourceforge.net
-
-
---------------Boundary-00=_9Y5ZDSBVNUHQ0ADT6RCH
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-
-
-----------  Weitergeleitete Nachricht  ----------
-
-Subject: [PATCH 2.5.59] fix for fbcon.c
-Date: Sun, 19 Jan 2003 19:36:12 +0100
-From: Alexander Kern <alex.kern@gmx.de>
-To: fb-devel@lists.sourceforge.net
-
-Hello,
-
-hier is a fix needed by 1400x1050 resolution. fbcon_resize() without fis =
-set
-resolution to 1400x1040 and confusing LCD vertical stretching.
-
-Regards
-Alex
-
-PS: I have retest both kernel versions, here is a result.
-
-COMPAQ ARMADA E500, ATI (Mach64) Rage 3D Mobility P/M
-15" with native 1400x1050 pixel
-
-                        2.4.21-pre3                              2.5.59
-640x400        perfect(LOGO)                        perfect
-640x480        perfect(LOGO)                        perfect
-800x600        perfect                                      perfect
-1024x768      h. overlapping(LOGO)          h. overlapping
-1152x864      h. overlapping                        h. overlapping
-1280x1024    h. overlapping                        h. overlapping
-1400x1050    perfect                                   perfect (with this
- fix)
-
-LOGO by 640x4?0 means strange blue pixels as mirror of pinguin
-LOGO by 1024x768 means shift to top, pinguin head is unvisible
-h. overlapping means mostly stretching issue.
-
--------------------------------------------------------
-
-
---------------Boundary-00=_9Y5ZDSBVNUHQ0ADT6RCH
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="fbcon.diff"
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename="fbcon.diff"
+To: Linux Kernel List <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net, jsimmons@infradead.org
 
---- linux-2.5.orig/drivers/video/console/fbcon.c	2003-01-17 16:13:53.000000000 +0100
-+++ linux/drivers/video/console/fbcon.c	2003-01-19 19:17:23.000000000 +0100
-@@ -1876,17 +1876,23 @@
- 	struct display *p = &fb_display[vc->vc_num];
- 	struct fb_info *info = p->fb_info;
- 	struct fb_var_screeninfo var = info->var;
--	int err;
-+	int err; int x_diff, y_diff;
- 
- 	var.xres = width * vc->vc_font.width;
- 	var.yres = height * vc->vc_font.height;
- 	var.activate = FB_ACTIVATE_NOW;
--
-+	x_diff = info->var.xres - var.xres;
-+	y_diff = info->var.yres - var.yres;
-+	if(x_diff < 0 || x_diff > vc->vc_font.width ||
-+	  (y_diff < 0 || y_diff > vc->vc_font.height)) {
-+		DPRINTK("resize now %ix%i\n", var.xres, var.yres);
- 	err = fb_set_var(&var, info);
- 	return  (err || var.xres != info->var.xres ||
--		 var.yres != info->var.yres) ?
--		-EINVAL : 0;
--	  
-+			var.yres != info->var.yres) ? -EINVAL : 0;
-+	} else {
-+		DPRINTK("prevent resize\n");
-+		return 0;
-+	}
- }
- 
- static int fbcon_switch(struct vc_data *vc)
+1. YWRAP scrolling.
 
---------------Boundary-00=_9Y5ZDSBVNUHQ0ADT6RCH--
+There appears to be something weird going on with fbcon scrolling in 2.5.59
+when using YWRAP.  The best example is what happens when scrolling a large
+file (say, /etc/termcap) in less.
+
+While scrolling down in the file, the screen scrolls correctly for the
+most part.  At some point, the screen stops scrolling and the last line
+which normally displays the less prompt character ":" is replaced by
+the next line of text.  Continuing to scroll down produces no visible
+changes.
+
+Once enough scrolling has occurred, suddenly the screen jumps and we get
+the proper text displayed.
+
+Also, if you scroll line by line until the ":" is replaced by text as
+above, scrolling back up one line replaces the ":" and scrolling upwards
+scrolls the screen up correctly.
+
+As an additional behaviour point, if you scroll down until the ":" just
+disappears and then some extra lines, hit 'q' to exit less, followed by
+^L, most of the screen is cleared, except for the very top few lines.
+I haven't checked, but I suspect the number of lines left at the top of
+the screen is equal to the number of lines we're off the bottom of the
+screen.
+
+2. Initialisation
+
+Machine 1: (acornfb)
+
+	parport0: PC-style at 0x278 (0x678) [PCSPP(,...)]
+	i2c-dev.o: i2c /dev entries driver module version 2.6.4 (20020719)
+	Acornfb: 2048kB VRAM, VIDC20, using 1280x1024, 63.885kHz, 59Hz
+	Acornfb: Monitor: 30.000-85.000kHz, 56-76Hz, DPMS
+-->	Console: switching to colour frame buffer device 160x128
+	pty: 256 Unix98 ptys configured
+	i2c-dev.o: Registered 'IOC/IOMD' as minor 0
+	mice: PS/2 mouse device common for all mice
+	input: Acorn RiscPC mouse
+	input: AT Set 2 keyboard on rpckbd/serio0
+	...
+	SCSI device sda: drive cache: write back
+	 sda: sda1 sda2
+	Attached scsi removable disk sda at scsi0, channel 0, id 2, lun 0
+-->	Console: switching to colour frame buffer device 160x128
+	NET4: Linux TCP/IP 1.0 for NET4.0
+	IP: routing cache hash table of 512 buckets, 4Kbytes
+
+Machine 2: (sa1100fb)
+
+	i2c-dev.o: i2c /dev entries driver module version 2.6.4 (20020719)
+	i2c-proc.o version 2.6.4 (20020719)
+	i2c-dev.o: Registered 'l3-bit-sa1100-gpio' as minor 0
+	dma period = 1372168 ps, clock = 206400 kHz
+-->	Console: switching to colour frame buffer device 40x30
+	pty: 256 Unix98 ptys configured
+	SA1100 Real Time Clock driver v1.00
+	RAMDISK driver initialized: 16 RAM disks of 8192K size 1024 blocksize
+-->	Console: switching to colour frame buffer device 40x30
+	drivers/mtd/maps/pcmciamtd.c: PCMCIA Flash memory card driver $Revision: 1.36 $
 
 
+We seem to be initialising the console twice?  Certainly the position of the
+text vs the logo seems to jump around with the second initialisation.
 
--------------------------------------------------------
-This SF.NET email is sponsored by: FREE  SSL Guide from Thawte
-are you planning your Web Server Security? Click here to get a FREE
-Thawte SSL guide and find the answers to all your  SSL security issues.
-http://ads.sourceforge.net/cgi-bin/redirect.pl?thaw0026en
+-- 
+Russell King (rmk@arm.linux.org.uk)                The developer of ARM Linux
+             http://www.arm.linux.org.uk/personal/aboutme.html

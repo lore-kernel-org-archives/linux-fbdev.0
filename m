@@ -1,19 +1,20 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: James Simmons <jsimmons@infradead.org>
 Subject: Re: 2.6.1 fb.h patch for userland application
-Date: Mon, 9 Feb 2004 13:33:28 +0100 (MET)
+Date: Mon, 9 Feb 2004 17:21:26 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0402091329210.14888@waterleaf.sonytel.be>
+Message-ID: <Pine.LNX.4.44.0402091720480.24535-100000@phoenix.infradead.org>
 References: <4027649B.5010208@de.bosch.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AqAbw-0008WI-QU
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Feb 2004 04:34:00 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1AqAbw-0005na-7X
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Feb 2004 04:34:00 -0800
+	id 1AqF6B-0004qX-9Q
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Feb 2004 09:21:31 -0800
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1AqF6A-0000pk-Aq
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Feb 2004 09:21:30 -0800
 In-Reply-To: <4027649B.5010208@de.bosch.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,25 +28,60 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Dirk Behme <dirk.behme@de.bosch.com>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@infradead.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, geert@linux-m68k.org
+
+
+Its already included in 2.6.3-rc1. Grab this kernel and give it a try.
+
 
 On Mon, 9 Feb 2004, Dirk Behme wrote:
-> I had problems to use linux/fb.h from 2.6.1 to compile userland
-> application microwindows. I made some changes to get microwindows 0.90
+
+> Hello,
+> 
+> I had problems to use linux/fb.h from 2.6.1 to compile userland 
+> application microwindows. I made some changes to get microwindows 0.90 
 > to compile, please see patch below.
+> 
+> The include files atomic.h and spinlock.h are necessary for spinlock_t 
+> and atomic_t. workqueue.h doesn't compile for userspace application and 
+> doesn't seem to be necessary at all (?). u8 is undefined while compiling 
+> for userspace, use __u8 instead.
+> 
+> Is this patch OK?
+> 
+> Dirk
+> 
+> --- linux/include/linux/fb.h_orig     2003-12-30 19:58:12.000000000 +0100
+> +++ linux/include/linux/fb.h        2004-02-04 10:11:59.000000000 +0100
+> @@ -2,8 +2,9 @@
+>   #define _LINUX_FB_H
+> 
+>   #include <linux/tty.h>
+> -#include <linux/workqueue.h>
+> +#include <linux/spinlock.h>
+>   #include <asm/types.h>
+> +#include <asm/atomic.h>
+>   #include <asm/io.h>
+> 
+>   /* Definitions of frame buffers 
+>           */
+> @@ -339,8 +340,8 @@ struct fb_pixmap {
+>          __u32 scan_align;                 /* alignment per scanline 
+>      */
+>          __u32 flags;                      /* see FB_PIXMAP_* 
+>      */
+>                                            /* access methods 
+>      */
+> -       void (*outbuf)(u8 *dst, u8 *addr, unsigned int size);
+> -       u8   (*inbuf) (u8 *addr);
+> +       void (*outbuf)(__u8 *dst, __u8 *addr, __u32 size);
+> +       __u8 (*inbuf) (__u8 *addr);
+>          spinlock_t lock;                  /* spinlock 
+>      */
+>          atomic_t count;
+>   };
+> 
 
-Should be fixed in 2.6.3-rc1.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 
 -------------------------------------------------------

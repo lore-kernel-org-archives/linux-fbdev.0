@@ -1,17 +1,16 @@
-From: Miles Lane <miles@megapathdsl.net>
-Subject: Re: rivafb problems with 2.5.24 + latest fbdev.diff patch
-Date: 27 Jun 2002 17:28:03 -0700
+From: Petr Vandrovec <vandrove@vc.cvut.cz>
+Subject: [PATCH] 2.5.24 matroxfb memory corruption
+Date: Sun, 30 Jun 2002 02:28:34 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1025224085.1632.2.camel@turbulence.megapathdsl.net>
-References: <Pine.LNX.4.44.0206271312270.19152-100000@www.transvirtual.com>
+Message-ID: <afles2$eas$2@main.gmane.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from front1.mail.megapathdsl.net ([66.80.60.31])
-	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17Njgj-0003gJ-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 27 Jun 2002 17:32:37 -0700
-In-Reply-To: <Pine.LNX.4.44.0206271312270.19152-100000@www.transvirtual.com>
+Received: from p015.as-l031.contactel.cz ([212.65.234.207] helo=ppc.vc.cvut.cz)
+	by usw-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17ORNF-0001Zb-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 29 Jun 2002 16:11:26 -0700
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,41 +21,89 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@transvirtual.com>
-Cc: Fbdev <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: torvalds@transmeta.com
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, 2002-06-27 at 13:24, James Simmons wrote:
+Hi,
+  Linus, please apply this. When James converted all drivers to unified
+do_install_cmap(), he blindly changed also matroxfb, which happily
+uses fbcon.currcon == -1. This caused memory corruption because of
+memory before fb_display[] array was overwritten.
+  Default do_install_cmap() also installed invalid default color map
+in some matroxfb resolutions. Not all world have >= 4bpp.
+					Thanks,
+						Petr Vandrovec
+						vandrove@vc.cvut.cz
 
-<snip>
 
-> > 2)  After booting, running the command "fbset -a 1600x1200-76"
-> > causes the machine to lock up.  This same command worked fine
-> > with 2.5.22.
-> 
-> I noticed. The mode did change for me but it locked up. Nothing was
-> recorded either. Since you are using serial console can you define
-> RIVAFBDEBUG in fbdev.c and send me your output.
-
-I tried this, but nothing got emitted on the serial console.
-The system locked up, as before.
-
-<snip>
-
-> > 4)  Lastly, I have not yet figured out how to get rivafb
-> > in the 2.5 series to boot directly into 1600x1200x16 @ 76Hz.
-> [snip]..
-> 
-> > I was then informed that I should use "video=riva:1600x1200@75-16",
-> > since there is no 76Hz entry in linux/drivers/video/modedb.c.
-> 
-> I attempted that one as well. It didn't work for me either.
-
-Hmm. So you don't know what the correct method to do this is?
-Or this is the correct way and it simply is not working.
-
+diff -urdN linux/drivers/video/matrox/matroxfb_base.c linux/drivers/video/matrox/matroxfb_base.c
+--- linux/drivers/video/matrox/matroxfb_base.c	Fri Jun 21 00:53:55 2002
++++ linux/drivers/video/matrox/matroxfb_base.c	Sun Jun 30 02:19:15 2002
+@@ -141,6 +141,19 @@
+ 
+ 
+ /* --------------------------------------------------------------------- */
++static inline void my_install_cmap(WPMINFO2)
++{
++	/* Do not touch this code if you do not understand what it does! */
++	/* Never try to use do_install_cmap() instead. It is crap. */
++	struct fb_cmap* cmap = &ACCESS_FBINFO(currcon_display)->cmap;
++
++	if (cmap->len)
++		fb_set_cmap(cmap, 1, &ACCESS_FBINFO(fbcon));
++	else
++		fb_set_cmap(fb_default_cmap(ACCESS_FBINFO(curr.cmap_len)),
++			    1, &ACCESS_FBINFO(fbcon));
++}
++
+ 
+ static void matrox_pan_var(WPMINFO struct fb_var_screeninfo *var) {
+ 	unsigned int pos;
+@@ -869,7 +882,7 @@
+ 				up_read(&ACCESS_FBINFO(altout.lock));
+ 			}
+ 			matrox_cfbX_init(PMINFO display);
+-			do_install_cmap(ACCESS_FBINFO(fbcon.currcon),&ACCESS_FBINFO(fbcon));
++			my_install_cmap(PMINFO2);
+ #if defined(CONFIG_FB_COMPAT_XPMAC)
+ 			if (console_fb_info == &ACCESS_FBINFO(fbcon)) {
+ 				int vmode, cmode;
+diff -urdN linux/drivers/video/matrox/matroxfb_crtc2.c linux/drivers/video/matrox/matroxfb_crtc2.c
+--- linux/drivers/video/matrox/matroxfb_crtc2.c	Fri Jun 21 00:53:48 2002
++++ linux/drivers/video/matrox/matroxfb_crtc2.c	Sun Jun 30 02:19:15 2002
+@@ -84,6 +84,19 @@
+ #undef m2info
+ }
+ 
++static inline void my_install_cmap(struct matroxfb_dh_fb_info* m2info)
++{
++	/* Do not touch this code if you do not understand what it does! */
++	/* Never try to use do_install_cmap() instead. It is crap. */
++	struct fb_cmap* cmap = &m2info->currcon_display->cmap;
++	
++	if (cmap->len)
++		fb_set_cmap(cmap, 1, &m2info->fbcon);
++	else
++		fb_set_cmap(fb_default_cmap(16), 1, &m2info->fbcon);
++}
++
++
+ static void matroxfb_dh_restore(struct matroxfb_dh_fb_info* m2info,
+ 		struct my_timming* mt,
+ 		struct display* p,
+@@ -439,7 +452,7 @@
+ 			up_read(&ACCESS_FBINFO(altout.lock));
+ 		}
+ 		matroxfb_dh_cfbX_init(m2info, p);
+-		do_install_cmap(ACCESS_FBINFO(fbcon.currcon), &ACCESS_FBINFO(fbcon));
++		my_install_cmap(m2info);
+ 	}
+ 	return 0;
+ #undef m2info
 
 
 -------------------------------------------------------
 This sf.net email is sponsored by:ThinkGeek
-Bringing you mounds of caffeinated joy.
+No, I will not fix your computer.
 http://thinkgeek.com/sf

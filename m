@@ -1,15 +1,15 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Console bug fix.
-Date: Tue, 13 May 2003 22:41:52 +0100 (BST)
+Subject: Framebuffer fix 1
+Date: Tue, 13 May 2003 22:45:06 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0305132237570.12672-100000@phoenix.infradead.org>
+Message-ID: <Pine.LNX.4.44.0305132242030.12672-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19FhXa-0007EZ-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 13 May 2003 14:42:31 -0700
+	id 19Fhag-00018h-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 13 May 2003 14:45:43 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,48 +22,59 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Linus Torvalds <torvalds@transmeta.com>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 
 
-The font size needs to be set for all terminals. This patch fixes that. 
-Please apply.
+This removed EDID support for VESA. The EDID code needs more developement
+which can be done on the side. 
 
 # This is a BitKeeper generated patch for the following project:
 # Project Name: Linux kernel tree
 # This patch format is intended for GNU patch command version 2.5 or higher.
 # This patch includes the following deltas:
-#	           ChangeSet	1.1077  -> 1.1078 
-#	drivers/char/vt_ioctl.c	1.22    -> 1.23   
+#	           ChangeSet	1.1078  -> 1.1079 
+#	drivers/video/vesafb.c	1.31    -> 1.32   
 #
 # The following is the BitKeeper ChangeSet Log
 # --------------------------------------------
-# 03/05/12	jsimmons@maxwell.earthlink.net	1.1078
-# [CONSOLE] This was the bug that was causing dual head (vga and mda) to lock up.
+# 03/05/12	jsimmons@maxwell.earthlink.net	1.1079
+# [VESA FBDEV] Removed the EDID code. The results where mixed. It worked for some but not for others.
 # --------------------------------------------
 #
-diff -Nru a/drivers/char/vt_ioctl.c b/drivers/char/vt_ioctl.c
---- a/drivers/char/vt_ioctl.c	Mon May 12 14:12:47 2003
-+++ b/drivers/char/vt_ioctl.c	Mon May 12 14:12:47 2003
-@@ -869,13 +869,13 @@
- 		if (clin > 32)
- 			return -EINVAL;
- 		    
--		if (vlin)
--			vc->vc_scan_lines = vlin;
--		if (clin)
--			vc->vc_font.height = clin;
--	
--		for (i = 0; i < MAX_NR_CONSOLES; i++)
-+		for (i = 0; i < MAX_NR_CONSOLES; i++) {
-+			if (vlin)
-+				vc_cons[i].d->vc_scan_lines = vlin;
-+			if (clin)
-+				vc_cons[i].d->vc_font.height = clin;
- 			vc_resize(i, cc, ll);
-+		}
-   		return 0;
+diff -Nru a/drivers/video/vesafb.c b/drivers/video/vesafb.c
+--- a/drivers/video/vesafb.c	Mon May 12 14:26:05 2003
++++ b/drivers/video/vesafb.c	Mon May 12 14:26:05 2003
+@@ -215,7 +215,6 @@
+ int __init vesafb_init(void)
+ {
+ 	int video_cmap_len;
+-	char *edid = 0;
+ 	int i;
+ 
+ 	if (screen_info.orig_video_isVGA != VIDEO_TYPE_VLFB)
+@@ -300,18 +299,10 @@
+ 		ypan = 0;
  	}
  
+-#ifdef __i386__
+-	edid = get_EDID_from_BIOS(0);
+-	if (edid)
+-		parse_edid(edid, &vesafb_defined);	
+-	else		
+-#endif
+-	{	
+-		/* some dummy values for timing to make fbset happy */
+-		vesafb_defined.pixclock     = 10000000 / vesafb_defined.xres * 1000 / vesafb_defined.yres;
+-		vesafb_defined.left_margin  = (vesafb_defined.xres / 8) & 0xf8;
+-		vesafb_defined.hsync_len    = (vesafb_defined.xres / 8) & 0xf8;
+-	}
++	/* some dummy values for timing to make fbset happy */
++	vesafb_defined.pixclock     = 10000000 / vesafb_defined.xres * 1000 / vesafb_defined.yres;
++	vesafb_defined.left_margin  = (vesafb_defined.xres / 8) & 0xf8;
++	vesafb_defined.hsync_len    = (vesafb_defined.xres / 8) & 0xf8;
+ 	
+ 	if (vesafb_defined.bits_per_pixel > 8) {
+ 		vesafb_defined.red.offset    = screen_info.red_pos;
 
 
 

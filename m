@@ -1,16 +1,16 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Helge Hafting <helgehaf@aitel.hist.no>
 Subject: Re: Much better framebuffer fixes.
-Date: Thu, 27 Mar 2003 10:18:51 +0100 (MET)
+Date: Thu, 27 Mar 2003 10:33:52 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0303271016300.26358-100000@vervain.sonytel.be>
-References: <Pine.LNX.4.44.0303270017180.25001-100000@phoenix.infradead.org>
+Message-ID: <3E82C580.1000801@aitel.hist.no>
+References: <Pine.LNX.4.44.0303270017180.25001-100000@phoenix.infradead.org> <1048735712.1047.10.camel@localhost.localdomain>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18yTY8-0003uu-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 27 Mar 2003 01:19:52 -0800
-In-Reply-To: <Pine.LNX.4.44.0303270017180.25001-100000@phoenix.infradead.org>
+Received: from hermine.idb.hist.no ([158.38.50.15])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18yTjQ-000184-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 27 Mar 2003 01:31:32 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,28 +20,29 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Antonino Daplas <adaplas@pol.net>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, 27 Mar 2003, James Simmons wrote:
->  drivers/video/logo/logo.c       |   69 +++++------
+Antonino Daplas wrote:
+> On Thu, 2003-03-27 at 08:18, James Simmons wrote:
+> 
+>>Okay. Here are more framebuffer fixes. Please try these fixes and let me 
+>>know how they work out for you.
+>>
+> 
+> 
+> This is a resend of the patch I previously sent.  I see that you have
+> made changes to the logo drawing code targeted for monochrome logo
+> drawing to use mono expansion.  You still need a few changes though,
+> image->bg_color and image->fg_color must be initialized correctly when
+> image->depth == 1.
 
-Are you sure the change from logo type to logo depth in (fb_)find_logo() won't
-have any side effects? After this change, you may receive a different type of
-logo than you requested.
+This applied on top of James Simmons' patch, but didn't compile.
+spin_lock_irqsave was "unknown".
 
-Gr{oetje,eeting}s,
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Helge Hafting
 
 
 

@@ -1,137 +1,232 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: request_mem_region problem ...
-Date: 31 Oct 2002 19:05:13 +0800
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1036062270.638.25.camel@daplas>
-References: <20021030130016.GA1573@iliana> <1036024416.644.23.camel@daplas>
-	<20021031081007.GB617@iliana>
+From: James Simmons <jsimmons@infradead.org>
+Subject: [BK fbdev updates]
+Date: Thu, 31 Oct 2002 13:03:54 -0800 (PST)
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <Pine.LNX.4.33.0210311258040.1721-100000@maxwell.earthlink.net>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [203.167.79.9] (helo=willow.compass.com.ph)
-	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 187DBZ-0007q3-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 31 Oct 2002 03:08:25 -0800
-In-Reply-To: <20021031081007.GB617@iliana>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Sven Luther <luther@dpt-info.u-strasbg.fr>
-Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
-
-On Thu, 2002-10-31 at 16:10, Sven Luther wrote:
-> On Thu, Oct 31, 2002 at 08:34:05AM +0800, Antonino Daplas wrote:
-[...]
-> 
-> I already solutioned this problem.
-> 
-> BTW, i don't understand how the tdfxfb does not have this problem, as it
-> is from there that i tried to sole this.
-> 
-> The problem was that i did :
-> 
->         /* Find the mmio register area */
-> 	pm3_fix.mmio_start = pci_resource_start(pdev, 0);
-> 	pm3_fix.mmio_len = pci_resource_len(pdev, 0);
-> 
-> And later :
-> 
-> 	if (!request_mem_region(pci_resource_start(pdev, 0), pci_resource_len(pdev, 0), ...
-> 
-> Changing this to :
-> 
-> 	if (!request_mem_region(pm3_fix.mmio_start, pm3_fix.mmio_len, ...
-> 
-> Solved the problem, so it seems that the pci_resource_ functions can be
-> called only one time. Is this true ?
-> 
-Strange.  pci_resource_* are just macros, so they should be usable as
-long as the pci_dev pointer is valid.
-
-> Now, i seem to have everything fine, but it still hangs in
-> register_framebuffer, a bit of searching has it that it is when
-> register_framebuffer calls take_over_console. I didn't have time for
-> looking into it more yesterday.
-> 
-> Still the screen is black, and i see a small (underscore) blinking
-> cursor at the bottom left of the screen. The machine was dead though :
-> 
-> Oct 30 23:15:53 iliana kernel:  printing eip:
-> Oct 30 23:15:53 iliana kernel: c023affc
-> Oct 30 23:15:53 iliana kernel: Oops: 0000
-> Oct 30 23:15:53 iliana kernel: pm3fb nls_iso8859-15 nls_cp437 sym53c8xx
-> Oct 30 23:15:53 iliana kernel: CPU:    0
-> Oct 30 23:15:53 iliana kernel: EIP:    0060:[fbcon_cursor+108/480] Not tainted
-> Oct 30 23:15:53 iliana kernel: EFLAGS: 00010246
-> Oct 30 23:15:53 iliana kernel: eax: 00000000   ebx: 00000000   ecx: 00000000   edx: c1143240
-> Oct 30 23:15:53 iliana kernel: esi: c042d280   edi: 00000002   ebp: 00000018   esp: c4dcbc10
-> Oct 30 23:15:53 iliana kernel: ds: 0068   es: 0068   ss: 0068
-> Oct 30 23:15:53 iliana kernel: Process modprobe (pid: 495, threadinfo=c4dca000 task=c6bec040)
-> Oct 30 23:15:53 iliana kernel: Stack: 00000000 c04156c0 00000000 00000000 c01f21f8 c1143240 00000002 00000000
-> Oct 30 23:15:53 iliana kernel:        c04156c0 c01f5435 00000000 c039ef20 c03dfe9f 0000339f 000033cf c0414a30
-> Oct 30 23:15:53 iliana kernel:        00002adf c01275e1 00000000 c0119439 c039ef20 c03dfe9f 00000030 000033cf
-> 
-Running ksymoops on that might help.  The source can be found at
-ftp.kernel.org.  
-
-If you define FBCON_HAS_ACCEL, then fb_imageblit, fb_copyarea and
-fb_fillrect in info->fbops must not be null.  Otherwise, you'll always
-get an oops. If you don't define FBCON_HAS_ACCEL, you'll end up with
-fbcon_dummy, which is totally safe but will not show anything at all. 
-This is all assuming you use gen_set_var.  
-
-If you did not define fb_set_var at all, then info->disp.dispsw must
-point to valid console drawing hooks before you register the
-framebuffer.  (Actually, all fields in struct display must be valid
-before you register the framebuffer)
-
-Your oops tracing points to fbcon_cursor as the culprit.  If
-dispsw->cursor is NULL, then you must have a valid dispsw->revc.
-  
-> How, well, maybe i should wait for the new patches from James to be
-> accepted into the linus tree.
-> 
-> Notice, maybe this is due to me not having defined yet any of the
-> check_var, set_par, blank, ... functions, but my idea, for the howto
-> afterward, was to write first the most minimal working fbdev.
-> 
-> BTW, should i work on james BK tree directly ? Is there an howto on how
-> to do that ? Or could it be possible to get a patch against 2.5.44 ?
-> 
-Try Documentation/BK-usage.  You will need a very fat pipe, then for a
-start, 
-
-bk clone bk://fbdev.bkbits.net/fbdev-2.5
-
-> 
-> when i try to use the cfb_xxx functions, it does not work. i copied the
-> neofb line in the Makefile so that pm3fb should have added the 3 cfbxxx
-> objects, but it does not work. When loading the cfbxxx.o object files as
-> modules, insmod complains about lack of version in them, so i guess they
-> are not modules. Still, they don't get linked with the pm3fb.o (and
-> neither with the neofb.o when i tried it), and when loading pm3fb.o, i
-> get a message about missing symbols cfb_xxx.
-> 
-> So, does the cfb_xxx generic accel stuff get linked correctly when
-> building as modules or am i missing something ?
-> 
-You're correct, the neofb line in the Makefile is for static building
-only.  The cfb_xxx will not compile as modules, yet.  If your driver has
-its own Makefile, just add cfb_xxx.o objects to directly link to them.
-
-Tony
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
+Sorry about not producing a regular diff. The final changes really did a
+number on the framebuffer console code in fbcon.c so I had some massive
+work to do. I still have a massive amount of cleaning up to do. Also a lot
+of drivers stil haven't been ported.
 
--------------------------------------------------------
-This sf.net email is sponsored by: Influence the future 
-of Java(TM) technology. Join the Java Community 
-Process(SM) (JCP(SM)) program now. 
-http://ads.sourceforge.net/cgi-bin/redirect.pl?sunm0004en
+So here is the regular diff against 2.5.45
+
+http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
+
+diffstat:
+
+ CREDITS                                |   10
+ Documentation/DocBook/kernel-api.tmpl  |    4
+ MAINTAINERS                            |    7
+ arch/alpha/Kconfig                     |   31
+ arch/arm/Kconfig                       |   21
+ arch/i386/Kconfig                      |   55
+ arch/ia64/Kconfig                      |   25
+ arch/m68k/Kconfig                      |    7
+ arch/mips/Kconfig                      |   62
+ arch/mips64/Kconfig                    |   23
+ arch/parisc/Kconfig                    |   19
+ arch/ppc/Kconfig                       |   22
+ arch/ppc64/Kconfig                     |    7
+ arch/sh/Kconfig                        |   55
+ arch/sparc/Kconfig                     |   16
+ arch/sparc64/Kconfig                   |   11
+ arch/x86_64/Kconfig                    |   55
+ drivers/Makefile                       |    3
+ drivers/char/consolemap.c              |    1
+ drivers/char/keyboard.c                |    1
+ drivers/char/selection.c               |    1
+ drivers/char/tty_io.c                  |    7
+ drivers/char/vc_screen.c               |    1
+ drivers/char/vt.c                      |  181
+ drivers/char/vt_ioctl.c                |   58
+ drivers/video/Kconfig                  |  338 -
+ drivers/video/Makefile                 |   45
+ drivers/video/S3triofb.c               |    2
+ drivers/video/amifb.c                  |    2
+ drivers/video/anakinfb.c               |   18
+ drivers/video/atafb.c                  |    2
+ drivers/video/aty/atyfb_base.c         |  111
+ drivers/video/aty/mach64_ct.c          |    2
+ drivers/video/aty/mach64_cursor.c      |    2
+ drivers/video/aty/mach64_gx.c          |    2
+ drivers/video/aty128fb.c               | 3165 +++++++---------
+ drivers/video/cfbcopyarea.c            |  485 ++
+ drivers/video/cfbfillrect.c            |  107
+ drivers/video/cfbimgblt.c              |  335 +
+ drivers/video/chipsfb.c                |    2
+ drivers/video/clps711xfb.c             |   16
+ drivers/video/console/Kconfig          |  277 +
+ drivers/video/console/Makefile         |   52
+ drivers/video/console/dummycon.c       |   73
+ drivers/video/console/fbcon-accel.c    |  330 +
+ drivers/video/console/fbcon-accel.h    |   34
+ drivers/video/console/fbcon-afb.c      |  448 ++
+ drivers/video/console/fbcon-afb.h      |   32
+ drivers/video/console/fbcon-hga.c      |  253 +
+ drivers/video/console/fbcon-ilbm.c     |  296 +
+ drivers/video/console/fbcon-ilbm.h     |   32
+ drivers/video/console/fbcon-iplan2p2.c |  476 ++
+ drivers/video/console/fbcon-iplan2p2.h |   32
+ drivers/video/console/fbcon-iplan2p4.c |  497 ++
+ drivers/video/console/fbcon-iplan2p4.h |   32
+ drivers/video/console/fbcon-iplan2p8.c |  534 ++
+ drivers/video/console/fbcon-iplan2p8.h |   32
+ drivers/video/console/fbcon-sti.c      |  289 +
+ drivers/video/console/fbcon.c          | 2476 +++++++++++++
+ drivers/video/console/fbcon.h          |  188
+ drivers/video/console/font.h           |   53
+ drivers/video/console/font_6x11.c      | 3351 +++++++++++++++++
+ drivers/video/console/font_8x16.c      | 4631 ++++++++++++++++++++++++
+ drivers/video/console/font_8x8.c       | 2583 +++++++++++++
+ drivers/video/console/font_acorn_8x8.c |  277 +
+ drivers/video/console/font_mini_4x6.c  | 2158 +++++++++++
+ drivers/video/console/font_pearl_8x8.c | 2587 +++++++++++++
+ drivers/video/console/font_sun12x22.c  | 6220 +++++++++++++++++++++++++++++++++
+ drivers/video/console/font_sun8x16.c   |  275 +
+ drivers/video/console/fonts.c          |  135
+ drivers/video/console/mdacon.c         |  631 +++
+ drivers/video/console/newport_con.c    |  745 +++
+ drivers/video/console/prom.uni         |   11
+ drivers/video/console/promcon.c        |  605 +++
+ drivers/video/console/sti.h            |  289 +
+ drivers/video/console/sticon.c         |  214 +
+ drivers/video/console/sticore.c        |  601 +++
+ drivers/video/console/vgacon.c         | 1066 +++++
+ drivers/video/controlfb.c              |    2
+ drivers/video/cyberfb.c                |    2
+ drivers/video/dnfb.c                   |   18
+ drivers/video/dummycon.c               |   74
+ drivers/video/epson1355fb.c            |    2
+ drivers/video/fbcmap.c                 |   92
+ drivers/video/fbcon-accel.c            |  188
+ drivers/video/fbcon-accel.h            |   34
+ drivers/video/fbcon-afb.c              |  448 --
+ drivers/video/fbcon-cfb16.c            |  319 -
+ drivers/video/fbcon-cfb2.c             |  225 -
+ drivers/video/fbcon-cfb24.c            |  333 -
+ drivers/video/fbcon-cfb32.c            |  305 -
+ drivers/video/fbcon-cfb4.c             |  229 -
+ drivers/video/fbcon-cfb8.c             |  294 -
+ drivers/video/fbcon-hga.c              |  253 -
+ drivers/video/fbcon-ilbm.c             |  296 -
+ drivers/video/fbcon-iplan2p2.c         |  476 --
+ drivers/video/fbcon-iplan2p4.c         |  497 --
+ drivers/video/fbcon-iplan2p8.c         |  534 --
+ drivers/video/fbcon-mfb.c              |  217 -
+ drivers/video/fbcon-sti.c              |  337 -
+ drivers/video/fbcon-vga-planes.c       |  387 --
+ drivers/video/fbcon.c                  | 2509 -------------
+ drivers/video/fbgen.c                  |  313 -
+ drivers/video/fbmem.c                  |  100
+ drivers/video/fm2fb.c                  |   17
+ drivers/video/font_6x11.c              | 3351 -----------------
+ drivers/video/font_8x16.c              | 4631 ------------------------
+ drivers/video/font_8x8.c               | 2583 -------------
+ drivers/video/font_acorn_8x8.c         |  277 -
+ drivers/video/font_mini_4x6.c          | 2158 -----------
+ drivers/video/font_pearl_8x8.c         | 2587 -------------
+ drivers/video/font_sun12x22.c          | 6220 ---------------------------------
+ drivers/video/font_sun8x16.c           |  275 -
+ drivers/video/fonts.c                  |  135
+ drivers/video/g364fb.c                 |   32
+ drivers/video/hgafb.c                  |  228 -
+ drivers/video/hitfb.c                  |   17
+ drivers/video/hpfb.c                   |   16
+ drivers/video/igafb.c                  |    2
+ drivers/video/imsttfb.c                |    3
+ drivers/video/macfb.c                  |   22
+ drivers/video/macmodes.c               |    3
+ drivers/video/macmodes.h               |   70
+ drivers/video/matrox/i2c-matroxfb.c    |    2
+ drivers/video/matrox/matroxfb_base.c   |    4
+ drivers/video/matrox/matroxfb_crtc2.c  |    4
+ drivers/video/maxinefb.c               |   15
+ drivers/video/mdacon.c                 |  632 ---
+ drivers/video/modedb.c                 |    7
+ drivers/video/neofb.c                  |   28
+ drivers/video/newport_con.c            |  746 ---
+ drivers/video/offb.c                   |   23
+ drivers/video/platinumfb.c             |    2
+ drivers/video/pm2fb.c                  |    2
+ drivers/video/pm3fb.c                  |    2
+ drivers/video/pmag-ba-fb.c             |   15
+ drivers/video/pmagb-b-fb.c             |   15
+ drivers/video/prom.uni                 |   11
+ drivers/video/promcon.c                |  606 ---
+ drivers/video/pvr2fb.c                 |    4
+ drivers/video/q40fb.c                  |   16
+ drivers/video/retz3fb.c                |    2
+ drivers/video/sa1100fb.c               |    2
+ drivers/video/sbusfb.c                 |    2
+ drivers/video/sgivwfb.c                |   24
+ drivers/video/sis/Makefile             |    2
+ drivers/video/sis/sis_accel.c          |  495 ++
+ drivers/video/sis/sis_main.c           |    2
+ drivers/video/skeletonfb.c             |   28
+ drivers/video/sstfb.c                  |    2
+ drivers/video/sti-bmode.h              |  287 -
+ drivers/video/sti.h                    |  289 -
+ drivers/video/sticon-bmode.c           |  895 ----
+ drivers/video/sticon.c                 |  215 -
+ drivers/video/sticore.c                |  601 ---
+ drivers/video/sticore.h                |  407 ++
+ drivers/video/stifb.c                  | 1403 ++++++-
+ drivers/video/sun3fb.c                 |    2
+ drivers/video/tdfxfb.c                 |  377 --
+ drivers/video/tgafb.c                  |    2
+ drivers/video/tridentfb.c              |    2
+ drivers/video/tx3912fb.c               |   16
+ drivers/video/valkyriefb.c             |    2
+ drivers/video/vesafb.c                 |   24
+ drivers/video/vfb.c                    |   36
+ drivers/video/vga16fb.c                | 1192 ++++--
+ drivers/video/vgacon.c                 | 1055 -----
+ drivers/video/virgefb.c                |    2
+ include/linux/console.h                |    1
+ include/linux/fb.h                     |  201 -
+ include/linux/sisfb.h                  |   58
+ include/linux/vt_kern.h                |    8
+ include/video/fbcon-afb.h              |   32
+ include/video/fbcon-cfb16.h            |   34
+ include/video/fbcon-cfb2.h             |   32
+ include/video/fbcon-cfb24.h            |   34
+ include/video/fbcon-cfb32.h            |   34
+ include/video/fbcon-cfb4.h             |   32
+ include/video/fbcon-cfb8.h             |   34
+ include/video/fbcon-hga.h              |   32
+ include/video/fbcon-ilbm.h             |   32
+ include/video/fbcon-iplan2p2.h         |   32
+ include/video/fbcon-iplan2p4.h         |   32
+ include/video/fbcon-iplan2p8.h         |   32
+ include/video/fbcon-mac.h              |   32
+ include/video/fbcon-mfb.h              |   32
+ include/video/fbcon-vga-planes.h       |   37
+ include/video/fbcon-vga.h              |   32
+ include/video/fbcon.h                  |  795 ----
+ include/video/font.h                   |   53
+ include/video/macmodes.h               |   70
+ 191 files changed, 38960 insertions(+), 41494 deletions(-)
+
+BK
+
+bk://fbdev.bkbits.net/fbdev-2.5
+
+Go test it out. Just note several drivers haven't been ported yet.
+
+MS: (n) 1. A debilitating and surprisingly widespread affliction that
+renders the sufferer barely able to perform the simplest task. 2. A disease.
+
+James Simmons  [jsimmons@users.sf.net] 	                ____/|
+fbdev/console/gfx developer                             \ o.O|
+http://www.linux-fbdev.org                               =(_)=
+http://linuxgfx.sourceforge.net                            U
+http://linuxconsole.sourceforge.net

@@ -1,13 +1,22 @@
 From: James Simmons <jsimmons@www.infradead.org>
-Subject: Re: Resource management.
-Date: Tue, 22 Feb 2005 03:53:38 +0000 (GMT)
-Message-ID: <Pine.LNX.4.56.0502220319330.20949@pentafluge.infradead.org>
-References: <Pine.LNX.4.56.0502211908520.14500@pentafluge.infradead.org> 
- <200502220653.01286.adaplas@hotpop.com>  <Pine.LNX.4.56.0502212313160.18148@pentafluge.infradead.org>
- <9e473391050221170111610521@mail.gmail.com>
+Subject: Re: Framebuffer and non-PCI devices
+Date: Tue, 22 Feb 2005 04:01:31 +0000 (GMT)
+Message-ID: <Pine.LNX.4.56.0502220401120.21388@pentafluge.infradead.org>
+References: <9e47339105021910257461d4cc@mail.gmail.com>
+ <Pine.LNX.4.62.0502191937500.3355@numbat.sonytel.be>
+ <9e473391050219135923cc6455@mail.gmail.com> <200502200738.37022.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-In-Reply-To: <9e473391050221170111610521@mail.gmail.com>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1D3REu-0002MU-1s
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 20:01:36 -0800
+Received: from pentafluge.infradead.org ([213.146.154.40])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1D3REs-0004xG-81
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 20:01:35 -0800
+In-Reply-To: <200502200738.37022.adaplas@hotpop.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -20,53 +29,23 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, adaplas@pol.net, dri-devel@lists.sourceforge.net, xorg@lists.freedesktop.org, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Jon Smirl <jonsmirl@gmail.com>
 
 
-> > Do you see any other solution to this then?
+> On Sunday 20 February 2005 05:59, Jon Smirl wrote:
+> > I started editing all of the drivers to make assigning fb_info->device
+> > explicit.  Does this look like it is useful? I was surprised some
+> > architectures don't make use of 'struct device'. If this is
+> > interesting there are about ten more drivers that I need to patch.  I
+> > did find several drivers which have device struct's that are not
+> > assigning them to fb_info->device.
 > 
-> You could build this inside of the DRM framework which already
-> supports DMA and memory management. DRM doesn't really know anything
-> about 3D, it just knows how to send commands to the graphics hardware.
-> It's the mesa layer in user space that knows about 3D.
-> 
-> There is a lot of code inside DRM to stop a DRM user from using the
-> DMA hardware to play with kernel memory and gain root priv. fbdev will
-> need the same protection if it starts using DMA.
+> No, don't do this.  Either convert the driver to use framebuffer_alloc()/
+> framebuffer_release(), or let the driver explicitly set info->device.
 
-I have CC the dri list to discuss the issues. I have looked at the DRI 
-code. I know merging dri and fbdev infrastructres has been discussed
-before. There are a few issues that have always prevented this. Now
-I'm going to go over the issues.
+Ug. Most fbdev drivers are not PCI devices.
 
-1. Lots of work that would take lots of time. To my knowledge all fbdev 
-   developers work in there spare free time. No one does this for a 
-   living.
-
-2. Sharing of headers. The dri headers are isolated in the drm directory.
-   I totally understand why :-) It makes merging easier for them. The
-   disadvantage is no one in the fbdev can use them easily :-(
-
-3. DRM has way to much functionality for most embedded devices. I have 
-   talked to embedded guys before and they want a simple api to work with.
-   By default DRM builds in everything. A simple api mean alot to those 
-   guys. Plus the extra built in code bloat takes up to much space which 
-   is precious on embedded devices. If a devices doesn't support dma then 
-   the dma code doesn't need to be built in.
-
-4. Which comes to the next point. The code is not modular enough. Take 
-   drm_bufs.c. Everything is a ioctl function. This has a few disadvantages.
-   One is the fbdev layer couldn't just link into it so fbcon could use 
-   it. The second is it's not easy to take advantage of things like sysfs.
-   If you could untangle the code somewhat it would make life so much 
-   easier. That would include making life easier for OS ports.
-
-5. The license issue. The DRI code is GPL and additional rights. What is that? 
-
-For the fbdev layer we would need a layer on top of the drm data 
-structures because we need to know things in the kernel to draw images
-for font characters i.e how much byte padding is need for images.
 
 
 -------------------------------------------------------

@@ -1,15 +1,15 @@
 From: tmika@t-online.de (Thorsten Mika)
 Subject: contrast on a fixed frequency monitor
-Date: Fri, 12 Jul 2002 22:45:42 +0200
+Date: Sat, 13 Jul 2002 10:55:38 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20020712224542.6ca24472.tmika@t-online.de>
+Message-ID: <20020713105538.7bb776f2.tmika@t-online.de>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mailout09.sul.t-online.com ([194.25.134.84])
+Received: from mailout08.sul.t-online.com ([194.25.134.20])
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17T7IY-0000Om-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 12 Jul 2002 13:45:54 -0700
+	id 17TIgw-0001Dj-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 13 Jul 2002 01:55:50 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -37,8 +37,10 @@ thx in advance,
 Thorsten Mika                                mailto:tmika@t-online.de
 Hamm / Germany                                            TM5173-RIPE
 
+p.s.: this is my 3rd try to get it sent to the list. i can't see it on the webpage, but if it's a moderated list and my message needs to be checked before it appears on the webpage i excuse to the moderator :)
+
 
 -------------------------------------------------------
 This sf.net email is sponsored by:ThinkGeek
-Gadgets, caffeine, t-shirts, fun stuff.
+Welcome to geek heaven.
 http://thinkgeek.com/sf

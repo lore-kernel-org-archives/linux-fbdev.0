@@ -1,21 +1,19 @@
 From: John Zielinski <grim@undead.cc>
-Subject: Re: 2.6.7 still garbage upon start
-Date: Fri, 18 Jun 2004 22:09:14 -0400
+Subject: radeonfb_pci_register video memory clear?
+Date: Fri, 18 Jun 2004 22:20:17 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <40D3A04A.60203@undead.cc>
-References: <40D21E31.5070904@winischhofer.net> <40D2E96A.9000605@undead.cc> <Pine.GSO.4.58.0406181516460.11779@waterleaf.sonytel.be> <200406190240.31144.adaplas@hotpop.com>
+Message-ID: <40D3A2E1.2060100@undead.cc>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BbVIL-0002N9-Gc
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 19:09:25 -0700
-Received: from ns2.undead.cc ([216.126.84.18] helo=mail.undead.cc)
+	id 1BbVSz-0003Ig-Qb
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 19:20:25 -0700
+Received: from ghoul.undead.cc ([216.126.84.18] helo=mail.undead.cc)
 	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
-	id 1BbVIL-0002VA-2L
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 19:09:25 -0700
-In-Reply-To: <200406190240.31144.adaplas@hotpop.com>
+	id 1BbVSz-0004Kv-CI
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 19:20:25 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,28 +24,14 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: adaplas@pol.net
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Thomas Winischhofer <thomas@winischhofer.net>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Antonino A. Daplas wrote:
-
->If the boot logo is not enabled, then everything is okay.  With the boot logo
->enabled, you will see remnants of old text (not garbage) in the space 
->provided for the logo.  
->
->  
->
-Actually, my problem _was_ with the boot logo not enabled but your patch 
-fixed it.  That misplaced set_par was why it looked like vgacon was 
-still being used and the cause of all my grief. 
-
->Please test, and if it works for you, I'll push it upstream.
->
->  
->
-Yes, it does work so please push it.  It just took me a while to test it 
-as I had to figure out what was clearing my video memory.  Once that was 
-disabled I can now see my bootup sequence all the way back to the beginning.
+I'm just wondering why the clearing of video memory was added to 
+radeonfb_pci_register?  The memory still belongs to vgacon at this 
+point.  There are a few other problems with this:  there is a noticable 
+delay while the screen is totaly blank,  vgacon can't save the text 
+screen to the shadow buffer, and all further output until the takeover 
+is invisible (vga font is wiped) so an oops here wouldn't be readable.
 
 John
 

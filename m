@@ -1,23 +1,21 @@
-From: Srinivasa Deevi
- <sdeevi%integrated-devices.com@integrated-devices.com>
-Subject: Need help !
-Date: Mon, 14 Jun 2004 12:21:35 -0700
+From: David Eger <eger@havoc.gtf.org>
+Subject: Re: Need help !
+Date: Mon, 14 Jun 2004 17:51:56 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <40CDFABF.2020503@integrated-devices.com>
+Message-ID: <20040614215156.GA29145@havoc.gtf.org>
+References: <40CDFABF.2020503@integrated-devices.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BZx0S-0004gE-9P
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Jun 2004 12:20:32 -0700
-Received: from pimout1-ext.prodigy.net ([207.115.63.77])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BZx0R-00040t-Sr
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Jun 2004 12:20:31 -0700
-Received: from integrated-devices.com (adsl-66-122-252-196.dsl.sndg02.pacbell.net [66.122.252.196])
-	by pimout1-ext.prodigy.net (8.12.10 milter /8.12.10) with ESMTP id i5EJKNsg097122
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 14 Jun 2004 15:20:24 -0400
+	id 1BZzNG-0003nV-7f
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Jun 2004 14:52:14 -0700
+Received: from havoc.gtf.org ([216.162.42.101])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BZzNF-0007ol-TR
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Jun 2004 14:52:13 -0700
+Content-Disposition: inline
+In-Reply-To: <40CDFABF.2020503@integrated-devices.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,22 +25,23 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Srinivasa Deevi <sdeevi%integrated-devices.com@integrated-devices.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Hi all
+On Mon, Jun 14, 2004 at 12:21:35PM -0700, Srinivasa Deevi wrote:
 
-do I need to add any fonts in fonts directory to see the any console 
-output through fbcon ? Right now I am able to see the blinking cursor 
-but any data from it .
+> do I need to add any fonts in fonts directory to see the any console 
+> output through fbcon ? 
 
-can somebody help me what should I do to see the cosole output on a 
-frame buffer device ? The frame buffer driver is working in graphics 
-mode . I have trouble in console mode .
+You shouldn't need to.
 
-thanks in advance,
-sri
+Have you set the fb_info[.*|.var.*|.fix.*] fields to reflect your hardware?
+Try running 'fbset -i > stats.txt' blind from the console and affirm
+that the settings are currect.
 
+-dte
 
 
 -------------------------------------------------------

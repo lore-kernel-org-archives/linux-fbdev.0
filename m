@@ -1,13 +1,13 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [Linux-fbdev-devel] Generic VESA framebuffer driver and Video card BOOT?
-Date: Wed, 20 Oct 2004 21:08:46 +0200
+Subject: Re: [Linux-fbdev-devel] Re: Generic VESA framebuffer driver and Video card BOOT?
+Date: Wed, 20 Oct 2004 21:10:44 +0200
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20041020190846.GA21315@elf.ucw.cz>
-References: <41740384.5783.12A07B14@localhost> <41763777.26324.1B3B684C@localhost>
+Message-ID: <20041020191044.GB21315@elf.ucw.cz>
+References: <41763777.27136.1B3B687B@localhost> <41764FB3.29782.1B9A13F4@localhost>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S269176AbUJTTNS@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S269104AbUJTTMz@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <41763777.26324.1B3B684C@localhost>
+In-Reply-To: <41764FB3.29782.1B9A13F4@localhost>
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -16,27 +16,41 @@ Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
 Hi!
 
-> > > Open Firmware may be a 'nicer' solution, but I guarantee that if the 
-> > > vendors started supporting that it would be just a bug ridden as any 16-
-> > > bit real mode BIOS code. For the Video BIOS the code always works for 
-> > > what it is tested for. Some vendors spend more time testing the VBE BIOS 
-> > > side of things fully (if they are smart they have licensed our VBETest 
-> > > tools for this purpose). Unfortunatley some vendors do not test this 
-> > > stuff thoroughly and it has problems. But the same testing issues would 
-> > > exist whether the firmware was written as a 16-bit x86 blob or as an Open 
-> > > Firmware blob.
+> > > >         pushl   $0                                              # Kill any dangerous flags
+> > > >         popfl
+> > > > 
+> > > >         movl    real_magic - wakeup_code, %eax
+> > > >         cmpl    $0x12345678, %eax
+> > > >         jne     bogus_real_magic
+> > > > 
+> > > >         testl   $1, video_flags - wakeup_code
+> > > >         jz      1f
+> > > >         lcall   $0xc000,$3
+> > > 
+> > > The call to 0xC000:0x0003 is the entry point to POST the card. However 
+> > > for PCI cards you need to make sure that AX is loaded with the bus, slot 
+> > > and function for the card that is being POST'ed. It will pass this value 
+> > > to the PCI BIOS Int 0x1A functions in order to find itself, so if this is 
+> > > not set many BIOS'es will not work.
 > > 
-> > Actually that 16-bit x86 blob can access any PC hardware, and that's
-> > where the stuff gets hard.
+> > Ok, this one is bad... ... In case of just one vga adapter, we
+> > should be able to store its parameters in some well-known place.
+> > For more than one adapter, we'll definitely need to run BIOS in
+> > emulator. 
 > 
-> Yes, but there is only a very small set of PC hardware features you need 
-> to implement, and most BIOS'es only look at those things for timing 
-> purposes. Unfortunately there is no standard for how BIOS'es do internal 
-> timing and delay loops, so we emulate them all (8253 timers, speaker 
-> ports and CMOS time/date support ;-).
+> Yes. If you are running this in real mode you don't have any option but 
+> to use the BIOS emulator. If you are running in protected mode and using 
+> vm86() style service, the 0xC0000 memory is just memory and can be re-
+> written. For instance on Linux you can map 0xC0000 into your process 
+> address space as copy on write, which then allows you to re-write the 
+> BIOS image for a secondary controller and then restore it when you are 
+> done.
 
-Hmm, that does not seem that bad. Did you need to emulate interrupt
-controller, too? That one seemed most scary to me.
+One more question: Does 0xc0000 POST method work even on notebooks? On
+regular machines, PCI card must have normal bios and stuff is easy. On
+notebooks there was talk about "integrated bios" where it really has
+no video bios at all and system bios POSTs the card. Have you seen
+that?
 								Pavel
 -- 
 People were complaining that M$ turns users into beta-testers...

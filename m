@@ -1,20 +1,22 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] atyfb accel capabilities
-Date: Sun, 6 Jun 2004 13:10:33 +0200 (MEST)
+Subject: Re: Re: [PATCH] sisfb accel capabilities
+Date: Sun, 6 Jun 2004 13:19:49 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0406061308510.4558@waterleaf.sonytel.be>
-References: <20040603024052.GC20951@havoc.gtf.org>
+Message-ID: <Pine.GSO.4.58.0406061315370.4558@waterleaf.sonytel.be>
+References: <20040603024412.GE20951@havoc.gtf.org> <40BEF4ED.7090909@winischhofer.net>
+ <1086269209.40bf27191fe1c@mail.theboonies.us> <40BF5482.7080900@winischhofer.net>
+ <1086282526.40bf5b1e52eca@mail.theboonies.us>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BWvXw-0003Dc-Hs
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 06 Jun 2004 04:10:36 -0700
+	id 1BWvgz-0004By-9F
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 06 Jun 2004 04:19:57 -0700
 Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BWvXw-0002x2-13
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 06 Jun 2004 04:10:36 -0700
-In-Reply-To: <20040603024052.GC20951@havoc.gtf.org>
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BWvgy-0007oj-Es
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 06 Jun 2004 04:19:56 -0700
+In-Reply-To: <1086282526.40bf5b1e52eca@mail.theboonies.us>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,19 +28,39 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: David Eger <eger@havoc.gtf.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: David Eger <eger-dated-1086887330.ffe1f7@theboonies.us>
+Cc: Thomas Winischhofer <thomas@winischhofer.net>, David Eger <eger@havoc.gtf.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 2 Jun 2004, David Eger wrote:
-> The following patch updates atyfb for the new fb accel capabilities
-> patch I'm sending upstream.  Please test the core patch + this patch,
-> and let me know it works for you.  You ought to be able to use fbset
+On Thu, 3 Jun 2004, David Eger wrote:
+> I guess I shouldn't mark it "stupid shit" until I actually have the replacement
+> code ready ;-)  You want me to revise the name of the #define?
 
-Looks OK. Unfortunately I cannot test it on my RAGE II+, since my PPC box died
-2 weeks ago :-(
+Yes, please do so. We need it for backwards compatibility.
 
-I _could_ still give it a try on the laptop from work (Mobility M1), but I
-first need to get atyfb in 2.6 work on that one...
+> Basically, I think the name FB_ACCELF_TEXT is silly and misleading:
+> + it means the kernel is enabling the acceleration engine; not really to do with
+> _TEXT
+
+Well, inside the kernel, the acceleration engine is used for acceleration the
+text console emulation only.
+
+> + it's not really a flag, since it and zero are the only valid settings
+
+What other things do you do with a flag? Waiving? ;-)
+
+> + it doesn't really belong with the mode settings (i.e. 1024x768, 60 Hz 32bpp)
+> which is what var is, mainly
+
+A long time ago, we also intended to use it to switch to real text mode on
+cards that supported it[*]. But no one ever implemented that.
+
+[*] Remember, fbdev originated on platforms without VGA graphics. Although some
+graphics cards were based on VGA-compatible chips, they all booted in graphics
+mode.
+
+> But it is how things are done now.  So yes, fbset -accel 0 => var.accel_flags =
+
+Indeed.
 
 Gr{oetje,eeting}s,
 

@@ -1,17 +1,17 @@
-From: <TristanWW@SmileAtYou.com>
-Subject: onfirmation
-Date: Fri, 11 Jul 2003 18:08:09 -0700
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: fbdev and power management
+Date: Sat, 5 Jan 2002 12:13:40 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <E19b8rx-0005qE-00@turkey.mail.pas.earthlink.net>
+Message-ID: <20020105111340.GA2254@zaurus.ucw.cz>
+References: <Pine.LNX.4.44.0307090024170.32323-100000@phoenix.infradead.org> <1057750557.514.22.camel@gaston> <20030709151032.A22612@flint.arm.linux.org.uk>
+Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from turkey.mail.pas.earthlink.net ([207.217.120.126])
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123] ident=postfix)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19b8s3-000621-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 11 Jul 2003 18:08:15 -0700
-Received: from h-69-3-127-235.dnvtco56.covad.net ([69.3.127.235] helo=TristanWW)
-	by turkey.mail.pas.earthlink.net with smtp (Exim 3.33 #1)
-	id 19b8rx-0005qE-00
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 11 Jul 2003 18:08:09 -0700
+	id 19c2ht-0003aL-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 14 Jul 2003 05:45:29 -0700
+Content-Disposition: inline
+In-Reply-To: <20030709151032.A22612@flint.arm.linux.org.uk>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,26 +21,24 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, James Simmons <jsimmons@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Confirmation for linux-fbdev-devel@lists.sourceforge.net
+Hi!
 
-Thank you for your interest in my work.  After you complete the verification below you will be added to my list to receive updates whenever a piece is completed.
+> I'm slightly concerned by this.  There are a growing amount of drivers
+> in 2.5 which are being made to work with the existing power management
+> system.  This "new" system seems to have been hanging around for about
+> 4 months now with no visible further work, presumably so that a paper
+> can be presented before its release.
 
-If you didn't sign up, perhaps a friend added you.
-
-Reply to this email and type 'Yes Please' in the body and you will be added.  Do nothing and you will be forgotten.
-
-Derek Olson
-Tristan Woodworks
-Your soul speaks Art.
-http://www.SmileAtYou.com
-Highlands Ranch, Colorado
-
-
+I believe it is bad idea to change driver
+model again in 2.6.x-pre. I believe current
+solution is pretty much okay.
+-- 
+				Pavel
+Written on sharp zaurus, because my Velo1 broke. If you have Velo you don't need...
 
 
 

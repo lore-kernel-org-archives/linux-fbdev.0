@@ -1,36 +1,86 @@
-From: Helge Deller <deller@gmx.de>
-Subject: Re: [Linux-fbdev-devel] Help re Frame Buffer/Console Problems
-Date: Tue, 2 Nov 2004 01:26:01 +0100
-Message-ID: <200411020126.01891.deller@gmx.de>
-References: <Pine.LNX.4.10.10411011719270.2438-100000@mtfhpc.demon.co.uk> <200411020746.27871.adaplas@hotpop.com>
+From: joshk@triplehelix.org (Joshua Kwan)
+Subject: Re: Problem with current fb_get_color_depth function
+Date: Mon, 1 Nov 2004 21:55:55 -0800
+Message-ID: <20041102055555.GJ6361@triplehelix.org>
+References: <20041010225903.GA2418@darjeeling.triplehelix.org> <200410110832.19978.adaplas@hotpop.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <sparclinux-owner@vger.kernel.org>
-In-Reply-To: <200411020746.27871.adaplas@hotpop.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="iJXiJc/TAIT2rh2r"
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S777735AbUKBF4S@vger.kernel.org>
 Content-Disposition: inline
-Sender: sparclinux-owner@vger.kernel.org
+In-Reply-To: <200410110832.19978.adaplas@hotpop.com>
+Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
 To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, Mark Fortescue <mark@mtfhpc.demon.co.uk>, jsimmons@infradead.org, geert@linux-m68k.org, sparclinux@vger.kernel.org, ultralinux@vger.kernel.org, linux-kernel@vger.kernel.org, wli@holomorphy.com
+Cc: linux-kernel mailing list <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
 
-On Tuesday 02 November 2004 00:46, Antonino A. Daplas wrote:
-> On Tuesday 02 November 2004 01:32, Mark Fortescue wrote:
-> > Hi all,
-> >
-> > Thanks for the info Antonino. I see you spotted my typing error. Yes it is
-> > the 2.6.10-rc1-bk6 kernel. The oter error is the 2.2.8.1. It should be
-> > 2.6.8.1.
-> >
-> > The cgthree driver does not currently set up the all->info.var.red,
-> > all->info.var.green or all->info.var.blue structures. Putting a value of 8
-> > in the length field of these structures (correct for the cgthree) does get
-> > me my logo back but I am still getting black on black text. It makes it
-> > very difficult to read. It is begining to look like there is something
-> > werid going on with the colour pallet stuf for PSEUDO_COLOUR.
 
-I saw similiar problems with the stifb driver on HPPA. 
-Changing the driver's pseudo_palette[] struct to support 256 colors solved this problem.
-But there might be a problem in higher levels as well....
+--iJXiJc/TAIT2rh2r
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Helge
+[ long overdue follow-up ]
+
+On Mon, Oct 11, 2004 at 08:33:10AM +0800, Antonino A. Daplas wrote:
+> So, linux_logo_224 cannot be drawn when visual is directcolor at RGB555 or
+> RGB565 because the logo clut requirements exceeds the hardware clut
+> capability. You need to use a logo image with a lower depth such as the
+> 16-color logo, linux_logo_16.
+
+This is weird, because removing that conditional from fb_get_color_depth
+allows a 224-color logo to show correctly on my Radeon framebuffer, in
+full color.
+
+Otherwise, it is dithered to kingdom come and mostly appears all orange
+and black.
+
+You may be right conceptually, but the fact of the matter is that this
+is a regression because 224-color logos work perfectly with the old
+fb_get_color_depth. So what is the real problem?
+
+> In short, fb_get_color_depth() and radeonfb both do the correct thing, but
+> you need a logo with a lower color depth. Or choose RGB888 or higher, or
+> set the visual to truecolor.
+
+What does that last sentence mean? -- I have no idea...
+
+> PS: Note that this behavior is the same as 2.4 behavior (224-color logo is
+> only chosen if directcolor and bpp >=3D 24).  It might have worked before=
+, and
+> this is probably due to the directcolor clut being ramped to truecolor
+> values. However, the correct solution is to use a 16-color logo.
+
+Oh, I see, I didn't read this before.
+
+Well, 16-color logos being used when 224-color ones work perfectly
+enough 99% of the time is pretty bad aesthetically, if you ask me.
+
+--=20
+Joshua Kwan
+
+--iJXiJc/TAIT2rh2r
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+Comment: http://triplehelix.org/~joshk/pubkey_gpg.asc
+
+iQIVAwUBQYchaqOILr94RG8mAQIbzw//Vr7HKPSfizutcsDWLDaSDDfyxBQ2ZaK5
+9syczy5lyzdz+As7ltaye5hHeANLnWYGXeS6vcuSODc7ZEZ/yO/R4H2avOh8iTUj
+69PFkFIY/jqUKz3S3z+1tCdpAPsUcF8N2UMXPSLbks9XWnzeF01zPNOP4X5MbjzR
+x/PFtxuJuZgp04dxvJMiWSrIpLHnccq3oX4jaP5RM4SvnVHQxEOOKCh6KXg+FxDr
+1OENYt94PqokcZYDv853IQTmKH072Dz33urtJi+kLQCAIvgGNZF8ukwblGhNmbwX
+N0O5SZpWKBTd2aGmfAKvvxTiEzDmGoLjJ5/+iIg/j55sRibJFeHSN9TuIaYqlqrR
+RHhg8LoofjjHYEHTpdfWGeCXNX4IT2T2EsjagQw9j40RoojjGj5NnELKtRTDvfpd
+mPZgwL0c7H5UkYwvRk56SNUP/2v5Lz+ZRj/CNTOXlgv2COAqxtz1IpyDqFJrGYf5
+EdRzJIgWZF6/xLrN9CPMqih1McRK5YbxslHI80+vLbgHioWZNjHhNw91FVczzawd
+HElIMfEpkhP/ZNhle9AEjh94nd81gSeAPfVMuqfEy9WmTef1YE8Jd5ICFI01whaI
+FSKim8tW77mbSuAfNdW+UfGt4KfBnhNIibXWVuswnTG5gLfe7ODR9+HfVOnvsYxn
+ywyzXhqbe3g=
+=2pCR
+-----END PGP SIGNATURE-----
+
+--iJXiJc/TAIT2rh2r--

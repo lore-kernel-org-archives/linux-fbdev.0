@@ -1,17 +1,17 @@
 From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: Feature Freeze?
-Date: 06 Mar 2003 09:18:07 +0800
+Subject: Re: Some questions
+Date: 06 Mar 2003 09:18:19 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1046913396.1227.176.camel@localhost.localdomain>
-References: <Pine.LNX.4.44.0303051829450.27760-100000@phoenix.infradead.org>
+Message-ID: <1046913411.1206.185.camel@localhost.localdomain>
+References: <Pine.LNX.4.44.0303051939470.27760-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from pine.compass.com.ph ([202.70.96.37])
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18qk06-00076x-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 17:16:46 -0800
-In-Reply-To: <Pine.LNX.4.44.0303051829450.27760-100000@phoenix.infradead.org>
+	id 18qk0J-0007Ax-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 17:16:59 -0800
+In-Reply-To: <Pine.LNX.4.44.0303051939470.27760-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,38 +23,41 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@infradead.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Thomas Winischhofer <thomas@winischhofer.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, 2003-03-06 at 02:34, James Simmons wrote:
+On Thu, 2003-03-06 at 03:43, James Simmons wrote:
 > 
-> > > 1. Text mode support?
+> > > I think you should only accept modes where the difference is a fraction
+> > > of a character width or height.  A difference more than that and
+> > > clear_margins() will not work correctly.  
+> > > 
 > > 
-> > Required by at least davem and petr
+> > I apologize for my stupidity, fbdev does not know the font dimensions. 
+> > I guess, we'll just need to really bring back fbset resizing.
 > 
-> Just Petr. I'm working to seperate the text code out into a matroxcon.c 
-> file. Needs alot more work tho.
-> 
-> > > 2. console resizing using fbset (besides stty)?
-> > 
-> > Nice, if it's not too much work.
-> 
-> :-( I hope to improve fbcon to handle this.
->  
+> I disagree that fbset is the solution to all things. The problem is 
+> fbcon_resize is severally broken. The reality is that there are fixed mode 
 
-If you're really against using fbset to resize the console, then the
-first step is to protect the console from the "dangers" of fbset. 
-Secondly, we can have fbcon_resize() validate the mode instead of just
-blindly calling fb_set_var().  If it's not valid, then it can also fetch
-a working mode for it.  The user can then fine tune the timings using
-fbset afterwards.
+fbcon_resize() is not that broken, it's only trying to do what it's
+supposed to do.  It is indeed limited because it is trying to outguess
+the low-level drivers on the best resolution for a window size.
 
+However, the brokenness is really on the driver side.  They are unable
+to change the video mode unless they are supplied with the correct
+timing parameters where in fact they actually have the best knowledge on
+how to calculate them.  
 
-So, do we allow fbcon to handle mode validating and fetching, or do we
-just leave all this to fbdev? At least let's bring out some ideas on how
-to go about doing this.  Having a working idea, even if dumb, should
-interest other developers in contributing. 
+So the question:  Do we let fbcon spoonfeed the timings to fbdev, or do
+we let the drivers calculate it for themselves?  I go for the latter, as
+fbcon really should not have any business with hardware.
 
-Tony  
+> resolutions (i.e. LCD displays). So fbcon has to adpat to this. What we 
+> shoudl do is set the console mode fit slightly smaller than that the 
+> actually resolution. The reason being is partially drawn fonts at the 
+
+Yes, Geert's accel_clear_margin fix should help that.
+
+Tony
 
 
 

@@ -1,65 +1,75 @@
-From: Carl-Daniel Hailfinger <c-d.hailfinger.kernel.2004-hi6Y0CQ0nG0@public.gmane.org>
-Subject: Re: Re: Samsung P35 and S3 suspend
-Date: Wed, 22 Dec 2004 03:06:01 +0100
-Message-ID: <41C8D689.3020502@gmx.net>
-References: <41BFC3AD.5030001@gmx.net> <1103117333.5924.3.camel@mhcln03>	 <41C07B6F.70900@gmx.net> <1103159022.5924.17.camel@mhcln03> <41C0FFF3.4010902@gmx.net> <41C19BD8.7050201@gmx.net> <41C1CFA2.20304@gmx.net>
+From: Guido Guenther <agx@sigxcpu.org>
+Subject: Re: [PATCH] GeForce 5200 on rivafb
+Date: Thu, 23 Dec 2004 21:48:21 +0100
+Message-ID: <20041223204819.GA25233@bogon.ms20.nix>
+References: <200412072347.23194.lucasvr@gobolinux.org>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <acpi-devel-admin-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
-In-Reply-To: <41C1CFA2.20304-hi6Y0CQ0nG0@public.gmane.org>
-Sender: acpi-devel-admin-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
-Errors-To: acpi-devel-admin-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/acpi-devel>,
-	<mailto:acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=unsubscribe>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1ChvL7-0007Am-Ti
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Dec 2004 11:43:05 -0800
+Received: from honk1.physik.uni-konstanz.de ([134.34.140.224])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1ChvL7-0002WC-7L
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Dec 2004 11:43:05 -0800
+Received: from localhost (localhost.localnet [127.0.0.1])
+	by honk1.physik.uni-konstanz.de (Postfix) with ESMTP id E2D8A2BC3C
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 24 Dec 2004 20:43:00 +0100 (CET)
+Received: from honk1.physik.uni-konstanz.de ([127.0.0.1])
+	by localhost (honk [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
+	id 29906-22 for <linux-fbdev-devel@lists.sourceforge.net>;
+	Fri, 24 Dec 2004 20:42:50 +0100 (CET)
+Received: from bogon.sigxcpu.org (unknown [82.113.119.0])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(No client certificate requested)
+	by honk1.physik.uni-konstanz.de (Postfix) with ESMTP id E05582BC39
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 24 Dec 2004 20:42:46 +0100 (CET)
+Content-Disposition: inline
+In-Reply-To: <200412072347.23194.lucasvr@gobolinux.org>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
-List-Help: <mailto:acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/acpi-devel>,
-	<mailto:acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=acpi-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
-Cc: Matthias Hentges <mailinglisten-H4PcyxPeSRnR7s880joybQ@public.gmane.org>, Oliver Dawid <od-VRmHG7Xu4f31qYPpFx2fzhvVK+yQ3ZXh@public.gmane.org>, =?ISO-8859-1?Q?Stefan_D=F6singer?= <stefandoesinger-RbZlAiThDcE@public.gmane.org>, Linux Kernel Mailing List <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>, linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Carl-Daniel Hailfinger wrote:
-
-> OK, I got S3 working with all kernels since 2.6.9 (well, your
-> patches had to be modified slightly). Right now I'm running on the
-> latest Linus -bk tree.
->
-> I will now try other configurations and a full bootup.
->
-> OK, it is working perfectly with the latest Linus -bk tree and
-> everything configured in (SuSE .config, comparable to allmodconfig).
-
-It turns out that (at least for 2.6.10-rc3 and later) the kernel
-resumes from S3 perfectly regardless of .config as long as
-- no framebuffer console is activated (kernel param video=vesa:off )
-- pci-resume-2.6.10.patch and resume-finish-split-2.6.10.patch
-  are applied
-- suspend and resume happen with an active TEXT console (chvt 2)
-- VESA registers are saved before suspend
-- the radeon card is POSTed after resume
-- the VESA registers are restored after that
-- now you are free to change back to X if you want.
-
-You do NOT need
-- a patched X server
-- a special kernel .config
-- sacrifices of any kind.
-
-See my other mail to acpi-devel for details about how to save/restore
-the VESA registers and POST the card.
-
-Question for the framebuffer experts: Is it possible to forbid access
-to the video card after resume until the card has been POSTed and all
-registers are restored? Any access to the card before that will freeze
-the machine.
-
-Regards,
-Carl-Daniel
--- 
-http://www.hailfinger.org/
+On Tue, Dec 07, 2004 at 11:47:23PM -0200, Lucas Correia Villa Real wrote:
+> diff -X dontdiff-2.6 -Nur 2.6.10-rc3-vanilla/drivers/video/riva/fbdev.c 2.6.10-rc3-lucasvr/drivers/video/riva/fbdev.c
+> --- 2.6.10-rc3-vanilla/drivers/video/riva/fbdev.c	2004-12-07 09:58:14.000000000 -0200
+> +++ 2.6.10-rc3-lucasvr/drivers/video/riva/fbdev.c	2004-12-07 22:45:52.000000000 -0200
+> @@ -192,6 +192,10 @@
+>  	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
+>  	{ PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_700XGL,
+>  	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
+> +	{ PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5200_ULTRA,
+> +	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
+> +	{ PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5200,
+> +	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
+>  	{ PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_GO_5200,
+>  	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
+>  	{ 0, } /* terminate list */
+> @@ -1876,6 +1880,8 @@
+>  		case 0x0300:   /* GeForceFX 5800 */
+>  		case 0x0310:   /* GeForceFX 5600 */
+>  		case 0x0320:   /* GeForceFX 5200 */
+> +		case 0x0321:   /* GeForceFX 5200 Ultra */
+> +		case 0x0322:   /* GeForceFX 5200 */
+>  		case 0x0330:   /* GeForceFX 5900 */
+>  		case 0x0340:   /* GeForceFX 5700 */
+>  		     arch =  NV_ARCH_30;
+This last hunk is wrong, we do a (pd->device && 0x0ff0) above that, so
+the 0x0321 and 0x322 parts are never possible.
+ -- Guido
 
 
 -------------------------------------------------------

@@ -1,16 +1,16 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: James Simmons <jsimmons@infradead.org>
 Subject: Re: gen_set_var() fix?
-Date: Wed, 28 Aug 2002 11:19:08 +0200 (MEST)
+Date: Wed, 28 Aug 2002 11:14:03 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0208281118280.19583-100000@vervain.sonytel.be>
-References: <20020828121619.05a8bf02.jani@iv.ro>
+Message-ID: <Pine.LNX.4.33.0208281111210.1459-100000@maxwell.earthlink.net>
+References: <20020828100048.2dde942e.jani@iv.ro>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+Received: from hawk.mail.pas.earthlink.net ([207.217.120.22])
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17jyzf-0005de-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 28 Aug 2002 02:20:07 -0700
-In-Reply-To: <20020828121619.05a8bf02.jani@iv.ro>
+	id 17k7QE-0006Ol-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 28 Aug 2002 11:20:06 -0700
+In-Reply-To: <20020828100048.2dde942e.jani@iv.ro>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,26 +23,43 @@ List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Jani Monoses <jani@iv.ro>
-Cc: Antonino Daplas <adaplas@pol.net>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 28 Aug 2002, Jani Monoses wrote:
-> so not having check_var implies we only support one video mode?
 
-Yes. This is useful for e.g. handheld devices with LCDs, and for offb.
+> James
+> Should't gen_set_var set the var in info here as well? (when no check_var present)
 
-> > The original code is correct.  It means the driver supports only 1 video
-> > mode, which is the current one in info->var.  
+No. The first test is to see if the passed in var is equal to the current
+var in info. Note info->var is always set before we call gen_set_var. The
+next set is check if xxfb_check_var is there. If this function is lacking
+then we know the hardware supports a static mode. Then it just returns the
+defualt var which is set before we call gen_set_var.
 
-Gr{oetje,eeting}s,
+> BTW is gen_set_var going to stay in the new API or go away ?
 
-						Geert
+It is to stay. It will be intergrated into fbmem.c once we are done.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> --- fbgen.c.orig       Wed Aug 28 09:49:45 2002
+> +++ fbgen.c     Wed Aug 28 09:57:32 2002
+> @@ -36,7 +36,7 @@
+>
+>         if (con < 0 || (memcmp(&info->var, var, sizeof(struct fb_var_screeninfo)))) {
+>                 if (!info->fbops->fb_check_var) {
+> -                       *var = info->var;
+> +                       info->var = *var;
+>                         return 0;
+>                 }
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+
+
+MS: (n) 1. A debilitating and surprisingly widespread affliction that
+renders the sufferer barely able to perform the simplest task. 2. A disease.
+
+James Simmons  [jsimmons@users.sf.net] 	                ____/|
+fbdev/console/gfx developer                             \ o.O|
+http://www.linux-fbdev.org                               =(_)=
+http://linuxgfx.sourceforge.net                            U
+http://linuxconsole.sourceforge.net
 
 
 

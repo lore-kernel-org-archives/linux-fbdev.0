@@ -1,62 +1,65 @@
-From: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] fix offb
-Date: Thu, 12 Dec 2002 14:45:17 +1100
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [FBDEV]: Framebuffer driver for Intel 810/815 chipsets
+Date: Thu, 12 Dec 2002 10:45:20 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <15864.1613.688767.520790@argo.ozlabs.ibm.com>
+Message-ID: <Pine.LNX.4.33.0212121045060.32196-100000@maxwell.earthlink.net>
+References: <1039603490.1147.80.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <1039603490.1147.80.camel@localhost.localdomain>
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-This patch fixes the offb driver, and fixes the Makefile so it doesn't
-go looking for a nonexistent file (cfbimgblit.o) when CONFIG_FB_OF is
-turned on.  In the offb driver, we were overrunning the end of the
-info->fix.id field on some cards, plus it had an undefined variable.
-I guess we could also get rid of the "info->node = NODEV;" line too.
 
-Paul.
+Applied !!!!
 
-diff -urN linux-2.5/drivers/video/Makefile pmac-2.5/drivers/video/Makefile
---- linux-2.5/drivers/video/Makefile	2002-12-10 15:20:32.000000000 +1100
-+++ pmac-2.5/drivers/video/Makefile	2002-12-10 21:25:36.000000000 +1100
-@@ -42,7 +42,7 @@
- obj-$(CONFIG_FB_3DFX)             += tdfxfb.o
- obj-$(CONFIG_FB_MAC)              += macfb.o macmodes.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o 
- obj-$(CONFIG_FB_HP300)            += hpfb.o cfbfillrect.o cfbimgblt.o
--obj-$(CONFIG_FB_OF)               += offb.o cfbfillrect.o cfbimgblit.o cfbcopyarea.o
-+obj-$(CONFIG_FB_OF)               += offb.o cfbfillrect.o cfbimgblt.o cfbcopyarea.o
- obj-$(CONFIG_FB_IMSTT)            += imsttfb.o
- obj-$(CONFIG_FB_RETINAZ3)         += retz3fb.o
- obj-$(CONFIG_FB_CLGEN)            += clgenfb.o
-diff -urN linux-2.5/drivers/video/offb.c pmac-2.5/drivers/video/offb.c
---- linux-2.5/drivers/video/offb.c	2002-12-10 15:20:32.000000000 +1100
-+++ pmac-2.5/drivers/video/offb.c	2002-12-10 19:58:24.000000000 +1100
-@@ -393,6 +393,7 @@
- 	struct fb_fix_screeninfo *fix;
- 	struct fb_var_screeninfo *var;
- 	struct fb_info *info;
-+	int size;
- 
- 	if (!request_mem_region(res_start, res_size, "offb"))
- 		return;
-@@ -421,7 +422,7 @@
- 	var = &info->var;
- 
- 	strcpy(fix->id, "OFfb ");
--	strncat(fix->id, name, sizeof(fix->id));
-+	strncat(fix->id, name, sizeof(fix->id) - sizeof("OFfb "));
- 	fix->id[sizeof(fix->id) - 1] = '\0';
- 
- 	var->xres = var->xres_virtual = width;
-@@ -522,8 +523,6 @@
- 	var->sync = 0;
- 	var->vmode = FB_VMODE_NONINTERLACED;
- 
--	strcpy(fix->id, "OFfb ");
--	strncat(fix->id, full_name, sizeof(fix->id));
- 	info->node = NODEV;
- 	info->fbops = &offb_ops;
- 	info->screen_base = ioremap(address, fix->smem_len);
+MS: (n) 1. A debilitating and surprisingly widespread affliction that
+renders the sufferer barely able to perform the simplest task. 2. A disease.
+
+James Simmons  [jsimmons@users.sf.net] 	                ____/|
+fbdev/console/gfx developer                             \ o.O|
+http://www.linux-fbdev.org                               =(_)=
+http://linuxgfx.sourceforge.net                            U
+http://linuxconsole.sourceforge.net
+
+On 11 Dec 2002, Antonino Daplas wrote:
+
+> James,
+>
+> It seems the fbdev framework is stable enough, and already in the
+> development tree.  So, I'm submitting a driver for the Intel 810/815 for
+> review and perhaps inclusion to your tree (to get more testing), and
+> hopefully merge with Linus's tree.
+>
+> The patch is against linux-2.5.51, but will not work yet because of 2
+> reasons:
+>
+> 1. agpgart is not working for the i810
+> 2. support for early agp initialization needs to be added.
+>
+> Once #1 is fixed, the driver should work as a module.  And once #2 gets
+> included, the driver can be compiled statically.  Dave Jones (thanks for
+> the help, by the way) has already #2 in his tree (tested and works), and
+> is currently working on #1 (I have a hacked version at home).
+>
+> The driver should be compliant with fbdev-2.5, and should support most
+> if not all features that are to be expected (modularity, state saving
+> and restoring, full hardware support, etc).  One thing also that's very
+> important for many people is that the driver will work with XFree86 with
+> its native i810 drivers without further modification, and quite stably
+> too.
+>
+> The patch is at
+> http://i810fb.sourceforge.net/linux-2.5.51-i810fb.diff.gz
+>
+> Thanks,
+>
+> Tony
+>
+>
+>
+>
+>

@@ -1,145 +1,87 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: Re: Re: [Linux-fbdev-devel] Redesign of kernel graphics interface
-Date: Sat, 15 May 2004 11:25:12 +0300
-Sender: mesa3d-dev-admin@lists.sourceforge.net
-Message-ID: <20040515082512.GC28940@sci.fi>
-References: <20040514180814.GA18297@sci.fi> <20040514184004.16621.qmail@web14930.mail.yahoo.com> <20040514190103.GA18868@sci.fi> <40A5C666.8020901@qanu.de>
+From: David Eger <eger-sender-da68b9@theboonies.us>
+Subject: [ PATCH-LINK ] fb accel capabilities - take 2
+Date: Sat, 15 May 2004 15:58:32 +0200 (CEST)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.LNX.4.58.0405151556280.7525@rosencrantz.theboonies.us>
+References: <200405051047.00127.lucasvr@gobolinux.org>
+Reply-To: David Eger <eger-dated-1085234045.9ffaa3@theboonies.us>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <mesa3d-dev-admin@lists.sourceforge.net>
-Content-Disposition: inline
-In-Reply-To: <40A5C666.8020901@qanu.de>
-Errors-To: mesa3d-dev-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
-	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=unsubscribe>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BOzc7-00065C-Ja
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 15 May 2004 06:54:07 -0700
+Received: from not.theboonies.us ([66.139.79.224])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1BOzc7-0001l4-93
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 15 May 2004 06:54:07 -0700
+In-Reply-To: <200405051047.00127.lucasvr@gobolinux.org>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:mesa3d-dev@lists.sourceforge.net>
-List-Help: <mailto:mesa3d-dev-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
-	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=mesa3d-dev>
-Content-Type: text/plain; charset="iso-8859-1"
-To: dri-devel <dri-devel@lists.sourceforge.net>, mesa3d-dev <mesa3d-dev@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sat, May 15, 2004 at 09:27:34AM +0200, Holger Waechtler wrote:
-> Ville Syrj=E4l=E4 wrote:
-> >On Fri, May 14, 2004 at 11:40:04AM -0700, Jon Smirl wrote:
-> >
-> >>Does DirectFB work on anything beside Matrox now?
-> >
-> >
-> >It works on any card with a working fbdev driver (vga16fb excluded).=20
-> >Hardware acceleration is available on quite a few chips these days.
-> >
-> >ati128  cyber5k  mach64  neomagic  nvidia  savage  tdfx
-> >cle266  i810     matrox  nsc       radeon  sis315
->=20
-> Keep in mind that beside the matrox driver almost none of them=20
-> implements the full accelerated 2D API
 
-cle266 is about the same level as matrox. I could get mach64 into this=20
-group with some modifications to the memory allocator. I think for some o=
-f=20
-the other drivers the biggest problem is lack of developers.
+I've taken Geert's suggestion and put the framebuffer capabilities flags 
+in fbinfo.flags as follows:
 
-> and that most are misusing the 3D=20
-> engine to implement 2D functionality. Alpha blended stretch blits are=20
-> almost always implemented using the 3D texture engines on PC graphics c=
-ards.
+ /* FBIF = FB_Info.Flags */
+ #define FBIF_MODULE		0x0001	/* Low-level driver is a module */
+ #define FBIF_HWACCEL_DISABLED	0x0002
 
-I don't consider that mis-use, simply use.
+ /* hints */
+ #define FBIF_PARTIAL_PAN_OK	0x0040 /* otw use pan only for double-buffering */
+ #define FBIF_READS_FAST		0x0080 /* soft-copy faster than rendering */
 
-> About one third of these drivers have been written using specs and=20
-> documentation files that have never been officially released by the=20
-> hardware vendors, so I'm not really sure whether they are much better=20
-> from a security point of view than a closed source driver -- what's the=
-=20
-> point of a open source hardware driver without hardware specs? - you're=
-=20
-> not really able to review it seriously.
+ /* hardware supported ops */
+ #define FBIF_HWACCEL_NONE	0x0000
+ #define FBIF_HWACCEL_COPYAREA	0x0100
+ #define FBIF_HWACCEL_FILLRECT	0x0200
+ #define FBIF_HWACCEL_ROTATE	0x0400
+ #define FBIF_HWACCEL_IMAGEBLIT	0x0800
+ #define FBIF_HWACCEL_XPAN	0x1000
+ #define FBIF_HWACCEL_YPAN	0x2000
+ #define FBIF_HWACCEL_YWRAP	0x4000
 
-I don't think the specs would help in that regard much. For all you know=20
-the specs could be all wrong. If you have the code and can see the=20
-expected results that usually means the code works correctly. And closed=20
-source kernel drivers could do a lot of other nasty stuff even without=20
-touching the hardware.
+The patch is very large (40 kilobytes), but 27 of those kilobytes are just 
+the work of running 's/FBINFO_FLAG_DEFAULT/FBIF_DEFAULT/g'.  I've posted the
+patch at http://www.yak.net/random/fbdev-patches/accel-cap-take2
 
-> The specs for the remaining ones usually showed up as soon the hardware=
-=20
-> was getting outdated. Basically the same situation like the one you see=
-=20
-> with DRI drivers.
+The files there are:
 
-Except now the specs are getting harder to get even for old hardware. The=
-=20
-vendors seem to be returning to the old ways :(
+rev-1.1415.radeonfb-copyarea-corruption-fix.patch
+	This is in the mainline kernel, but not yet applied to benh's tree ;)
 
-> >I use matrox and mach64 drivers daily. It's been a few years since I=20
-> >seriously used XFree86.
->=20
-> Have you ever thought about the inherent security risks of memory mappe=
-d=20
-> i/o registers when executing non-trusted applications? Imagine what=20
-> happens if every single application is allowed to program the blitter=20
-> and texture engines to copy host memory from anywhere in the system to=20
-> graphics memory and back - a single misbehaving application can damage=20
-> your entire system.
+rev-1.1416.james-console-init-cleanup.patch
+	James's patch, modified to apply against benh's tree.
 
-I am aware of the risks. Currently it's not an issue for me. And if I=20
-limit myself to running only XDirectFB the risk is equal to running=20
-accelerated XFree86. Of course I would be glad to make it all secure but=20
-only without losing any of the nice features.
+rev-1.1417.fb-accel-capabilities.patch
+	Baseline patch to make framebuffer/fbcon interaction more sane by 
+	basing the fbcon heuristics on capabilities advertized by underlying 
+	framebuffer via the fb_info.flags field.
 
-> And do you really have the time to review every line of code you execut=
-e=20
-> on your system?
+	This patch updates fbcon, fb.h, and skeletonfb.c.
+	It also does a 's/FBINFO_FLAG_DEFAULT/FBIF_DEFAULT/g' on the fb drivers 
+	to let them compile.  
+	It does *not* yet update the drivers themselves.  They should compile 
+	and work, but their hinting is not correct yet, meaning most fb drivers
+	will be slow until I set the flags to the right hinting driver-by-driver.
 
-Clearly not. There is some stuff you just have to trust (or not care).
+If the patch looks good to you (James, Geert, BenH), I'd like to forward
+it on to Linus followed by the individual driver updates (that'll take
+a little longer -- I need to revise how drivers do things like remember
+noaccel, etc. and update them).
 
-> >>2) mesa supports a broad number of cards, basically everything there =
-is=20
-> >>doc for
-> >
-> >
-> >Just about as broad as DirectFB.
->=20
-> be honest.
-
-I am. This is the list of drivers in Mesa cvs:
-i810   mga     radeon  tdfx=20
-ffb    i830    r128  savage  unichrome
-gamma  mach64  r200  sis
-
-The list is almost the same as the DirectFB driver list. Granted that som=
-e=20
-of the Mesa drivers use more of the hardware's capabilities, but that's=20
-only because I don't have the hardware ;)
-
-> >I'm not suggesting that everyone start using DirectFB. Everyong should=
- be=20
-> >able to use any API they want. The kernel should provide just enough t=
-o=20
-> >allow these APIs to be implemented.
->=20
-> that would be always possible, don't worry.
-
-I do worry a bit because of this OpenGL as the one and only API talk.
-
-> Please keep in mind that we developed DirectFB at Convergence as API to=
-=20
-> access SettopBox and Game Console functionality in a convenient way, it=
-=20
-> was never intended and has not been designed for use in=20
-> security-critical desktop or workstation environments.
-
-I am aware of that and that's why I don't recommend it to everyone.=20
-Personally I just find it to my liking. Even the code itself makes me=20
-a happy camper whereas XFree86 code gives me a headache...
-
---=20
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+-dte
 
 
 -------------------------------------------------------

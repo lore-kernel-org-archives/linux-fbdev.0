@@ -1,17 +1,17 @@
 From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: fb_imageblit()
-Date: 08 Jan 2003 10:41:47 +0800
+Subject: Re: fbmem.c : FBIOGETCMAP
+Date: 08 Jan 2003 11:49:19 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1041993390.927.38.camel@localhost.localdomain>
-References: <Pine.LNX.4.44.0301072215370.17129-100000@phoenix.infradead.org>
+Message-ID: <1041997586.927.80.camel@localhost.localdomain>
+References: <Pine.LNX.4.44.0301072230180.17129-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from willow.compass.com.ph ([202.70.96.38])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18W6Mw-0006mH-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 07 Jan 2003 18:55:02 -0800
-In-Reply-To: <Pine.LNX.4.44.0301072215370.17129-100000@phoenix.infradead.org>
+	id 18W7QM-0008Ro-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 07 Jan 2003 20:02:38 -0800
+In-Reply-To: <Pine.LNX.4.44.0301072230180.17129-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,87 +23,68 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@infradead.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 2003-01-08 at 06:23, James Simmons wrote: 
-> > >     
-> > >     If monochrome image data would be packed as well, it could be handled by
-> > >     setting fb_image.fg_color = 1 and fb_image.bg_color = 0 (or vice versa for
-> > >     mono10), and fb_set_logo() becomes simpler as well.
-> > > 
-> > >     If we retain the unpacked data for images, we need some other flag to
-> > >     indicate color expansion. Perhaps setting fb_image.depth to 0?
-> > > 
-> > If we change the contents of the logo data, then it makes sense to pack
-> > the logo data also.  However, if we stick to indices, we might as well
-> > retain the "unpacked" 8-bit format.  I think setting fb_image.depth to 0
-> > to mean color expansion is more appropriate. Drivers that will need
-> > trivial changing would be tgafb, i810fb, rivafb, tdfxfb, atyfb, vga16fb
-> > and of course cfb_imgblt.c, softcursor.c and fbcon.c.
+On Wed, 2003-01-08 at 06:37, James Simmons wrote:
 > 
-> The requirement I made of imageblit was to always use packed data. What 
-> the indices approach was to to always use a struct fb_cmap. This way it 
-> didn't matter if used a pseudocolor mode or a directcolor mode.
- 
-I've thought of that also, packing the data according to the pixel depth.  
-However, this will be very inefficient since image blitting
-will go like this: 
+> > I can run the fb color map tests now if you had a
+> > chance to fix the code.
+> > 
+> > I am just running fbtest from the sourceforge fb cvs.
+> 
+> I'm CC the fbdev list because the fb color map code is a mess. I like to 
+> know what the best approach would be to clean it up.
+> 
+> FIrst the main bug. In fb_copy_cmap we should be testing to see if 
+> copy_from[to]_user fails. We don't. The other issue is for fb_copy_cmap
+> We handle memcpy, copy_from_user, and copy)to_user. Now in fb_set_cmap
+> we use get_user also without any checks. 
+> 
+> So we could have fb_copy_cmap keep handling all these issues and remove 
+> get_user from fb_set_cmap. We would just pass in fbcmap we got from 
+> fb_copy_cmap and pass into fb_set_cmap. The other approach is to 
+> remove copy_from_user in fb_copy_cmap and place it int fb_set_cmap. 
+> 
+> What do you think is the best approach to this?
+> 
+> 
+I don't know, it looks okay to me except for the following:
 
-a. Prepare logo data so each pixel of data is in directcolor format (if
-we will use the cmap), so depth corresponds to framebuffer depth, and
-data is packed. 
+1.  In case FBIOPUTCMAP, fb_set_cmap() must pass 1 (to imply get info
+from user space).
 
-b. Pass the structure to cfb_imageblit. 
+2.  In case FBIOGETCMAP, fb_copy_cmap() must pass 2 (to imply copy cmap
+from kernel space to user space)
 
-c. In cfb_imageblit, unpack the logo data: 
+3.  no checks when doing the user access functions (should have no
+effect really, except for the extra processing).
 
-d. Get each color component from the cmap data. 
+I think fb_set_cmap() is a bit misleading.  It mostly implies set the hardware 
+DAC based on the color information in fb_cmap.  fb_cmap is either in kernel 
+space or user space.  There is no need to copy the actual cmap to kernel 
+space and we just let the user app keep a copy of its own.
 
-e. Recreate pixel data based on var.[color].offset and
-var.[color].length. 
+So fb_copy_cmap() is not necessary when doing an fb_set_cmap() because
+you have to allocate memory for it, which has to be deallocated after
+doing an fb_set_cmap().  We cannot use info->cmap because it might be of
+different length, and it will clobber the console cmap.
 
-f. Write the pixel data in packed form to the framebuffer. 
+The copy_from_user() of fb_copy_cmap() may not be needed unless we
+have support for it.  If this is the case, then we have to find a way of
+saving info->cmap first then allocate memory for the new cmap.  Then
+deallocate the new cmap and restore the default cmap to info->cmap
+afterwards.  You will need additional code for this. In any case, info->cmap
+is driver-private anyway, and user apps have no business replacing
+info->cmap with its own.
 
-Whereas, with the current approach: 
+I think the main use of those 2 ioctls is this:
 
-a. Prepare logo data such that each pixel corresponds to one byte. 
-
-b. Pass the structure to cfb_imageblit. 
-
-c. Read color information from pseudopalette if directcolor/truecolor. 
-
-d. Write the pixel data in packed form to the framebuffer. 
-
-Aside from the inefficiency of the method (pack, unpack, pack), drawing
-the logo will become inconsistent with the behavior of the rest of the
-functions, since it's the only one that gets color info differently.  If
-you look at color_imageblit() and slow_imageblit(), they basically use
-the same code logic. 
-
-Secondly, indexing the cmap instead of the pseudo_palette means that
-cfb_imageblit has to know the native framebuffer format.  This was
-argued before that the generic drawing functions need not know of the
-format, one of the reasons we have info->pseudopalette.  Actually, in
-order to be really consistent, I would rather have everything refer to
-the pseudopalette, regardless of the visual format.  This will be better
-especially for some of the corner cases, like monochrome cards with
-bits_per_pixel = 8. 
-
-Thirdly, it's much simpler for drivers to draw the logo.  Just get the
-corrct pixel data from it's own palette.  No need to construct each
-pixel from the cmap.  That's tedious, slow, and will contribute to code
-bloat.  Which is easier?  Get each byte from the logo data, and use it as an 
-index to the pseudo_palette, or unpack the data, separate each unit to 4 
-color components, and construct pixel data from cmap using the 4 extracted 
-indices?
-
-I agree that it would be faster in some cases to draw a packed logo
-data, but if we're going to be inconsistent, let's do it all the way. 
-Make the logo data match the native framebuffer format.  This will be
-very efficient, and this is the one that I actually prefer.
+1. save kernel cmap by doing FBIOGETCMAP,
+2. set hardware DAC based on user app's cmap using FBIOPUTCMAP,
+3. upon exit of the app, restore hardware DAC by doing FBIOPUTCMAP using
+the cmap taken from FBIOGETCMAP.
 
 Tony 
-
 
 
 

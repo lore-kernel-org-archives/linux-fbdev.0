@@ -1,25 +1,17 @@
-From: Mail Delivery Subsystem <MAILER-DAEMON@mailsv2.nec.co.jp>
-Subject: Returned mail: see transcript for details
-Date: Fri, 9 Apr 2004 22:22:43 +0900 (JST)
+From: MAILER-DAEMON@yahoo.com
+Subject: failure delivery
+Date: 9 Apr 2004 22:30:27 -0000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200404091322.i39DMhb27991@mailsv2.nec.co.jp>
-Mime-Version: 1.0
-Content-Type: multipart/report; report-type=delivery-status;
-	boundary="i39DMhb27991.1081516963/mailsv2.nec.co.jp"
+Message-ID: <E1BC4W8-0006em-Nm@sc8-sf-mx1.sourceforge.net>
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BBvy6-0002Yw-Lz
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Apr 2004 06:22:50 -0700
-Received: from tyo202.gate.nec.co.jp ([210.143.35.52])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BBvy6-0002tK-2D
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Apr 2004 06:22:50 -0700
-Received: from mailgate3.nec.co.jp (mailgate53.nec.co.jp [10.7.69.160] (may be forged))
-	by TYO202.gate.nec.co.jp (8.11.7/3.7W01080315) with ESMTP id i39DMmh28263
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 9 Apr 2004 22:22:48 +0900 (JST)
-Received: (from root@localhost) by mailgate3.nec.co.jp (8.11.7/3.7W-MAILGATE-NEC)
-	id i39DMmD23631 for linux-fbdev-devel@lists.sourceforge.net; Fri, 9 Apr 2004 22:22:48 +0900 (JST)
+	id 1BC4W8-0007lK-Ue
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Apr 2004 15:30:32 -0700
+Received: from mta258.mail.scd.yahoo.com ([66.218.86.175])
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
+	id 1BC4W8-0006em-Nm
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Apr 2004 15:30:32 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,97 +21,57 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
 
-This is a MIME-encapsulated message
+Message from  yahoo.com.
+Unable to deliver message to the following address(es).
 
---i39DMhb27991.1081516963/mailsv2.nec.co.jp
+<ttlno1@yahoo.co.kr>:
+v3size saved = 10906
+Can not open /etc/four11conf/logserver
+H: mta258.mail.scd.yahoo.com PID: 30742 SID: 737350759 P: 5 T: Fri Apr  9 15:30:26 2004 |Delivery Terminating, 100 - ttlno1 over quota|
+Sorry, your message to ttlno1@yahoo.co.kr cannot be delivered.  This account is over quota.
 
-The original message was received at Fri, 9 Apr 2004 22:22:32 +0900 (JST)
-from mailgate91.nec.co.jp [10.7.69.199]
-
-   ----- The following addresses had permanent fatal errors -----
-<kisimoto@css1.kbnes.nec.co.jp>
-    (reason: 550 Host unknown)
-
-   ----- Transcript of session follows -----
-550 5.1.2 <kisimoto@css1.kbnes.nec.co.jp>... Host unknown (Name server: css1.kbnes.nec.co.jp.: host not found)
-
---i39DMhb27991.1081516963/mailsv2.nec.co.jp
-Content-Type: message/delivery-status
-
-Reporting-MTA: dns; mailsv2.nec.co.jp
-Received-From-MTA: DNS; mailgate91.nec.co.jp
-Arrival-Date: Fri, 9 Apr 2004 22:22:32 +0900 (JST)
-
-Final-Recipient: RFC822; kisimoto@css1.kbnes.nec.co.jp
-Action: failed
-Status: 5.1.2
-Remote-MTA: DNS; css1.kbnes.nec.co.jp
-Diagnostic-Code: SMTP; 550 Host unknown
-Last-Attempt-Date: Fri, 9 Apr 2004 22:22:43 +0900 (JST)
-
---i39DMhb27991.1081516963/mailsv2.nec.co.jp
-Content-Type: message/rfc822
+--- Original message follows.
 
 Return-Path: <linux-fbdev-devel@lists.sourceforge.net>
-Received: from mailgate41.nec.co.jp (mailgate91.nec.co.jp [10.7.69.199]) by mailsv2.nec.co.jp (8.11.7/3.7W-MAILSV2-NEC) with ESMTP
-	id i39DMVb27939 for <kisimoto@css1.kbnes.nec.co.jp>; Fri, 9 Apr 2004 22:22:32 +0900 (JST)
-Received: from mailgate4.nec.co.jp (mailgate54.nec.co.jp [10.7.69.197]) by mailgate41.nec.co.jp (8.11.7/3.7W-MAILGATE-NEC) with ESMTP
-	id i39DMVH28029 for <kisimoto@css1.kbnes.nec.co.jp>; Fri, 9 Apr 2004 22:22:31 +0900 (JST)
-Received: (from root@localhost) by mailgate4.nec.co.jp (8.11.7/3.7W-MAILGATE-NEC)
-	id i39DMVA27169 for kisimoto@css1.kbnes.nec.co.jp; Fri, 9 Apr 2004 22:22:31 +0900 (JST)
-Received: from css1.kbnes.nec.co.jp (YahooBB219054210091.bbtec.net [219.54.210.91])
-	by TYO203.gate.nec.co.jp (8.11.7/3.7W02122014) with ESMTP id i39DMLO25107
-	for <kisimoto@css1.kbnes.nec.co.jp>; Fri, 9 Apr 2004 22:22:21 +0900 (JST)
-Message-Id: <200404091322.i39DMLO25107@TYO203.gate.nec.co.jp>
+
+The original message is over 5k.  Message truncated to 1K.
+
+X-Rocket-Spam: 61.41.128.24
+X-YahooFilteredBulk: 61.41.128.24
+X-Rocket-Track: 48: 20 ; SERVER=66.218.86.249
+Return-Path: <linux-fbdev-devel@lists.sourceforge.net>
+Received: from 61.41.128.24  (HELO yahoo.co.kr) (61.41.128.24)
+  by mta258.mail.scd.yahoo.com with SMTP; Fri, 09 Apr 2004 13:34:41 -0700
 From: linux-fbdev-devel@lists.sourceforge.net
-To: kisimoto@css1.kbnes.nec.co.jp
-Subject: Re: Your picture
-Date: Fri, 9 Apr 2004 22:22:41 +0900
+To: ttlno1@yahoo.co.kr
+Subject: warning
+Date: Sat, 10 Apr 2004 05:30:43 +0900
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0009_00002D58.00001A6B"
-X-Priority: 3
-X-MSMail-Priority: Normal
+Content-Type: multipart/mixed; boundary="41356254"
 
-This is a multi-part message in MIME format.
-
-------=_NextPart_000_0009_00002D58.00001A6B
-Content-Type: text/plain; charset=iso-2022-jp
+--41356254
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 
-------------------  Virus Warning Message ---
+read it immediately!
 
-Found virus WORM_NETSKY.D in file your_picture.pif
-The uncleanable file is deleted.
+--41356254
+Content-Type: application/x-zip-compressed; name="ps.zip"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="ps.zip"
 
-Have detected viruses in mails sent to you. MAILGATE deleted viruses or files  contained viruses. If you have questions about this message, please consult with virus-admin@nic.nec.co.jp.| あなた宛に送付されたメールからウイルスが検出されたため、該当添付ファイルのみメールから駆除/削除しました。下記URLを参照の上、不明点がある場合、virus-admin@nic.nec.co.jpにご相談下さい。
-
--About Virus Scan Gate(Only jp): http://www.ipc.nec.co.jp/virus/mgate/ -
-
-------=_NextPart_000_0009_00002D58.00001A6B
-Content-Type: text/plain;
-	charset="Windows-1252"
-Content-Transfer-Encoding: 7bit
-
-Your document is attached.
-
-------=_NextPart_000_0009_00002D58.00001A6B
-Content-Type: text/plain; charset=iso-2022-jp
-Content-Transfer-Encoding: 7bit
-
-
-------------------  Virus Warning Message ---
-
-your_picture.pif is removed from here because it contains a virus.
-
--About Virus Scan Gate(Only jp): http://www.ipc.nec.co.jp/virus/mgate/ -
-------=_NextPart_000_0009_00002D58.00001A6B--
-
-
-
---i39DMhb27991.1081516963/mailsv2.nec.co.jp--
+UEsDBAoAAAAAANSjiTBdbrAiAFYAAABWAAAKAAAAcHMuZG9jLnNjck1akAADAAAABAAAAP//
+AAC4AAAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAOH7oO
+ALQJzSG4AUzNIVRoaXMgcHJvZ3JhbSBjYW5ub3QgYmUgcnVuIGluIERPUyBtb2RlLg0NCiQA
+AAAAAAAAUEUAAEwBAwBZ9DBAAAAAAAAAAADgAA8CCwECOABQAAAAEAAAAEABANCQAQAAUAEA
+AKABAAAAQAAAEAAAAAIAAAQAAAAAAAAABAAAAAAAAAAAsAEAABAAAAAAAAACAAAAAAAQAAAQ
+AAAAABAAABAAAAAAAAAQAAAAAAAAA
+*** MESSAGE TRUNCATED ***
 
 
 

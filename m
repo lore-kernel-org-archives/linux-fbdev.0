@@ -1,119 +1,92 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 4/4] fbdev: Add iomem annotations to vga16fb.c
-Date: Sat, 18 Sep 2004 11:48:06 +0800
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <200409181141.46530.adaplas@hotpop.com>
-Reply-To: adaplas@pol.net
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Radeon: do not blank screen during suspend
+Date: Sat, 18 Sep 2004 14:47:02 +1000
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <1095482822.3574.24.camel@gaston>
+References: <20040915112652.GA21386@elf.ucw.cz>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S269113AbUIRDts@vger.kernel.org>
-Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1C8X8D-0001UO-5z
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 17 Sep 2004 21:47:29 -0700
+Received: from gate.crashing.org ([63.228.1.57])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1C8X8C-0005yV-Cm
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 17 Sep 2004 21:47:29 -0700
+In-Reply-To: <20040915112652.GA21386@elf.ucw.cz>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, linux-kernel@vger.kernel.org
+To: Pavel Machek <pavel@ucw.cz>
+Cc: ajoshi@shell.unixbox.com, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@zip.com.au>
 
-Add iomem annottions to vga16fb.c
+On Wed, 2004-09-15 at 21:26, Pavel Machek wrote:
+> Hi!
+> 
+> This stops ugly flashing from radeon during suspend/resume, please
+> apply,
 
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
+Shoud be fine.
 
- vga16fb.c |   27 ++++++++++++++++-----------
- 1 files changed, 16 insertions(+), 11 deletions(-)
+BTW. What is the status with Patrick merge of pmdisk & swsusp ? Has it
+been merged at all ? (No time to check at the moment). I still hope I'll
+find some time to do real work on it (& cleanup the ppc support that I
+had working experimentally at OLS) sooner or later...
 
-diff -uprN linux-2.6.9-rc2-mm1-orig/drivers/video/vga16fb.c linux-2.6.9-rc2-mm1/drivers/video/vga16fb.c
---- linux-2.6.9-rc2-mm1-orig/drivers/video/vga16fb.c	2004-09-16 19:40:05.000000000 +0800
-+++ linux-2.6.9-rc2-mm1/drivers/video/vga16fb.c	2004-09-18 10:46:32.325377824 +0800
-@@ -123,7 +123,7 @@ static struct fb_fix_screeninfo vga16fb_
-    suitable instruction is the x86 bitwise OR.  The following
-    read-modify-write routine should optimize to one such bitwise
-    OR. */
--static inline void rmw(volatile char *p)
-+static inline void rmw(volatile char __iomem *p)
- {
- 	readb(p);
- 	writeb(1, p);
-@@ -883,7 +883,7 @@ void vga_8planes_fillrect(struct fb_info
-         char oldmask = selectmask();
-         int line_ofs, height;
-         char oldop, oldsr;
--        char *where;
-+        char __iomem *where;
- 
-         dx /= 4;
-         where = info->screen_base + dx + rect->dy * info->fix.line_length;
-@@ -932,7 +932,7 @@ void vga_8planes_fillrect(struct fb_info
- void vga16fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
- {
- 	int x, x2, y2, vxres, vyres, width, height, line_ofs;
--	char *dst;
-+	char __iomem *dst;
- 
- 	vxres = info->var.xres_virtual;
- 	vyres = info->var.yres_virtual;
-@@ -1012,7 +1012,8 @@ void vga_8planes_copyarea(struct fb_info
-         char oldsr = setsr(0xf);
-         int height, line_ofs, x;
- 	u32 sx, dx, width;
--	char *dest, *src;
-+	char __iomem *dest;
-+	char __iomem *src;
- 
-         height = area->height;
- 
-@@ -1063,7 +1064,8 @@ void vga16fb_copyarea(struct fb_info *in
- 	u32 dx = area->dx, dy = area->dy, sx = area->sx, sy = area->sy; 
- 	int x, x2, y2, old_dx, old_dy, vxres, vyres;
- 	int height, width, line_ofs;
--	char *dst = NULL, *src = NULL;
-+	char __iomem *dst = NULL;
-+	char __iomem *src = NULL;
- 
- 	vxres = info->var.xres_virtual;
- 	vyres = info->var.yres_virtual;
-@@ -1174,7 +1176,7 @@ void vga_8planes_imageblit(struct fb_inf
-         char oldmask = selectmask();
-         const char *cdat = image->data;
- 	u32 dx = image->dx;
--        char *where;
-+        char __iomem *where;
-         int y;
- 
-         dx /= 4;
-@@ -1198,10 +1200,11 @@ void vga_8planes_imageblit(struct fb_inf
- 
- void vga_imageblit_expand(struct fb_info *info, const struct fb_image *image)
- {
--	char *where = info->screen_base + (image->dx/8) + 
-+	char __iomem *where = info->screen_base + (image->dx/8) +
- 		image->dy * info->fix.line_length;
- 	struct vga16fb_par *par = (struct vga16fb_par *) info->par;
--	char *cdat = (char *) image->data, *dst;
-+	char *cdat = (char *) image->data;
-+	char __iomem *dst;
- 	int x, y;
- 
- 	switch (info->fix.type) {
-@@ -1265,9 +1268,11 @@ void vga_imageblit_color(struct fb_info 
- 	 * Draw logo 
- 	 */
- 	struct vga16fb_par *par = (struct vga16fb_par *) info->par;
--	char *where = info->screen_base + image->dy * info->fix.line_length + 
-+	char __iomem *where =
-+		info->screen_base + image->dy * info->fix.line_length +
- 		image->dx/8;
--	const char *cdat = image->data, *dst;
-+	const char *cdat = image->data;
-+	char __iomem *dst;
- 	int x, y;
- 
- 	switch (info->fix.type) {
-@@ -1354,7 +1359,7 @@ int __init vga16fb_init(void)
- 
- 	/* XXX share VGA_FB_PHYS and I/O region with vgacon and others */
- 
--	vga16fb.screen_base = (void *)VGA_MAP_MEM(VGA_FB_PHYS);
-+	vga16fb.screen_base = (void __iomem *)VGA_MAP_MEM(VGA_FB_PHYS);
- 	if (!vga16fb.screen_base) {
- 		printk(KERN_ERR "vga16fb: unable to map device\n");
- 		ret = -ENOMEM;
+Ben.
+							Pavel
+> 
+> --- clean-mm/drivers/video/aty/radeon_pm.c	2004-08-24 09:03:18.000000000 +0200
+> +++ linux-mm/drivers/video/aty/radeon_pm.c	2004-09-15 13:00:51.000000000 +0200
+> @@ -871,7 +871,8 @@
+>  	agp_enable(0);
+>  #endif
+>  
+> -	fb_set_suspend(info, 1);
+> +	if (system_state != SYSTEM_SNAPSHOT)
+> +		fb_set_suspend(info, 1);
+>  
+>  	if (!(info->flags & FBINFO_HWACCEL_DISABLED)) {
+>  		/* Make sure engine is reset */
+> @@ -880,12 +881,14 @@
+>  		radeon_engine_idle();
+>  	}
+>  
+> -	/* Blank display and LCD */
+> -	radeonfb_blank(VESA_POWERDOWN, info);
+> -
+> -	/* Sleep */
+> -	rinfo->asleep = 1;
+> -	rinfo->lock_blank = 1;
+> +	if (system_state != SYSTEM_SNAPSHOT) {
+> +		/* Blank display and LCD */
+> +		radeonfb_blank(VESA_POWERDOWN, info);
+> +
+> +		/* Sleep */
+> +		rinfo->asleep = 1;
+> +		rinfo->lock_blank = 1;
+> +	}
+>  
+>  	/* Suspend the chip to D2 state when supported
+>  	 */
+-- 
+Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+
+
+-------------------------------------------------------
+This SF.Net email is sponsored by: YOU BE THE JUDGE. Be one of 170
+Project Admins to receive an Apple iPod Mini FREE for your judgement on
+who ports your project to Linux PPC the best. Sponsored by IBM.
+Deadline: Sept. 24. Go here: http://sf.net/ppc_contest.php

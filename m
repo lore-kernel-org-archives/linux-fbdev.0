@@ -1,8 +1,8 @@
 From: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] fix endian problem in color_imageblit
-Date: Thu, 12 Dec 2002 14:41:30 +1100
+Subject: [PATCH] fix offb
+Date: Thu, 12 Dec 2002 14:45:17 +1100
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <15864.1386.543811.337732@argo.ozlabs.ibm.com>
+Message-ID: <15864.1613.688767.520790@argo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
@@ -11,53 +11,52 @@ Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@infradead.org>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-This patch fixes the endian problems in color_imageblit().  With this
-patch, I get the penguin drawn properly on boot.
-
-The main change is that on big-endian systems, when we load a pixel
-from the source, we now shift it to the left-hand (most significant)
-end of the word.  With this change the rest of the logic is correct on
-big-endian systems.  This may not be the most efficient way to do
-things but it is a simple change that works and avoids disturbing the
-rest of the code.
+This patch fixes the offb driver, and fixes the Makefile so it doesn't
+go looking for a nonexistent file (cfbimgblit.o) when CONFIG_FB_OF is
+turned on.  In the offb driver, we were overrunning the end of the
+info->fix.id field on some cards, plus it had an undefined variable.
+I guess we could also get rid of the "info->node = NODEV;" line too.
 
 Paul.
 
-diff -urN linux-2.5/drivers/video/cfbimgblt.c pmac-2.5/drivers/video/cfbimgblt.c
---- linux-2.5/drivers/video/cfbimgblt.c	2002-12-10 15:20:32.000000000 +1100
-+++ pmac-2.5/drivers/video/cfbimgblt.c	2002-12-12 09:14:47.000000000 +1100
-@@ -103,10 +103,10 @@
- {
- 	/* Draw the penguin */
- 	int i, n;
--	unsigned long bitmask = SHIFT_LOW(~0UL, BITS_PER_LONG - p->var.bits_per_pixel);
-+	int bpp = p->var.bits_per_pixel;
- 	unsigned long *palette = (unsigned long *) p->pseudo_palette;
- 	unsigned long *dst, *dst2, color = 0, val, shift;
--	unsigned long null_bits = BITS_PER_LONG - p->var.bits_per_pixel; 
-+	unsigned long null_bits = BITS_PER_LONG - bpp;
- 	u8 *src = image->data;
+diff -urN linux-2.5/drivers/video/Makefile pmac-2.5/drivers/video/Makefile
+--- linux-2.5/drivers/video/Makefile	2002-12-10 15:20:32.000000000 +1100
++++ pmac-2.5/drivers/video/Makefile	2002-12-10 21:25:36.000000000 +1100
+@@ -42,7 +42,7 @@
+ obj-$(CONFIG_FB_3DFX)             += tdfxfb.o
+ obj-$(CONFIG_FB_MAC)              += macfb.o macmodes.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o 
+ obj-$(CONFIG_FB_HP300)            += hpfb.o cfbfillrect.o cfbimgblt.o
+-obj-$(CONFIG_FB_OF)               += offb.o cfbfillrect.o cfbimgblit.o cfbcopyarea.o
++obj-$(CONFIG_FB_OF)               += offb.o cfbfillrect.o cfbimgblt.o cfbcopyarea.o
+ obj-$(CONFIG_FB_IMSTT)            += imsttfb.o
+ obj-$(CONFIG_FB_RETINAZ3)         += retz3fb.o
+ obj-$(CONFIG_FB_CLGEN)            += clgenfb.o
+diff -urN linux-2.5/drivers/video/offb.c pmac-2.5/drivers/video/offb.c
+--- linux-2.5/drivers/video/offb.c	2002-12-10 15:20:32.000000000 +1100
++++ pmac-2.5/drivers/video/offb.c	2002-12-10 19:58:24.000000000 +1100
+@@ -393,6 +393,7 @@
+ 	struct fb_fix_screeninfo *fix;
+ 	struct fb_var_screeninfo *var;
+ 	struct fb_info *info;
++	int size;
  
- 	dst2 = (unsigned long *) dst1;
-@@ -125,9 +125,10 @@
- 		while (n--) {
- 			if (p->fix.visual == FB_VISUAL_TRUECOLOR ||
- 			    p->fix.visual == FB_VISUAL_DIRECTCOLOR )
--				color = palette[*src] & bitmask;
-+				color = palette[*src];
- 			else
--				color = *src & bitmask;	
-+				color = *src;
-+			color <<= LEFT_POS(bpp);
- 			val |= SHIFT_HIGH(color, shift);
- 			if (shift >= null_bits) {
- 				FB_WRITEL(val, dst++);
-@@ -136,7 +137,7 @@
- 				else
- 					val = SHIFT_LOW(color, BITS_PER_LONG - shift);
- 			}
--			shift += p->var.bits_per_pixel;
-+			shift += bpp;
- 			shift &= (BITS_PER_LONG - 1);
- 			src++;
- 		}
+ 	if (!request_mem_region(res_start, res_size, "offb"))
+ 		return;
+@@ -421,7 +422,7 @@
+ 	var = &info->var;
+ 
+ 	strcpy(fix->id, "OFfb ");
+-	strncat(fix->id, name, sizeof(fix->id));
++	strncat(fix->id, name, sizeof(fix->id) - sizeof("OFfb "));
+ 	fix->id[sizeof(fix->id) - 1] = '\0';
+ 
+ 	var->xres = var->xres_virtual = width;
+@@ -522,8 +523,6 @@
+ 	var->sync = 0;
+ 	var->vmode = FB_VMODE_NONINTERLACED;
+ 
+-	strcpy(fix->id, "OFfb ");
+-	strncat(fix->id, full_name, sizeof(fix->id));
+ 	info->node = NODEV;
+ 	info->fbops = &offb_ops;
+ 	info->screen_base = ioremap(address, fix->smem_len);

@@ -1,23 +1,23 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] neofb patches
-Date: Wed, 28 Apr 2004 10:27:46 +0200 (MEST)
+Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
+ one works ; -)
+Date: Wed, 28 Apr 2004 10:35:06 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0404281026410.3644@waterleaf.sonytel.be>
-References: <Pine.LNX.4.44.0404271938330.20536-100000@phoenix.infradead.org>
- <408EE34F.8080106@undead.cc> <1083107454.16544.42.camel@gaston>
- <20040428002037.GE22495@guug.org> <1083112565.20473.10.camel@gaston>
- <20040428070832.GA23411@guug.org>
+Message-ID: <Pine.GSO.4.58.0404281034530.3644@waterleaf.sonytel.be>
+References: <Pine.LNX.4.44.0404240035400.5826-100000@phoenix.infradead.org>
+ <1083025364.11575.4.camel@gaston> <Pine.GSO.4.58.0404271050540.14434@waterleaf.sonytel.be>
+ <200404280818.49915.adaplas@pol.net>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIkQ9-0002IS-3S
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 01:27:57 -0700
+	id 1BIkXC-00049g-Ry
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 01:35:14 -0700
 Received: from witte.sonytel.be ([80.88.33.193])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIkQ8-00073s-LD
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 01:27:56 -0700
-In-Reply-To: <20040428070832.GA23411@guug.org>
+	id 1BIkXC-0008V6-DZ
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 01:35:14 -0700
+In-Reply-To: <200404280818.49915.adaplas@pol.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,21 +29,34 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Otto Solares <solca@guug.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: "Antonino A. Daplas" <adaplas@hotpop.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, James Simmons <jsimmons@infradead.org>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 28 Apr 2004, Otto Solares wrote:
-> I currently have now.  I like the fbdev abstraction but it has
-> too many limitations:
+On Wed, 28 Apr 2004, Antonino A. Daplas wrote:
+> On Tuesday 27 April 2004 16:51, Geert Uytterhoeven wrote:
+> > On Tue, 27 Apr 2004, Benjamin Herrenschmidt wrote:
+> > > On Tue, 2004-04-27 at 10:19, James Simmons wrote:
+> > > > Okay. This is my first attempt to address this problem. There is not
+> > > > test for accelerated copyarea or image drawing as we lack the flag. I
+> > > > haven't figured where to put it yet. We have 3 choices.
+> > > >
+> > > >
+> > > > fb_var_screeninfo
+> > > > fb_fix_screeninfo
+> > > > fb_info
+> > >
+> > > Well... fix is what gets filled after a mode is set, let's put it in
+> > > there along with the linewidth etc...
+> >
+> > Indeed. BTW, no comments on my proposal to add
+> > fb_fix_screeninfo.capabilities?
+> >
 >
-> - It should exist a field in the fixed info for the bus_id, so
->   intelligent apps will realize which card is attached to a fbdev.
+> Since accelerated drawing functions have no relevence whatsoever in userspace,
+> placing it in fb_info is better.  But I won't disagree if it's placed in
+> fb_fix_screeninfo.
 
-Should be fixed soon with sysfs in 2.6.
-
-> C'mon James, Ben, Geert, driver writers, let's fix the layer!
-
-Time, time, time...
+Point taken.
 
 Gr{oetje,eeting}s,
 

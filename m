@@ -1,77 +1,110 @@
-From: Richard Smith <rsmith@bitworks.com>
-Subject: Re: Generic VESA framebuffer driver and Video
- card BOOT?
-Date: Mon, 18 Oct 2004 19:18:09 -0500
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <41745D41.50306@bitworks.com>
-References: <200410160946.32644.adaplas@hotpop.com>	 <4173B865.26539.117B09BD@localhost> <417428F2.2050402@bitworks.com>	 <9e47339104101814166bf4cfe5@mail.gmail.com>	 <41744505.4080507@bitworks.com> <9e47339104101816282ba385d2@mail.gmail.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: "Kendall Bennett" <KendallB@scitechsoft.com>
+Subject: Re: [Linux-fbdev-devel] Generic VESA framebuffer driver and Video card BOOT?
+Date: Mon, 18 Oct 2004 17:55:16 -0700
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <41740384.5783.12A07B14@localhost>
+References: <9e47339104101814166bf4cfe5@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CJhhj-0000vU-D0
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 17:18:19 -0700
-Received: from [69.4.201.55] (helo=bitworks.com)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CJhhg-0005wV-Ij
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 17:18:19 -0700
-In-Reply-To: <9e47339104101816282ba385d2@mail.gmail.com>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 7BIT
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S268177AbUJSA4F@vger.kernel.org>
+In-reply-to: <41744505.4080507@bitworks.com>
+Content-description: Mail message body
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: Richard Smith <rsmith@bitworks.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-Jon Smirl wrote:
+Richard Smith <rsmith@bitworks.com> wrote:
 
-> LinuxBIOS can do things the real kernel probably shouldn't be doing.
-> For example on an x86 it can find the expansion ROMs and post all of
- > the video cards. On non-x86 it can embed emu86 and run the ROMs that
- > way. And for a few cards that we have the docs on it can directly
- > initialize them.  These options should be selected when LinuxBIOS is
- > built for the hardware.
+> Jon Smirl wrote:
+> 
+> > Every system has to be able to somehow indicate that it can find/load the
+> > kernel image or that the image is corrupt or that hardware diagnostics failed.
+> > Displaying this info is the responsibility of the BIOS.
+> 
+> Jon, I agree with you 100%.  I was merely responding to a
+> statement I saw as false. 
+> 
+> If we could get the video chip manufacturers to provide me with
+> all the necessary documentation we embedded folk would be happy to
+> do exactly as you say.  We could code up a nice robust boot time
+> init procedure to serve our purposes.  OF would be great if all
+> the mfgs would support it. 
 
-Well we see it the other way around.  We want to do a little as possible 
-and let Linux handle as much as possible.  Otherwise your bios turns 
-into a mini-OS.  The path is littered with dead projects that went that 
-route.  Keeping current with driver support kills them.
+Well being able to use this BIOS emulator logic to bring up the primary 
+video card in the firmware should solve this problem, right? Just ignore 
+the fact that the BIOS image we are using happens to be x86 code, and 
+think about is as a set of instructions that we execute using an 
+interpreter (ie: the same as Open Firmware really).
 
-> But getting Int10 video up and running does not mean that the kernel
-> framebuffer/DRM subsystem has to be up and running. Int10 or Open
+> Its a sad fact though that we are (x86 anyway) dependant on some
+> amazingly fragile, stupid, usually binary only, legacy bloated, and
+> quite often buggy, 16-bit realmode video init code that should have
+> been put to pasture many years ago. 
 
-Agreed.
+Actually there is nothing wrong with the x86 BIOS from the perspective of 
+functionality and useability (or bloat for that matter). It contains all 
+the functionality we need and armed with something like the x86 emulator 
+we can use it for what we need on any platform.
 
-> it, then it is the hardware manufacturer responsibility to acquire
-> enough documentation from the graphics vendor so that a boot display
-> can be implemented.
+Open Firmware may be a 'nicer' solution, but I guarantee that if the 
+vendors started supporting that it would be just a bug ridden as any 16-
+bit real mode BIOS code. For the Video BIOS the code always works for 
+what it is tested for. Some vendors spend more time testing the VBE BIOS 
+side of things fully (if they are smart they have licensed our VBETest 
+tools for this purpose). Unfortunatley some vendors do not test this 
+stuff thoroughly and it has problems. But the same testing issues would 
+exist whether the firmware was written as a 16-bit x86 blob or as an Open 
+Firmware blob.
 
-If only it were that easy. *grin*
+> LinuxBIOS has been trying to come up with a solution to the video
+> BOOT problems for good while now.  Emulation seems to be the only
+> thing that really has a chance of working. 
 
-Ok well I really don't want to start a off-topic argument here so I'll 
-shut up after this. Especially since I'm not really argueing anything 
-that hasn't already be thrashed over many times.
+IMHO that is the best solution to the problem because it will be using 
+code that has been heavily tested by the vendor. The one thing x86 Video 
+BIOS'es can do reliably is POST the graphics card ;-)
 
-I and many others would like to see a unified int10 solution that could 
-be used by as many projects that need it rather than the fragmented 
-setup we have now.  The kernel proper may or may not be one of those.
+> I don't currently (see next paragraph) need the kernel to try and
+> do all that stuff for me since I need it prior to when the kernel
+> loads.  But what I would like is to be able to use/build on kernel
+> framework without having to completely re-invent the wheel. 
 
--- 
-Richard A. Smith
+Assuming you put the video init code into the firmware, then yes, the 
+kernel does not need it. However part of the project to put this into the 
+kernel involves building a better VESA framebuffer console driver, and to 
+do that we either need vm86() services from kernel land (frowned upon by 
+the kernel community and inherently x86 centric) or support for x86 
+emulation.
 
+If you want to try and build a better standard than the x86 VESA VBE 
+BIOS, be my guest. I lobbied for years on the VESA Software Standards 
+Committee to build the next generation firmware that would be cross 
+platform, but nobody was interested. In fact the SSC eventually closed 
+due to lack of interest so we took all our technology and turned it into 
+SciTech SNAP. 
 
+I see Intel is trying to do something similar with EFI, but when will 
+that actually be here?
 
+So for now we have the x86 BIOS and it works today. We should use it.
 
--------------------------------------------------------
-This SF.net email is sponsored by: IT Product Guide on ITManagersJournal
-Use IT products in your business? Tell us what you think of them. Give us
-Your Opinions, Get Free ThinkGeek Gift Certificates! Click to find out more
-http://productguide.itmanagersjournal.com/guidepromo.tmpl
+> Linux far exceeds the hardware support level and flexablity of any
+> bios and already does 90% of the job a bios does anyway. In most
+> cases better than the bios ever could.  Linux booting Linux is the
+> ultimate bios/bootloader. 
+
+That would be nice if you could trim it down ;-) Would certainly save a 
+lot of code bloat. But if you do that, then you would need this code in 
+the kernel since now it would be the boot loader as well ;-)
+
+Regards,
+
+---
+Kendall Bennett
+Chief Executive Officer
+SciTech Software, Inc.
+Phone: (530) 894 8400
+http://www.scitechsoft.com
+
+~ SciTech SNAP - The future of device driver technology! ~

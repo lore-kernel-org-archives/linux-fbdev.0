@@ -1,22 +1,22 @@
 From: James Simmons <jsimmons@infradead.org>
 Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
  one works ;-)
-Date: Fri, 30 Apr 2004 17:03:17 +0100 (BST)
+Date: Fri, 30 Apr 2004 17:05:09 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0404301702200.12865-100000@phoenix.infradead.org>
-References: <20040429201316.GA26704@guug.org>
+Message-ID: <Pine.LNX.4.44.0404301703340.12865-100000@phoenix.infradead.org>
+References: <1083275931.20091.150.camel@gaston>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BJaU2-0002nZ-Lk
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Apr 2004 09:03:26 -0700
+	id 1BJaVr-0003GX-1B
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Apr 2004 09:05:19 -0700
 Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1BJaU2-0002zM-8u
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Apr 2004 09:03:26 -0700
-In-Reply-To: <20040429201316.GA26704@guug.org>
+	id 1BJaVq-0007FN-5n
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Apr 2004 09:05:18 -0700
+In-Reply-To: <1083275931.20091.150.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,23 +28,36 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Otto Solares <solca@guug.org>
-Cc: Kronos <kronos@kronoz.cjb.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, John Zielinski <grim@undead.cc>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
 
-> Excellent news!
+> > > On your monitor... then most TFT owners will curse you :)
+> > 
+> > As we move from ioctls to sysfs we will also move from using 
+> > fb_var_screeninfo as the userland interface to using mode strings.
+> > That means when someone creates a string  like
+> > 
+> > 834x721@81 
+> > 
+> > then for non TFT monitors it should fail. For TFT monitors it will work.
+> > If someoone using stty ask for exotic mode then if the monitor is TFT then 
+> > it should work. Else it should fail. 
+> 
+> Maybe... though for a TFT, you
+> 
+> 1) need more infos than that to set a proper mode
 
-Its going to be a little bit before this is complete. I plan for 2.6.X to 
-have this functionality.
+What do I need? I like to see this idea work.
 
-> I just would suggest as userspace fbdev consumer that is a pain to
-> do development using two different interfaces, if sysfs interface
-> will obsolete the ioctl one, it must have all the mechanics that
-> are present in the ioctl one so no mix of interfaces would be
-> required.
+> 2) don't care bout the refresh rate once you have that proper mode set
+> since you use the HW scaler
 
-Yeah that is going to be a problem for a while. 
+Okay. You don't have to pass in a mode string with a refresh rate anyways.
+If it's not a tft then we can pick one basded on user preference.
+
+
 
 
 

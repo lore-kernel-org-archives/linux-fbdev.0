@@ -1,21 +1,23 @@
-From: James Simmons <jsimmons@infradead.org>
+From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
 Subject: Re: Framebuffers and VC setup (via fbcon.c)
-Date: Wed, 10 Mar 2004 18:15:57 +0000 (GMT)
+Date: Wed, 10 Mar 2004 23:02:22 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0403101806460.24760-100000@phoenix.infradead.org>
-References: <20040309143950.GS17857@lug-owl.de>
+Message-ID: <20040310220222.GG17857@lug-owl.de>
+References: <20040309143950.GS17857@lug-owl.de> <Pine.LNX.4.44.0403101806460.24760-100000@phoenix.infradead.org>
 Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="3y/CVJp2vtgPOhvS"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B18WZ-0002d8-H4
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Mar 2004 10:33:47 -0800
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.30)
-	id 1B18FO-00067h-6y
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Mar 2004 10:16:02 -0800
-In-Reply-To: <20040309143950.GS17857@lug-owl.de>
+	id 1B1C3m-0002Ng-7T
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Mar 2004 14:20:18 -0800
+Received: from dvmwest.gt.owl.de ([62.52.24.140])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1B1BNT-0003yb-LE
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Mar 2004 13:36:35 -0800
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44.0403101806460.24760-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,74 +27,86 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
 
-> This all happens on a VAX 4000 Model 46. I've already done the FB driver
-> (http://cvs.sourceforge.net/viewcvs.py/linux-vax/kernel-2.5/drivers/video/vaxlcgfb.c)
-> which basically works - cat'ting a properly prepared image to it
-> produces a proper display output.
+--3y/CVJp2vtgPOhvS
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Wow really cool.
- 
-> Now I tried to bring CONFIG_VT and CONFIG_FRAMEBUFFER_CONSOLE into the
-> game. However, I end up with no working FB console. No penguin image, no
-> login prompt. This is because vc->vc_bottom ends up being 0, while it
-> should be at around 60.
+On Wed, 2004-03-10 18:15:57 +0000, James Simmons <jsimmons@infradead.org>
+wrote in message <Pine.LNX.4.44.0403101806460.24760-100000@phoenix.infradea=
+d.org>:
+> > 	- Despite the fact that (quite late in the boot process)
+> > 	  vc_init() is called (with correct looking arguments), I think
+> > 	  it should have been called quite some time earlier. With other
+> > 	  (PC based) graphic cards, the machine just switches to FB mode
+> > 	  after the FB driver is initialized. All further output is put
+> > 	  there. But not here...
+> >=20
+> > I haven't yet really understood how FB and console code work together,
+> > so it would be nice to have some hints there :)
 
-Wow. Nasty bug.
+In the meantime, another VAX hacker (who initially worked on the 2.4.x
+code base) hinted me: in the arch_setup function, I was missing a=20
 
-> Adding some printk()s and initcall_debug, here is what happens:
-> 
->   tty_class_init()
->   chr_dev_init()
->     vaxlcgfb_init()
->   tty_init()
->     vty_init()
->       fb_console_init()
-> 			"fbcon_startup: mode: VAX LCGfb"
-> 			"fbcon_startup: visual: 3"
-> 			"fbcon_startup: res: 1280x1024-8"
-> 			"Console: switching to frame buffer device"
->   pty_init()
->   fb_console_init()
->   			"Console: switching to frame buffer device"
->   ...
->   vc_init():
->   			currcons=0, rows=64, cols=160, clear=1
-> 			then colors 0..15 are set
-> 
-> Two things look odd to me:
-> 
-> 	- fb_console_init is called twice. Once from
-> 	  tty_init() -> vty_init() -> fb_console_init(), second time
-> 	  directly as a "normal" __init / module_init() call.
+	conswitchp =3D &dummy_con;
 
-That is a bug. I have a patch to fix that.
+After adding these, I got a penguin and a login prompt. However, the
+console output (during further boot-up) didn't show up. But I'll get
+there:)
 
-> 	- Despite the fact that (quite late in the boot process)
-> 	  vc_init() is called (with correct looking arguments), I think
-> 	  it should have been called quite some time earlier. With other
-> 	  (PC based) graphic cards, the machine just switches to FB mode
-> 	  after the FB driver is initialized. All further output is put
-> 	  there. But not here...
-> 
-> I haven't yet really understood how FB and console code work together,
-> so it would be nice to have some hints there :)
+>     I'm going to have to look at your driver. Normally one of two things=
+=20
+> happen. Some driver have there hardware modes set by firmware and they=20
+> can't be changed. For example VESA fbdev. In this case you lack a=20
+> xxxfb_check_var and xxxfb_set_par function. Then fbcon doesn't attempt to=
+=20
+> change the hardware state but use the current one.=20
+>   The other case is that your driver sets the hardware state. You have a=
+=20
+> set_check_var and a set_par function hook in struct fb_info->fbops. So th=
+e=20
+> fbcon layer will call set_par directly for you.
 
-    I'm going to have to look at your driver. Normally one of two things 
-happen. Some driver have there hardware modes set by firmware and they 
-can't be changed. For example VESA fbdev. In this case you lack a 
-xxxfb_check_var and xxxfb_set_par function. Then fbcon doesn't attempt to 
-change the hardware state but use the current one. 
-  The other case is that your driver sets the hardware state. You have a 
-set_check_var and a set_par function hook in struct fb_info->fbops. So the 
-fbcon layer will call set_par directly for you.
+Well, as I know today, there are more variants of this hardware, some of
+them capable of changing screen resolution. So I think I'd add those two
+functions (after I figured out how to actually change modes, or even how
+to properly detect the available hardware at all:)
 
+Thanks for these valuable hints! Oh, just another question: the largest
+of theses framebuffer devices can handle four CRTs. Just need to
+register four framebuffers, then?
 
+After all, I've had my very first local login last night, at 00:42:23
+CET with local monitor and keyboard on a VAX. Right, I waited some
+seconds to get that nice time on my watch:)
+
+MfG, JBG
+
+--=20
+   Jan-Benedict Glaw       jbglaw@lug-owl.de    . +49-172-7608481
+   "Eine Freie Meinung in  einem Freien Kopf    | Gegen Zensur | Gegen Krieg
+    fuer einen Freien Staat voll Freier B=FCrger" | im Internet! |   im Ira=
+k!
+   ret =3D do_actions((curr | FREE_SPEECH) & ~(NEW_COPYRIGHT_LAW | DRM | TC=
+PA));
+
+--3y/CVJp2vtgPOhvS
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+
+iD8DBQFAT5BuHb1edYOZ4bsRAvXRAJ9xHQoDLuQ34hrNRAJ1olv6C4UvWACeO3FK
+Rwm5zOhPkfhdKDbm4C3zA10=
+=yAoc
+-----END PGP SIGNATURE-----
+
+--3y/CVJp2vtgPOhvS--
 
 
 -------------------------------------------------------

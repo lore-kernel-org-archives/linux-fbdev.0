@@ -1,19 +1,19 @@
-From: Parag Warudkar <warudkar@vsnl.net>
-Subject: Re: 2.5.70 - Blank Screen with VESA VGA Framebuffer
-Date: Sat, 14 Jun 2003 09:20:16 +0530
+From: "Andy Sy" <andy@nospam.com>
+Subject: Documentation for tdfxfb
+Date: Sat, 14 Jun 2003 16:20:49 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <002201c33228$12566b80$016f41db@Lappy>
+Message-ID: <003f01c3324d$e6d49d30$0100a8c0@duron12>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_003C_01C33290.EB327DA0"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from smtp2.vsnl.net ([203.200.235.232])
+Received: from [202.78.77.6] (helo=mail.netasia.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19R2Eg-0007Gg-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 13 Jun 2003 21:01:50 -0700
-Received: from Lappy ([127.0.0.1])
- by smtp2.vsnl.net (iPlanet Messaging Server 5.2 HotFix 1.16 (built May 14
- 2003)) with SMTP id <0HGG008WGDBM25@smtp2.vsnl.net> for
- linux-fbdev-devel@lists.sourceforge.net; Sat, 14 Jun 2003 09:20:16 +0530 (IST)
+	id 19R6En-0005v1-00
+	for <Linux-fbdev-devel@lists.sourceforge.net>; Sat, 14 Jun 2003 01:18:13 -0700
+Received: from duron12 ([202.78.77.74])
+	by mail.netasia.net (8.11.6/8.11.6) with SMTP id h5E8BqT27322
+	for <Linux-fbdev-devel@lists.sourceforge.net>; Sat, 14 Jun 2003 16:11:52 +0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,73 +23,91 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: nsouch@free.fr
-Cc: geert@linux-m68k.org, jsimmons@infradead.org, linux-fbdev-devel@lists.sourceforge.net, jochen@panix.com
+To: Linux-fbdev-devel@lists.sourceforge.net
 
-  Sorry - Last time I sent the message encoded/html which appeared garbled
-on the list.. Thanx to Jochen Roth for pointing it out.
-  Original Message...>
+This is a multi-part message in MIME format.
 
-  Yeah, exact same card. I will try the LCD patch, does X work with it?
-  For me the reason for using FB is X, it wont work otherwise. Why? I don't
-know..
-  Will take this up with X-Pert..!
+------=_NextPart_000_003C_01C33290.EB327DA0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 
-  P
-  -----Original Message----- 
-  From: Nicolas Souchu [mailto:nsouch@free.fr]
-  Sent: Sat 6/14/2003 04:55
-  To: Parag Warudkar
-  Cc: Geert Uytterhoeven; James Simmons; Linux Frame Buffer Device
-Development
-  Subject: Re: [Linux-fbdev-devel] 2.5.70 - Blank Screen with VESA VGA
-Framebuffer
+I made some docs for the still undocumented tdfxfb
+driver.  It was rather frustrating trying to get it
+to work and I want to save others the trouble.  Should
+this be included in Documentation/fb?
+
+vesafb works with Voodoo 3 (and above I believe) but
+the advantage of using tdfxfb is being able to use
+refresh rates other than 60Hz.  
+
+Text mode at 1152x864/70Hz on a decent 14" color monitor 
+is just peachy!  (pseudo-) Text mode rulez!
 
 
-  On Fri, Jun 13, 2003 at 02:06:56PM +0530, Parag Warudkar wrote:
-  > No. Atyfb hasn't worked for me in 2.4.20. If I use video=atyfb, I get a
-  > corrupted white screen which is beyond my capabilities to describe!! :)
-
-  My experience is almost the same with the following board:
-
-  01:00.0 VGA compatible controller: ATI Technologies Inc Rage Mobility P/M
-AGP 2x
-  +(rev 64) (prog-if 00 [VGA])
-          Subsystem: ATI Technologies Inc Rage Mobility P/M AGP 2x
-          Flags: bus master, stepping, medium devsel, latency 64, IRQ 9
-          Memory at e4000000 (32-bit, non-prefetchable) [size=16M]
-          I/O ports at c000 [size=256]
-          Memory at e6000000 (32-bit, non-prefetchable) [size=4K]
-          Expansion ROM at <unassigned> [disabled] [size=128K]
-          Capabilities: [50] AGP version 1.0
-          Capabilities: [5c] Power Management version 1
-
-  The PCI id is Ox4d4c, and you?
-
-  e.g. I got the famous encrypted white screen with at least 2.4.9 but
-  now with 2.5.69 + LCD patch posted recently, it's much better. I get
-  half the screen duplicated verticaly but with correct resolution.
-
-  I guess this is a modesetting problem?
-
-  > The graphics chip is ATI RAGE Mobility M1(LT) AGP2X - a MACH64 Derivate
-  > with 8Mb RAM..  For X, 3D acceleration (DRI, direct rendering) works
-  > with a Mach64 branch of XFree86.
-  > (http://dri.sourceforge.net/snapshots/bleeding-edge/mach64*-*)
-
-  You should try the 2.5.69+patch...
-
-  Note that I had to disable everything else but the ATY driver (VESA,
-VGA16,
-  framebuffer virtual).
-
-  Nicholas
-
-  --
-  Nicholas Souchu - nsouch@free.fr - nsouch@FreeBSD.org
+===============================
+a n d y @ n e t f x p h . c o m
 
 
+------=_NextPart_000_003C_01C33290.EB327DA0
+Content-Type: text/plain;
+	name="tdfxfb.txt"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment;
+	filename="tdfxfb.txt"
+
+This is just a quickly hacked together doc for using tdfxfb so=0A=
+you don't have to look at the source or use trial and error to=0A=
+know how to configure it.=0A=
+=0A=
+Passing command lines to the tdfxfb driver works similar to=0A=
+the other framebuffer drivers.=0A=
+=0A=
+The syntax for kernel parameters is:=0A=
+=0A=
+  video=3Dtdfx:option1,option2,...=0A=
+=0A=
+optionn is in the form:=0A=
+=0A=
+  optionname:value=0A=
+=0A=
+value being optional.=0A=
+=0A=
+To set the resolution and refresh, use the following syntax:=0A=
+=0A=
+WWWWxHHHH-BPP@RR=0A=
+ =0A=
+where WWWW =3D width, HHHH=3Dheight in pixels, BPP=3Dbits per pixel,=0A=
+and RR is the refresh rate.=0A=
+=0A=
+example:=0A=
+=0A=
+(in lilo.conf)=0A=
+=0A=
+append=3D"video=3Dtdfx:font:VGA8x16,1152x864-16@70"=0A=
+=0A=
+Other options are noaccel,nowrap,nopan,nowhwcursor,inverse,nomtrr.=0A=
+I have not tried any of these yet, just saw them in tdfxfb_setup()=0A=
+in /usr/src/linux/video/drivers/tdfxfb.c.=0A=
+=0A=
+The syntax for setting a mode is explained in =0A=
+/usr/src/linux/video/drivers/modefb.c in the comments=0A=
+for fb_find_mode().  The valid refresh rate/resolution =0A=
+combinations and settings for them are listed and will=0A=
+be taken from there and not /etc/fb.modes.=0A=
+=0A=
+If you own a Voodoo3/4/5, the nice thing with using the =0A=
+tdfxfb driver over vesafb (which also works nicely) is that=0A=
+you can set the refresh rate for your fbcon mode.  No more =0A=
+having to live with 60Hz!  The con is that as of now (2.4.20)=0A=
+the penguin logo display is still quite glitchy.=0A=
+=0A=
+=0A=
+Written by: codeboy@postmark.net=0A=
+Date: 2003-6-14=0A=
+=0A=
+
+------=_NextPart_000_003C_01C33290.EB327DA0--
 
 
 

@@ -1,19 +1,20 @@
-From: Dirk Behme <dirk.behme@de.bosch.com>
-Subject: 2.6.1 fb.h patch for userland application
-Date: Mon, 09 Feb 2004 11:44:43 +0100
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: 2.6.1 fb.h patch for userland application
+Date: Mon, 9 Feb 2004 13:33:28 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <4027649B.5010208@de.bosch.com>
+Message-ID: <Pine.GSO.4.58.0402091329210.14888@waterleaf.sonytel.be>
+References: <4027649B.5010208@de.bosch.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Aq8x9-0005jj-QK
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Feb 2004 02:47:47 -0800
-Received: from gwa11.fe.bosch.de ([194.39.219.249])
+	id 1AqAbw-0008WI-QU
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Feb 2004 04:34:00 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1Aq8x9-0005YQ-Af
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Feb 2004 02:47:47 -0800
+	id 1AqAbw-0005na-7X
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Feb 2004 04:34:00 -0800
+In-Reply-To: <4027649B.5010208@de.bosch.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -23,54 +24,28 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: jsimmons@infradead.org, geert@linux-m68k.org
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Dirk Behme <dirk.behme@de.bosch.com>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@infradead.org>
 
-Hello,
+On Mon, 9 Feb 2004, Dirk Behme wrote:
+> I had problems to use linux/fb.h from 2.6.1 to compile userland
+> application microwindows. I made some changes to get microwindows 0.90
+> to compile, please see patch below.
 
-I had problems to use linux/fb.h from 2.6.1 to compile userland 
-application microwindows. I made some changes to get microwindows 0.90 
-to compile, please see patch below.
+Should be fixed in 2.6.3-rc1.
 
-The include files atomic.h and spinlock.h are necessary for spinlock_t 
-and atomic_t. workqueue.h doesn't compile for userspace application and 
-doesn't seem to be necessary at all (?). u8 is undefined while compiling 
-for userspace, use __u8 instead.
+Gr{oetje,eeting}s,
 
-Is this patch OK?
+						Geert
 
-Dirk
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
---- linux/include/linux/fb.h_orig     2003-12-30 19:58:12.000000000 +0100
-+++ linux/include/linux/fb.h        2004-02-04 10:11:59.000000000 +0100
-@@ -2,8 +2,9 @@
-  #define _LINUX_FB_H
-
-  #include <linux/tty.h>
--#include <linux/workqueue.h>
-+#include <linux/spinlock.h>
-  #include <asm/types.h>
-+#include <asm/atomic.h>
-  #include <asm/io.h>
-
-  /* Definitions of frame buffers 
-          */
-@@ -339,8 +340,8 @@ struct fb_pixmap {
-         __u32 scan_align;                 /* alignment per scanline 
-     */
-         __u32 flags;                      /* see FB_PIXMAP_* 
-     */
-                                           /* access methods 
-     */
--       void (*outbuf)(u8 *dst, u8 *addr, unsigned int size);
--       u8   (*inbuf) (u8 *addr);
-+       void (*outbuf)(__u8 *dst, __u8 *addr, __u32 size);
-+       __u8 (*inbuf) (__u8 *addr);
-         spinlock_t lock;                  /* spinlock 
-     */
-         atomic_t count;
-  };
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

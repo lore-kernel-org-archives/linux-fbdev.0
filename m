@@ -1,24 +1,22 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: [PATCH] atyfb: fix pan with doublescan
-Date: Tue, 10 Feb 2004 20:28:22 +0200
+From: Christoph Hellwig <hch@infradead.org>
+Subject: Re: Newest fbdev patch to go mainline.
+Date: Tue, 10 Feb 2004 19:04:13 +0000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040210182822.GA13022@sci.fi>
+Message-ID: <20040210190413.A8470@infradead.org>
+References: <20040210173551.GC27779@kroah.com> <Pine.LNX.4.44.0402101747450.6600-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="vkogqOf2sHV7VnPd"
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Aqcca-0001Hv-JB
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 10 Feb 2004 10:28:32 -0800
-Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AqccV-0001Xs-2F
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 10 Feb 2004 10:28:27 -0800
-Received: from kuori.saunalahti.fi (kuori.saunalahti.fi [195.197.175.23])
-	by gw01.mail.saunalahti.fi (Postfix) with ESMTP id BD25110E780C
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 10 Feb 2004 20:28:22 +0200 (EET)
+	id 1AqdBR-0001dY-LL
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 10 Feb 2004 11:04:33 -0800
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1AqdBL-0003jE-1H
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 10 Feb 2004 11:04:27 -0800
 Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44.0402101747450.6600-100000@phoenix.infradead.org>; from jsimmons@infradead.org on Tue, Feb 10, 2004 at 05:49:52PM +0000
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,38 +26,19 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: James Simmons <jsimmons@infradead.org>
+Cc: Greg KH <greg@kroah.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
+On Tue, Feb 10, 2004 at 05:49:52PM +0000, James Simmons wrote:
+> Thats coming :-) The problem only showes itself with modular drivers 
+> correct. So I will submit patches for those first. I just wanted to polish 
+> off a few really tiny patches fist.
 
---vkogqOf2sHV7VnPd
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+You just copletly b0rked up lifetime rules.  Please revert the sysfs patch
+and add it back when all drivers are fixed.  
 
-This patch fixes panning with doublescan in atyfb.
-
---=20
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
-
---vkogqOf2sHV7VnPd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="atyfb_dblscan_pan.patch"
-
---- linux-2.4.24/drivers/video/aty/atyfb_base.c.orig	2003-11-28 20:26:20.000000000 +0200
-+++ linux-2.4.24/drivers/video/aty/atyfb_base.c	2004-02-10 20:15:15.000000000 +0200
-@@ -1475,6 +1475,8 @@
- 
-     xres = (((par->crtc.h_tot_disp>>16) & 0xff)+1)*8;
-     yres = ((par->crtc.v_tot_disp>>16) & 0x7ff)+1;
-+    if (par->crtc.gen_cntl & CRTC_DBL_SCAN_EN)
-+        yres >>= 1;
-     xoffset = (var->xoffset+7) & ~7;
-     yoffset = var->yoffset;
-     if (xoffset+xres > par->crtc.vxres || yoffset+yres > par->crtc.vyres)
-
---vkogqOf2sHV7VnPd--
 
 
 -------------------------------------------------------

@@ -1,70 +1,69 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 1/6] atyfb: Add boot/module option
- to override composite sync
-Date: Sun, 13 Mar 2005 10:04:04 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0503131003090.23778@numbat.sonytel.be>
-References: <200503130832.41113.adaplas@hotpop.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: radeon, apertures & memory mapping
+Date: Sun, 13 Mar 2005 20:20:45 +1100
+Message-ID: <1110705646.14684.126.camel@gaston>
+References: <1110677744.19810.80.camel@gaston> <20050313082216.GA7362@sci.fi>
 Mime-Version: 1.0
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DAP1K-0002Ml-Vf
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Mar 2005 01:04:22 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DAP1J-0003gY-AO
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Mar 2005 01:04:22 -0800
-In-Reply-To: <200503130832.41113.adaplas@hotpop.com>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20050313082216.GA7362@sci.fi>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@osdl.org>
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
+	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/xorg>
+List-Post: <mailto:xorg@lists.freedesktop.org>
+List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
+	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
+Sender: xorg-bounces@lists.freedesktop.org
+Errors-To: xorg-bounces@lists.freedesktop.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Cc: Jon Smirl <jonsmirl@yahoo.com>, dri-devel@lists.sourceforge.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, xorg@lists.freedesktop.org
 
-On Sun, 13 Mar 2005, Antonino A. Daplas wrote:
->   Some SPARC-based displays need the composite sync set to high.
->   Since none of the entries in the default db has the composite
->   sync set to high, using fb_find_mode() will produce a blank
->   display.
-> 
->   Add this new option to Documentation/fb/aty128fb.txt
+On Sun, 2005-03-13 at 10:22 +0200, Ville Syrj=E4l=E4 wrote:
 
-Wrong documentation file!
+> >=20
+> >  - We only really need to bother about CPU access for the framebuffer
+> > itself (and possibly the cursor). That is normal non-accelerated fbde=
+v
+> > operations an mmap'ing of the framebuffer in user space. This is not
+> > really a problem if that is limited to some part of vram. It puts a
+> > small constraint on the allocation of video memory: the framebuffer h=
+as
+> > to be near the beginning.
+>=20
+> It will limit DirectFB to access only CONFIG_APER_SIZE. DirectFB needs =
+CPU=20
+> access to offscreen memory for software fallbacks and explicit user=20
+> access. Any other compositing window system would need to do the same. =
+If=20
+> the video memory manager ever gets done then it shouldn't be a major=20
+> problem because the kernel could blit the data to/from the inaccesible=20
+> part without the application even realizing it. Although direct access=20
+> might be useful in that case also since it could reduce pressure on the=
+=20
+> GART address space.
 
-> Signed-off-by: Antonino Daplas <adaplas@pol.net>
-> ---
-> 
-> Documentation/fb/aty128fb.txt  |    1 +
+Yes, that means direct access will be limited to half of the vram on
+some setups and not on others, depending on how the BIOS sets up the
+card. Is this a real issue ? I don't think so personally. Especially
+since directfb could make use of DRM to do DMA blits either from main
+memory or from AGP space... Or things can be put in accessible space,
+and blitted elsewhere using the accelerator.
 
-aty128fb.txt is for ATI RAGE128 ...
+That "half" of vram is plenty enough for a framebuffer (and more). it's
+only an issue when you start doing very large offscreen surfaces. Do you
+have much usage of those without DMA ?
+=20
+> > But my opinion is that a mode switch will
+> > pretty much always invalidate everything that is cached in video memo=
+ry,
+>=20
+> I don't see any reason for such a sledgehammer approach. If the new mod=
+e=20
+> doesn't overlap with any offscreen data then there is no need to=20
+> invalidate anything.
 
->  drivers/video/aty/atyfb_base.c |   13 +++++++++++++
+Depends how smart the memory manager is.
 
-... while atyfb_base.c is for ATI Mach64.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
-
--------------------------------------------------------
-SF email is sponsored by - The IT Product Guide
-Read honest & candid reviews on hundreds of IT Products from real users.
-Discover which products truly live up to the hype. Start reading now.
-http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
+Ben.

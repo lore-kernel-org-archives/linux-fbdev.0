@@ -1,20 +1,20 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Apollo framebuffer sysfs
-Date: Tue, 24 Feb 2004 09:32:27 +0100 (MET)
+Subject: Re: fbdv/fbcon pending problems
+Date: Tue, 24 Feb 2004 09:35:35 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0402240931140.3187@waterleaf.sonytel.be>
-References: <Pine.LNX.4.44.0402232216120.11599-100000@phoenix.infradead.org>
+Message-ID: <Pine.GSO.4.58.0402240935090.3187@waterleaf.sonytel.be>
+References: <1077497593.5960.28.camel@gaston> <20040224023759.GA16499@guug.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AvY7Y-0005aN-GI
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 00:40:52 -0800
+	id 1AvYAx-0006X4-VU
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 00:44:23 -0800
 Received: from witte.sonytel.be ([80.88.33.193])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AvXzS-0001vP-Bs
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 00:32:30 -0800
-In-Reply-To: <Pine.LNX.4.44.0402232216120.11599-100000@phoenix.infradead.org>
+	id 1AvY2r-0002Lt-Nd
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 00:36:01 -0800
+In-Reply-To: <20040224023759.GA16499@guug.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,43 +26,18 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Otto Solares <solca@guug.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
 
-On Mon, 23 Feb 2004, James Simmons wrote:
-> > Wow, the first platform_device on m68k ;-)
->
-> :-)
->
-> Merged with my patch. This patch is against linus tree. Please test.
->
->
-> --- linus-2.6/drivers/video/dnfb.c	2004-02-18 20:59:07.000000000 -0800
-> +++ fbdev-2.6/drivers/video/dnfb.c	2004-02-22 21:17:16.000000000 -0800
+On Mon, 23 Feb 2004, Otto Solares wrote:
+> On Mon, Feb 23, 2004 at 11:53:14AM +1100, Benjamin Herrenschmidt wrote:
+> - bus_id for each fbdev, so from userland became posible to identify
+>   to which card we are controlling.  I know it should be exported via
+>   sysfs but an ioctl should be really handy as when you program for
+>   fbdev anyway you have to use ioctl's, just to get the bus_is will
+>   be a pain use sysfs.
 
-You missed these:
-  - Kill space at end of line
-  - Kill unneeded initialization
-
---- linux/drivers/video/dnfb.c.orig	2004-02-24 09:28:19.000000000 +0100
-+++ linux/drivers/video/dnfb.c	2004-02-23 20:59:20.000000000 +0100
-@@ -246,7 +246,7 @@
- 		framebuffer_release(info);
- 		return err;
- 	}
--
-+
- 	err = register_framebuffer(info);
- 	if (err < 0) {
- 		fb_dealloc_cmap(&info->cmap);
-@@ -275,7 +275,6 @@
-
- static struct platform_device dnfb_device = {
- 	.name	= "dnfb",
--	.id	= 0,
- };
-
- int __init dnfb_init(void)
+But the goal is to replace these ioctl()s by sysfs, too, isn't it?
 
 Gr{oetje,eeting}s,
 

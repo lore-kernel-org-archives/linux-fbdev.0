@@ -1,16 +1,22 @@
-From: Keith Packard <keithp@keithp.com>
-Subject: Re: [Dri-devel] Re: Re: Current discussion about the future of free software graphics
-Date: Wed, 12 May 2004 20:32:51 -0700
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] atyfb (2.6): Add RGB565 support
+Date: Thu, 13 May 2004 11:22:01 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <E1BO6xn-0006x5-00@evo.keithp.com>
-References: <40A1E4D3.40705@tungstengraphics.com>
+Message-ID: <Pine.GSO.4.58.0405131121210.9790@waterleaf.sonytel.be>
+References: <20040511213607.GB6854@sci.fi> <Pine.GSO.4.58.0405121110360.19967@waterleaf.sonytel.be>
+ <20040512185724.GA825@sci.fi>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_38340921P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-In-Reply-To: Your message of "Wed, 12 May 2004 09:48:19 BST."
-             <40A1E4D3.40705@tungstengraphics.com> 
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BOCPn-0003A9-28
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 02:22:07 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BOCPm-000429-Hi
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 02:22:06 -0700
+In-Reply-To: <20040512185724.GA825@sci.fi>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -20,40 +26,44 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: dri-devel@lists.sourceforge.net
-Cc: Ian Romanick <idr@us.ibm.com>, James Simmons <jsimmons@infradead.org>, linux-fbdev-devel@lists.sourceforge.net, Keith Packard <keithp@keithp.com>
+Content-Type: TEXT/PLAIN; charset="iso-8859-1"
+To: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
---==_Exmh_38340921P
-Content-Type: text/plain; charset=us-ascii
+	Hi Ville,
 
+On Wed, 12 May 2004, Ville [iso-8859-1] Syrj=E4l=E4 wrote:
+> On Wed, May 12, 2004 at 11:11:21AM +0200, Geert Uytterhoeven wrote:
+> > On Wed, 12 May 2004, Ville [iso-8859-1] Syrj=E4l=E4 wrote:
+> > > This patch adds RGB565 support to atyfb.
+> >
+> > Nice! Have you tried fbtest on it?
+> >
+> > I once tried to implement it myself, but it didn't work reliably.
+>
+> I just tried fbtest and most tests look ok. The penguin images are wron=
+g
+> (green instead of white stuff aroung the penguin) and the test009 looks
+> wrong too. Are you sure fbtest is doing the right thing with rgb565
+> directcolor visuals? DirectFB or mplayer don't have any problems.
 
-Around 9 o'clock on May 12, Keith Whitwell wrote:
+It's always possible there's a bug in fbtest w.r.t. 565 handling, but I d=
+idn't
+see it.
 
-> My one worry about the discussion is that because of confusion over where the 
-> X developers are hanging out nowadays, they are missing out on having their 
-> say on this - and they probably care deeply about modesetting.
+Gr{oetje,eeting}s,
 
-Egbert and I are here; I'm not sure who else wants to be involved at this 
-point.  I know I'm hoping that a great deal of the mode setting logic 
-disappears from my piece of the system soon.
+						Geert
 
--keith
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m6=
+8k.org
 
-
-
---==_Exmh_38340921P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-Comment: Exmh version 2.3.1 11/28/2001
-
-iD8DBQFAouxiQp8BWwlsTdMRAln+AKDNaWrtaeyKsQykC8BOMt3ReYNVtwCgiwaE
-xriP7cFTn+TRc+yXktxXhWg=
-=NYZd
------END PGP SIGNATURE-----
-
---==_Exmh_38340921P--
+In personal conversations with technical people, I call myself a hacker. =
+But
+when I'm talking to journalists I just say "programmer" or something like=
+ that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

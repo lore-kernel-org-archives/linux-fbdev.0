@@ -1,18 +1,18 @@
 From: syrjala@sci.fi
-Subject: [PATCH 2/8] atyfb: Fix interlaced modes
+Subject: [PATCH 3/8] atyfb: Don't stretch with CRT
 Date: Thu, 17 Mar 2005 05:07:52 +0200 (EET)
-Message-ID: <20050317030752.138A47A@kuori.saunalahti.fi>
+Message-ID: <20050317030752.325B77A@kuori.saunalahti.fi>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DBlMZ-00057t-Sh
+	id 1DBlMZ-000580-VI
 	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Mar 2005 19:07:55 -0800
 Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DBlMX-0005va-13
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DBlMX-0003IY-6B
 	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Mar 2005 19:07:55 -0800
 Received: from kuori.saunalahti.fi (kuori.saunalahti.fi [195.197.175.23])
-	by gw01.mail.saunalahti.fi (Postfix) with ESMTP id 3C20BDC5CE
+	by gw01.mail.saunalahti.fi (Postfix) with ESMTP id 5C989DC655
 	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 17 Mar 2005 05:07:52 +0200 (EET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -29,34 +29,36 @@ Content-Type: text; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Cc: alex.kern@gmx.de
 
-Fix interlaced display modes.
+The overlay on 3D Rage LT Pro doesn't work correctly if stretching is 
+enabled when using only a CRT.
 
 Signed-off-by: Ville Syrjala <syrjala@sci.fi>
 ---
 
- atyfb_base.c |   10 ----------
- 1 files changed, 10 deletions(-)
+ atyfb_base.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
 diff -urN linux/drivers/video/aty/atyfb_base.c linux/drivers/video/aty/atyfb_base.c
---- linux/drivers/video/aty/atyfb_base.c	2005-03-16 16:46:41.000000000 +0200
-+++ linux/drivers/video/aty/atyfb_base.c	2005-03-16 18:58:33.000000000 +0200
-@@ -979,16 +979,6 @@
- 		vdisplay = yres;
- 		if(vmode & FB_VMODE_DOUBLE)
- 			vdisplay <<= 1;
--		if(vmode & FB_VMODE_INTERLACED) {
--			vdisplay >>= 1;
--
--			/* The prefered mode for the lcd is not interlaced, so disable it if
--			   it was enabled. For doublescan there is no problem, because we can
--			   compensate for it in the hardware stretching (we stretch half as much)
--			 */
--			vmode &= ~FB_VMODE_INTERLACED;
--			/*crtc->gen_cntl &= ~CRTC_INTERLACE_EN;*/
--		}
- 		crtc->gen_cntl &= ~(CRTC2_EN | CRTC2_PIX_WIDTH);
- 		crtc->lcd_gen_cntl &= ~(HORZ_DIVBY2_EN | DIS_HOR_CRT_DIVBY2 |
- 			/*TVCLK_PM_EN | VCLK_DAC_PM_EN |*/
+--- linux/drivers/video/aty/atyfb_base.c	2005-03-16 18:58:33.000000000 +0200
++++ linux/drivers/video/aty/atyfb_base.c	2005-03-16 19:02:03.000000000 +0200
+@@ -994,7 +994,7 @@
+ 		crtc->horz_stretching &=
+ 			~(HORZ_STRETCH_RATIO | HORZ_STRETCH_LOOP | AUTO_HORZ_RATIO |
+ 			HORZ_STRETCH_MODE | HORZ_STRETCH_EN);
+-		if (xres < par->lcd_width) {
++		if (xres < par->lcd_width && crtc->lcd_gen_cntl & LCD_ON) {
+ 			do {
+ 				/*
+ 				* The horizontal blender misbehaves when HDisplay is less than a
+@@ -1056,7 +1056,7 @@
+ 			} while (0);
+ 		}
+ 
+-		if (vdisplay < par->lcd_height) {
++		if (vdisplay < par->lcd_height && crtc->lcd_gen_cntl & LCD_ON) {
+ 			crtc->vert_stretching = (VERT_STRETCH_USE0 | VERT_STRETCH_EN |
+ 				(((vdisplay * (VERT_STRETCH_RATIO0 + 1)) / par->lcd_height) & VERT_STRETCH_RATIO0));
+ 
 
 
 

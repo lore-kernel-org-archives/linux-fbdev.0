@@ -1,21 +1,21 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: large framebuffers and mmap
-Date: Mon, 22 Sep 2003 09:16:20 +0200 (MEST)
+Subject: Re: cfb* routines and high mem
+Date: Mon, 22 Sep 2003 09:23:50 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0309220915370.4957-100000@vervain.sonytel.be>
-References: <20030922030448.2986.qmail@web14908.mail.yahoo.com>
+Message-ID: <Pine.GSO.4.21.0309220923020.4957-100000@vervain.sonytel.be>
+References: <20030922053954.47449.qmail@web14914.mail.yahoo.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1A1Kvq-0006xT-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 22 Sep 2003 00:16:26 -0700
+	id 1A1L35-000087-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 22 Sep 2003 00:23:55 -0700
 Received: from mail2.sonytel.be ([195.0.45.172] helo=witte.sonytel.be)
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 1A1Kvn-00067l-Ai
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 22 Sep 2003 00:16:23 -0700
-In-Reply-To: <20030922030448.2986.qmail@web14908.mail.yahoo.com>
+	id 1A1L32-0001oC-OR
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 22 Sep 2003 00:23:53 -0700
+In-Reply-To: <20030922053954.47449.qmail@web14914.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -31,23 +31,19 @@ To: Jon Smirl <jonsmirl@yahoo.com>
 Cc: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
 On Sun, 21 Sep 2003, Jon Smirl wrote:
-> Right now the framebuffer drivers are mapping the framebuffer into the kernel
-> address space. But shouldn't the fbconsole layer be doing the ioremap()? That
-> way there would be a single point of remap for all framebuffer drivers.  It
-> would also let all of the high mem access code be localized into fbconsole if
-> the fb was mapped high.
-> 
-> This would also get around my problem of using framebuffer drivers but not
-> using framebuffer console. In my case I don't have enough kernel address space
-> to do the remap. If fbconsole is doing the map, then the kernel map will never
-> happen on my system since I don't load fbconsole. 
-> 
-> I looked through a couple of drivers and none of them seem to touch the buffer
-> after it has been remapped. They only pass the pointer back to fbconsole.
+> After grepping around for a while it looks like the only user of the cfb*
+> routines is the console code. There doesn't appear to be a way to get to these
 
-What about
-  - read from/write to /dev/fb*?
-  - the logo code?
+And the logo code...
+
+> from user space but I may have missed one.
+>
+> If this is true, then the cfb* code could be moved down into the console
+> directory and be built into that driver. The frame buffer drivers would just
+> return NULL for the function pointers if they don't implement an accelerated
+> routine. Doing this would help isolate high mem access code into fbconsole.
+
+What about unaccelerated frame buffer drivers for non-cfb hardware?
 
 Gr{oetje,eeting}s,
 

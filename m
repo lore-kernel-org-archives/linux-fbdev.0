@@ -1,21 +1,23 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: scrollmode, accel_flags, fbcon.c ...
-Date: Mon, 29 Mar 2004 18:50:46 +0100 (BST)
+From: "Art Haas" <ahaas@airmail.net>
+Subject: [PATCH] Add C99 initializers to Sparc frame buffer devices
+Date: Mon, 29 Mar 2004 13:55:44 -0600
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0403291824020.15706-100000@phoenix.infradead.org>
-References: <Pine.GSO.4.58.0403281014010.364@waterleaf.sonytel.be>
+Message-ID: <20040329195544.GB30251@artsapartment.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B80uV-0008MS-UV
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 09:50:55 -0800
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.30)
-	id 1B80uT-0008AG-Qk
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 09:50:54 -0800
-In-Reply-To: <Pine.GSO.4.58.0403281014010.364@waterleaf.sonytel.be>
+	id 1B82ru-0005VX-MQ
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 11:56:22 -0800
+Received: from covert.black-ring.iadfw.net ([209.196.123.142] helo=covert.brown-ring.iadfw.net)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1B82rs-000447-6j
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 11:56:20 -0800
+Received: from pppte04-361.ght.iadfw.net ([66.94.135.107] helo=pcdebian)
+	by covert.iadfw.net with esmtp (Exim 4.24)
+	id 1B82rh-0006PP-VY
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 13:56:10 -0600
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,49 +27,561 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, David Eger <eger-dated-1080865620.ef4dea@theboonies.us>, Jakub Jelinek <jj@ultra.linux.cz>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: sparclinux@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
+Hi.
 
-> > But an fbdev that implements an accelerated copyarea ?
-> >
-> > I don't want such heuristics in fbcon, they are just asking for trouble,
-> > I think we should redraw on non-accelerated and copy on accelerated,
-> 
-> You mean, if ywrap/ypan is not available/not possible (e.g. partial screen
-> scrolls)? Yes, that makes sense.
+Here is a set of 7 patches for adding C99 initializers to the various
+Sparc frame buffer devices. I've compiled all but the 'ffb.c' file, as
+that one looks to be sparc64 only.
 
-Sounds like we need to update update_scrollmode. So what do we have so 
-far. 
+Art Haas
 
-1. test for ywrap/ypan. This test should see if the screen is more than 
-   two whole screens in size. 
+===== drivers/video/bw2.c 1.6 vs edited =====
+--- 1.6/drivers/video/bw2.c	Sun May 25 19:00:00 2003
++++ edited/drivers/video/bw2.c	Mon Mar 29 13:45:40 2004
+@@ -162,8 +162,10 @@
+ }
+ 
+ static struct sbus_mmap_map bw2_mmap_map[] = {
+-	{ 0,			0,			SBUS_MMAP_FBSIZE(1) },
+-	{ 0,			0,			0		    }
++	{
++		.size = SBUS_MMAP_FBSIZE(1)
++	},
++	{ .size = 0 }
+ };
+ 
+ static int bw2_mmap(struct fb_info *info, struct file *file, struct vm_area_struct *vma)
+===== drivers/video/cg14.c 1.8 vs edited =====
+--- 1.8/drivers/video/cg14.c	Sun Aug 10 08:26:02 2003
++++ edited/drivers/video/cg14.c	Mon Mar 29 10:49:26 2004
+@@ -367,23 +367,82 @@
+ }
+ 
+ static struct sbus_mmap_map __cg14_mmap_map[CG14_MMAP_ENTRIES] __initdata = {
+-	{ CG14_REGS,		0x80000000,		0x1000		    },
+-	{ CG14_XLUT,		0x80003000,		0x1000		    },
+-	{ CG14_CLUT1,		0x80004000,		0x1000		    },
+-	{ CG14_CLUT2,		0x80005000,		0x1000		    },
+-	{ CG14_CLUT3,		0x80006000,		0x1000		    },
+-	{ CG3_MMAP_OFFSET - 
+-	  0x7000,		0x80000000,		0x7000		    },
+-	{ CG3_MMAP_OFFSET,	0x00000000,		SBUS_MMAP_FBSIZE(1) },
+-	{ MDI_CURSOR_MAP,	0x80001000,		0x1000		    },
+-	{ MDI_CHUNKY_BGR_MAP,	0x01000000,		0x400000	    },
+-	{ MDI_PLANAR_X16_MAP,	0x02000000,		0x200000	    },
+-	{ MDI_PLANAR_C16_MAP,	0x02800000,		0x200000	    },
+-	{ MDI_PLANAR_X32_MAP,	0x03000000,		0x100000	    },
+-	{ MDI_PLANAR_B32_MAP,	0x03400000,		0x100000	    },
+-	{ MDI_PLANAR_G32_MAP,	0x03800000,		0x100000	    },
+-	{ MDI_PLANAR_R32_MAP,	0x03c00000,		0x100000	    },
+-	{ 0,			0,			0		    }
++	{
++		.voff	= CG14_REGS,
++		.poff	= 0x80000000,
++		.size	= 0x1000
++	},
++	{
++		.voff	= CG14_XLUT,
++		.poff	= 0x80003000,
++		.size	= 0x1000
++	},
++	{
++		.voff	= CG14_CLUT1,
++		.poff	= 0x80004000,
++		.size	= 0x1000
++	},
++	{
++		.voff	= CG14_CLUT2,
++		.poff	= 0x80005000,
++		.size	= 0x1000
++	},
++	{
++		.voff	= CG14_CLUT3,
++		.poff	= 0x80006000,
++		.size	= 0x1000
++	},
++	{
++		.voff	= CG3_MMAP_OFFSET - 0x7000,
++		.poff	= 0x80000000,
++		.size	= 0x7000
++	},
++	{
++		.voff	= CG3_MMAP_OFFSET,
++		.poff	= 0x00000000,
++		.size	= SBUS_MMAP_FBSIZE(1)
++	},
++	{
++		.voff	= MDI_CURSOR_MAP,
++		.poff	= 0x80001000,
++		.size	= 0x1000
++	},
++	{
++		.voff	= MDI_CHUNKY_BGR_MAP,
++		.poff	= 0x01000000,
++		.size	= 0x400000
++	},
++	{
++		.voff	= MDI_PLANAR_X16_MAP,
++		.poff	= 0x02000000,
++		.size	= 0x200000
++	},
++	{
++		.voff	= MDI_PLANAR_C16_MAP,
++		.poff	= 0x02800000,
++		.size	= 0x200000
++	},
++	{
++		.voff	= MDI_PLANAR_X32_MAP,
++		.poff	= 0x03000000,
++		.size	= 0x100000
++	},
++	{
++		.voff	= MDI_PLANAR_B32_MAP,
++		.poff	= 0x03400000,
++		.size	= 0x100000
++	},
++	{
++		.voff	= MDI_PLANAR_G32_MAP,
++		.poff	= 0x03800000,
++		.size	= 0x100000
++	},
++	{
++		.voff	= MDI_PLANAR_R32_MAP,
++		.poff	= 0x03c00000,
++		.size	= 0x100000
++	},
++	{ .size = 0 }
+ };
+ 
+ struct all_info {
+===== drivers/video/cg3.c 1.6 vs edited =====
+--- 1.6/drivers/video/cg3.c	Sun May 25 19:00:00 2003
++++ edited/drivers/video/cg3.c	Mon Mar 29 10:42:34 2004
+@@ -221,8 +221,12 @@
+ }
+ 
+ static struct sbus_mmap_map cg3_mmap_map[] = {
+-	{ CG3_MMAP_OFFSET,	CG3_RAM_OFFSET,		SBUS_MMAP_FBSIZE(1) },
+-	{ 0,			0,			0		    }
++	{
++		.poff	= CG3_MMAP_OFFSET,
++		.voff	= CG3_RAM_OFFSET,
++		.size	= SBUS_MMAP_FBSIZE(1)
++	},
++	{ .size = 0 }
+ };
+ 
+ static int cg3_mmap(struct fb_info *info, struct file *file, struct vm_area_struct *vma)
+===== drivers/video/cg6.c 1.5 vs edited =====
+--- 1.5/drivers/video/cg6.c	Thu Apr 24 05:30:41 2003
++++ edited/drivers/video/cg6.c	Mon Mar 29 10:42:54 2004
+@@ -480,15 +480,47 @@
+ }
+ 
+ static struct sbus_mmap_map cg6_mmap_map[] = {
+-	{ CG6_FBC,		CG6_FBC_OFFSET,		PAGE_SIZE 		},
+-	{ CG6_TEC,		CG6_TEC_OFFSET,		PAGE_SIZE 		},
+-	{ CG6_BTREGS,		CG6_BROOKTREE_OFFSET,	PAGE_SIZE 		},
+-	{ CG6_FHC,		CG6_FHC_OFFSET,		PAGE_SIZE 		},
+-	{ CG6_THC,		CG6_THC_OFFSET,		PAGE_SIZE 		},
+-	{ CG6_ROM,		CG6_ROM_OFFSET,		0x10000   		},
+-	{ CG6_RAM,		CG6_RAM_OFFSET,		SBUS_MMAP_FBSIZE(1)  	},
+-	{ CG6_DHC,		CG6_DHC_OFFSET,		0x40000   		},
+-	{ 0,			0,			0	  		}
++	{
++		.voff	= CG6_FBC,
++		.poff	= CG6_FBC_OFFSET,
++		.size	= PAGE_SIZE
++	},
++	{
++		.voff	= CG6_TEC,
++		.poff	= CG6_TEC_OFFSET,
++		.size	= PAGE_SIZE
++	},
++	{
++		.voff	= CG6_BTREGS,
++		.poff	= CG6_BROOKTREE_OFFSET,
++		.size	= PAGE_SIZE
++	},
++	{
++		.voff	= CG6_FHC,
++		.poff	= CG6_FHC_OFFSET,
++		.size	= PAGE_SIZE
++	},
++	{
++		.voff	= CG6_THC,
++		.poff	= CG6_THC_OFFSET,
++		.size	= PAGE_SIZE
++	},
++	{
++		.voff	= CG6_ROM,
++		.poff	= CG6_ROM_OFFSET,
++		.size	= 0x10000
++	},
++	{
++		.voff	= CG6_RAM,
++		.poff	= CG6_RAM_OFFSET,
++		.size	= SBUS_MMAP_FBSIZE(1)
++	},
++	{
++		.voff	= CG6_DHC,
++		.poff	= CG6_DHC_OFFSET,
++		.size	= 0x40000
++	},
++	{ .size	= 0 }
+ };
+ 
+ static int cg6_mmap(struct fb_info *info, struct file *file, struct vm_area_struct *vma)
+===== drivers/video/ffb.c 1.8 vs edited =====
+--- 1.8/drivers/video/ffb.c	Thu Mar  4 20:22:25 2004
++++ edited/drivers/video/ffb.c	Mon Mar 29 10:56:00 2004
+@@ -769,34 +769,142 @@
+ }
+ 
+ static struct sbus_mmap_map ffb_mmap_map[] = {
+-	{ FFB_SFB8R_VOFF,	FFB_SFB8R_POFF,		0x0400000 },
+-	{ FFB_SFB8G_VOFF,	FFB_SFB8G_POFF,		0x0400000 },
+-	{ FFB_SFB8B_VOFF,	FFB_SFB8B_POFF,		0x0400000 },
+-	{ FFB_SFB8X_VOFF,	FFB_SFB8X_POFF,		0x0400000 },
+-	{ FFB_SFB32_VOFF,	FFB_SFB32_POFF,		0x1000000 },
+-	{ FFB_SFB64_VOFF,	FFB_SFB64_POFF,		0x2000000 },
+-	{ FFB_FBC_REGS_VOFF,	FFB_FBC_REGS_POFF,	0x0002000 },
+-	{ FFB_BM_FBC_REGS_VOFF,	FFB_BM_FBC_REGS_POFF,	0x0002000 },
+-	{ FFB_DFB8R_VOFF,	FFB_DFB8R_POFF,		0x0400000 },
+-	{ FFB_DFB8G_VOFF,	FFB_DFB8G_POFF,		0x0400000 },
+-	{ FFB_DFB8B_VOFF,	FFB_DFB8B_POFF,		0x0400000 },
+-	{ FFB_DFB8X_VOFF,	FFB_DFB8X_POFF,		0x0400000 },
+-	{ FFB_DFB24_VOFF,	FFB_DFB24_POFF,		0x1000000 },
+-	{ FFB_DFB32_VOFF,	FFB_DFB32_POFF,		0x1000000 },
+-	{ FFB_FBC_KREGS_VOFF,	FFB_FBC_KREGS_POFF,	0x0002000 },
+-	{ FFB_DAC_VOFF,		FFB_DAC_POFF,		0x0002000 },
+-	{ FFB_PROM_VOFF,	FFB_PROM_POFF,		0x0010000 },
+-	{ FFB_EXP_VOFF,		FFB_EXP_POFF,		0x0002000 },
+-	{ FFB_DFB422A_VOFF,	FFB_DFB422A_POFF,	0x0800000 },
+-	{ FFB_DFB422AD_VOFF,	FFB_DFB422AD_POFF,	0x0800000 },
+-	{ FFB_DFB24B_VOFF,	FFB_DFB24B_POFF,	0x1000000 },
+-	{ FFB_DFB422B_VOFF,	FFB_DFB422B_POFF,	0x0800000 },
+-	{ FFB_DFB422BD_VOFF,	FFB_DFB422BD_POFF,	0x0800000 },
+-	{ FFB_SFB16Z_VOFF,	FFB_SFB16Z_POFF,	0x0800000 },
+-	{ FFB_SFB8Z_VOFF,	FFB_SFB8Z_POFF,		0x0800000 },
+-	{ FFB_SFB422_VOFF,	FFB_SFB422_POFF,	0x0800000 },
+-	{ FFB_SFB422D_VOFF,	FFB_SFB422D_POFF,	0x0800000 },
+-	{ 0,			0,			0	  }
++	{
++		.voff	= FFB_SFB8R_VOFF,
++		.poff	= FFB_SFB8R_POFF,
++		.size	= 0x0400000
++	},
++	{
++		.voff	= FFB_SFB8G_VOFF,
++		.poff	= FFB_SFB8G_POFF,
++		.size	= 0x0400000
++	},
++	{
++		.voff	= FFB_SFB8B_VOFF,
++		.poff	= FFB_SFB8B_POFF,
++		.size	= 0x0400000
++	},
++	{
++		.voff	= FFB_SFB8X_VOFF,
++		.poff	= FFB_SFB8X_POFF,
++		.size	= 0x0400000
++	},
++	{
++		.voff	= FFB_SFB32_VOFF,
++		.poff	= FFB_SFB32_POFF,
++		.size	= 0x1000000
++	},
++	{
++		.voff	= FFB_SFB64_VOFF,
++		.poff	= FFB_SFB64_POFF,
++		.size	= 0x2000000
++	},
++	{
++		.voff	= FFB_FBC_REGS_VOFF,
++		.poff	= FFB_FBC_REGS_POFF,
++		.size	= 0x0002000
++	},
++	{
++		.voff	= FFB_BM_FBC_REGS_VOFF,
++		.poff	= FFB_BM_FBC_REGS_POFF,
++		.size	= 0x0002000
++	},
++	{
++		.voff	= FFB_DFB8R_VOFF,
++		.poff	= FFB_DFB8R_POFF,
++		.size	= 0x0400000
++	},
++	{
++		.voff	= FFB_DFB8G_VOFF,
++		.poff	= FFB_DFB8G_POFF,
++		.size	= 0x0400000
++	},
++	{
++		.voff	= FFB_DFB8B_VOFF,
++		.poff	= FFB_DFB8B_POFF,
++		.size	= 0x0400000
++	},
++	{
++		.voff	= FFB_DFB8X_VOFF,
++		.poff	= FFB_DFB8X_POFF,
++		.size	= 0x0400000
++	},
++	{
++		.voff	= FFB_DFB24_VOFF,
++		.poff	= FFB_DFB24_POFF,
++		.size	= 0x1000000
++	},
++	{
++		.voff	= FFB_DFB32_VOFF,
++		.poff	= FFB_DFB32_POFF,
++		.size	= 0x1000000
++	},
++	{
++		.voff	= FFB_FBC_KREGS_VOFF,
++		.poff	= FFB_FBC_KREGS_POFF,
++		.size	= 0x0002000
++	},
++	{
++		.voff	= FFB_DAC_VOFF,
++		.poff	= FFB_DAC_POFF,
++		.size	= 0x0002000
++	},
++	{
++		.voff	= FFB_PROM_VOFF,
++		.poff	= FFB_PROM_POFF,
++		.size	= 0x0010000
++	},
++	{
++		.voff	= FFB_EXP_VOFF,
++		.poff	= FFB_EXP_POFF,
++		.size	= 0x0002000
++	},
++	{
++		.voff	= FFB_DFB422A_VOFF,
++		.poff	= FFB_DFB422A_POFF,
++		.size	= 0x0800000
++	},
++	{
++		.voff	= FFB_DFB422AD_VOFF,
++		.poff	= FFB_DFB422AD_POFF,
++		.size	= 0x0800000
++	},
++	{
++		.voff	= FFB_DFB24B_VOFF,
++		.poff	= FFB_DFB24B_POFF,
++		.size	= 0x1000000
++	},
++	{
++		.voff	= FFB_DFB422B_VOFF,
++		.poff	= FFB_DFB422B_POFF,
++		.size	= 0x0800000
++	},
++	{
++		.voff	= FFB_DFB422BD_VOFF,
++		.poff	= FFB_DFB422BD_POFF,
++		.size	= 0x0800000
++	},
++	{
++		.voff	= FFB_SFB16Z_VOFF,
++		.poff	= FFB_SFB16Z_POFF,
++		.size	= 0x0800000
++	},
++	{
++		.voff	= FFB_SFB8Z_VOFF,
++		.poff	= FFB_SFB8Z_POFF,
++		.size	= 0x0800000
++	},
++	{
++		.voff	= FFB_SFB422_VOFF,
++		.poff	= FFB_SFB422_POFF,
++		.size	= 0x0800000
++	},
++	{
++		.voff	= FFB_SFB422D_VOFF,
++		.poff	= FFB_SFB422D_POFF,
++		.size	= 0x0800000
++	},
++	{ .size = 0 }
+ };
+ 
+ static int ffb_mmap(struct fb_info *info, struct file *file, struct vm_area_struct *vma)
+===== drivers/video/leo.c 1.5 vs edited =====
+--- 1.5/drivers/video/leo.c	Sun Aug 10 08:26:02 2003
++++ edited/drivers/video/leo.c	Mon Mar 29 11:02:20 2004
+@@ -294,20 +294,72 @@
+ }
+ 
+ static struct sbus_mmap_map leo_mmap_map[] = {
+-	{ LEO_SS0_MAP,		LEO_OFF_SS0,		0x800000	},
+-	{ LEO_LC_SS0_USR_MAP,	LEO_OFF_LC_SS0_USR,	0x1000		},
+-	{ LEO_LD_SS0_MAP,	LEO_OFF_LD_SS0,		0x1000		},
+-	{ LEO_LX_CURSOR_MAP,	LEO_OFF_LX_CURSOR,	0x1000		},
+-	{ LEO_SS1_MAP,		LEO_OFF_SS1,		0x800000	},
+-	{ LEO_LC_SS1_USR_MAP,	LEO_OFF_LC_SS1_USR,	0x1000		},
+-	{ LEO_LD_SS1_MAP,	LEO_OFF_LD_SS1,		0x1000		},
+-	{ LEO_UNK_MAP,		LEO_OFF_UNK,		0x1000		},
+-	{ LEO_LX_KRN_MAP,	LEO_OFF_LX_KRN,		0x1000		},
+-	{ LEO_LC_SS0_KRN_MAP,	LEO_OFF_LC_SS0_KRN,	0x1000		},
+-	{ LEO_LC_SS1_KRN_MAP,	LEO_OFF_LC_SS1_KRN,	0x1000		},
+-	{ LEO_LD_GBL_MAP,	LEO_OFF_LD_GBL,		0x1000		},
+-	{ LEO_UNK2_MAP,		LEO_OFF_UNK2,		0x100000	},
+-	{ 0,			0,			0	  	}
++	{
++		.voff	= LEO_SS0_MAP,
++		.poff	= LEO_OFF_SS0,
++		.size	= 0x800000
++	},
++	{
++		.voff	= LEO_LC_SS0_USR_MAP,
++		.poff	= LEO_OFF_LC_SS0_USR,
++		.size	= 0x1000
++	},
++	{
++		.voff	= LEO_LD_SS0_MAP,
++		.poff	= LEO_OFF_LD_SS0,
++		.size	= 0x1000
++	},
++	{
++		.voff	= LEO_LX_CURSOR_MAP,
++		.poff	= LEO_OFF_LX_CURSOR,
++		.size	= 0x1000
++	},
++	{
++		.voff	= LEO_SS1_MAP,
++		.poff	= LEO_OFF_SS1,
++		.size	= 0x800000
++	},
++	{
++		.voff	= LEO_LC_SS1_USR_MAP,
++		.poff	= LEO_OFF_LC_SS1_USR,
++		.size	= 0x1000
++	},
++	{
++		.voff	= LEO_LD_SS1_MAP,
++		.poff	= LEO_OFF_LD_SS1,
++		.size	= 0x1000
++	},
++	{
++		.voff	= LEO_UNK_MAP,
++		.poff	= LEO_OFF_UNK,
++		.size	= 0x1000
++	},
++	{
++		.voff	= LEO_LX_KRN_MAP,
++		.poff	= LEO_OFF_LX_KRN,
++		.size	= 0x1000
++	},
++	{
++		.voff	= LEO_LC_SS0_KRN_MAP,
++		.poff	= LEO_OFF_LC_SS0_KRN,
++		.size	= 0x1000
++	},
++	{
++		.voff	= LEO_LC_SS1_KRN_MAP,
++		.poff	= LEO_OFF_LC_SS1_KRN,
++		.size	= 0x1000
++	},
++	{
++		.voff	= LEO_LD_GBL_MAP,
++		.poff	= LEO_OFF_LD_GBL,
++		.size	= 0x1000
++	},
++	{
++		.voff	= LEO_UNK2_MAP,
++		.poff	= LEO_OFF_UNK2,
++		.size	= 0x100000
++	},
++	{ .size = 0 }
+ };
+ 
+ static int leo_mmap(struct fb_info *info, struct file *file, struct vm_area_struct *vma)
+===== drivers/video/tcx.c 1.6 vs edited =====
+--- 1.6/drivers/video/tcx.c	Sun May 25 19:00:00 2003
++++ edited/drivers/video/tcx.c	Mon Mar 29 10:59:02 2004
+@@ -238,20 +238,59 @@
+ }
+ 
+ static struct sbus_mmap_map __tcx_mmap_map[TCX_MMAP_ENTRIES] = {
+-	{ TCX_RAM8BIT,		0,		SBUS_MMAP_FBSIZE(1) },
+-	{ TCX_RAM24BIT,		0,		SBUS_MMAP_FBSIZE(4) },
+-	{ TCX_UNK3,		0,		SBUS_MMAP_FBSIZE(8) },
+-	{ TCX_UNK4,		0,		SBUS_MMAP_FBSIZE(8) },
+-	{ TCX_CONTROLPLANE,	0,		SBUS_MMAP_FBSIZE(4) },
+-	{ TCX_UNK6,		0,		SBUS_MMAP_FBSIZE(8) },
+-	{ TCX_UNK7,		0,		SBUS_MMAP_FBSIZE(8) },
+-	{ TCX_TEC,		0,		PAGE_SIZE	    },
+-	{ TCX_BTREGS,		0,		PAGE_SIZE	    },
+-	{ TCX_THC,		0,		PAGE_SIZE	    },
+-	{ TCX_DHC,		0,		PAGE_SIZE	    },
+-	{ TCX_ALT,		0,		PAGE_SIZE	    },
+-	{ TCX_UNK2,		0,		0x20000		    },
+-	{ 0,			0,		0		    }
++	{
++		.voff	= TCX_RAM8BIT,
++		.size	= SBUS_MMAP_FBSIZE(1)
++	},
++	{
++		.voff	= TCX_RAM24BIT,
++		.size	= SBUS_MMAP_FBSIZE(4)
++	},
++	{
++		.voff	= TCX_UNK3,
++		.size	= SBUS_MMAP_FBSIZE(8)
++	},
++	{
++		.voff	= TCX_UNK4,
++		.size	= SBUS_MMAP_FBSIZE(8)
++	},
++	{
++		.voff	= TCX_CONTROLPLANE,
++		.size	= SBUS_MMAP_FBSIZE(4)
++	},
++	{
++		.voff	= TCX_UNK6,
++		.size	= SBUS_MMAP_FBSIZE(8)
++	},
++	{
++		.voff	= TCX_UNK7,
++		.size	= SBUS_MMAP_FBSIZE(8)
++	},
++	{
++		.voff	= TCX_TEC,
++		.size	= PAGE_SIZE
++	},
++	{
++		.voff	= TCX_BTREGS,
++		.size	= PAGE_SIZE
++	},
++	{
++		.voff	= TCX_THC,
++		.size	= PAGE_SIZE
++	},
++	{
++		.voff	= TCX_DHC,
++		.size	= PAGE_SIZE
++	},
++	{
++		.voff	= TCX_ALT,
++		.size	= PAGE_SIZE
++	},
++	{
++		.voff	= TCX_UNK2,
++		.size	= 0x20000
++	},
++	{ .size = 0 }
+ };
+ 
+ static int tcx_mmap(struct fb_info *info, struct file *file, struct vm_area_struct *vma)
+-- 
+Man once surrendering his reason, has no remaining guard against absurdities
+the most monstrous, and like a ship without rudder, is the sport of every wind.
 
-2. Test if xxxfb_copyarea is accelerated. If it is set to YMOVE.
-
-3. If xxxfb_copyare is not accelerated then redraw the screen.
-
-If I'm missing anything let me know.
-
-> Which means additional flags to fb_fix_screeninfo...
-
-:-( I'm hoping we can develope some kind of nice logic. Often I seen 
-a driver writer use the wrong flag.
-
-> > One thing I don't like in the new fbcon is the way it deals with the
-> > var structure anyway. I think it should have one var per VC.
-> 
-> I agree.
-
-Why do we need a var for ever VC. The card is on one hardware state at 
-all times. The only times we nned to be concern with changes is for 
-setfont, resize and VC switching. These are not common occurs. If the 
-fbcon layer can't get the data it needs from struct vc_data then the upper
-console layer is broken.
-
-
+-Thomas Jefferson to James Smith, 1822
 
 
 -------------------------------------------------------

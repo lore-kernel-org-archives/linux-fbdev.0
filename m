@@ -1,16 +1,20 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: (no subject)
-Date: Thu, 22 Aug 2002 11:48:24 -0700 (PDT)
+From: Stephane Wirtel <stephane.wirtel@belgacom.net>
+Subject: Re: why not put LOGO_W and LOGO_H in linux_logo.h ?
+Date: Thu, 22 Aug 2002 20:56:00 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.33.0208221147160.9077-100000@maxwell.earthlink.net>
-References: <Pine.GSO.4.21.0208191056040.12594-100000@vervain.sonytel.be>
+Message-ID: <20020822185600.GA17996@debian>
+References: <20020817175835.GB7078@debian> <Pine.LNX.4.33.0208221144110.9077-100000@maxwell.earthlink.net>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from swan.mail.pas.earthlink.net ([207.217.120.123])
+Received: from 212.68.254.82.brutele.be ([212.68.254.82] helo=debian)
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17hx5O-0007Mt-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 22 Aug 2002 11:53:38 -0700
-In-Reply-To: <Pine.GSO.4.21.0208191056040.12594-100000@vervain.sonytel.be>
+	id 17hx7m-000834-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 22 Aug 2002 11:56:07 -0700
+Received: from root by debian with local (Exim 3.35 #1 (Debian))
+	id 17hx7h-0004gf-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 22 Aug 2002 20:56:01 +0200
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.33.0208221144110.9077-100000@maxwell.earthlink.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,36 +24,60 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-
-> 	Hi,
->
-> In cfb_copyarea(), `tmp' must be unsigned long because it is used to store
-> unsigned long values (see patch at the end).
-
-Oops. This might fix the one bug I see sometimes. When I delete some
-characters some of the remaining characters get corrputed.
-
-> cfb_copyarea() also doesn't clear the bits to modify in the first and last
-> words of a line, e.g. it does
->
-> |	last = (FB_READ(src) & start_mask);
-> |
-> |	if (shift > 0)
-> |		FB_WRITE(FB_READ(dst) | (last >> shift_right), dst);
->                          ^^^^^^^^^^^^
-> After this read, the bits to modify must be cleared first, before the OR!
->
-> I'm working on a version of cfb_copyarea() that fixes this and handles _all_
-> possible values of var.bits_per_pixel (the current code assumes
-> var.bits_per_pixel is a multiple of 8). Stay tuned!
-
-Yeah!!! Will test.
+To: Linux Frame Buffer Devel Mailing List <linux-fbdev-devel@lists.sourceforge.net>
 
 
+On Thu, Aug 22, 2002 at 11:44:25AM -0700, James Simmons wrote:
+> 
+> Good question. Is there any reason why this is?
+it's more easy to change the logo if it is in linux_logo.h
+
+i modified fblogo, to make a linux_logo.h with LOGO_W and LOGO_H.
+
+> 
+> MS: (n) 1. A debilitating and surprisingly widespread affliction that
+> renders the sufferer barely able to perform the simplest task. 2. A disease.
+> 
+> James Simmons  [jsimmons@users.sf.net] 	                ____/|
+> fbdev/console/gfx developer                             \ o.O|
+> http://www.linux-fbdev.org                               =(_)=
+> http://linuxgfx.sourceforge.net                            U
+> http://linuxconsole.sourceforge.net
+> 
+> On Sat, 17 Aug 2002, Stephane Wirtel wrote:
+> 
+> >
+> > --
+> > Stephane Wirtel <stephane.wirtel@belgacom.net>
+> > Web : www.linux-mons.be	 "Linux Is Not UniX !!!"
+> >
+> >
+> > -------------------------------------------------------
+> > This sf.net email is sponsored by: OSDN - Tired of that same old
+> > cell phone?  Get a new here for FREE!
+> > https://www.inphonic.com/r.asp?r=sourceforge1&refcode1=vs3390
+> > _______________________________________________
+> > Linux-fbdev-devel mailing list
+> > Linux-fbdev-devel@lists.sourceforge.net
+> > https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+> >
+> 
+> 
+> 
+> -------------------------------------------------------
+> This sf.net email is sponsored by: OSDN - Tired of that same old
+> cell phone?  Get a new here for FREE!
+> https://www.inphonic.com/r.asp?r=sourceforge1&refcode1=vs3390
+> _______________________________________________
+> Linux-fbdev-devel mailing list
+> Linux-fbdev-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+-- 
+Stephane Wirtel <stephane.wirtel@belgacom.net>
+Web : www.linux-mons.be	 "Linux Is Not UniX !!!"
 
 
 -------------------------------------------------------

@@ -1,22 +1,21 @@
-From: James Simmons <jsimmons@infradead.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
  one works ;-)
-Date: Wed, 28 Apr 2004 18:54:51 +0100 (BST)
+Date: Wed, 28 Apr 2004 19:56:58 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0404281851060.1187-100000@phoenix.infradead.org>
-References: <53204.64.139.3.221.1083127431.squirrel@www.foogod.com>
+Message-ID: <Pine.GSO.4.58.0404281948260.11982@waterleaf.sonytel.be>
+References: <Pine.LNX.4.44.0404281709260.1187-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BItGs-00035e-BI
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 10:54:58 -0700
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.30)
-	id 1BItGr-0000AA-MY
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 10:54:58 -0700
-In-Reply-To: <53204.64.139.3.221.1083127431.squirrel@www.foogod.com>
+	id 1BItIx-0003g9-3m
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 10:57:07 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BItIw-0008CL-MP
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 10:57:06 -0700
+In-Reply-To: <Pine.LNX.4.44.0404281709260.1187-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,36 +27,68 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alex Stewart <alex@foogod.com>
-Cc: benh@kernel.crashing.org, grim@undead.cc, eger-dated-1083663529.7e8c27@theboonies.us, geert@linux-m68k.org, adaplas@hotpop.com, eger-dated-1082943669.d79d33@theboonies.us, linux-fbdev-devel@lists.sourceforge.net
+To: James Simmons <jsimmons@infradead.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, John Zielinski <grim@undead.cc>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+On Wed, 28 Apr 2004, James Simmons wrote:
+> > > No. Look the logic should go from the upper VT layer to the lower driver
+> > > to accomplish something. Not the reverse.
+> > >
+> > > struct vc_data -> native console driver structure --> fbdev
+> >
+> > But the upper VT layer has no clue about what a graphic mode can be and
+> > we know well enough that we _need_ to be able to enforce graphics mode
+> > or want to play with them by manipulating var structures, without losing
+> > the console.
+> >
+> > Your logic is only ever valid once every single fbdev is capable of
+> > doing proper mode management & validation. And even then, there isn't
+> > a 1:1 relationchip between a mode and an fbcon size.
+>
+>   But we do have the proper data already. Its called modedb. I have two
 
-> >> > 1) Color depth.
-> >> > 2) Frequency.
-> >> > 3) Over scan color.
-> >>
-> >> No, no, no ... We don't need those, we need a var structure, that's
-> >> all.
-> 
-> I agree, a var structure is how video modes are represented, and should be
-> the way they're always represented.  Anything else will either be
-> inadequate or horribly duplicative.  I also think that storing pixel
-> resolutions and depths (let alone frequencies, etc) in a layer that
-> shouldn't even know what a framebuffer is generally a poor way to do
-> things.
+So I cannot have a mode that's not in modedb, since it won't survive switching
+VTs.
 
-The tty layer alreasy stores the resolution. See asm/termios.h. What it 
-lacks is depth and frequency. I have to do some digging to see if the 
-VT220 dealt with that data. I bet it did.
+> reasons for why I hate to have a var in struct display. One is that it
+> makes fbcon heavier. You now have a extra var in every struct display.
 
-> Heh, well, I hope I'm not stirring things up too much here if I say I
-> think both of those paths are wrong :)
+... vs. a (non __init) modedb that stays in RAM after bootup.
 
-I have to look over what you said in detail. I have to get to coding a fix 
-for the fbcon resize issue.
+Besides the initial mode (modedb, EDID, kernel arg, ...), I'd like to keep mode
+databases in userspace where possible.
 
+> Usually the user has several if not all VCs at the same resolution. That
+> means there is alot of duplication of the same data for now reason. If we
 
+Alternatively, make the vars in struct display pointers to reference counted
+data, so initially they all point to the same var. But I don't know if it's
+worth the extra effort.
 
+> use modedb to fill in the extra data then we don't need the extra data in
+> each struct display. The bonus there is permentally stored data to represent
+> that one mode to everybody!! Much lighter.
+
+But I'm still limited to the modes in modedb.
+
+>   Second I have seen the fbset method to set the VC fail miserably. Whereas I
+> have never seen using modedb at boot time fail unless the mode is not supported.
+> There have been many times where using fbset has left my screen blank :-(
+
+I consider it a bug in the fbdev driver if you manage to end up with a blank
+screen (not taking into account modes beyond your monitor's limitations if
+monspecs are not implemented/working).
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

@@ -1,19 +1,19 @@
 From: "Randy.Dunlap" <rddunlap@osdl.org>
-Subject: [PATCH] au1100: fix io_remap_page_range() arg. list
-Date: Mon, 21 Feb 2005 15:28:22 -0800
-Message-ID: <20050221152822.5221487b.rddunlap@osdl.org>
+Subject: [PATCH] au1100fb: use C99 struct init.
+Date: Mon, 21 Feb 2005 16:09:32 -0800
+Message-ID: <20050221160932.2a816aea.rddunlap@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D3MyP-0002Wa-EB
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 15:28:17 -0800
+	id 1D3NcF-0004Se-8d
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 16:09:27 -0800
 Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
 	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.41)
-	id 1D3MyN-0004f7-RF
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 15:28:17 -0800
+	id 1D3NcC-0007cY-5A
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 16:09:27 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,26 +29,42 @@ To: ralf@linux-mips.org, akpm <akpm@osdl.org>
 Cc: adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net
 
 
-Fix io_remap_page_range() call to pass a missing arg.
+au1100: use C99 struct init.
 
 Signed-off-by: Randy Dunlap <rddunlap@osdl.org>
 
 diffstat:=
- drivers/video/au1100fb.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/au1100fb.c |   18 +++++++++---------
+ 1 files changed, 9 insertions(+), 9 deletions(-)
 
-diff -Naurp ./drivers/video/au1100fb.c~au1100_ioremap ./drivers/video/au1100fb.c
---- ./drivers/video/au1100fb.c~au1100_ioremap	2005-02-18 13:39:05.000000000 -0800
-+++ ./drivers/video/au1100fb.c	2005-02-21 15:21:17.447431120 -0800
-@@ -408,7 +408,7 @@ au1100fb_mmap(struct fb_info *_fb,
- 	/* This is an IO map - tell maydump to skip this VMA */
- 	vma->vm_flags |= VM_IO;
+diff -Naurp ./drivers/video/au1100fb.c~au1100_c99 ./drivers/video/au1100fb.c
+--- ./drivers/video/au1100fb.c~au1100_c99	2005-02-21 15:21:17.447431120 -0800
++++ ./drivers/video/au1100fb.c	2005-02-21 15:40:03.901184120 -0800
+@@ -111,15 +111,15 @@ static int au1100fb_ioctl(struct inode *
+ void au1100_nocursor(struct display *p, int mode, int xx, int yy){};
  
--	if (io_remap_page_range(vma->vm_start, off,
-+	if (io_remap_page_range(vma, vma->vm_start, off,
- 				vma->vm_end - vma->vm_start,
- 				vma->vm_page_prot)) {
- 		return -EAGAIN;
+ static struct fb_ops au1100fb_ops = {
+-	owner:		THIS_MODULE,
+-	fb_get_fix:	fbgen_get_fix,
+-	fb_get_var:	fbgen_get_var,
+-	fb_set_var:	fbgen_set_var,
+-	fb_get_cmap:	fbgen_get_cmap,
+-	fb_set_cmap:	fbgen_set_cmap,
+-	fb_pan_display: fbgen_pan_display,
+-        fb_ioctl:       au1100fb_ioctl,
+-	fb_mmap:        au1100fb_mmap,
++	.owner		= THIS_MODULE,
++	.fb_get_fix	= fbgen_get_fix,
++	.fb_get_var	= fbgen_get_var,
++	.fb_set_var	= fbgen_set_var,
++	.fb_get_cmap	= fbgen_get_cmap,
++	.fb_set_cmap	= fbgen_set_cmap,
++	.fb_pan_display	= fbgen_pan_display,
++        .fb_ioctl	= au1100fb_ioctl,
++	.fb_mmap	= au1100fb_mmap,
+ };
+ 
+ static void au1100_detect(void)
 
 
 ---

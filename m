@@ -1,17 +1,15 @@
-From: James Simmons <jsimmons@infradead.org>
+From: "Petr Vandrovec" <VANDROVE@vc.cvut.cz>
 Subject: Re: Re: FBdev updates.
-Date: Wed, 5 Mar 2003 20:23:45 +0000 (GMT)
+Date: Wed, 5 Mar 2003 21:31:05 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0303052023110.27760-100000@phoenix.infradead.org>
-References: <1046727094.1279.27.camel@localhost.localdomain>
+Message-ID: <11EC6AF51A4E@vcnet.vc.cvut.cz>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7BIT
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18qfR7-0004an-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 12:24:22 -0800
-In-Reply-To: <1046727094.1279.27.camel@localhost.localdomain>
+Received: from mailgw.cvut.cz ([147.32.3.235])
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18qfY1-0006wL-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 12:31:29 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,31 +19,50 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: Petr Vandrovec <vandrove@vc.cvut.cz>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@infradead.org>
+Cc: Antonino Daplas <adaplas@pol.net>, linux-kernel@vger.kernel.org, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-
+On  5 Mar 03 at 20:22, James Simmons wrote:
+>  
 > >   And one (or two...) generic questions: why is not pseudo_palette
 > > u32* pseudo_palette, or even directly u32 pseudo_palette[17] ?
 > 
-> Yes, all drivers should treat the pseudo_palette as u32* anyway, so why
-> not change pseudo-palette from void* to u32*?
+> pseudo_palette was originally designed to be a pointer to some kind of 
+> data for color register programming. For example many PPC graphics cards 
+> have a color register region. Now you could have that point to 
+> pseudo_palette.  Note pseudo_palette is only visiable in fbmem.c for the 
+> logo drawing code. Personally I liek to see that hidden.
 
-See other email.
-
+cfbfillrect? cfbimageblit? Both use pseudo_palette, and both convert
+it to u32*.
+ 
 > > And why we do not fill this pseudo_palette with
 > > i * 0x01010101U for 8bpp pseudocolor and i * 0x11111111U for 4bpp
 > > pseudocolor? This allowed me to remove couple of switches and tests
 > > from acceleration fastpaths (and from cfb_imageblit and cfb_fillrect,
 > > but I did not changed these two in my benchmarks below).
 > 
-> I also agree for a different reason.  Cards with unconventional formats
-> (such as monochrome at 8 bpp - 0 for black , 0xff for white) will not
-> work with the current code.
+> ??? Does your accel engine require these kinds of values?
 
-Isn't that the job of setcolreg?
+Yes. It is 32bit engine, and so it wants 32bit value. And even if 
+not, code doing
+
+if (p->fix.visual == FB_VISUAL_TRUECOLOR ||
+    p->fix.visual == FB_VISUAL_DIRECTCOLOR)
+      fg = p->pseudo_palette[rect->color];
+else
+      fg = rect->color;
+
+is horrible. Two conditional jumps on each rectangle. If you'll do
+always lookup through pseudo_palette, not only that you get rid of
+these jumps, you can also remove calls to pixel_to_pat32 (and accompanying
+tables & lookups), as you do this expansion at set_var time,
+instead of at blit/clear time.
+                                            Best regards,
+                                                Petr Vandrovec
+                                                vandrove@vc.cvut.cz
+                                                
 
 
 

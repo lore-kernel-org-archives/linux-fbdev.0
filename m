@@ -1,26 +1,28 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: framebuffer ioctl
-Date: Tue, 7 Sep 2004 05:21:09 +0800
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [OT] framebuffer ioctl
+Date: Mon, 6 Sep 2004 17:39:54 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200409070521.09524.adaplas@hotpop.com>
-References: <Pine.GSO.4.58.0409041304080.3434@waterleaf.sonytel.be> <200409060926.07163.adaplas@hotpop.com> <413C83F7.D4CB1EAD@orpatec.ch>
+Message-ID: <9e4733910409061439695460f@mail.gmail.com>
+References: <Pine.GSO.4.58.0409041304080.3434@waterleaf.sonytel.be>
+	 <413A3735.9E7D2F11@orpatec.ch> <413B4925.5000706@comcast.net>
+	 <200409060926.07163.adaplas@hotpop.com> <413CC0EA.8070709@comcast.net>
+	 <9e4733910409061402372095b1@mail.gmail.com>
+	 <20040906211120.GC29544@guug.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C4Qug-0000Wa-Kn
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Sep 2004 14:20:34 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.61])
+	id 1C4RDR-00066a-9I
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Sep 2004 14:39:57 -0700
+Received: from rproxy.gmail.com ([64.233.170.200] helo=mproxy.gmail.com)
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1C4Quf-0003jp-OY
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Sep 2004 14:20:34 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 7B74B7EB784
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  6 Sep 2004 21:20:15 +0000 (UTC)
-In-Reply-To: <413C83F7.D4CB1EAD@orpatec.ch>
-Content-Disposition: inline
+	id 1C4RDP-0006PS-SU
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Sep 2004 14:39:57 -0700
+Received: by mproxy.gmail.com with SMTP id 76so145379rnl
+        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 06 Sep 2004 14:39:54 -0700 (PDT)
+In-Reply-To: <20040906211120.GC29544@guug.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,38 +33,43 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, Otto Wyss <otto.wyss@orpatec.ch>
-Cc: Zack <plinius@comcast.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Monday 06 September 2004 23:36, Otto Wyss wrote:
-> I'm neither pro nor contra moving drawing routines into the kernel but
-> this has to be discussed and written down.
-
-On Tuesday 07 September 2004 03:56, Zack wrote:
-> I think you may be misinterpreting my intent. I am strictly anti-bloat,
-> so I don't want a larger kernel. By the same token, I don't use
-> X because it is bloated--X uses 16 megs minimum on my system,
-> and that is very much not to my taste.
-
-This is not about pros/cons, but a statement of fact. What I meant was that 
-the drawing routines that we actually have (imageblit, copyarea, fillrect) 
-cannot be used in userspace.  So, if fbdev is going to support drawing 
-routines for userspace, then fbdev will need 2 versions of each of the 
-drawing function.  That is a waste of good code.  
-
-This decision has been set quite early during 2.5 development.  At that 
-period, I wrote a version of imageblit, copyarea and fillrect that can be 
-accessed in userspace via ioctl.  With that, I also provided a patch for the 
-XFree86 fbdev driver that takes advantage of these ioctl's resulting to 
-certain x11perf benchmarks that are faster than X+native driver.  See:
-
-http://marc.theaimsgroup.com/?l=linux-fbdev-devel&m=102278557515976&w=2
-
-Of course, the above is quite difficult to accomplish now.
-
-Tony
+Someone has already ported it, but I forget who it was. mesa-solo is
+not quite ready for prime time yet because it does have mode setting
+support. Ask on the cairo list about the port. It was simple to do, it
+only took a day or so.
 
 
+On Mon, 6 Sep 2004 15:11:20 -0600, Otto Solares <solca@guug.org> wrote:
+> On Mon, Sep 06, 2004 at 05:02:20PM -0400, Jon Smirl wrote:
+> > Check out the Cairo benchmarks. The OpenGL drivers can beat the
+> > performance of 2D drivers 100:1 and some cases 400:1. OpenGL uses the
+> > GPU to do the drawing instead of the main CPU.
+> 
+> Does cairo have been ported to mesa-solo?
+> 
+> -otto
+> 
+> 
+> 
+> 
+> -------------------------------------------------------
+> This SF.Net email is sponsored by BEA Weblogic Workshop
+> FREE Java Enterprise J2EE developer tools!
+> Get your free copy of BEA WebLogic Workshop 8.1 today.
+> http://ads.osdn.com/?ad_id=5047&alloc_id=10808&op=click
+> _______________________________________________
+> Linux-fbdev-devel mailing list
+> Linux-fbdev-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+> 
+
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
 
 
 -------------------------------------------------------

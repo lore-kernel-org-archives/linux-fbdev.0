@@ -1,23 +1,29 @@
-From: David Eger <eger-sender-da68b9@theboonies.us>
-Subject: Re: [ PATCH-LINK ] fb accel capabilities - take 2
-Date: Thu, 27 May 2004 22:38:08 -0500
+From: Lucas Correia Villa Real <lucasvr@gobolinux.org>
+Subject: Re: doubts
+Date: Fri, 28 May 2004 00:44:24 -0300
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1085715488.40b6b42062e3c@mail.theboonies.us>
-References: <40B691DF.4060509@winischhofer.net>
-Reply-To: David Eger <eger-dated-1086320292.98e266@theboonies.us>
+Message-ID: <200405280044.24185.lucasvr@gobolinux.org>
+References: <000001c44316$487bf040$7c04b40a@dlh.st.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BTYCG-0001ix-5B
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 27 May 2004 20:38:16 -0700
-Received: from not.theboonies.us ([66.139.79.224])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.30)
-	id 1BTYCF-0008MU-T1
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 27 May 2004 20:38:15 -0700
-In-Reply-To: <40B691DF.4060509@winischhofer.net>
+	id 1BTYHO-0002Uu-Ru
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 27 May 2004 20:43:34 -0700
+Received: from loncoche.terra.com.br ([200.154.55.229])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BTYHO-0000ik-A7
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 27 May 2004 20:43:34 -0700
+Received: from arica.terra.com.br (arica.terra.com.br [200.154.55.128])
+	by loncoche.terra.com.br (Postfix) with ESMTP id 324BDE784B5
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 28 May 2004 00:43:28 -0300 (BRT)
+Received: from ummagumma.ozzmosis.net (200-203-051-011.nhoce7002.dsl.brasiltelecom.net.br [200.203.51.11])
+	(authenticated user lucasvr)
+	by arica.terra.com.br (Postfix) with ESMTP id E64D33C00F
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 28 May 2004 00:43:27 -0300 (BRT)
+In-Reply-To: <000001c44316$487bf040$7c04b40a@dlh.st.com>
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,45 +34,50 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Thomas Winischhofer <thomas@winischhofer.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Thomas Winischhofer eloquently put:
-> David Eger wrote:
->  > If the patch looks good to you (James, Geert, BenH), I'd like to
->  > forward it on to Linus followed by the individual driver updates
->  > (that'll take a little longer -- I need to revise how drivers do
->  > things like remember noaccel, etc. and update them).
+On Wednesday 26 May 2004 08:40, Manish RATHI wrote:
+> Hi,
+> In franebuffer  fb_info structure, there are 4 functions to be used by
+> fbcon.c these are:
+
+4? You asked for 3 functions :-)
+
+
+> (*updatevar)();
+
+This is a function called by fbcon.c when going to update a user defined part 
+of the display, in order to pan/wrap; updatevar() usually sets the new 
+driver's "var" xoffset and yoffset and then tells the video controller the 
+new screen start address. 
+
+
+> (*changevar)();
+
+Oh, I didn't see any driver using that. In the case of fbcon_changevar, it 
+just calls fbcon_setup (specifying not to show the logo again), which resets 
+the framebuffer settings such as font and pan/wrap offsets. 
+
+When one calls (*setvar)(), which modifies the display variable configuration, 
+it checks for the existence of a non-null function pointer to changevar and 
+if found, calls that function. I really don't know why a driver should need 
+to restart things when changing var data. Could anyone help to clarify that?
+
+> (*blank)();
+
+This function does the screen blanking routine, not required to be implemented 
+by the driver. There's a good explanation of it on skeletonfb.c.
+
+
+> Could anybody tell me the logic of above functions. Although they are
+> mentioned in pl110.c and vfb.c but only function header is given.
 >
-> How about properly documenting what you actually do and let the driver
-> maintainer handle the implementation?
+>
+> Regards
+> Manish
 
-see the update to skeletonfb.c
-
-> General question (not to you only): How about considering the 2.6 series
-> as "stable" as everybody else does and keep it to fixing bugs instead of
-> change the driver API the Xth time?
-
-
-If you want to handle the fix for sisfb, please do, I'll skip over that one ;-)
-
-It's all part of fixing bugs ;-)  When my "accelerated" fb driver is still
-super-slow, i consider that a bug.  And it's a bug of the framebuffer
-subsystem, not really of the drivers.  Your lovely
-SiS310SubsequentScreenToScreenCopy() and friends (do I smell xfree86 code here?
-;-) )  would probably work great if they were ever called.  Currently, they're
-not :-P
-
-The patch (a later version mailed to lkml against mainline) fixes an issue
-discussed in a large thread previously.  The Linux 2.6 fbdriver/kernel
-interface is opaque as to what hardware acceleration a video card *actually*
-provides.  There are a bunch of entry-points, but they're often done by
-software.  This patch fixes the framebuffer interface so that fbcon (currently
-the only app that really lives on top of the fb subsystem) can sanely choose
-its method of rendering.
-
--dte
-
+Cheers,
+Lucas
 
 
 -------------------------------------------------------

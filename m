@@ -1,24 +1,24 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: Re: PATCH Proposal make FB_ACCEL_ private to the driver
-Date: Mon, 28 Feb 2005 15:40:56 +0200
-Message-ID: <20050228134056.GA5942@sci.fi>
-References: <20050227032611.GB14968@systol.god.lan> <Pine.LNX.4.62.0502271926560.3143@numbat.sonytel.be> <20050227221715.GA16837@systol.god.lan>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: Re: 2.6.11-rc5, rivafb i2c oops, bogus error handling
+Date: Mon, 28 Feb 2005 22:41:54 +0800
+Message-ID: <200502282241.55815.adaplas@hotpop.com>
+References: <Pine.LNX.4.58.0502232014190.18997@ppc970.osdl.org> <20050227203214.GA15572@suse.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Content-Transfer-Encoding: 7bit
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D5l8v-0003Zq-Ev
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 28 Feb 2005 05:41:01 -0800
-Received: from gw02.mail.saunalahti.fi ([195.197.172.116])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1D5l8t-0001Q3-Ts
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 28 Feb 2005 05:41:01 -0800
-Received: from kuori.saunalahti.fi (kuori.saunalahti.fi [195.197.175.23])
-	by gw02.mail.saunalahti.fi (Postfix) with ESMTP id 24482B9FF7
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 28 Feb 2005 15:40:57 +0200 (EET)
+	id 1D5m6F-0007MN-Ul
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 28 Feb 2005 06:42:19 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.71])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1D5m6E-0005P2-BJ
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 28 Feb 2005 06:42:19 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id B890714797FA
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 28 Feb 2005 14:42:07 +0000 (UTC)
+In-Reply-To: <20050227203214.GA15572@suse.de>
 Content-Disposition: inline
-In-Reply-To: <20050227221715.GA16837@systol.god.lan>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,52 +29,63 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net, Olaf Hering <olh@suse.de>, linux-nvidia@lists.surfsouth.com
+Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Sun, Feb 27, 2005 at 11:17:15PM +0100, Henk Vergonet wrote:
-> On Sun, Feb 27, 2005 at 07:28:47PM +0100, Geert Uytterhoeven wrote:
-> > On Sun, 27 Feb 2005, Henk Vergonet wrote:
-> > I'm afraid you will never see this reply, as rememberme@systol.god.la=
-n won't
-> > resolve....
->=20
-> It is intentional, but if it's a problem I can fix it.
->=20
-> >=20
-> > > I want to propose to localize the maintenance and registration of t=
-he
-> > > FB_ACCEL_ id's and remove it from the public fb.h include file.
-> > >=20
-> > > Motivation:
-> > > - This removes an unneeded dependency to fb.h if an additional card=
-s/chips are
-> > >   introduced. (These id's are only interesting for the driver anyho=
-w.=20
-> > >   Only fbset will print out the id, but I'll doubt this is used by =
-anyone.)
-> >=20
-> > Yes, it's used by userspace apps that need to know the graphics card =
-type (e.g.
-> > DirectFB and the good old XF68_FBDev).
->=20
-> My point is not that there are no userspace utils that use it. But that
-> we should lose this identifier in the public interface eventually becau=
-se it introduces unneeded dependencies as stated in my earlier post.
->=20
-> If it's used by userspace in any other way than for pure informational =
-purposes:
-> For example to make certain assumptions on hardware capabilities, locat=
-ions of specific hardware registers ...) then that's ok but should be con=
-sidered as a make-shift solution until we have found a better solution dr=
-ivers/API.
+On Monday 28 February 2005 04:32, Olaf Hering wrote:
+>  On Wed, Feb 23, Linus Torvalds wrote:
+> > This time it's really supposed to be a quickie, so people who can, please
+> > check it out, and we'll make the real 2.6.11 asap.
+>
+> Here is another one, probably not new.
+> Is riva_get_EDID_i2c a bit too optimistic by not having a $i2cadapter_ok
+> member in riva_par->riva_i2c_chan? It calls riva_probe_i2c_connector
+> even if riva_create_i2c_busses fails to register all 3 busses.
+>
 
-And that is exactly how DirectFB uses it. Case closed :)
+Thanks,
 
---=20
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+Can you try this?
+
+Fixed error handling in rivafb-i2c.c if bus registration fails.
+
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
+---
+
+ rivafb-i2c.c |   11 +++++++++--
+ 1 files changed, 9 insertions(+), 2 deletions(-)
+
+diff -Nru a/drivers/video/riva/rivafb-i2c.c b/drivers/video/riva/rivafb-i2c.c
+--- a/drivers/video/riva/rivafb-i2c.c	2005-01-13 03:57:12 +08:00
++++ b/drivers/video/riva/rivafb-i2c.c	2005-02-28 08:22:06 +08:00
+@@ -120,8 +120,12 @@
+ 	rc = i2c_bit_add_bus(&chan->adapter);
+ 	if (rc == 0)
+ 		dev_dbg(&chan->par->pdev->dev, "I2C bus %s registered.\n", name);
+-	else
+-		dev_warn(&chan->par->pdev->dev, "Failed to register I2C bus %s.\n", name);
++	else {
++		dev_warn(&chan->par->pdev->dev,
++			 "Failed to register I2C bus %s.\n", name);
++		chan->par = NULL;
++	}
++
+ 	return rc;
+ }
+ 
+@@ -171,6 +175,9 @@
+ 		},
+ 	};
+ 	u8 *buf;
++
++	if (!chan->par)
++		return NULL;
+ 
+ 	buf = kmalloc(EDID_LENGTH, GFP_KERNEL);
+ 	if (!buf) {
+
+
 
 
 -------------------------------------------------------

@@ -1,16 +1,17 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
+From: Antonino Daplas <adaplas@pol.net>
 Subject: Re: Reading the EDID block for x86 machines
-Date: Mon, 17 Mar 2003 11:33:38 -0800 (PST)
+Date: 18 Mar 2003 06:29:56 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030317193338.94491.qmail@web14908.mail.yahoo.com>
-References: <1047883995.1234.7.camel@localhost.localdomain>
+Message-ID: <1047940105.3693.40.camel@localhost.localdomain>
+References: <20030317220215.49788.qmail@web14902.mail.yahoo.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from web14908.mail.yahoo.com ([216.136.225.60])
+Received: from pine.compass.com.ph ([202.70.96.37])
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18v0Mc-0000eZ-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Mar 2003 11:33:38 -0800
-In-Reply-To: <1047883995.1234.7.camel@localhost.localdomain>
+	id 18v3Ab-000212-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Mar 2003 14:33:25 -0800
+In-Reply-To: <20030317220215.49788.qmail@web14902.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,72 +22,59 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
+To: Jon Smirl <jonsmirl@yahoo.com>
 Cc: Geert Uytterhoeven <geert@linux-m68k.org>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
---- Antonino Daplas <adaplas@pol.net> wrote:
-> You're talking about other device's expansion ROM's.
->  VGA ROM's,
-> especially for the x86, are an exception and has to
-> be always mapped at
-> c000:0000.
+On Tue, 2003-03-18 at 06:02, Jon Smirl wrote:
+> The VBIOS should be position independent code and it
+> will run at any 64K boundary. The PC bus spec simply
+> says the video BIOS defaults to C000, it is not a
+> requirement that it be located there. For example if
+> you look at the aty128fb driver's find ROM routine
+> your will notice that it is searching a broad address
+> space for the ROM.
+> 
+> I'm still not convinced that the memory at C000 is
+> really hardware write protected, I think it is just
+> RAM with a copy of the ROM in it. For example if I
+> turn off BIOS shadowing my system will not boot. When
+> debugging this I spent some time tracing into the ATI
+> ROM and I was pretty sure that they are dependent on
+> begin copied into RAM before begin run. 
 
-Reboot and add pci=rom (case sensitive) to your kernel
-parameters. That will show you where the video ROMs
-are really located.
-
-My x86 PC's boot video ROM is located at dd000000 not
-C00000. C00000 is only a copy of the ROM in RAM.
-
-01:00.0 VGA compatible controller: ATI Technologies
-Inc Radeon R250 If [Radeon 9
-000] (rev 01) (prog-if 00 [VGA])
-        Subsystem: C.P. Technology Co. Ltd: Unknown
-device 2039
-        Flags: stepping, 66Mhz, medium devsel, IRQ 5
-        Memory at d0000000 (32-bit, prefetchable)
-[disabled] [size=64M]
-        I/O ports at c000 [disabled] [size=256]
-        Memory at de000000 (32-bit, non-prefetchable)
-[disabled] [size=64K]
-        Expansion ROM at dd000000 [size=128K]
-        Capabilities: [58] AGP version 2.0
-        Capabilities: [50] Power Management version 2
-
-The ROM on my other video card is located here:
-
-00:0b.0 VGA compatible controller: ATI Technologies
-Inc Rage 128 PD/PRO TMDS (pr
-og-if 00 [VGA])
-        Subsystem: ATI Technologies Inc Rage 128 AIW
-        Flags: bus master, stepping, medium devsel,
-latency 32, IRQ 10
-        Memory at d8000000 (32-bit, prefetchable)
-[size=64M]
-        I/O ports at e400 [size=256]
-        Memory at df000000 (32-bit, non-prefetchable)
-[size=16K]
-        Expansion ROM at 20060000 [size=128K]
-        Capabilities: [5c] Power Management version 2
-
-> Remember, ROM's are supposed to be read-only, so
-> even if they are
-> shadowed, the BIOS write protects it.
-
-How is this write protection being achieved? Is it
-done via manipulation of the processor descriptor
-tables; if so just undo it.
+    The PC-compatible specific set of steps for the system POST code
+    when handling each expansion ROM are:
+    
+    1. Map and enable the expansion ROM to an unoccupied area of the
+    memory address space.
+    2. Find the proper image in the ROM and copy it from ROM into the
+    compatibility area of RAM (typically 0C0000h to 0DFFFFhh) using the
+    number of bytes specified by Initialization Size.
+    3. Disable the Expansion ROM Base Address register.
+    4. Leave the RAM area writable and call the INIT function.
+    5. Use the byte at offset 02h (which may have been modified) to
+    determine how much memory is used at runtime.
+    
+    Before system boot, the POST code must make the RAM area containing
+    expansion ROM code read-only.
+    
+    POST code must handle VGA devices with expansion ROMs in a special
+    way.  The VGA device's expansion BIOS must be copied to 0C0000h. 
+    VGA devices can be identified by examining the Class Code field in
+    the device's Configuration Space.
+    
+-- pg. 210 PCI Local Bus Specification Revision 2.2 December 18, 1998
 
 
-=====
-Jon Smirl
-jonsmirl@yahoo.com
+> 
+> Do you have a DOS floppy around? Just boot into DOS,
+> start debug and see if you can change C000:0.
 
-__________________________________________________
-Do you Yahoo!?
-Yahoo! Platinum - Watch CBS' NCAA March Madness, live on your desktop!
-http://platinum.yahoo.com
+Yes, it's unchangeable.
+
+Tony
+
+
 
 
 -------------------------------------------------------

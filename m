@@ -1,17 +1,17 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Vertical retrace interrupts?
-Date: Tue, 28 Jan 2003 19:21:30 +0000 (GMT)
+Subject: Re: vesafb and too much RAM?
+Date: Tue, 28 Jan 2003 19:22:54 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0301281920520.12076-100000@phoenix.infradead.org>
-References: <1043545888.3795.2.camel@h9n1fls20o980.telia.com>
+Message-ID: <Pine.LNX.4.44.0301281922120.12076-100000@phoenix.infradead.org>
+References: <Pine.LNX.4.44.0301111150160.10295-100000@ie>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
+Received: from phoenix.infradead.org ([195.224.96.167])
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18dbJ6-0004NT-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 28 Jan 2003 11:22:05 -0800
-In-Reply-To: <1043545888.3795.2.camel@h9n1fls20o980.telia.com>
+	id 18dbKS-0004Y1-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 28 Jan 2003 11:23:29 -0800
+In-Reply-To: <Pine.LNX.4.44.0301111150160.10295-100000@ie>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,16 +23,18 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Fredrik Noring <noring@nocrew.org>
+To: Matt Nanney <matt@ifox.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
 
-> Are there any plans on merging DirectFB features? Stuff like vertical
-> retrace interrupts etc.?
+> I was running debian with a 2.4.20(-3 I believe) with vesafb with no
+> problems with 512MB ram. I upgraded to 1GB and immediately I could not
+> boot. I get as far as the LILO prompt, but as soon as I hit enter the
+> screen goes black, the caps lock and scroll lock keyboard LEDs flash, and
+> nothing save hitting the reset switch has any affect.
 
-Thats already supported. Just add a poll function to fb_ops. To date no 
-one has used this feature.
-
+You have lots oe memory. Try turning on high memory support. This will 
+make the problem go away.
 
 
 

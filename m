@@ -1,13 +1,23 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: "remap_page_range" i810 compile time problem ..
-Date: Fri, 11 Mar 2005 19:05:26 +0800
-Message-ID: <200503111905.27355.adaplas@hotpop.com>
-References: <4EE0CBA31942E547B99B3D4BFAB348113A49D2@mail.esn.co.in>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Fw: Problem with 2.6.11-bk[3456]
+Date: Fri, 11 Mar 2005 23:11:30 +1100
+Message-ID: <1110543090.5810.96.camel@gaston>
+References: <20050310204728.3969cfa1.akpm@osdl.org>
+	 <1110516944.32556.352.camel@gaston>
+	 <1110542957.2667.5.camel@alpha.digital-domain.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-In-Reply-To: <4EE0CBA31942E547B99B3D4BFAB348113A49D2@mail.esn.co.in>
-Content-Disposition: inline
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1D9izg-0000br-El
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 11 Mar 2005 04:11:52 -0800
+Received: from gate.crashing.org ([63.228.1.57])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1D9izf-0004X5-Vr
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 11 Mar 2005 04:11:52 -0800
+In-Reply-To: <1110542957.2667.5.camel@alpha.digital-domain.net>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -19,90 +29,20 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, "Mukund JB." <mukundjb@esntechnologies.co.in>, adaplas@pol.net, linux-fbdev-users@lists.sourceforge.net
+To: Andrew Clayton <andrew@digital-domain.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@osdl.org>
 
-On Friday 11 March 2005 14:36, Mukund JB. wrote:
-> Hi adaplas,
->
-> Thankful to u for making things clear at every level.
->
-> > > But when I try this without accel=1 rotation fails. Can u just
->
-> narrate
->
-> > > me what is accel accentually doing?
-> >
-> > Because if accel is on, the driver is using it's own version of
->
-> drawing
->
-> > functions which are flexible enough that additional features can be
->
-> added,
->
-> > such as screen rotation.
-> >
-> > If accel is off, the driver will use the generic functions which
->
-> cannot do
->
-> > screen rotation.  Of course, one can write a software version that can
->
-> do
->
-> > screen rotation.
->
-> So, u mean the i810fb driver will process the command line parameters &
-> if finds the accel is "1" in the list, it will use its own functions or
-> else it will use the generic functions provided in the fbgen.c file.
 
-Above is correct, except that i810fb, if accel is disabled will use the
-functions in fbcon-cfb*.c, not fbgen.c.
+> Hi Ben,
+> 
+> No, I'm not using radeonfb/framebuffer, just the normal VGA mode.
+> 
+> 
+> Thanks for the reply.
 
->
-> This is my understanding about fb driver architecture
->
-> 			Application
-> 			-----------
-> 		  XFree86 / Directfb (Embedded)
-> 			-----------
-> 			 FB driver
-> 			-----------
-> 			 HARDWARE
->
-> Are these files below a part of fb driver or do they come under a
-> different level in fb driver architecture?
+Well, Andrew, at least this one isn't a radeonfb regression :)
 
-The above is correct, assuming that XFree86 uses the 'fbdev' driver.
-
->
-> fbcon.c - low level framebuffer based console driver
-> fbcon-cfb* - low level framebuffer based operations for 8 bpp packed
-> pixels
-> How do I differentiate between the above two?
-
-fbcon.c is the glue between console and fbdev.  fbcon-cfb* contains
-generic drawing functions for framebuffers with packed pixel format.
-
->
-> fbcmap.c 	- It handles color mapping
-> fbcon-plan2p*
->
-> I find fbdevhw.a & I find groups referring to it.
-
-fbdevhw, if I'm not mistaken, came from XFree86/Xorg.  It contains
-helper functions used by XFree86 to talk to fbdev.
-
-> I think it is a library. If so, give me some inputs where we can use it.
-> Please do correct if I am going OFF-TRACK understanding FB drivers.
->
-> Where exactly should I place the fbdevhw.a in the above shown
-> architecture?
-
-Probably between  XFree86 and fbdev.
-
-Tony
-
+Ben.
 
 
 

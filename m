@@ -1,15 +1,16 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: Feature Freeze?
-Date: 05 Mar 2003 16:26:04 +0800
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Feature Freeze?
+Date: Wed, 5 Mar 2003 10:57:45 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1046852721.1228.13.camel@localhost.localdomain>
+Message-ID: <Pine.GSO.4.21.0303051055250.23176-100000@vervain.sonytel.be>
+References: <1046852721.1228.13.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from pine.compass.com.ph ([202.70.96.37])
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18qUCh-0004Tf-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 00:24:43 -0800
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18qVfJ-00063k-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 01:58:21 -0800
+In-Reply-To: <1046852721.1228.13.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -19,37 +20,46 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+On 5 Mar 2003, Antonino Daplas wrote:
+> I believe it's time to finalize what is needed/not needed for the
+> framebuffer framework:
 
-Hi,
+> 1. Text mode support?
 
-I believe it's time to finalize what is needed/not needed for the
-framebuffer framework:
+Required by at least davem and petr
 
-1. Text mode support?
+> 2. console resizing using fbset (besides stty)?
 
-2. console resizing using fbset (besides stty)?
+Nice, if it's not too much work.
 
-3. support for unloading of fbcon if modular?
+> 3. support for unloading of fbcon if modular?
+> 4. driver specified placement of buffers - for putcs method?
+> 5. flexible logo placement/overlayed logo?
+> 6. generic console display rotation?
 
-4. driver specified placement of buffers - for putcs method?
+Low priority, IMHO.
 
-5. flexible logo placement/overlayed logo?
+> 7. Anything else?
 
-6. generic console display rotation?
+0. Update all drivers
 
-7. Anything else?
+Absolutely required
 
-8. feature freeze deadline?
+Gr{oetje,eeting}s,
 
-If you think any of the above is essential, useful, bloat, etc, please
-say so.  If you think there are features in the present code that needs
-to be removed, make it known.
+						Geert
 
-Tony
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

@@ -1,25 +1,24 @@
 From: James Simmons <jsimmons@www.infradead.org>
 Subject: Re: Re: [linux-2.6.10] radeonfb / oops
-Date: Fri, 4 Feb 2005 20:42:04 +0000 (GMT)
-Message-ID: <Pine.LNX.4.56.0502042040530.25309@pentafluge.infradead.org>
-References: <200502030925.09942.pluto@pld-linux.org>
+Date: Fri, 4 Feb 2005 20:42:48 +0000 (GMT)
+Message-ID: <Pine.LNX.4.56.0502042042120.25309@pentafluge.infradead.org>
+References: <200502030925.09942.pluto@pld-linux.org> <1107496794.2362.90.camel@gaston>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CxAHM-0006zK-VI
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 04 Feb 2005 12:42:12 -0800
+	id 1CxAI4-00071H-Ma
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 04 Feb 2005 12:42:56 -0800
 Received: from pentafluge.infradead.org ([213.146.154.40])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1CxAHJ-0006Aq-9G
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 04 Feb 2005 12:42:12 -0800
+	id 1CxAI1-0004sb-QJ
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 04 Feb 2005 12:42:56 -0800
 Received: from jsimmons (helo=localhost)
 	by pentafluge.infradead.org with local-esmtp (Exim 4.43 #1 (Red Hat Linux))
-	id 1CxAHE-0006bJ-B6
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 04 Feb 2005 20:42:05 +0000
-In-Reply-To: <200502030925.09942.pluto@pld-linux.org>
+	id 1CxAHx-0006bS-1a
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 04 Feb 2005 20:42:50 +0000
+In-Reply-To: <1107496794.2362.90.camel@gaston>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,39 +29,19 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="iso-8859-1"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-Ug. You have to many video drivers enabled. For one you both radeons=20
-enabled, there is a older driver, and VESA and vga16fb. You need to select=
-=20
-one driver only. They all conflict when they try to access the hardware.
+> > plain text document attachment (.config)
+> 
+> You seem to have built both the old and new radeonfb's ... can you
+> remove the old one ?
 
-On Thu, 3 Feb 2005, [utf-8] Pawe=C5^B Sikora wrote:
+Plus a whole bunch of other drivers. BTW would you consider it time to 
+kill off the old radeon fbdev driver?
 
-> >  > Hi,
-> >  >=20
-> >  > Could You look at this: http://lkml.org/lkml/2005/1/29/67
-> >  > Help will be appreciated.
-> >=20
-> > From: James Simmons <jsimmons@ww...>
-> > Re: [linux-2.6.10] radeonfb / oops  =20
-> > 2005-02-01 12:54=20
-> >=20
-> > Can you post your config?
-> > =20
-> > On Tue, 1 Feb 2005, Pawel Sikora wrote:
-> >=20
->=20
-> I've tested kernel without grsec and fbsplash and it still oopses.
->=20
-> --=20
-> /* Copyright (C) 2003, SCO, Inc. This is valuable Intellectual Property. =
-*/
->=20
->                            #define say(x) lie(x)
->=20
 
 
 -------------------------------------------------------

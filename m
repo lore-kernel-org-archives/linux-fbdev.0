@@ -1,23 +1,20 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: ioremap problem on highmem
-Date: Wed, 15 Oct 2003 18:46:44 +0200
+From: James Simmons <jsimmons@infradead.org>
+Subject: FBDEV 2.6.0-test7 updates.
+Date: Wed, 15 Oct 2003 23:59:26 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1066236404.662.60.camel@gaston>
-References: <20031014004651.36307.qmail@web14914.mail.yahoo.com>
+Message-ID: <Pine.LNX.4.44.0310152345210.13660-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1A9onm-0001Jt-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 15 Oct 2003 09:47:10 -0700
-Received: from pentafluge.infradead.org ([213.86.99.235])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	id 1A9ucD-00038x-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 15 Oct 2003 15:59:37 -0700
+Received: from [213.86.99.234] (helo=phoenix.infradead.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.22)
-	id 1A9onj-0008Ao-EO
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 15 Oct 2003 09:47:07 -0700
-In-Reply-To: <20031014004651.36307.qmail@web14914.mail.yahoo.com>
+	id 1A9ucA-0000qo-0d
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 15 Oct 2003 15:59:34 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,22 +24,311 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Jon Smirl <jonsmirl@yahoo.com>
-Cc: Otto Solares <solca@guug.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
 
-> The more I learn about fbconsole the more I think it is a bad idea. This is no
-> comment on the skill of the people writing it, I just think the whole concept
-> of mapping the framebuffer in to kernel space needs to be eliminated. There is
-> only 1GB of kernel space and it make no sense to chew up 128MB or 256MB of it
-> mapping a framebuffer just to get a penguin at boot. I do think penguin is
-> cute, but not cute enough to waste kernel address space on.
+Here is the latest fbdev patches. Please test!!! Many new enhancements. 
+Several fixes. The patch is against 2.6.0-test7
 
-Can you think about non-x86 please ? Most of them don't have anything
-remotely like VGA / BIOS
+http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
 
-Ben.
+bk://fbdev.bkbits.net/fbdev-2.5
+
+ Documentation/fb/neofb.txt            |   27 
+ MAINTAINERS                           |    5 
+ drivers/char/vt_ioctl.c               |   12 
+ drivers/video/Kconfig                 |  130 
+ drivers/video/Makefile                |   11 
+ drivers/video/acornfb.c               |    1 
+ drivers/video/asiliantfb.c            |  619 
+ drivers/video/aty/Makefile            |    1 
+ drivers/video/aty/aty128fb.c          |    1 
+ drivers/video/aty/atyfb.h             |   12 
+ drivers/video/aty/atyfb_base.c        |   28 
+ drivers/video/aty/mach64_cursor.c     |  254 
+ drivers/video/bw2.c                   |   74 
+ drivers/video/cfbimgblt.c             |    2 
+ drivers/video/cg14.c                  |   98 
+ drivers/video/cg3.c                   |   79 
+ drivers/video/cg6.c                   |   89 
+ drivers/video/chipsfb.c               |    4 
+ drivers/video/cirrusfb.c              |    1 
+ drivers/video/console/Makefile        |   29 
+ drivers/video/console/fbcon.c         |  574 
+ drivers/video/console/fbcon.h         |    3 
+ drivers/video/controlfb.c             |   10 
+ drivers/video/cyber2000fb.c           |    1 
+ drivers/video/epson1355fb.c           |  967 -
+ drivers/video/fbmem.c                 |  391 
+ drivers/video/fbmon.c                 |   10 
+ drivers/video/ffb.c                   |  110 
+ drivers/video/g364fb.c                |   78 
+ drivers/video/i810/Makefile           |    7 
+ drivers/video/i810/i810_main.c        |   21 
+ drivers/video/igafb.c                 |    5 
+ drivers/video/imsttfb.c               |    7 
+ drivers/video/leo.c                   |   78 
+ drivers/video/logo/Kconfig            |    2 
+ drivers/video/logo/Makefile           |   49 
+ drivers/video/logo/logo.c             |   10 
+ drivers/video/macfb.c                 |   34 
+ drivers/video/matrox/matroxfb_base.c  |    8 
+ drivers/video/matrox/matroxfb_crtc2.c |    1 
+ drivers/video/modedb.c                |    4 
+ drivers/video/neofb.c                 |  339 
+ drivers/video/p9100.c                 |   62 
+ drivers/video/platinumfb.c            |   10 
+ drivers/video/pm2fb.c                 | 3010 +---
+ drivers/video/pvr2fb.c                |  846 -
+ drivers/video/radeonfb.c              |    3 
+ drivers/video/riva/fbdev.c            |  171 
+ drivers/video/riva/nv_type.h          |   12 
+ drivers/video/sa1100fb.c              |    1 
+ drivers/video/sgivwfb.c               |   12 
+ drivers/video/sis/300vtbl.h           | 2455 ---
+ drivers/video/sis/310vtbl.h           | 3515 +----
+ drivers/video/sis/init.c              | 8364 +++++-------
+ drivers/video/sis/init.h              | 2874 +++-
+ drivers/video/sis/init301.c           |21989 +++++++++++++++++-----------------
+ drivers/video/sis/init301.h           |  535 
+ drivers/video/sis/initdef.h           |  357 
+ drivers/video/sis/oem300.h            |  502 
+ drivers/video/sis/oem310.h            |  181 
+ drivers/video/sis/osdef.h             |  122 
+ drivers/video/sis/sis_accel.c         |   68 
+ drivers/video/sis/sis_accel.h         |   27 
+ drivers/video/sis/sis_main.c          | 4592 +++----
+ drivers/video/sis/sis_main.h          |  713 -
+ drivers/video/sis/vgatypes.h          |  267 
+ drivers/video/sis/vstruct.h           |  218 
+ drivers/video/skeletonfb.c            |   74 
+ drivers/video/softcursor.c            |  200 
+ drivers/video/sstfb.c                 |    2 
+ drivers/video/stifb.c                 |    1 
+ drivers/video/tcx.c                   |  115 
+ drivers/video/tdfxfb.c                |   87 
+ drivers/video/tgafb.c                 |  177 
+ drivers/video/tridentfb.c             |    1 
+ drivers/video/valkyriefb.c            |  548 
+ drivers/video/vesafb.c                |   17 
+ drivers/video/vgastate.c              |    1 
+ include/linux/fb.h                    |  131 
+ include/linux/linux_logo.h            |    4 
+ include/linux/pci_ids.h               |   11 
+ include/video/cvisionppc.h            |   51 
+ include/video/epson1355.h             |   64 
+ include/video/neomagic.h              |  261 
+ include/video/sisfb.h                 |  105 
+ include/video/tdfx.h                  |    1 
+ 86 files changed, 27909 insertions(+), 29034 deletions(-)
+
+through these ChangeSets:
+
+<jsimmons@infradead.org> (03/10/15 1.1363)
+   [FBDEV SOFT CURSOR] Fixed size bug.
+   [FBDEV] Increased size for 64 bit platforms.
+
+<jsimmons@infradead.org> (03/10/15 1.1362)
+   [FBDEV SOFTWARE CURSOR] We always save the maximum are under the cursor. This way we don't have to worry about cursor resizing.
+
+<jsimmons@infradead.org> (03/10/14 1.1361)
+   [FBDEV] Implemented the first round of saving and restoring the area under the cursor.
+
+<jsimmons@infradead.org> (03/10/14 1.1359)
+   [FBDEV] Moved kernel header files to be visible only when compiling for the kernel. Userland doesn't need these header files. It also makes shifting from kernel version to kernel version easier.
+
+<jsimmons@infradead.org> (03/10/14 1.1358)
+   [SIS FBDEV] Compile fix.
+
+<jsimmons@infradead.org> (03/10/13 1.1347.4.2)
+   [SIS FBDEV] SIS updates. FIxed CRT1 detection.
+
+<jsimmons@infradead.org> (03/10/03 1.1296.43.4)
+   [SGIVW FBDEV] Fixed 16 bpp color mode.
+
+<jsimmons@infradead.org> (03/09/29 1.1296.28.2)
+   [FBDEV] Patch fixes get_std_timing. Current code doesn't search the  VESA modedb. Instead it exits after the first  iteration  with  mode calculated  by  calc_mode_timings.
+
+<jsimmons@infradead.org> (03/09/22 1.1267.1.26)
+   [FBDEV] Better makefile.
+
+<jsimmons@infradead.org> (03/09/22 1.1267.1.25)
+   pm2fb-2.6.patch
+
+<jsimmons@debian.(none)> (03/09/19 1.1267.40.2)
+   [TGA FBDEV] Updates to the tga famebuffer. Added color imageblit support. Added using dec logo for TGA fbdev. Color palette fix.
+
+<kronos@kronoz.cjb.net> (03/09/18 1.1267.1.20)
+   Update driver with the new API
+
+<kronos@kronoz.cjb.net> (03/09/18 1.1267.1.19)
+   Update sisfb driver:
+   - merge with driver version version 090903-1 (from Thomas Winischhofer)
+   - port driver to the new framebuffer_{alloc,release} API
+
+<kronos@kronoz.cjb.net> (03/09/17 1.1267.1.18)
+   Update sparc framebuffer drivers to the new API.
+
+<kronos@kronoz.cjb.net> (03/09/17 1.1267.33.1)
+   Add new API framebuffer_alloc and framebuffer_release.
+   
+   Framebuffer info structure (ie. struct fb_info) must be obtained from
+   framebuffer_alloc. When it is no longer needed (after unregister_framebuffer
+   and clean up) it can be released using framebuffer_release.
+   
+   If the framebuffer is not registered yet (eg. on error path) then fb_info must
+   be released via kfree. 
+
+<jsimmons@maxwell.earthlink.net> (03/09/16 1.1267.1.16)
+   [MACH 64 FBDEV] Updated to new cursor api.
+
+<jsimmons@debian.(none)> (03/09/14 1.1267.1.14)
+   [FBDEV} Final cursor api.
+
+<jsimmons@infradead.org> (03/09/04 1.1153.146.5)
+   [FBDEV] Cleanup for Configuration of Mach64 driver.
+
+<jsimmons@infradead.org> (03/09/04 1.1153.146.4)
+   [FBDEV] Fixed the cursor code. Also some cleanup with move_buf_*. 
+
+<jsimmons@infradead.org> (03/09/04 1.1153.146.3)
+   [FBDEV] Currcon removal. fbcon.c does this for us.
+
+<jsimmons@infradead.org> (03/09/04 1.1153.146.2)
+   [FBDEV MODEDB] Better support for 1400x1050 modes.
+
+<jsimmons@infradead.org> (03/08/21 1.1153.1.97)
+   [FBDEV] Removed currcon from low level drivers.
+
+<jsimmons@infradead.org> (03/08/21 1.1153.1.96)
+   [FBDEV] Sysfs support.
+
+<jsimmons@maxwell.earthlink.net> (03/08/18 1.1153.6.4)
+   [RIVA FBDEV] Finally cursor api is complete. A few bugs yet but now to start on other drivers.
+
+<jsimmons@infradead.org> (03/08/15 1.1153.6.2)
+   [TDFX FBDEV] Fixed Interlace. Only for Banshee interlace wasn't supported.
+                Added Double scanline mode.
+   	     Fixed the foreground color value for tdfxfb_fillrect. For Truecolor modes we have to map the to the proper color value 
+
+<jsimmons@bohr.(none)> (03/08/11 1.1123.21.2)
+   [NEOMAGIC FBDEV] Add going between graphics and VGA text mode. 
+
+<jsimmons@host-193.int.pioneer-pra.com> (03/07/21 1.1046.416.32)
+   [TDFX FBDEV] Fixes to make the image blitter work. Also the color handling code was fixed. 
+
+<jsimmons@host-193.int.pioneer-pra.com> (03/07/15 1.1046.416.28)
+   [FBCON] Always turn off the cursor in fbcon_cursor. The reason is that cursor might try to blink while we are reprogramming the hardware.
+
+<jsimmons@host-193.int.pioneer-pra.com> (03/07/11 1.1046.416.25)
+   [IMSTT FBDEV] Free up resources when it fails.
+
+<jsimmons@host-193.int.pioneer-pra.com> (03/07/11 1.1046.416.24)
+   [FBDEV] Makefiel cleanups.
+
+<jsimmons@host-193.int.pioneer-pra.com> (03/07/11 1.1046.416.23)
+   [ASILIANT FBDEV] Added support for the asiliant graphics chipset.
+
+<jsimmons@host-193.int.pioneer-pra.com> (03/07/09 1.1046.416.18)
+   [RIVA FBDEV] Support for more versions of GEFORCE 4. Also some cursor cleanup to allow it to compile.
+
+<jsimmons@host-193.int.pioneer-pra.com> (03/07/08 1.1046.416.15)
+   [SIS FBDEV] Updates to the SiS framebuffer driver. Add support for 760 chipset, LCD scaling.
+
+<jsimmons@kozmo.(none)> (03/07/03 1.1046.416.12)
+   [NEOMAGIC FBDEV] Fixed a nasty bug in the copyarea function. It wasn't testing for the condition when both regions have the same y coordinates but are over lapping. This casued a corrpution of data. Also started ot used the macros in vga.h.
+
+<jsimmons@kozmo.(none)> (03/06/30 1.1046.416.7)
+   [LOGO] Display the correct logo for MIPS DEC workstations.
+
+<jsimmons@kozmo.(none)> (03/06/25 1.1046.416.1)
+   [FBCON] Removed the crappy ROP_COPY/ROP_XOR test for flashing the cursor. Now we disable and enable the cursor timer instead.
+
+<jsimmons@kozmo.(none)> (03/06/24 1.1046.1.192)
+   [FBDEV] Now we can use a specific hardware mapper for different hardware functionality.
+
+<jsimmons@kozmo.(none)> (03/06/23 1.1046.1.188)
+   [VGA CORE] Added needed vmalloc header.
+
+<jsimmons@kozmo.(none)> (03/06/23 1.1046.1.185)
+   [FBCON] When using 512 characters, the mouse pointer starts using the wrong complement_mask after a console reset.
+
+<jsimmons@kozmo.(none)> (03/06/23 1.1046.1.184)
+   [FBDEV] Made chipsfb/controlfb/platinumfb use the xxfb kernel command line string.
+
+<jsimmons@maxwell.earthlink.net> (03/06/18 1.1046.1.180)
+   [MAC FBDEV] Bug fixes.
+
+<jsimmons@maxwell.earthlink.net> (03/06/15 1.1046.1.176)
+   [SIS FBDEV] More updates for the SIS driver. 
+
+<jsimmons@maxwell.earthlink.net> (03/06/14 1.1046.1.174)
+   [CONTROL/PLATINUM FBDEV] Fix to match change in fb_set_var.
+
+<jsimmons@maxwell.earthlink.net> (03/06/10 1.1046.1.170)
+   [FBDEV] Fixed a issue with soft_cursor. It only worked with drivers with a pixmap.scan_align of 1. Now it will work with any.
+
+<jsimmons@kozmo.(none)> (03/06/07 1.1046.1.164)
+   [SIS FBDEV] Fixed sysnc issue.
+
+<jsimmons@kozmo.(none)> (03/06/05 1.1046.1.160)
+   [FBCON] Cleared out the struct fb_cursor we passed in. Other wise we get random data being used.
+
+<jsimmons@kozmo.(none)> (03/05/30 1.1046.1.155)
+   [FBDEV GENERIC ACCEL] Fixed why logo was not displayed for some.
+
+<jsimmons@maxwell.earthlink.net> (03/05/24 1.1046.155.3)
+   [VALKYRUE FBDEV] Ported to new api.
+
+<jsimmons@maxwell.earthlink.net> (03/05/23 1.1046.155.1)
+   [FBDEV] Updates to explain the new cursor api.
+
+<jsimmons@maxwell.earthlink.net> (03/05/23 1.1046.1.142)
+   [EPSON FRAMEBUFFER] Ported to the new api. Added support for the arm platform.
+
+<jsimmons@maxwell.earthlink.net> (03/05/15 1.1046.84.18)
+   [SIS FBDEV] SIS Framebuffer updates.
+                 - Added preliminary and untested support for SiS660
+                 - Added DDC support
+                 - Enhanced proprietary programming API for compatibility with X driver
+                   and upcoming SDL updates and upcoming vidix driver for mplayer
+                 - Fixes for video bridge output on various HW combinations
+                 - Fixes in TV detection
+                 - Reduced source size by removing duplicated data
+                 - Updated Kconfig descriptions
+
+<jsimmons@maxwell.earthlink.net> (03/05/14 1.1046.73.2)
+   [PVR2 FBDEV] Port of the Dreamcast Frambuffer to the new api.
+
+<jsimmons@maxwell.earthlink.net> (03/05/12 1.1046.7.19)
+   [FBCON] set_con2fb_map wasn't testing to see the VC we where mapping to actually exist. Now it does. 
+   
+           I add code to fbcon_cursor to reset the hotspot if it was changed by userland. 
+
+<jsimmons@maxwell.earthlink.net> (03/05/12 1.1046.7.17)
+   [RIVA FBDEV] Removal of exccess variable. Kills off a few warnings.
+
+<jsimmons@maxwell.earthlink.net> (03/05/12 1.1046.7.16)
+   [VESA FBDEV] Removed the EDID code. The results where mixed. It worked for some but not for others.
+
+<jsimmons@maxwell.earthlink.net> (03/05/12 1.1046.7.15)
+   [CONSOLE] This patch fixes the problem of not being able to set the fonts on VCs other than the first one. This also was the bug that was casuing dual head (vga and mda) to lock up.
+
+<jsimmons@kozmo.(none)> (03/05/02 1.1042.122.2)
+   [FBDEV] Synced to kdev_t change.
+
+<jsimmons@kozmo.(none)> (03/04/22 1.1042.37.2)
+   [FBDEV] Moved pixmap to the kernel side of the header. Will not be needed for ioctl calls at the present time.
+   
+   [FBCON] Lots more optimizations.
+
+<jsimmons@kozmo.(none)> (03/04/21 1.1042.37.1)
+   [LOGO] Removed fb_ prefix. Wil be used by other drivers such as the newport driver.
+   
+   [G354 FBDEV] Now use the final cursor api.
 
 
 

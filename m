@@ -1,15 +1,16 @@
-From: "Petr Vandrovec" <VANDROVE@vc.cvut.cz>
-Subject: Re: Re: FBdev updates.
-Date: Wed, 5 Mar 2003 21:31:05 +0100
+From: Thomas Winischhofer <thomas@winischhofer.net>
+Subject: Re: Some questions
+Date: Wed, 05 Mar 2003 23:13:05 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <11EC6AF51A4E@vcnet.vc.cvut.cz>
+Message-ID: <3E667671.9040805@winischhofer.net>
+References: <Pine.LNX.4.44.0303051932120.27760-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mailgw.cvut.cz ([147.32.3.235])
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18qfY1-0006wL-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 12:31:29 -0800
+Received: from static213-229-38-018.adsl.inode.at ([213.229.38.18] helo=home.winischhofer.net)
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18qh7p-0006tX-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 14:12:33 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -19,50 +20,35 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: James Simmons <jsimmons@infradead.org>
-Cc: Antonino Daplas <adaplas@pol.net>, linux-kernel@vger.kernel.org, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On  5 Mar 03 at 20:22, James Simmons wrote:
->  
-> >   And one (or two...) generic questions: why is not pseudo_palette
-> > u32* pseudo_palette, or even directly u32 pseudo_palette[17] ?
+
+
+James Simmons wrote:
+>>>We should split the monitor programing stuff out from stuff like bpp etc.
+>>>Now if you think about it we can do things like change the bpp without 
+>>>having to redo the monitor programming. This is the flaw with the old and 
+>>>even the new api. 
+>>
+>>You could have done that from the beginning. Just look at which fields have
+>>changed and which haven't.
 > 
-> pseudo_palette was originally designed to be a pointer to some kind of 
-> data for color register programming. For example many PPC graphics cards 
-> have a color register region. Now you could have that point to 
-> pseudo_palette.  Note pseudo_palette is only visiable in fbmem.c for the 
-> logo drawing code. Personally I liek to see that hidden.
-
-cfbfillrect? cfbimageblit? Both use pseudo_palette, and both convert
-it to u32*.
- 
-> > And why we do not fill this pseudo_palette with
-> > i * 0x01010101U for 8bpp pseudocolor and i * 0x11111111U for 4bpp
-> > pseudocolor? This allowed me to remove couple of switches and tests
-> > from acceleration fastpaths (and from cfb_imageblit and cfb_fillrect,
-> > but I did not changed these two in my benchmarks below).
 > 
-> ??? Does your accel engine require these kinds of values?
+> I should of but didn't because I knew driver would take teh path of lest 
+> resistance to port there drivers. TO much change would have made the 
+> current situtation much much worst. 
 
-Yes. It is 32bit engine, and so it wants 32bit value. And even if 
-not, code doing
+One could argue that changing stuff more or less constantly does not 
+make it any easier to keep up with a working driver.... :)
 
-if (p->fix.visual == FB_VISUAL_TRUECOLOR ||
-    p->fix.visual == FB_VISUAL_DIRECTCOLOR)
-      fg = p->pseudo_palette[rect->color];
-else
-      fg = rect->color;
+Thomas
 
-is horrible. Two conditional jumps on each rectangle. If you'll do
-always lookup through pseudo_palette, not only that you get rid of
-these jumps, you can also remove calls to pixel_to_pat32 (and accompanying
-tables & lookups), as you do this expansion at set_var time,
-instead of at blit/clear time.
-                                            Best regards,
-                                                Petr Vandrovec
-                                                vandrove@vc.cvut.cz
-                                                
+-- 
+Thomas Winischhofer
+Vienna/Austria
+mailto:thomas@winischhofer.net          *** http://www.winischhofer.net
 
 
 

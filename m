@@ -1,19 +1,14 @@
-From: Nico Schottelius <schottelius@wdt.de>
-Subject: Re: atyfb: 2.5.54
-Date: Thu, 9 Jan 2003 09:43:18 +0100
+From: Jon Smirl <jonsmirl@yahoo.com>
+Subject: Rage128 as secondary adapter
+Date: Thu, 9 Jan 2003 09:47:06 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030109084318.GB251@schottelius.org>
-References: <Pine.LNX.4.44.0301072154010.17129-100000@phoenix.infradead.org> <Pine.GSO.4.21.0301072257220.21057-100000@vervain.sonytel.be>
+Message-ID: <20030109174706.1471.qmail@web14907.mail.yahoo.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="QKdGvSO+nmPlgiQ/"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from dialin-145-254-167-040.arcor-ip.net ([145.254.167.40] helo=schottelius.net)
+Received: from web14907.mail.yahoo.com ([216.136.225.59])
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18WgpI-0006ta-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 09 Jan 2003 09:50:45 -0800
-Content-Disposition: inline
-In-Reply-To: <Pine.GSO.4.21.0301072257220.21057-100000@vervain.sonytel.be>
+	id 18Wgls-0005kW-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 09 Jan 2003 09:47:12 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,37 +18,41 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
+I'm working on aty128fb to make it support a Rage128
+as a secondary adapter. It needs a few new minor
+changes to do this.
 
---QKdGvSO+nmPlgiQ/
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+My main problem is that secondary adapters are not
+initialized at boot.  I have a program (vbios.vm86)
+that will initialize the R128, but instead I would
+like to do it when the driver loads. vbios.vm86 goes
+through a complicated process in real mode of
+emulating the system boot ROM (same thing X does).
 
-Geert Uytterhoeven [Tue, Jan 07, 2003 at 10:58:25PM +0100]:
-> Atyfb is known not to work on some Rage Mobility P/M (incl. the one in my=
- Vaio
-> :-(
-=20
-I hope this changes soon ;)
+Can someone with access to the Rage128 documentation
+tell me how to do this from protected mode? I have the
+ROM mapped so the code can get to constants stored in
+the ROM. What I need is a piece of C code equal to
+what the ROM initialization does minus the part about
+Int10 vector setup.
 
-Nico
+The programmers at ATI probably have a piece of code
+available to do this since ATI's Windows driver can do
+it.  I've tried emailing and signing up as a developer
+without response.
 
---QKdGvSO+nmPlgiQ/
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+=====
+Jon Smirl
+jonsmirl@yahoo.com
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.0.7 (GNU/Linux)
-
-iD8DBQE+HTYmtnlUggLJsX0RAoQXAJwM/McIXPdWuVENZO13N/aEcZse3QCgjLWQ
-87w8t393lCZZn1Dpv2MVfrg=
-=X471
------END PGP SIGNATURE-----
-
---QKdGvSO+nmPlgiQ/--
+__________________________________________________
+Do you Yahoo!?
+Yahoo! Mail Plus - Powerful. Affordable. Sign up now.
+http://mailplus.yahoo.com
 
 
 -------------------------------------------------------

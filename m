@@ -1,62 +1,33 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: Frame buffer Reading fails!!
-Date: 04 Jan 2003 19:06:37 +0800
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1041678353.957.8.camel@localhost.localdomain>
-References: <00df01c2b33f$a1354690$bd00000a@abhilash>
+From: Jurriaan <thunder7@xs4all.nl>
+Subject: Re: [PATCH][FBDEV]: fb_putcs() and fb_setfont() methods
+Date: Sat, 4 Jan 2003 15:00:58 +0100
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <20030104140058.GA10918@middle.of.nowhere>
+References: <1041672313.958.17.camel@localhost.localdomain>
+Reply-To: thunder7@xs4all.nl
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from willow.compass.com.ph ([202.70.96.38])
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18UmKl-0002Ul-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 04 Jan 2003 03:19:20 -0800
-Received: from AP-202-70-105-31.compass.com.ph (AP-202-70-105-31.compass.com.ph [202.70.105.31])
-	by willow.compass.com.ph (8.9.3/8.9.3) with ESMTP id TAA46606
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 4 Jan 2003 19:19:15 +0800 (PHT)
-	(envelope-from adaplas@pol.net)
-In-Reply-To: <00df01c2b33f$a1354690$bd00000a@abhilash>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1041672313.958.17.camel@localhost.localdomain>
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel List <linux-kernel@vger.kernel.org>
 
-On Fri, 2003-01-03 at 23:48, Abhilash wrote:
-> Hello,
+From: Antonino Daplas <adaplas@pol.net>
+Date: Sat, Jan 04, 2003 at 05:25:14PM +0800
+> Attached is a patch against 2.5.54 in an attempt to add putcs() and
+> setfont() methods for fbdev drivers that require them:
 > 
-> As u suggested I tried following code in RedHat7.1.
-> But it shows
-> 
->  "The framebuffer device was opened successfully."
->  "Error reading fixed information."
-> 
-> What could be the problem?
-> I am new to this.
-> 
+And those drivers would be the matrox framebuffer drivers, for example?
 
-Try doing it again as root.  /dev/fbX is most probably owned by root (as
-it should be).
+That would be really great!
 
-If it still doesn't work, do a  
-
-cat /dev/urandom > /dev/fb0 
-
-to check if /dev/fb0 is valid.  BTW, what fb driver are you using?
-
-Tony
-
-
-
-
-
--------------------------------------------------------
-This sf.net email is sponsored by:ThinkGeek
-Welcome to geek heaven.
-http://thinkgeek.com/sf
+Thanks,
+Jurriaan
+-- 
+Me I'm just like you
+I don't have a clue
+	Shotgun Messiah - Nobody's Home
+GNU/Linux 2.5.53 SMP/ReiserFS 2x2752 bogomips 7 users load av: 2.24 1.99 1.56

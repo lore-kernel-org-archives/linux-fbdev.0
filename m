@@ -1,16 +1,18 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: RFC: Optimizing putcs()
-Date: Tue, 6 Aug 2002 22:08:45 +0200 (MEST)
+From: Louis Garcia <louisg00@bellsouth.net>
+Subject: Re: radeonfb and dvi support
+Date: 06 Aug 2002 17:12:33 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0208062204390.5852-100000@vervain.sonytel.be>
-References: <1028584418.556.29.camel@daplas>
+Message-ID: <1028668354.1102.3.camel@tiger>
+References: <1028602312.1221.5.camel@tiger> 
+	<20020806155013.16343@192.168.4.1>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+Received: from mail215.mail.bellsouth.net ([205.152.58.155] helo=imf15bis.bellsouth.net)
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17cAdo-0000xi-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 06 Aug 2002 13:09:17 -0700
-In-Reply-To: <1028584418.556.29.camel@daplas>
+	id 17cBYm-0000J1-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 06 Aug 2002 14:08:08 -0700
+In-Reply-To: <20020806155013.16343@192.168.4.1>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,56 +22,26 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On 6 Aug 2002, Antonino Daplas wrote:
-> With fbcon-accel and the new drawing functions in linux-2.5, console
-> performance degraded compared to the linux-2.4 implementation.  This is
-> because putcs() has to to do 1 fb_imageblit() per character to be
-> drawn.  
+My desktop has a radeon 7500 with a flat panel. How can I get a patch
+from your tree?
 
-Yes, this will be shown badly after I'll have ported amifb to the new
-framework, since chip RAM accesses are very slow and we use bitplanes...
+--Lou
 
-> This can be optimized by letting putcs() initially construct the row of
-> text to be drawn into an offscreen buffer, then do a single
-> fb_imageblit() in the end.  Performance wil increase for several
-> reasons:
-
-Yes, this is very nice! I was thinking about passing an array of images to an
-fb_imageblit_multiple() or so, but yours may be better.
-
-> For drivers that uses cfb_imageblit or similar, a code such as the one
-> below can be inserted during initialization:
+On Tue, 2002-08-06 at 11:50, Benjamin Herrenschmidt wrote:
+> >Is the radeonfb driver going to have support for the dvi port any time soon.
+> >I'm talking about the 2.4.x kernels.
 > 
-> info->pixmap.addr = (unsigned long) kmalloc(BUFFER_SIZE, GFP_KERNEL);
-> info->pixmap.size = BUFFER_SIZE;
-> info->pixmap.offset = 0;
-> info->pixmap.buf_align = 1;
-> info->pixmap.scan_align = 1;
+> If you are running single head (and not the LCD on DVI on the latest
+> laptops), the one in my tree should work (thanks to Paulus fixes)
 > 
-> Some benchmarks:
+> Ben.
 > 
-> time cat /usr/src/linux/MAINTAINERS (40K text file)
-> mode: 1024x768@8bpp, y-panning disabled.
+> 
 
-  [...]
-
-Just for reference, did you run this benchmark on 2.4.x as well?
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 
 

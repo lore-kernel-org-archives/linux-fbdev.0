@@ -1,17 +1,17 @@
-From: James Simmons <jsimmons@transvirtual.com>
+From: Ani Joshi <ajoshi@shell.unixbox.com>
 Subject: Re: Re: [PATCH] fbdev updates.
-Date: Fri, 5 Jul 2002 12:58:20 -0700 (PDT)
+Date: Fri, 5 Jul 2002 13:21:47 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0207051257410.30731-100000@www.transvirtual.com>
-References: <Pine.BSF.4.44.0207051253480.36957-100000@shell.unixbox.com>
+Message-ID: <Pine.BSF.4.44.0207051319290.273-100000@shell.unixbox.com>
+References: <Pine.LNX.4.44.0207051257410.30731-100000@www.transvirtual.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from www.transvirtual.com ([206.14.214.140])
+Received: from shell.unixbox.com ([207.211.45.65])
 	by usw-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17QZDl-0002oi-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 05 Jul 2002 12:58:25 -0700
-In-Reply-To: <Pine.BSF.4.44.0207051253480.36957-100000@shell.unixbox.com>
+	id 17QZMZ-0003oA-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 05 Jul 2002 13:07:31 -0700
+In-Reply-To: <Pine.LNX.4.44.0207051257410.30731-100000@www.transvirtual.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,19 +23,27 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Ani Joshi <ajoshi@shell.unixbox.com>
+To: James Simmons <jsimmons@transvirtual.com>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> > It is and has started to got into the mainline kernel. The thing was I was
-> > bending over backwards to not break peoples drivers.
->
-> I forgot to ask another question, the patch you post on your website dir
-> "fbdev.diff.gz", what exactly is that diffed against?  I tried patching
-> against 2.5.24 but it failed miserably.  Can you tell me the exact version
-> for which this was diffed against?
 
-Ug. It is against Linus latest BK tree.
+On Fri, 5 Jul 2002, James Simmons wrote:
+
+> Ug. It is against Linus latest BK tree.
+
+
+Ahh, I don't use BK and I don't wish to use programs which make you
+subsribe to silly mailing lists to use their software (but thats another
+issue).  Could you please make a diff against 2.5.24 (or whatever the
+current 2.5 release is) if possible?  Or is the cvs at sourceforget still
+current or did you change over to only BK now?
+
+
+A patch against a kernel.org tree would be quite helpful, thanks!
+
+
+ani
 
 
 

@@ -1,59 +1,60 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: 2.5.54: radeonfb almost works
-Date: Tue, 7 Jan 2003 21:34:13 +0000 (GMT)
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.44.0301072124250.17129-100000@phoenix.infradead.org>
-References: <3E14315E.F80B3DFF@aitel.hist.no>
+Subject: Re: [PATCH][FBDEV]: fb_putcs() and fb_setfont()
+ methods
+Date: Tue, 7 Jan 2003 21:43:06 +0000 (GMT)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.LNX.4.44.0301072139130.17129-100000@phoenix.infradead.org>
+References: <1041717978.1052.23.camel@localhost.localdomain>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <3E14315E.F80B3DFF@aitel.hist.no>
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18W1Vd-0002Dn-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 07 Jan 2003 13:43:41 -0800
+In-Reply-To: <1041717978.1052.23.camel@localhost.localdomain>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Helge Hafting <helgehaf@aitel.hist.no>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel List <linux-kernel@vger.kernel.org>
 
 
-> Just booting with video=radeon gives me a 640x400
-> mode.  There's some initial garbage (looks like early boot
-> messages converted to graphichs at the wrong resolution)
-> on the screen, but that isn't a problem.  The low resolution
-> is, though.
+> Personally, that's fine by me since I have no need for those 2
+> extensions.  But please apply the accel_putcs() buffer overrun patch.
 
-640x480 is normal. 
+Applied. 
 
+> BTW, attached is another patch that will change the resolution of the
+> console via tty ioctl TIOCSWINSZ.  I'm not sure if this is the correct
+> solution, but it's the only one I can think of without really adding a
+> lot of extra code.  This is implemented by adding a con_resize() hook to
+> fbcon, so the window size can be changed such as by using:
+>
+> stty cols 128 rows 48 (1024x768 with font 8x16)
+
+Yes this is the correct approach.
  
-> I first tried "fbset 1280x1024-60", which changed
-> the resolution, but the console was still a
-> small 640x400 thing in the upper left corner of
-> the 1280x1024 display.  Not very useful.
+> The new window size should also be preserved per console.  Still, there
+> are other fb parameters that can screw up the console (such as changing
+> yres_virtual and bits_per_pixel) but the window size is the most
+> important.
 
-Because fbset is only useful for setting /dev/fb. You want to use stty
-to set the resolution now. The advantage of this is we don't end up
-with a console mode of 80 3/4 columns by 30 1/4 rows. 
-Try
+Updatevar in fbcon.c should handle yres_virtual properly. The scrolling 
+code needs alot of work. It is a mess. Bits_per_pixel will be trickier to 
+handle. 
 
-stty cols 160 rows 64 
 
-assuming you are using 8x16 fonts.
- 
-> So I tried booting with video=radeon:1280x1024-32@60
-> That gave me a blank screen, the monitor complained
-> about "no signal".
-> 
-> But I logged in blind, and ran fbset 1280x1024-60
-> again.  This gave me the console I want.
-> 1280x1024 resolution, with 160x64 characters.
 
-Sounds like a monitor timings issue. fbset cheats by taking
-times from the /etc/fb.mods file. I'm working on patch 
-that was sent to me to deal with this.
-
-> Another problem comes up when running X.  Switching
-> from X to some virtual console always gives me the
-> "no signal" thing, and I have to type the fbset
-> command blind before the console becomes
-> visible.  Switching back to X is never a problem.
-
-Same problem again. It is a monitor timings issue. 
-We are working on this.
+-------------------------------------------------------
+This SF.NET email is sponsored by:
+SourceForge Enterprise Edition + IBM + LinuxWorld = Something 2 See!
+http://www.vasoftware.com

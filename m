@@ -1,18 +1,18 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+From: Russell King <rmk@arm.linux.org.uk>
 Subject: Re: [PATCH] interlaced packed pixels
-Date: 04 Apr 2003 14:07:31 +0100
+Date: Fri, 4 Apr 2003 16:39:31 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1049461651.2138.70.camel@dhcp22.swansea.linux.org.uk>
-References: <Pine.GSO.4.21.0304041418000.1720-100000@vervain.sonytel.be>
+Message-ID: <20030404163931.E964@flint.arm.linux.org.uk>
+References: <Pine.GSO.4.21.0304041310440.1720-100000@vervain.sonytel.be>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from pc2-cwma1-4-cust86.swan.cable.ntl.com ([213.105.254.86] helo=lxorguk.ukuu.org.uk)
+Received: from caramon.arm.linux.org.uk ([212.18.232.186])
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 191RpS-0004iO-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 04 Apr 2003 06:06:02 -0800
-In-Reply-To: <Pine.GSO.4.21.0304041418000.1720-100000@vervain.sonytel.be>
+	id 191TII-0003LI-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 04 Apr 2003 07:39:54 -0800
+Content-Disposition: inline
+In-Reply-To: <Pine.GSO.4.21.0304041310440.1720-100000@vervain.sonytel.be>; from geert@linux-m68k.org on Fri, Apr 04, 2003 at 01:17:15PM +0200
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,24 +23,34 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-On Gwe, 2003-04-04 at 13:22, Geert Uytterhoeven wrote:
-> Op vrijdag 4 April 2003, schreef Alan Cox:
-> > On Gwe, 2003-04-04 at 12:17, Geert Uytterhoeven wrote:
->      ^^^                                          ^^^^^
-> The Welsh setup isn't 100% finished yet ;-)
+On Fri, Apr 04, 2003 at 01:17:15PM +0200, Geert Uytterhoeven wrote:
+> I'd like to introduce a new frame buffer type to accommodate packed pixel frame
+> buffers that store the even and odd fields separately. This is typically used
+> in graphics hardware for TV output (e.g. set-top boxes).
 
-Translations in progess still. Tackling evolution is a big job
-that the translators haven't started yet
+While we're on the subject of framebuffers, one area which needs to be
+looked into is the pixel layout for all of:
 
-> What's the exact format description for MJPEG? YUV 4:*:*?
-> Shouldn't that be a FB_VISUAL_MJPEG?
+- little endian byte, little endian pixel
+	1bpp: word 0 bit 31..0 = pixel 31..0)
+	16bpp: word 0 bit 31..0 = pixel1 bits 15..0 pixel0 bits 15..0) 
+- little endian byte, big endian pixel
+	1bpp: word 0 bit 31..0 = pixel 24..31, 16..23, 8..15, 0..7)
+	16bpp: word 0 bit 31..0 = pixel1 bits 15..0 pixel0 bits 15..0) 
+- big endian byte, big endian pixel
+	1bpp: word 0 bit 31..0 = pixel 0..31)
+	16bpp: word 0 bit 31..0 = pixel0 bits 15..0 pixel1 bits 15..0) 
 
-The frame buffer holds a jpeg frame. At the moment text mode
-is problematic but doable (you encode each dct square the
-same size for each charater and write in a carefully sized font 8))
+We currently do not support all these combinations, and so far I haven't
+looked into it.  It is on my (great long) to do list.
+
+-- 
+Russell King (rmk@arm.linux.org.uk)                The developer of ARM Linux
+             http://www.arm.linux.org.uk/personal/aboutme.html
 
 
 

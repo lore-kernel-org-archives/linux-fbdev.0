@@ -1,61 +1,60 @@
-From: Dermot Bradley <dermot.bradley@openwave.com>
-Subject: Re: Framebuffer Port guide for 2.4->2.6?
-Date: Mon, 08 Nov 2004 13:33:02 +0000
-Message-ID: <418F758E.3090403@openwave.com>
-References: <41892D53.1060007@cablespeed.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: [Linux-fbdev-devel] Re: [PATCH] fbdev: Fix IO access in rivafb
+Date: Tue, 9 Nov 2004 04:02:19 +0800
+Message-ID: <200411090402.22696.adaplas@hotpop.com>
+References: <200411080521.iA85LbG6025914@hera.kernel.org> <200411081706.55261.adaplas@hotpop.com> <Pine.LNX.4.58.0411080719460.24286@ppc970.osdl.org>
+Reply-To: adaplas@pol.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CR9e2-0007q0-N7
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 08 Nov 2004 05:33:18 -0800
-Received: from oe-im1pub.managedmail.com ([206.46.164.52] helo=oe-im1.bizmailsrvcs.net)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CR9e0-0007PL-Uq
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 08 Nov 2004 05:33:18 -0800
-Received: from mm-ismta3.bizmailsrvcs.net ([192.168.133.28])
-          by oe-im1.bizmailsrvcs.net
-          (InterMail vM.5.01.06.05 201-253-122-130-105-20030824) with ESMTP
-          id <20041108133310.QJCX10275.oe-im1.bizmailsrvcs.net@mm-ismta3.bizmailsrvcs.net>
-          for <linux-fbdev-devel@lists.sourceforge.net>;
-          Mon, 8 Nov 2004 07:33:10 -0600
-Received: from [10.20.5.111] ([193.129.95.129])
-          by mm-ismta3.bizmailsrvcs.net
-          (InterMail vM.5.01.06.05 201-253-122-130-105-20030824) with ESMTP
-          id <20041108133310.MEWV29412.mm-ismta3.bizmailsrvcs.net@[10.20.5.111]>
-          for <linux-fbdev-devel@lists.sourceforge.net>;
-          Mon, 8 Nov 2004 07:33:10 -0600
-In-Reply-To: <41892D53.1060007@cablespeed.com>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261211AbUKHUDM@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.58.0411080719460.24286@ppc970.osdl.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
 
-Kelly Price wrote:
-> Is there a port guide for framebuffer drivers going from 2.4 to 2.6? I'm 
-> trying to port the CT65548 Frambuffer driver over to 2.6.
-> 
-> http://members.elysium.pl/ytm/html/linux.html is where the 2.4 version 
-> is at.
+On Monday 08 November 2004 23:21, Linus Torvalds wrote:
+> On Mon, 8 Nov 2004, Antonino A. Daplas wrote:
+> > How about this patch?  This is almost the original macro in riva_hw.h,
+> > with the __force annotation.
+>
+> Why not just use __raw_readl/__raw_writel?
+>
 
-This would interest me as I've got a Fuji PT510 with this chip in it.
+Ok.
 
-I'd wondered about trying to port this driver to 2.6 myself but (a) I 
-haven't found the time so far and (b) I'm not really a programmer :-)
+Tony
 
+In big endian machines, the read*/write* accessors do a byteswap for an
+inherently little endian PCI bus.  However, rivafb puts the hardwire in big
+endian register access, thus the byteswap is not needed. So, instead of
+read*/write*, use __raw_read*/__raw_write*.
+ 
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
+---
 
--------------------------------------------------------
-This SF.Net email is sponsored by:
-Sybase ASE Linux Express Edition - download now for FREE
-LinuxWorld Reader's Choice Award Winner for best database on Linux.
-http://ads.osdn.com/?ad_id=5588&alloc_id=12065&op=click
+diff -Nru a/drivers/video/riva/riva_hw.h b/drivers/video/riva/riva_hw.h
+--- a/drivers/video/riva/riva_hw.h	2004-11-09 03:45:55 +08:00
++++ b/drivers/video/riva/riva_hw.h	2004-11-09 03:50:32 +08:00
+@@ -77,14 +77,18 @@
+ #include <asm/io.h>
+ #define NV_WR08(p,i,d)	out_8(p+i, d)
+ #define NV_RD08(p,i)	in_8(p+i)
++#define NV_WR16(p,i,d)  (__raw_writew((d), (u16 __iomem *)(p) + (i)/2))
++#define NV_RD16(p,i)    (__raw_readw((u16 __iomem *)(p) + (i)/2))
++#define NV_WR32(p,i,d)  (__raw_writel((d), (u32 __iomem *)(p) + (i)/4))
++#define NV_RD32(p,i)    (__raw_readl((u32 __iomem *)(p) + (i)/4))
+ #else
+ #define NV_WR08(p,i,d)  (writeb((d), (u8 __iomem *)(p) + (i)))
+ #define NV_RD08(p,i)    (readb((u8 __iomem *)(p) + (i)))
+-#endif
+ #define NV_WR16(p,i,d)  (writew((d), (u16 __iomem *)(p) + (i)/2))
+ #define NV_RD16(p,i)    (readw((u16 __iomem *)(p) + (i)/2))
+ #define NV_WR32(p,i,d)  (writel((d), (u32 __iomem *)(p) + (i)/4))
+ #define NV_RD32(p,i)    (readl((u32 __iomem *)(p) + (i)/4))
++#endif
+ #define VGA_WR08(p,i,d) NV_WR08(p,i,d)
+ #define VGA_RD08(p,i)   NV_RD08(p,i)
+ 

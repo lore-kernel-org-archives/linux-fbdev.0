@@ -1,22 +1,23 @@
-From: Admar Schoonen <admar@luon.net>
-Subject: Re: sparc64, 2 x mach64 & 2.6.8-rc4: no working XFree86
-Date: Wed, 18 Aug 2004 21:27:29 +0200
+From: Otto Wyss <otto.wyss@orpatec.ch>
+Subject: Re: Framebuffer drivers in kernel 2.6.x
+Date: Wed, 18 Aug 2004 21:51:56 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040818192728.GP21828@azrael.luon.net>
-References: <20040814135408.GM21828@azrael.luon.net> <200409150521.47587.adaplas@hotpop.com>
+Message-ID: <4123B35C.64E07B02@orpatec.ch>
+References: <412238E7.C4A7ED2D@orpatec.ch> <20040818053646.GC16935@lug-owl.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BxW3n-0005yD-HE
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 18 Aug 2004 12:25:23 -0700
-Received: from rg06.tte.ele.tue.nl
-	([131.155.194.16] helo=azrael.luon.net ident=postfix)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1BxW3m-00087U-2m
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 18 Aug 2004 12:25:23 -0700
-Content-Disposition: inline
-In-Reply-To: <200409150521.47587.adaplas@hotpop.com>
+	id 1BxWTj-0002PD-Ai
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 18 Aug 2004 12:52:11 -0700
+Received: from mail.xor.ch ([212.55.210.163])
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.34)
+	id 1BxWTh-0005B1-Hd
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 18 Aug 2004 12:52:11 -0700
+Received: from orpatec.ch (217.162.130.125)
+          by mail.xor.ch with MERCUR Mailserver (v4.03.03 NjYtMjMxMS00NjIy)
+          for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 18 Aug 2004 21:56:49 +0200
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,32 +28,26 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net
+To: Jan-Benedict Glaw <jbglaw@lug-owl.de>
+Cc: 'linux-fbdev-devel' <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, Sep 15, 2004 at 05:21:45AM +0800, Antonino A. Daplas wrote:
-> > With 2.6.X (X <= 7), only the primary (onboard) card worked ; secondary
-> > was always black in console and in XFree86.
+Jan-Benedict Glaw wrote:
 > 
-> con2fb was broken before that version.
-I doubt that the problem is con2fbmap. con2fbmap works fine with 2.4.x
-and 2.6.8-rcX (I guess 2.6.8 will work fine too).
-
-> > Starting with 2.6.8-rc1, the console works on both cards again, however,
-> > XFree86 doesn't work anymore. It crashes with signal 11 even before it
-> > can display it's famous black & white dot pattern.
+> On Tue, 2004-08-17 18:57:10 +0200, Otto Wyss <otto.wyss@orpatec.ch>
 > 
-> I tried with 1 PCI and 1 AGP nVidia card, PCI is primary.  I use vesafb on the
-> primary, and I have no problems launching X on the secondary.  If I initialize
-> the secondary card's ROM-BIOS, I can also modprobe rivafb and launch X-fbdev on
-> both the primary and secondary.
+> The API changed, but it isn't too hard to port old-style drivers to the
+> new API. If this hasn't happened yet, it's just because nobody yet
+> really missed that particular driver. However, there are a lot of
+> drivers available...
 > 
-> I cannot use rivafb for both because of conflicts.
+I miss radeonfb :-( 
+Is anywhere a description of the API changes or what has to be done port
+a driver?
 
-I guess my problem is Ati (Mach64 only?) and/or sparc (sparc64 only?)
-related. I haven't tested X-fbdev.
+O. Wyss
 
-Admar
+-- 
+See a huge pile of work at "http://wyodesktop.sourceforge.net/"
 
 
 -------------------------------------------------------

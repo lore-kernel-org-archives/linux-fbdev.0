@@ -1,23 +1,23 @@
 From: "Kendall Bennett" <KendallB@scitechsoft.com>
-Subject: Re: Generic VESA framebuffer driver and Video card BOOT?
+Subject: Re: Re: Generic VESA framebuffer driver and Video card BOOT?
 Date: Mon, 18 Oct 2004 12:34:45 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <4173B865.26539.117B09BD@localhost>
-References: <200410160946.32644.adaplas@hotpop.com>
+Message-ID: <4173B865.23362.117B098E@localhost>
+References: <416E6ADC.3007.294DF20D@localhost>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7BIT
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CJdHX-00045Q-Qf
+	id 1CJdHX-00045P-OX
 	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 12:34:59 -0700
 Received: from mail.scitechsoft.com ([63.195.13.67])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.41)
-	id 1CJdHX-0008GP-7m
+	id 1CJdHX-0007vJ-7F
 	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 12:34:59 -0700
-In-reply-to: <9e47339104101519034137c795@mail.gmail.com>
+In-reply-to: <9e47339104101610447a393abc@mail.gmail.com>
 Content-description: Mail message body
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,43 +34,30 @@ Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
 Jon Smirl <jonsmirl@gmail.com> wrote:
 
-> > There's a log of initialization that goes on between console_init() and
-> > populate_rootfs().  However, console_init() will only initialize built-in
-> > consoles (as pointed to by conswitchp) such as vgacon or dummycon.
-> > However, the framebuffer system initialization does happen after
-> > populate_rootfs().
+> > What this means is that it should be possible to build a new version of
+> > the VESA framebuffer console driver for the Linux kernel that will have
+> > these important features:
+> > 
+> > 1. Be able to switch display modes on the fly, supporting all modes
+> > enumerated by the Video BIOS.
+> > 
+> > 2. Be able to support refresh rate control on graphics cards that support
+> > the VBE 3.0 services.
 > 
-> We already have vgacon, promcon, sticon, mgacon, newportcon. What
-> platforms (other than embedded) are not covered by these? 
+> How is this going to work if there are multiple graphics cards
+> installed? Each card will want to install it's own VBE extension
+> interrupt. 
 
-Many embedded platforms do not map VGA resources in, so it is not 
-possible to get VGACon to work on those machines unless the kernel/boot 
-loader is modified to properly map VGA resources (which should be 
-possible).
+Yep. The code I have ported to the Linux kernel right now does not 
+support multiple consoles because porting that code would be a lot more 
+work (I would prefer to keep it in userland if possible since it already 
+works there).
 
-Then there are Macintosh machines that also do not map VGA resources. I 
-am not sure if it is possible to map them on Macintosh machines or not.
-
-I would assume however a serial port console would be fine for embedded 
-machines until the framebuffer driver could come up anyway.
-
-> The idea is to use one of these as a temporary console and not
-> print anything on it except KERN_ERR level messages. Of course if
-> you are a kernel developer you can change this. A working system
-> would non have KERN_ERR messages during this phase and the screen
-> would remain blank. 
-> 
-> Messages at levels other than KERN_ERR would be queued until
-> populate_rootfs()/early user space time where they would then get
-> displayed on the fbcon. fbcon will be a full console with mode
-> setting capability and other fancy features. It would immediately
-> go into graphics mode. 
-
-As long as this process happens quickly and the machine boots into 
-graphics mode within 1-2 seconds from poweron, that would probably be OK. 
-If it starts taking too long for the system to get into graphics mode to 
-display something the user can easily think something is wrong and the 
-machine is not working.
+Anyway the way the system works for multiple controllers is that there is 
+a separate BIOS image and separate machine state maintained for each 
+graphics card. So you can run the VBE driver on the primary, secondary 
+and ternary drivers if you want. We do it all the time with SNAP just for 
+fun and giggles ;-)
 
 Regards,
 

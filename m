@@ -1,36 +1,30 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+From: Torgeir Veimo <torgeir@pobox.com>
 Subject: Re: [patch] radeonfb: FB_WAITFORVSYNC
 	implementation
-Date: Sat, 12 Mar 2005 12:10:22 -0500
-Message-ID: <1110647422.4004.456.camel@localhost>
+Date: Sat, 12 Mar 2005 17:12:36 +0000
+Message-ID: <1110647557.5997.98.camel@atlantis.netenviron.com>
 References: <1110636406.5997.86.camel@atlantis.netenviron.com>
-	 <20050312151318.GA27200@sci.fi>
+	 <20050312151318.GA27200@sci.fi>  <1110647422.4004.456.camel@localhost>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DAA8M-0007VY-G7
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 12 Mar 2005 09:10:38 -0800
-Received: from darkcity.gna.ch ([195.226.6.9])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DAA8K-0002Qj-Vi
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 12 Mar 2005 09:10:38 -0800
-Received: from localhost (localhost [127.0.0.1])
-	by darkcity.gna.ch (Postfix) with ESMTP id 408E418B5A8
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 12 Mar 2005 18:10:31 +0100 (CET)
-Received: from unknown by localhost (amavisd-new, unix socket)
- id client-XXdF5K55 for <linux-fbdev-devel@lists.sourceforge.net>;
- Sat, 12 Mar 2005 18:10:29 +0100 (CET)
-Received: from localhost (CPE001124084852-CM014500006147.cpe.net.cable.rogers.com [65.48.154.37])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	id 1DAAAR-0007a0-I8
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 12 Mar 2005 09:12:47 -0800
+Received: from orb.pobox.com ([207.8.226.5])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DAAAO-0007ft-3c
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 12 Mar 2005 09:12:47 -0800
+Received: from orb (localhost [127.0.0.1])
+	by orb.pobox.com (Postfix) with ESMTP id 6F5D970
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 12 Mar 2005 12:12:33 -0500 (EST)
+Received: from [192.168.1.18] (iampivot.plus.com [81.174.152.151])
+	(using SSLv3 with cipher RC4-MD5 (128/128 bits))
 	(No client certificate requested)
-	by darkcity.gna.ch (Postfix) with ESMTP id 1169B18B58C
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 12 Mar 2005 18:10:27 +0100 (CET)
-Received: from daenzer by localhost with local (Exim 4.50)
-	id 1DAA87-0003dG-ON
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 12 Mar 2005 12:10:23 -0500
-In-Reply-To: <20050312151318.GA27200@sci.fi>
+	by orb.sasl.smtp.pobox.com (Postfix) with ESMTP id 190EA8B
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 12 Mar 2005 12:12:32 -0500 (EST)
+In-Reply-To: <1110647422.4004.456.camel@localhost>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -41,26 +35,28 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset="iso-8859-1"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-On Sat, 2005-03-12 at 17:13 +0200, Ville Syrj=C3=A4l=C3=A4 wrote:
+On Sat, 2005-03-12 at 12:10 -0500, Michel D=E4nzer wrote:
+> On Sat, 2005-03-12 at 17:13 +0200, Ville Syrj=E4l=E4 wrote:
+> >=20
+> > Also adding support for FB_ACTIVATE_VBL should be quite simple now.
 >=20
-> Also adding support for FB_ACTIVATE_VBL should be quite simple now.
+> You don't need an interrupt for that. You can choose via the
+> CRTC_OFFSET_CNTL:CRTC_OFFSET_FLIP_CNTL bit whether the update of the
+> CRTC offset should take effect immediately or on the next vertical
+> blank.
+>=20
+> Personally, I'm not sure why something that needs this functionality
+> can't use the DRM...
 
-You don't need an interrupt for that. You can choose via the
-CRTC_OFFSET_CNTL:CRTC_OFFSET_FLIP_CNTL bit whether the update of the
-CRTC offset should take effect immediately or on the next vertical
-blank.
-
-Personally, I'm not sure why something that needs this functionality
-can't use the DRM...
-
+My interest for adding this is video playback. It's kind of hard to do
+through the DRM.
 
 --=20
-Earthling Michel D=C3=A4nzer      |     Debian (powerpc), X and DRI develop=
-er
-Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=3Ddaenzer
+Torgeir Veimo <torgeir@pobox.com>
+
 
 
 -------------------------------------------------------

@@ -1,18 +1,18 @@
 From: domen@coderock.org
-Subject: [patch 1/3] video/pxafb: reorder add_wait_queue() and set_current_state()
-Date: Mon, 10 Jan 2005 20:42:02 +0100
-Message-ID: <20050110194202.E59701F203@trashy.coderock.org>
+Subject: [patch 3/3] sis_main.c - vfree() checking cleanups
+Date: Mon, 10 Jan 2005 20:42:08 +0100
+Message-ID: <20050110194208.F03A91F20A@trashy.coderock.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Co5QY-0004hM-4q
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 10 Jan 2005 11:42:10 -0800
+	id 1Co5Qd-0004hi-Iv
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 10 Jan 2005 11:42:15 -0800
 Received: from coderock.org
 	([193.77.147.115] helo=trashy.coderock.org ident=postfix)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1Co5QW-0001KF-H7
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 10 Jan 2005 11:42:10 -0800
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1Co5Qc-0003fU-9K
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 10 Jan 2005 11:42:15 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,40 +27,34 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, domen@coderock.org, nacc@us.ibm.com
+Cc: linux-fbdev-devel@lists.sourceforge.net, domen@coderock.org, jlamanna@gmail.com
 
 
 
+sis_main.c vfree() checking cleanups.
 
-Any comments would be, as always, appreciated.
+Signed-off by: James Lamanna <jlamanna@gmail.com>
 
--Nish
 
-Description: Reorder set_current_state() and add_wait_queue(). There is
-a chance that a signal could be missed in between the two functions
-currently.
-
-Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
 Signed-off-by: Domen Puncer <domen@coderock.org>
 ---
 
 
- kj-domen/drivers/video/pxafb.c |    2 +-
+ kj-domen/drivers/video/sis/sis_main.c |    2 +-
  1 files changed, 1 insertion(+), 1 deletion(-)
 
-diff -puN drivers/video/pxafb.c~reorder-state-drivers_video_pxafb drivers/video/pxafb.c
---- kj/drivers/video/pxafb.c~reorder-state-drivers_video_pxafb	2005-01-10 18:00:25.000000000 +0100
-+++ kj-domen/drivers/video/pxafb.c	2005-01-10 18:00:25.000000000 +0100
-@@ -740,8 +740,8 @@ static void pxafb_disable_controller(str
+diff -puN drivers/video/sis/sis_main.c~vfree-drivers_video_sis_sis_main drivers/video/sis/sis_main.c
+--- kj/drivers/video/sis/sis_main.c~vfree-drivers_video_sis_sis_main	2005-01-10 18:01:05.000000000 +0100
++++ kj-domen/drivers/video/sis/sis_main.c	2005-01-10 18:01:05.000000000 +0100
+@@ -5674,7 +5674,7 @@ static void __devexit sisfb_remove(struc
+ 	/* Unmap */
+ 	iounmap(ivideo->video_vbase);
+ 	iounmap(ivideo->mmio_vbase);
+-	if(ivideo->bios_abase) vfree(ivideo->bios_abase);
++	vfree(ivideo->bios_abase);
  
- 	DPRINTK("Disabling LCD controller\n");
- 
--	add_wait_queue(&fbi->ctrlr_wait, &wait);
- 	set_current_state(TASK_UNINTERRUPTIBLE);
-+	add_wait_queue(&fbi->ctrlr_wait, &wait);
- 
- 	LCSR = 0xffffffff;	/* Clear LCD Status Register */
- 	LCCR0 &= ~LCCR0_LDM;	/* Enable LCD Disable Done Interrupt */
+ 	/* Release mem regions */
+ 	release_mem_region(ivideo->video_base, ivideo->video_size);
 _
 
 

@@ -1,58 +1,56 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: [Linux-fbdev-devel] [BK fbdev updates]
-Date: 03 Nov 2002 16:40:00 +0800
+From: Aivils Stoss <Aivils.Stoss@unibanka.lv>
+Subject: Re: [BK console] console updates.
+Date: Mon, 4 Nov 2002 11:40:39 +0200
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1036312836.615.15.camel@daplas>
-References: <Pine.LNX.4.33.0211011524270.11313-100000@maxwell.earthlink.net>
+Message-ID: <OF15F84381.6ACA34E4-ONC2256C67.003460FB@unibanka.lv>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.33.0211011524270.11313-100000@maxwell.earthlink.net>
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: James Simmons <jsimmons@infradead.org>, Christoph Hellwig <hch@infradead.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux console project <linuxconsole-dev@lists.sourceforge.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sat, 2002-11-02 at 07:29, James Simmons wrote:
-> 
-> > James,
-> >
-> > I tried the patch, and it does produce a cleaner and smaller driver.
-> > Overall, I like it. Some observations:
-> >
-> > 1. Without the fb_set_var() hook, switching from X messes up the
-> > console.  I would guess this will be addressed by the console?
-> 
-> fbcon_switch has to be rewritten. I'm going threw the process of cleaning
-> up the upper fbcon layer. Its such a mess. Yuck!!!
-> 
-> > 2. Console panning/wrapping does not work.  updatevar includes a check
-> > "if (con == info->currcon)", and my guess is info->currcon is obsoleted
-> > so the check always fails.
-> 
-> It worked before. Strange. Do you mean for you console panning doesn't
-> work on the visiable VC or a non visible VC?
-> 
+Fri, 1 Nov 2002 09:40:05 -0800 (PST) James Simons wrote:
+>> On Wed, Oct 30, 2002 at 01:56:38PM -0800, James Simmons wrote:
+>> > I doubt this code will go into 2.5.X but it is avaiable for anyone to
+play
+>> > with it.
+>>
+>> Why?  I don't want to live another release with the old, crappy console,
+>> and you've been working on this during almost all of 2.4 now..
+>
+>Give my console diff a try.
+>
+>http://phoenix.infradead.org/~jsimmons/console.diff.gz
+>
+>Its against 2.5.45. It has 3 bugs I know of.
+>
+>1) Switch back to X messes up the screen.
 
-Adding update_var to fbcon_switch fixes #1 and #2 for me.  Attached is a
-diff.
+Already fixed in the linuxconsole 2.4.X backport http://startx.times.lv/
 
-Also, using fbset to change video modes corrupts the console.  Looking
-at the code, the flow of control is from the console to fbdev only?  Is
-this correct?  I agree with this, it's saner.
+Aivils Stoss
 
-Tony
-
-diff -Naur linux/drivers/video/console/fbcon.c linux-2.5.45-fbdev/drivers/video/console/fbcon.c
---- linux/drivers/video/console/fbcon.c	Sun Nov  3 08:19:32 2002
-+++ linux-2.5.45-fbdev/drivers/video/console/fbcon.c	Sun Nov  3 08:18:56 2002
-@@ -1604,8 +1604,6 @@
-     scrollback_max = 0;
-     scrollback_current = 0;
- 
--    update_var(unit, info);
+--- linus-2.5/drivers/char/vt_ioctl.c    Mon Nov  4 11:33:57 2002
++++ linus-2.5/drivers/char/vt_ioctl.c.changed      Mon Nov  4 11:36:45 2002
+@@ -1089,17 +1089,17 @@ int vt_ioctl(struct tty_struct *tty, str
+                    if (!tmp) {
+                         tmp = vc_allocate(vc->vt_newvt);
+                         if (!tmp) {
+                              i = vc->vt_newvt;
+                              vc->vt_newvt = -1;
+                              return i;
+                         }
+                    }
 -
-     if (p->dispsw->clear_margins && vt_cons[unit]->vc_mode == KD_TEXT)
- 	p->dispsw->clear_margins(conp, p, 0);
-     if (logo_shown == -2) {
-   
++                   vc->vt_newvt = -1;
+                    /*
+                     * When we actually do the console switch,
+                     * make sure we are atomic with respect to
+                     * other console switches..
+                     */
+                    acquire_console_sem();
+                    complete_change_console(tmp,
+vc->display_fg->fg_console);
+                    release_console_sem();

@@ -1,41 +1,47 @@
-From: Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>
-Subject: Re: [Linux-fbdev-devel] Re: inappropriate use of in_atomic()
-Date: Fri, 11 Mar 2005 23:26:13 +1100
-Message-ID: <1110543974.5809.98.camel@gaston>
-References: <20050310204006.48286d17.akpm@osdl.org>
-	 <20050311091142.GB22415@fi.muni.cz> <20050311014601.166ae43d.akpm@osdl.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [announce 7/7] fbsplash - documentation
+Date: Fri, 11 Mar 2005 23:27:47 +1100
+Message-ID: <1110544067.5810.100.camel@gaston>
+References: <20050308021706.GH26249@spock.one.pl>
+	 <200503080418.08804.arnd@arndb.de> <20050308223728.GA11065@spock.one.pl>
+	 <200503090117.12755.arnd@arndb.de>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-In-Reply-To: <20050311014601.166ae43d.akpm-3NddpPZAyC0@public.gmane.org>
-Sender: acpi-devel-admin-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
-Errors-To: acpi-devel-admin-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/acpi-devel>,
-	<mailto:acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=unsubscribe>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1D9jFS-0001PG-Sd
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 11 Mar 2005 04:28:10 -0800
+Received: from gate.crashing.org ([63.228.1.57])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1D9jFR-0005y2-CY
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 11 Mar 2005 04:28:10 -0800
+In-Reply-To: <200503090117.12755.arnd@arndb.de>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
-List-Help: <mailto:acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/acpi-devel>,
-	<mailto:acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=acpi-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Linux Fbdev development list <linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
-Cc: Jan Kasprzak <kas-0hYGf3jDe+XrBKCeMvbIDA@public.gmane.org>, Paul Mackerras <paulus-eUNUBHrolfbYtjvyW6yDsg@public.gmane.org>, jt-yAE0UhLNZJawPNPzzlOzwdBPR1lH4CV8@public.gmane.org, javier-UOFnMJzu7Pp1eVVWpSVkNqxOck334EZe@public.gmane.org, acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux1394-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, roland-nF87da4h5whBDgjK7y7TUQ@public.gmane.org, Linux Kernel list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Michal Januszewski <spock@gentoo.org>, Linux Kernel list <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Fri, 2005-03-11 at 01:46 -0800, Andrew Morton wrote:
-> Jan Kasprzak <kas-0hYGf3jDe+XrBKCeMvbIDA@public.gmane.org> wrote:
-> >
-> > This may be the cause of 
-> > 
-> >  http://bugme.osdl.org/show_bug.cgi?id=4150
+
 > 
-> Looks that way, yes.
+> I don't understand. Does the kernel code need to wait for the helper
+> to finish while holding the semaphore? AFAICS, the helper is completely
+> asynchronous, so it can simply do its job when the kernel has given
+> up the semaphore.
 
-Note that it would be interesting to fix that (I mean the reliability of
-is_atomic() or an alternative). I agree it's quite bad to rely on that
-in practice, but there are a few corner cases where it's useful (like
-oops handling in fbdev's etc...)
+It should be totally async witout any sem. there is no guarantee that
+userspace is even available at the time you do the call.
 
-Ben.
 
 
 

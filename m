@@ -1,18 +1,16 @@
-From: Richard Zidlicky <rz@linux-m68k.org>
-Subject: Re: Oops in fbcon_setup
-Date: Sun, 1 Sep 2002 23:16:34 +0200
+From: "Linux  PPC" <linuxppc@rediffmail.com>
+Subject: bits_per_pixel query
+Date: 8 Sep 2002 16:39:36 -0000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20020901231634.A1604@linux-m68k.org>
-References: <20020831222000.A205@linux-m68k.org> <Pine.GSO.4.21.0209011123290.6530-100000@vervain.sonytel.be>
+Message-ID: <20020908163936.31266.qmail@webmail30.rediffmail.com>
+Reply-To: "Linux  PPC" <linuxppc@rediffmail.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from faui02.informatik.uni-erlangen.de ([131.188.30.102])
-	by usw-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17lcSS-0004rM-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 01 Sep 2002 14:40:36 -0700
+Received: from webmail30.rediffmail.com ([202.54.124.145])
+	by usw-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17o56u-0006A1-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 08 Sep 2002 09:40:33 -0700
 Content-Disposition: inline
-In-Reply-To: <Pine.GSO.4.21.0209011123290.6530-100000@vervain.sonytel.be>; from geert@linux-m68k.org on Sun, Sep 01, 2002 at 11:24:57AM +0200
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,27 +20,44 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain;
+	format=flowed; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Sun, Sep 01, 2002 at 11:24:57AM +0200, Geert Uytterhoeven wrote:
+Hello there,
 
-> 
-> Since fbcon_cfb16 is going to go away, what about using fbcon_accel and
-> cfb{copyarea,fillrect,imgblt}.c instead?
+I had some doubts regarding the framebuffer struct
+usage.
 
-it appears it oopsed because FBCON_HAS_ACCEL was not defined, the
-name of the config option is slightly misleading.
+As I understand, the buffer is at fb_info.screen_base
+and the size of the buffer is (hres * vres *
+bits_per_pixel )/8. The state of the pixel at
+location (x,y), would be represented by the value of
+byte at screen_base + ((y*hres + x) * bits_per_pixel)/8.
 
-Now the penguin is prefect, however text is unreadable and in some 
-strange blueish colour. Text background (empty lines etc) are filed 
-with some strange symbol.
+If the display is 8 bit, then it would require only
+a byte to represent the value of the pixel. If it were 24 bit, 
+then it would require 3 bytes, and so
+on. Is that right? What would happen, to the size required for the 
+buffer, if the display
+requires, say 12 bits per pixel, or 18 bits?
 
-Any ideas? This is still 2.5.31 if that matters.
+So, if I were to set all the bytes after screen_base
+uptil screen_base + (hres*vres*bits_per_pixel/8) to
+zeros, then I would get a black screen. Is that right?
 
-Richard
+I'm asking cos, I'm workin on a framebuffer support
+for an LCD panel, and am making the above assumption
+which doesn't seem happening.
+
+- navin.
+
+__________________________________________________________
+Give your Company an email address like
+ravi @ ravi-exports.com.  Sign up for Rediffmail Pro today!
+Know more. http://www.rediffmailpro.com/signup/
+
 
 
 -------------------------------------------------------

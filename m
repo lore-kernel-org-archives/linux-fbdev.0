@@ -1,51 +1,67 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] update valkyriefb driver
-Date: Sun, 25 May 2003 15:46:47 +0200 (MEST)
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.GSO.4.21.0305251539340.11403-100000@vervain.sonytel.be>
-References: <16079.23215.864277.374639@argo.ozlabs.ibm.com>
+From: Siim Vahtre <siim@pld.ttu.ee>
+Subject: 2.5.70-bk1 compilation error
+Date: Tue, 27 May 2003 19:55:42 +0300 (EET DST)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.GSO.4.53.0305271949510.10781@pitsa.pld.ttu.ee>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <16079.23215.864277.374639@argo.ozlabs.ibm.com>
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from wall.ttu.ee ([193.40.254.238])
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19Khjq-0006PT-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 27 May 2003 09:55:50 -0700
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Mackerras <paulus@samba.org>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Sat, 24 May 2003, Paul Mackerras wrote:
-> This patch updates the valkyriefb driver to the new API.  It compiles
-> OK, but I haven't been able to test it.  I have simplified the driver
-> quite a bit using the knowledge that there can only ever be one
-> valkyrie graphics adaptor in a system - it is the built-in graphics
-> adaptor on various ancient mac and powermac machines, and we access it
-> at a hard-coded address, so we can only handle one.
 
-Thanks! It compiles fine without any warnings on m68k!
-
-However, in addition you want to apply the patch below. macmodes.o is only
-there for m68k (but it shouldn't harm for PPC), while you do need the cfb*.o
-files on both platforms.
-
---- linux-2.5.69/drivers/video/Makefile	Tue Apr  8 10:05:26 2003
-+++ linux-m68k-2.5.69/drivers/video/Makefile	Sun May 25 15:40:39 2003
-@@ -26,7 +26,7 @@
- obj-$(CONFIG_FB_IGA)              += igafb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
- obj-$(CONFIG_FB_CONTROL)          += controlfb.o
- obj-$(CONFIG_FB_PLATINUM)         += platinumfb.o
--obj-$(CONFIG_FB_VALKYRIE)         += valkyriefb.o
-+obj-$(CONFIG_FB_VALKYRIE)         += valkyriefb.o macmodes.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
- obj-$(CONFIG_FB_CT65550)          += chipsfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
- obj-$(CONFIG_FB_ANAKIN)           += anakinfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
- obj-$(CONFIG_FB_CLPS711X)         += clps711xfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
-
-Gr{oetje,eeting}s,
-
-						Geert
+  CC [M]  drivers/video/i810/i810_main.o
+In file included from drivers/video/i810/i810_main.c:56:
+drivers/video/i810/i810.h:206: error: parse error before "agp_memory"
+drivers/video/i810/i810.h:206: warning: no semicolon at end of struct or
+union
+drivers/video/i810/i810.h:207: warning: type defaults to `int' in
+declaration of `i810_cursor_memory'
+drivers/video/i810/i810.h:207: warning: data definition has no type or
+storage class
+drivers/video/i810/i810.h:208: error: parse error before '}' token
+drivers/video/i810/i810.h:246: error: field `i810_gtt' has incomplete type
+drivers/video/i810/i810_main.c: In function `i810fb_getcolreg':
+drivers/video/i810/i810_main.c:1078: warning: comparison is always false
+due to
+limited range of data type
+drivers/video/i810/i810_main.c: In function `i810fb_release_resource':
+drivers/video/i810/i810_main.c:1887: error: dereferencing pointer to
+incomplete
+type
+drivers/video/i810/i810_main.c:1889: error: dereferencing pointer to
+incomplete
+type
+make[3]: *** [drivers/video/i810/i810_main.o] Error 1
+make[2]: *** [drivers/video/i810] Error 2
+make[1]: *** [drivers/video] Error 2
+make: *** [drivers] Error 2
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+siim@void:~$ gcc --version
+gcc (GCC) 3.3 (Debian)
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+CONFIG_DRM_I810=y
+CONFIG_FB_I810=m
+CONFIG_FB_I810_GTF=y
+
+
+
+-------------------------------------------------------
+This SF.net email is sponsored by: ObjectStore.
+If flattening out C++ or Java code to make your application fit in a
+relational database is painful, don't do it! Check out ObjectStore.
+Now part of Progress Software. http://www.objectstore.net/sourceforge

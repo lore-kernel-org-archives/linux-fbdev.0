@@ -1,47 +1,26 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [PATCH 7/7] fbdev: Add Tile Blitting support
-Date: Fri, 10 Sep 2004 08:47:55 +0800
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: fbdev broken in current bk for PPC
+Date: Fri, 10 Sep 2004 12:23:42 +1000
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <200409100847.56034.adaplas@hotpop.com>
-References: <200409100534.56680.adaplas@hotpop.com> <20040910001113.GA19132@vana.vc.cvut.cz>
-Reply-To: adaplas@pol.net
+Message-ID: <1094783022.2667.106.camel@gaston>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S265795AbUIJAqr@vger.kernel.org>
-In-Reply-To: <20040910001113.GA19132@vana.vc.cvut.cz>
-Content-Disposition: inline
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S266905AbUIJCZO@vger.kernel.org>
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Petr Vandrovec <vandrove@vc.cvut.cz>, adaplas@pol.net
-Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, linux-kernel@vger.kernel.org
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@osdl.org>
 
-On Friday 10 September 2004 08:11, Petr Vandrovec wrote:
-> On Fri, Sep 10, 2004 at 05:34:56AM +0800, Antonino A. Daplas wrote:
-> > In my case at least, the cleanup did produce an unexpected but beneficial
-> > side effect, a little more speedup.  Not much, < 5%.
-> >
-> > Petr, if you have comments, suggestions, or you think this is a bad idea,
-> > let me know.
->
-> It looks like good idea to me.  Though I still do not see benefits
-> 2.6.x fbcon provides over 2.4.x.
+Recent changes upstream are breaking fbdev on pmacs.
 
-Too late for that :-).  Personally, minus the stability and bugs, I
-prefer 2.6 over 2.4.
+I haven't had time to go deep into that (but I suspect Linus sees it
+too on his own g5 unless he removed offb from his .config).
 
->
-> BTW, there is still bad bug with software scrollback and multihead
-> (it is here since I remember): redraw_screen sets redraw to 0 when
-> old_console == new_console, but fbcon uses con_switch() method for
-> deciding whether software scrollback should be reinitialized or not.
-> As software scrollback is per-system and not per-fbdev thing, this
-> has rather nasty consequences - when both fbdevs have different xres,
-> console user can crash system (con2fb /dev/fb1 /dev/tty11; set xres
-> fb0 != xres fb1; chvt 11; chvt 10; chvt 11; hit alt-shift-pgup
-> or force vt11 to scroll; crash, some kernel data structures were
-> overwritten with 0x0720...).
+From what I see, it seems that offb is kicking in by default, reserves
+the mmio regions, and then whatever chip driver loads can't access them.
 
-I just tried it now, but can't elicit a crash (2.6.9-rc1-mm4 + my patches).
-I'll try to examine this in more detail this weekend.
+offb is supposed to be a "fallback" driver in case no fbdev is taking
+over, it should also be "forced" in with video=ofonly kernel command
+line. This logic has been broken.
 
-Tony
+Ben.

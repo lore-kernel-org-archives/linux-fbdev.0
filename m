@@ -1,21 +1,26 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Missing radeonfb_setup
-Date: Wed, 29 Oct 2003 10:19:22 +0100 (MET)
+From: Sven Luther <sven.luther@wanadoo.fr>
+Subject: tdfx & multiple voodoo cards : supposed to work ?
+Date: Wed, 29 Oct 2003 10:36:53 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0310291018490.10663-100000@waterleaf.sonytel.be>
-References: <20031028185559.384201ff.jvillavicencio@arnet.com.ar>
+Message-ID: <20031029093653.GA4626@iliana>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1AEmUD-00006I-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 29 Oct 2003 01:19:29 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.24)
-	id 1AEmUD-0007eE-BO
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 29 Oct 2003 01:19:29 -0800
-In-Reply-To: <20031028185559.384201ff.jvillavicencio@arnet.com.ar>
+	id 1AEmlG-0002Zi-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 29 Oct 2003 01:37:06 -0800
+Received: from smtp2.wanadoo.fr ([193.252.22.29] helo=mwinf0203.wanadoo.fr)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.24)
+	id 1AEmlF-0007Yy-Q8
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 29 Oct 2003 01:37:05 -0800
+Received: from iliana (AStrasbourg-206-1-12-73.w80-14.abo.wanadoo.fr [80.14.240.73])
+	by mwinf0203.wanadoo.fr (SMTP Server) with ESMTP id BD57F100012D
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 29 Oct 2003 10:36:59 +0100 (CET)
+Received: from luther by iliana with local (Exim 3.36 #1 (Debian))
+	id 1AEml8-0001EB-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 29 Oct 2003 10:36:58 +0100
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -25,30 +30,20 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Javier Villavicencio <jvillavicencio@arnet.com.ar>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 28 Oct 2003, Javier Villavicencio wrote:
-> Simple patch to the new radeon fb driver to make it set modes/resolutions,
-> and take the other parameters.
-> Extracted some code from the matroxfb driver. Added radeonfb_setup function.
+Hello,
 
-If you bother to change the initialization of radeonfb_default_var, please also
-convert it to C99 struct unitializers, so you don't need the comments.
+I have had a report of someone trying to use two voodoo cards on a
+pegasos/ppc motherboard, and it freezing the kernel (2.4.22 kernel)
 
-Gr{oetje,eeting}s,
+Is the tdfx fbdev supposed to be able to handle dual card setups, or not ?
 
-						Geert
+Friendly,
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Sven Luther
 
 
 -------------------------------------------------------

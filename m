@@ -1,12 +1,21 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [Linux-fbdev-users] radeon/2.6.5-rc1-mm1 sets strange frequencies
-Date: Wed, 17 Mar 2004 21:48:29 +0000 (GMT)
+Subject: Re: addition to mach64.diff
+Date: Wed, 17 Mar 2004 22:04:50 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0403172145380.19415-100000@phoenix.infradead.org>
-References: <20040317073840.GA15392@middle.of.nowhere>
+Message-ID: <Pine.LNX.4.44.0403172204170.19415-100000@phoenix.infradead.org>
+References: <200403132046.56579.alex.kern@gmx.de>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-In-Reply-To: <20040317073840.GA15392@middle.of.nowhere>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1B3j9h-0006zA-Nd
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Mar 2004 14:04:53 -0800
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1B3j9g-0007CH-Ms
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Mar 2004 14:04:52 -0800
+In-Reply-To: <200403132046.56579.alex.kern@gmx.de>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -18,47 +27,25 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jurriaan <thunder7@xs4all.nl>
-Cc: linux-fbdev-users@lists.sourceforge.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Alexander Kern <alex.kern@gmx.de>
+Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> After booting 2.6.5-rc1-mm1 with this command-line:
+I tested your patch. Works fine for me. I will included it in BK.
+
+On Sat, 13 Mar 2004, Alexander Kern wrote:
+
+> Hello James,
 > 
-> kernel /vmlinuz-265rc1mm1 root=/dev/hda3 video=radeonfb:1600x1200-32@75 acpi=force
+> here two additions from me,
 > 
-> I get a warning on my monitor:
+> first, one more define in include/video/mach64.h
 > 
-> fH 271.5 kHz
-> fV 217.2 Hz
-
-I haven't seen that before :-/ The kernel isn't generating that. I just 
-looked threw the code.
-
-> That is obviously not what I meant by 1600x1200-32@75.
+> second, improvements in code, tested with mach64 Mobility on my ARMADA.
 > 
-> fbset -V tells me:
+> P.S. Changes proposed by BenH are not here, wait_for_idle on the end of each 
+> accelerated function, causes a freeze by me ;-( 
 > 
-> Linux Frame Buffer Device Configuration Version 2.1 (23/06/1999)
-> (C) Copyright 1995-1999 by Geert Uytterhoeven
-> 
-> 
-> mode "1600x1200-75"
->     # D: 202.511 MHz, H: 93.755 kHz, V: 75.004 Hz
->     geometry 1600 1200 1600 1200 32
->     timings 4938 304 64 46 1 192 3
->     hsync high
->     vsync high
->     rgba 8/16,8/8,8/0,0/0
-> endmode
-
-This looks right.
-
-
-> Obviously, it's bad that I define what video-mode I want and radeonfb
-> starts changing that to bogus values. The monitor is an Eizo F931,
-> connected via a Rose Electronics Vista KVM.
-
-What is you want exactly?
 
 
 

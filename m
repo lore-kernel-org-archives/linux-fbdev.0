@@ -1,58 +1,44 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [Linux-fbdev-devel] Re: radeon, apertures & memory mapping
-Date: Sun, 13 Mar 2005 12:56:26 -0500
-Message-ID: <9e4733910503130956401e1107@mail.gmail.com>
-References: <1110677744.19810.80.camel@gaston> <20050313082216.GA7362@sci.fi>
-	 <1110705646.14684.126.camel@gaston> <20050313103936.GA11002@sci.fi>
-	 <1110715499.14684.132.camel@gaston>
-	 <9e473391050313081937cde207@mail.gmail.com>
-	 <20050313174714.GA15871@sci.fi>
-Reply-To: Jon Smirl <jonsmirl@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [Linux-fbdev-devel] [announce 0/7] fbsplash - The Framebuffer Splash
+Date: Sun, 13 Mar 2005 19:20:32 +0100
+Message-ID: <20050313182032.GA1427@elf.ucw.cz>
+References: <20050308015731.GA26249@spock.one.pl> <200503091301.15832.adaplas@hotpop.com> <9e473391050308220218cc26a3@mail.gmail.com> <Pine.LNX.4.62.0503091033400.22598@numbat.sonytel.be> <1110392212.3116.215.camel@localhost.localdomain> <Pine.LNX.4.56.0503092043380.7510@pentafluge.infradead.org> <1110408049.9942.275.camel@localhost.localdomain> <Pine.LNX.4.62.0503101009240.9227@numbat.sonytel.be> <20050310145419.GD632@openzaurus.ucw.cz> <Pine.LNX.4.56.0503111801550.10827@pentafluge.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20050313174714.GA15871@sci.fi>
-Sender: dri-devel-admin@lists.sourceforge.net
-Errors-To: dri-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:dri-devel@lists.sourceforge.net>
-List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=dri-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: linux-fbdev-devel@lists.sourceforge.net, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jon Smirl <jonsmirl@yahoo.com>, dri-devel@lists.sourceforge.net, xorg@lists.freedesktop.org
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.56.0503111801550.10827@pentafluge.infradead.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: James Simmons <jsimmons@www.infradead.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Geert Uytterhoeven <geert@linux-m68k.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, James Simmons <jsimmons@pentafluge.infradead.org>, Michal Januszewski <spock@gentoo.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>, "Antonino A. Daplas" <adaplas@hotpop.com>
 
-On Sun, 13 Mar 2005 19:47:14 +0200, Ville Syrj=E4l=E4 <syrjala@sci.fi> wrot=
-e:
-> I don't understand why we have "GART memory" anyway. It's just main memor=
-y
-> and I don't see any point going through the GART to access it with the
-> CPU. Only the graphics card needs to use the GART.
+Hi!
 
-I see no need to for the CPU to go through the GART either. The main
-CPU page tables can provide the same rearranging that the GART does.
+> > > > Thats why moving the eye candy console into user space is such a good
+> > > > idea. You don't have to run it 8) It also means that the console
+> > > > development is accessible to all the crazy rasterman types.
+> > > 
+> > > Yep. The basic console we already have. Everyone who wants eye candy can switch
+> > > from basic console to user space console in early userspace.
+> > > 
+> > 
+> > Heh, I'm afraid it does not work like that. Anyone who wants eye-candy
+> > simply applies broken patch to their kernel... unless their distribution applied one
+> > already.
+> > 
+> > Situation where we have one working eye-candy patch would certainly
+> > be an improvement.
+> 
+> Why do we need patches in the kernel. Just set you config to 
+> CONFIG_DUMMY_CONSOLE, CONFIG_FB, CONFIG_INPUT and don't set fbcon or 
+> vgacon. Then have a userspace app using /dev/fb and /dev/input create a 
+> userland console. There is no need to do special hacks in the kernel.
 
-We do need specially marked GART memory because of caching issues. If
-the CPU writes to GART RAM the write may still be on the CPU chip in a
-cache. We have to make sure it gets pushed into physical memory so
-that the GPU can see it.
-
-The best model would be to chuck the AGP/PCI Express interface on the
-board and have a hyperchannel instead. Hyperchannel provides full
-cache consistency without all of these flushing problems. The GPU
-really is another specialized CPU, give it a CPU class memory
-interface.
-
---=20
-Jon Smirl
-jonsmirl@gmail.com
-
-
--------------------------------------------------------
-SF email is sponsored by - The IT Product Guide
-Read honest & candid reviews on hundreds of IT Products from real users.
-Discover which products truly live up to the hype. Start reading now.
-http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
---
+Except that I'll not get usefull reports from Oopsen and panic's,
+right? Ideally I'd also like high-priority kernel messages to be
+displayed during boot.
+								Pavel
+-- 
+People were complaining that M$ turns users into beta-testers...
+...jr ghea gurz vagb qrirybcref, naq gurl frrz gb yvxr vg gung jnl!

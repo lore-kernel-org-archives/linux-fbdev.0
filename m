@@ -1,60 +1,58 @@
-From: James Simmons <jsimmons@www.infradead.org>
-Subject: Re: XGL/mesa-solo and fbdev
-Date: Tue, 22 Feb 2005 17:31:54 +0000 (GMT)
-Message-ID: <Pine.LNX.4.56.0502221723230.30102@pentafluge.infradead.org>
-References: <9e47339105022111483136bd56@mail.gmail.com> <1109056956.5412.107.camel@gaston>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Alex Deucher <alexdeucher@gmail.com>
+Subject: Re: [Linux-fbdev-devel] Resource management.
+Date: Tue, 22 Feb 2005 13:59:22 -0500
+Message-ID: <a728f9f90502221059686284a7@mail.gmail.com>
+References: <Pine.LNX.4.56.0502211908520.14500@pentafluge.infradead.org>
+	 <200502220653.01286.adaplas@hotpop.com>
+	 <Pine.LNX.4.56.0502212313160.18148@pentafluge.infradead.org>
+	 <9e473391050221170111610521@mail.gmail.com>
+	 <Pine.LNX.4.56.0502220319330.20949@pentafluge.infradead.org>
+	 <21d7e99705022120462cb9494c@mail.gmail.com>
+	 <9e47339105022121234d0f7f73@mail.gmail.com>
+	 <Pine.LNX.4.56.0502221719440.30102@pentafluge.infradead.org>
+Reply-To: Alex Deucher <alexdeucher@gmail.com>
 Mime-Version: 1.0
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D3dt8-0000EF-NV
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Feb 2005 09:31:58 -0800
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1D3dt8-0000Vq-0W
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Feb 2005 09:31:58 -0800
-In-Reply-To: <1109056956.5412.107.camel@gaston>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Jon Smirl <jonsmirl@gmail.com>
+In-Reply-To: <Pine.LNX.4.56.0502221719440.30102@pentafluge.infradead.org>
+Sender: dri-devel-admin@lists.sourceforge.net
+Errors-To: dri-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
+	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:dri-devel@lists.sourceforge.net>
+List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
+	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=dri-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@www.infradead.org>
+Cc: Jon Smirl <jonsmirl@gmail.com>, Dave Airlie <airlied@gmail.com>, James Simmons <jsimmons@pentafluge.infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, adaplas@pol.net, dri-devel@lists.sourceforge.net, xorg@lists.freedesktop.org, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-
-> Finishing that in the next month or so is extremely optimist :)
-
-Try 5 to 10 years with us working in our spare time. It toke the input api 
-years to go in. The new fbdev system I worked on is the same way. I 
-started that code in 1999. 6 years and it still is not finished !!!!!! 
-Writing code in your spare time for free just doesn't work.
-
-> The first step is putting fbdev's and DRM driver together. I think it's
-> worth doing a stub right now rather than hacking radeonfb and the radeon
-> DRM together, because all other PCI card drivers at least will have the
-> same issues, and for various reasons, you may wnat to only use "half" of
-> it (that is not use the fbdev side or not use the DRM side), at least
-> for a while. (radeonfb doesn't always work 100% on all x86's)
+On Tue, 22 Feb 2005 17:23:03 +0000 (GMT), James Simmons
+<jsimmons@www.infradead.org> wrote:
 > 
-> The second step is to add video memory management & arbitration.
+> > As far as I know none of the significant contributors on either fbdev
+> > or DRM are being paid to work on the project.
 > 
-> The third step is to add missing "features" like dual head etc.... and
-> the appropriate fbdev API changes to do it properly.
+> So I have noticed. There is much to do but no real man power. We are
+> talking about this merging but at our rate it will take 5 years to happen.
+> We don't have the man power to do this. So I'm not going to bother
+> merging. Its all pipe dreams here.
+> 
+> 
 
-Forget it. Lets just work around the problems we have now. Attempting to 
-solve these kinds of problems will take so many years it is not worth it.
-I personally realized it is not the worth the effort to do this. Just make 
-it work!!!
+with that attitude it's never gonna happen.  I work almost exclusively
+on X, but once we get at least one sample driver done (probably
+radeon, I would be more than happy to devote my limited development
+resources to the new drm/fb super driver.  Right now the kernel FB
+drivers have no benefit for me so I don't use/develop them.  The drm
+just works and I'm more interested in the crtc/modes/outputs handling
+than the command processor control stuff.  I think a lot of X
+developers (and porobably IHVs) will get on board when this happens. 
+X is undermanned as well, but we've managed to do a pretty good job of
+supported a lot of features on a fair number of cards.
 
+Alex
 
 
 -------------------------------------------------------
@@ -62,3 +60,4 @@ SF email is sponsored by - The IT Product Guide
 Read honest & candid reviews on hundreds of IT Products from real users.
 Discover which products truly live up to the hype. Start reading now.
 http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
+--

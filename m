@@ -1,18 +1,16 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: fb_pan_display
-Date: Fri, 1 Nov 2002 09:11:08 -0800 (PST)
+Subject: Re: request_mem_region problem ...
+Date: Fri, 1 Nov 2002 09:35:06 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.33.0211010908390.6296-100000@maxwell.earthlink.net>
+Message-ID: <Pine.LNX.4.33.0211010933210.6296-100000@maxwell.earthlink.net>
+References: <1036062270.638.25.camel@daplas>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from conure.mail.pas.earthlink.net ([207.217.120.54])
+Received: from avocet.mail.pas.earthlink.net ([207.217.120.50])
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 187eUV-0005RF-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 01 Nov 2002 08:17:47 -0800
-Received: from pool0547.cvx24-bradley.dialup.earthlink.net ([209.179.212.37])
-	by conure.mail.pas.earthlink.net with esmtp (Exim 3.33 #1)
-	id 187eUS-00049S-00
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 01 Nov 2002 08:17:45 -0800
+	id 187esG-0003e8-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 01 Nov 2002 08:42:20 -0800
+In-Reply-To: <1036062270.638.25.camel@daplas>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -24,51 +22,28 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Sven Luther <luther@dpt-info.u-strasbg.fr>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
 
-Hi!
+> If you did not define fb_set_var at all, then info->disp.dispsw must
+> point to valid console drawing hooks before you register the
+> framebuffer.  (Actually, all fields in struct display must be valid
+> before you register the framebuffer)
 
-  Looking at the last bits of the fbdev changes I have question. Currently
-I have in fbgen.c:
+The next set of change should help reduce these problems of missing
+pointers as we move to the new api.
 
-int fb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
-{
-        int xoffset = var->xoffset;
-        int yoffset = var->yoffset;
-        int err;
+> > So, does the cfb_xxx generic accel stuff get linked correctly when
+> > building as modules or am i missing something ?
+>
+> You're correct, the neofb line in the Makefile is for static building
+> only.  The cfb_xxx will not compile as modules, yet.  If your driver has
+> its own Makefile, just add cfb_xxx.o objects to directly link to them.
 
-        if (xoffset < 0 || yoffset < 0 ||
-            xoffset + info->var.xres > info->var.xres_virtual ||
-            yoffset + info->var.yres > info->var.yres_virtual)
-                return -EINVAL;
-        if (info->fbops->fb_pan_display) {
-                if ((err = info->fbops->fb_pan_display(var, info)))
-                        return err;
-                else
-                        return -EINVAL;
-        }
-        info->var.xoffset = var->xoffset;
-        info->var.yoffset = var->yoffset;
-        if (var->vmode & FB_VMODE_YWRAP)
-                info->var.vmode |= FB_VMODE_YWRAP;
-        else
-                info->var.vmode &= ~FB_VMODE_YWRAP;
-        return 0;
-}
+In the next set of changes the cfb* files should be able to be built as
+modules!!!!
 
-Now what I was wondering are these test standard enough that we coudl call
-this instead of info->fb_ops->fb_pan_display. Several drivers have this
-test so it would me more code reduction.
-
-MS: (n) 1. A debilitating and surprisingly widespread affliction that
-renders the sufferer barely able to perform the simplest task. 2. A disease.
-
-James Simmons  [jsimmons@users.sf.net] 	                ____/|
-fbdev/console/gfx developer                             \ o.O|
-http://www.linux-fbdev.org                               =(_)=
-http://linuxgfx.sourceforge.net                            U
-http://linuxconsole.sourceforge.net
 
 
 

@@ -1,96 +1,57 @@
-From: Petr Vandrovec <vandrove@vc.cvut.cz>
-Subject: 2.5.66 fbdev performance (was Re: Re: FBdev updates)
-Date: Fri, 28 Mar 2003 15:19:28 +0100
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030328141928.GB2051@vana.vc.cvut.cz>
-References: <Pine.LNX.4.44.0302200108090.20350-100000@phoenix.infradead.org> <20030220150201.GD13507@codemonkey.org.uk> <20030220182941.GK14445@vana.vc.cvut.cz> <1045787031.2051.9.camel@localhost.localdomain> <20030303203500.GA2916@vana.vc.cvut.cz>
+From: Antonino Daplas <adaplas@pol.net>
+Subject: Re: [Linux-fbdev-devel] 2.5.66 fbdev performance (was Re: Re:
+	FBdev updates)
+Date: 29 Mar 2003 02:50:08 +0800
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <1048877364.1000.17.camel@localhost.localdomain>
+References: <Pine.LNX.4.44.0302200108090.20350-100000@phoenix.infradead.org>
+	<20030220150201.GD13507@codemonkey.org.uk>
+	<20030220182941.GK14445@vana.vc.cvut.cz>
+	<1045787031.2051.9.camel@localhost.localdomain>
+	<20030303203500.GA2916@vana.vc.cvut.cz> 
+	<20030328141928.GB2051@vana.vc.cvut.cz>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from vana.vc.cvut.cz ([147.32.240.58] ident=root)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18yuhm-0007tC-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 28 Mar 2003 06:19:39 -0800
-Content-Disposition: inline
-In-Reply-To: <20030303203500.GA2916@vana.vc.cvut.cz>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <20030328141928.GB2051@vana.vc.cvut.cz>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: Petr Vandrovec <vandrove@vc.cvut.cz>
 Cc: James Simmons <jsimmons@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Hello,
-  I see a problem with new pixmap based code...
-There is 25% slowdown for 8x16 8bpp videomode 
-after upgrading from 2.5.63 to 2.5.66 :-(
+On Fri, 2003-03-28 at 22:19, Petr Vandrovec wrote:
+> 
+> Problem is in the new pixmap handling, especially
+> pixbuf.output - so now instead of memcpy we
+> call some function for copying each byte from
+> font to temporary buffer. As you can see,
+> "constant" portion of time, independent of
+> color depth, increased by 1sec for unaccelerated
+> and by 0.75sec for accelerated putcs.
+> It is 5% to 25% slowdown (5% for 32bpp unaccelerated,
+> 25% for 8bpp accelerated).
+> 
 
-Setup as usual, 1024x768, 100Hz, secondary
-head doing nothing (i.e. no fbtv...), CPU
-doing nothing except running this test.
-P4 1.6GHz, MGA G550. Shown value is system
-time in seconds needed to repaint screen 1000
-times (avg. from 3 tests) (you can treat it 
-as time in milliseconds needed to repaint 
-screen once).
+Actually, the slowdown is caused not just by the overhead of the
+read/write methods, but also due to the extra work padding and aligning
+the bitmaps according to requirements of the hardware.  This was because
+James wanted support for buffers located not just in system memory but
+also graphics/dma memory.
 
-Although speedup for 12x22 font is very nice,
-it looks to me that we paid too much for it.
+The result is that unaccelerated imageblit will slow down while properly
+written accelerated imageblit will experience some speed up (not much,
+probably around 5%).
 
-Problem is in the new pixmap handling, especially
-pixbuf.output - so now instead of memcpy we
-call some function for copying each byte from
-font to temporary buffer. As you can see,
-"constant" portion of time, independent of
-color depth, increased by 1sec for unaccelerated
-and by 0.75sec for accelerated putcs.
-It is 5% to 25% slowdown (5% for 32bpp unaccelerated,
-25% for 8bpp accelerated).
+We can:
 
-And while we are still faster than 2.4.x, we were
-even better...
-				Petr
+1. partially reverse the code so it behaves similarly to 2.5.63. 
+Support for writing to graphics/dma memory will go away.  
 
-NOACCEL, 8x16
-        2.4.19+fbtv  2.5.63+fbtv  2.5.63  2.5.66
-8bpp    10.02         6.96         5.62    6.62
-16bpp   20.05        13.25        10.62   11.63
-24bpp   30.03        19.05        15.13   16.07
-32bpp   45.00        25.74        20.54   21.62
+2. split the code path:  one will go to the '2.5.63' path, the other
+will go to the '2.5.66' path, depending on the setting of info->pixmap.
 
-ACCEL, 8x16
-        2.4.19+fbtv  2.5.63+fbtv  2.5.63  2.5.66
-8bpp     7.48         3.38         3.00    3.75
-16bpp    7.50         3.38         3.01    3.76
-24bpp    7.53         3.56         3.53    4.23
-32bpp    8.95         4.37         4.33    5.05
+3. keep the code as is
 
-NOACCEL, 12x22
-        2.4.19+fbtv  2.5.63+fbtv  2.5.63  2.5.66
-8bpp    11.54        13.35        10.93    8.96
-16bpp   20.00        22.02        18.03   13.61
-24bpp   30.03        35.83        29.53   18.07
-32bpp   40.12        44.48        36.75   23.22
+Personally, I prefer #1, but it's up to James/Geert.
 
-ACCEL, 12x22
-        2.4.19+fbtv  2.5.63+fbtv  2.5.63  2.5.66
-8bpp     8.57        14.87        12.90    5.72
-16bpp    8.57        14.93        12.92    5.72
-24bpp    8.56        15.13        13.10    6.20
-32bpp    8.56        15.52        13.76    6.98
-
-
-
-
--------------------------------------------------------
-This SF.net email is sponsored by:
-The Definitive IT and Networking Event. Be There!
-NetWorld+Interop Las Vegas 2003 -- Register today!
-http://ads.sourceforge.net/cgi-bin/redirect.pl?keyn0001en
+Tony

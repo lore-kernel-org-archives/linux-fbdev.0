@@ -1,22 +1,22 @@
 From: David Eger <eger-sender-da68b9@theboonies.us>
-Subject: [PATCH 2/3] fb accel capabilities (james' fbcon init cleanup)
-Date: Thu, 13 May 2004 01:49:03 +0200 (CEST)
+Subject: [PATCH 3/3] fb accel capabilities (the main patch)
+Date: Thu, 13 May 2004 01:50:03 +0200 (CEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.58.0405130148110.2282@rosencrantz.theboonies.us>
+Message-ID: <Pine.LNX.4.58.0405130149210.2282@rosencrantz.theboonies.us>
 References: <Pine.LNX.4.58.0405130131460.2282@rosencrantz.theboonies.us>
 	<Pine.LNX.4.58.0405130146300.2282@rosencrantz.theboonies.us>
-Reply-To: David Eger <eger-dated-1085010260.2f2af1@theboonies.us>
+Reply-To: David Eger <eger-dated-1085010321.5fd942@theboonies.us>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BO3Og-0002U0-CD
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 May 2004 16:44:22 -0700
+	id 1BO3Pf-0002jE-DP
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 May 2004 16:45:23 -0700
 Received: from not.theboonies.us ([66.139.79.224])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1BO3Of-0000A6-TJ
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 May 2004 16:44:22 -0700
+	id 1BO3Pe-0003cw-W8
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 May 2004 16:45:23 -0700
 In-Reply-To: <Pine.LNX.4.58.0405130146300.2282@rosencrantz.theboonies.us>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,178 +32,181 @@ Content-Transfer-Encoding: 7bit
 To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, jsimmons@infradead.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
+
 # This is a BitKeeper generated diff -Nru style patch.
 #
 # ChangeSet
-#   2004/05/12 14:43:14+02:00 eger@rosencrantz.theboonies.us 
-#   fbcon init sequence cleanup (James Simmon / May 2004)
+#   2004/05/13 00:13:46+02:00 eger@rosencrantz.theboonies.us 
+#   Tell fbcon to read hints about hardware capabilities given by framebuffer devices
 # 
-# drivers/video/fbmem.c
-#   2004/05/12 14:42:59+02:00 eger@rosencrantz.theboonies.us +2 -2
-#   fbcon init cleanup
+# include/linux/fb.h
+#   2004/05/13 00:13:25+02:00 eger@rosencrantz.theboonies.us +7 -2
+#   fb_fix_screeninfo change - now we have accel hints to say which
+#   accel functions are actually hw supported.
 # 
 # drivers/video/console/fbcon.h
-#   2004/05/12 14:42:59+02:00 eger@rosencrantz.theboonies.us +1 -1
-#   fbcon init cleanup
+#   2004/05/13 00:13:25+02:00 eger@rosencrantz.theboonies.us +4 -5
+#   rework console accel hints to be sane
 # 
 # drivers/video/console/fbcon.c
-#   2004/05/12 14:42:59+02:00 eger@rosencrantz.theboonies.us +22 -35
-#   fbcon init cleanup:
-#   factor out retrieving the vc_data from the fbcon_event_notify path
-#   remove fbcon_event_notifier_registered cruft
+#   2004/05/13 00:13:24+02:00 eger@rosencrantz.theboonies.us +18 -13
+#   fix broken divides() logic
+#   rework fbcon to work from accel hints given by fb's
 # 
+# drivers/video/aty/radeon_base.c
+#   2004/05/13 00:13:24+02:00 eger@rosencrantz.theboonies.us +1 -9
+#   update radeonfb for new acceleration hint semantics
+# 
+diff -Nru a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
+--- a/drivers/video/aty/radeon_base.c	Thu May 13 00:18:35 2004
++++ b/drivers/video/aty/radeon_base.c	Thu May 13 00:18:35 2004
+@@ -1798,17 +1798,9 @@
+         info->fix.type_aux = 0;
+         info->fix.mmio_start = rinfo->mmio_base_phys;
+         info->fix.mmio_len = RADEON_REGSIZE;
+-	if (radeon_accel_disabled())
+-	        info->fix.accel = FB_ACCEL_NONE;
+-	else
+-		info->fix.accel = FB_ACCEL_ATI_RADEON;
++	info->fix.hwaccel = FB_HWACCEL_COPYAREA | FB_HWACCEL_FILLRECT;
+ 
+ 	fb_alloc_cmap(&info->cmap, 256, 0);
+-
+-	if (radeon_accel_disabled())
+-		info->var.accel_flags &= ~FB_ACCELF_TEXT;
+-	else
+-		info->var.accel_flags |= FB_ACCELF_TEXT;
+ 
+         return 0;
+ }
 diff -Nru a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
---- a/drivers/video/console/fbcon.c	Wed May 12 15:51:14 2004
-+++ b/drivers/video/console/fbcon.c	Wed May 12 15:51:14 2004
-@@ -296,15 +296,17 @@
-  *	Maps a virtual console @unit to a frame buffer device
-  *	@newidx.
-  */
--int set_con2fb_map(int unit, int newidx)
-+int set_con2fb_map(int start, int end, int newidx)
+--- a/drivers/video/console/fbcon.c	Thu May 13 00:18:35 2004
++++ b/drivers/video/console/fbcon.c	Thu May 13 00:18:35 2004
+@@ -140,7 +140,7 @@
+ 
+ static int vbl_cursor_cnt;
+ 
+-#define divides(a, b)	((!(a) || (b)%(a)) ? 0 : 1)
++#define divides(a, b)	((a && (b)%(a)) ? 0 : 1)
+ 
+ /*
+  *  Interface used by the world
+@@ -607,8 +607,10 @@
+ 	/* on which frame buffer will we open this console? */
+ 	info = registered_fb[(int) con2fb_map[unit]];
+ 	
+-	if (info->var.accel_flags)
+-		fb_display[unit].scrollmode = SCROLL_YNOMOVE;
++	if (info->fix.hwaccel & FB_HWACCEL_COPYAREA)
++		fb_display[unit].scrollmode = SCROLL_YACCEL;
++	else if (info->var.accel_flags)
++		fb_display[unit].scrollmode = SCROLL_YPANWRAP;
+ 	else
+ 		fb_display[unit].scrollmode = SCROLL_YREDRAW;
+ 	fbcon_set_display(vc, init, !init);
+@@ -624,20 +626,23 @@
+ static __inline__ void updatescrollmode(struct display *p, struct vc_data *vc)
  {
--	struct vc_data *vc = vc_cons[unit].d;
-+	struct vc_data *vc = vc_cons[start].d;
-+	int i;
- 
- 	if (!vc)
- 		return -ENODEV;
--	con2fb_map[unit] = newidx;
-+	for (i = start; i < end; i++)
-+		con2fb_map[i] = newidx;
- 	fbcon_is_default = (vc->vc_sw == &fb_con) ? 1 : 0;
--	take_over_console(&fb_con, unit, unit, fbcon_is_default);
-+	take_over_console(&fb_con, start, end, fbcon_is_default);
- 	return 0;
- }
- 
-@@ -2235,33 +2237,21 @@
- 	return 0;
- }
- 
--static void fbcon_suspended(struct fb_info *info)
-+static void fbcon_suspended(struct fb_info *info, struct vc_data *vc)
- {
- 	/* Clear cursor, restore saved data */
--	info->cursor.enable = 0;
--	info->fbops->fb_cursor(info, &info->cursor);
-+	fbcon_cursor(vc, CM_ERASE);
- }
- 
--static void fbcon_resumed(struct fb_info *info)
-+static void fbcon_resumed(struct fb_info *info, struct vc_data *vc)
- {
--	struct vc_data *vc;
+ 	struct fb_info *info = registered_fb[(int) con2fb_map[vc->vc_num]];
 -
--	if (info->currcon < 0)
+ 	int m;
+-	if (p->scrollmode & __SCROLL_YFIXED)
 -		return;
--	vc = vc_cons[info->currcon].d;
--
- 	update_screen(vc->vc_num);
- }
- 
--static void fbcon_mode_changed(struct fb_info *info)
-+static void fbcon_mode_changed(struct fb_info *info, struct vc_data *vc)
- {
--	struct vc_data *vc;
- 	int rows, cols;
- 
--	if (info->currcon < 0)
--		return;
--	vc = vc_cons[info->currcon].d;
--
- 	/* This isn't perfect yet. If we change one console, we
- 	 * don't change them all and we switch back to the wrong
- 	 * mode on next console switch. We need to either keep a
-@@ -2291,16 +2281,21 @@
- 			      unsigned long action, void *data)
- {
- 	struct fb_info *info = (struct fb_info *) data;
-+	struct vc_data *vc;
 +
-+	if (info->currcon < 0)
-+		return 0;
-+	vc = vc_cons[info->currcon].d;
++	switch (p->scrollmode & __SCROLL_YMASK) {
++		case __SCROLL_YACCEL:
++		case __SCROLL_YREDRAW:
++			return;
++	}
++
++	/* assume we should do wrap/pan if we can */
+ 	if (divides(info->fix.ywrapstep, vc->vc_font.height) &&
+-	    divides(vc->vc_font.height, info->var.yres_virtual))
++		divides(vc->vc_font.height, info->var.yres_virtual))
+ 		m = __SCROLL_YWRAP;
+ 	else if (divides(info->fix.ypanstep, vc->vc_font.height) &&
+ 		 info->var.yres_virtual >= info->var.yres + vc->vc_font.height)
+ 		m = __SCROLL_YPAN;
+-	else if (p->scrollmode & __SCROLL_YNOMOVE)
++	else 
+ 		m = __SCROLL_YREDRAW;
+-	else
+-		m = __SCROLL_YMOVE;
+ 	p->scrollmode = (p->scrollmode & ~__SCROLL_YMASK) | m;
+ }
  
- 	switch(action) {
- 	case FB_EVENT_MODE_CHANGE:
--		fbcon_mode_changed(info);
-+		fbcon_mode_changed(info, vc);
- 		break;
- 	case FB_EVENT_SUSPEND:
--		fbcon_suspended(info);
-+		fbcon_suspended(info, vc);
- 		break;
- 	case FB_EVENT_RESUME:
--		fbcon_resumed(info);
-+		fbcon_resumed(info, vc);
- 		break;
- 	}
- 	return 0;
-@@ -2336,20 +2331,15 @@
- 	.notifier_call	= fbcon_event_notify,
+@@ -1364,7 +1369,7 @@
+ 		if (logo_shown >= 0)
+ 			goto redraw_up;
+ 		switch (p->scrollmode & __SCROLL_YMASK) {
+-		case __SCROLL_YMOVE:
++		case __SCROLL_YACCEL:
+ 			accel_bmove(vc, info, t + count, 0, t, 0,
+ 					 b - t - count, vc->vc_cols);
+ 			accel_clear(vc, info, b - count, 0, count,
+@@ -1431,7 +1436,7 @@
+ 		if (count > vc->vc_rows)	/* Maximum realistic size */
+ 			count = vc->vc_rows;
+ 		switch (p->scrollmode & __SCROLL_YMASK) {
+-		case __SCROLL_YMOVE:
++		case __SCROLL_YACCEL:
+ 			accel_bmove(vc, info, t, 0, t + count, 0,
+ 					 b - t - count, vc->vc_cols);
+ 			accel_clear(vc, info, t, 0, count, vc->vc_cols);
+iff -Nru a/drivers/video/console/fbcon.h b/drivers/video/console/fbcon.h
+--- a/drivers/video/console/fbcon.h	Thu May 13 00:18:35 2004
++++ b/drivers/video/console/fbcon.h	Thu May 13 00:18:35 2004
+@@ -71,11 +71,9 @@
+ /* Internal flags */
+ #define __SCROLL_YPAN		0x001
+ #define __SCROLL_YWRAP		0x002
+-#define __SCROLL_YMOVE		0x003
++#define __SCROLL_YACCEL		0x003
+ #define __SCROLL_YREDRAW	0x004
+ #define __SCROLL_YMASK		0x00f
+-#define __SCROLL_YFIXED		0x010
+-#define __SCROLL_YNOMOVE	0x020
+ #define __SCROLL_YPANREDRAW	0x040
+ #define __SCROLL_YNOPARTIAL	0x080
+ 
+@@ -92,8 +90,9 @@
+    with every line covering all screen columns, it would not be the right
+    benchmark).
+  */
+-#define SCROLL_YREDRAW		(__SCROLL_YFIXED|__SCROLL_YREDRAW)
+-#define SCROLL_YNOMOVE		(__SCROLL_YNOMOVE|__SCROLL_YPANREDRAW)
++#define SCROLL_YACCEL      (__SCROLL_YACCEL)
++#define SCROLL_YPANWRAP		(__SCROLL_YPANREDRAW)
++#define SCROLL_YREDRAW		(__SCROLL_YREDRAW)
+ 
+ /* SCROLL_YNOPARTIAL, used in combination with the above, is for video
+    cards which can not handle using panning to scroll a portion of the
+diff -Nru a/include/linux/fb.h b/include/linux/fb.h
+--- a/include/linux/fb.h	Thu May 13 00:18:35 2004
++++ b/include/linux/fb.h	Thu May 13 00:18:35 2004
+@@ -109,6 +109,9 @@
+ #define FB_ACCEL_NEOMAGIC_NM2360 97	/* NeoMagic NM2360              */
+ #define FB_ACCEL_NEOMAGIC_NM2380 98	/* NeoMagic NM2380              */
+ 
++#define FB_HWACCEL_COPYAREA	0x0001
++#define FB_HWACCEL_FILLRECT	0x0002
++#define FB_HWACCEL_ROTATE	0x0004
+ 
+ struct fb_fix_screeninfo {
+ 	char id[16];			/* identification string eg "TT Builtin" */
+@@ -125,8 +128,10 @@
+ 	unsigned long mmio_start;	/* Start of Memory Mapped I/O   */
+ 					/* (physical address) */
+ 	__u32 mmio_len;			/* Length of Memory Mapped I/O  */
+-	__u32 accel;			/* Type of acceleration available */
+-	__u16 reserved[3];		/* Reserved for future compatibility */
++	__u32 accel;			/* Indicate to driver which 	*/
++					/*  specific chip/card we have	*/
++	__u16 hwaccel;			/* Which accel ops are hw-supported? */
++	__u16 reserved[2];		/* Reserved for future compatibility */
  };
  
--static int fbcon_event_notifier_registered;
--
- int __init fb_console_init(void)
- {
-+	acquire_console_sem();
-+	fb_register_client(&fbcon_event_notifer);
-+	release_console_sem();
-+
- 	if (!num_registered_fb)
- 		return -ENODEV;
--
- 	take_over_console(&fb_con, first_fb_vc, last_fb_vc, fbcon_is_default);
--	acquire_console_sem();
--	if (!fbcon_event_notifier_registered) {
--		fb_register_client(&fbcon_event_notifer);
--		fbcon_event_notifier_registered = 1;
--	} 
--	release_console_sem();
- 	return 0;
- }
- 
-@@ -2358,10 +2348,7 @@
- void __exit fb_console_exit(void)
- {
- 	acquire_console_sem();
--	if (fbcon_event_notifier_registered) {
--		fb_unregister_client(&fbcon_event_notifer);
--		fbcon_event_notifier_registered = 0;
--	}
-+	fb_unregister_client(&fbcon_event_notifer);
- 	release_console_sem();
- 	give_up_console(&fb_con);
- }	
-diff -Nru a/drivers/video/console/fbcon.h b/drivers/video/console/fbcon.h
---- a/drivers/video/console/fbcon.h	Wed May 12 15:51:14 2004
-+++ b/drivers/video/console/fbcon.h	Wed May 12 15:51:14 2004
-@@ -38,7 +38,7 @@
- 
- /* drivers/video/console/fbcon.c */
- extern char con2fb_map[MAX_NR_CONSOLES];
--extern int set_con2fb_map(int unit, int newidx);
-+extern int set_con2fb_map(int start, int end, int newidx);
- 
-     /*
-      *  Attribute Decoding
-diff -Nru a/drivers/video/fbmem.c b/drivers/video/fbmem.c
---- a/drivers/video/fbmem.c	Wed May 12 15:51:14 2004
-+++ b/drivers/video/fbmem.c	Wed May 12 15:51:14 2004
-@@ -1108,9 +1108,9 @@
- 		if (!registered_fb[con2fb.framebuffer])
- 		    return -EINVAL;
- 		if (con2fb.console != 0)
--			set_con2fb_map(con2fb.console-1, con2fb.framebuffer);
-+			set_con2fb_map(con2fb.console-1, con2fb.console-1, con2fb.framebuffer);
- 		else
--			fb_console_init();		
-+			set_con2fb_map(0, MAX_NR_CONSOLES, con2fb.framebuffer);
- 		return 0;
- #endif	/* CONFIG_FRAMEBUFFER_CONSOLE */
- 	case FBIOBLANK:
+ /* Interpretation of offset for color fields: All offsets are from the right,
 
 
 -------------------------------------------------------

@@ -1,17 +1,17 @@
-From: Aleksandr Koltsoff <czr@iohazard.tts.fi>
-Subject: Re: Re: Programming advanced hardware in 69030
-Date: Wed, 9 Jul 2003 14:16:21 +0300
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: fbdev and power management
+Date: 09 Jul 2003 13:35:58 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030709111621.GA25834@iohazard.tts.fi>
-References: <20030704093418.GA21481@iohazard.tts.fi> <Pine.LNX.4.44.0307090026380.32323-100000@phoenix.infradead.org>
+Message-ID: <1057750557.514.22.camel@gaston>
+References: <Pine.LNX.4.44.0307090024170.32323-100000@phoenix.infradead.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from iohazard.tts.fi ([194.100.228.154])
+Received: from griffon.mipsys.com ([217.167.51.129] helo=gaston)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19aCx6-0002v9-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 09 Jul 2003 04:17:36 -0700
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0307090026380.32323-100000@phoenix.infradead.org>
+	id 19aDFV-0004bx-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 09 Jul 2003 04:36:37 -0700
+In-Reply-To: <Pine.LNX.4.44.0307090024170.32323-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,22 +22,34 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: James Simmons <jsimmons@infradead.org>
-Cc: Nitin@soc-soft.com, linux-fbdev-devel@lists.sourceforge.net
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, Jul 09, 2003 at 12:27:20AM +0100, James Simmons wrote:
-> > Get the programming documentation from asiliant website (it's all free and
-> > released).
-> I recented a framebuffer for the asiliant chipset some time ago. It is 
-> very similiar to the chips and technology chipsets isn't ?
 
-CT was bought off by intel in 1999 or 2000 and then the CT-specific
-stuff was sold off to old CT employees which founded asiliant. so in
-all respects asiliant = 65k + 69k stuff (not the older CT stuff
-though).
+> No patches at this time. I need to learn the new power management code. 
+> Where are the docs for them ? 
 
-ak.
+The PM code in radeonfb is probably only useful for Mac laptops where
+we have to manually put the chip in D2 state. I don't think x86 laptops
+use D2...
+
+Note that I have a patch adding some basic PM support to fbdev in 2.5
+that I need to send you for review. The PM is always initiated by the
+low level driver which gets notified of PM events by its parent bus,
+what I added is a way for the driver to "broadcast" that to clients
+like fbcon so fbcon can stop touching the framebuffer while the chip
+is potentially off, and can restore the display on wakeup.
+
+I'll send that to you asap. 
+
+Note: The Power Management isn't well implemented in 2.5 yet. The
+infrastructure is mostly there, but the driver side semantics are
+still wrong. Patrick Mochel has a new implementation that is much
+better, but he didn't merge it upstream yet. I expect this will
+happen around Kernel Summit / OLS.
+
+Ben.
+
 
 
 -------------------------------------------------------

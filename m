@@ -1,347 +1,214 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: [PATCH][FBDEV]: fb_putcs() and fb_setfont() methods
-Date: 04 Jan 2003 17:25:14 +0800
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1041672313.958.17.camel@localhost.localdomain>
+From: "Abhilash" <abhilash@avenir.net>
+Subject: Frame buffer Reading fails!!
+Date: Fri, 3 Jan 2003 21:18:51 +0530
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <00df01c2b33f$a1354690$bd00000a@abhilash>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Linux Kernel List <linux-kernel@vger.kernel.org>
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_00DC_01C2B36D.B6843500"
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18UlC3-0001AL-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 04 Jan 2003 02:06:16 -0800
+Received: from vervain.sonytel.be (mail.sonytel.be [10.17.0.27])
+	by mail.sonytel.be (8.9.0/8.8.6) with ESMTP id LAA07513
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 4 Jan 2003 11:05:36 +0100 (MET)
+ReSent-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+ReSent-Message-ID: <Pine.GSO.4.21.0301041105330.10242@vervain.sonytel.be>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+To: inux-fbdev-devel@lists.sourceforge.net, Geert Uytterhoeven <geert@linux-m68k.org>
 
-Attached is a patch against 2.5.54 in an attempt to add putcs() and
-setfont() methods for fbdev drivers that require them:
 
-...
-struct fb_char {
-	__u32 dx;               /* where to place chars, in pixels */
-	__u32 dy;               /* where to place chars, in scanline */
-	__u32 len;              /* number of characters */
-	__u32 fg_color;
-	__u32 bg_color;        
-	__u32 *data;            /* array of indices to fontdata */
-};
 
-struct fb_fontdata {
-	__u32 width;            /* font width */
-	__u32 height;           /* font height */
-	__u32 len;              /* number of characters */
-	__u8  *data;            /* character map */
-};
+This is a multi-part message in MIME format.
 
-...
+------=_NextPart_000_00DC_01C2B36D.B6843500
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-    /* upload character map */
-    int (*fb_setfont)(struct fb_info *info, const struct fb_fontdata
-*font);
-    /* write characters */
-    int (*fb_putcs)(struct fb_info *info, const struct fb_char *chars);
+Hello,
 
-fb_setfont() uploads the character map to fbdev and makes it the current
-map
+As u suggested I tried following code in RedHat7.1.
+But it shows
 
-fb_putcs() writes characters to display 
+ "The framebuffer device was opened successfully."
+ "Error reading fixed information."
 
-I also did some rudimentary testing by adding test hooks to various
-fbdev drivers but haven't examined its full effects (ie, different
-character maps per console).
+What could be the problem?
+I am new to this.
 
-Tony
+Thank you,
+Abhilash.
 
-diff -Naur linux-2.5.54/drivers/video/console/fbcon.c linux/drivers/video/console/fbcon.c
---- linux-2.5.54/drivers/video/console/fbcon.c	2003-01-04 09:01:10.000000000 +0000
-+++ linux/drivers/video/console/fbcon.c	2003-01-04 09:00:04.000000000 +0000
-@@ -378,61 +378,97 @@
- 	info->fbops->fb_fillrect(info, &region);
- }	
- 
-+#define FB_PIXMAPSIZE 8192
- void accel_putcs(struct vc_data *vc, struct display *p,
- 			const unsigned short *s, int count, int yy, int xx)
- {
-+	static u8 pixmap[FB_PIXMAPSIZE];
- 	struct fb_info *info = p->fb_info;
- 	unsigned short charmask = p->charmask;
- 	unsigned int width = ((vc->vc_font.width + 7)/8);
--	unsigned int cellsize = vc->vc_font.height * width;
--	struct fb_image image;
-+	unsigned int cnt, i, j, k;
-+	unsigned int maxcnt;
- 	u16 c = scr_readw(s);
--	static u8 pixmap[8192];
-+
-+	if (info->fbops->fb_putcs) {
-+		struct fb_char chars;
-+
-+		maxcnt = FB_PIXMAPSIZE/4;
-+		chars.dx = xx * vc->vc_font.width;
-+		chars.dy = yy * vc->vc_font.height;
-+		chars.fg_color = attr_fgcol(p, c);
-+		chars.bg_color = attr_bgcol(p, c);
-+		chars.data = (u32 *) pixmap;
-+
-+		while (count) {
-+			if (count > maxcnt)
-+				cnt = maxcnt;
-+			else
-+				cnt = count;
-+			chars.len = cnt;
-+			for (i = 0; i < cnt; i++) 
-+				((u32 *)pixmap)[i] = (u32) (scr_readw(s++) & 
-+							    charmask);
-+
-+			info->fbops->fb_putcs(info, &chars);
-+			chars.dx += cnt * vc->vc_font.width;
-+			count -= cnt;
-+		}
-+	}
-+	else {
-+		unsigned int cellsize = vc->vc_font.height * width;
-+		struct fb_image image;
- 	
--	image.fg_color = attr_fgcol(p, c);
--	image.bg_color = attr_bgcol(p, c);
--	image.dx = xx * vc->vc_font.width;
--	image.dy = yy * vc->vc_font.height;
--	image.height = vc->vc_font.height;
--	image.depth = 1;
--
--/*	pixmap = kmalloc((info->var.bits_per_pixel + 7) >> 3 *
--				vc->vc_font.height, GFP_KERNEL); 
--*/
-+		image.fg_color = attr_fgcol(p, c);
-+		image.bg_color = attr_bgcol(p, c);
-+		image.dx = xx * vc->vc_font.width;
-+		image.dy = yy * vc->vc_font.height;
-+		image.height = vc->vc_font.height;
-+		image.depth = 1;
-+		
-+		if (!(vc->vc_font.width & 7)) {
-+			unsigned int pitch;
-+			char *src, *dst, *dst0;
-+			
-+			maxcnt = FB_PIXMAPSIZE/(vc->vc_font.height * width);
-+			image.data = pixmap;
-+			while (count) {
-+				if (count > maxcnt) 
-+					cnt = k = maxcnt;
-+				else
-+					cnt = k = count;
- 				
--	if (!(vc->vc_font.width & 7) && pixmap != NULL) {
--		unsigned int pitch = width * count, i, j;
--		char *src, *dst, *dst0;
--
--		dst0 = pixmap;
--		image.width = vc->vc_font.width * count;
--		image.data = pixmap;
--		while (count--) {
--			src = p->fontdata + (scr_readw(s++) & charmask) * cellsize;
--			dst = dst0;
--			for (i = image.height; i--; ) {
--				for (j = 0; j < width; j++) 
--					dst[j] = *src++;
--				dst += pitch;
-+				dst0 = pixmap;
-+				pitch = width * cnt;
-+				image.width = vc->vc_font.width * cnt;
-+				while (k--) {
-+					src = p->fontdata + 
-+					  (scr_readw(s++)&charmask) *
-+					  cellsize;
-+					dst = dst0;
-+					for (i = image.height; i--; ) {
-+						for (j = 0; j < width; j++) 
-+							dst[j] = *src++;
-+						dst += pitch;
-+					}
-+					dst0 += width;
-+				}
-+				
-+				info->fbops->fb_imageblit(info, &image);
-+				image.dx += cnt * vc->vc_font.width;
-+				count -= cnt;
- 			}
--			dst0 += width;
-+		} else {
-+			image.width = vc->vc_font.width;
-+			while (count--) {
-+				image.data = p->fontdata + 
-+					(scr_readw(s++) & charmask) * 
-+					vc->vc_font.height * width;
-+				info->fbops->fb_imageblit(info, &image);
-+				image.dx += vc->vc_font.width;
-+			}	
- 		}
--		info->fbops->fb_imageblit(info, &image);
--		if (info->fbops->fb_sync)
--			info->fbops->fb_sync(info);
--	} else {
--		image.width = vc->vc_font.width;
--		while (count--) {
--			image.data = p->fontdata + 
--				(scr_readw(s++) & charmask) * vc->vc_font.height * width;
--			info->fbops->fb_imageblit(info, &image);
--			image.dx += vc->vc_font.width;
--		}	
- 	}
--	/*
--	if (pixmap);
--		kfree(pixmap);
--	*/	
- }
- 
- void accel_clear_margins(struct vc_data *vc, struct display *p,
-@@ -1144,8 +1180,6 @@
- 	struct display *p = &fb_display[vc->vc_num];
- 	struct fb_info *info = p->fb_info;
- 	unsigned short charmask = p->charmask;
--	unsigned int width = ((vc->vc_font.width + 7) >> 3);
--	struct fb_image image;
- 	int redraw_cursor = 0;
- 
- 	if (!p->can_soft_blank && console_blanked)
-@@ -1158,18 +1192,35 @@
- 		cursor_undrawn();
- 		redraw_cursor = 1;
- 	}
-+	
-+	if (info->fbops->fb_putcs) {
-+		struct fb_char chars;
-+		u32 font = c & charmask;
-+
-+		chars.dx = xpos * vc->vc_font.width;
-+		chars.dy = real_y(p, ypos) * vc->vc_font.height;
-+		chars.len = 1;
-+		chars.fg_color = attr_fgcol(p, c);
-+		chars.bg_color = attr_bgcol(p, c);
-+		chars.data = &font;
- 
--	image.fg_color = attr_fgcol(p, c);
--	image.bg_color = attr_bgcol(p, c);
--	image.dx = xpos * vc->vc_font.width;
--	image.dy = real_y(p, ypos) * vc->vc_font.height;
--	image.width = vc->vc_font.width;
--	image.height = vc->vc_font.height;
--	image.depth = 1;
--	image.data = p->fontdata + (c & charmask) * vc->vc_font.height * width;
--
--	info->fbops->fb_imageblit(info, &image);
--
-+		info->fbops->fb_putcs(info, &chars);
-+	}
-+	else {
-+		struct fb_image image;
-+		unsigned int width = ((vc->vc_font.width + 7) >> 3);
-+	
-+		image.fg_color = attr_fgcol(p, c);
-+		image.bg_color = attr_bgcol(p, c);
-+		image.dx = xpos * vc->vc_font.width;
-+		image.dy = real_y(p, ypos) * vc->vc_font.height;
-+		image.width = vc->vc_font.width;
-+		image.height = vc->vc_font.height;
-+		image.depth = 1;
-+		image.data = p->fontdata + (c & charmask) * vc->vc_font.height * width;
-+		
-+		info->fbops->fb_imageblit(info, &image);
-+	}
- 	if (redraw_cursor)
- 		vbl_cursor_cnt = CURSOR_DRAW_DELAY;
- }
-@@ -1271,16 +1322,9 @@
- 
- int update_var(int con, struct fb_info *info)
- {
--	int err;
-+	if (con == info->currcon) 
-+		return fb_pan_display(&info->var, info);
- 
--	if (con == info->currcon) {
--		if (info->fbops->fb_pan_display) {
--			if ((err =
--			     info->fbops->fb_pan_display(&info->var,
--							 info)))
--				return err;
--		}
--	}
- 	return 0;
- }
- 
-@@ -1918,6 +1962,18 @@
- 	scrollback_max = 0;
- 	scrollback_current = 0;
- 
-+	if (info->fbops->fb_setfont) {
-+		struct fb_fontdata font;
-+
-+		font.width = vc->vc_font.width;
-+		font.height = vc->vc_font.height;
-+		font.len = FNTCHARCNT(p->fontdata);
-+		font.data = p->fontdata;
-+
-+		if (info->fbops->fb_setfont(info, &font))
-+			return 0;
-+	}
-+
- 	info->currcon = unit;
- 	
- 	update_var(unit, info);
-@@ -2133,6 +2189,18 @@
- 
- 	}
- 
-+	if (info->fbops->fb_setfont) {
-+		struct fb_fontdata font;
-+
-+		font.width = vc->vc_font.width;
-+		font.height = vc->vc_font.height;
-+		font.len = cnt;
-+		font.data = p->fontdata;
-+
-+		if (info->fbops->fb_setfont(info, &font))
-+			return 1;
-+	}
-+
- 	if (resize) {
- 		/* reset wrap/pan */
- 		info->var.xoffset = info->var.yoffset = p->yscroll = 0;
-diff -Naur linux-2.5.54/include/linux/fb.h linux/include/linux/fb.h
---- linux-2.5.54/include/linux/fb.h	2003-01-04 09:01:31.000000000 +0000
-+++ linux/include/linux/fb.h	2003-01-04 09:00:35.000000000 +0000
-@@ -295,6 +295,23 @@
- 	struct fb_cmap cmap;	/* color map info */
- };
- 
-+struct fb_char {
-+	__u32 dx;               /* where to place chars, in pixels */
-+	__u32 dy;               /* where to place chars, in scanline */
-+	__u32 len;              /* number of characters */
-+	__u32 fg_color;
-+	__u32 bg_color;        
-+	__u32 *data;            /* array of indices to fontdata */
-+};
-+
-+struct fb_fontdata {
-+	__u32 width;            /* font width */
-+	__u32 height;           /* font height */
-+	__u32 len;              /* number of characters */
-+	__u8  *data;            /* character map */
-+};
-+
-+
- /*
-  * hardware cursor control
-  */
-@@ -375,6 +392,10 @@
- 		    unsigned long arg, struct fb_info *info);
-     /* perform fb specific mmap */
-     int (*fb_mmap)(struct fb_info *info, struct file *file, struct vm_area_struct *vma);
-+    /* upload character map */
-+    int (*fb_setfont)(struct fb_info *info, const struct fb_fontdata *font);
-+    /* write characters */
-+    int (*fb_putcs)(struct fb_info *info, const struct fb_char *chars);
- };
- 
- struct fb_info {
+
+#include <unistd.h>
+#include <stdio.h>
+#include <fcntl.h>
+#include <linux/fb.h>
+#include <sys/mman.h>
+
+int main()
+{
+    int fbfd =3D 0;
+    struct fb_var_screeninfo vinfo;
+    struct fb_fix_screeninfo finfo;
+    long int screensize =3D 0;
+    char *fbp =3D 0;
+    int x =3D 0, y =3D 0;
+    long int location =3D 0;
+
+    // Open the file for reading and writing
+    fbfd =3D open("/dev/fb0", O_RDWR);
+    if (!fbfd) {
+        printf("Error: cannot open framebuffer device.\n");
+        exit(1);
+    }
+    printf("The framebuffer device was opened successfully.\n");
+
+    // Get fixed screen information
+    if (ioctl(fbfd, FBIOGET_FSCREENINFO, &finfo)) {
+        printf("Error reading fixed information.\n");
+        exit(2);
+    }
+}
+
+----- Original Message -----
+From: "Geert Uytterhoeven" <geert@linux-m68k.org>
+To: "Abhilash" <abhilash@avenir.net>
+Cc: "Linux Frame Buffer Device Development"
+<linux-fbdev-devel@lists.sourceforge.net>
+Sent: Friday, December 27, 2002 5:03 PM
+Subject: Re: [Linux-fbdev-devel] Screen Capturing
+
+
+> On Fri, 27 Dec 2002, Abhilash wrote:
+> > I need to capture the screen .For that I use mirror driver in
+Windows
+for
+> > capturing screen.
+> > ie, its basically overloading the driver functions.
+> >
+> > So in case of Linux, is there any method like this or which is the
+best
+> > method?
+> > In Xlib there are some functions to capture screen and also heard
+abt
+VESA
+> > which is better?
+>
+> If you are using a frame buffer device, you can capture the contents
+of
+> /dev/fb*. Either read from /dev/fb*, or mmap() it. The data you
+receive
+are in
+> the native format of the graphics chip. For CLUT modes, you have to
+use an
+> ioctl() to get the colormap.
+>
+> Gr{oetje,eeting}s,
+>
+> Geert
+
+
+
+
+------=_NextPart_000_00DC_01C2B36D.B6843500
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META content=3D"text/html; charset=3Diso-8859-1" =
+http-equiv=3DContent-Type>
+<META content=3D"MSHTML 5.00.3502.5390" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV><FONT face=3DArial size=3D2>
+<DIV><FONT face=3DArial size=3D2>Hello,<BR><BR>As u suggested I tried =
+following code=20
+in RedHat7.1.<BR>But it shows<BR><BR>&nbsp;"The framebuffer device was =
+opened=20
+successfully."<BR>&nbsp;"Error reading fixed information."<BR><BR>What =
+could be=20
+the problem?<BR>I am new to this.<BR><BR>Thank=20
+you,<BR>Abhilash.<BR><BR><BR>#include &lt;unistd.h&gt;<BR>#include=20
+&lt;stdio.h&gt;<BR>#include &lt;fcntl.h&gt;<BR>#include=20
+&lt;linux/fb.h&gt;<BR>#include &lt;sys/mman.h&gt;<BR><BR>int=20
+main()<BR>{<BR>&nbsp;&nbsp;&nbsp; int fbfd =3D 0;<BR>&nbsp;&nbsp;&nbsp; =
+struct=20
+fb_var_screeninfo vinfo;<BR>&nbsp;&nbsp;&nbsp; struct fb_fix_screeninfo=20
+finfo;<BR>&nbsp;&nbsp;&nbsp; long int screensize =3D =
+0;<BR>&nbsp;&nbsp;&nbsp; char=20
+*fbp =3D 0;<BR>&nbsp;&nbsp;&nbsp; int x =3D 0, y =3D =
+0;<BR>&nbsp;&nbsp;&nbsp; long int=20
+location =3D 0;<BR><BR>&nbsp;&nbsp;&nbsp; // Open the file for reading =
+and=20
+writing<BR>&nbsp;&nbsp;&nbsp; fbfd =3D open("/dev/fb0",=20
+O_RDWR);<BR>&nbsp;&nbsp;&nbsp; if (!fbfd)=20
+{<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printf("Error: cannot =
+open=20
+framebuffer device.\n");<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20
+exit(1);<BR>&nbsp;&nbsp;&nbsp; }<BR>&nbsp;&nbsp;&nbsp; printf("The =
+framebuffer=20
+device was opened successfully.\n");<BR><BR>&nbsp;&nbsp;&nbsp; // Get =
+fixed=20
+screen information<BR>&nbsp;&nbsp;&nbsp; if (ioctl(fbfd, =
+FBIOGET_FSCREENINFO,=20
+&amp;finfo)) {<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+printf("Error=20
+reading fixed =
+information.\n");<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20
+exit(2);<BR>&nbsp;&nbsp;&nbsp; }<BR>}<BR><BR>----- Original Message=20
+-----<BR>From: "Geert Uytterhoeven" &lt;<A=20
+href=3D"mailto:geert@linux-m68k.org">geert@linux-m68k.org</A>&gt;<BR>To: =
+
+"Abhilash" &lt;<A=20
+href=3D"mailto:abhilash@avenir.net">abhilash@avenir.net</A>&gt;<BR>Cc: =
+"Linux=20
+Frame Buffer Device Development"<BR>&lt;<A=20
+href=3D"mailto:linux-fbdev-devel@lists.sourceforge.net">linux-fbdev-devel=
+@lists.sourceforge.net</A>&gt;<BR>Sent:=20
+Friday, December 27, 2002 5:03 PM<BR>Subject: Re: [Linux-fbdev-devel] =
+Screen=20
+Capturing<BR><BR><BR>&gt; On Fri, 27 Dec 2002, Abhilash wrote:<BR>&gt; =
+&gt; I=20
+need to capture the screen .For that I use mirror driver=20
+in<BR>Windows<BR>for<BR>&gt; &gt; capturing screen.<BR>&gt; &gt; ie, its =
+
+basically overloading the driver functions.<BR>&gt; &gt;<BR>&gt; &gt; So =
+in case=20
+of Linux, is there any method like this or which is the<BR>best<BR>&gt; =
+&gt;=20
+method?<BR>&gt; &gt; In Xlib there are some functions to capture screen =
+and also=20
+heard<BR>abt<BR>VESA<BR>&gt; &gt; which is better?<BR>&gt;<BR>&gt; If =
+you are=20
+using a frame buffer device, you can capture the contents<BR>of<BR>&gt;=20
+/dev/fb*. Either read from /dev/fb*, or mmap() it. The data=20
+you<BR>receive<BR>are in<BR>&gt; the native format of the graphics chip. =
+For=20
+CLUT modes, you have to<BR>use an<BR>&gt; ioctl() to get the=20
+colormap.<BR>&gt;<BR>&gt; Gr{oetje,eeting}s,<BR>&gt;<BR>&gt;=20
+Geert<BR><BR><BR></FONT></DIV></FONT></DIV></BODY></HTML>
+
+------=_NextPart_000_00DC_01C2B36D.B6843500--
+
+
+
+
+-------------------------------------------------------
+This sf.net email is sponsored by:ThinkGeek
+Welcome to geek heaven.
+http://thinkgeek.com/sf

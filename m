@@ -1,23 +1,100 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [Linux-fbdev-devel] [FB PATCH]
-Date: Sat, 28 Dec 2002 18:19:39 +0000 (GMT)
+Subject: [fbdev updates]
+Date: Sat, 28 Dec 2002 15:30:41 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.44.0212281819070.5974-100000@phoenix.infradead.org>
-References: <20021227155451.A3942@twiddle.net>
+Message-ID: <Pine.LNX.4.33.0212281528330.1994-100000@maxwell.earthlink.net>
 Mime-Version: 1.0
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <20021227155451.A3942@twiddle.net>
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Henderson <rth@twiddle.net>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@transmeta.com>
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
 
-> > Strange, it's defined in drivers/video/fbmem.c in my copy of 2.5.53.
-> 
-> Ah.  It's not exported, so fbcon as a module fails.
-> Not sure how I missed it with a grep...
+Here are a bunch of fixes and driver updates for the fbdev layer. The
+patch applies against 2.5.53. You can also do a bk pull at
 
-That problem is fixed already in the latest BK tree. I will push today the 
-most recent fixes.
+bk://fbdev.bkbits.net:8080/fbdev-2.5
+
+The diff is at
+
+http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
+
+ CREDITS                                |    1
+ Documentation/fb/intel810.txt          |  272 +++
+ MAINTAINERS                            |    2
+ arch/m68k/kernel/head.S                |   34
+ arch/m68k/kernel/m68k_defs.c           |   16
+ drivers/char/vt.c                      |    2
+ drivers/video/Kconfig                  |   68
+ drivers/video/Makefile                 |   20
+ drivers/video/aty/atyfb_base.c         |   33
+ drivers/video/aty128fb.c               |  102 -
+ drivers/video/cfbcopyarea.c            |    2
+ drivers/video/cfbimgblt.c              |   15
+ drivers/video/chipsfb.c                |  572 ++------
+ drivers/video/console/Kconfig          |   36
+ drivers/video/console/Makefile         |   38
+ drivers/video/console/dummycon.c       |    6
+ drivers/video/console/fbcon-sti.c      |  289 ----
+ drivers/video/console/fbcon.c          |  304 ----
+ drivers/video/console/fbcon.h          |   17
+ drivers/video/console/font.h           |   53
+ drivers/video/console/font_6x11.c      |    2
+ drivers/video/console/font_8x16.c      |    2
+ drivers/video/console/font_8x8.c       |    2
+ drivers/video/console/font_acorn_8x8.c |    3
+ drivers/video/console/font_mini_4x6.c  |    2
+ drivers/video/console/font_pearl_8x8.c |    2
+ drivers/video/console/font_sun12x22.c  |    2
+ drivers/video/console/font_sun8x16.c   |    2
+ drivers/video/console/fonts.c          |    2
+ drivers/video/console/mdacon.c         |   24
+ drivers/video/console/newport_con.c    |    2
+ drivers/video/console/sti.h            |  289 ----
+ drivers/video/console/sticon.c         |  390 ++++-
+ drivers/video/console/sticore.c        | 1132 +++++++++++-----
+ drivers/video/controlfb.c              |   37
+ drivers/video/fbmem.c                  |  364 ++++-
+ drivers/video/fbmon.c                  |  334 ++++
+ drivers/video/i810/Makefile            |   22
+ drivers/video/i810/i810.h              |  300 ++++
+ drivers/video/i810/i810_accel.c        |  513 +++++++
+ drivers/video/i810/i810_dvt.c          |  308 ++++
+ drivers/video/i810/i810_gtf.c          |  275 ++++
+ drivers/video/i810/i810_main.c         | 2245 +++++++++++++++++++++++++++++++++
+ drivers/video/i810/i810_main.h         |  205 +++
+ drivers/video/i810/i810_regs.h         |  274 ++++
+ drivers/video/igafb.c                  |  100 +
+ drivers/video/offb.c                   |    5
+ drivers/video/radeonfb.c               |   38
+ drivers/video/riva/fbdev.c             |  310 +++-
+ drivers/video/riva/nv_type.h           |   58
+ drivers/video/riva/riva_hw.c           |  128 +
+ drivers/video/riva/riva_hw.h           |  110 +
+ drivers/video/riva/riva_tbl.h          |   99 +
+ drivers/video/riva/rivafb.h            |    7
+ drivers/video/skeletonfb.c             |  220 ++-
+ drivers/video/sstfb.c                  | 2076 ++++++++++++------------------
+ drivers/video/sstfb.h                  |   68
+ drivers/video/sticore.h                |    5
+ drivers/video/stifb.c                  |  136 -
+ drivers/video/tdfxfb.c                 |   11
+ drivers/video/tgafb.c                  | 1544 +++++++++-------------
+ drivers/video/vga16fb.c                |   70 -
+ drivers/video/vgastate.c               |    7
+ include/linux/fb.h                     |   10
+ include/linux/font.h                   |   53
+ include/linux/pci_ids.h                |   37
+ include/video/radeon.h                 |  144 +-
+ include/video/tgafb.h                  |  210 +++
+ 68 files changed, 9296 insertions(+), 4765 deletions(-)
+
+MS: (n) 1. A debilitating and surprisingly widespread affliction that
+renders the sufferer barely able to perform the simplest task. 2. A disease.
+
+James Simmons  [jsimmons@users.sf.net] 	                ____/|
+fbdev/console/gfx developer                             \ o.O|
+http://www.linux-fbdev.org                               =(_)=
+http://linuxgfx.sourceforge.net                            U
+http://linuxconsole.sourceforge.net

@@ -1,23 +1,22 @@
-From: Theodore Kilgore <kilgota@banach.math.auburn.edu>
-Subject: Re: aty128fb problems on iMac, kernel 2.8.1
- (fwd)
-Date: Sun, 26 Sep 2004 11:25:51 -0500 (CDT)
+From: Guido Guenther <agx@sigxcpu.org>
+Subject: [PATCH]: rivafb, use framebuffer_alloc
+Date: Sun, 26 Sep 2004 11:27:50 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.58.0409261055420.5509@banach.math.auburn.edu>
-References: <Pine.GSO.4.61.0409231022110.7127@waterleaf.sonytel.be>
- <1096187234.537.303.camel@gaston>
+Message-ID: <20040926092750.GA3936@bogon.ms20.nix>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="nFreZHaLTZJo0R7j"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CBcTn-0001PY-1a
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Sep 2004 10:06:31 -0700
-Received: from banach.math.auburn.edu ([131.204.45.3])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CBcTm-00020d-0S
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Sep 2004 10:06:30 -0700
-In-Reply-To: <1096187234.537.303.camel@gaston>
+	id 1CBet5-0005xS-J1
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Sep 2004 12:40:47 -0700
+Received: from honk1.physik.uni-konstanz.de ([134.34.140.224])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1CBet3-0005Sp-4g
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Sep 2004 12:40:47 -0700
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,96 +26,193 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-
-Thanks.
-
-Someone else made pretty much the same suggestion (to compile the support
-into the kernel) two days ago. I did that and the problem is fixed. Now I
-am tryint to compile KDE and can't figure out why in h--- I am able to
-compile the qt libraries and then when I go on to the nex thing I get an
-error message that the qt libraries are not there. But that's nothing to
-do with this list.
-
-In case anyone is curious:
-
-This iMac has an ati rage 128, which lspci says is a 4X agp card. So, I
-put in the kernel:
-
-under Character devices:
-AGP support
-r128 support
-
-and then
-framebuffer support
-aty128fb support
-
-and (because my eyes are 63 years old just like the rest of me)
-font support, with sun12x22 fonts installed.
-
-so now I get a nice bootup with those nice big fonts, right away, instead
-of the built-in Apple fonts where the characters are the size of tiny
-black ants.
-
-Then in xorg.cfg I chose r128 support with framebuffer option. Then X
-maxes out at 1240x1024-75, with 24-bit color.
-
-So as I said these problems are solved, and thanks for the help on the
-mailing list because I needed for someont to tell me straight-up that it
-isn't going to work if all this is done as modules. I still do not
-understand completely why not, however, and if anyone has any ideas to try
-out, to make that work, then as I said this machine is being built as a
-test machine. Just let me know.
-
-I do have one remaining question. This is not an X problem but a console
-problem. Sometimes in the console I get an artifact on the right side and
-on the bottom of the screen. This happens especially if Midnight Commander
-is running, and I switch it to the "background" with Cntrl-O and then
-switch the VT and then switch back again. Then the backwards "L" shaped
-artifact may become quite visible and is bright blue. I have looked in
-/etc/fb.modes to see if the settings there (which are for another card)
-might be causing this, due to the settings for "bottom" and "right" being
-a bit off, but it does not seem so. Indeed, the settings which show up in
-console after bootup, when one types "fbset" are for 1024x768-75. But
-the settings which fbset reports, do not agree with the 1024x768-75
-settings which are given in /etc/fb.modes. (?).
-
-Do not misunderstand. This is not a burning issue from the perspective of
-a user. But it might be a good laboratory test in which one can learn
-better how to control the video hardware.
-
-Thanks again for the help.
-
-Theodore Kilgore
+To: "Antonino A. Daplas" <adaplas@hotpop.com>
+Cc: linux-fbdev-devel@lists.sf.net
 
 
-On Sun, 26 Sep 2004, Benjamin Herrenschmidt wrote:
+--nFreZHaLTZJo0R7j
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
->
->
-> > So, when I do make modules it says that it compiled the aty128fb module,
-> > but it gives two error messages:
-> >
-> > mac_find_mode  undefined
-> >
-> > and
-> >
-> > mac_vmode_to_var  undefined.
->
-> Build the fbdev in the kernel, not as a module, there are a number of
-> issues with fbdev's as module, especially on Macs where offb (the
-> default 8 bits framebuffer) will take over, preventing you from loading
-> the specific ATI driver on top of it anyway.
->
-> Then, use X "ati" driver with Option "UseFBDev" "true" in the "Device"
-> section.
->
-> Ben.
->
->
+Hi,
+attached patch against 2.6.9-rc2 converts rivafb to use
+framebuffer_alloc and tries to be more specific about the errors that
+occure during init. Please apply.
+Cheers,
+ -- Guido
+
+--nFreZHaLTZJo0R7j
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="rivafb-2.6.9-rc2-framebuffer_alloc.diff"
+
+--- linux-2.6.9-rc2.orig/drivers/video/riva/fbdev.c	2004-09-15 09:23:42.000000000 +0200
++++ linux-2.6.9-rc2/drivers/video/riva/fbdev.c	2004-09-26 10:57:41.000000000 +0200
+@@ -1854,35 +1865,36 @@
+ {
+ 	struct riva_par *default_par;
+ 	struct fb_info *info;
++	int ret;
+ 
+ 	NVTRACE_ENTER();
+ 	assert(pd != NULL);
+ 
+-	info = kmalloc(sizeof(struct fb_info), GFP_KERNEL);
+-	if (!info)
++	ret=pci_enable_device(pd);
++	if (ret < 0) {
++		printk(KERN_ERR PFX "cannot enable PCI device\n");
+ 		goto err_out;
+-
+-	default_par = kmalloc(sizeof(struct riva_par), GFP_KERNEL);
+-	if (!default_par)
+-		goto err_out_kfree;
+-
+-	memset(info, 0, sizeof(struct fb_info));
+-	memset(default_par, 0, sizeof(struct riva_par));
++	}
++	info = framebuffer_alloc(sizeof(struct riva_par), &pd->dev);
++	if (!info) {
++		printk (KERN_ERR PFX "could not allocate memory\n");
++		ret = -ENOMEM;
++		goto err_pci_disable;
++	}
++	default_par = info->par;
+ 	default_par->pdev = pd;
+ 
+ 	info->pixmap.addr = kmalloc(64 * 1024, GFP_KERNEL);
+-	if (info->pixmap.addr == NULL)
+-		goto err_out_kfree1;
+-	memset(info->pixmap.addr, 0, 64 * 1024);
+-
+-	if (pci_enable_device(pd)) {
+-		printk(KERN_ERR PFX "cannot enable PCI device\n");
+-		goto err_out_enable;
++	if (info->pixmap.addr == NULL) {
++	    	ret = -ENOMEM;
++		goto err_release_fb;
+ 	}
++	memset(info->pixmap.addr, 0, 64 * 1024);
+ 
+-	if (pci_request_regions(pd, "rivafb")) {
++	ret=pci_request_regions(pd, "rivafb");
++	if (ret < 0) {
+ 		printk(KERN_ERR PFX "cannot request PCI regions\n");
+-		goto err_out_request;
++		goto err_free_pixmap;
+ 	}
+ 
+ 	default_par->riva.Architecture = riva_get_arch(pd);
+@@ -1896,7 +1908,8 @@
+ 
+ 	if(default_par->riva.Architecture == 0) {
+ 		printk(KERN_ERR PFX "unknown NV_ARCH\n");
+-		goto err_out_kfree1;
++		ret=-ENODEV;
++		goto err_release_pci;
+ 	}
+ 	if(default_par->riva.Architecture == NV_ARCH_10 ||
+ 	   default_par->riva.Architecture == NV_ARCH_20 ||
+@@ -1930,11 +1943,10 @@
+ 					 rivafb_fix.mmio_len);
+ 	if (!default_par->ctrl_base) {
+ 		printk(KERN_ERR PFX "cannot ioremap MMIO base\n");
+-		goto err_out_free_base0;
++		ret = -EIO;
++		goto err_release_pci;
+ 	}
+ 
+-	info->par = default_par;
+-
+ 	switch (default_par->riva.Architecture) {
+ 	case NV_ARCH_03:
+ 		/* Riva128's PRAMIN is in the "framebuffer" space
+@@ -1944,7 +1956,8 @@
+ 		default_par->riva.PRAMIN = ioremap(rivafb_fix.smem_start + 0x00C00000, 0x00008000);
+ 		if (!default_par->riva.PRAMIN) {
+ 			printk(KERN_ERR PFX "cannot ioremap PRAMIN region\n");
+-			goto err_out_free_nv3_pramin;
++			ret = -EIO;
++			goto err_iounmap_ctrl_base;
+ 		}
+ 		rivafb_fix.accel = FB_ACCEL_NV3;
+ 		break;
+@@ -1970,7 +1983,8 @@
+ 				    rivafb_fix.smem_len);
+ 	if (!info->screen_base) {
+ 		printk(KERN_ERR PFX "cannot ioremap FB base\n");
+-		goto err_out_free_base1;
++		ret = -EIO;
++		goto err_iounmap_pramin;
+ 	}
+ 
+ #ifdef CONFIG_MTRR
+@@ -1993,19 +2007,21 @@
+ 	riva_get_EDID(info, pd);
+ 	riva_get_edidinfo(info);
+ 
+-	if (riva_set_fbinfo(info) < 0) {
++	ret=riva_set_fbinfo(info);
++	if (ret < 0) {
+ 		printk(KERN_ERR PFX "error setting initial video mode\n");
+-		goto err_out_iounmap_fb;
++		goto err_iounmap_screen_base;
+ 	}
+ 
+ 	fb_destroy_modedb(info->monspecs.modedb);
+ 	info->monspecs.modedb_len = 0;
+ 	info->monspecs.modedb = NULL;
+ 
+-	if (register_framebuffer(info) < 0) {
++	ret = register_framebuffer(info);
++	if (ret < 0) {
+ 		printk(KERN_ERR PFX
+ 			"error registering riva framebuffer\n");
+-		goto err_out_iounmap_fb;
++		goto err_iounmap_screen_base;
+ 	}
+ 
+ 	pci_set_drvdata(pd, info);
+@@ -2024,28 +2040,26 @@
+ 	NVTRACE_LEAVE();
+ 	return 0;
+ 
+-err_out_iounmap_fb:
++err_iounmap_screen_base:
+ #ifdef CONFIG_FB_RIVA_I2C
+ 	riva_delete_i2c_busses((struct riva_par *) info->par);
+ #endif
+ 	iounmap(info->screen_base);
+-err_out_free_base1:
++err_iounmap_pramin:
+ 	if (default_par->riva.Architecture == NV_ARCH_03) 
+ 		iounmap((caddr_t)default_par->riva.PRAMIN);
+-err_out_free_nv3_pramin:
++err_iounmap_ctrl_base:
+ 	iounmap(default_par->ctrl_base);
+-err_out_free_base0:
++err_release_pci:
+ 	pci_release_regions(pd);
+-err_out_request:
+-	pci_disable_device(pd);
+-err_out_enable:
++err_free_pixmap:
+ 	kfree(info->pixmap.addr);
+-err_out_kfree1:
+-	kfree(default_par);
+-err_out_kfree:
+-	kfree(info);
++err_release_fb:
++	framebuffer_release(info);
++err_pci_disable:
++	pci_disable_device(pd);
+ err_out:
+-	return -ENODEV;
++	return ret;
+ }
+ 
+ static void __exit rivafb_remove(struct pci_dev *pd)
+
+--nFreZHaLTZJo0R7j--
 
 
 -------------------------------------------------------

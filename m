@@ -1,101 +1,60 @@
-From: Kronos <kronos@kronoz.cjb.net>
-Subject: [PATCH] Sysfs for framebuffer
-Date: Sat, 20 Mar 2004 18:49:56 +0100
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20040320174956.GA3177@dreamland.darkstar.lan>
-Reply-To: kronos@kronoz.cjb.net
+From: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] Sysfs for framebuffer
+Date: Sat, 20 Mar 2004 13:30:30 -0800
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <20040320213030.GA3950@kroah.com>
+References: <20040320174956.GA3177@dreamland.darkstar.lan>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1B4o3d-0002iL-Pj
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 20 Mar 2004 13:31:05 -0800
+Received: from mail.kroah.org ([65.200.24.183] helo=perch.kroah.org)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1B4o3b-0005B5-1o
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 20 Mar 2004 13:31:03 -0800
 Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net
+In-Reply-To: <20040320174956.GA3177@dreamland.darkstar.lan>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>
+To: Kronos <kronos@kronoz.cjb.net>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>
 
-Hi,
-the following patch (against 2.6.5-rc2) teaches fb to use class_simple.
-With this patch udev will automagically create device nodes for each
-framebuffer registered. Once all drivers are converted to
-framebuffer_{alloc,release} we can switch to our own class.
+On Sat, Mar 20, 2004 at 06:49:56PM +0100, Kronos wrote:
+> Hi,
+> the following patch (against 2.6.5-rc2) teaches fb to use class_simple.
+> With this patch udev will automagically create device nodes for each
+> framebuffer registered. Once all drivers are converted to
+> framebuffer_{alloc,release} we can switch to our own class.
 
-This is what sysfs dir looks like:
+yeah, it's about time!  Didn't I post this patch a few months ago... :)
 
-notebook:~# tree /sys/class/graphics/
-/sys/class/graphics/
-`-- fb0
-    `-- dev
+Anyway, it looks good, I only have one comment:
 
-1 directory, 1 file
+> notebook:~# tree /sys/class/graphics/
+> /sys/class/graphics/
 
+"graphics"?  Why that?  Why not "fb"?
 
---- a/drivers/video/fbmem.c	2004-03-20 15:57:53.000000000 +0100
-+++ b/drivers/video/fbmem.c	2004-03-20 16:17:26.000000000 +0100
-@@ -32,6 +32,9 @@
- #include <linux/kmod.h>
- #endif
- #include <linux/devfs_fs_kernel.h>
-+#include <linux/err.h>
-+#include <linux/kernel.h>
-+#include <linux/device.h>
- 
- #if defined(__mc68000__) || defined(CONFIG_APUS)
- #include <asm/setup.h>
-@@ -1251,6 +1254,8 @@
- #endif
- };
- 
-+static struct class_simple *fb_class;
-+
- /**
-  *	register_framebuffer - registers a frame buffer device
-  *	@fb_info: frame buffer info structure
-@@ -1265,6 +1270,7 @@
- register_framebuffer(struct fb_info *fb_info)
- {
- 	int i;
-+	struct class_device *c;
- 
- 	if (num_registered_fb == FB_MAX)
- 		return -ENXIO;
-@@ -1273,6 +1279,12 @@
- 		if (!registered_fb[i])
- 			break;
- 	fb_info->node = i;
-+
-+	c = class_simple_device_add(fb_class, MKDEV(FB_MAJOR, i), NULL, "fb%d", i);
-+	if (IS_ERR(c)) {
-+		/* Not fatal */
-+		printk(KERN_WARNING "Unable to create class_device for framebuffer %d; errno = %ld\n", i, PTR_ERR(c));
-+	}
- 	
- 	if (fb_info->pixmap.addr == NULL) {
- 		fb_info->pixmap.addr = kmalloc(FBPIXMAPSIZE, GFP_KERNEL);
-@@ -1338,6 +1350,7 @@
- 		kfree(fb_info->sprite.addr);
- 	registered_fb[i]=NULL;
- 	num_registered_fb--;
-+	class_simple_device_remove(MKDEV(FB_MAJOR, i));
- 	return 0;
- }
- 
-@@ -1399,6 +1412,12 @@
- 	if (register_chrdev(FB_MAJOR,"fb",&fb_fops))
- 		printk("unable to get major %d for fb devs\n", FB_MAJOR);
- 
-+	fb_class = class_simple_create(THIS_MODULE, "graphics");
-+	if (IS_ERR(fb_class)) {
-+		printk(KERN_WARNING "Unable to create fb class; errno = %ld\n", PTR_ERR(fb_class));
-+		fb_class = NULL;
-+	}
-+
- #ifdef CONFIG_FB_OF
- 	if (ofonly) {
- 		offb_init();
+It doesn't really matter to me, just curious.
+
+thanks,
+
+greg k-h
 
 
-Luca
--- 
-Home: http://kronoz.cjb.net
-La differenza fra l'intelligenza e la stupidita`?
-All'intelligenza c'e` un limite.
+-------------------------------------------------------
+This SF.Net email is sponsored by: IBM Linux Tutorials
+Free Linux tutorial presented by Daniel Robbins, President and CEO of
+GenToo technologies. Learn everything from fundamentals to system
+administration.http://ads.osdn.com/?ad_id=1470&alloc_id=3638&op=click

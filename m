@@ -1,16 +1,17 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: Re: fbmem.c : FBIOGETCMAP
-Date: Sun, 5 Jan 2003 12:40:33 -0800 (PST)
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: new logo drawing code
+Date: Sun, 5 Jan 2003 20:46:33 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030105204033.19207.qmail@web14904.mail.yahoo.com>
-References: <Pine.LNX.4.44.0301052034420.24903-100000@phoenix.infradead.org>
+Message-ID: <Pine.LNX.4.44.0301052044530.24903-100000@phoenix.infradead.org>
+References: <Pine.GSO.4.21.0212292057180.17739-100000@vervain.sonytel.be>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from web14904.mail.yahoo.com ([216.136.225.56])
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18VHZT-0007Z0-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 05 Jan 2003 12:40:35 -0800
-In-Reply-To: <Pine.LNX.4.44.0301052034420.24903-100000@phoenix.infradead.org>
+Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18VHfo-00006C-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 05 Jan 2003 12:47:08 -0800
+In-Reply-To: <Pine.GSO.4.21.0212292057180.17739-100000@vervain.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,31 +21,25 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-It needs a copy_to_user too to work. Probably doesn't
-need the copy_from_user.
+On Sun, 29 Dec 2002, Geert Uytterhoeven wrote:
 
-Is the right fix?
+>   - Replace conditionals by straight code without branches (bit 7 of needs_logo
+>     is either 0 (normal) or 1 (reverse), and perhaps we should kill the default
+>     case?).
 
-	case FBIOGETCMAP:
-		fb_copy_cmap(&info->cmap, &cmap, 0);
-		if (copy_to_user((void *) arg, &cmap, sizeof(cmap)))
-			return -EFAULT;
-		return 0;
+Applied.
 
+> BTW, most of the new fbdev code looks really ugly in vim with `let
+> c_space_errors=1', due to the exorbitant use of superfluous whitespace
+> characters.
 
-=====
-Jon Smirl
-jonsmirl@yahoo.com
+??? I use indent -kr -i8 to handle indenting.
 
-__________________________________________________
-Do you Yahoo!?
-Yahoo! Mail Plus - Powerful. Affordable. Sign up now.
-http://mailplus.yahoo.com
 
 
 -------------------------------------------------------

@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 5/7] nvidiafb: Delete i2c bus on driver unload
-Date: Sun, 20 Mar 2005 21:09:33 +0800
-Message-ID: <200503202109.33049.adaplas@hotpop.com>
+Subject: [PATCH 6/7] neofb: mmio fixes
+Date: Sun, 20 Mar 2005 21:09:43 +0800
+Message-ID: <200503202109.43080.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DD0Ci-0001GC-Tf
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Mar 2005 05:10:52 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.61])
+	id 1DD0Cn-0001GE-T7
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Mar 2005 05:10:57 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.71])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1DD0Ci-0007nE-6a
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Mar 2005 05:10:52 -0800
+	id 1DD0Cl-0007nl-AJ
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Mar 2005 05:10:57 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 56F39FB9738
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 20 Mar 2005 13:10:45 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id C34FE14CE83C
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 20 Mar 2005 13:10:48 +0000 (UTC)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -29,93 +29,50 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Marek Marczykowski <marmarek@staszic.waw.pl>
 
-The driver nvidiafb fails to delete the i2c bus on load failure or
-unload.  Fix
+  Changes in neo_map_mmio to make neofb working on NM2070,
+  NM2090, NM2093.
 
-From: Antonino Daplas <adaplas@pol.net>
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
+From: Marek Marczykowski <marmarek@staszic.waw.pl>
+Signed-off-by: Marek Marczykowski <marmarek@staszic.waw.pl>
 ---
 
- nv_i2c.c   |    2 --
- nv_of.c    |    1 +
- nv_proto.h |    2 ++
- nvidia.c   |    6 ++++--
- 4 files changed, 7 insertions(+), 4 deletions(-)
+ neofb.c |   22 +++++++++++++++++++++-
+ 1 files changed, 21 insertions(+), 1 deletion(-)
 
-diff -Nru a/drivers/video/nvidia/nv_i2c.c b/drivers/video/nvidia/nv_i2c.c
---- a/drivers/video/nvidia/nv_i2c.c	2005-03-12 23:25:10 +08:00
-+++ b/drivers/video/nvidia/nv_i2c.c	2005-03-18 21:06:28 +08:00
-@@ -146,7 +146,6 @@
- 	nvidia_setup_i2c_bus(&par->chan[2], "BUS3");
- }
+diff -Nru a/drivers/video/neofb.c b/drivers/video/neofb.c
+--- a/drivers/video/neofb.c	2005-03-12 23:23:15 +08:00
++++ b/drivers/video/neofb.c	2005-03-19 05:33:32 +08:00
+@@ -1691,7 +1691,27 @@
  
--#if 0
- void nvidia_delete_i2c_busses(struct nvidia_par *par)
- {
- 	if (par->chan[0].par)
-@@ -162,7 +161,6 @@
- 	par->chan[2].par = NULL;
+ 	DBG("neo_map_mmio");
  
- }
--#endif  /*  0  */
+-	info->fix.mmio_start = pci_resource_start(dev, 1);
++	switch (info->fix.accel) {
++		case FB_ACCEL_NEOMAGIC_NM2070:
++			info->fix.mmio_start = pci_resource_start(dev, 0)+
++				0x100000;
++			break;
++		case FB_ACCEL_NEOMAGIC_NM2090:
++		case FB_ACCEL_NEOMAGIC_NM2093:
++			info->fix.mmio_start = pci_resource_start(dev, 0)+
++				0x200000;
++			break;
++		case FB_ACCEL_NEOMAGIC_NM2160:
++		case FB_ACCEL_NEOMAGIC_NM2097:
++		case FB_ACCEL_NEOMAGIC_NM2200:
++		case FB_ACCEL_NEOMAGIC_NM2230:
++		case FB_ACCEL_NEOMAGIC_NM2360:
++		case FB_ACCEL_NEOMAGIC_NM2380:
++			info->fix.mmio_start = pci_resource_start(dev, 1);
++			break;
++		default:
++			info->fix.mmio_start = pci_resource_start(dev, 0);
++	}
+ 	info->fix.mmio_len = MMIO_SIZE;
  
- static u8 *nvidia_do_probe_i2c_edid(struct nvidia_i2c_chan *chan)
- {
-diff -Nru a/drivers/video/nvidia/nv_of.c b/drivers/video/nvidia/nv_of.c
---- a/drivers/video/nvidia/nv_of.c	2005-03-12 23:25:11 +08:00
-+++ b/drivers/video/nvidia/nv_of.c	2005-03-18 21:06:28 +08:00
-@@ -28,6 +28,7 @@
- #include "nv_proto.h"
- 
- void nvidia_create_i2c_busses(struct nvidia_par *par) {}
-+void nvidia_delete_i2c_busses(struct nvidia_par *par) {}
- 
- int nvidia_probe_i2c_connector(struct nvidia_par *par, int conn, u8 **out_edid)
- {
-diff -Nru a/drivers/video/nvidia/nv_proto.h b/drivers/video/nvidia/nv_proto.h
---- a/drivers/video/nvidia/nv_proto.h	2005-03-12 23:25:12 +08:00
-+++ b/drivers/video/nvidia/nv_proto.h	2005-03-18 21:06:28 +08:00
-@@ -33,10 +33,12 @@
- /* in nvidia-i2c.c */
- #if defined(CONFIG_FB_NVIDIA_I2C) || defined (CONFIG_PPC_OF)
- void nvidia_create_i2c_busses(struct nvidia_par *par);
-+void nvidia_delete_i2c_busses(struct nvidia_par *par);
- int nvidia_probe_i2c_connector(struct nvidia_par *par, int conn,
- 			       u8 ** out_edid);
- #else
- #define nvidia_create_i2c_busses(...)
-+#define nvidia_delete_i2c_busses(...)
- #define nvidia_probe_i2c_connector(p, c, edid) \
- do {                                           \
- 	*(edid) = NULL;                        \
-diff -Nru a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
---- a/drivers/video/nvidia/nvidia.c	2005-03-15 18:42:12 +08:00
-+++ b/drivers/video/nvidia/nvidia.c	2005-03-18 21:22:39 +08:00
-@@ -1566,8 +1566,9 @@
- 
-       err_out_iounmap_fb:
- 	iounmap(info->screen_base);
--      err_out_free_base1:
- 	fb_destroy_modedb(info->monspecs.modedb);
-+	nvidia_delete_i2c_busses(par);
-+      err_out_free_base1:
- 	iounmap(par->REGS);
-       err_out_free_base0:
- 	pci_release_regions(pd);
-@@ -1597,9 +1598,10 @@
- 			 info->fix.smem_len);
- #endif				/* CONFIG_MTRR */
- 
-+	iounmap(info->screen_base);
- 	fb_destroy_modedb(info->monspecs.modedb);
-+	nvidia_delete_i2c_busses(par);
- 	iounmap(par->REGS);
--	iounmap(info->screen_base);
- 	pci_release_regions(pd);
- 	pci_disable_device(pd);
- 	kfree(info->pixmap.addr);
+ 	if (!request_mem_region
 
 
 

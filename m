@@ -1,40 +1,79 @@
-From: Stefan =?iso-8859-1?q?D=F6singer?= <stefandoesinger@gmx.at>
-Subject: Re: [Linux-fbdev-devel] Re: Generic VESA framebuffer driver and Video card BOOT?
-Date: Fri, 22 Oct 2004 14:57:41 +0200
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <200410221457.41542.stefandoesinger@gmx.at>
-References: <88056F38E9E48644A0F562A38C64FB6003287A2A@scsmsx403.amr.corp.intel.com>
-Reply-To: stefandoesinger@gmx.at
+From: "Kendall Bennett" <KendallB@scitechsoft.com>
+Subject: RE: Re: Generic VESA framebuffer driver and Video card BOOT?
+Date: Fri, 22 Oct 2004 10:10:43 -0700
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <4178DCA3.681.25909C7A@localhost>
+References: <88056F38E9E48644A0F562A38C64FB600328792F@scsmsx403.amr.corp.intel.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S271318AbUJVNIH@vger.kernel.org>
-In-Reply-To: <88056F38E9E48644A0F562A38C64FB6003287A2A@scsmsx403.amr.corp.intel.com>
-Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 7BIT
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1CL2wE-0001kk-I2
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Oct 2004 10:10:50 -0700
+Received: from mail.scitechsoft.com ([63.195.13.67])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1CL2wD-0003ca-Vg
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Oct 2004 10:10:50 -0700
+In-reply-to: <88056F38E9E48644A0F562A38C64FB600328792F@scsmsx403.amr.corp.intel.com>
+Content-description: Mail message body
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
 To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Kendall Bennett <KendallB@scitechsoft.com>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-> Right now I am using call_usermodehelper() to call the
-> emulator during resume and the video comes back just fine on this
-> system where Ole's patch didn't work.
-Can you explain me how you do this? call_usermodehelper() doesn't work =
-for me=20
-at resume time.
+"Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com> wrote:
 
-BTW, I had a look at the radeon card's resume code at 0xc000:3 and atte=
-mpted=20
-to implement it in a kernel module. The code is pretty simple, but it's=
- quite=20
-long. My module isn't finished, it only turns off the display and reset=
-s the=20
-memory. I had to stop because I've a lot of things to do for school now=
-=2E
+> I have done some experiments with this video post stuff. I think
+> this should be done using x86 emulator rather than doing in real
+> mode. The reason being, with an userlevel emulator we can call it
+> at different times during resume. The current real mode videopost
+> does it before the driver has restored the PCI config space. Some
+> systems (mostly the ones with Radeon card) requires this to be
+> done after PCI config space is restored. With a userspace
+> emulator, we can call it at various places during the driver
+> restore. 
+> 
+> I have seen the SciTech's x86 emulator in X.org. I could seperate
+> it out from X into a stand alone application that does x86
+> emulation. I use it to get the video back on my laptop (which has
+> radeon card), by calling this user level emulator using
+> usermodehelper call. I hope we will have x86 emulator sitting in a
+> standard place in userspace. That way we can use it in driver
+> restore and solve the S3 video restore problem in a more generic
+> way. 
 
-Ole Rohne meant that the code is potentially dangerous because it pokes=
- around=20
-with undocumented PLL registers, so I will not send it to the list: I w=
-ill=20
-send it only to those who explicitly ask for it.
+We already have all this code completely separate from X and would 
+release this as part of the Video Boot package for Linux. The kernel 
+module is one part of it, but the code can be compiled as a stand alone 
+user land program as well (SNAPBoot we call it right now). 
 
-Stefan D=F6singer
+Regards,
+
+---
+Kendall Bennett
+Chief Executive Officer
+SciTech Software, Inc.
+Phone: (530) 894 8400
+http://www.scitechsoft.com
+
+~ SciTech SNAP - The future of device driver technology! ~
+
+
+
+
+-------------------------------------------------------
+This SF.net email is sponsored by: IT Product Guide on ITManagersJournal
+Use IT products in your business? Tell us what you think of them. Give us
+Your Opinions, Get Free ThinkGeek Gift Certificates! Click to find out more
+http://productguide.itmanagersjournal.com/guidepromo.tmpl

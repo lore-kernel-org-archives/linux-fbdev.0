@@ -1,12 +1,14 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
 Subject: Re: Re: [Linux-fbdev-devel] Redesign of kernel graphics interface
-Date: Fri, 14 May 2004 10:51:35 -0700 (PDT)
+Date: Fri, 14 May 2004 21:08:14 +0300
 Sender: mesa3d-dev-admin@lists.sourceforge.net
-Message-ID: <20040514175135.41336.qmail@web14921.mail.yahoo.com>
-References: <20040514172011.GA11990@pegasos>
+Message-ID: <20040514180814.GA18297@sci.fi>
+References: <20040514172011.GA11990@pegasos> <20040514175135.41336.qmail@web14921.mail.yahoo.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <mesa3d-dev-admin@lists.sourceforge.net>
-In-Reply-To: <20040514172011.GA11990@pegasos>
+Content-Disposition: inline
+In-Reply-To: <20040514175135.41336.qmail@web14921.mail.yahoo.com>
 Errors-To: mesa3d-dev-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
 	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=unsubscribe>
@@ -16,63 +18,48 @@ List-Help: <mailto:mesa3d-dev-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
 	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=mesa3d-dev>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Sven Luther <sven.luther@wanadoo.fr>
-Cc: James Simmons <jsimmons@infradead.org>, Nicolas Souchu <nsouch@free.fr>, dri-devel <dri-devel@lists.sourceforge.net>, mesa3d-dev <mesa3d-dev@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
+To: dri-devel <dri-devel@lists.sourceforge.net>, mesa3d-dev <mesa3d-dev@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-Just look at this picture and you can see the trend of 2D vs 3D (coprocessor
-based) graphics.
-http://www.de.tomshardware.com/graphic/20040504/images/architecture.gif
-Within one or two generations the 2D box is going to be gone.
+On Fri, May 14, 2004 at 10:51:35AM -0700, Jon Smirl wrote:
+> Just look at this picture and you can see the trend of 2D vs 3D (coproc=
+essor
+> based) graphics.
+> http://www.de.tomshardware.com/graphic/20040504/images/architecture.gif
+> Within one or two generations the 2D box is going to be gone.
+>=20
+> If Linux wants to stay current with technology we have to start using t=
+he
+> coprocessor features of the GPU. Most of the benchmarks I have seen sho=
+w
+> coprocessor vs programmed at 100:1 speed differential. This is also a
+> competitive problem, Microsoft and Apple have both decided to go with t=
+he GPU
+> coprocessor this year.=20
 
-If Linux wants to stay current with technology we have to start using the
-coprocessor features of the GPU. Most of the benchmarks I have seen show
-coprocessor vs programmed at 100:1 speed differential. This is also a
-competitive problem, Microsoft and Apple have both decided to go with the GPU
-coprocessor this year. 
+I don't understand you GPU vs. PIO comparisons. You can use the 2D engine=
+=20
+with DMA as well. And at least with older cards the 2D engine is clearly=20
+faster than the 3D engine (~100% faster for blits on my G400) so trying t=
+o=20
+bypass it is just stupid.
 
-Lack of free drivers is no reason to ignore the GPU coprocessor. It just means
-more effort needs to be put into mesa and prying the docs out of the graphics
-chip vendors. If the current open drivers don't work on a non-x86 platform just
-go fix them. All of the necessary data is available. Progress is being made with
-ATI for getting the R300 specs now that the R400 series has shipped.
+> I said OpenGL is the only accelerated API available on Linux. Can you n=
+ame
+> another?
 
---- Sven Luther <sven.luther@wanadoo.fr> wrote:
-> As long as this doesn't change, stating that we have an accelerated API
-> for OpenGL in linux is not only dead wrong, but is leading us in a
-> dangerous direction, where we will depend on a non-free component in the
-> kernel and were we are going to forget about graphic support on anything
-> non-x86.
+DirectFB.
 
-I said OpenGL is the only accelerated API available on Linux. Can you name
-another? There is a little acceleration in framebuffer, but I don't know of any
-others. Also, software mesa works just fine to provide OpenGL on dumb 2D cards.
+> There is a little acceleration in framebuffer, but I don't know of any
+> others. Also, software mesa works just fine to provide OpenGL on dumb 2=
+D cards.
 
-You have to choose. Either we stay with programmed IO and low speed 2D graphics
-forever or we have to embrace the GPU coprocessor. No one is going to make you
-buy a high end ATI or Nvidia card. But if you want to use one you have to deal
-with the realities of the situation. ATI and Nvidia own their technology and if
-they don't want to open it all we can do is complain to them or use their
-proprietary drivers. 
+Using unaccelerated OpenGL for 2D rendering doesn't sound exatly useful.=20
 
-If being free is critical to you then you won't be using any high graphics
-cards. Stick with an R200 or less type card. Your system will work fine with the
-OpenGL based xserver. But graphics cards are evolving and Linux can't ignore
-them. We just have to hope that Nvidia and API can see the light someday and
-open their specs.
-
-=====
-Jon Smirl
-jonsmirl@yahoo.com
-
-
-	
-		
-__________________________________
-Do you Yahoo!?
-SBC Yahoo! - Internet access at a great low price.
-http://promo.yahoo.com/sbc/
+--=20
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
 
 
 -------------------------------------------------------

@@ -1,24 +1,22 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH][FBDEV]: Fix kernel panic from FBIO_CURSOR ioctl
-Date: Mon, 30 Aug 2004 10:47:46 +0800
+From: "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH][FBDEV] Fix copy_to/from_user in fbmem.c:fb_read/write
+Date: Sun, 29 Aug 2004 20:16:28 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200408301047.46287.adaplas@hotpop.com>
+Message-ID: <20040829201628.79eeee65.davem@davemloft.net>
+References: <200408301047.28117.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C1cCp-0003Pw-G6
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 29 Aug 2004 19:47:39 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.71])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1C1cCm-0007uk-QS
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 29 Aug 2004 19:47:37 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id ECF7810B10CE
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 30 Aug 2004 02:47:28 +0000 (UTC)
-Content-Disposition: inline
+	id 1C1cfX-0007cZ-FD
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 29 Aug 2004 20:17:19 -0700
+Received: from smtp109.mail.sc5.yahoo.com ([66.163.170.7])
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.34)
+	id 1C1cfU-0000ZT-HW
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 29 Aug 2004 20:17:18 -0700
+In-Reply-To: <200408301047.28117.adaplas@hotpop.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,117 +27,19 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Yuval Kogman <nothingmuch@woobling.org>
+To: adaplas@pol.net
+Cc: adaplas@hotpop.com, akpm@osdl.org, linux-fbdev-devel@lists.sourceforge.net, davem@redhat.com
 
-Hi,
+On Mon, 30 Aug 2004 10:47:28 +0800
+"Antonino A. Daplas" <adaplas@hotpop.com> wrote:
 
-1. This fixes a kernel oops when issuing an FBIO_CURSOR ioctl if struct fb_cursor_user
-is filled with zero/NULLs. Reported by Yuval Kogman <nothingmuch@woobling.org>.
+> This patch fixes a prblem reported by David S. Miller <davem@redhat.com>
+> 
+> "I just noticed that fb_{read,write}() uses copy_*_user() with
+> the kernel buffer being the frame buffer.  It needs to use
+> the proper device address accessor functions."
 
-2. This also fixes the cursor corruption in soft_cursor when sprite.scan_align != 1.
-
-Tony
-
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
-
-diff -uprN linux-2.6.9-rc1-mm1-orig/drivers/video/fbmem.c linux-2.6.9-rc1-mm1/drivers/video/fbmem.c
---- linux-2.6.9-rc1-mm1-orig/drivers/video/fbmem.c	2004-08-30 08:15:35.000000000 +0800
-+++ linux-2.6.9-rc1-mm1/drivers/video/fbmem.c	2004-08-30 08:24:22.986434720 +0800
-@@ -1018,7 +1018,7 @@ fb_cursor(struct fb_info *info, struct f
- {
- 	struct fb_cursor_user cursor_user;
- 	struct fb_cursor cursor;
--	char *data = NULL, *mask = NULL;
-+	char *data = NULL, *mask = NULL, *info_mask = NULL;
- 	u16 *red = NULL, *green = NULL, *blue = NULL, *transp = NULL;
- 	int err = -EINVAL;
- 	
-@@ -1026,12 +1026,12 @@ fb_cursor(struct fb_info *info, struct f
- 		return -EFAULT;
- 
- 	memcpy(&cursor, &cursor_user, sizeof(cursor_user));
--	cursor.mask = NULL;
--	cursor.image.data = NULL;
--	cursor.image.cmap.red = NULL;
--	cursor.image.cmap.green = NULL;
--	cursor.image.cmap.blue = NULL;
--	cursor.image.cmap.transp = NULL;
-+	cursor.mask = info->cursor.mask;
-+	cursor.image.data = info->cursor.image.data;
-+	cursor.image.cmap.red = info->cursor.image.cmap.red;
-+	cursor.image.cmap.green = info->cursor.image.cmap.green;
-+	cursor.image.cmap.blue = info->cursor.image.cmap.blue;
-+	cursor.image.cmap.transp = info->cursor.image.cmap.transp;
- 	cursor.data = NULL;
- 
- 	if (cursor.set & FB_CUR_SETCUR)
-@@ -1091,6 +1091,8 @@ fb_cursor(struct fb_info *info, struct f
- 		
- 		cursor.image.data = data;
- 		cursor.mask = mask;
-+		info_mask = (char *) info->cursor.mask;
-+		info->cursor.mask = mask;
- 	}
- 	info->cursor.set = cursor.set;
- 	info->cursor.rop = cursor.rop;
-@@ -1102,6 +1104,8 @@ out:
- 	kfree(green);
- 	kfree(blue);
- 	kfree(transp);
-+	if (info_mask)
-+		info->cursor.mask = info_mask;
- 	return err;
- }
- 
-diff -uprN linux-2.6.9-rc1-mm1-orig/drivers/video/softcursor.c linux-2.6.9-rc1-mm1/drivers/video/softcursor.c
---- linux-2.6.9-rc1-mm1-orig/drivers/video/softcursor.c	2004-08-30 05:54:14.000000000 +0800
-+++ linux-2.6.9-rc1-mm1/drivers/video/softcursor.c	2004-08-30 08:15:58.000000000 +0800
-@@ -22,7 +22,8 @@ int soft_cursor(struct fb_info *info, st
- 	unsigned int scan_align = info->sprite.scan_align - 1;
- 	unsigned int buf_align = info->sprite.buf_align - 1;
- 	unsigned int i, size, dsize, s_pitch, d_pitch;
--	u8 *dst, src[64];
-+	struct fb_cursor *cur;
-+	u8 *dst, *src;
- 
- 	if (cursor->set & FB_CUR_SETSIZE) {
- 		info->cursor.image.height = cursor->image.height;
-@@ -48,9 +49,17 @@ int soft_cursor(struct fb_info *info, st
- 		info->cursor.image.depth = cursor->image.depth;
- 	}	
- 
-+	info->cursor.image.data = cursor->image.data;
-+
- 	if (info->state != FBINFO_STATE_RUNNING)
- 		return 0;
- 
-+	src = kmalloc(64 + sizeof(struct fb_cursor), GFP_ATOMIC);
-+	if (!src)
-+		return -ENOMEM;
-+	cur = (struct fb_cursor *) (src + 64);
-+	*cur = info->cursor;
-+	
- 	s_pitch = (info->cursor.image.width + 7) >> 3;
- 	dsize = s_pitch * info->cursor.image.height;
- 	d_pitch = (s_pitch + scan_align) & ~scan_align;
-@@ -79,9 +88,12 @@ int soft_cursor(struct fb_info *info, st
- 	else
- 		fb_sysmove_buf_aligned(info, &info->sprite, dst, d_pitch, src,
- 				   s_pitch, info->cursor.image.height);
--	info->cursor.image.data = dst;
-+	cur->image.data = dst;
- 	
--	info->fbops->fb_imageblit(info, &info->cursor.image);
-+	info->fbops->fb_imageblit(info, &cur->image);
-+
-+	kfree(src);
-+
- 	return 0;
- }
- 
-
-
+Looks great Tony, thanks for fixing this.
 
 
 -------------------------------------------------------

@@ -1,22 +1,24 @@
-From: Unknown <unknown@unknown.invalid>
-Subject: Undeliverable message returned to sender
-Date: Thu, 25 Mar 2004 04:51:11 +0000 (UCT)
+From: Mail Delivery System <Mailer-Daemon@nl.demon.net>
+Subject: Mail delivery failed: returning message to sender
+Date: Thu, 25 Mar 2004 16:44:31 +0000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040325045111.DFF521873F5@mail22-kan-R.bigfish.com>
+Message-ID: <E1B6Xy3-000DUv-92@fakedmsgid.mail.nl.demon.net>
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B6Mpv-0000rD-Ab
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 24 Mar 2004 20:51:23 -0800
-Received: from mail-kan.bigfish.com ([63.161.60.29] helo=mail22-kan-R.bigfish.com)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1B6Mpt-0006JU-Ch
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 24 Mar 2004 20:51:21 -0800
-Received: from localhost.localdomain (localhost.localdomain [127.0.0.1])
-	by mail22-kan-R.bigfish.com (Postfix) with ESMTP id DFF521873F5
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 25 Mar 2004 04:51:11 +0000 (UCT)
-From: Content Filter <>
+	id 1B6Xy6-0004sz-K6
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Mar 2004 08:44:34 -0800
+Received: from post-21.mail.nl.demon.net ([194.159.73.20])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1B6Xy4-0003Se-7B
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Mar 2004 08:44:32 -0800
+Received: from [194.159.73.161] (helo=incoming-21.mail.nl.demon.net)
+	by post-21.mail.nl.demon.net with esmtp (Exim 3.36 #2)
+	id 1B6Xy3-0001Rl-00
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Mar 2004 16:44:31 +0000
+Received: from exim by incoming-21.mail.nl.demon.net with local (Exim 4.24)
+	id 1B6Xy3-000DUv-92
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Mar 2004 16:44:31 +0000
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,33 +35,14 @@ To: linux-fbdev-devel@lists.sourceforge.net
 
 This message was created automatically by mail delivery software.
 
-Delivery failed for the following recipients(s):
- 	twoller@crystal.cirrus.com
+A message that you sent could not be delivered to one or more of its
+recipients. This is a permanent error. The following address(es) failed:
 
-The message you sent contained an attachment which the recipient has chosen to block.
-Usually these sort of attachments are blocked to prevent malicious software from
-being sent to the recipient in question.
+  gerben_wierda@rna.nl
+    SMTP error from remote mailer after RCPT TO:<gerben_wierda@rna.nl>:
+    host 82.161.98.36 [82.161.98.36]: 550 <gerben_wierda@rna.nl>:
+    User unknown in local recipient table
 
-The name(s) of the blocked file(s) follow:
-	your_website.pif
-
-To send this file, please place it in a compressed archive using WinZip (http://www.winzip.com) or the archive software of your choice.
-
------ Original Message Header -----
-Received: by mail22-kan (MessageSwitch) id 1080190271658372_8101; Thu, 25 Mar 2004 04:51:11 +0000 (UCT)
-Received: from crystal.cirrus.com (unknown [202.149.216.214])
-	by mail22-kan.bigfish.com (Postfix) with ESMTP id B81D0187392
-	for <twoller@crystal.cirrus.com>; Thu, 25 Mar 2004 04:51:06 +0000 (UCT)
-From: linux-fbdev-devel@lists.sourceforge.net
-To: twoller@crystal.cirrus.com
-Subject: Re: Your website
-Date: Sun, 15 Dec 2002 10:21:45 +0530
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0013_00002F5B.00007B30"
-X-Priority: 3
-X-MSMail-Priority: Normal
-Message-Id: <20040325045106.B81D0187392@mail22-kan.bigfish.com>
 
 
 -------------------------------------------------------

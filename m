@@ -1,20 +1,20 @@
-From: John Zielinski <grim@undead.cc>
-Subject: patch to radeonfb accel functions
-Date: Fri, 23 Apr 2004 03:04:52 -0400
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Vesafb patch
+Date: Fri, 23 Apr 2004 10:42:57 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <4088C014.7030505@undead.cc>
+Message-ID: <Pine.GSO.4.58.0404231037360.11983@waterleaf.sonytel.be>
+References: <Pine.LNX.4.44.0404221914190.24337-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="------------050909090006060005030303"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BGukA-0003cE-38
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 00:05:02 -0700
-Received: from ns2.undead.cc ([216.126.84.18] helo=mail.undead.cc)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1BGuk9-0004R5-N2
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 00:05:01 -0700
+	id 1BGwH8-000185-LH
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 01:43:10 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BGwH8-0001hh-45
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 01:43:10 -0700
+In-Reply-To: <Pine.LNX.4.44.0404221914190.24337-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -24,58 +24,48 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
-
-This is a multi-part message in MIME format.
---------------050909090006060005030303
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: James Simmons <jsimmons@infradead.org>
+Cc: Andrew Morton <akpm@osdl.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-I haven't seen anything about this on the list so I'm posting it.  The 
-first change adds the pseudo_palette lookup to the fillrect function 
-which cleans up the ugliness when running make menuconfig among other 
-things.  The second change I'm not 100% sure if it's right but I'm quite 
-sure what was originally there isn't right.  DP_SRC_RECT has the same 
-value as GMC_DST_8BPP and is listed in the DP_MIX section and not the 
-GMC section .  I'm assuming it should have been GMC_DP_SRC_RECT .  Can 
-someone else confirm this?
+On Thu, 22 Apr 2004, James Simmons wrote:
+> This patch updates vesafb to use the framebuffer_alloc/framebuffer_release
+> function. It also adds a long ago patch for mtrr handling.
+>
+> --- linus-2.6/drivers/video/vesafb.c	2004-04-21 15:39:16.000000000 -0700
+> +++ fbdev-2.6/drivers/video/vesafb.c	2004-04-21 18:41:44.000000000 -0700
+> @@ -47,12 +47,13 @@
+>  	.accel	= FB_ACCEL_NONE,
+>  };
+>
+> -static struct fb_info fb_info;
+> -static u32 pseudo_palette[17];
+> -
+>  static int             inverse   = 0;
+> +#ifdef __x86_64__
+>  static int             mtrr      = 1;
+> -
+> +#else
+> +static int	       mtrr	 = 0;
+> +#endif
 
-John
+IIRC, the consensus a while ago was that MTRR was always OK, not only on
+x86-64?
 
+Cfr. the previous change
+http://linux.bkbits.net:8080/linux-2.5/diffs/drivers/video/vesafb.c@1.33?nav=index.html|src/|src/drivers|src/drivers/video|hist/drivers/video/vesafb.c
 
---------------050909090006060005030303
-Content-Type: text/plain;
- name="radeon_accel.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="radeon_accel.patch"
+Gr{oetje,eeting}s,
 
-diff -urNX dontdiff linux-2.6.5/drivers/video/aty/radeon_accel.c linux/drivers/video/aty/radeon_accel.c
---- linux-2.6.5/drivers/video/aty/radeon_accel.c	2004-04-03 22:37:36.000000000 -0500
-+++ linux/drivers/video/aty/radeon_accel.c	2004-04-23 02:36:54.000000000 -0400
-@@ -47,6 +47,10 @@
- 	if(modded.dx + modded.width  > vxres) modded.width  = vxres - modded.dx;
- 	if(modded.dy + modded.height > vyres) modded.height = vyres - modded.dy;
- 
-+	if (info->fix.visual == FB_VISUAL_TRUECOLOR ||
-+	    info->fix.visual == FB_VISUAL_DIRECTCOLOR )
-+		modded.color = ((u32 *) (info->pseudo_palette))[modded.color];
-+		
- 	radeonfb_prim_fillrect(rinfo, &modded);
- }
- 
-@@ -58,7 +62,7 @@
- 		rinfo->dp_gui_master_cntl /* i.e. GMC_DST_32BPP */
- 		| GMC_SRC_DSTCOLOR
- 		| ROP3_S 
--		| DP_SRC_RECT );
-+		| GMC_DP_SRC_RECT );
- 	OUTREG(DP_WRITE_MSK, 0xffffffff);
- 	OUTREG(DP_CNTL, (DST_X_LEFT_TO_RIGHT | DST_Y_TOP_TO_BOTTOM));
- 
+						Geert
 
---------------050909090006060005030303--
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

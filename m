@@ -1,25 +1,21 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: Re: [PATCH 8/10] fbdev: Allow core fb to be
- built as a module
-Date: Tue, 8 Mar 2005 22:50:28 -0800
-Message-ID: <20050308225028.2b1015b4.akpm@osdl.org>
-References: <200503060816.55890.adaplas@hotpop.com>
-	<9e47339105030720507cc34a68@mail.gmail.com>
-	<20050307205808.60301d30.akpm@osdl.org>
-	<200503091348.35322.adaplas@hotpop.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [announce 0/7] fbsplash - The Framebuffer
+ Splash
+Date: Wed, 9 Mar 2005 10:34:59 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0503091033400.22598@numbat.sonytel.be>
+References: <20050308015731.GA26249@spock.one.pl> <200503091301.15832.adaplas@hotpop.com>
+ <9e473391050308220218cc26a3@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D8v27-0007Xw-Rq
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 08 Mar 2005 22:51:03 -0800
-Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.41)
-	id 1D8v22-0003pz-Qf
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 08 Mar 2005 22:51:03 -0800
-In-Reply-To: <200503091348.35322.adaplas@hotpop.com>
+	id 1D8xb3-0006aS-Jw
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 09 Mar 2005 01:35:17 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1D8xb1-0003Lr-VN
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 09 Mar 2005 01:35:17 -0800
+In-Reply-To: <9e473391050308220218cc26a3@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,70 +26,29 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: adaplas@pol.net
-Cc: adaplas@hotpop.com, linux-fbdev-devel@lists.sourceforge.net, jonsmirl@gmail.com
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Michal Januszewski <spock@gentoo.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>, "Antonino A. Daplas" <adaplas@hotpop.com>
 
-"Antonino A. Daplas" <adaplas@hotpop.com> wrote:
->
-> On Tuesday 08 March 2005 12:58, Andrew Morton wrote:
-> > Jon Smirl <jonsmirl@gmail.com> wrote:
-> > > Did you fix this or do I need to send another patch?
-> >
-> > I fixed it.
-> >
-> >
-> >
-> > We seem to have a few newish fbdev bugs btw:
-> >
-> > From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-> > To: linux-kernel@vger.kernel.org, jim.hague@acm.org,
-> > linux-fbdev-devel@lists.sourceforge.net Subject: [2.6.11 Permedia-2
-> > Framebuffer] driver broken (?).
-> >
-> 
-> Resolved by Jim Hague in another thread.  If you haven't seen it yet,
-> here's the patch.
-> 
-> --- drivers/video/pm2fb.c.orig  2005-03-07 15:35:28.000000000 +0000
-> +++ drivers/video/pm2fb.c       2005-03-07 18:34:13.000000000 +0000
-> @@ -747,7 +747,7 @@
->         }
->         if ((info->var.vmode & FB_VMODE_MASK)==FB_VMODE_DOUBLE)
->                 video |= PM2F_LINE_DOUBLE;
-> -       if (info->var.activate==FB_ACTIVATE_NOW)
-> +       if ((info->var.activate & FB_ACTIVATE_MASK)==FB_ACTIVATE_NOW)
->                 video |= PM2F_VIDEO_ENABLE;
->         par->video = video;
+On Wed, 9 Mar 2005, Jon Smirl wrote:
+> Another idea would be to build a console is user space. Think of it as
+> a full screen xterm. A user space console has access to full hardware
+> acceleration using the DRM interface.
 
-OK, thanks.  I'll wait until your next patch drop for this.
+Yep. And that's what Alan Cox wanted to do. Console in userspace, eye candy
+(using Porter-Duff blending) as much as you want, full UTF-8 support, ...
 
-> 
-> >
-> > From: Henrik Persson <root@fulhack.info>
-> > To: unlisted-recipients:;;@localhost.localdomain (no To-header on input)
-> > Cc: dtor@mail.ru, linux-kernel@vger.kernel.org
-> > Subject: Re: Touchpad "tapping" changes in 2.6.11?
-> >
-> > 	("Well, -mm1 didn't quite agree with my savage gfx drivers")
-> 
-> Any details on this?
-> 
+Gr{oetje,eeting}s,
 
-Yeah, it was just a compile error due to the support-multiple-AGP-bridges
-API change.  No doubt the devleopers will fix that up soon.  
+						Geert
 
-Henrik said he's using drivers from:
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
- CVS (from mesa, xorg and dri cvs all-in-one) snapshots at 
- http://dri.freedesktop.org/snapshots/
-
- I don't really know why it isn't merged. It's under pretty heavy 
- development right now, but maybe it could get into -mm anyway?
-
- Felix Khling <fxkuehl@gmx.de> is the driver hacker. He should know more.
-
-A DRI driver, I guess.  Are we planning on merging that in?
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

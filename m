@@ -1,15 +1,14 @@
-From: "Holzrichter, Bruce" <bruce.holzrichter@monster.com>
-Subject: RE: 2.5 atyfb on Sparc question
-Date: Mon, 12 Aug 2002 13:42:58 -0500
+From: Seiichi Nakashima <nakasima@kumin.ne.jp>
+Subject: VESA VGA Graphic console has error to use emacs
+Date: Tue, 13 Aug 2002 07:57:32 +0900
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <61DB42B180EAB34E9D28346C11535A780112F9C1@nocmail101.ma.tmpw.net>
+Message-ID: <200208122257.AA00113@prism.kumin.ne.jp>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mailsorter.ma.tmpw.net ([63.112.169.25])
-	by usw-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17eKAF-0001VS-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 12 Aug 2002 11:43:39 -0700
+Received: from heavymos.kumin.ne.jp ([61.114.158.133] helo=emerald.kumin.ne.jp)
+	by usw-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17eO8i-0002qP-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 12 Aug 2002 15:58:21 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,52 +20,43 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'James Simmons' <jsimmons@infradead.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net.
 
+Hi.
 
-> 
-> Try it again. I pushed some fixes.
-> 
+I found VESA VGA Graphic console at linux-2.5.31 again.
+and I was adviced by Petr Vandrovec that forward to linux-fbdev-devel@lists.sourceforge.net
 
-Here's a simple one liner fix, pretty self explanatory, if you haven't
-caught it yet.  ;o)
+=====
 
---- atyfb_base.c.old    Mon Aug 12 11:34:44 2002
-+++ atyfb_base.c        Mon Aug 12 10:57:11 2002
-@@ -2241,7 +2241,7 @@
-                                    aty_ld_le32(CRTC_H_TOTAL_DISP,
-default_par);
-                                crtc.h_sync_strt_wid =
-                                    aty_ld_le32(CRTC_H_SYNC_STRT_WID,
--                                               defualt_par);
-+                                               default_par);
-                                crtc.v_tot_disp =
-                                    aty_ld_le32(CRTC_V_TOTAL_DISP,
-default_par);
-                                crtc.v_sync_strt_wid =
+>I use linux-2.5.30 with VESA VGA Graphic console at slackware-8.1 based environment.
+>when I use emacs( 21.2 ), these situation occured. (I used to boot up with vga=771)
+>
+>(1) # emacs /tmp/test
+>    I type a line ( /sbin/ifconfig lo 127.0.0.1 ), and save file.
+>
+>(2) # emacs /tmp/test
+>    a line ( /sbin/ifconfig lo 127.0.0.1 ) displayed in emacs frame.
+>
+>(3) I wand to insert few spaces between /sbin/ifconfig and lo.
+>    when I type a space, then a line change to a line ( /sbin/ifconfig  oo 127.0.0.1 ).
+>    I could not edit a line as I want to edit.
+>    this situation display only. when I save file and re-read file, results were fine.
+>
+>(4) I boot up PC ( erase VGA option ), I checked this test, everything OK.
+>
+>I checked a same test at linux-2.5.26,28,30 and got a same result.
+>I checked at linux-2.4.19, it is OK( everything work fine with vga=771 ).
+>I thinked VESA VGA Graphic console has bug to display in emacs frame.
+>
+>Before VESA VGA Graphic console occured kernel panic at linux-2.5.14,15.
+>from linux-2.5.16 VESA VGA Graphic console compile and work fine,
+>but Pengin Image did not display at boot up time. is it OK?
 
-Now looking to track this one down.  Haven't found it yet....
-
-  ld -m elf64_sparc -T arch/sparc64/vmlinux.lds arch/sparc64/kernel/head.o
-arch/sparc64/kernel/init_task.o init/init.o --start-group
-arch/sparc64/kernel/kernel.o arch/sparc64/mm/mm.o kernel/kernel.o mm/mm.o
-fs/fs.o ipc/ipc.o security/built-in.o arch/sparc64/math-emu/math-emu.o
-/home/bruce/sparctest/lib/lib.a lib/lib.a
-/home/bruce/sparctest/arch/sparc64/prom/promlib.a
-/home/bruce/sparctest/arch/sparc64/lib/lib.a drivers/built-in.o
-sound/sound.o net/network.o --end-group -o vmlinux
-drivers/built-in.o: In function `console_init':
-drivers/built-in.o(.text.init+0xa78): undefined reference to
-`uart_console_init'
-make: *** [vmlinux] Error 1
-
-B.
-
-
-
-
-
+--------------------------------
+  Seiichi Nakashima
+  Email   nakasima@kumin.ne.jp
+--------------------------------
 
 
 -------------------------------------------------------

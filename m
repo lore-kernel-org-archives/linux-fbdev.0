@@ -1,24 +1,23 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: [PATCH] atyfb: Blank LCD by turning off backlight voltage
-Date: Thu, 17 Jun 2004 12:53:41 +0300
+From: Timothy Miller <miller@techsource.com>
+Subject: Re: accelerated radeonfb produces artifacts on
+ scrolling in 2.6.7
+Date: Thu, 17 Jun 2004 09:51:07 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040617095341.GC28687@sci.fi>
+Message-ID: <40D1A1CB.7090301@techsource.com>
+References: <20040616182415.GA8286@middle.of.nowhere> <20040616184145.GA12673@havoc.gtf.org> <40D0A5B4.7060007@techsource.com> <20040616195210.GA26935@middle.of.nowhere>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="yVhtmJPUSI46BTXb"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BataY-0001hi-Kp
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Jun 2004 02:53:42 -0700
-Received: from gw02.mail.saunalahti.fi ([195.197.172.116])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BataY-00060M-6A
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Jun 2004 02:53:42 -0700
-Received: from kuori.saunalahti.fi (kuori.saunalahti.fi [195.197.175.23])
-	by gw02.mail.saunalahti.fi (Postfix) with ESMTP id 59B834047E
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 17 Jun 2004 12:53:41 +0300 (EEST)
-Content-Disposition: inline
+	id 1Bax1W-0000ss-JG
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Jun 2004 06:33:46 -0700
+Received: from kinesis.swishmail.com ([209.10.110.86] ident=qmailr)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1Bax1W-0008Fg-8U
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Jun 2004 06:33:46 -0700
+In-Reply-To: <20040616195210.GA26935@middle.of.nowhere>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,63 +27,28 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Jurriaan <thunder7@xs4all.nl>
+Cc: David Eger <eger@havoc.gtf.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
 
---yVhtmJPUSI46BTXb
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-This patch makes the blanking code turn the backlight voltage on/off.
+Jurriaan wrote:
 
---=20
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+>>Is this the case even with the off-by-one error in the bitblt code 
+>>fixed?  In the 2.4 kernel, I got rid of all artifacts by fixing the 
+>>off-by-one error.
 
---yVhtmJPUSI46BTXb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="atyfb-2.6-lcd_blank.patch"
+> You mean this code? I see (w-1) and (h-1) in there.
 
-diff -urN linux-orig/drivers/video/aty/atyfb_base.c linux/drivers/video/aty/atyfb_base.c
---- linux-orig/drivers/video/aty/atyfb_base.c	2004-06-17 11:41:21.265972568 +0300
-+++ linux/drivers/video/aty/atyfb_base.c	2004-06-17 11:40:45.733374344 +0300
-@@ -2464,7 +2464,14 @@
- #ifdef CONFIG_PMAC_BACKLIGHT
- 	if ((_machine == _MACH_Pmac) && blank)
- 		set_backlight_enable(0);
--#endif /* CONFIG_PMAC_BACKLIGHT */
-+#elif defined(CONFIG_FB_ATY_GENERIC_LCD)
-+	if (par->lcd_table && blank &&
-+	    (aty_ld_lcd(LCD_GEN_CNTL, par) & LCD_ON)) {
-+		u32 pm = aty_ld_lcd(POWER_MANAGEMENT, par);
-+		pm &= ~PWR_BLON;
-+		aty_st_lcd(POWER_MANAGEMENT, pm, par);
-+	}
-+#endif
- 
- 	gen_cntl = aty_ld_8(CRTC_GEN_CNTL, par);
- 	if (blank > 0)
-@@ -2488,7 +2495,15 @@
- #ifdef CONFIG_PMAC_BACKLIGHT
- 	if ((_machine == _MACH_Pmac) && !blank)
- 		set_backlight_enable(1);
--#endif /* CONFIG_PMAC_BACKLIGHT */
-+#elif defined(CONFIG_FB_ATY_GENERIC_LCD)
-+	if (par->lcd_table && !blank &&
-+	    (aty_ld_lcd(LCD_GEN_CNTL, par) & LCD_ON)) {
-+		u32 pm = aty_ld_lcd(POWER_MANAGEMENT, par);
-+		pm |= PWR_BLON;
-+		aty_st_lcd(POWER_MANAGEMENT, pm, par);
-+	}
-+#endif
-+
- 	return 0;
- }
- 
 
---yVhtmJPUSI46BTXb--
+> 
+> 	if ( xdir < 0 ) { sx += w-1; dx += w-1; }
+> 	if ( ydir < 0 ) { sy += h-1; dy += h-1; }
+
+
+Yes, that's the code, and it's correct.
+
 
 
 -------------------------------------------------------

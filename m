@@ -1,19 +1,22 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: fb_console_init fix.
-Date: Fri, 20 Feb 2004 21:58:02 +0000 (GMT)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: fb_console_init fix.
+Date: Sat, 21 Feb 2004 09:56:56 +1100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0402202156340.6798-100000@phoenix.infradead.org>
+Message-ID: <1077317816.9623.20.camel@gaston>
+References: <Pine.LNX.4.44.0402202156340.6798-100000@phoenix.infradead.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AuIkw-0007hS-7P
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 20 Feb 2004 14:04:22 -0800
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1AuJlI-0004K1-FU
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 20 Feb 2004 15:08:48 -0800
+Received: from gate.crashing.org ([63.228.1.57] ident=root)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1AuIVo-0001Tv-RS
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 20 Feb 2004 13:48:45 -0800
+	id 1AuJfC-0002GW-JX
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 20 Feb 2004 15:02:30 -0800
+In-Reply-To: <Pine.LNX.4.44.0402202156340.6798-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -23,49 +26,44 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@transmeta.com>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linus Torvalds <torvalds@transmeta.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+
+On Sat, 2004-02-21 at 08:58, James Simmons wrote:
+> Hi!
+> 
+>   This patch fixes fb_console_init from being called twice. I still need 
+> to fix set_con2fb but this helps but this is still important to get in.
+
+I hate those #ifdef MODULE. They are plaguing the drivers too, because
+of our crazy initialization scheme...
+
+(Linus: that patch should still go in, doing better is probably a
+2.7 target in this case).
+
+If we want the fb stuff to be initialized before other drivers, we
+probably want to create an init step before devices and after PCI
+probe, but is that really necessary ?
+
+The core fbdev should just need a subsys initcall. fbcon could use
+that too and register a notifier. Then we could use the notifier
+mecanism to notify fbcon when fbdev's are added (from
+register_framebuffer) and get rid of all of the init crap
+
+The only remaining junk is to deal with the setup= stuff, but
+then, it could be done by having the drivers provide their
+"name" string & setup function in the ops structure passed
+on register, and have us call back the driver straight away,
+though that's a big change of the way drivers are initialized.
+
+Or we could add an fb_check_setup("name", my_driver_setup) call
+to be done by the drivers before register_framebuffer is called
 
 
-Hi!
+Ben
+.
 
-  This patch fixes fb_console_init from being called twice. I still need 
-to fix set_con2fb but this helps but this is still important to get in.
-
---- linus-2.6/drivers/video/console/fbcon.c	2004-02-18 20:59:11.000000000 -0800
-+++ fbdev-2.6/drivers/video/console/fbcon.c	2004-02-19 18:14:52.000000000 -0800
-@@ -2335,6 +2335,7 @@
- {
- 	if (!num_registered_fb)
- 		return -ENODEV;
-+
- 	take_over_console(&fb_con, first_fb_vc, last_fb_vc, fbcon_is_default);
- 	acquire_console_sem();
- 	if (!fbcon_event_notifier_registered) {
-@@ -2342,10 +2343,11 @@
- 		fbcon_event_notifier_registered = 1;
- 	} 
- 	release_console_sem();
--
- 	return 0;
- }
- 
-+#ifdef MODULE
-+
- void __exit fb_console_exit(void)
- {
- 	acquire_console_sem();
-@@ -2360,6 +2362,8 @@
- module_init(fb_console_init);
- module_exit(fb_console_exit);
- 
-+#endif
-+
- /*
-  *  Visible symbols for modules
-  */
 
 
 

@@ -1,15 +1,23 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Dri-devel] Re: DRM and pci_driver
-	conversion
-Date: Sun, 26 Oct 2003 00:07:08 +0200
+From: Ingo Oeser <ioe-lkml@rameria.de>
+Subject: Re: [Dri-devel] Re: DRM and pci_driver conversion
+Date: Mon, 27 Oct 2003 16:37:30 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1067119628.3570.23.camel@gaston>
-References: <Pine.LNX.4.44.0310251116140.4083-100000@home.osdl.org>
-Reply-To: benh@kernel.crashing.org
+Message-ID: <200310271537.30435.ioe-lkml__21583.9665303522$1067274709@rameria.de>
+References: <Pine.LNX.4.44.0310251116140.4083-100000@home.osdl.org> <3F9ACC58.5010707@pobox.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-In-Reply-To: <Pine.LNX.4.44.0310251116140.4083-100000@home.osdl.org>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 1AE8gG-0001rg-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 27 Oct 2003 06:49:16 -0800
+Received: from smtprelay02.ispgateway.de ([62.67.200.157])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.24)
+	id 1AE8ba-00072L-B9
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 27 Oct 2003 06:44:26 -0800
+In-Reply-To: <3F9ACC58.5010707@pobox.com>
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,72 +28,41 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: Egbert Eich <eich@xfree86.org>, Jon Smirl <jonsmirl@yahoo.com>, Eric Anholt <eta@lclark.edu>, Kronos <kronos@kronoz.cjb.net>, Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, dri-devel <dri-devel@lists.sourceforge.net>, Jeff Garzik <jgarzik@pobox.com>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: Egbert Eich <eich@xfree86.org>, Jon Smirl <jonsmirl@yahoo.com>, Eric Anholt <eta@lclark.edu>, kronos@kronoz.cjb.net, Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net, dri-devel <dri-devel@lists.sourceforge.net>, Linus Torvalds <torvalds@osdl.org>
 
-
-> Face it, a good graphics driver needs more than just "set up the ROM". It
-> needs DMA access, and the ability to use interrupts. It needs a real
+On Saturday 25 October 2003 21:17, Jeff Garzik wrote:
+> Graphics processors are growing more general, too -- moving towards
+> generic vector/data processing engines.  I bet you'll see an optimal
+> model emerge where you have some sort of "JIT" for GPU microcode in
+> userspace.  Multiple apps pipeline X/GL/hardware commands into the JIT,
+> which in turn pipelines data and microcode commands to the GPU kernel
 > driver.
-> 
-> It basically needs something like what the DRI modules tend to do.
-> 
-> I'd be really happy to have real graphics drivers in the kernel, but quite
-> frankly, so far the abstractions I've seen have sucked dead donkeys
-> through a straw. "fbcon" does way too much (it's not a driver, it's more a
-> text delivery system and a mode switcher). And DRI is too complex and
-> fluid to be a good low-level driver.
 
-Well... While I tend to agree, note that in 2.6 fbcon and the fbdev
-itself _do_ have been separated. The fbdevs are moving toward that
-low level driver thing.
+These "JIT" is needed also for another reason: 
 
-> Quite frankly, I'd much rather see a low-level graphics driver that does
-> _two_ things, and those things only:
-> 
->  - basic hardware enumeration and setup (and no, "basic setup" does not
->    mean "mode switching": it literally means things like doing the 
->    pci_enable_device() stuff.
-> 
->  - serialization and arbitrary command queuing from a _trusted_ party (ie
->    it could take command lists from the X server, but not from untrusted
->    clients). This part basically boils down to "DMA and interrupts". This 
->    is the part that allows others to wait for command completion, "enough 
->    space in the ring buffers" etc. But it does _not_ know or care what the 
->    commands are.
+	There are contraints for GPU commands and the pipelines need to
+	be modelled, like CPU piplines are modelled in a compiler. But
+	more like the pipelines of some early long instruction word
+	processors, where issuing to a used pipeline will cause random
+	behavior and crashes. So the JIT doesn't should also emit
+	synchronization points. 
 
-IMHO, that low level driver should be ... the fbdev. The main reason for
-that is the necessary locking & synchronisation between the command flow
-and mode switching, palette control and cursor control (which aren't
-things doable via the normal command path on moth cases).
+With this JIT in place, there need to be just some hardware description
+files (backends) and some API (GL, DirectX, X) description files
+(frontends).
 
-> Then, fbcon and DRI and X could all three use these basics - and they'd be
-> _so_ basic that the hardware layer could be really stable (unlike the DRI
-> code that tends to have to upgrade for each new type of command that DRI
-> adds - since it has to take care of untrusted clients. So DRI would
-> basically use the low-level driver as a separate module, the way it
-> already uses AGP).
+Now we just need some funding for that and the datasheets. Then it's
+doable.
 
-I agree that fbcon itself should (and is now in 2.6) be a separate
-module. The interface is still scary, the locking is almost absent,
-which is a real problem even with current mode switching beeing racy
-with printk & blanking, but at least we have something that works and
-can evolve in the right direction.
+I see just one showstopper: Cheating in benchmarks isn't possible anymore.
 
-Look how the fbdev interface was simplified in the 2.4 -> 2.6
-transition, it's really a lot saner now, and I hope it will continue
-to improve.
+PS: That's basically the GGI approach taken further.
 
-> But I'm _not_ interested in some interfaces to let user mode just bypass 
-> the kernel. Because they will not solve any of the other problems that 
-> clearly _do_ need solving, and if the X server continues to believe that 
-> it can just access the hardware directly, it will never play well together 
-> with projects like fbcon/dri.
+Regards
 
-Fully agreed. My point is that this low-level driver and the fbdev should
-be one thing.
+Ingo Oeser
 
-Ben.
 
 
 

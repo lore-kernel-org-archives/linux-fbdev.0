@@ -1,21 +1,21 @@
 From: Jim Hague <jim.hague@acm.org>
 Subject: Re: [2.6.11 Permedia-2 Framebuffer] driver broken (?).
-Date: Mon, 07 Mar 2005 19:44:24 -0000 (GMT)
-Message-ID: <XFMail.20050307194424.jim.hague@acm.org>
-References: <Pine.LNX.4.60.0503052355320.12643@poirot.grange>
+Date: Mon, 07 Mar 2005 22:08:32 -0000 (GMT)
+Message-ID: <XFMail.20050307220832.jim.hague@acm.org>
+References: <Pine.LNX.4.60.0503072119420.6636@poirot.grange>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D8O9e-0004pB-8s
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Mar 2005 11:44:38 -0800
+	id 1D8QPy-0005YF-P3
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Mar 2005 14:09:38 -0800
 Received: from cpc1-oxfd2-6-0-cust43.oxfd.cable.ntl.com ([81.103.191.43] helo=fluffy.bear-cave.org.uk)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.41)
-	id 1D8O9c-00067x-Iq
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Mar 2005 11:44:38 -0800
-In-Reply-To: <Pine.LNX.4.60.0503052355320.12643@poirot.grange>
+	id 1D8QPx-0007Qf-1o
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Mar 2005 14:09:38 -0800
+In-Reply-To: <Pine.LNX.4.60.0503072119420.6636@poirot.grange>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,51 +28,63 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On 05-Mar-2005 Guennadi Liakhovetski wrote:
-> Worked on 2.6.10-rc2. With 2.6.11 during boot upon switching to fb, tex=
-t=20
-> becomes orange, penguins look sick (not sharp). X starts and runs norma=
-l=20
-> (doesn't use fb), switching to vt not possible any more. Disabling=20
-> fb-console in kernel config fixes VTs. Reverting pm2fb.c fixes the=20
-> problem.
+Hi Guennadi,
 
-I've just tried a stock 2.6.11 fresh from the tarball, and I see some of =
-what
-you are seeing.
+> Thanks for the patch. Yes, it does fix switching between X and VT.
 
-I don't see any problems with text colour or images. Text is white, Tux i=
-s 100%
-normal. This on a single processor K6/2-450 with a Creative Graphics Blas=
-ter
-Exxtreme, BTW.
+OK, good.
 
-However, I do see the problem switching back to a vt from X. In fact it d=
-oes
-work, except that the video is blanked. This is a bug in pm2fb.c exposed =
-by
-recent changes to fbcon. Please try this fix (works for me) and let me kn=
-ow if
-it restores normal service for you too.
+> As for colours / graphics, disabling CONFIG_FB_PM2_FIFO_DISCONNECT fixe=
+s
+> that too, but it worked under 2.6.10-rc2 with that option on too. What =
+does
+> it do and why I cannot use it under 2.6.11 any more? The help text to t=
+his=20
+> option is not very enlightening...
 
---- drivers/video/pm2fb.c.orig  2005-03-07 15:35:28.000000000 +0000
-+++ drivers/video/pm2fb.c       2005-03-07 18:34:13.000000000 +0000
-@@ -747,7 +747,7 @@
-        }
-        if ((info->var.vmode & FB_VMODE_MASK)=3D=3DFB_VMODE_DOUBLE)
-                video |=3D PM2F_LINE_DOUBLE;
--       if (info->var.activate=3D=3DFB_ACTIVATE_NOW)
-+       if ((info->var.activate & FB_ACTIVATE_MASK)=3D=3DFB_ACTIVATE_NOW)
-                video |=3D PM2F_VIDEO_ENABLE;
-        par->video =3D video;
+(To be honest, I've never looked closely at this but inherited it from Il=
+lo's
+2.4 driver. Cue scrabbling around in manuals...)
 
-Returning to your problems with text colour and images, can you try
-with CONFIG_FB_PM2_FIFO_DISCONNECT=3Dn and see if that makes a difference=
-.
+pm2fb programs the Permedia registers by writing to a FIFO. Normally if y=
+ou
+attempt to write to the FIFO and the FIFO is full, the write is lost. So =
+pm2fb
+checks before writing that there is sufficient space in the FIFO to hold =
+the
+full command sequence, and if not it loops waiting for the FIFO to empty
+sufficiently.
 
-Thanks.
+Enabling FIFO_DISCONNECT enables PCI Disconnect. In this mode, if a write=
+ to
+the FIFO occurs when the FIFO is full, the Permedia chip enables PCI Disc=
+onnect
+which causes the processor to keep retrying the write cycle until the FIF=
+O
+empties and the write succeeds.
+
+On the one hand this allows faster download to the Permedia because you d=
+on't
+have to check the FIFO space, but at a cost of hogging the PCI bus (and p=
+ossibly
+causing interrupt loss) until the Permedia is ready. The programmers manu=
+al
+cautions that it should only be used when you know that the Permedia can
+consume data faster than the host can generate it and/or where there are =
+no
+time-critical periperals on the PCI bus.
+
+All of which sounds to me like enabling PCI Disconnect isn't a great idea=
+ and
+offers at best infinitesimal speedups. Having said that, the X driver doe=
+s seem
+to turn it on, which probably shows how much I know. As to why it's sudde=
+nly
+stopped working, I have no idea. I'll try it out and see if I see the sam=
+e
+problems.
 
 --=20
 Jim Hague - jim.hague@acm.org          Never trust a computer you can't l=

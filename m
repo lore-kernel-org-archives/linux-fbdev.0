@@ -1,17 +1,16 @@
-From: Petr Vandrovec <vandrove@vc.cvut.cz>
+From: Antonino Daplas <adaplas@pol.net>
 Subject: Re: fb_pan_display
-Date: Sun, 3 Nov 2002 03:25:07 +0100
+Date: 03 Nov 2002 02:43:49 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20021103022507.GE10610@ppc.vc.cvut.cz>
+Message-ID: <1036262577.583.3.camel@daplas>
 References: <Pine.LNX.4.33.0211010908390.6296-100000@maxwell.earthlink.net>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from p0050.as-l042.contactel.cz ([194.108.237.50] helo=ppc.vc.cvut.cz)
-	by usw-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 188AS8-0004FY-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 02 Nov 2002 18:25:29 -0800
-Content-Disposition: inline
+Received: from [203.167.79.9] (helo=willow.compass.com.ph)
+	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 1883ID-0007Lv-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 02 Nov 2002 10:46:45 -0800
 In-Reply-To: <Pine.LNX.4.33.0211010908390.6296-100000@maxwell.earthlink.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
@@ -23,11 +22,10 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: James Simmons <jsimmons@infradead.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Fri, Nov 01, 2002 at 09:11:08AM -0800, James Simmons wrote:
+On Sat, 2002-11-02 at 01:11, James Simmons wrote:
 > 
 > Hi!
 > 
@@ -43,15 +41,6 @@ On Fri, Nov 01, 2002 at 09:11:08AM -0800, James Simmons wrote:
 >         if (xoffset < 0 || yoffset < 0 ||
 >             xoffset + info->var.xres > info->var.xres_virtual ||
 >             yoffset + info->var.yres > info->var.yres_virtual)
-
-Hm, do not YWRAP devices need this
-
-          if (xoffset < 0 || yoffset < 0 ||
-              xoffset >= info->var.xres_virtual ||
-              yoffset >= info->var.yres_virtual) {
-
-instead?
-
 >                 return -EINVAL;
 >         if (info->fbops->fb_pan_display) {
 >                 if ((err = info->fbops->fb_pan_display(var, info)))
@@ -66,14 +55,16 @@ instead?
 >         else
 >                 info->var.vmode &= ~FB_VMODE_YWRAP;
 >         return 0;
+> }
+> 
+> Now what I was wondering are these test standard enough that we coudl call
+> this instead of info->fb_ops->fb_pan_display. Several drivers have this
+> test so it would me more code reduction.
 
-Somebody has to check whether FB_VMODE_YWRAP is supported
-by this hardware at all (i.e. var.vmode should already
-contain FB_VMODE_YWRAP bit set from previous set_var, should
-not it?).
-					Best regards,
-						Petr Vandrovec
-						vandrove@vc.cvut.cz
+Looks generic enough for me.
+
+Tony
+
 
 
 -------------------------------------------------------

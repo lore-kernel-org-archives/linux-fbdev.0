@@ -1,69 +1,28 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: [STATUS] fbdev api.
-Date: 04 Dec 2002 08:32:07 +0500
+From: Tomas Szepe <szepe@pinerecords.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH] FBDev: vga16fb port
+Date: Wed, 4 Dec 2002 04:19:19 +0100
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1038972718.1086.17.camel@localhost.localdomain>
-References: <Pine.LNX.4.33.0212031417520.10097-100000@maxwell.earthlink.net>
+Message-ID: <20021204031919.GA11553@louise.pinerecords.com>
+References: <1038930464.11426.1.camel@irongate.swansea.linux.org.uk> <Pine.LNX.4.33.0212031401440.10097-100000@maxwell.earthlink.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.33.0212031417520.10097-100000@maxwell.earthlink.net>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.33.0212031401440.10097-100000@maxwell.earthlink.net>
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux console project <linuxconsole-dev@lists.sourceforge.net>
+Cc: Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Wed, 2002-12-04 at 03:18, James Simmons wrote:
 > 
-> > Attached is a patch against linux-2.5.50 + your fbdev.diff.
+> > I question whether thats something that belongs anywhere near the
+> > kernel. Ben Pfaff wrote a fine library for vga16 hackery (BOGL) and it
+> > combines very nicely with the fb driver.
 > 
-> Applied :-)
-> 
-> > b.  Another rewrite of fbcon_show_logo() so it's more understandable
-> > (hopefully).  I also added support for the rest of the visuals, but
-> > untested yet.
-> > Not tested:
-> > static psuedocolor, mono01, and mono10.
-> 
-> I have a mono hga card.
-> 
-Can you apply the following patch to include logo drawing support for all formats :-)?
+> Out of curiousity where is this library.
 
-diff -Naur linux-2.5.50-js/drivers/video/cfbimgblt.c linux/drivers/video/cfbimgblt.c
---- linux-2.5.50-js/drivers/video/cfbimgblt.c	2002-12-04 03:14:19.000000000 +0000
-+++ linux/drivers/video/cfbimgblt.c	2002-12-04 03:13:57.000000000 +0000
-@@ -123,11 +123,11 @@
- 			shift = start_index;
- 		}
- 		while (n--) {
--			if (p->fix.visual == FB_VISUAL_PSEUDOCOLOR)
--				color = *src & bitmask; 
- 			if (p->fix.visual == FB_VISUAL_TRUECOLOR ||
- 			    p->fix.visual == FB_VISUAL_DIRECTCOLOR )
- 				color = palette[*src] & bitmask;
-+			else
-+				color = *src & bitmask; 
- 			val |= SHIFT_HIGH(color, shift);
- 			if (shift >= null_bits) {
- 				FB_WRITEL(val, dst++);
+http://packages.qa.debian.org/b/bogl.html
+http://http.us.debian.org/debian/pool/main/b/bogl/bogl_0.1.10-3.tar.gz
 
-> > c.  prevent fbcon module from loading if no fbdev is registered.  Also
-> > made fbcon module unsafe to unload (for now).  This is optional, of course.
-> 
-> It is a good idea until we have the ability to switch back to text mode.
-> 
-It's not the switch back to text mode, that's very doable (see my other
-reply).  It's during give_up_console() at fbcon module exit.  At this
-point, the console suddenly disappears and freezes the system.  Maybe we
-can save the global "conswitchp" during fbcon module init, then
-something like this at fbcon module exit:
-
-void __exit fb_console_exit(void)
-{	
-	give_up_console(&fbcon);
-	take_over_console(saved_conswitchp, ...);	
-}
-
-Is this feasible?
-
-Tony
+-- 
+Tomas Szepe <szepe@pinerecords.com>

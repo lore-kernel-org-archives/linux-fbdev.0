@@ -1,22 +1,20 @@
-From: Alexander Kern <alex.kern@gmx.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: fbutils
-Date: Mon, 22 Dec 2003 23:42:15 +0100
+Date: Mon, 22 Dec 2003 17:21:06 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200312222342.15265.alex.kern@gmx.de>
-References: <3FE649BF.30501@undead.cc>
+Message-ID: <Pine.GSO.4.58.0312221718380.838@waterleaf.sonytel.be>
+References: <3FE649BF.30501@undead.cc> <200312222342.15265.alex.kern@gmx.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AYSRq-0005MY-O2
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 22 Dec 2003 07:58:22 -0800
-Received: from imap.gmx.net ([213.165.64.20] helo=mail.gmx.net)
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.24)
-	id 1AYSRq-0003wc-6E
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 22 Dec 2003 07:58:22 -0800
-In-Reply-To: <3FE649BF.30501@undead.cc>
-Content-Disposition: inline
+	id 1AYSny-0006bz-DK
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 22 Dec 2003 08:21:14 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.24)
+	id 1AYSnx-0005oF-S2
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 22 Dec 2003 08:21:14 -0800
+In-Reply-To: <200312222342.15265.alex.kern@gmx.de>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,25 +24,49 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
-Cc: John Zielinski <grim@undead.cc>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Alexander Kern <alex.kern@gmx.de>
+Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>, John Zielinski <grim@undead.cc>
 
-Am Montag, 22. Dezember 2003 02:32 schrieb John Zielinski:
-> Here's a patch to get fbutils from the CVS working if anyone else wants
-> to play around with them.
->
-> John
-Have you ./configure for it ? I'm wonder, that this package does not have
-classic build system.
+On Mon, 22 Dec 2003, Alexander Kern wrote:
+> Am Montag, 22. Dezember 2003 02:32 schrieb John Zielinski:
+> > Here's a patch to get fbutils from the CVS working if anyone else wants
+> > to play around with them.
 
-Regards Alex
+Thanks John!
 
-P.S. You spoked also about program named "fbtest". Where I can find it?
-I have implement accelerated imageblt for mach64. It works good for boot logo 
-and console.
-"make menuconfig" works also good, but "mc" completely sucks. 
+> > John
+> Have you ./configure for it ? I'm wonder, that this package does not have
+> classic build system.
 
+I started fbutils in 1999, but I never finished it.
+
+In fact I never thought anyone would finish it ;-)
+
+> P.S. You spoked also about program named "fbtest". Where I can find it?
+
+CVS module fbtest in linux-fbdev CVS at SourceForge, next to fbutils.
+
+> I have implement accelerated imageblt for mach64. It works good for boot logo
+> and console.
+
+Nice!
+
+> "make menuconfig" works also good, but "mc" completely sucks.
+
+That may be a generic fbcon bug...
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

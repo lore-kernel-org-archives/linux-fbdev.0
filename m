@@ -1,23 +1,23 @@
-From: Sergey Vlasov <vsu@altlinux.ru>
-Subject: Re: Radeonfb hsync fudge factor?
-Date: Wed, 24 Dec 2003 12:18:24 +0300
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: 2.6 fbcon and 15/16 bpp
+Date: Wed, 24 Dec 2003 13:08:57 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20031224091824.GB11706@master.mivlgu.local>
-References: <3FE8D315.1000904@undead.cc>
+Message-ID: <Pine.GSO.4.58.0312241306590.1638@waterleaf.sonytel.be>
+References: <1070348676.4311.39.camel@gaston>  <3FCC4018.4020503@undead.cc>
+  <1070403757.4300.75.camel@gaston>  <3FCD17D5.4040804@undead.cc> 
+ <1070410792.21174.83.camel@gaston>  <3FE8CCE3.4010709@undead.cc>
+ <1072230310.739.25.camel@gaston>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="s/l3CgOIzMHHjg/5"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AZ59w-00049z-SQ
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 24 Dec 2003 01:18:28 -0800
-Received: from mivlgu.ru ([81.18.140.87] helo=master.mivlgu.local)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.24)
-	id 1AZ59w-0003eL-Eu
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 24 Dec 2003 01:18:28 -0800
-Content-Disposition: inline
-In-Reply-To: <3FE8D315.1000904@undead.cc>
+	id 1AZ7p1-0000cJ-MG
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 24 Dec 2003 04:09:03 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.24)
+	id 1AZ7p1-0003YZ-5Y
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 24 Dec 2003 04:09:03 -0800
+In-Reply-To: <1072230310.739.25.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,39 +27,38 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: John Zielinski <grim@undead.cc>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
+On Wed, 24 Dec 2003, Benjamin Herrenschmidt wrote:
+> > Here's a patch that fixed things on my machine.  I found it by trial and
+> > error since I don't have a hardware reference document and the code is a
+> > little confusing to me.  I don't know if this is the root cause or just
+> > a fix for the symptoms.  Changing the u16's to u32's fixed the verticle
+> > grille appearance and most of the color corruption.  Commenting out that
+> > small block of code fixed the rest of the color problems.
+>
+> Intersting. The pseudo palette thing might have to be u32 indeed, I have
+> to double check. That sounds like a typical misdesign crap vs. endian
+> assuming a given value can be accessed via any size is a little endian
+> "feature" that doesn't work on BE.
 
---s/l3CgOIzMHHjg/5
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Yep, IIRC fb_info.pseudo_palette[] should always be an array of u32s in 2.6.
+However, it's still `void *' in <linux/fb.h>. Perhaps this is fixed in James'
+BK tree?
 
-On Tue, Dec 23, 2003 at 06:43:17PM -0500, John Zielinski wrote:
-> What's the hsync fudge factor used for?
-> 
-> I noticed that the left edged of my screen moved a bit when I was 
-> switching between 32/16/8 bpp modes and tracked it down to this.
+Gr{oetje,eeting}s,
 
-The same thing here - both with Radeon VE QY and 8500LE (don't remember
-the exact chip version).  Adding the opposite value to the fbset
-parameters puts the image back into the place - so it looks like the hsync
-fudge is unneeded at least with these chipsets.
+						Geert
 
-Probably this fudge factor was needed for some early chips?
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
---s/l3CgOIzMHHjg/5
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.3 (GNU/Linux)
-
-iD8DBQE/6VngW82GfkQfsqIRAl8LAJoCX8VI75blufJGSktdxbwCVev1+gCfWwGI
-SL6j3JWca02Bw3EVwnVijmQ=
-=kpNV
------END PGP SIGNATURE-----
-
---s/l3CgOIzMHHjg/5--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

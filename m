@@ -1,30 +1,24 @@
-From: James Simmons <jsimmons@www.infradead.org>
-Subject: Re: [announce 0/7] fbsplash - The Framebuffer
- Splash
-Date: Tue, 15 Mar 2005 19:22:36 +0000 (GMT)
-Message-ID: <Pine.LNX.4.56.0503151920080.5506@pentafluge.infradead.org>
-References: <20050308015731.GA26249@spock.one.pl> 
- <Pine.LNX.4.62.0503091033400.22598@numbat.sonytel.be> 
- <1110392212.3116.215.camel@localhost.localdomain> 
- <Pine.LNX.4.56.0503092043380.7510@pentafluge.infradead.org> 
- <1110408049.9942.275.camel@localhost.localdomain> 
- <Pine.LNX.4.62.0503101009240.9227@numbat.sonytel.be>  <20050310145419.GD632@openzaurus.ucw.cz>
-  <Pine.LNX.4.56.0503111801550.10827@pentafluge.infradead.org> 
- <9e473391050311101356536667@mail.gmail.com> 
- <Pine.LNX.4.56.0503151855430.5506@pentafluge.infradead.org>
- <9e4733910503151103b8a9c8f@mail.gmail.com>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: Reworking sysfs attributes for fbdev
+Date: Wed, 16 Mar 2005 04:27:04 +0800
+Message-ID: <200503160427.04940.adaplas@hotpop.com>
+References: <200503111331.41352.ajax@nwnk.net> <200503151449.59874.adaplas@hotpop.com> <Pine.LNX.4.62.0503150954500.30569@numbat.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Content-Transfer-Encoding: 7bit
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DBHcs-0003mf-RF
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Mar 2005 11:22:46 -0800
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1DBHcr-0000aI-CP
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Mar 2005 11:22:46 -0800
-In-Reply-To: <9e4733910503151103b8a9c8f@mail.gmail.com>
+	id 1DBIdP-00081H-GW
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Mar 2005 12:27:23 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.71])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DBIdN-0007pL-PM
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Mar 2005 12:27:23 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id 0838314AE91A
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 15 Mar 2005 20:27:07 +0000 (UTC)
+In-Reply-To: <Pine.LNX.4.62.0503150954500.30569@numbat.sonytel.be>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -35,24 +29,65 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Geert Uytterhoeven <geert@linux-m68k.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, James Simmons <jsimmons@pentafluge.infradead.org>, Michal Januszewski <spock@gentoo.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>, "Antonino A. Daplas" <adaplas@hotpop.com>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net, Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Jon Smirl <jonsmirl@gmail.com>, dri-egl@lists.freedesktop.org
 
+On Tuesday 15 March 2005 16:55, Geert Uytterhoeven wrote:
+> On Tue, 15 Mar 2005, Antonino A. Daplas wrote:
+> > On Tuesday 15 March 2005 11:43, Jon Smirl wrote:
+> > > Some discussion on the dri-egl list points out that the new mode
+> > > setting sysfs attributes for fbdev are too limited. Below is a
+> > > proposal I made on the dri-egl list.
+> > >
+> > > To implement this for fbdev I need to know the right set of of
+> > > attribute value pairs. Some obvious ones are:
+> > >
+> > > name=string
+> > > width=number
+> > > height=number
+> > > depth=number
+> > > refresh=number
+> > > interlace= yes | no | double
+> > > type = detailed|standard|vesa|user
+> > > sync = horizonatal_high | vertical_high | external | composite |
+> > > broadcast | green
+> > > left=number
+> > > right=number
+> > > lower=number
+> > > upper=number
+> > > hsync=number
+> > > vsync=number
+> > > pixclock=number
+> > >
+> > > Right now fb0/modes is set by passing in an array of fb_videomode
+> > > structs. To convert this to attribute value pair I needs the full set
+> > > so that no info is lost.
+> > >
+> > > If the mode and depth are independent variables we can end up with a
+> > > combo that exceeds monitor or hardware bandwidth. Would it be better
+> > > to combine the depth into the modes list? or if you try to set a
+> >
+> > We can do that, vesa's mode id's are like that. Although I prefer that
+> > mode setting should be separated from the framebuffer format setting (ie,
+> > depth), it's currently difficult to make this work safely the reason
+> > being that not all check_var() functions can be relied upon.
+>
+> So should we separate into geometry, timings, visual (cfr. fbutils)?
 
-> DRM doesn't know a thing about 3D. All it does is DMA, memory
-> management and queue things up for the GPU to work on. You don't even
-> have to have a GPU processor you could use the CPU to execute the
-> commands.
-> 
-> It's the code up in mesa that knows about 3D and builds the commands
-> to be sent to DRM.
+Ideally, yes, but the problem with fbsysfs is that a regular user can change
+the mode. Once we do the separation, combinations will exist that can be 
+illegal.
 
-Not all devices are DMA. Personally since it is generic DMA engine then 
-why not move it to the device api so everyone could use it. We already 
-have DMA pools. Actually I have started some work for some generic DMA 
-handling for the device api core but I have other fish to fry first.
+ie echo 1024x768@60 > fb0/mode
+   echo 32 > fb0/depth
+
+The second set may not be compatible with the preceeding one.  Although
+drivers do have a check_var(), I don't think all are robust enough to 
+screen out illegal combinations.
+
+Tony
+
 
 
 

@@ -1,22 +1,20 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Jon Smirl <jonsmirl@yahoo.com>
 Subject: Re: mode setting and console locking
-Date: Mon, 17 May 2004 08:03:40 +1000
+Date: Sun, 16 May 2004 19:29:38 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1084745020.6445.18.camel@gaston>
-References: <20040516155757.26612.qmail@web14927.mail.yahoo.com>
+Message-ID: <20040517022938.48950.qmail@web14922.mail.yahoo.com>
+References: <1084745020.6445.18.camel@gaston>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BPToB-0002sd-7q
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 16 May 2004 15:08:35 -0700
-Received: from gate.crashing.org ([63.228.1.57] ident=root)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1BPToA-0006vz-Qi
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 16 May 2004 15:08:34 -0700
-In-Reply-To: <20040516155757.26612.qmail@web14927.mail.yahoo.com>
+	id 1BPXso-00037C-HG
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 16 May 2004 19:29:38 -0700
+Received: from web14922.mail.yahoo.com ([216.136.225.6])
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
+	id 1BPXso-0006PB-6E
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 16 May 2004 19:29:38 -0700
+In-Reply-To: <1084745020.6445.18.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,32 +25,71 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Jon Smirl <jonsmirl@yahoo.com>
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Mon, 2004-05-17 at 01:57, Jon Smirl wrote:
-> I have two video cards installed. I run X on the primary and fbdev on the
-> secondary.  I'm having a problem setting the mode to the fbdev device from an
-> xterm window. This was working six months ago in 2.6 but it is broken currently.
+After about 100 reboots I have narrowed it down. The problem is coming from the
+VT switch to get to XFree, not Xfree. I have a bare fbdev loaded on a secondary
+device without a console attached to it. It should not be processing VT switches
+but it is.
+
+The bogus VT switch is causing it to restore garbage into the registers. When I
+then set the mode from the xtern radeonfb gets hung in a loop in the write_pll
+routine. The PLL write isn't completing because the chip state has been messed
+up from the garbage restore.
+
+I need to do more debugging to figure out why it is getting VT switch events.
+How does a fbdev get notified of a VT switch?
+
+The fbdev design is still broken. fbdev should not be touching the console
+semaphore. The console semaphore should be handled in vga/fbconsole. If an fbdev
+wants to protect against reentrancy each fbdev should have it's own semaphore
+but printk is a console function and should be controlled from the console
+driver, not the fbdev. An fbdev should function standalone and have no ties into
+the VT system or console semaphore.
+
+Think about the case of two or three video cards each with an fbdev loaded. It's
+obvious then that an fbdev should have no ties to VT and console. 
+
+What about this case?
+x86 running vga console
+then load fbdev
+
+I think the fbdev should be inactive at this point. The only way to activate it
+is to disable the vgacon. You can deactivate vgacon by loading fbcon or doing
+something to move the console to a different device.
+
+--- Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> On Mon, 2004-05-17 at 01:25, Jon Smirl wrote:
+> > I checked fbset from xterm on primary aty128fb, that works.
+> > Then I checked fbset from xterm on radeon as my primary monitor, that
+> worlks.
+> > 
+> > So it seems to be an interaction when the fbdev is a secondary device. The
+> lock
+> > up happens 100% of the time. Any ideas on what could be causing it?
+> > 
+> > Mode setting to CRT connected panel is broken every case I try.
 > 
-> If I load fbdev on my primary card, then run X on it, fbset will work on the
-> primary card fron the xterm window.
+> I supose XFree and fbdev fighting each other, no ?
 > 
-> if I load fbdev on my secondary card (it is reset and fbdev loads without
-> problem) then fbset from an xterm window will lock my box. fbset from a console
-> window works fine. I have tried this both ways, swapping the primary and
-> secondary cards, so it doesn't seem to be the card drivers.
+> Ben.
 > 
-> Is there some locking going on in fbdev mode setting that is interacting with X?
-> My X server does not have the fbdev driver loaded. The only thing I can think of
-> is that the console is marked at being in KD_GRAPHICs. Any ideas?
-
-No, there is currently no locking. There is locking between printk (fbcon)
-and mode setting but not with userland clients. 
-
-Ben.
+> 
 
 
+=====
+Jon Smirl
+jonsmirl@yahoo.com
+
+
+	
+		
+__________________________________
+Do you Yahoo!?
+SBC Yahoo! - Internet access at a great low price.
+http://promo.yahoo.com/sbc/
 
 
 -------------------------------------------------------

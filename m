@@ -1,26 +1,18 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: Re: [linux-2.6.10] radeonfb / oops
-Date: Fri, 4 Feb 2005 19:36:09 -0500
-Message-ID: <9e473391050204163656dc5747@mail.gmail.com>
-References: <200502030925.09942.pluto@pld-linux.org>
-	 <1107496794.2362.90.camel@gaston>
-	 <Pine.LNX.4.56.0502042042120.25309@pentafluge.infradead.org>
-	 <9e47339105020413047ada9b2c@mail.gmail.com>
-	 <Pine.LNX.4.56.0502042158250.26459@pentafluge.infradead.org>
+From: James Simmons <jsimmons@www.infradead.org>
+Subject: Status for my work.
+Date: Sat, 5 Feb 2005 01:03:40 +0000 (GMT)
+Message-ID: <Pine.LNX.4.56.0502042214120.26842@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CxDvn-0003SU-Q5
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 04 Feb 2005 16:36:11 -0800
-Received: from rproxy.gmail.com ([64.233.170.203])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CxDvm-0007Sl-9y
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 04 Feb 2005 16:36:11 -0800
-Received: by rproxy.gmail.com with SMTP id j1so613574rnf
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 04 Feb 2005 16:36:09 -0800 (PST)
-In-Reply-To: <Pine.LNX.4.56.0502042158250.26459@pentafluge.infradead.org>
+	id 1CxEMV-0005K0-Kj
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 04 Feb 2005 17:03:47 -0800
+Received: from pentafluge.infradead.org ([213.146.154.40])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1CxEMS-0001h3-WF
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 04 Feb 2005 17:03:47 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,25 +23,45 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Antonino A. Daplas" <adaplas@hotpop.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Fri, 4 Feb 2005 21:59:16 +0000 (GMT), James Simmons
-<jsimmons@www.infradead.org> wrote:
-> Could you set CONFIG_FB_RADEON_DEBUG and post the results to this list and
-> CC ben?
 
-I've sent him detailed debug info a couple of times. It happens on all
-my analog LCD panels, I have four different ones. Next time I'm
-playing around with radeonfb I'll try and debug it.
+Hi!
+	I have been busy with some new patches. Hold off on the cfb_imageblit
+    patch. I'm working on a better one. Of the things I discovered is that not
+    all graphics hardware can do 32 bit writes to the framebuffer. For example
+    the Epson135X chipsets have this problem. Only 16 bit writes/reads. So I
+    have been working on making cfb_imageblit be able to do 8/16/32 writes/reads
+    to the framebuffer. So far I have managed to get the color image working
+    for most conditions. Unfortunely it doesn't work for the case where the pixel
+    is larger than the allowed write/read.
+        The second issue I have been pondering is what to do exactly with
+    struct fb_pixmap. Its not really clear what its totally functionality
+    could be to alot of people. Originally it was designed to deal with
+    padding scan lines of images to and/or padding image data at the end so 
+    hardware accel engines could handle the data directly inside the hardware
+    drivers acceleration functions.
+    	Now I have been viewing it as a layer just above the lowest level of 
+    access. It still would do the above functions plus more. I'm purposing
+    creating a list of struct pixmap's for struct fb_info. Right now we have
+    pixmap and sprite. No one at the present uses sprite. So instead we have 
+    the link list instead. We would create the default one which is the 
+    scratch pad for fb_con. It could be used else where as well. I also like to
+    create a second one for the framebuffer itself. Doing this we could:
 
-Otto is correct about the behavior, it the match is perfect the mode
-will be set. If the match is not perfect you get 640x480 no matter
-what the input. DVI panels don't have this problem.
+	1. Move screen_base and screen_size into struct fb_pixmap.
+	2. Get ride of the fb_writes and fb_reads with inbuf, outbuf.
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+    So what do you think?
+
+	The other thing I have been working on is real sysfs support. So far I 
+    brought it back and made it functional. You can also get the name of the device
+    also which can replace /proc/fb. I have been attempting to figure out how to
+    handle the mode database. How should it be displayed in the tree?
+    
 
 
 -------------------------------------------------------

@@ -1,18 +1,18 @@
 From: Michal Januszewski <spock@gentoo.org>
-Subject: [announce 1/7] fbsplash - the core interface
-Date: Tue, 8 Mar 2005 03:02:20 +0100
-Message-ID: <20050308020218.GB26249@spock.one.pl>
+Subject: [announce 2/7] fbsplash - rendering routines
+Date: Tue, 8 Mar 2005 03:04:54 +0100
+Message-ID: <20050308020454.GC26249@spock.one.pl>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D8U3I-0002qe-L6
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Mar 2005 18:02:28 -0800
+	id 1D8U5i-00036V-IR
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Mar 2005 18:04:58 -0800
 Received: from ipp23-131.piekary.net ([80.48.23.131] helo=spock.one.pl)
 	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1D8U3E-0000cA-B1
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Mar 2005 18:02:28 -0800
+	id 1D8U5g-0000pp-I5
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Mar 2005 18:04:58 -0800
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -29,20 +29,20 @@ Content-Transfer-Encoding: 7bit
 To: linux-kernel@vger.kernel.org
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-The core splash interface handles interaction with the userspace helper.
-All communication is done via ioctls on the fbsplash device, which is a 
-misc character device.
+Fbsplash has its own set of rendering functions. These are
+unaccelerated but they should work with different framebuffer drivers.
+All rendering routines are completely separate from fbcon.
 
 Signed-off-by: Michael Januszewski <spock@gentoo.org>
 
 ---
-diff -Nru a/drivers/video/fbsplash.c b/drivers/video/fbsplash.c
+diff -Nru a/drivers/video/cfbsplash.c b/drivers/video/cfbsplash.c
 --- /dev/null	Wed Dec 31 16:00:00 196900
-+++ b/drivers/video/fbsplash.c	2005-03-07 16:50:34 +01:00
-@@ -0,0 +1,406 @@
-+/* 
-+ *  linux/drivers/video/fbsplash.c -- Framebuffer splash core interface
-+ *
++++ b/drivers/video/cfbsplash.c	2005-03-07 16:50:34 +01:00
+@@ -0,0 +1,468 @@
++/*
++ *  linux/drivers/video/cfbsplash.c -- Framebuffer splash rendering functions
++ *  
 + *  Copyright (C) 2004-2005 Michael Januszewski <spock@gentoo.org>
 + *
 + *  Code based upon "Bootsplash" (C) 2001-2003 
@@ -52,400 +52,462 @@ diff -Nru a/drivers/video/fbsplash.c b/drivers/video/fbsplash.c
 + *       Michael Schroeder <mls@suse.de>,
 + *       Ken Wimer <wimer@suse.de>.
 + *
-+ *  Splash render routines are located in /linux/drivers/video/cfbsplash.c
-+ * 
 + *  This file is subject to the terms and conditions of the GNU General Public
 + *  License.  See the file COPYING in the main directory of this archive for
 + *  more details.
-+ * 
-+ */
++ */ 
 +#include <linux/config.h>
 +#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/string.h>
 +#include <linux/types.h>
 +#include <linux/fb.h>
++#include <linux/selection.h>
 +#include <linux/vt_kern.h>
-+#include <linux/vmalloc.h>
-+#include <linux/unistd.h>
-+#include <linux/syscalls.h>
-+#include <linux/init.h>
-+#include <linux/proc_fs.h>
-+#include <linux/workqueue.h>
-+#include <linux/kmod.h>
-+#include <linux/miscdevice.h>
-+#include <linux/device.h>
-+#include <linux/fs.h>
-+
-+#include <asm/uaccess.h>
 +#include <asm/irq.h>
 +#include <asm/system.h>
 +
 +#include "console/fbcon.h"
 +#include "fbsplash.h"
 +
-+#define SPLASH_VERSION 		"0.9.2"
++#define parse_pixel(shift,bpp,type)						\
++	do {									\
++		if (d & (0x80 >> (shift)))					\
++			dd2[(shift)] = fgx;					\
++		else								\
++			dd2[(shift)] = transparent ? *(type *)splash_src : bgx;	\
++		splash_src += (bpp);						\
++	} while (0)								\
 +
-+extern signed char con2fb_map[];
-+static int fbsplash_enable(struct vc_data *vc);
-+char fbsplash_path[KMOD_PATH_LEN] = "/sbin/splash_helper";
++extern int get_color(struct vc_data *vc, struct fb_info *info,
++		     u16 c, int is_fg);
 +
-+int fbsplash_call_helper(char* cmd, unsigned short vc)
++void fbsplash_fix_pseudo_pal(struct fb_info *info, struct vc_data *vc)
 +{
-+	char *envp[] = {
-+		"HOME=/",
-+		"PATH=/sbin:/bin",
-+		NULL
-+	};
-+
-+	char tfb[5];
-+	char tcons[5];
-+	unsigned char fb = (int) con2fb_map[vc];
-+
-+	char *argv[] = {
-+		fbsplash_path,
-+		"2",
-+		cmd,
-+		tcons,
-+		tfb,
-+		vc_cons[vc].d->vc_splash.theme,
-+		NULL
-+	};
-+
-+	snprintf(tfb,5,"%d",fb);
-+	snprintf(tcons,5,"%d",vc);
-+
-+	return call_usermodehelper(fbsplash_path, argv, envp, 1);
-+}
-+
-+/* Disables fbsplash on a virtual console; called with console sem held. */
-+int fbsplash_disable(struct vc_data *vc, unsigned char redraw)
-+{
-+	struct fb_info* info;
-+
-+	if (!vc->vc_splash.state)
-+		return -EINVAL;
-+
-+	info = registered_fb[(int) con2fb_map[vc->vc_num]];
-+
-+	if (info == NULL)
-+		return -EINVAL;
-+
-+	vc->vc_splash.state = 0; 
-+	vc_resize(vc->vc_num, info->var.xres / vc->vc_font.width, 
-+		  info->var.yres / vc->vc_font.height);
-+
-+	if (fg_console == vc->vc_num && redraw) {
-+		redraw_screen(fg_console, 0);
-+		update_region(fg_console, vc->vc_origin + 
-+			      vc->vc_size_row * vc->vc_top, 
-+			      vc->vc_size_row * (vc->vc_bottom - vc->vc_top) / 2);
++	int i, j, k;
++	int minlen = min(min(info->var.red.length, info->var.green.length), 
++			     info->var.blue.length);
++	u32 col;
++	
++	for (j = i = 0; i < 16; i++) {
++		k = color_table[i];
++                      
++		col = ((vc->vc_palette[j++]  >> (8-minlen)) 
++			<< info->var.red.offset);
++		col |= ((vc->vc_palette[j++] >> (8-minlen)) 
++			<< info->var.green.offset);
++		col |= ((vc->vc_palette[j++] >> (8-minlen)) 
++			<< info->var.blue.offset);
++			((u32 *)info->pseudo_palette)[k] = col;
 +	}
-+
-+	printk(KERN_INFO "fbsplash: switched splash state to 'off' on console %d\n", 
-+			 vc->vc_num);
-+
-+	return 0;
 +}
++				
++void fbsplash_renderc(struct fb_info *info, int ypos, int xpos, int height, 
++		      int width, u8* src, u32 fgx, u32 bgx, u8 transparent)
++{	
++	unsigned int x, y;
++	u32 dd;
++	int bytespp = ((info->var.bits_per_pixel + 7) >> 3);
++	unsigned int d = ypos * info->fix.line_length + xpos * bytespp;
++	unsigned int ds = (ypos * info->var.xres + xpos) * bytespp;
++	u16 dd2[4];
 +
-+/* Enables fbsplash on a virtual console; called with console sem held. */
-+static int fbsplash_enable(struct vc_data *vc)
-+{
-+	struct fb_info* info;
++	u8* splash_src = (u8 *)(info->splash.data + ds);
++	u8* dst = (u8 *)(info->screen_base + d);
 +
-+	info = registered_fb[(int) con2fb_map[vc->vc_num]];
++	if ((ypos + height) > info->var.yres || (xpos + width) > info->var.xres)
++		return;
++	
++	for (y = 0; y < height; y++) {
++		switch (info->var.bits_per_pixel) {
++	
++		case 32:
++			for (x = 0; x < width; x++) {
++
++				if ((x & 7) == 0)
++					d = *src++;
++				if (d & 0x80)
++					dd = fgx;
++				else
++					dd = transparent ? 
++					     *(u32 *)splash_src : bgx;
++				
++				d <<= 1;
++				splash_src += 4;
++				fb_writel(dd, dst);
++				dst += 4;
++			}
++			break;
++		case 24:
++			for (x = 0; x < width; x++) {
++
++				if ((x & 7) == 0)
++					d = *src++;
++				if (d & 0x80)
++					dd = fgx;
++				else
++					dd = transparent ? 
++					     (*(u32 *)splash_src & 0xffffff) : bgx;
++				
++				d <<= 1;
++				splash_src += 3;
++#ifdef __LITTLE_ENDIAN
++				fb_writew(dd & 0xffff, dst);
++				dst += 2;
++				fb_writeb((dd >> 16), dst);
++#else
++				fb_writew(dd >> 8, dst);
++				dst += 2;
++				fb_writeb(dd & 0xff, dst);
++#endif
++				dst++;
++			}
++			break;
++		case 16:
++			for (x = 0; x < width; x += 2) {
++		    		if ((x & 7) == 0)
++					d = *src++;
++
++				parse_pixel(0, 2, u16);
++				parse_pixel(1, 2, u16);
++#ifdef __LITTLE_ENDIAN
++				dd = dd2[0] | (dd2[1] << 16);
++#else
++				dd = dd2[1] | (dd2[0] << 16);
++#endif
++				d <<= 2;
++				fb_writel(dd, dst);
++				dst += 4;
++			}
++			break;
++
++		case 8:
++			for (x = 0; x < width; x += 4) {
++				if ((x & 7) == 0)
++					d = *src++;
++	
++				parse_pixel(0, 1, u8);
++				parse_pixel(1, 1, u8);
++				parse_pixel(2, 1, u8);
++				parse_pixel(3, 1, u8);
 +		
-+	if (vc->vc_splash.twidth == 0 || vc->vc_splash.theight == 0 || 
-+	    info == NULL || vc->vc_splash.state || (!info->splash.data &&
-+	    vc->vc_num == fg_console))
-+		return -EINVAL;
-+	
-+	vc->vc_splash.state = 1;
-+	vc_resize(vc->vc_num, vc->vc_splash.twidth / vc->vc_font.width, 
-+		  vc->vc_splash.theight / vc->vc_font.height);
-+
-+	if (fg_console == vc->vc_num) {
-+		redraw_screen(fg_console, 0);
-+		update_region(fg_console, vc->vc_origin + 
-+			      vc->vc_size_row * vc->vc_top, 
-+			      vc->vc_size_row * (vc->vc_bottom - vc->vc_top) / 2);
-+		fbsplash_clear_margins(vc, info, 0);
-+	}
-+
-+	printk(KERN_INFO "fbsplash: switched splash state to 'on' on console %d\n", 
-+			 vc->vc_num);
-+
-+	return 0;
-+}
-+
-+static inline int fbsplash_ioctl_dosetstate(struct vc_data *vc, unsigned int __user* state, unsigned char origin)
-+{
-+	int tmp, ret;
-+
-+	if (get_user(tmp, state))
-+		return -EFAULT;
-+
-+	if (origin == FB_SPLASH_IO_ORIG_USER)
-+		acquire_console_sem();
-+	if (!tmp)
-+		ret = fbsplash_disable(vc, 1);
-+	else
-+		ret = fbsplash_enable(vc);
-+	if (origin == FB_SPLASH_IO_ORIG_USER)
-+		release_console_sem();
-+
-+	return ret;
-+}
-+
-+static inline int fbsplash_ioctl_dogetstate(struct vc_data *vc, unsigned int __user *state)
-+{
-+	return put_user(vc->vc_splash.state, (unsigned int __user*) state);
-+}
-+
-+static int fbsplash_ioctl_dosetcfg(struct vc_data *vc, struct vc_splash __user *arg, unsigned char origin)
-+{
-+	struct vc_splash cfg;
-+	struct fb_info *info;
-+	int len;
-+	char *tmp;
-+	
-+	info = registered_fb[(int) con2fb_map[vc->vc_num]];
-+
-+	if (copy_from_user(&cfg, arg, sizeof(struct vc_splash)))
-+		return -EFAULT;
-+	if (info == NULL || !cfg.twidth || !cfg.theight || 
-+	    cfg.tx + cfg.twidth  > info->var.xres ||
-+	    cfg.ty + cfg.theight > info->var.yres)
-+		return -EINVAL;
-+
-+	len = strlen_user(cfg.theme);
-+	if (!len || len > FB_SPLASH_THEME_LEN)
-+		return -EINVAL;
-+	tmp = kmalloc(len, GFP_KERNEL);
-+	if (!tmp)
-+		return -ENOMEM;
-+	if (copy_from_user(tmp, (void __user *)cfg.theme, len))
-+		return -EFAULT;
-+	cfg.theme = tmp;
-+	cfg.state = 0;
-+
-+	/* If this ioctl is a response to a request from kernel, the console sem
-+	 * is already held; we also don't need to disable splash because either the
-+	 * new config and background picture will be successfully loaded, and the 
-+	 * splash will stay on, or in case of a failure it'll be turned off in fbcon. */
-+	if (origin == FB_SPLASH_IO_ORIG_USER) {
-+		acquire_console_sem();
-+		if (vc->vc_splash.state)
-+			fbsplash_disable(vc, 1);
-+	}
-+
-+	if (vc->vc_splash.theme)
-+		kfree(vc->vc_splash.theme);
-+
-+	vc->vc_splash = cfg;
-+
-+	if (origin == FB_SPLASH_IO_ORIG_USER)
-+		release_console_sem();
-+
-+	printk(KERN_INFO "fbsplash: console %d using theme '%s'\n", 
-+			 vc->vc_num, vc->vc_splash.theme);
-+	return 0;	
-+}
-+
-+static int fbsplash_ioctl_dogetcfg(struct vc_data *vc, struct vc_splash __user *arg)
-+{
-+	struct vc_splash splash;
-+	char __user *tmp;
-+
-+	if (get_user(tmp, &arg->theme))
-+		return -EFAULT;
-+	
-+	splash = vc->vc_splash;
-+	splash.theme = tmp;
-+
-+	if (vc->vc_splash.theme) {
-+		if (copy_to_user(tmp, vc->vc_splash.theme, strlen(vc->vc_splash.theme) + 1))
-+			return -EFAULT;
-+	} else
-+		if (put_user(0, tmp))
-+			return -EFAULT;
-+
-+	if (copy_to_user(arg, &splash, sizeof(struct vc_splash)))
-+		return -EFAULT;
-+
-+	return 0;
-+}
-+
-+static int fbsplash_ioctl_dosetpic(struct vc_data *vc, struct fb_image __user *arg, unsigned char origin)
-+{
-+	struct fb_image img;
-+	struct fb_info *info;
-+	int len;
-+	u8 *tmp;
-+	
-+	if (vc->vc_num != fg_console) 
-+		return -EINVAL;
-+
-+	info = registered_fb[(int) con2fb_map[vc->vc_num]];
-+	
-+	if (info == NULL)
-+		return -EINVAL;
-+	
-+	if (copy_from_user(&img, arg, sizeof(struct fb_image)))
-+		return -EFAULT;
-+	
-+	if (img.width != info->var.xres || img.height != info->var.yres) {
-+		printk(KERN_ERR "fbsplash: picture dimensions mismatch\n");
-+		return -EINVAL;
-+	}
-+
-+	if (img.depth != info->var.bits_per_pixel) {
-+		printk(KERN_ERR "fbsplash: picture depth mismatch\n");
-+		return -EINVAL;
-+	}
-+		
-+	if (img.depth == 8) {
-+		if (!img.cmap.len || !img.cmap.red || !img.cmap.green || 
-+		    !img.cmap.blue)
-+			return -EINVAL;
-+		
-+		tmp = vmalloc(img.cmap.len * 3 * 2);
-+		if (!tmp)
-+			return -ENOMEM;
-+
-+		if (copy_from_user(tmp, (void __user*)img.cmap.red, img.cmap.len * 2) ||
-+		    copy_from_user(tmp + (img.cmap.len << 1),
-+			    	   (void __user*)img.cmap.green, (img.cmap.len << 1)) ||
-+		    copy_from_user(tmp + (img.cmap.len << 2),
-+			    	   (void __user*)img.cmap.blue, (img.cmap.len << 1))) {
-+			vfree(tmp);
-+			return -EFAULT;
++#ifdef __LITTLE_ENDIAN
++				dd = dd2[0] | (dd2[1] << 8) | (dd2[2] << 16) | (dd2[3] << 24);
++#else
++				dd = dd2[3] | (dd2[2] << 8) | (dd2[1] << 16) | (dd2[0] << 24);
++#endif
++				d <<= 4;
++				fb_writel(dd, dst);
++				dst += 4;
++			}		
 +		}
-+			
-+		img.cmap.transp = NULL;
-+		img.cmap.red = (u16*)tmp;
-+		img.cmap.green = img.cmap.red + img.cmap.len;
-+		img.cmap.blue = img.cmap.green + img.cmap.len;
-+	} else {
-+		img.cmap.red = NULL;
++
++		dst += info->fix.line_length - width * bytespp;
++		splash_src += (info->var.xres - width) * bytespp;
++    	}
++}
++
++#define cc2cx(a) 						\
++	((info->fix.visual == FB_VISUAL_TRUECOLOR || 		\
++	  info->fix.visual == FB_VISUAL_DIRECTCOLOR) ? 		\
++	 ((u32*)info->pseudo_palette)[a] : a)
++
++void fbsplash_putcs(struct vc_data *vc, struct fb_info *info,
++		   const unsigned short *s, int count, int yy, int xx)
++{
++	unsigned short charmask = vc->vc_hi_font_mask ? 0x1ff : 0xff;
++	int fg_color, bg_color, transparent;
++
++	u8 *src;
++	u32 bgx, fgx;
++
++	u16 c = scr_readw(s);
++
++	fg_color = get_color(vc, info, c, 1);
++        bg_color = get_color(vc, info, c, 0);
++	transparent = vc->vc_splash.bg_color == bg_color;
++
++	xx = xx * vc->vc_font.width + vc->vc_splash.tx;
++	yy = yy * vc->vc_font.height + vc->vc_splash.ty;
++
++	fgx = cc2cx(fg_color);
++	bgx = cc2cx(bg_color);
++
++	while (count--) {
++		c = scr_readw(s++);
++		src = vc->vc_font.data + (c & charmask) * vc->vc_font.height *
++		      ((vc->vc_font.width + 7) >> 3);
++
++		fbsplash_renderc(info, yy, xx, vc->vc_font.height, 
++			       vc->vc_font.width, src, fgx, bgx, transparent);
++		xx += vc->vc_font.width;
 +	}
-+		
-+	len = ((img.depth + 7) >> 3) * img.width * img.height;
-+	tmp = vmalloc(len);
-+
-+	if (!tmp)
-+		goto out;
-+
-+	if (copy_from_user(tmp, (void __user*)img.data, len))
-+		goto out;
-+		
-+	img.data = tmp;
-+
-+	/* If this ioctl is a response to a request from kernel, the console sem
-+	 * is already held. */
-+	if (origin == FB_SPLASH_IO_ORIG_USER)
-+		acquire_console_sem();
-+	
-+	if (info->splash.data)
-+		vfree((u8*)info->splash.data);
-+	if (info->splash.cmap.red)
-+		vfree(info->splash.cmap.red);
-+	
-+	info->splash = img;
-+
-+	if (origin == FB_SPLASH_IO_ORIG_USER)
-+		release_console_sem();
-+
-+	return 0;
-+
-+out:	if (img.cmap.red)
-+		vfree(img.cmap.red);
-+	if (tmp)
-+		vfree(tmp);
-+	return -ENOMEM;
 +}
 +
-+static int splash_ioctl(struct inode * inode, struct file *filp, u_int cmd, 
-+			u_long arg)
++void fbsplash_cursor(struct fb_info *info, struct fb_cursor *cursor)
 +{
-+	struct fb_splash_iowrapper __user *wrapper = (void __user*) arg;
-+	struct vc_data *vc = NULL;
-+	unsigned short vc_num = 0;
-+	unsigned char origin = 0;
-+	void __user *data = NULL;
-+	
-+	if (verify_area(VERIFY_READ, wrapper, 
-+			sizeof(struct fb_splash_iowrapper)))
-+		return -EFAULT;
-+	
-+	__get_user(vc_num, &wrapper->vc);
-+	__get_user(origin, &wrapper->origin);
-+	__get_user(data, &wrapper->data);
-+		
-+	if (!vc_cons_allocated(vc_num))
-+		return -EINVAL;
++	int i;
++	unsigned int dsize, s_pitch;
++	struct fbcon_ops *ops = info->fbcon_par;
++	struct vc_data* vc;	
++	u8 *src;
 +
-+	vc = vc_cons[vc_num].d;
-+	
-+	switch (cmd) {
-+	case FBIOSPLASH_SETPIC:
-+		return fbsplash_ioctl_dosetpic(vc, (struct fb_image __user*)data, origin);
-+	case FBIOSPLASH_SETCFG:
-+		return fbsplash_ioctl_dosetcfg(vc, (struct vc_splash*)data, origin);
-+	case FBIOSPLASH_GETCFG:
-+		return fbsplash_ioctl_dogetcfg(vc, (struct vc_splash*)data);
-+	case FBIOSPLASH_SETSTATE:
-+		return fbsplash_ioctl_dosetstate(vc, (unsigned int *)data, origin);
-+	case FBIOSPLASH_GETSTATE:
-+		return fbsplash_ioctl_dogetstate(vc, (unsigned int *)data);
-+	default:
-+		return -ENOIOCTLCMD;
-+	}	
++	/* we really don't need any cursors while the console is blanked */
++	if (info->state != FBINFO_STATE_RUNNING || ops->blank_state)
++		return;
++
++	vc = vc_cons[ops->currcon].d;
++
++	src = kmalloc(64 + sizeof(struct fb_image), GFP_ATOMIC);
++	if (!src)
++		return;
++
++	s_pitch = (cursor->image.width + 7) >> 3;
++	dsize = s_pitch * cursor->image.height;
++	if (cursor->enable) {	
++		switch (cursor->rop) {
++		case ROP_XOR:
++			for (i = 0; i < dsize; i++)
++				src[i] = cursor->image.data[i] ^ cursor->mask[i];
++                        break;
++		case ROP_COPY:
++		default:
++			for (i = 0; i < dsize; i++)
++				src[i] = cursor->image.data[i] & cursor->mask[i];
++			break;
++		}
++	} else
++		memcpy(src, cursor->image.data, dsize);
++
++	fbsplash_renderc(info,
++			cursor->image.dy + vc->vc_splash.ty,
++			cursor->image.dx + vc->vc_splash.tx,
++			cursor->image.height,
++			cursor->image.width,
++			(u8*)src,
++			cc2cx(cursor->image.fg_color),
++			cc2cx(cursor->image.bg_color),
++			cursor->image.bg_color == vc->vc_splash.bg_color);
++
++	kfree(src);
 +}
 +
-+static struct file_operations splash_ops = {
-+	.owner = THIS_MODULE,
-+	.ioctl = splash_ioctl
-+};
-+
-+static struct miscdevice splash_dev = {
-+	.minor = MISC_DYNAMIC_MINOR,
-+	.name = "fbsplash",
-+	.fops = &splash_ops
-+};
-+
-+int fbsplash_init(void)
++static void splashset(u8 *dst, int height, int width, int dstbytes, 
++		        u32 bgx, int bpp)
 +{
-+	struct fb_info *info;
-+	struct vc_data *vc;
 +	int i;
 +	
-+	vc = vc_cons[0].d;
-+	info = registered_fb[0];
-+
-+	for (i = 0; i < num_registered_fb; i++) {
-+		registered_fb[i]->splash.data = NULL;
-+		registered_fb[i]->splash.cmap.red = NULL;
-+	}
-+
-+	for (i = 0; i < MAX_NR_CONSOLES && vc_cons[i].d; i++) {
-+		vc_cons[i].d->vc_splash.state = vc_cons[i].d->vc_splash.twidth = 
-+						vc_cons[i].d->vc_splash.theight = 0;
-+		vc_cons[i].d->vc_splash.theme = NULL;
-+	}
-+
-+	i = misc_register(&splash_dev);
-+	if (i) {
-+		printk(KERN_ERR "fbsplash: failed to register device\n");
-+		return i;
-+	}
-+
-+	fbsplash_call_helper("init", 0);
++	if (bpp == 8)
++		bgx |= bgx << 8;
++	if (bpp == 16 || bpp == 8)
++		bgx |= bgx << 16;
 +	
-+	return 0;
++	while (height-- > 0) {
++		u8 *p = dst;
++		
++		switch (bpp) {
++		
++		case 32:
++			for (i=0; i < width; i++) {
++				fb_writel(bgx, p); p += 4;
++			}
++			break;
++		case 24:	
++			for (i=0; i < width; i++) {
++#ifdef __LITTLE_ENDIAN
++				fb_writew((bgx & 0xffff),(u16*)p); p += 2;
++				fb_writeb((bgx >> 16),p++);
++#else
++				fb_writew((bgx >> 8),(u16*)p); p += 2;
++				fb_writeb((bgx & 0xff),p++);
++#endif
++			}
++		case 16:
++			for (i=0; i < width/4; i++) {
++				fb_writel(bgx,p); p += 4;
++				fb_writel(bgx,p); p += 4;
++			}
++			if (width & 2) {
++				fb_writel(bgx,p); p += 4;
++			}
++			if (width & 1)
++				fb_writew(bgx,(u16*)p);
++			break;
++		case 8:
++			for (i=0; i < width/4; i++) {
++				fb_writel(bgx,p); p += 4;
++			}
++			
++			if (width & 2) {
++				fb_writew(bgx,p); p += 2;
++			}
++			if (width & 1)
++				fb_writeb(bgx,(u8*)p);
++			break;
++
++		}		
++		dst += dstbytes;
++	}
 +}
 +
-+EXPORT_SYMBOL(fbsplash_path);
++void fbsplash_copy(u8 *dst, u8 *src, int height, int width, int linebytes, 
++		   int srclinebytes, int bpp)
++{
++	int i;
++
++	while (height-- > 0) {
++		u32 *p = (u32 *)dst;
++		u32 *q = (u32 *)src;
++
++		switch (bpp) {
++	
++		case 32:
++			for (i=0; i < width; i++)
++				fb_writel(*q++, p++);
++			break;	
++		case 24:	
++			for (i=0; i < (width*3/4); i++)
++				fb_writel(*q++, p++);
++			if ((width*3) % 4) {
++				if (width & 2) {
++					fb_writeb(*(u8*)q, (u8*)p);
++				} else if (width & 1) {
++					fb_writew(*(u16*)q, (u16*)p);
++					fb_writeb(*(u8*)((u16*)q+1),(u8*)((u16*)p+2));
++				}
++			}
++			break;
++		case 16:
++			for (i=0; i < width/4; i++) {
++				fb_writel(*q++, p++);
++				fb_writel(*q++, p++);
++			}
++			if (width & 2)
++				fb_writel(*q++, p++);
++			if (width & 1)
++				fb_writew(*(u16*)q, (u16*)p);
++			break;
++		case 8:
++			for (i=0; i < width/4; i++) 
++				fb_writel(*q++, p++);
++				
++			if (width & 2) {
++				fb_writew(*(u16*)q, (u16*)p); 
++				q = (u32*) ((u16*)q + 1);
++				p = (u32*) ((u16*)p + 1);
++			}
++			if (width & 1)
++				fb_writeb(*(u8*)q, (u8*)p);
++			break;
++		}
++
++		dst += linebytes;
++		src += srclinebytes;
++	}
++}
++
++static void splashfill(struct fb_info *info, int sy, int sx, int height, 
++		       int width) 
++{
++	int bytespp = ((info->var.bits_per_pixel + 7) >> 3);
++	int d  = sy * info->fix.line_length + sx * bytespp;
++	int ds = (sy * info->var.xres + sx) * bytespp;
++
++	fbsplash_copy((u8 *)(info->screen_base + d), (u8 *)(info->splash.data + ds),
++		    height, width, info->fix.line_length, info->var.xres * bytespp,
++		    info->var.bits_per_pixel);
++}
++
++void fbsplash_clear(struct vc_data *vc, struct fb_info *info, int sy, int sx, 
++		    int height, int width)
++{
++	int bgshift = (vc->vc_hi_font_mask) ? 13 : 12;
++	int bg_color = attr_bgcol_ec(bgshift, vc);
++	int transparent = vc->vc_splash.bg_color == bg_color;
++	u8 *dst;
++
++	sy = sy * vc->vc_font.height + vc->vc_splash.ty;
++	sx = sx * vc->vc_font.width + vc->vc_splash.tx;
++	height *= vc->vc_font.height;
++	width *= vc->vc_font.width;
++
++	if (transparent) {
++		splashfill(info, sy, sx, height, width);
++	} else {
++		dst = (u8 *)(info->screen_base + sy * info->fix.line_length + 
++			     sx * ((info->var.bits_per_pixel + 7) >> 3));
++		splashset(dst, height, width, info->fix.line_length, cc2cx(bg_color), 
++			  info->var.bits_per_pixel);
++	}
++}
++
++void fbsplash_clear_margins(struct vc_data *vc, struct fb_info *info, 
++			    int bottom_only)
++{
++	unsigned int tw = vc->vc_cols*vc->vc_font.width;
++	unsigned int th = vc->vc_rows*vc->vc_font.height;
++
++	if (!bottom_only) {
++		/* top margin */
++		splashfill(info, 0, 0, vc->vc_splash.ty, info->var.xres);
++		/* left margin */
++		splashfill(info, vc->vc_splash.ty, 0, th, vc->vc_splash.tx);
++		/* right margin */
++		splashfill(info, vc->vc_splash.ty, vc->vc_splash.tx + tw, th, 
++			   info->var.xres - vc->vc_splash.tx - tw);
++	}
++	splashfill(info, vc->vc_splash.ty + th, 0, 
++		   info->var.yres - vc->vc_splash.ty - th, info->var.xres);
++}
++
++void fbsplash_bmove_redraw(struct vc_data *vc, struct fb_info *info, int y, 
++			   int sx, int dx, int width)
++{
++	u16 *d = (u16 *) (vc->vc_origin + vc->vc_size_row * y + dx * 2);
++	u16 *s = d + (dx - sx);
++	u16 *start = d;
++	u16 *ls = d;
++	u16 *le = d + width;
++	u16 c;
++	int x = dx;
++	u16 attr = 1;
++
++	do {
++		c = scr_readw(d);
++		if (attr != (c & 0xff00)) {
++			attr = c & 0xff00;
++			if (d > start) {
++				fbsplash_putcs(vc, info, start, d - start, y, x);
++				x += d - start;
++				start = d;
++			}
++		}
++		if (s >= ls && s < le && c == scr_readw(s)) {
++			if (d > start) {
++				fbsplash_putcs(vc, info, start, d - start, y, x);
++				x += d - start + 1;
++				start = d + 1;
++			} else {
++				x++;
++				start++;
++			}
++		}
++		s++;
++		d++;
++	} while (d < le);
++	if (d > start)
++		fbsplash_putcs(vc, info, start, d - start, y, x);
++}
++
++void fbsplash_blank(struct vc_data *vc, struct fb_info *info, int blank)
++{
++	if (blank) {
++		splashset((u8 *)info->screen_base, info->var.yres, info->var.xres,
++			  info->fix.line_length, 0, info->var.bits_per_pixel);
++	} else {
++		update_screen(vc->vc_num);
++		fbsplash_clear_margins(vc, info, 0);
++	}
++}
++
 
 
 

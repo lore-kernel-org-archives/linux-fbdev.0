@@ -1,16 +1,16 @@
 From: James Simmons <jsimmons@infradead.org>
 Subject: Re: [BK PATCHS] fbdev updates.
-Date: Fri, 18 Oct 2002 10:05:54 -0700 (PDT)
+Date: Fri, 18 Oct 2002 10:16:46 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.33.0210180951500.10832-100000@maxwell.earthlink.net>
-References: <20021015100024.A9771@flint.arm.linux.org.uk>
+Message-ID: <Pine.LNX.4.33.0210181012560.10832-100000@maxwell.earthlink.net>
+References: <Pine.GSO.4.21.0210151109180.25245-100000@vervain.sonytel.be>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from falcon.mail.pas.earthlink.net ([207.217.120.74])
+Received: from avocet.mail.pas.earthlink.net ([207.217.120.50])
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 182afv-0005wv-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Oct 2002 10:12:39 -0700
-In-Reply-To: <20021015100024.A9771@flint.arm.linux.org.uk>
+	id 182aqV-00017m-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Oct 2002 10:23:35 -0700
+In-Reply-To: <Pine.GSO.4.21.0210151109180.25245-100000@vervain.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,25 +22,36 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King <rmk@arm.linux.org.uk>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Russell King <rmk@arm.linux.org.uk>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
 
-> I'm not sure this "set var" business has been thought out as much as it
-> should be.
+> So the generic part of the code should behave like this:
+>
+>   if (info->fbops->fb_blank && info->fbops->fb_blank(blank_flag)) {
+>       /* use hardware blanking */
+>   } else if (info->fix.visual == FB_VISUAL_PSEUDOCOLOR ||
+> 	     info->fix.visual == FB_VISUAL_DIRECTCOLOR) {
+>       /* use software blanking */
+>   } else {
+>       /* no blanking possible, except for filling the screen with black, which
+> 	 is not appropriate (unless we save/restore the contents?) */
+>   }
+>
+> Is that OK for you?
 
-<snip>
+I was thinking more like
 
-   I see it coming. With the next set of changes it will be possible to
-have fbdev with the VT system. So I have been putting into place the
-ability to power down the framebuffer via the ioctl. So I want the flow
-to be with fbcon from high level console to fbcon layer to fbdev driver.
-Without fbcon to go from userland to the fbdev driver directly.
-   Also we have mode changing. Soon I will add hooks to the VT layer to
-allow use to change a single VC via stty. VT_RESIZE can replace the
-current method of changing the size of all VCS instead of the fbdev layer
-doing it.
-   So you will see the necessary changes to handle all this.
+   if (info->fbops->fb_blank && info->fbops->fb_blank(blank_flag)) {
+       /* use hardware blanking */
+   } else if (info->var.accel_flags) {
+	/* Use hardware fillrect to blank the screen */
+ 	info->fbops->fb_fillrect(info, whole_screen);
+   } else {
+	/* Nothing avaiable. Use set the colormap to black */
+   }
+
+What do you think?
 
 
 

@@ -1,77 +1,139 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [Q] is framebuffer console code in 2.5.4x functional ?
-Date: Thu, 21 Nov 2002 17:24:44 +0000 (GMT)
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.33.0211210753100.9540-100000@maxwell.earthlink.net>
-References: <20021120094654.GA319@pazke.ipt>
+From: Steve Longerbeam <stevel@mvista.com>
+Subject: Re: atyfb and radeonfb
+Date: Wed, 20 Nov 2002 16:56:16 -0800
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <3DDC2F30.6040709@mvista.com>
+References: <Pine.GSO.4.21.0211141209250.8876-100000@vervain.sonytel.be>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <20021120094654.GA319@pazke.ipt>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: multipart/alternative;
+ boundary="------------070206050100080903070406"
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from gateway-1237.mvista.com ([12.44.186.158] helo=av.mvista.com)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18Efdo-0002b4-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 20 Nov 2002 16:56:24 -0800
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Steven Newbury <steven.newbury1@ntlworld.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+
+
+
+--------------070206050100080903070406
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-To: Andrey Panin <pazke@orbita1.ru>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
 
-> > > console doesn't show a single pixel.
-> > 
-> > :-( Can you post your .config file. 
-> 
-> Attached.
+Geert Uytterhoeven wrote:
 
-Hm. Strange. It should work. Can you get serial console working? 
-  
-> I did some changes to sgivwfb.c to make it compilable, patch attached.
-> Can you take a look at it ?
+>On 13 Nov 2002, Benjamin Herrenschmidt wrote:
+>  
+>
+>>On Fri, 2002-11-08 at 16:28, Steven Newbury wrote:
+>>    
+>>
+>>>Is atyfb in 2.4 known to work with recent Mach64 chips like Rage XL? 
+>>>When I install the driver it detects the chip but results in just a 
+>>>black screen.  I also noticed that it detects WRAM, whereas I am certain 
+>>>it should be SGRAM.  The XFree86 driver detects everything ok and just 
+>>>works.
+>>>      
+>>>
+>>Well, I don't know if Geert still have much time to maintain
+>>this driver, any help implementing the missing features would
+>>be nice ;)
+>>    
+>>
+>
+>Erhm, not really...
+>
+>For RAGE XL support, you want to contact Steve Longerbeam <stevel@mvista.com>.
+>
 
-Applied your patch to the BK tree. 
- 
-> > I will be posting a new fbdev patch today against 2.5.48 today. Giev it a 
-> > try.
-> 
-> Didn't see proposed fbdev patch yet :(
+I reverse-engineered ATI's video BIOS on the Xpert98 PCI card (RageXL) using
+a PCI bus analyzer. Got atyfb to work on embedded platforms and PC's 
+that way.
+It could work with other RageXL-based cards with some tweaking. I'll 
+give you the
+source if you're interested.
 
-    Sorry about that. You are not the only one that has asked me. Also I 
-keep getting lots of error reports about drivers being broken. The problem 
-is having enough time. For example I haven't found the time to create this 
-patch. This brings up a serious point which I have been wrestling with. The 
-framebuffer layer has been broken for a long time durning the 2.5.X cycle. 
-The problem is both maintainers of this subsystem, Geert and I, both have 
-very little time to work on it. For both of us we don't work on the 
-framebuffer code for a living. I work with wireless networking cards. I 
-work 8 hours a day on networking code and travel 3 hours total every day 
-to work. Including eating a sleeping and I have at most 1 to 2 hours a day 
-to work on the framebuffer stuff. Weekends I have to do other survial 
-things like buy food. So the framebuffer developement has gone at a 
-snail pace and will continue to do so unless things change. I estimate 
-about 20+ more versions before the framebuffer layer properly works. 
-    It pains me that this is happening. I really enjoy working on the 
-framebuffer and console layer. So I have been thinking about what to 
-do ? One which is the most likely is to step down from maintaintership 
-and hope someone else who can devote there full time and energy to it 
-can take over. Will someone else take over? I seriously doubt it. We all 
-have to make a living and that means working on things the linux industry 
-cares about which is only server stuff. So I except the framebuffer layer 
-will go into serious code decay. So the best situtation which I except to 
-happen is that I finish as much as I can for the fbdev layer and then 
-step down. 
-    I have tried to look for work locallly (can't really affored to move 
-cross country very few years) relating to the framebuffer layer. In my 
-search I only found one company that seemed interested in this developement, 
-strangeberry (http://www.strangeberry.com). I sent them my resume but 
-never heard from them. As for funding I serious doubt that would happen 
-since it isn't server related. The reality is for proper maintiance of any 
-subsystem you need people hired to solely work to keep it going. 
-Unfortunely the framebuffer layer is one of those few ones that doesn't 
-have that.
+-- 
+Steve Longerbeam
+MontaVista Software, Inc.
+office:408-328-9008, fax:408-328-3875
+http://www.mvista.com
 
-MS: (n) 1. A debilitating and surprisingly widespread affliction that
-renders the sufferer barely able to perform the simplest task. 2. A disease.
 
-James Simmons  [jsimmons@users.sf.net] 	                ____/|
-fbdev/console/gfx developer                             \ o.O|
-http://www.linux-fbdev.org                               =(_)=
-http://linuxgfx.sourceforge.net                            U
-http://linuxconsole.sourceforge.net
+
+--------------070206050100080903070406
+Content-Type: text/html; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title></title>
+</head>
+<body>
+<br>
+<br>
+Geert Uytterhoeven wrote:<br>
+<blockquote type="cite"
+ cite="midPine.GSO.4.21.0211141209250.8876-100000@vervain.sonytel.be">
+  <pre wrap="">On 13 Nov 2002, Benjamin Herrenschmidt wrote:
+  </pre>
+  <blockquote type="cite">
+    <pre wrap="">On Fri, 2002-11-08 at 16:28, Steven Newbury wrote:
+    </pre>
+    <blockquote type="cite">
+      <pre wrap="">Is atyfb in 2.4 known to work with recent Mach64 chips like Rage XL? 
+When I install the driver it detects the chip but results in just a 
+black screen.  I also noticed that it detects WRAM, whereas I am certain 
+it should be SGRAM.  The XFree86 driver detects everything ok and just 
+works.
+      </pre>
+    </blockquote>
+    <pre wrap="">Well, I don't know if Geert still have much time to maintain
+this driver, any help implementing the missing features would
+be nice ;)
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+Erhm, not really...
+
+For RAGE XL support, you want to contact Steve Longerbeam <a class="moz-txt-link-rfc2396E" href="mailto:stevel@mvista.com">&lt;stevel@mvista.com&gt;</a>.</pre>
+</blockquote>
+<br>
+I reverse-engineered ATI's video BIOS on the Xpert98 PCI card (RageXL) using<br>
+a PCI bus analyzer. Got atyfb to work on embedded platforms and PC's that
+way.<br>
+It could work with other RageXL-based cards with some tweaking. I'll give
+you the<br>
+source if you're interested.<br>
+<br>
+<pre class="moz-signature" cols="$mailwrapcol">-- 
+Steve Longerbeam
+MontaVista Software, Inc.
+office:408-328-9008, fax:408-328-3875
+<a class="moz-txt-link-freetext" href="http://www.mvista.com">http://www.mvista.com</a>
+</pre>
+<br>
+</body>
+</html>
+
+--------------070206050100080903070406--
+
+
+
+-------------------------------------------------------
+This sf.net email is sponsored by:ThinkGeek
+Welcome to geek heaven.
+http://thinkgeek.com/sf

@@ -1,66 +1,48 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Re: fbdev cursor part 1.
-Date: Mon, 23 Feb 2004 14:51:07 +0100 (MET)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0402231449040.14277@waterleaf.sonytel.be>
-References: <Pine.LNX.4.44.0402222234120.2390-100000@phoenix.infradead.org>
- <1077496550.5960.9.camel@gaston> <Pine.GSO.4.58.0402231156040.14277@waterleaf.sonytel.be>
- <1077533958.5942.42.camel@gaston> <Pine.GSO.4.58.0402231343270.14277@waterleaf.sonytel.be>
- <20040223132151.GA7255@sci.fi>
+From: Johannes Stezenbach <js@convergence.de>
+Subject: Re: fbdv/fbcon pending problems
+Date: Mon, 23 Feb 2004 16:52:09 +0100
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <20040223155209.GB302@convergence.de>
+References: <1077497593.5960.28.camel@gaston>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AvGbw-00041A-GI
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 23 Feb 2004 05:59:04 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1AvGJ0-00035T-Js
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 23 Feb 2004 05:39:30 -0800
-In-Reply-To: <20040223132151.GA7255@sci.fi>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="iso-8859-1"
-To: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1077497593.5960.28.camel@gaston>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
 
-On Mon, 23 Feb 2004, Ville [iso-8859-1] Syrj=E4l=E4 wrote:
-> BTW would it be possible to add a new accelerator type for Pro chips. I=
-'d
-> like to identify Pro chips in my DirectFB driver because there are a fe=
-w
-> important differences between Pro and older models. Othwerwise I'm goin=
-g
-> to have to the same thing I did with matrox cards and use /proc/bus/pci=
- :(
+Benjamin Herrenschmidt wrote:
+> 
+> Here's a list of pending issues with fbdev (either upstream or in the
+> fbdev bk treee), I figured posting it here may help getting more people
+> on those issues as my time is sparse and I suppose James too.
+...
+> Ok, that's all that comes to my mind right now, help is welcome :)
 
-Can't you just check CONFIG_CHIP_ID in your DirectFB driver?
+IMHO it is rather discouraging that:
 
-Gr{oetje,eeting}s,
+FRAMEBUFFER LAYER
+P:      James Simmons, Geert Uytterhoeven       
+M:      jsimmons@infradead.org, geert@linux-m68k.org    
+L:      linux-fbdev-devel@lists.sourceforge.net 
+W:      http://www.linux-fbdev.org
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m6=
-8k.org
-
-In personal conversations with technical people, I call myself a hacker. =
-But
-when I'm talking to journalists I just say "programmer" or something like=
- that.
-							    -- Linus Torvalds
+$ host www.linux-fbdev.org
+Nameserver not responding
+www.linux-fbdev.org A record not found, try again
 
 
--------------------------------------------------------
-SF.Net is sponsored by: Speed Start Your Linux Apps Now.
-Build and deploy apps & Web services for Linux with
-a free DVD software kit from IBM. Click Now!
-http://ads.osdn.com/?ad_id=1356&alloc_id=3438&op=click
+http://linux-fbdev.sourceforge.net/ has no halfway up-to-date information about
+the state of 2.6 fbdev devlopment. Sure, one can dig through the mailing list
+archives, but if a project is looking for developers I would at least expect a
+link to
+- the current fbdev source tree
+- a TODO that lets me see what work is currently been done by others,
+  and what work could be contributed by me
+
+(This is just a suggestion, I don't have time to work on fbdev myself.)
+
+Johannes

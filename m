@@ -1,21 +1,21 @@
 From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: Re: cfb* routines and high mem
-Date: Mon, 22 Sep 2003 12:48:40 -0700 (PDT)
+Subject: Re: Add three new IOCTLs to FB API
+Date: Mon, 22 Sep 2003 13:25:11 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030922194840.59600.qmail@web14902.mail.yahoo.com>
-References: <Pine.LNX.4.44.0309221953110.6431-100000@phoenix.infradead.org>
+Message-ID: <20030922202511.53395.qmail@web14915.mail.yahoo.com>
+References: <Pine.GSO.4.21.0309220919230.4957-100000@vervain.sonytel.be>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1A1Wfq-0001T3-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 22 Sep 2003 12:48:42 -0700
-Received: from web14902.mail.yahoo.com ([216.136.225.54])
+	id 1A1XFA-0006QM-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 22 Sep 2003 13:25:12 -0700
+Received: from web14915.mail.yahoo.com ([216.136.225.228])
 	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.22)
-	id 1A1Wfp-0001Bj-Pq
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 22 Sep 2003 12:48:41 -0700
-In-Reply-To: <Pine.LNX.4.44.0309221953110.6431-100000@phoenix.infradead.org>
+	id 1A1XF9-00010Q-Pc
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 22 Sep 2003 13:25:11 -0700
+In-Reply-To: <Pine.GSO.4.21.0309220919230.4957-100000@vervain.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,43 +27,38 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
---- James Simmons <jsimmons@infradead.org> wrote:
-> No. The penguin code works for fbdev without console support. The logo can 
-> be displayed for embedded fbdev devices so the developer knows it is 
-> loaded.
-
-Could the penguin code do the ioremap in its code? That way if it fails it
-isn't fatal. Right now if the fb driver fails to load the penguin code is kind
-of pointless. 
-
-The client of the framebuffer needs to be responsible for the ioremap(), not
-the driver. Since if the buffer is mapped to high mem the client code needs to
-match. The current scheme prevents a high mem mapping since the client code
-isn't high mem aware.
-
-I also think that it is wrong that the fb drivers should fail to load just
-because it can't ioremap() to draw the penguin. It would be much better to have
-the fb driver load and the penguin disappear.
-
+--- Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> On Sun, 21 Sep 2003, Jon Smirl wrote:
+> > I'd like to add three new IOCTLs to the FB API to help support standalone 
+Mesa.
+> > The idea is to eliminate the need for config files. Xfree might even use
+these
+> > in the future.
 > 
-> > Are there non-cfb drivers? How hard would it be to convert them?
-> > Is there another solution to the problem?
+> For 2.4.x or 2.6.0?
+For 2.6
+
+> > 2) Get 3D driver name. Return the name of the DRM driver that is associated
+> > with this fb device. For example aty128fb would return r128, radeonfb would
+> > return radeon. Empty string if there is none. There are eight DRM drivers
+> and
+> > 15 fb ones.
 > 
-> There are several non-cfb drivers. Breaking the code up and pushing it 
-> into the fbconsole layer is a bad idea. 
-> 
-> Accelerated driver (non-cfb) don't need to ioremap the framebuffer memory
-> except for the case of fb_read/fb_write. That can be handled. What should 
-> be done is a surface api that allocates the amount of memory we really 
-> need at any time. 
-> 
-I'm still having trouble with the fb drivers doing the ioremap() when
-fbconsole/penguin is the only client. 1600x1200x4 dual head still takes up 16MB
-of address space. 16MB will fail ioremap() on my system. Aren't we just
-delaying an inevitable problem with increasing resolutions?
+> I think this should be done using sysfs, too. I.e. symbolic links between the
+> fbdev and drm drivers in /sys.
+
+Initially the fb device will need to provide strings for the name of the 3D
+driver. A user app is going to read these strings and load the DRM driver.
+After the DRM driver is loaded it can make links.
+
+Another solution would be for the fb driver to reference a symbol in the
+appropriate DRM driver. This would make modprobe load them both.
+
+What should the /sys entries look like for fb devices?
+
 
 
 =====

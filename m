@@ -1,22 +1,21 @@
-From: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: Re: 2.6.12-rc1-mm2 -- nvidiafb driver gives black screen
-Date: Tue, 29 Mar 2005 11:16:58 +0200 (CEST)
-Message-ID: <dJBFtcnM.1112087818.6686590.khali@localhost>
-References: <a44ae5cd05032817125e99b868@mail.gmail.com>
+From: Miles Lane <miles.lane@gmail.com>
+Subject: The nvidiafb driver is requiring too much vmalloc space and other problems.
+Date: Wed, 30 Mar 2005 14:59:09 -0800
+Message-ID: <a44ae5cd05033014597bb3a2e@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DGCuK-0008Av-To
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Mar 2005 01:21:08 -0800
-Received: from zone4.gcu-squad.org ([213.91.10.50] ident=root)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1DGCuH-0006yB-Td
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Mar 2005 01:21:08 -0800
-In-Reply-To: <a44ae5cd05032817125e99b868@mail.gmail.com>
+	id 1DGm9r-0005Nj-NX
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 30 Mar 2005 14:59:31 -0800
+Received: from wproxy.gmail.com ([64.233.184.195])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DGm9b-0005BA-6p
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 30 Mar 2005 14:59:31 -0800
+Received: by wproxy.gmail.com with SMTP id 69so353698wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 30 Mar 2005 14:59:09 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,40 +27,44 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: miles.lane@gmail.com, rddunlap@osdl.org
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net
+To: linux-fbdev-devel@lists.sourceforge.net, "Randy.Dunlap" <rddunlap@osdl.org>, Andrew Morton <akpm@osdl.org>, "Antonino A. Daplas" <adaplas@pol.net>
 
+Hello,
 
-Hi gentle folks,
+With guidance from Randy Dunlap, it has been determined that
+the nvidiafb driver will fail to operate correctly unless more than
+128M of memory is provided by using "vmalloc=".  The default 
+kernel configuration provides for 128M, but Randy found that:
 
-> Perhaps you are thinking I am using the NVidia binary driver?
-> This is not the case.  nvidiafb is a recently added framebuffer
-> driver (IIRC, first showing up in 2.6.12-rc1-mm2).  I believe
-> khali@linux-fr.org is the author.
+>I started looking at vmalloc() and what it calls (which is
+> __get_vm_area).  _get_vm_area() always allocates one extra
+> page (called a "guard page") between all vmalloc allocations,
+> so even though 128 MB is the default amount and the amount
+> that nvidiafb wants to use, the kernel wants to allocate
+> 128 MB + PAGE_SIZE (4 KB on x86; are you on x86?), so even
+> if nvidiafb is the only caller, the vmalloc() call will fail.
 
-I am not! Antonino Daplas is. Adding him to the CC list, although I guess
-he reads linux-fbdev-devel.
+Booting with vmalloc=256M works, but Andrew thinks that 
+nvidiafb should not be requiring 128M in the first place.
 
-The only part I can help with is the i2c stuff, which caused trouble
-already, but so far I couldn't find anything relevant. The nvidiafb
-driver is quite new, and it's natural that it needs some debugging. I
-suspect that the driver has some severe problem with the way it handles
-resources, as was suggested by our previous (failed) attempts to debug
-it. I'd be happy to help with the debugging but unfortunately (no quite
-so) I don't have any nvidia device in my machines anymore.
+Regarding the problems with i2c bit-banging drivers, I don't
+know if the Oops I have been getting is related to the vmalloc
+issue somehow.  Comments?  I'll try to repro the crash with
+vmalloc=256M set.
 
-Somewhere else in this thread, Randy suggested that some __devinit stuff
-wasn't really. I think it would be worth investigating this first, and
-make sure that nothing is incorrectly tagged. The oops reported by Miles
-sounded like large memory chunks had been freed when they shouldn't
-have. I think I understand that erroneously tagging things __init might
-lead to that kind of trouble. But maybe it's a completely different
-problem, I'm really only suggesting this because I don't get what's
-going on either.
+Lastly, with vmalloc=256M, my machine crashes whenever 
+I try to switch from XFree86 to a framebuffer console.  I cannot
+see the oops.  Unfortunately, the only machine I could use for
+debugging using a serial connection is a Powerbook, which has
+no serial port.
+
+I could try setting up dumping the stack over the network,
+but I have never tried to do this before and do not know
+whether I can do the dump to a Powerbook running OS/X.
+Any suggestions?
 
 Thanks,
---
-Jean Delvare
+        Miles
 
 
 -------------------------------------------------------

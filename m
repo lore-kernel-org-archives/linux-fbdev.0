@@ -1,72 +1,90 @@
-From: Suresh Chandra Mannava <Mannava@GameBox.net>
-Subject: framebuffer on 4 MegaHertz FPGA
-Date: Sat, 20 Mar 2004 09:16:43 +0530
-Sender: linux-fbdev-users-admin@lists.sourceforge.net
-Message-ID: <405BBEA3.4040000@GameBox.net>
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [PATCH] PXA255 LCD Driver
+Date: Sat, 20 Mar 2004 09:06:07 +0000
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <20040320090607.A27266@flint.arm.linux.org.uk>
+References: <1079607908.2175.67.camel@icampbell-debian> <Pine.LNX.4.44.0403192352580.14905-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-users-admin@lists.sourceforge.net>
-Errors-To: linux-fbdev-users-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-users>,
-	<mailto:linux-fbdev-users-request@lists.sourceforge.net?subject=unsubscribe>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1B4cQs-00081q-Aw
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 20 Mar 2004 01:06:18 -0800
+Received: from caramon.arm.linux.org.uk ([212.18.232.186])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1B4cQr-0005Dn-Fr
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 20 Mar 2004 01:06:17 -0800
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44.0403192352580.14905-100000@phoenix.infradead.org>; from jsimmons@infradead.org on Sat, Mar 20, 2004 at 12:01:03AM +0000
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-users@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-users-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-users>,
-	<mailto:linux-fbdev-users-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-users>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-users@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: James Simmons <jsimmons@infradead.org>
+Cc: Ian Campbell <icampbell@arcom.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Dear Friends,   
+On Sat, Mar 20, 2004 at 12:01:03AM +0000, James Simmons wrote:
+> We can have it so that we can pass in a monitor string that can be used to 
+> select the proper LCD panel in the database. How does that sound?
 
-We are facing the problem of initializing the framebuffer for the below 
-system.
-We are porting Xfree86 on to a new 32bit RISC processor. We have test 
-FPGA system running at 4 Mega Hertz (Bogomips 0.16) on kernel 2.4.7. 
-proposed system(ASIC) runs on ~300Mhz.
+That's still a little problematical because some hardware people put
+a CPLD between the LCD controller and the LCD panel itself which
+may change the characteristics.
 
-My main concern is does Xfree86 can be tested on 2.6Mhz FPGA?
-What is the minimum clock speed required to run X?
+It's fairly common to have one LCD controller appear in many different
+devices (because its part of the CPU) and have the same display, yet
+need different timing.
 
-Our test system supports 2GB of RAM and it consists of PCI ATI Rage XL 
-Graphics card.
+For example, see sa1100fb.c:
 
- We started testing the generic vga16fb.c framebuffer.The basic 
-intialization seems to happen perfectly.The problem comes in 
-take_over_console,where framebuffer takes over the dummy console.In the 
-take over console,at first step he is calling fbcon_startup which is 
-getting screen base ,X and Y coordinates and clearing that location.This 
-happens fine.This function is called for after some timer interval and 
-hence we can say that it will be called repeatedly.The problem is that 
-we cann't put any printk in between as it adversely affects the 
-flow(This we found after testing vga16fb.c rigorously on intel as well 
-as on our FPGA).We traversed the source code and also through object 
-dumps and found that nothing is wrong.The system seems to be hung after 
-some time(It is able to clear the screen).We came to this conclusion 
-after giving a run and waiting for 6 hours.
+static struct sa1100fb_mach_info lq039q2ds54_info __initdata = {
+        .pixclock       = 171521,       .bpp            = 16,
+        .xres           = 320,          .yres           = 240,
 
-We think that speed might be a problem.We need to findout first whether 
-we will be able to run a framebuffer driver at 4 MHZ.Since framebuffer 
-does pixel by pixel access,we think it will take a lot of time and 
-anything can happen in between.We are now not in a position to predict 
-what is happening.Please give your points on whether the framebuffer 
-will work at such a low speed.
+        .hsync_len      = 5,            .vsync_len      = 1,
+        .left_margin    = 61,           .upper_margin   = 3,
+        .right_margin   = 9,            .lower_margin   = 0,
 
-I request your suggestions on feasibility of initializing framebuffer 
-and testing X on the above system.
+        .sync           = FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
 
+        .lccr0          = LCCR0_Color | LCCR0_Sngl | LCCR0_Act,
+        .lccr3          = LCCR3_OutEnH | LCCR3_PixRsEdg | LCCR3_ACBsDiv(2),
+};
 
-Regards,
-Suresh Chandra Mannava.
+static struct sa1100fb_mach_info h3600_info __initdata = {
+        .pixclock       = 174757,       .bpp            = 16,
+        .xres           = 320,          .yres           = 240,
+
+        .hsync_len      = 3,            .vsync_len      = 3,
+        .left_margin    = 12,           .upper_margin   = 10,
+        .right_margin   = 17,           .lower_margin   = 1,
+
+        .cmap_static    = 1,
+
+        .lccr0          = LCCR0_Color | LCCR0_Sngl | LCCR0_Act,
+        .lccr3          = LCCR3_OutEnH | LCCR3_PixRsEdg | LCCR3_ACBsDiv(2),
+};
+
+Both of these are the same LCD panel (type LQ039Q2DS54) yet there are
+two different sets of timing information, including the polarity of
+the line and field clocks (which are equivalent to hsync and vsync.)
+
+Also note that such panels are generally fixed resolution, though there
+are a few rare exceptions where changing the colour depth is permitted.
 
 -- 
-Suresh Chandra Mannava		
-Software Engineer, Cornet Technology India, Chennai.
-CSE, Research Student, Vellore Institute of Technology - India.
-Email: mannava(at)vit.ac.in, Mobile: +919884278813
-
-
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:  2.6 PCMCIA      - http://pcmcia.arm.linux.org.uk/
+                 2.6 Serial core
 
 
 -------------------------------------------------------

@@ -1,22 +1,20 @@
-From: "Alex Stewart" <alex@foogod.com>
+From: James Simmons <jsimmons@infradead.org>
 Subject: Re: [PATCH] neofb patches
-Date: Fri, 23 Apr 2004 09:53:11 -0700 (PDT)
+Date: Fri, 23 Apr 2004 19:35:46 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <15833.171.72.5.12.1082739191.squirrel@www.foogod.com>
-References: <Pine.LNX.4.44.0404211840040.9207-100000@phoenix.infradead.org>
-        <1082574664.2344.3.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44.0404231935340.5307-100000@phoenix.infradead.org>
+References: <1082574664.2344.3.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BH3wW-000794-Ho
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 09:54:24 -0700
-Received: from adsl-209-182-168-213.value.net ([209.182.168.213] helo=firestar.foogod.com)
+	id 1BH5Wn-0006TG-IC
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 11:35:57 -0700
+Received: from phoenix.infradead.org ([213.86.99.234])
 	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1BH3wV-0005GL-Uf
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 09:54:24 -0700
+	id 1BH5Wn-00015a-1R
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 11:35:57 -0700
 In-Reply-To: <1082574664.2344.3.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,26 +25,38 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: adaplas@hotpop.com
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Antonino A. Daplas" <adaplas@hotpop.com>
+Cc: Alex Stewart <alex@foogod.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Geert Uytterhoeven <geert@linux-m68k.org>
 
+
+In that case the pacth will be applied.
+
+
+On 22 Apr 2004, Antonino A. Daplas wrote:
+
+> On Thu, 2004-04-22 at 01:47, James Simmons wrote:
+> 
+> > > neofb.3.16bit.patch     - Misc fixes for 16-bit mode
+> > >
+> > >   Changed the visual reported for 16-bit mode from DirectColor to TrueColor,
+> > >   since we don't support changing the colormap, which means we don't really
+> > >   support DirectColor.  Also changed the palette entries for to be 32 bits 
+> > >   wide even for 16-bit mode because this is what the logo code expects, 
+> > >   and appears to be the correct way of doing things.
+> > 
+> > I haven't tried this one yet. Geert is this right?
+> 
 > Yes, _all_ of the generic drawing functions expect the pseudopalette to
 > be always u32.
-
-Just curious, but if this is the case, why isn't pseudo_palette defined as
-a "u32 *" (instead of "void *") in struct fb_info?  If anything outside
-the driver itself is going to be using this, it really should be more
-explicit what format it's supposed to be in.
-
-For that matter, is it really kosher to have the logo code (or other
-things external to the driver) setting pseudo_palette directly anyway? 
-Shouldn't there be some sort of an interface function for this (at the
-very least to let the driver know it's changed, in case it needs to know
-that sort of thing)?
-
--alex
-
+> 
+> Tony
+> 
+> 
+> 
+> 
+> 
 
 
 

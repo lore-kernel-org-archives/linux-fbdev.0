@@ -1,17 +1,17 @@
 From: James Simmons <jsimmons@transvirtual.com>
-Subject: RE:Whats the scoop for the apollo framebuffers?
-Date: Fri, 31 May 2002 11:50:02 -0700 (PDT)
+Subject: Re: National Geode Framebuffer Drivers
+Date: Fri, 31 May 2002 12:37:30 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0205311148410.3190-100000@www.transvirtual.com>
-References: <OF23FD3867.7218A6AF-ONC1256BCA.0057E5DF-C1256BCA.0059138E@antall.com>
+Message-ID: <Pine.LNX.4.44.0205311236350.3190-100000@www.transvirtual.com>
+References: <D3AF5F134D627243993F2F2FC32EE4D20CE08C@mailman.eason.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from www.transvirtual.com ([206.14.214.140])
 	by usw-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17DrTW-0005g6-00
-	for <Linux-fbdev-devel@lists.sourceforge.net>; Fri, 31 May 2002 11:50:10 -0700
-In-Reply-To: <OF23FD3867.7218A6AF-ONC1256BCA.0057E5DF-C1256BCA.0059138E@antall.com>
+	id 17DsDU-00023S-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 31 May 2002 12:37:41 -0700
+In-Reply-To: <D3AF5F134D627243993F2F2FC32EE4D20CE08C@mailman.eason.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,30 +23,20 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: e.fuste@focal.fr
-Cc: Linux-fbdev-devel@lists.sourceforge.net
+To: Alex Pavloff <apavloff@eason.com>
+Cc: "'linux-fbdev-devel@lists.sourceforge.net'" <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> >I noticed dnfb.c and dn_cfb4.c and dn_cfb8.c. They look the same except
-> >for different modes. Anyone have a clue here?
->
-> Yes, the only functionnal one was dnfb.c, the others were for testing
-> purpose:
+> I have posted National's Framebuffer drivers for the Geode processor's
+> onboard video at www.eason.com/linux, along with my commentary.  Some of you
+> folks may be interested, and I'd love to see this in the kernel once all the
+> cruft has been stripped out.
 
-So would it be safe to remove dn_cfb4[8].c ?
+Wow!! I see you got it out the door. I also worked on this device but I
+was under NDA. Now that the driver is out I can work on it.
 
-> Developpers Peter (and me for a less big part) had only the mono frame
-> buffer board.
-> There is color boards for Apollo DN workstation for which I have docs, but
-> I no longuer
-> have access to the hardware, color fb or Apollo. Basic color fb management
-> is similar to
-> the mono one.
-> Apollo hardware is ISA based, perhaps someone still have some working one.
-> I stoped working on Linux Apollo port because of lack of hardware.
-
-I ported over dnfb.c to the new api. I will post for people to try it.
-
+P.S
+   They do have everything in their. Oh my!!
 
 
 _______________________________________________________________

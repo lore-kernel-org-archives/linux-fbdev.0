@@ -1,17 +1,16 @@
-From: Antonino Daplas <adaplas@pol.net>
+From: Thomas Winischhofer <thomas@winischhofer.net>
 Subject: Re: Some questions
-Date: 06 Mar 2003 17:03:58 +0800
+Date: Thu, 06 Mar 2003 10:03:41 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1046941303.1209.38.camel@localhost.localdomain>
-References: <Pine.GSO.4.21.0303060932150.28248-100000@vervain.sonytel.be>
+Message-ID: <3E670EED.2050805@winischhofer.net>
+References: <Pine.LNX.4.44.0303060006030.394-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from pine.compass.com.ph ([202.70.96.37])
+Received: from [213.229.38.66] (helo=mail.falke.at)
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18qrGy-0007CD-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 06 Mar 2003 01:02:40 -0800
-In-Reply-To: <Pine.GSO.4.21.0303060932150.28248-100000@vervain.sonytel.be>
+	id 18qrKq-0008CX-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 06 Mar 2003 01:06:40 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,41 +20,55 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: James Simmons <jsimmons@infradead.org>, Thomas Winischhofer <thomas@winischhofer.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: James Simmons <jsimmons@infradead.org>
+Cc: Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, 2003-03-06 at 16:33, Geert Uytterhoeven wrote:
-> On Wed, 5 Mar 2003, James Simmons wrote:
-> > > > We should split the monitor programing stuff out from stuff like bpp etc.
-> > > > Now if you think about it we can do things like change the bpp without 
-> > > > having to redo the monitor programming. This is the flaw with the old and 
-> > > > even the new api. 
-> > > 
-> > > You could have done that from the beginning. Just look at which fields have
-> > > changed and which haven't.
-> > 
-> > I should of but didn't because I knew driver would take teh path of lest 
-> > resistance to port there drivers. TO much change would have made the 
-> > current situtation much much worst. 
+James Simmons wrote:
+> Actually it is normal. Changing a console via stty has been around 
+> forever. When you ask what size is your VGA console you say 80x25. Now why 
+> is that. The main thing is people think of it as a text mode and second
+> you really can't change it or boot to to many different size resolutions.
+> Does this mean VGA console should be limited? NO!!! I plan to make vgacon 
+> some day changable in window size. So the final answer is:
 > 
-> One other reason why this isn't done is because X may interfere with it. If we
-> don't do a full register update, but change the parts that need a change only,
-> we will see less flickering (no PLL reprogramming), but we will suffer if X
-> doesn't restore the registers to the exact same values they were before.
+> Portablity. 
 > 
+> You could use stty or some other program using the tty layer to change the 
+> resolution on any type of hardware running any type of console driver. The 
+> next best thing is some day we can get ride of con_switch in the upper 
+> console layers. We can just use set_font and vc_resize on VT switching 
+> since that is all you are doing on vc_switching. 
 
-Ideally, that is what should happen.  However, fb_set_var does a check
-if the passed var is different from the default var.  If it's the same,
-fb_set_par is skipped.  Switching back from X, this check will be mostly
-false, so fb_set_par will be skipped, and register refreshing would have
-failed.
+OK, if this is your final word on this, I - as the maintainer of a 
+driver which due to LCD and TV handling only supports a (huge) number of 
+built-in modes - am forced to do the following:
 
-So, I think fbcon should also detect if the previous console is not
-fbcon (ie previous con > last_fbvc || previous con < first_fbvc), and if
-it isn't, force an fb_set_par.
+If I receive a request for a mode that isn't supported, I go with the 
+next larger one that is supported. Even if that leads to differences 
+from requested 813x601 to displayed 1024x768.
 
-Tony
+Hope you and your console code can deal with that then :)
+
+>>BTW: What happens currently if I instruct console to replace the current 
+>>font with a bigger one (if that's possible at run-time at all) ?
+> 
+> 
+> It should work.
+
+... and lead to a mode switch? Funny: If I switch from a 8x16 font to a 
+bigger one, because I forgot my glasses, the mode is switched to a 
+higher one, because the number of cols and rows hasn't changed, leaving 
+me with a nearly identical charcter size?
+
+Thomas
+
+-- 
+Thomas Winischhofer
+Vienna/Austria
+mailto:thomas@winischhofer.net            http://www.winischhofer.net/
+
+
 
 
 

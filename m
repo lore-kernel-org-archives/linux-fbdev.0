@@ -1,24 +1,28 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH] fbdev: trivial fb_get_options fix for cyber2000fb and bw2fb
-Date: Tue, 12 Oct 2004 09:04:33 +0800
+From: David Eger <eger@havoc.gtf.org>
+Subject: Re: State of pm3fb driver
+Date: Tue, 12 Oct 2004 15:15:14 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200410120904.35862.adaplas@hotpop.com>
+Message-ID: <20041012191514.GB4636@havoc.gtf.org>
+References: <1gl6uux.9w928rity4liM%dolbeaur@club-internet.fr> <20041005190604.GA11481@mercury.jahnsnet.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CHB5u-0002eh-89
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 11 Oct 2004 18:04:50 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.51])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CHB5q-0000Ar-NQ
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 11 Oct 2004 18:04:50 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 7BFF175690
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 12 Oct 2004 01:04:38 +0000 (UTC)
+	id 1CHSE8-00039r-7u
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 12 Oct 2004 12:22:28 -0700
+Received: from havoc.gtf.org ([69.28.190.101])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CHSE7-0006vJ-DX
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 12 Oct 2004 12:22:28 -0700
+Received: from havoc.gtf.org (havoc.gtf.org [127.0.0.1])
+	by havoc.gtf.org (Postfix) with ESMTP id AC50E754E
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 12 Oct 2004 15:15:14 -0400 (EDT)
+Received: (from eger@localhost)
+	by havoc.gtf.org (8.12.10/8.12.10/Submit) id i9CJFEdn023974
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 12 Oct 2004 15:15:14 -0400
 Content-Disposition: inline
+In-Reply-To: <20041005190604.GA11481@mercury.jahnsnet.de>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,44 +33,33 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Trivial fb_get_options fix for 
-- cyber200fb
-- bw2fb
+On Tue, Oct 05, 2004 at 09:06:04PM +0200, Thomas Jahns wrote:
+> On 10/05/04 15:01:23, Romain Dolbeau wrote:
+> >Noone ever updated pm3fb to works with 2.6.x, so as you noticed,
+> >it doesn't work. There was a lot of changes for FB driver in 2.6.x,
+> >so the driver is in need of a complete rewrite.
+> 
+> Is there a sufficiently complete description of these changes to  
+> "mechanically" port them to the existing driver? I'd certainly try that  
+> because it seems to me the changes to atyfb are just as hard to port to  
+> the Macintosh. I think Benjamin Herrenschmidt is working on the latter  
+> already but I'm unaware as to how much progress he has made.
 
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
+Upgrading a driver from 2.4 to 2.6 is a tedious task that takes about
+two weeks if you know FB sorta well.  I and Francois Romieu did this for
+cirrusfb between 2.6.7 and 2.6.9;  Geert fixed the amiga bits then too, but 
+there's been no testing of that code ;-)
 
- bw2.c         |    2 +-
- cyber2000fb.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+A Pseudo-human readable description of the non-Amiga bits is at:
 
-diff -uprN linux-2.6.9-rc3-mm3-orig/drivers/video/bw2.c linux-2.6.9-rc3-mm3/drivers/video/bw2.c
---- linux-2.6.9-rc3-mm3-orig/drivers/video/bw2.c	2004-10-12 08:57:28.613795144 +0800
-+++ linux-2.6.9-rc3-mm3/drivers/video/bw2.c	2004-10-12 08:56:51.244476144 +0800
-@@ -386,7 +386,7 @@ int __init bw2_init(void)
- 	struct sbus_bus *sbus;
- 	struct sbus_dev *sdev;
- 
--	if (fb_get_options("bw2fb", &option))
-+	if (fb_get_options("bw2fb", NULL))
- 		return -ENODEV;
- 
- #ifdef CONFIG_SUN4
-diff -uprN linux-2.6.9-rc3-mm3-orig/drivers/video/cyber2000fb.c linux-2.6.9-rc3-mm3/drivers/video/cyber2000fb.c
---- linux-2.6.9-rc3-mm3-orig/drivers/video/cyber2000fb.c	2004-10-12 08:57:33.672026176 +0800
-+++ linux-2.6.9-rc3-mm3/drivers/video/cyber2000fb.c	2004-10-12 08:56:59.958151464 +0800
-@@ -1724,7 +1724,7 @@ int __init cyber2000fb_init(void)
- #ifndef MODULE
- 	char *option = NULL;
- 
--	if (fb_get_options("cyber2000fb", NULL))
-+	if (fb_get_options("cyber2000fb", &option))
- 		return -ENODEV;
- 	cyber2000fb_setup(option);
- #endif
+http://www.ussg.iu.edu/hypermail/linux/kernel/0406.2/1936.html
+http://www.ussg.iu.edu/hypermail/linux/kernel/0406.3/1040.html
+http://www.ussg.iu.edu/hypermail/linux/kernel/0406.3/1083.html
 
+-dte
 
 
 

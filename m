@@ -1,18 +1,17 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: LCD scaling type
-Date: 10 Jan 2003 20:42:24 +0100
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: rotation.
+Date: Fri, 10 Jan 2003 19:42:59 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1042227743.705.22.camel@zion.wanadoo.fr>
+Message-ID: <Pine.LNX.4.44.0301101940460.18287-100000@phoenix.infradead.org>
+References: <1042171520.933.126.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from amarseille-201-1-3-14.abo.wanadoo.fr ([193.253.250.14] helo=zion.wanadoo.fr)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18X53C-0001Vo-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Jan 2003 11:42:42 -0800
-Received: from benh by zion.wanadoo.fr with local (Exim 3.36 #1 (Debian))
-	id 18X52u-0000Gs-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Jan 2003 20:42:24 +0100
+Received: from phoenix.infradead.org ([195.224.96.167])
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18X541-0001bJ-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Jan 2003 11:43:34 -0800
+In-Reply-To: <1042171520.933.126.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,32 +21,33 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-Hi !
 
-When setting a mode on an LCD display that is not exactly the
-native mode of that display, we can, on some chips, setup a
-scaler. However, most of the time, we have 2 difference choices
-for setting up this scaler: It can preserve or not preserve
-the aspect ratio. A typical example is the titnium powerbook's 1152x768
-mode. If I set it to 1024x768, I can get either horizontal scaling (not
-preserving aspect ratio) or no scaling with black bars on left & right
-(preserving aspect ratio).
+> > Yes. Hardware rotation shouldn't also not effect the way accel 
+> > operatations are done.
+>  
+> The main difference is if the hardware supports rotation, fbcon will
+> present it with "normal" data.  With the generic implementation, fbcon
+> will present the driver with rotated data.
+> 
+> So we need a driver capabilities field either in fb_info or
+> fb_fix_screeninfo.
 
-While in most case you actually want to preserve the aspect ratio, it
-would still I beleive make sense to let the user choose it. 
+We can just test if the rotation hook exist for the fbdev driver. No hook 
+then use generic code in fbcon. Also we have a angle field in var so we 
+can see if the user wants the data rotated.
 
-Could we define one of the reserved fields in fb_var_screeninfo as
-beeing a "flags" field for such things ? There are a couple of other
-things that we may want to stuff into such a bitfield later, I'd suggest
-reserving one 32 bits field for such flags.
+> Not really.  We can dynamically rotate the fontdata using the default
+> display->fontdata into another buffer.  I believe I have functions that
+> do that in the patch I submitted.  (Sorry, I lost it when one of my
+> drives crashed :-(.
 
-Ben.
+I have that patch. It just has to be updated to the latest changes.
 
--- 
-Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 
 -------------------------------------------------------

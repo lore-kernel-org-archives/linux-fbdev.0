@@ -1,21 +1,24 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: Re: fbdv/fbcon pending problems
-Date: Tue, 24 Feb 2004 09:37:12 +0100 (MET)
+Date: Tue, 24 Feb 2004 19:33:13 +1100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0402240936270.3187@waterleaf.sonytel.be>
+Message-ID: <1077611593.28488.162.camel@gaston>
 References: <Pine.LNX.4.44.0402231823570.11599-100000@phoenix.infradead.org>
- <1077576644.5960.77.camel@gaston>
+	 <1077576644.5960.77.camel@gaston>
+	 <Pine.GSO.4.58.0402240936270.3187@waterleaf.sonytel.be>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AvYCG-0006tZ-TZ
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 00:45:44 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1AvXsD-0004zA-Sk
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 00:25:02 -0800
-In-Reply-To: <1077576644.5960.77.camel@gaston>
+	id 1AvYG9-0007pq-K9
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 00:49:45 -0800
+Received: from gate.crashing.org ([63.228.1.57] ident=root)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.30)
+	id 1AvY83-00033h-BD
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 00:41:23 -0800
+In-Reply-To: <Pine.GSO.4.58.0402240936270.3187@waterleaf.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,42 +28,21 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
 
-On Tue, 24 Feb 2004, Benjamin Herrenschmidt wrote:
-> On Tue, 2004-02-24 at 05:59, James Simmons wrote:
-> > I think we should do better validating of the var passed in. This also
-> > needs a bit of work.
->
-> It does. Radeonfb did one step in this direction, but that's not
-> enough. _BUT_ we still need to differenciate between a full mode
-> passed from userland from a mode where we _KNOW_ everything is
-> bogus but width/height... In the later case, we really want to
-> find a mode that is just large enough for the passed in width/height
-> (but not smaller, or just fail if not found) and with the same
-> hfreq if possible as the current mode. That's really a different
-> request than a full blown mode coming from userland (like a 'tuning'
-> tool or whatever...)
->
-> The FB_ACTIVATE_FIND is just that. It justs tells the driver to
-> pick up a mode based on width/height only. We know the rest of
-> the var is bogus.
 
-What about renaming it to FB_ACTIVE_RESIZE?
+> What about renaming it to FB_ACTIVE_RESIZE?
 
-Gr{oetje,eeting}s,
+Because it's not actually setting any mode, just returns a
+valid "var" :) For now, fbcon will just do a set_var
+FB_ACTIVATE_NOW right away, but userland may want to use
+that to build mode lists without actually changing the mode...
 
-						Geert
+Ben.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 
 -------------------------------------------------------

@@ -1,15 +1,17 @@
-From: "Petr Vandrovec" <VANDROVE@vc.cvut.cz>
-Subject: Re: Comments on fbgen.c and fbcon-accel
-Date: Tue, 7 May 2002 15:33:02 +0200
+From: James Simmons <jsimmons@transvirtual.com>
+Subject: Re: 2.5.14 oops in fb_copy_cmap
+Date: Tue, 7 May 2002 11:02:53 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <48088FD4B1B@vcnet.vc.cvut.cz>
+Message-ID: <Pine.LNX.4.10.10205071102120.30751-100000@www.transvirtual.com>
+References: <20020506170357.GA3798@kroah.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from zikova.cvut.cz ([147.32.235.100])
-	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17555y-0005Gh-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 07 May 2002 06:33:34 -0700
+Received: from www.transvirtual.com ([206.14.214.140])
+	by usw-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 1759Iw-00057H-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 07 May 2002 11:03:14 -0700
+In-Reply-To: <20020506170357.GA3798@kroah.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -19,32 +21,18 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Antonino Daplas <adaplas@pol.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Greg KH <greg@kroah.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On  7 May 02 at 21:26, Antonino Daplas wrote:
-> > And set_par() could do some optimizations based on a shadow map of the register
-> > contents, also to avoid artefacts when switching to a different VC with the
-> > same video timings. Like:
-> > 
-> >   write_reg(reg, val)
-> >   {
-> >       if (shadow[reg] != val) {
-> >   shadow[reg] = val;
-> >   hardware[reg] = val;
-> >       }
-> >   }
 
-I was doing that long ago in matroxfb, and it simple does not work :-(
-There is too many applications which programs video hardware directly.
-So currently matroxfb always reprogram most of registers, and for
-critical ones (PLL) it reads back value from hardware, and not from some
-shadow area. Speed difference is invisible and reliability is much better.
-                                                Best regards,
-                                                    Petr Vandrovec
-                                                    vandrove@vc.cvut.cz
-                                                     
+> I get the oops below at boot time if "vga=0x0305" is on the command
+> line.  If I take it off, I can boot just fine.
+
+Hm. Can you wait a few days. I'm porting the vesa driver to the new api. I
+will soon release a new driver.
+
 
 _______________________________________________________________
 

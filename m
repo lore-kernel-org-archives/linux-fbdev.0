@@ -1,17 +1,15 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: fbmem.c : FBIOGETCMAP
-Date: Sun, 5 Jan 2003 20:52:37 +0000 (GMT)
+From: Richard Henderson <rth@twiddle.net>
+Subject: [FB PATCH] fix alpha boot oops
+Date: Mon, 6 Jan 2003 01:20:42 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0301052048270.24903-100000@phoenix.infradead.org>
-References: <20030105204033.19207.qmail@web14904.mail.yahoo.com>
+Message-ID: <20030106012042.A14616@twiddle.net>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18VHlf-0001E2-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 05 Jan 2003 12:53:12 -0800
-In-Reply-To: <20030105204033.19207.qmail@web14904.mail.yahoo.com>
+Received: from are.twiddle.net ([64.81.246.98])
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18VTRC-0001MW-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 06 Jan 2003 01:20:50 -0800
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,35 +19,47 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jon Smirl <jonsmirl@yahoo.com>
-Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, torvalds@transmeta.com
+
+Oops in fb_set_cmap caused by palette_cmap.transp uninitialized.
+By inspection, fb_blank appears to have the same problem.
 
 
-> It needs a copy_to_user too to work. Probably doesn't
-> need the copy_from_user.
-> 
-> Is the right fix?
-> 
-> 	case FBIOGETCMAP:
-> 		fb_copy_cmap(&info->cmap, &cmap, 0);
-> 		if (copy_to_user((void *) arg, &cmap, sizeof(cmap)))
-> 			return -EFAULT;
-> 		return 0;
-
-Oops. I see the problem. It should be 
-
-  fb_copy_cmap(&info->cmap, &cmap, 2);
-
-This tells it to use copy_to_user. I see a few mistakes here. Fixing...
-
-There are several bugs here. I have to cleanup it up. FOr example in 
-fb_copy_cmap there is test for a EFAULT for any copy_* function. This is 
-just broken. It has been broken for a long time. Will fix. Will you test 
-my patch as soon as it is ready?
+r~
 
 
+===== fbmem.c 1.49 vs edited =====
+--- 1.49/drivers/video/fbmem.c	Tue Dec 31 18:08:48 2002
++++ edited/fbmem.c	Mon Jan  6 01:07:03 2003
+@@ -386,6 +386,7 @@
+ 	palette_cmap.red = palette_red;
+ 	palette_cmap.green = palette_green;
+ 	palette_cmap.blue = palette_blue;
++	palette_cmap.transp = NULL;
+ 
+ 	for (i = 0; i < LINUX_LOGO_COLORS; i += n) {
+ 		n = LINUX_LOGO_COLORS - i;
+@@ -767,6 +768,7 @@
+ int
+ fb_blank(int blank, struct fb_info *info)
+ {	
++	/* ??? Varible sized stack allocation.  */
+ 	u16 black[info->cmap.len];
+ 	struct fb_cmap cmap;
+ 	
+@@ -775,8 +777,7 @@
+ 	if (blank) { 
+ 		memset(black, 0, info->cmap.len * sizeof(u16));
+ 		cmap.red = cmap.green = cmap.blue = black;
+-		if (info->cmap.transp)
+-			cmap.transp = black;
++		cmap.transp = info->cmap.transp ? black : NULL;
+ 		cmap.start = info->cmap.start;
+ 		cmap.len = info->cmap.len;
+ 	} else
 
 
 -------------------------------------------------------

@@ -1,32 +1,39 @@
-From: Linus Torvalds <torvalds@osdl.org>
+From: Giuseppe Bilotta <bilotta78@hotpop.com>
 Subject: Re: [Linux-fbdev-devel] Re: [PATCH] fbdev: Fix IO access in rivafb
-Date: Mon, 8 Nov 2004 14:25:04 -0800 (PST)
-Message-ID: <Pine.LNX.4.58.0411081422560.2301@ppc970.osdl.org>
-References: <200411080521.iA85LbG6025914@hera.kernel.org>
- <200411090402.22696.adaplas@hotpop.com> <Pine.LNX.4.58.0411081211270.2301@ppc970.osdl.org>
- <200411090608.02759.adaplas@hotpop.com>
+Date: Tue, 9 Nov 2004 00:07:58 +0100
+Message-ID: <MPG.1bfa1abaf653d37c98970a@news.gmane.org>
+References: <200411080521.iA85LbG6025914@hera.kernel.org> <1099893447.10262.154.camel@gaston> <200411081706.55261.adaplas@hotpop.com> <1099950722.10262.166.camel@gaston>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261281AbUKHW0K@vger.kernel.org>
-In-Reply-To: <200411090608.02759.adaplas@hotpop.com>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261295AbUKHXLo@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: adaplas@pol.net
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>, Guido Guenther <agx@sigxcpu.org>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-
-
-On Tue, 9 Nov 2004, Antonino A. Daplas wrote:
+Benjamin Herrenschmidt wrote:
+> On Mon, 2004-11-08 at 17:06 +0800, Antonino A. Daplas wrote:
 > 
-> In big endian machines, the read*/write* accessors do a byteswap for an
-> inherently little endian PCI bus.  However, rivafb puts the hardwire in big
-> endian register access, thus the byteswap is not needed. So for 16- and
-> 32-bit access, instead of read*/write*, use __raw_read*/__raw_write* for all
-> archs.
+> > 
+> > How about this patch?  This is almost the original macro in riva_hw.h,
+> > with the __force annotation.
+> 
+> I don't like it neither. It lacks barriers. the rivafb driver
+> notoriously lacks barriers, except in a few places where it was so bad
+> that it actually broke all the time, where we added some. This
+> originates from the X "nv" driver written by Mark Vojkovich who didn't
+> want to hear about barriers for perfs reasons I think.
 
-Ok, applied with some further simplifications (use "void __iomem *" and 
-suddenly those /2 and /4 just go away - also use __raw_xxxx for the 
-single-byte versions to be consistent).
+Could this be the reason why in 2.6.7 I get solid lockups when 
+switching to nv-driven X and rivafb-driven console? Is there 
+something I could test to see if this is the reason?
 
-		Linus
+-- 
+Giuseppe "Oblomov" Bilotta
+
+Can't you see
+It all makes perfect sense
+Expressed in dollar and cents
+Pounds shillings and pence
+                  (Roger Waters)

@@ -1,49 +1,82 @@
-From: Petr Vandrovec <vandrove@vc.cvut.cz>
-Subject: [PATCH] matroxfb update to new API
-Date: Tue, 27 May 2003 19:50:21 +0200
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20030527175021.GA2453@vana.vc.cvut.cz>
+From: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?=
+ <yoshfuji@wide.ad.jp>
+Subject: Re: 2.5.70-bk1 compilation error
+Date: Wed, 28 May 2003 02:57:51 +0900 (JST)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <20030528.025751.65947567.yoshfuji@wide.ad.jp>
+References: <Pine.GSO.4.53.0305271949510.10781@pitsa.pld.ttu.ee>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from yue.hongo.wide.ad.jp ([203.178.139.94])
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19KihM-0003ni-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 27 May 2003 10:57:20 -0700
+In-Reply-To: <Pine.GSO.4.53.0305271949510.10781@pitsa.pld.ttu.ee>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: Text/Plain; charset="us-ascii"
+To: siim@pld.ttu.ee, davej@codemonkey.org.uk
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-Hi,
-  I just created stripped down version of matroxfb - it is available
-as diff for 2.5.70 at 
-ftp://platan.vc.cvut.cz/pub/linux/matrox-latest/mga-stripdown-2.5.70.gz.
+In article <Pine.GSO.4.53.0305271949510.10781@pitsa.pld.ttu.ee> (at Tue, 27 May 2003 19:55:42 +0300 (EET DST)), Siim Vahtre <siim@pld.ttu.ee> says:
 
-  I'll still update my own version of fbdev layer and matroxfb, as
-this stripped down driver is quite unusable for me.
-						Petr Vandrovec
+>   CC [M]  drivers/video/i810/i810_main.o
+> In file included from drivers/video/i810/i810_main.c:56:
+> drivers/video/i810/i810.h:206: error: parse error before "agp_memory"
 
------ Forwarded message from Petr Vandrovec <vandrove@vc.cvut.cz> -----
+Index: linux25-LINUS/drivers/video/i810/i810.h
+===================================================================
+RCS file: /cvsroot/usagi/usagi-backport/linux25/drivers/video/i810/i810.h,v
+retrieving revision 1.1.1.4
+diff -u -r1.1.1.4 i810.h
+--- linux25-LINUS/drivers/video/i810/i810.h	17 Apr 2003 18:13:36 -0000	1.1.1.4
++++ linux25-LINUS/drivers/video/i810/i810.h	27 May 2003 17:48:49 -0000
+@@ -203,8 +203,8 @@
+ #define LOCKUP                      8
+ 
+ struct gtt_data {
+-	agp_memory *i810_fb_memory;
+-	agp_memory *i810_cursor_memory;
++	struct agp_memory *i810_fb_memory;
++	struct agp_memory *i810_cursor_memory;
+ };
+ 
+ struct mode_registers {
+Index: linux25-LINUS/drivers/video/sis/sis_main.c
+===================================================================
+RCS file: /cvsroot/usagi/usagi-backport/linux25/drivers/video/sis/sis_main.c,v
+retrieving revision 1.1.1.4
+diff -u -r1.1.1.4 sis_main.c
+--- linux25-LINUS/drivers/video/sis/sis_main.c	6 May 2003 12:43:02 -0000	1.1.1.4
++++ linux25-LINUS/drivers/video/sis/sis_main.c	27 May 2003 17:48:50 -0000
+@@ -2868,8 +2868,8 @@
+ 	unsigned long *write_port = 0;
+ 	SIS_CMDTYPE    cmd_type;
+ #ifndef AGPOFF
+-	agp_kern_info  *agp_info;
+-	agp_memory     *agp;
++	struct agp_kern_info  *agp_info;
++	struct agp_memory     *agp;
+ 	u32            agp_phys;
+ #endif
+ #endif
 
-Date: Tue, 27 May 2003 19:46:31 +0200
-From: Petr Vandrovec <vandrove@vc.cvut.cz>
-To: torvalds@transmeta.com
-Subject: [PATCH] matroxfb update to new API
+-- 
+Hideaki YOSHIFUJI @ USAGI Project <yoshfuji@linux-ipv6.org>
+GPG FP: 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
 
-Hi Linus,
-  as it appears that current fbdev layer is not going to disappear,
-there is update of matroxfb. I'm sorry that it is quite large, but
-due to completely changed underlying API there is no reasonable way 
-how to split it into smaller pieces.
 
-(Mis) Features:
-Removed support for text mode. No way for it with current API.
-Removed support for hardware cursor. Generic cursor code has enough 
-	troubles as is, in software mode.
-No reasonable fbset support... It is especially annoying on multihead
-	system, as 'stty cols XXX rows YYY' does not change pixclock...
-Removed fastfont support. No way for it with current API.
-
-(Mis) Features inherited from generic fbdev API:
-Cursor on other framebuffers than primary one does not blink.
-Contents of visible, but not foreground, display is not updated.
-
-						Thanks,
-							Petr Vandrovec
+-------------------------------------------------------
+This SF.net email is sponsored by: ObjectStore.
+If flattening out C++ or Java code to make your application fit in a
+relational database is painful, don't do it! Check out ObjectStore.
+Now part of Progress Software. http://www.objectstore.net/sourceforge

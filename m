@@ -1,23 +1,20 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Changing modes with fbset
-Date: Tue, 6 Jan 2004 16:23:13 +0100 (MET)
+Subject: Re: [PATCH] VT locking
+Date: Tue, 6 Jan 2004 17:31:31 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0401061621160.5752@waterleaf.sonytel.be>
-References: <3FDBB97F.4070207@undead.cc>  <Pine.LNX.4.44.0401060005511.7347-100000@phoenix.infradead.org>
-  <20040106002822.GB442@guug.org>  <1073349349.780.181.camel@gaston>
- <1073389131.25197.30.camel@thor.asgaard.local>
+Message-ID: <Pine.GSO.4.58.0401061725250.5752@waterleaf.sonytel.be>
+References: <1073349182.9504.175.camel@gaston>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1Adt3I-0005Nn-0y
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 07:23:28 -0800
+	id 1Adu7I-0001oa-MC
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 08:31:40 -0800
 Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1Adt3H-0000ni-F2
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 07:23:27 -0800
-In-Reply-To: <1073389131.25197.30.camel@thor.asgaard.local>
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1Adu7H-0001CC-WB
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 08:31:40 -0800
+In-Reply-To: <1073349182.9504.175.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,38 +24,49 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="iso-8859-1"
-To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Otto Solares <solca@guug.org>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@osdl.org>, James Simmons <jsimmons@infradead.org>
 
-On Tue, 6 Jan 2004, Michel [ISO-8859-1] D=E4nzer wrote:
-> On Tue, 2004-01-06 at 01:35, Benjamin Herrenschmidt wrote:
-> > Then, we probably want some way to also enable mirroring instead of
-> > dual head...
+On Tue, 6 Jan 2004, Benjamin Herrenschmidt wrote:
+> --- linux-2.5/kernel/printk.c	2004-01-06 10:07:08.640948328 +1100
+> +++ linuxppc-2.5-benh/kernel/printk.c	2003-12-31 17:01:25.000000000 +1100
+> @@ -479,6 +493,9 @@
+>  	char *p;
+>  	static char printk_buf[1024];
+>  	static int log_level_unknown = 1;
+> +#ifdef CONFIG_BOOTX_TEXT
+> +	extern int force_printk_to_btext;
+> +#endif
 >
-> Crazy idea: What would break if it defaulted to mirroring? :) You could
-> achieve true multihead via panning or something...
+>  	if (oops_in_progress) {
+>  		/* If a crash is occurring, make sure we can't deadlock */
+> @@ -494,6 +511,10 @@
+>  	va_start(args, fmt);
+>  	printed_len = vsnprintf(printk_buf, sizeof(printk_buf), fmt, args);
+>  	va_end(args);
+> +#ifdef CONFIG_BOOTX_TEXT
+> +	if (force_printk_to_btext)
+> +		btext_drawstring(printk_buf);
+> +#endif /* CONFIG_BOOTX_TEXT */
 
-Not that crazy!
+Looks like a nice opportunity to introduce an arch-specific printk() stub:
 
-It would revert the current con2fbmap approach: instead of mapping virtua=
-l
-consoles to frame buffer devices, it would allow to map frame buffer devi=
-ces to
-a virtual console or to another frame buffer device...
+    void *arch_printk(const char *args);
+
+    if (arch_printk)
+	arch_printk(printk_buf);
 
 Gr{oetje,eeting}s,
 
 						Geert
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m6=
-8k.org
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. =
-But
-when I'm talking to journalists I just say "programmer" or something like=
- that.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
 							    -- Linus Torvalds
 
 

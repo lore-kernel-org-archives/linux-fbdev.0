@@ -1,21 +1,21 @@
-From: James Simmons <jsimmons@infradead.org>
+From: Otto Solares <solca@guug.org>
 Subject: Re: fbdv/fbcon pending problems
-Date: Tue, 24 Feb 2004 01:19:46 +0000 (GMT)
+Date: Mon, 23 Feb 2004 20:37:59 -0600
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0402240116090.17027-100000@phoenix.infradead.org>
-References: <1077576644.5960.77.camel@gaston>
+Message-ID: <20040224023759.GA16499@guug.org>
+References: <1077497593.5960.28.camel@gaston>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AvRMf-0008Sx-I2
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 23 Feb 2004 17:28:01 -0800
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.30)
-	id 1AvR33-0005KC-80
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 23 Feb 2004 17:07:45 -0800
-In-Reply-To: <1077576644.5960.77.camel@gaston>
+	id 1AvSaE-0003ui-P1
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 23 Feb 2004 18:46:06 -0800
+Received: from guug.org ([168.234.203.30] helo=guug.galileo.edu)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1AvSSH-0001ka-Lq
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 23 Feb 2004 18:37:53 -0800
+Content-Disposition: inline
+In-Reply-To: <1077497593.5960.28.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,64 +25,77 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
 
-
-> I would appreciate if you did so ;) Please let me know what you find.
-
-Okay. 
-
-> I have this problem since the very beginning. The very first
-> shift-pageup to display things properly from the back buffer, but to not
-> _erase_ properly, until you do a bit of ping pong (down up down up) so
-> that your screen end up properly refreshed.
-
-:-( 
- 
-> I never use modules for fbdevs
-
-Its a handy way to track down bugs :-)
-
-> It does. Radeonfb did one step in this direction, but that's not
-> enough. _BUT_ we still need to differenciate between a full mode 
-> passed from userland from a mode where we _KNOW_ everything is
-> bogus but width/height... In the later case, we really want to
-> find a mode that is just large enough for the passed in width/height
-> (but not smaller, or just fail if not found) and with the same
-> hfreq if possible as the current mode. That's really a different
-> request than a full blown mode coming from userland (like a 'tuning'
-> tool or whatever...)
+On Mon, Feb 23, 2004 at 11:53:14AM +1100, Benjamin Herrenschmidt wrote:
+> Hi !
 > 
-> The FB_ACTIVATE_FIND is just that. It justs tells the driver to
-> pick up a mode based on width/height only. We know the rest of
-> the var is bogus.
+> Here's a list of pending issues with fbdev (either upstream or in the
+> fbdev bk treee), I figured posting it here may help getting more people
+> on those issues as my time is sparse and I suppose James too.
+> 
+>  - First one, I will deal with, just writing it for completeness: When
+> switching from KD_GRAPHICS to KD_TEXT (either same console changing mode
+> or switching to a different console), we need a callback so the fbdev
+> has a chance to restore the accel engine setting (or even the whole
+> mode, to be safe).
+> 
+>  - Memory corruption problems. There is still at least one identified
+> when using stty. Just use crazy values, like flipping rows & cols (like
+> stty rows 132 cols 30) and usually, you'll see the box blow up very soon
+> with heavy memory corruption.
+> 
+>  - mach64 lockups on LT-G (I'll try on an LT-Pro soon) plus other
+> mach64 bugs in the new version in the bk fbdev, I'll have a patch for
+> some of the problems, but I didn't find a good explanation for the
+> accel lockups yet
+> 
+>  - Logo problems. When booting with a logo, then going to getty, the
+> logo doesn't get erased until we actually switch to another console (or
+> reset the console). At this point, using things like vi & scrolling up
+> doesn't work properly. Actually, last time I tried, I had to switch
+> back & forth twice before my console that had the logo got fully working
+> with vi.
+> 
+>  - Back buffer problem: maybe related to the logo ? After boot, doing
+> shift-pageup to go back to the boot message, usually you get crap
+> displayed at various places.
+> 
+>  - On x86, various junk displayed when the fbdev takes over. Reported
+> by radeonfb users, I couldn't test myself, I don't have an x86 with
+> radeon at hand for the moment. Apparently, the takeover from vgacon
+> doesn't properly "convert" the previous VGA text buffer content
+> 
+>  - stty & mode picking. Currently, fbcon_resize() (called when stty is
+> used to resize the console) will hack a "var" strcture by just putting
+> new width/height in it and pass that to set_var. The way the various
+> drivers react to that mostly broken "var" structure is rather random.
+> We need to explicitely differenciate between a mode that is "complete"
+> (like what fbset or X passes down the fbdev) or a mode that is just
+> width/height and eventually a hint of frequency, like what fbcon passes
+> in this case. I added FB_ACTIVATE_FIND for that purpose, but that needs
+> better driver support to "pick" up a proper mode. The algorithm for
+> that isn't trivial. Could be moved to common code.
+> 
+>  - fbset doesn't resize the console. I consider that a regression from
+> 2.4. I have some code based on the notification mecanism to address
+> that, but it tends to trigger the same memory corruption problem as
+> reported with stty & bogus coordinates. There is something hairy going
+> on with console resizes. That code is a bit foreign to me though.
+> 
+> Ok, that's all that comes to my mind right now, help is welcome :)
 
-Its still possible that the user sends in bogus data using 
-FB_ACTIVATE_FIND. 
- 
-> Yes, but that's less urgent than the other ones. 
+- bus_id for each fbdev, so from userland became posible to identify
+  to which card we are controlling.  I know it should be exported via
+  sysfs but an ioctl should be really handy as when you program for
+  fbdev anyway you have to use ioctl's, just to get the bus_is will
+  be a pain use sysfs.
 
-I agree.
-
-
-> We really need to fix
-> those basic behaviour problems before multihead. Multihead will come
-> later as I will implement dual head support in radeonfb. That leads to
-> a while bunch of problems with the userland API that need to be improed
-> too, 
-
-That is what sysfs is for :-) 
-
-> and that leads to the problem of properly soft booting additional
-> cards. I have various ideas to address those problems, but that's
-> definitely less urgent than the list I wrote down.
-
-We will talk about this later.
-
-
+-otto
+  
 
 
 -------------------------------------------------------

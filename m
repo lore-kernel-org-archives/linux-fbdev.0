@@ -1,21 +1,15 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: Problem with cfb_imageblit
-Date: 25 May 2002 07:24:51 +0800
+From: James Simmons <jsimmons@transvirtual.com>
+Subject: [PATCH] fbdev updates.
+Date: Tue, 28 May 2002 11:09:58 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1022282739.542.1.camel@daplas>
-References: <1022214909.540.1.camel@daplas>
+Message-ID: <ad0i2l$841$2@main.gmane.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [203.167.79.9] (helo=willow.compass.com.ph)
-	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17BOPR-0004kD-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 24 May 2002 16:23:45 -0700
-Received: from [205.136.61.38] (cwc38.compass.com.ph [205.136.61.38])
-	by willow.compass.com.ph (8.9.3/8.9.3) with ESMTP id HAA24152
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 25 May 2002 07:23:40 +0800 (PHT)
-	(envelope-from adaplas@pol.net)
-In-Reply-To: <1022214909.540.1.camel@daplas>
+Received: from www.transvirtual.com ([206.14.214.140])
+	by usw-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17ClQ2-0003Va-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 28 May 2002 11:10:02 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -25,31 +19,36 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linus Torvalds <torvalds@transmeta.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Fri, 2002-05-24 at 21:19, Antonino Daplas wrote:
-> Hi,
-> 
-> I have an unusual problem with cfb_imageblit.  I'm not too sure if this
-> is unique to my system. I get garbage pixels.  For example the
-> underscore character (_) appears like this magnified:
 
-Didn't look carefully enough, I found the problem.  
+Hi!
 
-Tony
+   Could you merge the latest stuff in the fbdev BK tree. It has various
+fixes and ports over ot the new api. Also a few new drivers. 
 
---- cfbimgblt.c-orig	Fri May 24 15:51:13 2002
-+++ cfbimgblt.c	Fri May 24 15:51:28 2002
-@@ -105,7 +105,7 @@
- 				fb_writel((mask & eorx)^bgx, dst);
- 				dst++;
- 			}
--			l =- pad;		
-+			l -= pad;		
- 			dst1 += p->fix.line_length;	
- 		}	
- 	}
+http://fbdev.bkbits.net:8080/fbdev-2.5
+
+or a traditional diff at 
+
+http://www.transvirtual.com/~jsimmons/fbdev.diff
+
+
+P.S
+  To the general list. The company I work for appears to be going under.
+So if anyone is looking for a kernel developer drop me a email. 
+
+
+   . ---
+   |o_o |
+   |:_/ |   Give Micro$oft the Bird!!!!
+  //   \ \  Use Linux!!!!
+ (|     | )
+ /'_   _/`\
+ ___)=(___/
 
 
 _______________________________________________________________

@@ -1,17 +1,17 @@
-From: James Simmons <jsimmons@transvirtual.com>
-Subject: Re: [PATCH] fbdev updates.
-Date: Fri, 5 Jul 2002 12:00:35 -0700 (PDT)
+From: Ani Joshi <ajoshi@shell.unixbox.com>
+Subject: Re: Re: [PATCH] fbdev updates.
+Date: Fri, 5 Jul 2002 12:29:15 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0207051141590.25589-100000@www.transvirtual.com>
-References: <20020705193923.G27920@flint.arm.linux.org.uk>
+Message-ID: <Pine.BSF.4.44.0207051222060.63178-100000@shell.unixbox.com>
+References: <Pine.LNX.4.44.0207051123240.25589-100000@www.transvirtual.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from www.transvirtual.com ([206.14.214.140])
+Received: from shell.unixbox.com ([207.211.45.65])
 	by usw-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17QYJw-0003CW-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 05 Jul 2002 12:00:44 -0700
-In-Reply-To: <20020705193923.G27920@flint.arm.linux.org.uk>
+	id 17QYYo-0005Li-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 05 Jul 2002 12:16:06 -0700
+In-Reply-To: <Pine.LNX.4.44.0207051123240.25589-100000@www.transvirtual.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,45 +23,43 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King <rmk@arm.linux.org.uk>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: James Simmons <jsimmons@transvirtual.com>
+Cc: Russell King <rmk@arm.linux.org.uk>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> On Fri, Jul 05, 2002 at 11:32:51AM -0700, James Simmons wrote:
-> > > James, you're OTT here.
-> >
-> > I apologize I'm sorry. I did get upset. Its just this has been discussed
-> > time and time again. It gets annoying after awhile and it stopped me from
-> > completing the fbdev changes in the last development series. I don't want
-> > that again.
+Hi James,
 
-> _I_ didn't stop your fbdev changes.
+On Fri, 5 Jul 2002, James Simmons wrote:
 
-I know that. In fact you where one of my best supporters of my ideas. You
-defended my ideas against the others who where against it. This I am most
-grateful for.
+> > It's part of the deal.  Either you allow driver writers to cleanly code
+> > the way they see fit, or you take over maintainence of those drivers.
+> > You break it, you fix it.  What's it to be?
+>
+> I'm not going to fight with you about it. I can revert the changes back to
+> the way you had it before if you want.
 
-> You stopped them yourself when other
-> driver maintainers didn't comply with your ill-timed request.
+If you are going to back out the changes you did to RK's drivers could you
+please also back out the changes you made to my drivers?  Specifically I
+noticed several changes done to rivafb which introduce a riva_par, which I
+also don't like to use in my drivers.  My drivers share a very common
+structure and I'd like to keep it that way.  I'm not sure if you have done
+any changes to the other drivers (radeonfb or aty128fb) but if you could
+please backout your changes to rivafb that would be nice.  I will try my
+best to free up some time next week and fixup the drivers to go along with
+this new API.
 
-I didn't want to break their drivers. I still don't. I like to avoid it as
-much as possible.
+The reason I haven't done so yet is that it seems from the traffic on
+the list, this "new API" its somewhat of a changing theory so far and its
+not yet defined well.  I haven't noticed any other driver maintainers
+updating their drivers to this new API (if they are, perhaps I'm looking
+at the wrong places) so I am hessitant to do this as it seems its still
+'iffy' if this work will actually go into the mainline kernel.  Could
+someone please clear up the confusion about this?
 
-> And that's the situation today.  If you want to carry on this slagging
-> match... but its not getting either of us anywhere.
 
-   No I don't either. I'm claimed down and I'm thinking straight again.
-Unfortunely email doesn't show this. Sorry about the misunderstanding
-here.
-   All I want to do is seperate out the console code and redundent
-stuff. To make fbdev work without fbcon. You can see the bonus here.
-   This is the first step. Once that is out of the way I like to see the
-internals AND externals change for fbdev. I'm no big fan of var and fix
-being seperate. Plus there is abunch of other things. But this is for the
-next developement tree. So once 2.6 comes out I like to start on these
-changes right away. Since I see you have a strong opinon (which is a good
-thing) I want to here your input on how the next generation of fbdev/dri
-drivers should be.
+Thank you,
+
+ani
 
 
 

@@ -1,20 +1,27 @@
-From: Mario Lang <mlang@delysid.org>
-Subject: fbcon has a empty unimap after boot
-Date: Fri, 12 Sep 2003 13:07:36 +0200
+From: "Thomas S. Iversen" <zensonic@zensonic.dk>
+Subject: Need advice on blitting to dword alignment
+Date: Fri, 12 Sep 2003 15:52:29 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <874qzip8nb.fsf@lexx.delysid.org>
+Message-ID: <20030912135229.GA12523@zensonic.dk>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19xlmp-0003dg-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 12 Sep 2003 04:08:23 -0700
-Received: from chello080109223066.lancity.graz.surfer.at
-	([80.109.223.66] helo=lexx.delysid.org ident=mail)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 19xlmo-00032K-HD
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 12 Sep 2003 04:08:22 -0700
+	id 19xoMY-0002Rz-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 12 Sep 2003 06:53:26 -0700
+Received: from 213.237.25.228.adsl.van.worldonline.dk ([213.237.25.228] helo=www.zensonic.dk)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.22)
+	id 19xoMX-0006Yf-AS
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 12 Sep 2003 06:53:25 -0700
+Received: from www.zensonic.dk (localhost [127.0.0.1])
+	by www.zensonic.dk (8.12.3/8.12.3/Debian-6.4) with ESMTP id h8CDqUkc012829
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 12 Sep 2003 15:52:31 +0200
+Received: (from zensonic@localhost)
+	by www.zensonic.dk (8.12.3/8.12.3/Debian-6.4) id h8CDqUdx012827
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 12 Sep 2003 15:52:30 +0200
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,62 +34,30 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: jsimmons@infradead.org, geert@linux-m68k.org
 
-Hi.
+Hi There
 
-I noticed that with 2.6.0 kernels, when using fbcon
-(with the sisfb driver in my case, using a Sis630 card), the
-ioctl GIO_UNIMAP returns a empty unimap.
-This results in problems for BRLTTY[1], which relies
-on a valid unimap to back-translate the font-positions of
-/dev/vcsa to the actual characters used.
+I am in the final stages of developing a framebufferdriver for 
+the Silicon Motion Lynx series chip, but ran into troubles
+during development of accelerated host blits (mono font expansion to
+arbitrary bpp depths)
 
-Further digging showed that this problems has probably gone
-unnoticed because there is a special case in
-drivers/char/consolemap.c:conv_uni_to_pc which returns -3 when
-there is no unimap available.  This -3 return value
-is caught in drivers/char/vt.c:do_con_write like this:
+The Lynx chip expects data in dwords no matter what. If
+the image is a multiple of 32 bits wide this is just fine, 
+but if it is not I have to pad in zeros in the last dword _for 
+each line_
 
-                        tc = conv_uni_to_pc(vc_cons[currcons].d, tc);
-                        ...
-                        } else if ( tc == -3 ) {
-                                /* Bad hash table -- hope for the best */
-                                tc = c;
-                        }
+eg. an 24bit by 16 bit mono image would consist of 1 dword for each line
+taking 16 dwords to transfer.
 
-This is why I think the uninitialized unimap did go
-unnoticed, since this code will make things work for
-standard iso-8859 type of charsets.
+Is there _any_ way I can force the framebuffer console system to give
+images aligned to dwords? It is ofcourse possible to transfer data
+using a for loop taking the padding into account, but that seems
+overly complex and in-efficient compared to a memcpy_toio(src,dst,size)
 
-However, user space apps which rely on GIO_UNIMAP do not
-work correctly, and in general, I think I18N should be broken
-on fbcon currently.
+Any hints or suggestions?
 
-I have a very crude patch which works for me here, but I
-am not sure if this is the right way to fix this.
-Anyway, it is attached.  Note that I am very new to
-kernel hacking, so my analysis of the problem might be
-bogus, but I do think I am on the right track...
-
---- linux-2.6.0-test4/drivers/video/console/fbcon.c.orig        2003-09-03 15:32:42.000000000 +0200
-+++ linux-2.6.0-test4/drivers/video/console/fbcon.c     2003-09-03 15:27:09.000000000 +0200
-@@ -695,6 +695,7 @@
-                fb_display[unit].scrollmode = SCROLL_YNOMOVE;
-        else
-                fb_display[unit].scrollmode = SCROLL_YREDRAW;
-+       con_set_default_unimap(unit);
-        fbcon_set_display(vc, init, !init);
- }
-
-
-[1] http://mielke.cc/brltty/
-
--- 
-CYa,
-  Mario | Debian Developer <URL:http://debian.org/>
-        | Get my public key via finger mlang@db.debian.org
-        | 1024D/7FC1A0854909BCCDBE6C102DDFFC022A6B113E44
+Regards Thomas, Denmark
 
 
 -------------------------------------------------------

@@ -1,22 +1,22 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 8/9] fbdev: Fix default timings in vga16fb
-Date: Tue, 21 Dec 2004 23:34:18 +0800
-Message-ID: <20041221213722.C41221A0257@smtp-1.hotpop.com>
+Subject: [PATCH 9/9] fbdev: Reduce stack usage of intelfb
+Date: Tue, 21 Dec 2004 23:34:31 +0800
+Message-ID: <20041221213729.2EE321A01F5@smtp-1.hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CgrhO-0007p6-3k
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 21 Dec 2004 13:37:42 -0800
+	id 1CgrhX-0007pP-2m
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 21 Dec 2004 13:37:51 -0800
 Received: from smtp-out.hotpop.com ([38.113.3.61])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CgrhN-0002Y2-Jj
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 21 Dec 2004 13:37:42 -0800
+	id 1CgrhW-0002Yq-IZ
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 21 Dec 2004 13:37:50 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id D49C8AAFA25
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 21 Dec 2004 21:37:28 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id 6EBABBFF729
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 21 Dec 2004 21:37:37 +0000 (UTC)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -30,38 +30,77 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Martin Wilck <martin.wilck@fujitsu-siemens.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, "Randy.Dunlap" <randy.dunlap@verizon.net>
 
+Reduce stack usage in intelfb_set_par() from 2404 bytes
+(on x86-32) to 12 bytes.
 
-=46rom Martin Wilck:
-
-=2E.I am asking because we have encountered a video device that obviously=20
-has problems displaying the standard mode of the vga16fb driver...
-
-The default timings give a vtotal of 529 instead of 525 in 640x480@60.
-
+Signed-off-by: Randy Dunlap <rddunlap@osdl.org>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
-=2D--
+---
 
- vga16fb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ intelfbdrv.c |   25 ++++++++++++++++---------
+ 1 files changed, 16 insertions(+), 9 deletions(-)
 
-diff -Nru a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
-=2D-- a/drivers/video/vga16fb.c	2004-11-10 06:15:07 +08:00
-+++ b/drivers/video/vga16fb.c	2004-11-25 22:45:54 +08:00
-@@ -91,8 +91,8 @@
- 	.pixclock	=3D 39721,
- 	.left_margin	=3D 48,
- 	.right_margin	=3D 16,
-=2D	.upper_margin	=3D 39,
-=2D	.lower_margin	=3D 8,
-+	.upper_margin	=3D 33,
-+	.lower_margin	=3D 10,
- 	.hsync_len 	=3D 96,
- 	.vsync_len	=3D 2,
- 	.vmode		=3D FB_VMODE_NONINTERLACED,
-
-
+diff -Nru a/drivers/video/intelfb/intelfbdrv.c b/drivers/video/intelfb/intelfbdrv.c
+--- a/drivers/video/intelfb/intelfbdrv.c	2004-11-17 18:15:18 +08:00
++++ b/drivers/video/intelfb/intelfbdrv.c	2004-12-21 04:59:25 +08:00
+@@ -1234,8 +1234,7 @@
+ static int
+ intelfb_set_par(struct fb_info *info)
+ {
+-	struct intelfb_hwstate hw;
+-
++ 	struct intelfb_hwstate *hw;
+         struct intelfb_info *dinfo = GET_DINFO(info);
+ 
+ 	if (FIXED_MODE(dinfo)) {
+@@ -1243,6 +1242,10 @@
+ 		return -EINVAL;
+ 	}
+ 
++ 	hw = kmalloc(sizeof(*hw), GFP_ATOMIC);
++ 	if (!hw)
++ 		return -ENOMEM;
++
+ 	DBG_MSG("intelfb_set_par (%dx%d-%d)\n", info->var.xres,
+ 		info->var.yres, info->var.bits_per_pixel);
+ 
+@@ -1251,15 +1254,15 @@
+ 	if (dinfo->accel)
+ 		intelfbhw_2d_stop(dinfo);
+ 
+-	hw = dinfo->save_state;
+-	if (intelfbhw_mode_to_hw(dinfo, &hw, &info->var))
+-		return -EINVAL;
+-	if (intelfbhw_program_mode(dinfo, &hw, 0))
+-		return -EINVAL;
++ 	memcpy(hw, &dinfo->save_state, sizeof(*hw));
++ 	if (intelfbhw_mode_to_hw(dinfo, hw, &info->var))
++ 		goto invalid_mode;
++ 	if (intelfbhw_program_mode(dinfo, hw, 0))
++ 		goto invalid_mode;
+ 
+ #if REGDUMP > 0
+-	intelfbhw_read_hw_state(dinfo, &hw, 0);
+-	intelfbhw_print_hw_state(dinfo, &hw);
++ 	intelfbhw_read_hw_state(dinfo, hw, 0);
++ 	intelfbhw_print_hw_state(dinfo, hw);
+ #endif
+ 
+ 	update_dinfo(dinfo, &info->var);
+@@ -1278,7 +1281,11 @@
+ 	} else {
+ 		info->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
+ 	}
++	kfree(hw);
+ 	return 0;
++invalid_mode:
++	kfree(hw);
++	return -EINVAL;
+ }
+ 
+ static int
 
 
 

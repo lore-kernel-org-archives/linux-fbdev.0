@@ -1,34 +1,46 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Ben Collins <bcollins@debian.org>
 Subject: Re: [FBDEV UPDATE] Newer patch.
-Date: Thu, 23 Oct 2003 12:00:24 +0200 (MEST)
+Date: Thu, 23 Oct 2003 10:43:15 -0400
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.GSO.4.21.0310231200050.27218-100000@waterleaf.sonytel.be>
+Message-ID: <20031023144315.GA667@phunnypharm.org>
 References: <Pine.LNX.4.44.0310221814290.25125-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+Content-Disposition: inline
 In-Reply-To: <Pine.LNX.4.44.0310221814290.25125-100000@phoenix.infradead.org>
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: James Simmons <jsimmons@infradead.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Wed, 22 Oct 2003, James Simmons wrote:
+On Wed, Oct 22, 2003 at 06:31:22PM +0100, James Simmons wrote:
+> 
+> Hi folks. 
+> 
 >   I have a new patch against 2.6.0-test8. This patch is a few fixes and I 
 > added back in functionality for switching the video mode for fbcon via 
 > fbset again. Give it a try and let me know the results.
 > 
 > http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
 
-This patch accidentally includes drivers/video/logo/logo_linux_clut224.c.
+The changes to mach64_cursor.c really bork things up somehow. The cursor
+has changed from a nice underline to a solid white block. Not only that,
+but the block is bigger than the font it is over (if I am on top of
+adjacent letters, it covers the entire letter I am on, plus a couple of
+pixels of the letter to the right).
 
-Gr{oetje,eeting}s,
+In additition, the cursor now disappears while typing, and navigating
+around (on the command line left and right, or even in an editor when
+moving the cursor up and down). This disappearing while typing or
+navigating is _really_ annoying. If I go left or right a lot, I have to
+keep stopping to see where the cursor actually is.
 
-						Geert
+FYI, this is on an UltraSPARC Blade 100, Mach64. Atleast things didn't
+break completely :) Definitely need this fixed though.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+Debian     - http://www.debian.org/
+Linux 1394 - http://www.linux1394.org/
+Subversion - http://subversion.tigris.org/
+WatchGuard - http://www.watchguard.com/

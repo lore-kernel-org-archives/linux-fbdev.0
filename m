@@ -1,24 +1,21 @@
-From: Mailsweeper@kpmg.com
-Subject: A virus was detected on your message
-Date: Tue, 26 Aug 2003 04:36:08 -0400 (EDT)
+From: License@windriver.com
+Subject: Licensing has received your request
+Date: Tue, 26 Aug 2003 01:54:20 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200308260836.h7Q8a9Y17857@kpmg.com>
-Mime-Version: 1.0
+Message-ID: <200308260854.BAA24407@mail.wrs.com>
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19rZK5-0000uB-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 26 Aug 2003 01:37:05 -0700
-Received: from p0016c25.us.kpmg.com ([199.207.250.26])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.22)
-	id 19rZK3-0004qM-DW
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 26 Aug 2003 01:37:03 -0700
-Received: from kpmg.com (p0016c21.us.kworld.kpmg.com [10.1.206.21])
-	by p0016c25.us.kpmg.com (Switch-2.2.6/Switch-2.2.6) with ESMTP id h7Q8a9w18969
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 26 Aug 2003 04:36:09 -0400 (EDT)
-Received: from usnssexc51.us.kworld.kpmg.com by kpmg.com(Switch-2.2.6/Switch-2.2.6) with ESMTP id h7Q8a9Y17857 for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 26 Aug 2003 04:36:09 -0400 (EDT)
+	id 19rZbp-0003vI-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 26 Aug 2003 01:55:25 -0700
+Received: from unknown-1-11.wrs.com ([147.11.1.11] helo=mail.wrs.com)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
+	id 19rZbm-0001Jg-Sa
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 26 Aug 2003 01:55:22 -0700
+Received: (from license@localhost)
+	by mail.wrs.com (8.9.3/8.9.1) id BAA24407
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 26 Aug 2003 01:54:20 -0700 (PDT)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -28,17 +25,20 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Virus Detection Alert
-
-Your message sent to:
-tstiles@kpmg.com
-
-with the subject: "Re: Thank you!", sent on: Wed, 27 Aug 2003 3:26:54 +0800
-has been found to contain a virus and has not been delivered.  Please clean the infected attachment and resend the message.
+Thank you for purchasing Wind River products.
+ 
+Your email request has been received. 
+We will send your license key(s) within 24 hours, or someone 
+will contact you if we need additional information.
+ 
+Thank you.
+Licensing Department
+1-800-872-4977 option #2
 
 
 -------------------------------------------------------

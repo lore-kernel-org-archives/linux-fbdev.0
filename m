@@ -1,20 +1,22 @@
-From: John Zielinski <grim@undead.cc>
-Subject: FBTEST Patch
-Date: Thu, 27 Nov 2003 21:47:45 -0500
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Running frame buffer programs using a VGA
+ console?
+Date: Fri, 28 Nov 2003 09:34:46 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3FC6B751.8080801@undead.cc>
+Message-ID: <Pine.GSO.4.21.0311280933080.21469-100000@waterleaf.sonytel.be>
+References: <3FC6ADC4.4090002@undead.cc>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1APYfq-0007NS-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 27 Nov 2003 18:48:02 -0800
-Received: from gw-undead3.tht.net ([216.126.84.18] helo=mail.undead.cc)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.24)
-	id 1APYfp-0000O9-ES
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 27 Nov 2003 18:48:01 -0800
+	id 1APe5U-0002Ra-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 28 Nov 2003 00:34:52 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.24)
+	id 1APe5T-00048x-EF
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Nov 2003 00:34:51 -0800
+In-Reply-To: <3FC6ADC4.4090002@undead.cc>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -24,62 +26,43 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: John Zielinski <grim@undead.cc>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Here's the fbtest patch I was talking about:
+On Thu, 27 Nov 2003, John Zielinski wrote:
+> Geert Uytterhoeven wrote:
+> >On Thu, 27 Nov 2003, John Zielinski wrote:
+> >>Silly question.  Is it actually possible to run a fb program like fbtest 
+> >>if your console is the VGA console?  I tried it but the fb driver 
+> >>doesn't seem to switch modes.
+> >
+> >No, you cannot. You need an active frame buffer device driver.
+> 
+> I have the low level radeon fb driver in the kernel and it initializes 
+> like usual, but I turned off the frame buffer console option.   I was 
 
-diff -urNX dontdiff fbtest.old/fb.c fbtest/fb.c
---- fbtest.old/fb.c	2003-04-04 07:07:55.000000000 -0500
-+++ fbtest/fb.c	2003-11-27 21:41:16.000000000 -0500
-@@ -18,6 +18,7 @@
- #include <sys/types.h>
- #include <sys/stat.h>
- #include <unistd.h>
-+#include <linux/kd.h>
- 
- #include <asm/page.h>
- 
-@@ -47,6 +48,7 @@
- static struct fb_cmap saved_cmap;
- static u16 *saved_red, *saved_green, *saved_blue, *saved_transp;
- static u8 *saved_fb;
-+static long old_mode;
- 
- 
- static void fix_validate(void);
-@@ -396,6 +398,9 @@
- void fb_init(void)
- {
-     Debug("fb_init()\n");
-+    ioctl(STDOUT_FILENO, KDGETMODE, &old_mode);
-+    if (old_mode == KD_TEXT );
-+        ioctl(STDOUT_FILENO, KDSETMODE, KD_GRAPHICS);
-     fb_open();
-     fb_get_var();
-     saved_var = fb_var;
-@@ -435,7 +440,8 @@
- 	    ALLOC_AND_SAVE_COMPONENT(transp);
-     }
-     fb_map();
--    fb_save();
-+    if (old_mode == KD_GRAPHICS)
-+        fb_save();
-     fb_clear();
- }
- 
-@@ -477,6 +483,7 @@
- 	/* FIXME: compare fb_fix with saved_fix */
- 	fb_close();
-     }
-+    ioctl(STDOUT_FILENO, KDSETMODE, old_mode);
- }
- 
- #undef RESTORE_AND_FREE_COMPONENT
+So you have an active frame buffer device (you can check this using `cat
+/proc/fb')....
 
+> wondering if the frame buffer programs can run like this.  If not then I 
+> won't have to worry about that kind of configuration when working on fb 
+> programs.
 
-John
+... and fbtest should work. You cannot switch between graphcis and text mode,
+though, since there's no console attached to your frame buffer device.
 
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

@@ -1,16 +1,16 @@
 From: James Simmons <jsimmons@infradead.org>
 Subject: Re: [BK PATCHS] fbdev updates.
-Date: Fri, 18 Oct 2002 09:48:09 -0700 (PDT)
+Date: Fri, 18 Oct 2002 10:05:54 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.33.0210180948070.10832-100000@maxwell.earthlink.net>
-References: <Pine.GSO.4.21.0210151036400.25245-100000@vervain.sonytel.be>
+Message-ID: <Pine.LNX.4.33.0210180951500.10832-100000@maxwell.earthlink.net>
+References: <20021015100024.A9771@flint.arm.linux.org.uk>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from pintail.mail.pas.earthlink.net ([207.217.120.122])
+Received: from falcon.mail.pas.earthlink.net ([207.217.120.74])
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 182aOX-0003Gp-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Oct 2002 09:54:41 -0700
-In-Reply-To: <Pine.GSO.4.21.0210151036400.25245-100000@vervain.sonytel.be>
+	id 182afv-0005wv-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Oct 2002 10:12:39 -0700
+In-Reply-To: <20021015100024.A9771@flint.arm.linux.org.uk>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,58 +22,25 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Russell King <rmk@arm.linux.org.uk>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Done.
 
-MS: (n) 1. A debilitating and surprisingly widespread affliction that
-renders the sufferer barely able to perform the simplest task. 2. A disease.
+> I'm not sure this "set var" business has been thought out as much as it
+> should be.
 
-James Simmons  [jsimmons@users.sf.net] 	                ____/|
-fbdev/console/gfx developer                             \ o.O|
-http://www.linux-fbdev.org                               =(_)=
-http://linuxgfx.sourceforge.net                            U
-http://linuxconsole.sourceforge.net
+<snip>
 
-On Tue, 15 Oct 2002, Geert Uytterhoeven wrote:
-
-> On Mon, 14 Oct 2002, James Simmons wrote:
-> > > On Sun, 13 Oct 2002, James Simmons wrote:
-> > > > This is nearly the last of the fbdev api changes (90% of them). Alot of
-> > > > driver fixes as well. The console related stuff in each fbdev driver
-> > > > is nearly gone!!! Please do a pull. Thank you.
-> > > >
-> > > > bk://fbdev.bkbits.net/fbdev-2.5
-> > >
-> > > Please add the output of diffstat, so we know which files you changed.
-> >
-> > Better yet here is the BK patch via email.
-> > @@ -220,12 +218,7 @@
-> >     bool '  Advanced low level driver options' CONFIG_FBCON_ADVANCED
-> >     if [ "$CONFIG_FBCON_ADVANCED" = "y" ]; then
-> >        tristate '    Monochrome support' CONFIG_FBCON_MFB
->
-> CONFIG_FBCON_MFB can be deleted, because of this change to the Makefile:
->
-> > -obj-$(CONFIG_FBCON_MFB)           += fbcon-mfb.o
->
-> >  #      tristate '    Atari interleaved bitplanes (16 planes) support' CONFIG_FBCON_IPLAN2P16
->
-> FBCON_IPLAN2P16 can be deleted, since it doesn't exist.
->
-> Gr{oetje,eeting}s,
->
-> 						Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
-> 							    -- Linus Torvalds
->
->
+   I see it coming. With the next set of changes it will be possible to
+have fbdev with the VT system. So I have been putting into place the
+ability to power down the framebuffer via the ioctl. So I want the flow
+to be with fbcon from high level console to fbcon layer to fbdev driver.
+Without fbcon to go from userland to the fbdev driver directly.
+   Also we have mode changing. Soon I will add hooks to the VT layer to
+allow use to change a single VC via stty. VT_RESIZE can replace the
+current method of changing the size of all VCS instead of the fbdev layer
+doing it.
+   So you will see the necessary changes to handle all this.
 
 
 

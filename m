@@ -1,28 +1,21 @@
-From: Hetz Ben Hamo <hetz@softier.com>
-Subject: looking for some sample apps
-Date: Sun, 23 Nov 2003 17:54:26 +0200
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: looking for some sample apps
+Date: Sun, 23 Nov 2003 17:52:13 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200311231754.26515.hetz@softier.com>
+Message-ID: <Pine.GSO.4.21.0311231751270.14450-100000@waterleaf.sonytel.be>
+References: <200311231754.26515.hetz@softier.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1ANwzw-0006Nx-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 23 Nov 2003 08:22:08 -0800
-Received: from enigma.barak.net.il ([212.150.48.99])
+	id 1ANxT8-0008Se-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 23 Nov 2003 08:52:18 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.24)
-	id 1ANwzw-0003TH-8P
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 23 Nov 2003 08:22:08 -0800
-Received: from abu-fatma.softier.local ([62.90.245.250])
-          by enigma.barak.net.il
-          (InterMail vK.4.04.00.00 201-232-137 license b2629777bce4038e9f419f7b71122558)
-          with ESMTP
-          id <20031123155558.IYWD15249.enigma@abu-fatma.softier.local>
-          for <linux-fbdev-devel@lists.sourceforge.net>;
-          Sun, 23 Nov 2003 17:55:58 +0200
-Content-Disposition: inline
+	id 1ANxT8-00073u-FO
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 23 Nov 2003 08:52:18 -0800
+In-Reply-To: <200311231754.26515.hetz@softier.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -32,18 +25,30 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Hetz Ben Hamo <hetz@softier.com>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi,
+On Sun, 23 Nov 2003, Hetz Ben Hamo wrote:
+> I'm looking for some very simple "demo" applications to see and learn how to 
+> program the framebuffer, or any docs about this issue...
+> 
+> Any recommendations please?
 
-I'm looking for some very simple "demo" applications to see and learn how to 
-program the framebuffer, or any docs about this issue...
+Check out CVS module `fbtest' from
+http://www.sourceforge.net/projects/linux-fbdev/.
 
-Any recommendations please?
+Gr{oetje,eeting}s,
 
-Thanks,
-Hetz
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

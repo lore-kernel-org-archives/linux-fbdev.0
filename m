@@ -1,25 +1,19 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 3/3] [FBDEV]: Hardware State
-	Notification
-Date: Mon, 28 Jun 2004 19:55:09 -0500
+From: David Eger <eger@havoc.gtf.org>
+Subject: [PATCH] radeonfb: 16bpp copyarea() fixed!
+Date: Tue, 29 Jun 2004 05:36:00 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1088470508.13870.31.camel@gaston>
-References: <200406220639.26576.adaplas@hotpop.com>
-	 <200406250446.47073.adaplas@hotpop.com> <1088460578.15069.24.camel@gaston>
-	 <200406290645.11510.adaplas@hotpop.com>
+Message-ID: <20040629093559.GA22557@havoc.gtf.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bf6x1-0000sO-Jr
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 28 Jun 2004 17:58:19 -0700
-Received: from gate.crashing.org ([63.228.1.57])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.34)
-	id 1Bf6x1-0001qd-5p
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 28 Jun 2004 17:58:19 -0700
-In-Reply-To: <200406290645.11510.adaplas@hotpop.com>
+	id 1BfF2t-0000v6-6f
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Jun 2004 02:36:55 -0700
+Received: from havoc.gtf.org ([216.162.42.101])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1BfF2s-0003xd-SQ
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Jun 2004 02:36:55 -0700
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,24 +24,38 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: adaplas@pol.net
-Cc: James Simmons <jsimmons@infradead.org>, Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: akpm@osdl.org
+Cc: linux-fbdev-devel@lists.sourceforge.net, Jurriaan <thunder7@xs4all.nl>
 
+Dear Andrew,
 
-> fbcon_switch() will be called when there is a request to redraw the screen 
-> of the same vc, such as in the above, or when switching to a different vc. 
-> 
-> I think the name 'con_switch' is misleading.  The better term, IMO, is
-> 'con_redraw'.
+It turns out the bug was due to my mis-copying a certain set of 
+flags from the x.org tree.  The fix is as follows.  Thanks for not
+accepting an ugly work around :-)  Please see that this gets to 
+mainline.
 
-Hrm... ok, I missed that one then. It would still be useful to figure
-out what's wrong with X, it may not be a driver problem, but rather
-an X core problem calling the driver "restore" callbacks at the wrong
-time, and thus more easily fixable
+-dte
 
-Ben.
+radeonfb: fix 16bpp copyarea() bug
 
+Signed-off-by: David Eger <eger@havoc.gtf.org>
 
+diff -Nru a/drivers/video/aty/radeon_accel.c b/drivers/video/aty/radeon_accel.c
+--- a/drivers/video/aty/radeon_accel.c	2004-06-29 11:21:26 +02:00
++++ b/drivers/video/aty/radeon_accel.c	2004-06-29 11:21:26 +02:00
+@@ -71,9 +71,10 @@
+ 	radeon_fifo_wait(3);
+ 	OUTREG(DP_GUI_MASTER_CNTL,
+ 		rinfo->dp_gui_master_cntl /* i.e. GMC_DST_32BPP */
++		| GMC_BRUSH_NONE
+ 		| GMC_SRC_DSTCOLOR
+ 		| ROP3_S 
+-		| DP_SRC_RECT );
++		| DP_SRC_SOURCE_MEMORY );
+ 	OUTREG(DP_WRITE_MSK, 0xffffffff);
+ 	OUTREG(DP_CNTL, (xdir>=0 ? DST_X_LEFT_TO_RIGHT : 0)
+ 			| (ydir>=0 ? DST_Y_TOP_TO_BOTTOM : 0));
 
 
 -------------------------------------------------------

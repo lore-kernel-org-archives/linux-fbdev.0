@@ -1,42 +1,35 @@
-From: Gerd Knorr <kraxel@bytesex.org>
-Subject: Re: [Linux-fbdev-devel] Generic VESA framebuffer driver and Video card BOOT?
-Date: 15 Oct 2004 14:05:50 +0200
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [Linux-fbdev-devel] Generic VESA framebuffer driver and Video
+ card BOOT?
+Date: Fri, 15 Oct 2004 14:38:01 +0200 (MEST)
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <87d5zkqj8h.fsf@bytesex.org>
-References: <416E6ADC.3007.294DF20D@localhost>
+Message-ID: <Pine.GSO.4.61.0410151437050.10040@waterleaf.sonytel.be>
+References: <416E6ADC.3007.294DF20D@localhost> <87d5zkqj8h.fsf@bytesex.org>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S267700AbUJOMU0@vger.kernel.org>
-In-Reply-To: <416E6ADC.3007.294DF20D@localhost>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S267746AbUJOMlQ@vger.kernel.org>
+In-Reply-To: <87d5zkqj8h.fsf@bytesex.org>
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, penguinppc-team@lists.penguinppc.org
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>, penguinppc-team@lists.penguinppc.org
 
-"Kendall Bennett" <KendallB@scitechsoft.com> writes:
+On Fri, 15 Oct 2004, Gerd Knorr wrote:
+> Have you talked to the powermanagement guys btw.?  One of the major
+> issues with suspend-to-ram is to get the graphics card back online,
+> and SNAPBoot might help to fix this too.  I'm not sure a userspace
+> solution would work for *that* through.
 
-> Note that the SNAPBoot code uses the x86emu BIOS emulator project as the 
-> core CPU emulation technology, and project we have been actively involved 
-> with for many years since the licensing on the project was changed to 
-> MIT/BSD style licensing and incorporated into the XFree86 project.
+Why not? Of course you won't get any output before the graphics card has been
+re-initialized to a sane and usable state...
 
-> So what we would like to find out is how much interest there might be in 
-> both an updated VESA framebuffer console driver as well as the code for 
-> the Video card BOOT process being contributed to the maintstream kernel. 
+Gr{oetje,eeting}s,
 
-It certainly would be nice to have that.  Not nessesarely in the
-kernel through, people tend not to like such complex stuff like cpu
-emulation in the kernel for good reasons.  The kernel can run
-userspace apps (modprobe, hotplug), that mechanism could be used to
-invoke a userspace tool which does the boot / mode switching.  Having
-it in userspace likely also makes it easier to share code with X11.
+						Geert
 
-Have you talked to the powermanagement guys btw.?  One of the major
-issues with suspend-to-ram is to get the graphics card back online,
-and SNAPBoot might help to fix this too.  I'm not sure a userspace
-solution would work for *that* through.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-  Gerd
-
--- 
-return -ENOSIG;
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds

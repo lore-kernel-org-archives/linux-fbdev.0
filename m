@@ -1,20 +1,24 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: vga16fb mode change.
-Date: Tue, 27 Jan 2004 09:06:41 +0100 (MET)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Re: monochrome display fix.
+Date: Tue, 27 Jan 2004 21:19:29 +1100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0401270906070.18483@waterleaf.sonytel.be>
-References: <20040123153354.GB19002@redhat.com>
+Message-ID: <1075198769.30623.187.camel@gaston>
+References: <Pine.LNX.4.44.0401262212140.5445-100000@phoenix.infradead.org>
+	 <Pine.LNX.4.58.0401261446560.2313@home.osdl.org>
+	 <20040127074035.GF1315@rembrandt.csv.ica.uni-stuttgart.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AlOFC-0000z9-0n
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Jan 2004 00:06:46 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AlOFB-0005Qz-H2
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Jan 2004 00:06:45 -0800
-In-Reply-To: <20040123153354.GB19002@redhat.com>
+	id 1AlQMR-00026D-HF
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Jan 2004 02:22:23 -0800
+Received: from gate.crashing.org ([63.228.1.57] ident=root)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.30)
+	id 1AlQMQ-0004zT-UR
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Jan 2004 02:22:23 -0800
+In-Reply-To: <20040127074035.GF1315@rembrandt.csv.ica.uni-stuttgart.de>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -24,31 +28,20 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@redhat.com>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Thiemo Seufer <ica2_ts@csv.ica.uni-stuttgart.de>
+Cc: Linus Torvalds <torvalds@osdl.org>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Fri, 23 Jan 2004, Dave Jones wrote:
->  How come the 2.6 vga16fb driver doesn't change the display
-> to the framebuffer when it's modprobe'd any more like the 2.4
-> used to ?
->
-> Is this an intentional change, or a regression?
 
-I think this was intentional, to allow both vgacon and vga16fb to co-exist.
-James can tell you more about that.
+> It was always broken. This went unnoticed, apparently nobody tried to use
+> a kernel which supports mono and colour framebuffers at the same time.
 
-Gr{oetje,eeting}s,
+Still, the patch is ugly.. I'd rather just calculate the colour
+normally, and only conditionally store it once in the end...
 
-						Geert
+Ben.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 
 -------------------------------------------------------

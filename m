@@ -1,20 +1,20 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] Remove obsolete cruft from aty128fb
-Date: Tue, 10 Feb 2004 21:36:38 +1100
+Subject: [PATCH] softcursor fix for PM
+Date: Tue, 10 Feb 2004 21:38:59 +1100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1076408923.874.0.camel@gaston>
+Message-ID: <1076409539.866.9.camel@gaston>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AqVG3-000355-TG
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 10 Feb 2004 02:36:47 -0800
+	id 1AqVII-0003vo-UQ
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 10 Feb 2004 02:39:06 -0800
 Received: from gate.crashing.org ([63.228.1.57] ident=root)
 	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1AqVGA-0001cB-8n
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 10 Feb 2004 02:36:54 -0800
+	id 1AqVIP-0002JB-9j
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 10 Feb 2004 02:39:13 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,25 +28,21 @@ Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@infradead.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi James !
-
-This removes no longer needed includes from aty128fb
-
-diff -urN fbdev-2.5/drivers/video/aty/aty128fb.c linuxppc-2.5-benh/drivers/video/aty/aty128fb.c
---- fbdev-2.5/drivers/video/aty/aty128fb.c	2004-01-28 16:50:07.000000000 +1100
-+++ linuxppc-2.5-benh/drivers/video/aty/aty128fb.c	2004-02-09 18:51:35.000000000 +1100
-@@ -71,11 +71,6 @@
- #include "../macmodes.h"
- #endif
+diff -urN fbdev-2.5/drivers/video/softcursor.c linuxppc-2.5-benh/drivers/video/softcursor.c
+--- fbdev-2.5/drivers/video/softcursor.c	2004-02-10 21:15:18.000000000 +1100
++++ linuxppc-2.5-benh/drivers/video/softcursor.c	2004-02-10 21:06:24.000000000 +1100
+@@ -62,7 +62,10 @@
  
--#ifdef CONFIG_ADB_PMU
--#include <linux/adb.h>
--#include <linux/pmu.h>
--#endif
--
- #ifdef CONFIG_PMAC_BACKLIGHT
- #include <asm/backlight.h>
- #endif
+ 	if (cursor->set & FB_CUR_SETSHAPE)
+ 		fb_load_cursor_image(info);
+-		
++
++	if (info->state != FBINFO_STATE_RUNNING)
++		return 0;
++
+ 	if (!cursor->enable || (info->cursor.enable && (cursor->set & FB_CUR_SETPOS))) {
+ 		if (needsync && info->fbops->fb_sync) {
+ 			info->fbops->fb_sync(info);
 
 
 

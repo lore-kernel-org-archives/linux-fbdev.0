@@ -1,19 +1,21 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Fw: Problem with 2.6.11-bk[3456]
-Date: Thu, 10 Mar 2005 20:47:28 -0800
-Message-ID: <20050310204728.3969cfa1.akpm@osdl.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Fw: Problem with 2.6.11-bk[3456]
+Date: Fri, 11 Mar 2005 15:55:44 +1100
+Message-ID: <1110516944.32556.352.camel@gaston>
+References: <20050310204728.3969cfa1.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D9c4E-0004dP-BI
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 10 Mar 2005 20:48:06 -0800
-Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1D9cGv-0005D6-1g
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 10 Mar 2005 21:01:13 -0800
+Received: from gate.crashing.org ([63.228.1.57])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1D9c4C-00017k-P8
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 10 Mar 2005 20:48:06 -0800
+	id 1D9cGu-0003cK-Hd
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 10 Mar 2005 21:01:12 -0800
+In-Reply-To: <20050310204728.3969cfa1.akpm@osdl.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -25,77 +27,20 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Andrew Clayton <andrew@digital-domain.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Clayton <andrew@digital-domain.net>
+
+On Thu, 2005-03-10 at 20:47 -0800, Andrew Morton wrote:
+> Thanks for the report, Andrew.  I'll add this to my (huge) pile of
+> post-2.6.10 regressions...
+
+I saw a couple of DRM fixes around, could be that. Or could be related
+to radeonfb, was the user using it ? Can he test with vgacon ? Though
+I'm not aware of any problem with the 9200SE ...
+
+Ben.
 
 
-Thanks for the report, Andrew.  I'll add this to my (huge) pile of
-post-2.6.10 regressions...
-
-
-Begin forwarded message:
-
-Date: Thu, 10 Mar 2005 22:08:19 +0000
-From: Andrew Clayton <andrew@digital-domain.net>
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: Problem with 2.6.11-bk[3456]
-
-
-Hi,
-
-Got a problem here with the last few Linus -bk releases.
-
-2.6.11-bk2 is running fine.
-
-2.6.11-bk3 - 2.6.11-bk6 has the following problem:
-
-Everything is fine while the machine is booting. However as soon as X
-starts up the screen goes blank as normal but stays blank, no gdm login
-screen and the hard disk and floppy drive lights are on continuously.
-The machine is now locked up solid and needs a hard reset.
-
-I tried a serial console but get nothing after the kernel messages and
-the agetty login.
-
-The machine is question is an UP Athlon 1800+ XP with 768MB RAM, the
-graphics card is an AGP ATI Radeon 9200SE using the kernel AGP/DRM
-drivers and the Xorg radeon driver.
-
-It's running FC3.
-
-
-I've put 2.6.11-bk2 and 2.6.11-bk6 config's, dmesg's and an lspc -vv up
-on the web.
-
-http://digital-domain.net/kernel/2.6.11-bk2.config
-http://digital-domain.net/kernel/2.6.11-bk6.config
-http://digital-domain.net/kernel/2.6.11-bk2.dmesg
-http://digital-domain.net/kernel/2.6.11-bk6.dmesg
-http://digital-domain.net/kernel/lspci-vv
-
-
-When looking at this the other day I did get a message on the serial
-console after X started and the machine locked, about uhci host
-controller being disabled or something. Unfortunately I didn't make a
-note of it and didn't get it today for when I was preparing this report.
-
-Looking at the two dmesg's there is some difference in the usb messages.
-
-
-Anyway, thanks for your time and if you need any more info just let me
-know.
-
-
-Cheers,
-
-Andrew Clayton
- 
-
--
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
 
 
 -------------------------------------------------------

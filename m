@@ -1,38 +1,55 @@
-From: Russell King <rmk@arm.linux.org.uk>
-Subject: Re: [Linux-fbdev-devel] [PATCH] fix endian problem in color_imageblit
-Date: Sat, 21 Dec 2002 09:27:44 +0000
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20021221092744.A23531@flint.arm.linux.org.uk>
-References: <Pine.LNX.4.44.0212201932150.6471-100000@phoenix.infradead.org> <1040442194.1294.9.camel@localhost.localdomain>
+From: Ramprasad <ramprasad@ncoretech.com>
+Subject: problem in displaying logo
+Date: Sat, 21 Dec 2002 16:16:42 +0530
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <3E044692.89F5BEA6@ncoretech.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1040442194.1294.9.camel@localhost.localdomain>; from adaplas@pol.net on Sat, Dec 21, 2002 at 11:45:44AM +0800
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: James Simmons <jsimmons@infradead.org>, Paul Mackerras <paulus@samba.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from [164.164.42.6] (helo=gateway.ncoretech.com)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18PhC9-0001oT-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 21 Dec 2002 02:49:26 -0800
+Received: from mail.ncoretech.com (mail.ncoretech.com [192.168.1.3])
+	by gateway.ncoretech.com (8.12.5/8.12.5) with ESMTP id gBLAmi6J006956
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 21 Dec 2002 16:18:46 +0530
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sat, Dec 21, 2002 at 11:45:44AM +0800, Antonino Daplas wrote:
-> The pseudopalette will only matter for truecolor and directcolor as the
-> rest of the visuals bypasses the pseudopalette.  Typecasting to
-> "unsigned long" rather than "u32" is also safer (even for bpp16) since
-> in 64-bit machines, the drawing functions use fb_writeq instead of
-> fb_writel.
+Hi ,
 
-Erm, what does the size of the drawing functions have to do with the
-size of the pseudo palette.  The pseudo palette is only there to encode
-the pixel values for the 16 console colours.
+ I am using 2.4.18-rmk7 kernel on assabet like board , with 240x320 LCD
+color display panel.
 
-This means that a 64-bit pseudo palette would only be useful if you have
-a graphics card that supports > 32bpp, otherwise a 32-bit pseudo palette
-is perfectly adequate, even if you are using fb_writeq.
 
-(note that fbcon doesn't support > 32bpp, so we will only ever look at
-the first 32 bits, and having it be 64-bit would just be a needless
-waste of space imho.)
+My problem is i have modified the linux startup logo to 240x320 size
+,This works fine on 32MB RAM and 16MB flash
+ board, i.e  i can see full screen logo and i boots up fine. This does
+not work on  64MB RAM and 32MB flash board . logo comes up and kernel
+panic..
 
--- 
-Russell King (rmk@arm.linux.org.uk)                The developer of ARM Linux
-             http://www.arm.linux.org.uk/personal/aboutme.html
+I just  tried to reduce the size of logo to 240x280 this works fine.
+
+Can anybody give some pointers why this is happening..
+
+
+Thanks in advance,
+Ramprasad
+
+
+
+-------------------------------------------------------
+This SF.NET email is sponsored by: Order your Holiday Geek Presents Now!
+Green Lasers, Hip Geek T-Shirts, Remote Control Tanks, Caffeinated Soap,
+MP3 Players,  XBox Games,  Flying Saucers,  WebCams,  Smart Putty.
+T H I N K G E E K . C O M       http://www.thinkgeek.com/sf/

@@ -1,18 +1,17 @@
 From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: rivafb "Badness" using fbdev.diff.gz and
-	2.5.5[45]
-Date: 31 Jan 2003 07:01:04 +0800
+Subject: Re: [PATCH] Interlace for rivafb driver
+Date: 31 Jan 2003 06:59:51 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1043967543.1041.25.camel@localhost.localdomain>
-References: <Pine.LNX.4.44.0301242009210.31541-100000@phoenix.infradead.org>
+Message-ID: <1043966131.1041.5.camel@localhost.localdomain>
+References: <Pine.LNX.4.44.0301301849220.8852-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from willow.compass.com.ph ([202.70.96.38])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18eNtG-0006Nq-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 30 Jan 2003 15:14:38 -0800
-In-Reply-To: <Pine.LNX.4.44.0301242009210.31541-100000@phoenix.infradead.org>
+	id 18eNtM-0006OI-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 30 Jan 2003 15:14:44 -0800
+In-Reply-To: <Pine.LNX.4.44.0301301849220.8852-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -24,26 +23,31 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@infradead.org>
-Cc: Jak <rfjak@eircom.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Fredrik Noring <noring@nocrew.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sat, 2003-01-25 at 04:14, James Simmons wrote:
+On Fri, 2003-01-31 at 03:34, James Simmons wrote:
 > 
-> I applied part of the patch. I like to avoid changing nv_driver to much 
-> because it is based on the X windows driver. Easier to keep them sync. 
-> What we could do is move the following 
+> > >    To Tony. I applied your patches as well. The only patch I didn't was 
+> > > the DIRECTCOLOR patch. The X server freaked out for my card when the video 
+> > > mode was in a DIRECTCOLOR state.
+> > > 
+> > 
+> > Yes I'm not sure about this too.  Also the patch I submitted is untested
+> > for RGB565, tested only for RGB555 and RGB8888.  So, does X work for
+> > rivafb?  It does not work in my hardware unless I add the directcolor
+> > patch.
 > 
-> riva_common_setup(par);
-> ..
-> 
-> par->dclk_max = par->riva.MaxVClock..
-> 
-> from rivafb_probe to riavfb_open. Can you give tht a try and tell me if it 
-> works.
+> I applied your direct color patch. The X server has issues without it as 
+> well. For some reason the screen is cut in half and the colors are wrong.
+> Even when I leave X. The only solution is to switch back to 8 bpp mode.
 > 
 
-I haven't tried this yet, but I think it will work.  The only (very
-minor) problem with this is the rivafb's printk output will be incorrect
-(no info on video memory size).  
+I get this too.  For some reason, X fails to dynamically set rivafb to
+the mode it wants to use.  So, I have to use fbset first to set rivafb
+to the mode and visual X is going to use.  After doing this, I get
+XFBdev working nicely (at Depth 15).
+
+I have no problems with DirectFB though.
 
 Tony
 

@@ -1,23 +1,21 @@
-From: Richard Smith <rsmith@bitworks.com>
-Subject: Re: still ..Confused about atyfb and M1
-Date: Thu, 05 Feb 2004 11:55:22 -0600
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: fb.h header fix.
+Date: Thu, 5 Feb 2004 18:06:52 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <4022838A.8010502@bitworks.com>
-References: <Pine.LNX.4.44.0401302147390.22830-100000@phoenix.infradead.org> <401FF39B.7090406@bitworks.com> <Pine.GSO.4.58.0402041003560.20790@waterleaf.sonytel.be> <40210CEA.5080102@bitworks.com> <Pine.GSO.4.58.0402041634100.22483@waterleaf.sonytel.be>
-Reply-To: RSmith@bitworks.com
+Message-ID: <Pine.LNX.4.44.0402051805360.3236-100000@phoenix.infradead.org>
+References: <1075937512.4029.47.camel@gaston>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Aonjh-0006na-Q9
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 05 Feb 2004 09:56:21 -0800
-Received: from b44.xdsl.pgtc.com ([198.70.248.44] helo=bitworks.com)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1Aonjg-0003zi-MK
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 05 Feb 2004 09:56:20 -0800
-Received: from bitworks.com [192.168.1.22] by bitworks.com [127.0.0.1] with SMTP (MDaemon.v2.7.SP4.R) for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 05 Feb 2004 11:55:22 -0600
-In-Reply-To: <Pine.GSO.4.58.0402041634100.22483@waterleaf.sonytel.be>
+	id 1Aonu3-00028D-Pu
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 05 Feb 2004 10:07:03 -0800
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1Aonu2-0007qK-9P
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 05 Feb 2004 10:07:03 -0800
+In-Reply-To: <1075937512.4029.47.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,39 +25,228 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: geert@linux-m68k.org
-Cc: James Simmons <jsimmons@infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Alexander Kern <alex.kern@gmx.de>, Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Andrew Morton <akpm@osdl.org>, torvalds@transmeta.com, Linux Kernel list <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Geert Uytterhoeven wrote:
 
->>How much?  Are things like the ammount and type of RAM autodetected or
->>just read from registers that the BIOS is supposed to set?
+> Yes, but I think Andrew should still merge your patch at this point,
+> I'll send the ppc64 fix today hopefully along with other ppc64 io.h
+> fixes.
 
-> Atyfb reads them from the registers.
+Andrew will you take this patch. I removed the powerpc flag. The ppc64 
+will build now.
 
-So this is probally why all the values are jacked up.  They probally 
-aren't set correctly to begin with.  I'll try hardcodeing them in the 
-driver with what I think they should be.
-
-> 1002:4c4d
-
-Wonder why your device ID is differnet than mine.  Can you send me a 
-'lspci -vv' of your M1?
-
-James:
-
-If you read this from the list...  I get your mail but for some reason I 
-can't send you mail.  I get:
-
-   Attempting TCP connection to [phoenix.ipv6.infradead.org : 25]
-   A-record resolution of [phoenix.ipv6.infradead.org] in progress...
-   Name server has no records of the requested type for that domain.
-
--- 
-Richard A. Smith
-rsmith@bitworks.com
-
+--- linus-2.6/include/linux/fb.h	2004-01-27 19:50:11.000000000 -0800
++++ fbdev-2.6/include/linux/fb.h	2004-01-30 18:09:12.000000000 -0800
+@@ -1,10 +1,7 @@
+ #ifndef _LINUX_FB_H
+ #define _LINUX_FB_H
+ 
+-#include <linux/tty.h>
+-#include <linux/workqueue.h>
+ #include <asm/types.h>
+-#include <asm/io.h>
+ 
+ /* Definitions of frame buffers						*/
+ 
+@@ -326,32 +323,49 @@
+ 	struct fb_image	image;	/* Cursor image */
+ };
+ 
++#ifdef __KERNEL__
++
++#include <linux/fs.h>
++#include <linux/init.h>
++#include <linux/tty.h>
++#include <linux/device.h>
++#include <linux/workqueue.h>
++#include <linux/devfs_fs_kernel.h>
++#include <linux/notifier.h>
++#include <asm/io.h>
++
++struct vm_area_struct;
++struct fb_info;
++struct device;
++struct file;
++
++/*
++ * Pixmap structure definition
++ *
++ * The purpose of this structure is to translate data
++ * from the hardware independent format of fbdev to what
++ * format the hardware needs.
++ */
++
+ #define FB_PIXMAP_DEFAULT 1     /* used internally by fbcon */
+ #define FB_PIXMAP_SYSTEM  2     /* memory is in system RAM  */
+ #define FB_PIXMAP_IO      4     /* memory is iomapped       */
+ #define FB_PIXMAP_SYNC    256   /* set if GPU can DMA       */
+ 
+ struct fb_pixmap {
+-        __u8  *addr;                      /* pointer to memory             */  
+-	__u32 size;                       /* size of buffer in bytes       */
+-	__u32 offset;                     /* current offset to buffer      */
+-	__u32 buf_align;                  /* byte alignment of each bitmap */
+-	__u32 scan_align;                 /* alignment per scanline        */
+-	__u32 flags;                      /* see FB_PIXMAP_*               */
++	u8 *addr;		/* pointer to memory                    */
++	u32 size;		/* size of buffer in bytes              */
++	u32 offset;		/* current offset to buffer             */
++	u32 buf_align;		/* byte alignment of each bitmap        */
++	u32 scan_align;		/* alignment per scanline               */
++	u32 access_align;	/* alignment per read/write             */
++	u32 flags;		/* see FB_PIXMAP_*                      */
+ 					  /* access methods                */
+ 	void (*outbuf)(u8 *dst, u8 *addr, unsigned int size); 
+ 	u8   (*inbuf) (u8 *addr);
+ 	spinlock_t lock;                  /* spinlock                      */
+ 	atomic_t count;
+ };
+-#ifdef __KERNEL__
+-
+-#include <linux/fs.h>
+-#include <linux/init.h>
+-
+-struct fb_info;
+-struct vm_area_struct;
+-struct file;
+ 
+     /*
+      *  Frame buffer operations
+@@ -362,37 +376,60 @@
+     struct module *owner;
+     int (*fb_open)(struct fb_info *info, int user);
+     int (*fb_release)(struct fb_info *info, int user);
++
+     /* For framebuffers with strange non linear layouts */	
+-    ssize_t (*fb_read)(struct file *file, char *buf, size_t count, loff_t *ppos);
+-    ssize_t (*fb_write)(struct file *file, const char *buf, size_t count, loff_t *ppos);	
+-    /* checks var and creates a par based on it */
+-    int (*fb_check_var)(struct fb_var_screeninfo *var, struct fb_info *info);
+-    /* set the video mode according to par */
++	ssize_t(*fb_read) (struct file * file, char *buf, size_t count,
++			   loff_t * ppos);
++	ssize_t(*fb_write) (struct file * file, const char *buf,
++			    size_t count, loff_t * ppos);
++	
++	/* checks var and eventually tweaks it to something supported, 
++	 * DO NOT MODIFY PAR */
++	int (*fb_check_var) (struct fb_var_screeninfo * var,
++			     struct fb_info * info);
++	/* set the video mode according to info->var */
+     int (*fb_set_par)(struct fb_info *info);
++
+     /* set color register */
+     int (*fb_setcolreg)(unsigned regno, unsigned red, unsigned green,
+-                        unsigned blue, unsigned transp, struct fb_info *info);
++			     unsigned blue, unsigned transp,
++			     struct fb_info * info);
++
+     /* blank display */
+     int (*fb_blank)(int blank, struct fb_info *info);
++
+     /* pan display */
+-    int (*fb_pan_display)(struct fb_var_screeninfo *var, struct fb_info *info);
++	int (*fb_pan_display) (struct fb_var_screeninfo * var,
++			       struct fb_info * info);
++
+     /* draws a rectangle */
+-    void (*fb_fillrect)(struct fb_info *info, const struct fb_fillrect *rect); 
++	void (*fb_fillrect) (struct fb_info * info,
++			     const struct fb_fillrect * rect);
+     /* Copy data from area to another */
+-    void (*fb_copyarea)(struct fb_info *info,const struct fb_copyarea *region); 
++	void (*fb_copyarea) (struct fb_info * info,
++			     const struct fb_copyarea * region);
+     /* Draws a image to the display */
+-    void (*fb_imageblit)(struct fb_info *info, const struct fb_image *image);
++	void (*fb_imageblit) (struct fb_info * info,
++			      const struct fb_image * image);
++
+     /* Draws cursor */
+-    int (*fb_cursor)(struct fb_info *info, struct fb_cursor *cursor);
++	int (*fb_cursor) (struct fb_info * info,
++			  struct fb_cursor * cursor);
++
+     /* Rotates the display */
+     void (*fb_rotate)(struct fb_info *info, int angle);
++
+     /* wait for blit idle, optional */
+     int (*fb_sync)(struct fb_info *info);		
++
+     /* perform fb specific ioctl (optional) */
+-    int (*fb_ioctl)(struct inode *inode, struct file *file, unsigned int cmd,
+-		    unsigned long arg, struct fb_info *info);
++	int (*fb_ioctl) (struct inode * inode, struct file * file,
++			 unsigned int cmd, unsigned long arg,
++			 struct fb_info * info);
++
+     /* perform fb specific mmap */
+-    int (*fb_mmap)(struct fb_info *info, struct file *file, struct vm_area_struct *vma);
++	int (*fb_mmap) (struct fb_info * info, struct file * file,
++			struct vm_area_struct * vma);
+ };
+ 
+ struct fb_info {
+@@ -405,7 +442,7 @@
+    struct fb_monspecs monspecs;         /* Current Monitor specs */
+    struct fb_cursor cursor;		/* Current cursor */	
+    struct work_struct queue;		/* Framebuffer event queue */
+-   struct fb_pixmap pixmap;	        /* Current pixmap */
++	struct fb_pixmap pixmap;	/* Image Hardware Mapper */
+    struct fb_cmap cmap;                 /* Current cmap */
+    struct fb_ops *fbops;
+    char *screen_base;                   /* Virtual address */
+@@ -482,11 +519,12 @@
+ extern int fb_prepare_logo(struct fb_info *fb_info);
+ extern int fb_show_logo(struct fb_info *fb_info);
+ extern u32 fb_get_buffer_offset(struct fb_info *info, u32 size);
+-extern void move_buf_unaligned(struct fb_info *info, u8 *dst, u8 *src, u32 d_pitch,
+-			     	u32 height, u32 mask, u32 shift_high, u32 shift_low,
+-				u32 mod, u32 idx);
+-extern void move_buf_aligned(struct fb_info *info, u8 *dst, u8 *src, u32 d_pitch,
+-			     u32 s_pitch, u32 height);
++extern void move_buf_unaligned(struct fb_info *info, u8 * dst, u8 * src,
++				u32 d_pitch, u32 height, u32 mask,
++				u32 shift_high, u32 shift_low, u32 mod,
++				u32 idx);
++extern void move_buf_aligned(struct fb_info *info, u8 * dst, u8 * src,
++				u32 d_pitch, u32 s_pitch, u32 height);
+ extern struct fb_info *registered_fb[FB_MAX];
+ extern int num_registered_fb;
+ 
+@@ -517,8 +555,7 @@
+ /* drivers/video/fbcmap.c */
+ extern int fb_alloc_cmap(struct fb_cmap *cmap, int len, int transp);
+ extern void fb_dealloc_cmap(struct fb_cmap *cmap);
+-extern int fb_copy_cmap(struct fb_cmap *from, struct fb_cmap *to,
+-			int fsfromto);
++extern int fb_copy_cmap(struct fb_cmap *from, struct fb_cmap *to, int fsfromto);
+ extern int fb_set_cmap(struct fb_cmap *cmap, int kspc, struct fb_info *fb_info);
+ extern struct fb_cmap *fb_default_cmap(int len);
+ extern void fb_invert_cmaps(void);
+@@ -541,7 +578,8 @@
+ 
+ #ifdef MODULE
+ static inline int fb_find_mode(struct fb_var_screeninfo *var,
+-			       struct fb_info *info, const char *mode_option,
++			       struct fb_info *info,
++			       const char *mode_option,
+ 			       const struct fb_videomode *db,
+ 			       unsigned int dbsize,
+ 			       const struct fb_videomode *default_mode,
+@@ -568,7 +606,8 @@
+ }
+ #else
+ extern int __init fb_find_mode(struct fb_var_screeninfo *var,
+-			       struct fb_info *info, const char *mode_option,
++			       struct fb_info *info,
++			       const char *mode_option,
+ 			       const struct fb_videomode *db,
+ 			       unsigned int dbsize,
+ 			       const struct fb_videomode *default_mode,
 
 
 

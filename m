@@ -1,21 +1,20 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] - fix video/fbmem.c warning.
-Date: Fri, 30 Apr 2004 21:37:56 -0700
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Re: [PATCH] - video/tdfxfb.c warning fix.
+Date: Sat, 1 May 2004 20:47:10 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040430213756.188bbfe6.akpm@osdl.org>
-References: <20040430181015.GB3119@lorien.prodam>
+Message-ID: <Pine.GSO.4.58.0405012045070.25805@waterleaf.sonytel.be>
+References: <20040430180451.GA3119@lorien.prodam> <20040430213513.7bafde36.akpm@osdl.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BJmGZ-0007Vp-9N
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Apr 2004 21:38:19 -0700
-Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BJmGY-0004GC-Ss
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Apr 2004 21:38:18 -0700
-In-Reply-To: <20040430181015.GB3119@lorien.prodam>
+	id 1BJzWA-0004VE-A1
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 01 May 2004 11:47:18 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BJzW9-000516-PS
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 01 May 2004 11:47:17 -0700
+In-Reply-To: <20040430213513.7bafde36.akpm@osdl.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,44 +24,42 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: "Luiz Fernando N. Capitulino" <lcapitulino@prefeitura.sp.gov.br>
-Cc: jsimmons@infraded.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@osdl.org>
+Cc: "Luiz Fernando N. Capitulino" <lcapitulino@prefeitura.sp.gov.br>, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-"Luiz Fernando N. Capitulino" <lcapitulino@prefeitura.sp.gov.br> wrote:
+On Fri, 30 Apr 2004, Andrew Morton wrote:
+> "Luiz Fernando N. Capitulino" <lcapitulino@prefeitura.sp.gov.br> wrote:
+> >  This patch fixes this warning:
+> >
+> >   drivers/video/tdfxfb.c:1005: warning: `tdfxfb_cursor' defined but not
+> >   used
+> >
+> >   and make the acceleration function selectable (like hgafb
+> >  and tridentfb):
 >
-> 
->  Hi,
-> 
->  The patch bellow fix this warning:
-> 
->  drivers/video/fbmem.c: In function `fb_cursor':
->  drivers/video/fbmem.c:922: warning: passing arg 1 of `copy_from_user' discards qualifiers from pointer target type
-> 
->  It is only a cast (several other calls for copy_from_user() need that).
-> 
->  drivers/video/fbmem.c |    2 +-
->  1 files changed, 1 insertion(+), 1 deletion(-)
-> 
-> 
-> diff -X dontdiff -Nparu a/drivers/video/fbmem.c a~/drivers/video/fbmem.c
-> --- a/drivers/video/fbmem.c	2004-04-26 15:25:52.000000000 -0300
-> +++ a~/drivers/video/fbmem.c	2004-04-27 16:48:15.000000000 -0300
-> @@ -914,7 +914,7 @@ fb_cursor(struct fb_info *info, struct f
->  			return -ENOMEM;
->  		}
->  		
-> -		if (copy_from_user(cursor.image.data, sprite->image.data, size) ||
-> +		if (copy_from_user((void *) cursor.image.data, sprite->image.data, size) ||
->  		    copy_from_user(cursor.mask, sprite->mask, size)) { 
->  			kfree(cursor.image.data);
->  			kfree(cursor.mask);
-> 
+> You've taken a bunch of previously-working 3d acceleration functions and
+> made them configurable, dependent upon CONFIG_EXPERIMENTAL.
+>
+> What on earth for?  Will this not gratuitously break people's
+> previously-working 3d setups?
 
-Why is fb_image.data declared to be a pointer to `const' data?  This
-function proves that this assertion is false.
+No, tdfxfb_cursor() was not used before, causing a compiler warning.
+tdfxfb_cursor() may work, but we don't know, so we didn't dare to enable it by
+default. Now the user (he who has the hardware) can enable it, and tell us
+whether it works or not.
 
-Would it not be better to remove the `const' qualifier?
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

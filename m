@@ -1,18 +1,20 @@
-From: sydmsw@kpmg.com.au
-Subject: RE: A virus was detected in your message Thank you!
-Date: Fri, 22 Aug 2003 00:33:12 +1000 (EAST)
+From: rblalock@inktomi.com
+Subject: Re: Re: That movie
+Date: Thu, 21 Aug 2003 08:21:50 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <T64337f0946cb1e5e1a54c@melextgw10.kpmg.com.au>
+Message-ID: <HJZ6OE02.0DP@inbox2.inktomi.com>
+Reply-To: rblalock@inktomi.com
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="2452874.12.14268"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from melextgw10.kpmg.com.au ([203.30.94.26])
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19prb1-0000Oi-00
-	for <Linux-fbdev-devel@lists.sourceforge.net>; Thu, 21 Aug 2003 08:43:31 -0700
-Received: from AUSYDSRV07.au.kworld.kpmg.com (ausydsrv07.au.kworld.kpmg.com) by melextgw10.kpmg.com.au
- (Content Technologies SMTPRS 4.3.6) with ESMTP id <T64337f0946cb1e5e1a54c@melextgw10.kpmg.com.au> for <Linux-fbdev-devel@lists.sourceforge.net>;
- Fri, 22 Aug 2003 00:38:13 +1000
+Received: from or1.inktomi.com ([209.131.48.34])
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19ps0K-0007Iv-00
+	for <Linux-fbdev-devel@lists.sourceforge.net>; Thu, 21 Aug 2003 09:09:40 -0700
+Received: from inbox2.inktomi.com (inbox2.inktomi.com [209.131.48.29])
+	by or1.inktomi.com (Switch-2.1.0/Switch-2.1.0) with ESMTP id h7LFORk10393
+	for <Linux-fbdev-devel@lists.sourceforge.net>; Thu, 21 Aug 2003 08:24:28 -0700 (PDT)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,25 +24,15 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
 To: Linux-fbdev-devel@lists.sourceforge.net
 
+Your Message has been received.
 
---2452874.12.14268
-Content-Type: text/plain; charset=US-ASCII
+If you have any further questions, please call Inktomi's main
+telephone number at:  650.653.2800
 
-Your message entitled
-
-"Thank you!"
-
-contains a Virus, according to our Anti-Virus software, and has not reached the intended recipient.  Please remove the virus from this message before resending.
-
-A copy of the original message has been quarantined on our Server. 
-
-For more information contact
-
-mailadmin@kpmg.com.au
-
---2452874.12.14268--
+This message was generated automatically.
 
 
 -------------------------------------------------------

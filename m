@@ -1,25 +1,20 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: scrollmode, accel_flags, fbcon.c ...
-Date: Sun, 28 Mar 2004 10:16:04 +0200 (MEST)
+From: postmaster@telindus.be
+Subject: Delivery Status Notification (Failure)
+Date: Mon, 29 Mar 2004 12:33:19 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0403281014010.364@waterleaf.sonytel.be>
-References: <Pine.LNX.4.58.0403081323040.32244@rosencrantz.theboonies.us>
- <Pine.GSO.4.58.0403091111540.26626@waterleaf.sonytel.be>
- <Pine.LNX.4.58.0403260040100.7037@rosencrantz.theboonies.us>
- <1080267697.3068.24.camel@gaston> <Pine.GSO.4.58.0403260802590.409@waterleaf.sonytel.be>
- <1080312167.1390.19.camel@gaston> <Pine.GSO.4.58.0403261600580.409@waterleaf.sonytel.be>
- <1080350682.1333.59.camel@gaston>
+Message-ID: <idcDjoYAP0000001d@tbe3mx1.telindus.intra>
 Mime-Version: 1.0
+Content-Type: multipart/report; report-type=delivery-status;
+	boundary="9B095B5ADSN=_01C4157663BA274F000001BAtbe3mx1.telindus"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B7VSm-00089D-J0
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 28 Mar 2004 00:16:12 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
+	id 1B7u51-0004k5-97
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 02:33:19 -0800
+Received: from gatekeepermons.telindus.be ([217.136.226.79] helo=tbe3mx1.telindus.intra)
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B7VSl-00085v-Lo
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 28 Mar 2004 00:16:11 -0800
-In-Reply-To: <1080350682.1333.59.camel@gaston>
+	id 1B7u4z-000182-Sj
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 02:33:18 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,46 +24,63 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: David Eger <eger-dated-1080865620.ef4dea@theboonies.us>, Jakub Jelinek <jj@ultra.linux.cz>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Sat, 27 Mar 2004, Benjamin Herrenschmidt wrote:
-> > W.r.t. redraw vs. copy for scrolling, perhaps some heuristics like PCI/AGP are
-> > known to be slow for reading? Fbcon can find out whether a fbdev is on a
-> > PCI/AGP bus by checking the device (once new driver model/sysfsication is
-> > complete), right?
->
-> But an fbdev that implements an accelerated copyarea ?
->
-> I don't want such heuristics in fbcon, they are just asking for trouble,
-> I think we should redraw on non-accelerated and copy on accelerated,
+This is a MIME-formatted message.  
+Portions of this message may be unreadable without a MIME-capable mail program.
 
-You mean, if ywrap/ypan is not available/not possible (e.g. partial screen
-scrolls)? Yes, that makes sense.
+--9B095B5ADSN=_01C4157663BA274F000001BAtbe3mx1.telindus
+Content-Type: text/plain; charset=unicode-1-1-utf-7
 
-> but then, it should be under more direct driver control. Also, fbcon
+This is an automatically generated Delivery Status Notification.
 
-Which means additional flags to fb_fix_screeninfo...
+Delivery to the following recipients failed.
 
-> keeps "losing" the accel_flags for me.
->
-> One thing I don't like in the new fbcon is the way it deals with the
-> var structure anyway. I think it should have one var per VC.
+       joma@telindus.be
 
-I agree.
 
-Gr{oetje,eeting}s,
 
-						Geert
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+--9B095B5ADSN=_01C4157663BA274F000001BAtbe3mx1.telindus
+Content-Type: message/delivery-status
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Reporting-MTA: dns;tbe3mx1.telindus.intra
+Received-From-MTA: dns;Loburg
+Arrival-Date: Mon, 29 Mar 2004 12:33:19 +0200
+
+Final-Recipient: rfc822;joma@telindus.be
+Action: failed
+Status: 5.1.1
+
+--9B095B5ADSN=_01C4157663BA274F000001BAtbe3mx1.telindus
+Content-Type: message/rfc822
+
+Received: from Loburg ([10.0.136.3]) by tbe3mx1.telindus.intra with Microsoft SMTPSVC(6.0.3790.0);
+	 Mon, 29 Mar 2004 12:33:19 +0200
+Received: FROM telindus.be BY Loburg ; Mon Mar 29 12:36:23 2004 +0200
+From: linux-fbdev-devel@lists.sourceforge.net
+To: joma@telindus.be
+Subject: Mail Delivery (failure joma@telindus.be)
+Date: Mon, 29 Mar 2004 12:34:41 +0200
+MIME-Version: 1.0
+Content-Type: multipart/related;
+	type="multipart/alternative";
+	boundary="----=_NextPart_000_001B_01C0CA80.6B015D10"
+X-Priority: 3
+X-MSMail-Priority: Normal
+Return-Path: linux-fbdev-devel@lists.sourceforge.net
+Message-ID: <TBE3MX1rcR4ZDgC81Tb00000024@tbe3mx1.telindus.intra>
+X-OriginalArrivalTime: 29 Mar 2004 10:33:19.0045 (UTC) FILETIME=[407E1F50:01C41579]
+
+Network Associates WebShield SMTP V4.5 MR1a on Loburg detected virus W32/Netsky.p@MM
+in attachment unknown from <linux-fbdev-devel@lists.sourceforge.net> and it was
+Deleted and Quarantined.
+
+
+
+
+
+--9B095B5ADSN=_01C4157663BA274F000001BAtbe3mx1.telindus--
 
 
 -------------------------------------------------------

@@ -2,22 +2,22 @@ From: "Kendall Bennett" <KendallB@scitechsoft.com>
 Subject: Re: Generic VESA framebuffer driver and Video card BOOT?
 Date: Fri, 15 Oct 2004 15:22:51 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <416FEB4B.9875.2A1DBFE@localhost>
-References: <416FB275.6425.1C3D985@localhost>
+Message-ID: <416FEB4B.25470.2A1DBC0@localhost>
+References: <416FAF05.30267.1B66C92@localhost>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7BIT
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CIaTi-0005yK-QJ
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Oct 2004 15:23:14 -0700
+	id 1CIaTe-0005xH-C9
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Oct 2004 15:23:10 -0700
 Received: from mail.scitechsoft.com ([63.195.13.67])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.41)
-	id 1CIaTg-0003dz-Lb
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Oct 2004 15:23:14 -0700
-In-reply-to: <9e4733910410151319159482ce@mail.gmail.com>
+	id 1CIaTd-0007GT-AT
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Oct 2004 15:23:10 -0700
+In-reply-to: <41701D1C.70705@comcast.net>
 Content-description: Mail message body
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,54 +29,46 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
+To: Zachary Smith <plinius@comcast.net>, linux-fbdev-devel@lists.sourceforge.net
 
-Hi Jon,
+Zachary Smith <plinius@comcast.net> wrote:
 
-> The plan for this in 2.6 is to first write a VGA device driver.
-> This driver is responsible for identifying all of the VGA devices
-> in a system and ensuring only one of them gets enabled a time. I
-> started writing this but I haven't finished. This driver would be
-> compiled into the kernel. I can send source if you are interested.
-
-I am interested but I probably wouldn't have the time to look at it right 
-now.
-
-> I have added hooks to the PCI subsystem to record the boot video
-> device. If the VGA driver finds VGA devices other than the boot
-> one it will generate hotplug events on them. Initramfs should
-> contain a reset program for using X86 mode to reset these cards. To
-> do this you need two things from the kernel: 1) a way to make sure
-> only a single VGA device is active (VGA driver, allow you to
-> disable the current VGA device, reset the card, restore the active
-> VGA device) and 2) a way to get the ROM image. There is a patch in
-> -mm that makes the ROMs visible in sysfs that should be in the
-> kernel shortly. 
+> Kendall Bennett wrote:
+> > Zachary Smith <plinius@comcast.net> wrote:
+> > 
+> >>The problem of x86-only BIOSes is one of the videocard
+> >>manufacturers' own making which, in the spirit of good engineering,
+> >>they should fix before requiring a downstream kludge. 
 > 
-> So, when you first boot you have two choices, 1) use a display the
-> boot ROM setup, such as VGAcon or PROMcon. or 2) have no display.
-> People want this both ways. VGAcon/PROMcon will let you get output
-> very early in the boot process. 
+>  > Forgetting the fact that the BIOS image is x86, why
+>  > not think about the x86 BIOS image as being a set of 'generic'
+>  > instructions or p-code
+> 
+> Yes, this idea occurred to me after I posted my response.
+> 
+> But if you're going to add x86 emulation to the non-x86 kernels
+> perhaps it would be nice if you could find a way to permit users to
+> run x86 applications as well seamlessly. 
 
-What about non-x86 platforms such as PowerPC and MIPS embedded devices 
-that want video (TiVo type platforms, media players etc). How would these 
-fit into the picture? Would this require the boot loader (ie: U-Boot or 
-whatever) to have the ability to POST the card? 
+Well there is a big difference between a simple CPU emulator and a full 
+fledged machine emulation environment. Although if you only plan to run 
+Linux user space programs that might be easier to handle because you just 
+need to handle the system calls. But you would still need x86 shared 
+libraries and such which at the end of the day doesn't make much sense 
+(too much bloat). 
 
-Or perhaps the VideoBoot module would be a useful addition to the VGA 
-boot driver compiled into the kernel to bring up the video card into a 
-sane state on any system (even a dumb framebuffer linear mode) so a fully 
-accelerated console driver in user space can take over later on?
+Also the emulator only emulates real mode code at present. It had full 
+support for 32-bit instructions and could probably be tweaked to run user 
+space 32-bit code, but it has never been tested.
 
-> Right now I am working on a merged fbdev/DRM that supports
-> multi-head adapters. It's turning out to be much more work than I
-> though because neither DRM or fbdev handle multihead at the device
-> driver level. You can get snapshots of the code at
-> mesa3d.bkbits.net but it doesn't work right yet. This driver is
-> designed to run after the VGAdriver has reset the hardware. 
+> Although that would introduce a tradeoff: kernel code should be
+> small which is bound to be slow in the case of an emulator, which
+> is OK for running BIOS code, but a user running apps probably
+> prefer optimized code which may be bigger. 
 
-Sounds interesting!
+Probably. Although we have been very surprised at just how well the 
+PowerPC compiled version of the emulator runs BIOS code. It seems the 
+PowerPC compilers can optimise the code a lot better than x86 compilers.
 
 Regards,
 

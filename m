@@ -1,14 +1,16 @@
 From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: real mode entry points for PCI BIOS
-Date: Tue, 11 Mar 2003 18:42:24 -0800 (PST)
+Subject: Decoding DDC/EDID
+Date: Tue, 11 Mar 2003 19:30:54 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030312024224.82402.qmail@web14908.mail.yahoo.com>
+Message-ID: <20030312033054.87825.qmail@web14904.mail.yahoo.com>
+References: <20030312024224.82402.qmail@web14908.mail.yahoo.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from web14908.mail.yahoo.com ([216.136.225.60])
+Received: from web14904.mail.yahoo.com ([216.136.225.56])
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18swCG-0005ZO-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 Mar 2003 18:42:24 -0800
+	id 18swxG-00028j-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 Mar 2003 19:30:58 -0800
+In-Reply-To: <20030312024224.82402.qmail@web14908.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,31 +25,9 @@ Content-Transfer-Encoding: 7bit
 To: Antonino Daplas <adaplas@pol.net>
 Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-http://www.delorie.com/djgpp/doc/rbinter/ix/1A/B1.html
-The class for video displays is 3
+There is existing code for this the XFree/DRI tree.
 
-It should be possible to make this work. Do you have a
-PCI video card that you can install along with an AGP
-one? Future PCI-X allows as many video cards as you
-want so we need something along these lines. This
-would also solve a lot of problems in framebuffer
-development.
-
-The reset program I sent earlier shows how to disable
-VGA ports and copy INT vectors, etc. It also shows how
-to enable the ROMs (writing to PCI config space).
-Video ROMs needs to be copied to RAM before being
-executed or they won't run. The BIOS did this to the
-primary adapter's ROM for you.
-
-Is it possible to allocate an entire page for DDC
-info? At 512 bytes that would support eight video
-cards. When the framebuffer driver loads how is it
-going to find the page with the DDC info? How does it
-know which info goes to which card?
-
-This approach should work crossplatform. The
-equivalent code will need to be written for each architecture.
+http://cvs.sourceforge.net/cgi-bin/viewcvs.cgi/dri/xc/xc/programs/Xserver/hw/xfree86/ddc/
 
 =====
 Jon Smirl

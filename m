@@ -1,26 +1,21 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [PATCH] Allow core fb to be built as a module
-Date: Fri, 25 Feb 2005 14:34:57 -0500
-Message-ID: <9e473391050225113466ccdcb8@mail.gmail.com>
-References: <9e4733910502241239268ca595@mail.gmail.com>
-	 <200502250704.56925.adaplas@hotpop.com>
-	 <9e47339105022415165ee292e0@mail.gmail.com>
-	 <200502250720.33030.adaplas@hotpop.com>
-	 <Pine.LNX.4.56.0502251755400.20213@pentafluge.infradead.org>
+From: Olaf Hering <olh@suse.de>
+Subject: Re: Re: 2.6.11-rc5
+Date: Fri, 25 Feb 2005 21:24:23 +0100
+Message-ID: <20050225202423.GA24282@suse.de>
+References: <Pine.LNX.4.58.0502232014190.18997@ppc970.osdl.org> <20050224145049.GA21313@suse.de> <1109287708.15026.25.camel@gaston> <20050225070813.GA13735@suse.de> <1109316551.14993.63.camel@gaston> <20050225172945.GA31211@suse.de> <Pine.LNX.4.56.0502251758370.20213@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D4lEq-0005TR-5w
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 25 Feb 2005 11:35:00 -0800
-Received: from rproxy.gmail.com ([64.233.170.200])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1D4lEo-00035g-JE
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 25 Feb 2005 11:35:00 -0800
-Received: by rproxy.gmail.com with SMTP id z35so1251545rne
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 25 Feb 2005 11:34:57 -0800 (PST)
-In-Reply-To: <Pine.LNX.4.56.0502251755400.20213@pentafluge.infradead.org>
+	id 1D4m0o-0008Ux-Ps
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 25 Feb 2005 12:24:34 -0800
+Received: from cantor.suse.de ([195.135.220.2])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1D4m0l-00016W-LB
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 25 Feb 2005 12:24:34 -0800
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.56.0502251758370.20213@pentafluge.infradead.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,34 +27,23 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@www.infradead.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Fri, 25 Feb 2005 17:57:44 +0000 (GMT), James Simmons
-<jsimmons@www.infradead.org> wrote:
-> Yeap. The process is first make patch and send to list for testing. People
-> comment and some changes happen. This can happen several times. Once the
-> patch is acceptable then it going into Andrew's tree for wider range
-> testing. Once Andrew determines that the patch is safe he sends it to
-> linus. It is a sure way to make sure the patches are of the highest
-> quality.
+ On Fri, Feb 25, James Simmons wrote:
 
-There is already code of mine in the kernel so I have been through the
-process. Let's get the process moving on these patches so that they
-will be in place by the time OLS comes around. This patch is small and
-non-controversial. Let's get it started moving forward so that we can
-spend time on the complex ones. The complex ones will also need to get
-hammered out on LKML since they involve complicated hotplug code.
+> 
+> > cfb_imageblit(320) dst1 fa51a800 base e0b80000 bitstart 1999a800
+> > fast_imageblit(237) s daea4000 dst1 fa51a800
+> > fast_imageblit(269) j 1 fa51a800 0
+> > Unable to handle kernel paging request at virtual address fa51a800
+> > 
+> > is bitstart incorrect or is the thing just not (yet) mapped?
+> 
+> Looks like the screen_base is not mapped to.
 
-The next patch will be the sysfs one but it is not ready yet.
-After that is the reset one.
-Next will be secondary head support in the radeon driver.
-
-These three will require a lot more code review.
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+rc3 worked ok, rc4 does not. testing the -bk snapshots now.
 
 
 -------------------------------------------------------

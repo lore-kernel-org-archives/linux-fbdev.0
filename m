@@ -1,16 +1,16 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: clipping
-Date: Wed, 8 Jan 2003 10:54:12 +0100 (MET)
+Subject: Re: rotation.
+Date: Wed, 8 Jan 2003 11:24:22 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0301081053400.21171-100000@vervain.sonytel.be>
-References: <Pine.LNX.4.44.0301072211310.17129-100000@phoenix.infradead.org>
+Message-ID: <Pine.GSO.4.21.0301081120540.21171-100000@vervain.sonytel.be>
+References: <Pine.LNX.4.44.0301072240530.17129-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18WCx9-0003q5-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 08 Jan 2003 01:56:51 -0800
-In-Reply-To: <Pine.LNX.4.44.0301072211310.17129-100000@phoenix.infradead.org>
+	id 18WDOz-00019r-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 08 Jan 2003 02:25:37 -0800
+In-Reply-To: <Pine.LNX.4.44.0301072240530.17129-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,26 +23,18 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: James Simmons <jsimmons@infradead.org>
-Cc: Antonino Daplas <adaplas@pol.net>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
 On Tue, 7 Jan 2003, James Simmons wrote:
-> > > > BTW, do we really need clipping in fb_ops.fb_{fillrect,copyarea,imageblit}()?
-> > > Personally, I don't think we need clipping.  I tried removing it before
-> > > (circa linux-2.5.30+), but the console segfaults whenever I decrease
-> > > var->yres_virtual.  I haven't tried this again with the newest
-> > > framebuffer framework though.
-> > 
-> > Any definitive answer on this?
-> > 
-> > What happens if you resize the VT to such a large size that columns*fontwidth >
-> > xres_virtual or rows*fontheight > yres_virtual? I guess clipping prevents a
-> > crash there?
-> 
-> Correct. Actually fbcon_resize checks to make sure the user doesn't do 
-> something stupid like this. So we might not needed. Hm.
+> I'm about to implement rotation which is needed for devices like the ipaq. 
+> The question is do we flip the xres and yres values depending on the 
+> rotation or do we just alter the data that will be drawn to make the 
+> screen appear to rotate. How does hardware rotate view the x and y axis?
+> Are they rotated or does just the data get rotated? 
 
-And what if you use fbset to reduce the resolution below what's needed to
-accomodate the current console size?
+Where are you going to implement the rotation? At the fbcon or fbdev level?
+
+Fbcon has the advantage that it'll work for all frame buffer devices.
 
 Gr{oetje,eeting}s,
 

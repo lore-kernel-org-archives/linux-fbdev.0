@@ -1,28 +1,13 @@
-From: Miernik <miernik@ctnet.pl>
-Subject: wierd neofb framebuffer problem, blank screen if no CD drive
-Date: Tue, 12 Oct 2004 08:53:18 -0000
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: [RFC] Does fbdev need a cursor API for userland?
+Date: Sun, 17 Oct 2004 23:47:15 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20041017131312.3ACA.0.NOFFLE@localhost.localdomain.local>
+Message-ID: <200410172347.15516.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CJBFi-0003HF-6V
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 17 Oct 2004 06:39:14 -0700
-Received: from main.gmane.org ([80.91.229.2])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CJBFi-0002tz-23
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 17 Oct 2004 06:39:14 -0700
-Received: from list by main.gmane.org with local (Exim 3.35 #1 (Debian))
-	id 1CJBFf-0007DQ-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 17 Oct 2004 15:39:11 +0200
-Received: from 82.160.30.99 ([82.160.30.99])
-        by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-        id 1AlnuQ-0007hv-00
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 17 Oct 2004 15:39:11 +0200
-Received: from miernik by 82.160.30.99 with local (Gmexim 0.1 (Debian))
-        id 1AlnuQ-0007hv-00
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 17 Oct 2004 15:39:11 +0200
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,39 +17,60 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-fbdev-users@lists.sourceforge.net
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, linux-fbdev-users <linux-fbdev-users@lists.sourceforge.net>
 
-Up till today everything was OK. Today I upgraded kernel from 2.6.8-3 to
-2.6.8-4 Debian revision.
+Hi all,
 
-And I always started my laptop wth vga=303 parameter to get 800x600
-screen, instead of the ugly emulated 640x480 (LCD physical resolution is
-800x600).
+I'm done with a little clean-up of the fbcon cursor code.  A problem still
+remains with the cursor code in fbmem.c:fb_cursor(). This function is
+accessible by the user through the FBIO_CURSOR ioctl.  However, just by
+looking at it, I think it is broken. 
 
-This loaded vesafb framebuffer. After this upgrade, a few seconds
-after GRUB boots, and the vesafb is activated, the screen goes blank,
-and laptop doesn't continue the boot (the HDD led doesn't light)
-If I remove vga=303, it boots normally.
+The question is, do we need to support this ioctl?  Coding for this correctly
+is a bit complicated (very similar to coding for a rudimentary overlay).
+However, if it's agreed upon to support this ioctl, here's a proposal and
+questions for an implementation:
 
-Then: I downgraded the kernel back to 2.6.8-3, but it didn't help!
+1. Below can be supported by the current cursor code.  Do we need more?
 
-And one more interesting thing: I have a bay where I can put in a
-CD-ROM, a floppy or a battery.
+  - 2-color cursor
+  - show, move, hide cursor
+  - maximum dimensions of 64x64
+  - invert and copy ROPs
 
-And if the CD-drive is in the bay (may be without any CD), it boots OK
-even with the vga=303 800x500 framebuffer.
+2. Should fbdev implement a generic version, or should this be available only
+to drivers with hardware cursors?
 
-any ideas?
+3. Additionally, code must be written for the following:
+  - restriction for single use or locking for multiple use
+  - save/restore framebuffer contents underlying the cursor (if a 
+    software/generic version is supported) 
 
--- 
-Miernik             _________________________  xmpp:miernik@amessage.info
-___________________/_______________________/      mailto:miernik@ffii.org
-Why software shouldn't be covered by patents
-http://bladeenc.mp3.no/articles/software_patents.html
+4. Implementation
+
+A single ioctl is too unwieldy for usage.  It's probably better to split the
+ioctl into at least following:
+
+FBIO_CURSOR_ACTIVATE
+	- activate/inactivate user-mode cursor.  This will disable/reenable the 
+fbcon cursor, load initial data (colormap, image, map), etc.
+
+FBIO_CURSOR_MOVE
+	- show, move or hide cursor
+
+FBIO_CURSOR_LOADCMAP
+	- change cursor colormap
+
+FBIO_CURSOR_LOADIMAGE
+	- change cursor image and mask
+
+IMO, I believe that the cursor ioctl should just be removed :-)
+
+Comments?
+
+Tony
+
 
 
 

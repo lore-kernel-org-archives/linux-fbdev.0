@@ -1,17 +1,17 @@
 From: James Simmons <jsimmons@infradead.org>
 Subject: Re: Feature Freeze?
-Date: Wed, 5 Mar 2003 18:34:45 +0000 (GMT)
+Date: Wed, 5 Mar 2003 18:36:07 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0303051829450.27760-100000@phoenix.infradead.org>
-References: <Pine.GSO.4.21.0303051055250.23176-100000@vervain.sonytel.be>
+Message-ID: <Pine.LNX.4.44.0303051835120.27760-100000@phoenix.infradead.org>
+References: <20030305110529.GA2036@iliana>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
+Received: from phoenix.infradead.org ([195.224.96.167])
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18qdjd-0006YG-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 10:35:21 -0800
-In-Reply-To: <Pine.GSO.4.21.0303051055250.23176-100000@vervain.sonytel.be>
+	id 18qdl2-0006yu-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 10:36:49 -0800
+In-Reply-To: <20030305110529.GA2036@iliana>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,49 +23,22 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Sven Luther <luther@dpt-info.u-strasbg.fr>
 Cc: Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> > 1. Text mode support?
-> 
-> Required by at least davem and petr
-
-Just Petr. I'm working to seperate the text code out into a matroxcon.c 
-file. Needs alot more work tho.
-
 > > 2. console resizing using fbset (besides stty)?
 > 
-> Nice, if it's not too much work.
+> What about dynamic multi-head support ?
 
-:-( I hope to improve fbcon to handle this.
- 
-> 0. Update all drivers
+Next developement series.
+
+> > 8. feature freeze deadline?
 > 
-> Absolutely required
+> This would be for fbdev deature freeze, right, not for the drivers ?
 
-Its getting there. Drivers not ported are:
-
-68328fb.c
-S3triofb.c
-amifb.c
-atafb.c
-clgenfb.c
-cyber2000fb.c
-cyberfb.c
-imsttfb.c    <- I have a nearly done driver. The old driver doesn't work 
-		on ix86. I tried it. Oh wells.
-leofb.c
-pm2fb.c
-pm3fb.c
-pvr2fb.c
-retz3fb.c
-sun3fb.c
-valkyriefb.c
-virgefb.c
-
-
-Many of these drivers have been in state of code rotte for a long time :-( 
+Correct. It pretty much is done. The only thing left to do IMO is cursor 
+cleanup and docs and more buffer handling stuff.
 
 
 

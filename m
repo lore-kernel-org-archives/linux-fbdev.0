@@ -1,49 +1,61 @@
-From: Otto Solares <solca@guug.org>
-Subject: dri fb drivers [was: Re: Rage128 and Radeon patches]
-Date: Thu, 14 Aug 2003 12:26:31 -0600
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030814182631.GC7862@guug.org>
-References: <20030814034338.25567.qmail@web14907.mail.yahoo.com>
+From: Jon Smirl <jonsmirl@yahoo.com>
+Subject: Re: dri fb drivers [was: Re: [Linux-fbdev-devel] Rage128 and Radeon patches]
+Date: Thu, 14 Aug 2003 11:55:51 -0700 (PDT)
+Sender: dri-devel-admin@lists.sourceforge.net
+Message-ID: <20030814185551.41277.qmail@web14908.mail.yahoo.com>
+References: <20030814182631.GC7862@guug.org>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Content-Disposition: inline
-In-Reply-To: <20030814034338.25567.qmail@web14907.mail.yahoo.com>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Return-path: <dri-devel-admin@lists.sourceforge.net>
+In-Reply-To: <20030814182631.GC7862@guug.org>
+Errors-To: dri-devel-admin@lists.sourceforge.net
+List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:dri-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
+	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
+	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=dri-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jon Smirl <jonsmirl@yahoo.com>
+To: Otto Solares <solca@guug.org>
 Cc: dri-devel <dri-devel@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, Aug 13, 2003 at 08:43:38PM -0700, Jon Smirl wrote:
-> Hopefully these is the last versions. They implement:
-> 1) add every know PCI ID
-> 2) access ROM directly instead of relying on copy in
-> low RAM. This allows multiple cards. Required
-> MPP_TB_CONFIG fix in driver.
-> 3) implemented kernel 2.6 module parameters
-> 4) Cleaned up error paths and made sure resources are
-> released on errors. Both build without compiler
-> warnings now. You can ins/rm mod multiple times
-> without problem. Just don't do it from a window in
-> your X server.
-> 5) Driver marks both primary and secondary devices as
-> being in use.
+--- Otto Solares <solca@guug.org> wrote:
+> nice work!
+> 
+> i know you are working with the dri fb drivers, is
+> any progress and what is the current state?
 
-nice work!
+I am working on embedded Mesa, which is another name
+for standalone OpenGL. Embedded Mesa is based on the
+3D DRI code but it handles 2D very differently.
 
-i know you are working with the dri fb drivers, is any
-progress and what is the current state?
+Xfree/DRI scans the PCI bus and initializes hardware
+in it's user space process.  Embedded Mesa instead
+loads the framebuffer drivers and uses them to
+initialize the hardware. This makes Embedded Mesa much
+simpler since it relies on the framebuffer drivers for
+a lot of things such as mode switching and PCI bus
+scanning.
 
--solca
+You can get a snapshot of my work with this:
+bk clone bk://mesa3d.bkbits.net/jonsmirl local_name
 
+Standalone OpenGL works for most all Radeon chips if
+you also use the updated framebuffers. Rage128 and MGA
+support and being worked on but they are not ready
+yet. This is development level code and it is not
+ready for testing.
+
+=====
+Jon Smirl
+jonsmirl@yahoo.com
+
+__________________________________
+Do you Yahoo!?
+Yahoo! SiteBuilder - Free, easy-to-use web site design software
+http://sitebuilder.yahoo.com
 
 
 -------------------------------------------------------

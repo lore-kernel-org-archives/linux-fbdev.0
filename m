@@ -1,57 +1,68 @@
-From: Egbert Eich <eich@suse.de>
-Subject: Re: [Linux-fbdev-devel] Re: Who is stomping PCI config space?
-Date: Fri, 4 Mar 2005 13:07:21 +0100
-Message-ID: <16936.20345.249542.65736@xf14.local>
-References: <9e4733910503031103552514b9@mail.gmail.com>
-	<1109891245.5611.246.camel@gaston>
-	<9e473391050303161559c17955@mail.gmail.com>
-	<9e47339105030319037f083f7@mail.gmail.com>
-	<1109918459.5610.273.camel@gaston>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: Fw: Initialisation sequencing.
+Date: Fri, 4 Mar 2005 08:45:34 +0800
+Message-ID: <200503040845.36571.adaplas@hotpop.com>
+References: <200503031438.48357.adaplas@hotpop.com> <200503040407.11449.adaplas@hotpop.com> <4227A5CE.4050008@f2s.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-In-Reply-To: benh@kernel.crashing.org wrote on Friday,
-	4 March 2005 at 17:40:59 +1100 
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1D70wx-0000aI-Lc
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 03 Mar 2005 16:45:51 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.71])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1D70ww-0006Iw-10
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 03 Mar 2005 16:45:51 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id 65393147A469
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri,  4 Mar 2005 00:45:43 +0000 (UTC)
+In-Reply-To: <4227A5CE.4050008@f2s.com>
+Content-Disposition: inline
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/xorg>
-List-Post: <mailto:xorg@lists.freedesktop.org>
-List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
-Sender: xorg-bounces@lists.freedesktop.org
-Errors-To: xorg-bounces@lists.freedesktop.org
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Xserver development <xorg@freedesktop.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Egbert Eich <eich@pdx.freedesktop.org>
+To: Ian Molton <spyro@f2s.com>, adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Benjamin Herrenschmidt writes:
- > On Thu, 2005-03-03 at 22:03 -0500, Jon Smirl wrote:
- > > Hopefully someone who knows what is going on with VT switching and how
- > > hardware gets enabled will respond and we can get this fixed in the
- > > server.  I see Zoltan's patch but we shouldn't have to tell X to leave
- > > hardware alone that doesn't belong to it. X just has no business
- > > messing with cards it does not own.
- > > 
- > > Meanwhile I am forced to write to PCI config space and reenable IO
- > > access from inside my interrupt handler. Yuck, yuck, yuck!!!
- > 
- > Well, that shows why we need this arbitration for who gets the VGA
- > enable bits in the kernel :)
+On Friday 04 March 2005 08:03, Ian Molton wrote:
+> Antonino A. Daplas wrote:
+> > Are you using the backlight architecture in drivers/video/backlight?
+> > Shouldn't the backlight driver pull the video driver first?  I think
+> > you can do that if you make the backlight driver depend on the video
+> > driver.
+>
+> IOW make it a child of it?
+>
+> I asumed that would work but I cant actually build a modular kernel for
+> some reason I havent had time to look into yet.
+>
+> that said, does load order have *any* bearing on probe order ?
+> since both devices are platform devices, both drivers can be loaded and
+> dormant and brought up at any time by their devices becomming available
+> from (another) module...
 
-It needs to have it in some central place which doesn't necessarily
-have to be the kernel. 
-The point is: if Jon needs these registers in an interrupt handler
-he may have to tweak PCI config space form there anyway since another 
-card may currently have VGA routed.
+If you really need to ensure that video gets loaded before backlight, you can
+insert:
 
- > 
- > X disables any other VGA card IO/MEM in the system so that at one given
- > point in time, only one of them will decode VGA cycles. Wether it has
- > those cards to drive in it's config or not doesn't matter, the problem
- > at the bus level is the same.
+module_get/try_module_get(<video_driver>) in your backlight on load,
+module_put() on unload.
 
-Right. It however should only do so if one of the cards it is driving 
-itself requires VGA registers for its mode of operation.
+Tony
 
-Egbert.
+
+
+
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

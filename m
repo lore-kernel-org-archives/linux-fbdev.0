@@ -1,21 +1,25 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Default timings in vga16fb driver
-Date: Fri, 26 Nov 2004 10:11:33 +0100 (MET)
-Message-ID: <Pine.GSO.4.61.0411261010460.26681@waterleaf.sonytel.be>
-References: <41A36DA5.8090200@fujitsu-siemens.com> <200411250016.25813.adaplas@hotpop.com>
- <41A5F24A.4040804@fujitsu-siemens.com> <200411260351.57443.adaplas@hotpop.com>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: Rivafb won't work with DVI connector
+Date: Fri, 26 Nov 2004 22:09:16 +0800
+Message-ID: <200411262209.17558.adaplas@hotpop.com>
+References: <200411250807.32040.adaplas@hotpop.com> <200411251527.15141.andrew@walrond.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CXc8w-000508-HL
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 26 Nov 2004 01:11:54 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CXc8v-0002zg-M1
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 26 Nov 2004 01:11:54 -0800
-In-Reply-To: <200411260351.57443.adaplas@hotpop.com>
+	id 1CXgn2-0007CP-BZ
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 26 Nov 2004 06:09:36 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1CXgn0-00046s-2v
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 26 Nov 2004 06:09:36 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id E589DA7BB21
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 26 Nov 2004 14:09:25 +0000 (UTC)
+In-Reply-To: <200411251527.15141.andrew@walrond.org>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,34 +30,41 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net, Andrew Walrond <andrew@walrond.org>
 
-On Fri, 26 Nov 2004, Antonino A. Daplas wrote:
-> On Thursday 25 November 2004 22:55, Martin Wilck wrote:
-> > Antonino A. Daplas wrote:
-> > > I don't think you overlooked anything. The default modeline of vga16fb
-> > > should be corrected.
+On Thursday 25 November 2004 23:27, Andrew Walrond wrote:
+> On Thursday 25 Nov 2004 00:07, Antonino A. Daplas wrote:
+> > That's assuming 0x31b is supported by your card.  Why not
+> > try:
 > >
-> > OK, so here's the patch (using the timings from /etc/fb.modes). Should I
-> > send it to linux-kernel, too?
-> 
-> No, I'll take care of this.
+> > vga=ask
+> >
+> > Choose 'scan', choose the highest size, and check if the panel
+> > size changed again.
+>
+> vesafb 'scan' can only find 80xwhatever text modes with dvi connnection,
+> and upto 132xwhatever text modes with dsub. It does not display any
+> graphics modes at all, and rejects them if I try. (I also tried with vesafb
+> only, nvidafb removed - same result).
 
-BTW, can't vga16fb just use modedb, with the default mode being 640x480-4@60?
+You can also try this.  1600x1200 is not a standard VESA mode but is most
+probably supported by your card as an OEM mode.  However, we do not know the
+mode id of 1600x1200 since it's different from vendor to vendor.  
 
-Gr{oetje,eeting}s,
+You can use X though to find out what modes are supported by your Video
+BIOS.  
 
-						Geert
+1. Boot with DVI attached
+2. Change the X driver to 'vesa' (instead of probably 'nv')
+3. Launch X
+4. Check /var/log/XFree86.?.log
+5. Find the mode id you want, add 0x200 and use it in your 'vga='
+   boot line
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Tony
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+
 
 
 -------------------------------------------------------

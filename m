@@ -1,10 +1,22 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: SGI Visual Workstation fbdev patch
-Date: Mon, 26 Apr 2004 03:55:03 +0100 (BST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: vesafb and *fb
+Date: Mon, 26 Apr 2004 11:10:06 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0404260345570.31004-100000@phoenix.infradead.org>
+Message-ID: <Pine.GSO.4.58.0404261109370.25122@waterleaf.sonytel.be>
+References: <Pine.LNX.4.44.0404240031030.5826-100000@phoenix.infradead.org>
+ <Pine.GSO.4.58.0404251511320.13613@waterleaf.sonytel.be>
+ <1082906968.28039.7.camel@localhost.localdomain>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BI27x-0003OF-Vr
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 26 Apr 2004 02:10:13 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BI27x-0007QJ-Dc
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 26 Apr 2004 02:10:13 -0700
+In-Reply-To: <1082906968.28039.7.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -16,251 +28,36 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: pazke@orbita1.ru
-Cc: linux-visws-devel@lists.sf.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
+On Sun, 25 Apr 2004, Alan Cox wrote:
+> On Sul, 2004-04-25 at 14:13, Geert Uytterhoeven wrote:
+> > > >     if (!request_mem_region(vesafb_fix.smem_start, vesafb_fix.smem_len, "vesafb")) {
+> > > > 	    printk(KERN_WARNING
+> > > > 		   "vesafb: abort, cannot reserve video memory at 0x%lx\n",
+> > > > 		    vesafb_fix.smem_start);
+> > > > 	    /* We cannot make this fatal. Sometimes this comes from magic
+> > > > 	       spaces our resource handlers simply don't know about */
+>
+> Various built-in video systems broke on that test because we didnt
+> have resources for them so the resources couldnt be allocated. Probably
+> if vesafb is enabled we should skip any primary video device (ie the one
+> with VGA_EN at boot)
 
-This ports the SGI Visual Workstation fbdev driver to use the 
-framebuffer_alloc/release api. Please try it.
+But vesafb is meant to be used as a fallback, if no chipset-specific driver is
+found.
 
---- linus-2.6/drivers/video/sgivwfb.c	2004-02-18 20:59:08.000000000 -0800
-+++ fbdev-2.6/drivers/video/sgivwfb.c	2004-02-19 16:11:44.000000000 -0800
-@@ -22,7 +22,7 @@
- #include <asm/mtrr.h>
- 
- #define INCLUDE_TIMING_TABLE_DATA
--#define DBE_REG_BASE default_par.regs
-+#define DBE_REG_BASE par->regs
- #include <video/sgivw.h>
- 
- struct sgivw_par {
-@@ -44,9 +44,6 @@
- extern unsigned long sgivwfb_mem_phys;
- extern unsigned long sgivwfb_mem_size;
- 
--static struct sgivw_par default_par;
--static u32 pseudo_palette[17];
--static struct fb_info fb_info;
- static int ypan = 0;
- static int ywrap = 0;
- 
-@@ -162,7 +159,7 @@
-  *              console.
-  */
- 
--static void dbe_TurnOffDma(void)
-+static void dbe_TurnOffDma(struct sgivw_par *par)
- {
- 	unsigned int readVal;
- 	int i;
-@@ -367,7 +364,7 @@
- /*
-  *  Setup flatpanel related registers.
-  */
--static void sgivwfb_setup_flatpanel(struct dbe_timing_info *currentTiming)
-+static void sgivwfb_setup_flatpanel(struct sgivw_par *par, struct dbe_timing_info *currentTiming)
- {
- 	int fp_wid, fp_hgt, fp_vbs, fp_vbe;
- 	u32 outputVal = 0;
-@@ -429,7 +426,7 @@
- 	/* Turn on dotclock PLL */
- 	DBE_SETREG(ctrlstat, 0x20000000);
- 
--	dbe_TurnOffDma();
-+	dbe_TurnOffDma(par);
- 
- 	/* dbe_CalculateScreenParams(); */
- 	maxPixelsPerTileX = 512 / bytesPerPixel;
-@@ -453,7 +450,7 @@
- 		DBE_SETREG(vt_xy, 0x00000000);
- 		udelay(1);
- 	} else
--		dbe_TurnOffDma();
-+		dbe_TurnOffDma(par);
- 
- 	/* dbe_Initdbe(); */
- 	for (i = 0; i < 256; i++) {
-@@ -567,7 +564,7 @@
- 	DBE_SETREG(vt_hcmap, outputVal);
- 
- 	if (flatpanel_id != -1)
--		sgivwfb_setup_flatpanel(currentTiming);
-+		sgivwfb_setup_flatpanel(par, currentTiming);
- 
- 	outputVal = 0;
- 	temp = currentTiming->vblank_start - currentTiming->vblank_end - 1;
-@@ -752,16 +749,30 @@
- /*
-  *  Initialisation
-  */
--int __init sgivwfb_init(void)
-+static void sgivwfb_release(struct device *device)
-+{
-+}	
-+
-+static int __init sgivwfb_probe(struct device *device)
- {
-+	struct platform_device *dev = to_platform_device(device);
-+	struct sgivw_par *par;	
-+	struct fb_info *info;
- 	char *monitor;
- 
-+	info = framebuffer_alloc(sizeof(struct sgivw_par) + sizeof(u32) * 256, &dev->dev); 
-+	if (!info)
-+		return -ENOMEM;
-+	par = info->par;
-+	
- 	if (!request_mem_region(DBE_REG_PHYS, DBE_REG_SIZE, "sgivwfb")) {
- 		printk(KERN_ERR "sgivwfb: couldn't reserve mmio region\n");
-+		framebuffer_release(info);
- 		return -EBUSY;
- 	}
--	default_par.regs = (struct asregs *) ioremap_nocache(DBE_REG_PHYS, DBE_REG_SIZE);
--	if (!default_par.regs) {
-+
-+	par->regs = (struct asregs *) ioremap_nocache(DBE_REG_PHYS, DBE_REG_SIZE);
-+	if (!par->regs) {
- 		printk(KERN_ERR "sgivwfb: couldn't ioremap registers\n");
- 		goto fail_ioremap_regs;
- 	}
-@@ -773,66 +784,110 @@
- 	sgivwfb_fix.ywrapstep = ywrap;
- 	sgivwfb_fix.ypanstep = ypan;
- 
--	fb_info.fix = sgivwfb_fix;
-+	info->fix = sgivwfb_fix;
- 
- 	switch (flatpanel_id) {
- 		case FLATPANEL_SGI_1600SW:
--			fb_info.var = sgivwfb_var1600sw;
-+			info->var = sgivwfb_var1600sw;
- 			monitor = "SGI 1600SW flatpanel";
- 			break;
- 		default:
--			fb_info.var = sgivwfb_var;
-+			info->var = sgivwfb_var;
- 			monitor = "CRT";
- 	}
- 
- 	printk(KERN_INFO "sgivwfb: %s monitor selected\n", monitor);
- 
--	fb_info.fbops = &sgivwfb_ops;
--	fb_info.pseudo_palette = pseudo_palette;
--	fb_info.par = &default_par;
--	fb_info.flags = FBINFO_FLAG_DEFAULT;
-+	info->fbops = &sgivwfb_ops;
-+	info->pseudo_palette = (void *) (par + 1);
-+	info->flags = FBINFO_FLAG_DEFAULT;
- 
--	fb_info.screen_base = ioremap_nocache((unsigned long) sgivwfb_mem_phys, sgivwfb_mem_size);
--	if (!fb_info.screen_base) {
-+	info->screen_base = ioremap_nocache((unsigned long) sgivwfb_mem_phys, sgivwfb_mem_size);
-+	if (!info->screen_base) {
- 		printk(KERN_ERR "sgivwfb: couldn't ioremap screen_base\n");
- 		goto fail_ioremap_fbmem;
- 	}
- 
--	fb_alloc_cmap(&fb_info.cmap, 256, 0);
-+	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0)
-+		goto fail_color_map;
- 
--	if (register_framebuffer(&fb_info) < 0) {
-+	if (register_framebuffer(info) < 0) {
- 		printk(KERN_ERR "sgivwfb: couldn't register framebuffer\n");
- 		goto fail_register_framebuffer;
- 	}
- 
-+	dev_set_drvdata(&dev->dev, info);
-+	
- 	printk(KERN_INFO "fb%d: SGI DBE frame buffer device, using %ldK of video memory at %#lx\n",      
--		fb_info.node, sgivwfb_mem_size >> 10, sgivwfb_mem_phys);
-+		info->node, sgivwfb_mem_size >> 10, sgivwfb_mem_phys);
- 	return 0;
--
-+	
- fail_register_framebuffer:
--	iounmap((char *) fb_info.screen_base);
-+	fb_dealloc_cmap(&info->cmap);
-+fail_color_map:
-+	iounmap((char *) info->screen_base);
- fail_ioremap_fbmem:
--	iounmap(default_par.regs);
-+	iounmap(par->regs);
- fail_ioremap_regs:
- 	release_mem_region(DBE_REG_PHYS, DBE_REG_SIZE);
-+	framebuffer_release(info);
- 	return -ENXIO;
- }
- 
--#ifdef MODULE
--MODULE_LICENSE("GPL");
-+static int sgivwfb_remove(struct device *device)
-+{
-+	struct fb_info *info = dev_get_drvdata(device);
-+
-+	if (info) {
-+		struct sgivw_par *par = info->par;
-+		
-+		unregister_framebuffer(info);
-+		dbe_TurnOffDma(par);
-+		iounmap(par->regs);
-+		iounmap(info->screen_base);
-+		release_mem_region(DBE_REG_PHYS, DBE_REG_SIZE);
-+	}
-+	return 0;
-+}	
-+
-+static struct device_driver sgivwfb_driver = {
-+	.name	= "sgivwfb",
-+	.bus	= &platform_bus_type,
-+	.probe	= sgivwfb_probe,
-+	.remove	= sgivwfb_remove,
-+};
-+
-+static struct platform_device sgivwfb_device = {
-+	.name	= "sgivwfb",
-+	.id	= 0,
-+	.dev	= {
-+		.release = sgivwfb_release,
-+	}
-+};
- 
--int init_module(void)
-+int __init sgivwfb_init(void)
- {
--	return sgivwfb_init();
-+	int ret;
-+
-+	ret = driver_register(&sgivwfb_driver);
-+	if (!ret) {
-+		ret = platform_device_register(&sgivwfb_device);
-+		if (ret)
-+			driver_unregister(&sgivwfb_driver);
-+	}
-+	return ret;
- }
- 
--void cleanup_module(void)
-+#ifdef MODULE
-+MODULE_LICENSE("GPL");
-+
-+static void __exit sgivwfb_exit(void)
- {
--	unregister_framebuffer(&fb_info);
--	dbe_TurnOffDma();
--	iounmap(regs);
--	iounmap(&fb_info.screen_base);
--	release_mem_region(DBE_REG_PHYS, DBE_REG_SIZE);
-+	platform_device_unregister(&sgivwfb_device);
-+	driver_unregister(&sgivwfb_driver);
- }
- 
-+module_init(sgivwfb_init);
-+module_exit(sgivwfb_exit);
-+
- #endif				/* MODULE */
+Gr{oetje,eeting}s,
 
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

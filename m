@@ -1,18 +1,15 @@
-From: Louis Garcia <louisg00@bellsouth.net>
-Subject: Re: radeonfb and 2.5.66
-Date: 26 Mar 2003 14:34:26 -0500
+From: James Simmons <jsimmons@infradead.org>
+Subject: Framebuffer fixes.
+Date: Wed, 26 Mar 2003 19:57:08 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1048707266.2533.1.camel@tiger>
-References: <Pine.GSO.4.21.0303251607490.22126-100000@vervain.sonytel.be>
-	 <1048633657.2513.5.camel@tiger> <1048668763.10474.27.camel@zion.wanadoo.fr>
+Message-ID: <Pine.LNX.4.44.0303261951090.21188-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail227.mail.bellsouth.net ([205.152.58.197] helo=imf25bis.bellsouth.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18yGf3-0005m2-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 26 Mar 2003 11:34:09 -0800
-In-Reply-To: <1048668763.10474.27.camel@zion.wanadoo.fr>
+Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18yH1s-0003Em-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 26 Mar 2003 11:57:46 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,66 +19,47 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-
-This change had no effect. This is what I get
-
---Lou
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-Mar 26 14:28:02 tiger kernel: Journalled Block Device driver loaded
-Mar 26 14:28:02 tiger kernel: radeonfb_pci_register BEGIN
-Mar 26 14:28:02 tiger kernel: radeonfb: ref_clk=2700, ref_div=12,
-xclk=23000 defaults
-Mar 26 14:28:03 tiger kernel: radeonfb: probed DDR SGRAM 65536k videoram
-Mar 26 14:28:03 tiger kernel: radeonfb: detected DFP panel size from
-registers:
-1280x1024
-Mar 26 14:28:03 tiger kernel: radeonfb: ATI Radeon 7500 QW DDR SGRAM 64
-MB
-Mar 26 14:28:03 tiger kernel: radeonfb: DVI port DFP monitor connected
-Mar 26 14:28:03 tiger kernel: radeonfb: CRT port no monitor connected
-Mar 26 14:28:03 tiger kernel: radeonfb_pci_register END
-Mar 26 14:28:03 tiger kernel: hStart = 680, hEnd = 960, hTotal = 1056
-Mar 26 14:28:03 tiger kernel: vStart = 402, vEnd = 421, vTotal = 442
-Mar 26 14:28:03 tiger kernel: h_total_disp = 0x4f0083^I   hsync_strt_wid
-= 0xa302a2
-Mar 26 14:28:03 tiger kernel: v_total_disp = 0x18f01b9^I  
-vsync_strt_wid = 0x930191
-Mar 26 14:28:03 tiger kernel: post div = 0x8
-Mar 26 14:28:03 tiger kernel: fb_div = 0x59
-Mar 26 14:28:03 tiger kernel: ppll_div_3 = 0x30059
-Mar 26 14:28:03 tiger kernel: ron = 712, roff = 16464
-Mar 26 14:28:03 tiger kernel: vclk_freq = 2503, per = 588
-Mar 26 14:28:03 tiger kernel: Console: switching to colour frame buffer
-device 80x25
-Mar 26 14:28:03 tiger keytable: Loading keymap:
+Okay. Here you go. This patch is against 2.5.66 vanialla. I tested to see 
+if it applied. It does. Basically I added back in the static buffers in 
+accel_cursor in fbcon.c. Now the cursor will work just like it did before. 
+The draw back is that if you have more than one framebuffer then the 
+cursors will be messed up. So for single headed frmaebuffer systems it 
+will work perfectly. It is not that big of a deal since the console layer 
+is broken for multi-head and pre-emptive support anyways. Plus fbcon has 
+issues as well. The proper fix would require a huge amount of work. 
+I have a few updated drivers as well. Please test.
 
+http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
 
+ drivers/video/aty/aty128fb.c    |   16 +-
+ drivers/video/cfbimgblt.c       |    4
+ drivers/video/console/fbcon.c   |  246 +++++++++++++++++++++-------------------
+ drivers/video/controlfb.c       |   18 --
+ drivers/video/fbmem.c           |   42 ++----
+ drivers/video/i810/i810.h       |    6
+ drivers/video/i810/i810_accel.c |  140 +++++++++++-----------
+ drivers/video/i810/i810_dvt.c   |    3
+ drivers/video/i810/i810_gtf.c   |    7 -
+ drivers/video/i810/i810_main.c  |  135 +++++++++------------
+ drivers/video/i810/i810_main.h  |    4
+ drivers/video/logo/logo.c       |   69 +++++------
+ drivers/video/platinumfb.c      |   28 +---
+ drivers/video/radeonfb.c        |   10 +
+ drivers/video/riva/fbdev.c      |    2
+ drivers/video/softcursor.c      |   95 ++++-----------
+ drivers/video/tdfxfb.c          |   18 +-
+ drivers/video/tgafb.c           |    2
+ drivers/video/vga16fb.c         |    4
+ include/linux/fb.h              |    4
+ include/linux/linux_logo.h      |    2
+ 21 files changed, 393 insertions(+), 462 deletions(-)
 
-On Wed, 2003-03-26 at 03:52, Benjamin Herrenschmidt wrote:
-> On Wed, 2003-03-26 at 00:07, Louis Garcia wrote:
-> > When I use video=radeonfb:dfp my monitor just goes into power saving
-> > mode (shuts off). This is what I get in the logs: If someone needs more
-> > info let me know. By the way I'm on a Intel x86 box.
-> 
-> Try that: around line 2065, change:
-> 
-> 	newmode.tmds_transmitter_cntl = (TMDS_RAN_PAT_RST |
-> 					 ICHCSEL | TMDS_PLL_EN) &
-> 					 ~(TMDS_PLLRST);
-> 
-> to:
-> 
-> 	newmode.tmds_transmitter_cntl = (TMDS_RAN_PAT_RST | ICHCSEL) &
-> 					 ~(TMDS_PLLRST);
-> 
-> And tell me if that helps
-> 
-> Ben.
-> 
 
 
 

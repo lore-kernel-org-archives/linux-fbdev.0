@@ -1,18 +1,17 @@
-From: Stephane Wirtel <stephane.wirtel@belgacom.net>
-Subject: can you check my patches ?
-Date: Thu, 22 Aug 2002 21:48:02 +0200
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: what are the various changes between fb-2.4
+ and fb-2.5 ?
+Date: Thu, 22 Aug 2002 12:19:44 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20020822194802.GC18406@debian>
+Message-ID: <Pine.LNX.4.33.0208221219030.9077-100000@maxwell.earthlink.net>
+References: <20020814013745.GA11852@stargate.lan>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from 212.68.254.82.brutele.be ([212.68.254.82] helo=debian)
+Received: from snipe.mail.pas.earthlink.net ([207.217.120.62])
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17hxw5-0001uV-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 22 Aug 2002 12:48:05 -0700
-Received: from root by debian with local (Exim 3.35 #1 (Debian))
-	id 17hxw2-0004p4-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 22 Aug 2002 21:48:02 +0200
-Content-Disposition: inline
+	id 17hyUi-00027v-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 22 Aug 2002 13:23:52 -0700
+In-Reply-To: <20020814013745.GA11852@stargate.lan>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,25 +21,15 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-
-i made many patches to change the framebuffer's logo in 2.4.
-
-i modified fblogo to put LOGO_W and LOGO_H in linux_logo.h :-)
-
-so, i have many problems with my patch, can you check it ?
-
-thanks
-
-here the URL : http://www.linux-mons.be/projets/framebuffer_logos/
+To: Stephane Wirtel <stephane.wirtel@belgacom.net>
+Cc: Linux Frame Buffer Devel Mailing List <linux-fbdev-devel@lists.sourceforge.net>
 
 
+The removal of the console code from the low level drivers into fbcon.c.
+See skeletonfb.c in the latest 2.5.X kernel to see the changes.
 
--- 
-Stephane Wirtel <stephane.wirtel@belgacom.net>
-Web : www.linux-mons.be	 "Linux Is Not UniX !!!"
 
 
 -------------------------------------------------------

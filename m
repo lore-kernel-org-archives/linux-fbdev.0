@@ -1,17 +1,22 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: [PATCH] Interlace for rivafb driver
-Date: 30 Jan 2003 10:35:33 +0800
+From: Sven Luther <luther@dpt-info.u-strasbg.fr>
+Subject: tool to reverse engineer a windows driver ?
+Date: Thu, 30 Jan 2003 09:14:08 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1043893542.1052.130.camel@localhost.localdomain>
-References: <Pine.LNX.4.44.0301281927590.12076-100000@phoenix.infradead.org>
+Message-ID: <20030130081408.GA1189@iliana>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from willow.compass.com.ph ([202.70.96.38])
+Received: from smtp-out-4.wanadoo.fr ([193.252.19.23] helo=mel-rto4.wanadoo.fr)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18e4gh-0007EP-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 29 Jan 2003 18:44:29 -0800
-In-Reply-To: <Pine.LNX.4.44.0301281927590.12076-100000@phoenix.infradead.org>
+	id 18e9pw-0004nD-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 30 Jan 2003 00:14:17 -0800
+Received: from mel-rta6.wanadoo.fr (193.252.19.26) by mel-rto4.wanadoo.fr (6.7.015)
+        id 3E0C33FD014D9F5F for linux-fbdev-devel@lists.sourceforge.net; Thu, 30 Jan 2003 09:14:09 +0100
+Received: from iliana (217.128.59.117) by mel-rta6.wanadoo.fr (6.7.015)
+        id 3E26CE2100811006 for linux-fbdev-devel@lists.sourceforge.net; Thu, 30 Jan 2003 09:14:09 +0100
+Received: from luther by iliana with local (Exim 3.36 #1 (Debian))
+	id 18e9po-0000Js-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 30 Jan 2003 09:14:08 +0100
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,38 +27,22 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: Fredrik Noring <noring@nocrew.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 2003-01-29 at 03:29, James Simmons wrote:
-> On 26 Jan 2003, Fredrik Noring wrote:
-> 
-> > Attached patch implements interlace for the rivafb driver and
-> > the hardware that supports it (Riva 128, TNT, TNT2, some GeForce 
-> > cards and possibly others).
-> > 
-> > It's a patch against 2.4.21-pre2 (with polarity and sync patches)
-> > but it should fit with 2.5.x too skipping riva_hw.c and riva_hw.h 
-> > which already are adopted from XFree86.
-> 
-> Applied. 
-> 
-> 
-> P.S
->    To Tony. I applied your patches as well. The only patch I didn't was 
-> the DIRECTCOLOR patch. The X server freaked out for my card when the video 
-> mode was in a DIRECTCOLOR state.
-> 
+Hello, ...
 
-Yes I'm not sure about this too.  Also the patch I submitted is untested
-for RGB565, tested only for RGB555 and RGB8888.  So, does X work for
-rivafb?  It does not work in my hardware unless I add the directcolor
-patch.
+Do some of you know of a (preferably free) way to reverse engineer a
+windows driver ? I guess a simple disasembler would do the trick, since
+after all i have the docs for my chip, but it has some inaccuracies, so
+i would like to know what the windows driver does.
 
-Tony
+Spying the register writes would also be ok, i guess, but more
+difficult, since the stuff i need is used on mode setup.
 
+Friendly,
 
-
+Sven Luther
 
 
 -------------------------------------------------------

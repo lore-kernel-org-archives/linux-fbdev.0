@@ -1,17 +1,17 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Mirrored Display?
-Date: Tue, 7 Jan 2003 21:18:12 +0000 (GMT)
+Subject: Re: const fb_{fillrect,copyarea,image}?
+Date: Tue, 7 Jan 2003 21:21:03 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0301072117130.17129-100000@phoenix.infradead.org>
-References: <1041175846.1210.10.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44.0301072119370.17129-100000@phoenix.infradead.org>
+References: <Pine.GSO.4.21.0212301127150.18122-100000@vervain.sonytel.be>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from phoenix.infradead.org ([195.224.96.167])
+Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18W17d-0005xE-00
-	for <Linux-fbdev-devel@lists.sourceforge.net>; Tue, 07 Jan 2003 13:18:53 -0800
-In-Reply-To: <1041175846.1210.10.camel@localhost.localdomain>
+	id 18W1AI-0006Wu-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 07 Jan 2003 13:21:39 -0800
+In-Reply-To: <Pine.GSO.4.21.0212301127150.18122-100000@vervain.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,18 +23,23 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: Michael Kaufmann <kaufmann@sohard.de>, Linux-fbdev-devel@lists.sourceforge.net
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> > I'm know a litte bit amazed about a rotation feature in next versions. Does 
-> > this mean, that the buffer where user apps (or also the console) are writing 
-> > there picture data is not directly the videobuffer anymore? Or how does this 
-> > rotation feature works?
-> I think the rotation hooks are console specific.  
+> Wouldn't it make sense to make the fb_{fillrect,copyarea,image} parameters of
+> the fb_ops.fb_{fillrect,copyarea,image}() operations const? This would protect
+> us against side effects when reusing the fb_{fillrect,copyarea,image} structs
+> without reinitializing their contents (as is currently done by the logo drawing
+> code in fbcon_show_logo() on SMP).
 
-Actually the low level drivers can use the hooks.
+Where is this exactly?
 
+> Of course this means that we have to modify the clipping code, which currently
+> just modifies the passed structure.
+
+:-( That is done to prevent someone from passing data that is larger than 
+the framebuffer.
 
 
 

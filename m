@@ -1,23 +1,25 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Jon Smirl <jonsmirl@gmail.com>
 Subject: Re: [PATCH] Provide control of active VGA device on PCI systems
-Date: Wed, 23 Feb 2005 08:27:14 +1100
-Message-ID: <1109107634.5326.146.camel@gaston>
+Date: Tue, 22 Feb 2005 16:42:35 -0500
+Message-ID: <9e4733910502221342b560325@mail.gmail.com>
 References: <9e47339105021921507545d084@mail.gmail.com>
-	 <200502221050.43534.jbarnes@sgi.com> <1109105867.5411.128.camel@gaston>
-	 <200502221302.59803.jbarnes@sgi.com>
+	 <9e473391050219230764b0dfd2@mail.gmail.com>
+	 <200502221050.43534.jbarnes@sgi.com>
+	 <1109105867.5411.128.camel@gaston>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D3hZW-0006tc-9y
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Feb 2005 13:27:58 -0800
-Received: from gate.crashing.org ([63.228.1.57])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1D3hZV-0001Ec-OU
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Feb 2005 13:27:58 -0800
-In-Reply-To: <200502221302.59803.jbarnes@sgi.com>
+	id 1D3hnn-0007x8-Sn
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Feb 2005 13:42:43 -0800
+Received: from rproxy.gmail.com ([64.233.170.194])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1D3hnm-0004Lg-AI
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Feb 2005 13:42:43 -0800
+Received: by rproxy.gmail.com with SMTP id z35so1007914rne
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 22 Feb 2005 13:42:36 -0800 (PST)
+In-Reply-To: <1109105867.5411.128.camel@gaston>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,43 +31,51 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Jesse Barnes <jbarnes@sgi.com>
-Cc: Jon Smirl <jonsmirl@gmail.com>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Jesse Barnes <jbarnes@sgi.com>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-
-> > The problem is that on some cards (ATIs for example), the BIOS will
-> > modify the image in RAM at c0000 and will put in there various infos,
-> > like panel type, PLL infos, etc... that can't always be obtained from
-> > the "hard" ROM (especially the panel infos). The driver (raeonfb or X,
-> > strace X and see it mmap'ing /dev/mem at c0000...) need those things.
+On Wed, 23 Feb 2005 07:57:47 +1100, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Tue, 2005-02-22 at 10:50 -0800, Jesse Barnes wrote:
 > 
-> Shouldn't the driver safe that stuff at suspend time for use at resume time?  
-> Or do we expect to be able to resume with different hw attached?
-
-That's even more complicated :)
-
-Honestly, I don't know for sure... I suppose the stuff should not change
-accross suspend/resume. If the BIOS is used to re-post the on
-board/primary card, it will just put the same stuff back in there. BIOS
-wrappers that POST secondary cards shouldn't touch the real c0000 area
-but some kind of shadow elsewhere. The driver POSTing code should
-definitely return the modified shadow area btw...
-
-Another problem with suspend/resume is to re-post the chip on resume,
-which is quit a nightmare too. One would think it would be possible to
-just re-run the BIOS to re-POST, but that will not always work. On
-laptops, the video chip tend not to have any ROM attached (the video
-BIOS is somewhere stuffed with the main BIOS image). You can find the
-stuff at 0xc0000 but it doesn't necessarily contain the full video BIOS
-code...
-
-The ATI driver for example in Windows has a library that "knows" how to
-re-POST gazillion of chips, but they can't/won't really opensource this
-last I asked.
-
-Ben.
+> > Nice, if this is combined with Ben's suggestion of using a firmware loader
+> > type model to deal with POSTing, it seems like we're in pretty good shape.
+> > Can you add documentation for this API to
+> > Documentation/filesystems/sysfs-<foo>.txt (maybe the pci file or a new file)
+> > so that userspace people will be able to figure out how to use it?
+> >
+> > Also, how does one know if a card is 'primary' or not?  I.e. some BIOSes will
+> > POST all cards, some will POST only one, and some will POST none...
+> 
+> Well, that's something we need to figure out... While I do think the
+> POSTing must be under driver control, as I explained, there is still
+> that nasty notion of who has the stuff at 0xc0000 ... and if your
+> firmware runs the x86 BIOS but doesn't keep the shadow around, then you
+> are toast with a good deal of laptop chips.
 
 
+With the ROM API code that is checked into the kernel on the x86 it
+tracks the boot video device so that it knows which card C000 belongs
+to. IORESOURCE_ROM_SHADOW is set in this case. If you do pci_map_rom()
+on the boot device it returns you the contents of C000 not the actual
+ROM.
+
+
+> 
+> The problem is that on some cards (ATIs for example), the BIOS will
+> modify the image in RAM at c0000 and will put in there various infos,
+> like panel type, PLL infos, etc... that can't always be obtained from
+> the "hard" ROM (especially the panel infos). The driver (raeonfb or X,
+> strace X and see it mmap'ing /dev/mem at c0000...) need those things.
+> 
+> Ben.
+> 
+> 
+
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
 
 
 -------------------------------------------------------

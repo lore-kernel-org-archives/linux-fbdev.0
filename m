@@ -1,16 +1,16 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Re: [BK PATCHS] fbdev updates.
-Date: Tue, 22 Oct 2002 19:13:57 +0200 (MEST)
+Subject: Re: 2.5 atyfb on Sparc question
+Date: Tue, 22 Oct 2002 21:05:21 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0210221912430.8374-100000@vervain.sonytel.be>
-References: <20021018223708.C15827@flint.arm.linux.org.uk>
+Message-ID: <Pine.GSO.4.21.0210222057050.8374-100000@vervain.sonytel.be>
+References: <Pine.LNX.4.33.0210181103380.10832-100000@maxwell.earthlink.net>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1842ci-0004LH-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 22 Oct 2002 10:15:20 -0700
-In-Reply-To: <20021018223708.C15827@flint.arm.linux.org.uk>
+	id 1844N6-0008Di-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 22 Oct 2002 12:07:20 -0700
+In-Reply-To: <Pine.LNX.4.33.0210181103380.10832-100000@maxwell.earthlink.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,23 +22,19 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King <rmk@arm.linux.org.uk>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Sven LUTHER <luther@dpt-info.u-strasbg.fr>, "Holzrichter, Bruce" <bruce.holzrichter@monster.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Fri, 18 Oct 2002, Russell King wrote:
-> On Fri, Oct 18, 2002 at 02:24:48PM -0700, James Simmons wrote:
-> > Your right. That is a bug from the old fbgen code. Since few driver used
-> > the old fbgen code it never appeared. I suggest we remove can_soft_blank
-> > and just test to see if the function pointer exist for fb_blank. If it
-> > doesn't then we can resort to other tricks in suggested in the ther email.
-> 
-> Ok.  What about the case where you're running in true colour / static
-> pseudo colour, and can't blank the palette, but do have a fb_blank
-> method to handle the direct colour / pseudo colour case?
+On Fri, 18 Oct 2002, James Simmons wrote:
+> fb_rastering:	I don't know if we are going to keep this one?
 
-That's what the return value of the fb_blank() function is for: to indicate
-whether it handled the blanking or not. If not, the upper layer has to take
-care of it.
+AFAIK these are used by the SPARC people only, to switch the graphics hardware
+to frame buffer mode so the logo can be drawn. All other operations are done
+using the accel engine on the cards that need fb_rasterimg().
+
+So yes, once the logo is drawn by fb_imageblit(), fb_rasterimg() can be
+eliminated by moving its functionality inside the fbdev-specific
+fb_imageblit().
 
 Gr{oetje,eeting}s,
 

@@ -1,19 +1,17 @@
 From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: How can I test my console driver?
-Date: 12 Mar 2003 04:07:48 +0800
+Subject: Re: Some questions
+Date: 12 Mar 2003 04:07:53 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1047407682.1033.178.camel@localhost.localdomain>
-References: <1047376355.5640.5.camel@cambridge.braddahead>
-	<1047387515.984.44.camel@localhost.localdomain> 
-	<1047392898.2262.4.camel@cambridge.braddahead>
+Message-ID: <1047407816.1013.182.camel@localhost.localdomain>
+References: <Pine.LNX.4.44.0303111628240.23668-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from pine.compass.com.ph ([202.70.96.37])
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18sq5R-0005DA-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 Mar 2003 12:10:57 -0800
-In-Reply-To: <1047392898.2262.4.camel@cambridge.braddahead>
+	id 18sq5T-0005E4-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 Mar 2003 12:10:59 -0800
+In-Reply-To: <Pine.LNX.4.44.0303111628240.23668-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -24,31 +22,48 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Alex Bennee <kernel-hacker@bennee.com>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Thomas Winischhofer <thomas@winischhofer.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tue, 2003-03-11 at 22:28, Alex Bennee wrote:
-> > Why not just use take_over_console() with first and last equal to a tty
-> > you can switch to?  If something bad happens, just switch to a working
-> > console.
+On Wed, 2003-03-12 at 00:29, James Simmons wrote:
 > 
-> I tried that. It seems the first time I do a Ctrl-Alt-5 (for example) I
-> loose the ability to use my keyboard. The only way I can recover
-> anything is to re-boot my machine. This strikes me as a little odd as I
-> thought the console was soley interested in output.
+> > So, I think fbcon should also detect if the previous console is not
+> > fbcon (ie previous con > last_fbvc || previous con < first_fbvc), and if
+> > it isn't, force an fb_set_par.
 > 
-> Is there anyway to write unbuffered output to the console? After all the
-> only way I'm going to know anything is working is through dmesg and/or
-> the screen image I read from my debugging proc interface.
+> This whole idea of mapping a specific VC to a specific piece of hardware 
+> is just plain dumb and overly complex. The new console system will 
+> allocate a set of 16 console to each independent VT.
 > 
 
-Maybe you can create dummy methods first, con_startup, con_init (used
-during take_over_console), as well as the putc/s, scroll, clear, bmove,
-etc.  Then you can implement them one by one and see which method
-actually triggerred the lockup.
+Well, you have info->currcon, fg_console etc...  No mapping is done,
+fbcon will just keep track of the tty's it's currently switched to (vt.c
+does it, and so does fbcon_switch), and fbcon will just look if the vc
+has a valid PID (which means a process installed its own vc) and
+therefore not trust it to completely preserve the graphics state.
+
+Note that X does something like this to protect itself.  When switch
+from console to X, it refreshes its own registers.
+
+I think you may need some support for this.  Several have already
+reported that switching from X to a console results in a corrupted
+display which can be cleared by doing an fbset. 
+
+The choices are:
+
+1. refresh the registers at every switch - slowest but guarantees
+hardware state is always preserved 
+ 
+2. do not refresh unless var changed - fasted but can result in
+corruption/crash if registers were changed behind the back of fbdev
+
+3. selective refresh - do not refresh if switching between "trusted"
+consoles, refresh if switching from "untrusted" consoles.
+
+4. Find a method to detect if the registers were changed behind the back
+of fbdev.
 
 Tony 
-
 
 
 

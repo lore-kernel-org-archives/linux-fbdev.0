@@ -1,16 +1,16 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: Re: 2.5 offb breakage
-Date: Wed, 31 Jul 2002 20:07:07 +0200
+Date: Wed, 31 Jul 2002 20:18:28 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20020731180708.19824@192.168.4.1>
+Message-ID: <20020731181828.24541@192.168.4.1>
 References: <Pine.LNX.4.44.0207311049150.13905-100000@www.transvirtual.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from [217.167.51.129] (helo=zion.wanadoo.fr)
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17Zxs1-0003xO-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 31 Jul 2002 11:06:49 -0700
+	id 17Zy3N-0005f9-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 31 Jul 2002 11:18:33 -0700
 In-Reply-To: <Pine.LNX.4.44.0207311049150.13905-100000@www.transvirtual.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
@@ -25,15 +25,15 @@ Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@transvirtual.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
->-	info =
->-	    kmalloc(sizeof(struct fb_info) + sizeof(struct display) +
->-		    sizeof(u32) * 17, GFP_ATOMIC);
->+	size = sizeof(struct fb_info) + sizeof(struct display) + sizeof(u32) * 17;
->+
->+	info = kmalloc(size, GFP_ATOMIC);
+Ok, now it's really weird.
 
-Ok, I fixed that in my tree as well, but didn't yet test with
-CONFIG_FBCON_ACCEL _and_ that fix. I'll do that now.
+If I fix the memset, I get my old crash. However, it seems that
+it's r4 that is NULL in cfb_imageblit, which would mean the
+"image" paremeter is NULL. The stack shows the caller beeing
+fbcon_accel_putcs, so that make no sense as image is on the
+stack...
+
+I'll have to investigate more.
 
 Ben.
 

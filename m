@@ -1,24 +1,25 @@
-From: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
-Subject: Re: vesafb with special resolution?
-Date: Sat, 16 Oct 2004 09:55:28 +0200
+From: Nigel Cunningham <ncunningham@linuxmail.org>
+Subject: Re: Generic VESA framebuffer driver and Video
+	card BOOT?
+Date: Sat, 16 Oct 2004 19:01:35 +1000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20041016075528.GD18311@charite.de>
-References: <20041015190606.GN30583@charite.de> <200410160552.20443.adaplas@hotpop.com>
+Message-ID: <1097917295.4763.35.camel@desktop.cunninghams>
+References: <416E6ADC.3007.294DF20D@localhost> <87d5zkqj8h.fsf@bytesex.org>
+	 <Pine.GSO.4.61.0410151437050.10040@waterleaf.sonytel.be>
+	 <20041015112902.A12631@unix-os.sc.intel.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CIjPa-0002WP-La
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 16 Oct 2004 00:55:34 -0700
-Received: from mail.charite.de ([160.45.207.131])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1CIjPZ-0006MB-T3
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 16 Oct 2004 00:55:34 -0700
-Content-Disposition: inline
-In-Reply-To: <200410160552.20443.adaplas@hotpop.com>
+	id 1CIkUn-0000sW-48
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 16 Oct 2004 02:05:01 -0700
+Received: from pop5-1.us4.outblaze.com ([205.158.62.125])
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.41)
+	id 1CIkUk-0007hy-B1
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 16 Oct 2004 02:05:01 -0700
+In-Reply-To: <20041015112902.A12631@unix-os.sc.intel.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,39 +29,42 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>, penguinppc-team@lists.penguinppc.org
 
-* Antonino A. Daplas <adaplas@hotpop.com>:
+Hi.
 
-> With the current vesafb incarnation, no. The vesafb driver currently
-> selects the mode from a table of standard vesa modes provided by the
-> BIOS, and 1280x768 is not standard.
+On Sat, 2004-10-16 at 04:29, Venkatesh Pallipadi wrote:
+> > Why not? Of course you won't get any output before the graphics card has been
+> > re-initialized to a sane and usable state...
+> > 
+> 
+> True. I do it on my Dell 600m (Radeon 9000M) using usermodehelper and
+> it works just fine. It works both with VGA and X. I need to split up
+> the thaw_processes into two stages though. It may not work with fb as
+> fb driver resumes earlier. I use the patch below for the kernel and a
+> userlevel x86 emulator.
+> 
+> I have to say though, it will help if we have a such an emulator in the kernel.
 
-OK.
-=20
-> Try vesafb-tng if you need a non-vesa standard mode.
->=20
-> http://dev.gentoo.org/~spock/projects/vesafb-tng/
+Just a quick question: is this the right way to distinguish kernel
+threads? I've been checking if the process has an mm context (if p->mm).
 
-I patched my kernel and I'm rebuilding as we speak.
+> +		if (p->parent->pid != 1)
+> +			continue;
 
---=20
-_________________________________________________
+Regards,
 
-  Charit=E9 - Universit=E4tsmedizin Berlin
-_________________________________________________
+Nigel
+-- 
+Nigel Cunningham
+Pastoral Worker
+Christian Reformed Church of Tuggeranong
+PO Box 1004, Tuggeranong, ACT 2901
 
-  Ralf Hildebrandt
-   i.A. des IT-Zentrum | Netzwerkdienste
-   Stabsstelle des Klinikumsvorstandes
-   Campus Benjamin Franklin
-   Hindenburgdamm 30 | Berlin
-   Tel. +49 30 450 570155 | Fax +49 30 8445-4447
-   Ralf.Hildebrandt@charite.de
-   http://www.charite.de
-
+Many today claim to be tolerant. True tolerance, however, can cope with others
+being intolerant.
 
 
 

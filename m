@@ -1,21 +1,23 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: vesafb and *fb
-Date: Wed, 21 Apr 2004 09:51:41 +0200 (MEST)
+Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
+ one works ;-)
+Date: Wed, 21 Apr 2004 10:28:19 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0404210949590.7657@waterleaf.sonytel.be>
+Message-ID: <Pine.GSO.4.58.0404211027300.7657@waterleaf.sonytel.be>
+References: <1082339577.15101.4.camel@gaston>
+ <Pine.LNX.4.44.0404202032210.29160-100000@phoenix.infradead.org>
+ <12573.10.250.10.1.1082504618.squirrel@sq01.pol.net> <1082507437.2077.28.camel@gaston>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BGCWI-00052N-1o
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 00:51:46 -0700
+	id 1BGD5n-0001Oo-Ob
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 01:28:27 -0700
 Received: from witte.sonytel.be ([80.88.33.193])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BGCWH-0006i8-G7
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 00:51:45 -0700
-Received: from waterleaf.sonytel.be (localhost [127.0.0.1])
-	by witte.sonytel.be (8.12.10/8.12.10) with ESMTP id i3L7pfxt005447
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 21 Apr 2004 09:51:41 +0200 (MEST)
+	id 1BGD5n-0005gw-7y
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 01:28:27 -0700
+In-Reply-To: <1082507437.2077.28.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,27 +29,17 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Antonino Daplas <adaplas@pol.net>, James Simmons <jsimmons@infradead.org>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+On Wed, 21 Apr 2004, Benjamin Herrenschmidt wrote:
+> > I find that a soft copyarea is always expensive than a soft imageblit as a
+> > copyarea will involve an fb read (10-20x slower than fb write).  Tested
+> > this before with an old pci nvidia card. Not o sure with newer hardware.
+>
+> I confirm, reading from the fb shall be avoided at all cost
 
-Yesterday I noticed on a box at work that if you compile in both vesafb and
-atyfb (the box has an ATI 3D RAGE PRO), you get both fb0 (atyfb) and fb1
-(vesafb). That's not supposed to happen.
-
-Vesafb did print that the frame buffer was already in use, but it just
-continued, cfr. this code:
-
-    if (!request_mem_region(vesafb_fix.smem_start, vesafb_fix.smem_len, "vesafb")) {
-	    printk(KERN_WARNING
-		   "vesafb: abort, cannot reserve video memory at 0x%lx\n",
-		    vesafb_fix.smem_start);
-	    /* We cannot make this fatal. Sometimes this comes from magic
-	       spaces our resource handlers simply don't know about */
-    }
-
-That was on plain 2.6.5. But to my surprise the latest 2.4 behaves the same.
-This seems to have been changed in 2.4.15.
-Does anyone know why this was changed?
+This is true for PCI/AGP, but may not be true for unified memory systems.
 
 Gr{oetje,eeting}s,
 

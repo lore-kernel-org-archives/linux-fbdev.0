@@ -1,74 +1,48 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [RFC] Does fbdev need a cursor API for userland?
-Date: Tue, 19 Oct 2004 04:56:31 +0800
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200410190456.32643.adaplas@hotpop.com>
-References: <200410172347.15516.adaplas@hotpop.com> <200410181905.56602.adaplas@hotpop.com> <Pine.GSO.4.61.0410181359040.23486@waterleaf.sonytel.be>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [Linux-fbdev-devel] Generic VESA framebuffer driver and Video card BOOT?
+Date: Mon, 18 Oct 2004 17:16:15 -0400
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <9e47339104101814166bf4cfe5@mail.gmail.com>
+References: <200410160946.32644.adaplas@hotpop.com>
+	 <4173B865.26539.117B09BD@localhost> <417428F2.2050402@bitworks.com>
+Reply-To: Jon Smirl <jonsmirl@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CJeSW-0005q6-0r
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 13:50:24 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.71])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CJeSV-0000VU-G7
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 13:50:23 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id D9A2411605C7
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 18 Oct 2004 20:50:09 +0000 (UTC)
-In-Reply-To: <Pine.GSO.4.61.0410181359040.23486@waterleaf.sonytel.be>
-Content-Disposition: inline
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S267334AbUJRVT2@vger.kernel.org>
+In-Reply-To: <417428F2.2050402@bitworks.com>
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>, adaplas@pol.net
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Jon Smirl <jonsmirl@gmail.com>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
 
-On Monday 18 October 2004 20:01, Geert Uytterhoeven wrote:
-> On Mon, 18 Oct 2004, Antonino A. Daplas wrote:
-> > On Monday 18 October 2004 17:35, Geert Uytterhoeven wrote:
-> > > On Mon, 18 Oct 2004, Antonino A. Daplas wrote:
-> > > > The restore_fb_contents/save_fb_contents cannot be done generically. 
-> > > > Not all framebuffers have a linear format, there are some that are
-> > > > planar such as amifb and vga16fb.  This means that we need to add
-> > > > per-driver hooks just to save and restore the framebuffer contents.
-> > >
-> > > Can't we use fb_imageblit() for restore?
+On Mon, 18 Oct 2004 15:34:58 -0500, Richard Smith <rsmith@bitworks.com> wrote:
+> Kendall Bennett wrote:
 > >
-> > fb_imageblit() is limited because it uses the pseudo_palette.  Even if
-> > we expand the palette to 256 entries, it won't be able to handle formats
-> > > 8bpp. More than 256 is not practical. Plus, fb_imageblit is limited to
-> > 1->bpp, and 8->bpp expansion.
->
-> What about expanding fb_imageblit() to handle 32-bit ARGB as well? Then it
-> can handle most canonical formats (1 bpp monochrome, 8-bit CLUT, 32-bit
+> > I would assume however a serial port console would be fine for embedded
+> > machines until the framebuffer driver could come up anyway.
+> > 
+> This would be an incorrect assumption.  Speaking as a developer of one
+> said embedded system I must have video at boot and be able to dump
+> critical kernel messages to the screen.
 
-Meaning, fb_imageblit needs to do 32-bit ARGB to native fb format conversion
-on the fly.  How can we do that generically without fb_imageblit knowing the
-format of the framebuffer? For example, how do we convert 32-bit ARGB to
-8-bit Pseudocolor?
+I don't see it as the kernel's responsibility to compensate for lack
+of something in an embedded system's BIOS. Embedded programmers are
+free to go in and add basic display code to their arch specific
+directories for printing out this class of messages. Better yet would
+be to fix the embedded ROM to support basic display.
 
-Isn't it much simpler to just have a set_image() where the source block is
-in the same format as the framebuffer so it doesn't have to do format
-conversions?
+What I don't want to do is get a graphics driver system capable of
+supporting multi-head console and openGL running before the kernel
+initializes. I'm also trying to move big chunks of the display system
+(vm86 reset and EDID) out of the kernel and into user space in order
+to reduce the size of the graphic drivers. Moving this code means that
+the full display system can not initialize until at least early user
+space is running.
 
-Tony
+Every system has to be able to somehow indicate that it can find/load the
+kernel image or that the image is corrupt or that hardware diagnostics failed.
+Displaying this info is the responsibility of the BIOS.
 
-
-
-
--------------------------------------------------------
-This SF.net email is sponsored by: IT Product Guide on ITManagersJournal
-Use IT products in your business? Tell us what you think of them. Give us
-Your Opinions, Get Free ThinkGeek Gift Certificates! Click to find out more
-http://productguide.itmanagersjournal.com/guidepromo.tmpl
+-- 
+Jon Smirl
+jonsmirl@gmail.com

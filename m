@@ -1,16 +1,17 @@
-From: Alexander Kern <alex.kern@gmx.de>
-Subject: [Request for Help] specs for new Mach64's after 1999
-Date: Sun, 6 Jul 2003 14:55:58 +0200
+From: Lia Maggioni <voloterreno@tin.it>
+Subject: (no subject)
+Date: Tue, 8 Jul 2003 01:37:11 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200307052010.24033.alex.kern@gmx.de>
-Mime-Version: 1.0
+Message-ID: <EEA72549-B0D3-11D7-804B-00039387DFA2@tin.it>
+Mime-Version: 1.0 (Apple Message framework v482)
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail.gmx.de ([213.165.64.20] helo=mail.gmx.net)
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19Z941-0003v4-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 06 Jul 2003 05:56:21 -0700
-Content-Disposition: inline
+Received: from vsmtp2.tin.it ([212.216.176.222])
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19ZfU1-0008Ce-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 07 Jul 2003 16:33:21 -0700
+Received: from localhost (62.211.128.197) by vsmtp2.tin.it (6.7.016)
+        id 3EE0613200C3E4DD for linux-fbdev-devel@lists.sourceforge.net; Tue, 8 Jul 2003 01:33:13 +0200
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,28 +21,31 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Hello peoples,
 
-as you known I am trying add a full support for ATI Rage 3D MOBILITY to 
-Kernel. I am own a laptop with such chip and can test it. The main trouble is 
-that I have only "mach64 overview" and "register reference" from 1998. It  
-does not described MOBILITY. It says absolutely nothing about chips newer as 
-Mach64 VT. As I am a lucky boy, my laptop works very well with my changes on 
-all base resolutions with LCD and all(really all, 320x200 too) on CRT. 
-Unfortunately not all are lucky with my changes, but without specs I cannot 
-help their.
+When I start the system with YWRAP activated I have scrolling problems , 
+in fact when I make the screen scrolling for a while (for example during 
+the examination of a document with "less" or during the compilation of a 
+software) , on the screen starts appear colored lines on the screen and 
+these starts scrolling . When the screen is full of this lines these 
+disappear and the text is back , but after few scroll again these lines 
+appears. With 2.4.21-ac4 kernel the problem is more evident than the 
+2.4.21 "vanilla" .  If I reboot the system doesn't appears lines 
+anymore, but instead of the lines appears words of the precedent boot of 
+the system, seems like that the video memory have not been reset , and 
+that the FB takes parts of the Video data Junk remained after the reboot 
+and visualize these on the screen. Seems like an error in addressing the 
+video memory .
 
-Notice, i have subscribe myself by http://apps.ati.com/developers/devform1.asp 
-on 22 January 2003. I get nothing from they all this time.
+With 2.4.20 and precedent this doesn't happen .
 
-I hope anybody has access to latest Mach64 specs and can help me. I am need 
-specially info for PLL programming.
+Please help me :cry:
 
-Anyway, every hint is welcome.
-Alex Kern
+Bye
+
+marcello
 
 
 

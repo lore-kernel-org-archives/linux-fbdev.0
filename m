@@ -1,16 +1,16 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: 2.5 atyfb on Sparc question
-Date: Thu, 8 Aug 2002 11:19:46 -0700 (PDT)
+From: James Simmons <captain_delete@yahoo.com>
+Subject: Re: RFC: Optimizing putcs()
+Date: Thu, 8 Aug 2002 11:31:52 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.33.0208081118440.15229-100000@maxwell.earthlink.net>
-References: <20020808182142.93437.qmail@web13007.mail.yahoo.com>
+Message-ID: <20020808183152.47469.qmail@web13002.mail.yahoo.com>
+References: <1028657448.554.6.camel@daplas>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from harrier.mail.pas.earthlink.net ([207.217.120.12])
-	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17cryK-0006M3-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 08 Aug 2002 11:25:20 -0700
-In-Reply-To: <20020808182142.93437.qmail@web13007.mail.yahoo.com>
+Received: from web13002.mail.yahoo.com ([216.136.174.12])
+	by usw-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17cs4h-0006un-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 08 Aug 2002 11:31:55 -0700
+In-Reply-To: <1028657448.554.6.camel@daplas>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,25 +20,32 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jani Monoses <jani@iv.ro>
-Cc: bruce.holzrichter@monster.com, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Antonino Daplas <adaplas@pol.net>
+Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>, jsimmons@infradead.org
+
+> I took a crack at adding support for bpp24 for the
+> cfb_* drawing
+> functions.  I tried to keep the original code as
+> much as possible, so
+> the result may not be optimal.  My test shows though
+> that bpp24 should
+> be as fast as (maybe a tad slower than) bpp32.
+
+Thanks.
+ 
+> As for drawing the logo, will the source be
+> containing indices to the
+> palette?
+
+I believe so. I haven't thought much about it.
 
 
-> > > I push stuff. The next set of patches will break
-> > alot
-> > > of drivers but I need to do this to get people to
-> > port
-> > > there stuff over to the new api.
-> >
-> > Could you outline what the next set of patches will
-> > change?
-
-Oops. The next patch will remove get_fix and get_var. Also the internal
-fbdev code will begin using the var and fix feilds in struct fb_info.
-
-
+__________________________________________________
+Do You Yahoo!?
+HotJobs - Search Thousands of New Jobs
+http://www.hotjobs.com
 
 
 -------------------------------------------------------

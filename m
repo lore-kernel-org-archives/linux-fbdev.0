@@ -1,23 +1,19 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Fbdev and PM patch.
-Date: Sat, 13 Sep 2003 14:00:18 +0200
+From: Jon Smirl <jonsmirl@yahoo.com>
+Subject: new radeon code and acquire/release_console_sem()
+Date: Sat, 13 Sep 2003 17:23:59 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1063454417.674.11.camel@gaston>
-References: <Pine.LNX.4.44.0309121858550.5017-100000@phoenix.infradead.org>
+Message-ID: <20030914002359.33381.qmail@web14910.mail.yahoo.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19y95g-0004CN-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 13 Sep 2003 05:01:24 -0700
-Received: from pentafluge.infradead.org ([213.86.99.235])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.22)
-	id 19y95f-0004KD-Es
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 13 Sep 2003 05:01:23 -0700
-In-Reply-To: <Pine.LNX.4.44.0309121858550.5017-100000@phoenix.infradead.org>
+	id 19yKgK-0002YI-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 13 Sep 2003 17:24:00 -0700
+Received: from web14910.mail.yahoo.com ([216.136.225.62])
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.22)
+	id 19yKgJ-00024T-K4
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 13 Sep 2003 17:23:59 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -28,57 +24,21 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, kronos <kronos@kronoz.cjb.net>
+Cc: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Fri, 2003-09-12 at 20:08, James Simmons wrote:
-> Hi!
-> 
->     I looked at your PM patch and I have a few ideas. The first thing I 
-> did was create a dummy struct fb_ops instead of dummy functions for each 
-> function for fb_ops. Plus you only had dummy functions for the basic 
-> functions. So in the style of dummycon.c I created a dummy struct fb_ops.
->     I like to seperate out the client management code out of fbmem.c into 
-> a seperate file. Especially with the device handling stuff it is quite 
-> ugly looking. Here is what I suggest:
+I don't run fb console on my system so I don't have acquire_console_sem() and
+release_console_sem(). Shouldn't these have an #ifdef CONFIG_FRAMEBUFFER_CONSOLE?
 
-I kept the fb_ops on purpose. If you look at my implementation in
-radeonfb, you'll see for example that the check_var/set_par fully
-works during sleep, except that the HW isn't touched, but on wakeup,
-the mode that was set during sleep will be applied properly.
+=====
+Jon Smirl
+jonsmirl@yahoo.com
 
-If you put dummy fb_ops, you'll either let var be changed without
-control from the driver, or make any set_var fail, which is a policy
-decision I didn't want to take (but acceptable).
-
->     struct fb_client_ops {
-> 	struct module *owner;
-> 	void (*state_manager)(struct fb_info *info, void *data, u32 state);
->     }
-> 
-> The idea is instead of a bunch of functions we have one function for 
-> state management. In struct fb_info we keep track of the state flag to see
-> what the states are. We have something like this:
-> 
-> int
-> fb_change_state(struct fb_info *info, u32 state)
-> {
-> 	if (info->state & state)
-> 		return;
-> 
-> 	Your fb_client_call_##name code except it is now only one 
-> 	function.
-> }			
-> 
-> What do you think?
-
-Well... The mode change notification isn't a state per-se and would
-benefit from beeing a separate function. For the Power Management
-callbacks, I don't mind either way
-
-Ben.
-
-
+__________________________________
+Do you Yahoo!?
+Yahoo! SiteBuilder - Free, easy-to-use web site design software
+http://sitebuilder.yahoo.com
 
 
 -------------------------------------------------------

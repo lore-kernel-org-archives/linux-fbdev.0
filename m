@@ -1,21 +1,20 @@
-From: Michal 'hramrach' Suchanek <hramrach@centrum.cz>
-Subject: Re: Linux Framebuffer Driver
-Date: Sun, 20 Feb 2005 22:46:11 +0100
-Message-ID: <20050220214611.GM23069@uvt316-2.ruk.cuni.cz>
-References: <E1D2Q4W-000GqN-00.kirdevv-mail-ru@f26.mail.ru>
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: Problem: how to sequence reset of PCI hardware
+Date: Mon, 21 Feb 2005 02:24:07 -0500
+Message-ID: <9e47339105022023242e2fd9ce@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D2yya-0007pU-Me
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Feb 2005 13:50:52 -0800
-Received: from dec59.ruk.cuni.cz ([195.113.2.17])
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
-	id 1D2yyY-0003j9-VZ
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Feb 2005 13:50:52 -0800
-Content-Disposition: inline
-In-Reply-To: <E1D2Q4W-000GqN-00.kirdevv-mail-ru@f26.mail.ru>
+	id 1D37vN-0001DN-QS
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Feb 2005 23:24:09 -0800
+Received: from rproxy.gmail.com ([64.233.170.206])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1D37vN-0004Df-Dh
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Feb 2005 23:24:09 -0800
+Received: by rproxy.gmail.com with SMTP id z35so414734rne
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 20 Feb 2005 23:24:07 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,45 +25,47 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="utf-8"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: lkml <linux-kernel@vger.kernel.org>, fbdev <linux-fbdev-devel@lists.sourceforge.net>, Greg KH <greg@kroah.com>
 
-On Sat, Feb 19, 2005 at 11:34:40AM +0300, =D0=9A=D0=B8=D1=80=D0=B8=D0=BB=D0=
-=BB =D0=98=D0=B2=D0=B0=D0=BD=D0=BE=D0=B2  wrote:
-> Hello, my name is Kirill
-> I'am not a professional programmer (strongly speaking i am simply user)=
-,
-> but i try to write Linux framebuffer driver for my Cyberblade/i1 (Tride=
-nt)
-> videocard.
-> So, basic driver I wrote, but one problem occur: when switching to fram=
-ebuffer
-> console
-> information about columns and rows is not updated.
-> Although kernel reports: "Console: switching to colour framebuffer devi=
-ce
-> 100x37",
-> console as before have 80x25, because when line exceed 80 characters li=
-ne become
-> wrapped.
->=20
-> What's wrong?
->=20
-> I use kernel-2.4.22 on IA-32.
+Secondary video cards need to be reset before they will work. How can
+we get the kernel to do this? I can not come up with a good solution
+for triggering this from a device driver.
 
-There may be any kind of problem propagating the console resize to the
-terminal application in question. Does it go away if you log out and
-back in?
-ie I was hit by a bug in bash that eats the terminal resizes when bash
-is the first thing run in a terminal..
+One sequence I tried:
+modprobe driver
+driver registers sysfs class and triggers hotplug
+probe code fail because HW is not reset
+user space hotplug reset app runs
+when reset is finished poke a sysfs attribute
+in attribute handler reprobe the card
 
-HTH
+The sequence needs to be tolerant of the user space hotplug app failing
+It also has to handle a rmmod of the driver while the user space app is running
 
-Michal Suchanek
+An alternative is to put a emu86 execution module into the kernel.
+That will allow the reset to occur synchronously. The linuxbios people
+have one that is about 40-50K in size.
+
+Another solution would be to have the PCI subsystem track devices that
+have not been reset yet. modprobe of a driver would trigger a hotplug
+reset event and fail the modprobe. The user space reset app would tell
+the PCI subsystem when the hardware was successfully reset. After that
+the modprobe would be allow to procede like normal.
+
+I haven't been able to come up with a reliable way to call a user
+space reset program from a driver's probe function except with an
+in-kernel emu86. Is there another way? I'd also like to try an find a
+solution that doesn't need to modify the 73 existing framebuffer
+drivers.
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
 
 
 -------------------------------------------------------
 SF email is sponsored by - The IT Product Guide
 Read honest & candid reviews on hundreds of IT Products from real users.
 Discover which products truly live up to the hype. Start reading now.
-http://ads.osdn.com/?ad_id=3D6595&alloc_id=3D14396&op=3Dclick
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

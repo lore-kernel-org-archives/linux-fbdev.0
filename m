@@ -1,17 +1,32 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Get console sem on fbdev ioctls
-Date: Tue, 06 Jan 2004 11:25:12 +1100
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1073348711.761.165.camel@gaston>
-Reply-To: benh@kernel.crashing.org
+Date: Tue, 06 Jan 2004 11:32:43 +1100
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <1073349163.781.172.camel@gaston>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
+	id 1AdfAc-0006pS-PX
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 16:34:06 -0800
+Received: from pentafluge.infradead.org ([213.86.99.235])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.30)
+	id 1AdfAc-0006pe-0Z
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 16:34:06 -0800
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
-
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
 Along with my VT race fixes I sent earlier, this is a patch (that may
@@ -84,3 +99,13 @@ diff -urN linux-2.5/drivers/video/fbmem.c linuxppc-2.5-benh/drivers/video/fbmem.
  	default:
  		if (fb->fb_ioctl == NULL)
  			return -EINVAL;
+-- 
+Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+
+
+-------------------------------------------------------
+This SF.net email is sponsored by: IBM Linux Tutorials.
+Become an expert in LINUX or just sharpen your skills.  Sign up for IBM's
+Free Linux Tutorials.  Learn everything from the bash shell to sys admin.
+Click now! http://ads.osdn.com/?ad_id=1278&alloc_id=3371&op=click

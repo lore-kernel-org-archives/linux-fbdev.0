@@ -1,22 +1,22 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 7/11] radeonfb: Fix init/exit section usage
-Date: Thu, 13 Jan 2005 21:01:43 +0800
-Message-ID: <20050113214644.2FC861A018F@smtp-1.hotpop.com>
+Subject: [PATCH 6/11] atyfb: Fix module parameter descriptions
+Date: Thu, 13 Jan 2005 21:01:39 +0800
+Message-ID: <20050113214636.7E7B51A0165@smtp-1.hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CpCo1-00015f-3h
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 Jan 2005 13:47:01 -0800
+	id 1CpCo2-00015n-QH
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 Jan 2005 13:47:02 -0800
 Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CpCo0-0000Ff-Kx
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1CpCny-00006X-AF
 	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 Jan 2005 13:47:01 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id ECAFBCC4C97
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 13 Jan 2005 21:46:47 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id 41480CD1CA6
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 13 Jan 2005 21:46:45 +0000 (UTC)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -30,35 +30,35 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, "Randy.Dunlap" <rddunlap@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Magnus Damm <magnus.damm@gmail.com>
 
-  Fix 3 instances of calling exit section function from text or init:
-  Error: ./drivers/video/aty/radeon_base.o .text refers to 000029e5
-  R_386_PC32        .exit.text
-  Error: ./drivers/video/aty/radeon_base.o .text refers to 00002a60
-  R_386_PC32        .exit.text
-  Error: ./drivers/video/aty/radeon_base.o .init.text refers to 00000192
-  R_386_PC32        .exit.text
+  This patch syncs up the module parameter descriptions in aty128fb for module
+  parameters "mode_option" and "nomtrr". Without the patch bad parameter names
+  are used with MODULE_PARM_DESC().
 
-Signed-off-by: Randy Dunlap <rddunlap@osdl.org>
+Signed-off-by: Magnus Damm <damm@opensource.se>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- radeon_base.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+ aty128fb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff -Nru a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
---- a/drivers/video/aty/radeon_base.c	2005-01-12 06:10:17 +08:00
-+++ b/drivers/video/aty/radeon_base.c	2005-01-08 02:30:17 +08:00
-@@ -261,7 +261,7 @@
+diff -Nru a/drivers/video/aty/aty128fb.c b/drivers/video/aty/aty128fb.c
+--- a/drivers/video/aty/aty128fb.c	2005-01-12 06:10:17 +08:00
++++ b/drivers/video/aty/aty128fb.c	2005-01-09 01:11:50 +08:00
+@@ -2430,10 +2430,10 @@
+ MODULE_DESCRIPTION("FBDev driver for ATI Rage128 / Pro cards");
+ MODULE_LICENSE("GPL");
+ module_param(mode_option, charp, 0);
+-MODULE_PARM_DESC(mode, "Specify resolution as \"<xres>x<yres>[-<bpp>][@<refresh>]\" ");
++MODULE_PARM_DESC(mode_option, "Specify resolution as \"<xres>x<yres>[-<bpp>][@<refresh>]\" ");
+ #ifdef CONFIG_MTRR
+ module_param_named(nomtrr, mtrr, invbool, 0);
+-MODULE_PARM_DESC(mtrr, "bool: Disable MTRR support (0 or 1=disabled) (default=0)");
++MODULE_PARM_DESC(nomtrr, "bool: Disable MTRR support (0 or 1=disabled) (default=0)");
+ #endif
+ #endif
  
- #endif /* CONFIG_PPC_OF */
- 
--static void __devexit radeon_unmap_ROM(struct radeonfb_info *rinfo, struct pci_dev *dev)
-+static void radeon_unmap_ROM(struct radeonfb_info *rinfo, struct pci_dev *dev)
- {
- 	if (!rinfo->bios_seg)
- 		return;
 
 
 

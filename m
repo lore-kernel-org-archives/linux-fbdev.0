@@ -1,20 +1,20 @@
 From: Kronos <kronos@kronoz.cjb.net>
-Subject: [PATCH] sstfb: New framebuffer_alloc API and class_dev changes
-Date: Mon, 15 Sep 2003 22:47:09 +0200
+Subject: [PATCH] p9100: New framebuffer_alloc API and class_dev changes
+Date: Mon, 15 Sep 2003 22:47:42 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030915204709.GC23294@dreamland.darkstar.lan>
+Message-ID: <20030915204742.GE23294@dreamland.darkstar.lan>
 Reply-To: kronos@kronoz.cjb.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19z0GS-0000ov-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 15 Sep 2003 13:48:04 -0700
-Received: from mail-7.tiscali.it ([195.130.225.153])
+	id 19z0H1-0000r2-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 15 Sep 2003 13:48:39 -0700
+Received: from mail-3.tiscali.it ([195.130.225.149])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 19z0GR-00014R-Qz
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 15 Sep 2003 13:48:04 -0700
+	id 19z0H0-0001lo-27
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 15 Sep 2003 13:48:38 -0700
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
@@ -27,115 +27,163 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: gtoumi@laposte.net
+To: davem@redhat.com
 Cc: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>
 
 Hi,
-this patch converts driver/video/sstfb.c to framebuffer_alloc:
+this patch converts driver/video/p9100.c to framebuffer_alloc:
 
-======== drivers/video/sstfb.c 1.30 ========
-D 1.30 03/09/14 18:08:47+02:00 kronos@kronoz.cjb.net 34 33 20/22/1695
-P drivers/video/sstfb.c
+======== drivers/video/p9100.c 1.8 ========
+D 1.8 03/09/14 00:01:06+02:00 kronos@kronoz.cjb.net 9 8 35/29/348
+P drivers/video/p9100.c
 C switch to framebuffer_alloc
 ------------------------------------------------
 
-===== drivers/video/sstfb.c 1.29 vs 1.30 =====
---- 1.29/drivers/video/sstfb.c	Fri Sep  5 00:20:13 2003
-+++ 1.30/drivers/video/sstfb.c	Sun Sep 14 18:08:47 2003
-@@ -117,6 +117,8 @@
- 	ID_VOODOO2 = 1,
+===== drivers/video/p9100.c 1.7 vs 1.8 =====
+--- 1.7/drivers/video/p9100.c	Fri Aug 22 08:34:52 2003
++++ 1.8/drivers/video/p9100.c	Sun Sep 14 00:01:06 2003
+@@ -34,6 +34,7 @@
+ static int p9100_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
+ static int p9100_ioctl(struct inode *, struct file *, unsigned int,
+ 		       unsigned long, struct fb_info *);
++static void release_p9100fb(struct fb_info *info);
+ 
+ /*
+  *  Frame buffer operations
+@@ -138,6 +139,7 @@
+ 	unsigned long		fbsize;
+ 
+ 	struct sbus_dev		*sdev;
++	struct fb_info		*info;
+ 	struct list_head	list;
  };
  
-+static void release_sstfb(struct fb_info *info);
-+
- #define IS_VOODOO2(par) ((par)->type == ID_VOODOO2)
+@@ -269,64 +271,66 @@
  
- static struct sst_spec voodoo_spec[] __devinitdata = {
-@@ -1399,12 +1401,6 @@
- 	struct sst_spec *spec;
- 	int err;
+ static void p9100_init_one(struct sbus_dev *sdev)
+ {
+-	struct all_info *all;
++	struct fb_info *info;
++	struct p9100_par *par;
+ 	int linebytes;
  
--	struct all_info {
--		struct fb_info info;
--		struct sstfb_par par;
--		u32 pseudo_palette[16];
--	} *all;
--	
- 	/* Enable device in PCI config. */
- 	if ((err=pci_enable_device(pdev))) {
- 		eprintk("cannot enable device\n");
-@@ -1412,14 +1408,14 @@
+-	all = kmalloc(sizeof(*all), GFP_KERNEL);
+-	if (!all) {
++	info = framebuffer_alloc(sizeof(*par), NULL);
++	if (!info) {
+ 		printk(KERN_ERR "p9100: Cannot allocate memory.\n");
+ 		return;
+ 	}
+-	memset(all, 0, sizeof(*all));
++	info->release = &release_p9100fb;
++	par = info->par;
++	par->info = info;
+ 
+-	INIT_LIST_HEAD(&all->list);
++	INIT_LIST_HEAD(&par->list);
+ 
+-	spin_lock_init(&all->par.lock);
+-	all->par.sdev = sdev;
++	spin_lock_init(&par->lock);
++	par->sdev = sdev;
+ 
+ 	/* This is the framebuffer and the only resource apps can mmap.  */
+-	all->par.physbase = sdev->reg_addrs[2].phys_addr;
++	par->physbase = sdev->reg_addrs[2].phys_addr;
+ 
+ 	sbusfb_fill_var(&all->info.var, sdev->prom_node, 8);
+ 
+ 	linebytes = prom_getintdefault(sdev->prom_node, "linebytes",
+-				       all->info.var.xres);
+-	all->par.fbsize = PAGE_ALIGN(linebytes * all->info.var.yres);
++				       info->var.xres);
++	par->fbsize = PAGE_ALIGN(linebytes * info->var.yres);
+ 
+-	all->par.regs = (struct p9100_regs *)
++	par->regs = (struct p9100_regs *)
+ 		sbus_ioremap(&sdev->resource[0], 0,
+ 			     sizeof(struct p9100_regs), "p9100 regs");
+ 
+-	all->info.flags = FBINFO_FLAG_DEFAULT;
+-	all->info.fbops = &p9100_ops;
++	info->flags = FBINFO_FLAG_DEFAULT;
++	info->fbops = &p9100_ops;
+ #ifdef CONFIG_SPARC32
+-	all->info.screen_base = (char *)
++	info->screen_base = (char *)
+ 		prom_getintdefault(sdev->prom_node, "address", 0);
+ #endif
+-	if (!all->info.screen_base)
+-		all->info.screen_base = (char *)
++	if (!info->screen_base)
++		info->screen_base = (char *)
+ 			sbus_ioremap(&sdev->resource[2], 0,
+-				     all->par.fbsize, "p9100 ram");
+-	all->info.par = &all->par;
++				     par->fbsize, "p9100 ram");
+ 
+-	p9100_blank(0, &all->info);
++	p9100_blank(0, info);
+ 
+-	if (fb_alloc_cmap(&all->info.cmap, 256, 0)) {
++	if (fb_alloc_cmap(&info->cmap, 256, 0)) {
+ 		printk(KERN_ERR "p9100: Could not allocate color map.\n");
+ 		kfree(all);
+ 		return;
  	}
  
- 	/* Allocate the fb and par structures.  */
--	all = kmalloc(sizeof(*all), GFP_KERNEL);
--	if (!all)
-+	info = framebuffer_alloc(sizeof(struct sstfb_par) + 32 * 16,
-+			&pdev->dev);
-+	if (!info)
- 		return -ENOMEM;
--	memset(all, 0, sizeof(*all));
--	pci_set_drvdata(pdev, all);
--	
--	info = &all->info;
--	par  = info->par = &all->par;
-+	pci_set_drvdata(pdev, info);
-+
-+	info->release = &release_sstfb;
-+	par  = info->par;
- 	fix  = &info->fix;
- 	
- 	par->type = id->driver_data;
-@@ -1476,8 +1472,7 @@
+-	p9100_init_fix(&all->info, linebytes);
++	p9100_init_fix(info, linebytes);
  
- 	info->flags	= FBINFO_FLAG_DEFAULT;
- 	info->fbops	= &sstfb_ops;
--	info->pseudo_palette = &all->pseudo_palette;
--	info->dev	= &pdev->dev;
-+	info->pseudo_palette = (par + 1);
+-	if (register_framebuffer(&all->info) < 0) {
++	if (register_framebuffer(info) < 0) {
+ 		printk(KERN_ERR "p9100: Could not register framebuffer.\n");
+-		fb_dealloc_cmap(&all->info.cmap);
+-		kfree(all);
++		fb_dealloc_cmap(&info->cmap);
++		kfree(info);
+ 		return;
+ 	}
  
- 	fix->type	= FB_TYPE_PACKED_PIXELS;
- 	fix->visual	= FB_VISUAL_TRUECOLOR;
-@@ -1536,21 +1531,24 @@
- 	return -ENXIO; 	/* no voodoo detected */
+-	list_add(&all->list, &p9100_list);
++	list_add(&par->list, &p9100_list);
+ 
+ 	printk("p9100: %s at %lx:%lx\n",
+ 	       sdev->prom_name,
+@@ -347,16 +351,18 @@
+ 	return 0;
  }
  
-+static void release_sstfb(struct fb_info *info) {
-+	struct sstfb_par *par = info->par;
-+	
-+	iounmap(info->screen_base);
-+	iounmap((void*)par->mmio_vbase);
-+	release_mem_region(info->fix.smem_start, 0x400000);
-+	release_mem_region(info->fix.mmio_start, info->fix.mmio_len);
++static void release_p9100fb(struct fb_info *info) {
++	fb_dealloc_cmap(&info->cmap);
 +}
 +
- static void __devexit sstfb_remove(struct pci_dev *pdev)
+ void __exit p9100_exit(void)
  {
--	struct sstfb_par *par;
- 	struct fb_info *info;
+ 	struct list_head *pos, *tmp;
  
- 	info = pci_get_drvdata(pdev);
--	par = (struct sstfb_par *) info->par;
- 	
- 	sst_shutdown(info);
- 	unregister_framebuffer(info);
--	iounmap(info->screen_base);
--	iounmap((void*)par->mmio_vbase);
--	release_mem_region(info->fix.smem_start, 0x400000);
--	release_mem_region(info->fix.mmio_start, info->fix.mmio_len);
--	kfree(info);
-+	pci_set_drvdata(pdev, NULL);
+ 	list_for_each_safe(pos, tmp, &p9100_list) {
+-		struct all_info *all = list_entry(pos, typeof(*all), list);
++		struct p9100_par *par = list_entry(pos, typeof(*par), list);
+ 
+-		unregister_framebuffer(&all->info);
+-		fb_dealloc_cmap(&all->info.cmap);
+-		kfree(all);
++		unregister_framebuffer(par->info);
+ 	}
  }
  
- 
+
 
 Luca
 -- 
 Reply-To: kronos@kronoz.cjb.net
 Home: http://kronoz.cjb.net
-La vasca da bagno fu inventata nel 1850, il telefono nel 1875.
-Se fossi vissuto nel 1850, avrei potuto restare in vasca per 25 anni
-senza sentir squillare il telefono
+"I've seen things you people wouldn't believe...
+ Attack Ships on fire off the shores of Orion.
+ I've watched C-beams glitter in the dark off of Tanhauser Gate.
+ All those moments will be lost in time...like tears, in rain.
+ Time to die." -- Roy Batty (played by Rutger Hauer)
 
 
 -------------------------------------------------------

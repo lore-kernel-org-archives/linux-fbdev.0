@@ -1,20 +1,20 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Sane behavior of fbset
-Date: Fri, 18 Jun 2004 10:24:48 +0200 (MEST)
+Subject: Re: about fb_mmap
+Date: Fri, 18 Jun 2004 10:28:16 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0406181024180.11779@waterleaf.sonytel.be>
-References: <200406180945.12444.adaplas@hotpop.com>
+Message-ID: <Pine.GSO.4.58.0406181027140.11779@waterleaf.sonytel.be>
+References: <PMEKJGJGKKPHMBEGKNMIEEIJCCAA.xuhaoz@neonetech.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BbEg6-0005nl-Tx
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 01:24:50 -0700
+	id 1BbEjU-0006Fj-ID
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 01:28:20 -0700
 Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BbEg6-0002yP-8Z
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 01:24:50 -0700
-In-Reply-To: <200406180945.12444.adaplas@hotpop.com>
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BbEjT-0006Up-WC
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 01:28:20 -0700
+In-Reply-To: <PMEKJGJGKKPHMBEGKNMIEEIJCCAA.xuhaoz@neonetech.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,36 +26,21 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: xuhaoz <xuhaoz@neonetech.com>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Fri, 18 Jun 2004, Antonino A. Daplas wrote:
-> Currently, using fbset either corrupts the display, or at worst, hangs the GPU.  I consider
-> this a critical bug.  I don't want to discuss the pros/cons of using fbset vs stty to
-> change the console size, but we need to make sure that using fbset (or any utility
-> that utilizes the fb_set_var ioctl) does not produce undefined behavior.  There are
-> at least 3 possibilities:
->
-> 1.  Revert to 2.4 behavior.  This is easy to add since fbdev already has a notifier
-> support. (I already have working code for this). Of course, stty will still work.
->
-> 2.  Make the set_var ioctl return immediately if the vc_mode of the current display is
-> KD_TEXT. Basically, fbset becomes an informational utility only. I don't know the
-> repercussions of this with userland fb applications though.
->
-> 3.  Modify fbset (and other similar utilities, if there are any) so it also issues an
-> 'stty-like' call after a 'set_var' call.
->
-> Note: As mentioned by many people before, it's almost impossible to completely
-> preserve per-console mode info because of the lack of a per-display var.  So even
-> if we agree to implement #1,  it cannot completely match 2.4 behavior. Also, the lack
-> of per-display var means that drivers must be able to handle mode changes without
-> any help.  James' fb_find_mode support in fbcon_resize does partly alleviate this
-> limitation.
->
-> Comments?
+On Fri, 18 Jun 2004, xuhaoz wrote:
+> 	I have a question about fb_mmap in uclinux2.4.
 
-I vote for 1, and re-adding per-display vars.
+It (should) behave (almost) the same for uClinux and real Linux.
+
+> 	what is the usage of fb_mmap(struct file *file, struct vm_area_struct
+> *vma)
+> 	my kernel is arm7 no mmu , does the fb_mmap function do some help for my
+> framebuffer driver if i use fb_mmap function?
+
+It allows to mmap() the frame buffer memory (and optionally the graphics chip
+registers) to a user space application, e.g. an X server.
 
 Gr{oetje,eeting}s,
 

@@ -1,27 +1,49 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Tridentfb updates?
-Date: 25 Nov 2002 00:51:58 +0000
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1038185518.28491.24.camel@irongate.swansea.linux.org.uk>
-References: <Pine.LNX.4.44.0211221146240.30881-100000@blessed.joshisanerd.com>
+From: Romain Dolbeau <dolbeau@irisa.fr>
+Subject: Re: [PATCH] save_flags/cli in drivers/video/pm3fb.c
+Date: Mon, 25 Nov 2002 11:01:15 +0100
+Sender: kernel-janitor-discuss-admin@lists.sourceforge.net
+Message-ID: <3DE1F4EB.2050207@irisa.fr>
+References: <Pine.LNX.4.44.0211232001050.15858-200000@top.qwarx.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44.0211221146240.30881-100000@blessed.joshisanerd.com>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-To: Josh Myer <jbm@joshisanerd.com>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <kernel-janitor-discuss-admin@lists.sourceforge.net>
+Errors-To: kernel-janitor-discuss-admin@lists.sourceforge.net
+List-Help: <mailto:kernel-janitor-discuss-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:kernel-janitor-discuss@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/kernel-janitor-discuss>,
+	<mailto:kernel-janitor-discuss-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/kernel-janitor-discuss>,
+	<mailto:kernel-janitor-discuss-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=kernel-janitor-discuss>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Chris Wilson <chris@qwirx.com>
+Cc: Linux Kernel Janitors <kernel-janitor-discuss@lists.sourceforge.net>, Trivial Patch Monkey <trivial@rustcorp.com.au>, linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, 2002-11-22 at 17:49, Josh Myer wrote:
-> Hi,
-> 
-> I've got an EPIA board, with a trident CyberBlade chipset. Does anyone
-> have doco on this chipset? The random Xfree stuff available from VIA is
-> less-than-enlightening (I'm not familiar with X internals).
-> 
-> I'm basically just interested in getting FB working for NTSC output.
+Chris Wilson wrote:
 
-The chipset docs are freely downloadable from VIA (including the 3d
-info). The TV on the epia is a seperate chip. I use the vesa mode switch
-to program that
+> Since I can't compile this driver on my architecture, I'm afraid I haven't 
+> been able to test this patch at all.
+
+This patch is relevant for 2.5.x only, and pm3fb can't compile
+and work on 2.5.x. The FB API was changed, and FB drivers
+need to be rewritten. As I never found a 2.5.x release that
+would compile on my box (no x86 here), I didn't port pm3fb.
+
+BTW, pm3fb should not be integrated in 2.5.x, it was submitted
+only to 2.4.x and somehow found its way in 2.5.x. I don't
+maintain pm3fb on 2.5.x, never has, and likely never will.
+
+The proper fix for pm3fb in 2.5 is to delete it, at least
+until someone else rewrite it or until 2.5.x can actually
+compile and work on PowerPC and I can rewrite it myself.
+
+-- 
+romain
+
+
+
+-------------------------------------------------------
+This sf.net email is sponsored by:ThinkGeek
+Welcome to geek heaven.
+http://thinkgeek.com/sf

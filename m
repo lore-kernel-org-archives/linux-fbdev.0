@@ -1,26 +1,24 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [PATCH 3/3][FBDEV]: Set capabilities flag for vesafb and vga16fb
-Date: Tue, 6 Jul 2004 18:30:37 +0800
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] radeonfb: remove reg_lock nonsense
+Date: Tue, 06 Jul 2004 07:08:47 -0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200407061830.37554.adaplas@hotpop.com>
-References: <200407060634.43963.adaplas@hotpop.com> <20040706053545.GA2375@havoc.gtf.org>
-Reply-To: adaplas@pol.net
+Message-ID: <1089115727.1899.27.camel@gaston>
+References: <200407051043.i65AhCG13509@mail.osdl.org>
+	 <Pine.LNX.4.58.0407051028250.1764@ppc970.osdl.org>
+	 <20040706081037.GA9036@havoc.gtf.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BhnDK-000890-RV
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jul 2004 03:30:14 -0700
-Received: from twix.hotpop.com ([38.113.3.71])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1BhnDK-0000xV-Fp
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jul 2004 03:30:14 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by twix.hotpop.com (Postfix) with SMTP id DBEDBFE4079
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue,  6 Jul 2004 10:10:02 +0000 (UTC)
-In-Reply-To: <20040706053545.GA2375@havoc.gtf.org>
-Content-Disposition: inline
+	id 1BholM-0004uR-Vc
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jul 2004 05:09:28 -0700
+Received: from gate.crashing.org ([63.228.1.57])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.34)
+	id 1BholM-0001oO-Ih
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jul 2004 05:09:28 -0700
+In-Reply-To: <20040706081037.GA9036@havoc.gtf.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,31 +29,26 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: David Eger <eger@havoc.gtf.org>, adaplas@pol.net
-Cc: Andrew Morton <akpm@osdl.org>, jsimmons@pentafluge.infradead.org, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: David Eger <eger@havoc.gtf.org>
+Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tuesday 06 July 2004 13:35, David Eger wrote:
-> Thanks for getting these; I've been lazy and not gotten to them.
->
 
-My intent was to demonstrate the PAN_REDRAW patch, and 
-FBINFO_HWACCEL_YPAN must be set for that :-) And I chose
-vesafb and vga16fb since they're the most commonly used drivers
-in the x86 world.
+> I agree, the patch is horrid.  In fact, now that I really look at it,
+> it seems that the spinlock is totally bogus.  This patch removes it.
+> Details below.
+> 
+> BenH: thoughts, objections?
 
-> I do want FBINFO_FLAG_DEFAULT to go away though... it's now
+The lock is meant to keep writes to the PLL index register followed
+with a read/write of the PLL data register together. It is necessay
+for OUTPLL/INPLL as long as radeonfb can be re-entered.
 
-Hmm, okay, I did not know that.
+I recently fixed a whole bunch of races at the VT & fbdev level that
+would cause such re-entering, but we still, I think, have a potential
+issue with the cursor code, maybe the blanking code, and with the
+timer I setup for the LVDS updates.
 
-> FBINFO_DEFAULT.  I also don't see anything in vga16fb that precludes
-> FBINFO_HWACCEL_XPAN, though I don't see anyone who uses that flag,
-> either.  *shrug*
-
-Well, fbcon does not use x-panning at all, so, yes, it's a useless flag, not
-just for vga16fb but for all drivrers.  Userspace uses x-panning though, but 
-they check xpanstep instead.
-
-Tony
+Ben.
 
 
 

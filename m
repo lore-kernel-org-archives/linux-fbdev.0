@@ -1,22 +1,22 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Fw: [Bugme-new] [Bug 3778] New: neofb: screen corruption
-Date: Fri, 19 Nov 2004 16:08:27 -0800
-Message-ID: <20041119160827.64201d6f.akpm@osdl.org>
+From: Guido Guenther <agx@sigxcpu.org>
+Subject: Re: rivafb: finally enable NV30 based pbooks/cleanup probe errors
+Date: Sat, 20 Nov 2004 01:42:11 +0100
+Message-ID: <20041120004210.GA5015@bogon.ms20.nix>
+References: <20041118164946.GA3763@bogon.ms20.nix> <200411190719.24961.adaplas@hotpop.com> <20041119080951.GA6409@bogon.ms20.nix> <200411190920.44609.andrew@walrond.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CVIje-0004vz-Ep
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Nov 2004 16:04:14 -0800
-Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CVIjd-0006Yn-E1
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Nov 2004 16:04:14 -0800
-Received: from akpm.pao.digeo.com (build.pdx.osdl.net [172.20.1.2])
-	by mail.osdl.org (8.11.6/8.11.6) with SMTP id iAK04C914683
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 19 Nov 2004 16:04:12 -0800
+	id 1CVJMa-00007f-Fw
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Nov 2004 16:44:28 -0800
+Received: from honk1.physik.uni-konstanz.de ([134.34.140.224])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1CVJMZ-0004Vn-P7
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Nov 2004 16:44:28 -0800
+Content-Disposition: inline
+In-Reply-To: <200411190920.44609.andrew@walrond.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,47 +28,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: adaplas@pol.net, Wolfram Quester <wolfi@mittelerde.physik.uni-konstanz.de>
 
-
-
-Begin forwarded message:
-
-Date: Fri, 19 Nov 2004 15:36:37 -0800
-From: bugme-daemon@osdl.org
-To: bugme-new@lists.osdl.org
-Subject: [Bugme-new] [Bug 3778] New: neofb: screen corruption
-
-
-http://bugme.osdl.org/show_bug.cgi?id=3778
-
-           Summary: neofb: screen corruption
-    Kernel Version: 2.6.10-rc2
-            Status: NEW
-          Severity: blocking
-             Owner: aridtech@gmail.com
-         Submitter: aridtech@gmail.com
-
-
-Distribution: Gentoo
-Hardware Environment: IBM ThinkPad 570
-Neomagic Corporation NM2200 [MagicGraph256AV] (rev 20)
-440BX Motherboard
-Software Environment:
-It happens during kernel loading
-
-Problem Description: It happens when kernal begin to load. All characters on the
-screen are unreadable and contsist of lines and pixels. i can't attach dmesg
-because i can't see what i type when this bug occurs.
-As i discovered this bug was born after convertion MODULE_PARM to module_param
-in neofb module because if copy unconverted neofb from 2.6.10-rc1 to rc2 and
-compile it everything works ok.
-
-Steps to reproduce:
-Recompile kernel with neofb.
-
-------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
+On Fri, Nov 19, 2004 at 09:20:44AM +0000, Andrew Walrond wrote:
+> On Friday 19 Nov 2004 08:09, Guido Guenther wrote:
+> >
+> > Hmmm...shouldn't we delay this past 2.6.10? People with rivafb compiled
+> > into the kernel but a - until now undetected - card,  might get bitten
+> > otherwise.
+> >  -- Guido
+> >
+> 
+> Why would 2.6.11 be a better time than 2.6.10 for this change? People tend to 
+> expect a few problems whenever they upgrade a kernel.
+Well, Linus asked for "fixes only" IIRC, risking to break things for
+some users without good reason doesn't fit in well into this.
+ -- Guido
 
 
 -------------------------------------------------------

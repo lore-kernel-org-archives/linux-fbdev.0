@@ -1,78 +1,71 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: Re: [PATCH 7/8] fbdev: atyfb_base.c requires atyfb_cursor()
-Date: Tue, 2 Nov 2004 15:58:43 +0200
-Message-ID: <20041102135843.GA13761@sci.fi>
-References: <200411021946.26862.adaplas@hotpop.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+Subject: Re: [Linux-fbdev-devel] Help re Frame Buffer/Console Problems
+Date: Tue, 2 Nov 2004 14:26:31 +0000 (GMT)
+Message-ID: <Pine.LNX.4.10.10411021416590.4390-100000@mtfhpc.demon.co.uk>
+References: <200411020746.27871.adaplas@hotpop.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1COzBP-0002xv-Jz
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Nov 2004 05:58:47 -0800
-Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1COzBP-0004dF-4Q
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Nov 2004 05:58:47 -0800
-Content-Disposition: inline
-In-Reply-To: <200411021946.26862.adaplas@hotpop.com>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Andrew Morton <akpm@osdl.org>, Olaf Hering <olh@suse.de>
+Return-path: <ultralinux-owner@vger.kernel.org>
+In-Reply-To: <200411020746.27871.adaplas@hotpop.com>
+Sender: ultralinux-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net, jsimmons@infradead.org, geert@linux-m68k.org, sparclinux@vger.kernel.org, ultralinux@vger.kernel.org, linux-kernel@vger.kernel.org, wli@holomorphy.com
 
-On Tue, Nov 02, 2004 at 07:46:26PM +0800, Antonino A. Daplas wrote:
-> atyfb_base.c requires atyfb_cursor, but it is only available for linkin=
-g
-> if CONFIG_FB_ATY_CT=3Dy.
-> This patch moves the .o file to the CONFIG_FB_ATY rule.
+Hi all,
 
-Here's a better fix. It was a part of my swcursor patch which was=20
-partially included. Looks like Alex accidentally dropped this part.
+I have already hard wired the fg and bg colours. I have got to the point 
+where I am checking the cfbimgblt code where it converts the mono bit font
+image data to the 8bpp pseudo colour screen image data. It is looking
+like there may be a problem with sign extension at this level as the
+pixel value being used apears to be 255.
 
+I have changed a char *pt to a u8 *pt to see if this helps.
 
-Fix atyfb cursor problems:
-- oops with noaccel option
-- CONFIG_FB_ATY_CT dependency problem
+Regards
+	Mark Fortescue.
 
-Signed-off-by: Ville Syrjala <syrjala@sci.fi>
----
+On Tue, 2 Nov 2004, Antonino A. Daplas wrote:
 
- atyfb_base.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+> On Tuesday 02 November 2004 01:32, Mark Fortescue wrote:
+> > Hi all,
+> >
+> > Thanks for the info Antonino. I see you spotted my typing error. Yes it is
+> > the 2.6.10-rc1-bk6 kernel. The oter error is the 2.2.8.1. It should be
+> > 2.6.8.1.
+> >
+> > The cgthree driver does not currently set up the all->info.var.red,
+> > all->info.var.green or all->info.var.blue structures. Putting a value of 8
+> > in the length field of these structures (correct for the cgthree) does get
+> > me my logo back but I am still getting black on black text. It makes it
+> > very difficult to read. It is begining to look like there is something
+> > werid going on with the colour pallet stuf for PSEUDO_COLOUR.
+> >
+> 
+> I doubt that the problem is at the driver layer since you were able to
+> see the logo. It's probably higher up.
+> 
+> Try this mod, hardwire the foreground color to 0x07.
+> 
+> Edit drivers/video/console/bitblit.c:bit_putcs() and change this line:
+> 
+> image.fg_color = fg;
+> image.bg_color = bg;
+> 
+> to
+> 
+> image.fg_color = 0x07070707;
+> image.bg_color = 0x0;
+> 
+> You can also try the reverse:
+> 
+> image.fg_color = 0x0;
+> image.bg_color = 0x07070707
+> 
+> If you get visible text, the problem is either in fbcon.c or vt.c.
+> 
+> Tony
+> 
+> 
 
-diff -Nur a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base=
-.c
---- a/drivers/video/aty/atyfb_base.c	2004-11-02 15:20:23.199495000 +0200
-+++ b/drivers/video/aty/atyfb_base.c	2004-11-02 15:22:20.979495000 +0200
-@@ -292,7 +292,7 @@
- 	.fb_fillrect	=3D atyfb_fillrect,
- 	.fb_copyarea	=3D atyfb_copyarea,
- 	.fb_imageblit	=3D atyfb_imageblit,
--	.fb_cursor	=3D atyfb_cursor,
-+	.fb_cursor	=3D soft_cursor,
- #ifdef __sparc__
- 	.fb_mmap	=3D atyfb_mmap,
- #endif
-
---=20
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
-
-
--------------------------------------------------------
-This SF.Net email is sponsored by:
-Sybase ASE Linux Express Edition - download now for FREE
-LinuxWorld Reader's Choice Award Winner for best database on Linux.
-http://ads.osdn.com/?ad_id=5588&alloc_id=12065&op=click

@@ -1,21 +1,22 @@
-From: Monchi Abbad <kernel@axion.demon.nl>
-Subject: High resolution console gets garbled when X running at higher resolution then the console.
-Date: Fri, 17 Oct 2003 21:39:34 +0200
+From: Dave Jones <davej@redhat.com>
+Subject: Re: Re: FBDEV 2.6.0-test7 updates.
+Date: Fri, 17 Oct 2003 20:50:09 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20031017193934.GA1921@axion.demon.nl>
+Message-ID: <20031017195008.GA11186@redhat.com>
+References: <Pine.LNX.4.44.0310171751200.966-100000@phoenix.infradead.org> <20031017193447.41865.qmail@web14911.mail.yahoo.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1AAaVm-00009U-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 17 Oct 2003 12:43:46 -0700
-Received: from axion.demon.nl ([195.173.231.39] ident=0)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.22)
-	id 1AAaUl-00082z-Ta
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 17 Oct 2003 12:42:44 -0700
+	id 1AAadx-0000Va-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 17 Oct 2003 12:52:15 -0700
+Received: from mx1.redhat.com ([66.187.233.31])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
+	id 1AAad4-0000NY-70
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 17 Oct 2003 12:51:18 -0700
 Content-Disposition: inline
+In-Reply-To: <20031017193447.41865.qmail@web14911.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,33 +28,26 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: vandrove@vc.cvut.cz
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: James Simmons <jsimmons@infradead.org>, Otto Solares <solca@guug.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, "Carlo E. Prelz" <fluido@fluido.as>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
 
-Distribution: Slackware 9.1
-Hardware Environment: Matrox Millenium II AMD Athlon 1.1 ghz 512MB ram
+On Fri, Oct 17, 2003 at 12:34:47PM -0700, Jon Smirl wrote:
+ > The people writing the AGP driver have added their ID's in the wrong format.
+ > ATI wants the IDs in the two letter form, not family/chip.  The fbdev patch has
+ > the ID's in correct form. The AGP driver should be the one that gets changed.
 
-Software Environment: kernel fbdev console + XFree86 4.3
+The ATI AGPGART driver _always_ used the format it currently does.
+Since day 1, when it was written _by ATI engineers_
+Your "ATI wants the IDs in two letter form" differs depending on which
+ATI engineer you talk to it seems.
 
-kernel proc version:
-Linux version 2.6.0-test7 (root@axion) (gcc version 3.2.3) #1 Thu Oct 9 11:16:09 CEST 2003
+Personally, as agpgart maintainer, I couldn't care less what the defines
+end up being, as long as it still compiles afterwards.
 
-Problem Description: High resolution console gets garbled when X running at
-higher resolution then the console
+		Dave
 
-Steps to reproduce:
-Compile kernel with Matroxfb and use video option 'matroxfb:vesa:0x193' when
-booting.
-Then start an X session, with mga driver in stead of matroxfb driver, make sure the
-X-session is running at a higher resolution then the console, and switch from
-the X-session to a console.
-Now run ls or simply clear screen.
-
-To go back to a normal console simple run X with the same resolution as the
-console. ( using the matroxfb driver ).
-
-Monchi.
---
+-- 
+ Dave Jones     http://www.codemonkey.org.uk
 
 
 -------------------------------------------------------

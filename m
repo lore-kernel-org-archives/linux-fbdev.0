@@ -1,23 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: Re: [PATCH][RFC] Add support for Epson S1D13806 FB
-Date: Tue, 15 Mar 2005 18:26:42 +0800
-Message-ID: <200503151826.42957.adaplas@hotpop.com>
-References: <20050314130014.55A073658E8@mail.esiee.fr> <200503142306.00236.adaplas@hotpop.com> <20050315071735.GA5037@linux-sh.org>
+Subject: Re: [Fwd: AtyFB in 2.6.10, still not perfect]
+Date: Tue, 15 Mar 2005 18:26:46 +0800
+Message-ID: <200503151826.46073.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DB9GO-0004aD-IQ
+	id 1DB9GO-0004aC-FT
 	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Mar 2005 02:27:00 -0800
 Received: from smtp-out.hotpop.com ([38.113.3.61])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1DB9GO-0007Hm-0M
+	id 1DB9GM-0007IH-PH
 	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Mar 2005 02:27:00 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id E2EBFFBBCD0
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 15 Mar 2005 10:26:39 +0000 (UTC)
-In-Reply-To: <20050315071735.GA5037@linux-sh.org>
+	by smtp-out.hotpop.com (Postfix) with SMTP id 4C602FB23A2
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 15 Mar 2005 10:26:44 +0000 (UTC)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -30,98 +28,157 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Paul Mundt <lethal@linux-sh.org>, adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Luigi Gangitano <luigi@debian.org>, adaplas@hotpop.com
+Cc: Alexander Kern <alex.kern@gmx.de>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tuesday 15 March 2005 15:17, Paul Mundt wrote:
-> On Mon, Mar 14, 2005 at 11:06:00PM +0800, Antonino A. Daplas wrote:
-> > In the case of hitfb, fillrect and copyarea are both accelerated.  So the
-> > proper flags would be:
-> >
-> > FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN | FBINFO_HWACCEL_COPYAREA |
-> > FBINFO_HWACCEL_FILLRECT.
->
-> Should this not be implied by having something other then the cfb_
-> routines for these?
 
-Yes.
+--- Luigi Gangitano <luigi@debian.org> wrote:
+> Hi,
+> David S. Miller told me to forward this information
+> to you. I'm using
 
-> On the other hand, will this affect performance
-> negatively if these flags remain and we end up wrapping to the cfb_
-> routines in certain cases?
+I don't have any hardware for this driver, and never really contributed
+anything to its development, except for a few patches that are quite
+obvious.
 
-Yes, if cfb_copyarea is used and FBINFO_HWACCEL_COPYAREA is set,  fbcon
-will use SCROLL_MOVE. And SCROLL_MOVE is magnitudes slower than
-SCROLL_REDRAW especially for unaccelerated PCI/AGP cards.
+I'll CC the linux-fbdev list as well as Alex Kern.
 
->
-> If we consider the case of FBINFO_HWACCEL_COPYAREA:
->
->         if ((cap & FBINFO_HWACCEL_COPYAREA) &&
->             !(cap & FBINFO_HWACCEL_DISABLED))
->                 p->scrollmode = SCROLL_MOVE;
->         else /* default to something safe */
->                 p->scrollmode = SCROLL_REDRAW;
->
->
-> This doesn't seem like it will work out well if we end up having
-> something like (using neofb as an example):
->
-> static void
-> neofb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
-> {
->         switch (info->fix.accel) {
->                 case FB_ACCEL_NEOMAGIC_NM2200:
->                 case FB_ACCEL_NEOMAGIC_NM2230:
->                 case FB_ACCEL_NEOMAGIC_NM2360:
->                 case FB_ACCEL_NEOMAGIC_NM2380:
->                         neo2200_copyarea(info, area);
->                         break;
->                 default:
->                         cfb_copyarea(info, area);
->                         break;
->         }
-> }
->
-> The behaviour in this case will be to use SCROLL_MOVE with regards to
-> cfb_copyarea() instead of SCROLL_REDRAW as it would normally. If we trust
-> the comment, then this seems unsafe or broken.
+In the meantime, can you try the ff:
 
-Yes.
+1. enable/disable CONFIG_FB_ATY_XL_INIT in your kernel
+config and see if that makes a difference.
 
->
-> In this case it would seem to be more sensible to fix neo_alloc_fb_info()
-> to only set these flags for those devices where an optimization exists.
-> In the case of where using the optimized method depends on a fixed bit
-> depth, this issue becomes a bit more problematic.
+2. Try using fbset to adjust the display settings, or pick a new
+mode.  Remember to set csync to high.
 
-Yes, the hwaccel flags should be fixed for neofb.  Also drivers can always
-reset these flags during the set_par() part, if for example accel is only
-available at depth 8, 16, 24,  but not 32 (i810fb).
+3.  Does xfree86 manifest the same problem if atyfb is off?
 
-Fortunately, SCROLL_REDRAW  is an acceptable default, accelerated or not.
-It's not very fast, but is not that slow either. It's just that setting the
-wrong flags can lead to significant performance loss, and not setting any
-flags at all may underutilize the driver's capability.
-
-So driver maintainers may need to try out which flags work best for them.
-This is the algo used to choose the scrolling mode (in fbcon.c):
-
-	if (good_wrap || good_pan) {
-		if (reading_fast || fast_copyarea)
-			p->scrollmode = good_wrap ? SCROLL_WRAP_MOVE : SCROLL_PAN_MOVE;
-		else
-			p->scrollmode = good_wrap ? SCROLL_REDRAW :
-				SCROLL_PAN_REDRAW;
-	} else {
-		if (reading_fast || (fast_copyarea && !fast_imageblit))
-			p->scrollmode = SCROLL_MOVE;
-		else
-			p->scrollmode = SCROLL_REDRAW;
-	}
-
+4.  Can you post the dmesg, config and fbset -i of both the
+working and non-working kernel?
 
 Tony
+> Debian/sparc on a SunBlade 100. AtyFB worked fine
+> with 2.6.8 and broke
+> (as known) with 2.6.10. Latest 2.6.10 source in
+> debian adds the fix that
+> was integrated in 2.6.11, from
+> 
+>  
+> http://lists.debian.org/debian-sparc/2005/02/msg00063.html
+> 
+> atyfb works now with 2.6.10 but the output is
+> garbled.
+> 
+> Please let me know if I can help with more
+> informations.
+> 
+> Regards,
+> 
+> L
+> 
+> 
+> ------- Messaggio inoltrato -------
+> > Da: Luigi Gangitano <luigi@debian.org>
+> > A: debian-sparc@lists.debian.org
+> > Oggetto: AtyFB in 2.6.10, still not perfect
+> > Data: Mon, 14 Mar 2005 23:50:02 +0100
+> > Hi all,
+> > I've just upgraded to the latest
+> kernel-source-2.6.10 and recompiled it.
+> > AtyFB on my SB100 works now (sort of), but the
+> console misses the first
+> > column on the left and some random pixels are
+> corrupted. Under XFree86
+> > I've got the same corruption of randome areas of
+> the screen (I'll try to
+> > get some screenshot if this is of help).
+> > 
+> > This is the relevant output of kernel (really I
+> still don't know how to
+> > interpret it... :-)):
+> > 
+> > atyfb: 3D RAGE XL (Mach64 GR, PCI-33MHz) [0x4752
+> rev 0x27]
+> > atyfb: 8M SDRAM (1:1), 29.498928 MHz XTAL, 230 MHz
+> PLL, 83 Mhz MCLK, 63
+> > MHz XCLK
+> > atyfb: setting up CRTC
+> > atyfb: set primary CRT to 1152x900 NN composite P
+> > atyfb: CRTC_H_TOTAL_DISP: 8f00be
+> > atyfb: CRTC_H_SYNC_STRT_WID: 300296
+> > atyfb: CRTC_V_TOTAL_DISP: 38303a8
+> > atyfb: CRTC_V_SYNC_STRT_WID: 240385
+> > atyfb: CRTC_OFF_PITCH: 24000000
+> > atyfb: CRTC_VLINE_CRNT_VLINE: 0
+> > atyfb: CRTC_GEN_CNTL: b000210
+> > atyfb: atyfb_set_par
+> > atyfb:  Set Visible Mode to 1152x900-8
+> > atyfb:  Virtual resolution 1152x7246,
+> pixclock_in_ps 10644 (calculated
+> > 10644)
+> > atyfb:  Dot clock:           93 MHz
+> > atyfb:  Horizontal sync:     61 kHz
+> > atyfb:  Vertical refresh:    65 Hz
+> > atyfb:  x  style: 93.10108 1152 1210 1338 1528  
+> 900 902 906 937
+> > atyfb:  fb style: 10644  190 1152 58 128 31 900 2
+> 4
+> > debug atyfb: Mach64 non-shadow register values:
+> > debug atyfb: 0x2000:  008F00BE 00300296 038303A8
+> 00240385
+> > debug atyfb: 0x2010:  03880000 24000000 08000001
+> 0B002210
+> > debug atyfb: 0x2020:  003A0556 01200522 00000000
+> 00000000
+> > debug atyfb: 0x2030:  00000000 00110202 00000000
+> 0000C001
+> > debug atyfb: 0x2040:  00000000 00000000 00000000
+> 00000000
+> > debug atyfb: 0x2050:  00000000 00000000 00000000
+> 00000000
+> > debug atyfb: 0x2060:  36BB3121 24FBA121 00000000
+> 00000000
+> > debug atyfb: 0x2070:  00000000 00000000 01003300
+> 00050000
+> > debug atyfb: 0x2080:  00000000 00000000 00000000
+> 00000000
+> > debug atyfb: 0x2090:  00803000 00000000 00000100
+> 00000000
+> > debug atyfb: 0x20A0:  7B23A040 00000101 007F8091
+> E5000C81
+> > debug atyfb: 0x20B0:  10151A3B 00010000 00010000
+> 00000000
+> > debug atyfb: 0x20C0:  00FF0000 86010182 00000000
+> 00000000
+> > debug atyfb: 0x20D0:  00000100 00000008 00000000
+> 000000C2
+> > debug atyfb: 0x20E0:  27004752 00400014 00000000
+> 00000000
+> > debug atyfb: 0x20F0:  00000000 0000B14D 037FFCF8
+> 00000000
+> > 
+> > debug atyfb: Mach64 PLL register values:
+> > debug atyfb: 0x00:  ADD541E4 8A0301CF 8E9E6501
+> 801B0000
+> > debug atyfb: 0x10:  06CF4000 10B6AC10 408024FD
+> 00000002
+> > debug atyfb: 0x20:  06AC06AC 1424FD00 00255500
+> 00000000
+> > debug atyfb: 0x30:  00000000 00000000 00000000
+> 00000000
+> > 
+> > Console: switching to colour frame buffer device
+> 144x56
+> > atyfb: fb0: ATY Mach64 frame buffer device on PCI
+> > 
+> > Regards,
+> > 
+> -- 
+>  Luigi Gangitano -- <luigi@debian.org> --
+> <gangitano@lugroma3.org>
+>  GPG: 1024D/924C0C26: 12F8 9C03 89D3 DB4A 9972  C24A
+> F19B A618 924C 0C26
+> 
 
 
 

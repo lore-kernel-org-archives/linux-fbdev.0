@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [PATCH 2/7] fbdev: Make fb_find_mode() return failure if modular
-Date: Fri, 18 Feb 2005 07:38:31 +0800
-Message-ID: <200502180738.31709.adaplas@hotpop.com>
-References: <200502172045.16677.adaplas@hotpop.com> <200502180507.32473.adaplas@hotpop.com> <Pine.LNX.4.56.0502172203260.10099@pentafluge.infradead.org>
+Subject: Re: [PATCH 7/7] fbdev: Generic drawing function cleanups
+Date: Fri, 18 Feb 2005 07:28:29 +0800
+Message-ID: <200502180728.29222.adaplas@hotpop.com>
+References: <200502172045.40790.adaplas@hotpop.com> <200502172129.18249.adaplas@hotpop.com> <Pine.LNX.4.56.0502172200400.10099@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D1vEP-000704-OW
+	id 1D1vEP-000703-IJ
 	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 15:38:49 -0800
 Received: from smtp-out.hotpop.com ([38.113.3.61])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1D1vEP-0003Mc-Bo
+	id 1D1vEN-0003MU-VQ
 	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 15:38:49 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 8B088E53278
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 17 Feb 2005 23:38:35 +0000 (UTC)
-In-Reply-To: <Pine.LNX.4.56.0502172203260.10099@pentafluge.infradead.org>
+	by smtp-out.hotpop.com (Postfix) with SMTP id 232E6E4D2D5
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 17 Feb 2005 23:38:32 +0000 (UTC)
+In-Reply-To: <Pine.LNX.4.56.0502172200400.10099@pentafluge.infradead.org>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -31,34 +31,15 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@www.infradead.org>
-Cc: David Vrabel <dvrabel@arcom.com>
+Cc: Andrew Morton <akpm@osdl.org>, Ulrich Eckhardt <eckhardt@satorlaser.com>
 
-On Friday 18 February 2005 06:09, James Simmons wrote:
-> > On Thursday 17 February 2005 22:29, David Vrabel wrote:
-> > > Antonino A. Daplas wrote:
-> > > > A few drivers call fb_find_mode() even if compiled as a module.  If
-> > > > the modedb parameter is NULL, the function will use default modedb
-> > > > array which is marked __init. This will cause a crash.  To avoid
-> > > > this, check if the driver is compiled as a module, and if it is,
-> > > > fail.
-> > >
-> > > Why limit the default mode DB to built-in drivers only?
-> >
-> > The default db is used by drivers only once.  After that, it just
-> > consumes memory.
->
-> For modules it wouldn't be that hard to add the modedb from userland after
-> loading. First insmod your module. Normally modular fbdev driver don't set
-> the hardware explictly. Once we have sysfs it will be easy. Next send the
-> new modes to the db. Next select the mode you want.
+On Friday 18 February 2005 06:02, James Simmons wrote:
+> Tony did you get my patch with the changes I had merged with the below
+> patch?
 >
 
-Yes, also, modedb contains modes from different displays most of which
-are unusable.  If you want, you can create a private mode database for your
-driver. See how rivafb, savagefb and radeonfb do it.  In fact, all drivers
-already have a private modelist, but if not explicitly created, will contain
-only one entry, coming from info->var.  Each time you use fbset, the 
-mode is automatically added to the modelist.
+Yes, but after I sent the patches.  I'll send your update as an incremental
+patch.
 
 Tony
 

@@ -1,28 +1,22 @@
-From: Jon Smirl <jonsmirl@gmail.com>
+From: Zack <plinius@comcast.net>
 Subject: Re: framebuffer ioctl
-Date: Mon, 6 Sep 2004 15:33:11 -0400
+Date: Mon, 06 Sep 2004 12:56:26 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <9e47339104090612334b3623ee@mail.gmail.com>
-References: <Pine.GSO.4.58.0409041304080.3434@waterleaf.sonytel.be>
-	 <413A3735.9E7D2F11@orpatec.ch> <413B4925.5000706@comcast.net>
-	 <20040906184306.GA29544@guug.org>
-	 <9e47339104090612086149bfd7@mail.gmail.com>
-	 <20040906192400.GB29544@guug.org>
+Message-ID: <413CC0EA.8070709@comcast.net>
+References: <Pine.GSO.4.58.0409041304080.3434@waterleaf.sonytel.be> <413A3735.9E7D2F11@orpatec.ch> <413B4925.5000706@comcast.net> <200409060926.07163.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C4PEm-00019W-Tj
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Sep 2004 12:33:12 -0700
-Received: from rproxy.gmail.com ([64.233.170.202] helo=mproxy.gmail.com)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1C4PEm-0003gL-IH
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Sep 2004 12:33:12 -0700
-Received: by mproxy.gmail.com with SMTP id 77so141424rnl
-        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 06 Sep 2004 12:33:11 -0700 (PDT)
-In-Reply-To: <20040906192400.GB29544@guug.org>
+	id 1C4PbF-0004Sf-3b
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Sep 2004 12:56:25 -0700
+Received: from rwcrmhc13.comcast.net ([204.127.198.39])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1C4PbD-0007Pz-1P
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Sep 2004 12:56:24 -0700
+In-Reply-To: <200409060926.07163.adaplas@hotpop.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,46 +26,60 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-It is still being worked on. The have been a lot of changes to DRM
-recently. The PCI ROM patch is finished and waiting to go into the
-kernel. I'm starting on the VGA driver next. Jess@sgi is working on
-the user space reset app.
+Antonino A. Daplas wrote:
 
-After all that is done we can start on printk support.
+>On Monday 06 September 2004 01:13, Zack wrote:
+>  
+>
+>>4. new features would be optional anyway: fullscreen-guis need not
+>>recognize their existence, but would benefit from doing so
+>>since some fb drivers would override the generic routines
+>>to implement accelerated routines.
+>>
+>One of the limitations of the in-kernel drawing routines is that they were 
+>never designed to be used in user space.  This has been discussed a long time 
+>ago so that the upper layer need not know the characteristics of the 
+>low-level driver. 
+>
+>Possibly, the only drawing function that can be used by userspace is copyarea 
+>(bitblt).  Fillrect (color fill) and imageblit (color expand) cannot be used 
+>since they rely on pseudo_palette which is limited to 16 colors.
+>
+>I believe that the kernel framebuffer should only support features that cannot 
+>be done in user space, such as interrupt handling.  I really recommend to 
+>concentrate on one library (I recommend DirectFB) and enhance that.
+>
+>Note that the framebuffer ABI is quite consistent since its inception. So you 
+>can rely on libraries based on fbdev, ie DirectFB, even X, to consistently 
+>work with whatever version of the kernel.
+>
+>Tony
+>
+I think you may be misinterpreting my intent. I am strictly anti-bloat,
+so I don't want a larger kernel. By the same token, I don't use
+X because it is bloated--X uses 16 megs minimum on my system,
+and that is very much not to my taste.
+
+Directfb seems geared toward being overly impressive,
+which says to me that if it's not bloated already, it will be later.
+
+My new routines are small.
+
+>I believe that the kernel framebuffer should only support features that cannot 
+>be done in user space, such as interrupt handling.  I really recommend to 
+>concentrate on one library (I recommend DirectFB) and enhance that.
 
 
-On Mon, 6 Sep 2004 13:24:00 -0600, Otto Solares <solca@guug.org> wrote:
-> On Mon, Sep 06, 2004 at 03:08:40PM -0400, Jon Smirl wrote:
-> > On Mon, 6 Sep 2004 12:43:06 -0600, Otto Solares <solca@guug.org> wrote:
-> >
-> > Teach him about mesa-solo and he won't want to extend fbdev.
-> 
-> What about the new graphics interface that will unify
-> fbdev/drm you talk about in kernel summit?
-> 
-> 
-> 
-> -otto
-> 
-> -------------------------------------------------------
-> This SF.Net email is sponsored by BEA Weblogic Workshop
-> FREE Java Enterprise J2EE developer tools!
-> Get your free copy of BEA WebLogic Workshop 8.1 today.
-> http://ads.osdn.com/?ad_id=5047&alloc_id=10808&op=click
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-> 
+For other people reading this, the idea of putting everything into
+userspace that can be put there is called an "exokernel" approach.
+It's a matter of taste. To me it's just another way bloat is achieved.
 
+Zack
 
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
 
 
 -------------------------------------------------------

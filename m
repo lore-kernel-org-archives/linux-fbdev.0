@@ -1,18 +1,18 @@
-From: Kronos <kronos@kronoz.cjb.net>
-Subject: [PATCH] 2/3 Add I2C/DDC support to radeonfb (resend)
-Date: Fri, 22 Aug 2003 19:10:24 +0200
+From: Alex Bennee <kernel-hacker@bennee.com>
+Subject: Memory corruption 2.4.21 caused by loading a console driver?
+Date: 22 Aug 2003 19:01:08 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030822171024.GB5757@dreamland.darkstar.lan>
-Reply-To: kronos@kronoz.cjb.net
+Message-ID: <6305.60059003091$1061575547@news.gmane.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail-3.tiscali.it ([195.130.225.149])
+Received: from host81-152-26-251.range81-152.btcentralplus.com ([81.152.26.251] helo=cambridge.braddahead)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19qFQd-0006Nq-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 22 Aug 2003 10:10:24 -0700
-Received: from dreamland.darkstar.lan (217.133.180.117) by mail-3.tiscali.it (6.7.019)
-        id 3F33543C0050E023 for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Aug 2003 19:10:14 +0200
-Content-Disposition: inline
+	id 19qGDv-0003Sr-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 22 Aug 2003 11:01:19 -0700
+Received: from localhost (localhost [127.0.0.1])
+	by cambridge.braddahead (Postfix) with ESMTP id 4CC951C1E2
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 22 Aug 2003 19:01:09 +0100 (BST)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,121 +23,109 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-[This is a resend, it seems that original mail got lost]
-Register i2c bus. Parse EDID block.
+Hi,
 
---- linux-2.6.vanilla/drivers/video/radeonfb.c	Fri Aug 22 17:33:45 2003
-+++ linux-2.6/drivers/video/radeonfb.c	Fri Aug 22 17:36:29 2003
-@@ -418,6 +418,10 @@
- #ifdef CONFIG_FB_RADEON_I2C
- 	u32 DDCReg;
- #endif
-+	/* ModeDB from EDID */
-+	struct fb_videomode *modedb;
-+	int dbsize;
-+	
- 	struct radeonfb_info *next;
- };
- 
-@@ -1597,7 +1601,7 @@
- #ifndef MODULE
-         if (mode_option)
-                 fb_find_mode (var, &rinfo->info, mode_option,
--                              NULL, 0, NULL, 8);
-+                              rinfo->modedb, rinfo->dbsize, NULL, 8);
-         else
- #endif
- 	if (rinfo->use_default_var)
-@@ -3248,7 +3252,33 @@
- 	}
- #endif
- 
-+	/* Register I2C bus */
-+	if (!radeonfb_i2c_bus_reg(rinfo))
-+		i2c_ready = 1;
-+
- 	radeon_get_EDID(rinfo);
-+	if (rinfo->EDID) {
-+		struct fb_var_screeninfo var;
-+		struct fb_videomode *db;
-+		int i;
-+
-+		if (parse_edid(rinfo->EDID, &var)) {
-+			kfree(rinfo->EDID);
-+			rinfo->EDID = NULL;
-+		} else {
-+			/* Update default with EDID info */
-+			radeonfb_default_var = var;
-+			rinfo->use_default_var = 1;
-+
-+			/* Create a modedb */
-+			if ((db = fb_create_modedb(rinfo->EDID, &i))) {
-+				rinfo->modedb = db;
-+				rinfo->dbsize = i;
-+			}
-+		}
-+
-+		show_edid(rinfo->EDID);
-+	}
- 
- 	if ((rinfo->dviDisp_type == MT_DFP) || (rinfo->dviDisp_type == MT_LCD) ||
- 	    (rinfo->crtDisp_type == MT_DFP)) {
-@@ -3258,6 +3288,10 @@
- 					    pci_resource_len(pdev, 2));
- 			release_mem_region (rinfo->fb_base_phys,
- 					    pci_resource_len(pdev, 0));
-+			if (rinfo->EDID)
-+				kfree(rinfo->EDID);
-+			fb_destroy_modedb(rinfo->modedb);
-+			radeonfb_i2c_bus_del();
- 			kfree (rinfo);
- 			return -ENODEV;
- 		}
-@@ -3271,6 +3305,10 @@
- 				    pci_resource_len(pdev, 2));
- 		release_mem_region (rinfo->fb_base_phys,
- 				    pci_resource_len(pdev, 0));
-+		if (rinfo->EDID)
-+			kfree(rinfo->EDID);
-+		fb_destroy_modedb(rinfo->modedb);
-+		radeonfb_i2c_bus_del();
- 		kfree (rinfo);
- 		return -ENODEV;
- 	}
-@@ -3329,6 +3367,10 @@
- 				    pci_resource_len(pdev, 2));
- 		release_mem_region (rinfo->fb_base_phys,
- 				    pci_resource_len(pdev, 0));
-+		if (rinfo->EDID)
-+			kfree(rinfo->EDID);
-+		fb_destroy_modedb(rinfo->modedb);
-+		radeonfb_i2c_bus_del();
- 		kfree (rinfo);
- 		return -ENODEV;
- 	}
-@@ -3400,6 +3442,12 @@
- 			    pci_resource_len(pdev, 2));
- 	release_mem_region (rinfo->fb_base_phys,
- 			    pci_resource_len(pdev, 0));
-+
-+	if (rinfo->EDID)
-+		kfree(rinfo->EDID);
-+
-+	fb_destroy_modedb(rinfo->modedb);
-+	radeonfb_i2c_bus_del();
-         
-         kfree (rinfo);
- }
+Hopefully this will get through the chunks of sobig responses. Anyway
+onwards.
 
+I've hit a problem with 2.4.21 where loading a console driver and
+performing a simple action is causing memory corruption within the
+kernel. To re-create the bug on my system I did:
+
+insmod shcon_driver.o
+clear > /dev/tty0
+
+and then attempted to ssh into box (its an embedded system) causing a
+kernel pageing fault at dcache.c:718 (due to a bad dentry pointer). I
+cannot reproduce this fault on 2.4.20. Being suspicious of my own code
+(the console driver) had gone mad and corrupted something I removed all
+my code and left it as stubs. The actual act of clearing the console did
+nothing in my code but still manages to cause this strangeness. However
+I'm hoping someone could explain what the difference is between these
+two traces (of doing the clear > /dev/tty0), one before loading a
+console driver (which damages nothing) and one after. Why are they so
+different? Especially considering clearing the screen is a few simple
+ioctls?
+
+Trace 1 (Before Loading Console Driver)
+
+Before Loading the shcon driver
+do_tty_write: func(8807fe00), tty(88385000), file(89f5b2e0),
+buf(004ae008), count(22)
+
+do_tty_write: func(8807fe00), tty(89d1d000), file(89f5b760),
+buf(00468698), count(3)
+do_tty_write: func(8807fe00), tty(88385000), file(89f5b2e0),
+buf(004ae008), count(53)
+
+do_tty_write: func(8807fe00), tty(89d1d000), file(89f5b760),
+buf(00468698), count(3)
+do_tty_write: func(8807fe00), tty(88385000), file(89f5b2e0),
+buf(004ae008), count(43)
+
+do_tty_write: func(8807fe00), tty(89d1d000), file(89f5b760),
+buf(00468698), count(1)
+do_tty_write: func(8807fe00), tty(88385000), file(89f5b2e0),
+buf(004ae008), count(1)
+
+vt_ioctl: cmd=0x5401, arg=0x7bfffd1c
+vt_ioctl: cmd=0x5401, arg=0x7bfffcf8
+vt_ioctl: cmd=0x5401, arg=0x7bfffc3c
+tty_write: if(00000000), write(00000000,2956e000,7,00000020)
+do_tty_write: func(8807fe00), tty(899b4000), file(88246aa0),
+buf(2956e000), count(7)
+do_tty_write: func(8807fe00), tty(88385000), file(89f5b2e0),
+buf(004ae008), count(22)
+
+Trace 2 (After Loadiing Console Driver)
+
+After Loading the shcon driver
+do_tty_write: func(8807fe00), tty(88385000), file(89f5b2e0),
+buf(004ae008), count(22)
+
+do_tty_write: func(8807fe00), tty(89d1d000), file(89f5b760),
+buf(00468698), count(3)
+do_tty_write: func(8807fe00), tty(88385000), file(89f5b2e0),
+buf(004ae008), count(52)
+
+do_tty_write: func(8807fe00), tty(89d1d000), file(89f5b760),
+buf(00468698), count(3)
+do_tty_write: func(8807fe00), tty(88385000), file(89f5b2e0),
+buf(004ae008), count(66)
+
+do_tty_write: func(8807fe00), tty(89d1d000), file(89f5b760),
+buf(00468698), count(3)
+do_tty_write: func(8807fe00), tty(88385000), file(89f5b2e0),
+buf(004ae008), count(45)
+
+do_tty_write: func(8807fe00), tty(89d1d000), file(89f5b760),
+buf(00468698), count(1)
+do_tty_write: func(8807fe00), tty(88385000), file(89f5b2e0),
+buf(004ae008), count(1)
+
+vt_ioctl: cmd=0x5401, arg=0x7bfffd1c
+vt_ioctl: cmd=0x5401, arg=0x7bfffcf8
+vt_ioctl: cmd=0x5401, arg=0x7bfffc3c
+tty_write: if(00000000), write(00000000,2956e000,7,00000020)
+do_tty_write: func(8807fe00), tty(899b4000), file(899c50a0),
+buf(2956e000), count(7)
+shcon_driver:Called shcon_cursor
+do_tty_write: func(8807fe00), tty(88385000), file(89f5b2e0),
+buf(004ae008), count(22)
+
+Is anyone else using loadable modules for console drivers and noticed
+anything like this from 2.4.20 to 2.4.21?
+
+Regards,
 
 
 -- 
-Reply-To: kronos@kronoz.cjb.net
-Home: http://kronoz.cjb.net
-Windows NT: Designed for the Internet. The Internet: Designed for Unix.
+Alex, homepage: http://www.bennee.com/~alex/
+"...[Linux's] capacity to talk via any medium except smoke signals."
+(By Dr. Greg Wettstein, Roger Maris Cancer Center)
+
 
 
 -------------------------------------------------------

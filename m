@@ -1,16 +1,17 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Advice sought on approach.
-Date: Wed, 5 Mar 2003 15:44:12 +0100 (MET)
+From: Sven Luther <luther@dpt-info.u-strasbg.fr>
+Subject: Re: Feature Freeze?
+Date: Wed, 5 Mar 2003 15:49:47 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0303051543290.23176-100000@vervain.sonytel.be>
-References: <1046875200.10894.216.camel@cambridge.braddahead>
+Message-ID: <20030305144947.GA3946@iliana>
+References: <1046852721.1228.13.camel@localhost.localdomain> <20030305110529.GA2036@iliana> <1046868330.1229.59.camel@localhost.localdomain> <20030305134355.GA3105@iliana> <1046875559.1291.135.camel@localhost.localdomain>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+Received: from smtp-out-3.wanadoo.fr ([193.252.19.233] helo=mel-rto3.wanadoo.fr)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18qa8w-0007Xt-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 06:45:19 -0800
-In-Reply-To: <1046875200.10894.216.camel@cambridge.braddahead>
+	id 18qaDY-0000jy-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 06:50:00 -0800
+Content-Disposition: inline
+In-Reply-To: <1046875559.1291.135.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,57 +21,52 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alex Bennee <kernel-hacker@bennee.com>
-Cc: Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Sven Luther <luther@dpt-info.u-strasbg.fr>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On 5 Mar 2003, Alex Bennee wrote:
-> On Wed, 2003-03-05 at 13:26, Antonino Daplas wrote:
-> > On Wed, 2003-03-05 at 20:37, Alex Bennee wrote:
-> > > Having read the fb-dev docs on www.linux-fbdev.org I'm a little confused
-> > > as to what actually puts data into the framebuffer. Most of the
-> > > framebuffer drivers just seem to deal with resolution and colourmap
-> > > settings. Is this a case of having to re-implement the fbcon drivers as
-> > > well to get what I want?
-> > The pixels placed to the framebuffer are all done in the fbcon-cfb*.c
-> > modules (if you use the generic functions).  This is for standard
-> > character drawing.  The logo is drawn indepently (fbcon_show_logo in
-> > fbcon.c).  User applications write directly to the framebuffer via the
-> > mmap() function.
+On Wed, Mar 05, 2003 at 10:46:37PM +0800, Antonino Daplas wrote:
+> > I thought that the new API, separating the fbcon layer from the fbdev
+> > drivers would add support for this more easily. I guess it would be easy
+> > for the Appian Jeronimo 2000 board, which has two permedia3 chips, and
+> > thus can be seen as two separate devices. Cards with two ramdacs per
+> > chip, like the G400, the later radeon's and most recent cards would need
+> > driver level support, that is understandable, but is all there for fbcon
+> > to take advantage of it ? What about multi-seat, with two full consoles,
+> > with mouse and keyboard for each ?
+> > 
 > 
-> I think I understand now. When the fb_set_disp function is called I fill
-> in the display struction with the console display operations. I've got
-> two choices now:
+> This was one of the goals of the Ruby project, but I think it's mostly 
+> the input layer that got into the kernel. 
+
+:(((
+
+> Fbcon needs to be cleaned up, a lot. It still implements the "current
+> console or foreground console" concept (only one console active at a
+> time).  Also, this is more of a job for linuxconsole than fbdev.  I may
+> be wrong though.
+
+Mmm, do you know who is working on linuxconsole, and what their plan are ?
+
+> > > It does have one benefit though, the newer code should make it easier to
+> > > add an infrastructure on top of fbdev, such as xinerama-style support. 
+> > > But this will be in the future.
+> > 
+> > Mmm, I don't know if there is really a point to this, are there really
+> > all that much applications which do xinerama-like things on top of fbdev ?
+> > I rather thought that more higlevel userland apps would be doing this.
+> > like either xfree86 with chip-specific drivers or fbdev drivers, or
+> > directfb or something such.
+> > 
 > 
-> 1. Create a new fbcon_cfb16 file which notes the changed areas before
-> calling the generic function.
-> 
-> 2. Patch the current fbcon_cfb16 (with a CONFIG option) to add the
-> change tracking facility in a more generic way.
-> 
-> I guess the question is is it worth doing 2 as a potential upstream
-> patch? Or is this sort of thing so specialised I should just keep it all
-> packed in my own fb driver?
-> 
-> I guess I can't easily implement user access via mmap without uploading
-> the entire screen, which I'm not intending to do anyway because all I
-> really need is the console support - at least for now.
+> You're right, xinerama is mainly user-app.
 
-If all you need is console support, please take a look at
-drivers/video/newport_con.c, for the SGI Indy.
+:)))
 
-Gr{oetje,eeting}s,
+Friendly,
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+Sven Luther
 
 
 -------------------------------------------------------

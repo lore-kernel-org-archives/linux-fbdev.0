@@ -1,23 +1,24 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: Running fb core as a module
-Date: Thu, 17 Feb 2005 18:08:37 -0500
-Message-ID: <9e473391050217150813fea994@mail.gmail.com>
-References: <9e473391050216173115f37838@mail.gmail.com>
-	 <Pine.LNX.4.56.0502172214350.10099@pentafluge.infradead.org>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: [PATCH 2/7] fbdev: Make fb_find_mode() return failure if modular
+Date: Fri, 18 Feb 2005 07:38:31 +0800
+Message-ID: <200502180738.31709.adaplas@hotpop.com>
+References: <200502172045.16677.adaplas@hotpop.com> <200502180507.32473.adaplas@hotpop.com> <Pine.LNX.4.56.0502172203260.10099@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D1ulI-0005PD-SZ
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 15:08:44 -0800
-Received: from rproxy.gmail.com ([64.233.170.201])
+	id 1D1vEP-000704-OW
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 15:38:49 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.61])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1D1ulI-0000cp-Ey
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 15:08:44 -0800
-Received: by rproxy.gmail.com with SMTP id z35so482274rne
-        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 17 Feb 2005 15:08:38 -0800 (PST)
-In-Reply-To: <Pine.LNX.4.56.0502172214350.10099@pentafluge.infradead.org>
+	id 1D1vEP-0003Mc-Bo
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 15:38:49 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id 8B088E53278
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 17 Feb 2005 23:38:35 +0000 (UTC)
+In-Reply-To: <Pine.LNX.4.56.0502172203260.10099@pentafluge.infradead.org>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,43 +30,39 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@www.infradead.org>
+Cc: David Vrabel <dvrabel@arcom.com>
 
-On Thu, 17 Feb 2005 22:16:36 +0000 (GMT), James Simmons
-<jsimmons@www.infradead.org> wrote:
-> 
-> > Is there a patch floating around for turning the core of fbdev into a
-> > module? Why isn't running fbdev as a module an option? It would make
-> > debugging fbdev core much simpler.
-> 
-> I agree. Of course you would need either a graphics card boot from a non
-> primary slot or work with serial console :-) Of course that opens alot of
-> other issues with races. We have to look into it in depth.
+On Friday 18 February 2005 06:09, James Simmons wrote:
+> > On Thursday 17 February 2005 22:29, David Vrabel wrote:
+> > > Antonino A. Daplas wrote:
+> > > > A few drivers call fb_find_mode() even if compiled as a module.  If
+> > > > the modedb parameter is NULL, the function will use default modedb
+> > > > array which is marked __init. This will cause a crash.  To avoid
+> > > > this, check if the driver is compiled as a module, and if it is,
+> > > > fail.
+> > >
+> > > Why limit the default mode DB to built-in drivers only?
+> >
+> > The default db is used by drivers only once.  After that, it just
+> > consumes memory.
+>
+> For modules it wouldn't be that hard to add the modedb from userland after
+> loading. First insmod your module. Normally modular fbdev driver don't set
+> the hardware explictly. Once we have sysfs it will be easy. Next send the
+> new modes to the db. Next select the mode you want.
+>
 
-I am using 2 graphics cards. I run X on the primary one and test
-DRM/fbdev on the secondary one.
+Yes, also, modedb contains modes from different displays most of which
+are unusable.  If you want, you can create a private mode database for your
+driver. See how rivafb, savagefb and radeonfb do it.  In fact, all drivers
+already have a private modelist, but if not explicitly created, will contain
+only one entry, coming from info->var.  Each time you use fbset, the 
+mode is automatically added to the modelist.
 
-What would cause races? the base fb system is inactive unless you load
-something that uses it like fbconsole. Look in the patch I sent, the
-code for doing this is minor.
-
-
-> 
-> -------------------------------------------------------
-> SF email is sponsored by - The IT Product Guide
-> Read honest & candid reviews on hundreds of IT Products from real users.
-> Discover which products truly live up to the hype. Start reading now.
-> http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-> 
+Tony
 
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
 
 
 -------------------------------------------------------

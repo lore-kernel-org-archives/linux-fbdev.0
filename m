@@ -1,19 +1,24 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: small fbmem.c fix.
-Date: Tue, 17 Feb 2004 04:36:56 +0000 (GMT)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: atyfb expert needed
+Date: Tue, 17 Feb 2004 17:00:10 +1100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0402170435070.24924-100000@phoenix.infradead.org>
+Message-ID: <1076997609.1046.168.camel@gaston>
+References: <1076537453.868.123.camel@gaston>
+	 <200402131641.29028.alex.kern@gmx.de> <1076714453.7304.103.camel@gaston>
+	 <200402141626.39311.alex.kern@gmx.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Asx2b-0002rf-EL
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 16 Feb 2004 20:41:01 -0800
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1AsyML-0002Tz-JG
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 16 Feb 2004 22:05:29 -0800
+Received: from gate.crashing.org ([63.228.1.57] ident=root)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1Aswsn-0001bE-Oj
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 16 Feb 2004 20:30:54 -0800
+	id 1AsyCS-0003iS-RM
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 16 Feb 2004 21:55:16 -0800
+In-Reply-To: <200402141626.39311.alex.kern@gmx.de>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -23,27 +28,48 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@transmeta.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Alexander Kern <alex.kern@gmx.de>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+
+On Sun, 2004-02-15 at 02:26, Alexander Kern wrote:
+> Am Samstag, 14. Februar 2004 00:20 schrieb Benjamin Herrenschmidt:
+> > > Hi,
+> > > mach64_ct.c(where aty_dsp_gt is) from James tree should be identical with
+> > > Daniel'S 2.4 tree. If not, please send me the diff.
+> >
+> > Is Daniel's latest version in current 2.4 or is there another source
+> > for his patches ?
+
+Ok. Comparing 2.4.24 & 2.6.3/fbdev to XFree driver, it seems that
+2.6.3/fbdev matches XFree more closely.... Except that we are missing
+the FIFO_24 attribute for the LT-G chip.
+
+Fixing that leads to slightly less crapy display, but still unreadable... until
+I figured out that acceleration (imageblit more precisely) has broken endianness...
+
+This kludge fixes it for me (maybe incorrect, just a quick fix) :
+
+@@ -419,9 +425,9 @@
+                }
+        } else {
+                u32 *pbitmap;
+-               for(pbitmap = (u32*)(image->data); dwords; dwords--, pbitmap++) {
+-                       wait_for_fifo(1, par);
+-                       aty_st_le32(HOST_DATA0, *pbitmap, par);
++               for (pbitmap = (u32*)(image->data); dwords; dwords--, pbitmap++) {
++                       wait_for_fifo(2, par);
++                       aty_st_le32(HOST_DATA0, le32_to_cpup(pbitmap), par);
+                }
+ 
+_BUT_ then, I get a lockup when reaching the end of the screen... Apparently,
+it locks up when drawin the last line, not sure if it did a scroll yet or not.
+I'm playing with the accel fifo a bit, but that's definitely a regression.
+
+Ben.
 
 
-The platinum framebuffer is repeated twice. Removed one of them.
 
-
---- fbmem.c	2004-02-16 00:50:15.000000000 -0800
-+++ fbmem.c.new	2004-02-16 04:42:15.000000000 -0800
-@@ -107,8 +107,6 @@
- extern int platinumfb_setup(char*);
- extern int control_init(void);
- extern int control_setup(char*);
--extern int platinum_init(void);
--extern int platinum_setup(char*);
- extern int valkyriefb_init(void);
- extern int valkyriefb_setup(char*);
- extern int chips_init(void);
-r
 
 
 

@@ -1,18 +1,18 @@
 From: "Luiz Fernando N. Capitulino" <lcapitulino@prefeitura.sp.gov.br>
-Subject: [PATCH] - video/imsttfb.c warning fix.
-Date: Tue, 13 Apr 2004 16:47:31 -0300
+Subject: [PATCH] - video/hgafb.c warning fix.
+Date: Tue, 13 Apr 2004 16:45:34 -0300
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040413164731.70e30fc6.lcapitulino@prefeitura.sp.gov.br>
+Message-ID: <20040413164534.17eb0c1b.lcapitulino@prefeitura.sp.gov.br>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BDTsG-0003gc-6C
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 13 Apr 2004 12:47:12 -0700
+	id 1BDTsF-0003gJ-FM
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 13 Apr 2004 12:47:11 -0700
 Received: from sampa7.prodam.sp.gov.br ([200.230.190.107])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BDTsF-0002Mg-H3
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BDTsE-0002oA-Tk
 	for linux-fbdev-devel@lists.sourceforge.net; Tue, 13 Apr 2004 12:47:11 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,192 +32,99 @@ Hi,
 
  I'm getting the fallowing warnings:
 
-drivers/video/imsttfb.c:1089: warning: `imsttfb_load_cursor_image' defined but not used
-drivers/video/imsttfb.c:1159: warning: `imstt_set_cursor' defined but not used
+drivers/video/hgafb.c:452: warning: `hgafb_fillrect' defined but not used
+drivers/video/hgafb.c:472: warning: `hgafb_copyarea' defined but not used
+drivers/video/hgafb.c:502: warning: `hgafb_imageblit' defined but not used
 
  They are caused by dead code, this patch remove then:
 
-diff -X dontdiff -Nparu a/drivers/video/imsttfb.c a~/drivers/video/imsttfb.c
---- a/drivers/video/imsttfb.c	2003-10-20 08:11:34.000000000 -0200
-+++ a~/drivers/video/imsttfb.c	2004-04-13 16:02:51.000000000 -0300
-@@ -1084,177 +1084,6 @@ imsttfb_copyarea(struct fb_info *info, c
- 	while(read_reg_le32(par->dc_regs, SSTATUS) & 0x40);
+diff -X dontdiff -Nparu a/drivers/video/hgafb.c a~/drivers/video/hgafb.c
+--- a/drivers/video/hgafb.c	2004-01-09 10:30:36.000000000 -0200
++++ a~/drivers/video/hgafb.c	2004-04-13 15:29:51.000000000 -0300
+@@ -448,70 +448,6 @@ static int hgafb_blank(int blank_mode, s
+ 	return 0;
  }
  
--static int
--imsttfb_load_cursor_image(struct imstt_par *par, int width, int height, __u8 fgc)
+-static void hgafb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
 -{
--	u_int x, y;
+-	u_int rows, y;
+-	u8 *dest;
 -
--	if (width > 32 || height > 32)
--		return -EINVAL;
+-	y = rect->dy;
 -
--	if (par->ramdac == IBM) {
--		par->cmap_regs[PIDXHI] = 1;	eieio();
--		for (x = 0; x < 0x100; x++) {
--			par->cmap_regs[PIDXLO] = x;		eieio();
--			par->cmap_regs[PIDXDATA] = 0x00;	eieio();
--		}
--		par->cmap_regs[PIDXHI] = 1;	eieio();
--		for (y = 0; y < height; y++)
--			for (x = 0; x < width >> 2; x++) {
--				par->cmap_regs[PIDXLO] = x + y * 8;	eieio();
--				par->cmap_regs[PIDXDATA] = 0xff;	eieio();
--			}
--		par->cmap_regs[PIDXHI] = 0;		eieio();
--		par->cmap_regs[PIDXLO] = CURS1R;	eieio();
--		par->cmap_regs[PIDXDATA] = fgc;		eieio();
--		par->cmap_regs[PIDXLO] = CURS1G;	eieio();
--		par->cmap_regs[PIDXDATA] = fgc;		eieio();
--		par->cmap_regs[PIDXLO] = CURS1B;	eieio();
--		par->cmap_regs[PIDXDATA] = fgc;		eieio();
--		par->cmap_regs[PIDXLO] = CURS2R;	eieio();
--		par->cmap_regs[PIDXDATA] = fgc;		eieio();
--		par->cmap_regs[PIDXLO] = CURS2G;	eieio();
--		par->cmap_regs[PIDXDATA] = fgc;		eieio();
--		par->cmap_regs[PIDXLO] = CURS2B;	eieio();
--		par->cmap_regs[PIDXDATA] = fgc;		eieio();
--		par->cmap_regs[PIDXLO] = CURS3R;	eieio();
--		par->cmap_regs[PIDXDATA] = fgc;		eieio();
--		par->cmap_regs[PIDXLO] = CURS3G;	eieio();
--		par->cmap_regs[PIDXDATA] = fgc;		eieio();
--		par->cmap_regs[PIDXLO] = CURS3B;	eieio();
--		par->cmap_regs[PIDXDATA] = fgc;		eieio();
--	} else {
--		par->cmap_regs[TVPADDRW] = TVPIRICC;	eieio();
--		par->cmap_regs[TVPIDATA] &= 0x03;	eieio();
--		par->cmap_regs[TVPADDRW] = 0;		eieio();
--		for (x = 0; x < 0x200; x++) {
--			par->cmap_regs[TVPCRDAT] = 0x00;	eieio();
--		}
--		for (x = 0; x < 0x200; x++) {
--			par->cmap_regs[TVPCRDAT] = 0xff;	eieio();
--		}
--		par->cmap_regs[TVPADDRW] = TVPIRICC;	eieio();
--		par->cmap_regs[TVPIDATA] &= 0x03;	eieio();
--		for (y = 0; y < height; y++)
--			for (x = 0; x < width >> 3; x++) {
--				par->cmap_regs[TVPADDRW] = x + y * 8;	eieio();
--				par->cmap_regs[TVPCRDAT] = 0xff;		eieio();
--			}
--		par->cmap_regs[TVPADDRW] = TVPIRICC;	eieio();
--		par->cmap_regs[TVPIDATA] |= 0x08;	eieio();
--		for (y = 0; y < height; y++)
--			for (x = 0; x < width >> 3; x++) {
--				par->cmap_regs[TVPADDRW] = x + y * 8;	eieio();
--				par->cmap_regs[TVPCRDAT] = 0xff;		eieio();
--			}
--		par->cmap_regs[TVPCADRW] = 0x00;	eieio();
--		for (x = 0; x < 12; x++)
--			par->cmap_regs[TVPCDATA] = fgc;	eieio();
--	}
--	return 1;
--}
--
--static void
--imstt_set_cursor(struct imstt_par *par, struct fb_image *d, int on)
--{
--	if (par->ramdac == IBM) {
--		par->cmap_regs[PIDXHI] = 0;	eieio();
--		if (!on) {
--			par->cmap_regs[PIDXLO] = CURSCTL;	eieio();
--			par->cmap_regs[PIDXDATA] = 0x00;	eieio();
--		} else {
--			par->cmap_regs[PIDXLO] = CURSXHI;	eieio();
--			par->cmap_regs[PIDXDATA] = d->dx >> 8;	eieio();
--			par->cmap_regs[PIDXLO] = CURSXLO;	eieio();
--			par->cmap_regs[PIDXDATA] = d->dx & 0xff;eieio();
--			par->cmap_regs[PIDXLO] = CURSYHI;	eieio();
--			par->cmap_regs[PIDXDATA] = d->dy >> 8;	eieio();
--			par->cmap_regs[PIDXLO] = CURSYLO;	eieio();
--			par->cmap_regs[PIDXDATA] = d->dy & 0xff;eieio();
--			par->cmap_regs[PIDXLO] = CURSCTL;	eieio();
--			par->cmap_regs[PIDXDATA] = 0x02;	eieio();
--		}
--	} else {
--		if (!on) {
--			par->cmap_regs[TVPADDRW] = TVPIRICC;	eieio();
--			par->cmap_regs[TVPIDATA] = 0x00;	eieio();
--		} else {
--			__u16 x = d->dx + 0x40, y = d->dy + 0x40;
--
--			par->cmap_regs[TVPCXPOH] = x >> 8;	eieio();
--			par->cmap_regs[TVPCXPOL] = x & 0xff;	eieio();
--			par->cmap_regs[TVPCYPOH] = y >> 8;	eieio();
--			par->cmap_regs[TVPCYPOL] = y & 0xff;	eieio();
--			par->cmap_regs[TVPADDRW] = TVPIRICC;	eieio();
--			par->cmap_regs[TVPIDATA] = 0x02;	eieio();
--		}
--	}
--}
--
--#if 0
--static int 
--imsttfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
--{
--	struct imstt_par *par = (struct imstt_par *) info->par;
--        u32 flags = cursor->set, fg, bg, xx, yy;
--
--	if (cursor->dest == NULL && cursor->rop == ROP_XOR)
--		return 1;
--	
--	imstt_set_cursor(info, cursor, 0);
--
--	if (flags & FB_CUR_SETPOS) {
--		xx = cursor->image.dx - info->var.xoffset;
--		yy = cursor->image.dy - info->var.yoffset;
--	}
--
--	if (flags & FB_CUR_SETSIZE) {
--        }
--
--        if (flags & (FB_CUR_SETSHAPE | FB_CUR_SETCMAP)) {
--                int fg_idx = cursor->image.fg_color;
--                int width = (cursor->image.width+7)/8;
--                u8 *dat = (u8 *) cursor->image.data;
--                u8 *dst = (u8 *) cursor->dest;
--                u8 *msk = (u8 *) cursor->mask;
--
--                switch (cursor->rop) {
--                case ROP_XOR:
--                        for (i = 0; i < cursor->image.height; i++) {
--                                for (j = 0; j < width; j++) {
--                                        d_idx = i * MAX_CURS/8  + j;
--                                        data[d_idx] =  byte_rev[dat[s_idx] ^
--                                                                dst[s_idx]];
--                                        mask[d_idx] = byte_rev[msk[s_idx]];
--                                        s_idx++;
--                                }
--                        }
--                        break;
--                case ROP_COPY:
--                default:
--                        for (i = 0; i < cursor->image.height; i++) {
--                                for (j = 0; j < width; j++) {
--                                        d_idx = i * MAX_CURS/8 + j;
--                                        data[d_idx] = byte_rev[dat[s_idx]];
--                                        mask[d_idx] = byte_rev[msk[s_idx]];
--                                        s_idx++;
--                                }
--			}
+-	for (rows = rect->height; rows--; y++) {
+-		dest = rowaddr(info, y) + (rect->dx >> 3);
+-		switch (rect->rop) {
+-		case ROP_COPY:
+-			//fb_memset(dest, rect->color, (rect->width >> 3));
+-			break;
+-		case ROP_XOR:
+-			*dest = ~*dest;
 -			break;
 -		}
--
--		fg = ((info->cmap.red[fg_idx] & 0xf8) << 7) |
--                     ((info->cmap.green[fg_idx] & 0xf8) << 2) |
--                     ((info->cmap.blue[fg_idx] & 0xf8) >> 3) | 1 << 15;
--
--		imsttfb_load_cursor_image(par, xx, yy, fgc);
 -	}
--	if (cursor->enable)
--		imstt_set_cursor(info, cursor, 1);
--	return 0;
 -}
--#endif
 -
- #define FBIMSTT_SETREG		0x545401
- #define FBIMSTT_GETREG		0x545402
- #define FBIMSTT_SETCMAPREG	0x545403
+-static void hgafb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
+-{
+-	u_int rows, y1, y2;
+-	u8 *src, *dest;
+-
+-	if (area->dy <= area->sy) {
+-		y1 = area->sy;
+-		y2 = area->dy;
+-
+-		for (rows = area->height; rows--; ) {
+-			src = rowaddr(info, y1) + (area->sx >> 3);
+-			dest = rowaddr(info, y2) + (area->dx >> 3);
+-			//fb_memmove(dest, src, (area->width >> 3));
+-			y1++;
+-			y2++;
+-		}
+-	} else {
+-		y1 = area->sy + area->height - 1;
+-		y2 = area->dy + area->height - 1;
+-
+-		for (rows = area->height; rows--;) {
+-			src = rowaddr(info, y1) + (area->sx >> 3);
+-			dest = rowaddr(info, y2) + (area->dx >> 3);
+-			//fb_memmove(dest, src, (area->width >> 3));
+-			y1--;
+-			y2--;
+-		}
+-	}
+-}
+-
+-static void hgafb_imageblit(struct fb_info *info, const struct fb_image *image)
+-{
+-	u8 *dest, *cdat = (u8 *) image->data;
+-	u_int rows, y = image->dy;
+-	u8 d;
+-
+-	for (rows = image->height; rows--; y++) {
+-		d = *cdat++;
+-		dest = rowaddr(info, y) + (image->dx >> 3);
+-		*dest = d;
+-	}
+-}
+-
+-
+ static struct fb_ops hgafb_ops = {
+ 	.owner		= THIS_MODULE,
+ 	.fb_open	= hgafb_open,
+@@ -519,9 +455,9 @@ static struct fb_ops hgafb_ops = {
+ 	.fb_setcolreg	= hgafb_setcolreg,
+ 	.fb_pan_display	= hgafb_pan_display,
+ 	.fb_blank	= hgafb_blank,
+-	.fb_fillrect	= cfb_fillrect, //hgafb_fillrect,
+-	.fb_copyarea	= cfb_copyarea,	//hgafb_copyarea,
+-	.fb_imageblit	= cfb_imageblit,//hgafb_imageblit,
++	.fb_fillrect	= cfb_fillrect,
++	.fb_copyarea	= cfb_copyarea,
++	.fb_imageblit	= cfb_imageblit,
+ };
+ 		
+ /* ------------------------------------------------------------------------- *
 
 -- 
 Luiz Fernando N. Capitulino

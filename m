@@ -1,22 +1,23 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: fbset not working with tridentfb on 2.6.x
- kern
-Date: Fri, 23 Apr 2004 17:52:40 +0100 (BST)
+From: "Alex Stewart" <alex@foogod.com>
+Subject: Re: [PATCH] neofb patches
+Date: Fri, 23 Apr 2004 09:53:11 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0404231752020.3997-100000@phoenix.infradead.org>
-References: <200404200100.47906.deller@gmx.de>
+Message-ID: <15833.171.72.5.12.1082739191.squirrel@www.foogod.com>
+References: <Pine.LNX.4.44.0404211840040.9207-100000@phoenix.infradead.org>
+        <1082574664.2344.3.camel@localhost.localdomain>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BH3ut-0006ie-N8
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 09:52:43 -0700
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1BH3wW-000794-Ho
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 09:54:24 -0700
+Received: from adsl-209-182-168-213.value.net ([209.182.168.213] helo=firestar.foogod.com)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1BH3ut-0004G1-8z
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 09:52:43 -0700
-In-Reply-To: <200404200100.47906.deller@gmx.de>
+	id 1BH3wV-0005GL-Uf
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 09:54:24 -0700
+In-Reply-To: <1082574664.2344.3.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,53 +27,26 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Helge Deller <deller@gmx.de>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: adaplas@hotpop.com
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
+> Yes, _all_ of the generic drawing functions expect the pseudopalette to
+> be always u32.
 
-That is a problem in the general layer. It hasn't been fixed yet.
+Just curious, but if this is the case, why isn't pseudo_palette defined as
+a "u32 *" (instead of "void *") in struct fb_info?  If anything outside
+the driver itself is going to be using this, it really should be more
+explicit what format it's supposed to be in.
 
+For that matter, is it really kosher to have the logo code (or other
+things external to the driver) setting pseudo_palette directly anyway? 
+Shouldn't there be some sort of an interface function for this (at the
+very least to let the driver know it's changed, in case it needs to know
+that sort of thing)?
 
-On Tue, 20 Apr 2004, Helge Deller wrote:
+-alex
 
-> Hi,
-> 
-> I've tried the tridentfb a few times with the last 2.6 kernel series (e.g. 2.6.6-rc1, 2.6.5, 2.6.4, 2.6.3) and with none of those kernels switching resolution with fbset worked. Everytime just screen was just scrambled with weired random graphics pixel stuff.
-> 
-> modprobe tridentfb on 2.6.6-rc1 gives:
-> tridentfb: Trident framebuffer 0.7.8-NEWAPI initializing
-> tridentfb: framebuffer size = 8192 Kb
-> tridentfb: 0000:01:00.0 board found
-> tridentfb: 1024x768 flat panel found
-> tridentfb: fb0: Trident frame buffer device 640x480-8bpp
-> 
-> My system is a IBM R30 laptop with the following lspci output:
-> 01:00.0 VGA compatible controller: Trident Microsystems CyberBlade/i1 (rev 5d) (prog-if 00 [VGA])
->         Subsystem: IBM ThinkPad T30
->         Flags: bus master, 66Mhz, medium devsel, latency 32, IRQ 11
->         Memory at 80800000 (32-bit, non-prefetchable)
->         Memory at 80500000 (32-bit, non-prefetchable)
->         Memory at 81000000 (32-bit, non-prefetchable)
->         Capabilities: [80] AGP version 1.0
->         Capabilities: [90] Power Management version 1
-> 
-> I'm willing to test any patches to get this think working correctly....
-> 
-> Helge
-> 
-> 
-> -------------------------------------------------------
-> This SF.Net email is sponsored by: IBM Linux Tutorials
-> Free Linux tutorial presented by Daniel Robbins, President and CEO of
-> GenToo technologies. Learn everything from fundamentals to system
-> administration.http://ads.osdn.com/?ad_id=1470&alloc_id=3638&op=click
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-> 
 
 
 

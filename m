@@ -1,22 +1,21 @@
-From: Otto Solares <solca@guug.org>
-Subject: Re: syncing to mainline kernel
-Date: Thu, 9 Oct 2003 12:20:54 -0600
+From: Kromer <krom@gazeta.pl>
+Subject: framebuffer  with  non-direct memory access
+Date: Fri, 10 Oct 2003 09:20:11 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20031009182054.GB5249@guug.org>
-References: <Pine.LNX.4.44.0310081946520.24451-100000@phoenix.infradead.org> <1065639239.6518.29.camel@gaston> <20031009004146.GC31602@guug.org> <1065685406.7081.68.camel@gaston>
+Message-ID: <3F865DAB.3010900@gazeta.pl>
+Reply-To: krom@gazeta.pl
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1A7fQe-00053f-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 09 Oct 2003 11:22:24 -0700
-Received: from guug.org ([168.234.203.30] helo=guug.galileo.edu)
+	id 1A7rZL-0000v9-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Oct 2003 00:20:11 -0700
+Received: from [195.117.141.6] (helo=dgt-lab.com.pl)
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 1A7fQd-00061e-ON
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 09 Oct 2003 11:22:23 -0700
-Content-Disposition: inline
-In-Reply-To: <1065685406.7081.68.camel@gaston>
+	id 1A7rZJ-0002SX-S2
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Oct 2003 00:20:10 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -26,48 +25,42 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: James Simmons <jsimmons@infradead.org>, Louis Garcia <louisg00@bellsouth.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: krom@gazeta.pl
 
-On Thu, Oct 09, 2003 at 09:43:26AM +0200, Benjamin Herrenschmidt wrote:
-> 
-> > Ben, i have problems with your new radeonfb driver, apart that i have
-> > to update the pci_ids.h and r200.c in both stock 2.6 and your bk tree
-> > to make work my radeon 9200 (rv280 Ya), in your new driver, spaces
-> > becomes '_', and after a while all characteres get messy.  My normal
-> > setup is 1024x768-32@75 but with your driver the only reliable mode is
-> > 640x480-8@60.  Any idea?
-> 
-> Regarding PCI IDs, I'm changing that now, I decided to add a separate
-> drivers/video/aty/ati_ids.h containing a copy of XFree ATI PCI IDs
-> instead of using the include/linux/pci_ids.h one. That may see odd,
-> but it helps a lot avoiding the merge problems and makes it easier
-> to resync with XFree. This is already the case in my bk btw.
+hello fb-everybody	
 
-Good, adding new cards would become easy but i really like the pci_ids.h
-approach as is a centralized db, it doesn't take much time to update
-the driver to work with my card.
+i'm just writing my own framebuffer driver for device acessed only via
+parallel port (tlike lcd where is no way to direct read/write it's memory)
 
-> Regarding your problem, I don't know what's up with spaces vs '_',
-> that doesn't ring any bell to me, especially since there is no use
-> of HW accel in this version, so the chars are really only drawn
-> by the core fbdev layer.
->
-> What do you mean by "reliable mode". What do you get when trying to
-> use another mode ? It's normal that fbset doesn't work properly in
-> 2.6, this is a known issue. What did you try and what result did you
-> get ?
+i just want to use memory allocated in kernel module, and acess it
+application with mmmap (and of course flush this memory to device
+periodicaly)
 
-I can't set my fbdev to anything different than the booted mode 640x480-8@60,
-trying anything else brings me a black screen or unsynched monitor,
-i am using Jon's merged driver (benh+khronos) so probably is not your driver's
-fault (but edid support is very tempting, although is not used because i'm
-working now on an old monitor without ddc :), i will try your driver alone and
-report back.
+i have tried to use vmalloc like in vfb.c, and it works only with file 
+transfers, when i'm using write to my framebuffer i can see it in my 
+allocated memory
+but, with mmap function there is no changes in my memory after writes 
+(even i've flushed it with msync!)
 
--solca
+the only way to acces mmap is to:
+copy_from_user(my_memory,pointer_passed_to_fb_mmap_function,size)
+that's not ver efficient
+
+q1: where is documentation of writing own mmap  functions
+q2: what fields need to be set in  mmap function implementation
+q3: what kind of memory allocation i should use inside driver
+       (kmalloc, vmalloc, with GFP_KERNEL or FGP_USER?)
+q4: how to remap (or not?) in mmap function
+
+q5: is there any simply way to build acess for non-direct memory ?
+      i mean for each byte read/write to this
+      memory need to be called my own function
+
+
+please answer to my priv (mailto:krom@gazeta.pl) too
+thx
 
 
 

@@ -1,162 +1,335 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 1/5] fbdev: Speed up scrolling of tdfxfb
-Date: Sat, 4 Sep 2004 11:06:50 +0800
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <200409041106.51013.adaplas@hotpop.com>
-Reply-To: adaplas@pol.net
+Subject: [PATCH 3/5] fbcon: take over console on driver registration
+Date: Sat, 4 Sep 2004 11:07:13 +0800
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <200409041107.13611.adaplas@hotpop.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S265222AbUIDDMQ@vger.kernel.org>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1C3QyQ-0003n6-Db
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 03 Sep 2004 20:12:18 -0700
+Received: from smtp-out.hotpop.com ([38.113.3.51])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
+	id 1C3QyP-0000PF-Js
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 03 Sep 2004 20:12:18 -0700
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id BE39B719DC
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat,  4 Sep 2004 03:12:09 +0000 (UTC)
 Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, linux-kernel@vger.kernel.org
 
-This patch speeds up scrolling of tdfxfb by maximizing var->yres_virtual so
-tdfxfb uses SCROLL_PAN_MOVE instead of SCROLL_REDRAW.  This is true whether
-CONFIG_FB_3DFX_ACCEL is set or not. This problem was reported by Paolo
-Ornati <ornati@fastwebnet.it> who also made substantial contributions to
-solve this problem.
+1. This fixes another regression from 2.4.  If fbcon is compiled statically,
+and the framebuffer driver is compiled as a module, doing a 'modprobe xxxfb'
+does nothing to the console. This has generated numerous bug reports from
+users.
 
-This patch also fixes compile errors when CONFIG_FB_3DFX_ACCEL is false.
+With this patch, fbmem will notify fbcon upon driver registration allowing
+fbcon to take over the console.
+
+2. This also fixes con2fbmap not working if fbcon is compiled as a module
+using the same mechanism as described above.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- Makefile |    5 ++---
- tdfxfb.c |   47 +++++++++++++++++++++++++++++++----------------
- 2 files changed, 33 insertions(+), 19 deletions(-)
+ drivers/video/console/fbcon.c |   89 +++++++++++++++++++++++++++---------------
+ drivers/video/console/fbcon.h |    4 -
+ drivers/video/fbmem.c         |   28 ++++++++-----
+ include/linux/fb.h            |    7 +++
+ 4 files changed, 82 insertions(+), 46 deletions(-)
 
-diff -uprN linux-2.6.9-rc1-mm3-orig/drivers/video/Makefile linux-2.6.9-rc1-mm3/drivers/video/Makefile
---- linux-2.6.9-rc1-mm3-orig/drivers/video/Makefile	2004-09-04 04:26:37.000000000 +0800
-+++ linux-2.6.9-rc1-mm3/drivers/video/Makefile	2004-09-04 08:23:53.176782760 +0800
-@@ -34,10 +34,9 @@ obj-$(CONFIG_FB_CYBER)            += cyb
- obj-$(CONFIG_FB_CYBER2000)        += cyber2000fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
- obj-$(CONFIG_FB_GBE)              += gbefb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
- obj-$(CONFIG_FB_SGIVW)            += sgivwfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
--obj-$(CONFIG_FB_3DFX)             += tdfxfb.o tdfxfb_lib.o
--tdfxfb_lib-y                      := cfbimgblt.o
-+obj-$(CONFIG_FB_3DFX)             += tdfxfb.o cfbimgblt.o
- ifneq ($(CONFIG_FB_3DFX_ACCEL),y)
--tdfxfb_lib-y                      += cfbfillrect.o cfbcopyarea.o
-+obj-$(CONFIG_FB_3DFX)             += cfbfillrect.o cfbcopyarea.o
- endif
- obj-$(CONFIG_FB_MAC)              += macfb.o macmodes.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o 
- obj-$(CONFIG_FB_HP300)            += hpfb.o cfbfillrect.o cfbimgblt.o
-diff -uprN linux-2.6.9-rc1-mm3-orig/drivers/video/tdfxfb.c linux-2.6.9-rc1-mm3/drivers/video/tdfxfb.c
---- linux-2.6.9-rc1-mm3-orig/drivers/video/tdfxfb.c	2004-08-26 23:04:25.000000000 +0800
-+++ linux-2.6.9-rc1-mm3/drivers/video/tdfxfb.c	2004-09-04 08:23:48.520490624 +0800
-@@ -168,7 +168,6 @@ static int banshee_wait_idle(struct fb_i
- static void tdfxfb_fillrect(struct fb_info *info, const struct fb_fillrect *rect);
- static void tdfxfb_copyarea(struct fb_info *info, const struct fb_copyarea *area);  
- static void tdfxfb_imageblit(struct fb_info *info, const struct fb_image *image); 
--static int tdfxfb_cursor(struct fb_info *info, struct fb_cursor *cursor);
- #endif /* CONFIG_FB_3DFX_ACCEL */
- 
- static struct fb_ops tdfxfb_ops = {
-@@ -183,13 +182,12 @@ static struct fb_ops tdfxfb_ops = {
- 	.fb_fillrect	= tdfxfb_fillrect,
- 	.fb_copyarea	= tdfxfb_copyarea,
- 	.fb_imageblit	= tdfxfb_imageblit,
--	.fb_cursor	= tdfxfb_cursor,
- #else
- 	.fb_fillrect	= cfb_fillrect,
- 	.fb_copyarea	= cfb_copyarea,
- 	.fb_imageblit	= cfb_imageblit,
--	.fb_cursor	= soft_cursor,
- #endif
-+	.fb_cursor	= soft_cursor,
- };
- 
- /*
-@@ -502,15 +500,11 @@ static int tdfxfb_check_var(struct fb_va
- 		return -EINVAL;
- 	}
- 
--	if (var->xres != var->xres_virtual) {
--		DPRINTK("virtual x resolution != physical x resolution not supported\n");
--		return -EINVAL;
--	}
-+	if (var->xres != var->xres_virtual)
-+		var->xres_virtual = var->xres;
- 
--	if (var->yres > var->yres_virtual) {
--		DPRINTK("virtual y resolution < physical y resolution not possible\n");
--		return -EINVAL;
--	}
-+	if (var->yres > var->yres_virtual)
-+		var->yres_virtual = var->yres;
- 
- 	if (var->xoffset) {
- 		DPRINTK("xoffset not supported\n");
-@@ -539,9 +533,12 @@ static int tdfxfb_check_var(struct fb_va
- 	}
-   
- 	if (lpitch * var->yres_virtual > info->fix.smem_len) {
--		DPRINTK("no memory for screen (%ux%ux%u)\n",
--		var->xres, var->yres_virtual, var->bits_per_pixel);
--		return -EINVAL;
-+		var->yres_virtual = info->fix.smem_len/lpitch;
-+		if (var->yres_virtual < var->yres) {
-+			DPRINTK("no memory for screen (%ux%ux%u)\n",
-+			var->xres, var->yres_virtual, var->bits_per_pixel);
-+			return -EINVAL;
-+		}
- 	}
-   
- 	if (PICOS2KHZ(var->pixclock) > par->max_pixclock) {
-@@ -1030,7 +1027,9 @@ static void tdfxfb_imageblit(struct fb_i
- 	}
- 	banshee_wait_idle(info);
- }
-+#endif /* CONFIG_FB_3DFX_ACCEL */
- 
-+#ifdef TDFX_HARDWARE_CURSOR
- static int tdfxfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
- {
- 	struct tdfx_par *par = (struct tdfx_par *) info->par;
-@@ -1167,7 +1166,7 @@ static int tdfxfb_cursor(struct fb_info 
- 	spin_unlock_irqrestore(&par->DAClock, flags);
+diff -uprN linux-2.6.9-rc1-mm3-orig/drivers/video/console/fbcon.c linux-2.6.9-rc1-mm3/drivers/video/console/fbcon.c
+--- linux-2.6.9-rc1-mm3-orig/drivers/video/console/fbcon.c	2004-08-26 23:04:25.000000000 +0800
++++ linux-2.6.9-rc1-mm3/drivers/video/console/fbcon.c	2004-09-04 08:34:25.410053096 +0800
+@@ -314,6 +314,28 @@ static int search_for_mapped_con(void)
  	return 0;
  }
--#endif /* CONFIG_FB_3DFX_ACCEL */
-+#endif
  
++static int fbcon_takeover(void)
++{
++	int err, i;
++
++	if (!num_registered_fb)
++		return -ENODEV;
++
++	for (i = first_fb_vc; i <= last_fb_vc; i++)
++		con2fb_map[i] = info_idx;
++
++	err = take_over_console(&fb_con, first_fb_vc, last_fb_vc,
++				fbcon_is_default);
++	if (err) {
++		for (i = first_fb_vc; i <= last_fb_vc; i++) {
++			con2fb_map[i] = -1;
++		}
++		info_idx = -1;
++	}
++
++	return err;
++}
++
  /**
-  *      tdfxfb_probe - Device Initializiation
-@@ -1183,7 +1182,7 @@ static int __devinit tdfxfb_probe(struct
+  *	set_con2fb_map - map console to frame buffer device
+  *	@unit: virtual console number to map
+@@ -322,7 +344,7 @@ static int search_for_mapped_con(void)
+  *	Maps a virtual console @unit to a frame buffer device
+  *	@newidx.
+  */
+-int set_con2fb_map(int unit, int newidx)
++static int set_con2fb_map(int unit, int newidx)
  {
- 	struct tdfx_par *default_par;
+ 	struct vc_data *vc = vc_cons[unit].d;
+ 	int oldidx = con2fb_map[unit];
+@@ -338,8 +360,7 @@ int set_con2fb_map(int unit, int newidx)
+ 
+ 	if (!search_for_mapped_con()) {
+ 		info_idx = newidx;
+-		fb_console_init();
+-		return 0;
++		return fbcon_takeover();
+ 	}
+ 
+ 	if (oldidx != -1)
+@@ -2730,12 +2751,25 @@ static int fbcon_mode_deleted(struct fb_
+ 	return found;
+ }
+ 
++static int fbcon_fb_registered(int idx)
++{
++	int ret = 0;
++
++	if (info_idx == -1) {
++		info_idx = idx;
++		ret = fbcon_takeover();
++	}
++
++	return ret;
++}
++
+ static int fbcon_event_notify(struct notifier_block *self, 
+ 			      unsigned long action, void *data)
+ {
+ 	struct fb_event *event = (struct fb_event *) data;
+ 	struct fb_info *info = event->info;
+ 	struct fb_videomode *mode;
++	struct fb_con2fbmap *con2fb;
+ 	int ret = 0;
+ 
+ 	switch(action) {
+@@ -2752,6 +2786,17 @@ static int fbcon_event_notify(struct not
+ 		mode = (struct fb_videomode *) event->data;
+ 		ret = fbcon_mode_deleted(info, mode);
+ 		break;
++	case FB_EVENT_FB_REGISTERED:
++		ret = fbcon_fb_registered(info->node);
++		break;
++	case FB_EVENT_SET_CONSOLE_MAP:
++		con2fb = (struct fb_con2fbmap *) event->data;
++		ret = set_con2fb_map(con2fb->console - 1, con2fb->framebuffer);
++		break;
++	case FB_EVENT_GET_CONSOLE_MAP:
++		con2fb = (struct fb_con2fbmap *) event->data;
++		con2fb->framebuffer = con2fb_map[con2fb->console - 1];
++		break;
+ 	}
+ 
+ 	return ret;
+@@ -2790,43 +2835,28 @@ const struct consw fb_con = {
+ static struct notifier_block fbcon_event_notifier = {
+ 	.notifier_call	= fbcon_event_notify,
+ };
+-static int fbcon_event_notifier_registered;
+ 
+-/* can't be __init as it can be called by set_con2fb_map() later */
+-int fb_console_init(void)
++int __init fb_console_init(void)
+ {
+-	int err, i;
++	int i;
++
++	acquire_console_sem();
++	fb_register_client(&fbcon_event_notifier);
++	release_console_sem();
+ 
+ 	for (i = 0; i < MAX_NR_CONSOLES; i++)
+ 		con2fb_map[i] = -1;
+ 
+-	if (!num_registered_fb)
+-		return -ENODEV;
+-
+-	if (info_idx == -1) {
++	if (num_registered_fb) {
+ 		for (i = 0; i < FB_MAX; i++) {
+ 			if (registered_fb[i] != NULL) {
+ 				info_idx = i;
+ 				break;
+ 			}
+ 		}
++		fbcon_takeover();
+ 	}
+-	for (i = first_fb_vc; i <= last_fb_vc; i++)
+-		con2fb_map[i] = info_idx;
+-	err = take_over_console(&fb_con, first_fb_vc, last_fb_vc,
+-				fbcon_is_default);
+-	if (err) {
+-		for (i = first_fb_vc; i <= last_fb_vc; i++) {
+-			con2fb_map[i] = -1;
+-		}
+-		return err;
+-	}
+-	acquire_console_sem();
+-	if (!fbcon_event_notifier_registered) {
+-		fb_register_client(&fbcon_event_notifier);
+-		fbcon_event_notifier_registered = 1;
+-	} 
+-	release_console_sem();
++
+ 	return 0;
+ }
+ 
+@@ -2835,10 +2865,7 @@ int fb_console_init(void)
+ void __exit fb_console_exit(void)
+ {
+ 	acquire_console_sem();
+-	if (fbcon_event_notifier_registered) {
+-		fb_unregister_client(&fbcon_event_notifier);
+-		fbcon_event_notifier_registered = 0;
+-	}
++	fb_unregister_client(&fbcon_event_notifier);
+ 	release_console_sem();
+ 	give_up_console(&fb_con);
+ }	
+diff -uprN linux-2.6.9-rc1-mm3-orig/drivers/video/console/fbcon.h linux-2.6.9-rc1-mm3/drivers/video/console/fbcon.h
+--- linux-2.6.9-rc1-mm3-orig/drivers/video/console/fbcon.h	2004-08-26 23:04:25.000000000 +0800
++++ linux-2.6.9-rc1-mm3/drivers/video/console/fbcon.h	2004-09-04 08:34:34.014744984 +0800
+@@ -48,10 +48,6 @@ struct display {
+     struct fb_videomode *mode;
+ };
+ 
+-/* drivers/video/console/fbcon.c */
+-extern signed char con2fb_map[MAX_NR_CONSOLES];
+-extern int set_con2fb_map(int unit, int newidx);
+-
+     /*
+      *  Attribute Decoding
+      */
+diff -uprN linux-2.6.9-rc1-mm3-orig/drivers/video/fbmem.c linux-2.6.9-rc1-mm3/drivers/video/fbmem.c
+--- linux-2.6.9-rc1-mm3-orig/drivers/video/fbmem.c	2004-09-04 04:26:37.000000000 +0800
++++ linux-2.6.9-rc1-mm3/drivers/video/fbmem.c	2004-09-04 08:34:41.758567744 +0800
+@@ -47,9 +47,6 @@
+ 
+ #include <linux/fb.h>
+ 
+-#ifdef CONFIG_FRAMEBUFFER_CONSOLE
+-#include "console/fbcon.h"
+-#endif
+     /*
+      *  Frame buffer device initialization and setup routines
+      */
+@@ -1236,10 +1233,9 @@ fb_ioctl(struct inode *inode, struct fil
+ 	struct fb_ops *fb = info->fbops;
+ 	struct fb_var_screeninfo var;
+ 	struct fb_fix_screeninfo fix;
+-#ifdef CONFIG_FRAMEBUFFER_CONSOLE
+ 	struct fb_con2fbmap con2fb;
+-#endif
+ 	struct fb_cmap_user cmap;
++	struct fb_event event;
+ 	void __user *argp = (void __user *)arg;
+ 	int i;
+ 	
+@@ -1288,13 +1284,16 @@ fb_ioctl(struct inode *inode, struct fil
+ 		i = fb_cursor(info, argp);
+ 		release_console_sem();
+ 		return i;
+-#ifdef CONFIG_FRAMEBUFFER_CONSOLE
+ 	case FBIOGET_CON2FBMAP:
+ 		if (copy_from_user(&con2fb, argp, sizeof(con2fb)))
+ 			return -EFAULT;
+ 		if (con2fb.console < 1 || con2fb.console > MAX_NR_CONSOLES)
+ 		    return -EINVAL;
+-		con2fb.framebuffer = con2fb_map[con2fb.console-1];
++		con2fb.framebuffer = -1;
++		event.info = info;
++		event.data = &con2fb;
++		notifier_call_chain(&fb_notifier_list,
++				    FB_EVENT_GET_CONSOLE_MAP, &event);
+ 		return copy_to_user(argp, &con2fb,
+ 				    sizeof(con2fb)) ? -EFAULT : 0;
+ 	case FBIOPUT_CON2FBMAP:
+@@ -1310,11 +1309,14 @@ fb_ioctl(struct inode *inode, struct fil
+ #endif /* CONFIG_KMOD */
+ 		if (!registered_fb[con2fb.framebuffer])
+ 		    return -EINVAL;
+-		if (con2fb.console > 0 && con2fb.console < MAX_NR_CONSOLES)
+-			return set_con2fb_map(con2fb.console-1,
+-					      con2fb.framebuffer);
++		if (con2fb.console > 0 && con2fb.console < MAX_NR_CONSOLES) {
++			event.info = info;
++			event.data = &con2fb;
++			return notifier_call_chain(&fb_notifier_list,
++						   FB_EVENT_SET_CONSOLE_MAP,
++						   &event);
++		}
+ 		return -EINVAL;
+-#endif	/* CONFIG_FRAMEBUFFER_CONSOLE */
+ 	case FBIOBLANK:
+ 		acquire_console_sem();
+ 		i = fb_blank(info, arg);
+@@ -1493,6 +1495,7 @@ register_framebuffer(struct fb_info *fb_
+ {
+ 	int i;
+ 	struct class_device *c;
++	struct fb_event event;
+ 
+ 	if (num_registered_fb == FB_MAX)
+ 		return -ENXIO;
+@@ -1546,6 +1549,9 @@ register_framebuffer(struct fb_info *fb_
+ 
+ 	devfs_mk_cdev(MKDEV(FB_MAJOR, i),
+ 			S_IFCHR | S_IRUGO | S_IWUGO, "fb/%d", i);
++	event.info = fb_info;
++	notifier_call_chain(&fb_notifier_list,
++			    FB_EVENT_FB_REGISTERED, &event);
+ 	return 0;
+ }
+ 
+diff -uprN linux-2.6.9-rc1-mm3-orig/include/linux/fb.h linux-2.6.9-rc1-mm3/include/linux/fb.h
+--- linux-2.6.9-rc1-mm3-orig/include/linux/fb.h	2004-09-04 08:36:01.161496664 +0800
++++ linux-2.6.9-rc1-mm3/include/linux/fb.h	2004-09-04 08:35:17.433144384 +0800
+@@ -452,6 +452,13 @@ struct fb_cursor_user {
+ #define FB_EVENT_RESUME			0x03
+ /*      An entry from the modelist was removed */
+ #define FB_EVENT_MODE_DELETE            0x04
++/*      A driver registered itself */
++#define FB_EVENT_FB_REGISTERED          0x05
++/*      get console to framebuffer mapping */
++#define FB_EVENT_GET_CONSOLE_MAP        0x06
++/*      set console to framebuffer mapping */
++#define FB_EVENT_SET_CONSOLE_MAP        0x07
++
+ 
+ struct fb_event {
  	struct fb_info *info;
--	int size, err;
-+	int size, err, lpitch;
- 
- 	if ((err = pci_enable_device(pdev))) {
- 		printk(KERN_WARNING "tdfxfb: Can't enable pdev: %d\n", err);
-@@ -1288,6 +1287,22 @@ static int __devinit tdfxfb_probe(struct
- 	if (!err || err == 4)
- 		info->var = tdfx_var;
- 
-+	/* maximize virtual vertical length */
-+	lpitch = info->var.xres_virtual * ((info->var.bits_per_pixel + 7) >> 3);
-+	info->var.yres_virtual = info->fix.smem_len/lpitch;
-+	if (info->var.yres_virtual < info->var.yres)
-+		goto out_err;
-+
-+#ifdef CONFIG_FB_3DFX_ACCEL
-+	/*
-+	 * FIXME: Limit var->yres_virtual to 4096 because of screen artifacts
-+	 * during scrolling. This is only present if 2D acceleration is
-+	 * enabled.
-+	 */
-+	if (info->var.yres_virtual > 4096)
-+		info->var.yres_virtual = 4096;
-+#endif /* CONFIG_FB_3DFX_ACCEL */
-+
- 	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0) {
- 		printk(KERN_WARNING "tdfxfb: Can't allocate color map\n");
- 		goto out_err;
 
 
- 
+
+
+-------------------------------------------------------
+This SF.Net email is sponsored by BEA Weblogic Workshop
+FREE Java Enterprise J2EE developer tools!
+Get your free copy of BEA WebLogic Workshop 8.1 today.
+http://ads.osdn.com/?ad_id=5047&alloc_id=10808&op=click

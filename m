@@ -1,15 +1,15 @@
-From: James Simmons <jsimmons@transvirtual.com>
-Subject: [UPDATES] fbdev ports and fixes
-Date: Thu, 20 Jun 2002 11:11:44 -0700 (PDT)
+From: Bryan Stillwell <bryan@bokeoa.com>
+Subject: radeonfb and 16bit color problem
+Date: Thu, 20 Jun 2002 21:29:58 -0600
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0206201105200.16635-100000@www.transvirtual.com>
+Message-ID: <20020620212958.B20756@bokeoa.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from www.transvirtual.com ([206.14.214.140])
-	by usw-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17L6PO-0003qU-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 20 Jun 2002 11:11:50 -0700
+Received: from morpheus.bokeoa.com ([66.7.161.57])
+	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17LF7e-0004Dr-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 20 Jun 2002 20:30:07 -0700
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -19,79 +19,44 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: dhd@debian.org, Geert Uytterhoeven <geert@linux-m68k.org>, Ani Joshi <ajoshi@shell.unixbox.com>
+To: linux-fbdev-devel@lists.sourceforge.net
+
+I'm using version 0.1.5 of the radeonfb driver that Ani Joshi posted on
+this list earlier this month with kernel 2.4.19pre10, and I've run into
+a problem with the colors not being right in 16bit color mode.  In 15bit
+color mode, everything seems to look good...
+
+Since running `fbset 800x600-75 -depth 16` seems to want to switch to
+15bit color and not 16bit color, I had to use `fbset 800x600-75 -depth
+16 -rgba 5,6,5,0` to get into 16bit color mode.  However, once I'm in
+16bit color and try to view some jpegs using fbi, the colors are messed
+up.
+
+Based of of how the colors in the images are changing, I'm guessing
+that the video card is only using the lower 5 bits of green instead of
+all 6 bits (chopping off the most significant bit.)  This causes colors
+that were only 50% green before to become 100% green (and 25% green
+before to become 50%.)
+
+Any ideas would be helpful.  I tried looking at the code myself, but I'm
+still quite new to the framebuffer code.  However, this part looked kind
+of strange to me:
+
+   /* For 565, the green component is mixed one order below */
+   if (rinfo->depth == 16) {
+      OUTREG(PALETTE_INDEX, pindex>>1);
+      OUTREG(PALETTE_DATA, (rinfo->palette[regno>>1].red << 16) |
+             (green << 8) | (rinfo->palette[regno>>1].blue));
+      green = rinfo->palette[regno<<1].green;
+   }
 
 
-Hi!
+BTW, I have a Radeon 8500 (QL).
 
-  I managed to port over the RIVA framebuffer driver to the new api as
-well as the Macintosh one. The RIVA driver has been tested on my system.
-I also placed in BK the newest Voodoo1 driver. Another big change from
-Franz Sirl and approved by BenH is the removal of the VC_IOCTL stuff on
-the PPC platform. Please test these patches before I submit them.
-
-Thank you.
-
-Here is a diffstat of the changes:
-
- drivers/video/riva/accel.c                     |  427 -------
- fbdev-2.5/arch/i386/boot/video.S               |    4
- fbdev-2.5/drivers/char/vt.c                    |   66 -
- fbdev-2.5/drivers/video/Config.help            |   17
- fbdev-2.5/drivers/video/Config.in              |   68 -
- fbdev-2.5/drivers/video/Makefile               |    4
- fbdev-2.5/drivers/video/S3triofb.c             |   19
- fbdev-2.5/drivers/video/aty/atyfb_base.c       |   28
- fbdev-2.5/drivers/video/aty128fb.c             |   33
- fbdev-2.5/drivers/video/chipsfb.c              |   29
- fbdev-2.5/drivers/video/controlfb.c            |   21
- fbdev-2.5/drivers/video/fbcon-mac.c            |  483 --------
- fbdev-2.5/drivers/video/imsttfb.c              |   56
- fbdev-2.5/drivers/video/macfb.c                |  463 ++-----
- fbdev-2.5/drivers/video/macmodes.c             |  171 --
- fbdev-2.5/drivers/video/matrox/matroxfb_base.c |   27
- fbdev-2.5/drivers/video/matrox/matroxfb_base.h |    6
- fbdev-2.5/drivers/video/modedb.c               |    4
- fbdev-2.5/drivers/video/neofb.c                |    7
- fbdev-2.5/drivers/video/offb.c                 |   26
- fbdev-2.5/drivers/video/platinumfb.c           |   26
- fbdev-2.5/drivers/video/riva/Makefile          |    2
- fbdev-2.5/drivers/video/riva/fbdev.c           | 1500 +++++++++----------------
- fbdev-2.5/drivers/video/riva/riva_hw.c         |   38
- fbdev-2.5/drivers/video/riva/riva_hw.h         |    2
- fbdev-2.5/drivers/video/riva/riva_tbl.h        |  203 +--
- fbdev-2.5/drivers/video/riva/rivafb.h          |   60 -
- fbdev-2.5/drivers/video/sstfb.c                |  958 +++++++++------
- fbdev-2.5/drivers/video/sstfb.h                |   73 -
- fbdev-2.5/drivers/video/tdfxfb.c               |   55
- fbdev-2.5/drivers/video/valkyriefb.c           |   26
- fbdev-2.5/drivers/video/vesafb.c               |    8
- fbdev-2.5/include/asm-ppc/vc_ioctl.h           |   46
- fbdev-2.5/include/asm-ppc64/vc_ioctl.h         |   50
- fbdev-2.5/include/linux/pci_ids.h              |    1
- fbdev-2.5/include/linux/tty.h                  |    3
- 36 files changed, 1516 insertions(+), 3494 deletions(-)
-
-The URL to grab the diff is
-
-http://www.transvirtual.com/~jsimmons/fbdev.diff.gz
-
-and the BK link is
-
-http://fbdev.bkbits.net:8080/fbdev-2.5
-
-   . ---
-   |o_o |
-   |:_/ |   Give Micro$oft the Bird!!!!
-  //   \ \  Use Linux!!!!
- (|     | )
- /'\_   _/`\
- \___)=(___/
-
-
+Thanks,
+Bryan
 
 
 -------------------------------------------------------

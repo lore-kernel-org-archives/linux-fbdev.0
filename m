@@ -1,20 +1,20 @@
 From: Alexander Kern <alex.kern@gmx.de>
-Subject: [PATCH atyfb] fix hw cursor in doublescan modes
-Date: Wed, 10 Nov 2004 19:25:30 +0100
-Message-ID: <200411101925.30957.alex.kern@gmx.de>
+Subject: [PATCH atyfb] Fix typo
+Date: Wed, 10 Nov 2004 19:27:00 +0100
+Message-ID: <200411101927.01121.alex.kern@gmx.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_a0lkB61S7EafUik"
+  boundary="Boundary-00=_11lkBbpv51OpLxW"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CRxA5-0007dh-PA
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Nov 2004 10:25:41 -0800
-Received: from imap.gmx.net ([213.165.64.20] helo=mail.gmx.net)
+	id 1CRxBU-0007nc-6D
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Nov 2004 10:27:08 -0800
+Received: from mail.gmx.net ([213.165.64.20])
 	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.41)
-	id 1CRxA5-0004Kw-3R
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Nov 2004 10:25:41 -0800
+	id 1CRxBT-0004Vh-Am
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Nov 2004 10:27:08 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,64 +28,49 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 To: "Antonino A. Daplas" <adaplas@hotpop.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
---Boundary-00=_a0lkB61S7EafUik
+--Boundary-00=_11lkBbpv51OpLxW
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-fix hw cursor in doublescan modes 
+Fix typo, and decrease amount of output
+
 
 Signed-off-by: Alexander Kern <alex.kern@gmx.de>
 
 
---Boundary-00=_a0lkB61S7EafUik
+
+--Boundary-00=_11lkBbpv51OpLxW
 Content-Type: text/x-diff;
   charset="us-ascii";
-  name="atyfb_fix_cursor_in_doublescanmode.patch"
+  name="atyfb_fix_typo.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment;
-	filename="atyfb_fix_cursor_in_doublescanmode.patch"
+	filename="atyfb_fix_typo.patch"
 
---- linux-2.6.head/drivers/video/aty/mach64_cursor.c.orig	2004-11-07 17:14:57.000000000 +0100
-+++ linux-2.6.head/drivers/video/aty/mach64_cursor.c	2004-11-09 15:04:56.000000000 +0100
-@@ -75,7 +75,7 @@
- {
- 	struct atyfb_par *par = (struct atyfb_par *) info->par;
- 	u16 xoff, yoff;
--	int x, y;
-+	int x, y, h;
+--- linux-2.6.head/drivers/video/aty/atyfb_base.c.orig	2004-11-07 17:14:57.000000000 +0100
++++ linux-2.6.head/drivers/video/aty/atyfb_base.c	2004-11-07 19:22:58.973917552 +0100
+@@ -659,7 +659,7 @@
+ 	aty_st_le32(CRTC_GEN_CNTL, crtc->gen_cntl & ~CRTC_EN, par);
  
- #ifdef __sparc__
- 	if (par->mmaped)
-@@ -106,17 +106,20 @@
- 			yoff = 0;
- 		}
+ 	DPRINTK("setting up CRTC\n");
+-	PRINTKI("set primary CRT to %ix%i %c%c composite %c\n",
++	DPRINTK("set primary CRT to %ix%i %c%c composite %c\n",
+ 	    ((((crtc->h_tot_disp>>16) & 0xff) + 1)<<3), (((crtc->v_tot_disp>>16) & 0x7ff) + 1),
+ 	    (crtc->h_sync_strt_wid & 0x200000)?'N':'P', (crtc->v_sync_strt_wid & 0x200000)?'N':'P',
+ 	    (crtc->gen_cntl & CRTC_CSYNC_EN)?'P':'N');
+@@ -692,7 +692,7 @@
+ 		aty_st_lcd(LCD_GEN_CNTL, (crtc->lcd_gen_cntl & ~CRTC_RW_SELECT) |
+ 			(SHADOW_EN | SHADOW_RW_EN), par);
  
-+		h = cursor->image.height;
-+		
- 		/*
--		 * In doublescan mode, the cursor location also needs to be
--		 * doubled.
-+		 * In doublescan mode, the cursor location
-+		 * and heigh also needs to be doubled.
- 		 */
--                if (par->crtc.gen_cntl & CRTC_DBL_SCAN_EN)
-+                if (par->crtc.gen_cntl & CRTC_DBL_SCAN_EN) {
- 			y<<=1;
-+			h<<=1;
-+		}
- 		wait_for_fifo(4, par);
- 		aty_st_le32(CUR_OFFSET, (info->fix.smem_len >> 3) + (yoff << 1), par);
- 		aty_st_le32(CUR_HORZ_VERT_OFF,
--			    ((u32) (64 - cursor->image.height + yoff) << 16) | xoff,
--			    par);
-+			    ((u32) (64 - h + yoff) << 16) | xoff, par);
- 		aty_st_le32(CUR_HORZ_VERT_POSN, ((u32) y << 16) | x, par);
- 	}
+-		PRINTKI("set secondary CRT to %ix%i %c%c\n",
++		DPRINTK("set secondary CRT to %ix%i %c%c\n",
+ 		    ((((crtc->shadow_h_tot_disp>>16) & 0xff) + 1)<<3), (((crtc->shadow_v_tot_disp>>16) & 0x7ff) + 1),
+ 		    (crtc->shadow_h_sync_strt_wid & 0x200000)?'N':'P', (crtc->shadow_v_sync_strt_wid & 0x200000)?'N':'P');
  
 
---Boundary-00=_a0lkB61S7EafUik--
+--Boundary-00=_11lkBbpv51OpLxW--
 
 
 -------------------------------------------------------

@@ -1,45 +1,55 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [Linux-fbdev-devel] Redesign of kernel graphics interface
-Date: Fri, 7 May 2004 10:31:34 +0200 (MEST)
-Sender: mesa3d-dev-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0405071030420.28787@waterleaf.sonytel.be>
-References: <20040507005040.18258.qmail@web14925.mail.yahoo.com>
+Subject: Re: [PATCH] atyfb (2.6): Memory type correction
+Date: Fri, 7 May 2004 10:36:50 +0200 (MEST)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.GSO.4.58.0405071035410.28787@waterleaf.sonytel.be>
+References: <20040507021126.GA11648@sci.fi>
 Mime-Version: 1.0
-Return-path: <mesa3d-dev-admin@lists.sourceforge.net>
-In-Reply-To: <20040507005040.18258.qmail@web14925.mail.yahoo.com>
-Errors-To: mesa3d-dev-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
-	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=unsubscribe>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BM0qi-0001yB-VG
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 07 May 2004 01:36:52 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BM0qh-00043b-Oa
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 07 May 2004 01:36:52 -0700
+In-Reply-To: <20040507021126.GA11648@sci.fi>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:mesa3d-dev@lists.sourceforge.net>
-List-Help: <mailto:mesa3d-dev-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
-	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=mesa3d-dev>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jon Smirl <jonsmirl@yahoo.com>
-Cc: James Simmons <jsimmons@infradead.org>, Nicolas Souchu <nsouch@free.fr>, dri-devel <dri-devel@lists.sourceforge.net>, mesa3d-dev <mesa3d-dev@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: TEXT/PLAIN; charset="iso-8859-1"
+To: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, 6 May 2004, Jon Smirl wrote:
-> 6) What about low memory embedded systems? mesa has an excellent implementation
-> of OpenGL-ES available for free. http://www.khronos.org/opengles/ It already
-> supports running out of a dumb framebuffer. OpenGL-ES is small enough that
-> Qualcomm is putting it into phones. Of course you can always ignore the GUI
-> standard and do what you want in an embedded system.
+On Fri, 7 May 2004, Ville [iso-8859-1] Syrj=E4l=E4 wrote:
+> This patch changes the memory type message to match reality. This agree=
+s
+> with both my hardware and the Mobility register specs.
 
-What about performance on older systems? Current new embedded CE may be much
-faster than an average PC from a few years ago.
+I took the values from the RAGE II+ manual. So ATI recycled the WRAM valu=
+e for
+Mobility? Unless they never actually made boards with WRAM.
 
 Gr{oetje,eeting}s,
 
 						Geert
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m6=
+8k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
+In personal conversations with technical people, I call myself a hacker. =
+But
+when I'm talking to journalists I just say "programmer" or something like=
+ that.
 							    -- Linus Torvalds
 
 

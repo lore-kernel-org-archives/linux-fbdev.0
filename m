@@ -1,61 +1,68 @@
-From: Sven Luther <luther@dpt-info.u-strasbg.fr>
-Subject: Re: request_mem_region problem ...
-Date: Sat, 9 Nov 2002 08:52:11 +0100
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20021109075211.GA939@iliana>
-References: <20021030130016.GA1573@iliana> <1036024416.644.23.camel@daplas> <20021031081007.GB617@iliana> <1036062270.638.25.camel@daplas>
+From: James Simmons <jsimmons@phoenix.infradead.org>
+Subject: Re: Linux 2.5.47 compile error
+Date: Tue, 12 Nov 2002 17:44:59 +0000 (GMT)
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <Pine.LNX.4.44.0211121744450.14340-100000@phoenix.infradead.org>
+References: <Pine.LNX.4.44.0211111103130.246-100000@epo>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from smtp-out-4.wanadoo.fr ([193.252.19.23] helo=mel-rto4.wanadoo.fr)
-	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18AQPs-0002Lb-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 08 Nov 2002 23:52:29 -0800
-Content-Disposition: inline
-In-Reply-To: <1036062270.638.25.camel@daplas>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44.0211111103130.246-100000@epo>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: Sven Luther <luther@dpt-info.u-strasbg.fr>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
+To: Michael Kummer <michael@kummer.cc>
+Cc: Linux Kernel Mailinglist <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, Oct 31, 2002 at 07:05:13PM +0800, Antonino Daplas wrote:
-> > How, well, maybe i should wait for the new patches from James to be
-> > accepted into the linus tree.
-> > 
-> > Notice, maybe this is due to me not having defined yet any of the
-> > check_var, set_par, blank, ... functions, but my idea, for the howto
-> > afterward, was to write first the most minimal working fbdev.
-> > 
-> > BTW, should i work on james BK tree directly ? Is there an howto on how
-> > to do that ? Or could it be possible to get a patch against 2.5.44 ?
-> > 
-> Try Documentation/BK-usage.  You will need a very fat pipe, then for a
-> start, 
+
+IT will be fixed in the next change set.
+
+On Mon, 11 Nov 2002, Michael Kummer wrote:
+
+> make -f scripts/Makefile.build obj=drivers/video/riva
+>   gcc -Wp,-MD,drivers/video/riva/.fbdev.o.d -D__KERNEL__ -Iinclude -Wall
+> -Wstrict-prototypes -Wno-trigraphs -O2 -fomit-frame-pointer
+> -fno-strict-aliasing -fno-common -pipe -mpreferred-stack-boundary=2
+> -march=i686 -malign-functions=4 -Iarch/i386/mach-generic -nostdinc
+> -iwithprefix include    -DKBUILD_BASENAME=fbdev   -c -o
+> drivers/video/riva/fbdev.o drivers/video/riva/fbdev.c
+> drivers/video/riva/fbdev.c: In function `riva_set_dispsw':
+> drivers/video/riva/fbdev.c:665: structure has no member named `type'
+> drivers/video/riva/fbdev.c:666: structure has no member named `type_aux'
+> drivers/video/riva/fbdev.c:667: structure has no member named `ypanstep'
+> drivers/video/riva/fbdev.c:668: structure has no member named `ywrapstep'
+> drivers/video/riva/fbdev.c:677: structure has no member named
+> `line_length'
+> drivers/video/riva/fbdev.c:678: structure has no member named `visual'
+> drivers/video/riva/fbdev.c:686: structure has no member named
+> `line_length'
+> drivers/video/riva/fbdev.c:687: structure has no member named `visual'
+> drivers/video/riva/fbdev.c:695: structure has no member named
+> `line_length'
+> drivers/video/riva/fbdev.c:696: structure has no member named `visual'
+> drivers/video/riva/fbdev.c: In function `rivafb_get_fix':
+> drivers/video/riva/fbdev.c:1294: structure has no member named `type'
+> drivers/video/riva/fbdev.c:1295: structure has no member named `type_aux'
+> drivers/video/riva/fbdev.c:1296: structure has no member named `visual'
+> drivers/video/riva/fbdev.c:1302: structure has no member named
+> `line_length'
+> drivers/video/riva/fbdev.c: In function `rivafb_pan_display':
+> drivers/video/riva/fbdev.c:1611: structure has no member named
+> `line_length'
+> drivers/video/riva/fbdev.c:1586: warning: `base' might be used
+> uninitialized in this function
+> drivers/video/riva/fbdev.c: At top level:
+> drivers/video/riva/fbdev.c:1748: unknown field `fb_get_fix' specified in
+> initializer
+> drivers/video/riva/fbdev.c:1748: warning: initialization from incompatible
+> pointer type
+> drivers/video/riva/fbdev.c:1749: unknown field `fb_get_var' specified in
+> initializer
+> drivers/video/riva/fbdev.c:1749: warning: initialization from incompatible
+> pointer type
+> make[3]: *** [drivers/video/riva/fbdev.o] Error 1
+> make[2]: *** [drivers/video/riva] Error 2
+> make[1]: *** [drivers/video] Error 2
+> make: *** [drivers] Error 2
 > 
-> bk clone bk://fbdev.bkbits.net/fbdev-2.5
-
-How the hell can i use this ? i don't have any bk installed, and i doubt
-bk will ever be debian packaged so i will have to clutter my system, and
-they ask me about some collection of stupid questions before i can download,
-and finally it is not even possible to download this stuff.
-
-I suppose there is another free solution for downloading the bk kernel,
-does anyone have a link to it or to documentation about how to do it ?
-
-Friendly,
-
-Sven Luther
-
-
--------------------------------------------------------
-This sf.net email is sponsored by:ThinkGeek
-Welcome to geek heaven.
-http://thinkgeek.com/sf
+> 
+> 

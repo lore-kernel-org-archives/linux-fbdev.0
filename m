@@ -1,21 +1,23 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: Re: Large framebuffers and HIGHMEM systems
-Date: Wed, 10 Sep 2003 08:01:00 -0700 (PDT)
+From: Kronos <kronos@kronoz.cjb.net>
+Subject: Re: Re: New radeonfb, mostly untested
+Date: Wed, 10 Sep 2003 19:46:54 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030910150100.89767.qmail@web14914.mail.yahoo.com>
-References: <Pine.GSO.4.21.0309101039170.1390-100000@vervain.sonytel.be>
+Message-ID: <20030910174654.GA422@dreamland.darkstar.lan>
+References: <1062952639.655.6.camel@gaston> <20030907230334.GA847@dreamland.darkstar.lan> <1063000866.659.9.camel@gaston> <20030908190527.GA1731@dreamland.darkstar.lan> <20030910164101.GA437@dreamland.darkstar.lan> <1063212505.642.77.camel@gaston>
+Reply-To: kronos@kronoz.cjb.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19x6TE-00012y-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 10 Sep 2003 08:01:24 -0700
-Received: from web14914.mail.yahoo.com ([216.136.225.241])
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.22)
-	id 19x6TC-00019d-19
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Sep 2003 08:01:22 -0700
-In-Reply-To: <Pine.GSO.4.21.0309101039170.1390-100000@vervain.sonytel.be>
+	id 19x94d-0002zB-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 10 Sep 2003 10:48:11 -0700
+Received: from mail-7.tiscali.it ([195.130.225.153])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
+	id 19x94c-0007CW-SI
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Sep 2003 10:48:11 -0700
+Content-Disposition: inline
+In-Reply-To: <1063212505.642.77.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,42 +29,30 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
---- Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> Or modify ioremap() to print the message? This problem is not only limited to
-> frame buffer devices, but to every driver that needs to ioremap() large
-> regions, right?
+Il Wed, Sep 10, 2003 at 06:48:26PM +0200, Benjamin Herrenschmidt ha scritto: 
+> > This is very  annoying because I must re-center the  screen every time I
+> > switch from  console to X and  viceversa. I had the same  issue with the
+> > old driver + i2c code.
+> > 
+> > That doesn't happen with the standard modedb. At 1024x768 with
+> > ignore_edid it's ok. At 1280x1024 it falls back to 800x600.
 > 
-ioremap() is supposed to map the region into the bottom 1GB or fail. After
-ioremap() fails you need to use a different API to map to the highmem regions.
-The way Linux is set up there is always about 20-30MB of free address space
-below 1GB. All of the hardware I've seen can map into that space. The only
-exception is the huge amount of address space needed for kernel mapped video
-frame buffers.
+> Can you try tweaking the hSync and vSync polarity ?
 
-Memory below 1GB is important to the kernel for keeping page tables. Page table
-can be pushed above 1GB but you incur performance penalties. There is no
-problem creating a 256MB hole with reserve=XXXX in the 1GB address space to
-allow the latest ATI/NV cards to run with framebuffers; but doing this will
-slow your system down. It is also a very non-obvious solution to why a
-framebuffer fails to load.
+Tried,  I doesn't  change. I'm  looking  at radeonfb_set_par. What  does
+hSyncPol and vSyncPol do? They seem  useless, they aren't used anywhere.
+I  changed h_sync_pol  and v_sync_pol  (first  one, then  the other  and
+finally both).
 
-I don't think we should be forcing non-performance sensitve framebuffer memory
-into the bottom 1GB and pushing performance sensitive page tables into highmem.
-Besides, we are going that have to do something, we are likely to have 1GB
-video cards two years from now.
-
-
-=====
-Jon Smirl
-jonsmirl@yahoo.com
-
-__________________________________
-Do you Yahoo!?
-Yahoo! SiteBuilder - Free, easy-to-use web site design software
-http://sitebuilder.yahoo.com
+Luca
+-- 
+Reply-To: kronos@kronoz.cjb.net
+Home: http://kronoz.cjb.net
+K.R.O.N.O.S
+Kinetic Replicant Optimized for Nocturnal Observation and Sabotage
 
 
 -------------------------------------------------------

@@ -1,21 +1,24 @@
-From: John Zielinski <grim@undead.cc>
-Subject: Re: [PATCH] neofb patches
-Date: Tue, 27 Apr 2004 21:39:45 -0400
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
+	one works ;-)
+Date: Wed, 28 Apr 2004 11:50:20 +1000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <408F0B61.5090806@undead.cc>
-References: <Pine.LNX.4.44.0404280019070.23153-100000@phoenix.infradead.org>	 <408EF0D9.6000403@undead.cc> <1083109849.20091.1.camel@gaston>	 <408EFD18.7070702@undead.cc> <1083112862.20474.14.camel@gaston>
+Message-ID: <1083117020.20091.22.camel@gaston>
+References: <Pine.LNX.4.44.0404280051480.23153-100000@phoenix.infradead.org>
+	 <408F0507.3000201@undead.cc>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIe3H-0000Jm-B4
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 18:39:55 -0700
-Received: from ns2.undead.cc ([216.126.84.18] helo=mail.undead.cc)
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
-	id 1BIe3G-0002In-Rc
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 18:39:54 -0700
-In-Reply-To: <1083112862.20474.14.camel@gaston>
+	id 1BIeJD-0004Xp-QG
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 18:56:23 -0700
+Received: from gate.crashing.org ([63.228.1.57] ident=root)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.30)
+	id 1BIeJD-0005A6-D9
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 18:56:23 -0700
+In-Reply-To: <408F0507.3000201@undead.cc>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,46 +28,20 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: James Simmons <jsimmons@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Alex Stewart <alex@foogod.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: John Zielinski <grim@undead.cc>
+Cc: James Simmons <jsimmons@infradead.org>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Benjamin Herrenschmidt wrote:
 
->You don't need a /dev/fb for that do you ? You need to map the current
->vt to it's fb via the existing fbdev ioctls, isn't that possible ? (just
->asking , I've never actually done that).
->
->  
->
-But how does the app find this out?  It would have to figure out if it's 
-running on a real console then figure out which console is mapped to 
-which fb and then try to find out which /dev/fbx device points to that 
-fb.  Programmer's are lazy, they'll just make it a command line switch 
-to specify what device to use which is not very user friendly.
+> 
+> Either way, regardless if we remember a per vt var or (x, y, Hz, bpp), I 
+> still would like the vt/fbcon to reset the the last mode on switch from 
+> KD_GRAPHICS to KD_TEXT.
 
-What I'm proposing is that you open /dev/fb.  If it fails you're running 
-on a serial line or shh or whatever.  If it succedes you issue 
-KD_GRAPHICS ioctl on the /dev/fb device and that's it.  Very simple for 
-the programmer.
+That is done in fbcon in the unblank callback, though it uses the currently
+crappy way that fbcon has to build up the var structure
 
-The kernel does all the work.  It figures out what vt you're on and 
-prevents access from serial or a pty.  It also would figure out which 
-framebuffer device to connect to based on the con2fb map specified by 
-the fbdev ioctls.  It would pass the KD_TEXT/KD_GRAPHICS calls to the 
-appropriate vt.
-
-This makes it very user friendly.  The user just switches to the vt 
-that's on the moitor they want and starts the app.  The kernel figures 
-out how to route this to the appropriate fb driver according to the 
-con2fb map.
-
-I might also be possible to use /dev/tty as the starting point if you 
-want to make everything start at the vt layer and work down.   The fb 
-ioctls would just have to be passed down.  Once a KD_GRAPHICS was issued 
-on /dev/tty then read/write/mmap would pass down to the fb layer as well. 
-
-John
+Ben.
 
 
 

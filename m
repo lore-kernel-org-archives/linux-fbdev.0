@@ -1,20 +1,23 @@
-From: Alexander Kern <alex.kern@gmx.de>
-Subject: [PATCH trivial atyfb] swith debug off
-Date: Sat, 6 Nov 2004 19:00:12 +0100
-Message-ID: <200411061900.12827.alex.kern@gmx.de>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: [PATCH 2/8] fbdev: Fix mode handling in rivafb if with no EDID
+Date: Sun, 7 Nov 2004 22:43:56 +0800
+Message-ID: <20041107213318.B332511C60AD@smtp-3.hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_sERjBv1PD/HnFfo"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CQUrW-0000qL-I9
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 06 Nov 2004 10:00:30 -0800
-Received: from pop.gmx.de ([213.165.64.20] helo=mail.gmx.net)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
-	id 1CQUrS-0008SG-Kf
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 06 Nov 2004 10:00:30 -0800
+	id 1CQufd-00044L-Bb
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Nov 2004 13:33:57 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.71])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CQufc-0006zJ-5B
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Nov 2004 13:33:57 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id 53D7A11C6003
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun,  7 Nov 2004 21:33:21 +0000 (UTC)
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -25,44 +28,45 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: "Antonino A. Daplas" <adaplas@hotpop.com>, Linus Torvalds <torvalds@osdl.org>
-Cc: fbdev mail-list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
---Boundary-00=_sERjBv1PD/HnFfo
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+The current code in rivafb will not accept modes other than 640x480-60 if
+the the EDID block is absent.
 
-Hi, 
+This patch changes the behavior to the opposite, if without an EDID, rivafb
+will accept all modelines coming from userspace (2.4 behavior).
 
-it's out of interest for normally user to debug atyfb driver
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
+---
 
-Signed-off-by: Alexander Kern <alex.kern@gmx.de>
+ fbdev.c |    3 +--
+ 1 files changed, 1 insertion(+), 2 deletions(-)
 
-
---Boundary-00=_sERjBv1PD/HnFfo
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="atyfb_undef_debug.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="atyfb_undef_debug.patch"
-
---- linux-2.6.head/drivers/video/aty/atyfb_base.c.orig	2004-11-06 10:35:59.282703296 +0100
-+++ linux-2.6.head/drivers/video/aty/atyfb_base.c	2004-11-06 10:40:11.857306120 +0100
-@@ -100,8 +100,7 @@
- /*
-  * Debug flags.
-  */
--/*#undef DEBUG*/
--#define DEBUG
-+#undef DEBUG
+diff -Nru a/drivers/video/riva/fbdev.c b/drivers/video/riva/fbdev.c
+--- a/drivers/video/riva/fbdev.c	2004-11-06 06:21:26 +08:00
++++ b/drivers/video/riva/fbdev.c	2004-11-07 21:32:09 +08:00
+@@ -1126,7 +1126,7 @@
+ 		}
+ 	}
  
- /* Make sure n * PAGE_SIZE is protected at end of Aperture for GUI-regs */
- /*  - must be large enough to catch all GUI-Regs   */
+-	if (!mode_valid && !list_empty(&info->modelist))
++	if (!mode_valid && info->monspecs.modedb_len)
+ 		return -EINVAL;
+ 
+ 	if (var->xres_virtual < var->xres)
+@@ -2017,7 +2017,6 @@
+ 	}
+ 
+ 	fb_destroy_modedb(info->monspecs.modedb);
+-	info->monspecs.modedb_len = 0;
+ 	info->monspecs.modedb = NULL;
+ 	if (register_framebuffer(info) < 0) {
+ 		printk(KERN_ERR PFX
 
---Boundary-00=_sERjBv1PD/HnFfo--
+
+
 
 
 -------------------------------------------------------

@@ -1,53 +1,41 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: Re: i810 BUG summary. Was Re: [SoftwareSuspend-devel] [Announce] 2.1.7 for 2.6.11-rc4
-Date: Thu, 17 Feb 2005 20:09:58 +0800
-Message-ID: <200502172010.01473.adaplas@hotpop.com>
-References: <42141C01.nail5A31PHQ9L@berlios.de> <1108615165.4471.13.camel@desktop.cunningham.myip.net.au>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: mhf@berlios.de
+Subject: Re: [Linux-fbdev-devel] Re: i810 BUG summary. Was Re: 
+ [Announce] 2.1.7 for 2.6.11-rc4
+Date: Thu, 17 Feb 2005 13:31:36 +0100
+Message-ID: <42148EA8.nailK5I1LNJAE@berlios.de>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D1kUF-0007Nm-5p
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 04:10:27 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1D1kUE-0004p1-KK
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 04:10:27 -0800
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id A83CDE5EDC3
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 17 Feb 2005 12:10:19 +0000 (UTC)
-In-Reply-To: <1108615165.4471.13.camel@desktop.cunningham.myip.net.au>
-Content-Disposition: inline
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+Sender: softwaresuspend-devel-admin@berlios.de
+Errors-To: softwaresuspend-devel-admin@berlios.de
+List-Help: <mailto:softwaresuspend-devel-request@lists.berlios.de?subject=help>
+List-Post: <mailto:softwaresuspend-devel@lists.berlios.de>
+List-Subscribe: <http://lists.berlios.de/mailman/listinfo/softwaresuspend-devel>,
+	<mailto:softwaresuspend-devel-request@lists.berlios.de?subject=subscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Unsubscribe: <http://lists.berlios.de/mailman/listinfo/softwaresuspend-devel>,
+	<mailto:softwaresuspend-devel-request@lists.berlios.de?subject=unsubscribe>
+List-Archive: <http://lists.berlios.de/pipermail/softwaresuspend-devel/>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, Nigel Cunningham <ncunningham@cyclades.com>, mhf@berlios.de
-Cc: SoftwareSuspend Development <softwaresuspend-devel@lists.berlios.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz, akpm@osdl.org
+To: adaplas@pol.net
+Cc: akpm@osdl.org, pavel@suse.cz, linux-kernel@vger.kernel.org, softwaresuspend-devel@lists.berlios.de, ncunningham@cyclades.com, linux-fbdev-devel@lists.sourceforge.net
 
-On Thursday 17 February 2005 12:39, Nigel Cunningham wrote:
-> Hi Michael.
+On Thursday 17 February 2005 13:09, Antonino A. Daplas 
+wrote:
+> On Thursday 17 February 2005 12:39, Nigel Cunningham 
+wrote:
+> > Hi Michael.
+> >
+> > Perhaps this belongs with the framebuffer devel guys?
+> > I'll copy them now. Antonio et al, have I called it
+> > right?
 >
-> Perhaps this belongs with the framebuffer devel guys? I'll copy them
-> now. Antonio et al, have I called it right?
+> Is he using a framebuffer console or vgacon?
+>
+> Tony
 
-Is he using a framebuffer console or vgacon?
+Sorry, using vgacon and I shall be more specific next time.
 
-Tony
+Good point, I will test it also with fbcon and report back.
 
-
-
-
--------------------------------------------------------
-SF email is sponsored by - The IT Product Guide
-Read honest & candid reviews on hundreds of IT Products from real users.
-Discover which products truly live up to the hype. Start reading now.
-http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
+Thank you
+Michael

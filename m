@@ -1,17 +1,17 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: rotation.
-Date: Fri, 10 Jan 2003 19:42:59 +0000 (GMT)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Re: [PATCH]: image.depth fix to accomodate
+ monochrome cards
+Date: Fri, 10 Jan 2003 20:43:33 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0301101940460.18287-100000@phoenix.infradead.org>
-References: <1042171520.933.126.camel@localhost.localdomain>
+Message-ID: <Pine.GSO.4.21.0301102041130.18440-100000@vervain.sonytel.be>
+References: <Pine.LNX.4.44.0301101925110.18287-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from phoenix.infradead.org ([195.224.96.167])
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18X541-0001bJ-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Jan 2003 11:43:34 -0800
-In-Reply-To: <1042171520.933.126.camel@localhost.localdomain>
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18X559-0001m8-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Jan 2003 11:44:43 -0800
+In-Reply-To: <Pine.LNX.4.44.0301101925110.18287-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,30 +23,39 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-
-> > Yes. Hardware rotation shouldn't also not effect the way accel 
-> > operatations are done.
->  
-> The main difference is if the hardware supports rotation, fbcon will
-> present it with "normal" data.  With the generic implementation, fbcon
-> will present the driver with rotated data.
+On Fri, 10 Jan 2003, James Simmons wrote:
+> > I think we still have several corner cases, such as TRUECOLOR with bpp
+> > <= 8, I'm not sure if that works.
 > 
-> So we need a driver capabilities field either in fb_info or
-> fb_fix_screeninfo.
+> The matorx millenium has such a mode. So such things do exist.
+>  
+> > -	if (image->depth == 1) {
+> > +	if (image->depth == 0) {
+> 
+> P.S
+> 
+>    I'm just not to crazy about the depth equal zero thing. I just pitcure 
+> developers having a hard time with it.
 
-We can just test if the rotation hook exist for the fbdev driver. No hook 
-then use generic code in fbcon. Also we have a angle field in var so we 
-can see if the user wants the data rotated.
+Monochrome color expansion just works differently: it expands the zeroes and
+ones in a bitmap based on fg_color and bg_color, while image drawing draws an
+image containing colormap indices to the frame buffer.
 
-> Not really.  We can dynamically rotate the fontdata using the default
-> display->fontdata into another buffer.  I believe I have functions that
-> do that in the patch I submitted.  (Sorry, I lost it when one of my
-> drives crashed :-(.
+Do you have a better suggestion?
 
-I have that patch. It just has to be updated to the latest changes.
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

@@ -1,24 +1,24 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: Rivafb won't work with DVI connector
-Date: Sat, 20 Nov 2004 06:08:30 +0800
-Message-ID: <200411200608.30821.adaplas@hotpop.com>
-References: <200411191137.14649.andrew@walrond.org>
+Subject: Re: w100 fb driver
+Date: Sat, 20 Nov 2004 06:10:08 +0800
+Message-ID: <200411200610.08802.adaplas@hotpop.com>
+References: <021601c4ce58$1111a730$0f01a8c0@max>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CVGvw-0002wd-TW
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Nov 2004 14:08:48 -0800
+	id 1CVGxQ-00032e-Ro
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Nov 2004 14:10:20 -0800
 Received: from smtp-out.hotpop.com ([38.113.3.71])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CVGvt-0005a3-BX
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Nov 2004 14:08:48 -0800
+	id 1CVGxP-0005qh-JE
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Nov 2004 14:10:20 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 7E98611F4630
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 19 Nov 2004 22:08:30 +0000 (UTC)
-In-Reply-To: <200411191137.14649.andrew@walrond.org>
+	by smtp-out.hotpop.com (Postfix) with SMTP id 6EA4311F472D
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 19 Nov 2004 22:10:04 +0000 (UTC)
+In-Reply-To: <021601c4ce58$1111a730$0f01a8c0@max>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -31,53 +31,56 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, Andrew Walrond <andrew@walrond.org>
+To: linux-fbdev-devel@lists.sourceforge.net, Richard Purdie <rpurdie@rpsys.net>
 
-On Friday 19 November 2004 19:37, Andrew Walrond wrote:
-> I have a TFT LCD screen (1600x1200) with both D-Sub and DVI inputs, and a
-> NV25 [GeForce4 Ti 4600] with same outputs.
+On Saturday 20 November 2004 00:51, Richard Purdie wrote:
+> I've been working on creating support for the Sharp SL-C7xx series as part
+> of a wider effort to create support for the whole Zaurus range of PDAs
+> under linux 2.6. The C7xx's contain the ATI w100 video chip which doesn't
+> have mainstream kernel support at present.
 >
-> Using the old D-Sub cable works fine:
+> Sharp did release a driver against 2.4.18 and I've ported this across to
+> the 2.6 series. I've also made some fairly large changes to the driver to
+> tidy it up and create support for certain video modes Sharp never enabled.
 >
->  rivafb: nVidia device/chipset 10DE0250
->  rivafb: nVidia Corporation NV25 [GeForce4 Ti 4600]
->  rivafb: Detected CRTC controller 0 being used
->  rivafb: RIVA MTRR set to ON
->  rivafb: Found EDID Block from BUS 2
->  rivafb: setting virtual Y resolution to 83886
->  Console: switching to colour frame buffer device 200x75
->  rivafb: PCI nVidia NV25 framebuffer ver 0.9.5b (128MB @ 0xE0000000)
+> I'd like to discuss whether it'd be possible to include this driver in a
+> future kernel? The driver is available at:
+> http://www.rpsys.net/openzaurus/w100-r1.patch .
 >
-> but with the DVI cable (dsub disconnected) I get a blank screen as soon as
-> rivafb takes over:
->
->  rivafb: nVidia device/chipset 10DE0250
->  rivafb: nVidia Corporation NV25 [GeForce4 Ti 4600]
->  rivafb: Detected CRTC controller 0 being used
->  rivafb: RIVA MTRR set to ON
->  rivafb: Found EDID Block from BUS 3
->  EDID checksum failed, aborting
->  rivafb: setting virtual Y resolution to 209715
->  Console: switching to colour frame buffer device 80x30
->  rivafb: PCI nVidia NV25 framebuffer ver 0.9.5b (128MB @ 0xE0000000)
->
-> I then have to plug the d-sub back in to see the output.
-> [side note: 2.6.8.1 shows only garbage on reconnecting dsub, so rc2 is an
-> improvement.]
->
-> No I don't understand the lingo here, but I assume EDID/BUS2/BUS3 and the
-> checksum failure are the bits I'm interested in here.
+> I'm aware the corgi_backlight file included above is out of place and it
+> will be moved into the arch/arm/mach-pxa folder. I'm also aware some fb
+> changes made in 2.6.10-rc2 need to be applied to this file. Are there any
 
-You can try the following:
+Not much, but you may need to insert this before initialization:
 
-1. turn on verbose debug output in drivers/video/fbmon.c
+if (fb_get_options("w100fb", NULL))
+	return -ENODEV;
 
-2. Try just grabbing the EDID from BUS2, since the EDID checksum failed from
-BUS3.
+> other problems with the driver as it stands that would prevent its
+> inclusion, or areas in the driver that it would be advisable to
+> change/improve?
 
-3. if you can, send me your EDID block.  You can use the utility 'read-edid'. 
+Should be okay, just wondering why not use the kernel i2c algo's instead of
+using your own.
+
+Can't comment on backlight support as I don't know a thing about that.
+
+Preferrably, comments should be enclosed in /* */, rather than //
+
+>
+> If the driver would be acceptable, what method of submission is preferred?
+> (the sourceforge pages seem inactive)
+
+Submit patch inline to this list and CC me.  Preferrably break the patch
+down into several, hopefully standalone patches.  Add a changelog, and a
+signed-off line.
+
+Referring you to this link on patch submission:
+
+http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt
 
 Tony
+
 
 
 

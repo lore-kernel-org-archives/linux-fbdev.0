@@ -1,86 +1,61 @@
-From: "Mukund JB." <mukundjb@esntechnologies.co.in>
-Subject: RE: how to test framebuffer driver
-Date: Fri, 10 Sep 2004 10:31:14 +0530
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <4EE0CBA31942E547B99B3D4BFAB34811107534@mail.esn.co.in>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: [Linux-fbdev-devel] fbdev broken in current bk for PPC
+Date: Fri, 10 Sep 2004 13:28:57 +0800
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <200409101328.57431.adaplas@hotpop.com>
+References: <1094783022.2667.106.camel@gaston>
+Reply-To: adaplas@pol.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C5dm5-0002Hs-U6
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 09 Sep 2004 22:16:41 -0700
-Received: from externalmx-1.sourceforge.net ([12.152.184.25])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.34)
-	id 1C5dll-0000rF-Dp
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 09 Sep 2004 22:16:32 -0700
-Received: from [202.125.86.130] (helo=ns2.astrainfonets.net)
-	by externalmx-1.sourceforge.net with esmtp (Exim 4.41)
-	id 1C5dVQ-0005Tq-UH
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 09 Sep 2004 21:59:32 -0700
-Content-class: urn:content-classes:message
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S268138AbUIJFab@vger.kernel.org>
+In-Reply-To: <1094783022.2667.106.camel@gaston>
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: otto.wyss@orpatec.ch
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@osdl.org>
 
-
-> "Mukund JB." wrote:
-> >
-> > Can I write an application by directly opening my fb device and
-> > performing operations like read/write/ioctl on it.
-> >
-> Yes you can, see here
+On Friday 10 September 2004 10:23, Benjamin Herrenschmidt wrote:
+> Recent changes upstream are breaking fbdev on pmacs.
 >
-"http://cvs.sourceforge.net/viewcvs.py/wyodesktop/wyoDesktop/checkdfb/sr
-c/
-> app.cpp?view=3Dmarkup"
-> or here
-> "http://cvs.sourceforge.net/viewcvs.py/linux-
-> fbdev/fbtest/main.c?view=3Dmarkup".
-> You are welcomed to enhance either test or even write your own. Best
-if
-> you look at this thread as well
+> I haven't had time to go deep into that (but I suspect Linus sees it
+> too on his own g5 unless he removed offb from his .config).
 >
-"http://sourceforge.net/mailarchive/forum.php?thread_id=3D5445188&forum_i=
-d
-=3D2
-> 357".
->=20
-> O. Wyss
+> From what I see, it seems that offb is kicking in by default, reserves
+> the mmio regions, and then whatever chip driver loads can't access them.
+>
+> offb is supposed to be a "fallback" driver in case no fbdev is taking
+> over, it should also be "forced" in with video=ofonly kernel command
+> line. This logic has been broken.
+>
 
-Are these applications running on the X server or do they run directly
-on Framebuffer driver.
+Hi Ben,
 
-Being a driver writer I don't want to take the pain of developing such
-an application. So, if I just develop a frame buffer driver and run
-these applications by D/W them, will it work or shall I have to do any
-application level changes.
+Actually, I was thinking about this problem with offb.  I was planning on
+adding video=offb:off support for offb, and then place offb at the very top
+drivers Makefile (the reason why I placed it there, but forgot to add the
+setup support for offb).  So, without the 'off' option, offb becomes the
+first driver that gets initialized by reason that it's at the top, and with
+the 'off' option, it just exits initialization immediately, giving the other
+drivers a chance to get through.
 
-Have the Application API's that access the driver have changed from
-kernel to kernel.
+This first method is easy to add.
 
-How will the functions defined in fb_ops structure being called. r these
-callback functions. If so, how can I identify the Application level call
-for each of these call backs.
+The second method is not harder but will involve, again, changes to all 
+drivers.  The only sane method I can think of is to change fb_get_options so
+it returns an error if:
 
-Thanks a lot to the Linux community for ur continuous support,
-Mukund jampala.=20
-=20
+a. "off" option is enabled
+b. "ofonly" is enabled but only if name != "offb"
 
+If fb_get_options returns an error, drivers will not proceed with their
+initialization. The second method is more compatible with the
+previous setup semantics.
 
--------------------------------------------------------
-This SF.Net email is sponsored by: YOU BE THE JUDGE. Be one of 170
-Project Admins to receive an Apple iPod Mini FREE for your judgement on
-who ports your project to Linux PPC the best. Sponsored by IBM. 
-Deadline: Sept. 13. Go here: http://sf.net/ppc_contest.php
+I told Geert that if the changes did bite us, then I have no choice
+but to add support for the second method.
+
+So, if you think that the first method is not enough, then I will add the
+second method. Let me know.
+
+Tony

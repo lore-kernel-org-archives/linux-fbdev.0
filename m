@@ -1,13 +1,13 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH] MIPS DEC/SGI Linux logo
-Date: Sat, 26 Jul 2003 16:51:56 +0200
+From: Alex Thiel <stderr@web.de>
+Subject: Re: Neomagic fb driver oopses with linux 2.5
+Date: Sat, 26 Jul 2003 20:25:07 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200307261451.h6QEpusD002436@callisto.of.borg>
+Message-ID: <m3smotno1o.fsf@spock.alex.net>
+References: <Pine.LNX.4.44.0307250050320.7845-100000@phoenix.infradead.org>
+Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from amsfep11-int.chello.nl ([213.46.243.20])
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19gQLF-0005VL-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 26 Jul 2003 07:48:13 -0700
+In-Reply-To: <Pine.LNX.4.44.0307250050320.7845-100000@phoenix.infradead.org> (James
+ Simmons's message of "Fri, 25 Jul 2003 00:51:53 +0100 (BST)")
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -17,36 +17,40 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@transmeta.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Linux Fbdev <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+To: James Simmons <jsimmons@infradead.org>
+Cc: linux-fbdev-devel@sourceforge.net
 
-MIPS: Show the correct logo on DEC and SGI machines.
+James Simmons <jsimmons@infradead.org> writes:
 
---- linux-2.6.x/drivers/video/logo/logo.c	Tue May 27 19:03:30 2003
-+++ linux-m68k-2.6.x/drivers/video/logo/logo.c	Sat Jun 28 14:54:12 2003
-@@ -66,7 +66,7 @@
- #endif
- #ifdef CONFIG_LOGO_DEC_CLUT224
- 		/* DEC Linux logo on MIPS/MIPS64 */
--		if (mips_machgroup == MACH_GROUP_SGI)
-+		if (mips_machgroup == MACH_GROUP_DEC)
- 			logo = &logo_dec_clut224;
- #endif
- #ifdef CONFIG_LOGO_MAC_CLUT224
+>> The machine is a Sony Vaio PCG-505FX, lspci reports the graphic chip as
+>> 00:08.0 VGA compatible controller: Neomagic Corporation NM2160 [MagicGraph 128XD] (rev 01)
+>
+> My new laptop is a NeoMagic again so I can test it out.
+>  
+>> Kernel is 2.5.75 compiled with gcc 2.95.4. Here is the decoded oops,
+>> this one is with the patches applied.
 
-Gr{oetje,eeting}s,
+[oops ommited]
 
-						Geert
+>
+> I did a assembly dump of my cfbimgblt.o and I couldn't match the code up.
+> Strange I can't figure it out. I will try turning of hardware accel on 
+> mine.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+I noticed that ksymoops complained about not being able to open
+/proc/ksyms which seems to have gone in 2.5. Can this cause a
+misinterpretation of the raw oops data?
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Anyway, I managed to connect to the laptop via a serial line and hope
+to be able to track down the problem a little more this way.
+
+Cheers,
+
+        Alex
+
+
 
 
 -------------------------------------------------------

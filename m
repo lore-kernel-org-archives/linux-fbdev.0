@@ -1,16 +1,19 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Finding Aki M Laukkanen's VESAFBD project?
-Date: Sat, 15 Mar 2003 10:52:23 +0100 (MET)
+From: Nicholas Wourms <nwourms@netscape.net>
+Subject: Re: Re: FBdev updates.
+Date: Sun, 16 Mar 2003 17:10:56 -0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0303151050480.16951-100000@vervain.sonytel.be>
-References: <3E71B0FE.1534.4BFD86E@localhost>
+Message-ID: <3E74F670.4020609@netscape.net>
+References: <20030309212903.GC16578@vana.vc.cvut.cz> <Pine.LNX.4.44.0303111527500.23668-100000@phoenix.infradead.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+Received: from imo-m01.mx.aol.com ([64.12.136.4])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18u8LX-0006Ix-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 15 Mar 2003 01:52:55 -0800
-In-Reply-To: <3E71B0FE.1534.4BFD86E@localhost>
+	id 18ugNU-0007yz-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 16 Mar 2003 14:13:12 -0800
+Received: from nwourms@netscape.net
+	by imo-m01.mx.aol.com (mail_out_v34.21.) id 6.13a.66355cc (22681)
+	 for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 16 Mar 2003 17:13:03 -0500 (EST)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,39 +23,39 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Kendall Bennett <KendallB@scitechsoft.com>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Fri, 14 Mar 2003, Kendall Bennett wrote:
-> After some research I discovered that unfortunately Aki was killed in an 
-> accident in January 2001, and hence this project was forgotten about. I 
+James Simmons wrote:
+>>Hi James,
+>>  I tried to use fb_cursor and I have quite a lot problems with
+>>it:
+> 
+> 
+> I'm working on the code today. I just finished the final touchs on the 
+> pixmap buffer code. The next step is to make the pixmaps have flag for 
+> static data versus dynamic data. You can then use fastfonst with static 
+> buffer. This comes with the tile code. But first the cursor code today.
+> 
+> P.S
+>   You can grab my latest work on the matroxfb driver at 
+> 
+> http://phoenix.infradead.org/~jsimmons/matroxfb.diff.gz
+> 
 
-Oops...
+James (or anyone),
 
-> would very much like to resurrect this project and complete it on Aki's 
-> behalf. Below is the original announcement email from Aki in January 
-> 2000, but none of the links work anymore. If anyone downloaded this code 
-> at the time or knows where to find the code that Aki was working on, 
-> please let me know.
+Do you have something which might apply at least 
+semi-cleanly to fbdev-2.5 current?  The reason I ask is 
+because I have to use 2.5.64-ac4 or else my system won't 
+boot.  The problem is that Alan has already applied your 
+latest BK patch which kills your matroxfb diff against 
+fbcon.c.  Alan has also modified your changes, thus making 
+backing it out quite difficult and prone to error...  Thanks 
+in advance :-).
 
-> Download from:
-> http://www.cs.helsinki.fi/u/amlaukka/vesafb/
-
-Since the code used to be at a university webserver, you may want to ask the
-sysadmin team of cs.helsinki.fi whether they have a backup.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Cheers,
+Nicholas
 
 
 

@@ -1,21 +1,22 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
+From: Otto Solares <solca@guug.org>
 Subject: Re: ioremap problem on highmem
-Date: Tue, 14 Oct 2003 10:59:39 -0700 (PDT)
+Date: Tue, 14 Oct 2003 19:13:54 -0600
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20031014175939.2616.qmail@web14916.mail.yahoo.com>
-References: <Pine.LNX.4.44.0310141735250.20831-100000@phoenix.infradead.org>
+Message-ID: <20031015011354.GA9654@guug.org>
+References: <20031014015656.GE454@guug.org> <20031014045143.53369.qmail@web14912.mail.yahoo.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1A9TSP-0002hn-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 14 Oct 2003 10:59:41 -0700
-Received: from web14916.mail.yahoo.com ([216.136.225.229])
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.22)
-	id 1A9TSO-0003gY-BB
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 14 Oct 2003 10:59:40 -0700
-In-Reply-To: <Pine.LNX.4.44.0310141735250.20831-100000@phoenix.infradead.org>
+	id 1A9aFx-0003Rd-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 14 Oct 2003 18:15:17 -0700
+Received: from guug.org ([168.234.203.30] helo=guug.galileo.edu)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
+	id 1A9aFv-0003t1-Oc
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 14 Oct 2003 18:15:15 -0700
+Content-Disposition: inline
+In-Reply-To: <20031014045143.53369.qmail@web14912.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,49 +28,61 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Otto Solares <solca@guug.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
---- James Simmons <jsimmons@infradead.org> wrote:
+On Mon, Oct 13, 2003 at 09:51:43PM -0700, Jon Smirl wrote:
+> --- Otto Solares <solca@guug.org> wrote:
 > 
-> > I just think the whole concept
-> > of mapping the framebuffer in to kernel space needs to be eliminated. 
+> I almost have the DRI changes done. 
+
+Good.
+
+> I haven't tried adjusting the DRI Creator3D driver for my changes since I don't
+> have Sparc hardware.  Does sparc use the same kind of PCI ID probing that x86
+> does in a kernel module? Which 3D hardware do you have?
+
+I have written several patches for sparc linux and i never noted a
+difference in PCI management from x86 & sparc64, drivers use the same
+kernel api for such things, but i am no expert in that matter, maybe
+sparc guru David Miller can help you.
+
+My main 3D card is a Radeon 9200 at home and a Nvidia Ti4600 at work.
+
+> I'll check the DRI changes in as soon as they work; they are pretty minor. Then
+> I can get back to working on standalone Mesa. The whole purpose in doing this
+> is to fix things so that standalone Mesa doesn't need a config file.
 > 
-> I agree. That is why I moved the api over to a accelerated api. The idea 
-> was to get people to write accelerated drivers. Drivers using acceleration 
-> don't need to map the framebuffer in kernel space.
-> 
-> > 1) System boots using VGA mode or whatever BIOS provides.
-> 
-> On x86 platforms this fine but for the rest of the world this is not.
-> 
-I'm looking at this as more of a choice. If you have DRI supported hardware
-pick the DRI scheme, otherwise continue with existing framebuffer.  DRI only
-supports about 10% of existing graphics cards, but these 10% are used in 90% of
-current general purpose systems. 
+> Dummy con is spac equivalent of VGA con on X86.
 
-DRI doesn't exist on most embedded device, PDA's, etc. so stick with the
-current framebuffer. The ioremap is only causing problems on systems with over
-1GB memory so this eliminates most smaller devices.
+Sparc equivalent is epromcon, dummycon is just a kernel requirement
+to have something registered as a console, but is useless to display
+something.
 
-My main motivation for this is to have a single driver controlling the graphics
-hardware on DRI supported systems. This will eliminate the problem with saving
-hardware state between VT's. 
+> > Without fbcon, where the printk goes?
+> How does klogd get the printk's? I think it reads them from /proc/kmsg. The
+> terminal program can get them the same way.
 
-Another issue I am having trouble with is having mode setting/EDID code in a
-device driver. That is a lot of seldom used code sitting in a device driver.
-I'd rather see it in a user space library. Some hardware (Rage128) can only
-read EDID info from user space becuase of real mode INT10 problems.
+If something goes wrong nobody will see it, a practical solution will be
+that people use their favorite console (fbcon,vgacon,epromcon,dummycon,serialcon).
+when they quit exiting a standalone mesa program with your dri changes (if i
+understand correctly your dri changes entirely bypass fbdev) we simply return
+from vt graphics mode to vt text mode, is kernel responsability to restore
+the console to a usable state, IMO.  I don't know if that is the {fb,vga}con case.
 
+Also we are protected from hardware access by other programs using the vt
+layer assuming we install proper vt switching signal handlers correctly
+AND the others programs respect vt switching.
 
-=====
-Jon Smirl
-jonsmirl@yahoo.com
+> > Hey, this sound too cool to be true ;) any code yet? i would like to develop
+> > on such beast.
+> Want to write the terminal program? or work on the user libs? Go ahead and
+> start coding. See the drmtest program in the mesa tree.
 
-__________________________________
-Do you Yahoo!?
-The New Yahoo! Shopping - with improved product search
-http://shopping.yahoo.com
+Ok, let me hack a bit, i have proper vt and input working code.
+
+-solca
+
 
 
 -------------------------------------------------------

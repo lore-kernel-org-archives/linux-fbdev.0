@@ -1,20 +1,21 @@
-From: Bram Stolk <b.stolk@chello.nl>
-Subject: tridentfb in 2.5.70 broken
-Date: Sun, 8 Jun 2003 21:24:35 +0200
+From: "Jochen Roth" <jochen@panix.com>
+Subject: inverting sync line drivers
+Date: Mon, 9 Jun 2003 18:25:08 -0400 (EDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030608212435.17118c5b.b.stolk@chello.nl>
+Message-ID: <200306092225.h59MP8t18771@panix3.panix.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=witte.sonytel.be)
+Received: from mail1.panix.com ([166.84.1.72])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19PIDA-0005AW-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 09 Jun 2003 01:41:06 -0700
-Received: from vervain.sonytel.be (localhost [127.0.0.1])
-	by witte.sonytel.be (8.12.9/8.12.9) with ESMTP id h598eQpI024077
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 9 Jun 2003 10:40:26 +0200 (MEST)
-ReSent-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-ReSent-Message-ID: <Pine.GSO.4.21.0306091040220.1347@vervain.sonytel.be>
+	id 19PV4g-0003HI-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 09 Jun 2003 15:25:10 -0700
+Received: from panix3.panix.com (panix3.panix.com [166.84.1.3])
+	by mail1.panix.com (Postfix) with ESMTP id EE5CA4874E
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  9 Jun 2003 18:25:08 -0400 (EDT)
+Received: (from jochen@localhost)
+	by panix3.panix.com (8.11.6p2/8.8.8/PanixN1.1) id h59MP8t18771
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 9 Jun 2003 18:25:08 -0400 (EDT)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -25,41 +26,29 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: jani@iv.ro, geert@linux-m68k.org
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Hi there,
+Hello,
 
+Before I dig out my oscilloscope I think I need a reality
+check here...
 
-tridentfb 0.7.8-NEWAPI, as shipping with linux-2.5.70 is broken.
-in tridentfb_check_var(), the check for nativex should read:
+I am working on a driver for a S3Trio family chip in an old
+IBM thin client. It looks like the hsync and vsync signals
+coming out of the Trio are run through a 74ACT04 hex inverter.
 
-        if (flatpanel && nativex && var->xres > nativex)
+This is supported by the fact that the monitor syncs better
+if I negate the interpretation of FB_SYNC_HOR_HIGH_ACT and
+FB_SYNC_VERT_HIGH_ACT from what the other S3 drivers do.
 
-instead of:
+(I looked at some old PCI adapters with the same chip and they
+seem to run the sync signals straight from the video
+controller to the vga connector.)
 
-	if (var->xres > nativex)
+Has anybody seen something like this before?
 
-otherwise all modes are rejected on a non FP.
-
-Also, the Documents/fb/ docs are out of date, with regard
-to option passing.
-
-And the comment in tridentfb.c
- * Parse user specified options (`video=trident:')
-...is plain wrong.
-Only 'video=tridentfb:' will work.
-
-modedb.txt should include the 'tridentfb' target for video=
-tridentfb.txt should be updated on how to pass parameters.
-
-And last:
-video=tridentfb:mode=800x600 does not work, as mode= is
-not recognized. I think it should. Currently, you are forced to
-skip the mode=, thus: video=tridentfb:800x600
-
-  Regards,
-
-     Bram Stolk
+Regards,
+Jochen
 
 
 

@@ -1,21 +1,21 @@
 From: Kronos <kronos@people.it>
-Subject: Re: [PATCH][RFC][1/3] mode attribute in sysfs tree
-Date: Wed, 16 Jun 2004 11:28:47 +0200
+Subject: Re: [PATCH][RFC][2/3] mode attribute in sysfs tree
+Date: Wed, 16 Jun 2004 11:30:32 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040616092847.GB3556@dreamland.darkstar.lan>
+Message-ID: <20040616093032.GC3556@dreamland.darkstar.lan>
 References: <20040615172138.GA8823@dreamland.darkstar.lan>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BaWio-0005S6-N2
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 02:28:42 -0700
-Received: from mail-relay-4.tiscali.it ([212.123.84.94] helo=sparkfist.tiscali.it)
+	id 1BaWkY-0005W8-71
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 02:30:30 -0700
+Received: from mail-relay-1.tiscali.it ([212.123.84.91])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BaWio-0006mQ-1G
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 02:28:42 -0700
-Received: from dreamland.darkstar.lan (82.84.177.170) by sparkfist.tiscali.it (7.0.028)
-        id 40CF254F00073007 for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 11:28:33 +0200
+	id 1BaWkX-000740-Hz
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 02:30:29 -0700
+Received: from dreamland.darkstar.lan (82.84.177.170) by mail-relay-1.tiscali.it (7.0.028)
+        id 40CF307E0005DDC1 for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 11:30:21 +0200
 Content-Disposition: inline
 In-Reply-To: <20040615172138.GA8823@dreamland.darkstar.lan>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -31,44 +31,69 @@ Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
 
-First patch, with basic infrastructure:
+fb_show_mode function and FB_MODE_ATTR macro.
 
-diff -Nru -X dontdiff linux-2.6-vanilla/drivers/video/fbmem.c linux-2.6/drivers/video/fbmem.c
---- linux-2.6-vanilla/drivers/video/fbmem.c	2004-06-10 15:51:31.000000000 +0200
-+++ linux-2.6/drivers/video/fbmem.c	2004-06-12 21:19:06.000000000 +0200
-@@ -1294,6 +1294,8 @@
- 		/* Not fatal */
- 		printk(KERN_WARNING "Unable to create class_device for framebuffer %d; errno = %ld\n", i, PTR_ERR(c));
- 	}
-+	fb_info->class_dev = c;
-+	class_set_devdata(fb_info->class_dev, fb_info);
- 	
- 	if (fb_info->pixmap.addr == NULL) {
- 		fb_info->pixmap.addr = kmalloc(FBPIXMAPSIZE, GFP_KERNEL);
+diff -Nru -X dontdiff linux-2.6-vanilla/drivers/video/fbsysfs.c linux-2.6/drivers/video/fbsysfs.c
+--- linux-2.6-vanilla/drivers/video/fbsysfs.c	2004-02-28 13:32:58.000000000 +0100
++++ linux-2.6/drivers/video/fbsysfs.c	2004-06-14 17:34:15.000000000 +0200
+@@ -70,5 +70,32 @@
+ 	kfree(info);
+ }
+ 
++ssize_t fb_show_mode(struct class_device *class_dev, char * buf) {
++	struct fb_info *info = class_get_devdata(class_dev);
++	struct fb_var_screeninfo *var = &info->var;
++	
++	u32 htotal = var->xres + var->upper_margin + var->lower_margin + var->hsync_len;
++	u32 vtotal = var->yres + var->left_margin + var->right_margin + var->vsync_len;
++
++	if ((var->vmode & FB_VMODE_MASK) == FB_VMODE_DOUBLE)
++		vtotal = vtotal << 2;
++	else if ((var->vmode & FB_VMODE_MASK) == FB_VMODE_NONINTERLACED)
++		vtotal = vtotal << 1;
++
++	/* 
++	 * This should be:
++	 *                     1000000000000
++	 *            ------------------------------- * 2
++	 *            var->pixclock * htotal * vtotal
++	 *            
++	 * we divide numerator and pixclock by 1000 so the expression does not overflow.
++	 */
++	u32 refresh = 1000000000UL / ((var->pixclock / 1000) * htotal * vtotal) * 2;
++	
++	return snprintf(buf, PAGE_SIZE, "%ux%u-%u@%u\n", var->xres, var->yres,
++			var->bits_per_pixel, refresh);
++}
++
++EXPORT_SYMBOL(fb_show_mode);
+ EXPORT_SYMBOL(framebuffer_release);
+ EXPORT_SYMBOL(framebuffer_alloc);
 diff -Nru -X dontdiff linux-2.6-vanilla/include/linux/fb.h linux-2.6/include/linux/fb.h
---- linux-2.6-vanilla/include/linux/fb.h	2004-06-10 15:51:46.000000000 +0200
+--- linux-2.6-vanilla/include/linux/fb.h	2004-06-15 15:38:40.000000000 +0200
 +++ linux-2.6/include/linux/fb.h	2004-06-14 17:34:28.000000000 +0200
-@@ -389,6 +389,7 @@
- #include <linux/workqueue.h>
- #include <linux/devfs_fs_kernel.h>
- #include <linux/notifier.h>
-+#include <linux/device.h>
- #include <asm/io.h>
+@@ -611,6 +611,15 @@
+ /* drivers/video/fbsysfs.c */
+ extern struct fb_info *framebuffer_alloc(size_t size, struct device *dev);
+ extern void framebuffer_release(struct fb_info *info);
++extern ssize_t fb_show_mode(struct class_device *class_dev, char * buf);
++
++#define FB_MODE_ATTR(_name)			\
++struct class_device_attribute _name = {		\
++	.attr = {.name = "mode", .mode = 0444, .owner = THIS_MODULE },	\
++	.show = fb_show_mode,			\
++	.store = NULL,				\
++};
++
  
- struct vm_area_struct;
-@@ -521,6 +522,7 @@
- #define FBINFO_STATE_RUNNING	0
- #define FBINFO_STATE_SUSPENDED	1
- 	u32 state;			/* Hardware state i.e suspend */
-+	struct class_device *class_dev;
- 
- 	/* From here on everything is device dependent */
- 	void *par;	
+ /* drivers/video/fbmon.c */
+ #define FB_MAXTIMINGS		0
+
 
 Luca
 -- 
 Home: http://kronoz.cjb.net
-Se non puoi convincerli, confondili.
+Not an editor command: Wq
 
 
 -------------------------------------------------------

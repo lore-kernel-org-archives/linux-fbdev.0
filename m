@@ -1,19 +1,19 @@
-From: nihil <nihil0@freestart.hu>
-Subject: Matrox G450 fbdev, v4l  and TV-OUT question
-Date: Wed, 18 Feb 2004 23:32:44 +0100
+From: James Simmons <jsimmons@infradead.org>
+Subject: Permedia2 fbdev updates.
+Date: Thu, 19 Feb 2004 00:42:56 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1077143563.1716.16.camel@gaia>
+Message-ID: <Pine.LNX.4.44.0402190032430.10389-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AtaJ5-0000Am-K9
-	for Linux-fbdev-devel@lists.sourceforge.net; Wed, 18 Feb 2004 14:36:39 -0800
-Received: from 206.126-182-adsl-pool.axelero.hu ([81.182.126.206] helo=pulsus.mine.nu)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AtaEB-0006GT-29
-	for Linux-fbdev-devel@lists.sourceforge.net; Wed, 18 Feb 2004 14:31:35 -0800
+	id 1AtcMK-00030l-Ok
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 18 Feb 2004 16:48:08 -0800
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1AtcHN-0003L6-6t
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 18 Feb 2004 16:43:01 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -23,42 +23,37 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linus Torvalds <torvalds@transmeta.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+
 
 Hi!
 
-I found out, that up to the kernel version 2.6.2 the setting of the
-bright and contrast for the Matrox G450 TV-OUT doesn't work. However
-it worked in 2.4.xx and also in 2.6.1.
+Linus, please do a
 
-I can get the values with:
-~> v4lctl -c /dev/fb0 list
-attribute  | type   | current | default | comment
------------+--------+---------+---------+------------------------
-norm       | choice | (null)  | (null)  |
-input      | choice | (null)  | (null)  |
-bright     | int    |     127 |     127 | range is 0 => 780
-contrast   | int    |     127 |     127 | range is 0 => 1023
-color      | int    |     165 |     165 | range is 0 => 255
-hue        | int    |       0 |       0 | range is 0 => 255
-test outpu | bool   | off     | off     |
+	bk pull bk://fbdev.bkbits.net/fbdev-2.6
 
-But if I try to set a value, I get only an error message:
-~> v4lctl -c /dev/fb0 bright 600
-ioctl: VIDIOC_S_CTRL(id=9963776;value=600): Inappropriate ioctl for device
+This will update the following files:
 
-It is also the same for the contrast:
-~> v4lctl -c /dev/fb0 contrast 800
-ioctl: VIDIOC_S_CTRL(id=9963777;value=800): Inappropriate ioctl for device
+ drivers/video/cvisionppc.h |   51 
+ include/video/pm2fb.h      |  222 ---
+ drivers/video/Kconfig      |   18 
+ drivers/video/Makefile     |    2 
+ drivers/video/pm2fb.c      | 3014 +++++++++++++--------------------------------
+ include/video/cvisionppc.h |   51 
+ include/video/permedia2.h  |  222 +++
+ 7 files changed, 1210 insertions(+), 2370 deletions(-)
 
-What could be the problem? What is changed in the kernel from 2.6.1 to 2.6.2, 
-that causes this problem? If this doesn't work anymore, how can I change the 
-bright/contrast for the TV-OUT on the Matrox G450 card?
+through these ChangeSets:
 
-Thank you in advance!
-nihil
+<jsimmons@infradead.org> (04/02/17 1.1562)
+   [PERMEDIA2 FBDEV] Updated to the new api.
 
+I also have the patch is anyone wants it. Its big tho.
+
+  
 
 
 

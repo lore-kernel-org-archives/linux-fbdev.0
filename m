@@ -1,15 +1,15 @@
 From: Jon Smirl <jonsmirl@yahoo.com>
 Subject: Re: Reading the EDID block for x86 machines
-Date: Tue, 11 Mar 2003 15:42:49 -0800 (PST)
+Date: Tue, 11 Mar 2003 15:54:01 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030311234249.40244.qmail@web14914.mail.yahoo.com>
+Message-ID: <20030311235401.62252.qmail@web14901.mail.yahoo.com>
 References: <1047423718.1128.160.camel@localhost.localdomain>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from web14914.mail.yahoo.com ([216.136.225.241])
+Received: from web14901.mail.yahoo.com ([216.136.225.53])
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18stOU-0005xp-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 Mar 2003 15:42:50 -0800
+	id 18stZJ-0000ae-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 Mar 2003 15:54:01 -0800
 In-Reply-To: <1047423718.1128.160.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
@@ -25,23 +25,11 @@ Content-Transfer-Encoding: 7bit
 To: Antonino Daplas <adaplas@pol.net>
 Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
---- Antonino Daplas <adaplas@pol.net> wrote:
-> Yikes!  No, it can't be done this way.  During the
-> early boot sequence,
-> the kernel is not yet decompressed and loaded, so
-> all the services the
-> kernel provides are still unavailable.  Unless you
-> want to walk, detect,
-> enable, etc the PCI subsystem in pure 16-bit
-> assembly...
+Check out:
 
-You don't Linux to look at the PCI subsys you make
-calls into the system BIOS to find the devices.
+arch/i386/pci/pcbios.c
 
-> 
-> Tony
-> 
-
+http://members.datafast.net.au/dft0802/specs/bios21.pdf
 
 =====
 Jon Smirl

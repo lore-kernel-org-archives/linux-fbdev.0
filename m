@@ -1,22 +1,23 @@
-From: Jim Hague <jim.hague@acm.org>
-Subject: Re: New API and X option UseFBDev
-Date: Tue, 09 Sep 2003 14:57:58 +0100 (BST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Re: New radeonfb 0.2.0 (take 2)
+Date: Tue, 09 Sep 2003 17:22:41 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <XFMail.20030909145758.jim.hague@acm.org>
-References: <20030909100849.GA17091@iliana>
+Message-ID: <1063120961.647.3.camel@gaston>
+References: <20030909145202.47914.qmail@web14909.mail.yahoo.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19wj0M-0004Vd-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 09 Sep 2003 06:58:02 -0700
-Received: from mta05-svc.ntlworld.com ([62.253.162.45])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 19wj0L-0004cf-A8
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Sep 2003 06:58:01 -0700
-In-Reply-To: <20030909100849.GA17091@iliana>
+	id 19wkKQ-0006N6-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 09 Sep 2003 08:22:50 -0700
+Received: from pentafluge.infradead.org ([213.86.99.235])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.22)
+	id 19wkKN-0003dL-R9
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Sep 2003 08:22:48 -0700
+In-Reply-To: <20030909145202.47914.qmail@web14909.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,34 +28,23 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Sven Luther <sven.luther@wanadoo.fr>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Kronos <kronos@kronoz.cjb.net>
 
-On 09-Sep-2003 Sven Luther wrote:
-> On Tue, Sep 09, 2003 at 07:49:55AM +0100, Jim Hague wrote:
->> I have a problem when I try and run X (Debian 4.2.1-11 20030829103906). My
->> config uses the Glint driver with UseFBDev true, and works fine on 2.4.22.
->> [....]
->> It's occurred to me that maybe this just doesn't work and I need an updated
->> fbdevhw. Do I? Or should it really Just Work?
-> 
-> I think the glint driver is hardcoded to expect amiga hardware when
-> using pm2 with fbdev. Just don't use the usefbdev option, and everything
-> should be fine.
-> 
-> the glint driver does not really support usefbdev anyway, only as a
-> hacky workaround for amigas with cybervision/bvision graphic board.
+On Tue, 2003-09-09 at 16:52, Jon Smirl wrote:
+> I meant make it into two separate device drivers, not just split the files. 
+> Then the user could load base+DRI, base+FB or base+FB+DRI. This would minimize
+> the RAM footprint and let the DRI people avoid the problem of mapping the
+> framebuffer into kernel space.
 
-Unfortunately, I do rather think I need to use UseFBDev. Hardware is
-Graphics Exxtreme, x86, BTW. Without, things just don't work properly -
-something isn't quite right with the mode set by X, and you can't switch back
-to the console. Well, you can try, but it seems to hang the kernel.
+Well, what would base do then ? You can only set modes etc... by beeing
+an fbdev, and if you are an fbdev you have to map something for fbcon...
 
-I'm currently using UseFBDev on 2.4, for the same reasons. I will keep on
-digging.
+What would 'base' be without all of this ? just the PCI probing ?
 
--- 
-Jim Hague - jim.hague@acm.org          Never trust a computer you can't lift.
+Ben.
+
+
 
 
 -------------------------------------------------------

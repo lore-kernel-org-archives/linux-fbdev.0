@@ -1,40 +1,32 @@
 From: James Simmons <jsimmons@infradead.org>
 Subject: Re: FBDEV updates.
-Date: Fri, 15 Aug 2003 23:31:20 +0100 (BST)
+Date: Fri, 15 Aug 2003 23:37:21 +0100 (BST)
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.44.0308152319570.30952-100000@phoenix.infradead.org>
-References: <1060936833.13534.34.camel@gaston>
+Message-ID: <Pine.LNX.4.44.0308152337070.30952-100000@phoenix.infradead.org>
+References: <20030814231620.GA4632@kroah.com>
 Mime-Version: 1.0
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <1060936833.13534.34.camel@gaston>
+In-Reply-To: <20030814231620.GA4632@kroah.com>
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Greg KH <greg@kroah.com>
 Cc: Otto Solares <solca@guug.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> That patch actually works here and I'm more/less waiting for it
-> to be merged so I can send you the driver updates based on it.
-> (It's becoming rather urgent. My pending PowerMac updates that
-> port things to the new model are causing PM to break on PowerBook
-> laptops now because fbdev has incorrect PM and the "old style" thing
-> isn't properly ordered).
+> > Is there an API (or lib) to use framebuffers devices without
+> > worring about differents visuals?, to quering, setting or
+> > disabling EDID support? will these drivers export sysfs
+> > entries instead of control via ioctl's?
 > 
-> The only thing you may probably want to fix (because you know
-> that code better than I do) are:
+> I have some initial sysfs patches for the fb code that I've been sitting
+> on in my trees.  I was waiting for these patches to hit the mainline
+> before bothering James and the rest of the world with them.
 > 
->  - the "resume" callback in fbcon where I currently just refresh
-> the foreground console, while you may actually want to refresh the
-> one on this fb since I suppose that with mutiple heads, we may have
-> consoles on more than one head ?
-> 
->  - the suspend callback where you probably want to disable the
-> cursor timer
+> But they don't export any of the ioctl stuff through the sysfs
+> interface, but that would not be very hard to do at all if you want to.
+> They just basically show the major/minor of the fb device, and point
+> back to the proper place in the device tree where the fb device lives,
+> which is all udev really needs right now.
 
-Will do. I like to also handle Video mode change. Even userland will like 
-to know when a mode change happened. For userland a signal can be sent. 
-This would be useful for someone in X that runs fbset in a Xterm. This 
-hoses the X server. It would be nice if the X server would see the signal 
-change and adapt to it. Fbset could in theory be used again to change a VC 
-size. Yuck!!!! But it is what people want.
+Could you send me those patches :-)

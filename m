@@ -1,21 +1,23 @@
-From: John Zielinski <grim@undead.cc>
-Subject: Re: [PATCH] neofb patches
-Date: Wed, 28 Apr 2004 00:36:10 -0400
+From: "Alex Stewart" <alex@foogod.com>
+Subject: Re: [PATCH] radeonfb(): memmove() fix -- this one works ;-)
+Date: Tue, 27 Apr 2004 21:43:51 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <408F34BA.2090105@undead.cc>
-References: <Pine.LNX.4.44.0404280019070.23153-100000@phoenix.infradead.org>        <408EF0D9.6000403@undead.cc>        <1083109849.20091.1.camel@gaston>        <408EFD18.7070702@undead.cc>        <1083112862.20474.14.camel@gaston>        <408F0B61.5090806@undead.cc> <52520.64.139.3.221.1083122220.squirrel@www.foogod.com>
+Message-ID: <53204.64.139.3.221.1083127431.squirrel@www.foogod.com>
+References: <1083108311.16476.56.camel@gaston>
+        <Pine.LNX.4.44.0404280039460.23153-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIgo0-0001Jf-Tl
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 21:36:20 -0700
-Received: from ghoul.undead.cc ([216.126.84.18] helo=mail.undead.cc)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1BIgny-0004S8-G0
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 21:36:18 -0700
-In-Reply-To: <52520.64.139.3.221.1083122220.squirrel@www.foogod.com>
+	id 1BIgvU-0002fF-Mb
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 21:44:04 -0700
+Received: from adsl-209-182-168-213.value.net ([209.182.168.213] helo=firestar.foogod.com)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1BIgvU-0005qp-9J
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 21:44:04 -0700
+In-Reply-To: <Pine.LNX.4.44.0404280039460.23153-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,73 +27,117 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Alex Stewart <alex@foogod.com>
-Cc: benh@kernel.crashing.org, jsimmons@infradead.org, geert@linux-m68k.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: jsimmons@infradead.org
+Cc: benh@kernel.crashing.org, grim@undead.cc, eger-dated-1083663529.7e8c27@theboonies.us, geert@linux-m68k.org, adaplas@hotpop.com, eger-dated-1082943669.d79d33@theboonies.us, linux-fbdev-devel@lists.sourceforge.net
 
-Alex Stewart wrote:
+>> > 1) Color depth.
+>> > 2) Frequency.
+>> > 3) Over scan color.
+>>
+>> No, no, no ... We don't need those, we need a var structure, that's
+>> all.
 
->I like the idea of having graphical apps automatically open on the same
->framebuffer device as the console they were started from, but I agree with
->Ben, I think this approach is way more complicated than it needs to be.
+I agree, a var structure is how video modes are represented, and should be
+the way they're always represented.  Anything else will either be
+inadequate or horribly duplicative.  I also think that storing pixel
+resolutions and depths (let alone frequencies, etc) in a layer that
+shouldn't even know what a framebuffer is generally a poor way to do
+things.
+
+> No. Look the logic should go from the upper VT layer to the lower driver
+>  to accomplish something. Not the reverse.
 >
->  
+> struct vc_data -> native console driver structure --> fbdev
 >
-I don't believe it will be complicated but I'll find out after I try to 
-implement it.  I just like the fact the the kernel would be able to keep 
-applications from doing silly things.  Hey, if it turns out to be an 
-ugly patch I'll be the first to delete it.  Who knows, parts of it might 
-be useful.  And it's a great way for me to learn more of the innards of 
-the vt/fb systems.
-
->Firstly, all of the graphical apps you're describing should be VT-aware. 
->If they aren't, you shouldn't be using them on anything other than
->dedicated framebuffers anyway, really.  It's not hard to make an app work
->with VTs and it really is the correct way to do things for anything that
->is likely to be run in a VT-console environment.
->  
+> Not.
 >
-Hmm, I'll have to do some hunting.  What is the easy way to find out if 
-you're on a physical console and what vc num it is in user space?  I can 
-do it easily in kernel space...
+> fbdev --> native console driver --> struct vc_data.
 
->With this issue solved, all that needs to be done is to make it so that
->apps which open up a new VT, automatically get it on the same framebuffer
->as the currently active console (or better yet, the console associated
->with the app) is on (which is really the most intuitive thing anyway, and
->should probably be done on general principle).  Problem solved.
->
->  
->
-That might be tricky as you'd probably have to change the con2fb map to 
-remap the unused console to the right fb.
+Heh, well, I hope I'm not stirring things up too much here if I say I
+think both of those paths are wrong :)
 
->You really don't need all the complex machinations of a magic /dev/fb
->device to achieve this.  If the rest of the system is designed well the
->right behavior should be automatic without this extra effort.
->
->  
->
-Unfortunately it's not automatic.  The programmer has to jump through a 
-few hoops that it would take a couple of dozen lines of code in kernel 
-space to do.   This is just off the top of my head so it's probably not 
-entirely correct:
+Actually, I think we're going round and round here partly because nobody
+has really sat down and thought about what roles different components
+should be playing in the overall system.
 
-if( fbidx == 255 ) {
-    if( current->tty->driver != console_driver )    
-       return -ENODEV;
-    fbidx  = con2fb_map[ current->tty->index ];
-}
+The way I see it, we have the following components, which perform the
+following general tasks (note, I'm talking intended functionality, not
+necessarily exact implementation):
 
-Add another dozen lines to do the the KD_TEXT/KD_GRAPHICS and that's 90% 
-of the functionality of the /dev/fb device.
+framebuffer device driver (fbdev) - manages the actual hardware.
+fbcon - Represents a text console using a framebuffer for display.
+console - upper layer (generic) console system.
+vt - allows multiple things (consoles, other apps) to access the same
+display and input hardware.
+other apps - VT-aware userland framebuffer apps.
 
-Like I said, it's just a small experiment on my part.  Maybe someone 
-will find it useful or maybe they'll get some other ideas from it.  The 
-only reason I haven't tried it yet is I have to hunt down where my PCI 
-video card disappeared to so I can try it on a dual fb setup.
+Now one of the problems I see with things at the moment, is that some of
+these components (vt and the console stuff in particular) have very
+ambiguous and sometimes conflicting heirarchies in the current
+implementation.  I think it would be good to start by defining what the
+right relationships between these components should be.
 
-John
+The way I see it, if we formalize the boundaries between these components
+a bit better, the best arrangement is something like the following:
+
+1. fbdev sits on the bottom, talks to the hardware. (this is pretty obvious)
+
+2. vt sits on top of fbdev.  Its purpose is to arbitrate access to
+hardware resources.  It does not care about consoles, or display settings,
+just who's allowed to talk to the device drivers right now.
+
+3. fbcon sits on top of vt.  It uses vt to obtain access to fbdev, just
+like any other application should.  vt should not really need to care that
+this is a console as opposed to any other application which just wants to
+access the framebuffer.
+
+4. console sits on top of fbcon (for display) and vt (for keyboard access).
+
+5. other apps sit on top of vt, to talk to fbdev (and possibly keyboard,
+etc).
+ _____________________________
+|     console     |     |     |
+|-----------------|other|other|
+|      fbcon      | app | app |
+|-----------------+-----+-----|
+| (1) | (2) | (3) | (4) | (5) |
+| :::::::::::: vt ::::::::::::|
+|--------------.--------------'
+|     fbdev    |   keyboard   |
+`--------------'--------------'
+
+Now, first of all, I realize this is not the way things currently work.  I
+think this is part of the problem.  In the proposed heirarchy, fbcon and
+the rest of the console are treated exactly the same as any other
+application from the standpoint of accessing the framebuffer. 
+Applications do not need to know or care whether there's a console running
+on this framebuffer or not if they're just wanting to draw on a
+framebuffer, and vt doesn't have to know or care what a "video mode" is.
+
+If we want to set the video mode used by a framebuffer console, we should
+tell fbcon.  fbcon is (by definition) the only component which has (or
+should have) a concept of "video mode" and also has a concept of
+"console".  fbcon sets the appropriate var using fbdev (assuming vt says
+it is the currently active app for that screen), and then remembers what
+the right var is for future reference.  Any time vt changes to another VT,
+and then changes back to this one, fbdev gets notified that this VT has
+become active again, and can re-set fbdev's var to the right values.
+
+This of course requires that we have some appropriate way for something
+like fbset to "tell fbcon" to change the video mode.  I suggest it just be
+done through a fbcon-specific console ioctl (console passes it through to
+fbcon, fbcon interprets it and communicates with fbdev as appropriate). 
+vt never comes into the picture.
+
+By moving the console and fbcon code out to the same layer as other
+VT-aware framebuffer applications, the architecture becomes much cleaner,
+and a bunch of the nagging little issues we're currently discussing become
+a lot easier to deal with.
+
+So now you can all tell me how much crap you think this suggestion is..
+
+-alex
 
 
 

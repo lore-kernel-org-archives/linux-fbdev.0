@@ -1,78 +1,66 @@
 From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: Re: Re: [Dri-devel] Rage128 and Radeon patches
-Date: Thu, 14 Aug 2003 09:00:38 -0700 (PDT)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030814160038.11209.qmail@web14906.mail.yahoo.com>
-References: <1060857726.602.53.camel@gaston>
+Subject: Re: [Linux-fbdev-devel] Re: [Dri-devel] Rage128 and Radeon patches
+Date: Thu, 14 Aug 2003 10:13:11 -0700 (PDT)
+Sender: devel-admin@XFree86.Org
+Message-ID: <20030814171311.84327.qmail@web14911.mail.yahoo.com>
+References: <20030814132240.6523.qmail@web11307.mail.yahoo.com>
+Reply-To: devel@xfree86.org
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from web14906.mail.yahoo.com ([216.136.225.58])
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19nKX0-00014I-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 14 Aug 2003 09:00:54 -0700
-In-Reply-To: <1060857726.602.53.camel@gaston>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Return-path: <devel-admin@XFree86.Org>
+In-Reply-To: <20030814132240.6523.qmail@web11307.mail.yahoo.com>
+Errors-To: devel-admin@XFree86.Org
+List-Help: <mailto:devel-request@XFree86.Org?subject=help>
+List-Post: <mailto:devel@XFree86.Org>
+List-Subscribe: <http://XFree86.Org/mailman/listinfo/devel>,
+	<mailto:devel-request@XFree86.Org?subject=subscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Unsubscribe: <http://XFree86.Org/mailman/listinfo/devel>,
+	<mailto:devel-request@XFree86.Org?subject=unsubscribe>
+List-Archive: <http://XFree86.Org/mailman/private/devel/>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: dri-devel <dri-devel@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Alex Deucher <agd5f@yahoo.com>, dri-devel <dri-devel@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+Cc: devel@xfree86.org
 
---- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-wrote:
-> This is a problem. We also parse it to find the DFP
-> EDID and/or flat panel informations, do that work 
-> with the real ROM ? I don't know much about x86
-> BIOSes, but at least for the DFP EDID, I suppose
-> that one is read in RAM by the BIOS, not in the
-> ROM...
+--- Alex Deucher <agd5f@yahoo.com> wrote:
+> > 2) access ROM directly instead of relying on copy
+> > in low RAM. This allows multiple cards. Required
+> > MPP_TB_CONFIG fix in driver.
+> 
+> Is this patch necessary for xfree86?  It may address
+> some of the issues
+> in the email threads I sent out yesterday (ie,
+> problems with multiple
+> radeon cards and xfree86).  if so would you consider
+> making one?
+> 
 
-On x86 machines low RAM contains a copy of the ROM,
-now you are getting a pointer to the real ROM. The
-contents are identical. The only difference is that
-you need to use the readb()/readw()/etc macros to read
-it. On the x86 readb() does nothing, but on other
-platforms it will trigger a PCI read cycle. This plus
-side to this is that you can use multiple video cards.
+Xfree code does not have the patch, but is Xfree
+experiencing the bug? Xfree accesses the hardware very
+differently than the framebuffer drivers.
 
-The ROM stuff is only enabled on the X86 platform. It
-was IFDEF'd that way before I made my changes. I did
-not change the way it was previously IFDEF'd for other
-platforms.  You may want to try enabling the ROM on
-the Apple platforms. It will probably work, if it does
-change the IFDEFs. The old technique of relying on the
-copy in low memory does not work on Apples since their
-BIOS doesn't make the copy, that's why it was IFDEF'd
-off.
+I suspect that you would see this problem if you were
+using something else for your primary video and a
+Radeon for secondary. The first time you ran Xfree it
+would work. But when you exited and restarted Xfree it
+would hang when starting the secondary display.
 
-> You may want to look at the version I have in my
-> tree on ppc.bkbits.net/linuxppc-2.5-benh. I don't
-have
-> much time to sync with your before a couple of weeks
+Where does XFree reset the secondary card? The code
+below needs to run right after the reset in the radeon
+driver. I added it to my Rage128 driver too but I have
+not observed the problem with them.
 
-> for now... This version rely on my Power Management
-> stuffs I posted earlier that James didn't seem to
-merge
-> yet though.
+Framebuffer code is different and triggers the bug the
+first time the secondary display is accessed.
 
-I looked through the diff for this. The only potential
-conflict is where I cleaned up some error paths.
-Please keep my changes as the old code was not freeing
-resources where it should have. You may want to
-experiment with enabling the ROM on the Mac.
-
-My code does not change the behavior of the driver
-other than by adding PCI IDs and the way the ROM is
-accessed on the X86. It would be nice if you could
-check out my code and at least make sure it compiles
-and loads on a Powerbook.
+/* Fix from ATI for problem with Radeon hardware not
+leaving ROM enabled */
+unsigned int temp;
+temp = INREG(RADEON_MPP_TB_CONFIG);
+temp &= 0x00ffffffu;
+temp |= 0x04 << 24;
+OUTREG(RADEON_MPP_TB_CONFIG, temp);
+temp = INREG(RADEON_MPP_TB_CONFIG);
 
 
 =====
@@ -83,10 +71,3 @@ __________________________________
 Do you Yahoo!?
 Yahoo! SiteBuilder - Free, easy-to-use web site design software
 http://sitebuilder.yahoo.com
-
-
--------------------------------------------------------
-This SF.Net email sponsored by: Free pre-built ASP.NET sites including
-Data Reports, E-commerce, Portals, and Forums are available now.
-Download today and enter to win an XBOX or Visual Studio .NET.
-http://aspnet.click-url.com/go/psa00100003ave/direct;at.aspnet_072303_01/01

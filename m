@@ -1,21 +1,23 @@
-From: Jesse Barnes <jbarnes@sgi.com>
+From: Jon Smirl <jonsmirl@gmail.com>
 Subject: Re: [PATCH] Provide control of active VGA device on PCI systems
-Date: Tue, 22 Feb 2005 13:02:59 -0800
-Message-ID: <200502221302.59803.jbarnes@sgi.com>
-References: <9e47339105021921507545d084@mail.gmail.com> <200502221050.43534.jbarnes@sgi.com> <1109105867.5411.128.camel@gaston>
+Date: Thu, 24 Feb 2005 01:14:13 -0500
+Message-ID: <9e4733910502232214ecb3a5c@mail.gmail.com>
+References: <9e47339105021921507545d084@mail.gmail.com>
+	 <Pine.LNX.4.56.0502220401580.21388@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D3hBW-0005Ly-9n
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Feb 2005 13:03:10 -0800
-Received: from omx3-ext.sgi.com ([192.48.171.20] helo=omx3.sgi.com)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1D3hBT-0008R8-PP
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Feb 2005 13:03:10 -0800
-In-Reply-To: <1109105867.5411.128.camel@gaston>
-Content-Disposition: inline
+	id 1D4CGR-0000oR-MC
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Feb 2005 22:14:19 -0800
+Received: from rproxy.gmail.com ([64.233.170.192])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1D4CGQ-00022l-3e
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Feb 2005 22:14:19 -0800
+Received: by rproxy.gmail.com with SMTP id z35so646187rne
+        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 23 Feb 2005 22:14:14 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.56.0502220401580.21388@pentafluge.infradead.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,28 +29,51 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Jon Smirl <jonsmirl@gmail.com>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>
+Cc: Jesse Barnes <jbarnes@sgi.com>
 
-On Tuesday, February 22, 2005 12:57 pm, Benjamin Herrenschmidt wrote:
-> Well, that's something we need to figure out... While I do think the
-> POSTing must be under driver control, as I explained, there is still
-> that nasty notion of who has the stuff at 0xc0000 ... and if your
-> firmware runs the x86 BIOS but doesn't keep the shadow around, then you
-> are toast with a good deal of laptop chips.
+On Tue, 22 Feb 2005 04:07:23 +0000 (GMT), James Simmons
+<jsimmons@www.infradead.org> wrote:
+> This is not a bad patch but could you please merge that code into
+> vgastate.c and uses the vga io functions in include/video/vga.h
+> This way drivers can choose to link to the vga functions themselves.
+> The bonus is there is code in vgastate.c to save the state and restore
+> the vga text state with a fbdev device. You can for example with the
+> NVIDIA fbdev driver load it and do a open on /dev/fbX and it will go to
+> the graphics state. On the last close of /dev/fbX it will go back to the
+> vga text state it was in before the first open. With your code it would
+> make it even more functional.
 
-Right, that's a big pain.
+There are only three drivers linking in vgastate. This code has to run
+for all cards with PCI class VGA. It is used by the code that supports
+the VBIOS reset in user space. If I move it into vgastate.c I need to
+bring vgastate.o into the core fb module.
 
-> The problem is that on some cards (ATIs for example), the BIOS will
-> modify the image in RAM at c0000 and will put in there various infos,
-> like panel type, PLL infos, etc... that can't always be obtained from
-> the "hard" ROM (especially the panel infos). The driver (raeonfb or X,
-> strace X and see it mmap'ing /dev/mem at c0000...) need those things.
+The problem this code addresses:
+boot video card is a VGA device
+reseting secondary card will also enable it's VGA device
+now we have two active VGA devices - this is bad since most archs only allow one
 
-Shouldn't the driver safe that stuff at suspend time for use at resume time?  
-Or do we expect to be able to resume with different hw attached?
+It fixes it like this:
+boot video card is VGA
+reset program uses sysfs to disable all VGA devices in system, write
+vga=4 to any vga attrib
+after secondary card is reset it will have active VGA
+now reset program disables secondary VGA and restores the original
+one, write vga=3 to any vga attrib
 
-Jesse
+It has a neat side effect of letting you move the console around to
+different VGA devices but that is not it's primary purpose. This code
+needs to go into the core fb module. It has to deal with all VGA
+devices in the system whether they have fb loaded or not.
+
+I am going to remove the fb_hotplug function and IORESOURCE_NO_RESET
+and use a different scheme for triggering the user space reset
+program.
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
 
 
 -------------------------------------------------------

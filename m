@@ -1,22 +1,21 @@
-From: Denis Oliver Kropp <dok@directfb.org>
-Subject: Re: [PATCH 1/2] fbdev: S3 Savage Framebuffer Driver
-Date: Sat, 23 Oct 2004 01:38:45 +0200
+From: Andrew Morton <akpm@osdl.org>
+Subject: Fw: [Bugme-new] [Bug 3624] New: radeon drivers don't handle unclean
+ X.org exits properly, screwing up resolution settings
+Date: Sat, 23 Oct 2004 12:34:15 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20041022233845.GA20612@master.directfb.org>
-References: <200410230436.42009.adaplas@hotpop.com>
+Message-ID: <20041023123415.43f2a136.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CL913-0002uc-C7
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Oct 2004 16:40:13 -0700
-Received: from port-212-202-201-108.dynamic.qsc.de ([212.202.201.108] helo=master.zion.home)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CL912-0002ei-GU
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Oct 2004 16:40:13 -0700
-Content-Disposition: inline
-In-Reply-To: <200410230436.42009.adaplas@hotpop.com>
+	id 1CLRgW-0005K2-77
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 23 Oct 2004 12:36:16 -0700
+Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1CLRgV-0006mR-Lv
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 23 Oct 2004 12:36:16 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,50 +26,55 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: adaplas@pol.net
-Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Denis Oliver Kropp <dok@directfb.org>, Mika Pruikkonen <mpruikko@cc.hut.fi>, Sven Neumann <neo@convergence.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-fbdev-devel@lists.sourceforge.net
 
-Quoting Antonino A. Daplas:
-> S3 Savage Frambuffer Driver for the following chipsets: 
-> 
-> Savage 3D
-> Savage MX
-> Savage 4
-> Savage 2000
-> ProSavage
-> SuperSavage
-> 
-> This is based from the driver written by:
->  Denis Oliver Kropp <dok@directfb.org>
->  Sven Neumann <neo@directfb.org>
-> 
-> Initial Porting to 2.6 done by:
->  Mika Pruikkonen <mpruikko@cc.hut.fi>
-> 
-> Added the following:
-> - Console acceleration support (imageblit, fillrect, copyarea) -
->   Configurable
-> - DDC2/I2C support for (ProSavage DDR-K, Savage 4 and Prosavage PM only -
->   Configurable
-> - 8, 16, 32 bits per pixel
 
-Hi,
 
-you've made a great progress with the driver!
+Begin forwarded message:
 
-Nice to see that this driver is maintained again.
+Date: Sat, 23 Oct 2004 09:32:08 -0700
+From: bugme-daemon@osdl.org
+To: bugme-new@lists.osdl.org
+Subject: [Bugme-new] [Bug 3624] New: radeon drivers don't handle unclean X.org exits properly, screwing up resolution settings
 
--- 
-Best regards,
-  Denis Oliver Kropp
+
+http://bugme.osdl.org/show_bug.cgi?id=3624
+
+           Summary: radeon drivers don't handle unclean X.org exits
+                    properly, screwing up resolution settings
+    Kernel Version: 2.6.9
+            Status: NEW
+          Severity: normal
+             Owner: davej@codemonkey.org.uk
+         Submitter: luke-jr+linuxbugs@utopios.org
+
+
+Distribution: Gentoo 
+Hardware Environment: 
+  CPU: Athlon64 3200+ 
+  Motherboard: Asus K8V SE 
+  Video Card: ATi Radeon 9200 SE 
+Software Environment: 
+  Linux 2.6.9 
+  X.org 6.8.1 
+Problem Description: radeon drivers don't handle unclean X.org exits properly, 
+screwing up resolution settings 
  
-.------------------------------------------.
-| DirectFB - Hardware accelerated graphics |
-| http://www.directfb.org/                 |
-"------------------------------------------"
+Steps to reproduce (a): 
+  1. Take a working X.org configuration 
+  2. Change the pointer device to some non-existant /dev item 
+  3. Attempt to start X 
+  4. Your display is gone 
+ 
+Steps to reproduce (b): 
+  1. Take a working X.org configuration 
+  2. Start X 
+  3. Crash X 
+  4. Your console VTs are the wrong resolution and thus do not display 
+properly
 
-                            Convergence GmbH
+------- You are receiving this mail because: -------
+You are on the CC list for the bug, or are watching someone who is.
 
 
 -------------------------------------------------------

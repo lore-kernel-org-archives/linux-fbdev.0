@@ -1,17 +1,17 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH] Duplicate PROC_CONSOLE()
-Date: Wed, 9 Apr 2003 16:03:45 +0200 (MEST)
+Subject: [PATCH] fbcon crashes
+Date: Wed, 9 Apr 2003 16:08:31 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0304091600580.21742-100000@vervain.sonytel.be>
+Message-ID: <Pine.GSO.4.21.0304091603470.21742-100000@vervain.sonytel.be>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 193GBP-00070A-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 09 Apr 2003 07:04:12 -0700
+	id 193GFz-0007T5-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 09 Apr 2003 07:08:56 -0700
 Received: from vervain.sonytel.be (mail.sonytel.be [10.17.0.27])
-	by mail.sonytel.be (8.9.0p/8.8.6) with ESMTP id QAA12614
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 9 Apr 2003 16:03:29 +0200 (MET DST)
+	by mail.sonytel.be (8.9.0p/8.8.6) with ESMTP id QAA12979
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 9 Apr 2003 16:08:15 +0200 (MET DST)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -26,71 +26,77 @@ Content-Transfer-Encoding: 7bit
 To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
 
-A clean up for 2.4.x:
+While playing with 2.4.20 on a dual-headed unified memory system, I fixed the
+following:
 
-  - Remove local copy of PROC_CONSOLE() in drivers/video/modedb.c. A global one
-    is already provided by drivers/video/fbcon.c
-  - Add missing multiple include protectors to <linux/console_struct.h>
+  - Make PROC_CONSOLE() return -1 when the virtual console does not belong to
+    the specified fbdev. This way we prevent messing with the wrong fb_info[i]
+    later when running fbset from the `wrong' virtual console on multi-headed
+    systems.
+  - Validate the current cursor position before undrawing the cursor in
+    fbcon_cursor(). If we just shrank the frame buffer size, the old cursor
+    position may now lay outside the frame buffer region.
 
-OK to send this to Alan and Marcelo?
+The second one made my kernel crash, by scribbling on kernel code that was
+located right after the frame buffer. I guess no one saw this before, because
+usually display->screen_base doesn't move when changing the resolution, and
+most modern video cards have plenty of graphics memory.
 
---- linux-2.4.x/drivers/video/modedb.c.orig	Sun Dec 23 11:25:09 2001
-+++ linux-2.4.x/drivers/video/modedb.c	Wed Apr  9 13:47:05 2003
-@@ -16,6 +16,7 @@
- #include <linux/fb.h>
- #include <linux/console_struct.h>
- #include <linux/sched.h>
-+#include <video/fbcon.h>
+Any comments?
+
+--- linux-2.4.20/drivers/video/fbcon.c.orig	Wed Apr  2 13:26:09 2003
++++ linux-2.4.20/drivers/video/fbcon.c	Wed Apr  9 15:33:07 2003
+@@ -272,23 +272,22 @@
+ int PROC_CONSOLE(const struct fb_info *info)
+ {
+         int fgc;
+-        
+-        if (info->display_fg != NULL)
+-                fgc = info->display_fg->vc_num;
+-        else
+-                return -1;
+-                
+-        if (!current->tty)
+-                return fgc;
+-
+-        if (current->tty->driver.type != TTY_DRIVER_TYPE_CONSOLE)
+-                /* XXX Should report error here? */
+-                return fgc;
  
+-        if (MINOR(current->tty->device) < 1)
+-                return fgc;
++	if (info->display_fg == NULL)
++		return -1;
  
- #undef DEBUG
-@@ -255,28 +256,6 @@
- 		return val;
- 	}
-     }
--}
--
--static int PROC_CONSOLE(const struct fb_info *info)
--{
--	int fgc;
--	
--	if (info->display_fg != NULL)
--		fgc = info->display_fg->vc_num;
--	else
--		return -1;
--		
--	if (!current->tty)
--		return fgc;
--
--	if (current->tty->driver.type != TTY_DRIVER_TYPE_CONSOLE)
--		/* XXX Should report error here? */
--		return fgc;
--
--	if (MINOR(current->tty->device) < 1)
--		return fgc;
--
--	return MINOR(current->tty->device) - 1;
+-        return MINOR(current->tty->device) - 1;
++        if (!current->tty ||
++	    current->tty->driver.type != TTY_DRIVER_TYPE_CONSOLE ||
++	    MINOR(current->tty->device) < 1)
++		fgc = info->display_fg->vc_num;
++	else
++		fgc = MINOR(current->tty->device)-1;
++
++	/* Does this virtual console belong to the specified fbdev? */
++	if (fb_display[fgc].fb_info != info)
++		return -1;
++
++	return fgc;
  }
  
  
---- linux-2.4.x/include/linux/console_struct.h.orig	Thu Sep 20 10:51:46 2001
-+++ linux-2.4.x/include/linux/console_struct.h	Wed Apr  9 13:54:58 2003
-@@ -9,6 +9,9 @@
-  * to achieve effects such as fast scrolling by changing the origin.
-  */
+@@ -925,8 +924,9 @@
+ 	return;
  
-+#ifndef _LINUX_CONSOLE_STRUCT_H_
-+#define _LINUX_CONSOLE_STRUCT_H_
-+
- #define NPAR 16
+     cursor_on = 0;
+-    if (cursor_drawn)
+-        p->dispsw->revc(p, p->cursor_x, real_y(p, p->cursor_y));
++    if (cursor_drawn && p->cursor_x < conp->vc_cols &&
++	p->cursor_y < conp->vc_rows)
++	p->dispsw->revc(p, p->cursor_x, real_y(p, p->cursor_y));
  
- struct vc_data {
-@@ -107,3 +110,5 @@
- #define CUR_DEFAULT CUR_UNDERLINE
- 
- #define CON_IS_VISIBLE(conp) (*conp->vc_display_fg == conp)
-+
-+#endif /* _LINUX_CONSOLE_STRUCT_H_ */
+     p->cursor_x = conp->vc_x;
+     p->cursor_y = y;
+
 
 Gr{oetje,eeting}s,
 

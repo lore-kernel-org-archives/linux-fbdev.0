@@ -1,11 +1,18 @@
-From: "Mukund JB." <mukundjb@esntechnologies.co.in>
-Subject: RE: Crosstool for EBD9312..
-Date: Mon, 7 Mar 2005 19:06:44 +0530
-Message-ID: <4EE0CBA31942E547B99B3D4BFAB348113A4797@mail.esn.co.in>
+From: Henk Vergonet <rememberme@god.dyndns.org>
+Subject: RFC: Modeline configuration strategies.
+Date: Mon, 7 Mar 2005 18:37:53 +0100
+Message-ID: <20050307173753.GA7774@god.dyndns.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-class: urn:content-classes:message
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1D8MB8-0005XX-4q
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Mar 2005 09:38:02 -0800
+Received: from god.demon.nl ([83.160.164.11] helo=god.dyndns.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1D8MB6-0005aP-In
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Mar 2005 09:38:02 -0800
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -17,33 +24,34 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-users@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net
-Cc: geert@linux-m68k.org, Michael Burian <dynmail1@gassner-waagen.at>, komal_shah802003@yahoo.com
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net
+
+Greetings,
+
+I currently have a savage that's directly connected via the VGA interface to the SCART plug of the TV. This gives magnitudes better picture quality and I don't have to hassle with TVout suppor;)
+
+One of the things I always do is to adjust the static variable savagefb_var800x600x8 with the settings suitable for the TV (PAL mode) in order to boot linux (console) with the TV attached.
 
 
-Hi all,
+This made me wonder, can we make this configurable at kernel config time?
 
-I also have a doubt regarding Accelarated Display driver.=20
-Would u define an Accelerated display driver?
+The idea would be that you could do the video mode initialization at kernel configuration time.
 
-Is it the driver to a Accelerated display card?
+For example something like this:
+    Videomode intialization strategy:
+    [ ] Use EDID Monitor probing
+    [ ] Use Laptop mode probing ? (Im not an expert on DVI)
+    [ ] Select a videomode:
+	[ ] Pre-defined (Vesa modes, PAL, PAL interlaced, NTSC, NTCS interlaced ...)
+	[ ] User defined video mode
+		parameter1 ... parameterN
 
-			Or
 
-Is it like accelerated display driver has a different meaning. I mean,
-it has the set features which will not be there on a normal driver for
-the same card?
+As an added bonus this could further modularize the framebuffer code and further enhance modedb...
 
-How can I implement a accelerated driver?
-Can I use the existing code of a framebuffer driver & do that? I heard
-in the groups saying framebuffer driver is not an accelerated driver.=20
 
-Please take the pain of explaining how a framebuffer driver is different
-form accelerated driver?
-
-Regards,
-Mukund jampala
-
+What do you think?
 
 
 

@@ -1,19 +1,19 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Fw: [framebuffer] broken again :/
-Date: Wed, 21 Jul 2004 22:45:15 -0700
+From: "Postmaster" <postmaster@vbi.org>
+Subject: WARNING: YOU MAY HAVE A VIRUS
+Date: Thu, 22 Jul 2004 08:42:47 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040721224515.1b76193e.akpm@osdl.org>
+Message-ID: <200407220842.AA2194670134@vbi.org>
+Reply-To: <postmaster@vbi.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BnTb3-0005Gr-0F
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Jul 2004 19:46:13 -0700
-Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1BnTb2-000320-9u
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Jul 2004 19:46:12 -0700
+	id 1BnXI9-0000Cx-W7
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Jul 2004 23:42:57 -0700
+Received: from mail.ella.no ([212.4.36.66] helo=vbi.org)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1BnXI9-0006qX-BB
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Jul 2004 23:42:57 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -23,53 +23,14 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: pluto@pld-linux.org
 
-
-
-Begin forwarded message:
-
-Date: Wed, 21 Jul 2004 16:00:44 +0200
-From: Pawe=B3 Sikora <pluto@pld-linux.org>
-To: Andrew Morton <akpm@osdl.org>
-Subject: [framebuffer] broken again :/
-
-
-Hi,
-
-# vanilla 2.8.8rc2...
-
-I switch *all* consoles to 1024x768(75Hz,32bpp) (rivafb) mode.
-(http://149.156.124.14/~pluto/tmp/kernel/step1.png)
-Even without launching a bootsplash while switching
-to another console I observe below effect:
-(strange resolution and horrible aspect ratio)
-http://149.156.124.14/~pluto/tmp/kernel/step2.png
-I switch consoles again to 1024x768(75Hz,32bpp) mode
-and get an oops:
-http://149.156.124.14/~pluto/tmp/kernel/step3.png
-
-# vanilla 2.6.7...
-
-I switch *all* consoles to 1024x768(75Hz,32bpp) (rivafb) mode.
-While switching to another console everything is all right.
-(no resolution/aspect changes, no oops).
-
-# summary
-
-Framebuffer in 2.6.8-xx is broken (again) :/
-Writing to lkml =3D=3D Writing to /dev/null :/
-Please, forward this email to fb-related developers.
-At now, PLD-Linux rolls back to 2.6.7(+security fixes).
-
-2.6.8 is unusable :(
-
---=20
-/* Copyright (C) 2003, SCO, Inc. This is valuable Intellectual Property. */
-
-                           #define say(x) lie(x)
+The Declude Virus software on vbi.org has reported that you 
+sent an E-mail to vbi@vbi.org, containing the  W32/Netsky.P@mm virus in the
+your_document.zip attachment.  The subject of the E-mail was "Private document".  
+The E-mail containing the virus has been quarantined to prevent further damage.
 
 
 -------------------------------------------------------

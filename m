@@ -1,17 +1,18 @@
-From: Antonino Daplas <adaplas@pol.net>
+From: Fredrik Noring <noring@nocrew.org>
 Subject: Re: [PATCH] rivafb sync polarity problem?
-Date: 20 Jan 2003 00:49:50 +0800
+Date: 19 Jan 2003 18:38:56 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1042994847.976.3.camel@localhost.localdomain>
-References: <1042980943.12192.34.camel@h9n1fls20o980.telia.com>
+Message-ID: <1042997937.1303.22.camel@h9n1fls20o980.telia.com>
+References: <1042980943.12192.34.camel@h9n1fls20o980.telia.com> 
+	<1042994847.976.3.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from willow.compass.com.ph ([202.70.96.38])
+Received: from mailf.telia.com ([194.22.194.25])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18aInf-00048l-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 19 Jan 2003 08:59:59 -0800
-In-Reply-To: <1042980943.12192.34.camel@h9n1fls20o980.telia.com>
+	id 18aJOT-0001oI-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 19 Jan 2003 09:38:01 -0800
+In-Reply-To: <1042994847.976.3.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,33 +23,38 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Fredrik Noring <noring@nocrew.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Ani Joshi <ajoshi@shell.unixbox.com>
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sun, 2003-01-19 at 20:55, Fredrik Noring wrote:
-> Hi,
-> 
-> It seems the mode below doesn't work with rivafb in Linux 2.4.21-pre2,
-> the RGB (TV) screen fail to sync properly. (The equivalent modeline in
-> XFree86 4.2 works.)
-> 
->     mode "768x288"
->         geometry   768 288   768 288   32
->         timings    62500   120 80   20 2   54 2
->         hsync low
->         vsync low
->     endmode
-> 
+> How bad is the sync problem?  
 
-Ooops :-)  Sorry, I did not notice you were using 288 for your yres, so
-62500 is just right.
+Well, I must say it's pretty bad. It's a digital kind of TV - so
+either you'll get a stable nice looking image, or you'll get the
+blue "no-signal" screen. I get the blue screen.
 
-How bad is the sync problem?  It's possible that your horizontal timings
-is not divisible by 8?  Ie., your hsync_len is 54, but when it's written
-to the register, it's just 48.  You might want to recalculate the
-numbers so you use 54 or 56.
+But there is a strange mode in the TV where I can see the RGB signal
+from the computer using the sync from the RF-input. Using this, at
+least it seems the frequencies are reasonably correct.
 
-Tony
+> It's possible that your horizontal timings is not divisible by 8?  
+> Ie., your hsync_len is 54, but when it's written to the register, 
+> it's just 48.  You might want to recalculate the numbers so you 
+> use 54 or 56.
+
+I've tried the two variants below but neither work unfortunately.
+
+    mode "768x288"
+        geometry   768 288   768 288   32
+    #   timings    62500   126 80   20 2   48 2
+        timings    62500   118 80   20 2   56 2
+        hsync low
+        vsync low
+    endmode
+
+Thanks,
+
+	Fredrik
+
 
 
 

@@ -1,18 +1,13 @@
-From: Simeon Walker <simeon@sbs.bangor.ac.uk>
-Subject: 2.4 atyfb blank screen on Tyan MB
-Date: Fri, 25 Jul 2003 16:27:16 +0100
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH] Macfb compile fixes
+Date: Sat, 26 Jul 2003 16:51:44 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3F214C54.3030502@sbs.bangor.ac.uk>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Message-ID: <200307261451.h6QEpiES002358@callisto.of.borg>
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from vogon.bangor.ac.uk ([147.143.42.78])
+Received: from amsfep15-int.chello.nl ([213.46.243.28])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19g4TU-00032P-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 25 Jul 2003 08:27:17 -0700
-Received: from sbs.bangor.ac.uk (milliways [147.143.41.38])
-	by vogon.bangor.ac.uk (Postfix) with ESMTP id 5B216C4E8
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 25 Jul 2003 16:27:14 +0100 (BST)
+	id 19gQLC-0005VA-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 26 Jul 2003 07:48:10 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,46 +17,109 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linus Torvalds <torvalds@transmeta.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Linux Fbdev <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-Hi,
+Macfb compile fixes
 
-I am having trouble getting the frame buffer device working on
-a machine with A Tyan S2723 motherboard, this has an Intel
-i7501 chipset and lspci -v reports the following for the onboard
-ATI chip:
-
-01:02.0 VGA compatible controller: ATI Technologies Inc Rage XL (rev 27) 
-(prog-if 00 [VGA])
-        Subsystem: ATI Technologies Inc: Unknown device 8008
-        Flags: bus master, stepping, medium devsel, latency 64, IRQ 18
-        Memory at fd000000 (32-bit, non-prefetchable) [size=16M]
-        I/O ports at b800 [size=256]
-        Memory at fe7ff000 (32-bit, non-prefetchable) [size=4K]
-        Expansion ROM at fe7c0000 [disabled] [size=128K]
-        Capabilities: [5c] Power Management version 2
+--- linux-2.6.x/drivers/video/macfb.c	Mon May  5 10:32:15 2003
++++ linux-m68k-2.6.x/drivers/video/macfb.c	Sun Jun  8 11:24:51 2003
+@@ -233,11 +233,11 @@
+ 		
+ 		/* Loop until we get to the register we want */
+ 		for (i = 0; i < regno; i++) {
+-			nubus_writeb(info->cmap[i].red >> 8, &dafb_cmap_regs->lut);
++			nubus_writeb(info->cmap.red[i] >> 8, &dafb_cmap_regs->lut);
+ 			nop();
+-			nubus_writeb(info->cmap[i].green >> 8, &dafb_cmap_regs->lut);
++			nubus_writeb(info->cmap.green[i] >> 8, &dafb_cmap_regs->lut);
+ 			nop();
+-			nubus_writeb(info->cmap[i].blue >> 8, &dafb_cmap_regs->lut);
++			nubus_writeb(info->cmap.blue[i] >> 8, &dafb_cmap_regs->lut);
+ 			nop();
+ 		}
+ 	}
+@@ -528,10 +528,10 @@
+ 	 *  != 0 for invalid regno.
+ 	 */
+ 	
+-	if (regno >= info->cmap.len)
++	if (regno >= fb_info->cmap.len)
+ 		return 1;
  
-The problem is that no matter what I try the screen goes
-blank when the atyfb module is loaded. If compiled in then the
-screen goes blank during boot up. Everything else works fine.
+-	switch (info->var.bits_per_pixel) {
++	switch (fb_info->var.bits_per_pixel) {
+ 	case 1:
+ 		/* We shouldn't get here */
+ 		break;
+@@ -539,21 +539,21 @@
+ 	case 4:
+ 	case 8:
+ 		if (macfb_setpalette)
+-			macfb_setpalette(regno, red, green, blue, info);
++			macfb_setpalette(regno, red, green, blue, fb_info);
+ 		else
+ 			return 1;
+ 		break;
+ 	case 16:
+-		if (info->var.red.offset == 10) {
++		if (fb_info->var.red.offset == 10) {
+ 			/* 1:5:5:5 */
+-			((u32*) (info->pseudo_palette))[regno] =
++			((u32*) (fb_info->pseudo_palette))[regno] =
+ 					((red   & 0xf800) >>  1) |
+ 					((green & 0xf800) >>  6) |
+ 					((blue  & 0xf800) >> 11) |
+ 					((transp != 0) << 15);
+ 		} else {
+ 			/* 0:5:6:5 */
+-			((u32*) (info->pseudo_palette))[regno] =
++			((u32*) (fb_info->pseudo_palette))[regno] =
+ 					((red   & 0xf800)      ) |
+ 					((green & 0xfc00) >>  5) |
+ 					((blue  & 0xf800) >> 11);
+@@ -565,19 +565,19 @@
+ 		red   >>= 8;
+ 		green >>= 8;
+ 		blue  >>= 8;
+-		((u32 *)(info->pseudo_palette))[regno] =
+-			(red   << info->var.red.offset)   |
+-			(green << info->var.green.offset) |
+-			(blue  << info->var.blue.offset);
++		((u32 *)(fb_info->pseudo_palette))[regno] =
++			(red   << fb_info->var.red.offset)   |
++			(green << fb_info->var.green.offset) |
++			(blue  << fb_info->var.blue.offset);
+ 		break;
+ 	case 32:
+ 		red   >>= 8;
+ 		green >>= 8;
+ 		blue  >>= 8;
+-		((u32 *)(info->pseudo_palette))[regno] =
+-			(red   << info->var.red.offset)   |
+-			(green << info->var.green.offset) |
+-			(blue  << info->var.blue.offset);
++		((u32 *)(fb_info->pseudo_palette))[regno] =
++			(red   << fb_info->var.red.offset)   |
++			(green << fb_info->var.green.offset) |
++			(blue  << fb_info->var.blue.offset);
+ 		break;
+     }
+     return 0;
 
-Even fbset seems to work, the monitor will indicate the appropriate
-changes in resolution/refresh rate but the screen is always blank.
+Gr{oetje,eeting}s,
 
-I have tried kernels from stock 2.4.21 to 2.4.22-pre6-ac1 with
-no change in the results. Any suggestions?
+						Geert
 
-Regards,
-Simeon
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
--- 
-Simeon Walker,                      email: simeon@sbs.bangor.ac.uk
-School of Biological Sciences,      phone: +44 (0)1248 383702
-University of Wales, Bangor,        fax: +44 (0)1248 382569
-Gwynedd, LL57 2UW, UK.              www: http://biology.bangor.ac.uk/
-
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

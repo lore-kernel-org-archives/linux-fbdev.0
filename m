@@ -1,64 +1,62 @@
-From: Thomas Zimmerman <Thomas@zimres.net>
-Subject: Re: [BK FBDEV] Updates.
-Date: Fri, 7 Mar 2003 13:14:05 -0800
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20030307131405.59df9f38.Thomas@zimres.net>
-References: <Pine.LNX.4.44.0303061528000.4540-100000@phoenix.infradead.org>
+From: Witold Filipczyk <witekfl@poczta.gazeta.pl>
+Subject: Why aty128fb is so slow?
+Date: Fri, 7 Mar 2003 21:30:21 +0000
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <20030307213021.GC2413@pecet.fixsoftware.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44.0303061528000.4540-100000@phoenix.infradead.org>
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from pb15.olsztyn.cvx.ppp.tpnet.pl ([213.76.45.15] helo=pecet.fixsoftware.pl)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18rPS3-0006qd-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 07 Mar 2003 13:32:24 -0800
+Content-Disposition: inline
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, 6 Mar 2003 08:40:14 -0800 (PST)
-James Simmons <jsimmons@infradead.org> wrote:
+Hello,
+Could anybody explain why aty128fb is so slow?
+I'm using kernel-2.4.20.
 
-> 
-> Linus, please do a
-> 
-> 	bk pull http://fbdevA.bkbits.net/fbdev-2.5
-> 
-> This will update the following files:
-[snip]
->  drivers/video/sis/325vtbl.h                | 2335 -----
->  drivers/video/sis/sisfb.h                  |  153
->  drivers/video/sstfb.h                      |  355
-[snip]
->  include/linux/sisfb.h                      |  169
-[snip]
->  drivers/video/sis/300vtbl.h                | 1373 ++-
->  drivers/video/sis/310vtbl.h                | 2465 ++++-
->  drivers/video/sis/init.c                   | 5841 ++++++++-----
->  drivers/video/sis/init.h                   |  303
->  drivers/video/sis/init301.c                |12286
->  ++++++++++++++++++----------- drivers/video/sis/init301.h            
->     |  508 -
->  drivers/video/sis/initdef.h                |  114
->  drivers/video/sis/oem300.h                 |  468 +
->  drivers/video/sis/oem310.h                 |  218
->  drivers/video/sis/osdef.h                  |   13
->  drivers/video/sis/sis.h                    |   10
->  drivers/video/sis/sis_accel.c              |  166
->  drivers/video/sis/sis_accel.h              |  509 +
->  drivers/video/sis/sis_main.c               | 4526 ++++++----
->  drivers/video/sis/sis_main.h               |  672 +
->  drivers/video/sis/vgatypes.h               |   26
->  drivers/video/sis/vstruct.h                |  683 +
-[snip]
->  include/video/sisfb.h                      |  191
-[snip]
-> <jsimmons@maxwell.earthlink.net> (03/03/05 1.939)
->    [FBDEV] Updates for the SIS fbdev driver to the new api. Removed
->    poll. We wil use signals in the future instead.
-[snip]
-> Diff is at http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
+01:00.0 VGA compatible controller: ATI Technologies Inc Rage 128 Pro TF (prog-if 00 [VGA])
+        Subsystem: ATI Technologies Inc Rage 128 Pro TF
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping+ SERR- FastB2B-
+        Status: Cap+ 66Mhz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 32 (2000ns min), cache line size 08
+        Interrupt: pin A routed to IRQ 11
+        Region 0: Memory at e0000000 (32-bit, prefetchable) [size=64M]
+        Region 1: I/O ports at c000 [size=256]
+        Region 2: Memory at e7000000 (32-bit, non-prefetchable) [size=16K]
+        Expansion ROM at <unassigned> [disabled] [size=128K]
+        Capabilities: [50] AGP version 2.0
+                Status: RQ=31 SBA+ 64bit- FW- Rate=x1,x2
+                Command: RQ=0 SBA+ AGP- 64bit- FW- Rate=<none>
+        Capabilities: [5c] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
 
 
-Happily using this as sis fb doesn't compile in 2.5.64; This is the
-first 2.5 kernel that boots for me. X seems faster than under 2.4. This
-(almost) all sis based laptop likes things now.
+Computer has Athlon 1.8+ processor on K7VTA3 motherboard.
 
-Thomas
+In directory with 5000 files ls on console takes more than 6 seconds.
+In xterm or rxvt ls takes only 0.6 s.
+
+-- 
+Witold Filipczyk
+<witekfl@poczta.gazeta.pl>
+
+
+-------------------------------------------------------
+This SF.net email is sponsored by: Etnus, makers of TotalView, The debugger 
+for complex code. Debugging C/C++ programs can leave you feeling lost and 
+disoriented. TotalView can help you find your way. Available on major UNIX 
+and Linux platforms. Try it free. www.etnus.com

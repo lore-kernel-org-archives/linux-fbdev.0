@@ -1,17 +1,24 @@
-From: Komal Shah <komal_shah802003@yahoo.com>
-Subject: Fb rotation 2.6.x
-Date: Tue, 15 Mar 2005 00:58:27 -0800 (PST)
-Message-ID: <20050315085827.56051.qmail@web53603.mail.yahoo.com>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: Re: [PATCH][RFC] Add support for Epson S1D13806 FB
+Date: Tue, 15 Mar 2005 18:26:42 +0800
+Message-ID: <200503151826.42957.adaplas@hotpop.com>
+References: <20050314130014.55A073658E8@mail.esiee.fr> <200503142306.00236.adaplas@hotpop.com> <20050315071735.GA5037@linux-sh.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DB7so-0007dh-MU
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Mar 2005 00:58:34 -0800
-Received: from web53603.mail.yahoo.com ([206.190.37.36])
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
-	id 1DB7so-0007Ii-0N
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Mar 2005 00:58:34 -0800
+	id 1DB9GO-0004aD-IQ
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Mar 2005 02:27:00 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DB9GO-0007Hm-0M
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Mar 2005 02:27:00 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id E2EBFFBBCD0
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 15 Mar 2005 10:26:39 +0000 (UTC)
+In-Reply-To: <20050315071735.GA5037@linux-sh.org>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -23,263 +30,100 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Paul Mundt <lethal@linux-sh.org>, adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Hi All,
+On Tuesday 15 March 2005 15:17, Paul Mundt wrote:
+> On Mon, Mar 14, 2005 at 11:06:00PM +0800, Antonino A. Daplas wrote:
+> > In the case of hitfb, fillrect and copyarea are both accelerated.  So the
+> > proper flags would be:
+> >
+> > FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN | FBINFO_HWACCEL_COPYAREA |
+> > FBINFO_HWACCEL_FILLRECT.
+>
+> Should this not be implied by having something other then the cfb_
+> routines for these?
 
-We have added the code for hardware rotation in the
-framebuffer driver for omap242x processor from TI
-[2.6.x kernel]. 
+Yes.
 
-It has been reported to work on 2.4.x.
+> On the other hand, will this affect performance
+> negatively if these flags remain and we end up wrapping to the cfb_
+> routines in certain cases?
 
-But when I had made it changed for 2.6.x follwoing
-behaviour is seen:
+Yes, if cfb_copyarea is used and FBINFO_HWACCEL_COPYAREA is set,  fbcon
+will use SCROLL_MOVE. And SCROLL_MOVE is magnitudes slower than
+SCROLL_REDRAW especially for unaccelerated PCI/AGP cards.
 
-1. When I rotate the framebuffer ( Linux logo screen)
-by 180 degree then it shows only Linux logo image for
-a second only and then it disappears.
+>
+> If we consider the case of FBINFO_HWACCEL_COPYAREA:
+>
+>         if ((cap & FBINFO_HWACCEL_COPYAREA) &&
+>             !(cap & FBINFO_HWACCEL_DISABLED))
+>                 p->scrollmode = SCROLL_MOVE;
+>         else /* default to something safe */
+>                 p->scrollmode = SCROLL_REDRAW;
+>
+>
+> This doesn't seem like it will work out well if we end up having
+> something like (using neofb as an example):
+>
+> static void
+> neofb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
+> {
+>         switch (info->fix.accel) {
+>                 case FB_ACCEL_NEOMAGIC_NM2200:
+>                 case FB_ACCEL_NEOMAGIC_NM2230:
+>                 case FB_ACCEL_NEOMAGIC_NM2360:
+>                 case FB_ACCEL_NEOMAGIC_NM2380:
+>                         neo2200_copyarea(info, area);
+>                         break;
+>                 default:
+>                         cfb_copyarea(info, area);
+>                         break;
+>         }
+> }
+>
+> The behaviour in this case will be to use SCROLL_MOVE with regards to
+> cfb_copyarea() instead of SCROLL_REDRAW as it would normally. If we trust
+> the comment, then this seems unsafe or broken.
 
-2. Whereas while doing in 90 degree rotation, it shows
-the black square of Linux logo size on the 270 degree
-rotation position. 
+Yes.
 
-The reasons we found are as below:
+>
+> In this case it would seem to be more sensible to fix neo_alloc_fb_info()
+> to only set these flags for those devices where an optimization exists.
+> In the case of where using the optimized method depends on a fixed bit
+> depth, this issue becomes a bit more problematic.
 
------------------snip-----------------
-That is because in 2.4, the fb_display's var structure
-is updated by the driver - which we do consistently.
-In 2.6, on the other hand, the fb_info's var structure
-is
-updated by the driver, and all the fb_displays are
-updated by either fb_mem or fb_con - which I think is
-not done correctly. Also the set_par function is
-called so many times - I don't understand why.
+Yes, the hwaccel flags should be fixed for neofb.  Also drivers can always
+reset these flags during the set_par() part, if for example accel is only
+available at depth 8, 16, 24,  but not 32 (i810fb).
 
-What is happening is that, first, fb_info's var
-structure is updated, which rotates the display. But
-this var does not get passed to the current
-fb_display's var. Then when the fbcon_switch function
-is called, the current fb_display's var settings are
-affected - which 'unrotates' the display.
+Fortunately, SCROLL_REDRAW  is an acceptable default, accelerated or not.
+It's not very fast, but is not that slow either. It's just that setting the
+wrong flags can lead to significant performance loss, and not setting any
+flags at all may underutilize the driver's capability.
 
-We have to see if any other driver has rotation
-support and how they are implementing it. Otherwise,
-most probably fb_con needs fixing, I think.
------------------snip-----------------
+So driver maintainers may need to try out which flags work best for them.
+This is the algo used to choose the scrolling mode (in fbcon.c):
 
-Log of sequence in which functions are being called in
-driver when we issue FBIOPUT_VSCREENINFO, with xres,
-yres, xoffset, yoffset and rotate variables value.
-
--------long output for 180 degree rotation----
-
-omap24xxfb_check_var: Enter
-omap24xxfb_check_mode: Enter
-omap24xxfb_check_mode: Exit
-var_to_depth: Enter
-omap24xxfb_check_var: Exit
-omap24xxfb_set_par: Enter
-var_to_depth: Enter
-omap24xxfb_change_mode: Enter
-omap24xxfb_change_mode: Exit
-horizontal_sync_freq: Enter
-pixels_per_clock: Enter
-pixels_per_clock: Exit
-horizontal_sync_freq: Exit
-vertical_sync_freq: Enter
-horizontal_sync_freq: Enter
-pixels_per_clock: Enter
-pixels_per_clock: Exit
-horizontal_sync_freq: Exit
-vertical_sync_freq: Exit
-var_to_depth: Enter
-omap24xxfb_set_sms_rotation: Enter
-omap24xxfb_set_sms_rotation: Exit
-omap24xxfb_write_state: Enter
-omap24xxfb_disable: Enter
-omap24xxfb_disable: Exit
-omap24xxfb_enable: Enter
-wait_for_go: Enter
-wait_for_go: Exit
-omap24xxfb_enable: Exit
-omap24xxfb_write_state: Exit
-omap24xxfb_set_par: Exit
-omap24xxfb_pan_display: Enter
-omap24xxfb_pan_display: Exit
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_check_var: Enter
-omap24xxfb_check_mode: Enter
-omap24xxfb_check_mode: Exit
-var_to_depth: Enter
-omap24xxfb_check_var: Exit
-omap24xxfb_set_par: Enter
-var_to_depth: Enter
-omap24xxfb_change_mode: Enter
-omap24xxfb_change_mode: Exit
-horizontal_sync_freq: Enter
-pixels_per_clock: Enter
-pixels_per_clock: Exit
-horizontal_sync_freq: Exit
-vertical_sync_freq: Enter
-horizontal_sync_freq: Enter
-pixels_per_clock: Enter
-pixels_per_clock: Exit
-horizontal_sync_freq: Exit
-vertical_sync_freq: Exit
-var_to_depth: Enter
-omap24xxfb_set_sms_rotation: Enter
-omap24xxfb_set_sms_rotation: Exit
-omap24xxfb_write_state: Enter
-omap24xxfb_disable: Enter
-omap24xxfb_disable: Exit
-omap24xxfb_enable: Enter
-wait_for_go: Enter
-wait_for_go: Exit
-omap24xxfb_enable: Exit
-omap24xxfb_write_state: Exit
-omap24xxfb_set_par: Exit
-omap24xxfb_pan_display: Enter
-omap24xxfb_pan_display: Exit
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_pan_display: Enter
-omap24xxfb_pan_display: Exit
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_pan_display: Enter
-omap24xxfb_pan_display: Exit
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_pan_display: Enter
-omap24xxfb_pan_display: Exit
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
-omap24xxfb_setcolreg: Enter
----------lon output ends--------
-
-Above output is generated when I call my test
-application with 180 degree rotation. You can see that
-set_par is called many times, why?
-
-Let me know what changes I need to do in fb driver, so
-that I can remove the effect.
-
-Let me know if you guys need more info/driver source?
-
----Komal Shah
+	if (good_wrap || good_pan) {
+		if (reading_fast || fast_copyarea)
+			p->scrollmode = good_wrap ? SCROLL_WRAP_MOVE : SCROLL_PAN_MOVE;
+		else
+			p->scrollmode = good_wrap ? SCROLL_REDRAW :
+				SCROLL_PAN_REDRAW;
+	} else {
+		if (reading_fast || (fast_copyarea && !fast_imageblit))
+			p->scrollmode = SCROLL_MOVE;
+		else
+			p->scrollmode = SCROLL_REDRAW;
+	}
 
 
-		
-__________________________________ 
-Do you Yahoo!? 
-Yahoo! Mail - Find what you need with new enhanced search. 
-http://info.mail.yahoo.com/mail_250
+Tony
+
+
 
 
 -------------------------------------------------------

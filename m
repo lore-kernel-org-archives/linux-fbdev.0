@@ -1,26 +1,19 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: 2.6.7 still garbage upon start
-Date: Fri, 18 Jun 2004 09:45:06 +0800
+From: "xuhaoz" <xuhaoz@neonetech.com>
+Subject: about fb_mmap
+Date: Fri, 18 Jun 2004 14:08:14 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200406180945.06335.adaplas@hotpop.com>
-References: <40D21E31.5070904@winischhofer.net>
-Reply-To: adaplas@pol.net
+Message-ID: <PMEKJGJGKKPHMBEGKNMIEEIJCCAA.xuhaoz@neonetech.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bb8Qd-0000OH-6Z
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Jun 2004 18:44:27 -0700
-Received: from babyruth.hotpop.com ([38.113.3.61])
+	id 1BbCYy-0001rv-Km
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Jun 2004 23:09:20 -0700
+Received: from [211.155.249.251] (helo=nnt.neonetech.com)
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bb8Qc-00022l-ON
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Jun 2004 18:44:26 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by babyruth.hotpop.com (Postfix) with SMTP id 93427614EAF
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Jun 2004 01:05:53 +0000 (UTC)
-In-Reply-To: <40D21E31.5070904@winischhofer.net>
-Content-Disposition: inline
+	id 1BbCYx-0004a3-QE
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Jun 2004 23:09:20 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,39 +24,23 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Thomas Winischhofer <thomas@winischhofer.net>, linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Friday 18 June 2004 06:41, Thomas Winischhofer wrote:
-> modprobing fbcon still paints a white rectangle. Difference to 2.6.6 is
-> that this rectangle now fills the entire screen instead of a smaller
-> area. As before, text is shown all correctly (painted upon the
-> rectangle), and the white rectangle scrolls up just like text and in the
-> end vanishes.
->
 
-The white screen is the result of fbdev being initialized before vgacon is
-deinitialized.  I can't find a simple solution for this except to disable vgacon
-if fbcon is compiled statically.  Currently vgacon is always enabled in X86, so
-I use this in drivers/video/console/Kconfig.
+Hi all
+	I have a question about fb_mmap in uclinux2.4.
+	what is the usage of fb_mmap(struct file *file, struct vm_area_struct
+*vma)
+	my kernel is arm7 no mmu , does the fb_mmap function do some help for my
+framebuffer driver if i use fb_mmap function?
 
-config VGA_CONSOLE
-	bool "VGA text console" if EMBEDDED || !X86
-	depends on !ARCH_ACORN && !ARCH_EBSA110 && !4xx && !8xx && !SPARC32 &&	!SPARC64 && !M68K && FRAMEBUFFER_CONSOLE != y
-
-> Switching to another VT while in X still leaves you with a blank screen
-> and a blinking cursor. If one presses return, the screen contents is
-> restored.
-
-You mean switching from X to another VT?  At least you just get a blank screen,
-with other drivers, sometimes the machine hangs. 
-
-(I have code I'm planning to send for RFC that will notify the low-level driver if 
-switching from KD_GRAPHICS->KD_TEXT and vice versa or if multiple
-drivers are mapped to different consoles. However, it seems BenH already has
-code for this so I'm holding the submission.  I just can't find BenH's changes in
-2.6.7 or -mm.  Hey Ben, where is it?)  
-
-Tony
+		thanks for your help
+		xuhaoz
+				__________________
+zhang xuhao
+ICQ#: 116926669
+More ways to contact me: http://wwp.icq.com/116926669
+_________________________________________
 
 
 

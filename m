@@ -1,13 +1,12 @@
-From: Sven Luther <sven.luther@wanadoo.fr>
-Subject: Re: [Linux-fbdev-devel] Redesign of kernel graphics interface
-Date: Fri, 14 May 2004 19:20:11 +0200
+From: Jon Smirl <jonsmirl@yahoo.com>
+Subject: Re: Re: [Linux-fbdev-devel] Redesign of kernel graphics interface
+Date: Fri, 14 May 2004 10:51:35 -0700 (PDT)
 Sender: mesa3d-dev-admin@lists.sourceforge.net
-Message-ID: <20040514172011.GA11990@pegasos>
-References: <Pine.LNX.4.44.0405062327050.20402-100000@phoenix.infradead.org> <20040507005040.18258.qmail@web14925.mail.yahoo.com>
+Message-ID: <20040514175135.41336.qmail@web14921.mail.yahoo.com>
+References: <20040514172011.GA11990@pegasos>
 Mime-Version: 1.0
 Return-path: <mesa3d-dev-admin@lists.sourceforge.net>
-Content-Disposition: inline
-In-Reply-To: <20040507005040.18258.qmail@web14925.mail.yahoo.com>
+In-Reply-To: <20040514172011.GA11990@pegasos>
 Errors-To: mesa3d-dev-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
 	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=unsubscribe>
@@ -19,50 +18,61 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=mesa3d-dev>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jon Smirl <jonsmirl@yahoo.com>
+To: Sven Luther <sven.luther@wanadoo.fr>
 Cc: James Simmons <jsimmons@infradead.org>, Nicolas Souchu <nsouch@free.fr>, dri-devel <dri-devel@lists.sourceforge.net>, mesa3d-dev <mesa3d-dev@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, May 06, 2004 at 05:50:40PM -0700, Jon Smirl wrote:
-> --- James Simmons <jsimmons@infradead.org> wrote:
-> > 2) Ben suggestion that we mount userland inside the kernel during early 
-> >    boot and use a userland library. If we would use a library then it MUST 
-> >    be OpenGL. This would be the forced standard on all platforms. This 
-> >    would mean Mesa would be needed to build the kernel. We could move over 
-> >    Mesa into the kernel like zlib is in the tree right now.
-> 
-> It is not true that it must be OpenGL. The suggestion is for an independent
-> library that would support mode setting and cursor control. Actually OpenGL does
-> not specify an API for these things, we would need to develop one.
-> 
-> But broader issues are at work. Microsoft has decided to recode all graphics in
-> Longhorn to use Direct3D. This was done to get at the performance gains provided
-> by D3D and hardware accelerated graphics. For example a Cairo implementation hat
-> uses X rendering vs Cairo on OpenGL was benchmarked at being a 100:1 faster.
-> 
-> A proposal has been made that OpenGL be promoted as the primary base graphics
-> API on Linux. Then things like Cairo and the xserver be implemented on top of
-> OpenGL.
-> 
-> 1) OpenGL is the only fully accelerated API that Linux has. We don't have D3D or
-> anything else like it. Fully accelerated interfaces are a pain to build and it
-> would stupid to do another one.
+Just look at this picture and you can see the trend of 2D vs 3D (coprocessor
+based) graphics.
+http://www.de.tomshardware.com/graphic/20040504/images/architecture.gif
+Within one or two generations the 2D box is going to be gone.
 
-Notice that this is not really true, as there is no free OpenGL
-acceleration for any of the newer graphic cards coming out right now.
-The fastest graphic card with full free acceleration is the radeon 9000,
-which is now two generations old. This means that there is no
-acceleration outside of the x86 world, since neither ATI nor Nvidia are
-ready to build their proprietary drivers on anything else than x86. 
+If Linux wants to stay current with technology we have to start using the
+coprocessor features of the GPU. Most of the benchmarks I have seen show
+coprocessor vs programmed at 100:1 speed differential. This is also a
+competitive problem, Microsoft and Apple have both decided to go with the GPU
+coprocessor this year. 
 
-As long as this doesn't change, stating that we have an accelerated API
-for OpenGL in linux is not only dead wrong, but is leading us in a
-dangerous direction, where we will depend on a non-free component in the
-kernel and were we are going to forget about graphic support on anything
-non-x86.
+Lack of free drivers is no reason to ignore the GPU coprocessor. It just means
+more effort needs to be put into mesa and prying the docs out of the graphics
+chip vendors. If the current open drivers don't work on a non-x86 platform just
+go fix them. All of the necessary data is available. Progress is being made with
+ATI for getting the R300 specs now that the R400 series has shipped.
 
-Friendly,
+--- Sven Luther <sven.luther@wanadoo.fr> wrote:
+> As long as this doesn't change, stating that we have an accelerated API
+> for OpenGL in linux is not only dead wrong, but is leading us in a
+> dangerous direction, where we will depend on a non-free component in the
+> kernel and were we are going to forget about graphic support on anything
+> non-x86.
 
-Sven Luther
+I said OpenGL is the only accelerated API available on Linux. Can you name
+another? There is a little acceleration in framebuffer, but I don't know of any
+others. Also, software mesa works just fine to provide OpenGL on dumb 2D cards.
+
+You have to choose. Either we stay with programmed IO and low speed 2D graphics
+forever or we have to embrace the GPU coprocessor. No one is going to make you
+buy a high end ATI or Nvidia card. But if you want to use one you have to deal
+with the realities of the situation. ATI and Nvidia own their technology and if
+they don't want to open it all we can do is complain to them or use their
+proprietary drivers. 
+
+If being free is critical to you then you won't be using any high graphics
+cards. Stick with an R200 or less type card. Your system will work fine with the
+OpenGL based xserver. But graphics cards are evolving and Linux can't ignore
+them. We just have to hope that Nvidia and API can see the light someday and
+open their specs.
+
+=====
+Jon Smirl
+jonsmirl@yahoo.com
+
+
+	
+		
+__________________________________
+Do you Yahoo!?
+SBC Yahoo! - Internet access at a great low price.
+http://promo.yahoo.com/sbc/
 
 
 -------------------------------------------------------

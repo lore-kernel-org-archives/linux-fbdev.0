@@ -1,39 +1,47 @@
-From: Linus Torvalds <torvalds@transmeta.com>
-Subject: Re: Linux 2.5.69
-Date: Wed, 7 May 2003 15:07:34 -0700 (PDT)
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.44.0305071504470.3543-100000@home.transmeta.com>
-References: <Pine.GSO.4.21.0305072138510.12013-100000@vervain.sonytel.be>
+From: "Christopher Hoover" <ch@murgatroid.com>
+Subject: RE: [PATCH 2.5.68] Epson 1355 Rewrite for 2.5
+Date: Wed, 7 May 2003 16:10:17 -0700
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <000601c314ed$d37e2490$675f040f@bergamot>
+References: <Pine.LNX.4.44.0305072107440.6566-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <Pine.GSO.4.21.0305072138510.12013-100000@vervain.sonytel.be>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Ben Collins <bcollins@debian.org>, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from 12-234-34-139.client.attbi.com ([12.234.34.139] helo=heavens.murgatroid.com)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19DY3O-00084A-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 07 May 2003 16:10:26 -0700
+In-Reply-To: <Pine.LNX.4.44.0305072107440.6566-100000@phoenix.infradead.org>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: 'James Simmons' <jsimmons@infradead.org>, 'Geert Uytterhoeven' <geert@linux-m68k.org>
+Cc: 'Linux Frame Buffer Device Development' <linux-fbdev-devel@lists.sourceforge.net>
 
 
-On Wed, 7 May 2003, Geert Uytterhoeven wrote:
-> On Sun, 4 May 2003, Linus Torvalds wrote:
-> > Summary of changes from v2.5.68 to v2.5.69
-> > ============================================
-> > 
-> > Ben Collins:
-> >   o [VIDEO]: Revert cfbimgblt.c back to a working state on 64-bit
-> >   o [VIDEO]: Revert atyfb back to known working clean base
-> 
-> For future changes, could you please run these `reversals' through 
-> linux-fbdev-devel, instead of silently passing them behind our backs? Thanks!
+> I just reworked cfbimgblt.c to use struct pixmap and I am in 
+> the process of of working on the other cfb_* functions. Would you be 
+> willing to test this out? In theory one would only have to 
+> place in there 
+> own FB_WRITE[READ] function. 
 
-As mentioned already, this was done by several people, including the 
-maintainer.
+I'd be glad to test it out.  
 
-But even if it wasn't, the fact is that new additions that break major 
-architectures _will_ be reverted. No ifs, buts or maybes about it. If new 
-code shows itself to be broken, it's going to get reverted, and the sooner 
-the better. And in this case, the code was not just slightly broken, it 
-was totally non-working, in ways that made it clear that it had NEVER 
-worked as intended.
+-ch
 
-			Linus
+P.s. 
+I'm at 2.5.68 because that's the latest "rmk" arm kernel.
+
+
+
+-------------------------------------------------------
+Enterprise Linux Forum Conference & Expo, June 4-6, 2003, Santa Clara
+The only event dedicated to issues related to Linux enterprise solutions
+www.enterpriselinuxforum.com

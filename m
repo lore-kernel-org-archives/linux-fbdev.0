@@ -1,22 +1,22 @@
-From: Stuart Young <sgy-lkml@amc.com.au>
-Subject: Re: Re: fbdv/fbcon pending problems
-Date: Wed, 25 Feb 2004 18:14:50 +1100
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: fbdv/fbcon pending problems
+Date: Wed, 25 Feb 2004 12:41:25 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200402251812.26624.sgy-lkml@amc.com.au>
-References: <1077497593.5960.28.camel@gaston> <200402241657.37382.sgy-lkml@amc.com.au> <Pine.GSO.4.58.0402240935390.3187@waterleaf.sonytel.be>
+Message-ID: <Pine.GSO.4.58.0402251240140.24169@waterleaf.sonytel.be>
+References: <20040224214106.GA17390@guug.org>
+ <Pine.LNX.4.44.0402250118210.24952-100000@phoenix.infradead.org>
+ <20040225031553.GC17390@guug.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AvtOo-00042L-Gx
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 23:24:06 -0800
-Received: from mail1.amc.com.au ([203.15.175.2])
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
-	id 1Avt3O-00066q-2d
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 23:01:58 -0800
-In-Reply-To: <Pine.GSO.4.58.0402240935390.3187@waterleaf.sonytel.be>
-Content-Disposition: inline
+	id 1AvxYo-00043k-Li
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 Feb 2004 03:50:42 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1AvxD9-0004nh-KP
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 Feb 2004 03:28:19 -0800
+In-Reply-To: <20040225031553.GC17390@guug.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,67 +26,42 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Otto Solares <solca@guug.org>
+Cc: James Simmons <jsimmons@infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
 
-On Tue, 24 Feb 2004 07:36 pm, Geert Uytterhoeven wrote:
-> On Tue, 24 Feb 2004, Stuart Young wrote:
-> > On Mon, 23 Feb 2004 11:53 am, Benjamin Herrenschmidt wrote:
-> > >  - Logo problems. When booting with a logo, then going to getty, the
-> > > logo doesn't get erased until we actually switch to another console (or
-> > > reset the console). At this point, using things like vi & scrolling up
-> > > doesn't work properly. Actually, last time I tried, I had to switch
-> > > back & forth twice before my console that had the logo got fully
-> > > working with vi.
+On Tue, 24 Feb 2004, Otto Solares wrote:
+> On Wed, Feb 25, 2004 at 01:21:39AM +0000, James Simmons wrote:
+> > > On the other side i see a lot of effort in the fbdev acceleration,
+> > > it is nice but that effort should be better spent on fixing the layer,
+> > > imo, the only user for acceleration is fbcon, any userland app that
+> > > use fbdev disables that acceleration so it can map the vmem and ioregs,
+> > > and do it's own voodoo if it wants acceleration.  That acceleration
+> > > is not "exported" to user space.  I am working in a open source project
+> > > that uses mesa-solo with fbdev and many limitations from the layer
+> > > itself have been seen.
 > >
-> > If it's possible to unlock this region so that it scrolls again from
-> > userspace (ie: not resetting/clearing it, just unlocking it), then it's
-> > just a simple matter of checking wether the current console is an fb
-> > device, and if it is, making it unlock the scrolling region. In Debian,
-> > this could be done in /etc/init.d/rmnologin, or even in /etc/profile if
-> > someone would rather it done after login.
+> > That is true so far for fillrect and copyarea functions. Imageblit will be
+> > used for read and writes on /dev/fbX. Also it is used for software
+> > cursors.
 >
-> There should be an ANSI escape sequence for resetting the scroll region.
-> Just send that to the console.
+> But if acceleration is not disabled you can't map the vmem and io regions.
 
-Yup there is. It's Esc [r , however this also returns the cursor to the top of 
-the screen. You can use Esc [s & Esc [u to save and restore the current 
-cursor position, so it's just a matter of putting them around it thus:
- Esc [s Esc [r Esc [u
+I don't expect an app that mmap()s mmio to read/write from /dev/fb* at the same
+time. So I see no problem disabling accelerated read/write while mmio is
+mapped.
 
-Or with echo (in a bash script - \\'s to escape it from the shell):
- echo -ne \\033[s\\033[r\\033[u
+Gr{oetje,eeting}s,
 
-Now there is a problem with this solution: This leaves the logo (and any 
-boot-time drawn graphics in the unscrollable region) on the screen. When text 
-scrolls up the screen, these graphics do not scroll, and are only removed 
-when a character overwrites the graphics position on the screen. If you have 
-a number of graphics on the screen (or a machine with a number of processors, 
-and therefore a number of tux logos), you'll find that you end up with 
-spurious graphical artifacts left on the display where the text hasn't 
-directly overwritten the image.
-
-Now you'd think that you could easily just wipe (n) lines off the screen, 
-probably using ansi escape sequences. Well it sort of works, but then you 
-need to know how big the logo is, how big the font is (as you're working with 
-an ascii to graphical representation), and just how much of the screen to 
-wipe, to get it right for all the various fbcon display arrangements. While 
-the info might be available to userspace to figure this out, it stops being 
-simple.
-
-Probably could just talk to the fb driver directly (from the shell) and wipe 
-that section of screen. Fun fun fun... Hrm.. Time to look into it.
-
-Of course, you could just clear the screen.....
-
-Note: Fixing this in a binary is pretty much a no-no. How many dists will want 
-to add another binary to their systems, or patch something like getty simply 
-to fix a display artifact? I'm guessing pretty close to the 0 mark.
+						Geert
 
 --
- Stuart Young - sgy-lkml@amc.com.au is specifically for LKML and related email
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

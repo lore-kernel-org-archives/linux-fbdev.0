@@ -1,25 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [PATCH] Atyfb: kill assignment warnings on Atari due to __iomem changes
-Date: Sun, 24 Oct 2004 20:33:27 +0800
+Subject: [PATCH] fbdev: Fix software blanking code
+Date: Mon, 25 Oct 2004 05:48:59 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200410242033.29075.adaplas@hotpop.com>
-References: <Pine.LNX.4.61.0410241314550.27526@anakin>
+Message-ID: <200410250549.02808.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CLhSt-0008Pe-4c
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 24 Oct 2004 05:27:15 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.51])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CLhSq-00040F-VB
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 24 Oct 2004 05:27:14 -0700
+	id 1CLq7j-0000FS-Ek
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 24 Oct 2004 14:41:59 -0700
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1CLq7i-0001mo-Kj
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 24 Oct 2004 14:41:59 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id E2CB6768F9
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 24 Oct 2004 12:26:46 +0000 (UTC)
-In-Reply-To: <Pine.LNX.4.61.0410241314550.27526@anakin>
+	by smtp-out.hotpop.com (Postfix) with SMTP id 959E99559AC
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 24 Oct 2004 21:41:45 +0000 (UTC)
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,37 +29,45 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Antonino Daplas <adaplas@pol.net>, Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+To: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, linux-kernel@vger.kernel.org
 
-On Sunday 24 October 2004 19:15, Geert Uytterhoeven wrote:
-> Atyfb: kill assignment warnings on Atari due to __iomem changes
-
-I pushed a big mach64 patch (coming from various authors) to Andrew, and
-this will  get rejected.
-
-Attached is an incremental patch for the big mach64 update.
+The code in fbmem.c:fb_blank() is broken.  For drivers without an fb_blank
+hook, an FBIO_BLANK ioctl will produce wrong colors or will segfault.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
+ fbmem.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
 
----diff -Nru a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
---- a/drivers/video/aty/atyfb_base.c	2004-10-22 15:57:58 +08:00
-+++ b/drivers/video/aty/atyfb_base.c	2004-10-24 20:26:04 +08:00
-@@ -3457,8 +3457,10 @@
- 		 */
- 		info->screen_base = ioremap(phys_vmembase[m64_num], phys_size[m64_num]);
- 		info->fix.smem_start = (unsigned long)info->screen_base; /* Fake! */
--		par->ati_regbase = ioremap(phys_guiregbase[m64_num], 0x10000) + 0xFC00ul;
--		info->fix.mmio_start = par->ati_regbase; /* Fake! */
-+		par->ati_regbase = ioremap(phys_guiregbase[m64_num],
-+					   0x10000) + 0xFC00ul;
-+		info->fix.mmio_start =
-+			(unsigned long)par->ati_regbase; /* Fake! */
+diff -Nru a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+--- a/drivers/video/fbmem.c	2004-10-17 15:03:25 +08:00
++++ b/drivers/video/fbmem.c	2004-10-25 05:45:24 +08:00
+@@ -750,18 +750,20 @@
+ 	
+ 	if (info->fbops->fb_blank && !info->fbops->fb_blank(blank, info))
+ 		return 0;
++
++	cmap = info->cmap;
++
+ 	if (blank) { 
+ 		black = kmalloc(sizeof(u16) * info->cmap.len, GFP_KERNEL);
+-		if (!black) {
++		if (black) {
+ 			memset(black, 0, info->cmap.len * sizeof(u16));
+ 			cmap.red = cmap.green = cmap.blue = black;
+ 			cmap.transp = info->cmap.transp ? black : NULL;
+ 			cmap.start = info->cmap.start;
+ 			cmap.len = info->cmap.len;
+ 		}
+-	} else
+-		cmap = info->cmap;
+-
++	}
++
+ 	err = fb_set_cmap(&cmap, info);
+ 	kfree(black);
  
- 		aty_st_le32(CLOCK_CNTL, 0x12345678, par);
- 		clock_r = aty_ld_le32(CLOCK_CNTL, par);
-
 
 
 

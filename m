@@ -1,20 +1,20 @@
 From: Kronos <kronos@kronoz.cjb.net>
-Subject: [PATCH] neofb: New framebuffer_alloc API and class_dev changes
-Date: Mon, 15 Sep 2003 22:27:49 +0200
+Subject: [PATCH] maxinefb: New framebuffer_alloc API and class_dev changes
+Date: Mon, 15 Sep 2003 22:27:42 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030915202749.GX16370@dreamland.darkstar.lan>
+Message-ID: <20030915202742.GW16370@dreamland.darkstar.lan>
 Reply-To: kronos@kronoz.cjb.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19yzxd-0007nk-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 15 Sep 2003 13:28:37 -0700
-Received: from mail-8.tiscali.it ([195.130.225.154])
+	id 19yzxp-0007oO-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 15 Sep 2003 13:28:49 -0700
+Received: from mail-4.tiscali.it ([195.130.225.150])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 19yzxc-000656-1g
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 15 Sep 2003 13:28:36 -0700
+	id 19yzxo-0006E6-JO
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 15 Sep 2003 13:28:48 -0700
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
@@ -27,111 +27,83 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: dok@directfb.org
-Cc: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>
+To: James Simmons <jsimmons@infradead.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
 Hi,
-this patch converts driver/video/neofb.c to framebuffer_alloc:
+this patch converts driver/video/maxinefb.c to framebuffer_alloc:
 
-======== drivers/video/neofb.c 1.34 ========
-D 1.34 03/09/13 23:59:03+02:00 kronos@kronoz.cjb.net 41 40 10/11/2303
-P drivers/video/neofb.c
+======== drivers/video/maxinefb.c 1.20 ========
+D 1.20 03/09/13 23:57:10+02:00 kronos@kronoz.cjb.net 21 20 15/9/172
+P drivers/video/maxinefb.c
 C switch to framebuffer_alloc
 ------------------------------------------------
 
-===== drivers/video/neofb.c 1.33 vs 1.34 =====
---- 1.33/drivers/video/neofb.c	Fri Aug 22 08:27:08 2003
-+++ 1.34/drivers/video/neofb.c	Sat Sep 13 23:59:03 2003
-@@ -2001,15 +2001,12 @@
- 	struct fb_info *info;
- 	struct neofb_par *par;
+===== drivers/video/maxinefb.c 1.19 vs 1.20 =====
+--- 1.19/drivers/video/maxinefb.c	Thu Apr 24 12:30:41 2003
++++ 1.20/drivers/video/maxinefb.c	Sat Sep 13 23:57:10 2003
+@@ -40,7 +40,7 @@
+ /* whether are really running on a maxine, KM                       */
+ #include <asm/bootinfo.h>
  
--	info = kmalloc(sizeof(struct fb_info) + sizeof(struct neofb_par) + 
--		       sizeof(u32) * 17, GFP_KERNEL);
-+	info = framebuffer_alloc(sizeof(struct neofb_par) + sizeof(u32) * 17, &dev->dev);
+-static struct fb_info fb_info;
++static struct fb_info *fb_info;
  
- 	if (!info)
- 		return NULL;
+ static struct fb_var_screeninfo maxinefb_defined = {
+ 	.xres 		= 1024,
+@@ -131,6 +131,10 @@
+ 		return -EINVAL;
+ 	}
  
--	memset(info, 0, sizeof(struct fb_info) + sizeof(struct neofb_par) + sizeof(u32) * 17);
--
--	par = (struct neofb_par *) (info + 1);
-+	par = info->par;
++	fb_info = framebuffer_alloc(0, NULL);
++	if (!fb_info)
++		return -ENOMEM;
++
+ 	printk(KERN_INFO "Maxinefb: Personal DECstation detected\n");
+ 	printk(KERN_INFO "Maxinefb: initializing onboard framebuffer\n");
  
- 	info->fix.accel = id->driver_data;
+@@ -155,22 +159,24 @@
+ 		 */
+ 	}
  
-@@ -2059,9 +2056,8 @@
+-	fb_info.fbops = &maxinefb_ops;
+-	fb_info.screen_base = (char *) maxinefb_fix.smem_start;
+-	fb_info.var = maxinefb_defined;
+-	fb_info.fix = maxinefb_fix;
+-	fb_info.flags = FBINFO_FLAG_DEFAULT;
++	fb_info->fbops = &maxinefb_ops;
++	fb_info->screen_base = (char *) maxinefb_fix.smem_start;
++	fb_info->var = maxinefb_defined;
++	fb_info->fix = maxinefb_fix;
++	fb_info->flags = FBINFO_FLAG_DEFAULT;
  
- 	info->fbops = &neofb_ops;
- 	info->flags = FBINFO_FLAG_DEFAULT;
--	info->par = par;
- 	info->pseudo_palette = (void *) (par + 1);
--	info->dev = &dev->dev;
-+	info->release = &release_neofb_par;
+-	fb_alloc_cmap(&fb_info.cmap, 256, 0);
++	fb_alloc_cmap(&fb_info->cmap, 256, 0);
  
- 	fb_alloc_cmap(&info->cmap, NR_PALETTE, 0);
- 
-@@ -2156,6 +2152,13 @@
- 	return err;
+-	if (register_framebuffer(&fb_info) < 0)
++	if (register_framebuffer(fb_info) < 0) {
++		kfree(fb_info);
+ 		return 1;
++	}
+ 	return 0;
  }
  
-+static void release_neofb_par(struct fb_info *info) {
-+	fb_alloc_cmap(&info->cmap, 0, 0);
-+
-+	neo_unmap_video(info);
-+	neo_unmap_mmio(info);
-+}
-+
- static void __devexit neofb_remove(struct pci_dev *dev)
+ static void __exit maxinefb_exit(void)
  {
- 	struct fb_info *info = pci_get_drvdata(dev);
-@@ -2171,10 +2174,6 @@
- 		if (unregister_framebuffer(info))
- 			printk(KERN_WARNING
- 			       "neofb: danger danger!  Oopsen imminent!\n");
--
--		neo_unmap_video(info);
--		neo_unmap_mmio(info);
--		neo_free_fb_info(info);
+-	unregister_framebuffer(&fb_info);
++	unregister_framebuffer(fb_info);
+ }
  
- 		/*
- 		 * Ensure that the driver data is no longer
-
-
-======== include/video/neomagic.h 1.6 ========
-D 1.6 03/09/14 18:25:54+02:00 kronos@kronoz.cjb.net 7 6 4/0/206
-P include/video/neomagic.h
-C add prototype of release_neofb_par
-------------------------------------------------
-
-===== include/video/neomagic.h 1.5 vs 1.6 =====
---- 1.5/include/video/neomagic.h	Mon Aug 11 21:46:24 2003
-+++ 1.6/include/video/neomagic.h	Sun Sep 14 18:25:54 2003
-@@ -71,6 +71,8 @@
- 
- #ifdef __KERNEL__
- 
-+#include <linux/fb.h>
-+
- #ifdef NEOFB_DEBUG
- # define DBG(x)		printk (KERN_DEBUG "neofb: %s\n", (x));
- #else
-@@ -202,5 +204,7 @@
- 	int y_res;
- 	int mode;
- } biosMode;
-+
-+static void release_neofb_par(struct fb_info *);
- 
- #endif
+ #ifdef MODULE
 
 
 Luca
 -- 
 Reply-To: kronos@kronoz.cjb.net
 Home: http://kronoz.cjb.net
-La differenza fra l'intelligenza e la stupidita`?
-All'intelligenza c'e` un limite.
+La vasca da bagno fu inventata nel 1850, il telefono nel 1875.
+Se fossi vissuto nel 1850, avrei potuto restare in vasca per 25 anni
+senza sentir squillare il telefono
 
 
 -------------------------------------------------------

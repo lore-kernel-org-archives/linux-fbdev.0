@@ -1,55 +1,57 @@
-From: Jan Gukelberger <g.u.g.i@gmx.de>
-Subject: Re: FB model basic issues (WAS: radeon, apertures & memory mapping)
-Date: Tue, 15 Mar 2005 18:25:00 +0100
-Message-ID: <1110907500.3366.27.camel@elessar.home>
-References: <1110696189.5787.100.camel@gaston>
-	 <1110784327.5787.288.camel@gaston> <1110817205.4004.527.camel@localhost>
-	 <1110837171.5863.16.camel@gaston> <1110838356.4003.548.camel@localhost>
-	 <1110839873.5673.41.camel@gaston> <1110862777.4044.592.camel@localhost>
-	 <20050315060138.GA13064@sci.fi> <1110869983.29138.88.camel@gaston>
-	 <20050315140005.GB16051@sci.fi> <9e47339105031506292b1976b0@mail.gmail.com>
+From: James Simmons <jsimmons@www.infradead.org>
+Subject: Re: [announce 0/7] fbsplash - The Framebuffer
+ Splash
+Date: Tue, 15 Mar 2005 18:58:08 +0000 (GMT)
+Message-ID: <Pine.LNX.4.56.0503151855430.5506@pentafluge.infradead.org>
+References: <20050308015731.GA26249@spock.one.pl>  <200503091301.15832.adaplas@hotpop.com>
+  <9e473391050308220218cc26a3@mail.gmail.com>  <Pine.LNX.4.62.0503091033400.22598@numbat.sonytel.be>
+  <1110392212.3116.215.camel@localhost.localdomain> 
+ <Pine.LNX.4.56.0503092043380.7510@pentafluge.infradead.org> 
+ <1110408049.9942.275.camel@localhost.localdomain> 
+ <Pine.LNX.4.62.0503101009240.9227@numbat.sonytel.be>  <20050310145419.GD632@openzaurus.ucw.cz>
+  <Pine.LNX.4.56.0503111801550.10827@pentafluge.infradead.org>
+ <9e473391050311101356536667@mail.gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-In-Reply-To: <9e47339105031506292b1976b0@mail.gmail.com>
-Sender: dri-devel-admin@lists.sourceforge.net
-Errors-To: dri-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1DBHFD-0002Pu-Nv
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Mar 2005 10:58:19 -0800
+Received: from pentafluge.infradead.org ([213.146.154.40])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1DBHFB-0006Rq-0D
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Mar 2005 10:58:19 -0800
+In-Reply-To: <9e473391050311101356536667@mail.gmail.com>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:dri-devel@lists.sourceforge.net>
-List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=dri-devel>
-Content-Type: text/plain; charset="us-ascii"
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>, dri-devel@lists.sourceforge.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, xorg@lists.freedesktop.org, Jon Smirl <jonsmirl@yahoo.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Geert Uytterhoeven <geert@linux-m68k.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>, James Simmons <jsimmons@pentafluge.infradead.org>, Michal Januszewski <spock@gentoo.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>, "Antonino A. Daplas" <adaplas@hotpop.com>
 
-On Tue, 2005-03-15 at 09:29 -0500, Jon Smirl wrote:
-> Aonther approach would be to just say you have to choose to run one of
-> X, DirectFB, FBUI, XGL and you can't switch between them. Other than
-> developers I don't know if anyone really runs more than one of these
-> at a time.
 
-FWIW, yes we do. 
+> > Why do we need patches in the kernel. Just set you config to
+> > CONFIG_DUMMY_CONSOLE, CONFIG_FB, CONFIG_INPUT and don't set fbcon or
+> > vgacon. Then have a userspace app using /dev/fb and /dev/input create a
+> > userland console. There is no need to do special hacks in the kernel.
+> 
+> /dev/fb is not accelerated, if you want full acceleration use
+> /dev/dri. Using /dev/dri you can write a fully composited console that
+> displays dengavi in realtime. This is also a path to getting multiuser
+> working without a lot of kernel patches.
 
-We're developing a system for neuro-scientific experiments where we
-enjoy having a fast and lightweight graphics stack with access to VSYNC
-interrupt (DirectFBGL) for reliable frame timing of visual stimuli.
-OTOH the experimenter gets a QT control GUI running on a second graphics
-card with regular X.
-
-As this is not very common and quite a hassle to setup (e.g. X stomping
-on other card's IRQ and the like) I'm eagerly following all efforts to
-build a common standard graphics base with improved multi-head and GL
-support.
-
-That said, I realise that this is not a very widespread use-case. But
-nonetheless there are such applications.
-
-Thanks,
-Jan
-
+Not every device has a 3D core!!! DRM is not the answer for the entire graphics
+world. Its only for 3D functionality. If you want eye candy without 3D on small
+devices use fbdev. 
 
 
 -------------------------------------------------------
@@ -57,4 +59,3 @@ SF email is sponsored by - The IT Product Guide
 Read honest & candid reviews on hundreds of IT Products from real users.
 Discover which products truly live up to the hype. Start reading now.
 http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
---

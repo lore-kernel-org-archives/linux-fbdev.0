@@ -1,18 +1,17 @@
-From: Jens Axboe <axboe@suse.de>
-Subject: Re: [BK fbdev updates]
-Date: Sun, 12 Jan 2003 16:07:44 +0100
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: accel_putcs()
+Date: Sun, 12 Jan 2003 22:00:35 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030112150744.GH14017@suse.de>
-References: <Pine.LNX.4.33.0301111623070.8368-100000@maxwell.earthlink.net>
+Message-ID: <Pine.GSO.4.21.0301122156210.20640-100000@vervain.sonytel.be>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from ns.virtualhost.dk ([195.184.98.160] helo=virtualhost.dk)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18Xjim-0000TH-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 12 Jan 2003 07:08:20 -0800
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.33.0301111623070.8368-100000@maxwell.earthlink.net>
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18XpEJ-0005pW-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 12 Jan 2003 13:01:15 -0800
+Received: from vervain.sonytel.be (mail.sonytel.be [10.17.0.26])
+	by mail.sonytel.be (8.9.0/8.8.6) with ESMTP id WAA17995
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 12 Jan 2003 22:00:36 +0100 (MET)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,25 +21,54 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sat, Jan 11 2003, James Simmons wrote:
-> 
-> Linus, please do a
 
-James,
+accel_putcs() calls fb_sync() after fb_imageblit(), except if fontwidth is not
+a multiple of 8 and it falls back to individual drawing of the characters. This
+patch adds the missing call to fb_sync().
 
-2.5 still doesn't work on my vaio (I think I told you about this 3-4
-months ago) with the neofb. It just crashes with a black screen. If you
-don't have any clues what the problem is, I can hook the machine up to a
-serial console and see if anything interesting pops up. Using vesafb
-does make it boot, however the screen stays pitch black until X loads...
+It also replaces `vc->vc_font.height * width' by its precalculated value in
+`cellsize'.
 
--- 
-Jens Axboe
+--- linux-2.5.56/drivers/video/console/fbcon.c	Thu Jan  2 12:54:55 2003
++++ linux-geert-2.5.56/drivers/video/console/fbcon.c	Sun Jan 12 13:20:53 2003
+@@ -418,17 +415,17 @@
+ 			dst0 += width;
+ 		}
+ 		info->fbops->fb_imageblit(info, &image);
+-		if (info->fbops->fb_sync)
+-			info->fbops->fb_sync(info);
+ 	} else {
+ 		image.width = vc->vc_font.width;
+ 		while (count--) {
+-			image.data = p->fontdata + 
+-				(scr_readw(s++) & charmask) * vc->vc_font.height * width;
++			image.data = p->fontdata +
++				(scr_readw(s++) & charmask) * cellsize;
+ 			info->fbops->fb_imageblit(info, &image);
+ 			image.dx += vc->vc_font.width;
+-		}	
++		}
+ 	}
++	if (info->fbops->fb_sync)
++		info->fbops->fb_sync(info);
+ 	/*
+ 	if (pixmap);
+ 		kfree(pixmap);
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

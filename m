@@ -1,56 +1,57 @@
-From: "Richard Purdie" <rpurdie@rpsys.net>
-Subject: Calling fb_blank() in an interrupt?
-Date: Sat, 22 Jan 2005 18:22:02 -0000
-Message-ID: <059101c500af$493d5440$0f01a8c0@max>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Adrian Bunk <bunk@stusta.de>
+Subject: [2.6 patch] matroxfb_base.c: make some code static
+Date: Sun, 23 Jan 2005 11:16:16 +0100
+Message-ID: <20050123101616.GD3212@stusta.de>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261271AbVAWKW3@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CsPtf-0003zX-61
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 22 Jan 2005 10:22:07 -0800
-Received: from tim.rpsys.net ([194.106.48.114] ident=0)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1CsPtd-0006IZ-E7
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 22 Jan 2005 10:22:07 -0800
-Received: from localhost (localhost [127.0.0.1])
-	by tim.rpsys.net (8.13.1/8.12.10) with ESMTP id j0MIM2rT024037
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 22 Jan 2005 18:22:02 GMT
-Received: from tim.rpsys.net ([127.0.0.1])
- by localhost (tim [127.0.0.1]) (amavisd-new, port 10024) with LMTP
- id 23566-10 for <linux-fbdev-devel@lists.sourceforge.net>;
- Sat, 22 Jan 2005 18:22:01 +0000 (GMT)
-Received: from max (max.rpnet.com [192.168.1.15])
-	(authenticated bits=0)
-	by tim.rpsys.net (8.13.1/8.12.10) with ESMTP id j0MILwtD024029
-	(version=TLSv1/SSLv3 cipher=RC4-MD5 bits=128 verify=NO)
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 22 Jan 2005 18:21:58 GMT
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; format="flowed"; charset="us-ascii"; reply-type="original"
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Andrew Morton <akpm@osdl.org>
+Cc: Petr Vandrovec <vandrove@vc.cvut.cz>, Antonino Daplas <adaplas@pol.net>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-Do fb_blank() and other framebuffer functions need to be interrupt safe?
+This patch makes some needlessly global code static.
 
-I can't find any documentation on whether this should be the case or not...
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
--- 
-Richard 
+---
 
+ drivers/video/matrox/matroxfb_base.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
+This patch was already sent on:
+- 21 Nov 2004
 
--------------------------------------------------------
-This SF.Net email is sponsored by: IntelliVIEW -- Interactive Reporting
-Tool for open source databases. Create drag-&-drop reports. Save time
-by over 75%! Publish reports on the web. Export to DOC, XLS, RTF, etc.
-Download a FREE copy at http://www.intelliview.com/go/osdn_nl
+--- linux-2.6.10-rc2-mm2-full/drivers/video/matrox/matroxfb_base.c.old	2004-11-21 14:40:28.000000000 +0100
++++ linux-2.6.10-rc2-mm2-full/drivers/video/matrox/matroxfb_base.c	2004-11-21 14:41:35.000000000 +0100
+@@ -1908,8 +1908,8 @@
+ 	return err;
+ }
+ 
+-LIST_HEAD(matroxfb_list);
+-LIST_HEAD(matroxfb_driver_list);
++static LIST_HEAD(matroxfb_list);
++static LIST_HEAD(matroxfb_driver_list);
+ 
+ #define matroxfb_l(x) list_entry(x, struct matrox_fb_info, next_fb)
+ #define matroxfb_driver_l(x) list_entry(x, struct matroxfb_driver, node)
+@@ -2287,7 +2287,7 @@
+ 
+ /* ************************* init in-kernel code ************************** */
+ 
+-int __init matroxfb_setup(char *options) {
++static int __init matroxfb_setup(char *options) {
+ 	char *this_opt;
+ 
+ 	DBG(__FUNCTION__)
+@@ -2428,7 +2428,7 @@
+ 
+ static int __initdata initialized = 0;
+ 
+-int __init matroxfb_init(void)
++static int __init matroxfb_init(void)
+ {
+ 	char *option = NULL;
+ 

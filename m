@@ -1,24 +1,17 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: [PATCH] aty128fb: RGB565 console color fix
-Date: Fri, 14 May 2004 08:00:55 +0300
+From: Mail Delivery Subsystem <MAILER-DAEMON@ncrhub6.NCR.COM>
+Subject: Returned mail: see transcript for details
+Date: Fri, 14 May 2004 02:46:06 -0400 (EDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040514050055.GC2693@sci.fi>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="CUfgB8w4ZwR/yMy5"
-Content-Transfer-Encoding: 7bit
+Message-ID: <200405140646.i4E6k6Jk000414@ncrhub6.NCR.COM>
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BOUoc-000747-EF
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 22:00:58 -0700
-Received: from gw02.mail.saunalahti.fi ([195.197.172.116])
+	id 1BOWSS-000409-E7
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 23:46:12 -0700
+Received: from tan7.ncr.com ([192.127.94.7] helo=ncrhub6.NCR.COM)
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BOUob-0002Yp-O6
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 22:00:57 -0700
-Received: from kuori.saunalahti.fi (kuori.saunalahti.fi [195.197.175.23])
-	by gw02.mail.saunalahti.fi (Postfix) with ESMTP id 565134F2F
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 14 May 2004 08:00:56 +0300 (EEST)
-Content-Disposition: inline
+	id 1BOWSS-0001ND-6e
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 23:46:12 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,39 +21,44 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
 
+The original message was received at Fri, 14 May 2004 02:46:05 -0400 (EDT)
+from localhost [127.0.0.1]
 
---CUfgB8w4ZwR/yMy5
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+   ----- The following addresses had permanent fatal errors -----
+<mhagan@wtcpost.daytonoh.ncr.com>
+    (reason: 550 Host unknown)
 
-This patch fixes console colors in RGB565 mode on aty128fb.
+   ----- Transcript of session follows -----
+550 5.1.2 <mhagan@wtcpost.daytonoh.ncr.com>... Host unknown (Name server: wtcpost.daytonoh.ncr.com.: host not found)
 
---=20
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+   ----- Message header follows -----
 
---CUfgB8w4ZwR/yMy5
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="aty128fb-2.6-rgb565.patch"
+Return-Path: <linux-fbdev-devel@lists.sourceforge.net>
+Received: from ncrgw1.NCR.COM (localhost [127.0.0.1])
+	by ncrhub6.NCR.COM (8.12.10/8.12.10) with ESMTP id i4E6k5Jk000410
+	for <mhagan@wtcpost.daytonoh.ncr.com>; Fri, 14 May 2004 02:46:05 -0400 (EDT)
+Received: from wtcpost.daytonoh.ncr.com ([61.149.119.60])
+	by ncrgw1.NCR.COM (8.12.10/8.12.10) with ESMTP id i4E6jvOS001390
+	for <mhagan@wtcpost.daytonoh.ncr.com>; Fri, 14 May 2004 02:45:59 -0400 (EDT)
+Message-Id: <200405140645.i4E6jvOS001390@ncrgw1.NCR.COM>
+From: linux-fbdev-devel@lists.sourceforge.net
+To: mhagan@wtcpost.daytonoh.ncr.com
+Subject: Mail Delivery (failure mhagan@wtcpost.daytonoh.ncr.com)
+Date: Fri, 14 May 2004 14:56:42 +0800
+MIME-Version: 1.0
+Content-Type: multipart/related;
+	type="multipart/alternative";
+	boundary="----=_NextPart_000_001B_01C0CA80.6B015D10"
+X-Priority: 3
+X-MSMail-Priority: Normal
 
-diff -urN linux-orig/drivers/video/aty/aty128fb.c linux/drivers/video/aty/aty128fb.c
---- linux-orig/drivers/video/aty/aty128fb.c	2004-05-13 21:54:36.114529808 +0300
-+++ linux/drivers/video/aty/aty128fb.c	2004-05-14 07:16:21.258569072 +0300
-@@ -2092,7 +2092,7 @@
- 			pal[regno] = (regno << 10) | (regno << 5) | regno;
- 			break;
- 		case 16:
--			pal[regno] = (regno << 11) | (regno << 6) | regno;
-+			pal[regno] = (regno << 11) | (regno << 5) | regno;
- 			break;
- 		case 24:
- 			pal[regno] = (regno << 16) | (regno << 8) | regno;
+   ----- Message body suppressed -----
 
---CUfgB8w4ZwR/yMy5--
 
 
 -------------------------------------------------------

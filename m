@@ -1,24 +1,29 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
- one works ;-)
-Date: Wed, 21 Apr 2004 12:50:19 +0200 (MEST)
+From: Alex Thiel <stderr@web.de>
+Subject: Re: neofb patches
+Date: Wed, 21 Apr 2004 15:41:37 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0404211249570.7657@waterleaf.sonytel.be>
-References: <1082339577.15101.4.camel@gaston>
- <Pine.LNX.4.44.0404202032210.29160-100000@phoenix.infradead.org>
- <12573.10.250.10.1.1082504618.squirrel@sq01.pol.net> <1082507437.2077.28.camel@gaston>
- <Pine.GSO.4.58.0404211027300.7657@waterleaf.sonytel.be> <1082543782.2076.66.camel@gaston>
+Message-ID: <m3ekqh8n3h.fsf@checkov.alex.net>
+References: <m3ekqkpdt6.fsf@checkov.alex.net> <Pine.LNX.4.44.0404210534120.1415-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BGFJC-0007Av-Q4
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 03:50:26 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BGFJC-0001s8-EP
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 03:50:26 -0700
-In-Reply-To: <1082543782.2076.66.camel@gaston>
+	id 1BGHyy-0008Ky-G5
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 06:41:44 -0700
+Received: from main.gmane.org ([80.91.224.249])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BGHyx-0006QO-RZ
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 06:41:44 -0700
+Received: from list by main.gmane.org with local (Exim 3.35 #1 (Debian))
+	id 1BGHyw-0000no-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 21 Apr 2004 15:41:42 +0200
+Received: from p508b2e80.dip.t-dialin.net ([80.139.46.128])
+        by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+        id 1AlnuQ-0007hv-00
+        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 21 Apr 2004 15:41:42 +0200
+Received: from stderr by p508b2e80.dip.t-dialin.net with local (Gmexim 0.1 (Debian))
+        id 1AlnuQ-0007hv-00
+        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 21 Apr 2004 15:41:42 +0200
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,37 +33,59 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Antonino Daplas <adaplas@pol.net>, James Simmons <jsimmons@infradead.org>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 21 Apr 2004, Benjamin Herrenschmidt wrote:
-> On Wed, 2004-04-21 at 18:28, Geert Uytterhoeven wrote:
-> > On Wed, 21 Apr 2004, Benjamin Herrenschmidt wrote:
-> > > > I find that a soft copyarea is always expensive than a soft imageblit as a
-> > > > copyarea will involve an fb read (10-20x slower than fb write).  Tested
-> > > > this before with an old pci nvidia card. Not o sure with newer hardware.
-> > >
-> > > I confirm, reading from the fb shall be avoided at all cost
-> >
-> > This is true for PCI/AGP, but may not be true for unified memory systems.
+James Simmons <jsimmons@infradead.org> writes:
+
+> I have a new pacth avaliable at 
 >
-> Right, but that confirms my opinion that the choice of the technique used
-> shall be under control of the driver
+> http://phoenix.infradead.org:~/neofb.diff.gz
+>
+> Its against the latest kernel.
 
-Agreed. So a hint would be the most appropriate.
+For the record, the link is http://phoenix.infradead.org/~jsimmons/neofb.diff.gz
 
-Gr{oetje,eeting}s,
+Works well over here.
+I also tried the patches that Alex Stewart posted and these seem to
+work well, too. I suggest that the new neofb driver should go into
+the -mm tree soon, maybe after merging Alex' fixes.
 
-						Geert
+    Alex
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+>
+> On Mon, 19 Apr 2004, Alex Thiel wrote:
+>
+>> James Simmons <jsimmons@infradead.org> writes:
+>> 
+>> > Yes please. I have a newer driver as well. I like to see what fixes you 
+>> > have.
+>> >
+>> 
+>> BTW, James, I tried that new driver and it fixes the oops that I have
+>> reported a while ago. However, the diff that I got from infradead.org
+>> recently did not apply cleanly to official kernels.
+>> 
+>> Could you post your new neofb driver as a patch against a vanilla
+>> kernel release, please?
+>> 
+>> Cheers & thanks,
+>> 
+>>        Alex
+>> 
+>> > On Fri, 16 Apr 2004, Geert Uytterhoeven wrote:
+>> >
+>> >> On Thu, 15 Apr 2004, Alex Stewart wrote:
+>> >> > I recently tried using the Neomagic framebuffer driver (from kernel 2.6.5) with
+>> >> > my laptop, and noticed it seemed to have a few ...issues. :)
+>> >> >
+>> >> > So over the past few days I decided to go through and fix a bunch of the
+>> >> > problems I found, and have put together quite a few patches for submission.  Is
+>> >> > this list the right place to send patches for this driver, or is there
+>> >> > somewhere else which would be more appropriate?
+>> 
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 
 -------------------------------------------------------

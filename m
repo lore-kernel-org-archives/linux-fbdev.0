@@ -1,91 +1,51 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: Re: OLS and console rearchitecture
-Date: Fri, 30 Jul 2004 16:31:09 -0700 (PDT)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040730233109.36838.qmail@web14928.mail.yahoo.com>
-References: <20040730221956.GA9140@dreamland.darkstar.lan>
+From: Adrian Bunk <bunk@fs.tum.de>
+Subject: Re: [PATCH 5/5] [I810FB]: i810fb fixes
+Date: Sat, 31 Jul 2004 02:07:54 +0200
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <20040731000754.GF2746@fs.tum.de>
+References: <200407290955.29735.adaplas@hotpop.com>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BqgqF-0003j8-LB
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Jul 2004 16:31:11 -0700
-Received: from web14928.mail.yahoo.com ([216.136.225.87])
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.34)
-	id 1BqgqD-0003qM-Nm
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Jul 2004 16:31:10 -0700
-In-Reply-To: <20040730221956.GA9140@dreamland.darkstar.lan>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S267883AbUGaAIW@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <200407290955.29735.adaplas@hotpop.com>
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kronos <kronos@people.it>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: adaplas@pol.net
+Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, linux-kernel@vger.kernel.org
 
-There is a big thread about this on lkml currently.
+On Thu, Jul 29, 2004 at 10:04:32AM +0800, Antonino A. Daplas wrote:
 
---- Kronos <kronos@people.it> wrote:
+>...
+> --- linux-2.6.8-rc2-mm1-orig/drivers/video/Kconfig	2004-07-28 19:51:13.000000000 +0000
+> +++ linux-2.6.8-rc2-mm1/drivers/video/Kconfig	2004-07-29 00:35:04.115437224 +0000
+> @@ -457,7 +457,9 @@ config FB_RIVA_DEBUG
+>  
+>  config FB_I810
+>  	tristate "Intel 810/815 support (EXPERIMENTAL)"
+> -	depends on FB && AGP && AGP_INTEL && EXPERIMENTAL && PCI	
+> +	depends on FB && EXPERIMENTAL && PCI	
+> +	select AGP
+> +	select AGP_INTEL
+>  	help
+>  	  This driver supports the on-board graphics built in to the Intel 810 
+>            and 815 chipsets.  Say Y if you have and plan to use such a board.
+>...
 
-> Il Wed, Jul 28, 2004 at 11:57:59PM +0100, Alan Cox ha scritto: 
-> > 
-> > > > 7) Mode setting from normal user space - devices will have a
-> standard
-> > > > IOCTL accepting a mode string like fbdev currently uses.
-> > > 
-> > > sysfs? I sent a patch a while ago but didn't get much feedback.
-> > 
-> > How do you atomically tie sysfs objects to fbdev and X permissions
-> > models?
-> 
-> It's not atomic right now, the attribute is attached to a
-> class_device
-> object after register_framebuffer (which init & register the
-> class_device). Is this a problem?
-> 
-> Luca
-> -- 
-> Home: http://kronoz.cjb.net
-> Windows NT crashed.
-> I'm the Blue Screen of Death.
-> No one hears your screams.
-> 
-> 
-> -------------------------------------------------------
-> This SF.Net email is sponsored by OSTG. Have you noticed the changes
-> on
-> Linux.com, ITManagersJournal and NewsForge in the past few weeks?
-> Now,
-> one more big change to announce. We are now OSTG- Open Source
-> Technology
-> Group. Come see the changes on the new OSTG site. www.ostg.com
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-> 
+This is wrong.
 
+If you select something, you have to ensure that the dependencies of 
+what you select are fulfilled.
 
-=====
-Jon Smirl
-jonsmirl@yahoo.com
+Since AGP_INTEL depends on X86 && !X86_64 , you must add this to the 
+dependencies of FB_I810 if it selects AGP_INTEL.
 
+cu
+Adrian
 
-		
-__________________________________
-Do you Yahoo!?
-Yahoo! Mail - 50x more storage than other providers!
-http://promotions.yahoo.com/new_mail
+-- 
 
-
--------------------------------------------------------
-This SF.Net email is sponsored by OSTG. Have you noticed the changes on
-Linux.com, ITManagersJournal and NewsForge in the past few weeks? Now,
-one more big change to announce. We are now OSTG- Open Source Technology
-Group. Come see the changes on the new OSTG site. www.ostg.com
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed

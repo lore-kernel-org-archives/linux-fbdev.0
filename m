@@ -1,49 +1,42 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Sven Luther <luther@dpt-info.u-strasbg.fr>
 Subject: Re: [Linux-fbdev-devel] [PATCH]: EDID parser
-Date: 03 Apr 2003 09:05:52 +0200
+Date: Thu, 3 Apr 2003 09:40:13 +0200
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1049353552.579.45.camel@zion.wanadoo.fr>
-References: <Pine.LNX.4.44.0304022245520.2488-100000@phoenix.infradead.org>
-	 <1049330578.1029.38.camel@localhost.localdomain>
-	 <1049352298.579.23.camel@zion.wanadoo.fr>
+Message-ID: <20030403074013.GA3642@iliana>
+References: <418DE32AA8@vcnet.vc.cvut.cz>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <1049352298.579.23.camel@zion.wanadoo.fr>
+Content-Disposition: inline
+In-Reply-To: <418DE32AA8@vcnet.vc.cvut.cz>
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Antonino Daplas <adaplas@pol.net>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Petr Vandrovec <vandrove@vc.cvut.cz>
+Content-Transfer-Encoding: 7bit
+To: Petr Vandrovec <VANDROVE@vc.cvut.cz>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, adaplas@pol.net
 
-
-> Just define an ioctl for that and let each driver that support EDID
-> return something seem to be the simplest way.
-
-Replying to myself... and definitely not the best way for 2.5
-(would be ok for 2.4 but do we care at this point ?)
-
-Instead, we'd rather add the EDID as an attribute of the fb
-to sysfs.
-
-Actually, I suggest that each fbdev driver defines ones or more
-nodes in sysfs below the actual driver node, representing the
-various heads. Each head would then have attributes representing
-the various display properties, one beeing the EDID block.
-
-> If we really want to make EDID a generic thing, then we can eventually
-> have the EDID block attached to each fb_info and then a generic
-> fbmem.c ioctl to read it, but then make sure that EDID block isn"t
-> mandatory (it has no sense to some specific HW like some embedded
-> stuffs) and I always prefer when drivers are the real target of
-> the calls like this ioctl, eventually using fbdev "tools" as helpers
-> instead of having fbdev do something directly as a "mid-mayer".
+On Thu, Apr 03, 2003 at 03:07:33AM +0100, Petr Vandrovec wrote:
+> On  2 Apr 03 at 22:55, James Simmons wrote:
 > 
-> Ben.
+> > It doesn't need a struct pci_dev in this case. It is possible to get this 
+> > info from the i2c bus but I never seen any drivers do this. What data would
+> > we have to pass in get the EDID inforamtion? So the question is how 
+> > generic will get_EDID end up being or will we have to have driver specfic 
+> > hooks since I don't pitcure i2c approaches being the same for each video 
+> > card. Petr didn't you attempt this with the matrox driver at one time?
 > 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
--- 
-Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Yes, matroxfb provides one i2c (DDC) bus for each output videocard has.
+> I ended with only this support (and userspace EDID parser) as i2c was
+> initialized loong after framebuffer at that time... Now when i2c is usable
+> when fbdev initializes, it looks much better.
+> 
+> Only get_EDID interface I need is one which gets i2c bus as argument. But
+> I have no idea how I should handle situation where you have connected
+> two different monitors to both crtc1 outputs... Like 50Hz PAL TV &
+> 60+Hz VGA monitor. Currently it is user responsibility to resolve such
+> situation...
+
+Is the EDID reading stuff not done per head ?
+
+Friendly,
+
+Sven Luther

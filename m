@@ -1,17 +1,17 @@
 From: Adrian Bunk <bunk@stusta.de>
-Subject: [2.6 patch] drivers/video/radeonfb.c: fix an array overflow
-Date: Sun, 27 Mar 2005 22:31:53 +0200
-Message-ID: <20050327203153.GS4285@stusta.de>
+Subject: [2.6 patch] drivers/video/console/fbcon.c: fix a check after use
+Date: Sun, 27 Mar 2005 22:41:19 +0200
+Message-ID: <20050327204119.GY4285@stusta.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DFeRE-0003hO-AL
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 27 Mar 2005 12:32:48 -0800
+	id 1DFeZa-00048t-H8
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 27 Mar 2005 12:41:26 -0800
 Received: from emailhub.stusta.mhn.de ([141.84.69.5] helo=mailout.stusta.mhn.de)
 	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
-	id 1DFeRD-00086G-M3
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 27 Mar 2005 12:32:48 -0800
+	id 1DFeZZ-0000OV-Lp
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 27 Mar 2005 12:41:26 -0800
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -25,24 +25,30 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: ajoshi@shell.unixbox.com
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net, linux-kernel@vger.kernel.org
+To: adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-This patch fixes an array overflow found by the Coverity checker.
+This patch fixes a check after use found by the Coverity checker.
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Signed-off-by: Adrian Bunk <bunk@fs.tum.de>
 
---- linux-2.6.12-rc1-mm1-full/drivers/video/radeonfb.c.old	2005-03-23 01:50:14.000000000 +0100
-+++ linux-2.6.12-rc1-mm1-full/drivers/video/radeonfb.c	2005-03-23 01:50:30.000000000 +0100
-@@ -2107,7 +2107,7 @@ static void radeon_write_mode (struct ra
+--- linux-2.6.12-rc1-mm1-full/drivers/video/console/fbcon.c.old	2005-03-23 04:53:20.000000000 +0100
++++ linux-2.6.12-rc1-mm1-full/drivers/video/console/fbcon.c	2005-03-23 04:53:44.000000000 +0100
+@@ -906,10 +906,13 @@ static void fbcon_init(struct vc_data *v
+ 	struct vc_data *svc = *default_mode;
+ 	struct display *t, *p = &fb_display[vc->vc_num];
+ 	int logo = 1, new_rows, new_cols, rows, cols, charcnt = 256;
+-	int cap = info->flags;
++	int cap;
  
- 
- 	if (rinfo->arch == RADEON_M6) {
--		for (i=0; i<8; i++)
-+		for (i=0; i<7; i++)
- 			OUTREG(common_regs_m6[i].reg, common_regs_m6[i].val);
- 	} else {
- 		for (i=0; i<9; i++)
+ 	if (info_idx == -1 || info == NULL)
+ 	    return;
++
++	cap = info->flags;
++
+ 	if (vc != svc || logo_shown == FBCON_LOGO_DONTSHOW ||
+ 	    (info->fix.type == FB_TYPE_TEXT))
+ 		logo = 0;
 
 
 

@@ -1,22 +1,26 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Fw: CONFIG_FB_3DFX_ACCEL is unusable (in 2.6.7)
-Date: Wed, 16 Jun 2004 15:25:25 -0700
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: [PATCH][RIVAFB]: Updates to rivafb driver
+Date: Thu, 17 Jun 2004 06:29:09 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040616152525.51bb755c.akpm@osdl.org>
+Message-ID: <200406170629.09691.adaplas@hotpop.com>
+References: <200406160406.07060.adaplas@hotpop.com> <200406161353.51195.adaplas@hotpop.com> <20040616173429.GA8601@havoc.gtf.org>
+Reply-To: adaplas@pol.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Baino-0006DN-CW
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 15:22:40 -0700
-Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bainn-0000zr-G4
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 15:22:39 -0700
-Received: from akpm.pao.digeo.com (build.pdx.osdl.net [172.20.1.2])
-	by mail.osdl.org (8.11.6/8.11.6) with SMTP id i5GMMar32099
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 16 Jun 2004 15:22:36 -0700
+	id 1Baito-0007CB-PX
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 15:28:52 -0700
+Received: from babyruth.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1Baito-0006H5-E1
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 15:28:52 -0700
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by babyruth.hotpop.com (Postfix) with SMTP id 5802E60C807
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 16 Jun 2004 21:50:46 +0000 (UTC)
+In-Reply-To: <20040616173429.GA8601@havoc.gtf.org>
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,149 +31,46 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+To: David Eger <eger@havoc.gtf.org>, adaplas@pol.net
+Cc: James Simmons <jsimmons@infradead.org>, Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+
+On Thursday 17 June 2004 01:34, David Eger wrote:
+> On Wed, Jun 16, 2004 at 01:53:51PM +0800, Antonino A. Daplas wrote:
+> > > On Wednesday 16 June 2004 06:17, David Eger wrote:
+> > > > hey tony,
+> > > >
+> > > > your patch against drivers/video/riva/fbdev.c chokes on hunk 2 when
+> > > > applied to 2.6.7-rc3-mm2.  resend, and i'll test it on my TNT2 :)
+> > >
+> > > Ok.  Patch against 2.6.7-rc3-mm2.
+>
+> Applying your rivafb and fbmode patches work great on my TNT2.
+> I get a console with 160 columns and 60 rows :-)
+
+That's great.
+
+>
+> And yes, the capabilities patch makes your driver slow.
+> But setting the proper flags makes it fast again ;-)
+
+Do you mind submitting a patch yourself?  It's probably a 1 liner patch, unless
+we also modify rivafb to use cfb_* drawing functions depending on
+the setting of var->accel_flags.
+
+>
+> The driver still doesn't play nice with the evil binary nvidia drivers,
+> but then, that's expected.  (It'd be nice if changing from X to a console
+> didn't *crash my machine* though.)
+>
+
+Yeah, even with XOrg/Free86 nv driver, it hangs.  Don't really know the exact
+solution, probably a complete re-initialization of the hardware when switching from
+X.  But this will require that fbcon recognizes a switch from X itself which it
+currently doesn't (unless I'm mistaken).
+
+Tony
 
 
-Is anyone working on this?   Should we kill it off?
-
-Thanks.
-
-
-Begin forwarded message:
-
-Date: Wed, 16 Jun 2004 21:24:33 +0200
-From: Jakub Bogusz <qboosh@pld-linux.org>
-To: linux-kernel@vger.kernel.org
-Subject: CONFIG_FB_3DFX_ACCEL is unusable (in 2.6.7)
-
-
-I suggest marking this option as BROKEN or remove at all for now.
-It looks like some artifact of old hwcursor code which never worked in
-2.6.x.
-It uses some fields (namely par->hwcursor.*) never initialized,
-uninitialized timer, contains obvious bugs (using "&&" for testing
-bitfields) and finally causes oopses crashing system - like this:
-
-kernel: Console: switching consoles 1-1 to colour frame buffer device 100x37
-kernel: Console: switching consoles 2-2 to colour frame buffer device 100x37
-kernel: Console: switching consoles 3-3 to colour frame buffer device 100x37
-kernel: Console: switching consoles 4-4 to colour frame buffer device 100x37
-kernel: Console: switching consoles 5-5 to colour frame buffer device 100x37
-kernel: Console: switching consoles 6-6 to colour frame buffer device 100x37
-kernel: Console: switching consoles 7-7 to colour frame buffer device 100x37
-kernel: Uninitialised timer!
-kernel: This is just a warning.  Your computer is OK
-kernel: function=0x00000000, data=0x0
-kernel: [<c011b09f>] check_timer_failed+0x5f/0x70
-kernel: [<c011b3c2>] del_timer+0x12/0x80
-kernel: [<d88c4555>] tdfxfb_cursor+0x315/0x380 [tdfxfb]
-kernel: [<c01e5c63>] fbcon_cursor+0x273/0x380
-kernel: [<c01e59d3>] fbcon_putcs+0x93/0xb0
-kernel: [<c01bee01>] do_update_region+0xc1/0x180
-kernel: [<c01bf893>] set_cursor+0x63/0x80
-kernel: [<c01bfa6c>] redraw_screen+0xfc/0x1e0
-kernel: [<c01bf132>] update_attr+0xb2/0xd0
-kernel: [<c01c3662>] take_over_console+0x2f2/0x420
-kernel: [<c01e4931>] set_con2fb_map+0x41/0x50
-kernel: [<c01e93bc>] fb_ioctl+0x2cc/0x330
-kernel: [<c012c28d>] filemap_nopage+0x1ed/0x330
-kernel: [<c0139009>] do_no_page+0x189/0x2e0
-kernel: [<c013932e>] handle_mm_fault+0xbe/0x150
-kernel: [<c010fbc9>] do_page_fault+0x2e9/0x4c6
-kernel: [<c014e32f>] cdev_get+0x4f/0xb0
-kernel: [<c014e06c>] chrdev_open+0xec/0x210
-kernel: [<c01451e9>] dentry_open+0xf9/0x210
-kernel: [<c01450ec>] filp_open+0x4c/0x50
-kernel: [<c01568c9>] sys_ioctl+0x109/0x280
-kernel: [<c0103c1b>] syscall_call+0x7/0xb
-kernel:
-kernel: Console: switching consoles 8-8 to colour frame buffer device 100x37
-kernel: Console: switching consoles 9-9 to colour frame buffer device 100x37
-kernel: Console: switching consoles 13-13 to colour frame buffer device 100x37
-kernel: Console: switching consoles 14-14 to colour frame buffer device 100x37
-kernel: Console: switching consoles 15-15 to colour frame buffer device 100x37
-kernel: Console: switching consoles 16-16 to colour frame buffer device 100x37
-kernel: Console: switching consoles 17-17 to colour frame buffer device 100x37
-kernel: Console: switching consoles 18-18 to colour frame buffer device 100x37
-kernel: Console: switching consoles 19-19 to colour frame buffer device 100x37
-kernel: Console: switching consoles 20-20 to colour frame buffer device 100x37
-kernel: Console: switching consoles 21-21 to colour frame buffer device 100x37
-kernel: Unable to handle kernel NULL pointer dereference at virtual address 0000001f
-kernel: printing eip:
-kernel: d88c42dd
-kernel: *pde = 00000000
-kernel: Oops: 0000 [#1]
-kernel: PREEMPT
-kernel: Unable to handle kernel NULL pointer dereference at virtual address 0000002f
-kernel: printing eip:
-kernel: d88c42dd
-kernel: *pde = 00000000
-kernel: Oops: 0000 [#2]
-kernel: PREEMPT
-kernel: Modules linked in: binfmt_misc af_packet via686a i2c_sensor i2c_isa i2c_core tdfxfb cfbimgblt snd_ens1371 snd_rawmidi snd_seq_device snd_pcm snd_page_alloc snd_timer snd_ac97_codec snd ne2k_pci 8390 crc32 parport_pc parport via_agp agpgart evdev 8250 serial_core joydev analog es1371 soundcore gameport ac97_codec pcspkr uhci_hcd usbcore rtc
-kernel: CPU:    0
-kernel: EIP:    0060:[<d88c42dd>]    Not tainted
-kernel: EFLAGS: 00010086   (2.6.7)
-kernel: EIP is at tdfxfb_cursor+0x9d/0x380 [tdfxfb]
-kernel: eax: c01e59d3   ebx: d7fc8e01   ecx: 0000000f   edx: 00000010
-kernel: esi: c028ab10   edi: d265bb90   ebp: 0000000c   esp: d265bb24
-kernel: ds: 007b   es: 007b   ss: 0068
-kernel: Process tput (pid: 5644, threadinfo=d265a000 task=d22bac90)
-kernel: Stack: c01e4c93 00000008 d795866c d265bb90 d7958400 00000010 00000002
-
-kernel: d7fc8e01 c028ab10 c01e59d3 ffffffff ffffffff d7fc8e00 00000002 d7958400
-kernel: 0000000c c01e5d45 0000ffff 00000019 00000001 c0342708 c01e00ff 0000000f
-kernel: Call Trace:
-kernel: [<c01e4c93>] accel_putcs+0x253/0x2d0
-kernel: [<c01e59d3>] fbcon_putcs+0x93/0xb0
-kernel: [<c01e5d45>] fbcon_cursor+0x355/0x380
-kernel: [<c01e00ff>] proc_ide_write_settings+0x14f/0x260
-kernel: [<c01e59d3>] fbcon_putcs+0x93/0xb0
-kernel: [<c01bf81d>] hide_cursor+0x1d/0x30
-kernel: [<c01c2d94>] vt_console_print+0x2c4/0x2d0
-kernel: [<c01bf893>] set_cursor+0x63/0x80
-kernel: [<c01c2ad0>] vt_console_print+0x0/0x2d0
-kernel: [<c0114762>] __call_console_drivers+0x42/0x50
-kernel: [<c0114855>] call_console_drivers+0x75/0x100
-kernel: [<c0114baa>] release_console_sem+0x4a/0xe0
-kernel: [<c0114aac>] printk+0xfc/0x160
-kernel: [<c01043f0>] die+0x80/0x100
-kernel: [<c010fa97>] do_page_fault+0x1b7/0x4c6
-kernel: [<c01ac422>] copy_to_user+0x32/0x50
-kernel: [<c016a7d3>] load_elf_binary+0x513/0xc00
-kernel: [<c010f8e0>] do_page_fault+0x0/0x4c6
-kernel: [<c0103dc5>] error_code+0x2d/0x38
-kernel: [<d88c42dd>] tdfxfb_cursor+0x9d/0x380 [tdfxfb]
-kernel: [<c01e5c63>] fbcon_cursor+0x273/0x380
-kernel: [<c01bf893>] set_cursor+0x63/0x80
-kernel: [<c01c30e1>] con_flush_chars+0x31/0x40
-kernel: [<c01c2f54>] con_write+0x24/0x40
-kernel: [<c01b6186>] opost_block+0xc6/0x170
-kernel: [<c012c247>] filemap_nopage+0x1a7/0x330
-kernel: [<c0139009>] do_no_page+0x189/0x2e0
-kernel: [<c01b834d>] write_chan+0x1ad/0x230
-kernel: [<c0111360>] default_wake_function+0x0/0x10
-kernel: [<c010fbc9>] do_page_fault+0x2e9/0x4c6
-kernel: [<c0111360>] default_wake_function+0x0/0x10
-kernel: [<c013a621>] vma_merge+0x121/0x190
-kernel: [<c01b3291>] tty_write+0x1c1/0x260
-kernel: [<c013ac72>] do_mmap_pgoff+0x512/0x650
-kernel: [<c01b81a0>] write_chan+0x0/0x230
-kernel: [<c0145f8d>] vfs_write+0xcd/0x120
-kernel: [<c0146078>] sys_write+0x38/0x60
-kernel: [<c0103c1b>] syscall_call+0x7/0xb
-kernel:
-kernel: Code: 0f b7 04 51 c1 e0 10 89 44 24 04 0f b7 04 53 c1 e0 08 09 44
-kernel: <6>note: tput[5644] exited with preempt_count 2
-
-
--- 
-Jakub Bogusz    http://cyber.cs.net.pl/~qboosh/
--
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
 
 
 -------------------------------------------------------

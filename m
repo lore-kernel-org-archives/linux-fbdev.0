@@ -1,14 +1,17 @@
-From: Justin Ducote <justinduc@yahoo.com>
-Subject: Linux Intel FB Question
-Date: Mon, 14 Apr 2003 21:21:04 -0700 (PDT)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] imsttfb 2.5.x
+Date: 15 Apr 2003 09:05:41 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030415042104.88847.qmail@web41603.mail.yahoo.com>
+Message-ID: <1050390341.5574.105.camel@zion.wanadoo.fr>
+References: <20030412111945.GA537@gajba.net>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from web41603.mail.yahoo.com ([66.218.93.103])
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 195HwW-0008Tx-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 14 Apr 2003 21:21:12 -0700
+Received: from amarseille-201-1-6-42.abo.wanadoo.fr ([80.11.137.42] helo=zion.wanadoo.fr)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 195KUF-0006IY-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 15 Apr 2003 00:04:12 -0700
+In-Reply-To: <20030412111945.GA537@gajba.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -19,48 +22,29 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: justinduc@yahoo.com
+To: Boris Bezlaj <boris@gajba.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi guys..
+On Sat, 2003-04-12 at 13:19, Boris Bezlaj wrote:
+> In 2.5.67 imsttfb locks the system when it's time to scrool the text.
+> Patch below fixes that. Otherwise everything seems to work as in 2.4
+> 
+> --- linux/drivers/video/ORIG_imsttfb.c  2003-04-09 15:11:46.000000000 +0200
+> +++ linux/drivers/video/imsttfb.c       2003-04-11 16:44:07.000000000 +0200
+> @@ -409,7 +409,7 @@
+>  static inline u32 read_reg_le32(volatile u32 *base, int regindex)
+>  {
+>  #ifdef __powerpc__
+> -       in_le32((volatile u32 *) (base + regindex));
+> +       return in_le32((volatile u32 *) (base + regindex));
+>  #else
+>         return readl(base + regindex);
+>  #endif
 
-I would like to use the RADEON frame buffer, with
-that said I am restricting this senario to the VESA
-driver ONLY to try and clear up some of my confusion..
+There is actually no reason not to use readl() on ppc as well
 
-When I boot linux/grub (Redhat 9.0) with the following
-line:
+Ben.
 
-vga=792
-
-Everything works great, I get 1024x768x16m and it uses
-the VESA Framebuffer (I think) and everything is
-great. 
-
-If I try and use this line instead:
-
-video=vesa:mode:1024x768-24@60
-
-NOTHING happens.. 
-
-My understanding was that those two
-lines should yield the exact same result in theory. I
-thought they are doing the same thing but the video
-line does nothing so I am confused and I do not
-understand whats going on. 
-
-Additionally, 
-I would like to know what is the relationship
-between VGA= and VIDEO= 
-
-Thank you for your time.
-Justin Ducote
-
-__________________________________________________
-Do you Yahoo!?
-The New Yahoo! Search - Faster. Easier. Bingo
-http://search.yahoo.com
 
 
 -------------------------------------------------------

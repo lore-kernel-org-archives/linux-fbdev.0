@@ -1,21 +1,13 @@
-From: "Charles" <ccedeno@speedsurf.pacific.net.ph>
-Subject: Genuine Profitable Opportunity!
-Date: Sat, 25 Oct 2003 03:35:19 +0800
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [Dri-devel] Re: DRM and pci_driver conversion
+Date: Fri, 24 Oct 2003 23:45:05 +0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <E1AD7g0-0003eI-7N@sc8-sf-mx1.sourceforge.net>
-Reply-To: "Charles" <charlesjlc@indiatimes.com>
+Message-ID: <20031024234505.B2362@jurassic.park.msu.ru>
+References: <Pine.LNX.4.44.0310241051450.8177-100000@home.osdl.org> <20031024183405.36600.qmail@web14915.mail.yahoo.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1AD7jI-0000Aw-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 24 Oct 2003 12:36:12 -0700
-Received: from [210.23.250.24] (helo=speedsurf.pacific.net.ph)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.24)
-	id 1AD7g0-0003eI-7N
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Oct 2003 12:32:48 -0700
+Content-Disposition: inline
+In-Reply-To: <20031024183405.36600.qmail@web14915.mail.yahoo.com>; from jonsmirl@yahoo.com on Fri, Oct 24, 2003 at 11:34:04AM -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -26,38 +18,22 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: Linus Torvalds <torvalds@osdl.org>, Petr Vandrovec <vandrove@vc.cvut.cz>, Jeff Garzik <jgarzik@pobox.com>, Eric Anholt <eta@lclark.edu>, kronos@kronoz.cjb.net, Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net, dri-devel <dri-devel@lists.sourceforge.net>
 
-Hello, 
- 
-There's a revolutionary money making phenomenon that is spreading across
-the Internet like WILDFIRE!
- 
-And right now, for a very limited time, YOU have the opportunity to be
-right at the FRONT of it.
- 
-But time is of the essence; you need to LOCK IN YOUR POSITION NOW!!!
- 
-DON'T WAIT ANOTHER SECOND!!
- 
-Send email to charlesjlc@indiatimes.com with the subject "Register me as
-an Associate Member." with your Firstname, Lastname, Tel#, and Country.
-Registration is FREE...
+On Fri, Oct 24, 2003 at 11:34:04AM -0700, Jon Smirl wrote:
+> PCI ROM enabale/disable has come up before on LKML. Russell made this comment
+> about making the code more portable.
+> 
+> --- Russell King <rmk@arm.linux.org.uk> wrote:
+> > You should use pcibios_resource_to_bus() to convert a resource to a
+> > representation suitable for a BAR.
 
-If you allow this incredible, once-in-a-lifetime opportunity to pass you
-by, you'll forever regret the decision. 
- 
-Be an Associate Member and evaluate the program and surely you will
-discover what you have been dreaming of.
- 
-The time to act is now!
- 
-Not tomorrow... not someday... but right here, RIGHT NOW!
- 
-Regards,
- 
-Charles
-charlesjlc@indiatimes.com
+pci_assign_resource() does call pcibios_resource_to_bus(),
+so Linus' proposal will work correctly as it is.
+
+Ivan.
 
 
 -------------------------------------------------------

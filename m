@@ -1,26 +1,48 @@
-From: Russell King <rmk@arm.linux.org.uk>
-Subject: Re: [BK FBDEV] A few more updates.
-Date: Tue, 25 Mar 2003 18:01:08 +0000
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20030325180108.E24418@flint.arm.linux.org.uk>
-References: <Pine.LNX.4.33.0303251031180.4272-100000@maxwell.earthlink.net>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: PPC64 prom logo
+Date: Tue, 25 Mar 2003 18:17:13 +0000 (GMT)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.LNX.4.44.0303251816380.4568-100000@phoenix.infradead.org>
+References: <15999.27242.738276.356568@nanango.paulus.ozlabs.org>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.33.0303251031180.4272-100000@maxwell.earthlink.net>; from jsimmons@infradead.org on Tue, Mar 25, 2003 at 10:32:11AM -0800
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18xszf-0000Um-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 25 Mar 2003 10:17:51 -0800
+In-Reply-To: <15999.27242.738276.356568@nanango.paulus.ozlabs.org>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/PPC64 Development <linuxppc64-dev@lists.linuxppc.org>
 
-On Tue, Mar 25, 2003 at 10:32:11AM -0800, James Simmons wrote:
-> Linus, please do a
+
+> Actually, you should use RELOC on a variable (an L-value) or PTRRELOC
+> on a value (an R-value), so it should look like this:
 > 
-> 	bk pull http://fbdev.bkbits.net/fbdev-2.5
+> 	clut = PTRRELOC(RELOC(logo_linux_clut224.clut));
+> 	for (i = 0; i < RELOC(logo_linux_clut224.clutsize); i++, clut += 3)
+> 
+> etc.  I'll test on an actual ppc64 box and send a tested patch.
 
-Patch?
+Do you have a functional and tested patch?
 
--- 
-Russell King (rmk@arm.linux.org.uk)                The developer of ARM Linux
-             http://www.arm.linux.org.uk/personal/aboutme.html
+
+
+
+
+-------------------------------------------------------
+This SF.net email is sponsored by:
+The Definitive IT and Networking Event. Be There!
+NetWorld+Interop Las Vegas 2003 -- Register today!
+http://ads.sourceforge.net/cgi-bin/redirect.pl?keyn0001en

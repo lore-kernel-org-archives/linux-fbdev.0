@@ -1,21 +1,21 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Vesafb patch
-Date: Fri, 23 Apr 2004 17:47:03 +0100 (BST)
+Subject: Re: vfb updates.
+Date: Fri, 23 Apr 2004 17:47:24 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0404231746410.3997-100000@phoenix.infradead.org>
-References: <Pine.GSO.4.58.0404231037360.11983@waterleaf.sonytel.be>
+Message-ID: <Pine.LNX.4.44.0404231747090.3997-100000@phoenix.infradead.org>
+References: <Pine.GSO.4.58.0404231043280.11983@waterleaf.sonytel.be>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BH3pU-0005SZ-Gv
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 09:47:08 -0700
+	id 1BH3pq-0005XV-Ik
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 09:47:30 -0700
 Received: from phoenix.infradead.org ([213.86.99.234])
 	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1BH3pT-0003ll-Rp
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 09:47:08 -0700
-In-Reply-To: <Pine.GSO.4.58.0404231037360.11983@waterleaf.sonytel.be>
+	id 1BH3po-0003qJ-A5
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 09:47:28 -0700
+In-Reply-To: <Pine.GSO.4.58.0404231043280.11983@waterleaf.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,38 +31,28 @@ To: Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: Andrew Morton <akpm@osdl.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-Okay. I fixed that. I remember there was a debt but I didn't see the 
-conclusion. Fixed.
+oops. As you can see I was debugging.
 
 
 On Fri, 23 Apr 2004, Geert Uytterhoeven wrote:
 
 > On Thu, 22 Apr 2004, James Simmons wrote:
-> > This patch updates vesafb to use the framebuffer_alloc/framebuffer_release
-> > function. It also adds a long ago patch for mtrr handling.
+> > This patch updates the Virtual framebuffer to use the
+> > frmaebuffer_alloc/release functions.
 > >
-> > --- linus-2.6/drivers/video/vesafb.c	2004-04-21 15:39:16.000000000 -0700
-> > +++ fbdev-2.6/drivers/video/vesafb.c	2004-04-21 18:41:44.000000000 -0700
-> > @@ -47,12 +47,13 @@
-> >  	.accel	= FB_ACCEL_NONE,
+> > --- linus-2.6/drivers/video/vfb.c	2004-02-12 18:31:45.000000000 -0800
+> > +++ fbdev-2.6/drivers/video/vfb.c	2004-04-21 17:46:38.000000000 -0700
+> > @@ -72,7 +69,7 @@
+> >  	.accel =	FB_ACCEL_NONE,
 > >  };
 > >
-> > -static struct fb_info fb_info;
-> > -static u32 pseudo_palette[17];
-> > -
-> >  static int             inverse   = 0;
-> > +#ifdef __x86_64__
-> >  static int             mtrr      = 1;
-> > -
-> > +#else
-> > +static int	       mtrr	 = 0;
-> > +#endif
+> > -static int vfb_enable __initdata = 0;	/* disabled by default */
+> > +static int vfb_enable __initdata = 1;	/* disabled by default */
+> >  MODULE_PARM(vfb_enable, "i");
+> >
+> >      /*
 > 
-> IIRC, the consensus a while ago was that MTRR was always OK, not only on
-> x86-64?
-> 
-> Cfr. the previous change
-> http://linux.bkbits.net:8080/linux-2.5/diffs/drivers/video/vesafb.c@1.33?nav=index.html|src/|src/drivers|src/drivers/video|hist/drivers/video/vesafb.c
+> Please revert this hunk! You do _not_ want to enable vfb by default!
 > 
 > Gr{oetje,eeting}s,
 > 

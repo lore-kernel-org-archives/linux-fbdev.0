@@ -1,16 +1,17 @@
-From: Thomas Winischhofer <thomas@winischhofer.net>
+From: Antonino Daplas <adaplas@pol.net>
 Subject: Re: Some questions
-Date: Thu, 06 Mar 2003 10:43:36 +0100
+Date: 06 Mar 2003 17:58:06 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3E671848.5020506@winischhofer.net>
-References: <Pine.LNX.4.44.0303051939470.27760-100000@phoenix.infradead.org>	<1046913411.1206.185.camel@localhost.localdomain> 	<3E670B82.30900@winischhofer.net> <1046942633.1330.54.camel@localhost.localdomain>
+Message-ID: <1046944674.1332.68.camel@localhost.localdomain>
+References: <Pine.GSO.4.21.0303061006180.28248-100000@vervain.sonytel.be>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [213.229.38.66] (helo=mail.falke.at)
+Received: from pine.compass.com.ph ([202.70.96.37])
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18qrxT-0001Gk-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 06 Mar 2003 01:46:35 -0800
+	id 18qs7M-0002o1-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 06 Mar 2003 01:56:48 -0800
+In-Reply-To: <Pine.GSO.4.21.0303061006180.28248-100000@vervain.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,76 +21,42 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Antonino Daplas <adaplas@pol.net>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Thomas Winischhofer <thomas@winischhofer.net>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Antonino Daplas wrote:
-> On Thu, 2003-03-06 at 16:49, Thomas Winischhofer wrote:
->>>However, the brokenness is really on the driver side.  They are unable
->>>to change the video mode unless they are supplied with the correct
->>>timing parameters where in fact they actually have the best knowledge on
->>>how to calculate them.  
->>
->>Yes, BUT ONLY IF the driver has enough parameters to calculate it. This 
->>requires at least x and y dimension AND A CLOCK (or a vertical refresh 
->>rate, which I would prefer).
+On Thu, 2003-03-06 at 17:12, Geert Uytterhoeven wrote:
 > 
-> The VESA GTF can calculate timings using only xres, yres and any of the
-> three...
+> What if fbcon implements a text console _on top of_ fbdev? I.e. it uses the
+> current resolution?
 > 
-> 1. desired pixelclock
-> 2. desired refresh
-> 3. desired hsync
+> If you use stty to change the number of cols/rows, or change the font, or use
+> fbset, your text console may end up being smaller or larger than the real
+> screen size, in which case margins are cleared, or columns/lines are lost.
+> (Optionally, we can center the text console if it's smaller than the real
+>  screen size.)
 > 
-> ... all of which can be chosen by the driver, or extracted from the monitor
-> (ie. DDC or uploaded by the user).
 
-See? Need a clock! My word! :)
+Which is basically what stty does for the standard console (except that
+lines are not lost, but wrapped, and margins are not cleared).
 
-> Mode checking is not simply looking at xres and yres, but also looking
-> at htotal, and vtotal to derive hsync, vsync and pixelclock.  These are
-> then compared to the monitor/graphics card's capability.  If any of the
-> values fall outside the limits then the mode is not valid.  Otherwise,
-> the new mode should still produce a usable display, perhaps not the one
-> the user wants (ie refresh rate is lower).  By this time though, the
-> user can freely use fbset to fine tune all the timings.
+So, we need to reimplement the clipping code.
 
-Perhaps I have not made myself clear:
-
-I start with a default 800x600-60. Pixelclock in var is now X.
-
-fbcon_resize adapts the xres and yres, leaving the pixelclock alone.
-
-The driver sees upon the check_var call: xres, yres and X - the old 
-pixelclock (which is non-zero).
-
-That pixelclock *COULD* be valid, but it COULD also be invalid! There is 
-no way of distinguishing!
-
->>What about the following solution: What if fbcon_resize sets the clock 
->>in the var to 0? We could use this to force low level drivers to decide 
->>on the clock for themselves. Otherwise, ie if the clock field is 
->>non-zero, they are supposed to take it as the desired clock.
+> IMHO this is the most orthogonal approach. Fbcon takes care of the text
+> console, fbdev takes care of the graphics hardware and the video mode. Both
+> parts do (try to) not influence each other.
 > 
-> Yes, that's another solution.  Just invalidate the timings and force the
-> driver to compute a modeline each time.
+> Optionally, fbset can call stty to change the number of cols/rows, if the user
+> wants that.
+> 
 
-I think Geert came up with a better solution in the meantime.
+Or even a simple script that basically does "fbset 1024x768-60 && stty
+cols 128 rows 48". Of course, adding this to fbset itself will make it
+transparent to the user.
 
-But a general rule should be anyway: Whenever passing a var to the 
-driver which only changed in a few fields and through this invalidated 
-the timing settings, the caller should set everthing else to ZERO, in 
-other words: invalidate it in a recognizable way. That's IMHO the only 
-way the driver can distinguish between intended and unintended settings.
+Sounds very logical to me :-)
 
-Thomas
-
--- 
-Thomas Winischhofer
-Vienna/Austria
-mailto:thomas@winischhofer.net            http://www.winischhofer.net/
-
+Tony
 
 
 

@@ -1,21 +1,18 @@
-From: "Buttchereit, Axel (XL)" <XL@XLsigned.net>
-Subject: Re: [patch] intelfb: add (partial) support for
- 915G
-Date: Wed, 02 Feb 2005 17:40:15 +0100
-Message-ID: <4201026F.1080309@XLsigned.net>
-References: <41FB1AEB.4090206@XLsigned.net> <200502022019.21453.adaplas@hotpop.com>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: [2.6 patch] savagefb.c: make some code static
+Date: Wed, 2 Feb 2005 20:52:37 +0100
+Message-ID: <20050202195237.GJ3313@stusta.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CwNYF-00078b-FY
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 02 Feb 2005 08:40:23 -0800
-Received: from mail.goracer.de ([62.75.192.134])
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
-	id 1CwNYE-00047X-PS
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 02 Feb 2005 08:40:23 -0800
-In-Reply-To: <200502022019.21453.adaplas@hotpop.com>
+	id 1CwQZA-0002Vz-Fn
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 02 Feb 2005 11:53:32 -0800
+Received: from mailout.stusta.mhn.de ([141.84.69.5])
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.41)
+	id 1CwQZ8-00061E-Pv
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 02 Feb 2005 11:53:32 -0800
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,52 +24,51 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: sylvain.meyer@worldonline.fr, adaplas@pol.net
+Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@osdl.org>
+Cc: Denis Oliver Kropp <dok@directfb.org>, Sven Neumann <neo@directfb.org>, Antonino Daplas <adaplas@pol.net>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-Antonino A. Daplas wrote:
-> On Saturday 29 January 2005 13:11, Buttchereit, Axel (XL) wrote:
-> 
->>Add (partial) support for 915G
->>  No HW cursor at the moment
->>  Screen is blanked but signal/sync is not switched off
->>Mostly derived from XFree86/Xorg driver
->>Pass "vesa_modes" and VESA_MODEDB_SIZE in call to "fb_find_mode()"
->>  to allow loading as module. Makes "vesa_modes" also the default
->>  "modedb" when linking statically into the kernel.
->>Change PREFERRED_MODE to more reasonable value "1024x768-32@70"
->>
-> 
-> 
-> Can you resend?  Patch is malformed.
-Sure!
-But it would be much easier for me, if I know what's wrong with my patch.
+The patch below makes some needlessly global code static.
 
-I assume that the kernel source version I was using is wrong (outdated),
-i. e. I have to make my patch base on (at least) version 2.6.11-rc2.
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-I would like to know, if the following statements are true:
+---
 
-@2.6.10 	=	kernel/v2.6/linux-2.6.10.tar.bz2
-@2.6.11-rc1 	= 	@2.6.10 + kernel/v2.6/testing/patch-2.6.11-rc1.bz2
-@2.6.11-rc2 	= 	@2.6.10 + kernel/v2.6/testing/patch-2.6.11-rc2.bz2
-@2.6.11-rc2-bk1 =	@2.6.11-rc2 + kernel/v2.6/snapshots/patch-2.6.11-rc2-bk1.bz2
-@2.6.11-rc2-bk2 =	@2.6.11-rc2 + kernel/v2.6/snapshots/patch-2.6.11-rc2-bk2.bz2
-...
-@2.6.11-rc1-mm1 =	@2.6.11-rc1 + kernel/people/akpm/patches/2.6/2.6.11-rc1/2.6.11-rc1-mm1/2.6.11-rc1-mm1.bz2
-@2.6.11-rc1-mm2 =	@2.6.11-rc1 + kernel/people/akpm/patches/2.6/2.6.11-rc1/2.6.11-rc1-mm2/2.6.11-rc1-mm2.bz2
-@2.6.11-rc2-mm1 =	@2.6.11-rc2 + kernel/people/akpm/patches/2.6/2.6.11-rc2/2.6.11-rc2-mm1/2.6.11-rc2-mm1.bz2
-@2.6.11-rc2-mm2 =	@2.6.11-rc2 + kernel/people/akpm/patches/2.6/2.6.11-rc2/2.6.11-rc2-mm2/2.6.11-rc2-mm2.bz2
+This patch was already sent on:
+- 21 Nov 2004
 
-The "2.6.11-rc[V]-bk[W]" are maintained by Linus who integrates patches from Andrews's mm-tree,
-i. e. "patch-2.6.11-rc[V]-bk[W]" is a subset (selected patches) from Andrew's current
-"2.6.11-rc2-mm[I]" patchset.
+ drivers/video/savage/savagefb.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-Right?
-(What about the "-ac" patches? Are they also running into "2.6.11-rc[V]-bk[W]")
-
-Thanks for your patience
---Axel
+--- linux-2.6.10-rc2-mm2-full/drivers/video/savage/savagefb.c.old	2004-11-21 14:57:29.000000000 +0100
++++ linux-2.6.10-rc2-mm2-full/drivers/video/savage/savagefb.c	2004-11-21 14:58:53.000000000 +0100
+@@ -1458,7 +1458,7 @@
+ }
+ 
+ 
+-void savage_disable_mmio (struct savagefb_par *par)
++static void savage_disable_mmio (struct savagefb_par *par)
+ {
+ 	unsigned char val;
+ 
+@@ -2241,7 +2241,7 @@
+ 
+ /* ************************* init in-kernel code ************************** */
+ 
+-int __init savagefb_setup(char *options)
++static int __init savagefb_setup(char *options)
+ {
+ #ifndef MODULE
+ 	char *this_opt;
+@@ -2256,7 +2256,7 @@
+ 	return 0;
+ }
+ 
+-int __init savagefb_init(void)
++static int __init savagefb_init(void)
+ {
+ 	char *option;
+ 
 
 
 

@@ -1,63 +1,28 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: [BK FBDEV updates]
-Date: Mon, 6 Jan 2003 17:55:26 -0800 (PST)
+From: Jes Sorensen <jes@trained-monkey.org>
+Subject: Re: [BK FBDEV updates]
+Date: 06 Jan 2003 20:26:44 -0500
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.33.0301061753120.2196-100000@maxwell.earthlink.net>
-Mime-Version: 1.0
+Message-ID: <m3heclagx7.fsf@trained-monkey.org>
+References: <Pine.LNX.4.33.0301061753120.2196-100000@maxwell.earthlink.net>
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: James Simmons's message of "Mon, 6 Jan 2003 17:55:26 -0800 (PST)"
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@transmeta.com>
+To: James Simmons <jsimmons@infradead.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
+>>>>> "James" == James Simmons <jsimmons@infradead.org> writes:
 
-Linus, please do a
+James> Linus, please do a
+James> 	bk pull http://fbdev.bkbits.net:8080/fbdev-2.5
+James> This will update the following files:
 
-	bk pull http://fbdev.bkbits.net:8080/fbdev-2.5
+James,
 
-This will update the following files:
+You seem to have forgotten to include the unified diff in your posting
+posting to the list. Would you mind putting it somewhere.
 
- include/video/font.h            |   24
- arch/m68k/kernel/m68k_defs.c    |    2
- drivers/video/Makefile          |    3
- drivers/video/aty/atyfb_base.c  |    4
- drivers/video/console/fbcon.c   |   90 +-
- drivers/video/console/sticon.c  |   40 -
- drivers/video/console/sticore.c |    8
- drivers/video/fbmem.c           |    1
- drivers/video/i810/i810.h       |    2
- drivers/video/i810/i810_accel.c |   11
- drivers/video/i810/i810_dvt.c   |    2
- drivers/video/i810/i810_main.c  |   51 -
- drivers/video/i810/i810_main.h  |   79 --
- drivers/video/riva/Makefile     |    2
- drivers/video/riva/fbdev.c      | 1468 +++++++++++++++++++---------------------
- drivers/video/riva/nv_driver.c  |  212 +++++
- drivers/video/riva/riva_hw.c    |  350 +++++++--
- drivers/video/riva/rivafb.h     |   15
- drivers/video/sstfb.c           |  707 +++++++++----------
- drivers/video/sstfb.h           |   31
- include/linux/font.h            |   30
- 21 files changed, 1725 insertions(+), 1407 deletions(-)
-
-through these ChangeSets:
-
-<jsimmons@maxwell.earthlink.net> (03/01/06 1.972)
-   [RIVA FBDEV] Driver now uses its own fb_open and fb_release function again.
-   It has no ill effects. The drivers uses strickly hardware acceleration
-   so we don't need cfb_fillrect and cfb_copyarea.
-
-   Cleaned up font.h. Geerts orignal pacth broke them up into a font.h in
-   video and one in linux. Now I put them back together again in
-   include/linux. The m68k platform has been updated for this change.
-
-<jsimmons@maxwell.earthlink.net> (03/01/06 1.971)
-   Added resize support for the framebuffer console. Now you can change the
-   console size via stty. Also support for color palette changing on VC
-   switch is supported.
-
-<jsimmons@maxwell.earthlink.net> (03/01/06 1.970)
-   I810 fbdev updates. Cursor fix for ati mach 64 cards on big endian machines.
-   Buffer over flow fix for fbcon putcs function. C99 initializers for the
-   STI console drivers. Voodoo 1/2 and NVIDIA driver updates.
+Thanks,
+Jes

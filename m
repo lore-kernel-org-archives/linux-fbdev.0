@@ -1,80 +1,162 @@
-From: Nigel Cunningham <ncunningham@linuxmail.org>
-Subject: Devices don't get linked to their class.
-Date: Fri, 03 Sep 2004 15:02:31 +1000
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1094187751.2979.41.camel@laptop.cunninghams>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: [PATCH 1/5] fbdev: Speed up scrolling of tdfxfb
+Date: Sat, 4 Sep 2004 11:06:50 +0800
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <200409041106.51013.adaplas@hotpop.com>
+Reply-To: adaplas@pol.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C36GN-0000Pf-BZ
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 02 Sep 2004 22:05:27 -0700
-Received: from relay01.kbs.net.au ([203.220.32.149] ident=8)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1C36GM-0006fh-IG
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 02 Sep 2004 22:05:27 -0700
-Received: from [203.220.93.129] (helo=[203.220.93.129])
-	by relay01.kbs.net.au with esmtp (Exim 3.36 #2)
-	id 1C36GK-0000iW-00
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 03 Sep 2004 15:05:24 +1000
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S265222AbUIDDMQ@vger.kernel.org>
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, linux-kernel@vger.kernel.org
 
-Hi all.
+This patch speeds up scrolling of tdfxfb by maximizing var->yres_virtual so
+tdfxfb uses SCROLL_PAN_MOVE instead of SCROLL_REDRAW.  This is true whether
+CONFIG_FB_3DFX_ACCEL is set or not. This problem was reported by Paolo
+Ornati <ornati@fastwebnet.it> who also made substantial contributions to
+solve this problem.
 
-Some of my suspend2 users have reported that their displays go blank as
-soon as suspend starts writing to disk. I understand why. I suspend
-everything else except the storage device and it's parents at the start
-of writing the image.
+This patch also fixes compile errors when CONFIG_FB_3DFX_ACCEL is false.
 
-Interestingly, though, the issue doesn't occur with all display drivers,
-perhaps (I guess) because they haven't had PM support written yet.
-Having switched from the vesafb driver to the radeon one, I'm now able
-to reproduce the behaviour described above.
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
+---
 
-This morning I began work on addressing the problem. I thought the best
-approach would be to use device classes to find the struct dev for the
-frame buffer driver, and then use the same code I use for storage
-devices to avoid suspending the frame buffer until later. I successfully
-wrote a helper to find the 'graphics' class that fbmem.c creates, but
-now I've run into a more serious issue. register_framebuffer (in the
-same time) calls class_simple_device_add with a NULL for the pointer to
-the struct device. Is it possible for this issue to be addressed? I can
-see that (at least in the Radeon case) one could simply call
-register_framebuffer with an additional parameter, but thought I'd email
-you and seek your wisdom.
+ Makefile |    5 ++---
+ tdfxfb.c |   47 +++++++++++++++++++++++++++++++----------------
+ 2 files changed, 33 insertions(+), 19 deletions(-)
 
-By the way, am I missing something? It looks like framebuffer_alloc does
-nothing with the dev parameter passed to it.
+diff -uprN linux-2.6.9-rc1-mm3-orig/drivers/video/Makefile linux-2.6.9-rc1-mm3/drivers/video/Makefile
+--- linux-2.6.9-rc1-mm3-orig/drivers/video/Makefile	2004-09-04 04:26:37.000000000 +0800
++++ linux-2.6.9-rc1-mm3/drivers/video/Makefile	2004-09-04 08:23:53.176782760 +0800
+@@ -34,10 +34,9 @@ obj-$(CONFIG_FB_CYBER)            += cyb
+ obj-$(CONFIG_FB_CYBER2000)        += cyber2000fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+ obj-$(CONFIG_FB_GBE)              += gbefb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+ obj-$(CONFIG_FB_SGIVW)            += sgivwfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_3DFX)             += tdfxfb.o tdfxfb_lib.o
+-tdfxfb_lib-y                      := cfbimgblt.o
++obj-$(CONFIG_FB_3DFX)             += tdfxfb.o cfbimgblt.o
+ ifneq ($(CONFIG_FB_3DFX_ACCEL),y)
+-tdfxfb_lib-y                      += cfbfillrect.o cfbcopyarea.o
++obj-$(CONFIG_FB_3DFX)             += cfbfillrect.o cfbcopyarea.o
+ endif
+ obj-$(CONFIG_FB_MAC)              += macfb.o macmodes.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o 
+ obj-$(CONFIG_FB_HP300)            += hpfb.o cfbfillrect.o cfbimgblt.o
+diff -uprN linux-2.6.9-rc1-mm3-orig/drivers/video/tdfxfb.c linux-2.6.9-rc1-mm3/drivers/video/tdfxfb.c
+--- linux-2.6.9-rc1-mm3-orig/drivers/video/tdfxfb.c	2004-08-26 23:04:25.000000000 +0800
++++ linux-2.6.9-rc1-mm3/drivers/video/tdfxfb.c	2004-09-04 08:23:48.520490624 +0800
+@@ -168,7 +168,6 @@ static int banshee_wait_idle(struct fb_i
+ static void tdfxfb_fillrect(struct fb_info *info, const struct fb_fillrect *rect);
+ static void tdfxfb_copyarea(struct fb_info *info, const struct fb_copyarea *area);  
+ static void tdfxfb_imageblit(struct fb_info *info, const struct fb_image *image); 
+-static int tdfxfb_cursor(struct fb_info *info, struct fb_cursor *cursor);
+ #endif /* CONFIG_FB_3DFX_ACCEL */
+ 
+ static struct fb_ops tdfxfb_ops = {
+@@ -183,13 +182,12 @@ static struct fb_ops tdfxfb_ops = {
+ 	.fb_fillrect	= tdfxfb_fillrect,
+ 	.fb_copyarea	= tdfxfb_copyarea,
+ 	.fb_imageblit	= tdfxfb_imageblit,
+-	.fb_cursor	= tdfxfb_cursor,
+ #else
+ 	.fb_fillrect	= cfb_fillrect,
+ 	.fb_copyarea	= cfb_copyarea,
+ 	.fb_imageblit	= cfb_imageblit,
+-	.fb_cursor	= soft_cursor,
+ #endif
++	.fb_cursor	= soft_cursor,
+ };
+ 
+ /*
+@@ -502,15 +500,11 @@ static int tdfxfb_check_var(struct fb_va
+ 		return -EINVAL;
+ 	}
+ 
+-	if (var->xres != var->xres_virtual) {
+-		DPRINTK("virtual x resolution != physical x resolution not supported\n");
+-		return -EINVAL;
+-	}
++	if (var->xres != var->xres_virtual)
++		var->xres_virtual = var->xres;
+ 
+-	if (var->yres > var->yres_virtual) {
+-		DPRINTK("virtual y resolution < physical y resolution not possible\n");
+-		return -EINVAL;
+-	}
++	if (var->yres > var->yres_virtual)
++		var->yres_virtual = var->yres;
+ 
+ 	if (var->xoffset) {
+ 		DPRINTK("xoffset not supported\n");
+@@ -539,9 +533,12 @@ static int tdfxfb_check_var(struct fb_va
+ 	}
+   
+ 	if (lpitch * var->yres_virtual > info->fix.smem_len) {
+-		DPRINTK("no memory for screen (%ux%ux%u)\n",
+-		var->xres, var->yres_virtual, var->bits_per_pixel);
+-		return -EINVAL;
++		var->yres_virtual = info->fix.smem_len/lpitch;
++		if (var->yres_virtual < var->yres) {
++			DPRINTK("no memory for screen (%ux%ux%u)\n",
++			var->xres, var->yres_virtual, var->bits_per_pixel);
++			return -EINVAL;
++		}
+ 	}
+   
+ 	if (PICOS2KHZ(var->pixclock) > par->max_pixclock) {
+@@ -1030,7 +1027,9 @@ static void tdfxfb_imageblit(struct fb_i
+ 	}
+ 	banshee_wait_idle(info);
+ }
++#endif /* CONFIG_FB_3DFX_ACCEL */
+ 
++#ifdef TDFX_HARDWARE_CURSOR
+ static int tdfxfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ {
+ 	struct tdfx_par *par = (struct tdfx_par *) info->par;
+@@ -1167,7 +1166,7 @@ static int tdfxfb_cursor(struct fb_info 
+ 	spin_unlock_irqrestore(&par->DAClock, flags);
+ 	return 0;
+ }
+-#endif /* CONFIG_FB_3DFX_ACCEL */
++#endif
+ 
+ /**
+  *      tdfxfb_probe - Device Initializiation
+@@ -1183,7 +1182,7 @@ static int __devinit tdfxfb_probe(struct
+ {
+ 	struct tdfx_par *default_par;
+ 	struct fb_info *info;
+-	int size, err;
++	int size, err, lpitch;
+ 
+ 	if ((err = pci_enable_device(pdev))) {
+ 		printk(KERN_WARNING "tdfxfb: Can't enable pdev: %d\n", err);
+@@ -1288,6 +1287,22 @@ static int __devinit tdfxfb_probe(struct
+ 	if (!err || err == 4)
+ 		info->var = tdfx_var;
+ 
++	/* maximize virtual vertical length */
++	lpitch = info->var.xres_virtual * ((info->var.bits_per_pixel + 7) >> 3);
++	info->var.yres_virtual = info->fix.smem_len/lpitch;
++	if (info->var.yres_virtual < info->var.yres)
++		goto out_err;
++
++#ifdef CONFIG_FB_3DFX_ACCEL
++	/*
++	 * FIXME: Limit var->yres_virtual to 4096 because of screen artifacts
++	 * during scrolling. This is only present if 2D acceleration is
++	 * enabled.
++	 */
++	if (info->var.yres_virtual > 4096)
++		info->var.yres_virtual = 4096;
++#endif /* CONFIG_FB_3DFX_ACCEL */
++
+ 	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0) {
+ 		printk(KERN_WARNING "tdfxfb: Can't allocate color map\n");
+ 		goto out_err;
 
-Regards,
 
-Nigel
-
--- 
-Nigel Cunningham
-Pastoral Worker
-Christian Reformed Church of Tuggeranong
-PO Box 1004, Tuggeranong, ACT 2901
-
-Many today claim to be tolerant. True tolerance, however, can cope with others
-being intolerant.
-
-
-
--------------------------------------------------------
-This SF.Net email is sponsored by BEA Weblogic Workshop
-FREE Java Enterprise J2EE developer tools!
-Get your free copy of BEA WebLogic Workshop 8.1 today.
-http://ads.osdn.com/?ad_id=5047&alloc_id=10808&op=click
+ 

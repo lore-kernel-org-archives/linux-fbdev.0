@@ -1,24 +1,23 @@
-From: Francois Romieu <francois@fr.zoreil.com>
-Subject: Re: [patch] Re: GeForce 4 MX have no working frame buffer at all..
-Date: Sat, 21 Aug 2004 22:00:07 +0200
+From: Alexander Kern <alex.kern@gmx.de>
+Subject: Re: Framebuffer drivers maintainers
+Date: Sun, 22 Aug 2004 19:28:04 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040821200007.GA10966@electric-eye.fr.zoreil.com>
-References: <412729BC.5000102@mitose.net> <20040821111414.GA6818@electric-eye.fr.zoreil.com> <200408212009.30477.adaplas@hotpop.com> <41278A27.2070608@mitose.net>
+Message-ID: <200408221928.05205.alex.kern@gmx.de>
+References: <41270AD0.FE6C7970@orpatec.ch>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Byc3j-0005hC-3n
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 21 Aug 2004 13:01:51 -0700
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224] helo=fr.zoreil.com)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.34)
-	id 1Byc3h-0007Fo-7g
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 21 Aug 2004 13:01:51 -0700
+	id 1Byw8s-0004Xc-Ah
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 22 Aug 2004 10:28:30 -0700
+Received: from imap.gmx.net ([213.165.64.20] helo=mail.gmx.net)
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.34)
+	id 1Byw8r-0000p3-M7
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 22 Aug 2004 10:28:30 -0700
+In-Reply-To: <41270AD0.FE6C7970@orpatec.ch>
 Content-Disposition: inline
-In-Reply-To: <41278A27.2070608@mitose.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,39 +27,28 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Ploum Ploum <ploum@mitose.net>
-Cc: adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Otto Wyss <otto.wyss@orpatec.ch>, 'linux-kernel' <linux-kernel@vger.kernel.org>
 
-Ploum Ploum <ploum@mitose.net> :
-[...]
-> I've applied the mm3 patch from kernel.org and the patch supplied by=20
-> Fran=E7ois Romieu but there's no change at all.
+Am Samstag, 21. August 2004 10:41 schrieb Otto Wyss:
+> I've now updated the framebuffer driver list and hopefully listed each
+> current driver. It may not show the correct name so please suggest
+> corrections.
+>
+> For each driver its maintainer should be listed possibly with its
+> sourceforge.net user account in brackets. I'd like if only current
+> maintainers, who really take care of their drivers, are listed and none
+> who has done so in the past. Please any maintainer post a message to
+> linux-fbdev-devel or tell me where I can retrieve reliable information.
+>
+> I'd like to form a QA team which task is mostly to take care of not
+> maintained drivers. If you want to volunteer just leave me a message.
+>
+> O. Wyss
+HI, I'm care about atyfb driver in 2.6.x
 
-Bug of mine: I did not notice the lower part of the mask.
-
-> Note, I forget to say that I can enable the framebuffer but only at=20
-> 800x600.  If I put vga=3Dash (video=3Dvesafb), it simply won't recognis=
-e any=20
-> number that correspond to a higher resolution. Also, using the=20
-> framebuffer at 800x600 has a grave bug : once that X is started, I=20
-> cannot anymore see a console, only a black screen. those console works=20
-> perfectly (I can "blind" type on it) but I cannot see it.  Even if I=20
-> kill X, only a black screen remains.
-
-X messes with the hardware. You do not want to kill it.
-
-> I've put video=3Drivafb also, but then it simply doesn't work and boot =
-on=20
-> a non-fb console.
-
-Can you reproduce this test without nvidia proprietary module loaded at
-startup ?
-
-As a minimum there should be some messages prefixed by "rivafb: xxx".
-
---
-Ueimor
+bye Alex Kern
 
 
 -------------------------------------------------------

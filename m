@@ -1,17 +1,17 @@
-From: Andreas Henriksson <andreas@fjortis.info>
-Subject: Re: [FBDEV BK] Updates and fixes.
-Date: Tue, 15 Apr 2003 22:04:37 +0200
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] imsttfb 2.5.x
+Date: 15 Apr 2003 22:05:29 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030415200437.GA13773@gem>
-References: <20030414005814.6719915f.akpm@digeo.com> <Pine.LNX.4.44.0304152004350.8236-100000@phoenix.infradead.org>
+Message-ID: <1050437129.2266.6.camel@zion.wanadoo.fr>
+References: <Pine.LNX.4.44.0304152030500.8236-100000@phoenix.infradead.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from arnold.dormnet.his.se ([193.10.185.236] helo=smtp.dormnet.his.se)
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 195We5-0005Th-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 15 Apr 2003 13:03:09 -0700
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0304152004350.8236-100000@phoenix.infradead.org>
+Received: from amarseille-201-1-6-42.abo.wanadoo.fr ([80.11.137.42] helo=zion.wanadoo.fr)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 195WhZ-0007yv-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 15 Apr 2003 13:06:45 -0700
+In-Reply-To: <Pine.LNX.4.44.0304152030500.8236-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,58 +22,38 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: James Simmons <jsimmons@infradead.org>
-Cc: Andrew Morton <akpm@digeo.com>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
-
-On Tue, Apr 15, 2003 at 08:21:43PM +0100, James Simmons wrote:
-> > 	nVidia Corporation NV11 [GeForce2 MX] (rev b2)
-> > 
-> > this seems to work OK.  The penguins initially have a white background, then
-> > the background goes black, then they go away.  Perhaps that is intentional. 
-> > But it gets to a readable login prompt.
-> 
-> That is the stable code. As for the white background that is strange.
-> 
-
-This happens for me too (white background that goes away when there
-eventually is text that hits that area and overwrites it). 
-2.5.67 + extra stuff from bk + pnp + fbdev from april 11 with an Intel 8xx
-integrated card.
-
-$ lspci | grep VGA
-00:02.0 VGA compatible controller: Intel Corp. 82815 CGC [Chipset Graphics Controller] (rev 02)
-
-I also have an additional problem, the whole picture jumps slightly up
-and down all the time, plus I have a thin corruptionline from side to
-side that walks up and down on the screen. Like an old tv.
-
-My lilo.conf append line looks like this:
-append="video=i810fb:xres:1024,yres:768,bpp:16,hsync1:30,hsync2:82, \
-vsync1:50,vsync2:75,accel"
-
-I've tried several different modes but they all appear to give about the
-same effect.
-
-... and I'm using a TFT screen (ViewSonic ViewPanel VG181), if that
-matters (not using DVI though).
-
-At the same time I installed the 2.5 kernel I also upgraded to XFree86
-4.2.1 (from 4.1, the default in debian woody) and the exact same
-behaviour happened in X too (jumping slightly up and down, thin line of
-corruption and I couldn't get the xvideo extension to show anything but
-a blue screen in programs that used xv. [mplayer]). It all went away
-when I upgraded to XFree86 4.3. Don't know if that'll help you any but I
-thought it's better to mention it all.
+Cc: Boris Bezlaj <boris@gajba.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-I'll try a new kernel (with a newer fbdev patch) as soon as the dust
-settles. If you want me to try out any special patch or kernel version
-tell me and I'll do it as soon as I can.
+> Does readl handle byte swapping on the PPC. The registers expect the data 
+> feed to them to be little endian. Actually this driver will only work on 
+> the PPC and ix86 platform. Other big endian platforms are out of luck. 
 
+Yes, readl/writel will do the right thing. Use of in_le32 here is
+probably for pre-historical reasons ;)
 
-Regards,
-Andreas Henriksson
+All PCI capabale big endian platforms shall have proper byteswapping
+readl/writel.
+
+> P.S
+>    This whole issue really sucks. I really wish there was a clean standard 
+> api to this. 
+
+There is one, and it's readl/writel ;)
+
+The only real problem is that currently, we lack equivalent of the "s"
+versions of in/out macros for mmio. This is a bit annoying for the few
+rare case where they would be useful as those shouldn't byteswap, but
+re-implementing with __raw_read/writel (which doesn't byteswap neither)
+is nasty because it exposes the barrier problem to the driver.
+
+It would be convenient to define {read,write}s{b,w,l} so the IO
+accessors and MMIO accessors apre perfectly symetric, but that's an
+old debate...
+ 
+Ben.
+
 
 
 -------------------------------------------------------

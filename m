@@ -1,24 +1,24 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [PATCH 6/8] fbcon/fbdev: Remove fbc
-Date: Wed, 3 Nov 2004 10:37:13 +0800
-Message-ID: <200411031037.15235.adaplas@hotpop.com>
-References: <82235870BEB@vcnet.vc.cvut.cz> <200411030512.16925.adaplas@hotpop.com> <20041103001725.GB24964@vana.vc.cvut.cz>
+Subject: Re: [PATCH 7/8] fbdev: atyfb_base.c requires atyfb_cursor()
+Date: Wed, 3 Nov 2004 10:39:58 +0800
+Message-ID: <200411031039.58932.adaplas@hotpop.com>
+References: <200411021946.26862.adaplas@hotpop.com> <200411030531.36468.adaplas@hotpop.com> <20041102222645.GA20934@sci.fi>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CPB1z-00047f-UZ
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Nov 2004 18:37:51 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.71])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CPB1y-00035v-D1
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Nov 2004 18:37:51 -0800
+	id 1CPB4K-0004VS-Gm
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Nov 2004 18:40:16 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1CPB4K-0001kE-3p
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Nov 2004 18:40:16 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 9D7AC118F293
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed,  3 Nov 2004 02:37:30 +0000 (UTC)
-In-Reply-To: <20041103001725.GB24964@vana.vc.cvut.cz>
+	by smtp-out.hotpop.com (Postfix) with SMTP id 54F649101B7
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed,  3 Nov 2004 02:40:02 +0000 (UTC)
+In-Reply-To: <20041102222645.GA20934@sci.fi>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -30,27 +30,34 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Petr Vandrovec <vandrove@vc.cvut.cz>, adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, akpm@osdl.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-fbdev-devel@lists.sourceforge.net, Ville =?iso-8859-1?q?Syrj=E4l=E4?= <syrjala@sci.fi>
 
-On Wednesday 03 November 2004 08:17, Petr Vandrovec wrote:
-> On Wed, Nov 03, 2004 at 05:12:15AM +0800, Antonino A. Daplas wrote:
-> > On Tuesday 02 November 2004 19:46, Petr Vandrovec wrote:
-> > > On  2 Nov 04 at 19:46, Antonino A. Daplas wrote:
-> > Why not just leave the hardware uninitialized after register_framebuffer?
-> > Then, initialize it at the first call to xxxfb_open()?  We can even check
-> > a flag so we do this only once. This way if people accidentally enabled
-> > matroxfb but forgot to enable fbcon, they will still get a usable vga
-> > console.
+On Wednesday 03 November 2004 06:26, Ville Syrj=E4l=E4 wrote:
+> On Wed, Nov 03, 2004 at 05:31:36AM +0800, Antonino A. Daplas wrote:
+> > On Tuesday 02 November 2004 21:58, Ville Syrj=E4l=E4 wrote:
+> > > On Tue, Nov 02, 2004 at 07:46:26PM +0800, Antonino A. Daplas wrote:
+> > > > atyfb_base.c requires atyfb_cursor, but it is only available for
+> > > > linking if CONFIG_FB_ATY_CT=3Dy.
+> > > > This patch moves the .o file to the CONFIG_FB_ATY rule.
+> > >
+> > > Here's a better fix. It was a part of my swcursor patch which was
+> > > partially included. Looks like Alex accidentally dropped this part.
+> > >
+> > >
+> > > Fix atyfb cursor problems:
+> > > - oops with noaccel option
+> > > - CONFIG_FB_ATY_CT dependency problem
+> >
+> > If I read Alex's patch correctly, it looks like the aty has a working
+> > hardware cursor implementation, is this correct?  Then a better patch m=
+ay
+> > be to use soft_cursor if noaccel is true, and atyfb_cursor otherwise.
 >
-> Because hardware driver is supposed to drive hardware.   Plus I do not
-> agree with paradigm that open should do something special unless each open
-> provides completely separate view (like opening /dev/ptmx).  Harddisk also
-> does not spin up when you open /dev/hda and does not stop when you close
-> it. Petr Vandrovec
+> That is how things work with this patch. aty_init_cursor() sets fb_cursor
+> to atyfb_cursor.
 
-Ok, we'll do the flag in matroxfb_set_par().
+Ah, ok, did not see that.
 
 Tony
 

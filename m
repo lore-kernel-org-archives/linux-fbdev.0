@@ -1,17 +1,16 @@
-From: Antonino Daplas <adaplas@pol.net>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: fb_imageblit semantic
-Date: 17 Mar 2003 22:24:31 +0800
+Date: Mon, 17 Mar 2003 15:46:59 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1047911032.2684.79.camel@localhost.localdomain>
-References: <Pine.GSO.4.21.0303171436170.17453-100000@vervain.sonytel.be>
+Message-ID: <Pine.GSO.4.21.0303171545040.17453-100000@vervain.sonytel.be>
+References: <1047911032.2684.79.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from pine.compass.com.ph ([202.70.96.37])
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18uvax-00051V-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Mar 2003 06:28:07 -0800
-In-Reply-To: <Pine.GSO.4.21.0303171436170.17453-100000@vervain.sonytel.be>
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18uvuz-0002Si-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Mar 2003 06:48:50 -0800
+In-Reply-To: <1047911032.2684.79.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,56 +20,63 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Antonino Daplas <adaplas@pol.net>
 Cc: Petr Vandrovec <vandrove@vc.cvut.cz>, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Mon, 2003-03-17 at 21:47, Geert Uytterhoeven wrote:
->
-> IMHO always using an image depth of 8 is fine. That's a nice trade off between
-> genericity and easy access of image data.
+On 17 Mar 2003, Antonino Daplas wrote:
+> On Mon, 2003-03-17 at 21:47, Geert Uytterhoeven wrote:
+> > BTW, I just realized there's no need to distinguish between monochrome copy and
+> > monochrome-to-color expansion. The monochrome logo code just has to write the
+> > correct values to fb_image.[fb]gcolor. I.e. all zeroes or all ones (number of
+> > bits = var.bits_per_pixel, so it works for 8-bit monochrome, too).
+> > 
 > 
-> Except for monochrome, there I prefer a depth of 1, since doing 1->8 and 8->1
-> in a row is a bit too wasteful.
+> I remember mentioning this to you before, and you said that there might
+> be rare cases that fgcolor can be equal to bgcolor.  However, using -1
+> instead for bg_color/fg_color may work, at least for the current setup
+> and only for monochrome, (except perhaps 32-bit monochrome, if there is
+> such a thing)
+
+No, you wanted to distinguish between monochrome expansion and color copy by
+setting fb_image.[fb]gcolor to -1.
+
+> I still prefer splitting fb_imageblit() into two though, and still keep
+> image->depth for logo drawing only, to allow for future expansion.
+
+OK.
+
+> > > Do we still use the LUT?  
+> > 
+> > Yes. An alternative is to enlarge the pseudo palette to 256 entries (if there
 > 
-
-An exception to the rule :-)  Well, I guess if it will significantly
-benefit monochrome drivers...
-
-> BTW, I just realized there's no need to distinguish between monochrome copy and
-> monochrome-to-color expansion. The monochrome logo code just has to write the
-> correct values to fb_image.[fb]gcolor. I.e. all zeroes or all ones (number of
-> bits = var.bits_per_pixel, so it works for 8-bit monochrome, too).
+> Yes.  Which also means logo drawing will also work for quirky drivers,
+> and the upper layer will be finally totally independent of the low level
+> drivers.
 > 
-
-I remember mentioning this to you before, and you said that there might
-be rare cases that fgcolor can be equal to bgcolor.  However, using -1
-instead for bg_color/fg_color may work, at least for the current setup
-and only for monochrome, (except perhaps 32-bit monochrome, if there is
-such a thing)
-
-I still prefer splitting fb_imageblit() into two though, and still keep
-image->depth for logo drawing only, to allow for future expansion.
-. 
-> > Do we still use the LUT?  
+> > are enough number of colors). But since imageblit is done for the logo only,
+> > doing the transform from LUT index to pixel value in imageblit is OK, I think.
+> > 
 > 
-> Yes. An alternative is to enlarge the pseudo palette to 256 entries (if there
+> Yes, I also prefer referring to the LUT whatever the format even for
+> character drawing.  I don't expect any noticeable performance penalty
+> except for logo drawing.  The way it's currently done is because,
+> looking at all drivers, not one fills up the pseudo_palette when bpp <=
+> 8.
 
-Yes.  Which also means logo drawing will also work for quirky drivers,
-and the upper layer will be finally totally independent of the low level
-drivers.
+There are some, that have RGB332 truecolor.
 
-> are enough number of colors). But since imageblit is done for the logo only,
-> doing the transform from LUT index to pixel value in imageblit is OK, I think.
-> 
+Gr{oetje,eeting}s,
 
-Yes, I also prefer referring to the LUT whatever the format even for
-character drawing.  I don't expect any noticeable performance penalty
-except for logo drawing.  The way it's currently done is because,
-looking at all drivers, not one fills up the pseudo_palette when bpp <=
-8.
+						Geert
 
-Tony
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

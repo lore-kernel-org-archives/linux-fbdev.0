@@ -1,78 +1,138 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Radeon framebuffer weirdness in -mm2
-Date: Mon, 24 Jan 2005 15:00:37 +1100
-Message-ID: <1106539238.5210.16.camel@gaston>
-References: <20050120232122.GF3867@waste.org>
-	 <20050120153921.11d7c4fa.akpm@osdl.org> <20050120234844.GF12076@waste.org>
-	 <20050120160123.14f13ca6.akpm@osdl.org> <20050121035758.GH12076@waste.org>
-	 <20050120200530.4d5871f9.akpm@osdl.org>
-	 <20050120200711.4313dbcc.akpm@osdl.org>  <20050121060928.GI12076@waste.org>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Adrian Bunk <bunk@stusta.de>
+Subject: [2.6 patch] small drivers/video/kyro/ cleanups
+Date: Tue, 25 Jan 2005 12:27:46 +0100
+Message-ID: <20050125112746.GE30909@stusta.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CsvPJ-0007rL-91
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 23 Jan 2005 20:00:53 -0800
-Received: from gate.crashing.org ([63.228.1.57])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1CsvPH-000765-Ow
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 23 Jan 2005 20:00:53 -0800
-In-Reply-To: <20050121060928.GI12076@waste.org>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261898AbVAYLar@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Matt Mackall <mpm@selenic.com>
-Cc: Andrew Morton <akpm@osdl.org>, Linux Kernel list <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@osdl.org>
+Cc: lethal@linux-sh.org, Antonino Daplas <adaplas@pol.net>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, 2005-01-20 at 22:09 -0800, Matt Mackall wrote:
+This patch does the following cleanups under drivers/video/kyro/ :
+- remove an unused global varaible from STG4000Ramdac.c
+- make some needlessly global code static
 
-> 
-> It's something in this batch. Which is good, as I'd be a bit
-> disappointed if the "vt leakage" were somehow attributable to the fb
-> layer. More bisection after dinner.
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-Regarding the radeonfb reboot problem, can you try this patch on
-top of -mm2 ?
+---
 
---- linux-work.orig/drivers/video/aty/radeon_base.c	2005-01-24 12:19:09.000000000 +1100
-+++ linux-work/drivers/video/aty/radeon_base.c	2005-01-24 14:59:14.000000000 +1100
-@@ -2435,13 +2435,16 @@
-  
- 	radeonfb_pm_exit(rinfo);
+ drivers/video/kyro/STG4000InitDevice.c    |    4 ++--
+ drivers/video/kyro/STG4000OverlayDevice.c |    4 ++--
+ drivers/video/kyro/STG4000Ramdac.c        |    1 -
+ drivers/video/kyro/fbdev.c                |   14 ++++++++------
+ include/video/kyro.h                      |    2 --
+ 5 files changed, 12 insertions(+), 13 deletions(-)
+
+This patch was already sent on:
+- 21 Nov 2004
+
+--- linux-2.6.10-rc2-mm2-full/include/video/kyro.h.old	2004-11-21 03:16:55.000000000 +0100
++++ linux-2.6.10-rc2-mm2-full/include/video/kyro.h	2004-11-21 03:17:07.000000000 +0100
+@@ -49,9 +49,7 @@
+ extern unsigned int kyro_dev_fb_size(void);
+ extern unsigned int kyro_dev_regs_size(void);
  
-+#if 0
- 	/* restore original state
- 	 * 
--	 * Doesn't quite work yet, possibly because of the PPC hacking
--	 * I do on startup, disable for now. --BenH
-+	 * Doesn't quite work yet, I suspect if we come from a legacy
-+	 * VGA mode (or worse, text mode), we need to do some VGA black
-+	 * magic here that I know nothing about. --BenH
- 	 */
-         radeon_write_mode (rinfo, &rinfo->init_state, 1);
-- 
-+ #endif
-+
- 	del_timer_sync(&rinfo->lvds_timer);
+-extern int kyro_dev_overlay_create(u32 width, u32 height, int bLinear);
+ extern u32 kyro_dev_overlay_offset(void);
+-extern int kyro_dev_overlay_viewport_set(u32 x, u32 y, u32 width, u32 height);
  
- #ifdef CONFIG_MTRR
-
-
-
-
--------------------------------------------------------
-This SF.Net email is sponsored by: IntelliVIEW -- Interactive Reporting
-Tool for open source databases. Create drag-&-drop reports. Save time
-by over 75%! Publish reports on the web. Export to DOC, XLS, RTF, etc.
-Download a FREE copy at http://www.intelliview.com/go/osdn_nl
+ /*
+  * benedict.gaster@superh.com
+--- linux-2.6.10-rc2-mm2-full/drivers/video/kyro/fbdev.c.old	2004-11-21 03:17:15.000000000 +0100
++++ linux-2.6.10-rc2-mm2-full/drivers/video/kyro/fbdev.c	2004-11-21 15:48:10.000000000 +0100
+@@ -307,7 +307,7 @@
+ };
+ 
+ /* Accessors */
+-int kyro_dev_video_mode_set(struct fb_info *info)
++static int kyro_dev_video_mode_set(struct fb_info *info)
+ {
+ 	struct kyrofb_info *par = (struct kyrofb_info *)info->par;
+ 
+@@ -339,8 +339,8 @@
+ 	return 0;
+ }
+ 
+-int kyro_dev_overlay_create(u32 ulWidth,
+-			    u32 ulHeight, int bLinear)
++static int kyro_dev_overlay_create(u32 ulWidth,
++				   u32 ulHeight, int bLinear)
+ {
+ 	u32 offset;
+ 	u32 stride, uvStride;
+@@ -376,7 +376,7 @@
+ 	return 0;
+ }
+ 
+-int kyro_dev_overlay_viewport_set(u32 x, u32 y, u32 ulWidth, u32 ulHeight)
++static int kyro_dev_overlay_viewport_set(u32 x, u32 y, u32 ulWidth, u32 ulHeight)
+ {
+ 	if (deviceInfo.ulOverlayOffset == 0)
+ 		/* probably haven't called CreateOverlay yet */
+@@ -558,7 +558,8 @@
+ 	return 0;
+ }
+ 
+-int __init kyrofb_setup(char *options)
++#ifndef MODULE
++static int __init kyrofb_setup(char *options)
+ {
+ 	char *this_opt;
+ 
+@@ -583,6 +584,7 @@
+ 
+ 	return 0;
+ }
++#endif
+ 
+ static int kyrofb_ioctl(struct inode *inode, struct file *file,
+ 			unsigned int cmd, unsigned long arg,
+@@ -786,7 +788,7 @@
+ 	kfree(info);
+ }
+ 
+-int __init kyrofb_init(void)
++static int __init kyrofb_init(void)
+ {
+ #ifndef MODULE
+ 	char *option = NULL;
+--- linux-2.6.10-rc2-mm2-full/drivers/video/kyro/STG4000Ramdac.c.old	2004-11-21 03:18:52.000000000 +0100
++++ linux-2.6.10-rc2-mm2-full/drivers/video/kyro/STG4000Ramdac.c	2004-11-21 03:19:00.000000000 +0100
+@@ -18,7 +18,6 @@
+ 
+ static u32 STG_PIXEL_BUS_WIDTH = 128;	/* 128 bit bus width      */
+ static u32 REF_CLOCK = 14318;
+-STG4000REG __iomem *pSTGReg;
+ 
+ int InitialiseRamdac(volatile STG4000REG __iomem * pSTGReg,
+ 		     u32 displayDepth,
+--- linux-2.6.10-rc2-mm2-full/drivers/video/kyro/STG4000OverlayDevice.c.old	2004-11-21 03:19:34.000000000 +0100
++++ linux-2.6.10-rc2-mm2-full/drivers/video/kyro/STG4000OverlayDevice.c	2004-11-21 03:20:03.000000000 +0100
+@@ -42,8 +42,8 @@
+ #define STG4000_OVRL_MAX_HEIGHT 576
+ 
+ /* Decimation and Scaling */
+-u32 adwDecim8[33] = {
+-	0xffffffff, 0xfffeffff, 0xffdffbff, 0xfefefeff, 0xfdf7efbf,
++static u32 adwDecim8[33] = {
++	    0xffffffff, 0xfffeffff, 0xffdffbff, 0xfefefeff, 0xfdf7efbf,
+ 	    0xfbdf7bdf, 0xf7bbddef, 0xeeeeeeef, 0xeeddbb77, 0xedb76db7,
+ 	    0xdb6db6db, 0xdb5b5b5b, 0xdab5ad6b, 0xd5ab55ab, 0xd555aaab,
+ 	    0xaaaaaaab, 0xaaaa5555, 0xaa952a55, 0xa94a5295, 0xa5252525,
+--- linux-2.6.10-rc2-mm2-full/drivers/video/kyro/STG4000InitDevice.c.old	2004-11-21 03:20:23.000000000 +0100
++++ linux-2.6.10-rc2-mm2-full/drivers/video/kyro/STG4000InitDevice.c	2004-11-21 03:20:49.000000000 +0100
+@@ -79,8 +79,8 @@
+     for(i=0;i<X;i++) count++; \
+ }
+ 
+-u32 InitSDRAMRegisters(volatile STG4000REG __iomem *pSTGReg, u32 dwSubSysID,
+-			 u32 dwRevID)
++static u32 InitSDRAMRegisters(volatile STG4000REG __iomem *pSTGReg,
++			      u32 dwSubSysID, u32 dwRevID)
+ {
+ 	u32 adwSDRAMArgCfg0[] = { 0xa0, 0x80, 0xa0, 0xa0, 0xa0 };
+ 	u32 adwSDRAMCfg1[] = { 0x8732, 0x8732, 0xa732, 0xa732, 0x8732 };

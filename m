@@ -1,23 +1,13 @@
-From: Richard Smith <rsmith@bitworks.com>
-Subject: Compiling Rage xlinit.c
-Date: Tue, 11 May 2004 17:13:16 -0500
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: Current discussion about the future of free
+ software graphics
+Date: Wed, 12 May 2004 00:10:22 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <40A14FFC.102@bitworks.com>
-References: <Pine.LNX.4.44.0405110048330.8016-100000@phoenix.infradead.org>
-Reply-To: rsmith@bitworks.com
+Message-ID: <Pine.LNX.4.44.0405120008510.17349-100000@phoenix.infradead.org>
+References: <Pine.GSO.4.58.0405112205040.7748@waterleaf.sonytel.be>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BNfVd-00027D-PI
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 11 May 2004 15:13:57 -0700
-Received: from b44.xdsl.pgtc.com ([198.70.248.44] helo=bitworks.com)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1BNfVd-0004Hk-8Y
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 11 May 2004 15:13:57 -0700
-Received: from bitworks.com [192.168.1.22] by bitworks.com [127.0.0.1] with SMTP (MDaemon.v2.7.SP4.R) for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 May 2004 17:12:21 -0500
-In-Reply-To: <Pine.LNX.4.44.0405110048330.8016-100000@phoenix.infradead.org>
+In-Reply-To: <Pine.GSO.4.58.0405112205040.7748@waterleaf.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,20 +17,22 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: sottek <sottek@sottekland.com>, eich@pdx.freedesktop.org, agd5f@yahoo.com, michel@daenzer.net, keithp@keithp.com, jonsmirl@yahoo.com, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, dri-devel@lists.sourceforge.net
 
-How does one get the rage xlinit stuff to work.  I've enabled it in my 
-kernel build but it dosen't seem to be compiled and I don't see in the 
-Makefile any attempt to compile it.
 
-Does this get built for x86?
+> I don't think that's a good idea: dri-devel is limited to the platforms that
+> have a working DRI implementation, while linux-fbdev-devel is also frequented
+> by people from platforms without DRI.
+> 
+> And there we see a communication problem again: the DRI was started without
+> talking to fbdev people, IIRC...
+> 
+> Please unite our forces!
 
-Any anycase my attempt to compile it yeild an structure member dosen't 
-exist for pll->sclk_fb_div.  Checking the def for struct pll_ct shows 
-that sclk_fb_div is not a member of pll_ct.  So I don't see how this 
-would ever compile.
-
+I agree here. I apologize for my behavior. 
 
 
 

@@ -1,24 +1,26 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: Re: [PATCH] GeForce 5200 on rivafb
-Date: Thu, 16 Dec 2004 04:02:38 +0800
-Message-ID: <200412160402.39863.adaplas@hotpop.com>
-References: <200412120511.31725.adaplas@hotpop.com> <200412140547.22222.adaplas@hotpop.com> <7vr7lt8gii.fsf@assigned-by-dhcp.cox.net>
+From: Andrew Walrond <andrew@walrond.org>
+Subject: Re: Dual screen framebuffer development advice
+Date: Thu, 9 Dec 2004 09:25:10 +0000
+Message-ID: <200412090925.10768.andrew@walrond.org>
+References: <200406191455.56574.andrew@walrond.org> <200411222135.55027.andrew@walrond.org> <200411230614.03946.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CefMQ-0005PO-OO
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 15 Dec 2004 12:02:58 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CefMQ-0008Tb-1E
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 15 Dec 2004 12:02:58 -0800
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 31D40B93279
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 15 Dec 2004 20:02:44 +0000 (UTC)
-In-Reply-To: <7vr7lt8gii.fsf@assigned-by-dhcp.cox.net>
+	id 1Cet2e-0003EH-ES
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 16 Dec 2004 02:39:28 -0800
+Received: from [62.24.231.113] (helo=cenedra.walrond.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1Cet2d-0001tr-Gp
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 16 Dec 2004 02:39:28 -0800
+Received: from [62.24.231.115] (helo=orac.walrond.org)
+	by cenedra.walrond.org with esmtp (Exim 4.34)
+	id 1CcKXu-0001EM-Td
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 09 Dec 2004 09:25:11 +0000
+In-Reply-To: <200411230614.03946.adaplas@hotpop.com>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -31,47 +33,36 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Junio C Hamano <junkio@cox.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Tuesday 14 December 2004 15:51, Junio C Hamano wrote:
-> >>>>> "AAD" == Antonino A Daplas <adaplas@hotpop.com> writes:
+On Monday 22 Nov 2004 22:14, Antonino A. Daplas wrote:
+> On Tuesday 23 November 2004 05:35, Andrew Walrond wrote:
+> >
+> > I've got this working nicely now. I have a recent agp nvidia card and an
+> > old pci matrox millenium in this dual opteron machine running 64bit
+> > linux. I boot into a console on the matrox using the built-in matroxfb
+> > driver, then startx which runs on the nvidia card using the nv driver. I
+> > can then work on my fb application in X, viewing the output on the second
+> > monitor via the matrox card. Nice!
 >
-> AAD> Can you try this patch and enable nvidiafb-i2c. It adds your monitor
-> model AAD> to the database of displays with broken edid's and attempts a
-> fix. It AAD> checks first if the monitor is GTF capable, and if it is, sets
-> the input AAD> type from digital to analog. (I don't think digital inputs
-> can be GTF AAD> capable).
->
-> AAD> Apply this patch too, I forgot to adjust the checksum.
->
-> Thanks as always for a quick help.
->
-> With those two patches, your fixup message appears in the boot
-> log 6 times (is it expected?).  The monitor does not go blank
 
-Yes, it should be printed only once. 
+I've just done a bk pull from linus and build a new kernel (was using post rc2 
+before) and now this nice scheme (see above) fails to work:
 
-> anymore; it safely defaults to CRTCNumber 0.  Overall, it is as
-> if I am using your nvidiafb driver without nvidia-i2c ;-).
+When I 'startx', the X log complains about no core keyboard, my usb keyboard 
+stops responding and both screens go blank. I can only get access by ssh from 
+another machine.
 
-No, of course not.  There are certain advantages:
+Nothing changed other than kernel; using same .config.
 
-1. Without boot options, your display will automatically go to
-   1024x768@85 Hz, since this is the preferred timing.
+If I boot on rivafb console instead of matroxfb, startx and keyboard work 
+fine.
 
-2. The driver will refuse modes that exceeds the monitor's operating.
+Before I start hunting down the problem; Do any recent changes spring to mind?
 
-3.  Because your display is GTF capable, all you need to do is:
+Thanks
 
-fbset -xres 1600 -yres 1200 /* xres and yres can be any value */
-
-and as long as #2 is satisfied, the modeline for 1600x1200 at the highest
-refresh rate will be computed, no need to enter a modline in /etc/fb.modes.
-
-Tony
-
-
+Andrew
 
 
 -------------------------------------------------------

@@ -1,22 +1,23 @@
-From: Mail Delivery Service <postmaster@iol.it>
-Subject: Delivery Status Notification
-Date: Thu, 29 Apr 2004 09:22:31 +0200
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
+ one works ; -)
+Date: Thu, 29 Apr 2004 10:28:39 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <408696F20198AC78@smtp8.libero.it>
+Message-ID: <Pine.GSO.4.58.0404291016100.17712@waterleaf.sonytel.be>
+References: <1083194942.21436.96.camel@gaston>
+ <Pine.LNX.4.44.0404290106150.3125-100000@phoenix.infradead.org>
+ <20040429003852.GB24584@guug.org>
 Mime-Version: 1.0
-Content-Type: Multipart/Report; report-type=delivery-status; boundary="========/408696F20198AC77/smtp8.libero.it"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BJ5sU-0000FM-72
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 29 Apr 2004 00:22:38 -0700
-Received: from smtp8.libero.it ([193.70.192.92])
+	id 1BJ6uj-0003sh-Ce
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 29 Apr 2004 01:29:01 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BJ5sT-0000iq-P6
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 29 Apr 2004 00:22:37 -0700
-Received: from smtp8.libero.it (193.70.192.92) by smtp8.libero.it (7.0.027-DD01)
-        id 4086970100482D94 for linux-fbdev-devel@lists.sourceforge.net; Thu, 29 Apr 2004 09:22:31 +0200
-Received: by smtp8.libero.it (7.0.027-DD01) id 408696F20198AC7A for linux-fbdev-devel@lists.sourceforge.net; Thu, 29 Apr 2004 09:22:31 +0200
+	id 1BJ6ui-0006E8-SU
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 29 Apr 2004 01:29:01 -0700
+In-Reply-To: <20040429003852.GB24584@guug.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,52 +27,35 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Otto Solares <solca@guug.org>
+Cc: James Simmons <jsimmons@infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, John Zielinski <grim@undead.cc>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-This multi-part MIME message contains a Delivery Status Notification.
-If you can see this text, your mail client may not be able to understand MIME
-formatted messages or DSNs (see RFC 2045 through 2049 for general MIME
-information and RFC 1891 through 1894 for DSN specific information).
+On Wed, 28 Apr 2004, Otto Solares wrote:
+> On Thu, Apr 29, 2004 at 01:26:57AM +0100, James Simmons wrote:
+> > I plan to put in sysfs a way to cat a string to
+> > change the resolution using modedb.
+>
+> nice!.
+>
+> > Then you add to the modedb. Right now we lack that functionalty.
+>
+> Is not modedb marked __init so it's lost to userspace?  If not how
+> can i use modedb from userspace?
 
---========/408696F20198AC77/smtp8.libero.it
-Content-Type: text/plain; charset=iso-8859-1
+Not anymore (since 2.6.5-rc1).
 
-Your message was refused by recipient's server filtering program.
-Reason given was as follows:
+Gr{oetje,eeting}s,
 
-Disallowed attach type
+						Geert
 
---========/408696F20198AC77/smtp8.libero.it
-Content-Type: Message/Delivery-Status
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Reporting-MTA: dns; smtp8.libero.it
-Received-from-MTA: dns; libero.it (201.2.210.122)
-Arrival-Date: Thu, 29 Apr 2004 09:22:31 +0200
-
-Final-Recipient: rfc822; r.ragusa@libero.it
-Action: Failed
-Status: 5.7.1 (delivery not authorized, message refused)
-
---========/408696F20198AC77/smtp8.libero.it
-Content-Type: Text/RFC822-headers
-
-Return-Path: <linux-fbdev-devel@lists.sourceforge.net>
-Received: from libero.it (201.2.210.122) by smtp8.libero.it (7.0.027-DD01)
-        id 408696F20198AC77 for r.ragusa@libero.it; Thu, 29 Apr 2004 09:22:31 +0200
-From: linux-fbdev-devel@lists.sourceforge.net
-To: r.ragusa@libero.it
-Subject: Mail Delivery (failure r.ragusa@libero.it)
-Date: Wed, 21 Apr 2004 00:01:36 -0300
-MIME-Version: 1.0
-Content-Type: multipart/related;
-	type="multipart/alternative";
-	boundary="----=_NextPart_000_001B_01C0CA80.6B015D10"
-X-Priority: 3
-X-MSMail-Priority: Normal
-
-
---========/408696F20198AC77/smtp8.libero.it--
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

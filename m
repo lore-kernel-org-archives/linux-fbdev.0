@@ -1,24 +1,22 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Generic framebuffer driver
-Date: Fri, 20 Aug 2004 18:09:34 +0200 (MEST)
+From: Kronos <kronos@people.it>
+Subject: Re: Re: 2.6.8.1-mm2
+Date: Fri, 20 Aug 2004 18:20:45 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0408201805270.6741@waterleaf.sonytel.be>
-References: <41261BF3.19B87A64@orpatec.ch>
+Message-ID: <20040820162045.GB5184@dreamland.darkstar.lan>
+References: <20040819014204.2d412e9b.akpm@osdl.org> <20040820005019.GB6374@logos.cnet> <20040819230850.09d7d274.akpm@osdl.org> <200408201711.26091.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1ByBxX-0007kJ-T3
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 20 Aug 2004 09:09:43 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1ByBxX-0000YO-7c
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 20 Aug 2004 09:09:43 -0700
-Received: from waterleaf.sonytel.be (mail.sonytel.be [43.221.60.197])
-	by witte.sonytel.be (8.12.10/8.12.10) with ESMTP id i7KG9Zn1005491
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 20 Aug 2004 18:09:35 +0200 (MEST)
-In-Reply-To: <41261BF3.19B87A64@orpatec.ch>
+	id 1ByC8S-0001BH-M4
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 20 Aug 2004 09:21:00 -0700
+Received: from mail-relay-4.tiscali.it ([213.205.33.44])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1ByC8R-0001ZG-6o
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 20 Aug 2004 09:21:00 -0700
+Content-Disposition: inline
+In-Reply-To: <200408201711.26091.adaplas@hotpop.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,56 +26,66 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: 'linux-fbdev-devel' <linux-fbdev-devel@lists.sourceforge.net>
+To: "Antonino A. Daplas" <adaplas@hotpop.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>, Marcelo Tosatti <marcelo.tosatti@cyclades.com>
 
-On Fri, 20 Aug 2004, Otto Wyss wrote:
-> Since I never could acceptable align my monitor screen between Windows,
-> Linux console and Linux X-server I bought a DVI cable and switch to
-> digital mode. Immediately I discovered a fantastic feature of the radeon
-> framebuffer driver, it's able to discover the correct resolution of my
-> LCD monitor.
->
-> I guess this is a common feature of the digital interface and might be
-> available for any graphic card/monitor with DVI. Does anyone know for
-> sure? If yes this feature would allow to create a generic framebuffer
+Il Fri, Aug 20, 2004 at 05:11:26PM +0800, Antonino A. Daplas ha scritto: 
+> > > drivers/built-in.o(.text+0xa1bde): In function `radeon_match_mode':
+> > > : undefined reference to `vesa_modes'
+> > >
+> > > drivers/built-in.o(.text+0xa1cbd): In function `radeon_match_mode':
+> > > : undefined reference to `vesa_modes'
+> > >
+> > > make: ** [.tmp_vmlinux1] Erro 1
+> > >
+> > > Known already?
+> >
+> > nope.  That symbol is exported to modules.
+> >
+> 
+> Oops.  vesa_modes is now dependent on CONFIG_FB_MODE_HELPERS.  
+> I'll submit a patch over the weekend to fix drivers that require this option.
+> 
+> Tony
 
-It can work for normal monitors as well, using DDC.
+Hi,
+I sent the following patch a while ago. radeonfb, rivafb and i810fb need
+CONFIG_FB_MODE_HELPERS the patch makes them select it: 
 
-> driver which could be built into the kernel and used right from the
-> start. How nice would it be to have a shiny startup screen right from
-> the start of Linux! All the startup messages could be shown in a decent
-> font (maybe even configurable) and might be surrounded by a nice window.
-> What a difference would it make against the current DOS-like look.
+--- a/drivers/video/Kconfig	2004-08-09 17:03:58.000000000 +0200
++++ b/drivers/video/Kconfig	2004-08-09 17:04:56.000000000 +0200
+@@ -437,6 +437,7 @@
+ 	depends on FB && PCI
+ 	select I2C_ALGOBIT if FB_RIVA_I2C
+ 	select I2C if FB_RIVA_I2C
++	select FB_MODE_HELPERS
+ 	help
+ 	  This driver supports graphics boards with the nVidia Riva/Geforce
+ 	  chips.
+@@ -469,6 +470,7 @@
+ config FB_I810
+ 	tristate "Intel 810/815 support (EXPERIMENTAL)"
+ 	depends on FB && AGP && AGP_INTEL && EXPERIMENTAL && PCI	
++	select FB_MODE_HELPERS
+ 	help
+ 	  This driver supports the on-board graphics built in to the Intel 810 
+           and 815 chipsets.  Say Y if you have and plan to use such a board.
+@@ -672,6 +674,7 @@
+ 	depends on FB && PCI
+ 	select I2C_ALGOBIT if FB_RADEON_I2C
+ 	select I2C if FB_RADEON_I2C
++	select FB_MODE_HELPERS
+ 	help
+ 	  Choose this option if you want to use an ATI Radeon graphics card as
+ 	  a framebuffer device.  There are both PCI and AGP versions.  You
 
-Like what e.g. SUSE does?
 
-> The main task of this generic driver is to detect and switch to the
-> correct resolution and may only handle simple 2D drawing. It should only
-> support common features. It needs only be useful during startup and in
-> cases no specific framebuffer driver exists. And of course it has to
-> stop working and yield any resources when a card specific driver is loaded.
->
-> Do you also think such a generic driver should exist? Is anyone able to
-> create it, maybe simply extract it from the radeonfb?
-
-This generic driver does not exist. And it's not simple to write, since it's
-hardware dependent.
-
-The closest thing to such a generic driver is the existing vesafb. Perhaps on
-some cards the BIOS uses DDC as well to find a nice video mode?
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Luca
+-- 
+Home: http://kronoz.cjb.net
+Do, or do not. There is no try.
 
 
 -------------------------------------------------------

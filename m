@@ -1,30 +1,32 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [Linux-fbdev-devel] [2.6 patch] drivers/video/: misc cleanups
-Date: Mon, 22 Nov 2004 10:54:44 +0800
-Message-ID: <200411221054.48496.adaplas@hotpop.com>
-References: <20041121153702.GB2829@stusta.de>
+Subject: Re: [Linux-fbdev-devel] [2.6 patch] pm3fb: remove kernel 2.2 code (fwd)
+Date: Mon, 22 Nov 2004 10:55:14 +0800
+Message-ID: <200411221055.14914.adaplas@hotpop.com>
+References: <20041121175305.GC2924@stusta.de>
 Reply-To: adaplas@pol.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261908AbUKVC6n@vger.kernel.org>
-In-Reply-To: <20041121153702.GB2829@stusta.de>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261901AbUKVC6o@vger.kernel.org>
+In-Reply-To: <20041121175305.GC2924@stusta.de>
 Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Adrian Bunk <bunk@stusta.de>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+To: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@osdl.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Sunday 21 November 2004 23:37, Adrian Bunk wrote:
-> The patch below does the following cleanups under drivers/video/ :
-> - make some needlessly global code static
-> - the following was needlessly EXPORT_SYMBOL'ed:
->   - fbcon.c: fb_con
->   - mdacon.c: fb_blank
->   - fbmon.c: get_EDID_from_firmware (completely unused)
+On Monday 22 November 2004 01:53, Adrian Bunk wrote:
+> The patch forwarded below still applies against 2.6.10-rc2-mm2 (yes, I
+> know the driver is marked as BROKEN).
 >
-> Please review this patch.
 
-Looks ok.
+Also, the following drivers are not ported yet to 2.6:
+
+atafb
+cyberfb
+retz3fb
+S3triofb
+sun3fb
+virgefb
 
 Tony

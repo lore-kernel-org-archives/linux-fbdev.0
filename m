@@ -1,16 +1,16 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Re: New logo code [CONFIG OPTIONS]
-Date: Mon, 17 Feb 2003 11:36:51 +0100 (MET)
+Subject: Re: 2.5.60/atyfb
+Date: Mon, 17 Feb 2003 11:43:45 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0302171135100.16817-100000@vervain.sonytel.be>
-References: <20030215153154.GB469@schottelius.org>
+Message-ID: <Pine.GSO.4.21.0302171142480.16817-100000@vervain.sonytel.be>
+References: <20030215151128.GA478@schottelius.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18kiet-00077D-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Feb 2003 02:37:59 -0800
-In-Reply-To: <20030215153154.GB469@schottelius.org>
+	id 18kilO-00009a-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Feb 2003 02:44:43 -0800
+In-Reply-To: <20030215151128.GA478@schottelius.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,26 +23,28 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Nico Schottelius <schottelius@wdt.de>
-Cc: Torrey Hoffman <thoffman@arnor.net>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
 On Sat, 15 Feb 2003, Nico Schottelius wrote:
-> I think if the patch and the features talked about are included in the
-> kernel we'll have (names are not correct)
+> I retried using atyfb with 2.5.60:
+> Afterloading atyfb the only thing left is the cursor.
+> i don't see anything else anymore..i see the cursor moving, but that's all.
+> btw, i am using a laptop (means lcd)...
 > 
-> CONFIG_LOGO=y/n
-> CONFIG_LOGO_XRES=128
-> CONFIG_LOGO_YRES=64
-> CONFIG_LOGO_BPP=8
+> can somebody tell me whether playing around with fbset could make things
+> working?
+> 
+> Nico
+> 
+> lspci:
+> 01:00.0 VGA compatible controller: ATI Technologies Inc 3D Rage P/M Mobility AGP 2x (rev 64)
+> 
+> dmesg:
+> atyfb: 3D RAGE Mobility (PCI) [0x4c4d rev 0x64] 8M SDRAM, 29.498928 MHz XTAL, 230 MHz PLL, 50 Mhz MCLK
+> fb0: ATY Mach64 frame buffer device on PCI
 
-The 3 above are stored in struct linux_logo.
-
-> CONFIG_LOGO_PATH="" # (/usr/src/linux/.../logo/tux.pnm)
-> CONFIG_LOGO_POS_X="left|center|right"  # or absolute ?
-> CONFIG_LOGO_POS_Y="top|center|bottom"  # like X windows +110,+200 ?
-> CONFIG_LOGO_BGCOL=#ef0000              # depends on bpp of framebuffer... 
-
-I prefer to store the background color in struct linux_logo as well. And it
-must be a palette index, not an RGB triplet, I think.
+Did older versions of atyfb work on this chip? I have the same one in my Vaio,
+and so far it never worked with atyfb.
 
 Gr{oetje,eeting}s,
 

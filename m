@@ -1,18 +1,17 @@
 From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: Re: [PATCH]: image.depth fix to accomodate
-	monochrome cards
-Date: 08 Jan 2003 10:41:10 +0800
+Subject: Re: fb_imageblit()
+Date: 08 Jan 2003 10:41:47 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1041991742.927.12.camel@localhost.localdomain>
-References: <Pine.GSO.4.21.0301072201350.21057-100000@vervain.sonytel.be>
+Message-ID: <1041993390.927.38.camel@localhost.localdomain>
+References: <Pine.LNX.4.44.0301072215370.17129-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from willow.compass.com.ph ([202.70.96.38])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18W6MV-0006lR-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 07 Jan 2003 18:54:35 -0800
-In-Reply-To: <Pine.GSO.4.21.0301072201350.21057-100000@vervain.sonytel.be>
+	id 18W6Mw-0006mH-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 07 Jan 2003 18:55:02 -0800
+In-Reply-To: <Pine.LNX.4.44.0301072215370.17129-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,218 +22,89 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 2003-01-08 at 05:06, Geert Uytterhoeven wrote: 
-> On 8 Jan 2003, Antonino Daplas wrote:
-> > 2.  diff submitted by Geert: cleaner logo data preparation for
-> > monochrome cards and correct initialization of palette_cmap.transp.
+On Wed, 2003-01-08 at 06:23, James Simmons wrote: 
+> > >     
+> > >     If monochrome image data would be packed as well, it could be handled by
+> > >     setting fb_image.fg_color = 1 and fb_image.bg_color = 0 (or vice versa for
+> > >     mono10), and fb_set_logo() becomes simpler as well.
+> > > 
+> > >     If we retain the unpacked data for images, we need some other flag to
+> > >     indicate color expansion. Perhaps setting fb_image.depth to 0?
+> > > 
+> > If we change the contents of the logo data, then it makes sense to pack
+> > the logo data also.  However, if we stick to indices, we might as well
+> > retain the "unpacked" 8-bit format.  I think setting fb_image.depth to 0
+> > to mean color expansion is more appropriate. Drivers that will need
+> > trivial changing would be tgafb, i810fb, rivafb, tdfxfb, atyfb, vga16fb
+> > and of course cfb_imgblt.c, softcursor.c and fbcon.c.
 > 
-> I'll have to do some more fixes there, since the monochrome logo is used not
-> only on monochrome displays, but on all other displays with bits_per_pixel < 4
-> Since the pixel data in fb_image are colormap indices, they have to reflect the
-> correct `black' and `white' colors on such displays.
-> 
-> E.g. on amifb (which supports all bits_per_pixel from 1 through 8) the logo
-> showed up in black-and-blue with bits_per_pixel == 3, cfr. the first two
-> entries of {red,green,blue}8[] in fbcmap.c.
-> 
+> The requirement I made of imageblit was to always use packed data. What 
+> the indices approach was to to always use a struct fb_cmap. This way it 
+> didn't matter if used a pseudocolor mode or a directcolor mode.
+ 
+I've thought of that also, packing the data according to the pixel depth.  
+However, this will be very inefficient since image blitting
+will go like this: 
 
-Hmm, I see.  I think only linux_logo_bw will be the only one affected,
-since linux_logo_16 happens to match the console palette and in
-linux_logo, we either reset the palette and/or the cmap.
+a. Prepare logo data so each pixel of data is in directcolor format (if
+we will use the cmap), so depth corresponds to framebuffer depth, and
+data is packed. 
 
-Would expanding each bit to the full bit depth work?  Ie for bpp=8 using
-monochrome data, white is 0 and black is 0xff.
+b. Pass the structure to cfb_imageblit. 
 
-I think we still have several corner cases, such as TRUECOLOR with bpp
-<= 8, I'm not sure if that works.
+c. In cfb_imageblit, unpack the logo data: 
 
-Anyway, here's an updated patch for linux-2.5.54 + James Simmons' latest
-fbdev.diff.  Not sure if it works though :-)
+d. Get each color component from the cmap data. 
 
-Tony
+e. Recreate pixel data based on var.[color].offset and
+var.[color].length. 
 
-diff -Naur linux-2.5.54/drivers/video/cfbimgblt.c linux/drivers/video/cfbimgblt.c
---- linux-2.5.54/drivers/video/cfbimgblt.c	2003-01-08 01:53:45.000000000 +0000
-+++ linux/drivers/video/cfbimgblt.c	2003-01-08 01:51:21.000000000 +0000
-@@ -323,7 +323,7 @@
- 	bitstart &= ~(bpl - 1);
- 	dst1 = p->screen_base + bitstart;
- 
--	if (image->depth == 1) {
-+	if (image->depth == 0) {
- 		if (p->fix.visual == FB_VISUAL_TRUECOLOR ||
- 		    p->fix.visual == FB_VISUAL_DIRECTCOLOR) {
- 			fgcolor = ((u32 *)(p->pseudo_palette))[image->fg_color];
-diff -Naur linux-2.5.54/drivers/video/console/fbcon.c linux/drivers/video/console/fbcon.c
---- linux-2.5.54/drivers/video/console/fbcon.c	2003-01-08 01:53:45.000000000 +0000
-+++ linux/drivers/video/console/fbcon.c	2003-01-07 15:43:52.000000000 +0000
-@@ -395,7 +395,7 @@
- 	image.dx = xx * vc->vc_font.width;
- 	image.dy = yy * vc->vc_font.height;
- 	image.height = vc->vc_font.height;
--	image.depth = 1;
-+	image.depth = 0;
- 
- 	if (!(vc->vc_font.width & 7)) {
- 		unsigned int pitch, cnt, i, j, k;
-@@ -1170,7 +1170,7 @@
- 	image.dy = real_y(p, ypos) * vc->vc_font.height;
- 	image.width = vc->vc_font.width;
- 	image.height = vc->vc_font.height;
--	image.depth = 1;
-+	image.depth = 0;
- 	image.data = p->fontdata + (c & charmask) * vc->vc_font.height * width;
- 
- 	info->fbops->fb_imageblit(info, &image);
-diff -Naur linux-2.5.54/drivers/video/fbmem.c linux/drivers/video/fbmem.c
---- linux-2.5.54/drivers/video/fbmem.c	2003-01-08 01:53:45.000000000 +0000
-+++ linux/drivers/video/fbmem.c	2003-01-08 01:53:22.000000000 +0000
-@@ -386,6 +386,7 @@
- 	palette_cmap.red = palette_red;
- 	palette_cmap.green = palette_green;
- 	palette_cmap.blue = palette_blue;
-+	palette_cmap.transp = NULL;
- 
- 	for (i = 0; i < LINUX_LOGO_COLORS; i += n) {
- 		n = LINUX_LOGO_COLORS - i;
-@@ -448,26 +449,33 @@
- 		palette[i] = i << redshift | i << greenshift | i << blueshift;
- }
- 
--static void __init fb_set_logo(struct fb_info *info, u8 *logo, int needs_logo)
-+#if defined (__BIG_ENDIAN)
-+#define BIT_SHIFT(x, shift) ((x) >> (shift))
-+#else
-+#define BIT_SHIFT(x, shift) ((x) << (shift))
-+#endif
-+
-+static void fb_set_logo(struct fb_info *info, u8 *logo, int needs_logo)
- {
- 	int i, j;
-+	u8 mask = (u8) ~(BIT_SHIFT(0xffff, info->var.bits_per_pixel));
- 
- 	switch (needs_logo) {
- 	case 4:
--		for (i = 0; i < (LOGO_W * LOGO_H)/2; i++) {
-+		for (i = 0; i < (LOGO_W * LOGO_H)/2; i++) { 
- 			logo[i*2] = linux_logo16[i] >> 4;
- 			logo[(i*2)+1] = linux_logo16[i] & 0xf;
- 		}
- 		break;
- 	case 1:
- 	case ~1:
--	default:
--		for (i = 0; i < (LOGO_W * LOGO_H)/8; i++)
--			for (j = 0; j < 8; j++)
--				logo[i*8 + j] = (linux_logo_bw[i] &  (7 - j)) ?
--						((needs_logo == 1) ? 1 : 0) :
--						((needs_logo == 1) ? 0 : 1);
--			break;
-+		for (i = 0; i < (LOGO_W * LOGO_H)/8; i++) {
-+		       u8 d = linux_logo_bw[i];
-+                       for (j = 0; j < 8; j++, d <<= 1)
-+                               logo[i*8+j] = (((d ^ needs_logo) >> 7) & 1) ?
-+				       mask : 0;
-+		}
-+		break;
- 	}
- }
- 
-diff -Naur linux-2.5.54/drivers/video/i810/i810_accel.c linux/drivers/video/i810/i810_accel.c
---- linux-2.5.54/drivers/video/i810/i810_accel.c	2003-01-08 01:53:45.000000000 +0000
-+++ linux/drivers/video/i810/i810_accel.c	2003-01-07 15:45:47.000000000 +0000
-@@ -404,7 +404,7 @@
- 		return;
- 	}
- 
--	if (par->depth == 4 || image->depth != 1) {
-+	if (par->depth == 4 || image->depth != 0) {
- 		wait_for_engine_idle(par);
- 		cfb_imageblit(p, image);
- 		return;
-diff -Naur linux-2.5.54/drivers/video/riva/fbdev.c linux/drivers/video/riva/fbdev.c
---- linux-2.5.54/drivers/video/riva/fbdev.c	2003-01-08 01:53:45.000000000 +0000
-+++ linux/drivers/video/riva/fbdev.c	2003-01-07 15:47:28.000000000 +0000
-@@ -1323,7 +1323,7 @@
- 	volatile u32 *d;
- 	int i, j, size;
- 
--	if (image->depth != 1) {
-+	if (image->depth != 0) {
- 		wait_for_idle(par);
- 		cfb_imageblit(info, image);
- 		return;
-diff -Naur linux-2.5.54/drivers/video/skeletonfb.c linux/drivers/video/skeletonfb.c
---- linux-2.5.54/drivers/video/skeletonfb.c	2003-01-08 01:53:45.000000000 +0000
-+++ linux/drivers/video/skeletonfb.c	2003-01-07 15:59:33.000000000 +0000
-@@ -445,9 +445,14 @@
-  *      @fg_color: For mono bitmap images this is color data for     
-  *      @bg_color: the foreground and background of the image to
-  *		   write directly to the frmaebuffer.
-- *	@depth:	How many bits represent a single pixel for this image.
-+ *	@depth:	This will be zero (0) if color expanding (character drawing).  
-+ *              If nonzero, this represent the pixel depth of the data. 
-  *	@data: The actual data used to construct the image on the display.
-- *	@cmap: The colormap used for color images.   
-+ *             It is a monochrome bitmap if color expanding.  For image
-+ *             drawing, each byte of data represents 1 pixel irrespective
-+ *             of the framebuffer depth.  The byte is either an index to the
-+ *             pseudo_palette for directcolor and truecolor, or the 
-+ *             actual pixel written to the framebuffer.
-  */
- }
- 
-diff -Naur linux-2.5.54/drivers/video/softcursor.c linux/drivers/video/softcursor.c
---- linux-2.5.54/drivers/video/softcursor.c	2003-01-08 01:53:45.000000000 +0000
-+++ linux/drivers/video/softcursor.c	2003-01-07 15:39:15.000000000 +0000
-@@ -47,7 +47,7 @@
- 	image.dy = cursor->image.dy;
- 	image.width = cursor->image.width;
- 	image.height = cursor->image.height;
--	image.depth = cursor->image.depth;
-+	image.depth = 0;
- 	image.data = data;
- 
- 	if (info->fbops->fb_imageblit)
-diff -Naur linux-2.5.54/drivers/video/tdfxfb.c linux/drivers/video/tdfxfb.c
---- linux-2.5.54/drivers/video/tdfxfb.c	2003-01-08 01:53:45.000000000 +0000
-+++ linux/drivers/video/tdfxfb.c	2003-01-07 15:46:33.000000000 +0000
-@@ -939,7 +939,7 @@
- 	u8 *chardata = (u8 *) pixmap->data;
- 	u32 srcfmt;
- 
--	if (pixmap->depth == 1) {
-+	if (pixmap->depth == 0) {
- 		banshee_make_room(par, 8 + ((size + 3) >> 2));
- 		tdfx_outl(par, COLORFORE, pixmap->fg_color);
- 		tdfx_outl(par, COLORBACK, pixmap->bg_color);
-diff -Naur linux-2.5.54/drivers/video/tgafb.c linux/drivers/video/tgafb.c
---- linux-2.5.54/drivers/video/tgafb.c	2003-01-08 01:53:45.000000000 +0000
-+++ linux/drivers/video/tgafb.c	2003-01-07 15:44:35.000000000 +0000
-@@ -572,7 +572,7 @@
- 	   can do better than the generic code.  */
- 	/* ??? There is a DMA write mode; I wonder if that could be
- 	   made to pull the data from the image buffer...  */
--	if (image->depth > 1) {
-+	if (image->depth > 0) {
- 		cfb_imageblit(info, image);
- 		return;
- 	}
-diff -Naur linux-2.5.54/drivers/video/vga16fb.c linux/drivers/video/vga16fb.c
---- linux-2.5.54/drivers/video/vga16fb.c	2003-01-08 01:53:45.000000000 +0000
-+++ linux/drivers/video/vga16fb.c	2003-01-07 15:50:49.000000000 +0000
-@@ -1301,7 +1301,7 @@
- 				
- void vga16fb_imageblit(struct fb_info *info, struct fb_image *image)
- {
--	if (image->depth == 1)
-+	if (image->depth == 0)
- 		vga_imageblit_expand(info, image);
- 	else if (image->depth == info->var.bits_per_pixel)
- 		vga_imageblit_color(info, image);
+f. Write the pixel data in packed form to the framebuffer. 
+
+Whereas, with the current approach: 
+
+a. Prepare logo data such that each pixel corresponds to one byte. 
+
+b. Pass the structure to cfb_imageblit. 
+
+c. Read color information from pseudopalette if directcolor/truecolor. 
+
+d. Write the pixel data in packed form to the framebuffer. 
+
+Aside from the inefficiency of the method (pack, unpack, pack), drawing
+the logo will become inconsistent with the behavior of the rest of the
+functions, since it's the only one that gets color info differently.  If
+you look at color_imageblit() and slow_imageblit(), they basically use
+the same code logic. 
+
+Secondly, indexing the cmap instead of the pseudo_palette means that
+cfb_imageblit has to know the native framebuffer format.  This was
+argued before that the generic drawing functions need not know of the
+format, one of the reasons we have info->pseudopalette.  Actually, in
+order to be really consistent, I would rather have everything refer to
+the pseudopalette, regardless of the visual format.  This will be better
+especially for some of the corner cases, like monochrome cards with
+bits_per_pixel = 8. 
+
+Thirdly, it's much simpler for drivers to draw the logo.  Just get the
+corrct pixel data from it's own palette.  No need to construct each
+pixel from the cmap.  That's tedious, slow, and will contribute to code
+bloat.  Which is easier?  Get each byte from the logo data, and use it as an 
+index to the pseudo_palette, or unpack the data, separate each unit to 4 
+color components, and construct pixel data from cmap using the 4 extracted 
+indices?
+
+I agree that it would be faster in some cases to draw a packed logo
+data, but if we're going to be inconsistent, let's do it all the way. 
+Make the logo data match the native framebuffer format.  This will be
+very efficient, and this is the one that I actually prefer.
+
+Tony 
+
+
 
 
 

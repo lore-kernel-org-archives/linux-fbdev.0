@@ -1,17 +1,22 @@
-From: Fredrik Noring <noring@nocrew.org>
-Subject: Re: Linux GUI considerations
-Date: 05 Feb 2003 09:38:41 +0100
+From: Sven Luther <luther@dpt-info.u-strasbg.fr>
+Subject: writing to a floating point register ?
+Date: Wed, 5 Feb 2003 11:17:53 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1044434321.3443.29.camel@h9n1fls20o980.telia.com>
-References: <3E403C75.2DBCC9F8@bluewin.ch>
+Message-ID: <20030205101753.GA1466@iliana>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from maila.telia.com ([194.22.194.231])
+Received: from smtp-out-2.wanadoo.fr ([193.252.19.254] helo=mel-rto2.wanadoo.fr)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18gL4S-0007B4-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Feb 2003 00:38:16 -0800
-In-Reply-To: <3E403C75.2DBCC9F8@bluewin.ch>
+	id 18gMd1-0006OO-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Feb 2003 02:18:03 -0800
+Received: from mel-rta8.wanadoo.fr (193.252.19.79) by mel-rto2.wanadoo.fr (6.7.015)
+        id 3E0C3370018D2E50 for linux-fbdev-devel@lists.sourceforge.net; Wed, 5 Feb 2003 11:17:54 +0100
+Received: from iliana (80.14.240.127) by mel-rta8.wanadoo.fr (6.7.015)
+        id 3E26DA7000B3BB16 for linux-fbdev-devel@lists.sourceforge.net; Wed, 5 Feb 2003 11:17:54 +0100
+Received: from luther by iliana with local (Exim 3.36 #1 (Debian))
+	id 18gMcr-0000Nt-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Feb 2003 11:17:53 +0100
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,21 +27,21 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: otto.wyss@bluewin.ch
-Cc: "'wx-dev@lists.wxwindows.org'" <wx-dev@lists.wxwindows.org>, linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Hi,
+Hello, ...
 
-> Almost none of the PDA manufatures considers Linux since it's almost
-> impossible to bring anything nice on the screen.
+while writing a fbdev driver, i need to write a value to a floating
+point register. Do we have any macro doing this, or should i need to
+calculate the sign, mantissa and exponent by hand ?
 
-I believe Sharp Zaurus SL-5600 runs Qt/Embedded on a framebuffer. I
-haven't tested it myself, but there are some nice screen shots here:
-http://www.trolltech.com/products/qtopia/screenshots.html
+Just doing a unsigned int cast would round the value i think, and thus
+not give the right result.
 
-	Fredrik
+Friendly,
 
-
+Sven Luther
 
 
 -------------------------------------------------------

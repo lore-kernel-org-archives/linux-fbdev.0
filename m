@@ -1,22 +1,21 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: fbdv/fbcon pending problems
-Date: Wed, 25 Feb 2004 12:41:25 +0100 (MET)
+From: Jakub Bogusz <qboosh@pld-linux.org>
+Subject: [PATCH] don't use floating point in tdfxfb
+Date: Wed, 25 Feb 2004 12:55:31 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0402251240140.24169@waterleaf.sonytel.be>
-References: <20040224214106.GA17390@guug.org>
- <Pine.LNX.4.44.0402250118210.24952-100000@phoenix.infradead.org>
- <20040225031553.GC17390@guug.org>
+Message-ID: <20040225115530.GF16814@gruby.cs.net.pl>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="vtzGhvizbBRQ85DL"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AvxYo-00043k-Li
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 Feb 2004 03:50:42 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1AvxD9-0004nh-KP
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 Feb 2004 03:28:19 -0800
-In-Reply-To: <20040225031553.GC17390@guug.org>
+	id 1AvxmS-0007It-7I
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 Feb 2004 04:04:48 -0800
+Received: from gruby.cs.net.pl ([62.233.142.99] ident=postfix)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1AvxQm-0006Ib-2r
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 Feb 2004 03:42:24 -0800
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,42 +25,48 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Otto Solares <solca@guug.org>
-Cc: James Simmons <jsimmons@infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
+To: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 24 Feb 2004, Otto Solares wrote:
-> On Wed, Feb 25, 2004 at 01:21:39AM +0000, James Simmons wrote:
-> > > On the other side i see a lot of effort in the fbdev acceleration,
-> > > it is nice but that effort should be better spent on fixing the layer,
-> > > imo, the only user for acceleration is fbcon, any userland app that
-> > > use fbdev disables that acceleration so it can map the vmem and ioregs,
-> > > and do it's own voodoo if it wants acceleration.  That acceleration
-> > > is not "exported" to user space.  I am working in a open source project
-> > > that uses mesa-solo with fbdev and many limitations from the layer
-> > > itself have been seen.
-> >
-> > That is true so far for fillrect and copyarea functions. Imageblit will be
-> > used for read and writes on /dev/fbX. Also it is used for software
-> > cursors.
->
-> But if acceleration is not disabled you can't map the vmem and io regions.
 
-I don't expect an app that mmap()s mmio to read/write from /dev/fb* at the same
-time. So I see no problem disabling accelerated read/write while mmio is
-mapped.
+--vtzGhvizbBRQ85DL
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Gr{oetje,eeting}s,
+This patch removes using of floating point operations in tdfxfb - they
+are really not needed here (these consts are used only in substitutions
+and comparisons with integers) are cause unresolved symbols on some
+archs - e.g. on alpha:
 
-						Geert
+*** Warning: "__ltdf2" [drivers/video/tdfxfb.ko] undefined!
+*** Warning: "__adddf3" [drivers/video/tdfxfb.ko] undefined!
+*** Warning: "__floatsidf" [drivers/video/tdfxfb.ko] undefined!
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+Jakub Bogusz    http://cyber.cs.net.pl/~qboosh/
+PLD Team        http://www.pld-linux.org/
+
+--vtzGhvizbBRQ85DL
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="linux-tdfxfb-nofloat.patch"
+
+--- linux-2.6.3/drivers/video/tdfxfb.c.orig	2004-02-24 11:08:06.000000000 +0100
++++ linux-2.6.3/drivers/video/tdfxfb.c	2004-02-25 12:33:09.000000000 +0100
+@@ -86,9 +86,9 @@
+ #define DPRINTK(a,b...)
+ #endif 
+ 
+-#define BANSHEE_MAX_PIXCLOCK 270000.0
+-#define VOODOO3_MAX_PIXCLOCK 300000.0
+-#define VOODOO5_MAX_PIXCLOCK 350000.0
++#define BANSHEE_MAX_PIXCLOCK 270000
++#define VOODOO3_MAX_PIXCLOCK 300000
++#define VOODOO5_MAX_PIXCLOCK 350000
+ 
+ static struct fb_fix_screeninfo tdfx_fix __initdata = {
+ 	.id =		"3Dfx",
+
+--vtzGhvizbBRQ85DL--
 
 
 -------------------------------------------------------

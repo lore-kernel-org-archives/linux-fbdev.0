@@ -1,26 +1,26 @@
 From: James Simmons <jsimmons@www.infradead.org>
-Subject: Re: Re: Fw: [Bugme-new] [Bug 4218] New: Radeon
- fb doesn't have correct resolution for lcd screen
-Date: Wed, 16 Feb 2005 19:55:52 +0000 (GMT)
-Message-ID: <Pine.LNX.4.56.0502161955370.23410@pentafluge.infradead.org>
-References: <20050215133933.61769fd0.akpm@osdl.org> <1108504048.13376.11.camel@gaston>
- <200502160948.51781.bart@verwilst.be>
+Subject: Re: [patch] generic framebuffer support, cleanups
+ and buglets with BPP < 32 (fwd)
+Date: Wed, 16 Feb 2005 20:07:56 +0000 (GMT)
+Message-ID: <Pine.LNX.4.56.0502162005090.23410@pentafluge.infradead.org>
+References: <Pine.LNX.4.62.0502161022440.12747@numbat.sonytel.be>
+ <200502162155.53719.adaplas@hotpop.com> <200502161506.45868.eckhardt@satorlaser.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D1VHI-0003ch-AB
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 11:56:04 -0800
+	id 1D1VSu-0004X2-Sj
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 12:08:04 -0800
 Received: from pentafluge.infradead.org ([213.146.154.40])
 	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1D1VHD-0002N8-Jq
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 11:56:04 -0800
+	id 1D1VSt-0003uz-4I
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 12:08:04 -0800
 Received: from jsimmons (helo=localhost)
 	by pentafluge.infradead.org with local-esmtp (Exim 4.43 #1 (Red Hat Linux))
-	id 1D1VH7-000668-22
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 19:55:55 +0000
-In-Reply-To: <200502160948.51781.bart@verwilst.be>
+	id 1D1VSm-00069E-Av
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 20:07:58 +0000
+In-Reply-To: <200502161506.45868.eckhardt@satorlaser.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -36,66 +36,36 @@ Content-Transfer-Encoding: 7bit
 To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-Be careful. Don't run radeonfb and vesa fb at the same time!!!
+I will give the patch a test run. Before you do that I have a few 
+improvements myself. Mainly I nuked the BYTES_PER_LONG and SHIFT_PER_LONG 
+variables.
 
-On Wed, 16 Feb 2005, Bart Verwilst wrote:
+On Wed, 16 Feb 2005, Ulrich Eckhardt wrote:
 
-> Hi!
+> Antonino A. Daplas wrote:
+> > Patch is linewrapped.  Please resend.  Text attachment is okay.
 > 
-> Hm, i'm not sure wether it's radeonfb or not 
-> 
-> ----
-> 
-> vesafb: framebuffer at 0xe0000000, mapped to 0xdc880000, using 1875k, total 
-> 65472k
-> vesafb: mode is 800x600x16, linelength=1600, pages=67
-> vesafb: protected mode interface info at c000:51a9
-> vesafb: scrolling: redraw
-> vesafb: Truecolor: size=0:5:6:5, shift=0:11:5:0
-> bootsplash 3.1.4-2004/02/19: looking for picture.... silentjpeg size 14554 
-> bytes, found (800x600, 14506 bytes, v3).
-> Console: switching to colour frame buffer device 92x32
-> fb0: VESA VGA frame buffer device
-> 
-> ---
-> 
-> Is radeonfb a driver for vesafb? Or are they unrelated?
-> 
-> Could you give me some more pointers for me what i could do to test more? Or 
-> will enabling radeonfb debug support still be helpful?
-> 
-> Thanks in advance!
-> 
-> Op dinsdag 15 februari 2005 22:47, schreef Benjamin Herrenschmidt:
-> ||  On Tue, 2005-02-15 at 13:39 -0800, Andrew Morton wrote:
-> ||  > Begin forwarded message:
-> ||  >
-> ||  > Date: Tue, 15 Feb 2005 13:28:36 -0800
-> ||  > From: bugme-daemon@osdl.org
-> ||  > To: bugme-new@lists.osdl.org
-> ||  > Subject: [Bugme-new] [Bug 4218] New: Radeon fb doesn't have correct
-> ||  > resolution for lcd screen
-> ||
-> ||  Please, enable radeonfb verbose debug in the .config and send me the
-> ||  log.
-> ||
-> ||  Ben.
-> 
-> -- 
-> Bart Verwilst
-> Jabber ID & Email: bart@verwilst.be
-> Website: http://www.verwilst.be
+> Ok, resending. I'll repeat the description so it all is in one place. Here we 
+> go...
 > 
 > 
-> -------------------------------------------------------
-> SF email is sponsored by - The IT Product Guide
-> Read honest & candid reviews on hundreds of IT Products from real users.
-> Discover which products truly live up to the hype. Start reading now.
-> http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+> Changes:
+>  * removed trailing whitespace
+>  * use helper function for common bitwise operations
+>  * fixed several cases where either the wrong mask was used for bitops
+>    or the mask was computed falsely, messing up <32 BPP support
+>  * added self-tests for bitcpy_rev() algorithm in module-init function
+>  * no need to use explicitly sized integers in some cases
+>  * added a few comments where things weren't obvious to me
+> 
+> I tested these changes on an Au1100 based board, using the patches to its 
+> framebuffer code that were posted here by Christian Pellegrin[1]. I had this 
+> code working both on a 16BPP color LCD and a 4BPP monochrome one.
+> 
+> Uli
+> 
+> [1] http://www.linux-mips.org/archives/linux-mips/2005-01/msg00095.html
+> What happened to those, btw? They at least Work For Me(tm).
 > 
 
 

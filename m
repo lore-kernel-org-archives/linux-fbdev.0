@@ -1,22 +1,22 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 4/6] fbcon: Save blank state last
-Date: Tue, 18 Jan 2005 05:41:17 +0800
-Message-ID: <200501180541.17021.adaplas@hotpop.com>
+Subject: [PATCH 2/6] vesafb: Change return error id
+Date: Tue, 18 Jan 2005 05:41:05 +0800
+Message-ID: <200501180541.05366.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Cqecq-00037B-HP
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 17 Jan 2005 13:41:28 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.61])
+	id 1CqeeM-0003BC-1O
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 17 Jan 2005 13:43:02 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.71])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1Cqecq-0005TI-2A
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 17 Jan 2005 13:41:28 -0800
+	id 1CqeeK-0005Rl-Fz
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 17 Jan 2005 13:43:01 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 1B7A4CFE032
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Jan 2005 21:41:15 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id 9614D134752B
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Jan 2005 21:41:00 +0000 (UTC)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -30,36 +30,48 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Stuart_Hayes@Dell.com
 
-Save blank state after do_blank|unblank_screen() since this flag is checked
-in fbcon_blank().
+From: <Stuart_Hayes@Dell.com>
+
+  I'm getting a message in dmesg:  "localhost kernel: vesafb: probe of
+  vesafb0 failed with error -6"
+
+  I searched the web, and found that a lot of people are getting this, but
+  I couldn't find an answer, so I looked into it.
+
+  This appears to be because "vesafb" returns -ENXIO ("No such device or
+  address") when its probe function fails.  However, driverse/base/bus.c
+  spews an error message during device_attach() if a matching driver's
+  probe function returns anything but -ENODEV ("No such device").
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- fbcon.c |    4 ++--
+ vesafb.c |    4 ++--
  1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff -Nru a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
---- a/drivers/video/console/fbcon.c	2005-01-15 04:25:57 +08:00
-+++ b/drivers/video/console/fbcon.c	2005-01-15 08:23:03 +08:00
-@@ -2654,13 +2654,13 @@
- 		vc = vc_cons[ops->currcon].d;
+diff -Nru a/drivers/video/vesafb.c b/drivers/video/vesafb.c
+--- a/drivers/video/vesafb.c	2004-11-10 07:24:23 +08:00
++++ b/drivers/video/vesafb.c	2005-01-15 08:13:00 +08:00
+@@ -229,7 +229,7 @@
+ 	unsigned int size_total;
  
- 		if (CON_IS_VISIBLE(vc)) {
--			ops->blank_state = blank;
--
- 			if (blank)
- 				do_blank_screen(0);
- 			else
- 				do_unblank_screen(0);
- 		}
-+		
-+		ops->blank_state = blank;
+ 	if (screen_info.orig_video_isVGA != VIDEO_TYPE_VLFB)
+-		return -ENXIO;
++		return -ENODEV;
+ 
+ 	vesafb_fix.smem_start = screen_info.lfb_base;
+ 	vesafb_defined.bits_per_pixel = screen_info.lfb_depth;
+@@ -407,7 +407,7 @@
+ 		(ypan) ? FBINFO_HWACCEL_YPAN : 0;
+ 
+ 	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0) {
+-		err = -ENXIO;
++		err = -ENOMEM;
+ 		goto err;
  	}
- }
- 
+ 	if (register_framebuffer(info)<0) {
 
 
 

@@ -1,46 +1,278 @@
-From: Thorsten Kranzkowski <dl8bcu@dl8bcu.de>
-Subject: Re: fbdv/fbcon pending problems
-Date: Mon, 23 Feb 2004 20:35:28 +0000
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20040223203528.E433@Marvin.DL8BCU.ampr.org>
-References: <1077497593.5960.28.camel@gaston>
-Reply-To: dl8bcu@dl8bcu.de
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: FrameMasterII fbdev updates.
+Date: Mon, 23 Feb 2004 22:16:05 +0000 (GMT)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.LNX.4.44.0402232214520.11599-100000@phoenix.infradead.org>
+References: <Pine.GSO.4.58.0402201402010.23753@waterleaf.sonytel.be>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <1077497593.5960.28.camel@gaston>; from benh@kernel.crashing.org on Mon, Feb 23, 2004 at 11:53:14AM +1100
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1AvOUq-0003Sx-Hg
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 23 Feb 2004 14:24:16 -0800
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1AvOBP-0007P0-7F
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 23 Feb 2004 14:04:11 -0800
+In-Reply-To: <Pine.GSO.4.58.0402201402010.23753@waterleaf.sonytel.be>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Mon, Feb 23, 2004 at 11:53:14AM +1100, Benjamin Herrenschmidt wrote:
->  - mach64 lockups on LT-G (I'll try on an LT-Pro soon) plus other
-> mach64 bugs in the new version in the bk fbdev, I'll have a patch for
-> some of the problems, but I didn't find a good explanation for the
-> accel lockups yet
 
-Question: Is fbdev supposed to work without BIOS? 
+> On Wed, 18 Feb 2004, James Simmons wrote:
+> >   Can you test this patch. It is a port of the driver to use sysfs.
 
-I have an ATI Technologies Inc 3D Rage Pro 215GP in an Alpha AXPpci33,
-currently running with MILO as firmware/bootloader. 
-For several reasons I want to change to the original SRM firmware. 
-Unfortunately its intel_cpu/BIOS emulation locks up on the ATI BIOS. With
-the BIOS disabled the SRM succeeds loading the kernel. fbdev seems to
-initialize _something_, i.e. the monitor wakes up ans displays a stable
-repeating pattern of vertical stripes. But it hangs the machine after
-these lines on serial console:
+Merged your patch with mine. Here is the latest patch. Please test. The 
+patch is against linus tree. Thank you.
 
-fb0: ATY Mach64 frame buffer device on PCI
-Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
 
-Booting the same kernel image (2.6.[13]) with MILO (which has a different
-cpu emulation that succeeds executing the BIOS) works fine with fbdev. 
+--- fbdev-2.6/drivers/video/fm2fb.c	2004-02-22 20:18:18.000000000 -0800
++++ linus-2.6/drivers/video/fm2fb.c	2004-02-18 20:59:07.000000000 -0800
+@@ -49,7 +49,7 @@
+  *	not assembled with memory for the alpha channel. In this
+  *	case it could be possible to add the frame buffer into the
+  *	normal memory pool.
+- *
++ *	
+  *	At relative address 0x1ffff8 of the frame buffers base address
+  *	there exists a control register with the number of
+  *	four control bits. They have the following meaning:
+@@ -64,7 +64,7 @@
+  *	is not very much information about the FrameMaster II in
+  *	the world so I add these information for completeness.
+  *
+- *	JP1  interlace selection (1-2 non interlaced/2-3 interlaced)
++ *	JP1  interlace selection (1-2 non interlaced/2-3 interlaced) 
+  *	JP2  wait state creation (leave as is!)
+  *	JP3  wait state creation (leave as is!)
+  *	JP4  modulate composite sync on green output (1-2 composite
+@@ -127,7 +127,12 @@
+ 
+ static volatile unsigned char *fm2fb_reg;
+ 
+-static struct fb_fix_screeninfo fb_fix __devinitdata = {
++#define arraysize(x)	(sizeof(x)/sizeof(*(x)))
++
++static struct fb_info fb_info;
++static u32 pseudo_palette[17];
++
++static struct fb_fix_screeninfo fb_fix __initdata = {
+ 	.smem_len =	FRAMEMASTER_REG,
+ 	.type =		FB_TYPE_PACKED_PIXELS,
+ 	.visual =	FB_VISUAL_TRUECOLOR,
+@@ -136,12 +141,12 @@
+ 	.accel =	FB_ACCEL_NONE,
+ };
+ 
+-static int fm2fb_mode __devinitdata = -1;
++static int fm2fb_mode __initdata = -1;
+ 
+ #define FM2FB_MODE_PAL	0
+ #define FM2FB_MODE_NTSC	1
+ 
+-static struct fb_var_screeninfo fb_var_modes[] __devinitdata = {
++static struct fb_var_screeninfo fb_var_modes[] __initdata = {
+     {
+ 	/* 768 x 576, 32 bpp (PAL) */
+ 	768, 576, 768, 576, 0, 0, 32, 0,
+@@ -156,10 +161,11 @@
+ 	33333, 10, 102, 10, 5, 80, 34, FB_SYNC_COMP_HIGH_ACT, 0
+     }
+ };
+-
++    
+     /*
+      *  Interface used by the world
+      */
++int fm2fb_init(void);
+ 
+ static int fm2fb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+                            u_int transp, struct fb_info *info);
+@@ -168,7 +174,7 @@
+ static struct fb_ops fm2fb_ops = {
+ 	.owner		= THIS_MODULE,
+ 	.fb_setcolreg	= fm2fb_setcolreg,
+-	.fb_blank	= fm2fb_blank,
++	.fb_blank	= fm2fb_blank,	
+ 	.fb_fillrect	= cfb_fillrect,
+ 	.fb_copyarea	= cfb_copyarea,
+ 	.fb_imageblit	= cfb_imageblit,
+@@ -196,7 +202,7 @@
+ static int fm2fb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+                          u_int transp, struct fb_info *info)
+ {
+-	if (regno > 255)
++	if (regno > 15)
+ 		return 1;
+ 	red >>= 8;
+ 	green >>= 8;
+@@ -210,91 +216,66 @@
+      *  Initialisation
+      */
+ 
+-static int __devinit fm2fb_probe(struct zorro_dev *z,
+-				const struct zorro_device_id *id);
+-
+-static struct zorro_device_id fm2fb_devices[] __devinitdata = {
+-	{ ZORRO_PROD_BSC_FRAMEMASTER_II },
+-	{ ZORRO_PROD_HELFRICH_RAINBOW_II },
+-	{ 0 }
+-};
+-
+-static struct zorro_driver fm2fb_driver = {
+-	.name		= "fm2fb",
+-	.id_table	= fm2fb_devices,
+-	.probe		= fm2fb_probe,
+-};
+-
+-static int __devinit fm2fb_probe(struct zorro_dev *z,
+-				const struct zorro_device_id *id)
++int __init fm2fb_init(void)
+ {
+-	struct fb_info *info;
++	struct zorro_dev *z = NULL;
+ 	unsigned long *ptr;
+ 	int is_fm;
+ 	int x, y;
+ 
+-	is_fm = z->id == ZORRO_PROD_BSC_FRAMEMASTER_II;
+-
+-	if (!zorro_request_device(z,"fm2fb"))
+-		return -ENXIO;
++	while ((z = zorro_find_device(ZORRO_WILDCARD, z))) {
++		if (z->id == ZORRO_PROD_BSC_FRAMEMASTER_II)
++			is_fm = 1;
++		else if (z->id == ZORRO_PROD_HELFRICH_RAINBOW_II)
++			is_fm = 0;
++		else
++			continue;
++		
++		if (!request_mem_region(z->resource.start, FRAMEMASTER_SIZE, "fm2fb"))
++			continue;
++
++		/* assigning memory to kernel space */
++		fb_fix.smem_start = z->resource.start;
++		fb_info.screen_base = ioremap(fb_fix.smem_start, FRAMEMASTER_SIZE);
++		fb_fix.mmio_start = fb_fix.smem_start + FRAMEMASTER_REG;
++		fm2fb_reg  = (unsigned char *)(fb_info.screen_base+FRAMEMASTER_REG);
++	
++		strcpy(fb_fix.id, is_fm ? "FrameMaster II" : "Rainbow II");
++
++		/* make EBU color bars on display */
++		ptr = (unsigned long *)fb_fix.smem_start;
++		for (y = 0; y < 576; y++) {
++			for (x = 0; x < 96; x++) *ptr++ = 0xffffff;/* white */
++			for (x = 0; x < 96; x++) *ptr++ = 0xffff00;/* yellow */
++			for (x = 0; x < 96; x++) *ptr++ = 0x00ffff;/* cyan */
++			for (x = 0; x < 96; x++) *ptr++ = 0x00ff00;/* green */
++			for (x = 0; x < 96; x++) *ptr++ = 0xff00ff;/* magenta */
++			for (x = 0; x < 96; x++) *ptr++ = 0xff0000;/* red */
++			for (x = 0; x < 96; x++) *ptr++ = 0x0000ff;/* blue */
++			for (x = 0; x < 96; x++) *ptr++ = 0x000000;/* black */
++		}
++		fm2fb_blank(0, NULL);
+ 
+-	info = framebuffer_alloc(256 * sizeof(u32), &z->dev);	
+-	if (!info) {
+-		zorro_release_device(z);
+-		return -ENOMEM;
+-	}
++		if (fm2fb_mode == -1)
++			fm2fb_mode = FM2FB_MODE_PAL;
+ 
+-	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0) {
+-		framebuffer_release(info);
+-		zorro_release_device(z);
+-		return -ENOMEM;
+-	}
++		fb_info.fbops = &fm2fb_ops;
++		fb_info.var = fb_var_modes[fm2fb_mode];
++		fb_info.screen_base = (char *)fb_fix.smem_start;
++		fb_info.pseudo_palette = pseudo_palette;
++		fb_info.fix = fb_fix;
++		fb_info.flags = FBINFO_FLAG_DEFAULT;
+ 
+-	/* assigning memory to kernel space */
+-	fb_fix.smem_start = zorro_resource_start(z);
+-	info->screen_base = ioremap(fb_fix.smem_start, FRAMEMASTER_SIZE);
+-	fb_fix.mmio_start = fb_fix.smem_start + FRAMEMASTER_REG;
+-	fm2fb_reg  = (unsigned char *)(info->screen_base+FRAMEMASTER_REG);
+-
+-	strcpy(fb_fix.id, is_fm ? "FrameMaster II" : "Rainbow II");
+-
+-	/* make EBU color bars on display */
+-	ptr = (unsigned long *)fb_fix.smem_start;
+-	for (y = 0; y < 576; y++) {
+-		for (x = 0; x < 96; x++) *ptr++ = 0xffffff;/* white */
+-		for (x = 0; x < 96; x++) *ptr++ = 0xffff00;/* yellow */
+-		for (x = 0; x < 96; x++) *ptr++ = 0x00ffff;/* cyan */
+-		for (x = 0; x < 96; x++) *ptr++ = 0x00ff00;/* green */
+-		for (x = 0; x < 96; x++) *ptr++ = 0xff00ff;/* magenta */
+-		for (x = 0; x < 96; x++) *ptr++ = 0xff0000;/* red */
+-		for (x = 0; x < 96; x++) *ptr++ = 0x0000ff;/* blue */
+-		for (x = 0; x < 96; x++) *ptr++ = 0x000000;/* black */
+-	}
+-	fm2fb_blank(0, info);
++		/* The below fields will go away !!!! */
++		fb_alloc_cmap(&fb_info.cmap, 16, 0);
+ 
+-	if (fm2fb_mode == -1)
+-		fm2fb_mode = FM2FB_MODE_PAL;
++		if (register_framebuffer(&fb_info) < 0)
++			return -EINVAL;
+ 
+-	info->fbops = &fm2fb_ops;
+-	info->var = fb_var_modes[fm2fb_mode];
+-	info->pseudo_palette = info->par;
+-	info->par = NULL;
+-	info->fix = fb_fix;
+-	info->flags = FBINFO_FLAG_DEFAULT;
+-
+-	if (register_framebuffer(info) < 0) {
+-		fb_dealloc_cmap(&info->cmap);
+-		framebuffer_release(info);
+-		zorro_release_device(z);
+-		return -EINVAL;
++		printk("fb%d: %s frame buffer device\n", fb_info.node, fb_fix.id);
++		return 0;
+ 	}
+-	printk("fb%d: %s frame buffer device\n", info->node, fb_fix.id);
+-	return 0;
+-}
+-
+-int __init fm2fb_init(void)
+-{
+-	return zorro_register_driver(&fm2fb_driver);
++	return -ENXIO;
+ }
+ 
+ int __init fm2fb_setup(char *options)
+@@ -304,7 +285,7 @@
+ 	if (!options || !*options)
+ 		return 0;
+ 
+-	while ((this_opt = strsep(&options, ",")) != NULL) {
++	while ((this_opt = strsep(&options, ",")) != NULL) {	
+ 		if (!strncmp(this_opt, "pal", 3))
+ 			fm2fb_mode = FM2FB_MODE_PAL;
+ 		else if (!strncmp(this_opt, "ntsc", 4))
 
-Bye,
-Thorsten
 
--- 
-| Thorsten Kranzkowski        Internet: dl8bcu@dl8bcu.de                      |
-| Mobile: ++49 170 1876134       Snail: Kiebitzstr. 14, 49324 Melle, Germany  |
-| Ampr: dl8bcu@db0lj.#rpl.deu.eu, dl8bcu@marvin.dl8bcu.ampr.org [44.130.8.19] |
+
+-------------------------------------------------------
+SF.Net is sponsored by: Speed Start Your Linux Apps Now.
+Build and deploy apps & Web services for Linux with
+a free DVD software kit from IBM. Click Now!
+http://ads.osdn.com/?ad_id=1356&alloc_id=3438&op=click

@@ -1,17 +1,18 @@
-From: Michael Dantzer-Sorensen <mds@vitesse.com>
-Subject: ATI 3D RAGE Mobility chip removed from atyfb_base.c ??
-Date: Tue, 1 Mar 2005 21:16:07 +0100 (CET)
-Message-ID: <Pine.LNX.4.44.0503012109160.20076-100000@work-mds.dk.vitesse.com>
+From: Zack Smith <plinius@comcast.net>
+Subject: multiple displays?
+Date: Wed, 02 Mar 2005 09:53:25 -0500
+Message-ID: <4225D365.6020000@comcast.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D6DnF-0005Fu-7y
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 01 Mar 2005 12:16:33 -0800
-Received: from [217.74.214.36] (helo=mx-dk1.vsc.vitesse.com)
+	id 1D6VEP-0001Nf-MI
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 02 Mar 2005 06:53:45 -0800
+Received: from rwcrmhc13.comcast.net ([204.127.198.39])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1D6Dmx-0002nJ-AQ
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 01 Mar 2005 12:16:32 -0800
+	id 1D6VEG-0006Zh-Vt
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 02 Mar 2005 06:53:45 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -22,25 +23,20 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Hi 
+Hello,
 
-I have a quick question:  Why has the ATI 3D RAGE Mobility
-chip with ID 4c52 been taken out of the atyfb_base.c file?
+I was curious if the fb code currently allows
+for >1 simultaneous displays. Also, if this is
+a FAQ, where is the FAQ list?
 
-I have put it back into my kernel and it works fine, but
-I would really like to help to get it back into the file 
-on a permanent basis.
+Incidentally www.linux-fbdev.org is not
+responding.
 
-Br
-
-  Michael 
-
--- 
-This mail is best read on a 80x24 tty with 2 colors and a non-proportional font
+Thanks,
+Zack Smith
 
 
 

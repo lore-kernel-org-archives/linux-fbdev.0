@@ -1,21 +1,21 @@
-From: James Simmons <jsimmons@infradead.org>
+From: John Zielinski <grim@undead.cc>
 Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
  one works ;-)
-Date: Wed, 28 Apr 2004 00:51:12 +0100 (BST)
+Date: Tue, 27 Apr 2004 19:54:49 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0404280039460.23153-100000@phoenix.infradead.org>
-References: <1083108311.16476.56.camel@gaston>
+Message-ID: <408EF2C9.4020707@undead.cc>
+References: <Pine.LNX.4.44.0404280013210.23153-100000@phoenix.infradead.org> <1083108311.16476.56.camel@gaston>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIcM9-0005ps-FP
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:51:17 -0700
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.30)
-	id 1BIcM9-0005Bu-3v
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:51:17 -0700
+	id 1BIcPg-0006HQ-PC
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:54:56 -0700
+Received: from ns2.undead.cc ([216.126.84.18] helo=mail.undead.cc)
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
+	id 1BIcPg-0008Kw-AY
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:54:56 -0700
 In-Reply-To: <1083108311.16476.56.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,39 +26,32 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: John Zielinski <grim@undead.cc>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: James Simmons <jsimmons@infradead.org>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+Benjamin Herrenschmidt wrote:
 
-> > I refuse to have hacks to deal with a cripple VT system. What is 
-> > acceptable is that we add what we need to struct vc_data. You do that and 
-> > I have no problem then. From what I can see we need the following.
-> > 
-> > 1) Color depth.
-> > 2) Frequency.
-> > 3) Over scan color.
-> 
-> No, no, no ... We don't need those, we need a var structure, that's all.
+>>1) Color depth.
+>>2) Frequency.
+>>3) Over scan color.
+>>    
+>>
+>
+>No, no, no ... We don't need those, we need a var structure, that's all.
+>  
+>
 
-No. Look the logic should go from the upper VT layer to the lower driver 
-to accomplish something. Not the reverse.
+Yes, we need a var structure.  How else would you set one console to 
+1920x540p and another to 1920x1080i (540 doublescan)?  Or try different 
+timings?  I want my first console at a sane video mode like 480p while 
+the others can I can play with.  If the HDTV I'm testing looses sync I 
+can always switch to console one and restore all the consoles back to 
+480p and try again without having to shell in via serial or over a 
+network.  A second computer may not always be close at hand.
 
-struct vc_data -> native console driver structure --> fbdev
+John
 
-Not.
-
-fbdev --> native console driver --> struct vc_data.
-
-This was the way it uses to be. If this is the case then I suggest we 
-write our own vt.c and vt_ioctl.c for the fbcon layer. We shouldn't even
-use struct vc_data then. In fact each fbdev driver should be independent 
-console drivers. That is how 2.4.X was. Each driver was nearly its own 
-console driver. We need to go one way or the other. 
-
-
- 
 
 
 

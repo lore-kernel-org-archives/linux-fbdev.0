@@ -1,13 +1,13 @@
-From: Otto Solares <solca@guug.org>
+From: Nicolas Souchu <nsouch@free.fr>
 Subject: Re: [Linux-fbdev-devel] Redesign of kernel graphics interface
-Date: Thu, 6 May 2004 14:57:35 -0600
+Date: Thu, 6 May 2004 23:19:53 +0000
 Sender: mesa3d-dev-admin@lists.sourceforge.net
-Message-ID: <20040506205735.GA5194@guug.org>
+Message-ID: <20040506231953.B23760@armor.freesurf.fr>
 References: <20040506181639.61975.qmail@web14929.mail.yahoo.com>
 Mime-Version: 1.0
 Return-path: <mesa3d-dev-admin@lists.sourceforge.net>
 Content-Disposition: inline
-In-Reply-To: <20040506181639.61975.qmail@web14929.mail.yahoo.com>
+In-Reply-To: <20040506181639.61975.qmail@web14929.mail.yahoo.com>; from jonsmirl@yahoo.com on Thu, May 06, 2004 at 11:16:39AM -0700
 Errors-To: mesa3d-dev-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
 	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,43 +29,22 @@ On Thu, May 06, 2004 at 11:16:39AM -0700, Jon Smirl wrote:
 > sides so some of the proposed solutions are in conflict. The goal of this list
 > is to provide direction for a topic discussion at the Ottawa Kernel Summit.
 
-I see as common sense that fbdev should become the low-level and unified
-interface for graphics in Linux, it has too many advantages for us:
+[...]
+> A major topic that I missed in the original list was how to handle BSD. DRM is
+> under the BSD license and FB is GPL. If these two code bases are merged, what
+> are we going to do about BSD? I don't know the appropriate BSD lists to post
+> this to so please forward as necessary.
 
-- Exists now.
-- Multi-architecture.
-- Very popular in embedded solutions.
-- Interface to change video modes.
-- Supports low-end hardware.
-- It has an interface to control the hw from userspace.
-- Can be enhanced or fixed.
+What is exactly your question concerning licenses?
 
-Missing in fbdev:
+> Another topic that I missed was, why did kgi fail and what can we do to avoid
+> repeating the same path this time around.
 
-- Memory management.
-- Hardware lock to synch or flag changes in hardware.
-  (Maybe with the DRM/FB merge we could reuse the lock.)
-- sysfs (being fixed by Luca).
-- Video-out port API.
-- Video capture API (gatos).
+KGI failed to be accepted by linus/linux. You surely don't want repeating this ;)
+Otherwise, its design is still valid, I believe.
 
-I imply too that fbcon should not be considered as part of this low-level
-layer, but a client of it, because it implements acceleration and other
-stuff not related nor pertinent to a graphics layer per se.
-
-I am not saying that everything should be in the kernel, just the necesary
-API to properly have a Linux graphics state machine.  Anything else should
-be in userspace, specially acceleration that could be provided by DRI,
-directfb, fbcon, etc. which all will be clients of the low-level fbdev layer.
-
-This path makes it feasible to implement graphics servers (like Xserver)
-without implementing or duplicating the graphics layer details.  This
-would lead to a sane and (with time) a stable graphics layer for linux in
-the same way we have first-class networking, input and sound layers in Linux
-now.
-
--otto
-
+-- 
+Nicholas Souchu - nsouch@free.fr - nsouch@FreeBSD.org
 
 
 -------------------------------------------------------

@@ -1,25 +1,20 @@
-From: amavisd-new <postmaster@pendragon.lnxi.com>
-Subject: VIRUS (W32/Netsky-C) IN YOUR MAIL
-Date: Mon,  3 May 2004 20:10:27 -0600 (MDT)
+From: Yahoo! Groups <confirm-s2-R7zklVo0PdaWcCjjrp6ukHv78VQ-linux-fbdev-devel=lists.sourceforge.net@yahoogroups.com>
+Subject: Please confirm your request to join palkars
+Date: 4 May 2004 07:52:38 -0000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <VS08672-02@pendragon>
-References: <20040504021021.9CCA360162@pendragon.lnxi.com>
+Message-ID: <1083657158.32.57380.m22@yahoogroups.com>
+Reply-To: confirm-s2-R7zklVo0PdaWcCjjrp6ukHv78VQ-linux-fbdev-devel=lists.sourceforge.net@yahoogroups.com
 Mime-Version: 1.0
-Content-Type: multipart/report; report-type=delivery-status;
-    boundary="----------=_1083636627-8672-1"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BKpOC-0007ZZ-Eb
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 03 May 2004 19:10:32 -0700
-Received: from 66.239.25.6.ptr.us.xo.net ([66.239.25.6] helo=pendragon.lnxi.com)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BKpOB-0001BW-V9
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 03 May 2004 19:10:32 -0700
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by pendragon.lnxi.com (Postfix) with ESMTP id 36D02601CE
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  3 May 2004 20:10:27 -0600 (MDT)
-In-Reply-To: <20040504021021.9CCA360162@pendragon.lnxi.com>
+	id 1BKujL-0005Pc-VT
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 04 May 2004 00:52:43 -0700
+Received: from n41.grp.scd.yahoo.com ([66.218.67.16])
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
+	id 1BKujL-0001o5-Md
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 04 May 2004 00:52:43 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,82 +24,45 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-This is a multi-part message in MIME format...
 
-------------=_1083636627-8672-1
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Hello linux-fbdev-devel@lists.sourceforge.net,
 
-VIRUS ALERT
+We have received your request to join the palkars 
+group hosted by Yahoo! Groups, a free, easy-to-use community service.
 
-Our virus checker found
-    virus: W32/Netsky-C
-    banned filename: 454543403_moonlight.htm.scr
-in your email to the following recipient:
--> ebiederman@lnxi.com
+This request will expire in 7 days.
 
-Delivery of the email was stopped!
+TO BECOME A MEMBER OF THE GROUP: 
 
-Please check your system for viruses,
-or ask your system administrator to do so.
+1) Go to the Yahoo! Groups site by clicking on this link:
 
-For your reference, here are headers from your email:
-------------------------- BEGIN HEADERS -----------------------------
-Received: from lnxi.com (unknown [218.19.168.194])
-	by pendragon.lnxi.com (Postfix) with ESMTP id 9CCA360162
-	for <ebiederman@lnxi.com>; Mon,  3 May 2004 20:10:21 -0600 (MDT)
-From: linux-fbdev-devel@lists.sourceforge.net
-To: ebiederman@lnxi.com
-Subject: you have tried to steal!
-Date: Fri, 7 May 2004 10:10:56 +0800
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0003_0000740B.00004E51"
-X-Priority: 3
-X-MSMail-Priority: Normal
-Message-Id: <20040504021021.9CCA360162@pendragon.lnxi.com>
--------------------------- END HEADERS ------------------------------
+   http://groups.yahoo.com/i?i=R7zklVo0PdaWcCjjrp6ukHv78VQ&e=linux-fbdev-devel%40lists%2Esourceforge%2Enet 
 
-------------=_1083636627-8672-1
-Content-Type: message/delivery-status
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Description: Delivery error report
+  (If clicking doesn't work, "Cut" and "Paste" the line above into your 
+   Web browser's address bar.)
 
-Reporting-MTA: dns; pendragon
-Received-From-MTA: smtp; pendragon.lnxi.com ([127.0.0.1])
-Arrival-Date: Mon,  3 May 2004 20:10:23 -0600 (MDT)
+-OR-
 
-Final-Recipient: rfc822; ebiederman@lnxi.com
-Action: failed
-Status: 5.7.1
-Diagnostic-Code: smtp; 550 5.7.1 Message content rejected, id=08672-02 - VIRUS: W32/Netsky-C
-Last-Attempt-Date: Mon,  3 May 2004 20:10:27 -0600 (MDT)
+2) REPLY to this email by clicking "Reply" and then "Send"
+   in your email program
 
-------------=_1083636627-8672-1
-Content-Type: text/rfc822-headers
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Description: Undelivered-message headers
+If you did not request, or do not want, a membership in the
+palkars group, please accept our apologies
+and ignore this message.
 
-Received: from lnxi.com (unknown [218.19.168.194])
-	by pendragon.lnxi.com (Postfix) with ESMTP id 9CCA360162
-	for <ebiederman@lnxi.com>; Mon,  3 May 2004 20:10:21 -0600 (MDT)
-From: linux-fbdev-devel@lists.sourceforge.net
-To: ebiederman@lnxi.com
-Subject: you have tried to steal!
-Date: Fri, 7 May 2004 10:10:56 +0800
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0003_0000740B.00004E51"
-X-Priority: 3
-X-MSMail-Priority: Normal
-Message-Id: <20040504021021.9CCA360162@pendragon.lnxi.com>
+Regards,
 
-------------=_1083636627-8672-1--
+Yahoo! Groups Customer Care
+
+Your use of Yahoo! Groups is subject to http://docs.yahoo.com/info/terms/ 
+
+ 
+
+
+
 
 
 -------------------------------------------------------

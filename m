@@ -1,17 +1,19 @@
-From: "Carlo E. Prelz" <fluido@fluido.as>
-Subject: Re: Mixing g400 dualhead and old Millennium.
-Date: Sun, 13 Oct 2002 18:07:46 +0200
+From: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Subject: endian problem ?
+Date: Sun, 13 Oct 2002 20:49:21 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20021013160746.GA17618@casa.fluido.as>
-References: <20021012153641.GA13798@casa.fluido.as> <20021013001324.GF4267@ppc.vc.cvut.cz> <20021013141516.GA9973@casa.fluido.as> <20021013145604.GC20348@ppc.vc.cvut.cz>
+Message-ID: <20021013184921.4571@192.168.4.1>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from a205017.upc-a.chello.nl ([62.163.205.17] helo=mail.fluido.as)
+Received: from amarseille-201-1-3-116.abo.wanadoo.fr ([193.253.250.116] helo=zion.wanadoo.fr)
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 180lHe-0002vX-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 13 Oct 2002 09:08:03 -0700
-Content-Disposition: inline
-In-Reply-To: <20021013145604.GC20348@ppc.vc.cvut.cz>
+	id 180nnx-0000kS-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 13 Oct 2002 11:49:34 -0700
+Received: from local-mol ([192.168.4.2])
+	by zion.wanadoo.fr with esmtp (Exim 3.35 #1 (Debian))
+	id 180nsK-0000Jv-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 13 Oct 2002 20:54:04 +0200
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,35 +24,26 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchives/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Petr Vandrovec <vandrove@vc.cvut.cz>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-	Subject: Re: Mixing g400 dualhead and old Millennium.
-	Date: dom, ott 13, 2002 at 04:56:04 +0200
+Ok, I've ported radeonfb, controlfb and platinumfb to the
+new API (which is quite nice since allowed me to remove
+a whole bunch of cruft from these drivers, good job !)
 
-Quoting Petr Vandrovec (vandrove@vc.cvut.cz):
+However, I'm having a problem: With controlfb and
+radeonfb (couldn't test platinum yet but it's very similar
+to controlfb), the console is fine in 8 bpp, but text is
+plain blue in any higher bit depth (15, 16 or 32).
 
-> If you could print return value from register_framebuffer in 
-> matroxfb_dh_regit in matroxfb_crtc2.c, maybe it could reveal
-> problem. Maybe that using non-ac kernel fixes problem too.
+X with "fbdev" driver works fine, so I think setcolreg
+works properly. All those drivers are set to DIRECTCOLOR
+for these bit depth. Maybe I've missed something about
+the pseudo_palette thing (is it documented somewhere ?)
+or are there known endian bugs in the cfb_* routines ?
 
-It never reaches register_framebuffer. It leaves dh_regit at tese
-lines:
+Ben.
 
-        else if (ACCESS_FBINFO(video.len) < mem) {
-                kfree(d);
-                return -ENOMEM;
-        }
 
-ACCESS_FBINFO(video.len) is 2097152. Mem is 8388608.
-
-Carlo
-
--- 
-  *         Se la Strada e la sua Virtu' non fossero state messe da parte,
-* K * Carlo E. Prelz - fluido@fluido.as             che bisogno ci sarebbe
-  *               di parlare tanto di amore e di rettitudine? (Chuang-Tzu)
 
 
 -------------------------------------------------------

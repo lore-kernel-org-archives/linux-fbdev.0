@@ -1,19 +1,11 @@
-From: maximilian attems <janitor@sternwelten.at>
-Subject: [patch-kj] remove faulty __init's from drivers/video/fbmem.c
-Date: Fri, 23 Jul 2004 11:42:52 +0200
+From: "Nigel Adkins" <nadkins_um@m-p.dk>
+Subject: Get $200 bonus at our Casino!
+Date: Fri, 23 Jul 2004 11:55:56 -0300
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040723094252.GE1795@stro.at>
+Message-ID: <41c601c470c5$d6650cc5$0f30f257__44075.9221012287$1090595240$gmane$org@vortex.is>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BnwZu-0001qX-EN
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Jul 2004 02:42:58 -0700
-Received: from baikonur.stro.at ([213.239.196.228])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1BnwZt-0006SE-Nl
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Jul 2004 02:42:58 -0700
-Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -24,72 +16,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: jsimmons@infradead.org, geert@linux-m68k.org
+To: linux-usb-devel@lists.sourceforge.net, linux-ntfs-dev@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net, linux-decnet-user@lists.sourceforge.net
+
+Hi, 
+I have a special offer available for you at our casino.
+
+$20 to try our internet casino, no deposit is necessary!
+At the casino software's cashier enter bonus code: FR93P
+
+$200 bonus on your first deposit!
+At the casino software's cashier enter bonus code: FMJKU
+
+Allow us to show you our quality operation, fast payouts,
+generous bonuses, and super friendly around-the-clock
+customer support.
+
+Click here: http://bigbonus-casino.biz 
+
+Best regards,
+Jamie Zawinsky
 
 
 
-Hi.
-
-These four are called from fb_show_logo, which is exported symbol,
-called by fbcon_switch.
-
-Compile tested.
-
-	Domen
-
-patch is against 2.6.7-bk20, please tell if you need against newer.
-
-From: Domen Puncer <domen@coderock.org>
-Signed-off-by: Maximilian Attems
-
-
-
----
-
- linux-2.6.7-bk20-max/drivers/video/fbmem.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-diff -puN drivers/video/fbmem.c~faulty-inits-fbmem drivers/video/fbmem.c
---- linux-2.6.7-bk20/drivers/video/fbmem.c~faulty-inits-fbmem	2004-07-11 14:40:42.000000000 +0200
-+++ linux-2.6.7-bk20-max/drivers/video/fbmem.c	2004-07-11 14:40:42.000000000 +0200
-@@ -563,7 +563,7 @@ static inline unsigned safe_shift(unsign
- 	return n < 0 ? d >> -n : d << n;
- }
- 
--static void __init fb_set_logocmap(struct fb_info *info,
-+static void fb_set_logocmap(struct fb_info *info,
- 				   const struct linux_logo *logo)
- {
- 	struct fb_cmap palette_cmap;
-@@ -597,7 +597,7 @@ static void __init fb_set_logocmap(struc
- 	}
- }
- 
--static void  __init fb_set_logo_truepalette(struct fb_info *info,
-+static void  fb_set_logo_truepalette(struct fb_info *info,
- 					    const struct linux_logo *logo,
- 					    u32 *palette)
- {
-@@ -627,7 +627,7 @@ static void  __init fb_set_logo_truepale
- 	}
- }
- 
--static void __init fb_set_logo_directpalette(struct fb_info *info,
-+static void fb_set_logo_directpalette(struct fb_info *info,
- 					     const struct linux_logo *logo,
- 					     u32 *palette)
- {
-@@ -642,7 +642,7 @@ static void __init fb_set_logo_directpal
- 		palette[i] = i << redshift | i << greenshift | i << blueshift;
- }
- 
--static void __init fb_set_logo(struct fb_info *info,
-+static void fb_set_logo(struct fb_info *info,
- 			       const struct linux_logo *logo, u8 *dst,
- 			       int depth)
- {
+No thanks: http://bigbonus-casino.biz/u/
 
 
 

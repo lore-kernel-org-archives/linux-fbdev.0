@@ -1,21 +1,22 @@
-From: James Simmons <jsimmons@infradead.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: fbdv/fbcon pending problems
-Date: Thu, 26 Feb 2004 00:20:20 +0000 (GMT)
+Date: Thu, 26 Feb 2004 11:33:01 +1100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0402260014130.24952-100000@phoenix.infradead.org>
-References: <1077752759.22397.62.camel@gaston>
+Message-ID: <1077755580.22232.89.camel@gaston>
+References: <Pine.LNX.4.44.0402260014130.24952-100000@phoenix.infradead.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Aw9PS-0001Ea-1J
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 Feb 2004 16:29:50 -0800
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1Aw9iq-0004f6-I5
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 Feb 2004 16:49:52 -0800
+Received: from gate.crashing.org ([63.228.1.57] ident=root)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1Aw932-0005Lb-2P
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 Feb 2004 16:06:40 -0800
-In-Reply-To: <1077752759.22397.62.camel@gaston>
+	id 1Aw9MP-0007ot-7L
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 Feb 2004 16:26:41 -0800
+In-Reply-To: <Pine.LNX.4.44.0402260014130.24952-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,47 +26,49 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@infradead.org>
 Cc: Otto Solares <solca@guug.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
 
 
-> >    I think this is a bad idea. This has been tried before. In the 
-> > opensource community there is no such a thing as a standard library. 
-> 
-> On the other hand, things like dbus are low-level and slowly getting
-> used by everyone... we also have the libc :)
+> Well now that we have one input api that can happen. Of course with 
+> graphics its much more diverse with what you can do. That is one of the 
+> reasons for so many graphics libraries. It would be really hard to write
+> a one size fits all library when it comes to graphics.
 
-Well now that we have one input api that can happen. Of course with 
-graphics its much more diverse with what you can do. That is one of the 
-reasons for so many graphics libraries. It would be really hard to write
-a one size fits all library when it comes to graphics.
+Note that I am NOT talking about a graphics library. This has NO
+BUSINESS doing any kind of rendering. It's only the userland interface
+to the underlying kernel drivers as far as mode switching & geometry
+is concerned. That's _ALL_. In the same  was as libGL is the userland
+interface to DRI, or iptables the userlnad interface to netfilter,
+etc...
+ 
+> By state machine I mean the physical hardware state. If it's hardware 
+> access then it should be in the kernel. Note I'm refering to mode setting 
+> not acceleration. Now EDID overrides per monitor model and saving the 
+> state to disk is different. That should be userland. 
 
-> >     The kernel really needs to be the only state machine for the hardware. 
-> > Library developers will usually use the kernel standard interfaces. 
-> 
-> I don't fully agree. The kernel will do the actual HW banging, but
-> we want things like EDID overrides per monitor models, persistent
-> configuration saved to storage etc... all of that beeing pretty
-> nasty to do in the kernel.
+I agree. The HW access is done in kernel space. That's even true for
+acceleration actually. You are mixing things. What I'm taking about
+is exactly that: The userland library gets the various EDID & other
+probing informations coming from the kernel drivers. It does the various
+policy decisions on mode setting, it provides the API for userland to
+deal with mode setting & monitor placement (what I call geometry)
+and saving/restoring of configurations. The actual banging of the mode
+to the HW is done by the kernel driver though. (The card specific back
+end of the library probably builds either a mode description or a
+register list and pass that to the kernel driver).
 
-By state machine I mean the physical hardware state. If it's hardware 
-access then it should be in the kernel. Note I'm refering to mode setting 
-not acceleration. Now EDID overrides per monitor model and saving the 
-state to disk is different. That should be userland. 
+> I think we are fine for whats in the kernel. As for multiple head and 
+> geometry stuff its not that hard if done right. I have been using 
+> multi-head systems for years. I have multip desktop systems for years!!!
 
-> I have mixed feeling on that. Keith Packard seem to prefer the library
-> approach. I don't know for sure what Linus prefers here. Currently, I
-> feel we are trying to do too much in the kernel, and that will become
-> increasingly painful to manage as we get multiple head & geometry stuff
-> getting in the picture.
+I have been using multi head systems for years and I've seen how good
+it can be, but also a bunch of the pitfalls when trying to design a
+driver for it. If it was that easy, we would have had the right support
+in fbdev for ages. We don't.
 
-I think we are fine for whats in the kernel. As for multiple head and 
-geometry stuff its not that hard if done right. I have been using 
-multi-head systems for years. I have multip desktop systems for years!!!
-
-
+Ben.
 
 
 

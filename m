@@ -1,77 +1,33 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
 Subject: Re: [Linux-fbdev-devel] Re: [PATCH] fbdev: Fix IO access in rivafb
-Date: Tue, 9 Nov 2004 06:08:02 +0800
-Message-ID: <200411090608.02759.adaplas@hotpop.com>
-References: <200411080521.iA85LbG6025914@hera.kernel.org> <200411090402.22696.adaplas@hotpop.com> <Pine.LNX.4.58.0411081211270.2301@ppc970.osdl.org>
+Date: Tue, 9 Nov 2004 06:18:10 +0800
+Message-ID: <200411090618.10418.adaplas@hotpop.com>
+References: <200411080521.iA85LbG6025914@hera.kernel.org> <200411081633.00645.adaplas@hotpop.com> <1099950617.3946.163.camel@gaston>
 Reply-To: adaplas@pol.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261264AbUKHWIQ@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.58.0411081211270.2301@ppc970.osdl.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261274AbUKHWSx@vger.kernel.org>
+In-Reply-To: <1099950617.3946.163.camel@gaston>
 Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>, Guido Guenther <agx@sigxcpu.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, adaplas@pol.net
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>, Guido Guenther <agx@sigxcpu.org>
 
-On Tuesday 09 November 2004 04:13, Linus Torvalds wrote:
-> On Tue, 9 Nov 2004, Antonino A. Daplas wrote:
-> > In big endian machines, the read*/write* accessors do a byteswap for an
-> > inherently little endian PCI bus.  However, rivafb puts the hardwire in
-> > big endian register access, thus the byteswap is not needed. So, instead
-> > of read*/write*, use __raw_read*/__raw_write*.
+On Tuesday 09 November 2004 05:50, Benjamin Herrenschmidt wrote:
+> On Mon, 2004-11-08 at 16:33 +0800, Antonino A. Daplas wrote:
+> > Hmm, I'll ask Guido Guenther if he can test the changes. I think a
+> > different set of access macros for PPC might be a more preferrable
+> > solution.
 >
-> This fix should make the #ifdef CONFIG_PCC entirely superfluous afaik.
-
-Ah, of course.
-
->
-> The thing is, once riva does its HW accesses right, the special cases just
-> go away. There's a reason we have abstractions..
->
-> Does anybody have the hardware to test with?
+> Well, I'd rather leave the registers Little Endian, but then, it will
+> clash with X which does put them into Big Endian mode, so that would
+> have to be restored all the time.
 >
 
-I've asked Guido Guenther to test, might take a couple of days.  I also
-asked him if he can use the in/out_be* which is probably safer for ppc.
-And the mb()'s scattered all over the driver may be removed. 
+I also asked Guido if he can test the removal of the code that puts the
+hardware in big endian, although I told him that I prefer a new set of
+access macros.  But I'll leave this decision to you people. 
 
 Tony
-
-
-In big endian machines, the read*/write* accessors do a byteswap for an
-inherently little endian PCI bus.  However, rivafb puts the hardwire in big
-endian register access, thus the byteswap is not needed. So for 16- and
-32-bit access, instead of read*/write*, use __raw_read*/__raw_write* for all
-archs.
- 
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
-
-diff -Nru a/drivers/video/riva/riva_hw.h b/drivers/video/riva/riva_hw.h
---- a/drivers/video/riva/riva_hw.h	2004-11-09 05:39:48 +08:00
-+++ b/drivers/video/riva/riva_hw.h	2004-11-09 06:00:09 +08:00
-@@ -73,18 +73,13 @@
- /*
-  * HW access macros.
-  */
--#if defined(__powerpc__)
- #include <asm/io.h>
--#define NV_WR08(p,i,d)	out_8(p+i, d)
--#define NV_RD08(p,i)	in_8(p+i)
--#else
- #define NV_WR08(p,i,d)  (writeb((d), (u8 __iomem *)(p) + (i)))
- #define NV_RD08(p,i)    (readb((u8 __iomem *)(p) + (i)))
--#endif
--#define NV_WR16(p,i,d)  (writew((d), (u16 __iomem *)(p) + (i)/2))
--#define NV_RD16(p,i)    (readw((u16 __iomem *)(p) + (i)/2))
--#define NV_WR32(p,i,d)  (writel((d), (u32 __iomem *)(p) + (i)/4))
--#define NV_RD32(p,i)    (readl((u32 __iomem *)(p) + (i)/4))
-+#define NV_WR16(p,i,d)  (__raw_writew((d), (u16 __iomem *)(p) + (i)/2))
-+#define NV_RD16(p,i)    (__raw_readw((u16 __iomem *)(p) + (i)/2))
-+#define NV_WR32(p,i,d)  (__raw_writel((d), (u32 __iomem *)(p) + (i)/4))
-+#define NV_RD32(p,i)    (__raw_readl((u32 __iomem *)(p) + (i)/4))
- #define VGA_WR08(p,i,d) NV_WR08(p,i,d)
- #define VGA_RD08(p,i)   NV_RD08(p,i)
- 

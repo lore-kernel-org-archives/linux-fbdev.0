@@ -1,25 +1,33 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Re: [PATCH] fbdev: Fix IO access in rivafb
-Date: Sun, 14 Nov 2004 10:52:00 +1100
-Message-ID: <1100389920.20511.133.camel@gaston>
-References: <200411080521.iA85LbG6025914@hera.kernel.org>
-	 <200411132000.31465.adaplas@hotpop.com>
-	 <Pine.LNX.4.58.0411130959280.4100@ppc970.osdl.org>
-	 <200411140529.48977.adaplas@hotpop.com>
+From: ramprasad <ramprasad@ncoretech.com>
+Subject: frame bufffer on CRT
+Date: Mon, 15 Nov 2004 13:24:22 +0530
+Message-ID: <419860AE.4000606@ncoretech.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CT7hH-0005cX-3j
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 13 Nov 2004 15:52:47 -0800
-Received: from gate.crashing.org ([63.228.1.57])
+	id 1CTbYI-0000b8-UC
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 14 Nov 2004 23:45:30 -0800
+Received: from premium.exocore.com ([203.197.173.224])
 	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1CT7hG-0006yM-J6
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 13 Nov 2004 15:52:46 -0800
-In-Reply-To: <200411140529.48977.adaplas@hotpop.com>
+	id 1CTbYH-0005Ka-LM
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 14 Nov 2004 23:45:30 -0800
+Received: from mail.ncoretech.com (dsl.ncoretech.com [61.95.205.91])
+	by premium.exocore.com (8.12.8/8.12.8) with ESMTP id iAF7jOAk024837
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 15 Nov 2004 13:15:24 +0530
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by mail.ncoretech.com (Postfix) with ESMTP id 900DA5FF4D
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 15 Nov 2004 13:15:38 +0530 (IST)
+Received: from mail.ncoretech.com ([127.0.0.1])
+ by localhost (mail.ncoretech.com [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 03861-03 for <linux-fbdev-devel@lists.sourceforge.net>;
+ Mon, 15 Nov 2004 13:15:38 +0530 (IST)
+Received: from ncoretech.com (ws184.ncoretech.com [192.168.1.184])
+	by mail.ncoretech.com (Postfix) with ESMTP id 057035FF82
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 15 Nov 2004 13:15:38 +0530 (IST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,29 +38,18 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: adaplas@pol.net
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linus Torvalds <torvalds@osdl.org>, Guido Guenther <agx@sigxcpu.org>, Linux Kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Sun, 2004-11-14 at 05:29 +0800, Antonino A. Daplas wrote:
-> On Sunday 14 November 2004 02:00, Linus Torvalds wrote:
-> > On Sat, 13 Nov 2004, Antonino A. Daplas wrote:
-> > > Why not use in_be* and out_be* for __raw_read and raw_write?
-> >
-> > Please don't start using some stupid magic ppc-specific macros for a
-> > driver that has no reason to be PPC-specific. It then only causes bugs
-> > that show on one platform and not another.
-> 
-> I'm not. I'm just wondering that if the other approach was taken (keep the
-> hardware in little endian mode), then the write/read* macros, which are just
-> wrappers for in_le*/out_le*, would have been used. Would it help fix (or
-> cover up) bugs that are in PPC but not x86? 
+Hi All,
+        I am using 2.4.19-rmk7-pxa1  kernel on my PXA-255 board which is 
+using epson13506 chip for  CRT display.
+I am seeing the linux logo on my CRT.The problem is, i am seeing two 
+linux logo on my CRT.
+i have set my  display to 640x480. Can anybody explain why i am seeing this.
 
-If you switch the HW to LE, I'm afraid you'll lockup when VT switching
-back & forth with X ...
-
-Ben.
-
+Thanks in advance,
+Ramprasad
 
 
 

@@ -1,29 +1,22 @@
-From: Nigel Cunningham <ncunningham@clear.net.nz>
-Subject: Re: Cursor problems still in test9
-Date: Fri, 31 Oct 2003 08:46:46 +1300
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: tdfx & multiple voodoo cards : supposed to
+ work ? + Mach64Gx question.
+Date: Thu, 30 Oct 2003 21:31:56 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1067543205.4041.17.camel@laptop-linux>
-References: <20031028094907.GA1319@elf.ucw.cz>
- <Pine.LNX.4.44.0310300436440.28721-100000@phoenix.infradead.org>
- <20031030090934.GC295@elf.ucw.cz>
+Message-ID: <Pine.GSO.4.21.0310302131070.16880-100000@waterleaf.sonytel.be>
+References: <20031030183125.GA12087@iliana>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1AFIwa-0000Ef-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 30 Oct 2003 11:58:56 -0800
-Received: from smtp1.clear.net.nz ([203.97.33.27])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AFIwZ-0001wi-Ta
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 30 Oct 2003 11:58:56 -0800
-Received: from 218-101-109-48.dialup.clear.net.nz
- (218-101-109-48.dialup.clear.net.nz [218.101.109.48])
- by smtp1.clear.net.nz (CLEAR Net Mail)
- with ESMTP id <0HNL00AR5661F2@smtp1.clear.net.nz> for
- linux-fbdev-devel@lists.sourceforge.net; Fri, 31 Oct 2003 08:58:55 +1300 (NZDT)
-In-reply-to: <20031030090934.GC295@elf.ucw.cz>
+	id 1AFJSd-0005H2-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 30 Oct 2003 12:32:03 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.24)
+	id 1AFJSc-00031l-TC
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 30 Oct 2003 12:32:03 -0800
+In-Reply-To: <20031030183125.GA12087@iliana>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -33,39 +26,36 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Pavel Machek <pavel@suse.cz>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, geert@linux-m68k.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Sven Luther <sven.luther@wanadoo.fr>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-You can also see the cursor not getting erased if you try my software
-suspend port with the nice display turned on. It works fine on 2.4, but
-under 2.6 you get underlines all over the place, even though it tries to
-hide the cursor.
-
-Regards,
-
-Nigel
-
-On Thu, 2003-10-30 at 22:09, Pavel Machek wrote:
-> Well, we certainly do not want to see artifacts leaved behind cursor,
-> which is what 2.6 currently does. (Type something in bash, backspace
-> over it).
+On Thu, 30 Oct 2003, Sven Luther wrote:
+> On Thu, Oct 30, 2003 at 06:27:01PM +0000, James Simmons wrote:
+> > > 00:0f.0 VGA comppatible controller: ATI Technolgies Inc 210888GX [Mach64 GX] (rev 02)
+> > > 
+> > > Any idea on what is going on here (the kernel works, but there is no
+> > > video output).
+> > 
+> > I have this card as well and never got it to work.
 > 
-> Making it behave like it does now with 2.6, but with cursor properly
-> deleted after after backspace, it would be okay.
-> 
-> [It should behave the same way on 2.4 vgacon and fbcon... with
-> possible difference that "bright background" might cause characters to
-> blink on vgacon. That depends on vga card setting and is not really
-> important.]
+> On x86 ? But Chris is telling that it used to work well with his 2.2.20
+> or thereabout kernel.
 
+Interesting... With atyfb? There shouldn't be any changes between atyfb in
+2.2.20 and 2.4.x/2.6.0 w.r.t. Mach64 GX.
 
--- 
-Nigel Cunningham
-495 St Georges Road South, Hastings 4201, New Zealand
+Gr{oetje,eeting}s,
 
-Evolution (n): A hypothetical process whereby infinitely improbable events occur 
-with alarming frequency, order arises from chaos, and no one is given credit.
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

@@ -1,18 +1,15 @@
-From: "Dimitrie O. Paun" <dpaun@rogers.com>
-Subject: Re: [BK fbdev updates]
-Date: Tue, 31 Dec 2002 19:31:24 -0500
+From: "Chuck Meade" <chuck@ThePTRGroup.com>
+Subject: FB driver for Epson sed1335
+Date: Tue, 31 Dec 2002 20:47:58 -0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200212311931.24544.dpaun@rogers.com>
-References: <Pine.LNX.4.44.0301010039430.5161-100000@phoenix.infradead.org>
-Reply-To: dpaun@rogers.com
+Message-ID: <IIEEICKJLNEPBBDJICNGCEPHCMAA.chuck@ThePTRGroup.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from fep01-mail.bloor.is.net.cable.rogers.com ([66.185.86.71])
+Received: from smtp10.atl.mindspring.net ([207.69.200.246])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18TXqG-0007Af-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 31 Dec 2002 17:38:44 -0800
-In-Reply-To: <Pine.LNX.4.44.0301010039430.5161-100000@phoenix.infradead.org>
+	id 18TXzH-00088C-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 31 Dec 2002 17:48:03 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,22 +20,16 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>, Linus Torvalds <torvalds@transmeta.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: "Chuck Meade (PTR Group)" <chuck@ThePTRGroup.com>
 
-On December 31, 2002 08:17 pm, James Simmons wrote:
-> Just do a bk pull at
->
-> bk://fbdev.bkbits.net:8080/fbdev-2.5
->
-> The diff is at http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
+Does anyone have a Linux fb driver for the Epson sed1335 LCD
+controller?  I see drivers in the Linux tree for some of the
+newer Epson devices such as the 1355, but cannot locate a
+driver for the 1335.
 
-James,
-
-What about a diffstat? Come on dude, this a problem _every_single_patch_ :)
-
--- 
-Dimi.
+Thanks very much,
+Chuck
 
 
 

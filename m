@@ -1,16 +1,17 @@
-From: Jonathan Paul Calledo <jonathanpaul_r@geelongfan.com>
-Subject: FREE Great Opportunity!
-Date: Wed, 18 Jun 2003 09:19:21 -0700
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [PATCH] Macfb compile fixes
+Date: Thu, 19 Jun 2003 06:12:44 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <EDWIN4ddqN19bBLmUjS00004a93@edwin>
-Reply-To: jonathanpaul_13@eudoramail.com
+Message-ID: <Pine.LNX.4.44.0306190612270.30417-100000@phoenix.infradead.org>
+References: <200306151838.h5FIcdw5008298@callisto.of.borg>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quotedGMprintable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from blk178-26.digitelone.com ([202.138.178.26] helo=edwin)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19SRTr-0001t4-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 17 Jun 2003 18:11:22 -0700
+Received: from phoenix.infradead.org ([195.224.96.167])
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19Srjd-0002XH-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 18 Jun 2003 22:13:21 -0700
+In-Reply-To: <200306151838.h5FIcdw5008298@callisto.of.borg>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,93 +21,15 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-
-Hello!
-
-My name is Jonathan Paul Calledo. I am now focusing
-in one Business opportunity. I have tried several of
-these online opportunities full of hype promising
-us thousands of dollars every month.
-
-It is a sad fact that many people who are in need
-of additional income, are being victimized by
-these fly by night scam artists. Every time I
-tried one opportunity after the other, I ended up
-more broke than ever. Not to mention how
-embarrassing it was.
-
-As a result of trying all these opportunities, I
-finally found the company which is true to their
-words.  Not full of hype, but consistently send
-me the monthly check. They have given me the
-best compensation plan with their high %
-commission. I finally have SOMETHING my friends
-and family are BEGGING ME FOR rather than
-laughing behind my back. I joined for free and
-was amazed with what I've seen. I already had
-several people in my organization in less than a
-week.
-
-I didn't have to perform some juggling act to
-maintain some 60 to 40% balance in my legs. It
-is not one of those Binary compensation plan
-failures either. Everyone earns commissions here.
-
-They are providing a real service not the one
-that simply transfers wealth from the new signups
-to the people at the top. When you join, you will
-have a team of upline sponsors who will help you
-succeed every step of the way. Instead of being
-left alone, you will be guided step by step by
-real people, not those autoresponders.
-
-Do not believe in do nothing, no recruiting, and
-no selling schemes. They are scams. You might
-want to try it to prove my words. Beware of the
-ones that want you to invest $1200.00 before you
-start. How long would it take you to breakeven?
-Only you can make your own success together with
-the help of your sponsors.
-
-If you have 2 to 3 hours a day, you will be able
-to earn a full income in a few months. And there
-is absolutely no limit as to how much you can
-earn. It is designed to gain momentum after some
-time.
-
-But I prefer to avoid such statements as "You
-will get rich". I read it everywhere and will
-not allow myself to sound like them. I
-experienced it personally, YOU TOO, can be
-comfortable IF YOU CHOOSE!
-
-To explore more about this Business Opportunity,
-get your FREE ID now!
-
-Send email to jonathanpaul_12@eudoramail.com
-and put "SEND MY ID, PLEASE" in the subject and
-your FIRST NAME, LAST NAME, and COUNTRY in the body.
-
-You are going to like what you will see here.
-YOU WILL NOT SPEND ANY CENT When YOU JOIN US!
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linus Torvalds <torvalds@transmeta.com>, Linux Fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
 
-Best Regards,
+> Macfb compile fixes
 
-Jonathan Paul Calledo
-jonathanpaul_12@eudoramail.com
-
-
-
-Note: If you don't want to recieve emails from
-me again about this, send an email to jonathanpaul_50@geelongfan.com
-and put "Enough, Please" in the subject.
-
-
-
-
+Applied to BK tree.
 
 
 

@@ -1,24 +1,22 @@
-From: "Mukund JB." <mukundjb@esntechnologies.co.in>
-Subject: how to test framebuffer driver
-Date: Wed, 8 Sep 2004 16:09:53 +0530
+From: Shivappa Kushtagi <kushtagi@gmail.com>
+Subject: Virtual framebuffer driver - mmap problem
+Date: Wed, 8 Sep 2004 17:04:15 +0530
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <4EE0CBA31942E547B99B3D4BFAB348111073FB@mail.esn.co.in>
+Message-ID: <77e82a3f0409080434722d7650@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C4zpn-0003YG-0r
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 08 Sep 2004 03:37:51 -0700
-Received: from [202.125.86.130] (helo=ns2.astrainfonets.net)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1C4zpl-0000RT-LL
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 08 Sep 2004 03:37:50 -0700
-Received: from mail.esn.co.in ([202.125.80.34])
-	by ns2.astrainfonets.net (8.12.8p1/8.12.8) with ESMTP id i88AXPUE001160
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 8 Sep 2004 10:33:27 GMT
-Content-class: urn:content-classes:message
+	id 1C50iV-0001e8-98
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 08 Sep 2004 04:34:23 -0700
+Received: from rproxy.gmail.com ([64.233.170.195] helo=mproxy.gmail.com)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
+	id 1C50iU-0000nK-Lj
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 08 Sep 2004 04:34:23 -0700
+Received: by mproxy.gmail.com with SMTP id 74so329185rnl
+        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 08 Sep 2004 04:34:15 -0700 (PDT)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,35 +29,32 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Hello all,
+Hi,
 
-my task is to write frame buffer driver.
-can someone provide me some material for - how to remove the existing
-framebuffer driver and place mine when testing it. Is these any other
-way i can test my framebuffer driver.
+I would like to use virtual framebuffer on a linux system which is
+installed with R.H.9 to simulate my target display ( an embedded
+device with 320*480 resolution).
 
-Are there any applications which can directly run on framebuffer driver
-other than X server.
-If yes, what r they and how can I test my framebuffer driver using them.
-If no, how can I test the fb driver using X server.
+I have booted the system with VFB enabled. I verified it by checking
+the file /proc/fb
 
-Please send all notes, corrections and additions to me regarding the
-framebuffer drivers.
+# more /proc/fb
+0 Virtual FB
+1 VESA VGA
 
-Can I write an application by directly opening my fb device and
-performing operations like read/write/ioctl on it.
+Problem :
 
-					OR
+I have written a application which will mmap /dev/fb0 and fill it with
+some RGB values. I run framebuffer based VNC server to see whatever I
+have written. I always get a white image. Looks like mmap is mapped to
+some other address and fbvnc server is reading from somewhere else.
 
-Are there any functions for the following list of fb_ops function
-pointer.
-I mean when they will be called. r there any system calls for calling
-them.
+Does the existing drivers/video/vfb.c code works ? or Do I need to
+tweak it ?
 
-=20
-regards,
-mukund jampala
 
+Regards
+Shivappa
 
 
 -------------------------------------------------------

@@ -1,24 +1,24 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: Is framebufer driver a replacement for video driver?
-Date: Sat, 6 Nov 2004 05:48:22 +0800
-Message-ID: <200411060548.23261.adaplas@hotpop.com>
-References: <4EE0CBA31942E547B99B3D4BFAB348111ECB8A@mail.esn.co.in>
+Subject: Re: r128 driver problem
+Date: Sat, 6 Nov 2004 08:35:46 +0800
+Message-ID: <200411060835.53252.adaplas@hotpop.com>
+References: <418B02BE.3040403@sun.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CQBxR-0004wI-34
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Nov 2004 13:49:21 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.71])
+	id 1CQEYp-0000Sw-CN
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Nov 2004 16:36:07 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.61])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CQBxQ-0007an-3D
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Nov 2004 13:49:21 -0800
+	id 1CQEYo-0005rL-2N
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Nov 2004 16:36:07 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id BA0E811BEB4F
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri,  5 Nov 2004 21:48:22 +0000 (UTC)
-In-Reply-To: <4EE0CBA31942E547B99B3D4BFAB348111ECB8A@mail.esn.co.in>
+	by smtp-out.hotpop.com (Postfix) with SMTP id 854279B6370
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat,  6 Nov 2004 00:35:59 +0000 (UTC)
+In-Reply-To: <418B02BE.3040403@sun.com>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -31,47 +31,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, "Mukund JB." <mukundjb@esntechnologies.co.in>
-Cc: adaplas@pol.net, tonnerre@thundrix.ch
+To: linux-fbdev-devel@lists.sourceforge.net, Bill Shannon <bill.shannon@sun.com>
 
-On Friday 05 November 2004 19:44, Mukund JB. wrote:
-> Hi Geert,
->
-> Thanks for that.
-> Please, try to give me more clarity on the framebuffer driver by solving
-> the below quires?
->
-> > > Are you talking about the vesafb driver? This being  a generic
->
-> driver,
->
-> > > Will this driver work on any video card?
-> >
-> > Yep, `VESA' means the vesafb driver. It works on any video card with a
-> > VESA 2.0
-> > compliant BIOS.
->
-> If vesafb module works for any card, what are the situations that make
-> me write a new framebuffer driver for a new video hardware in the
-> market?
->
-> Is it like, the vesafb driver does not explore the card to the fullest
-> extent?
-> A framebuffer driver specific to Video card is just to explore the card
-> features to maximum.
->
-> Can u please tell me why to call "scr_readw" in accel.c file of riva
-> directory doing?
-> Also, I found NO readl, writel calls in the riva directory( framebuffer
-> driver). Then, who is responsible for accessing the hardware here?
+On Friday 05 November 2004 12:34, Bill Shannon wrote:
+> I'm looking for someone to help me with a problem I'm having with the
+> r128 driver.  See attached messages for a description of the problem.
+> I think I've proven that the problem is related to the driver/device,
+> but I don't know enough about the device and how it works to fix the
+> problem myself.  Any help would be much appreciated.
 >
 
-Because the supposedly OS-agnostic file uses direct pointer manipulation, which
-does imply that this file is not trully OS-agnostic.
+Looks like this is for the DRI people <dri-devel@lists.sourceforge.net>.
 
-The rivafb in 2.6.10-rc1-mm3 is already ported to use readl/writel.
-.
 Tony
+
+PS: The latest kernel snapshot contains an aty change that also installs an
+interrupt handler that waits for vblank.  I doubt this is the cause of your
+problems, but it's better to disable atyfb before sending mail to the DRI
+list (in case you're using the latest kernel).
 
 
 

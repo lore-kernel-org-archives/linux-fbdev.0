@@ -1,22 +1,11 @@
-From: "Courier mail server at smtp.b.astral.ro" <postmaster@smtp.b.astral.ro>
-Subject: NOTICE: mail delivery status.
-Date: Tue, 29 Jun 2004 20:28:37 +0300
+From: "Donny L. Sellers" <donny_lsellers_cw@gsf.fi>
+Subject: We have a cialapren offer for you.
+Date: Tue, 29 Jun 2004 20:59:01 -0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <courier.40E1A6C5.00000B13@smtp.b.astral.ro>
+Message-ID: <1cec01c45e24$794e80b8$e8079b00__26160.7746979736$1088545420@iway.na>
 Mime-Version: 1.0
-Content-Type: multipart/report; report-type=delivery-status;
-    boundary="=_courier_0"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BfMPQ-0002BB-GN
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Jun 2004 10:28:40 -0700
-Received: from dial.kappa.ro ([194.102.255.8] helo=smtp.b.astral.ro)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.34)
-	id 1BfMPP-00029f-QO
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Jun 2004 10:28:40 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,96 +15,32 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-usb-users@lists.sourceforge.net, linux-usb-devel@lists.sourceforge.net, linux-ntfs-dev@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Hi,
 
---=_courier_0
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=us-ascii
+We have a Cialapren offer for you.
 
-This is a delivery status notification from smtp.b.astral.ro,
-running the Courier mail server, version 0.45.5.
+The world's most effect=ECve male enhancem=E9nt p=EDll!
+100% Natural botanicals gathered from every corner of the world, only 2 p=
+=EDlls daily
 
-The original message was received on Tue, 29 Jun 2004 20:24:23 +0300
-from kappa.ro ([220.120.156.5])
+Increase the length of your manhood by 2-5 full inches
+Thicken your manhood and make it much fuller & harder
 
----------------------------------------------------------------------------
+Boost your confidence level & self-esteem
+Screw your lover like never before
 
-                           UNDELIVERABLE MAIL
+Get all-natural Cialpren here <http://www.enhance69.com/>
 
-Your message to the following recipients cannot be delivered:
-
-<drazvan@kappa.ro>:
-    [10.0.0.2] [10.0.0.2]:
->>> RCPT TO:<drazvan@kappa.ro>
-<<< 550 User unknown.
-
----------------------------------------------------------------------------
-
-If your message was also sent to additional recipients, their delivery
-status is not included in this report.  You may or may not receive
-other delivery status notifications for additional recipients.
-
-The original message follows as a separate attachment.
-
-
---=_courier_0
-Content-Type: message/delivery-status
-Content-Transfer-Encoding: 7bit
-
-Reporting-MTA: dns; smtp.b.astral.ro
-Arrival-Date: Tue, 29 Jun 2004 20:24:23 +0300
-Received-From-MTA: dns; kappa.ro ([220.120.156.5])
-
-Final-Recipient: rfc822; drazvan@kappa.ro
-Action: failed
-Status: 5.0.0
-Remote-MTA: dns; [10.0.0.2] [10.0.0.2]
-Diagnostic-Code: smtp; 550 User unknown.
-
---=_courier_0
-Content-Type: message/rfc822
-Content-Transfer-Encoding: 7bit
-
-Received: from kappa.ro ([220.120.156.5])
-  by smtp.b.astral.ro with esmtp; Tue, 29 Jun 2004 20:24:20 +0300
-  id 0006B822.40E1A5C5.0000643B
-From: linux-fbdev-devel@lists.sourceforge.net
-To: drazvan@kappa.ro
-Subject: Mail Delivery (failure drazvan@kappa.ro)
-Date: Wed, 30 Jun 2004 02:27:20 +0900
-MIME-Version: 1.0
-Content-Type: multipart/related;
-	type="multipart/alternative";
-	boundary="----=_NextPart_000_001B_01C0CA80.6B015D10"
-X-Priority: 3
-X-MSMail-Priority: Normal
-
-This is a multi-part message in MIME format.
-
-------=_NextPart_000_001B_01C0CA80.6B015D10
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_001_001C_01C0CA80.6B015D10"
-
-------=_NextPart_001_001C_01C0CA80.6B015D10
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-
-------=_NextPart_001_001C_01C0CA80.6B015D10--
-
-------=_NextPart_000_001B_01C0CA80.6B015D10--
-
-
---=_courier_0--
+Regards,
+Audrey Jones
 
 
 
 -------------------------------------------------------
 This SF.Net email sponsored by Black Hat Briefings & Training.
-Attend Black Hat Briefings & Training, Las Vegas July 24-29 - 
-digital self defense, top technical experts, no vendor pitches, 
+Attend Black Hat Briefings & Training, Las Vegas July 24-29 -=20
+digital self defense, top technical experts, no vendor pitches,=20
 unmatched networking opportunities. Visit www.blackhat.com

@@ -1,23 +1,24 @@
-From: Gerd Knorr <kraxel@bytesex.org>
+From: "Kendall Bennett" <KendallB@scitechsoft.com>
 Subject: Re: Generic VESA framebuffer driver and Video card BOOT?
-Date: Mon, 18 Oct 2004 14:10:33 +0200
+Date: Mon, 18 Oct 2004 12:34:45 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20041018121033.GB5106@bytesex>
-References: <416E6ADC.3007.294DF20D@localhost> <87d5zkqj8h.fsf@bytesex.org> <Pine.GSO.4.61.0410151437050.10040@waterleaf.sonytel.be> <87y8i8p1jq.fsf@bytesex.org> <20041017120728.GC10532@admingilde.org> <20041018083632.GE3065@bytesex> <20041018113929.GB3618@admingilde.org>
+Message-ID: <4173B865.26539.117B09BD@localhost>
+References: <200410160946.32644.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7BIT
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CJWUt-0003Lq-7n
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 05:20:19 -0700
-Received: from hirsch.in-berlin.de ([192.109.42.6] ident=root)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	id 1CJdHX-00045Q-Qf
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 12:34:59 -0700
+Received: from mail.scitechsoft.com ([63.195.13.67])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.41)
-	id 1CJWUs-0000tk-I6
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 05:20:19 -0700
-Content-Disposition: inline
-In-Reply-To: <20041018113929.GB3618@admingilde.org>
+	id 1CJdHX-0008GP-7m
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 12:34:59 -0700
+In-reply-to: <9e47339104101519034137c795@mail.gmail.com>
+Content-description: Mail message body
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,28 +29,61 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net, Linux Kernel Development <linux-kernel@vger.kernel.org>, penguinppc-team@lists.penguinppc.org
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Mon, Oct 18, 2004 at 01:39:29PM +0200, Martin Waitz wrote:
-> hi :)
+Jon Smirl <jonsmirl@gmail.com> wrote:
+
+> > There's a log of initialization that goes on between console_init() and
+> > populate_rootfs().  However, console_init() will only initialize built-in
+> > consoles (as pointed to by conswitchp) such as vgacon or dummycon.
+> > However, the framebuffer system initialization does happen after
+> > populate_rootfs().
 > 
-> > Whenever writing to the gfx memory before finishing the initialization
-> > is harmless or not probably depends on the hardware, I'd better not
-> > count on it ...
+> We already have vgacon, promcon, sticon, mgacon, newportcon. What
+> platforms (other than embedded) are not covered by these? 
+
+Many embedded platforms do not map VGA resources in, so it is not 
+possible to get VGACon to work on those machines unless the kernel/boot 
+loader is modified to properly map VGA resources (which should be 
+possible).
+
+Then there are Macintosh machines that also do not map VGA resources. I 
+am not sure if it is possible to map them on Macintosh machines or not.
+
+I would assume however a serial port console would be fine for embedded 
+machines until the framebuffer driver could come up anyway.
+
+> The idea is to use one of these as a temporary console and not
+> print anything on it except KERN_ERR level messages. Of course if
+> you are a kernel developer you can change this. A working system
+> would non have KERN_ERR messages during this phase and the screen
+> would remain blank. 
 > 
-> when the application tries to access the framebuffer memory then
-> the driver is asked to map the corresponding page.
+> Messages at levels other than KERN_ERR would be queued until
+> populate_rootfs()/early user space time where they would then get
+> displayed on the fbcon. fbcon will be a full console with mode
+> setting capability and other fancy features. It would immediately
+> go into graphics mode. 
 
-On first access only, and even that only if the driver doesn't map the
-pages at mmap() time already.  Not a single fb driver seems to map the
-pages lazy today, grepping in drivers/video for nopage handles shows
-nothing.  I'm not sure you can actually do that for iomem mappings.
+As long as this process happens quickly and the machine boots into 
+graphics mode within 1-2 seconds from poweron, that would probably be OK. 
+If it starts taking too long for the system to get into graphics mode to 
+display something the user can easily think something is wrong and the 
+machine is not working.
 
-  Gerd
+Regards,
 
--- 
-return -ENOSIG;
+---
+Kendall Bennett
+Chief Executive Officer
+SciTech Software, Inc.
+Phone: (530) 894 8400
+http://www.scitechsoft.com
+
+~ SciTech SNAP - The future of device driver technology! ~
+
+
 
 
 -------------------------------------------------------

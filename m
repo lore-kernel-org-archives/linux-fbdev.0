@@ -1,22 +1,25 @@
-From: Andrew Walrond <andrew@walrond.org>
-Subject: Re: Fbdev programming info
-Date: Tue, 22 Jun 2004 13:19:27 +0100
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: 2.6.7 still garbage upon start
+Date: Tue, 22 Jun 2004 21:20:22 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200406221319.27395.andrew@walrond.org>
-References: <200406220011.51968.andrew@walrond.org> <200406220836.54090.adaplas@hotpop.com>
+Message-ID: <200406222120.22405.adaplas@hotpop.com>
+References: <40D21E31.5070904@winischhofer.net> <200406191413.03881.adaplas@hotpop.com> <20040622094501.GA29480@havoc.gtf.org>
+Reply-To: adaplas@pol.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BckJL-0003AG-Nj
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Jun 2004 05:23:35 -0700
-Received: from host213-160-108-25.dsl.vispa.com ([213.160.108.25] helo=cenedra.walrond.org)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1BckJL-0007Qp-7Y
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Jun 2004 05:23:35 -0700
-In-Reply-To: <200406220836.54090.adaplas@hotpop.com>
+	id 1BclAD-0007rv-4A
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Jun 2004 06:18:13 -0700
+Received: from snickers.hotpop.com ([38.113.3.51])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BclAC-0000vw-Jc
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Jun 2004 06:18:12 -0700
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by snickers.hotpop.com (Postfix) with SMTP id 0585974E18
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 22 Jun 2004 12:16:17 +0000 (UTC)
+In-Reply-To: <20040622094501.GA29480@havoc.gtf.org>
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,25 +31,38 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: David Eger <eger@havoc.gtf.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Jeff Garzik <garzik@havoc.gtf.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tuesday 22 Jun 2004 01:36, Antonino A. Daplas wrote:
+On Tuesday 22 June 2004 17:45, David Eger wrote:
+> On Sat, Jun 19, 2004 at 02:13:03PM +0800, Antonino A. Daplas wrote:
+> > On Saturday 19 June 2004 11:08, David Eger wrote:
+> > > with my cirrusfb driver and your patch, the area to the right of the
+> > > penguins is cleared, but the area where the text is drawn still has
+> > > white rectangle crud that scrolls off the screen.
+> >
+> > Most probably, you are initializing your graphics card  before you
+> > register the framebuffer.  You should not do it, but only on an explict
+> > fb_set_par() call.
 >
-> I think you meant user apps for fbdev.  I also haven't seen any docs for
-> that. You can look at the fbutils code for an example.  Should be available
-> on the same site (linux-fbdev.sf.net)
+> You're absolutely correct.
 >
+> Unfortunately, removing the set_par() call from the PCI driver probe
+> code uncovered another problem.  For some reason, the VGA register writes
 
-Yes, initially anyway. But I might end up hacking fbdev if it doesn't do what 
-I need :)
+If you can't avoid doing a set_par duing initialization, you can always memset
+the fb memory to the background color.  Not sure if it's going to completely
+remove the garbage as vgacon continues to write to vga memory far beyond
+fbdev registration.
 
-Good suggestion (fbutils) I'll start there.
+Note: Doing a set_par during initialization will produce an unusable display 
+if you load the driver without fbcon. You can always restore by loading
+fbcon or running con2fbmap.
 
-Where does that latest kernel stuff live? Is there a fbdev development tree 
-somewhere?
+Tony
 
-Andrew Walrond
+
+
 
 
 -------------------------------------------------------

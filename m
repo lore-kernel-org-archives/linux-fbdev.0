@@ -1,17 +1,17 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Some questions
-Date: Tue, 11 Mar 2003 16:07:26 +0000 (GMT)
+Subject: Re: [BK updates] More updates.
+Date: Tue, 11 Mar 2003 16:09:03 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0303111607080.23668-100000@phoenix.infradead.org>
-References: <1046913411.1206.185.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44.0303111608420.23668-100000@phoenix.infradead.org>
+References: <1046916643.7318.1.camel@localhost.localdomain>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
+Received: from phoenix.infradead.org ([195.224.96.167])
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18smJ1-00019W-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 Mar 2003 08:08:44 -0800
-In-Reply-To: <1046913411.1206.185.camel@localhost.localdomain>
+	id 18smK1-0001XO-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 Mar 2003 08:09:46 -0800
+In-Reply-To: <1046916643.7318.1.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -24,19 +24,22 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Antonino Daplas <adaplas@pol.net>
-Cc: Thomas Winischhofer <thomas@winischhofer.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> However, the brokenness is really on the driver side.  They are unable
-> to change the video mode unless they are supplied with the correct
-> timing parameters where in fact they actually have the best knowledge on
-> how to calculate them.  
+> >     I just pieced together various patches. I think we need to push this 
+> > code to linus. It has gotten pretty big.. Can people test  it please 
+> > before I sen it.
+> > 
+> > Diff:  http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
 > 
-> So the question:  Do we let fbcon spoonfeed the timings to fbdev, or do
-> we let the drivers calculate it for themselves?  I go for the latter, as
-> fbcon really should not have any business with hardware.
+> James,
+> 
+> Something's wrong with the patch, it removed fb.h, the Makefiles and
+> possibly a bunch of other files.
 
-I agree. 
+UG. Forgot a bk -r co -q. I think the latest patch is right.
+
 
 
 

@@ -1,22 +1,17 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: LCD scaling type
-Date: 11 Jan 2003 13:08:30 +0100
+From: Antonino Daplas <adaplas@pol.net>
+Subject: Re: waitretrace available?
+Date: 11 Jan 2003 19:57:47 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1042286909.541.43.camel@zion.wanadoo.fr>
-References: <1042227743.705.22.camel@zion.wanadoo.fr>
-	 <1042268184.932.165.camel@localhost.localdomain>
-	 <1042278469.541.27.camel@zion.wanadoo.fr>
-	 <1042279649.955.18.camel@localhost.localdomain>
-	 <1042283284.541.38.camel@zion.wanadoo.fr>
-	 <1042284929.977.46.camel@localhost.localdomain>
+Message-ID: <1042286265.955.66.camel@localhost.localdomain>
+References: <Pine.GSO.4.21.0301111316070.12383-100000@zenon.ceid.upatras.gr>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from amarseille-201-1-3-14.abo.wanadoo.fr ([193.253.250.14] helo=zion.wanadoo.fr)
+Received: from willow.compass.com.ph ([202.70.96.38])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18XKR7-0006uq-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 11 Jan 2003 04:08:25 -0800
-In-Reply-To: <1042284929.977.46.camel@localhost.localdomain>
+	id 18XKR0-00079M-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 11 Jan 2003 04:08:18 -0800
+In-Reply-To: <Pine.GSO.4.21.0301111316070.12383-100000@zenon.ceid.upatras.gr>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,43 +22,78 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Antonino Daplas <adaplas@pol.net>
+To: Xanthakis Stelios <sxanth@ceid.upatras.gr>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sat, 2003-01-11 at 12:35, Antonino Daplas wrote:
-> If you only need to do is turn something on or off, assigning it an
-> ioctl may be too much.  The "feature" can be anything, not just a mode
-> setting. Also, you will have fbdev drivers writing their own ioctls just
-> for these "little" features, and each will need to have its own utility
-> written specifically for the driver.  If you have an
-> fb_var_screeninfo.tweaks field, you can simply use fbset, and it can be
-> used for all drivers.  One can even collect all possible 'hardware'
-> tweaks and create a general fb tweaks utility just by using fbset.
+On Sat, 2003-01-11 at 19:21, Xanthakis Stelios wrote:
 > 
-> Of course, if the feature requires something more than just turning a
-> switch on and off, then an ioctl is more practical.
+> Is there WAITRETRACE available in fb?
+> 
+> It seems that there used to be because svgalib sais:
+> 
+> 	static void fbdev_waitretrace(void)
+> 	{
+> 		/* This is from SDL */
+> 	#ifdef FBIOWAITRETRACE
+> 		ioctl(console_fd, FBIOWAITRETRACE, 0);
+> 	#endif
+> 	}
+> 
 
-Hrm... I think this is going too far for var_screeninfo. However,
-we do have need for such "tunable" settings, that can be
-brightness/contrast/backlight kind of stuff, geometry on some i2c-driven
-monitors (iMacs typically) etc...
+There is an FBIO_GETVBLANK that gives information on the current status
+of the display (such as if it's currently in hsync/vsync, the current
+vsync count since boot etc).  However, only matroxfb implements this
+ioctl.
 
-It may be interesting to think about an API where the fbdev (or the
-monitor layer, which is something we currently lack that should probably
-sit on top of fbdev) to expose the available "settings" and have std
-ioctls to get/set their values. A bit like sound mixer settings work
-today maybe.
+There is an unofficial patch (also for matroxfb), FBIO_VSYNCIRQ, which
+waits for the retrace by sleeping on a vsync interrupt.  
 
-For my immediate need, however, I still think turning one of the
-reserved fields of var_screeninfo into a "mode_flags" would be useful,
-we can already define a FB_MFLAG_LCD_FULLSCALE flag that would ask the
-driver to not bother keeping aspect ratio (the idea here is that keeping
-aspect ratio is the default, so 0, even if that's nor really working yet
-in radeonfb or aty128fb).
+> But I can't find such a value in the headers.
+> Seems like WAITRETRACE call is implemented in svga by:
+> 
+> 	while (!(inb(0x3da) & 8));
+> 	while (inb(0x3da) & 8);
+> 
+> 
+> *I know very little on how video hardware works*
+>
+
+It's a standard polling code for waiting for the retrace interval on VGA
+hardware.  Most graphics hardware will still work.  However, it eats CPU
+cycles.  The sleeping on an interrupt way is better.
  
+> The goal is to attempt some smooth scrolling. 
+> Back in the MS-DOS days there used to be a program
+> called smooth editor which was amazing (so amazing that
+> I used to do Page up/Down all the time w/o doing
+> any work). I was thinking if I could have some similar
+> smooth scrolling in my linux fb console.
+> 
 
--- 
-Benjamin Herrenschmidt <benh@kernel.crashing.org>
+You can accomplish the same effect using the above code, provide the
+hardware mode supports it, and provided you are not doing too many tasks
+at one time, else you'll experience frame skips, sound stutters etc. 
+
+> I recall that smooth editor explained that smooth scrolling
+> was achieved by "synchronizing with the video refresh"
+> (horizontal?, vertical? I don't remember). That's retrace yes?
+
+Yes, it's vertical.
+
+> 
+> So, can we by some way do waitretrace at each \n?
+> Should this be userland or kernelland?
+> 
+
+Depends.  The polling code can be done in userland.  However, newer
+hardware has better ways of waiting for the retrace.  In these cases, it
+has to be done within the driver.  See how the matroxfb patch does that.
+It's in the DirectFB package (www.directfb.org).  Also, you may want to
+check the DRI mailing list archives (dri.sourceforge.net).  They have
+discussions on that.
+
+Tony
+
 
 
 -------------------------------------------------------

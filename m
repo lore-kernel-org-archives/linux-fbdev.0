@@ -1,17 +1,16 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: why not a specific driver for nvidia geforce
- ?
-Date: Thu, 22 Aug 2002 12:00:11 -0700 (PDT)
+Subject: Re: which's the max resolution of the logo ?
+Date: Thu, 22 Aug 2002 12:00:51 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.33.0208221200010.9077-100000@maxwell.earthlink.net>
-References: <20020810173405.GA7115@stargate.lan>
+Message-ID: <Pine.LNX.4.33.0208221200260.9077-100000@maxwell.earthlink.net>
+References: <20020810173522.GB7115@stargate.lan>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from gull.mail.pas.earthlink.net ([207.217.120.84])
+Received: from snipe.mail.pas.earthlink.net ([207.217.120.62])
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17hxGm-0000cY-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 22 Aug 2002 12:05:24 -0700
-In-Reply-To: <20020810173405.GA7115@stargate.lan>
+	id 17hxHP-0000h7-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 22 Aug 2002 12:06:03 -0700
+In-Reply-To: <20020810173522.GB7115@stargate.lan>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,7 +26,7 @@ To: Stephane Wirtel <stephane.wirtel@belgacom.net>
 Cc: Linux Frame Buffer Devel Mailing List <linux-fbdev-devel@lists.sourceforge.net>
 
 
-That is the Riva driver. Give it a try.
+Eahc logo is 80x80 in size and there is one logo displayed per cpu.
 
 
 MS: (n) 1. A debilitating and surprisingly widespread affliction that
@@ -41,7 +40,11 @@ http://linuxconsole.sourceforge.net
 
 On Sat, 10 Aug 2002, Stephane Wirtel wrote:
 
+> which is the max resolution of the logo ? because i can't set a picture
+> in 16bits or more.
+>
 > thanks
+>
 > --
 > Stephane Wirtel <stephane.wirtel@belgacom.net>
 > Web : www.linux-mons.be	 "Linux Is Not UniX !!!"

@@ -1,23 +1,20 @@
 From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: Patch to add mode setting to sysfs
-Date: Wed, 16 Feb 2005 20:28:15 -0500
-Message-ID: <9e473391050216172841410bb2@mail.gmail.com>
-References: <9e4733910502161430ff1dad1@mail.gmail.com>
-	 <Pine.LNX.4.56.0502162238570.25965@pentafluge.infradead.org>
+Subject: Running fb core as a module
+Date: Wed, 16 Feb 2005 20:31:24 -0500
+Message-ID: <9e473391050216173115f37838@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D1aSr-0007VR-TB
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 17:28:21 -0800
-Received: from rproxy.gmail.com ([64.233.170.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1D1aSq-0003xC-HV
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 17:28:21 -0800
-Received: by rproxy.gmail.com with SMTP id z35so130032rne
-        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 16 Feb 2005 17:28:15 -0800 (PST)
-In-Reply-To: <Pine.LNX.4.56.0502162238570.25965@pentafluge.infradead.org>
+	id 1D1aWD-0007mH-AT
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 17:31:49 -0800
+Received: from rproxy.gmail.com ([64.233.170.201])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1D1aWB-00074a-Vs
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 17:31:49 -0800
+Received: by rproxy.gmail.com with SMTP id z35so130537rne
+        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 16 Feb 2005 17:31:24 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,19 +26,11 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@www.infradead.org>
-Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-I applied your patch, it makes a new directory,
-sys/class/graphics/fb0/modes with two entries dev and name. What is
-your mechanism for displaying the list of modes and setting a new one?
-
-Note that you can continue to use class_simple as
-class_simple_device_add returns the class_device for the new device.
-
-Give my patch a try, cat 'modes' and you you can see the list of
-modes. Echo one to 'mode' and it will set the new mode. The mode set
-works without being root.
+Is there a patch floating around for turning the core of fbdev into a
+module? Why isn't running fbdev as a module an option? It would make
+debugging fbdev core much simpler.
 
 -- 
 Jon Smirl

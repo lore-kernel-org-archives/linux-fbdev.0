@@ -1,55 +1,63 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: Re: [Linux-fbdev-devel] Re: FBDEV 2.6.0-test7 updates.
-Date: Fri, 17 Oct 2003 12:34:47 -0700 (PDT)
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20031017193447.41865.qmail@web14911.mail.yahoo.com>
-References: <Pine.LNX.4.44.0310171751200.966-100000@phoenix.infradead.org>
+From: Monchi Abbad <kernel@axion.demon.nl>
+Subject: High resolution console gets garbled when X running at higher resolution then the console.
+Date: Fri, 17 Oct 2003 21:39:34 +0200
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <20031017193934.GA1921@axion.demon.nl>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44.0310171751200.966-100000@phoenix.infradead.org>
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 1AAaVm-00009U-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 17 Oct 2003 12:43:46 -0700
+Received: from axion.demon.nl ([195.173.231.39] ident=0)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.22)
+	id 1AAaUl-00082z-Ta
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 17 Oct 2003 12:42:44 -0700
+Content-Disposition: inline
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>, Otto Solares <solca@guug.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, "Carlo E. Prelz" <fluido@fluido.as>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
+To: vandrove@vc.cvut.cz
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-The people writing the AGP driver have added their ID's in the wrong format.
-ATI wants the IDs in the two letter form, not family/chip.  The fbdev patch has
-the ID's in correct form. The AGP driver should be the one that gets changed.
+Distribution: Slackware 9.1
+Hardware Environment: Matrox Millenium II AMD Athlon 1.1 ghz 512MB ram
 
---- James Simmons <jsimmons@infradead.org> wrote:
-> 
-> > - Could I2C be ported to kernel I2C api and separated?, so it use would not
-> > require the fbdev module loaded.
-> 
-> I don't think that can be done. At least not easily.
->  
-> > - PCI IDs list should be in pci_ids.h as every other drivers, reality is
-> > that adding new IDs to pci_ids.h is not hard so your driver will not be the
-> > exception to the rule.
-> 
-> I agree here. We do need to watch out for the AGP drivers. Changing PCI 
-> Id's can break them. I dicovered that recently.
-> 
-> 
-> 
-> 
-> -------------------------------------------------------
-> This SF.net email sponsored by: Enterprise Linux Forum Conference & Expo
-> The Event For Linux Datacenter Solutions & Strategies in The Enterprise 
-> Linux in the Boardroom; in the Front Office; & in the Server Room 
-> http://www.enterpriselinuxforum.com
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+Software Environment: kernel fbdev console + XFree86 4.3
+
+kernel proc version:
+Linux version 2.6.0-test7 (root@axion) (gcc version 3.2.3) #1 Thu Oct 9 11:16:09 CEST 2003
+
+Problem Description: High resolution console gets garbled when X running at
+higher resolution then the console
+
+Steps to reproduce:
+Compile kernel with Matroxfb and use video option 'matroxfb:vesa:0x193' when
+booting.
+Then start an X session, with mga driver in stead of matroxfb driver, make sure the
+X-session is running at a higher resolution then the console, and switch from
+the X-session to a console.
+Now run ls or simply clear screen.
+
+To go back to a normal console simple run X with the same resolution as the
+console. ( using the matroxfb driver ).
+
+Monchi.
+--
 
 
-=====
-Jon Smirl
-jonsmirl@yahoo.com
-
-__________________________________
-Do you Yahoo!?
-The New Yahoo! Shopping - with improved product search
-http://shopping.yahoo.com
+-------------------------------------------------------
+This SF.net email sponsored by: Enterprise Linux Forum Conference & Expo
+The Event For Linux Datacenter Solutions & Strategies in The Enterprise 
+Linux in the Boardroom; in the Front Office; & in the Server Room 
+http://www.enterpriselinuxforum.com

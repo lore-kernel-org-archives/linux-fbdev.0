@@ -1,25 +1,21 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: Rivafb won't work with DVI connector
-Date: Sun, 28 Nov 2004 06:43:06 +0800
-Message-ID: <200411280643.09524.adaplas@hotpop.com>
-References: <200411250807.32040.adaplas@hotpop.com> <200411262209.17558.adaplas@hotpop.com> <200411271240.13475.andrew@walrond.org>
+From: "Richard Purdie" <rpurdie@rpsys.net>
+Subject: Re: FB_EVENT (blank and unblank?)
+Date: Sun, 28 Nov 2004 00:59:02 -0000
+Message-ID: <02cc01c4d4e5$75e4e170$0f01a8c0@max>
+References: <41A36DA5.8090200@fujitsu-siemens.com> <200411280643.14171.adaplas@hotpop.com> <027d01c4d4dd$19fe65a0$0f01a8c0@max> <200411280824.01338.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CYDPZ-0001ip-8Y
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 Nov 2004 16:59:33 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CYBHp-0003CF-PM
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 Nov 2004 14:44:01 -0800
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 76A0DA9471A
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 27 Nov 2004 22:43:10 +0000 (UTC)
-In-Reply-To: <200411271240.13475.andrew@walrond.org>
-Content-Disposition: inline
+	id 1CYDPE-0001gT-QE
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 Nov 2004 16:59:12 -0800
+Received: from tim.rpsys.net ([194.106.48.114] ident=0)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1CYDP4-0003rU-P7
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 Nov 2004 16:59:12 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,29 +26,58 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, Andrew Walrond <andrew@walrond.org>
+Content-Type: text/plain; format="flowed"; charset="us-ascii"; reply-type="original"
+To: adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net
 
-On Saturday 27 November 2004 20:40, Andrew Walrond wrote:
-> On Friday 26 Nov 2004 14:09, Antonino A. Daplas wrote:
-> > On Thursday 25 November 2004 23:27, Andrew Walrond wrote:
-> > > On Thursday 25 Nov 2004 00:07, Antonino A. Daplas wrote:
+Antonino A. Daplas:
+>> My Issue: I have a backlight driver that shares no code with the
+>> framebuffer driver - the hardware is totally separate. I have there 
+>> written
+>> them as two spate drivers which seems to make sense. The problem is that
+>> there is no method to communicate blanking to the external backlight 
+>> driver
+>> (which is all it needs to know about). Obviously I can add links between
 >
-> none which are useful. Trying some of the modes from the DSUB log (ie 145 =
-> vga=0x345 etc ) results always in (from memory) "Unsupported mode supplied;
-> hit enter for list for wait 30s to continue" during boot. As I said, scan
-> only finds text modes.
+> Of course there is.  Your backlight driver does a
+> register_backlight_controllers().  Then your fb driver does a
+> set_backlight_enable(!blank) in its xxxfb_blank implementation.
+
+Yes, you could do that. I was trying to look for a method than meant no 
+specific action by the framebuffer driver was required. It shouldn't have to 
+care if a backlight is present or not...
+
+On the other hand, the console system shouldn't have to either. Hence the 
+suggestion that blank and unblank events are added. It may be there's a 
+layer of backlight glue added to the drivers/video directory 
+drivers/video/backlight? that catches those events and calls 
+set_backlight_enable(!blank) and provides functions  like 
+register_backlight_controllers().
+
+>> The Other Issue: There is no common method to access and control 
+>> backlight
 >
-> So, not only is this not going to work, but the vesa driver also seems
-> broken when used with dvi.
+> Not yet, but if the powermac backlight support is extended, then we 
+> suddenly
+> have a common method.  Right now, pmac's backlight support has this as
+> exportable symbols:
+>
+> set_backlight_enable()
+> get_backlight_enable()
+> set_backlight_level()
+> get_backlight_level()
+>
+> And all of the above calls specific hooks to the backlight driver.
 
-It's the BIOS that's broken.
+I agree that would go part of the way towards a common method (the other 
+part being a sysfs representation or similar). That sysfs representation 
+could even be provided by backlight "core" in drivers/video/backlight?.
 
-If we can't even rely on the BIOS to set up an acceptable mode, I guess this
-problem is for nVidia (if they're going to release the info).
+> We don't have a common architecture yet for backlight control, and I don't
+> know where this is really going.  Anyone here have more info?
 
-Tony 
+I'd be interested to know the current position...
 
+Richard 
 
 
 

@@ -1,94 +1,156 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: FB model basic issues (WAS: radeon, apertures & memory mapping)
-Date: Tue, 15 Mar 2005 17:45:16 +1100
-Message-ID: <1110869116.29137.78.camel@gaston>
-References: <1110677744.19810.80.camel@gaston>
-	<9e47339105031219223e606a52@mail.gmail.com>
-	<1110696189.5787.100.camel@gaston>
-	<1110774523.4003.511.camel@localhost>
-	<1110784327.5787.288.camel@gaston>
-	<1110817205.4004.527.camel@localhost>
-	<1110837171.5863.16.camel@gaston> <1110838356.4003.548.camel@localhost>
-	<1110839873.5673.41.camel@gaston> <1110862777.4044.592.camel@localhost>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: Reworking sysfs attributes for fbdev
+Date: Tue, 15 Mar 2005 14:49:59 +0800
+Message-ID: <200503151449.59874.adaplas@hotpop.com>
+References: <200503111331.41352.ajax@nwnk.net> <9e473391050314091173cfbd0d@mail.gmail.com> <9e47339105031419437348829a@mail.gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <1110862777.4044.592.camel@localhost>
+Content-Transfer-Encoding: 7bit
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1DB5sb-0008IV-Do
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Mar 2005 22:50:13 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.71])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1DB5sZ-0002fu-I9
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Mar 2005 22:50:13 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id A9E1814BB91C
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 15 Mar 2005 06:49:59 +0000 (UTC)
+In-Reply-To: <9e47339105031419437348829a@mail.gmail.com>
+Content-Disposition: inline
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/xorg>
-List-Post: <mailto:xorg@lists.freedesktop.org>
-List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
-Sender: xorg-bounces@lists.freedesktop.org
-Errors-To: xorg-bounces@lists.freedesktop.org
-Content-Type: text/plain; charset="iso-8859-1"
-To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Cc: dri-devel@lists.sourceforge.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, xorg@lists.freedesktop.org, Jon Smirl <jonsmirl@yahoo.com>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net, Jon Smirl <jonsmirl@gmail.com>, dri-egl@lists.freedesktop.org
 
-On Mon, 2005-03-14 at 23:59 -0500, Michel D=E4nzer wrote:
-> On Tue, 2005-03-15 at 09:37 +1100, Benjamin Herrenschmidt wrote:
-> > > Be that as it may, it remains a fact that such a change would break
-> > > existing installations...
-> > >=20
-> > > I think that mode setting and memory allocation should be separated=
-. X
-> > > will always reserve enough video RAM for the largest resolution it =
-uses
-> > > for the screen contents.
-> >=20
-> > But X has no control on where fbdev will allocate memory.=20
->=20
-> My understanding is that so far, the fbdev API has pretty much implied
-> that any mode scans out the beginning of the memory accessed via the
-> framebuffer device, unless the panning ioctl is used. IIRC at least
-> DirectFB makes basically the same assumptions as X there.
+On Tuesday 15 March 2005 11:43, Jon Smirl wrote:
+> Some discussion on the dri-egl list points out that the new mode
+> setting sysfs attributes for fbdev are too limited. Below is a
+> proposal I made on the dri-egl list.
+>
+> To implement this for fbdev I need to know the right set of of
+> attribute value pairs. Some obvious ones are:
+>
+> name=string
+> width=number
+> height=number
+> depth=number
+> refresh=number
+> interlace= yes | no | double
+> type = detailed|standard|vesa|user
+> sync = horizonatal_high | vertical_high | external | composite |
+> broadcast | green
+> left=number
+> right=number
+> lower=number
+> upper=number
+> hsync=number
+> vsync=number
+> pixclock=number
+>
+> Right now fb0/modes is set by passing in an array of fb_videomode
+> structs. To convert this to attribute value pair I needs the full set
+> so that no info is lost.
+>
+> If the mode and depth are independent variables we can end up with a
+> combo that exceeds monitor or hardware bandwidth. Would it be better
+> to combine the depth into the modes list? or if you try to set a
 
-But that will not be true with dual head unless I put the second
-framebuffer into some fixed location in memory, thus making life more
-difficult for the allocator.
+We can do that, vesa's mode id's are like that. Although I prefer that mode
+setting should be separated from the framebuffer format setting (ie, depth), it's
+currently difficult to make this work safely the reason being that not all
+check_var() functions can be relied upon.
 
-> I'm not suggesting that, but I do think that tying together mode
-> switching and memory allocation would be a big mistake.
->=20
-> The EGL API for this is currently being discussed on the dri-egl list
-> (http://lists.freedesktop.org/mailman/listinfo/dri-egl), you may want t=
-o
-> join in there.
+> mode/depth that has too much bandwidth just select a lower bandwidth
+> mode automatically?
 
-I'll try, I'm near by bandwidth limit already though.
+It is hard to determine if the mode/depth combination is illegal unless
+the check_var() function, as mentioned, can be relied upon.
 
-> > We'll need to find a way to deal with that. An idea would be for me t=
-o=20
-> > do the clearing only when I come from a different bit depth or from t=
-ext=20
-> > mode. That is, what i want to avoid, is those artifacts caused by=20
-> > incorrect bit depth content. A strict mode change isn't an issue in t=
-his=20
-> > case. That would solve my immediate problem.
->=20
-> Sounds good.
->=20
-> > _BUT_ in the long run, X will have to be smarter. Current UseFBDev or=
- X
-> > "fbdev" can't support dual head properly on top of fbdev anyway,=20
->=20
-> Agreed for UseFBDev, but what's the problem with fbdev?
+> Adding the depth to the modelist will triple the
+> number of entries.
 
-Read the rest of the email.
->=20
-> > But until all clients are DRI clients, we have a problem.
->=20
-> Keep in mind that basically the only driver-independent API exposed by
-> the DRI is OpenGL, so I'm afraid it's unlikely that all fbdev
-> applications will take that route.
+That is the downside. Plus, combining parameters that describe the
+display with those that describe the framebuffer seems ugly to me.
 
-I meant DRM. That is some arbitration & locking. There is simply _NO_
-way we can have something that works with both independant multiple
-heads and direct banging of the framebuffer without arbitration. There
-is no magic here. It _can_ be made to work in _some_ cases using the
-separate swappers, but that won't help if one of the heads try to do
-accel....
+Also, depth might not be a good enough descriptor. We can have
+ARGB1555/RGB565 (depth = 16),  ARGB8888/ARGB2101010 (depth 32).
+Then you have directcolor, truecolor, pseudocolor.  To fully describe
+a modeline, one just have to look at VESA's modeinfoblock structure to
+see how complicated this can be.
 
-Ben.
+>
+> Now that an attribute/value pair scheme has been proposed I like it a
+> lot better than what I implemented.
+>
+> ---------- Forwarded message ----------
+> From: Jon Smirl <jonsmirl@gmail.com>
+> Date: Mon, 14 Mar 2005 12:11:52 -0500
+> Subject: Re: Native surface creation
+> To: Brian Paul <brian.paul@tungstengraphics.com>
+> Cc: dri-egl@lists.freedesktop.org
+>
+>
+> On Mon, 14 Mar 2005 09:03:45 -0700, Brian Paul
+>
+> <brian.paul@tungstengraphics.com> wrote:
+> > It's clear that you're working at a lower level of implementation
+> > detail than I am in trying to specify an EGL API extension.
+>
+> I'm working right at the hardware implementing the modesetting.
+>
+> A major thing being fixed is to allow normal users to set modes
+> without being root. Writing arbitrary modelines let you burn up
+> monitors so it has to be a root operation. To get around the need to
+> be root a fixed list of modes is exposed and you have to choose from
+> the list.
+>
+> Right now the interface for this is very human readable in sysfs:
+> cat /sys/class/graphics/fb0/modes  --- list of mode names in human readable
+> form echo name >/sys/class/graphics/fb0/mode -- set one of the modes from
+> the list
+>
+> This is in current linus bk and it works with fbcon but it isn't
+> machine friendly, it relies on the human to know what the mode names
+> mean.
+>
+> I could alter the attributes to work like this:
+>
+> echo "width=1000, height=800, depth=32" >/sys/class/graphics/fb0/mode
+> would pick the closest mode and set it
+
+The refresh rate can also be added.  If the refresh rate is not specified, choose
+the highest refresh. We already have a function for this:
+
+fb_find_nearest_mode()
+ 
+>
+> echo "HDTV 1080i" >/sys/class/graphics/fb0/mode
+> would search the names since there is no equal sign.
+>
+> cat /sys/class/graphics/fb0/mode
+> name="HDTV 720P", width=1024, height=720, depth=32, interlace=no,
+> refresh=60
+
+Yep, this is more descriptive.  Or just include the entire set of timings
+(ala X modeline), but one may argue that this is too much data.
+ 
+Tony
+
+
+
+
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

@@ -1,16 +1,18 @@
-From: "Somsak Sriprayoonsakul" <ssy@hpcnc.cpe.ku.ac.th>
-Subject: Can't correctly set palette
-Date: Wed, 6 Aug 2003 15:25:33 +0700
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [PATCH] Framebuffer: 2nd try: client
+ notification mecanism & PM
+Date: Thu, 7 Aug 2003 00:52:03 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <002701c35bf4$663764c0$16226c9e@hpcncd.cpe.ku.ac.th>
-Reply-To: "Somsak Sriprayoonsakul" <ssy@hpcnc.cpe.ku.ac.th>
+Message-ID: <Pine.LNX.4.44.0308070000540.17315-100000@phoenix.infradead.org>
+References: <1059732286.8184.43.camel@gaston>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from nontri.ku.ac.th ([158.108.2.71] helo=ku.ac.th)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19kJdq-0003ul-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 06 Aug 2003 01:27:30 -0700
+Received: from pub234.cambridge.redhat.com ([213.86.99.234] helo=phoenix.infradead.org)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19kY5B-00022V-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 06 Aug 2003 16:52:42 -0700
+In-Reply-To: <1059732286.8184.43.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,37 +22,23 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: kraxel@goldbach.in-berlin.de
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-kernel mailing list <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Pavel Machek <pavel@ucw.cz>
 
-Hello,
-    I am trying to create a graphical RedHat Linux bootup using Frame Buffer
-pixmap drawing (with the help of bogl library with bogl_put function). After
-successfully display the image from the command prompt. I try to add my
-image-drawing command to rc script, however, the image appeared to use wrong
-palette, all color are distorted. It seems that if I am trying to display
-the image in the different VT than the Vt that is running the program, the
-color palette will always distort (using chvt xx && ./show_image). I try to
-get the frame buffer palette using ioctl(FBIOGETCMAP) but it alwasy return
-zero fb_cmap. What have I done wrong? Here are the details of my platform
 
-frame buffer driver: vesafb (passing vga=0x301 at boot time)
-image: 640x480 - 7 bit indexed color.
+> James, if you are ok, can you get that upstream to Linus asap so
+> I can start pushing the driver bits for radeon & aty128 ?
 
-I also try libfbx and result is the same.
+Working on it. I'm thinking about also how it effects userland and how 
+userland affects the console if present. Basically the logic will go 
 
-PS: Don't tell me to use default color palette. I need to display a nice 7
-bit image in console mode.
+pci suspend ->  framebuffer driver supend function -> call each client
 
-------------------------------------------------------------------------
-Somsak Sriprayoonsakul
+Just give me a few days to piece it together.
 
-High Performance Computing and Networking Center
-Kasetsart University
-ssy@hpcnc.cpe.ku.ac.th
-----------------------------------------------------------------------------
----
+
 
 
 

@@ -1,13 +1,21 @@
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: [Dri-devel] Re: DRM and pci_driver conversion
-Date: Fri, 24 Oct 2003 23:08:30 +0400
+From: "Charles" <ccedeno@speedsurf.pacific.net.ph>
+Subject: Genuine Profitable Opportunity!
+Date: Sat, 25 Oct 2003 03:35:19 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20031024230830.A2362@jurassic.park.msu.ru>
-References: <3F987E18.9080606@pobox.com> <Pine.LNX.4.44.0310240931090.6051-100000@home.osdl.org> <20031024165718.GA4972@vana.vc.cvut.cz>
+Message-ID: <E1AD7g0-0003eI-7N@sc8-sf-mx1.sourceforge.net>
+Reply-To: "Charles" <charlesjlc@indiatimes.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Content-Disposition: inline
-In-Reply-To: <20031024165718.GA4972@vana.vc.cvut.cz>; from vandrove@vc.cvut.cz on Fri, Oct 24, 2003 at 06:57:18PM +0200
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 1AD7jI-0000Aw-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 24 Oct 2003 12:36:12 -0700
+Received: from [210.23.250.24] (helo=speedsurf.pacific.net.ph)
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.24)
+	id 1AD7g0-0003eI-7N
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Oct 2003 12:32:48 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -18,25 +26,38 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Petr Vandrovec <vandrove@vc.cvut.cz>
-Cc: Linus Torvalds <torvalds@osdl.org>, Jeff Garzik <jgarzik@pobox.com>, Jon Smirl <jonsmirl@yahoo.com>, Eric Anholt <eta@lclark.edu>, kronos@kronoz.cjb.net, Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net, dri-devel <dri-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, Oct 24, 2003 at 06:57:18PM +0200, Petr Vandrovec wrote:
-> We need something more sophisticated. Matrox's hardware has bits
-> 31-16 readable/writable only if bit 0 is set to 1 (ROM enabled; you can
-> (obviously) set bits 31-16 & 0 in one write). When ROM is disabled, 
-> bits 31-1 are always read as 0.
+Hello, 
+ 
+There's a revolutionary money making phenomenon that is spreading across
+the Internet like WILDFIRE!
+ 
+And right now, for a very limited time, YOU have the opportunity to be
+right at the FRONT of it.
+ 
+But time is of the essence; you need to LOCK IN YOUR POSITION NOW!!!
+ 
+DON'T WAIT ANOTHER SECOND!!
+ 
+Send email to charlesjlc@indiatimes.com with the subject "Register me as
+an Associate Member." with your Firstname, Lastname, Tel#, and Country.
+Registration is FREE...
 
-Hmm, I believe it's not true at least for Mystique, Millennium II
-and G400. Otherwise we wouldn't be able to determine ROM size/alignment
-as we do probe with ROM disabled (probe.c, line 125):
-
-		pci_write_config_dword(dev, rom, ~PCI_ROM_ADDRESS_ENABLE);
-		pci_read_config_dword(dev, rom, &sz);
-
-
-Ivan.
+If you allow this incredible, once-in-a-lifetime opportunity to pass you
+by, you'll forever regret the decision. 
+ 
+Be an Associate Member and evaluate the program and surely you will
+discover what you have been dreaming of.
+ 
+The time to act is now!
+ 
+Not tomorrow... not someday... but right here, RIGHT NOW!
+ 
+Regards,
+ 
+Charles
+charlesjlc@indiatimes.com
 
 
 -------------------------------------------------------

@@ -1,14 +1,16 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: fb_cmap and transparency
-Date: Tue, 18 Mar 2003 15:34:36 +0100 (MET)
+From: Jon Smirl <jonsmirl@yahoo.com>
+Subject: Re: Reading the EDID block for x86 machines
+Date: Tue, 18 Mar 2003 09:07:49 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0303181529590.17808-100000@vervain.sonytel.be>
+Message-ID: <20030318170749.55622.qmail@web14904.mail.yahoo.com>
+References: <1047981547.3668.73.camel@localhost.localdomain>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18vIBl-0007Tl-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 18 Mar 2003 06:35:37 -0800
+Received: from web14904.mail.yahoo.com ([216.136.225.56])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18vKZG-0006GN-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 18 Mar 2003 09:08:02 -0800
+In-Reply-To: <1047981547.3668.73.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -18,53 +20,47 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+Here is a description of how to control the shadow
+write protect for a SIS chipset. It is done by writing
+to PCI config space. There is a slim chance that this
+is a standard procedure.
 
-If a colormap contains no transparency information, fb_set_cmap() calls
-fb_setcolreg() with trans = 0. This causes all CLUT entries to be fully
-transparent on hardware that does have transparency information in the CLUT
-registers.
+http://www.missl.cs.umd.edu/Projects/sebos/winint/index1.html
 
-The following patch solves this problem by changing the default transparency
-from 0 (full transparent) to 0xffff (full opaque).
+When you copied to 8000 ot 9000, did you copy the ROM
+or the image at C000? I compared a dump of C000 to the
+ROM and they don't match. ATI may have overlaid some
+code during the init procedure.
 
-The patch applies to both 2.4.20 and 2.5.65.
+So I guess we are stuck with a user space daemon.
+Athlon-64 and IA64 will require the entire VM86
+emulator. Last I checked the scitech emulator (ver8)
+han't implemented all of the instructions needed to
+run the ATI ROMs so it will need some work.
 
---- linux/drivers/video/fbcmap.c.orig	Mon Mar  5 09:29:30 2001
-+++ linux/drivers/video/fbcmap.c	Mon Mar 17 17:39:59 2003
-@@ -271,7 +271,7 @@
- 	    hred = *red;
- 	    hgreen = *green;
- 	    hblue = *blue;
--	    htransp = transp ? *transp : 0;
-+	    htransp = transp ? *transp : 0xffff;
- 	} else {
- 	    get_user(hred, red);
- 	    get_user(hgreen, green);
-@@ -279,7 +279,7 @@
- 	    if (transp)
- 		get_user(htransp, transp);
- 	    else
--		htransp = 0;
-+		htransp = 0xffff;
- 	}
- 	red++;
- 	green++;
+How do the Transmeta tools work? Could we turn the
+ROMs into a C program and compile them again? Or use
+something like use an emulator to capture the reset
+sequence and then compile it for protected mode. 
 
-Gr{oetje,eeting}s,
+I tried a couple of reverse engineering tools on the
+ROMs but I didn't get very far. I don't have access to
+the ATI Radeon documentation so it is hard for me to
+tell what is going on.  
 
-						Geert
+=====
+Jon Smirl
+jonsmirl@yahoo.com
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+__________________________________________________
+Do you Yahoo!?
+Yahoo! Platinum - Watch CBS' NCAA March Madness, live on your desktop!
+http://platinum.yahoo.com
 
 
 -------------------------------------------------------

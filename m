@@ -1,63 +1,63 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Jon Smirl <jonsmirl@gmail.com>
 Subject: Re: radeon, apertures & memory mapping
-Date: Mon, 14 Mar 2005 11:10:05 +1100
-Message-ID: <1110759005.5787.198.camel@gaston>
-References: <1110705646.14684.126.camel@gaston>
-	<20050313103936.GA11002@sci.fi> <1110715499.14684.132.camel@gaston>
-	<9e473391050313081937cde207@mail.gmail.com>
-	<1110750553.5787.155.camel@gaston>
-	<9e47339105031314101c89e50e@mail.gmail.com>
-	<1110752401.19810.177.camel@gaston>
-	<9e47339105031315002a444f00@mail.gmail.com>
-	<20050313232735.GA19781@sci.fi>
-	<1110757699.5787.196.camel@gaston>  <20050314000835.GA20393@sci.fi>
+Date: Sun, 13 Mar 2005 19:25:15 -0500
+Message-ID: <9e47339105031316254524f72@mail.gmail.com>
+References: <1110677744.19810.80.camel@gaston> <20050313103936.GA11002@sci.fi>
+	 <1110715499.14684.132.camel@gaston>
+	 <9e473391050313081937cde207@mail.gmail.com>
+	 <1110750553.5787.155.camel@gaston>
+	 <9e47339105031314101c89e50e@mail.gmail.com>
+	 <1110752401.19810.177.camel@gaston>
+	 <9e47339105031315002a444f00@mail.gmail.com>
+	 <20050313232735.GA19781@sci.fi> <1110757699.5787.196.camel@gaston>
+Reply-To: Jon Smirl <jonsmirl@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-In-Reply-To: <20050314000835.GA20393@sci.fi>
+In-Reply-To: <1110757699.5787.196.camel@gaston>
+Sender: dri-devel-admin@lists.sourceforge.net
+Errors-To: dri-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
+	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/xorg>
-List-Post: <mailto:xorg@lists.freedesktop.org>
-List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
-Sender: xorg-bounces@lists.freedesktop.org
-Errors-To: xorg-bounces@lists.freedesktop.org
+List-Post: <mailto:dri-devel@lists.sourceforge.net>
+List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
+	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=dri-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Cc: Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, dri-devel@lists.sourceforge.net, xorg@lists.freedesktop.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: =?ISO-8859-1?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>, Jon Smirl <jonsmirl@yahoo.com>, dri-devel@lists.sourceforge.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, xorg@lists.freedesktop.org
 
+On Mon, 14 Mar 2005 10:48:19 +1100, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> 
+> > > That shouldn't matter the page brought in would be for a speculative
+> > > read and never accessed. It should just fall out of the cache and not
+> > > be written back. There is only one cachable mapping. In this model
+> > > writes are always followed by a flush before telling the GPU to access
+> > > the memory that has just been written.
+> >
+> > What about this scenario?
+> >
+> > Speculative read -> AGP master writes new data -> CPU has invalid data in
+> > cache :(
+> 
 
-> I don't think "normal" drivers do them at all. I did experiment with 
-> DirectFB at one point and had it place all offscreen surfaces to AGP 
-> memory. It worked really well on my hardware (G400 + VIA KT133 
-> northbridge). I also tried it with PCI transfers and that too worked but 
-> was naturally slower. I'd like to make DirectFB use AGP again since 32MB 
-> of video memory isn't always enough.
-> 
-> > (Which is interesting, that means that if we want to copy something out
-> > of video memory, we can't write it to AGP memory and then read it, we
-> > need to actually do the blit from the CPU, good to know for our memory
-> > manager. That also means that we have a problem if the video memory
-> > isn't entirely accessible by the CPU ...)
-> 
-> What about PCI master writes? Are there bridges that don't support even 
-> those?
+You need to reverse the cache flush process if you are going to read
+data written by the GPU.
 
-Usually, those work. I have a list of errata of Apple bridges at least
-in Darwin, some do not support PCI master writes, but it's only
-apparently some never-released revisions :)
+1) Make sure GPU is finished writing
+2) flush your cache
+3) read AGP memory like normal RAM.
 
-> > That's something we should probably think about doing properly: Have a
-> > list of AGP "issues" (errata ?) bits that are communicated by the AGP
-> > host driver to the DRM.
-> > 
-> > At least all the early Apple AGP bridges don't do writes, and I remember
-> > we have trouble with a few x86 ones as well. There are also issues when
-> > a single AGP burst crosses a page boundary, and other things like that.
-> 
-> :(
-> 
 -- 
-Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Jon Smirl
+jonsmirl@gmail.com
+
+
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
+--

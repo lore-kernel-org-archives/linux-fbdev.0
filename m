@@ -1,21 +1,20 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] VT locking
-Date: Tue, 6 Jan 2004 13:16:36 +0100
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: fbutils
+Date: Tue, 6 Jan 2004 14:22:45 +0100 (CET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040106121636.GA888@elf.ucw.cz>
-References: <1073349182.9504.175.camel@gaston>
+Message-ID: <Pine.LNX.4.58.0401061420420.1856@callisto>
+References: <3FE649BF.30501@undead.cc> <3FE7DCAC.8000204@undead.cc>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1Adq7D-0003oP-7F
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 04:15:19 -0800
-Received: from gprs214-240.eurotel.cz ([160.218.214.240] helo=amd.ucw.cz)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1Adq7A-0007ad-O6
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 04:15:19 -0800
-Content-Disposition: inline
-In-Reply-To: <1073349182.9504.175.camel@gaston>
+	id 1AdrAf-0006fG-3d
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 05:22:57 -0800
+Received: from amsfep12-int.chello.nl ([213.46.243.18])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1AdrAe-0005UW-Hb
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 05:22:56 -0800
+In-Reply-To: <3FE7DCAC.8000204@undead.cc>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,25 +24,58 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@osdl.org>, James Simmons <jsimmons@infradead.org>
+To: John Zielinski <grim@undead.cc>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi!
+On Tue, 23 Dec 2003, John Zielinski wrote:
+> I didn't get as much done as I've hoped but there's a few important
+> fixes so I'll repost early.  Apply to a fresh CVS copy.
 
-> The VT code is currently, it seems, full of races, it basically doesn't
-> do any locking... This patch is definitely not fixing everything,
-> but at
+Thanks!
 
-And the races bite, BTW. For years I was seeing weird stuff like
-console output on blanked console if scroll happened at approximately
-same time as blank. It was hard to reproduce reliably, through.
-								Pavel
+I need these patches to:
+  - accept the included etc/modes as a valid config file
+  - kill a warning
 
--- 
-When do you have a heart between your knees?
-[Johanka's followup: and *two* hearts?]
+If these are OK, I'll check everything in (someday :-)
+
+--- fbutils-john-2/etc/modes	2004-01-04 15:38:38.000000000 +0100
++++ fbutils/etc/modes	2004-01-04 15:33:21.000000000 +0100
+@@ -14,7 +14,7 @@
+     "640x480@75"	# 640x480 @ 75 Hz, 37.50 kHz hsync
+ 	{ 640 480 31746 120 16 16 1 64 3 }
+     "800x600@60"	# 800x600 @ 60 Hz, 37.8 kHz hsync
+-	{ 800 600 25000 88 40 23 1 128 4 0 hsync+ vsync+ }
++	{ 800 600 25000 88 40 23 1 128 4 hsync+ vsync+ }
+     "640x480@85"	# 640x480 @ 85 Hz, 43.27 kHz hsync
+ 	{ 640 480 27777 80 56 25 1 56 3 }
+     "1152x864@89"	# 1152x864 @ 89 Hz interlaced, 44 kHz hsync
+--- fbutils-john-2/fbset/fbset.C	2004-01-04 15:38:38.000000000 +0100
++++ fbutils/fbset/fbset.C	2004-01-04 15:42:02.000000000 +0100
+@@ -259,8 +259,8 @@
+
+     //  Parse the Options
+
+-    while (id = GetNextOption(argc, argv, Options,
+-			       sizeof(Options)/sizeof(*Options))) {
++    while ((id = GetNextOption(argc, argv, Options,
++			       sizeof(Options)/sizeof(*Options)))) {
+ 	switch (id) {
+ 	    case ID_HELP:
+ 		Usage();
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

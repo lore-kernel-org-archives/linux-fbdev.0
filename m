@@ -1,19 +1,12 @@
-From: MAILER-DAEMON@whois1.trueweb.co.kr
-Subject: failure notice
-Date: 7 Aug 2004 17:56:41 +0900(KST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: New kernel API for ROMs
+Date: Sat, 7 Aug 2004 15:16:45 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <E1BtN0g-0001Sd-7H@sc8-sf-mx1.sourceforge.net>
+Message-ID: <Pine.GSO.4.58.0408071515350.3475@waterleaf.sonytel.be>
+References: <20040806212133.22637.qmail@web14923.mail.yahoo.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="1091869001whois1.trueweb.co.kr7651483"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BtN0g-0002V3-Vq
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 07 Aug 2004 01:57:02 -0700
-Received: from [211.215.19.210] (helo=whois1.trueweb.co.kr)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.34)
-	id 1BtN0g-0001Sd-7H
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 07 Aug 2004 01:57:02 -0700
+In-Reply-To: <20040806212133.22637.qmail@web14923.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -23,42 +16,57 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: dri-devel <dri-devel@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
---1091869001whois1.trueweb.co.kr7651483
+On Fri, 6 Aug 2004, Jon Smirl wrote:
 
-Hi. This is the qmail-send program at whois1.trueweb.co.kr.
-I'm afraid I wasn't able to deliver your message to the following addresses.
-This is a permanent error; I've given up. Sorry it didn't work out.
+> This patch provides a new kernel API for access ROMs from device
+> drivers. If you're working on a driver that uses the ROM (most video
+> drivers) please give this patch a try and send some feedback/bugs.
+>
+> pci_map_rom() - map the rom and provide virtual address, transparently
+> return shadow/copy if needed. Normal drivers call this
+>
+> pci_map_rom_copy() - same as pci_map_rom except the ROM will copied,
+> future reads of ROM will use copy. Hardware with minimal decoding calls
+> use this
+>
+> pci_unmap_rom() - release the ioremap if there is one
+>
+> The ROMs also appear in sysfs and you can use hexdump to see them.
+>
+> If the Radeon ROM is all FFFF. Load a radeon device driver and it will
+> appear. Radeon cards have a bug that loading the driver will fix.
 
-<pro@koreabrain.com>:
-Sorry, no mailbox here by that name. (#5.1.1)
+> +unsigned char *
+> +pci_map_rom_copy(struct pci_dev *dev, size_t *size) {
+> +	struct resource *res = &dev->resource[PCI_ROM_RESOURCE];
+> +	unsigned char *rom;
+> +
+> +	rom = pci_map_rom(dev, size);
+> +	if (!rom)
+> +		return NULL;
+> +
+> +	if (res->flags & (PCI_ROM_COPY | PCI_ROM_SHADOW))
+> +		return rom;
+> +
+> +	res->start = (unsigned long)kmalloc(*size, GFP_KERNEL);
 
---- Enclosed are the original headers of the message.
+What's the maximum size of a PCI ROM? Larger than kmalloc() can handle?
 
---1091869001whois1.trueweb.co.kr7651483
-Content-Type: message/rfc822
+Gr{oetje,eeting}s,
 
-Return-Path: <linux-fbdev-devel@lists.sourceforge.net>
-Received: (qmail 23761 invoked from network); 7 Aug 2004 17:56:41 +0900(KST)
-Received: from unknown (HELO koreabrain.com) (220.120.156.5)
-  by 0 with SMTP; 7 Aug 2004 17:56:41 +0900(KST)
-From: linux-fbdev-devel@lists.sourceforge.net
-To: pro@koreabrain.com
-Subject: Mail Delivery (failure pro@koreabrain.com)
-Date: Sat, 7 Aug 2004 17:56:27 +0900
-MIME-Version: 1.0
-Content-Type: multipart/related;
-	type="multipart/alternative";
-	boundary="----=_NextPart_000_001B_01C0CA80.6B015D10"
-X-Priority: 3
-X-MSMail-Priority: Normal
+						Geert
 
-(Body supressed)
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-
-
---1091869001whois1.trueweb.co.kr7651483--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

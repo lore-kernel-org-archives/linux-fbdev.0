@@ -1,18 +1,21 @@
-From: Gary Thomas <gary@mlbassoc.com>
-Subject: Framebuffer console performance
-Date: Thu, 24 Mar 2005 15:14:48 -0700
-Message-ID: <1111702489.29791.216.camel@hermes>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: 2.6.12-rc1-mm2 -- nvidiafb driver gives black screen
+Date: Thu, 24 Mar 2005 20:31:18 -0800
+Message-ID: <20050324203118.345c6004.akpm@osdl.org>
+References: <a44ae5cd0503242023233dc23f@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DEabV-0005LV-6R
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 24 Mar 2005 14:15:01 -0800
-Received: from sta-206-168-96-204.rockynet.com ([206.168.96.204] helo=hermes.chez-thomas.org)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DEabT-0002Ex-Kd
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 24 Mar 2005 14:15:01 -0800
+	id 1DEgU4-00027F-4Y
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 24 Mar 2005 20:31:44 -0800
+Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1DEgU2-0003py-Lr
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 24 Mar 2005 20:31:44 -0800
+In-Reply-To: <a44ae5cd0503242023233dc23f@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -24,32 +27,53 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Miles Lane <miles.lane@gmail.com>
+Cc: khali@linux-fr.org, linux-fbdev-devel@lists.sourceforge.net
 
-I have a non-standard framebuffer (i.e. I wrote the driver,
-based on the au1000 driver) running on 2.4.27.  When I run
-virtual consoles on it, I see sluggish scroll performance.
-I get quite acceptable performance when the system first
-comes up, e.g. during the system initialization messages,
-but not long afterwards the scrolling slows down.  It can
-get continually worse, eventually ending up at a crawl.
 
-This is a memory limited embedded system, but I do not
-have any swapping going on.
+(Added the mailing list - trust that's ok)
 
-Ideas or hints where I might look?
+Miles Lane <miles.lane@gmail.com> wrote:
+>
+> Kernel command line: BOOT_IMAGE=Linux ro root=306 video=nvidiafb
+> init=/etc/init lang=us apm=power-off nomce
+> nvidiafb: nVidia device/chipset 10DE0312
+> nvidiafb: nVidia Corporation NV31 [GeForce FX 5600]
+> nvidiafb: CRTC0 found
+> nvidiafb: CRTC1 not found
+> nvidiafb: EDID found from BUS1
+> nvidiafb: CRTC 0 appears to have a CRT attached
+> nvidiafb: Using CRT on CRTC 0
+> 
+> >> I am wondering whether the following two lines point to the problem.
+> 
+> allocation failed: out of vmalloc space - use vmalloc=<size> to increase size.
+> nvidiafb: cannot ioremap FB base
 
-Thanks for your time.
+Quite possibly.
 
-n.b. I'm not subscribed to this list, so please CC my direct
-email address when replying.
+I'll do rc2-mm3 tonight - please test that.  It has fixes.
 
--- 
-------------------------------------------------------------
-Gary Thomas                 |  Consulting for the
-MLB Associates              |    Embedded world
-------------------------------------------------------------
-
+> CONFIG_AGP_NVIDIA=y
+> CONFIG_I2C=y
+> CONFIG_I2C_CHARDEV=m
+> CONFIG_I2C_ALGOBIT=y
+> CONFIG_I2C_ALGOPCF=m
+> CONFIG_I2C_ALGOPCA=m
+> CONFIG_I2C_ISA=m
+> CONFIG_I2C_NFORCE2=m
+> 
+> CONFIG_FB=y
+> CONFIG_FB_CFB_FILLRECT=y
+> CONFIG_FB_CFB_COPYAREA=y
+> CONFIG_FB_CFB_IMAGEBLIT=y
+> CONFIG_FB_SOFT_CURSOR=y
+> CONFIG_FB_MODE_HELPERS=y
+> CONFIG_FB_TILEBLITTING=y
+> CONFIG_VIDEO_SELECT=y
+> CONFIG_FB_NVIDIA=y
+> CONFIG_FB_NVIDIA_I2C=y
+> CONFIG_FRAMEBUFFER_CONSOLE=y
 
 
 -------------------------------------------------------

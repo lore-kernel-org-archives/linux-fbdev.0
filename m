@@ -1,21 +1,25 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: doubts
-Date: Sat, 5 Jun 2004 19:34:56 +0200 (MEST)
+From: Thomas Jahns <Thomas.Jahns@epost.de>
+Subject: Mach64 GX driver problems in post 2.4.22 kernels
+Date: Sat, 5 Jun 2004 20:56:47 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0406051932130.12190@waterleaf.sonytel.be>
-References: <000001c44316$487bf040$7c04b40a@dlh.st.com>
- <200405280044.24185.lucasvr@gobolinux.org>
+Message-ID: <20040605185647.GG5668@mercury.jahnsnet.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BWf5P-0008R1-2i
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 05 Jun 2004 10:36:03 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
+	id 1BWgLr-0003Yx-Vw
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 05 Jun 2004 11:57:07 -0700
+Received: from mail.epost.de ([193.28.100.151])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BWf5M-0003WA-MB
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 05 Jun 2004 10:36:00 -0700
-In-Reply-To: <200405280044.24185.lucasvr@gobolinux.org>
+	id 1BWgLr-0003ZD-Hp
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 05 Jun 2004 11:57:07 -0700
+Received: from mercury.jahnsnet.de (149.225.10.206) by mail.epost.de (6.7.015)
+        id 40C09F250003C876 for linux-fbdev-devel@lists.sourceforge.net; Sat, 5 Jun 2004 20:57:07 +0200
+Received: from mercury (tjahns@localhost [127.0.0.1])
+	by mercury.jahnsnet.de (8.12.11/8.12.11/Debian-5) with ESMTP id i55IunIL008317
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 5 Jun 2004 20:56:49 +0200
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,41 +29,73 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Lucas Correia Villa Real <lucasvr@gobolinux.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; format="Flowed"; delsp="Yes"; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, 28 May 2004, Lucas Correia Villa Real wrote:
-> On Wednesday 26 May 2004 08:40, Manish RATHI wrote:
-> > (*changevar)();
->
-> Oh, I didn't see any driver using that. In the case of fbcon_changevar, it
-> just calls fbcon_setup (specifying not to show the logo again), which resets
-> the framebuffer settings such as font and pan/wrap offsets.
->
-> When one calls (*setvar)(), which modifies the display variable configuration,
-> it checks for the existence of a non-null function pointer to changevar and
-> if found, calls that function. I really don't know why a driver should need
-> to restart things when changing var data. Could anyone help to clarify that?
+Hi,
 
-It's there so fbcon can resize the emulated text console based on the new
-screen size. E.g. when switching from 640x480 to 1024x768 using fbset, the text
-console will change from 80x30 to 128x48 (assuming a 8x16 font).
+I have the following problem when I try to build a new kernel for my  
+PowerMac 7500 (604e CPU, PCI adapters: Adaptec 2940UW SCSI, Apple  
+Mach64 GX card):
 
-It's broken in 2.6, though (unless it got fixed while I was on holidays last
-week :-)
+Kernel versions newer than my last build (of 2.4.22 plus preempt, benh,  
+lowlatency, ea+acl+nfsacl, cryptoloop patches, all from debian sid  
+source packages of that time) show a blank screen when switching to the  
+Mach64 framebuffer (BootX pre-boot messages are fine). The kernel  
+continues to boot and even activates the atyfb driver so I can login  
+blind on the console or remotely via ssh.
 
-Gr{oetje,eeting}s,
+I have so far built the following kernels: 2.4.25 from debian package  
+kernel-source-2.4.25_2.4.25-3, with and without the debian kernel- 
+patch-2.4.25-powerpc patch derived from Benjamin Herrenschmidt's source  
+tree, a kernel from each of www.kernel.org 2.4.26 and 2.4.25 archives  
+(without any patches) and a downloaded kernel from Benjamin's site  
+directly (rsync'ed on 2004/06/01, ca. 16:30). All of these builds show  
+the behaviour outlined above: kernel boots fine but screen blanks  
+immediatly.
 
-						Geert
+As Mach64 is obviously quite important to a number of PowerMacs I hope  
+someone already stumbled across the same problem, although I couldn't  
+find anything truely specific by googling.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Please tell if you need any more specific logs or info, I'll include  
+the dmesg lines and lspci -v output relevant to the card for a start:
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+> dmesg | grep -i \(aty\|console\)
+Kernel command line: root=/dev/sda7 video=atyfb:vmode:18:cmode:8  
+panic=60
+Console: colour dummy device 80x25
+atyfb: mach64GX (ATI888GX00) [0x00d7 rev 0x03] 4M VRAM, 14.31818 MHz  
+XTAL, 135
+MHz PLL, 50 Mhz MCLK
+Console: switching to colour frame buffer device 144x54
+fb0: ATY Mach64 frame buffer device on PCI
+MacOS display is /bandit/ATY,mach64
+
+I noticed one of these lines reads differently on my 2.4.22 kernel:
+
+atyfb: mach64GX (ATI888GX00) [0x00d7 rev 0x03] 4M VRAM, 14.31818 MHz
+XTAL, 135 MHz PLL, 50 Mhz MCLK
+                   ^^^^^^^^^^^
+Would that be a sign of the culprit?
+
+> lspci -v -s 00:0f.0
+0000:00:0f.0 VGA compatible controller: ATI Technologies Inc 210888GX  
+[Mach64
+GX] (rev 03) (prog-if 00 [VGA])
+       Flags: stepping, medium devsel, IRQ 25
+       Memory at 81000000 (32-bit, non-prefetchable) [size=16M]
+       Expansion ROM at <unassigned> [disabled] [size=64K]
+
+
+
+Thanks for any input you can provide with respect to my problem.
+
+Ciao, Thomas Jahns
+-- 
+"Computers are good at following instructions,
+ but not at reading your mind."
+D. E. Knuth, The TeXbook, Addison-Wesley 1984, 1986, 1996, p. 9
 
 
 -------------------------------------------------------

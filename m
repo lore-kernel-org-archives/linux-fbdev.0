@@ -1,22 +1,16 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: vesafb problem with 1GB Ram and possible
-	fix
-Date: 30 Mar 2003 05:39:10 +0800
+From: Kronos <kronos@kronoz.cjb.net>
+Subject: Debug: sleeping function called from illegal context at mm/slab.c:1723
+Date: Sun, 30 Mar 2003 15:29:15 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1048973887.1014.16.camel@localhost.localdomain>
-References: <3E8329D2.7040909@comcast.net>
-	<20030327190222.GA4060@middle.of.nowhere> <3E837ADD.9080209@comcast.net>
-	<3E84B7CB.1010604@comcast.net>
-	<1048910026.1000.17.camel@localhost.localdomain> 
-	<3E860111.1040207@comcast.net>
+Message-ID: <20030330132915.GA2198@dreamland.darkstar.lan>
+Reply-To: kronos@kronoz.cjb.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from pine.compass.com.ph ([202.70.96.37])
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18zO3d-0007Wt-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 29 Mar 2003 13:40:10 -0800
-In-Reply-To: <3E860111.1040207@comcast.net>
+Received: from mail-3.tiscali.it ([195.130.225.149] helo=mail.tiscali.it)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18zcsO-0003Ip-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 30 Mar 2003 05:29:32 -0800
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,33 +21,208 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Walt H <waltabbyh@comcast.net>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Sun, 2003-03-30 at 04:24, Walt H wrote:
-> > 
-> <Patch snipped>
-> 
-> One question I've been wondering about with either one of these 
-> approaches has to do with mode changes. I might be mistaken, but if I 
-> remember correctly, video mode changes aren't supported for vesa 
-> framebuffers. Would you ever need to allocate additional memory other 
-> than that allocated at startup? I'm thinking that in the small tweak 
-> that I did, you can perhaps not allocate enough memory for some 
-> unforseen future event, although I can't think of any off hand. Then 
-> again, I'm not a kernel programmer, I could be way off base here.
-> 
+Hi,
+I got this  under 2.5.66. It happens when I'm using  links (the browser)
+and is reproducible:
 
-True, vesafb does not support mode changes.  However, the extra graphics
-memory is useful for some framebuffer-based applications that implement
-multi-buffering. DirectFB, for instance, takes advantage of this since
-it uses a frontbuffer and a backbuffer (display the frontbuffer, render
-to the backbuffer, swap the front and backbuffer pointers, then display
-the new frontbuffer).  Xine and mplayer using the framebuffer backend
-are probably using similar setups. 
 
-Tony  
+.c:1723
+Call Trace:
+ [<c011fb7f>] __might_sleep+0x5f/0xa0
+ [<c014ce41>] kmalloc+0x1a1/0x1c0
+ [<c02bd125>] accel_cursor+0xd5/0x300
+ [<c02bd545>] fb_vbl_handler+0x85/0xa0
+ [<c02bd545>] fb_vbl_handler+0x85/0xa0
+ [<c012dc06>] update_process_times+0x46/0x50
+ [<c02bbb40>] cursor_timer_handler+0x0/0x40
+ [<c02bbb61>] cursor_timer_handler+0x21/0x40
+ [<c012dd84>] run_timer_softirq+0x154/0x400
+ [<c0112633>] timer_interrupt+0x1a3/0x3f0
+ [<c0128c61>] do_softirq+0xa1/0xb0
+ [<c010cc2f>] do_IRQ+0x23f/0x380
+ [<c0107240>] default_idle+0x0/0x30
+ [<c0107240>] default_idle+0x0/0x30
+ [<c010ac3c>] common_interrupt+0x18/0x20
+ [<c0107240>] default_idle+0x0/0x30
+ [<c0107240>] default_idle+0x0/0x30
+ [<c0107267>] default_idle+0x27/0x30
+ [<c01072e1>] cpu_idle+0x31/0x40
+ [<c0105000>] _stext+0x0/0xf0
 
+Debug: sleeping function called from illegal context at mm/slab.c:1723
+Call Trace:
+ [<c011fb7f>] __might_sleep+0x5f/0xa0
+ [<c014ce41>] kmalloc+0x1a1/0x1c0
+ [<c02bd125>] accel_cursor+0xd5/0x300
+ [<c02bd545>] fb_vbl_handler+0x85/0xa0
+ [<c02bbb40>] cursor_timer_handler+0x0/0x40
+ [<c02bbb61>] cursor_timer_handler+0x21/0x40
+ [<c012dd84>] run_timer_softirq+0x154/0x400
+ [<c0112633>] timer_interrupt+0x1a3/0x3f0
+ [<c0128c61>] do_softirq+0xa1/0xb0
+ [<c010cc2f>] do_IRQ+0x23f/0x380
+ [<c0107240>] default_idle+0x0/0x30
+ [<c0107240>] default_idle+0x0/0x30
+ [<c010ac3c>] common_interrupt+0x18/0x20
+ [<c0107240>] default_idle+0x0/0x30
+ [<c0107240>] default_idle+0x0/0x30
+ [<c0107267>] default_idle+0x27/0x30
+ [<c01072e1>] cpu_idle+0x31/0x40
+ [<c0105000>] _stext+0x0/0xf0
+
+Debug: sleeping function called from illegal context at mm/slab.c:1723
+Call Trace:
+ [<c011fb7f>] __might_sleep+0x5f/0xa0
+ [<c014ce41>] kmalloc+0x1a1/0x1c0
+ [<c02bd125>] accel_cursor+0xd5/0x300
+ [<c02bd545>] fb_vbl_handler+0x85/0xa0
+ [<c02bd545>] fb_vbl_handler+0x85/0xa0
+ [<d8a1e678>] pbd_waitq+0x18/0x20 [xfs]
+ [<c02bbb40>] cursor_timer_handler+0x0/0x40
+ [<c02bbb61>] cursor_timer_handler+0x21/0x40
+ [<c012dd84>] run_timer_softirq+0x154/0x400
+ [<c0112633>] timer_interrupt+0x1a3/0x3f0
+ [<c0128c61>] do_softirq+0xa1/0xb0
+ [<c010cc2f>] do_IRQ+0x23f/0x380
+ [<c0107240>] default_idle+0x0/0x30
+ [<c0107240>] default_idle+0x0/0x30
+ [<c010ac3c>] common_interrupt+0x18/0x20
+ [<c0107240>] default_idle+0x0/0x30
+ [<c0107240>] default_idle+0x0/0x30
+ [<c0107267>] default_idle+0x27/0x30
+ [<c01072e1>] cpu_idle+0x31/0x40
+ [<c0105000>] _stext+0x0/0xf0
+
+Debug: sleeping function called from illegal context at mm/slab.c:1723
+Call Trace:
+ [<c011fb7f>] __might_sleep+0x5f/0xa0
+ [<c014ce41>] kmalloc+0x1a1/0x1c0
+ [<c02bd125>] accel_cursor+0xd5/0x300
+ [<c02bd545>] fb_vbl_handler+0x85/0xa0
+ [<c02bd545>] fb_vbl_handler+0x85/0xa0
+ [<c02bbb40>] cursor_timer_handler+0x0/0x40
+ [<c02bbb61>] cursor_timer_handler+0x21/0x40
+ [<c012dd84>] run_timer_softirq+0x154/0x400
+ [<c0112633>] timer_interrupt+0x1a3/0x3f0
+ [<c02b1350>] ide_dma_intr+0x0/0xc0
+ [<c0128c61>] do_softirq+0xa1/0xb0
+ [<c010cc2f>] do_IRQ+0x23f/0x380
+ [<c0107240>] default_idle+0x0/0x30
+ [<c0107240>] default_idle+0x0/0x30
+ [<c010ac3c>] common_interrupt+0x18/0x20
+ [<c0107240>] default_idle+0x0/0x30
+ [<c0107240>] default_idle+0x0/0x30
+ [<c0107267>] default_idle+0x27/0x30
+ [<c01072e1>] cpu_idle+0x31/0x40
+ [<c0105000>] _stext+0x0/0xf0
+
+Debug: sleeping function called from illegal context at mm/slab.c:1723
+Call Trace:
+ [<c011fb7f>] __might_sleep+0x5f/0xa0
+ [<c014ce41>] kmalloc+0x1a1/0x1c0
+ [<c02cc3cd>] i8042_interrupt+0x1ed/0x3a0
+ [<c02bd125>] accel_cursor+0xd5/0x300
+ [<c02bd545>] fb_vbl_handler+0x85/0xa0
+ [<c02bd545>] fb_vbl_handler+0x85/0xa0
+ [<c012dc06>] update_process_times+0x46/0x50
+ [<c02bbb40>] cursor_timer_handler+0x0/0x40
+ [<c02bbb61>] cursor_timer_handler+0x21/0x40
+ [<c012dd84>] run_timer_softirq+0x154/0x400
+ [<c0112633>] timer_interrupt+0x1a3/0x3f0
+ [<c0128c61>] do_softirq+0xa1/0xb0
+ [<c010cc2f>] do_IRQ+0x23f/0x380
+ [<c0107240>] default_idle+0x0/0x30
+ [<c0107240>] default_idle+0x0/0x30
+ [<c010ac3c>] common_interrupt+0x18/0x20
+ [<c0107240>] default_idle+0x0/0x30
+ [<c0107240>] default_idle+0x0/0x30
+ [<c0107267>] default_idle+0x27/0x30
+ [<c01072e1>] cpu_idle+0x31/0x40
+ [<c0105000>] _stext+0x0/0xf0
+
+Debug: sleeping function called from illegal context at mm/slab.c:1723
+Call Trace:
+ [<c011fb7f>] __might_sleep+0x5f/0xa0
+ [<c014ce41>] kmalloc+0x1a1/0x1c0
+ [<c02cc3cd>] i8042_interrupt+0x1ed/0x3a0
+ [<c02bd125>] accel_cursor+0xd5/0x300
+ [<c02bd545>] fb_vbl_handler+0x85/0xa0
+ [<c02bd545>] fb_vbl_handler+0x85/0xa0
+ [<c012dc06>] update_process_times+0x46/0x50
+ [<c02bbb40>] cursor_timer_handler+0x0/0x40
+ [<c02bbb61>] cursor_timer_handler+0x21/0x40
+ [<c012dd84>] run_timer_softirq+0x154/0x400
+ [<c0112633>] timer_interrupt+0x1a3/0x3f0
+ [<c0128c61>] do_softirq+0xa1/0xb0
+ [<c010cc2f>] do_IRQ+0x23f/0x380
+ [<c0107240>] default_idle+0x0/0x30
+ [<c0107240>] default_idle+0x0/0x30
+ [<c010ac3c>] common_interrupt+0x18/0x20
+ [<c0107240>] default_idle+0x0/0x30
+ [<c0107240>] default_idle+0x0/0x30
+ [<c0107267>] default_idle+0x27/0x30
+ [<c01072e1>] cpu_idle+0x31/0x40
+ [<c0105000>] _stext+0x0/0xf0
+
+Debug: sleeping function called from illegal context at mm/slab.c:1723
+Call Trace:
+ [<c011fb7f>] __might_sleep+0x5f/0xa0
+ [<c014ce41>] kmalloc+0x1a1/0x1c0
+ [<c02bd125>] accel_cursor+0xd5/0x300
+ [<c02bd545>] fb_vbl_handler+0x85/0xa0
+ [<c012dc06>] update_process_times+0x46/0x50
+ [<c02bbb40>] cursor_timer_handler+0x0/0x40
+ [<c02bbb61>] cursor_timer_handler+0x21/0x40
+ [<c012dd84>] run_timer_softirq+0x154/0x400
+ [<c0112633>] timer_interrupt+0x1a3/0x3f0
+ [<c0128c61>] do_softirq+0xa1/0xb0
+ [<c010cc2f>] do_IRQ+0x23f/0x380
+ [<c0107240>] default_idle+0x0/0x30
+ [<c0107240>] default_idle+0x0/0x30
+ [<c010ac3c>] common_interrupt+0x18/0x20
+ [<c0107240>] default_idle+0x0/0x30
+ [<c0107240>] default_idle+0x0/0x30
+ [<c0107267>] default_idle+0x27/0x30
+ [<c01072e1>] cpu_idle+0x31/0x40
+ [<c0105000>] _stext+0x0/0xf0
+
+Debug: sleeping function called from illegal context at mm/slab.c:1723
+Call Trace:
+ [<c011fb7f>] __might_sleep+0x5f/0xa0
+ [<c014ce41>] kmalloc+0x1a1/0x1c0
+ [<c02cc3cd>] i8042_interrupt+0x1ed/0x3a0
+ [<c02bd125>] accel_cursor+0xd5/0x300
+ [<c02bd545>] fb_vbl_handler+0x85/0xa0
+ [<c02bd545>] fb_vbl_handler+0x85/0xa0
+ [<c02bbb40>] cursor_timer_handler+0x0/0x40
+ [<c02bbb61>] cursor_timer_handler+0x21/0x40
+ [<c012dd84>] run_timer_softirq+0x154/0x400
+ [<c0112633>] timer_interrupt+0x1a3/0x3f0
+ [<c0128c61>] do_softirq+0xa1/0xb0
+ [<c010cc2f>] do_IRQ+0x23f/0x380
+ [<c0107240>] default_idle+0x0/0x30
+ [<c0107240>] default_idle+0x0/0x30
+ [<c010ac3c>] common_interrupt+0x18/0x20
+ [<c0107240>] default_idle+0x0/0x30
+ [<c0107240>] default_idle+0x0/0x30
+ [<c0107267>] default_idle+0x27/0x30
+ [<c01072e1>] cpu_idle+0x31/0x40
+ [<c0105000>] _stext+0x0/0xf0
+
+[...]
+
+It keeps printing call traces so I have to reboot.
+
+HTH,
+Luca
+-- 
+Reply-To: kronos@kronoz.cjb.net
+Home: http://kronoz.cjb.net
+K.R.O.N.O.S
+Kinetic Replicant Optimized for Nocturnal Observation and Sabotage
 
 
 -------------------------------------------------------

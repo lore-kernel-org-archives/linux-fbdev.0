@@ -1,26 +1,25 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: Re: vesafb on Savage4
-Date: Wed, 4 Aug 2004 05:26:19 +0800
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Subject: Re: URGENT: status of atyfb
+Date: Wed, 4 Aug 2004 01:05:28 +0300
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200408040524.21663.adaplas@hotpop.com>
-References: <cenq8o$lkv$1@sea.gmane.org> <200408032022.51173.adaplas@hotpop.com> <ceo1s0$7c3$1@sea.gmane.org>
-Reply-To: adaplas@pol.net
+Message-ID: <20040803220528.GA29548@sci.fi>
+References: <1091417497.7393.63.camel@gaston> <1091424085.7387.68.camel@gaston> <200408032257.51111.alex.kern@gmx.de> <1091568340.1900.14.camel@gaston>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bs6og-0002nh-O6
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 03 Aug 2004 14:27:26 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.71])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1Bs6og-0000FH-Cq
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 03 Aug 2004 14:27:26 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 012CE104632A
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue,  3 Aug 2004 21:02:37 +0000 (UTC)
-In-Reply-To: <ceo1s0$7c3$1@sea.gmane.org>
+	id 1Bs7Pb-0001gl-Jv
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 03 Aug 2004 15:05:35 -0700
+Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1Bs7Pb-00059V-5K
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 03 Aug 2004 15:05:35 -0700
+Received: from kuori.saunalahti.fi (kuori.saunalahti.fi [195.197.175.23])
+	by gw01.mail.saunalahti.fi (Postfix) with ESMTP id 4363647082
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed,  4 Aug 2004 01:05:29 +0300 (EEST)
 Content-Disposition: inline
+In-Reply-To: <1091568340.1900.14.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,38 +29,33 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Miernik <miernik@ctnet.pl>, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tuesday 03 August 2004 20:53, Miernik wrote:
-> Antonino A. Daplas <adaplas@hotpop.com> wrote:
-> > On Tuesday 03 August 2004 18:43, Miernik wrote:
-> >> Aug  3 13:52:19 localhost kernel: vesafb: probe of vesafb0 failed with
-> >> error -6
-> >
-> > The error is -ENXIO and in vesafb it means that your graphics card
-> > failed to go to graphics mode.
-> >
-> > Can you post your dmesg and kernel config?
->
-> http://www.miernik.ctnet.pl/problems/savage4-fb/
->
-> It finally worked, when I added
-> vga=0x314 video=vesa:mtrr,ywrap
-> to my kernel parameters.
->
-> With only vga=8 as a kernel parameters, and then trying
-> modprobe vesafb
-> fbset
-> it didn't want to work, should it?
+On Wed, Aug 04, 2004 at 07:25:40AM +1000, Benjamin Herrenschmidt wrote:
+>=20
+> Also, when just dropping the existing driver into the current linus tre=
+e, the
+> cursor code is blowing up, I don't know why yet, I suppose some changes=
+ to the
+> common code in the fbdev tree. I'll have a look.
 
-No, the stock kernel vesafb cannot be compiled as a module, nor can you use 
-fbset, unless the distribution patched the kernel with a modified vesafb (ie, 
-vesafb-tng).
-
-Tony
+I had (probably) the same oops when using the driver from bk on 2.6.5-mm6=
+.=20
+Alex's latest patch fixed it for me.
 
 
+On a somewhat related note...
+I'd like to know if my LT LCD register access patch works correctly. It=20
+should allow the generic LCD code to work on LT. It's included in Alex's=20
+latest patch. But since parsing the BIOS is out of the question you'd hav=
+e=20
+to hardcode the LCD parameters. Could you test it?
+
+--=20
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
 
 
 -------------------------------------------------------

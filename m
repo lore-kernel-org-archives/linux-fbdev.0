@@ -1,13 +1,24 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Current discussion about the future of free
- software graphics
-Date: Tue, 11 May 2004 22:07:48 +0200 (MEST)
+From: Nicolas Souchu <nsouch@free.fr>
+Subject: Re: Redesign of kernel graphics interface
+Date: Tue, 11 May 2004 22:57:11 +0000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0405112205040.7748@waterleaf.sonytel.be>
-References: <200405111309.AA504430924@sottekland.com>
+Message-ID: <20040511225711.A7384@armor.freesurf.fr>
+References: <Pine.LNX.4.44.0405101708310.4338-100000@phoenix.infradead.org> <20040510182940.14049.qmail@web14924.mail.yahoo.com> <20040510223950.B2268@armor.freesurf.fr> <20040510204742.GA12863@guug.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-In-Reply-To: <200405111309.AA504430924@sottekland.com>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BNe7P-0007qi-0v
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 11 May 2004 13:44:51 -0700
+Received: from fidel.freesurf.fr ([212.43.206.16])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BNe7O-0005wn-My
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 11 May 2004 13:44:50 -0700
+Received: from smtp.freesurf.fr (62-240-249-21.adsl.freesurf.fr [62.240.249.21])
+	by fidel.freesurf.fr (Postfix) with SMTP id 136D32A5F6D
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 May 2004 22:44:41 +0200 (CEST)
+Content-Disposition: inline
+In-Reply-To: <20040510204742.GA12863@guug.org>; from solca@guug.org on Mon, May 10, 2004 at 02:47:42PM -0600
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -17,34 +28,38 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: sottek <sottek@sottekland.com>
-Cc: eich@pdx.freedesktop.org, agd5f@yahoo.com, michel@daenzer.net, keithp@keithp.com, jonsmirl@yahoo.com, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, dri-devel@lists.sourceforge.net
+To: Otto Solares <solca@guug.org>
+Cc: Jon Smirl <jonsmirl@yahoo.com>, James Simmons <jsimmons@infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tue, 11 May 2004, sottek wrote:
-> Also, we probably want to drop the communication down to just one
-> list? I think dri-devel seems to have the widest group of subscribers.
+On Mon, May 10, 2004 at 02:47:42PM -0600, Otto Solares wrote:
+> On Mon, May 10, 2004 at 10:39:50PM +0000, Nicolas Souchu wrote:
+> > Do apps manage their swap? No. I think the OS should be responsible for
+> > placing the data (vertices, textures, commands) at the right/best place
+> > for the HW 3D engine and the client should only fill virtual memory.
+> 
+> > http://www.freebsd.org/~nsouch/kgi4BSD
+> 
+> Browsing through kgi.sf.net I found that they have proper multihead
+> and DDC2 support.
 
-I don't think that's a good idea: dri-devel is limited to the platforms that
-have a working DRI implementation, while linux-fbdev-devel is also frequented
-by people from platforms without DRI.
+True.
 
-And there we see a communication problem again: the DRI was started without
-talking to fbdev people, IIRC...
+> They just lack DRI integrated into KGI and it will
+> rock from my user perspective.
 
-Please unite our forces!
+It's not DRI but GGI+KGI accel resource management. Mesa can work
+with GGI backend (the code has to be refreshed though).
 
-Gr{oetje,eeting}s,
+> Is true that the BSDs are adopting KGI as their unified kernel
+> graphics layer?
 
-						Geert
+It's a project, yes.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-- 
+Nicholas Souchu - nsouch@free.fr - nsouch@FreeBSD.org
+http://www.freebsd.org/~nsouch/kgi4BSD
 
 
 -------------------------------------------------------

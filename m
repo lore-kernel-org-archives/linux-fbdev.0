@@ -1,11 +1,16 @@
-From: "Petr Vandrovec" <VANDROVE@vc.cvut.cz>
+From: James Simmons <jsimmons@infradead.org>
 Subject: Re: 2.5 atyfb on Sparc question
-Date: Thu, 8 Aug 2002 20:24:55 +0200
+Date: Thu, 8 Aug 2002 11:19:46 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1729ACB1873@vcnet.vc.cvut.cz>
+Message-ID: <Pine.LNX.4.33.0208081118440.15229-100000@maxwell.earthlink.net>
+References: <20020808182142.93437.qmail@web13007.mail.yahoo.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from harrier.mail.pas.earthlink.net ([207.217.120.12])
+	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17cryK-0006M3-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 08 Aug 2002 11:25:20 -0700
+In-Reply-To: <20020808182142.93437.qmail@web13007.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -15,22 +20,25 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <captain_delete@yahoo.com>
-Cc: bruce.holzrichter@monster.com, linux-fbdev-devel@lists.sourceforge.net, jsimmons@users.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jani Monoses <jani@iv.ro>
+Cc: bruce.holzrichter@monster.com, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On  8 Aug 02 at 11:16, James Simmons wrote:
-> > I also hope that performance problems will be solved
-> > before we are
-> > forced to not use putcs.
-> 
-> It will be :-) I need to one align the data. Second I
-> plan to implement the patch recently posted here. 
 
-Patch still showed about 100% slowdown against 2.4.x, if I interpreted
-yesterday's table correctly. It is better than 1000% slowdown, but still...
-                                                Petr
-                                                
+> > > I push stuff. The next set of patches will break
+> > alot
+> > > of drivers but I need to do this to get people to
+> > port
+> > > there stuff over to the new api.
+> >
+> > Could you outline what the next set of patches will
+> > change?
+
+Oops. The next patch will remove get_fix and get_var. Also the internal
+fbdev code will begin using the var and fix feilds in struct fb_info.
+
+
 
 
 -------------------------------------------------------

@@ -1,16 +1,18 @@
-From: Martin Dalecki <dalecki@evision-ventures.com>
-Subject: Re: Linux 2.5.19
-Date: Thu, 30 May 2002 01:00:11 +0200
+From: Andre Dias <aod@unisys.com.br>
+Subject: sis acceleration
+Date: Thu, 30 May 2002 00:59:35 -0300
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3CF55D7B.80009@evision-ventures.com>
-References: <20020529211702.E30585@flint.arm.linux.org.uk> <Pine.LNX.4.10.10205291331500.19493-100000@www.transvirtual.com> <20020529214739.F30585@flint.arm.linux.org.uk> <3CF554A1.4090607@evision-ventures.com> <20020530002559.G30585@flint.arm.linux.org.uk> <3CF55941.7060806@evision-ventures.com> <20020530005207.I30585@flint.arm.linux.org.uk>
+Message-ID: <5.1.0.14.0.20020530004937.019193a8@pop.unisys.com.br>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [195.63.194.11] (helo=mail.stock-world.de)
+Received: from gw.incubadora.coppe.ufrj.br ([146.164.9.131] helo=inc)
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17DDKs-0000P8-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 29 May 2002 16:58:34 -0700
+	id 17DH6d-0000Hi-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 29 May 2002 21:00:07 -0700
+Received: from [146.164.9.154] (helo=aod-laptop.unisys.com.br)
+	by inc with esmtp (Exim 3.12 #1 (Debian))
+	id 17DEKb-00029o-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 29 May 2002 22:02:21 -0300
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,25 +23,30 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Russell King <rmk@arm.linux.org.uk>
-Cc: James Simmons <jsimmons@transvirtual.com>, Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Russell King wrote:
+Hi!
 
-> If you think this is acceptable, why the hell did I bother sending those
-> IDE DMA changes through you?  After all, you don't need to know about
-> them because I know better than you, don't I?  *That's* what you're
-> advocating here, and I'm sure you're going to object to that.
+I have built the latest 2.4.18 stable several times. But when I try to 
+include as a module the SIS acceleration ( SIS 630/540/730 support only ) 
+for the frame buffer I get this error:
 
-Well just to make my point clear. I trust you and I thing that you indeed
-know better then me on ARM stuff. (At least you can run it on
-more then my tinny PSION 5mx... where I still didn't revert to
-the original OS, quite cute this little thing under linux :-).
-But I wouldn't have minded it at all if you had just sendid
-the ARM adjustments directly to Linus!
-In the particular case we had it was however good to
-have some direct communication in front
-just to resolve the API issues. OK?
+depmod: *** Unresolved symbols in 
+/lib/modules/2.4.18/kernel/drivers/video/sis/sisfb.o
+depmod:         mclk
+depmod:         sisfb_set_dispsw_accel
+depmod:         eclk
+depmod:         sisfb_init_legacy_vga
+depmod:         sisfb_calc_clock_param
+depmod:         sisfb_calc_clock_freq
+make: *** [_modinst_post] Error 1
+
+
+does anyone know to whom should I send a bug report?
+
+thanks in advance
+
 
 
 _______________________________________________________________

@@ -1,22 +1,22 @@
 From: John Zielinski <grim@undead.cc>
 Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
  one works ;-)
-Date: Tue, 27 Apr 2004 21:00:21 -0400
+Date: Tue, 27 Apr 2004 21:12:39 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <408F0225.4000408@undead.cc>
-References: <Pine.LNX.4.44.0404280039460.23153-100000@phoenix.infradead.org>
+Message-ID: <408F0507.3000201@undead.cc>
+References: <Pine.LNX.4.44.0404280051480.23153-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIdRA-0002UM-60
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 18:00:32 -0700
+	id 1BIdd1-0004Qn-Lw
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 18:12:47 -0700
 Received: from ghoul.undead.cc ([216.126.84.18] helo=mail.undead.cc)
 	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1BIdR9-00022z-Sv
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 18:00:32 -0700
-In-Reply-To: <Pine.LNX.4.44.0404280039460.23153-100000@phoenix.infradead.org>
+	id 1BIdd0-00045A-I9
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 18:12:46 -0700
+In-Reply-To: <Pine.LNX.4.44.0404280051480.23153-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,56 +32,28 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, David Eger <eger-dated-10
 
 James Simmons wrote:
 
->No. Look the logic should go from the upper VT layer to the lower driver 
->to accomplish something. Not the reverse.
+>If this is true then it would be better if we have the below logic.
 >
->struct vc_data -> native console driver structure --> fbdev
+>struct vc_data --> native driver layer --> fbdev.
 >
+>instead of save/restore the var for each VC.
 >  
 >
-The problem with that is how would something like fbset work in that 
-situation?   The current way of selecing number of rows/columns through 
-the vt layer and hoping for the best in what mode you actually get is 
-way too limited to be the only mechanism.
 
-Don't misunderstand me here.  I do want to be able to tell the vt to 
-switch to 1024x768@85-32 and have it propagate down and set the right 
-mode.  This shouldn't be a problem once we get a mechanism in place to 
-load a user's mode database into the kernel at run time.  Then the 
-timings will be exactly what I want when I say 1024x768@85-32.
+I don't mean save as in record the current hardware state.  I mean save 
+as in remember the last mode the user had active on the console before a 
+graphics app starts.  This only has to be done 1) on boot and 2) after 
+running fbset or calling VT_RESIZE.
 
->Not.
->
->fbdev --> native console driver --> struct vc_data.
->
->  
->
-But how do I fiddle with this to get things just right in the first 
-place?   Right now that requires the the reversed path starting at the 
-fbdev shown immediately above. 
+Once we get the users mode db into the kernel then we only need to 
+remember the generic stuff (x, y, Hz, bpp) per vt as the user will have 
+the ability to map:
 
-What we need is a vt call that says I'm switching to 1024 x 768 with 
-this mode data that I wan't to pass down to the fbdev.  That way the vt 
-adjusts it's row/column settings based on the font size and then passes 
-the mode data down.  That's how the fbset (and other) mode tuning 
-utilities should work and should only be used by mode tuning utilities.  
-Once the user is happy they would include their tuned mode in their 
-database for other apps to use.
+(x, y, Hz, bpp) -> (exact timing options)
 
-All other apps should use the generic vt call to ask for 1024x768 at 
-85Hz in 32bpp and the kernel would give them the mode from the users 
-database.
-
-
->This was the way it uses to be. If this is the case then I suggest we 
->write our own vt.c and vt_ioctl.c for the fbcon layer. We shouldn't even
->use struct vc_data then. In fact each fbdev driver should be independent 
->console drivers. That is how 2.4.X was. Each driver was nearly its own 
->console driver. We need to go one way or the other. 
->
-
-I like your way, from vt down to the fbdev.  I just want a mechanism for 
-fbset and other mode tuning utilities to work.
+Either way, regardless if we remember a per vt var or (x, y, Hz, bpp), I 
+still would like the vt/fbcon to reset the the last mode on switch from 
+KD_GRAPHICS to KD_TEXT.
 
 John
 

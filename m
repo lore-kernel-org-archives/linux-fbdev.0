@@ -1,21 +1,27 @@
-From: James Simmons <jsimmons@www.infradead.org>
+From: Jon Smirl <jonsmirl@gmail.com>
 Subject: Re: Patch to add mode setting to sysfs
-Date: Mon, 21 Feb 2005 18:55:23 +0000 (GMT)
-Message-ID: <Pine.LNX.4.56.0502211853400.13423@pentafluge.infradead.org>
-References: <9e4733910502161430ff1dad1@mail.gmail.com> <200502181542.50162.adaplas@hotpop.com>
- <9e473391050218084629ad0935@mail.gmail.com> <200502190559.07162.adaplas@hotpop.com>
+Date: Mon, 21 Feb 2005 14:11:14 -0500
+Message-ID: <9e47339105022111111474017@mail.gmail.com>
+References: <9e4733910502161430ff1dad1@mail.gmail.com>
+	 <200502172150.16256.adaplas@hotpop.com>
+	 <9e47339105021712494955212d@mail.gmail.com>
+	 <200502180804.46005.adaplas@hotpop.com>
+	 <9e47339105021716392dcce795@mail.gmail.com>
+	 <Pine.LNX.4.56.0502211837040.13423@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Content-Transfer-Encoding: 7bit
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D3IiO-0004jp-Vg
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 10:55:28 -0800
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1D3IiN-0000vj-CJ
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 10:55:28 -0800
-In-Reply-To: <200502190559.07162.adaplas@hotpop.com>
+	id 1D3Ixj-0005nB-Qy
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 11:11:19 -0800
+Received: from rproxy.gmail.com ([64.233.170.207])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1D3Ixh-0006WW-Ej
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 11:11:19 -0800
+Received: by rproxy.gmail.com with SMTP id z35so594295rne
+        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 21 Feb 2005 11:11:14 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.56.0502211837040.13423@pentafluge.infradead.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,25 +32,25 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Jon Smirl <jonsmirl@gmail.com>, adaplas@pol.net, James Simmons <jsimmons@pentafluge.infradead.org>
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@www.infradead.org>
+Cc: adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@pentafluge.infradead.org>
 
-
-> > Do you want to take over the sysfs support? If so, I will make some
-> > changes to the radeonfb driver that I need. That will keep up from
-> > conflicting.
+On Mon, 21 Feb 2005 18:37:45 +0000 (GMT), James Simmons
+<jsimmons@www.infradead.org> wrote:
 > 
-> Actually, I plan to do the fbcon part only, capturing the event. I'll use
-> yours as the test bed, but you and James will have to agree on the best way
-> to add sysfs support to the fb core.
+> Here is a question. What about if the drivers are built and fbdev is
+> modular? I will have to try it to see the results.
 
-We are attempting to work that out. Right now also I'm working on resource 
-management for fbdev. I have a patch coming but it needs work. I consider 
-it more important that sysfs right now. I will be sending the first run at 
-that resource management today.
+If a driver is built in you can't use fb as a module. Kernel kconfig
+controls this automatically for you. If you pick fb as a module you
+will only get modules as a choice on the drivers. If you pick built in
+you can build the drivers either way. You can't compile fb as a module
+and have built in drivers, the kernel will refuse to build.
 
+-- 
+Jon Smirl
+jonsmirl@gmail.com
 
 
 -------------------------------------------------------

@@ -1,22 +1,19 @@
-From: Alexander Kern <alex.kern@gmx.de>
-Subject: Re: Re: Sun Blade 100 with 2 pgx64 (ATi Mach64 ?) framebuffers (fwd)
-Date: Thu, 20 May 2004 22:59:47 +0200
+From: "xuhaoz" <xuhaoz@neonetech.com>
+Subject: (no subject)
+Date: Sat, 22 May 2004 09:48:01 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200405202259.48232.alex.kern@gmx.de>
-References: <Pine.GSO.4.58.0405111620100.27719@waterleaf.sonytel.be> <20040517193244.GG3783@azrael.luon.net>
+Message-ID: <PMEKJGJGKKPHMBEGKNMIGEAOCCAA.xuhaoz@neonetech.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BQufC-00074V-7c
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 20 May 2004 14:01:14 -0700
-Received: from mail.gmx.net ([213.165.64.20])
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
-	id 1BQufB-0006uU-Kg
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 20 May 2004 14:01:13 -0700
-In-Reply-To: <20040517193244.GG3783@azrael.luon.net>
-Content-Disposition: inline
+	id 1BRLd5-0005PI-4a
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 21 May 2004 18:48:51 -0700
+Received: from [211.155.249.251] (helo=nnt.neonetech.com)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BRLd4-0005Pd-On
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 21 May 2004 18:48:51 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,21 +25,26 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: James Simmons <jsimmons@infradead.org>, admar@luon.net
 
-Am Montag, 17. Mai 2004 21:32 schrieb Admar Schoonen:
-> Dear linux-fbdev developers,
->
-> About a week ago, Geert Uytterhoeven forwarded 2 e-mails from me to this
-> list. Since I haven't received any replies yet, and since the (public)
-Hello, I trying to maintan atyfb driver in 2.6.x, unfortunately I can't to 
-probe with two cards, all my examples of Mach64 are AGP cards. Please
-wait before James submit new atyfb driver to main tree. Very soon;-) This 
-driver is a port of latest 2.4.x and and with little luck you will get both 
-working.
+hi:
+	how can i put the boot message onto the framebuffer_lcd? can uclinux 2.4
+do this ?
+                I have write a framebuffer driver base on vfb.c , and it is
+ok to use(I wrote a program to test.my lcd is 16 color,320x240, i alloc 37kB
+for the screen memory.i use write(fd,buff,count) function ,and the screen's
+color is changed.).Now, i want the screen to display english or chinese and
+picture, how to do , and have uclinux2.4 done this for me ? the only things
+for me is to find it and connect? i am puzzled , please help me.
 
-P.S. James, your site http://www.infradead.org/~jsimmons is still empty !!!
-Regards Alex
+thans a lot.
+			xuhaoz
+			2004-05-21
+
+_________________________________________
+zhang xuhao
+ICQ#: 116926669
+More ways to contact me: http://wwp.icq.com/116926669
+_________________________________________
 
 
 

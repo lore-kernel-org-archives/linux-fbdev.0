@@ -1,57 +1,81 @@
-From: Ian Molton <spyro@f2s.com>
-Subject: Re: Fw: Initialisation sequencing.
-Date: Fri, 04 Mar 2005 00:03:26 +0000
-Message-ID: <4227A5CE.4050008@f2s.com>
-References: <200503031438.48357.adaplas@hotpop.com> <4226D649.4000408@f2s.com> <200503040407.11449.adaplas@hotpop.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Egbert Eich <eich@suse.de>
+Subject: Re: Who is stomping PCI config space?
+Date: Fri, 4 Mar 2005 12:12:45 +0100
+Message-ID: <16936.17069.428202.815866@xf14.local>
+References: <9e4733910503031103552514b9@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D70ID-0006sH-Ko
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 03 Mar 2005 16:03:45 -0800
-Received: from outmail1.freedom2surf.net ([194.106.33.237] helo=outmail.freedom2surf.net)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1D70Hw-0006Ru-Ol
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 03 Mar 2005 16:03:45 -0800
-In-Reply-To: <200503040407.11449.adaplas@hotpop.com>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+In-Reply-To: jonsmirl@gmail.com wrote on Thursday,
+	3 March 2005 at 14:03:43 -0500 
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
+	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/xorg>
+List-Post: <mailto:xorg@lists.freedesktop.org>
+List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
+	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
+Sender: xorg-bounces@lists.freedesktop.org
+Errors-To: xorg-bounces@lists.freedesktop.org
+Content-Type: text/plain; charset="us-ascii"
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>, Xserver development <xorg@freedesktop.org>
 
-Antonino A. Daplas wrote:
+Jon Smirl writes:
+ > 
+ > Somebody is changing PCI command from 83 to 80 and disabling my
+ > radeon's memory and iospace. Who is doing this? It has to be X since
+ > it doesn't happen if I switch to VT6 or VT8.
+ > 
+ > Why is X mucking with a card it doesn't have a driver loaded for? 
+ > Where is this happening in the X code?
+ > 
 
-> Are you using the backlight architecture in drivers/video/backlight?
-> Shouldn't the backlight driver pull the video driver first?  I think
-> you can do that if you make the backlight driver depend on the video
-> driver.
+Jon,
 
+Yes, X is donig this as it is assuming that it is in 
+charge of all the graphics hardware in the machine.
 
-IOW make it a child of it?
+It has to make this assumption as it cannot be sure that 
+the card has *no* legacy resources open. Without a driver 
+loaded it has no way of knowing any differently.
 
-I asumed that would work but I cant actually build a modular kernel for
-some reason I havent had time to look into yet.
+It doesn't matter if these legacy ports are used on this 
+card, it only matters these resources are used by another 
+card for setup purposes. 
 
-that said, does load order have *any* bearing on probe order ?
+A lot of cards do have legacy ports open - even if nobody 
+uses them and without the driver the Xserver cannot really 
+do much about this.
 
-since both devices are platform devices, both drivers can be loaded and
-dormant and brought up at any time by their devices becomming available
-from (another) module...
+At the time this was programmed this assumption was 
+necessary for the fast majority of cards.
+I claim it is still required for a large number of 
+cards today as when the card has been POSTed the 
+BIOS usually leaves the legacy ports open.
 
+So far we have no central agent available to schedule
+access to shared resources.
 
--------------------------------------------------------
-SF email is sponsored by - The IT Product Guide
-Read honest & candid reviews on hundreds of IT Products from real users.
-Discover which products truly live up to the hype. Start reading now.
-http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
+If you want to access these cards from inside your 
+kernel you could just check if they are enabled before 
+you do and enable them if they aren't. 
+This works as long as you can be sure nobody else will 
+access legacy resources from anywhere else - this may 
+be difficult if you have a machine with more than one 
+CPU, if you have more than one userland process that 
+may want to access the HW.
+You should make sure to restore the state before you 
+return.
+
+As a note on the side: 
+The Xserver doesn't 'stomp' over PCI config space any 
+more without telling the kernel: The code which does 
+direct PIO banging for config space access doesn't 
+get used any more unless the user explicitely *asks*
+for it. 
+The option to do so is well hidden from the user.
+This has been this way since X.Org 6.8.0 - I didn't 
+change this for 6.7.0 for lack of testing.
+
+Egbert.

@@ -1,20 +1,20 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] radeonfb: mode switch work around
-Date: Sun, 4 Jul 2004 10:35:02 +0200 (MEST)
+From: Mail Delivery Subsystem <MAILER-DAEMON@tpsmtpu04.tele.net>
+Subject: Returned mail: see transcript for details
+Date: Sun, 4 Jul 2004 10:59:43 +0200 (CEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0407041034250.21842@waterleaf.sonytel.be>
-References: <20040704025923.39501.qmail@web14930.mail.yahoo.com>
+Message-ID: <200407040859.i63HC0QX013304@tpsmtpu04.tele.net>
 Mime-Version: 1.0
+Content-Type: multipart/report; report-type=delivery-status;
+	boundary="i63HC0QX013304.1088931583/tpsmtpu04.tele.net"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bh2TA-0002x1-Dg
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 04 Jul 2004 01:35:28 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1Bh2T8-0002TF-Fo
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 04 Jul 2004 01:35:26 -0700
-In-Reply-To: <20040704025923.39501.qmail@web14930.mail.yahoo.com>
+	id 1Bh2qh-00055O-Tn
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 04 Jul 2004 01:59:47 -0700
+Received: from tpsmtpu04.tele.net ([194.183.128.164])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1Bh2qh-0002d3-99
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 04 Jul 2004 01:59:47 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -24,30 +24,60 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jon Smirl <jonsmirl@yahoo.com>
-Cc: David Eger <eger@havoc.gtf.org>, Antonino Daplas <adaplas@pol.net>, Javier Marcet <javier-ml-gmane@marcet.info>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@osdl.org>, xorg@freedesktop.org
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Sat, 3 Jul 2004, Jon Smirl wrote:
-> Try this experiment...
-> modprobe radeonfb from a VT, then switch to an xterm and rmmod it.
-> Try it the other way to, modprobe from xterm and rmmod from VT.
-> Both of those result in a reboot on my machine.
+This is a MIME-encapsulated message
 
-I would say modprobing any fbdev while X is already playing with the same
-hardware is unsafe...
+--i63HC0QX013304.1088931583/tpsmtpu04.tele.net
 
-Gr{oetje,eeting}s,
+The original message was received at Fri, 18 Jun 2004 13:10:13 +0200 (CEST)
+from [61.144.28.66]
 
-						Geert
+   ----- The following addresses had permanent fatal errors -----
+<weissg@vienna.at>
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+   ----- Transcript of session follows -----
+<weissg@vienna.at>... Deferred: Invalid argument
+Message could not be delivered for 5 days
+Message will be deleted from queue
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+--i63HC0QX013304.1088931583/tpsmtpu04.tele.net
+Content-Type: message/delivery-status
+
+Reporting-MTA: dns; tpsmtpu04.tele.net
+Arrival-Date: Fri, 18 Jun 2004 13:10:13 +0200 (CEST)
+
+Final-Recipient: RFC822; weissg@vienna.at
+Action: failed
+Status: 4.4.7
+Last-Attempt-Date: Sun, 4 Jul 2004 10:59:42 +0200 (CEST)
+
+--i63HC0QX013304.1088931583/tpsmtpu04.tele.net
+Content-Type: text/rfc822-headers
+
+Return-Path: <linux-fbdev-devel@lists.sourceforge.net>
+Received: from vienna.at ([61.144.28.66])
+	by tpsmtpu04.tele.net (8.12.11/8.12.10) with ESMTP id i5IB9x28043257
+	for <weissg@vienna.at>; Fri, 18 Jun 2004 13:10:13 +0200 (CEST)
+	(envelope-from linux-fbdev-devel@lists.sourceforge.net)
+Message-Id: <200406181110.i5IB9x28043257@tpsmtpu04.tele.net>
+From: linux-fbdev-devel@lists.sourceforge.net
+To: weissg@vienna.at
+Subject: *****SPAM***** Re: Protected Mail Delivery
+Date: Sun, 20 Apr 2003 19:05:52 +0800
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="----------=_40D2CDB7.B4A43D1C"
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Spam-Flag: YES
+X-Spam-Status: Yes, hits=12.5 required=5.0 tests=DCC_CHECK,
+	MIME_BOUND_NEXTPART,MISSING_MIMEOLE,NO_REAL_NAME,PRIORITY_NO_NAME 
+	autolearn=spam version=2.63
+X-Spam-Level: ************
+X-Spam-Checker-Version: SpamAssassin 2.63 (2004-01-11) on tpspamu01.tele.net
+
+--i63HC0QX013304.1088931583/tpsmtpu04.tele.net--
+
 
 
 -------------------------------------------------------

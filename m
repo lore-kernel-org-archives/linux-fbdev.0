@@ -1,26 +1,23 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: tty open screws X color palette
-Date: Sun, 15 Aug 2004 09:37:06 +0000 (UTC)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: patch fixing background next to penguin logo
+ in monochrome
+Date: Sun, 15 Aug 2004 14:25:34 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200409151734.08795.adaplas@hotpop.com>
-References: <20040813114713.GA2168@suse.de> <200409150902.27378.adaplas@hotpop.com> <20040815063251.GA23843@suse.de>
-Reply-To: adaplas@pol.net
+Message-ID: <Pine.GSO.4.58.0408151425000.3409@waterleaf.sonytel.be>
+References: <1092254183.4209.16.camel@joy.home> <1092312171.27772.73.camel@joy.sophics>
+ <Pine.GSO.4.58.0408122158550.18214@waterleaf.sonytel.be>
+ <200409130625.07250.adaplas@hotpop.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BwHPp-0001jg-55
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 15 Aug 2004 02:35:01 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1BwHPm-0000ew-HK
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 15 Aug 2004 02:34:58 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 6D7F2767082
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 15 Aug 2004 08:39:43 +0000 (UTC)
-In-Reply-To: <20040815063251.GA23843@suse.de>
-Content-Disposition: inline
+	id 1BwK4y-0003x3-VQ
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 15 Aug 2004 05:25:40 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
+	id 1BwK4y-0000a5-Cv
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 15 Aug 2004 05:25:40 -0700
+In-Reply-To: <200409130625.07250.adaplas@hotpop.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,34 +27,38 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Date: Wed, 15 Sep 2004 17:34:07 +0800
-Content-Type: text/plain; charset="us-ascii"
-To: Olaf Hering <olh@suse.de>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Petr Stehlik <pstehlik@sophics.cz>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, "Christian T. Steigies" <cts@debian.org>
 
-On Sunday 15 August 2004 14:32, Olaf Hering wrote:
->  On Wed, Sep 15, Antonino A. Daplas wrote:
-> > On Friday 13 August 2004 19:47, Olaf Hering wrote:
-> > > An 'echo foo > /dev/tty42' while X runs will screw the color palette,
-> > > if tty42 wasnt in use before. Tested on ibook G3 and G4.
-> > > This will happen with rage128 and radeonfb in 2.6.5 and later,
-> > > X version is 4.3.99.
-> > >
-> > > X runs usually with a different color depth than the kernel framebuffer
-> > > console.
-> > > How can this be fixed? tty open should not touch the hardware if the
-> > > tty is not active.
-> >
-> > I tried the above and nothing happens to X.  My setup is X86 nVidia AGP
-> > on rivafb linux-2.6.8-rc4-mm1.
+On Mon, 13 Sep 2004, Antonino A. Daplas wrote:
+> On Friday 13 August 2004 04:01, Geert Uytterhoeven wrote:
+> > P.S. There are still problems when switching from color to monochrome
+> >      (underlines appear everywhere) or vice versa (text becomes blue), but
+> > I cannot expect you to fix all old bugs in one week ;-)
 >
-> Do you have 'Option "usefbdev" "true"' in our XF86Config?
+> This one is a little difficult since there is currently no method to convert
+> monochrome attributes to color and vice versa.  The best one can do is to
+> clear all attributes when switching from mono<->color.
+>
+> When switching, one will get plain text only.  This is  probably better than
+> having text with incorrect attributes.
+>
+> Attached patch is completely untested, but it's the same one in 2.6.
 
-No.  I tried that option before but it produces a segfault.
+Doesn't help, still the same behavior :-(
 
-Tony
+Gr{oetje,eeting}s,
 
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

@@ -1,21 +1,21 @@
-From: David Eger <eger@havoc.gtf.org>
-Subject: Re: [PATCH 3/3][FBDEV]: Set capabilities flag for vesafb and vga16fb
-Date: Tue, 6 Jul 2004 01:35:45 -0400
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 2/3][FBCON]: New Scrolling Mode: YPAN
+ + REDRAW
+Date: Tue, 6 Jul 2004 09:38:15 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040706053545.GA2375@havoc.gtf.org>
-References: <200407060634.43963.adaplas@hotpop.com>
+Message-ID: <Pine.GSO.4.58.0407060933200.3788@waterleaf.sonytel.be>
+References: <200407060634.37125.adaplas@hotpop.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BhicW-0006Qp-VC
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jul 2004 22:35:56 -0700
-Received: from havoc.gtf.org ([216.162.42.101])
+	id 1BhkXL-0005FJ-2T
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jul 2004 00:38:43 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1BhicW-0006FQ-MI
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jul 2004 22:35:56 -0700
-Content-Disposition: inline
-In-Reply-To: <200407060634.43963.adaplas@hotpop.com>
+	id 1BhkXK-0005QR-Fp
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jul 2004 00:38:42 -0700
+In-Reply-To: <200407060634.37125.adaplas@hotpop.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,23 +25,60 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: adaplas@pol.net
+To: Antonino Daplas <adaplas@pol.net>
 Cc: Andrew Morton <akpm@osdl.org>, jsimmons@pentafluge.infradead.org, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+On Tue, 6 Jul 2004, Antonino A. Daplas wrote:
+> Added a new scrolling mode (SCROLL_PAN_REDRAW) to fbcon that should greatly
+> benefit unaccelerated drivers such as VESA fbdev.  An increase of 3-10 times
+> in scrolling speed can be expected.
 
-Thanks for getting these; I've been lazy and not gotten to them.
+Nice!
 
-I do want FBINFO_FLAG_DEFAULT to go away though... it's now
-FBINFO_DEFAULT.  I also don't see anything in vga16fb that precludes
-FBINFO_HWACCEL_XPAN, though I don't see anyone who uses that flag,
-either.  *shrug*
+> Using an accelerated driver, we see almost the same effect but
+> not as dramatically:
+>
+> 1. SCROLL_MOVE - accel
+> real    0m3.112s
+> user    0m0.000s
+> sys     0m3.112s
+>
+> 2. SCROLL_REDRAW - accel
+> real    0m2.604s
+> user    0m0.000s
+> sys     0m2.603s
+>
+> Redraw is still faster than move, but not much.
 
-The big performance patch also looks like good work, though I've
-not tested it.  Thanks :)
+That probably depends on the card (imageblit vs copyarea)?
 
--dte
+> 3. SCROLL_PAN_MOVE - accel
+> real    0m0.203s
+> user    0m0.000s
+> sys     0m0.202s
+>
+> 4. SCROLL_PAN_REDRAW - accel
+> real    0m0.326s
+> user    0m0.002s
+> sys     0m0.323s
+>
+> This is one exception. If panning is enabled, move is
+> actually faster than redraw. As to why, I don't know.
+
+Perhaps because it's a non-overlapping copy?
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

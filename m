@@ -1,89 +1,86 @@
-From: Russell King <rmk@arm.linux.org.uk>
-Subject: Re: fbcon scrolling madness + fbset corruption
-Date: Wed, 5 Feb 2003 15:51:27 +0000
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030205155127.B28758@flint.arm.linux.org.uk>
-References: <20030119200340.A13758@flint.arm.linux.org.uk> <1043026112.988.4.camel@localhost.localdomain> <20030202195744.C32007@flint.arm.linux.org.uk>
+From: Torrey Hoffman <thoffman@arnor.net>
+Subject: Re: [Linux-fbdev-devel] Re: New logo code (fwd)
+Date: 05 Feb 2003 11:17:57 -0800
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <1044472678.1321.388.camel@rohan.arnor.net>
+References: <Pine.GSO.4.21.0302051336170.16681-100000@vervain.sonytel.be>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from caramon.arm.linux.org.uk ([212.18.232.186])
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18gRqH-0000o2-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Feb 2003 07:52:06 -0800
-Content-Disposition: inline
-In-Reply-To: <20030202195744.C32007@flint.arm.linux.org.uk>; from rmk@arm.linux.org.uk on Sun, Feb 02, 2003 at 07:57:44PM +0000
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Kernel List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@infradead.org>
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <Pine.GSO.4.21.0302051336170.16681-100000@vervain.sonytel.be>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-No one's commented on this yet.
+> > On Sun, 12 Jan 2003, Geert Uytterhoeven wrote:
+> > > The current logo code is messy, complex, and inflexible. So I decided to
+> > > rewrite it. My goals were:
+[ good list ]
 
-James?
+This is wonderful.  I (and some co-conspirators) started a similar
+project, and put up patches at www.arnor.net/linuxlogo . But yours is up
+to date, and ours is not (I was waiting until the framebuffer rewrite
+was done, and then I didn't have time to catch up).  
 
-On Sun, Feb 02, 2003 at 07:57:44PM +0000, Russell King wrote:
-> This doesn't appear to solve the ywrap problem - I still get
-> places where the screen doesn't scroll.  I decided to write a
-> small program to dump out the contents of fb_var_screeninfo, and
-> where stuff goes horribly wrong:
-> 
-> bash-2.04# ./tst
-> Visible: 1280x1024
-> Virtual: 1280x1632
-> BPP    : 8
-> Offset : +0+2352
-> bash-2.04# ./tst
-> Visible: 1280x1024
-> Virtual: 1280x1632
-> BPP    : 8
-> Offset : +0+2392
-> 
-> Up to the point where it goes wrong:
-> 
-> bash-2.04# ./tst
-> Visible: 1280x1024
-> Virtual: 1280x1632
-> BPP    : 8
-> Offset : +0+528
-> bash-2.04# ./tst
-> Visible: 1280x1024
-> Virtual: 1280x1632
-> BPP    : 8
-> Offset : +0+568
-> bash-2.04# ./tst
-> Visible: 1280x1024	<--- this is the last line on the screen
-> Virtual: 1280x1632
-> BPP    : 8
-> Offset : +0+608
-> bash-2.04#
-> 
-> So it looks like something isn't limiting the yoffset in the generic
-> console layer; an xoffset of 2392 when the maximum virtual Y is 1632
-> is just nonsense.
-> 
-> I also noticed an additional problem with fbcon: if I change the
-> resolution using fbset, the change occurs, except I end up with
-> corrupted mess on the screen (the reminents of the original display.)
-> The shell prompt is nowhere to be seen.
-> 
-> Hitting ^L clears the screen and then the shell prompt is visiable.
+It would be great if your patch was merged.  If I may offer some
+suggestions... well, feature requests :-)
 
--- 
-Russell King (rmk@arm.linux.org.uk)                The developer of ARM Linux
-             http://www.arm.linux.org.uk/personal/aboutme.html
+It would also be nice to have an option to turn off the blinking cursor
+on the framebuffer.  With a full-screen boot logo as used on embedded
+systems, even with a serial console or console on tty2, you still get
+the blinking cursor in the top corner of the screen. (at least in 2.4.x)
+
+Other options that might be useful, but less important: 
+- Single logo option for SMP
+- A "no logo" option, while still including framebuffer support
+- Logo positioning (centered horizontally, vertically, both)
+- Background and foreground text color options.  
+
+A combination of these features would make it possible to do a smaller
+logo (say, 256 x 128) centered on the screen with a matching background
+color that would make it look like a full-screen logo, while not
+bloating the kernel image much.
+
+Also, some simple documentation that would help beginners do a
+full-screen boot logo with the console on tty2 or serial should be
+included with the kernel.  Lots of people want to use Linux on
+"embedded" PC-based systems like kiosks, or just do this for fun on
+their home computers, and doing this is confusing for beginners.
+
+If you like, I would be happy to write documentation like this or help
+in other ways.
+
+I hope there is little resistance to merging a patch like this.  If
+anyone doubts the need, I can only say that despite our patches not
+being kept up to date regularly, I get a lot of email about them.  Also,
+there are patches by other people to do things like this, some better
+than others.  Despite the hassle of finding and applying these patches,
+people want the feature badly enough to make the effort.  I see a lot
+more desire for this feature than for many other worthwhile things that
+are merged into the kernel...
+
+Torrey Hoffman
+thoffman@arnor.net
 
 
-
--------------------------------------------------------
-This SF.NET email is sponsored by:
-SourceForge Enterprise Edition + IBM + LinuxWorld = Something 2 See!
-http://www.vasoftware.com
+On Wed, 2003-02-05 at 04:37, Geert Uytterhoeven wrote:
+> On Tue, 28 Jan 2003, Geert Uytterhoeven wrote:
+> > On Sun, 12 Jan 2003, Geert Uytterhoeven wrote:
+> > > The current logo code is messy, complex, and inflexible. So I decided to
+> > > rewrite it. My goals were:
+> > >   - Logos must be accessible easily by an image editor (currently: hex C source
+> > >     data must be converted to another format first)
+> > >   - Logos must be stored in ASCII-form in the source tree
+> > >   - Support arbitrary logo sizes (currently: fixed 80x80)
+> > >   - Allow the logo to be selected statically (at compile time) and/or
+> > >     dynamically (at run-time, based on machine type) (currently: at compile
+> > >     time only).
+> > >   - Allow simple adition of new logos
+> > >   - Support grayscale logos (not used yet)
+> > > 
+> > > The patch achieves all of these. Logos are stored in ASCII PNM format in
+> > > drivers/video/logo/, and automatically converted to hex C source arrays using
+> > > scripts/pnmtologo. I chose ASCII PNM because (a) it's ASCII, (b) it's very
+> > > simple to parse without an external library (XPM is more difficult to parse),
+> > > and (c) it can be handled by many image manipulation programs.

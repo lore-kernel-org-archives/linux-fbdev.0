@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 2/10] fbdev: Capture modelist change event
-Date: Sun, 6 Mar 2005 08:16:32 +0800
-Message-ID: <200503060816.32253.adaplas@hotpop.com>
+Subject: [PATCH 1/10] fbdev: Add mode changing via sysfs
+Date: Sun, 6 Mar 2005 08:16:25 +0800
+Message-ID: <200503060816.28615.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Content-Transfer-Encoding: quoted-printable
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D7jTp-000721-NS
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 05 Mar 2005 16:18:45 -0800
+	id 1D7jTn-00071k-RT
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 05 Mar 2005 16:18:43 -0800
 Received: from smtp-out.hotpop.com ([38.113.3.51])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1D7jTo-0002V5-QH
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 05 Mar 2005 16:18:45 -0800
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1D7jTk-00009Q-GB
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 05 Mar 2005 16:18:43 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 8A1D2736C9
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun,  6 Mar 2005 00:18:38 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id 12D2F736C1
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun,  6 Mar 2005 00:18:33 +0000 (UTC)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -31,422 +31,441 @@ Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Jon Smirl <jonsmirl@gmail.com>
 
-  Add capability to change private modelist.  It checks if the entries in the
-  new modelist are acceptable, and if not, trimmed from the modelist.
+=46rom Jon Smirl <jonsmirl@gmail.com>:
 
-  Also added a new event, FB_EVENT_NEW_MODELIST, sent by fbmem, and captured
-  by fbcon to resize all consoles, if need be.
+ This is a first pass at adding two new sysfs attributes to
+  /sys/class/graphics/fb0 for setting modes. There are two attributes:
+  modes which contains a list of valid modes, and mode which is the
+  current mode. To switch modes echo one of the entries from the modes
+  list to the mode attribute.
+  The D,V,S on the modes represents Detailed, Vesa, Standard from the DDC i=
+nfo.
 
-  Requires minor changes to new functions, ie, fb_get_color_depth().
+  modes is root writable. It can also be used to set the list of modes.
+  For example a /etc file could add modes that are not in the monitor's
+  DDC.
+
+  mode is user writable. PAM would set ownership of mode at user login
+  time. This provides a safe way  for a user to set the mode without
+  being root. You can only set the mode to one of the modes on the list.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
+=2D--
 
- drivers/video/console/bitblit.c |    2 -
- drivers/video/console/fbcon.c   |   68 +++++++++++++++++++++++++++++-----------
- drivers/video/fbmem.c           |   43 ++++++++++++++++++++++---
- drivers/video/fbsysfs.c         |   12 ++++++-
- drivers/video/modedb.c          |   42 ++++++++++++++++++++++++
- drivers/video/nvidia/nvidia.c   |    2 -
- include/linux/fb.h              |    7 +++-
- 7 files changed, 149 insertions(+), 27 deletions(-)
+ drivers/video/fbmem.c   |   14 +-
+ drivers/video/fbsysfs.c |  307 +++++++++++++++++++++++++++++++++++++++++++=
+++++-
+ include/linux/fb.h      |    4
+ 3 files changed, 317 insertions(+), 8 deletions(-)
 
-diff -Nru a/drivers/video/console/bitblit.c b/drivers/video/console/bitblit.c
---- a/drivers/video/console/bitblit.c	2004-11-17 18:15:17 +08:00
-+++ b/drivers/video/console/bitblit.c	2005-02-21 20:43:09 +08:00
-@@ -39,7 +39,7 @@
- {
- 	int attribute = 0;
- 
--	if (fb_get_color_depth(info) == 1) {
-+	if (fb_get_color_depth(&info->var) == 1) {
- 		if (attr_underline(c))
- 			attribute |= FBCON_ATTRIBUTE_UNDERLINE;
- 		if (attr_reverse(c))
-diff -Nru a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
---- a/drivers/video/console/fbcon.c	2005-02-01 23:21:27 +08:00
-+++ b/drivers/video/console/fbcon.c	2005-02-21 20:43:09 +08:00
-@@ -182,8 +182,10 @@
- static __inline__ void ypan_down(struct vc_data *vc, int count);
- static void fbcon_bmove_rec(struct vc_data *vc, struct display *p, int sy, int sx,
- 			    int dy, int dx, int height, int width, u_int y_break);
--static void fbcon_set_disp(struct fb_info *info, struct vc_data *vc);
--static void fbcon_preset_disp(struct fb_info *info, int unit);
-+static void fbcon_set_disp(struct fb_info *info, struct fb_var_screeninfo *var,
-+			   struct vc_data *vc);
-+static void fbcon_preset_disp(struct fb_info *info, struct fb_var_screeninfo *var,
-+			      int unit);
- static void fbcon_redraw_move(struct vc_data *vc, struct display *p,
- 			      int line, int count, int dy);
- 
-@@ -209,7 +211,7 @@
- static inline int get_color(struct vc_data *vc, struct fb_info *info,
- 	      u16 c, int is_fg)
- {
--	int depth = fb_get_color_depth(info);
-+	int depth = fb_get_color_depth(&info->var);
- 	int color = 0;
- 
- 	if (console_blanked) {
-@@ -418,7 +420,7 @@
- 	 * remove underline attribute from erase character
- 	 * if black and white framebuffer.
- 	 */
--	if (fb_get_color_depth(info) == 1)
-+	if (fb_get_color_depth(&info->var) == 1)
- 		erase &= ~0x400;
- 	logo_height = fb_prepare_logo(info);
- 	logo_lines = (logo_height + vc->vc_font.height - 1) /
-@@ -595,9 +597,9 @@
- 		info->fbops->fb_set_par(info);
- 
- 	if (vc)
--		fbcon_set_disp(info, vc);
-+		fbcon_set_disp(info, &info->var, vc);
- 	else
--		fbcon_preset_disp(info, unit);
-+		fbcon_preset_disp(info, &info->var, unit);
- 
- 	if (show_logo) {
- 		struct vc_data *fg_vc = vc_cons[fg_console].d;
-@@ -917,7 +919,7 @@
- 	}
- 	if (p->userfont)
- 		charcnt = FNTCHARCNT(p->fontdata);
--	vc->vc_can_do_color = (fb_get_color_depth(info) != 1);
-+	vc->vc_can_do_color = (fb_get_color_depth(&info->var) != 1);
- 	vc->vc_complement_mask = vc->vc_can_do_color ? 0x7700 : 0x0800;
- 	if (charcnt == 256) {
- 		vc->vc_hi_font_mask = 0;
-@@ -1123,13 +1125,14 @@
- /*
-  * If no vc is existent yet, just set struct display
-  */
--static void fbcon_preset_disp(struct fb_info *info, int unit)
-+static void fbcon_preset_disp(struct fb_info *info, struct fb_var_screeninfo *var,
-+			      int unit)
- {
- 	struct display *p = &fb_display[unit];
- 	struct display *t = &fb_display[fg_console];
- 
--	info->var.xoffset = info->var.yoffset = p->yscroll = 0;
--	if (var_to_display(p, &info->var, info))
-+	var->xoffset = var->yoffset = p->yscroll = 0;
-+	if (var_to_display(p, var, info))
- 		return;
- 
- 	p->fontdata = t->fontdata;
-@@ -1138,15 +1141,16 @@
- 		REFCOUNT(p->fontdata)++;
- }
- 
--static void fbcon_set_disp(struct fb_info *info, struct vc_data *vc)
-+static void fbcon_set_disp(struct fb_info *info, struct fb_var_screeninfo *var,
-+			   struct vc_data *vc)
- {
- 	struct display *p = &fb_display[vc->vc_num], *t;
- 	struct vc_data **default_mode = vc->vc_display_fg;
- 	struct vc_data *svc = *default_mode;
- 	int rows, cols, charcnt = 256;
- 
--	info->var.xoffset = info->var.yoffset = p->yscroll = 0;
--	if (var_to_display(p, &info->var, info))
-+	var->xoffset = var->yoffset = p->yscroll = 0;
-+	if (var_to_display(p, var, info))
- 		return;
- 	t = &fb_display[svc->vc_num];
- 	if (!vc->vc_font.data) {
-@@ -1160,7 +1164,7 @@
- 	if (p->userfont)
- 		charcnt = FNTCHARCNT(p->fontdata);
- 
--	vc->vc_can_do_color = (fb_get_color_depth(info) != 1);
-+	vc->vc_can_do_color = (fb_get_color_depth(var) != 1);
- 	vc->vc_complement_mask = vc->vc_can_do_color ? 0x7700 : 0x0800;
- 	if (charcnt == 256) {
- 		vc->vc_hi_font_mask = 0;
-@@ -1175,8 +1179,8 @@
- 	if (!*vc->vc_uni_pagedir_loc)
- 		con_copy_unimap(vc, svc);
- 
--	cols = info->var.xres / vc->vc_font.width;
--	rows = info->var.yres / vc->vc_font.height;
-+	cols = var->xres / vc->vc_font.width;
-+	rows = var->yres / vc->vc_font.height;
- 	vc_resize(vc, cols, rows);
- 	if (CON_IS_VISIBLE(vc)) {
- 		update_screen(vc);
-@@ -1955,7 +1959,7 @@
- 	set_blitting_type(vc, info, p);
- 	((struct fbcon_ops *)info->fbcon_par)->cursor_reset = 1;
- 
--	vc->vc_can_do_color = (fb_get_color_depth(info) != 1);
-+	vc->vc_can_do_color = (fb_get_color_depth(&info->var) != 1);
- 	vc->vc_complement_mask = vc->vc_can_do_color ? 0x7700 : 0x0800;
- 	updatescrollmode(p, info, vc);
- 
-@@ -2326,7 +2330,7 @@
- 	if (fbcon_is_inactive(vc, info))
- 		return -EINVAL;
- 
--	depth = fb_get_color_depth(info);
-+	depth = fb_get_color_depth(&info->var);
- 	if (depth > 3) {
- 		for (i = j = 0; i < 16; i++) {
- 			k = table[i];
-@@ -2658,6 +2662,31 @@
- 	ops->blank_state = blank;
- }
- 
-+static void fbcon_new_modelist(struct fb_info *info)
-+{
-+	int i;
-+	struct vc_data *vc;
-+	struct fb_var_screeninfo var;
-+	struct fb_videomode *mode;
-+
-+	for (i = 0; i < MAX_NR_CONSOLES; i++) {
-+		if (registered_fb[con2fb_map[i]] != info)
-+			continue;
-+		if (!fb_display[i].mode)
-+			continue;
-+		vc = vc_cons[i].d;
-+		display_to_var(&var, &fb_display[i]);
-+		mode = fb_find_nearest_mode(&var, &info->modelist);
-+		fb_videomode_to_var(&var, mode);
-+
-+		if (vc)
-+			fbcon_set_disp(info, &var, vc);
-+		else
-+			fbcon_preset_disp(info, &var, i);
-+
-+	}
-+}
-+
- static int fbcon_event_notify(struct notifier_block *self, 
- 			      unsigned long action, void *data)
- {
-@@ -2695,6 +2724,9 @@
- 		break;
- 	case FB_EVENT_BLANK:
- 		fbcon_fb_blanked(info, *(int *)event->data);
-+		break;
-+	case FB_EVENT_NEW_MODELIST:
-+		fbcon_new_modelist(info);
- 		break;
- 	}
- 
 diff -Nru a/drivers/video/fbmem.c b/drivers/video/fbmem.c
---- a/drivers/video/fbmem.c	2005-02-18 15:17:45 +08:00
-+++ b/drivers/video/fbmem.c	2005-02-21 20:43:10 +08:00
-@@ -62,10 +62,8 @@
-  * Helpers
-  */
- 
--int fb_get_color_depth(struct fb_info *info)
-+int fb_get_color_depth(struct fb_var_screeninfo *var)
+=2D-- a/drivers/video/fbmem.c	2005-03-05 00:18:24 +08:00
++++ b/drivers/video/fbmem.c	2005-02-18 15:17:45 +08:00
+@@ -1059,7 +1059,6 @@
+ register_framebuffer(struct fb_info *fb_info)
  {
--	struct fb_var_screeninfo *var = &info->var;
--
- 	if (var->green.length == var->blue.length &&
- 	    var->green.length == var->red.length &&
- 	    !var->green.offset && !var->blue.offset &&
-@@ -300,7 +298,7 @@
- 	const u8 *src = logo->data;
- 	u8 d, xor = (info->fix.visual == FB_VISUAL_MONO01) ? 0xff : 0;
- 
--	if (fb_get_color_depth(info) == 3)
-+	if (fb_get_color_depth(&info->var) == 3)
- 		fg = 7;
- 
- 	switch (depth) {
-@@ -365,7 +363,7 @@
- 
- int fb_prepare_logo(struct fb_info *info)
- {
--	int depth = fb_get_color_depth(info);
-+	int depth = fb_get_color_depth(&info->var);
- 
- 	memset(&fb_logo, 0, sizeof(struct logo_data));
- 
-@@ -1209,6 +1207,40 @@
- }
- subsys_initcall(fbmem_init);
- 
-+int fb_new_modelist(struct fb_info *info)
-+{
-+	struct fb_event event;
-+	struct fb_var_screeninfo var = info->var;
-+	struct list_head *pos, *n;
-+	struct fb_modelist *modelist;
-+	struct fb_videomode *m, mode;
-+	int err = 1;
+ 	int i;
+=2D	struct class_device *c;
+ 	struct fb_event event;
+=20
+ 	if (num_registered_fb =3D=3D FB_MAX)
+@@ -1070,13 +1069,15 @@
+ 			break;
+ 	fb_info->node =3D i;
+=20
+=2D	c =3D class_simple_device_add(fb_class, MKDEV(FB_MAJOR, i),
++	fb_info->class_device =3D class_simple_device_add(fb_class, MKDEV(FB_MAJO=
+R, i),
+ 				    fb_info->device, "fb%d", i);
+=2D	if (IS_ERR(c)) {
++	if (IS_ERR(fb_info->class_device)) {
+ 		/* Not fatal */
+=2D		printk(KERN_WARNING "Unable to create class_device for framebuffer %d;=
+ errno =3D %ld\n", i, PTR_ERR(c));
+=2D	}
+=2D=09
++		printk(KERN_WARNING "Unable to create class_device for framebuffer %d; e=
+rrno =3D %ld\n", i, PTR_ERR(fb_info->class_device));
++		fb_info->class_device =3D NULL;
++	} else
++		fb_init_class_device(fb_info);
 +
-+	list_for_each_safe(pos, n, &info->modelist) {
-+		modelist = list_entry(pos, struct fb_modelist, list);
-+		m = &modelist->mode;
-+		fb_videomode_to_var(&var, m);
-+		var.activate = FB_ACTIVATE_TEST;
-+		err = fb_set_var(info, &var);
-+		fb_var_to_videomode(&mode, &var);
-+		if (err || !fb_mode_is_equal(m, &mode)) {
-+			list_del(pos);
-+			kfree(pos);
-+		}
-+	}
-+
-+	err = 1;
-+
-+	if (!list_empty(&info->modelist)) {
-+		event.info = info;
-+		err = notifier_call_chain(&fb_notifier_list,
-+					   FB_EVENT_NEW_MODELIST,
-+					   &event);
-+	}
-+
-+	return err;
-+}
-+
- static char *video_options[FB_MAX];
- static int ofonly;
- 
-@@ -1321,5 +1353,6 @@
- EXPORT_SYMBOL(fb_register_client);
- EXPORT_SYMBOL(fb_unregister_client);
- EXPORT_SYMBOL(fb_get_options);
-+EXPORT_SYMBOL(fb_new_modelist);
- 
- MODULE_LICENSE("GPL");
-diff -Nru a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
---- a/drivers/video/fbsysfs.c	2005-02-20 07:56:25 +08:00
-+++ b/drivers/video/fbsysfs.c	2005-02-21 20:43:10 +08:00
-@@ -151,13 +151,23 @@
- {
- 	struct fb_info *fb_info =
- 		(struct fb_info *)class_get_devdata(class_device);
-+	LIST_HEAD(old_list);
- 	int i = count / sizeof(struct fb_videomode);
-+	
- 	if (i * sizeof(struct fb_videomode) != count)
- 		return -EINVAL;
- 
--	fb_destroy_modelist(&fb_info->modelist);
-+	acquire_console_sem();
-+	list_splice(&fb_info->modelist, &old_list);
- 	fb_videomode_to_modelist((struct fb_videomode *)buf, i,
- 				 &fb_info->modelist);
-+	if (fb_new_modelist(fb_info)) {
-+		fb_destroy_modelist(&fb_info->modelist);
-+		list_splice(&old_list, &fb_info->modelist);
-+	} else 
-+		fb_destroy_modelist(&old_list);
-+
-+	release_console_sem();
- 
+ 	if (fb_info->pixmap.addr =3D=3D NULL) {
+ 		fb_info->pixmap.addr =3D kmalloc(FBPIXMAPSIZE, GFP_KERNEL);
+ 		if (fb_info->pixmap.addr) {
+@@ -1135,6 +1136,7 @@
+ 	fb_destroy_modelist(&fb_info->modelist);
+ 	registered_fb[i]=3DNULL;
+ 	num_registered_fb--;
++	fb_cleanup_class_device(fb_info);
+ 	class_simple_device_remove(MKDEV(FB_MAJOR, i));
  	return 0;
  }
-diff -Nru a/drivers/video/modedb.c b/drivers/video/modedb.c
---- a/drivers/video/modedb.c	2005-03-05 00:13:32 +08:00
-+++ b/drivers/video/modedb.c	2005-02-21 20:43:10 +08:00
-@@ -722,6 +722,47 @@
- }
- 
+diff -Nru a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
+=2D-- a/drivers/video/fbsysfs.c	2004-10-19 20:21:42 +08:00
++++ b/drivers/video/fbsysfs.c	2005-02-20 07:56:25 +08:00
+@@ -17,6 +17,7 @@
+=20
+ #include <linux/kernel.h>
+ #include <linux/fb.h>
++#include <linux/console.h>
+=20
  /**
-+ * fb_find_nearest_mode - find mode closest video mode
-+ *
-+ * @var: pointer to struct fb_var_screeninfo
-+ * @head: pointer to modelist
-+ *
-+ * Finds best matching videomode, smaller or greater in dimension.
-+ * If more than 1 videomode is found, will return the videomode with
-+ * the closest refresh rate
-+ */
-+struct fb_videomode *fb_find_nearest_mode(struct fb_var_screeninfo *var,
-+					  struct list_head *head)
+  * framebuffer_alloc - creates a new frame buffer info structure
+@@ -57,6 +58,7 @@
+ #undef PADDING
+ #undef BYTES_PER_LONG
+ }
++EXPORT_SYMBOL(framebuffer_alloc);
+=20
+ /**
+  * framebuffer_release - marks the structure available for freeing
+@@ -71,6 +73,307 @@
+ {
+ 	kfree(info);
+ }
+=2D
+ EXPORT_SYMBOL(framebuffer_release);
+=2DEXPORT_SYMBOL(framebuffer_alloc);
++
++static int activate(struct fb_info *fb_info, struct fb_var_screeninfo *var)
 +{
-+	struct list_head *pos;
++	int err;
++
++	var->activate |=3D FB_ACTIVATE_FORCE;
++	acquire_console_sem();
++	fb_info->flags |=3D FBINFO_MISC_USEREVENT;
++	err =3D fb_set_var(fb_info, var);
++	fb_info->flags &=3D ~FBINFO_MISC_USEREVENT;
++	release_console_sem();
++	if (err)
++		return err;
++	return 0;
++}
++
++static int mode_string(char *buf, unsigned int offset,
++		       const struct fb_videomode *mode)
++{
++	char m =3D 'U';
++	if (mode->flag & FB_MODE_IS_DETAILED)
++		m =3D 'D';
++	if (mode->flag & FB_MODE_IS_VESA)
++		m =3D 'V';
++	if (mode->flag & FB_MODE_IS_STANDARD)
++		m =3D 'S';
++	return snprintf(&buf[offset], PAGE_SIZE - offset, "%c:%dx%d-%d\n", m, mod=
+e->xres, mode->yres, mode->refresh);
++}
++
++static ssize_t store_mode(struct class_device *class_device, const char * =
+buf,
++			  size_t count)
++{
++	struct fb_info *fb_info =3D
++		(struct fb_info *)class_get_devdata(class_device);
++	char mstr[100];
++	struct fb_var_screeninfo var;
 +	struct fb_modelist *modelist;
-+	struct fb_videomode *mode, *best = NULL;
-+	u32 diff = -1, diff_refresh = -1;
++	struct fb_videomode *mode;
++	struct list_head *pos;
++	size_t i;
++	int err;
 +
-+	list_for_each(pos, head) {
-+		u32 d;
++	memset(&var, 0, sizeof(var));
 +
-+		modelist = list_entry(pos, struct fb_modelist, list);
-+		mode = &modelist->mode;
++	list_for_each(pos, &fb_info->modelist) {
++		modelist =3D list_entry(pos, struct fb_modelist, list);
++		mode =3D &modelist->mode;
++		i =3D mode_string(mstr, 0, mode);
++		if (strncmp(mstr, buf, max(count, i)) =3D=3D 0) {
 +
-+		d = abs(mode->xres - var->xres) + 
-+			abs(mode->yres - var->yres);
-+		if (diff > d) {
-+			diff = d;
-+			best = mode;
-+		} else if (diff == d) {
-+			d = abs(mode->refresh - best->refresh);
-+			if (diff_refresh > d) {
-+				diff_refresh = d;
-+				best = mode;
-+			}
++			var =3D fb_info->var;
++			fb_videomode_to_var(&var, mode);
++			if ((err =3D activate(fb_info, &var)))
++				return err;
++			fb_info->mode =3D mode;
++			return count;
 +		}
 +	}
-+	
-+	return best;
-+}    
++	return -EINVAL;
++}
 +
-+/**
-  * fb_match_mode - find a videomode which exactly matches the timings in var
-  * @var: pointer to struct fb_var_screeninfo
-  * @head: pointer to struct list_head of modelist
-@@ -846,5 +887,6 @@
- EXPORT_SYMBOL(fb_destroy_modelist);
- EXPORT_SYMBOL(fb_match_mode);
- EXPORT_SYMBOL(fb_find_best_mode);
-+EXPORT_SYMBOL(fb_find_nearest_mode);
- EXPORT_SYMBOL(fb_videomode_to_modelist);
- EXPORT_SYMBOL(fb_find_mode);
-diff -Nru a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
---- a/drivers/video/nvidia/nvidia.c	2005-03-05 00:35:05 +08:00
-+++ b/drivers/video/nvidia/nvidia.c	2005-02-21 20:43:10 +08:00
-@@ -657,7 +657,7 @@
- {
- 	struct nvidia_par *par = info->par;
- 	struct _riva_hw_state *state = &par->ModeReg;
--	int i, depth = fb_get_color_depth(info);
-+	int i, depth = fb_get_color_depth(&info->var);
- 	int h_display = info->var.xres / 8 - 1;
- 	int h_start = (info->var.xres + info->var.right_margin) / 8 - 1;
- 	int h_end = (info->var.xres + info->var.right_margin +
++static ssize_t show_mode(struct class_device *class_device, char *buf)
++{
++	struct fb_info *fb_info =3D
++		(struct fb_info *)class_get_devdata(class_device);
++
++	if (!fb_info->mode)
++		return 0;
++
++	return mode_string(buf, 0, fb_info->mode);
++}
++
++static ssize_t store_modes(struct class_device *class_device, const char *=
+ buf,
++			   size_t count)
++{
++	struct fb_info *fb_info =3D
++		(struct fb_info *)class_get_devdata(class_device);
++	int i =3D count / sizeof(struct fb_videomode);
++	if (i * sizeof(struct fb_videomode) !=3D count)
++		return -EINVAL;
++
++	fb_destroy_modelist(&fb_info->modelist);
++	fb_videomode_to_modelist((struct fb_videomode *)buf, i,
++				 &fb_info->modelist);
++
++	return 0;
++}
++
++static ssize_t show_modes(struct class_device *class_device, char *buf)
++{
++	struct fb_info *fb_info =3D
++		(struct fb_info *)class_get_devdata(class_device);
++	unsigned int i;
++	struct list_head *pos;
++	struct fb_modelist *modelist;
++	const struct fb_videomode *mode;
++
++	i =3D 0;
++	list_for_each(pos, &fb_info->modelist) {
++		modelist =3D list_entry(pos, struct fb_modelist, list);
++		mode =3D &modelist->mode;
++		i +=3D mode_string(buf, i, mode);
++	}
++	return i;
++}
++
++static ssize_t store_bpp(struct class_device *class_device, const char * b=
+uf,
++			 size_t count)
++{
++	struct fb_info *fb_info =3D
++		(struct fb_info *)class_get_devdata(class_device);
++	struct fb_var_screeninfo var;
++	char ** last =3D NULL;
++	int err;
++
++	var =3D fb_info->var;
++	var.bits_per_pixel =3D simple_strtoul(buf, last, 0);
++	if ((err =3D activate(fb_info, &var)))
++		return err;
++	return count;
++}
++
++static ssize_t show_bpp(struct class_device *class_device, char *buf)
++{
++	struct fb_info *fb_info =3D
++		(struct fb_info *)class_get_devdata(class_device);
++	return snprintf(buf, PAGE_SIZE, "%d\n", fb_info->var.bits_per_pixel);
++}
++
++static ssize_t store_virtual(struct class_device *class_device,
++			     const char * buf, size_t count)
++{
++	struct fb_info *fb_info =3D
++		(struct fb_info *)class_get_devdata(class_device);
++	struct fb_var_screeninfo var;
++	char *last =3D NULL;
++	int err;
++
++	var =3D fb_info->var;
++	var.xres_virtual =3D simple_strtoul(buf, &last, 0);
++	last++;
++	if (last - buf >=3D count)
++		return -EINVAL;
++	var.yres_virtual =3D simple_strtoul(last, &last, 0);
++	printk(KERN_ERR "fb: xres %d yres %d\n", var.xres_virtual,
++	       var.yres_virtual);
++
++	if ((err =3D activate(fb_info, &var)))
++		return err;
++	return count;
++}
++
++static ssize_t show_virtual(struct class_device *class_device, char *buf)
++{
++	struct fb_info *fb_info =3D
++		(struct fb_info *)class_get_devdata(class_device);
++	return snprintf(buf, PAGE_SIZE, "%d,%d\n", fb_info->var.xres_virtual,
++			fb_info->var.xres_virtual);
++}
++
++static ssize_t store_cmap(struct class_device *class_device, const char * =
+buf,
++			  size_t count)
++{
++//	struct fb_info *fb_info =3D (struct fb_info *)class_get_devdata(class_d=
+evice);
++	return 0;
++}
++
++static ssize_t show_cmap(struct class_device *class_device, char *buf)
++{
++	struct fb_info *fb_info =3D
++		(struct fb_info *)class_get_devdata(class_device);
++	unsigned int offset =3D 0, i;
++
++	if (!fb_info->cmap.red || !fb_info->cmap.blue ||
++	    fb_info->cmap.green || fb_info->cmap.transp)
++		return -EINVAL;
++
++	for (i =3D 0; i < fb_info->cmap.len; i++) {
++		offset +=3D snprintf(buf, PAGE_SIZE - offset,
++				   "%d,%d,%d,%d,%d\n", i + fb_info->cmap.start,
++				   fb_info->cmap.red[i], fb_info->cmap.blue[i],
++				   fb_info->cmap.green[i],
++				   fb_info->cmap.transp[i]);
++	}
++	return offset;
++}
++
++static ssize_t store_blank(struct class_device *class_device, const char *=
+ buf,
++			   size_t count)
++{
++	struct fb_info *fb_info =3D
++		(struct fb_info *)class_get_devdata(class_device);
++	char *last =3D NULL;
++	int err;
++
++	acquire_console_sem();
++	fb_info->flags |=3D FBINFO_MISC_USEREVENT;
++	err =3D fb_blank(fb_info, simple_strtoul(buf, &last, 0));
++	fb_info->flags &=3D ~FBINFO_MISC_USEREVENT;
++	release_console_sem();
++	if (err < 0)
++		return err;
++	return count;
++}
++
++static ssize_t show_blank(struct class_device *class_device, char *buf)
++{
++//	struct fb_info *fb_info =3D (struct fb_info *)class_get_devdata(class_d=
+evice);
++	return 0;
++}
++
++static ssize_t store_console(struct class_device *class_device,
++			     const char * buf, size_t count)
++{
++//	struct fb_info *fb_info =3D (struct fb_info *)class_get_devdata(class_d=
+evice);
++	return 0;
++}
++
++static ssize_t show_console(struct class_device *class_device, char *buf)
++{
++//	struct fb_info *fb_info =3D (struct fb_info *)class_get_devdata(class_d=
+evice);
++	return 0;
++}
++
++static ssize_t store_cursor(struct class_device *class_device,
++			    const char * buf, size_t count)
++{
++//	struct fb_info *fb_info =3D (struct fb_info *)class_get_devdata(class_d=
+evice);
++	return 0;
++}
++
++static ssize_t show_cursor(struct class_device *class_device, char *buf)
++{
++//	struct fb_info *fb_info =3D (struct fb_info *)class_get_devdata(class_d=
+evice);
++	return 0;
++}
++
++static ssize_t store_pan(struct class_device *class_device, const char * b=
+uf,
++			 size_t count)
++{
++	struct fb_info *fb_info =3D
++		(struct fb_info *)class_get_devdata(class_device);
++	struct fb_var_screeninfo var;
++	char *last =3D NULL;
++	int err;
++
++	var =3D fb_info->var;
++	var.xoffset =3D simple_strtoul(buf, &last, 0);
++	last++;
++	if (last - buf >=3D count)
++		return -EINVAL;
++	var.yoffset =3D simple_strtoul(last, &last, 0);
++
++	acquire_console_sem();
++	err =3D fb_pan_display(fb_info, &var);
++	release_console_sem();
++
++	if (err < 0)
++		return err;
++	return count;
++}
++
++static ssize_t show_pan(struct class_device *class_device, char *buf)
++{
++	struct fb_info *fb_info =3D
++		(struct fb_info *)class_get_devdata(class_device);
++	return snprintf(buf, PAGE_SIZE, "%d,%d\n", fb_info->var.xoffset,
++			fb_info->var.xoffset);
++}
++
++struct class_device_attribute class_device_attrs[] =3D {
++	__ATTR(bits_per_pixel, S_IRUGO|S_IWUSR, show_bpp, store_bpp),
++	__ATTR(blank, S_IRUGO|S_IWUSR, show_blank, store_blank),
++	__ATTR(color_map, S_IRUGO|S_IWUSR, show_cmap, store_cmap),
++	__ATTR(console, S_IRUGO|S_IWUSR, show_console, store_console),
++	__ATTR(cursor, S_IRUGO|S_IWUSR, show_cursor, store_cursor),
++	__ATTR(mode, S_IRUGO|S_IWUSR, show_mode, store_mode),
++	__ATTR(modes, S_IRUGO|S_IWUSR, show_modes, store_modes),
++	__ATTR(pan, S_IRUGO|S_IWUSR, show_pan, store_pan),
++	__ATTR(virtual_size, S_IRUGO|S_IWUSR, show_virtual, store_virtual),
++};
++
++int fb_init_class_device(struct fb_info *fb_info)
++{
++	unsigned int i;
++	class_set_devdata(fb_info->class_device, fb_info);
++
++	for (i =3D 0; i < ARRAY_SIZE(class_device_attrs); i++)
++		class_device_create_file(fb_info->class_device,
++					 &class_device_attrs[i]);
++	return 0;
++}
++
++void fb_cleanup_class_device(struct fb_info *fb_info)
++{
++	unsigned int i;
++
++	for (i =3D 0; i < ARRAY_SIZE(class_device_attrs); i++)
++		class_device_remove_file(fb_info->class_device,
++					 &class_device_attrs[i]);
++}
++
++
 diff -Nru a/include/linux/fb.h b/include/linux/fb.h
---- a/include/linux/fb.h	2005-02-18 15:17:45 +08:00
-+++ b/include/linux/fb.h	2005-03-06 07:06:39 +08:00
-@@ -493,6 +493,8 @@
- #define FB_EVENT_SET_CONSOLE_MAP        0x07
- /*      A display blank is requested       */
- #define FB_EVENT_BLANK                  0x08
-+/*      Private modelist is to be replaced */
-+#define FB_EVENT_NEW_MODELIST           0x09
- 
- struct fb_event {
- 	struct fb_info *info;
-@@ -826,8 +828,9 @@
- 				u8 *dst, u32 d_pitch, u8 *src, u32 s_pitch,
- 				u32 height);
- extern void fb_set_suspend(struct fb_info *info, int state);
--extern int fb_get_color_depth(struct fb_info *info);
-+extern int fb_get_color_depth(struct fb_var_screeninfo *var);
- extern int fb_get_options(char *name, char **option);
-+extern int fb_new_modelist(struct fb_info *info);
- 
- extern struct fb_info *registered_fb[FB_MAX];
- extern int num_registered_fb;
-@@ -882,6 +885,8 @@
- 					  struct list_head *head);
- extern struct fb_videomode *fb_find_best_mode(struct fb_var_screeninfo *var,
- 					      struct list_head *head);
-+extern struct fb_videomode *fb_find_nearest_mode(struct fb_var_screeninfo *var,
-+						 struct list_head *head);
- extern void fb_destroy_modelist(struct list_head *head);
- extern void fb_videomode_to_modelist(struct fb_videomode *modedb, int num,
- 				     struct list_head *head);
+=2D-- a/include/linux/fb.h	2005-03-05 00:18:26 +08:00
++++ b/include/linux/fb.h	2005-02-18 15:17:45 +08:00
+@@ -715,8 +715,10 @@
+ 	struct fb_pixmap sprite;	/* Cursor hardware mapper */
+ 	struct fb_cmap cmap;		/* Current cmap */
+ 	struct list_head modelist;      /* mode list */
++	struct fb_videomode *mode;	/* current mode */
+ 	struct fb_ops *fbops;
+ 	struct device *device;
++	struct class_device *class_device; /* sysfs per device attrs */
+ #ifdef CONFIG_FB_TILEBLITTING
+ 	struct fb_tile_ops *tileops;    /* Tile Blitting */
+ #endif
+@@ -833,6 +835,8 @@
+ /* drivers/video/fbsysfs.c */
+ extern struct fb_info *framebuffer_alloc(size_t size, struct device *dev);
+ extern void framebuffer_release(struct fb_info *info);
++extern int fb_init_class_device(struct fb_info *fb_info);
++extern void fb_cleanup_class_device(struct fb_info *head);
+=20
+ /* drivers/video/fbmon.c */
+ #define FB_MAXTIMINGS		0
 
 
 

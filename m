@@ -1,24 +1,26 @@
 From: James Simmons <jsimmons@www.infradead.org>
-Subject: Re: Patch to add mode setting to sysfs
-Date: Mon, 21 Feb 2005 21:16:58 +0000 (GMT)
-Message-ID: <Pine.LNX.4.56.0502212116220.16017@pentafluge.infradead.org>
-References: <9e4733910502161430ff1dad1@mail.gmail.com> 
- <200502172150.16256.adaplas@hotpop.com>  <9e47339105021712494955212d@mail.gmail.com>
-  <200502180804.46005.adaplas@hotpop.com>  <9e47339105021716392dcce795@mail.gmail.com>
-  <Pine.LNX.4.56.0502211837040.13423@pentafluge.infradead.org>
- <9e47339105022111111474017@mail.gmail.com>
+Subject: Re: sysfs support for framebuffer
+Date: Mon, 21 Feb 2005 21:36:38 +0000 (GMT)
+Message-ID: <Pine.LNX.4.56.0502212117240.16017@pentafluge.infradead.org>
+References: <9e4733910502181435f60371c@mail.gmail.com> 
+ <Pine.LNX.4.56.0502211841580.13423@pentafluge.infradead.org>
+ <9e4733910502211133a8d7e59@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D3KvT-0004Lt-TC
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 13:17:07 -0800
+	id 1D3LER-0005FC-6S
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 13:36:43 -0800
 Received: from pentafluge.infradead.org ([213.146.154.40])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1D3KvS-00074f-9L
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 13:17:07 -0800
-In-Reply-To: <9e47339105022111111474017@mail.gmail.com>
+	id 1D3LEQ-0003Qu-Da
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 13:36:43 -0800
+Received: from jsimmons (helo=localhost)
+	by pentafluge.infradead.org with local-esmtp (Exim 4.43 #1 (Red Hat Linux))
+	id 1D3LEM-0004IQ-C3
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 21:36:40 +0000
+In-Reply-To: <9e4733910502211133a8d7e59@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,24 +33,58 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@pentafluge.infradead.org>
+To: linux-fbdev-devel@lists.sourceforge.net
 
 
-> <jsimmons@www.infradead.org> wrote:
-> > 
-> > Here is a question. What about if the drivers are built and fbdev is
-> > modular? I will have to try it to see the results.
+> > Yes. line_length. The cursor needs to be expanded. There is much more than
+> > that. Pretty much var and fix fields need to be exported to userland.
 > 
-> If a driver is built in you can't use fb as a module. Kernel kconfig
-> controls this automatically for you. If you pick fb as a module you
-> will only get modules as a choice on the drivers. If you pick built in
-> you can build the drivers either way. You can't compile fb as a module
-> and have built in drivers, the kernel will refuse to build.
+> I would like to keep the export data to user space at a minimum. So if
+> you want to set a non-standard mode edit /etc/mode and then use the
+> root priv app to add it to the list as a binary structure via
+> sysfs/modes. The patch currently supports this.
 
-So kbuild is smart enough to handle this. In the old days you could break 
-the build.
+If you want to support the same level of functionality as the current 
+fbdev setup then you have to export var and fix to userspace. You need 
+that data to be able to write to the framebuffer properly. 
 
+> > Do we really want everything under fb0. I was thinking we should have a
+> > directory for a card and under that directory list all the properties.
+> > I was considering this approach so both DRM and fbdev can exist is the
+> > same spot.
+> 
+> DRM and fbdev can not exist in the same spot since they make
+> independent deivces, fb0 and drm0. Udev needs them in two different
+> places otherwise there is no way to make two 'dev' attributes.
+
+I mean have drm under /sys/class/graphics/
+
+Also we would have /sys/class/graphics/lcd/
+		   /sys/class/graphics/display0/	One for each monitor
+		   /sys/class/graphics/zbuffer0/
+		   /sys/class/graphics/fb0
+etc. 
+
+Now there is a problem to the above. If we have more than one graphics 
+card it will get messy. I would guess the X server wants to know what 
+things belong to what device. For example the matrox card supports dual 
+heads. What if we have 3 graphics cards. Which two fbX devices belong to the 
+matrox card. You could scan all the directories and organize a list for 
+what belongs to what but that would be messy. Plus what if we plug 
+a monitor in. We have to know which things (fb, mmio) effect its output.
+
+> > We also need to deal with mirroring. How are we going to handle that?
+> > Also some card support chaining cards together to into one monitor.
+> > We need to really think about the design. Because once it goes into the
+> > main tree it will be hard to change the userland api.
+> 
+> Mirroring and merged fb would be handled by special modes in the mode
+> list. You would need ownership of both heads to set these modes.
+> Setting a mode like this into one head would then disable the device
+> for the other one.
+
+Okay. Also for demo mode we don't need to handle every case. Just the 
+common ones.
 
 
 -------------------------------------------------------

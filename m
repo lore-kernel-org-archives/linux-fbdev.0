@@ -1,22 +1,21 @@
-From: Sven Luther <sven.luther@wanadoo.fr>
-Subject: Re: tdfx & multiple voodoo cards : supposed to work ?
-Date: Thu, 30 Oct 2003 10:15:41 +0100
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: set_par/check-var vs. fbcon
+Date: Thu, 30 Oct 2003 10:16:24 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20031030091541.GA4422@iliana>
-References: <20031029182532.GA1662@dreamland.darkstar.lan> <Pine.LNX.4.44.0310292000530.21040-100000@phoenix.infradead.org>
+Message-ID: <Pine.GSO.4.21.0310301014290.15545-100000@waterleaf.sonytel.be>
+References: <1067476604.27090.37.camel@gaston>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1AF8uD-0002fD-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 30 Oct 2003 01:15:49 -0800
-Received: from smtp5.wanadoo.fr ([193.252.22.26] helo=mwinf0502.wanadoo.fr)
+	id 1AF8uu-0002i6-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 30 Oct 2003 01:16:32 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AF8uC-00056F-Oa
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 30 Oct 2003 01:15:48 -0800
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0310292000530.21040-100000@phoenix.infradead.org>
+	id 1AF8uu-0005Br-1y
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 30 Oct 2003 01:16:32 -0800
+In-Reply-To: <1067476604.27090.37.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -26,34 +25,54 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, Oct 29, 2003 at 08:04:15PM +0000, James Simmons wrote:
-> 
-> > > I have had a report of someone trying to use two voodoo cards on a
-> > > pegasos/ppc motherboard, and it freezing the kernel (2.4.22 kernel)
-> > > 
-> > > Is the tdfx fbdev supposed to be able to handle dual card setups, or not ?
+On Thu, 30 Oct 2003, Benjamin Herrenschmidt wrote:
+> >    We have the ability to create a var based on height, width and another 
+> > variable. When we lack EDID data we use the GTF formulas. The function for
+> > this is fb_get_mode in fbmon.c. Now when we do have EDID info we use the function. 
+> > For this we have fb_get_monitor_limits. 
+> >    The monitor info is very important. It is used to validate or invalidate a mode.  
+> > The next set of functions that are important are:
 > > 
-> > No, the driver has a statically allocated fb_info. It will blow up.
+> > fb_validate_mode		-> Used in all cases. Validates a var.
+> > fb_create_modedb
+> > fb_destroy_modedb
 > 
-> Yeap. Also the driver uses the VGA legacy IO ports. It is possible to run 
-> the driver without BIOS support. The specs have such info. I just haven't 
-> got around to it.
+> Well, I know we have those functions, but that doesn't help me
+> about how we shall use them. Specifically in radeonfb where I
+> do have the modedb based on EDID at hand (provided I could probe
+> it, if not, I want to default to the std VESA modes, not some
+> GTF formula).
+> 
+> The point I'm trying to make is that we are on one side called with
+> only width/height valid basically (by fbcon) or with a full mode with
+> timings (from userland ioctl). How do we choose what to do ? Also
+> userland may want to use our ability to "calculate" a mode based
+> only on H/W, or may want us to pick one with H/W and a freq, or may
+> provide us with a full mode with all timings in there. There is
+> currently no way to make a difference from within the driver on what
+> data in the passed in "var" are actually to be used to make the
+> actual mode.
 
-Notice : this is on powerpc, but the pegasos OF has support for
-emulating x86 bioses.
+If (when) we convert fbdev to use sysfs instead of ioctls, we can have a magic
+file in which you `cat' your var, and another one for `simple' mode specifiers
+(cfr. the modedb parameter <width>x<height>[-depth][@refresh]).
 
-What about running fbdev only on the first head, and have XFree86
-initialize the second head ? The problem is that just having the two
-boards in the box freezes the kernel.
+Gr{oetje,eeting}s,
 
-Friendly,
+						Geert
 
-Sven Luther
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 
 -------------------------------------------------------

@@ -1,22 +1,21 @@
-From: Alexander Kern <alex.kern@gmx.de>
-Subject: [Question] Colour management
-Date: Fri, 30 Jul 2004 20:12:36 +0200
+From: Kronos <kronos@people.it>
+Subject: Re: OLS and console rearchitecture
+Date: Sat, 31 Jul 2004 00:19:56 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200407302012.36325.alex.kern@gmx.de>
-References: <20040722184937.GA11361@sci.fi> <200407252036.52194.alex.kern@gmx.de> <200407260647.03489.adaplas@hotpop.com>
+Message-ID: <20040730221956.GA9140@dreamland.darkstar.lan>
+References: <20040728185346.36263.qmail@web14921.mail.yahoo.com> <20040728213102.GB26087@dreamland.darkstar.lan> <1091055478.31913.7.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bqbs9-0006UU-Ll
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Jul 2004 11:12:49 -0700
-Received: from mail.gmx.de ([213.165.64.20] helo=mail.gmx.net)
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.34)
-	id 1Bqbs9-0001Pz-2o
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Jul 2004 11:12:49 -0700
-In-Reply-To: <200407260647.03489.adaplas@hotpop.com>
+	id 1BqfjB-0004Vu-Cu
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Jul 2004 15:19:49 -0700
+Received: from mail-relay-1.tiscali.it ([213.205.33.41])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1BqfjA-0005ne-OZ
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Jul 2004 15:19:49 -0700
 Content-Disposition: inline
+In-Reply-To: <1091055478.31913.7.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,23 +26,30 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, Ville =?iso-8859-15?q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Content-Transfer-Encoding: 7bit
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
+Il Wed, Jul 28, 2004 at 11:57:59PM +0100, Alan Cox ha scritto: 
+> 
+> > > 7) Mode setting from normal user space - devices will have a standard
+> > > IOCTL accepting a mode string like fbdev currently uses.
+> > 
+> > sysfs? I sent a patch a while ago but didn't get much feedback.
+> 
+> How do you atomically tie sysfs objects to fbdev and X permissions
+> models?
 
-Hallo Tony,
+It's not atomic right now, the attribute is attached to a class_device
+object after register_framebuffer (which init & register the
+class_device). Is this a problem?
 
-can you explain the deep mining of fb_setcolreg. Background, I observe wrong 
-palette using in 15 and 16 bpp modes, but can not understand, what is 
-the right approach. In both cases from penguin logo I can see only contour in 
-honey yellow and blue vertical string jsimmons, pretty scury ;-) The rest is 
-black! The simple text or ncurses applications have always right colours.
-Additionally and only by 16bpp fbi shows blurry images. In 15bpp fbi works 
-fine. fbtest works fine and his penguins look good in all resolutions ?!
-
-Regards Alex
-
-P.S. where is our current tree of fbdev changes?
+Luca
+-- 
+Home: http://kronoz.cjb.net
+Windows NT crashed.
+I'm the Blue Screen of Death.
+No one hears your screams.
 
 
 -------------------------------------------------------

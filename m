@@ -1,9 +1,9 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [Dri-devel] Re: [Linux-fbdev-devel] Redesign of kernel
  graphics interface
-Date: Mon, 10 May 2004 20:33:11 +0100
+Date: Tue, 11 May 2004 09:40:44 +1000
 Sender: mesa3d-dev-admin@lists.sourceforge.net
-Message-ID: <1084217590.24759.10.camel@localhost.localdomain>
+Message-ID: <1084232443.2911.73.camel@gaston>
 References: <Pine.LNX.4.44.0405101708310.4338-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -20,19 +20,30 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=mesa3d-dev>
 Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@infradead.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Nicolas Souchu <nsouch@free.fr>, Jon Smirl <jonsmirl@yahoo.com>, DRI Devel <dri-devel@lists.sourceforge.net>, mesa3d-dev <mesa3d-dev@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Nicolas Souchu <nsouch@free.fr>, Jon Smirl <jonsmirl@yahoo.com>, dri-devel <dri-devel@lists.sourceforge.net>, mesa3d-dev <mesa3d-dev@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Llu, 2004-05-10 at 17:14, James Simmons wrote:
+On Tue, 2004-05-11 at 02:14, James Simmons wrote:
+> > You are mixing things. Mode setting has nothing to do with rendering. OpenGL
+> > is a rendering client. It produces commands sent to the low level kernel
+> > driver and provides a 3D API, but it's not the only one. In this regard,
+> > fbcon is a client too and XFree 2D accel is another one.
+> 
+> But we are rendering to draw fonts, clearing a area of the screen,copyarea.
+> If we are to have a universal solution it needs to OpenGL. Either that or 
+> mode switching stays in the kernel.  
+
+Drawing fonts have _NOTING_ to do with mode switching ! Don't tell me
+that you can't make the difference between fbdev and fbcon now ;)
+
 > Speaking of bloat in the kernel. When will the crypto and TCP/IP stack be 
 > moved to userspace. The networking code alone is over 17 megs in size. 
+> Bloat bloat bloat. 
 
-Not on my box. Nothing like it. Although to answer that question with a
-definitive example ELKS (a Linux like 8086 kernel in 64K) has IP demux
-in kernel space and tcp in user space. The v7 NCP stack also had much of
-the protocol in user space.
+That has nothing to do with it. If you don't agree, come to KS or OLS
+and talk to Linus. Your arguments & comparisons are pointless
 
-So its a perfectly valid argument to build such hybrid systems for
-display management too
+Ben.
+
 
 
 

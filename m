@@ -1,22 +1,34 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: atyfb in 2.5.51
-Date: 13 Dec 2002 10:26:55 +0000
+Date: Thu, 12 Dec 2002 21:23:23 +0100
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1039775215.25097.5.camel@irongate.swansea.linux.org.uk>
-References: <Pine.GSO.4.21.0212130949450.6939-100000@vervain.sonytel.be>
+Message-ID: <20021212202323.GA789@elf.ucw.cz>
+References: <1039596149.24691.2.camel@rth.ninka.net> <Pine.LNX.4.33.0212110709030.2617-100000@maxwell.earthlink.net> <20021211.124347.127990341.davem@redhat.com> <1039642510.18467.40.camel@irongate.swansea.linux.org.uk>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <Pine.GSO.4.21.0212130949450.6939-100000@vervain.sonytel.be>
+Content-Disposition: inline
+In-Reply-To: <1039642510.18467.40.camel@irongate.swansea.linux.org.uk>
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "David S. Miller" <davem@redhat.com>, James Simmons <jsimmons@infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: "David S. Miller" <davem@redhat.com>, jsimmons@infradead.org, benh@kernel.crashing.org, paulus@samba.org, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, 2002-12-13 at 08:53, Geert Uytterhoeven wrote:
-> (At first I thought you meant an instruction where the opcode crosses those
->  two memory types, but we don't put code in video RAM...)
+Hi!
 
-I did. The frame buffer drivers support mmap(). x86 has no "non-exec"
-bit. So any user able to open /dev/fb can bring down such a box. Similar
-things apply with early athlon and prefetching /dev/fb
+> On Wed, 2002-12-11 at 20:43, David S. Miller wrote:
+> > fbdev is nice, in the specific cases where the device fits the fbdev
+> > model, because once you have the kernel bits you have X support :)
+> 
+> fbdev also can't be used in some situations on x86. Deeply fascinating
+> things happen on some x86 processors if you execute a loop of code with
+> an instruction that crosses two different memory types.
+
+Sounds like cpu bug to me? What cpus are affected?
+
+Could be worked around by pointing debug register at memory boundary?
+
+								Pavel
+-- 
+Worst form of spam? Adding advertisment signatures ala sourceforge.net.
+What goes next? Inserting advertisment *into* email?

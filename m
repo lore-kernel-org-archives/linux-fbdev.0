@@ -1,1100 +1,448 @@
-From: David Eger <eger@havoc.gtf.org>
-Subject: [PATCH] cirrusfb: update for amiga (zorro)
-Date: Thu, 22 Jul 2004 09:09:12 -0400
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20040722130912.GA17834@havoc.gtf.org>
-References: <200406261905.22710.blaisorblade_spam@yahoo.it> <20040626130945.190fb199.akpm@osdl.org> <20040627035923.GB8842@ccure.user-mode-linux.org> <20040626233253.06ed314e.pj@sgi.com> <Pine.GSO.4.58.0406271050570.25680@waterleaf.sonytel.be> <20040628181134.GA21360@havoc.gtf.org> <Pine.GSO.4.58.0407201754460.23496@waterleaf.sonytel.be>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Subject: [PATCH] atyfb: vblank irq support
+Date: Thu, 22 Jul 2004 21:49:37 +0300
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <20040722184937.GA11361@sci.fi>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S265038AbUGVNNQ@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.GSO.4.58.0407201754460.23496@waterleaf.sonytel.be>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: multipart/mixed; boundary="4Ckj6UjgE2iN1+kY"
 Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/m68k <linux-m68k@lists.linux-m68k.org>, Linux/PPC on APUS development <linux-apus-devel@lists.sourceforge.net>, lhecking@nmrc.ie, Geert Uytterhoeven <geert@linux-m68k.org>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BnidS-0001lG-D8
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Jul 2004 11:49:42 -0700
+Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
+	id 1BnidR-0005Da-AN
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Jul 2004 11:49:42 -0700
+Received: from kuori.saunalahti.fi (kuori.saunalahti.fi [195.197.175.23])
+	by gw01.mail.saunalahti.fi (Postfix) with ESMTP id 0BE004408B
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 22 Jul 2004 21:49:38 +0300 (EEST)
+Content-Disposition: inline
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Hey Geert, 
 
-Thanks for bringing the ZORRO paths up to date for the cirrusfb driver.
-The code looks good, and I trust your knowledge of Amiga much more than
-my own. It would be nice if someone actually has this hardware and can
-test the patch... Anyone? Anyone? Lars? Beuler?
+--4Ckj6UjgE2iN1+kY
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-There was a trivial problem applying the patch - one of the whitespace
-fixes choked, so I took it out of the patch (below).
+This patch adds vblank interrupt support to atyfb. The added features are=
+=20
+FB_ACTIVATE_VBL flag for panning and FBIO_WAITFORVSYNC ioctl.
 
--dte
+The code is basically copied from matroxfb. I've tested it on two laptops=
+=20
+(Mobility and LT Pro) using DirectFB.
 
----
+--=20
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
 
-Cirrusfb updates:
-  - Cirrusfb depends on Zorro or PCI
-  - Revive Zorro support, using new Zorro driver framework
-  - Merge PCI and Zorro code where possible
-  - Use C99 initializers
-  - Kill superfluous whitespace
-  - #undef I/O ops before redefining them on Amiga
+--4Ckj6UjgE2iN1+kY
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="atyfb-2.6-vblank_irq.patch"
 
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Signed-off-by: David Eger <eger@havoc.gtf.org>
-
---- linux-2.6.8-rc2/drivers/video/Kconfig	2004-07-15 23:14:59.000000000 +0200
-+++ linux-m68k-2.6.8-rc2/drivers/video/Kconfig	2004-07-19 21:06:17.000000000 +0200
-@@ -40,7 +40,7 @@
-
- config FB_CIRRUS
- 	tristate "Cirrus Logic support"
--	depends on FB && (AMIGA || PCI)
-+	depends on FB && (ZORRO || PCI)
- 	---help---
- 	  This enables support for Cirrus Logic GD542x/543x based boards on
- 	  Amiga: SD64, Piccolo, Picasso II/II+, Picasso IV, or EGS Spectrum.
---- linux-2.6.8-rc2/drivers/video/cirrusfb.c	2004-07-18 15:55:33.000000000 +0200
-+++ linux-m68k-2.6.8-rc2/drivers/video/cirrusfb.c	2004-07-19 21:14:50.000000000 +0200
-@@ -5,8 +5,8 @@
-  *
-  * Contributors (thanks, all!)
-  *
-- * 	David Eger:
-- * 	Overhaul for Linux 2.6
-+ *	David Eger:
-+ *	Overhaul for Linux 2.6
-  *
-  *      Jeff Rugen:
-  *      Major contributions;  Motorola PowerStack (PPC and PCI) support,
-@@ -145,9 +145,6 @@
-  * a run-time table?
+diff -urN linux/drivers/video/aty/atyfb.h linux/drivers/video/aty/atyfb.h
+--- linux/drivers/video/aty/atyfb.h	2004-06-18 01:14:39.000000000 +0300
++++ linux/drivers/video/aty/atyfb.h	2004-07-22 21:08:19.000000000 +0300
+@@ -3,6 +3,8 @@
   */
- static const struct cirrusfb_board_info_rec {
--	cirrusfb_board_t btype;	/* chipset enum, not strictly necessary, as
--				 * cirrusfb_board_info[] is directly indexed
--				 * by this value */
- 	char *name;		/* ASCII name of chipset */
- 	long maxclock[5];		/* maximum video clock */
- 	/* for  1/4bpp, 8bpp 15/16bpp, 24bpp, 32bpp - numbers from xorg code */
-@@ -164,104 +161,115 @@
-
- 	unsigned char sr1f;	/* SR1F VGA initial register value */
- } cirrusfb_board_info[] = {
--	{ BT_NONE, }, /* dummy record */
--	{ BT_SD64,
--		"CL SD64",
--		{ 140000, 140000, 140000, 140000, 140000, },	/* guess */
--		/* the SD64/P4 have a higher max. videoclock */
--		TRUE,
--		TRUE,
--		TRUE,
--		0xF0,
--		0xF0,
--		0,		/* unused, does not multiplex */
--		0xF1,
--		0,		/* unused, does not multiplex */
--		0x20 },
--	{ BT_PICCOLO,
--		"CL Piccolo",
--		{ 90000, 90000, 90000, 90000, 90000 },	/* guess */
--		TRUE,
--		TRUE,
--		FALSE,
--		0x80,
--		0x80,
--		0,		/* unused, does not multiplex */
--		0x81,
--		0,		/* unused, does not multiplex */
--		0x22 },
--	{ BT_PICASSO,
--		"CL Picasso",
--		{ 90000, 90000, 90000, 90000, 90000, },	/* guess */
--		TRUE,
--		TRUE,
--		FALSE,
--		0x20,
--		0x20,
--		0,		/* unused, does not multiplex */
--		0x21,
--		0,		/* unused, does not multiplex */
--		0x22 },
--	{ BT_SPECTRUM,
--		"CL Spectrum",
--		{ 90000, 90000, 90000, 90000, 90000, },	/* guess */
--		TRUE,
--		TRUE,
--		FALSE,
--		0x80,
--		0x80,
--		0,		/* unused, does not multiplex */
--		0x81,
--		0,		/* unused, does not multiplex */
--		0x22 },
--	{ BT_PICASSO4,
--		"CL Picasso4",
--		{ 135100, 135100, 85500, 85500, 0 },
--		TRUE,
--		FALSE,
--		TRUE,
--		0x20,
--		0x20,
--		0,		/* unused, does not multiplex */
--		0x21,
--		0,		/* unused, does not multiplex */
--		0 },
--	{ BT_ALPINE,
--		"CL Alpine",
--		{ 85500, 85500, 50000, 28500, 0}, /* for the GD5430.  GD5446 can do more... */
--		TRUE,
--		TRUE,
--		TRUE,
--		0xA0,
--		0xA1,
--		0xA7,
--		0xA1,
--		0xA7,
--		0x1C },
--	{ BT_GD5480,
--		"CL GD5480",
--		{ 135100, 200000, 200000, 135100, 135100 },
--		TRUE,
--		TRUE,
--		TRUE,
--		0x10,
--		0x11,
--		0,		/* unused, does not multiplex */
--		0x11,
--		0,		/* unused, does not multiplex */
--		0x1C },
--	{ BT_LAGUNA,
--		"CL Laguna",
--		{ 135100, 135100, 135100, 135100, 135100, }, /* guess */
--		FALSE,
--		FALSE,
--		TRUE,
--		0,		/* unused */
--		0,		/* unused */
--		0,		/* unused */
--		0,		/* unused */
--		0,		/* unused */
--		0 },		/* unused */
-+	[BT_SD64] = {
-+		.name			= "CL SD64",
-+		.maxclock		= {
-+			/* guess */
-+			/* the SD64/P4 have a higher max. videoclock */
-+			140000, 140000, 140000, 140000, 140000,
-+		},
-+		.init_sr07		= TRUE,
-+		.init_sr1f		= TRUE,
-+		.scrn_start_bit19	= TRUE,
-+		.sr07			= 0xF0,
-+		.sr07_1bpp		= 0xF0,
-+		.sr07_8bpp		= 0xF1,
-+		.sr1f			= 0x20
-+	},
-+	[BT_PICCOLO] = {
-+		.name			= "CL Piccolo",
-+		.maxclock		= {
-+			/* guess */
-+			90000, 90000, 90000, 90000, 90000
-+		},
-+		.init_sr07		= TRUE,
-+		.init_sr1f		= TRUE,
-+		.scrn_start_bit19	= FALSE,
-+		.sr07			= 0x80,
-+		.sr07_1bpp		= 0x80,
-+		.sr07_8bpp		= 0x81,
-+		.sr1f			= 0x22
-+	},
-+	[BT_PICASSO] = {
-+		.name			= "CL Picasso",
-+		.maxclock		= {
-+			/* guess */
-+			90000, 90000, 90000, 90000, 90000
-+		},
-+		.init_sr07		= TRUE,
-+		.init_sr1f		= TRUE,
-+		.scrn_start_bit19	= FALSE,
-+		.sr07			= 0x20,
-+		.sr07_1bpp		= 0x20,
-+		.sr07_8bpp		= 0x21,
-+		.sr1f			= 0x22
-+	},
-+	[BT_SPECTRUM] = {
-+		.name			= "CL Spectrum",
-+		.maxclock		= {
-+			/* guess */
-+			90000, 90000, 90000, 90000, 90000
-+		},
-+		.init_sr07		= TRUE,
-+		.init_sr1f		= TRUE,
-+		.scrn_start_bit19	= FALSE,
-+		.sr07			= 0x80,
-+		.sr07_1bpp		= 0x80,
-+		.sr07_8bpp		= 0x81,
-+		.sr1f			= 0x22
-+	},
-+	[BT_PICASSO4] = {
-+		.name			= "CL Picasso4",
-+		.maxclock		= {
-+			135100, 135100, 85500, 85500, 0
-+		},
-+		.init_sr07		= TRUE,
-+		.init_sr1f		= FALSE,
-+		.scrn_start_bit19	= TRUE,
-+		.sr07			= 0x20,
-+		.sr07_1bpp		= 0x20,
-+		.sr07_8bpp		= 0x21,
-+		.sr1f			= 0
-+	},
-+	[BT_ALPINE] = {
-+		.name			= "CL Alpine",
-+		.maxclock		= {
-+			/* for the GD5430.  GD5446 can do more... */
-+			85500, 85500, 50000, 28500, 0
-+		},
-+		.init_sr07		= TRUE,
-+		.init_sr1f		= TRUE,
-+		.scrn_start_bit19	= TRUE,
-+		.sr07			= 0xA0,
-+		.sr07_1bpp		= 0xA1,
-+		.sr07_1bpp_mux		= 0xA7,
-+		.sr07_8bpp		= 0xA1,
-+		.sr07_8bpp_mux		= 0xA7,
-+		.sr1f			= 0x1C
-+	},
-+	[BT_GD5480] = {
-+		.name			= "CL GD5480",
-+		.maxclock		= {
-+			135100, 200000, 200000, 135100, 135100
-+		},
-+		.init_sr07		= TRUE,
-+		.init_sr1f		= TRUE,
-+		.scrn_start_bit19	= TRUE,
-+		.sr07			= 0x10,
-+		.sr07_1bpp		= 0x11,
-+		.sr07_8bpp		= 0x11,
-+		.sr1f			= 0x1C
-+	},
-+	[BT_LAGUNA] = {
-+		.name			= "CL Laguna",
-+		.maxclock		= {
-+			/* guess */
-+			135100, 135100, 135100, 135100, 135100,
-+		},
-+		.init_sr07		= FALSE,
-+		.init_sr1f		= FALSE,
-+		.scrn_start_bit19	= TRUE,
-+	}
+ 
+ #include <linux/config.h>
++#include <linux/spinlock.h>
++#include <linux/wait.h>
+     /*
+      *  Elements of the hardware specific atyfb_par structure
+      */
+@@ -33,6 +35,12 @@
+ #endif
  };
-
-
-@@ -270,12 +278,12 @@
- 	{ PCI_VENDOR_ID_CIRRUS, PCI_DEVICE_ID_##id, PCI_ANY_ID, PCI_ANY_ID, 0, 0, (btype) }
-
- static struct pci_device_id cirrusfb_pci_table[] = {
--	CHIP( CIRRUS_5436, 	BT_ALPINE ),
--	CHIP( CIRRUS_5434_8, 	BT_ALPINE ),
--	CHIP( CIRRUS_5434_4, 	BT_ALPINE ),
--	CHIP( CIRRUS_5430, 	BT_ALPINE ), /* GD-5440 has identical id */
--	CHIP( CIRRUS_7543, 	BT_ALPINE ),
--	CHIP( CIRRUS_7548, 	BT_ALPINE ),
-+	CHIP( CIRRUS_5436,	BT_ALPINE ),
-+	CHIP( CIRRUS_5434_8,	BT_ALPINE ),
-+	CHIP( CIRRUS_5434_4,	BT_ALPINE ),
-+	CHIP( CIRRUS_5430,	BT_ALPINE ), /* GD-5440 has identical id */
-+	CHIP( CIRRUS_7543,	BT_ALPINE ),
-+	CHIP( CIRRUS_7548,	BT_ALPINE ),
- 	CHIP( CIRRUS_5480,	BT_GD5480 ), /* MacPicasso probably */
- 	CHIP( CIRRUS_5446,	BT_PICASSO4 ), /* Picasso 4 is a GD5446 */
- 	CHIP( CIRRUS_5462,	BT_LAGUNA ), /* CL Laguna */
-@@ -289,31 +297,50 @@
-
-
- #ifdef CONFIG_ZORRO
-+static const struct zorro_device_id cirrusfb_zorro_table[] = {
-+	{
-+		.id		= ZORRO_PROD_HELFRICH_SD64_RAM,
-+		.driver_data	= BT_SD64,
-+	}, {
-+		.id		= ZORRO_PROD_HELFRICH_PICCOLO_RAM,
-+		.driver_data	= BT_PICCOLO,
-+	}, {
-+		.id		= ZORRO_PROD_VILLAGE_TRONIC_PICASSO_II_II_PLUS_RAM,
-+		.driver_data	= BT_PICASSO,
-+	}, {
-+		.id		= ZORRO_PROD_GVP_EGS_28_24_SPECTRUM_RAM,
-+		.driver_data	= BT_SPECTRUM,
-+	}, {
-+		.id		= ZORRO_PROD_VILLAGE_TRONIC_PICASSO_IV_Z3,
-+		.driver_data	= BT_PICASSO4,
-+	},
-+	{ 0 }
+ 
++struct aty_interrupt {
++	wait_queue_head_t wait;
++	unsigned int count;
++	int pan_display;
 +};
 +
- static const struct {
--	cirrusfb_board_t btype;
--	zorro_id id, id2;
-+	zorro_id id2;
- 	unsigned long size;
--} cirrusfb_zorro_probe_list[] __initdata = {
--	{ BT_SD64,
--		ZORRO_PROD_HELFRICH_SD64_RAM,
--		ZORRO_PROD_HELFRICH_SD64_REG,
--		0x400000 },
--	{ BT_PICCOLO,
--		ZORRO_PROD_HELFRICH_PICCOLO_RAM,
--		ZORRO_PROD_HELFRICH_PICCOLO_REG,
--		0x200000 },
--	{ BT_PICASSO,
--		ZORRO_PROD_VILLAGE_TRONIC_PICASSO_II_II_PLUS_RAM,
--		ZORRO_PROD_VILLAGE_TRONIC_PICASSO_II_II_PLUS_REG,
--		0x200000 },
--	{ BT_SPECTRUM,
--		ZORRO_PROD_GVP_EGS_28_24_SPECTRUM_RAM,
--		ZORRO_PROD_GVP_EGS_28_24_SPECTRUM_REG,
--		0x200000 },
--	{ BT_PICASSO4,
--		ZORRO_PROD_VILLAGE_TRONIC_PICASSO_IV_Z3,
--		0,
--		0x400000 },
-+} cirrusfb_zorro_table2[] = {
-+	[BT_SD64] = {
-+		.id2	= ZORRO_PROD_HELFRICH_SD64_REG,
-+		.size	= 0x400000
-+	},
-+	[BT_PICCOLO] = {
-+		.id2	= ZORRO_PROD_HELFRICH_PICCOLO_REG,
-+		.size	= 0x200000
-+	},
-+	[BT_PICASSO] = {
-+		.id2	= ZORRO_PROD_VILLAGE_TRONIC_PICASSO_II_II_PLUS_REG,
-+		.size	= 0x200000
-+	},
-+	[BT_SPECTRUM] = {
-+		.id2	= ZORRO_PROD_GVP_EGS_28_24_SPECTRUM_REG,
-+		.size	= 0x200000
-+	},
-+	[BT_PICASSO4] = {
-+		.id2	= 0,
-+		.size	= 0x400000
+ struct pll_info {
+ 	int pll_max;
+ 	int pll_min;
+@@ -142,8 +150,8 @@
+ #ifdef __sparc__
+ 	struct pci_mmap_map *mmap_map;
+ 	u8 mmaped;
+-	int open;
+ #endif
++	int open;
+ #ifdef CONFIG_FB_ATY_GENERIC_LCD
+ 	unsigned long bios_base_phys;
+ 	unsigned long bios_base;
+@@ -166,6 +174,10 @@
+ #endif
+ 	unsigned long aux_start; /* auxiliary aperture */
+ 	unsigned long aux_size;
++	struct aty_interrupt vblank;
++	unsigned long irq_flags;
++	unsigned int irq;
++	spinlock_t int_lock;
+ };
+ 
+     /*
+diff -urN linux/drivers/video/aty/atyfb_base.c linux/drivers/video/aty/atyfb_base.c
+--- linux/drivers/video/aty/atyfb_base.c	2004-06-18 01:14:39.000000000 +0300
++++ linux/drivers/video/aty/atyfb_base.c	2004-07-22 21:26:36.633215432 +0300
+@@ -62,6 +62,9 @@
+ #include <linux/fb.h>
+ #include <linux/init.h>
+ #include <linux/pci.h>
++#include <linux/interrupt.h>
++#include <linux/spinlock.h>
++#include <linux/wait.h>
+ 
+ #include <asm/io.h>
+ #include <asm/uaccess.h>
+@@ -1441,7 +1444,6 @@
+ 	u32 bpp = info->var.bits_per_pixel;
+ 
+ 	par->crtc.off_pitch = ((yoffset * vxres + xoffset) * bpp / 64) | (vxres << 19);
+-	aty_st_le32(CRTC_OFF_PITCH, par->crtc.off_pitch, par);
+ }
+ 
+ 
+@@ -1451,26 +1453,103 @@
+ 
+ static int atyfb_open(struct fb_info *info, int user)
+ {
+-#ifdef __sparc__
+ 	struct atyfb_par *par = (struct atyfb_par *) info->par;
+ 
+ 	if (user) {
+ 		par->open++;
++#ifdef __sparc__
+ 		par->mmaped = 0;
+-	}
+ #endif
 +	}
- };
- #endif /* CONFIG_ZORRO */
-
-@@ -381,13 +408,12 @@
- 	struct { u8 red, green, blue, pad; } palette[256];
-
- #ifdef CONFIG_ZORRO
--	unsigned long board_addr,
--		      board_size;
-+	struct zorro_dev *zdev;
- #endif
--
- #ifdef CONFIG_PCI
- 	struct pci_dev *pdev;
- #endif
-+	void (*unmap)(struct cirrusfb_info *cinfo);
- };
-
-
-@@ -401,50 +427,83 @@
- static const struct {
- 	const char *name;
- 	struct fb_var_screeninfo var;
--} cirrusfb_predefined[] =
--
--{
--	{"Autodetect",		/* autodetect mode */
--	 {0}
--	},
--
--	{"640x480",		/* 640x480, 31.25 kHz, 60 Hz, 25 MHz PixClock */
--	 {
--		 640, 480, 640, 480, 0, 0, 8, 0,
--		 {0, 8, 0},
--		 {0, 8, 0},
--		 {0, 8, 0},
--		 {0, 0, 0},
--	       0, 0, -1, -1, FB_ACCEL_NONE, 40000, 48, 16, 32, 8, 96, 4,
--     FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
--	 }
--	},
--
--	{"800x600",		/* 800x600, 48 kHz, 76 Hz, 50 MHz PixClock */
--	 {
--		 800, 600, 800, 600, 0, 0, 8, 0,
--		 {0, 8, 0},
--		 {0, 8, 0},
--		 {0, 8, 0},
--		 {0, 0, 0},
--	       0, 0, -1, -1, FB_ACCEL_NONE, 20000, 128, 16, 24, 2, 96, 6,
--     0, FB_VMODE_NONINTERLACED
--	 }
--	},
--
--	/*
--	   Modeline from XF86Config:
--	   Mode "1024x768" 80  1024 1136 1340 1432  768 770 774 805
--	 */
--	{"1024x768",		/* 1024x768, 55.8 kHz, 70 Hz, 80 MHz PixClock */
--		{
--			1024, 768, 1024, 768, 0, 0, 8, 0,
--			{0, 8, 0},
--			{0, 8, 0},
--			{0, 8, 0},
--			{0, 0, 0},
--	      0, 0, -1, -1, FB_ACCEL_NONE, 12500, 144, 32, 30, 2, 192, 6,
--     0, FB_VMODE_NONINTERLACED
-+} cirrusfb_predefined[] = {
-+	{
-+		/* autodetect mode */
-+		.name	= "Autodetect",
-+	}, {
-+		/* 640x480, 31.25 kHz, 60 Hz, 25 MHz PixClock */
-+		.name	= "640x480",
-+		.var	= {
-+			.xres		= 640,
-+			.yres		= 480,
-+			.xres_virtual	= 640,
-+			.yres_virtual	= 480,
-+			.bits_per_pixel	= 8,
-+			.red		= { .length = 8 },
-+			.green		= { .length = 8 },
-+			.blue		= { .length = 8 },
-+			.width		= -1,
-+			.height		= -1,
-+			.pixclock	= 40000,
-+			.left_margin	= 48,
-+			.right_margin	= 16,
-+			.upper_margin	= 32,
-+			.lower_margin	= 8,
-+			.hsync_len	= 96,
-+			.vsync_len	= 4,
-+			.sync		= FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
-+			.vmode		= FB_VMODE_NONINTERLACED
-+		 }
-+	}, {
-+		/* 800x600, 48 kHz, 76 Hz, 50 MHz PixClock */
-+		.name	= "800x600",
-+		.var	= {
-+			.xres		= 800,
-+			.yres		= 600,
-+			.xres_virtual	= 800,
-+			.yres_virtual	= 600,
-+			.bits_per_pixel	= 8,
-+			.red		= { .length = 8 },
-+			.green		= { .length = 8 },
-+			.blue		= { .length = 8 },
-+			.width		= -1,
-+			.height		= -1,
-+			.pixclock	= 20000,
-+			.left_margin	= 128,
-+			.right_margin	= 16,
-+			.upper_margin	= 24,
-+			.lower_margin	= 2,
-+			.hsync_len	= 96,
-+			.vsync_len	= 6,
-+			.vmode		= FB_VMODE_NONINTERLACED
-+		 }
-+	}, {
-+		/*
-+		 * Modeline from XF86Config:
-+		 * Mode "1024x768" 80  1024 1136 1340 1432  768 770 774 805
-+		 */
-+		/* 1024x768, 55.8 kHz, 70 Hz, 80 MHz PixClock */
-+		.name	= "1024x768",
-+		.var	= {
-+			.xres		= 1024,
-+			.yres		= 768,
-+			.xres_virtual	= 1024,
-+			.yres_virtual	= 768,
-+			.bits_per_pixel	= 8,
-+			.red		= { .length = 8 },
-+			.green		= { .length = 8 },
-+			.blue		= { .length = 8 },
-+			.width		= -1,
-+			.height		= -1,
-+			.pixclock	= 12500,
-+			.left_margin	= 144,
-+			.right_margin	= 32,
-+			.upper_margin	= 30,
-+			.lower_margin	= 2,
-+			.hsync_len	= 192,
-+			.vsync_len	= 6,
-+			.vmode		= FB_VMODE_NONINTERLACED
+ 	return (0);
+ }
+ 
++static irqreturn_t aty_irq(int irq, void *dev_id, struct pt_regs *fp)
++{
++	struct atyfb_par *par = dev_id;
++	int handled = 0;
++	u32 int_cntl;
++
++	spin_lock(&par->int_lock);
++
++	int_cntl = aty_ld_le32(CRTC_INT_CNTL, par);
++
++	if (int_cntl & CRTC_VBLANK_INT) {
++		/* clear interrupt */
++		aty_st_le32(CRTC_INT_CNTL, (int_cntl & CRTC_INT_EN_MASK) | CRTC_VBLANK_INT_AK, par);
++		par->vblank.count++;
++		if (par->vblank.pan_display) {
++			par->vblank.pan_display = 0;
++			aty_st_le32(CRTC_OFF_PITCH, par->crtc.off_pitch, par);
++		}
++		wake_up_interruptible(&par->vblank.wait);
++		handled = 1;
++	}
++
++	spin_unlock(&par->int_lock);
++
++	return IRQ_RETVAL(handled);
++}
++
++static int aty_enable_irq(struct atyfb_par *par, int reenable)
++{
++	u32 int_cntl;
++
++	if (!test_and_set_bit(0, &par->irq_flags)) {
++		if (request_irq(par->irq, aty_irq, SA_SHIRQ, "atyfb", par)) {
++			clear_bit(0, &par->irq_flags);
++			return -EINVAL;
++		}
++		spin_lock_irq(&par->int_lock);
++		int_cntl = aty_ld_le32(CRTC_INT_CNTL, par) & CRTC_INT_EN_MASK;
++		/* clear interrupt */
++		aty_st_le32(CRTC_INT_CNTL, int_cntl | CRTC_VBLANK_INT_AK, par);
++		/* enable interrupt */
++		aty_st_le32(CRTC_INT_CNTL, int_cntl | CRTC_VBLANK_INT_EN, par);
++		spin_unlock_irq(&par->int_lock);
++	} else if (reenable) {
++		spin_lock_irq(&par->int_lock);
++		int_cntl = aty_ld_le32(CRTC_INT_CNTL, par) & CRTC_INT_EN_MASK;
++		if (!(int_cntl & CRTC_VBLANK_INT_EN)) {
++			printk("atyfb: someone disabled IRQ [%08x]\n", int_cntl);
++			/* re-enable interrupt */
++			aty_st_le32(CRTC_INT_CNTL, int_cntl | CRTC_VBLANK_INT_EN, par );
++		}
++		spin_unlock_irq(&par->int_lock);
++	}
++
++	return 0;
++}
++
++static int aty_disable_irq(struct atyfb_par *par)
++{
++	u32 int_cntl;
++
++	if (test_and_clear_bit(0, &par->irq_flags)) {
++		if (par->vblank.pan_display) {
++			par->vblank.pan_display = 0;
++			aty_st_le32(CRTC_OFF_PITCH, par->crtc.off_pitch, par);
++		}
++		spin_lock_irq(&par->int_lock);
++		int_cntl = aty_ld_le32(CRTC_INT_CNTL, par) & CRTC_INT_EN_MASK;
++		/* disable interrupt */
++		aty_st_le32(CRTC_INT_CNTL, int_cntl & ~CRTC_VBLANK_INT_EN, par );
++		spin_unlock_irq(&par->int_lock);
++		free_irq(par->irq, par);
++	}
++
++	return 0;
++}
++
+ static int atyfb_release(struct fb_info *info, int user)
+ {
+-#ifdef __sparc__
+ 	struct atyfb_par *par = (struct atyfb_par *) info->par;
+ 	if (user) {
+ 		par->open--;
+ 		mdelay(1);
+ 		wait_for_idle(par);
+ 		if (!par->open) {
++#ifdef __sparc__
+ 			int was_mmaped = par->mmaped;
+ 
+ 			par->mmaped = 0;
+@@ -1495,9 +1574,10 @@
+ 						var.yres_virtual = var.yres;
+ 				}
+ 			}
++#endif
++			aty_disable_irq(par);
  		}
  	}
- };
-@@ -478,7 +537,7 @@
- static struct fb_ops cirrusfb_ops = {
- 	.owner		= THIS_MODULE,
- 	.fb_open	= cirrusfb_open,
--	.fb_release 	= cirrusfb_release,
-+	.fb_release	= cirrusfb_release,
- 	.fb_setcolreg	= cirrusfb_setcolreg,
- 	.fb_check_var	= cirrusfb_check_var,
- 	.fb_set_par	= cirrusfb_set_par,
-@@ -1132,7 +1191,7 @@
- 			DPRINTK (" (for GD54xx)\n");
- 			vga_wseq (regbase, CL_SEQR7,
- 				  regs.multiplexing ?
--				  	bi->sr07_1bpp_mux : bi->sr07_1bpp);
-+					bi->sr07_1bpp_mux : bi->sr07_1bpp);
- 			break;
-
- 		case BT_LAGUNA:
-@@ -1216,7 +1275,7 @@
- 			DPRINTK (" (for GD54xx)\n");
- 			vga_wseq (regbase, CL_SEQR7,
- 				  regs.multiplexing ?
--				  	bi->sr07_8bpp_mux : bi->sr07_8bpp);
-+					bi->sr07_8bpp_mux : bi->sr07_8bpp);
- 			break;
-
- 		case BT_LAGUNA:
-@@ -2156,10 +2215,144 @@
- 	framebuffer_release(cinfo->info);
- 	pci_disable_device(pdev);
+-#endif
+ 	return (0);
  }
-+#endif /* CONFIG_PCI */
+ 
+@@ -1524,10 +1604,50 @@
+ 	info->var.yoffset = yoffset;
+ 	if (par->asleep)
+ 		return 0;
 +
-+
-+#ifdef CONFIG_ZORRO
-+static void __devexit cirrusfb_zorro_unmap (struct cirrusfb_info *cinfo)
-+{
-+	zorro_release_device(cinfo->zdev);
-+
-+	if (cinfo->btype == BT_PICASSO4) {
-+		cinfo->regbase -= 0x600000;
-+		iounmap ((void *)cinfo->regbase);
-+		iounmap ((void *)cinfo->fbmem);
+ 	set_off_pitch(par, info);
++	if ((var->activate & FB_ACTIVATE_VBL) && !aty_enable_irq(par, 0)) {
++		par->vblank.pan_display = 1;
 +	} else {
-+		if (zorro_resource_start(cinfo->zdev) > 0x01000000)
-+			iounmap ((void *)cinfo->fbmem);
++		par->vblank.pan_display = 0;
++		aty_st_le32(CRTC_OFF_PITCH, par->crtc.off_pitch, par);
 +	}
-+	framebuffer_release(cinfo->info);
-+}
-+#endif /* CONFIG_ZORRO */
-+
-+static int cirrusfb_set_fbinfo(struct cirrusfb_info *cinfo)
-+{
-+	struct fb_info *info = cinfo->info;
-+	struct fb_var_screeninfo *var = &info->var;
-+
-+	info->currcon = -1;
-+	info->par = cinfo;
-+	info->pseudo_palette = cinfo->pseudo_palette;
-+	info->flags = FBINFO_DEFAULT
-+		    | FBINFO_HWACCEL_XPAN
-+		    | FBINFO_HWACCEL_YPAN
-+		    | FBINFO_HWACCEL_FILLRECT
-+		    | FBINFO_HWACCEL_COPYAREA;
-+	if (noaccel)
-+		info->flags |= FBINFO_HWACCEL_DISABLED;
-+	info->fbops = &cirrusfb_ops;
-+	info->screen_base = cinfo->fbmem;
-+	if (cinfo->btype == BT_GD5480) {
-+		if (var->bits_per_pixel == 16)
-+			info->screen_base += 1 * MB_;
-+		if (var->bits_per_pixel == 24 || var->bits_per_pixel == 32)
-+			info->screen_base += 2 * MB_;
-+	}
-+
-+	/* Fill fix common fields */
-+	strlcpy(info->fix.id, cirrusfb_board_info[cinfo->btype].name,
-+		sizeof(info->fix.id));
-+
-+	/* monochrome: only 1 memory plane */
-+	/* 8 bit and above: Use whole memory area */
-+	info->fix.smem_start = cinfo->fbmem_phys;
-+	info->fix.smem_len   = (var->bits_per_pixel == 1) ? cinfo->size / 4 : cinfo->size;
-+	info->fix.type       = cinfo->currentmode.type;
-+	info->fix.type_aux   = 0;
-+	info->fix.visual     = cinfo->currentmode.visual;
-+	info->fix.xpanstep   = 1;
-+	info->fix.ypanstep   = 1;
-+	info->fix.ywrapstep  = 0;
-+	info->fix.line_length = cinfo->currentmode.line_length;
-+
-+	/* FIXME: map region at 0xB8000 if available, fill in here */
-+	info->fix.mmio_start = cinfo->fbregs_phys;
-+	info->fix.mmio_len   = 0;
-+	info->fix.accel = FB_ACCEL_NONE;
-+
-+	fb_alloc_cmap(&info->cmap, 256, 0);
 +
 +	return 0;
 +}
-
-+static int cirrusfb_register(struct cirrusfb_info *cinfo)
++
++static int aty_waitforvblank(struct atyfb_par *par, u32 crtc)
 +{
-+	struct fb_info *info;
-+	int err;
-+	cirrusfb_board_t btype;
++	struct aty_interrupt *vbl;
++	unsigned int count;
++	int ret;
 +
-+	DPRINTK ("ENTER\n");
-
--static struct cirrusfb_info *cirrusfb_pci_setup (struct pci_dev *pdev,
--				   		 const struct pci_device_id *ent)
-+	printk (KERN_INFO "cirrusfb: Driver for Cirrus Logic based graphic boards, v" CIRRUSFB_VERSION "\n");
-+
-+	info = cinfo->info;
-+	btype = cinfo->btype;
-+
-+	/* sanity checks */
-+	assert (btype != BT_NONE);
-+
-+	DPRINTK ("cirrusfb: (RAM start set to: 0x%p)\n", cinfo->fbmem);
-+
-+	/* Make pretend we've set the var so our structures are in a "good" */
-+	/* state, even though we haven't written the mode to the hw yet...  */
-+	info->var = cirrusfb_predefined[cirrusfb_def_mode].var;
-+	info->var.activate = FB_ACTIVATE_NOW;
-+
-+	err = cirrusfb_decode_var(&info->var, &cinfo->currentmode, info);
-+	if (err < 0) {
-+		/* should never happen */
-+		DPRINTK("choking on default var... umm, no good.\n");
-+		goto err_unmap_cirrusfb;
++	switch (crtc) {
++	case 0:
++		vbl = &par->vblank;
++		break;
++	default:
++		return -ENODEV;
 +	}
 +
-+	/* set all the vital stuff */
-+	cirrusfb_set_fbinfo(cinfo);
++	ret = aty_enable_irq(par, 0);
++	if (ret)
++		return ret;
 +
-+	err = register_framebuffer(info);
-+	if (err < 0) {
-+		printk (KERN_ERR "cirrusfb: could not register fb device; err = %d!\n", err);
-+		goto err_dealloc_cmap;
++	count = vbl->count;
++	ret = wait_event_interruptible_timeout(vbl->wait, count != vbl->count, HZ/10);
++	if (ret < 0) {
++		return ret;
++	}
++	if (ret == 0) {
++		aty_enable_irq(par, 1);
++		return -ETIMEDOUT;
 +	}
 +
-+	DPRINTK ("EXIT, returning 0\n");
-+	return 0;
-+
-+err_dealloc_cmap:
-+	fb_dealloc_cmap(&info->cmap);
-+err_unmap_cirrusfb:
-+	cinfo->unmap(cinfo);
-+	return err;
-+}
-+
-+static void __devexit cirrusfb_cleanup (struct fb_info *info)
-+{
-+	struct cirrusfb_info *cinfo = info->par;
-+	DPRINTK ("ENTER\n");
-+
-+	switch_monitor (cinfo, 0);
-+
-+	unregister_framebuffer (info);
-+	fb_dealloc_cmap (&info->cmap);
-+	printk ("Framebuffer unregistered\n");
-+	cinfo->unmap(cinfo);
-+
-+	DPRINTK ("EXIT\n");
-+}
-+
-+
-+#ifdef CONFIG_PCI
-+static int cirrusfb_pci_register (struct pci_dev *pdev,
-+				  const struct pci_device_id *ent)
- {
- 	struct cirrusfb_info *cinfo;
- 	struct fb_info *info;
-@@ -2233,11 +2426,13 @@
-
- 	cinfo->fbmem_phys = board_addr;
- 	cinfo->size = board_size;
-+	cinfo->unmap = cirrusfb_pci_unmap;
-
- 	printk (" RAM (%lu kB) at 0xx%lx, ", cinfo->size / KB_, board_addr);
- 	printk ("Cirrus Logic chipset on PCI bus\n");
-+	pci_set_drvdata(pdev, info);
-
--	return cinfo;
-+	return cirrusfb_register(cinfo);
-
- err_release_legacy:
- 	if (release_io_ports)
-@@ -2252,77 +2447,51 @@
- err_disable:
- 	pci_disable_device(pdev);
- err_out:
--	return ERR_PTR(ret);
-+	return ret;
+ 	return 0;
  }
--#endif				/* CONFIG_PCI */
--
--
-
--
--#ifdef CONFIG_ZORRO
--static int cirrusfb_zorro_find (struct zorro_dev **z_o,
--				    struct zorro_dev **z2_o,
--				    cirrusfb_board_t *btype, unsigned long *size)
-+void __devexit cirrusfb_pci_unregister (struct pci_dev *pdev)
- {
--	struct zorro_dev *z = NULL;
--	int i;
--
--	assert (z_o != NULL);
--	assert (btype != NULL);
--
--	for (i = 0; i < ARRAY_SIZE(cirrusfb_zorro_probe_list); i++)
--		if ((z = zorro_find_device(cirrusfb_zorro_probe_list[i].id, NULL)))
--			break;
--
--	if (z) {
--		*z_o = z;
--		if (cirrusfb_zorro_probe_list[i].id2)
--			*z2_o = zorro_find_device(cirrusfb_zorro_probe_list[i].id2, NULL);
--		else
--			*z2_o = NULL;
--
--		*btype = cirrusfb_zorro_probe_list[i].btype;
--		*size = cirrusfb_zorro_probe_list[i].size;
--
--		printk (KERN_INFO "cirrusfb: %s board detected; ",
--			cirrusfb_board_info[*btype].name);
-+	struct fb_info *info = pci_get_drvdata(pdev);
-+	DPRINTK ("ENTER\n");
-
--		return 0;
--	}
-+	cirrusfb_cleanup (info);
-
--	printk (KERN_NOTICE "cirrusfb: no supported board found.\n");
--	return -ENODEV;
-+	DPRINTK ("EXIT\n");
- }
-
--
--static void __devexit cirrusfb_zorro_unmap (struct cirrusfb_info *cinfo)
--{
--	release_mem_region(cinfo->board_addr, cinfo->board_size);
--
--	if (cinfo->btype == BT_PICASSO4) {
--		cinfo->regbase -= 0x600000;
--		iounmap ((void *)cinfo->regbase);
--		iounmap ((void *)cinfo->fbmem);
--	} else {
--		if (cinfo->board_addr > 0x01000000)
--			iounmap ((void *)cinfo->fbmem);
--	}
--	framebuffer_release(cinfo->info);
--}
-+static struct pci_driver cirrusfb_pci_driver = {
-+	.name		= "cirrusfb",
-+	.id_table	= cirrusfb_pci_table,
-+	.probe		= cirrusfb_pci_register,
-+	.remove		= __devexit_p(cirrusfb_pci_unregister),
-+#ifdef CONFIG_PM
-+#if 0
-+	.suspend	= cirrusfb_pci_suspend,
-+	.resume		= cirrusfb_pci_resume,
-+#endif
-+#endif
-+};
-+#endif /* CONFIG_PCI */
-
-
--static struct cirrusfb_info *cirrusfb_zorro_setup(void)
-+#ifdef CONFIG_ZORRO
-+static int cirrusfb_zorro_register(struct zorro_dev *z,
-+				   const struct zorro_device_id *ent)
- {
- 	struct cirrusfb_info *cinfo;
- 	struct fb_info *info;
- 	cirrusfb_board_t btype;
--	struct zorro_dev *z = NULL, *z2 = NULL;
-+	struct zorro_dev *z2 = NULL;
- 	unsigned long board_addr, board_size, size;
- 	int ret;
-
--	ret = cirrusfb_zorro_find (&z, &z2, &btype, &size);
--	if (ret < 0)
--		goto err_out;
-+	btype = ent->driver_data;
-+	if (cirrusfb_zorro_table2[btype].id2)
-+		z2 = zorro_find_device(cirrusfb_zorro_table2[btype].id2, NULL);
-+	size = cirrusfb_zorro_table2[btype].size;
-+	printk(KERN_INFO "cirrusfb: %s board detected; ",
-+	       cirrusfb_board_info[btype].name);
-
- 	info = framebuffer_alloc(sizeof(struct cirrusfb_info), &z->dev);
- 	if (!info) {
-@@ -2339,11 +2508,12 @@
- 	assert (z2 >= 0);
- 	assert (btype != BT_NONE);
-
--	cinfo->board_addr = board_addr = z->resource.start;
--	cinfo->board_size = board_size = z->resource.end-z->resource.start+1;
-+	cinfo->zdev = z;
-+	board_addr = zorro_resource_start(z);
-+	board_size = zorro_resource_len(z);
- 	cinfo->size = size;
-
--	if (!request_mem_region(board_addr, board_size, "cirrusfb")) {
-+	if (!zorro_request_device(z, "cirrusfb")) {
- 		printk(KERN_ERR "cirrusfb: cannot reserve region 0x%lx, abort\n",
- 		       board_addr);
- 		ret = -EBUSY;
-@@ -2370,7 +2540,7 @@
- 		cinfo->fbregs_phys = board_addr + 0x600000;
-
- 		cinfo->fbmem_phys = board_addr + 16777216;
--		cinfo->fbmem = ioremap (info->fbmem_phys, 16777216);
-+		cinfo->fbmem = ioremap (cinfo->fbmem_phys, 16777216);
- 		if (!cinfo->fbmem)
- 			goto err_unmap_regbase;
- 	} else {
-@@ -2390,10 +2560,12 @@
-
- 		DPRINTK ("cirrusfb: Virtual address for board set to: $%p\n", cinfo->regbase);
- 	}
-+	cinfo->unmap = cirrusfb_zorro_unmap;
-
- 	printk (KERN_INFO "Cirrus Logic chipset on Zorro bus\n");
-+	zorro_set_drvdata(z, info);
-
--	return 0;
-+	return cirrusfb_register(cinfo);
-
- err_unmap_regbase:
- 	/* Parental advisory: explicit hack */
-@@ -2403,153 +2575,12 @@
- err_release_fb:
- 	framebuffer_release(info);
- err_out:
--	return ERR_PTR(ret);
-+	return ret;
- }
--#endif /* CONFIG_ZORRO */
-
--static int cirrusfb_set_fbinfo(struct cirrusfb_info *cinfo)
-+void __devexit cirrusfb_zorro_unregister(struct zorro_dev *z)
- {
--	struct fb_info *info = cinfo->info;
--	struct fb_var_screeninfo *var = &info->var;
--
--	info->currcon = -1;
--	info->par = cinfo;
--	info->pseudo_palette = cinfo->pseudo_palette;
--	info->flags = FBINFO_DEFAULT
--		    | FBINFO_HWACCEL_XPAN
--		    | FBINFO_HWACCEL_YPAN
--		    | FBINFO_HWACCEL_FILLRECT
--		    | FBINFO_HWACCEL_COPYAREA;
--	if (noaccel)
--		info->flags |= FBINFO_HWACCEL_DISABLED;
--	info->fbops = &cirrusfb_ops;
--	info->screen_base = cinfo->fbmem;
--	if (cinfo->btype == BT_GD5480) {
--		if (var->bits_per_pixel == 16)
--			info->screen_base += 1 * MB_;
--		if (var->bits_per_pixel == 24 || var->bits_per_pixel == 32)
--			info->screen_base += 2 * MB_;
--	}
--
--	/* Fill fix common fields */
--	strlcpy(info->fix.id, cirrusfb_board_info[cinfo->btype].name,
--		sizeof(info->fix.id));
--
--	/* monochrome: only 1 memory plane */
--	/* 8 bit and above: Use whole memory area */
--	info->fix.smem_start = cinfo->fbmem_phys;
--	info->fix.smem_len   = (var->bits_per_pixel == 1) ? cinfo->size / 4 : cinfo->size;
--	info->fix.type       = cinfo->currentmode.type;
--	info->fix.type_aux   = 0;
--	info->fix.visual     = cinfo->currentmode.visual;
--	info->fix.xpanstep   = 1;
--	info->fix.ypanstep   = 1;
--	info->fix.ywrapstep  = 0;
--	info->fix.line_length = cinfo->currentmode.line_length;
--
--	/* FIXME: map region at 0xB8000 if available, fill in here */
--	info->fix.mmio_start = cinfo->fbregs_phys;
--	info->fix.mmio_len   = 0;
--	info->fix.accel = FB_ACCEL_NONE;
--
--	fb_alloc_cmap(&info->cmap, 256, 0);
--
--	return 0;
--}
--
--#if defined(CONFIG_PCI)
--#define cirrusfb_unmap cirrusfb_pci_unmap
--#define cirrusfb_bus_setup cirrusfb_pci_setup
--#elif defined(CONFIG_ZORRO)
--#define cirrusfb_unmap cirrusfb_zorro_unmap
--#define cirrusfb_bus_setup cirrusfb_zorro_setup
--#endif
--
--
--static int cirrusfb_pci_register (struct pci_dev *pdev,
--				  const struct pci_device_id *ent)
--{
--	struct fb_info *info;
--	struct cirrusfb_info *cinfo = NULL;
--	int err;
--	cirrusfb_board_t btype;
--
--	DPRINTK ("ENTER\n");
--
--	printk (KERN_INFO "cirrusfb: Driver for Cirrus Logic based graphic boards, v" CIRRUSFB_VERSION "\n");
--
--	cinfo = cirrusfb_bus_setup(pdev, ent);
--
--	if (IS_ERR(cinfo)) {
--		err = PTR_ERR(cinfo);
--		goto err_out;
--	}
--
--	info = cinfo->info;
--	btype = cinfo->btype;
--
--	/* sanity checks */
--	assert (btype != BT_NONE);
--	assert (btype == cirrusfb_board_info[btype].btype);
--
--	DPRINTK ("cirrusfb: (RAM start set to: 0x%p)\n", cinfo->fbmem);
--
--	/* Make pretend we've set the var so our structures are in a "good" */
--	/* state, even though we haven't written the mode to the hw yet...  */
--	info->var = cirrusfb_predefined[cirrusfb_def_mode].var;
--	info->var.activate = FB_ACTIVATE_NOW;
--
--	err = cirrusfb_decode_var(&info->var, &cinfo->currentmode, info);
--	if (err < 0) {
--		/* should never happen */
--		DPRINTK("choking on default var... umm, no good.\n");
--		goto err_unmap_cirrusfb;
--	}
--
--	/* set all the vital stuff */
--	cirrusfb_set_fbinfo(cinfo);
--
--	pci_set_drvdata(pdev, info);
--
--	err = register_framebuffer(info);
--	if (err < 0) {
--		printk (KERN_ERR "cirrusfb: could not register fb device; err = %d!\n", err);
--		goto err_dealloc_cmap;
--	}
--
--	DPRINTK ("EXIT, returning 0\n");
--	return 0;
--
--err_dealloc_cmap:
--	fb_dealloc_cmap(&info->cmap);
--err_unmap_cirrusfb:
--	cirrusfb_unmap(cinfo);
--err_out:
--	return err;
--}
--
--
--static void __devexit cirrusfb_cleanup (struct fb_info *info)
--{
--	struct cirrusfb_info *cinfo = info->par;
--	DPRINTK ("ENTER\n");
--
--#ifdef CONFIG_ZORRO
--	switch_monitor (cinfo, 0);
--#endif
--
--	unregister_framebuffer (info);
--	fb_dealloc_cmap (&info->cmap);
--	printk ("Framebuffer unregistered\n");
--	cirrusfb_unmap (cinfo);
--
--	DPRINTK ("EXIT\n");
--}
--
--
--void __devexit cirrusfb_pci_unregister (struct pci_dev *pdev)
--{
--	struct fb_info *info = pci_get_drvdata(pdev);
-+	struct fb_info *info = zorro_get_drvdata(z);
- 	DPRINTK ("ENTER\n");
-
- 	cirrusfb_cleanup (info);
-@@ -2557,26 +2588,25 @@
- 	DPRINTK ("EXIT\n");
- }
-
--static struct pci_driver cirrusfb_driver = {
--	.name	= "cirrusfb",
--	.id_table	= cirrusfb_pci_table,
--	.probe		= cirrusfb_pci_register,
--	.remove		= __devexit_p(cirrusfb_pci_unregister),
--#ifdef CONFIG_PM
--#if 0
--	.suspend	= cirrusfb_pci_suspend,
--	.resume		= cirrusfb_pci_resume,
--#endif
--#endif
-+static struct zorro_driver cirrusfb_zorro_driver = {
-+	.name		= "cirrusfb",
-+	.id_table	= cirrusfb_zorro_table,
-+	.probe		= cirrusfb_zorro_register,
-+	.remove		= __devexit_p(cirrusfb_zorro_unregister),
- };
-+#endif /* CONFIG_ZORRO */
-
- int __init cirrusfb_init(void)
- {
-+	int error = 0;
+ 
 +
- #ifdef CONFIG_ZORRO
--	return cirrusfb_pci_register(NULL, NULL);
--#else
--	return pci_module_init(&cirrusfb_driver);
-+	error |= zorro_module_init(&cirrusfb_zorro_driver);
+ #ifdef DEBUG
+ #define ATYIO_CLKR		0x41545900	/* ATY\00 */
+ #define ATYIO_CLKW		0x41545901	/* ATY\01 */
+@@ -1552,12 +1672,14 @@
+ #define ATYIO_FEATW		0x41545903	/* ATY\03 */
  #endif
-+#ifdef CONFIG_PCI
-+	error |= pci_module_init(&cirrusfb_pci_driver);
+ 
++#ifndef FBIO_WAITFORVSYNC
++#define FBIO_WAITFORVSYNC _IOW('F', 0x20, __u32)
 +#endif
-+	return error;
- }
-
-
-@@ -2619,7 +2649,12 @@
-
- void __exit cirrusfb_exit (void)
++
+ static int atyfb_ioctl(struct inode *inode, struct file *file, u_int cmd,
+ 	u_long arg, struct fb_info *info)
  {
--	pci_unregister_driver (&cirrusfb_driver);
-+#ifdef CONFIG_PCI
-+	pci_unregister_driver(&cirrusfb_pci_driver);
-+#endif
-+#ifdef CONFIG_ZORRO
-+	zorro_unregister_driver(&cirrusfb_zorro_driver);
-+#endif
- }
+-#if defined(__sparc__) || (defined(DEBUG) && defined(CONFIG_FB_ATY_CT))
+ 	struct atyfb_par *par = (struct atyfb_par *) info->par;
+-#endif /* __sparc__ || DEBUG */
+ #ifdef __sparc__
+ 	struct fbtype fbtyp;
+ #endif
+@@ -1575,6 +1697,18 @@
+ 			return -EFAULT;
+ 		break;
+ #endif /* __sparc__ */
++
++	case FBIO_WAITFORVSYNC:
++		{
++			u32 crtc;
++
++			if (get_user(crtc, (__u32 *) arg))
++				return -EFAULT;
++
++			return aty_waitforvblank(par, crtc);
++		}
++		break;
++
+ #if defined(DEBUG) && defined(CONFIG_FB_ATY_CT)
+ 	case ATYIO_CLKR:
+ 		if (M64_HAS(INTEGRATED)) {
+@@ -1771,6 +1905,7 @@
+ 				info->var.yoffset = atyfb_save.yoffset;
+ 				set_off_pitch(par, info);
+ 			}
++			aty_st_le32(CRTC_OFF_PITCH, par->crtc.off_pitch, par);
+ 			break;
+ 		}
+ 	}
+@@ -2005,6 +2140,9 @@
+ 	int sense;
+ #endif
+ 
++	init_waitqueue_head(&par->vblank.wait);
++	spin_lock_init(&par->int_lock);
++
+ 	par->aty_cmap_regs =
+ 	    (struct aty_cmap_regs *) (par->ati_regbase + 0xc0);
+ 
+@@ -3207,6 +3345,8 @@
+ 	info->fix = atyfb_fix;
+ 	par->pci_id = aty_chips[i].pci_id;
+ 
++	par->irq = pdev->irq;
++
+ 	/* Reserve space */
+ 	par->res_start = rp->start;
+ 	par->res_size = rp->end - rp->start + 1;
+@@ -3300,6 +3440,8 @@
+ 
+ 		info->fix = atyfb_fix;
+ 
++		par->irq = (unsigned int) -1; /* something invalid */
++
+ 		/*
+ 		 *  Map the video memory (physical address given) to somewhere in the
+ 		 *  kernel address space.
+diff -urN linux/include/video/mach64.h linux/include/video/mach64.h
+--- linux/include/video/mach64.h	2004-06-18 01:14:39.000000000 +0300
++++ linux/include/video/mach64.h	2004-07-13 19:52:39.000000000 +0300
+@@ -630,10 +630,70 @@
+ #define CRTC_CUR_B_TEST		0x80000000
+ 
+ #define CRTC_CRNT_VLINE		0x07f00000
+-#define CRTC_VBLANK		0x00000001
+ 
+ #define CRTC_PRESERVED_MASK	0x0001f000
+ 
++#define CRTC_VBLANK		0x00000001
++#define CRTC_VBLANK_INT_EN	0x00000002
++#define CRTC_VBLANK_INT		0x00000004
++#define CRTC_VBLANK_INT_AK	CRTC_VBLANK_INT
++#define CRTC_VLINE_INT_EN	0x00000008
++#define CRTC_VLINE_INT		0x00000010
++#define CRTC_VLINE_INT_AK	CRTC_VLINE_INT
++#define CRTC_VLINE_SYNC		0x00000020
++#define CRTC_FRAME		0x00000040
++#define SNAPSHOT_INT_EN		0x00000080
++#define SNAPSHOT_INT		0x00000100
++#define SNAPSHOT_INT_AK		SNAPSHOT_INT
++#define I2C_INT_EN		0x00000200
++#define I2C_INT			0x00000400
++#define I2C_INT_AK		I2C_INT
++#define CRTC2_VBLANK		0x00000800
++#define CRTC2_VBLANK_INT_EN	0x00001000
++#define CRTC2_VBLANK_INT	0x00002000
++#define CRTC2_VBLANK_INT_AK	CRTC2_VBLANK_INT
++#define CRTC2_VLINE_INT_EN	0x00004000
++#define CRTC2_VLINE_INT		0x00008000
++#define CRTC2_VLINE_INT_AK	CRTC2_VLINE_INT
++#define CAPBUF0_INT_EN		0x00010000
++#define CAPBUF0_INT		0x00020000
++#define CAPBUF0_INT_AK		CAPBUF0_INT
++#define CAPBUF1_INT_EN		0x00040000
++#define CAPBUF1_INT		0x00080000
++#define CAPBUF1_INT_AK		CAPBUF1_INT
++#define OVERLAY_EOF_INT_EN	0x00100000
++#define OVERLAY_EOF_INT		0x00200000
++#define OVERLAY_EOF_INT_AK	OVERLAY_EOF_INT
++#define ONESHOT_CAP_INT_EN	0x00400000
++#define ONESHOT_CAP_INT		0x00800000
++#define ONESHOT_CAP_INT_AK	ONESHOT_CAP_INT
++#define BUSMASTER_EOL_INT_EN	0x01000000
++#define BUSMASTER_EOL_INT	0x02000000
++#define BUSMASTER_EOL_INT_AK	BUSMASTER_EOL_INT
++#define GP_INT_EN		0x04000000
++#define GP_INT			0x08000000
++#define GP_INT_AK		GP_INT
++#define CRTC2_VLINE_SYNC	0x10000000
++#define SNAPSHOT2_INT_EN	0x20000000
++#define SNAPSHOT2_INT		0x40000000
++#define SNAPSHOT2_INT_AK	SNAPSHOT2_INT
++#define VBLANK_BIT2_INT		0x80000000
++#define VBLANK_BIT2_INT_AK	VBLANK_BIT2_INT
++
++#define CRTC_INT_EN_MASK	(CRTC_VBLANK_INT_EN |	\
++				 CRTC_VLINE_INT_EN |	\
++				 SNAPSHOT_INT_EN |	\
++				 I2C_INT_EN |		\
++				 CRTC2_VBLANK_INT_EN |	\
++				 CRTC2_VLINE_INT_EN |	\
++				 CAPBUF0_INT_EN |	\
++				 CAPBUF1_INT_EN |	\
++				 OVERLAY_EOF_INT_EN |	\
++				 ONESHOT_CAP_INT_EN |	\
++				 BUSMASTER_EOL_INT_EN |	\
++				 GP_INT_EN |		\
++				 SNAPSHOT2_INT_EN)
++
+ /* DAC control values */
+ 
+ #define DAC_EXT_SEL_RS2		0x01
 
- #ifdef MODULE
-@@ -2830,7 +2865,7 @@
+--4Ckj6UjgE2iN1+kY--
 
- static void cirrusfb_BitBLT (caddr_t regbase, int bits_per_pixel,
- 			     u_short curx, u_short cury, u_short destx, u_short desty,
--		  	     u_short width, u_short height, u_short line_length)
-+			     u_short width, u_short height, u_short line_length)
- {
- 	u_short nwidth, nheight;
- 	u_long nsrc, ndest;
---- linux-2.6.8-rc2/include/video/vga.h	2003-03-25 10:07:30.000000000 +0100
-+++ linux-m68k-2.6.8-rc2/include/video/vga.h	2004-07-19 19:38:47.000000000 +0200
-@@ -26,8 +26,15 @@
- /*
-  * FIXME
-  * Ugh, we don't have PCI space, so map readb() and friends to use Zorro space
-- * for MMIO accesses. This should make clgenfb work again on Amiga
-+ * for MMIO accesses. This should make cirrusfb work again on Amiga
-  */
-+#undef inb_p
-+#undef inw_p
-+#undef outb_p
-+#undef outw
-+#undef readb
-+#undef writeb
-+#undef writew
- #define inb_p(port)	0
- #define inw_p(port)	0
- #define outb_p(port, val)	do { } while (0)
+
+-------------------------------------------------------
+This SF.Net email is sponsored by BEA Weblogic Workshop
+FREE Java Enterprise J2EE developer tools!
+Get your free copy of BEA WebLogic Workshop 8.1 today.
+http://ads.osdn.com/?ad_id=4721&alloc_id=10040&op=click

@@ -1,18 +1,17 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: Re: [PATCH]: cfb_imageblit() fix: handle
-	widths not divisible by 8
-Date: 15 Jan 2003 19:48:15 +0800
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Subject: Re: video dir reorg
+Date: 15 Jan 2003 22:38:31 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1042631288.1292.11.camel@localhost.localdomain>
-References: <Pine.GSO.4.21.0301151020270.4227-100000@vervain.sonytel.be>
+Message-ID: <1042666710.3186.40.camel@thor>
+References: <Pine.LNX.4.44.0301150035470.23774-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from willow.compass.com.ph ([202.70.96.38])
+Received: from netline-be1.netline.ch ([195.141.226.32])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18YmAV-0003Tp-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 15 Jan 2003 03:57:15 -0800
-In-Reply-To: <Pine.GSO.4.21.0301151020270.4227-100000@vervain.sonytel.be>
+	id 18YvF6-0001oN-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 15 Jan 2003 13:38:36 -0800
+In-Reply-To: <Pine.LNX.4.44.0301150035470.23774-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,142 +21,52 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
+To: James Simmons <jsimmons@infradead.org>
+Cc: Sven Luther <luther@dpt-info.u-strasbg.fr>, Jon Smirl <jonsmirl@yahoo.com>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 2003-01-15 at 17:28, Geert Uytterhoeven wrote:
-> On 15 Jan 2003, Antonino Daplas wrote:
-> > On Wed, 2003-01-15 at 08:26, James Simmons wrote:
-> > > Applied.
-> > > 
-> > > > c. Fix for fast_imageblit() so it always refer to mask tables in 32-bits
-> > > > which should make it work for 64-bit machines.
-> > > 
-> > > Ug. I rather try yo take advantge of using the full 64 bits of data to 
-> > > pass across the bus. What I was think is treat the 64 bit case as two 32 
-> > > bit cases. The 64 bit data comes in and we run the data twice at tabs[].
-> > > 
-> > Hi James,
-> > 
-> > Yes, I was trying to find a way to make fast_imageblit() be fast for all
-> > machine architectures.  With the patch attached, there's
-> > fast_imageblit32() and fast_imageblit64().  fast_imageblit32() is
-> > probably slower than fast_imageblit64 on 64-bit machines and, on the
-> > other hand, fast_imageblit64() is 20% slower on 32-bit machines, but is
-> > probably faster on 64-bit and higher machines.  So, the only way I can
-> > think of doing this on all machine architectures is to have them go
-> > separate paths.
-> 
-> Can't you merge fast_imageblit32() and fast_imageblit64() a bit more (with some
-> #ifdef's), and just call the result fast_imageblit()? Then the definition of
-> FAST_IMAGEBLIT can go away.
-> 
-> u32 is the same as unsigned long if BITS_PER_LONG == 32.
-> 
-That's true.  I don't want to do the merge before you people have seen
-it.  Anyway, here's an updated one.
+On Mit, 2003-01-15 at 01:37, James Simmons wrote:=20
+> > There is a response of linus in the mailing list archive about this, i
+> > don't remember nor checked if it was only the first time, or not. I
+> > think the objection was about complicate to supervise diffs.
+>=20
+> Yes. The DRI people want to keep there work seperate from us.
 
-Tony
+While I hope there will be some form of cooperation between framebuffer
+devices and the DRM in the future, I do think they basically serve very
+different purposes so I don't think merging them makes sense.
 
-diff -Naur linux-2.5.56-fbdev/drivers/video/cfbimgblt.c linux/drivers/video/cfbimgblt.c
---- linux-2.5.56-fbdev/drivers/video/cfbimgblt.c	2003-01-15 01:56:47.000000000 +0000
-+++ linux/drivers/video/cfbimgblt.c	2003-01-15 11:43:53.000000000 +0000
-@@ -73,14 +73,6 @@
- 	0x00000000, 0xffffffff
- };
- 
--#if BITS_PER_LONG == 32
--#define FB_WRITEL fb_writel
--#define FB_READL  fb_readl
--#else
--#define FB_WRITEL fb_writeq
--#define FB_READL  fb_readq
--#endif 
--
- #if defined (__BIG_ENDIAN)
- #define LEFT_POS(bpp)          (BITS_PER_LONG - bpp)
- #define LEFT_POS32(bpp)        (32 - bpp)
-@@ -95,6 +87,28 @@
- #define SHIFT_LOW(val, bits)   ((val) >> (bits))
- #endif
- 
-+#if BITS_PER_LONG == 32
-+#define FB_WRITEL        fb_writel
-+#define FB_READL         fb_readl
-+#define DECLARE_FASTPATH {}
-+#define INIT_FASTPATH    {}
-+#define FASTPATH         fb_writel((end_mask & eorx)^bgx, dst++)
-+#else
-+#define FB_WRITEL        fb_writeq
-+#define FB_READL         fb_readq
-+#define DECLARE_FASTPATH unsigned long val, bpl
-+#define INIT_FASTPATH    { val = 0; bpl = 0; }
-+#define FASTPATH {                                     \
-+	val |= SHIFT_HIGH((end_mask & eorx)^bgx, bpl); \
-+	bpl += 32;                                     \
-+	bpl &= BITS_PER_LONG - 1;                      \
-+	if (!bpl) {                                    \
-+		FB_WRITEL(val, dst++);                 \
-+		val = 0;                               \
-+	}                                              \
-+}                                                      
-+#endif 
-+
- static inline void color_imageblit(struct fb_image *image, struct fb_info *p, 
- 				   u8 *dst1, unsigned long start_index, 
- 				   unsigned long pitch_index)
-@@ -242,10 +256,11 @@
- 	u32 bit_mask, end_mask, eorx, shift; 
- 	u32 fgx = fgcolor, bgx = bgcolor, bpp = p->var.bits_per_pixel;
- 	u32 ppw = 32/bpp, spitch = (image->width + 7)/8;
--	u32 *dst;
- 	u32 *tab = NULL;
-+	unsigned long *dst;
- 	char *s = image->data, *src;
--		
-+	DECLARE_FASTPATH;
-+
- 	switch (bpp) {
- 	case 8:
- 		tab = cfb_tab8;
-@@ -270,18 +285,19 @@
- 	k = image->width/ppw;
- 
- 	for (i = image->height; i--; ) {
--		dst = (u32 *) dst1; shift = 8; src = s;
-+		dst = (unsigned long *) dst1; shift = 8; src = s;
-+		INIT_FASTPATH;
- 		for (j = k; j--; ) {
- 			shift -= ppw;
- 			end_mask = tab[(*src >> shift) & bit_mask]; 
--			fb_writel((end_mask & eorx)^bgx, dst++);
-+			FASTPATH;
- 			if (!shift) { shift = 8; src++; }
- 		}
- 		dst1 += p->fix.line_length;
- 		s += spitch;
- 	}
- }	
--	
-+
- void cfb_imageblit(struct fb_info *p, struct fb_image *image)
- {
- 	int x2, y2, vxres, vyres;
-@@ -331,7 +347,7 @@
- 		
- 		if (BITS_PER_LONG % bpp == 0 && !start_index && 
- 		    !pitch_index && bpp >= 8 && bpp <= 32 && 
--		    (image->width & (32/bpp-1)) == 0) 
-+		    (image->width & (BITS_PER_LONG/bpp-1)) == 0) 
- 			fast_imageblit(image, p, dst1, fgcolor, bgcolor);
- 		else 
- 			slow_imageblit(image, p, dst1, fgcolor, bgcolor, 
+> > Also, i think the drm drivers should compile not only on linux, but on
+> > other oses too (BSDs at least).
+>=20
+> That will be difficult. The VM layer to BSD is very very different from=20
+> linux. There is no way they coudl use the same code set for both without =
+
+> making a mess.=20
+
+Probably, but keeping all code separate for all supported OSs would be
+at least as big a mess, so we share as much code as possible via a
+template mechanism. The BSD specific parts aren't in the Linux kernel of
+course.
+
+> > Also, i believe some of the XFree86 guys don't like fbdevs.
+> =20
+> :-(
+
+Luckily, those aren't part of the DRI project AFAICT. On the contrary,
+several DRI developers have declared interest in supporting framebuffer
+devices, and at least one of them is working on 'an embedded radeon 3d
+driver that lives on top of fbdev' in Mesa CVS.
+
+
+--=20
+Earthling Michel D=E4nzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
+XFree86 and DRI project member   /  CS student, Free Software enthusiast
 
 
 
 -------------------------------------------------------
-This SF.NET email is sponsored by: Take your first step towards giving 
-your online business a competitive advantage. Test-drive a Thawte SSL 
-certificate - our easy online guide will show you how. Click here to get 
-started: http://ads.sourceforge.net/cgi-bin/redirect.pl?thaw0027en
+This SF.NET email is sponsored by: A Thawte Code Signing Certificate=20
+is essential in establishing user confidence by providing assurance of=20
+authenticity and code integrity. Download our Free Code Signing guide:
+http://ads.sourceforge.net/cgi-bin/redirect.pl?thaw0028en

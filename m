@@ -1,31 +1,25 @@
-From: Jesper Juhl <juhl-lkml@dif.dk>
-Subject: Fix warning in tdfxfb.c (Was: Re: IA32 (2.6.7 - 2004-06-18.22.30)
- - 2 New warnings (gcc 3.2.2))
-Date: Sat, 19 Jun 2004 14:30:32 +0200 (CEST)
+From: Andrew Walrond <andrew@walrond.org>
+Subject: Dual screen framebuffer development advice
+Date: Sat, 19 Jun 2004 14:55:56 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.56.0406191425340.18856@jjulnx.backbone.dif.dk>
-References: <200406191135.i5JBZsXL017823@cherrypit.pdx.osdl.net>
+Message-ID: <200406191455.56574.andrew@walrond.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bbf0P-0000hd-MN
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 19 Jun 2004 05:31:33 -0700
-Received: from mail.dif.dk ([193.138.115.101])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bbf0P-0000Bc-8p
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 19 Jun 2004 05:31:33 -0700
-Received: from localhost (localhost [127.0.0.1])
-	by mail.dif.dk (Postfix) with ESMTP id 4F332FFC9C
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 19 Jun 2004 14:40:10 +0200 (CEST)
-Received: from mail.dif.dk ([127.0.0.1])
- by localhost (saerimmer [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
- id 23794-47 for <linux-fbdev-devel@lists.sourceforge.net>;
- Sat, 19 Jun 2004 14:40:08 +0200 (CEST)
-Received: from diftmgw2.backbone.dif.dk (diftmgw2.backbone.dif.dk [10.227.136.246])
-	by mail.dif.dk (Postfix) with ESMTP id F33D8FFCA9
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 19 Jun 2004 14:40:05 +0200 (CEST)
-In-Reply-To: <200406191135.i5JBZsXL017823@cherrypit.pdx.osdl.net>
+	id 1BbgWc-0008A5-Sx
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 19 Jun 2004 07:08:54 -0700
+Received: from host213-160-108-25.dsl.vispa.com ([213.160.108.25] helo=cenedra.walrond.org)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.30)
+	id 1BbgWc-0003hU-GB
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 19 Jun 2004 07:08:54 -0700
+Received: from [192.168.0.2] (helo=bob.mobile)
+	by cenedra.walrond.org with esmtp (Exim 4.34)
+	id 1BbgWX-0003JG-ME
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 19 Jun 2004 15:08:49 +0100
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,38 +29,17 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: John Cherry <cherry@osdl.org>
-Cc: linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Sat, 19 Jun 2004, John Cherry wrote:
+I need to setup a machine to develop a framebuffer based application. I'd like 
+to use two graphics devices; The first an ati agp chipset on the motherboard 
+which will run X11 with X11's ati driver, the second a PCI card running a fb 
+driver and displaying my framebuffer application.
 
-> drivers/video/tdfxfb.c:1104: warning: initialization discards qualifiers from pointer target type
+Is this possible/sensible?
 
-Here's a patch for that.
-
-The issue is that the mask member of struct fb_cursor is const, so
-we shouldn't be assigning it to a non-const char*
-
-Signed-off-by: Jesper Juhl <juhl-lkml@dif.dk>
-
---- linux-2.6.7-orig/drivers/video/tdfxfb.c	2004-06-16 07:19:02.000000000 +0200
-+++ linux-2.6.7/drivers/video/tdfxfb.c	2004-06-19 14:25:16.000000000 +0200
-@@ -1101,7 +1101,7 @@ static int tdfxfb_cursor(struct fb_info
- 		 */
- 		u8 *cursorbase = (u8 *) info->cursor.image.data;
- 		char *bitmap = (char *)cursor->image.data;
--		char *mask = cursor->mask;
-+		const char *mask = cursor->mask;
- 		int i, j, k, h = 0;
-
- 		for (i = 0; i < 64; i++) {
-
-
---
-Jesper Juhl <juhl-lkml@dif.dk>
-
+Andrew Walrond
 
 
 -------------------------------------------------------

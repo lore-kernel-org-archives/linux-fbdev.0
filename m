@@ -1,15 +1,15 @@
-From: joachim.henke@stud.tu-ilmenau.de
-Subject: Re: 3DFX framebuffer driver v0.2.2
-Date: Thu, 24 Apr 2003 09:28:53 +0100
+From: Thiemo Seufer <ica2_ts@csv.ica.uni-stuttgart.de>
+Subject: [PATCH, 2,4] Avoid distorting mono attributes
+Date: Sun, 27 Apr 2003 00:48:46 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3EA7A045.5040509@stud.tu-ilmenau.de>
+Message-ID: <20030426224846.GB31642@rembrandt.csv.ica.uni-stuttgart.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from piggy.rz.tu-ilmenau.de ([141.24.4.8])
+Received: from iris1.csv.ica.uni-stuttgart.de ([129.69.118.2])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 198d1R-0007FB-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 24 Apr 2003 02:28:05 -0700
+	id 199YTw-0004Sq-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 26 Apr 2003 15:49:21 -0700
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -19,34 +19,74 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-The URL doesn't work anymore. Get the patch from here:
-http://www.stud.tu-ilmenau.de/~johe-ii/3dfx-0.2.2-2.4.20.diff.gz
+Hello Geert,
 
-James Simmons wrote:
->>The current kernel still contains version 0.1.3 which is rather old. Much
->>work has been done until version 0.2.2, mainly support for:
->>
->>* non-8 dot wide fonts
->>* multihead
->>* full 8/16/24/32 bit color (fixes the ugly bootup penguin)
->>* MIPS
->>* module options
->>
->>I think it's worth to give it a chance and to continue development on the
->>base of that code. So I "ported" it to kernel 2.4.2x. Get this new patch
->>here:
->>
->>http://tu-ilmenau.de/~johe-ii/3dfx-0.2.2-2.4.21-pre1.diff.gz
->>
->>I just merged the improvements that happened to v0.1.3 while it was in the
->>kernel and did some source formating.
-> 
-> 
-> Thanks. I'm looking over the patch now and will intergrate it into 2.5.X
+this patch protects mono attributes from being overwritten by
+the color handling.
 
+
+Thiemo
+
+
+diff -BurpNX /bigdisk/src/dontdiff linux-orig/drivers/char/console.c linux/drivers/char/console.c
+--- linux-orig/drivers/char/console.c	Sat Jan 11 22:54:24 2003
++++ linux/drivers/char/console.c	Sat Apr 12 15:44:11 2003
+@@ -1046,7 +1046,8 @@ static void default_attr(int currcons)
+ 	underline = 0;
+ 	reverse = 0;
+ 	blink = 0;
+-	color = def_color;
++	if (can_do_color)
++		color = def_color;
+ }
+ 
+ /* console_sem is held */
+@@ -1119,7 +1120,8 @@ static void csi_m(int currcons)
+ 				  * with white underscore (Linux - use
+ 				  * default foreground).
+ 				  */
+-				color = (def_color & 0x0f) | background;
++			        if (can_do_color)
++					color = (def_color & 0x0f) | background;
+ 				underline = 1;
+ 				break;
+ 			case 39: /* ANSI X3.64-1979 (SCO-ish?)
+@@ -1127,11 +1129,13 @@ static void csi_m(int currcons)
+ 				  * Reset colour to default? It did this
+ 				  * before...
+ 				  */
+-				color = (def_color & 0x0f) | background;
++			        if (can_do_color)
++					color = (def_color & 0x0f) | background;
+ 				underline = 0;
+ 				break;
+ 			case 49:
+-				color = (def_color & 0xf0) | foreground;
++			  	if (can_do_color)
++					color = (def_color & 0xf0) | foreground;
+ 				break;
+ 			default:
+ 				if (par[i] >= 30 && par[i] <= 37)
+@@ -1274,9 +1278,11 @@ static void setterm_command(int currcons
+ 			}
+ 			break;
+ 		case 8:	/* store colors as defaults */
+-			def_color = attr;
+-			if (hi_font_mask == 0x100)
+-				def_color >>= 1;
++			if (can_do_color) {
++				def_color = attr;
++				if (hi_font_mask == 0x100)
++					def_color >>= 1;
++			}
+ 			default_attr(currcons);
+ 			update_attr(currcons);
+ 			break;
 
 
 -------------------------------------------------------

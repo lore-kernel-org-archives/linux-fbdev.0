@@ -1,23 +1,44 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH] [FBDEV]: accel_putcs() buffer overflow fix
-Date: Mon, 6 Jan 2003 21:51:44 +0000 (GMT)
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.44.0301062151140.31831-100000@phoenix.infradead.org>
-References: <1041514436.1002.31.camel@localhost.localdomain>
+Subject: Re: i810fb: trivial fixes and cleanups
+Date: Mon, 6 Jan 2003 21:52:05 +0000 (GMT)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.LNX.4.44.0301062151530.31831-100000@phoenix.infradead.org>
+References: <1041514441.1003.33.camel@localhost.localdomain>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <1041514436.1002.31.camel@localhost.localdomain>
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from phoenix.infradead.org ([195.224.96.167])
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18VfAm-0000NF-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 06 Jan 2003 13:52:41 -0800
+In-Reply-To: <1041514441.1003.33.camel@localhost.localdomain>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Antonino Daplas <adaplas@pol.net>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel List <linux-kernel@vger.kernel.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> 1. If size of bitmap exceeds size of pixmap buffer, subdivide and do
-> multiple imageblits.
+> Attached is a diff against linux-2.5.54.
 > 
-> 2. Use generic fb_pan_display() instead of info->fbops->fb_pan_display()
-> in update_var()
+> 1. i810fb_par should be built inf fb_set_par() instead of
+> fb_check_var().
+> 2. changed __devinit*/__devexit* to __init/__exit.
+> 3. removed unused/redundant variables
 
-Applied.
+ Applied.
+
+
+
+-------------------------------------------------------
+This sf.net email is sponsored by:ThinkGeek
+Welcome to geek heaven.
+http://thinkgeek.com/sf

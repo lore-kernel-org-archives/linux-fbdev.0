@@ -1,18 +1,16 @@
-From: Sven Luther <luther@lambda.u-strasbg.fr>
-Subject: Re: pm3fb driver is ok in 2.5.24
-Date: Fri, 5 Jul 2002 08:00:53 +0200
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: cfb_{copyarea,fillrect}()
+Date: Fri, 5 Jul 2002 09:41:56 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20020705060053.GA12472@lambda.u-strasbg.fr>
-References: <20020702063549.GB30388@lambda.u-strasbg.fr> <Pine.LNX.4.44.0207041936220.1718-100000@www.transvirtual.com>
+Message-ID: <Pine.GSO.4.21.0207050935500.23857-100000@vervain.sonytel.be>
+References: <Pine.LNX.4.44.0207042034540.4852-100000@www.transvirtual.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from dpt-info.u-strasbg.fr ([130.79.44.193])
-	by usw-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17QM00-00039C-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 04 Jul 2002 22:51:21 -0700
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0207041936220.1718-100000@www.transvirtual.com>
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17QNjM-00046i-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 05 Jul 2002 00:42:17 -0700
+In-Reply-To: <Pine.LNX.4.44.0207042034540.4852-100000@www.transvirtual.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,43 +20,59 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: James Simmons <jsimmons@transvirtual.com>
-Cc: Romain Dolbeau <dolbeau@irisa.fr>, linux-fbdev-devel@lists.sourceforge.net
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, Jul 04, 2002 at 07:38:27PM -0700, James Simmons wrote:
+On Thu, 4 Jul 2002, James Simmons wrote:
+> > Other comments/notes:
+> >   - Shouldn't cfb_fillrect() use the pseudo_palette in DIRECTCOLOR mode?
 > 
-> > > api. I'm going to removal the old fbgen code soon.
-> >
-> > how soon, and is there documentation or sample code for the changed api
-> > ?
+> ??? I thought you had to go threw the DAC to get values.
+
+Yes, but you have to do that for _each_ color component. So you have to use
+pixel value (i, i, i), not (0, 0, i) (depending on the order of the components)
+like the current code does.
+
+> >   - I think the cfb_*() routines can easily be modified to work for bpp < 8,
+> >     and for bpp == 24:
 > 
-> In the next few days. Take a look at several drivers that have been ported
-> over. Plus take a look at skeletonfb.c. It details alot. If you have
-> furthur questions feel free to ask.
+> It doesn't work for bpp < 4 for you? It should work for those as well. Bpp
 
-Well, the only problem is that i don't have much time :(((
+Note that I didn't try that.
 
-But i will have a look at it.
-
-do i need to get the bk tree, or can i start working with the 2.5.24
-linus tree i now have ?
-
-Maybe there is a patch available somewhere ?
-
-> > BTW, i suppose now it will be easier to implement dual head with a dual
-> > output board ?
+> 24 is a bit more trick if we want to do word align access to the
+> framebuffer.
 > 
-> Yes :-) ON struct fb_info for each framebuffer and a struct xxx_par for
-> the hardware. In this case your xxx_par struct would be shared betweem
-> each struct fb_info.
+> >       o initialize src/dst indices to be bit indices instead of byte indices
+> >       o remove shifts by 3
+> >       o n is number of bits to copy/fill
+> 
+> Hm. I have to work up so psuedo code to try that idea out.
 
-:)))
+The main idea is to do an optimized bitcopy, not a bytecopy. Then it works for
+all values of bpp:
 
-Friendly,
+    void bitcpy(unsigned long *dst, int dst_idx, unsigned long *src,
+		int src_idx, int nbits);
 
-Sven Luther
+{dst,src}_idx are bit indices (0 == MSB, 31 or 63 = LSB), nbits is the number
+of bits to copy.
+
+The same is true for fillrect, there you want an optimized bitset().
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 
 -------------------------------------------------------

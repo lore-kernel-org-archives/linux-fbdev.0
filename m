@@ -1,21 +1,19 @@
-From: John Zielinski <grim@undead.cc>
-Subject: Re: 2.6.7 still garbage upon start
-Date: Fri, 18 Jun 2004 09:40:42 -0400
+From: Hamie <hamish@travellingkiwi.com>
+Subject: radeonfb vs IBM r50p - Blank screen (But with a cursor)
+Date: Fri, 18 Jun 2004 14:42:54 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <40D2F0DA.8050706@undead.cc>
-References: <40D21E31.5070904@winischhofer.net> <200406180945.06335.adaplas@hotpop.com> <40D29FCD.7020602@winischhofer.net> <Pine.GSO.4.58.0406181013340.11779@waterleaf.sonytel.be> <40D2E96A.9000605@undead.cc> <Pine.GSO.4.58.0406181516460.11779@waterleaf.sonytel.be>
+Message-ID: <40D2F15E.5080701@travellingkiwi.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BbJbt-0005H6-Mh
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 06:40:49 -0700
-Received: from mail.undead.cc ([216.126.84.18])
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1BbJbt-0003bm-AI
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 06:40:49 -0700
-In-Reply-To: <Pine.GSO.4.58.0406181516460.11779@waterleaf.sonytel.be>
+	id 1BbJeJ-0005UE-AJ
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 06:43:19 -0700
+Received: from balance1.baplc.com ([163.166.150.21] helo=rsl53.baplc.com)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BbJeI-0007Gg-MY
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 06:43:19 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,31 +24,33 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Thomas Winischhofer <thomas@winischhofer.net>, Antonino Daplas <adaplas@pol.net>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, akpm@osdl.org
 
-Geert Uytterhoeven wrote:
+Hi.
 
->Hence vgacon should be replaced by dummycon when it's deinitialized.
->
->  
->
-I like that.  That way we're not depending on the old console driver to 
-do the right thing when in KD_GRAPHICS.  Vgacon currently does but other 
-console drivers might not.
+I've just tried kernel 2.6.7 and radeonfb on my Thinkpad r50p, and sadly 
+it doesn't seem to work as advertised. The display works fine in VGA 
+80x24 on initial boot, but when the radeonfb initialises, I get a blank 
+screen with just the cursor flashing back & forth at the bottom in time 
+to whatever is supposedly supposed to be displayed.
 
-I'll try that out tonight and see how it goes and then post the patch.
-
->(According to what I learned from the EFI talk at OLS last year) It's worse:
->you have to talk to the EFI bytecode to draw text on UGA, no direct access to
->the frame buffer ;-(
->  
->
-Doh.  Let me guess, the interface was designed by a committee.....
-
-John
+Thankfully X does manage to get the display back, so I can login 
+afterwards... If I load it as a module, I can then switch back to the 
+console (CTRL-ALT-F1) and I'm back in 80x24 VGA mode again...
 
 
+dmesg output is appended...
+
+The system itself is debian-unstable
+
+Not sure if I'm doing anything wrong... Or if it's a butg. The dmesg 
+output (WIth radeonfb debugging enabled) doesn't seem to show any 
+errors. I am unsing ACPI though (As you can see from the dmesg output). 
+Any advice gratefully listened to...
+
+TIA
+
+hamish
 
 
 -------------------------------------------------------

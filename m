@@ -1,22 +1,26 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
 Subject: Re: Re: Virtual framebuffer driver - mmap problem
-Date: Thu, 9 Sep 2004 10:31:16 +0200 (MEST)
+Date: Thu, 9 Sep 2004 18:16:51 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0409091029190.10508@waterleaf.sonytel.be>
-References: <77e82a3f0409080651732d891e@mail.gmail.com>
- <200409090831.21966.adaplas@hotpop.com>
+Message-ID: <200409091816.51541.adaplas@hotpop.com>
+References: <77e82a3f0409080651732d891e@mail.gmail.com> <200409090831.21966.adaplas@hotpop.com> <Pine.GSO.4.58.0409091029190.10508@waterleaf.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C5KL5-0006BL-NH
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 09 Sep 2004 01:31:31 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
+	id 1C5Ly7-0001Wu-NW
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 09 Sep 2004 03:15:55 -0700
+Received: from smtp-out.hotpop.com ([38.113.3.61])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1C5KL2-0003SK-FP
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 09 Sep 2004 01:31:31 -0700
-In-Reply-To: <200409090831.21966.adaplas@hotpop.com>
+	id 1C5Ly5-0002C1-UT
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 09 Sep 2004 03:15:55 -0700
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id 0B5C38048B7
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu,  9 Sep 2004 10:15:33 +0000 (UTC)
+In-Reply-To: <Pine.GSO.4.58.0409091029190.10508@waterleaf.sonytel.be>
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,60 +30,31 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net, Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: Shivappa Kushtagi <kushtagi@gmail.com>
 
-On Thu, 9 Sep 2004, Antonino A. Daplas wrote:
-> On Wednesday 08 September 2004 21:51, Shivappa Kushtagi wrote:
-> > == You cannot mmap() the video memory of vfb.
+On Thursday 09 September 2004 16:31, Geert Uytterhoeven wrote:
 > >
-> > ==  Why don"t you use vesafb?
-> >
-> > As I had mentioned in my earlier post, I wanted to use virtual
-> > framebuffer to simulate the display of my target device (say some PDA
-> > with size 320*480 ).  With vesafb, I will not be able to change the
-> > resolution ( fbset fails telling,  invalid argument )
-> >
-> >
-> > Is there any other framebuffer based methods to simulate a display ?
-> >
+> > So if PAGE_SIZE is 4096, to allocate 8192 bytes, use order = 1. Note that
+> > there is an upper limit to order, so keep videomemorysize small.
 >
-> There are 2 problems with vfb.c that makes mmap fail:
+> And the upper limit is 128 kiB on most platforms. Hence even 640x480 in 8
+> bpp won't fit...
 >
-> 1. uses vmalloc to allocate framebuffer memory
-> 2. has its own fb_mmap hook which always return -EINVAL
+> Probably you can make a fb_mmap() hook that's compatible with the
+> vmalloc()'ed frame buffer and thus doesn't suffer from this limitation, but
+> it will require more code and more knowledge of memory management
+> internals.
 >
-> If you want to really use vfb.c, you can try to modify vfb.c so it behaves
-> like a normal, mmappable framebuffer.
->
-> A. First you need to change the framebuffer allocation method: Do not use
-> vmalloc, since it doesn't give you linear memory.  Instead use
-> __get_free_pages.
->
-> videomemorysize = PAGE_SIZE << order;
->
-> So if PAGE_SIZE is 4096, to allocate 8192 bytes, use order = 1. Note that
-> there is an upper limit to order, so keep videomemorysize small.
 
-And the upper limit is 128 kiB on most platforms. Hence even 640x480 in 8 bpp
-won't fit...
+Actually, I discovered that MAX_ORDER in 2.4 is 10 (4MiB) and 11 in 2.6 
+(8MiB), so it's probably not as limiting as it seems. However, the 
+probability of __get_free_pages() failing at such a high order is very high.
 
-Probably you can make a fb_mmap() hook that's compatible with the vmalloc()'ed
-frame buffer and thus doesn't suffer from this limitation, but it will require
-more code and more knowledge of memory management internals.
+Tony
 
-Gr{oetje,eeting}s,
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 
 -------------------------------------------------------

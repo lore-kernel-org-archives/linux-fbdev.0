@@ -1,23 +1,20 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 6/8] fbdev: Fix cursor in doublescan mode in atyfb
-Date: Thu, 11 Nov 2004 10:15:36 +0800
-Message-ID: <20041111022454.14B801A0262@smtp-1.hotpop.com>
+From: Alexander Kern <alex.kern@gmx.de>
+Subject: [PATCH atyfb] fix hw cursor in doublescan modes
+Date: Wed, 10 Nov 2004 19:25:30 +0100
+Message-ID: <200411101925.30957.alex.kern@gmx.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_a0lkB61S7EafUik"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CS4eM-00053g-Rf
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Nov 2004 18:25:26 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CS4eL-0004Us-Vq
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Nov 2004 18:25:26 -0800
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 589B59D8885
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 11 Nov 2004 02:25:17 +0000 (UTC)
-Content-Disposition: inline
+	id 1CRxA5-0007dh-PA
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Nov 2004 10:25:41 -0800
+Received: from imap.gmx.net ([213.165.64.20] helo=mail.gmx.net)
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.41)
+	id 1CRxA5-0004Kw-3R
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Nov 2004 10:25:41 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,22 +25,30 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>
-Cc: Alexander Kern <alex.kern@gmx.de>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: "Antonino A. Daplas" <adaplas@hotpop.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
+
+--Boundary-00=_a0lkB61S7EafUik
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 fix hw cursor in doublescan modes 
 
 Signed-off-by: Alexander Kern <alex.kern@gmx.de>
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
 
- mach64_cursor.c |   15 +++++++++------
- 1 files changed, 9 insertions(+), 6 deletions(-)
 
-diff -Nru a/drivers/video/aty/mach64_cursor.c b/drivers/video/aty/mach64_cursor.c
---- a/drivers/video/aty/mach64_cursor.c	2004-10-27 14:58:07 +08:00
-+++ b/drivers/video/aty/mach64_cursor.c	2004-11-11 09:56:33 +08:00
+--Boundary-00=_a0lkB61S7EafUik
+Content-Type: text/x-diff;
+  charset="us-ascii";
+  name="atyfb_fix_cursor_in_doublescanmode.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="atyfb_fix_cursor_in_doublescanmode.patch"
+
+--- linux-2.6.head/drivers/video/aty/mach64_cursor.c.orig	2004-11-07 17:14:57.000000000 +0100
++++ linux-2.6.head/drivers/video/aty/mach64_cursor.c	2004-11-09 15:04:56.000000000 +0100
 @@ -75,7 +75,7 @@
  {
  	struct atyfb_par *par = (struct atyfb_par *) info->par;
@@ -58,7 +63,7 @@ diff -Nru a/drivers/video/aty/mach64_cursor.c b/drivers/video/aty/mach64_cursor.
  		}
  
 +		h = cursor->image.height;
-+
++		
  		/*
 -		 * In doublescan mode, the cursor location also needs to be
 -		 * doubled.
@@ -80,8 +85,7 @@ diff -Nru a/drivers/video/aty/mach64_cursor.c b/drivers/video/aty/mach64_cursor.
  	}
  
 
-
-
+--Boundary-00=_a0lkB61S7EafUik--
 
 
 -------------------------------------------------------

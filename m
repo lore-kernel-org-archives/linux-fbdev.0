@@ -1,17 +1,15 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: More Fbdev policies.
-Date: Sat, 6 Jul 2002 03:14:03 +0200
+From: James Simmons <jsimmons@transvirtual.com>
+Subject: [PATCH] fbdev updates.
+Date: Mon, 8 Jul 2002 14:23:52 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <ag7d53$ptg$2@main.gmane.org>
-References: <Pine.LNX.4.44.0207051302300.30731-100000@www.transvirtual.com>
+Message-ID: <Pine.LNX.4.44.0207081420020.7699-100000@www.transvirtual.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail.clsp.jhu.edu ([128.220.34.27])
-	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17QuI3-0001MV-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 06 Jul 2002 11:28:16 -0700
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0207051302300.30731-100000@www.transvirtual.com>
+Received: from www.transvirtual.com ([206.14.214.140])
+	by usw-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17RfzH-0001qW-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 08 Jul 2002 14:24:03 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,34 +19,100 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@transvirtual.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi!
 
-> Recently I was porting several fbdev drivers over to the new api. Some
-> driver writers asked to have the changes reverted. So anyone who wants the
-> drivers reverted to the previous state say so. I will revert them. I did
-> this not to break any drivers but have a smooth transition. This will not
-> be the case now.
-> 
-> NOTE:
->    I will begin change the upper fbdev layer monday thus breaking most
-> if not all drivers. It is up to the maintainers to fix them. If not
-> fixed by the end of the developement cycle they will be dropped.
+Here is the updates to the fbdev layer. I removed a few driver
+modification for the authors that requested. Please note I removed th eold
+fbgen code. It will break some drivers. They are responsible for updating
+the drivers. Here are changes against the latest Linus BK tree.
 
-End of development cycle == 2.6.0 or 2.6.20? It would probably make
-sense to only mark them broken for stable series, they are pretty
-likely to be fixed there.
-								Pavel
--- 
-Worst form of spam? Adding advertisment signatures ala sourceforge.net.
-What goes next? Inserting advertisment *into* email?
+Updates to several drivers form the m68k platform and removal of the PPC
+VT excess code.
+
+ Documentation/fb/README-sstfb.txt        |   87 +
+ arch/i386/boot/compressed/vmlinux.bin.gz |binary
+ arch/ppc/Config.help                     |    6
+ arch/ppc/config.in                       |    3
+ drivers/char/vt.c                        |   66 -
+ drivers/video/Config.help                |   22
+ drivers/video/Config.in                  |   80 -
+ drivers/video/Makefile                   |   15
+ drivers/video/S3triofb.c                 |   19
+ drivers/video/amifb.c                    |   81 -
+ drivers/video/atafb.c                    |  376 ++++----
+ drivers/video/aty/atyfb.h                |   18
+ drivers/video/aty/atyfb_base.c           |  348 ++-----
+ drivers/video/aty/mach64.h               | 1158 -------------------------
+ drivers/video/aty/mach64_accel.c         |    2
+ drivers/video/aty/mach64_ct.c            |    4
+ drivers/video/aty/mach64_cursor.c        |   12
+ drivers/video/aty/mach64_gx.c            |    2
+ drivers/video/aty128.h                   |  352 -------
+ drivers/video/aty128fb.c                 |   32
+ drivers/video/chipsfb.c                  |   29
+ drivers/video/controlfb.c                |   21
+ drivers/video/dnfb.c                     |   19
+ drivers/video/fbcon-mac.c                |  483 ----------
+ drivers/video/fbcon-vga.c                |  213 ----
+ drivers/video/fbgen.c                    |  347 -------
+ drivers/video/fbmem.c                    |    2
+ drivers/video/fm2fb.c                    |    3
+ drivers/video/fonts.c                    |    4
+ drivers/video/hpfb.c                     |    3
+ drivers/video/imsttfb.c                  |   56 -
+ drivers/video/macfb.c                    |  463 ++--------
+ drivers/video/macmodes.c                 |  171 ---
+ drivers/video/matrox/matroxfb_base.c     |   27
+ drivers/video/matrox/matroxfb_base.h     |    6
+ drivers/video/modedb.c                   |    4
+ drivers/video/neofb.c                    |    7
+ drivers/video/offb.c                     | 1130 +++++++++---------------
+ drivers/video/platinumfb.c               |   26
+ drivers/video/q40fb.c                    |    8
+ drivers/video/retz3fb.c                  |    4
+ drivers/video/sgivwfb.c                  | 1432 +++++++++++++------------------
+ drivers/video/sgivwfb.h                  |  660 --------------
+ drivers/video/sstfb.c                    |  958 +++++++++++---------
+ drivers/video/sstfb.h                    |   73 +
+ drivers/video/tdfxfb.c                   |   55 -
+ drivers/video/tx3912fb.c                 |    2
+ drivers/video/valkyriefb.c               |   26
+ drivers/video/vesafb.c                   |   12
+ drivers/video/vfb.c                      |    4
+ include/asm-ppc/vc_ioctl.h               |   46
+ include/asm-ppc64/vc_ioctl.h             |   50 -
+ include/linux/pci_ids.h                  |    1
+ include/linux/tty.h                      |    3
+ include/video/aty128.h                   |  419 +++++++++
+ include/video/mach64.h                   | 1158 +++++++++++++++++++++++++
+ include/video/sgivw.h                    |  660 ++++++++++++++
+ 58 files changed, 4571 insertions(+), 6697 deletions(-)
+
+BK:
+   http://fbdev-2.5.bkbits.net/fbdev-2.5
+
+diff:
+
+   http://www.transvirtual.com/~jsimmons/fbdev.diff.gz
+
+   . ---
+   |o_o |
+   |:_/ |   Give Micro$oft the Bird!!!!
+  //   \ \  Use Linux!!!!
+ (|     | )
+ /'\_   _/`\
+ \___)=(___/
+
+
+
+
 
 
 -------------------------------------------------------
 This sf.net email is sponsored by:ThinkGeek
-Got root? We do.
+Oh, it's good to be a geek.
 http://thinkgeek.com/sf

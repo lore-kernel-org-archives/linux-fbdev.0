@@ -1,21 +1,27 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: Multiple drivers for same hardware:, was: DRM and pci_driver conversion
-Date: Thu, 23 Oct 2003 20:47:01 -0700 (PDT)
+From: Jamey Hicks <jamey.hicks@hp.com>
+Subject: lcd and backlight module class
+Date: Thu, 23 Oct 2003 10:39:38 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20031024034701.16514.qmail@web14915.mail.yahoo.com>
-References: <3F987E18.9080606@pobox.com>
+Message-ID: <3F97E82A.20001@hp.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1ACswZ-0001le-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 23 Oct 2003 20:48:56 -0700
-Received: from web14915.mail.yahoo.com ([216.136.225.228])
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.22)
-	id 1ACsuv-00084Q-Cm
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Oct 2003 20:47:13 -0700
-In-Reply-To: <3F987E18.9080606@pobox.com>
+	id 1ACtOZ-000427-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 23 Oct 2003 21:17:52 -0700
+Received: from crl-mail.crl.dec.com ([192.58.206.9])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.22)
+	id 1ACgfk-00029q-Cf
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Oct 2003 07:42:44 -0700
+Received: from quabbin.crl.dec.com (quabbin.crl.dec.com [16.11.0.45])
+	by crl-mail.crl.dec.com (8.12.8/8.12.5) with ESMTP id h9NEe8Go008333
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 23 Oct 2003 10:40:08 -0400
+Received: from hp.com (thorin.crl.dec.com [16.11.100.19])
+	by quabbin.crl.dec.com (8.12.10/8.12.10) with ESMTP id h9NEe8Hq445592
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 23 Oct 2003 10:40:08 -0400 (EDT)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -25,40 +31,41 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jeff Garzik <jgarzik@pobox.com>, Linus Torvalds <torvalds@osdl.org>
-Cc: Jon Smirl <jonsmirl@yahoo.com>, Eric Anholt <eta@lclark.edu>, kronos@kronoz.cjb.net, Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net, dri-devel <dri-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-What about the fundamental question? We have several pairs of device drivers
-that want to control the same hardware. One example would be radeon DRM and
-radeon Framebuffer. How should these drivers coordinate probing and claiming
-resources?
+A while back I posted a note to arm-linux-kernel about developing some 
+low-level API's to separate out platform-specific code from drivers such 
+as sa1100fb.c.
+  
+http://lists.arm.linux.org.uk/pipermail/linux-arm-kernel/2003-July/016235.html
 
-What should be the policy for multiple drivers?
-1) try new probe first and fall back to old scheme. First driver that loads
-gets the new probe, second gets the old. First driver reserves resources.
-2) Require a mini driver that handles probing. Then both drivers attach to the
-mini driver.
-3) Declare it illegal and make the drivers merge.
-4) Declare it illegal and only allow first one loaded to run.
+As a particular example, the sa1100fb driver is cluttered with the 
+platform initialization and control code for the many SA11x0-based 
+platforms supported by the ARM linux kernel.  My thought is that the new 
+device model gives a good framework to decouple the fbdev drivers and 
+the platforms.  I've been busy with other things, so progress on this 
+has been slower than I hoped.  But I have prototyped it.  For usespace 
+access to these controls, I envision sysfs attributes.  I also think 
+that the fb drivers might register an interface with the lcd/backlight 
+classes so that they can be notified if an LCD is hotplugged.  It  would 
+also help loosen the dependence on link/initialization order.
 
-Right now radeonfb handles probing and resource reservation. DRM works in
-stealth mode. DRM uses all of the resources and never tells the kernel, that's
-how it avoids conflicting with framebuffer.
+Anyway, please review and comment on this patch:
 
-DRM and framebuffer trade off control at VT switch. 2D state is save and
-restored. There is an assumption that framebuffer won't mess with the 3D state.
- I'm not sure that suspend/resume are coordinated in any way.
+http://www.arm.linux.org.uk/developer/patches/viewpatch.php?id=1696/1
 
-=====
-Jon Smirl
-jonsmirl@yahoo.com
+There are uses of lcd module in subsequent ipaq patches, such as this
+one:
+http://www.arm.linux.org.uk/developer/patches/viewpatch.php?id=1699/1
 
-__________________________________
-Do you Yahoo!?
-The New Yahoo! Shopping - with improved product search
-http://shopping.yahoo.com
+Thanks,
+Jamey Hicks
+
+
+
+
+
 
 
 -------------------------------------------------------

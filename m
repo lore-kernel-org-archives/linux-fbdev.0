@@ -1,24 +1,18 @@
 From: David Eger <eger@havoc.gtf.org>
-Subject: fb modules and taking over console after boot
-Date: Tue, 15 Jun 2004 14:43:22 -0400
+Subject: cirrusfb status report
+Date: Tue, 15 Jun 2004 14:53:55 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040615184322.GA9338@havoc.gtf.org>
+Message-ID: <20040615185355.GA12307@havoc.gtf.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BaIuC-0001I4-0b
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Jun 2004 11:43:32 -0700
+	id 1BaJD4-0003Y0-RI
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Jun 2004 12:03:02 -0700
 Received: from havoc.gtf.org ([216.162.42.101])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BaIuB-0006eA-Ju
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Jun 2004 11:43:31 -0700
-Received: from havoc.gtf.org (havoc.gtf.org [127.0.0.1])
-	by havoc.gtf.org (Postfix) with ESMTP id D7C1D759D
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 15 Jun 2004 14:43:22 -0400 (EDT)
-Received: (from eger@localhost)
-	by havoc.gtf.org (8.12.10/8.12.10/Submit) id i5FIhMTd012294
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Jun 2004 14:43:22 -0400
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BaJD4-0000B1-Do
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Jun 2004 12:03:02 -0700
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,13 +25,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Jeff Garzik <garzik@havoc.gtf.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-In Linux 2.6 -- It seems as though, for fbcon to take over the console,
-the relevant fb driver has to be built in to the kernel and the card
-detected during the boot sequence..  does anyone ever insert an fb driver
-as a module?  If so, which fb driver, and what do you do with it?  Just
-curious...
+So I have the cirrus fb driver ported to 2.6, with a few caveats:
+
++ ZORRO is busted (don't have the hardware... once i get things nice
+  on x86, I'll look about fixing ZORRO.  Hey geert - do you still have
+  hardware to test this>?)
++ the only mode it likes is 640x480 (but then, that's the only one 
+  i got working with the 2.4 driver, so, maybe that's not a regression...)
++ inserting it as a module just leaves crap all over the screen
+
+I ended up doing a lot of things like 's/fb_info/cinfo/g' so the diff
+is gonna look like the whole file, though I haven't (yet) changed any
+of the actual register-writing logic.
+
+Is there anyone else with cirrus logic video boards lying around who will
+be interested in testing the new driver in a couple of days?
 
 -dte
 

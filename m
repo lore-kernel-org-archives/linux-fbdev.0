@@ -1,21 +1,22 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] radeonfb(): memmove() fix -- this one works ;-)
-Date: Mon, 19 Apr 2004 11:50:19 +1000
+Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
+	one works ;-)
+Date: Mon, 19 Apr 2004 11:52:57 +1000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1082339419.15103.0.camel@gaston>
+Message-ID: <1082339577.15101.4.camel@gaston>
 References: <Pine.LNX.4.58.0404190339060.2288@rosencrantz.theboonies.us>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BFO15-0000AS-Ed
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 18 Apr 2004 18:56:11 -0700
+	id 1BFO3h-0000xZ-Gp
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 18 Apr 2004 18:58:53 -0700
 Received: from gate.crashing.org ([63.228.1.57] ident=root)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1BFO15-00061g-7e
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 18 Apr 2004 18:56:11 -0700
+	id 1BFO3h-00076e-32
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 18 Apr 2004 18:58:53 -0700
 In-Reply-To: <Pine.LNX.4.58.0404190339060.2288@rosencrantz.theboonies.us>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,10 +28,10 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: David Eger <eger@theboonies.us>
+To: David Eger <eger-dated-1082943669.d79d33@theboonies.us>, James Simmons <jsimmons@infradead.org>
 Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Mon, 2004-04-19 at 11:46, David Eger wrote:
+,On Mon, 2004-04-19 at 11:46, David Eger wrote:
 > Dear Ben,
 > 
 > Please apply this patch to the radeonfb driver (I think of you as the
@@ -43,7 +44,10 @@ On Mon, 2004-04-19 at 11:46, David Eger wrote:
 > space) -- little details like that just float past the eye...  no problem
 > with fbcon at all, as i previously speculated.  apologies to james.
 
-Excellent. Thanks.
+BTW, James, did we decide what is the best way to set fbcon accel
+mode ? For drivers with copyarea accelerated, we want YMOVE. I'd like
+a patch to send Linus/Andrew asap along with some pending radeonfb
+fixes for that.
 
 Ben.
 

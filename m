@@ -1,15 +1,15 @@
-From: Art Haas <ahaas@airmail.net>
-Subject: [PATCH] C99 initializers for drivers/video files
-Date: Wed, 2 Apr 2003 09:04:05 -0600
+From: Antonino Daplas <adaplas@pol.net>
+Subject: [PATCH]  Getting the EDID block for x86
+Date: 02 Apr 2003 23:41:53 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030402150405.GB22242@debian>
+Message-ID: <1049298092.5239.56.camel@localhost.localdomain>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from covert.brown-ring.iadfw.net ([209.196.123.142])
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 190jmg-00019p-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 02 Apr 2003 07:04:14 -0800
-Content-Disposition: inline
+Received: from pine.compass.com.ph ([202.70.96.37])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 190kSY-0006Pf-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 02 Apr 2003 07:47:30 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,280 +20,151 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: Linus Torvalds <torvalds@transmeta.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel List <linux-kernel@vger.kernel.org>, James Simmons <jsimmons@infradead.org>
 
-Hi.
+Hi Linus,
 
-Here are a set of patches converting various files in drivers/video to
-use C99 initializers. pm2fb.c and retz3fb.c do not compile as they
-haven't been converted to the new framebuffer code, but the patches
-converting the existing files are included here regardless. The patches
-are against the current BK.
+Attached is a diff against 2.5.66 which gets the EDID block via VBE/DDC
+service.  This is done before switching to protected mode.
 
-Art Haas
+It's useful for video drivers to have some kind of information about the
+primary display's operating limits and capability.  Please, kindly
+apply.
 
-===== drivers/video/pm2fb.c 1.17 vs edited =====
---- 1.17/drivers/video/pm2fb.c	Sun Feb 16 12:36:47 2003
-+++ edited/drivers/video/pm2fb.c	Tue Apr  1 19:30:16 2003
-@@ -1434,24 +1434,24 @@
- }
+Tony
+
+diff -Naur linux-2.5.66-orig/arch/i386/boot/compressed/misc.c linux-2.5.66-edid/arch/i386/boot/compressed/misc.c
+--- linux-2.5.66-orig/arch/i386/boot/compressed/misc.c	2003-02-16 00:47:53.000000000 +0000
++++ linux-2.5.66-edid/arch/i386/boot/compressed/misc.c	2003-04-02 13:54:55.000000000 +0000
+@@ -12,6 +12,7 @@
+ #include <linux/linkage.h>
+ #include <linux/vmalloc.h>
+ #include <linux/tty.h>
++#include <video/edid.h>
+ #include <asm/io.h>
  
- static struct display_switch pm2_cfb8 = {
--	.setup =	fbcon_cfb8_setup,
--	.bmove =	pm2fb_pp_bmove,
-+	.setup		= fbcon_cfb8_setup,
-+	.bmove		= pm2fb_pp_bmove,
- #ifdef __alpha__
- 	/* Not sure why, but this works and the other does not. */
- 	/* Also, perhaps we need a separate routine to wait for the
- 	   blitter to stop before doing this? */
- 	/* In addition, maybe we need to do this for 16 and 32 bit depths? */
--	.clear =	fbcon_cfb8_clear,
-+	.clear		= fbcon_cfb8_clear,
- #else
--	.clear =	pm2fb_clear8,
-+	.clear		= pm2fb_clear8,
+ /*
+@@ -91,6 +92,7 @@
+ #define ALT_MEM_K   (*(unsigned long *)(real_mode + 0x1e0))
  #endif
--	.putc =		fbcon_cfb8_putc,
--	.putcs =	fbcon_cfb8_putcs,
--	.revc =		fbcon_cfb8_revc,
--	.cursor =	pm2fb_cursor,
--	.set_font =	pm2fb_set_font,
--	.clear_margins =pm2fb_clear_margins8,
--	fontwidthmask:	FONTWIDTH(4)|FONTWIDTH(8)|FONTWIDTH(12)|FONTWIDTH(16) };
-+	.putc		= fbcon_cfb8_putc,
-+	.putcs		= fbcon_cfb8_putcs,
-+	.revc		= fbcon_cfb8_revc,
-+	.cursor		= pm2fb_cursor,
-+	.set_font	= pm2fb_set_font,
-+	.clear_margins	= pm2fb_clear_margins8,
-+	.fontwidthmask	= FONTWIDTH(4)|FONTWIDTH(8)|FONTWIDTH(12)|FONTWIDTH(16) };
- #endif /* FBCON_HAS_CFB8 */
+ #define SCREEN_INFO (*(struct screen_info *)(real_mode+0))
++#define EDID_INFO   (*(struct edid_info *)(real_mode+0x440))
  
- #ifdef FBCON_HAS_CFB16
-===== drivers/video/retz3fb.c 1.18 vs edited =====
---- 1.18/drivers/video/retz3fb.c	Tue Feb 25 13:05:23 2003
-+++ edited/drivers/video/retz3fb.c	Wed Feb 26 18:19:05 2003
-@@ -1589,13 +1589,13 @@
+ extern char input_data[];
+ extern int input_len;
+diff -Naur linux-2.5.66-orig/arch/i386/boot/video.S linux-2.5.66-edid/arch/i386/boot/video.S
+--- linux-2.5.66-orig/arch/i386/boot/video.S	2002-12-16 02:07:50.000000000 +0000
++++ linux-2.5.66-edid/arch/i386/boot/video.S	2003-04-02 14:06:09.000000000 +0000
+@@ -135,6 +135,7 @@
+ #endif /* CONFIG_VIDEO_RETAIN */
+ #endif /* CONFIG_VIDEO_SELECT */
+ 	call	mode_params			# Store mode parameters
++	call	store_edid
+ 	popw	%ds				# Restore original DS
+ 	ret
  
+@@ -1887,6 +1888,39 @@
+ 	popw	%ax
+ 	ret
  
- static struct display_switch fbcon_retz3_8 = {
--    setup:		fbcon_cfb8_setup,
--    bmove:		retz3_8_bmove,
--    clear:		retz3_8_clear,
--    putc:		retz3_putc,
--    putcs:		retz3_putcs,
--    revc:		retz3_revc,
--    clear_margins:	retz3_clear_margins,
--    fontwidthmask:	FONTWIDTH(8)
-+	.setup		= fbcon_cfb8_setup,
-+	.bmove		= retz3_8_bmove,
-+	.clear		= retz3_8_clear,
-+	.putc		= retz3_putc,
-+	.putcs		= retz3_putcs,
-+	.revc		= retz3_revc,
-+	.clear_margins	= retz3_clear_margins,
-+	.fontwidthmask	= FONTWIDTH(8)
++store_edid:
++	pushw	%es				# just save all registers 
++	pushw	%ax				
++	pushw	%bx
++	pushw   %cx
++	pushw	%dx
++	pushw   %di
++
++	pushw	%fs                             
++	popw    %es
++
++	movl	$0x13131313, %eax		# memset block with 0x13
++	movw    $32, %cx
++	movw	$0x440, %di
++	cld
++	rep 
++	stosl  
++
++	movw	$0x4f15, %ax                    # do VBE/DDC 
++	movw	$0x01, %bx
++	movw	$0x00, %cx
++	movw    $0x01, %dx
++	movw	$0x440, %di
++	int	$0x10	
++
++	popw	%di				# restore all registers        
++	popw	%dx
++	popw	%cx
++	popw	%bx
++	popw	%ax
++	popw	%es	
++	ret
++
+ # VIDEO_SELECT-only variables
+ mt_end:		.word	0	# End of video mode table if built
+ edit_buf:	.space	6	# Line editor buffer
+diff -Naur linux-2.5.66-orig/arch/i386/kernel/setup.c linux-2.5.66-edid/arch/i386/kernel/setup.c
+--- linux-2.5.66-orig/arch/i386/kernel/setup.c	2003-03-29 12:36:36.000000000 +0000
++++ linux-2.5.66-edid/arch/i386/kernel/setup.c	2003-04-02 13:56:21.000000000 +0000
+@@ -37,6 +37,7 @@
+ #include <linux/console.h>
+ #include <linux/root_dev.h>
+ #include <linux/highmem.h>
++#include <video/edid.h>
+ #include <asm/e820.h>
+ #include <asm/mpspec.h>
+ #include <asm/edd.h>
+@@ -85,7 +86,7 @@
+ 	unsigned short length;
+ 	unsigned char table[0];
  };
- #endif
-===== drivers/video/sis/sis_main.h 1.9 vs edited =====
---- 1.9/drivers/video/sis/sis_main.h	Fri Mar  7 13:19:02 2003
-+++ edited/drivers/video/sis/sis_main.h	Mon Mar 24 11:49:23 2003
-@@ -286,43 +286,43 @@
- static int    video_type = FB_TYPE_PACKED_PIXELS;
+-
++struct edid_info edid_info;
+ struct e820map e820;
  
- static struct fb_var_screeninfo default_var = {
--	xres:           0,
--	yres:           0,
--	xres_virtual:   0,
--	yres_virtual:   0,
--	xoffset:        0,
--	yoffset:        0,
--	bits_per_pixel: 0,
--	grayscale:      0,
--	red:            {0, 8, 0},
--	green:          {0, 8, 0},
--	blue:           {0, 8, 0},
--	transp:         {0, 0, 0},
--	nonstd:         0,
--	activate:       FB_ACTIVATE_NOW,
--	height:         -1,
--	width:          -1,
--	accel_flags:    0,
--	pixclock:       0,
--	left_margin:    0,
--	right_margin:   0,
--	upper_margin:   0,
--	lower_margin:   0,
--	hsync_len:      0,
--	vsync_len:      0,
--	sync:           0,
--	vmode:          FB_VMODE_NONINTERLACED,
-+	.xres		= 0,
-+	.yres		= 0,
-+	.xres_virtual	= 0,
-+	.yres_virtual	= 0,
-+	.xoffset	= 0,
-+	.yoffset	= 0,
-+	.bits_per_pixel	= 0,
-+	.grayscale	= 0,
-+	.red		= {0, 8, 0},
-+	.green		= {0, 8, 0},
-+	.blue		= {0, 8, 0},
-+	.transp		= {0, 0, 0},
-+	.nonstd		= 0,
-+	.activate	= FB_ACTIVATE_NOW,
-+	.height		= -1,
-+	.width		= -1,
-+	.accel_flags	= 0,
-+	.pixclock	= 0,
-+	.left_margin	= 0,
-+	.right_margin	= 0,
-+	.upper_margin	= 0,
-+	.lower_margin	= 0,
-+	.hsync_len	= 0,
-+	.vsync_len	= 0,
-+	.sync		= 0,
-+	.vmode		= FB_VMODE_NONINTERLACED,
- #if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0)	
--	reserved:       {0, 0, 0, 0, 0, 0}
-+	.reserved	= {0, 0, 0, 0, 0, 0}
- #endif	
- };
- 
- #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0)
- static struct fb_fix_screeninfo sisfb_fix = {
--	id:		"SiS",
--	type:		FB_TYPE_PACKED_PIXELS,
--	xpanstep:	1,
--	ypanstep:	1,
-+	.id		= "SiS",
-+	.type		= FB_TYPE_PACKED_PIXELS,
-+	.xpanstep	= 1,
-+	.ypanstep	= 1,
- };
- static char myid[20];
- static u32 pseudo_palette[17];
-===== drivers/video/radeonfb.c 1.20 vs edited =====
---- 1.20/drivers/video/radeonfb.c	Tue Jan 28 14:28:57 2003
-+++ edited/drivers/video/radeonfb.c	Wed Apr  2 07:02:45 2003
-@@ -3111,10 +3111,10 @@
- 
- 
- static struct pci_driver radeonfb_driver = {
--	name:		"radeonfb",
--	id_table:	radeonfb_pci_table,
--	probe:		radeonfb_pci_register,
--	remove:		__devexit_p(radeonfb_pci_unregister),
-+	.name		= "radeonfb",
-+	.id_table	= radeonfb_pci_table,
-+	.probe		= radeonfb_pci_register,
-+	.remove		= __devexit_p(radeonfb_pci_unregister),
- };
- 
- 
-===== drivers/video/tridentfb.c 1.6 vs edited =====
---- 1.6/drivers/video/tridentfb.c	Mon Mar  3 21:41:18 2003
-+++ edited/drivers/video/tridentfb.c	Wed Apr  2 07:03:26 2003
-@@ -1204,10 +1204,10 @@
- MODULE_DEVICE_TABLE(pci,trident_devices); 
- 
- static struct pci_driver tridentfb_pci_driver = {
--	name:"tridentfb",
--	id_table:trident_devices,
--	probe:trident_pci_probe,
--	remove:__devexit_p(trident_pci_remove)
-+	.name		= "tridentfb",
-+	.id_table	= trident_devices,
-+	.probe		= trident_pci_probe,
-+	.remove		= __devexit_p(trident_pci_remove)
- };
- 
- int __init tridentfb_init(void)
-===== drivers/video/riva/fbdev.c 1.40 vs edited =====
---- 1.40/drivers/video/riva/fbdev.c	Fri Feb 28 12:40:11 2003
-+++ edited/drivers/video/riva/fbdev.c	Wed Apr  2 07:02:04 2003
-@@ -297,34 +297,34 @@
- #endif
- 
- static struct fb_fix_screeninfo rivafb_fix = {
--	id:		"nVidia",
--	type:		FB_TYPE_PACKED_PIXELS,
--	xpanstep:	1,
--	ypanstep:	1,
-+	.id		= "nVidia",
-+	.type		= FB_TYPE_PACKED_PIXELS,
-+	.xpanstep	= 1,
-+	.ypanstep	= 1,
- };
- 
- static struct fb_var_screeninfo rivafb_default_var = {
--	xres:		640,
--	yres:		480,
--	xres_virtual:	640,
--	yres_virtual:	480,
--	bits_per_pixel:	8,
--	red:		{0, 8, 0},
--	green:		{0, 8, 0},
--	blue:		{0, 8, 0},
--	transp:		{0, 0, 0},
--	activate:	FB_ACTIVATE_NOW,
--	height:		-1,
--	width:		-1,
--	accel_flags:	FB_ACCELF_TEXT,
--	pixclock:	39721,
--	left_margin:	40,
--	right_margin:	24,
--	upper_margin:	32,
--	lower_margin:	11,
--	hsync_len:	96,
--	vsync_len:	2,
--	vmode:		FB_VMODE_NONINTERLACED
-+	.xres		= 640,
-+	.yres		= 480,
-+	.xres_virtual	= 640,
-+	.yres_virtual	= 480,
-+	.bits_per_pixel	= 8,
-+	.red		= {0, 8, 0},
-+	.green		= {0, 8, 0},
-+	.blue		= {0, 8, 0},
-+	.transp		= {0, 0, 0},
-+	.activate	= FB_ACTIVATE_NOW,
-+	.height		= -1,
-+	.width		= -1,
-+	.accel_flags	= FB_ACCELF_TEXT,
-+	.pixclock	= 39721,
-+	.left_margin	= 40,
-+	.right_margin	= 24,
-+	.upper_margin	= 32,
-+	.lower_margin	= 11,
-+	.hsync_len	= 96,
-+	.vsync_len	= 2,
-+	.vmode		= FB_VMODE_NONINTERLACED
- };
- 
- /* from GGI */
-@@ -1984,10 +1984,10 @@
- #endif /* !MODULE */
- 
- static struct pci_driver rivafb_driver = {
--	name:		"rivafb",
--	id_table:	rivafb_pci_tbl,
--	probe:		rivafb_probe,
--	remove:		__exit_p(rivafb_remove),
-+	.name		= "rivafb",
-+	.id_table	= rivafb_pci_tbl,
-+	.probe		= rivafb_probe,
-+	.remove		= __exit_p(rivafb_remove),
- };
- 
- 
--- 
-To announce that there must be no criticism of the President, or that we
-are to stand by the President, right or wrong, is not only unpatriotic
-and servile, but is morally treasonable to the American public.
- -- Theodore Roosevelt, Kansas City Star, 1918
+ unsigned char aux_device_present;
+@@ -883,6 +884,7 @@
+  	ROOT_DEV = ORIG_ROOT_DEV;
+  	drive_info = DRIVE_INFO;
+  	screen_info = SCREEN_INFO;
++	edid_info = EDID_INFO;
+ 	apm_info.bios = APM_BIOS_INFO;
+ 	saved_videomode = VIDEO_MODE;
+ 	printk("Video mode to be used for restore is %lx\n", saved_videomode);
+diff -Naur linux-2.5.66-orig/include/asm-i386/setup.h linux-2.5.66-edid/include/asm-i386/setup.h
+--- linux-2.5.66-orig/include/asm-i386/setup.h	2002-12-16 02:08:12.000000000 +0000
++++ linux-2.5.66-edid/include/asm-i386/setup.h	2003-04-02 13:53:34.000000000 +0000
+@@ -37,6 +37,7 @@
+ #define KERNEL_START (*(unsigned long *) (PARAM+0x214))
+ #define INITRD_START (*(unsigned long *) (PARAM+0x218))
+ #define INITRD_SIZE (*(unsigned long *) (PARAM+0x21c))
++#define EDID_INFO   (*(struct edid_info *) (PARAM+0x440))
+ #define EDD_NR     (*(unsigned char *) (PARAM+EDDNR))
+ #define EDD_BUF     ((struct edd_info *) (PARAM+EDDBUF))
+ #define COMMAND_LINE ((char *) (PARAM+2048))
+diff -Naur linux-2.5.66-orig/include/video/edid.h linux-2.5.66-edid/include/video/edid.h
+--- linux-2.5.66-orig/include/video/edid.h	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.5.66-edid/include/video/edid.h	2003-04-02 13:52:50.000000000 +0000
+@@ -0,0 +1,14 @@
++#ifndef __linux_video_edid_h__
++#define __linux_video_edid_h__
++
++#include <linux/config.h>
++
++#ifdef CONFIG_X86
++struct edid_info {
++	unsigned char dummy[128];
++};
++
++extern struct edid_info edid_info;
++#endif /* CONFIG_X86 */
++
++#endif /* __linux_video_edid_h__ */
+
+
+
+
 
 
 -------------------------------------------------------

@@ -1,21 +1,21 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH] neofb patches
-Date: Wed, 21 Apr 2004 18:47:16 +0100 (BST)
+Subject: Re: atyfb correction for 3D Rage Mobility L
+Date: Wed, 21 Apr 2004 18:51:01 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0404211840040.9207-100000@phoenix.infradead.org>
-References: <20040421011412.GA32047@foogod.com>
+Message-ID: <Pine.LNX.4.44.0404211849460.9207-100000@phoenix.infradead.org>
+References: <408681FA.50607@free.fr>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BGLod-00072O-VX
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 10:47:19 -0700
+	id 1BGLsI-0008AA-U2
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 10:51:06 -0700
 Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1BGLoc-000248-MO
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 10:47:19 -0700
-In-Reply-To: <20040421011412.GA32047@foogod.com>
+	id 1BGLsI-0003Sn-Ko
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 10:51:06 -0700
+In-Reply-To: <408681FA.50607@free.fr>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,73 +27,45 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alex Stewart <alex@foogod.com>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Geert Uytterhoeven <geert@linux-m68k.org>
+To: Arnaud FONTAINE <arnaud.fontaine@free.fr>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
 
-> Sorry I took a little while to get these out..  Had a bit busier weekend than I
-> expected..
+Yes those are the correct values. They are in a newer ATI driver I have. I 
+looked at the default 2.6.5 code and it looks correct. Are you sure you 
+are not using a modified driver?
+
+
+On Wed, 21 Apr 2004, Arnaud FONTAINE wrote:
+
+> Hi,
+> I'm running a Debian sarge on an iBook SE with a 2.6.5 kernel.
+> My iBook contains a "3D Rage Mobility L" and I've had some troubles with
+> the atyfb: my screen was turning blank.
 > 
-> Attached are my patches for the neofb driver.  All of these are against the
-> 2.6.5 kernel.  I'm still kinda new to the whole framebuffer subsystem, so if
-> I've done something horribly wrong, let me know.  
-
-I have the same chipset. I have the new driver posted at my website. I 
-tried your patchs but I had no luck.
-
-> Anyway, the attached patches are as follows:
+> I've modified the MCLCK and XCLCK of the "3D Rage Mobility L" in
+> drivers/video/aty/atyfb_base.c :
 > 
-> neofb.1.copyarea.patch  - Fix copyarea positioning bug
-
-Yeap. Really bad bug. I fixed it in the new driver.
-
-> neofb.2.imageblit.patch - Fix imageblit for color images
+> # old version
+> 	{ 0x4c4e, 0x4c4e, 0x00, 0x00, m64n_mob_a, 230, 83, 125, M64F_GT |
+> M64F_INTEGRATED | M64F_RESET_3D | M64F_GTB_DSP | M64F_MOBIL_BUS |
+> M64F_MFB_FORCE_4 }
 > 
->   It looks like the imageblit routine was written with only mono blits in 
->   mind. This patch adds support for color image transfers (Hi Tux!).
-
-I tried this patch. My boot wouldn't boot with this patch. Mind you I 
-never got the imageblit to work right.
-
-> neofb.3.16bit.patch     - Misc fixes for 16-bit mode
->
->   Changed the visual reported for 16-bit mode from DirectColor to TrueColor,
->   since we don't support changing the colormap, which means we don't really
->   support DirectColor.  Also changed the palette entries for to be 32 bits 
->   wide even for 16-bit mode because this is what the logo code expects, 
->   and appears to be the correct way of doing things.
-
-I haven't tried this one yet. Geert is this right?
-
-> neofb.4.24bit.patch     - Make 24-bit mode work
 > 
->   Added a couple of switch cases needed to make 24-bit mode actually work.
->   The colormap setting code also needed to be moved to be after vgaHWRestore,
->   so that the DAC would be configured properly (8-bit lookups) for 24-bit
->   color before writing to the lookup table.
+> # new version
+> 	{ 0x4c4e, 0x4c4e, 0x00, 0x00, m64n_mob_a, 230, 50, 50, M64F_GT |
+> M64F_INTEGRATED | M64F_RESET_3D | M64F_GTB_DSP | M64F_MOBIL_BUS |
+> M64F_MFB_FORCE_4 }
 > 
->   Also, it looks like there's a hardware bug with the NM2200 if you try to do a
->   color-expanded transfer in 24-bit mode and the width of the image is less
->   than 16 pixels wide (The left few pixels of the image seem to get partially
->   wrapped onto the right side.  I haven't tested all cases, actually.. I know
->   it breaks with 8-pixel-width blits), so in that case we just fall back to
->   cfb_imageblit instead.
-
-This can be handled by struct fb_pixmap. It padded image scan_lines to 
-what the hardware can handle or is optimized to.
- 
-> neofb.5.modedb.patch    - Change to use modedb for video mode selection
 > 
->   Allows specifying the video mode on the kernel/insmod command line now too.
-
-Also barfed my machine :-( I really like to get i2c support going. Perhaps 
-we should ask neomagic for the full specs for this chipset.
- 
-> neofb.6.blanking.patch  - Add support for DPMS blanking
-
-Ug. The new neofb driver has been moved over to use the new vga core code.
-See vgastate.c and vga.h in include/video.
-
+> I don't know if these settings are rights for every architectures, but
+> for powerpc it is.
+> 
+> Thanks in advance
+> 
+> Arnaud FONTAINE
+> 
+> 
 
 
 

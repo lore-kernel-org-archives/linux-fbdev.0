@@ -1,23 +1,23 @@
-From: Kronos <kronos@kronoz.cjb.net>
-Subject: Re: tdfx & multiple voodoo cards : supposed to work ?
-Date: Wed, 29 Oct 2003 21:25:44 +0100
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: set_par/check-var vs. fbcon
+Date: Thu, 30 Oct 2003 09:09:44 +1100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20031029202544.GA8953@dreamland.darkstar.lan>
-References: <20031029093653.GA4626@iliana> <20031029182532.GA1662@dreamland.darkstar.lan> <20031029195627.GA13626@iliana>
-Reply-To: kronos@kronoz.cjb.net
+Message-ID: <1067465383.27088.25.camel@gaston>
+References: <Pine.GSO.4.21.0310291035480.10663-100000@waterleaf.sonytel.be>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1AEwt9-0006qT-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 29 Oct 2003 12:25:55 -0800
-Received: from mail-8.tiscali.it ([195.130.225.154])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AEwt9-0000gt-Eb
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 29 Oct 2003 12:25:55 -0800
-Content-Disposition: inline
-In-Reply-To: <20031029195627.GA13626@iliana>
+	id 1AEyWJ-0004kF-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 29 Oct 2003 14:10:27 -0800
+Received: from pentafluge.infradead.org ([213.86.99.235])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.24)
+	id 1AEyWI-0008Aw-PX
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 29 Oct 2003 14:10:27 -0800
+In-Reply-To: <Pine.GSO.4.21.0310291035480.10663-100000@waterleaf.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -28,36 +28,25 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Sven Luther <sven.luther@wanadoo.fr>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Il Wed, Oct 29, 2003 at 08:56:27PM +0100, Sven Luther ha scritto: 
-> On Wed, Oct 29, 2003 at 07:25:32PM +0100, Kronos wrote:
-> > Il Wed, Oct 29, 2003 at 10:36:53AM +0100, Sven Luther ha scritto: 
-> > > Hello,
-> > > 
-> > > I have had a report of someone trying to use two voodoo cards on a
-> > > pegasos/ppc motherboard, and it freezing the kernel (2.4.22 kernel)
-> > > 
-> > > Is the tdfx fbdev supposed to be able to handle dual card setups, or not ?
-> > 
-> > No, the driver has a statically allocated fb_info. It will blow up.
-> 
-> Ok, thought so, i am not sure though.
 
-BTW, looking  at 2.6 it  seems that the  driver will work  with multiple
-cards.  Static vars have been removed so this problem is solved. I'm not
-sure that the  driver itself can handle more than  one card though. Give
-it a try.
+> Can't fbcon/stty create a var for the specified resolution from the
+> modedb/gttf?
 
-Luca
--- 
-Reply-To: kronos@kronoz.cjb.net
-Home: http://kronoz.cjb.net
-"New processes are created by other processes, just like new
- humans. New humans are created by other humans, of course,
- not by processes." -- Unix System Administration Handbook
+Actually, I'd prefer my driver to create a var from the width/height/freq,
+especially since I've brought in EDID stuff, as my driver is the one who
+knows what modes are really useable on the monitor. Or maybe, create an
+"official" way for the driver to expose the modedb it created to fbcon...
+
+This is even more true with iMacs & their fixed -hfreq monitor. I've not
+'fixed' that yet, but ultimately, the driver will have a specific modedb
+as well for the display.
+
+Ben.
+
+
 
 
 -------------------------------------------------------

@@ -1,64 +1,54 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: [PATCH][FBDEV]: generic fb console rotation infrastructure
-Date: 05 Feb 2003 16:38:15 +0800
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [Linux-fbdev-devel] Re: New logo code (fwd)
+Date: Thu, 6 Feb 2003 10:19:56 +0100 (MET)
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1044434293.1170.59.camel@localhost.localdomain>
+Message-ID: <Pine.GSO.4.21.0302061017330.3301-100000@vervain.sonytel.be>
+References: <1044428068.1170.10.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <1044428068.1170.10.camel@localhost.localdomain>
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Linux Kernel List <linux-kernel@vger.kernel.org>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-Hi James,
+On 5 Feb 2003, Antonino Daplas wrote:
+> On Wed, 2003-02-05 at 20:37, Geert Uytterhoeven wrote:
+> > Come on, is there really no one to comment on this??
+> 
+> Actually, I tried the patch before, but it was erased so fast that I
+> never got to see the logo :-)
+> 
+> Anyway, I think it's because logo_lines require logo_height in
+> fbcon_set_display().  logo_height is returned by fb_show_logo(), however
+> fb_show_logo() is called after computing logo_lines.
 
-I decided to add the Console rotation patch which I submitted before to
-linux-2.5.59.  The orientation of the display is determined by the
-valued of display.rotate, and the appropriate drawing functions in
-display.dispsw.  If the display is rotated, fontdata will be prerotated,
-and the appropriate console window dimenstions are swapped if necessary.
+I always see the logo twice. The first time it's erased by the text (because
+initially fbcon thinks logo_height = 0), the second time it's displayed
+correctly.
 
-Currently, this is just an implementation and no hooks are provided yet
-to enable/disable this.  This will require some coordination between the
-console layer and fbdev.
+So I also wondered why it's drawn twice?
 
-Current limitations:
+> So, how about breaking up fb_show_logo() into fb_prepare_logo() and
+> fb_show_logo()?  We can call fb_prepare_logo() to get the logo height
+> for the logo_lines, then do an fb_show_logo() for the actual drawing.
 
-1.  cannot support a fontwidth not a multiple of 8 if rotated 180
-degrees, and a fontheight not a multiple of 8 if rotated by 90 degrees. 
-This is a limitation with fb_imageblit which has no support for bitmap
-clipping.
+OK for me.
 
-2.  code for panning when rotated by 90 degrees is still buggy, so it's
-disabled.
+> Overall, I like it, though it does add some kilobytes to the kernel
+> image size.
 
-3.  minor graphics glitches.
+Why would it increase kernel size that much? The logos were there before as
+well (unless you enable all of them, of course :-).
 
-4.  no support for hardware based rotation, but this should be easy to
-add
+Gr{oetje,eeting}s,
 
-You can test this by defining DEBUG_ROTATE in the following code
-snippet:
+						Geert
 
-#undef DEBUG_ROTATE
-#ifdef DEBUG_ROTATE
-	/*
-	 * change to the appropriate orientation and 
-	 * drawing function to test for rotation
-	 */
-	p->dispsw = &fbcon_180_dispsw;
-	p->rotate = FB_VMODE_ROTATE_180
-	if (p->rotate) 
-		fbcon_rotate_fontdata(p->rotate, p); 
-#endif
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-I've tested the code with several drivers including vga16fb and vesafb.
-
-The patch is at
-http://i810fb.sourceforge.net/linux-2.5.59-rotate.diff.gz
-
-
-Any comments welcome.
-
-Tony
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds

@@ -1,8 +1,8 @@
-From: "Elmer Greene" <greenefi@ns.ten.it>
-Subject: $12882
-Date: Mon, 21 Jun 2004 23:02:22 -0500
+From: "Iris Newsome" <inewsomeey@univ-ubs.fr>
+Subject: Get $200 bonus at our Casino!
+Date: Tue, 22 Jun 2004 01:00:19 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <b7ce01c4580d$1c13c285$8b0b17b6__40927.3623292849$1087876816@kunstunterricht.de>
+Message-ID: <bede01c4582e$3a784e30$5f2f78c0__12729.0724929937$1087891093@carborundum.cz>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
@@ -16,24 +16,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-usb-users@lists.sourceforge.net, linux-usb-devel@lists.sourceforge.net, linux-ntfs-dev@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net
+To: linux-usb-devel@lists.sourceforge.net, linux-ntfs-dev@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net, linux-decnet-user@lists.sourceforge.net
 
-Hello,
-I sent you an email a few days ago, because you now qualify for a new mortgage.
-You could get $300,000 for as little as $700 a month!
-Bad credit is no problem, you can pull cash out or refinance.
+Hi, 
+I have a special offer available for you at our casino.
 
-Please click on this link:
-http://www.refifast.biz/aff/affiliate.php?uid=71
+$20 to try our internet casino, no deposit is necessary!
+At the casino software's cashier enter bonus code: FR93P
 
-Best Regards,
-Steve Morris
+$200 bonus on your first deposit!
+At the casino software's cashier enter bonus code: FMJKU
 
+Allow us to show you our quality operation, fast payouts, generous bonuses, and super friendly 
+around-the-clock customer support.
 
----- system information ----
-known Fallback properties fully expecting Specifying another only 
-example: user suggesting think identification members Cases defined 
-xml:lang wide allow but navigational needed provider) should 
+Click here: http://gozealgaming.com
+
+Best regards,
+Jamie Zawinsky
 
 
 

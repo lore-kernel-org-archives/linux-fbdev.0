@@ -1,17 +1,16 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH] C99 initializers for drivers/video
-Date: Tue, 26 Nov 2002 23:57:45 +0000 (GMT)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Re: status
+Date: Thu, 28 Nov 2002 00:02:56 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0211262342300.3719-100000@phoenix.infradead.org>
-References: <20021125213059.GF22546@debian>
+Message-ID: <Pine.GSO.4.21.0211272357060.5044-100000@vervain.sonytel.be>
+References: <1038260153.1027.26.camel@skalman>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18Gpaw-0006Re-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 26 Nov 2002 15:58:23 -0800
-In-Reply-To: <20021125213059.GF22546@debian>
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18HBE7-0004Tc-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 27 Nov 2002 15:04:16 -0800
+In-Reply-To: <1038260153.1027.26.camel@skalman>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,44 +22,44 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Art Haas <ahaas@airmail.net>
-Cc: Linus Torvalds <torvalds@transmeta.com>, linux-fbdev-devel@lists.sourceforge.net
+To: Johan Bolmsjo <johan@nocrew.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux/m68k <linux-m68k@lists.linux-m68k.org>
 
+On 25 Nov 2002, Johan Bolmsjo wrote:
+> For what it's worth, the interleaved modes on atari works like this:
+> 
+> The bitplanes are interleaved on 16 bit big-endian word basis so if you
+> have two bitplanes, bit 0 of the first 16 pixels would be in the first
+> 16 bit word in the display memory, bit 1 of the first 16 pixels would be
+> in the second word. With bit 0 I mean as masked out by & 0x0001 in C,
+> and bit 1 as masked out by 0x0002.
 
-> --- linux-2.5.49/drivers/video/aty128fb.c.old	2002-08-27 19:11:02.000000000 -0500
-> +++ linux-2.5.49/drivers/video/aty128fb.c	2002-11-22 19:56:35.000000000 -0600
+Thanks! This is exactly the kind of information I needed!
 
-Updated to new api. Those structs are gone.
+I added simple unoptimized support for Atari interleaved bitplanes to fbtest.
+When I know I got the basics right, I can start writing optimized drawing
+routines.
 
-> --- linux-2.5.49/drivers/video/controlfb.c.old	2002-08-27 19:11:02.000000000 -0500
-> +++ linux-2.5.49/drivers/video/controlfb.c	2002-11-22 19:56:20.000000000 -0600
+Anyone who cares to give it a try? Just check out CVS module `fbtest' from
+http://sourceforge.net/cvs/?group_id=908, type `make' and run `fbtest' for all
+available color depths (use fbset first), and tell me whether it works.
 
-Have to look. It has been updated but I don't have hardware to test it. I 
-think those structs are gone.
+If no one is left with an Atari with Linux/m68k installed, I can create a
+ramdisk containing fbset and fbtest, so you just need ataboot and a kernel to
+test it.
 
-> +++ linux-2.5.49/drivers/video/fbcon-afb.c 2002-11-22 19:56:18.000000000
-[snip]
+Thanks!
 
-All fbcon-*.c files are gone. The framebuffer console is now acceleration 
-driven via fillrect, copyarea, and image blits.
+Gr{oetje,eeting}s,
 
-> +++ linux-2.5.49/drivers/video/g364fb.c	2002-11-23 10:03:25.000000000 -0600
-Applied.
+						Geert
 
-> +++ linux-2.5.49/drivers/video/neofb.c	2002-11-22 19:56:18.000000000 -0600
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Been applied for awhile.
-
-> +++ linux-2.5.49/drivers/video/pm2fb.c	2002-11-22 19:56:39.000000000 -0600
-
-Being rewritten to new api.
-
-> --- linux-2.5.49/drivers/video/retz3fb.c.old	2002-08-27 19:11:03.000000000 -0500
-
-Needs to ported to new api.
-
-The aty128 driver also needs a few updates to C99. I will do that tonight.
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

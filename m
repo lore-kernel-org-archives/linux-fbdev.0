@@ -1,17 +1,17 @@
 From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: clipping
-Date: 10 Jan 2003 18:27:27 +0800
+Subject: Re: const fb_{fillrect,copyarea,image}?
+Date: 10 Jan 2003 18:28:38 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1042172016.933.136.camel@localhost.localdomain>
-References: <Pine.LNX.4.44.0301092122450.5660-100000@phoenix.infradead.org>
+Message-ID: <1042181502.933.301.camel@localhost.localdomain>
+References: <Pine.LNX.4.44.0301091814550.5660-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from willow.compass.com.ph ([202.70.96.38])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18WwYA-0008Ru-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Jan 2003 02:38:06 -0800
-In-Reply-To: <Pine.LNX.4.44.0301092122450.5660-100000@phoenix.infradead.org>
+	id 18WwZL-00006W-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Jan 2003 02:39:19 -0800
+In-Reply-To: <Pine.LNX.4.44.0301091814550.5660-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -25,39 +25,47 @@ Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@infradead.org>
 Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Fri, 2003-01-10 at 05:24, James Simmons wrote:
-> 
-> > So perhaps, a function something like this:
-> > 
-> > void fb_clip(struct fb_fillrect *region, struct fb_fillrect *clip);
-> > 
-> > This should not be difficult to implement, and I'll code it if everyone
-> > agrees.
+On Fri, 2003-01-10 at 02:16, James Simmons wrote: 
+
 >  
-> I thought about this. Originally I did have this function but removed it.
-> WHat do you think Geert?
+> > BTW, is it possible that someone passes data that is larger (except for bugs)?
+> > We have control over what happens in the kernel. Data passed from userspace is
+> > a different issue, of course.
 > 
-> > The other option (which I don't like) is just to check the passed
-> > fb_var_screeninfo in the put_var ioctl against the current console
-> > window size.  But this is not foolproof as we will not be sure of the
-> > resulting window size _after_ the fb_set_var() call.
+> Yes. Soon the standard ioctl for a cursor will be truly in place. This 
+> means cfb_imageblit could be a issue from userland.
 > 
-> Yuck!!! The other way is better.
-> 
+If you are going to export the cursor API to userland, then soft_cursor
+is useless, because it implies that we always have a copy of the screen
+under the cursor (so we can restore it when we move the cursor) and it
+also implies that fb_imageblit can support transparency (so the mask
+bits will work).  For soft cursors, the userland has to take care of it.
 
-Yes, I thought so too :-).
+For those with hardware cursors, this is exportable to user space. 
 
-I think one scenario why we need clipping is changing bits_per_pixel,
-ie, changing from 8->16 will drop your vyres by half and it's difficult
-to determine this unless you do another check before the set_par(), as
-Geert mentioned.  Worse still, there is little if no valid memory past
-vyres but the console thinks there is.  That's where you will get a
-segfault.
+The structure fbcursor has one field that is console specific
+fbcursor.dest which we basically use to invert the cursor image.  So the
+structure that is passed via the cursor ioctl will be slightly
+different, it should not have the 'dest' field.  So when it gets passed
+to fb_cursor(), dest == NULL.  Then this is how drivers can respond: 
 
-Whereas explicitly doing fbset -vyres 768 will not cause a segfault,
-because you still have valid framebuffer memory past y=768.
+1. soft_cursor - if cursor->dest == NULL, always exit with an error. 
 
-Tony
+2. hardware cursors which cannot do invert - if cursor->dest == NULL and
+rop == ROP_XOR, exit with an error, otherwise (ROP_COPY), proceed. 
+
+3. hardware cursors with invert - cursor->dest will be ignored so it has
+full support. 
+
+The rivafb_cursor() and i810fb_cursor() already behaves like #2 already.
+
+Anyway, inverting the cursor image is not commonly used in GUI apps.
+Typically, they just need an opaque cursor + a transparency mask to
+"shape" the cursor. 
+
+Tony  
+
+
 
 
 

@@ -1,58 +1,55 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] radeonfb: DDC i2c fix
-Date: Sat, 12 Mar 2005 10:52:17 +1100
-Message-ID: <1110585137.5751.122.camel@gaston>
-References: <1110519970.5751.17.camel@gaston>
-	 <20050311201326.GA7379@dreamland.darkstar.lan>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: [Linux-fbdev-devel] Re: [ACPI] inappropriate use of in_atomic()
+Date: Fri, 11 Mar 2005 16:13:35 -0800
+Message-ID: <20050311161335.1e601da1.akpm@osdl.org>
+References: <20050310204006.48286d17.akpm@osdl.org>
+	<20050311091142.GB22415@fi.muni.cz>
+	<20050311014601.166ae43d.akpm@osdl.org>
+	<1110543974.5809.98.camel@gaston>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D9tvs-0007mp-Pt
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 11 Mar 2005 15:52:40 -0800
-Received: from gate.crashing.org ([63.228.1.57])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1D9tvq-00059o-Jg
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 11 Mar 2005 15:52:40 -0800
-In-Reply-To: <20050311201326.GA7379@dreamland.darkstar.lan>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+In-Reply-To: <1110543974.5809.98.camel@gaston>
+Sender: linux1394-devel-admin@lists.sourceforge.net
+Errors-To: linux1394-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux1394-devel>,
+	<mailto:linux1394-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux1394-devel@lists.sourceforge.net>
+List-Help: <mailto:linux1394-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux1394-devel>,
+	<mailto:linux1394-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux1394-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Kronos <kronos@people.it>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@osdl.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, kas@fi.muni.cz, paulus@samba.org, jt@bougret.hpl.hp.com, javier@tudela.mad.ttd.net, acpi-devel@lists.sourceforge.net, linux1394-devel@lists.sourceforge.net, roland@topspin.com, linux-kernel@vger.kernel.org
 
-On Fri, 2005-03-11 at 21:13 +0100, Kronos wrote:
-> Il Fri, Mar 11, 2005 at 04:46:10PM +1100, Benjamin Herrenschmidt ha scritto: 
-> > The radeonfb code for DDC probing (like it's X.org counterpart) uses to
-> > leave the DDC clock & data lines asserted after the probing is complete.
-> > This causes problems with some Apple monitors like the new Cinema HD
-> > 23", who will turn themselves off when that happens. This fixes it.
+
+(where'd my cc go?)
+
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+>
+> On Fri, 2005-03-11 at 01:46 -0800, Andrew Morton wrote:
+> > Jan Kasprzak <kas@fi.muni.cz> wrote:
+> > >
+> > > This may be the cause of 
+> > > 
+> > >  http://bugme.osdl.org/show_bug.cgi?id=4150
+> > 
+> > Looks that way, yes.
 > 
-> Fix is correct, but comment is not ;) After the loop SCL and SDA are
-> left low. Pulling them high puts the I2C bus in the stop condition.
+> Note that it would be interesting to fix that (I mean the reliability of
+> is_atomic() or an alternative). I agree it's quite bad to rely on that
+> in practice, but there are a few corner cases where it's useful (like
+> oops handling in fbdev's etc...)
+> 
 
-Well, they are pull-up lines. I'm not pulling them high per-se, I'm
-"releasing" them to their natural state, which is high ;) The ATI code
-does some weird shit around the i2c transfer proper, and I don't know
-exactly why. I don't have any spec about DDC2 though, my understand is
-that it's more than just i2c EEPROM though. It used to leave the 2 lines
-"assserted" at the end of the transfer (after the last stop condition)
-and that sounded wrong and causes the misbehaviour  on the Apple
-display ...
+That would require that we increment current->something on every
+spin/read/write_lock and decrement it in unlock, even with !CONFIG_PREEMPT.
 
-Ben.
+iirc, Anton added an option to do that to the ppc64 build, decoupled from
+CONFIG_PREEMPT (which ppc64 doesn't support).
 
-
+But it's an appreciable amount of overhead.
 
 
 -------------------------------------------------------

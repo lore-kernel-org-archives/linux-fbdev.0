@@ -1,28 +1,22 @@
-From: Andrew Walrond <andrew@walrond.org>
-Subject: Re: Rivafb won't work with DVI connector
-Date: Thu, 25 Nov 2004 15:27:15 +0000
-Message-ID: <200411251527.15141.andrew@walrond.org>
-References: <200411250807.32040.adaplas@hotpop.com>
+From: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+Subject: Re: Default timings in vga16fb driver
+Date: Thu, 25 Nov 2004 15:55:06 +0100
+Message-ID: <41A5F24A.4040804@fujitsu-siemens.com>
+References: <41A36DA5.8090200@fujitsu-siemens.com> <200411250016.25813.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed;
+ boundary="------------010001080203020100090604"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CXLXg-0000gA-1y
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Nov 2004 07:28:20 -0800
-Received: from externalmx-1.sourceforge.net ([12.152.184.25])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1CXLXf-0001oR-DN
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Nov 2004 07:28:19 -0800
-Received: from [62.24.231.113] (helo=cenedra.walrond.org)
-	by externalmx-1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1CXLXE-0008CB-CP
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Nov 2004 07:27:53 -0800
-In-Reply-To: <200411250807.32040.adaplas@hotpop.com>
-Content-Disposition: inline
+	id 1CXL1l-0005Ke-6j
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Nov 2004 06:55:21 -0800
+Received: from plam.fujitsu-siemens.com ([217.115.66.9])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CXL1i-0002v4-CH
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Nov 2004 06:55:21 -0800
+In-Reply-To: <200411250016.25813.adaplas@hotpop.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -33,43 +27,66 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: "Antonino A. Daplas" <adaplas@hotpop.com>
+To: adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net
 
-On Thursday 25 Nov 2004 00:07, Antonino A. Daplas wrote:
->
-> That's assuming 0x31b is supported by your card.  Why not
-> try:
->
-> vga=ask
->
-> Choose 'scan', choose the highest size, and check if the panel
-> size changed again.
+This is a multi-part message in MIME format.
+--------------010001080203020100090604
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-vesafb 'scan' can only find 80xwhatever text modes with dvi connnection, and 
-upto 132xwhatever text modes with dsub. It does not display any graphics 
-modes at all, and rejects them if I try. (I also tried with vesafb only, 
-nvidafb removed - same result).
+Antonino A. Daplas wrote:
 
->
-> Well, checking the latest Xorg again, it seems that the nv driver also
-> depends on the BIOS for the panel size.  And they are the people who does
-> have access to the docs.
+> I don't think you overlooked anything. The default modeline of vga16fb
+> should be corrected.
 
-Ok; But remember that I can run this screen with DVI connection at 1600x1200 
-just fine with the proprietary nvidia driver. (Infact I routinely run it dual 
-head with both TFTs at 1600x1200, one on dvim one on dsub) so its not the 
-case that it can't be done. Iff the Xorg guys have docs, perhaps they can 
-work out how to do it.
+OK, so here's the patch (using the timings from /etc/fb.modes). Should I 
+send it to linux-kernel, too?
 
->
-> Sure, no harm in asking.  But I would rather ask the Xorg people first.  If
+Martin
 
-Ok, go ask Xorg. If you don't have any luck, I'll get in touch with Nvidia 
-directly and see if they will help.
+-- 
+Martin Wilck                Phone: +49 5251 8 15113
+Fujitsu Siemens Computers   Fax:   +49 5251 8 20409
+Heinz-Nixdorf-Ring 1        mailto:Martin.Wilck@Fujitsu-Siemens.com
+D-33106 Paderborn           http://www.fujitsu-siemens.com/primergy
 
-Andrew
+
+--------------010001080203020100090604
+Content-Type: text/x-patch;
+ name="vga16.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="vga16.diff"
+
+Patch:	Fix default timings in vga16fb.c
+
+Author: Martin Wilck <Martin.Wilck@Fujitsu-Siemens.com>
+Signed-off-by: Martin Wilck <Martin.Wilck@Fujitsu-Siemens.com>
+
+This patch adapts the timings of the default mode in vga16fb.c
+to the 640x480-60 timings in /etc/fb.modes. 
+
+In particular, the total screen height is fixed to be 525 pixels 
+rather than 529. The height of 529 was causing trouble on some LCD displays.
+
+(Note: To make the mode 100% identical to the one in /etc/fb.modes,
+the pixclock must be set to 39722, too; I didn't want to do that here).
+
+--- linux-2.6.5-7.111/drivers/video/vga16fb.c.orig	2004-11-25 15:38:11.000000000 +0100
++++ linux-2.6.5-7.111/drivers/video/vga16fb.c	2004-11-25 15:45:54.000000000 +0100
+@@ -91,8 +91,8 @@ static struct fb_var_screeninfo vga16fb_
+ 	.pixclock	= 39721,
+ 	.left_margin	= 48,
+ 	.right_margin	= 16,
+-	.upper_margin	= 39,
+-	.lower_margin	= 8,
++	.upper_margin	= 33,
++	.lower_margin	= 10,
+ 	.hsync_len 	= 96,
+ 	.vsync_len	= 2,
+ 	.vmode		= FB_VMODE_NONINTERLACED,
+
+--------------010001080203020100090604--
 
 
 -------------------------------------------------------

@@ -1,16 +1,16 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] broken cfb* support in the 2.5.31-bk
-Date: Thu, 22 Aug 2002 20:33:45 +0200 (MEST)
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [PATCH] broken cfb* support in the
+Date: Thu, 22 Aug 2002 11:34:38 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0208222031290.9137-100000@vervain.sonytel.be>
-References: <Pine.LNX.4.33.0208221115210.9077-100000@maxwell.earthlink.net>
+Message-ID: <Pine.LNX.4.33.0208221132230.9077-100000@maxwell.earthlink.net>
+References: <212B36E116D@vcnet.vc.cvut.cz>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+Received: from gull.mail.pas.earthlink.net ([207.217.120.84])
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17hwn0-00006I-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 22 Aug 2002 11:34:38 -0700
-In-Reply-To: <Pine.LNX.4.33.0208221115210.9077-100000@maxwell.earthlink.net>
+	id 17hwsF-0003Ih-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 22 Aug 2002 11:40:03 -0700
+In-Reply-To: <212B36E116D@vcnet.vc.cvut.cz>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,36 +22,25 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Paul Mackerras <paulus@au1.ibm.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Petr Vandrovec <VANDROVE@vc.cvut.cz>
+Cc: torvalds@transmeta.com, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, 22 Aug 2002, James Simmons wrote:
-> > > > Anyway, you could apply this patch, for a start.  I wish you would be
-> > > > a bit more careful about details.
-> > >
-> > > Done. Well the good news is I have aquired more hardware for different
-> > > platforms to test my work on :-)
-> >
-> > You don't need more hardware to protect yourself against such typos. A
-> > cross-compiler (or sometimes even your native gcc) is sufficient ;-)
-> 
-> That I also lack except for ARM and mips. Do you know where I can get a
-> developement kit for for ppc and m68k?
 
-The usual rules for creating cross-{binutils,gcc} apply here.
+> Which new API?
 
-If you run Debian, check out the toolchain-source package.
+The one being worked on for the last 2 years.
 
-Gr{oetje,eeting}s,
+> If you are going to remove logo and unaccelerated fbcon-cfb*,
+> then remove them completely. If you are not going to remove unaccelerated
+> fbcon-cfb*, then there is no reason for breaking them.
 
-						Geert
+The next set of round of changes will will reimplement drawing the penguin
+and will support 24 bpp mode. So we will be able to remove fbcon-cfb*
+completely the next round.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> I'm not going to remove unaccelerated code from the matroxfb. Never.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Then implement your own soft accel functions.
 
 
 

@@ -1,133 +1,28 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: [FB BK updates]
-Date: Tue, 14 Jan 2003 17:05:07 -0800 (PST)
+Subject: Re: [BK fbdev updates]
+Date: Wed, 15 Jan 2003 00:30:45 +0000 (GMT)
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.33.0301141701180.3048-100000@maxwell.earthlink.net>
+Message-ID: <Pine.LNX.4.44.0301130226560.18576-100000@phoenix.infradead.org>
+References: <20030112150744.GH14017@suse.de>
 Mime-Version: 1.0
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <20030112150744.GH14017@suse.de>
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@transmeta.com>
+To: Jens Axboe <axboe@suse.de>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
 
-More updates and fixes for the framebuffer layer.
+> > Linus, please do a
+> 
+> James,
+> 
+> 2.5 still doesn't work on my vaio (I think I told you about this 3-4
+> months ago) with the neofb. It just crashes with a black screen. If you
+> don't have any clues what the problem is, I can hook the machine up to a
+> serial console and see if anything interesting pops up. Using vesafb
+> does make it boot, however the screen stays pitch black until X loads...
 
-The standard diff is at
-
-http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
-
-Linus, please do a
-
-	bk pull http://fbdev.bkbits.net:8080/fbdev-2.5
-
-This will update the following files:
-
- drivers/video/tridentfb.h        |  169 ----
- include/video/font.h             |   24
- arch/m68k/kernel/m68k_defs.c     |    2
- drivers/video/Kconfig            |    2
- drivers/video/Makefile           |    9
- drivers/video/aty/atyfb.h        |    1
- drivers/video/aty/atyfb_base.c   |   93 --
- drivers/video/aty/mach64_accel.c |   12
- drivers/video/cfbcopyarea.c      |   85 +-
- drivers/video/cfbfillrect.c      |   22
- drivers/video/cfbimgblt.c        |  146 +--
- drivers/video/console/Kconfig    |   14
- drivers/video/console/fbcon.c    |   95 +-
- drivers/video/console/sticon.c   |  101 +-
- drivers/video/console/sticore.c  |  159 ++--
- drivers/video/fbmem.c            |   17
- drivers/video/fbmon.c            |  411 ++++++++++
- drivers/video/i810/i810.h        |    2
- drivers/video/i810/i810_accel.c  |   11
- drivers/video/i810/i810_dvt.c    |    2
- drivers/video/i810/i810_main.c   |   51 -
- drivers/video/i810/i810_main.h   |   79 --
- drivers/video/riva/Makefile      |    2
- drivers/video/riva/fbdev.c       | 1470 ++++++++++++++++++---------------------
- drivers/video/riva/nv_driver.c   |  212 +++++
- drivers/video/riva/riva_hw.c     |  350 +++++++--
- drivers/video/riva/rivafb.h      |   15
- drivers/video/sstfb.c            |  711 +++++++++---------
- drivers/video/sstfb.h            |   31
- drivers/video/sticore.h          |   58 -
- drivers/video/stifb.c            |  103 ++
- drivers/video/tdfxfb.c           |   12
- drivers/video/tridentfb.c        | 1213 +++++++++++++++-----------------
- include/linux/fb.h               |   13
- include/linux/font.h             |   30
- include/video/trident.h          |  175 ++++
- 36 files changed, 3352 insertions(+), 2550 deletions(-)
-
-through these ChangeSets:
-
-<jsimmons@maxwell.earthlink.net> (03/01/14 1.898)
-   [GENERIC IMAGEBLIT ACCEL]
-
-   a) Fix for cfb_imagblit so it can handle monochrome bitmaps with widths
-      not multiples of 8.
-
-   b) Further optiminzation of fast_imageblit by removing unnecessary steps
-      from its main loop.
-
-   c) fast_imageblit show now work for bitmaps widths which are least
-      divisible by 4. 4x6 and 12x22 shoudl use fast_imageblit now.
-
-   d) Use hadrware syncing method of hardware if present.
-
-   e) trivial: wrap text at 80 columns.
-
-   [RIVA and 3DFX] imageblit functions busted for large images. Use generic
-                   functions for now.
-
-   Several syncing issues fixed between the accel engine and access to the
-   framebuffer in several files.
-
-<jsimmons@maxwell.earthlink.net> (03/01/11 1.891)
-   [TRIDENT FBDEV] Driver ported to the new api.
-
-<jsimmons@maxwell.earthlink.net> (03/01/10 1.887.1.4)
-   Final updates to the GTF code. Now the code can gnerate GTF timings
-   regardless of the validity of info->monospecs.
-
-   [ATYFB] Updates to the aty driver.
-
-<jsimmons@maxwell.earthlink.net> (03/01/08 1.887.1.1)
-   Remove fb_set_var. Some how it was missed in a merge conflict.
-
-<jsimmons@kozmo.(none)> (03/01/08 1.889)
-   [ATY] Somehow a merge mistake happened. We removed fb_set_var.
-
-<jsimmons@maxwell.earthlink.net> (03/01/08 1.887)
-   [MONITOR support] GTF support for VESA complaint monitors. Here we
-   calculate the general timings needed so we don't over step the bounds
-   for a monitor.
-
-   [fbmem.c cleanup] Name change to make the code easier to read.
-
-<jsimmons@maxwell.earthlink.net> (03/01/07 1.879.2.95)
-   Updates from Helge Deller for the console/fbdev drivers for the PARISC
-   platform. Small fix for clearing the screen and a string typo for the
-   Voodoo 1/2 driver.
-
-<jsimmons@maxwell.earthlink.net> (03/01/06 1.879.2.93)
-   [RIVA FBDEV] Driver now uses its own fb_open and fb_release function again.
-   It has no ill effects. The drivers uses strickly hardware acceleration
-   so we don't need cfb_fillrect and cfb_copyarea.
-
-   Cleaned up font.h. Geerts orignal patch broke them up into a font.h in
-   video and one in  linux. Now I put them back together again in
-   include/linux. The m68k platform has been updated for this change.
-
-<jsimmons@maxwell.earthlink.net> (03/01/06 1.879.2.92)
-   Added resize support for the framebuffer console. Now you can change the
-   console size via stty. Also support for color palette changing on VC
-   switch is supported.
-
-<jsimmons@maxwell.earthlink.net> (03/01/06 1.879.2.91)
-   I810 fbdev updates. Cursor fix for ati mach 64 cards on big endian
-   machines. Buffer over flow fix for fbcon putcs function. C99 initializers
-   for the STI console drivers.Voodoo 1/2 and NVIDIA driver updates.
+VESA doesn't work either. Can you check to see if you have framebuffer 
+console enabled. Yes I'm curious to see why your neofb doesn't work.

@@ -1,21 +1,24 @@
-From: Thomas Winischhofer <thomas@winischhofer.net>
-Subject: Re: [PATCH] sisfb accel capabilities
-Date: Thu, 03 Jun 2004 11:52:45 +0200
+From: David Eger <eger-sender-da68b9@theboonies.us>
+Subject: Re: Re: [PATCH] sisfb accel capabilities
+Date: Thu,  3 Jun 2004 08:26:49 -0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <40BEF4ED.7090909@winischhofer.net>
+Message-ID: <1086269209.40bf27191fe1c@mail.theboonies.us>
 References: <20040603024412.GE20951@havoc.gtf.org>
+	<40BEF4ED.7090909@winischhofer.net>
+Reply-To: David Eger <eger-dated-1086874014.cda599@theboonies.us>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BVovF-0005Me-Sf
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 03 Jun 2004 02:54:05 -0700
-Received: from [213.229.38.66] (helo=mail.falke.at)
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
-	id 1BVovF-0003YR-7C
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 03 Jun 2004 02:54:05 -0700
-In-Reply-To: <20040603024412.GE20951@havoc.gtf.org>
+	id 1BVsFG-0007a3-B6
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 03 Jun 2004 06:26:58 -0700
+Received: from not.theboonies.us ([66.139.79.224])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1BVsFF-0004yq-VO
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 03 Jun 2004 06:26:58 -0700
+In-Reply-To: <40BEF4ED.7090909@winischhofer.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,85 +28,52 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: David Eger <eger@havoc.gtf.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: Thomas Winischhofer <thomas@winischhofer.net>
+Cc: David Eger <eger@havoc.gtf.org>, linux-fbdev-devel@lists.sourceforge.net
 
+Quoting Thomas Winischhofer <thomas@winischhofer.net>:
 
-David,
+> David Eger wrote:
+> > The following patch updates sisfb for the new fb accel capabilities
+> > patch I'm sending upstream.  By default, this patch will rely on your
+> > copyarea() and fillrect() accel functions instead of the panning.
+>
+> Could you give me any hint why this should be faster than panning?
 
-David Eger wrote:
-> Dear Thomas,
-> 
-> The following patch updates sisfb for the new fb accel capabilities
-> patch I'm sending upstream.  By default, this patch will rely on your
-> copyarea() and fillrect() accel functions instead of the panning.
+The logic to prefer copyarea()/fillrect() to panning is in the main patch.  If
+panning is faster than using these for most cards, then the default when both
+are available should be panning as you say.  But I'll need numbers to determine
+that ;-)  I think many drivers just map a chunk of video ram just big enough
+for the requested resolution, so panning does zero for them :-/
 
-Could you give me any hint why this should be faster than panning?
+> 1) fillrect and copyarea WERE (resp. ARE) being called here despite your
+> previous statement that they were not. Fillrect is used to clear every
+> line after pressing enter, and copyrect was used to copy the buffer to
+> the start of the virtual screen when the end was reached.)
 
-Frankly, I don't think that's a good idea... panning is by far the 
-fastest of all scrollmodes, especially when the virtual screen is much 
-larger than the visible area. sisfb (unless told not to do so) maximizes 
-the virtual y resolution to the available video memory, so by default 
-that's eg. about 1024x16000 with 32MB of video ram (which is usual these 
-days). The console is fast as hell here...
+bizarre.  For radeonfb, fillrect() was called to clear the last line as you say,
+but copyarea() never was.  I'll have to dig back through the old code to really
+ grok your statement.
 
-Perhaps you should make the decision whether to use either 
-fillrect/copyarea or panning by the size of the virtual framebuffer? I 
-understand panning is not as fast if the virtual screen is only little 
-bigger than the visible area, but as soon as it has a certain size that 
-makes copying the entire screen to the start of the framebuffer a seldom 
-event, it's much faster.
+> 2) I still don't understand the meaning of FBINFO_HWACCEL_XPAN
+> (especially as your sisfb patch sets it although sisfb did not support
+> x-panning until yesterday evening...)
 
-Hm. On second thought, even if the virtual screen is only little larger 
-than the visible screen, using panning will reduce the times where a 
-copy of the entire screen is required. With SCROLL_ACCEL, you need a 
-copy/move over the entire screen on every scrolling event; each 
-additional line of text that fits into the virtual screen means calling 
-copy/move one time less.
+Good catch.  My patch should not set that flag, as it's inaccurate for your
+driver.  My bad.  Good thing these are going through the individual driver
+maintainers ;-)
 
-What am I missing here?
+> > Please test the core patch + this patch, and let me know your console
+> > works.  I'm interested to hear what speeds you see :-)
+>
+> I will, but it will take some while. I need to merge your changes into
+> my development version (which has been modified quite a bit).
 
-BTW:
+Thanks.
 
-1) fillrect and copyarea WERE (resp. ARE) being called here despite your 
-previous statement that they were not. Fillrect is used to clear every 
-line after pressing enter, and copyrect was used to copy the buffer to 
-the start of the virtual screen when the end was reached.)
+-dte
 
-2) I still don't understand the meaning of FBINFO_HWACCEL_XPAN 
-(especially as your sisfb patch sets it although sisfb did not support 
-x-panning until yesterday evening...)
-
-
-> Please test the core patch + this patch, and let me know your console
-> works.  I'm interested to hear what speeds you see :-)
-
-I will, but it will take some while. I need to merge your changes into 
-my development version (which has been modified quite a bit). 
-Furthermore I need to make sure it still compiles and works under 2.4. 
-(You may have missed this fact but the driver is unified for both 2.4 
-and 2.6. No time to maintain two separate versions.)
-
-(BTW: The "get rid of reference to setup variable" and "YWARP" stuff was 
-already removed there... So your patch boils down to a very few lines in 
-sis_main.c only.)
-
-
-> Also, using fbset to turn acceleration on and off ought to work, though
-> i still think this is better done via sysfs... just don't have time to
-> learn that ATM...
-
-This depends on that STUPID_ACCELF_TEXT_SHIT, right? Nice name... ;) 
-Note that not only fbset needs this, but DirectFB as well.
-
-Thomas
-
--- 
-Thomas Winischhofer
-Vienna/Austria
-thomas AT winischhofer DOT net	       *** http://www.winischhofer.net
-twini AT xfree86 DOT org
 
 
 -------------------------------------------------------

@@ -1,17 +1,15 @@
 From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: fb_pan_display
-Date: 03 Nov 2002 02:43:49 +0800
+Subject: Module unloading
+Date: 03 Nov 2002 05:33:42 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1036262577.583.3.camel@daplas>
-References: <Pine.LNX.4.33.0211010908390.6296-100000@maxwell.earthlink.net>
+Message-ID: <1036272762.642.5.camel@daplas>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from [203.167.79.9] (helo=willow.compass.com.ph)
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1883ID-0007Lv-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 02 Nov 2002 10:46:45 -0800
-In-Reply-To: <Pine.LNX.4.33.0211010908390.6296-100000@maxwell.earthlink.net>
+	id 1885wV-0005EB-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 02 Nov 2002 13:36:31 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,47 +21,59 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sat, 2002-11-02 at 01:11, James Simmons wrote:
-> 
-> Hi!
-> 
->   Looking at the last bits of the fbdev changes I have question. Currently
-> I have in fbgen.c:
-> 
-> int fb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
-> {
->         int xoffset = var->xoffset;
->         int yoffset = var->yoffset;
->         int err;
-> 
->         if (xoffset < 0 || yoffset < 0 ||
->             xoffset + info->var.xres > info->var.xres_virtual ||
->             yoffset + info->var.yres > info->var.yres_virtual)
->                 return -EINVAL;
->         if (info->fbops->fb_pan_display) {
->                 if ((err = info->fbops->fb_pan_display(var, info)))
->                         return err;
->                 else
->                         return -EINVAL;
->         }
->         info->var.xoffset = var->xoffset;
->         info->var.yoffset = var->yoffset;
->         if (var->vmode & FB_VMODE_YWRAP)
->                 info->var.vmode |= FB_VMODE_YWRAP;
->         else
->                 info->var.vmode &= ~FB_VMODE_YWRAP;
->         return 0;
-> }
-> 
-> Now what I was wondering are these test standard enough that we coudl call
-> this instead of info->fb_ops->fb_pan_display. Several drivers have this
-> test so it would me more code reduction.
+Hi James,
 
-Looks generic enough for me.
+Regarding your latest patch, if the framebuffer console is not defined,
+then the module_use_count should not be incremented and the device
+should not be opened.  This will prevent the module from being unloaded.
+
+Attached is a patch against 2.5.45 + your fbdev.diff.
 
 Tony
+
+diff -Naur linux-2.5.45-fbdev/drivers/video/fbmem.c linux/drivers/video/fbmem.c
+--- linux-2.5.45-fbdev/drivers/video/fbmem.c	Sat Nov  2 21:21:06 2002
++++ linux/drivers/video/fbmem.c	Sat Nov  2 21:24:29 2002
+@@ -726,8 +726,8 @@
+ int
+ register_framebuffer(struct fb_info *fb_info)
+ {
+-	static int fb_ever_opened[FB_MAX];
+ #ifdef CONFIG_FRAMEBUFFER_CONSOLE
++	static int fb_ever_opened[FB_MAX];
+ 	static int first = 1;
+ 	int j;
+ #endif
+@@ -743,9 +743,9 @@
+ 	fb_info->node = mk_kdev(FB_MAJOR, i);
+ 	fb_info->currcon = -1;
+ 	registered_fb[i] = fb_info;
++#ifdef CONFIG_FRAMEBUFFER_CONSOLE
+ 	if (!fb_ever_opened[i]) {
+ 		struct module *owner = fb_info->fbops->owner;
+-#ifdef CONFIG_FRAMEBUFFER_CONSOLE
+ 		/*
+ 		 *  We assume initial frame buffer devices can be opened this
+ 		 *  many times
+@@ -767,14 +767,6 @@
+ 	if (first) {
+ 		first = 0;
+ 		take_over_console(&fb_con, first_fb_vc, last_fb_vc, fbcon_is_default);
+-	}
+-#else
+-		if (owner) {
+-			__MOD_INC_USE_COUNT(owner);
+-			if (fb_info->fbops->fb_open && fb_info->fbops->fb_open(fb_info,0))
+-				__MOD_DEC_USE_COUNT(owner);
+-		}
+-		fb_ever_opened[i] = 1;
+ 	}
+ #endif
+ 	sprintf (name_buf, "%d", i);
+
+
 
 
 

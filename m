@@ -1,21 +1,21 @@
 From: David Vrabel <dvrabel@arcom.com>
 Subject: Framebuffer kbuild -- make all drivers select FB_CFB_xxx (2/2)
-Date: Mon, 14 Feb 2005 14:06:56 +0000
-Message-ID: <4210B080.9020302@arcom.com>
-References: <421096C6.3030105@arcom.com> <Pine.GSO.4.61.0502141322060.16209@waterleaf.sonytel.be> <4210AC9A.9080707@arcom.com>
+Date: Mon, 14 Feb 2005 14:12:09 +0000
+Message-ID: <4210B1B9.4020800@arcom.com>
+References: <421096C6.3030105@arcom.com> <Pine.GSO.4.61.0502141322060.16209@waterleaf.sonytel.be> <4210AC9A.9080707@arcom.com> <4210B080.9020302@arcom.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: multipart/mixed;
- boundary="------------080808000905060805090304"
+ boundary="------------010905000209070002020404"
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D0gsW-0001QL-Fm
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Feb 2005 06:07:08 -0800
+	id 1D0gxY-0001qr-0C
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Feb 2005 06:12:20 -0800
 Received: from webapps.arcom.com ([194.200.159.168])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1D0gsQ-0001fN-QS
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Feb 2005 06:07:07 -0800
-In-Reply-To: <4210AC9A.9080707@arcom.com>
+	id 1D0gxT-0002Ha-0I
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Feb 2005 06:12:19 -0800
+In-Reply-To: <4210B080.9020302@arcom.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,9 +30,11 @@ To: linux-fbdev-devel@lists.sourceforge.net
 Cc: Geert Uytterhoeven <geert@linux-m68k.org>
 
 This is a multi-part message in MIME format.
---------------080808000905060805090304
+--------------010905000209070002020404
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+
+(Bad patch, here it is again.)
 
 Make all framebuffer drivers (where appropriate) select FB_CFB_FILLRECT,
 FB_CFB_COPYAREA, and/or FB_CFB_IMAGEBLIT instead of specifying the
@@ -40,7 +42,14 @@ objects in the Makefile directly.
 
 Signed-off-by: David Vrabel <dvrabel@arcom.com>
 
---------------080808000905060805090304
+David Vrabel
+-- 
+David Vrabel, Design Engineer
+
+Arcom, Clifton Road           Tel: +44 (0)1223 411200 ext. 3233
+Cambridge CB1 7EA, UK         Web: http://www.arcom.com/
+
+--------------010905000209070002020404
 Content-Type: text/plain;
  name="fb-kbuild-use-FB_CFB_xxx"
 Content-Transfer-Encoding: 7bit
@@ -471,15 +480,6 @@ Index: linux-2.6-i386/drivers/video/Kconfig
  	---help---
  	  This driver is supposed to support graphics boards with the
  	  Trident CyberXXXX/Image/CyberBlade chips mostly found in laptops
-@@ -947,7 +1096,7 @@
- 	  Say 'Y' here to allow you to select framebuffer drivers for
- 	  the AMD Geode family of processors.
- 
--source "drivers/video/geode/Kconfig
-+source "drivers/video/geode/Kconfig"
- 
- config FB_SBUS
- 	bool "SBUS and UPA framebuffers"
 @@ -958,6 +1107,8 @@
  config FB_FFB
  	bool "Creator/Creator3D/Elite3D support"
@@ -761,7 +761,6 @@ Index: linux-2.6-i386/drivers/video/Makefile
 +obj-$(CONFIG_FB_CIRRUS)		  += cirrusfb.o
 +obj-$(CONFIG_FB_ASILIANT)	  += asiliantfb.o
 +obj-$(CONFIG_FB_PXA)		  += pxafb.o
- obj-$(CONFIG_FB_GEODE)		  += geode/
  
  # Platform or fallback drivers go here
 -obj-$(CONFIG_FB_VESA)             += vesafb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
@@ -776,7 +775,7 @@ Index: linux-2.6-i386/drivers/video/Makefile
 -obj-$(CONFIG_FB_VIRTUAL)          += vfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
 +obj-$(CONFIG_FB_VIRTUAL)          += vfb.o
 
---------------080808000905060805090304--
+--------------010905000209070002020404--
 
 
 -------------------------------------------------------

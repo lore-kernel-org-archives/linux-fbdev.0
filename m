@@ -1,25 +1,21 @@
-From: Egbert Eich <eich@XFree86.Org>
-Subject: Re: [forum] Re: Announcement: Modification to the base XFree86(TM) license.
-Date: Fri, 30 Jan 2004 20:25:40 +0100
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: Re: still ..Confused about atyfb and M1
+Date: Fri, 30 Jan 2004 21:47:49 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <16410.44981.237411.858354@xf11.fra.suse.de>
-References: <20040129115838.A70069@xfree86.org>
-	<1075423804.12536.28.camel@gaston>
-	<16410.33783.236964.200047@xf11.fra.suse.de>
-	<20040130173238.GA8599@iliana>
+Message-ID: <Pine.LNX.4.44.0401302147390.22830-100000@phoenix.infradead.org>
+References: <4016FD36.6010109@bitworks.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AmeJN-0007dk-8b
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Jan 2004 11:28:17 -0800
-Received: from ns.suse.de ([195.135.220.2] helo=Cantor.suse.de)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1AmgUY-00029h-LR
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Jan 2004 13:47:58 -0800
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1AmeJM-0002em-LL
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Jan 2004 11:28:16 -0800
-In-Reply-To: sven.luther@wanadoo.fr wrote on Friday, 30 January 2004 at 18:32:38 +0100 
+	id 1AmgUY-0006GR-6B
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Jan 2004 13:47:58 -0800
+In-Reply-To: <4016FD36.6010109@bitworks.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,32 +25,38 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: forum@XFree86.Org
-Cc: devel@XFree86.Org, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Richard Smith <rsmith@bitworks.com>
+Cc: benh@kernel.crashing.org, Alexander Kern <alex.kern@gmx.de>, Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Sven Luther writes:
- > 
- > Maybe a decision on both parts on this would be ok ? XFree86 could make
- > sure the licence of the driver code would not conflict with the GPL,
- > keeping the old one for example, and the fbdev driver authors would
- > dual-licence the code, both GPL and the old xfree86 licence would do
- > just fine. Benjamin, what do you think about this ?
- > 
- > BTW, CCing this to the linux-fbdev mailing list.
- > 
 
-Yes, a personal agreement between driver developers would also work.
-However they tend to change and other people will make contributions
-who all would have to agree also. 
-I don't know if a general dual license agreement in the kernel 
-file header would be possible. Also it could get removed once 
-the author changes. Just like the license in the XFree86 driver 
-could be amended. 
-Doing this now for existing fbdev driver would involve to ask
-anyone who has contributed little more than a typo fix.
+Can you submit a patch.
 
-Egbert.
+
+On Tue, 27 Jan 2004, Richard Smith wrote:
+
+> Richard Smith wrote:
+> 
+> > Benjamin Herrenschmidt wrote:
+> > 
+> >>> Mach64 MOBILITY M1 works by me for ages. I submitted all patches to 
+> >>> James for months. They are in fbdev.diff.gz. But I dont think, they 
+> >>> will be merged with vanilla very soon.
+> >>
+> >>
+> >   I grabbed fbdev.diff.gz from infradead (is this the canonical source?) 
+> > and patched my 2.6.1 tree.  But I still don't see my 0x4c52 device id 
+> > listed in the tables.
+> > 
+> 
+> And it still dosen't detect my device(s).
+> 
+> I never received an answer to this.  I don't see how the M1 can work 
+> supported when the device id isn't in the table.  Did I really get the 
+> latest patch?
+> 
+> 
 
 
 

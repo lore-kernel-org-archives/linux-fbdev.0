@@ -1,21 +1,21 @@
-From: John Zielinski <grim@undead.cc>
-Subject: Re: Sane behavior of fbset
-Date: Sat, 19 Jun 2004 11:59:03 -0400
+From: Kronos <kronos@people.it>
+Subject: Re: radeonfb_pci_register video memory clear?
+Date: Sat, 19 Jun 2004 21:27:44 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <40D462C7.30908@undead.cc>
-References: <200406180945.12444.adaplas@hotpop.com> <200406190240.26228.adaplas@hotpop.com> <20040619031650.GC14319@havoc.gtf.org> <200406191413.28339.adaplas@hotpop.com>
+Message-ID: <20040619192744.GA3979@dreamland.darkstar.lan>
+References: <40D3A2E1.2060100@undead.cc>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BbiFJ-0008CR-VV
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 19 Jun 2004 08:59:09 -0700
-Received: from ns2.undead.cc ([216.126.84.18] helo=mail.undead.cc)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1BbiFJ-0005B6-Im
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 19 Jun 2004 08:59:09 -0700
-In-Reply-To: <200406191413.28339.adaplas@hotpop.com>
+	id 1BblVJ-0007P1-SG
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 19 Jun 2004 12:27:53 -0700
+Received: from mail-relay-3.tiscali.it ([212.123.84.93])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BblVJ-00079X-G3
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 19 Jun 2004 12:27:53 -0700
+Content-Disposition: inline
+In-Reply-To: <40D3A2E1.2060100@undead.cc>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,30 +25,24 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: adaplas@pol.net
-Cc: David Eger <eger@havoc.gtf.org>, jsimmons@infradead.org, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: John Zielinski <grim@undead.cc>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Antonino A. Daplas wrote:
+Il Fri, Jun 18, 2004 at 10:20:17PM -0400, John Zielinski ha scritto: 
+> *This message was transferred with a trial version of CommuniGate(tm) Pro*
+> I'm just wondering why the clearing of video memory was added to 
+> radeonfb_pci_register? 
 
->The flow of fbset is upstream:  fbset->fbdev->fbcon->vc (2.4 code)
->The flow of stty is downstream: stty->vc->fbcon->fbdev (2.6 code)
->  
->
-The flow of fbset in 2.6: fbset->fbdev->fbcon
-The flow of fbset after my patch: fbset->fbdev->fbcon->vc
-The flow of fbset if calc error: 
-fbset->fbdev->fbcon->vc->fbcon->fbdev->fbcon->vc-> etc.
+AFAIK without that radeonfb will display the content of the memory as
+random garbage.
 
-As long as  graphics_res / font_size = text_res then fbcon will not try 
-to resize the vc.  If there are any errors introduced into the 
-calculations then you end up with an infinite loop.
-
-John
-
-
-
-
+Luca
+-- 
+Home: http://kronoz.cjb.net
+Software is like sex; it's better when it's free.
+Linus Torvalds
 
 
 -------------------------------------------------------

@@ -1,17 +1,16 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: Reading the EDID block for x86 machines
-Date: 12 Mar 2003 04:07:58 +0800
+From: Thomas Winischhofer <thomas@winischhofer.net>
+Subject: Re: Some questions
+Date: Tue, 11 Mar 2003 21:56:58 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1047408233.1643.1.camel@localhost.localdomain>
-References: <Pine.LNX.4.44.0303111537420.23668-100000@phoenix.infradead.org>
+Message-ID: <3E6E4D9A.7060003@winischhofer.net>
+References: <Pine.LNX.4.44.0303111628240.23668-100000@phoenix.infradead.org> <1047407816.1013.182.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from pine.compass.com.ph ([202.70.96.37])
+Received: from static213-229-38-018.adsl.inode.at ([213.229.38.18] helo=home.winischhofer.net)
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18sq5Y-0005FW-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 Mar 2003 12:11:05 -0800
-In-Reply-To: <Pine.LNX.4.44.0303111537420.23668-100000@phoenix.infradead.org>
+	id 18sqnR-000894-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 Mar 2003 12:56:26 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,96 +20,61 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Antonino Daplas <adaplas@pol.net>
+Cc: James Simmons <jsimmons@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tue, 2003-03-11 at 23:49, James Simmons wrote:
+Antonino Daplas wrote:
+> Well, you have info->currcon, fg_console etc...  No mapping is done,
+> fbcon will just keep track of the tty's it's currently switched to (vt.c
+> does it, and so does fbcon_switch), and fbcon will just look if the vc
+> has a valid PID (which means a process installed its own vc) and
+> therefore not trust it to completely preserve the graphics state.
 > 
-> > I was wondering how to get the EDID block, and my first thought was to
-> > implement DDC.  But it is tricky to implement, so why not just get the
-> > EDID using an int 0x10 BIOS call?
-> 
-> DDC is tricky but the nice thing is it is very portable. We can do the 
-> BIOS call but that limits it support to intel family of processors.
-> I still like to do the BIOS call still because it allows us quick supprot 
-> of EDID on intel platforms. 
-> 
+> Note that X does something like this to protect itself.  When switch
+> from console to X, it refreshes its own registers.
 
-That's true.  The downside of course is that each driver/hardware has to
-have it's own i2c support.  So this may not be very lightweight on first
-glance.
+Which does not neccessarily mean that the framebuffer driver must do the 
+same, resulting in two mode switches. Not really healthy for LCD panels.
 
-Also, the int10 method is simple enough to implement and should
-theoretically support all x86 graphics card with a reasonably unbroken
-BIOS.  If ppc can get the EDID via OpenFirmware, the x86 can get it via
-VBE int10.  Theoretically, other archs that follow some kind of video
-standard will have this kind of support also.
+The current implementation (as with James' latest patch) does not show 
+any problems with this, even when switching back to a console with a 
+different resolution than the one X was started under. Then again, maybe 
+that's just due to a all too well working sis driver combination :)
 
-The downside of this method is it can only get the EDID block of the
-video controller/s initialized at boot time. 
-  
-> > The EDID block can be read before the kernel goes into protected mode
-> > (just a short assembly code in arch/i386/boot/video.S) and this can be
-> > saved later on as struct edid_info during the kernel's setup routine.  
-> > 
-> > One catch though is that that the "empty_zero_page" is becoming too
-> > tight, so it will just use the same offset used by the EDD (BIOS
-> > Enhanced Disk Drive).  So EDID reading will be disabled if EDD is
-> > enabled under the "Processor Type and Features"  option.
+> I think you may need some support for this.  Several have already
+> reported that switching from X to a console results in a corrupted
+> display which can be cleared by doing an fbset. 
 > 
-> I believe it is possible to read the block after we are in protect mode.
-> Look at vesafb and also the aty128 driver allows you to probe the BIOS 
-> after we are in protect mode. I suggest we add a feild to struct 
-> screeninfo to store the address to the edid pointer. 
->  
-
-Not in this case.  I believe there are very few int10 functions that
-have a protected mode interface counterpart.  One of the reasons vesafb
-cannot switch modes is because of this.
- 
-Also the int10 function is a request for the VBE to do DDC, and place
-the results to a buffer provided by the caller.  It's possible, of
-course, that the VBE has it's own copy of the EDID block, but I don't
-know how to search for that. 
-
-> > One of the goals is to build a video data structure that also includes a
-> > database of video mode in fb_videomode format.  This can be dynamically
-> > created per device using the supported VESA modes, manufacturer's mode
-> > and detailed timings mode information in the EDID block. The EDID block
-> > also contain information on GTF capability.  With these types of
-> > displays, a video mode mode database may not be needed since all
-> > possible supported modelines can be calculated.
-> > 
-> > The advantage of the above is that the driver can switch to different
-> > modes without relying on user input (of course, user-entered modelines
-> > are still preferred).
+> The choices are:
 > 
-> Wow. I'm glad we both think alike. I was thinking the same thing except my 
-> hands are tied with working on the upper layer stuff. 
-> 
-> > Anyway, I need help in testing the code (especially the Detailed
-> > Information part).  Just apply the attached patch, disable Enhanced Disk
-> > Driver support (under Processor Type and Features), and enable EDID
-> > support (under Graphics option).  Finally, add the following line to the
-> > fbdev driver that you use (anywhere, but a good place is the init code):
-> 
-> Diable Enhanced Disk support :-( I have a few suggestions. One we add a 
-> pointer to struct screen_info that points to the edid information. We can 
-> use phys_to_virt to translate that address into virtual memory. I can 
-> create a patch today and store it in the BK tree. 
-> 
+> 1. refresh the registers at every switch - slowest but guarantees
+> hardware state is always preserved 
 
-You can't.  The EDID block was placed in the "empty_zero_page", the same
-page shared by screen_info (and the EDD, apm, etc) at boottime .  This
-page will get overwritten later on so an explicit save of the contents
-must be done.  And because it's only a page (4086 bytes), there may not
-be enough room to squeeze in 128 bytes.  The EDD already requires a
-buffer at offset 0x600, and I'm not sure how large is the block.  Of
-course, if someone tells me where to squeeze in 128 bytes without
-overlapping the others, that is infinitely much better.
+Bad. Takes long time, especially on LCD displays which always need a 
+little delay for backlight and sync stability reasons.
 
-Tony
+> 2. do not refresh unless var changed - fasted but can result in
+> corruption/crash if registers were changed behind the back of fbdev
+
+I think one can rely on tidyness of applications changing the registers. 
+Like X does.
+
+> 3. selective refresh - do not refresh if switching between "trusted"
+> consoles, refresh if switching from "untrusted" consoles.
+> 
+> 4. Find a method to detect if the registers were changed behind the back
+> of fbdev.
+
+Very time taking on some hardware (such as ... erm... SiS) with more 
+than 100 registers for graphic mode setup.
+
+Thomas
+
+-- 
+Thomas Winischhofer
+Vienna/Austria
+mailto:thomas@winischhofer.net          *** http://www.winischhofer.net
 
 
 

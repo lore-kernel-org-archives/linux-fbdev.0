@@ -1,21 +1,23 @@
-From: Greg KH <greg@kroah.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: fb_console_init fix.
-Date: Fri, 20 Feb 2004 15:54:12 -0800
+Date: Sat, 21 Feb 2004 11:16:47 +1100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040220235410.GB17771@kroah.com>
-References: <Pine.LNX.4.44.0402202156340.6798-100000@phoenix.infradead.org> <1077317816.9623.20.camel@gaston>
+Message-ID: <1077322606.10864.1.camel@gaston>
+References: <Pine.LNX.4.44.0402202156340.6798-100000@phoenix.infradead.org>
+	 <1077317816.9623.20.camel@gaston>  <20040220235410.GB17771@kroah.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AuKcA-0001aW-2r
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 20 Feb 2004 16:03:26 -0800
-Received: from mail.kroah.org ([65.200.24.183] helo=perch.kroah.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AuKW3-00028g-0n
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 20 Feb 2004 15:57:07 -0800
-Content-Disposition: inline
-In-Reply-To: <1077317816.9623.20.camel@gaston>
+	id 1AuL0l-0007Za-1P
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 20 Feb 2004 16:28:51 -0800
+Received: from gate.crashing.org ([63.228.1.57] ident=root)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.30)
+	id 1AuKub-0006Pt-Uv
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 20 Feb 2004 16:22:30 -0800
+In-Reply-To: <20040220235410.GB17771@kroah.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,27 +28,27 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Greg KH <greg@kroah.com>
 Cc: James Simmons <jsimmons@infradead.org>, Linus Torvalds <torvalds@transmeta.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Sat, Feb 21, 2004 at 09:56:56AM +1100, Benjamin Herrenschmidt wrote:
-> 
-> If we want the fb stuff to be initialized before other drivers, we
-> probably want to create an init step before devices and after PCI
-> probe, but is that really necessary ?
-> 
-> The core fbdev should just need a subsys initcall. fbcon could use
-> that too and register a notifier. Then we could use the notifier
-> mecanism to notify fbcon when fbdev's are added (from
-> register_framebuffer) and get rid of all of the init crap
+On Sat, 2004-02-21 at 10:54, Greg KH wrote:
 
-What's wrong with the current range of init call sections?  Can't that
-work for fb devices today?
+> What's wrong with the current range of init call sections?  Can't that
+> work for fb devices today?
 
-thanks,
+We can probably work with those. I just don't fell like changing that
+part of fbdev right now. More important fixes to get in first (and
+there's a shitload of crap related to calling the setup functions in
+fbdev's that need fixing too if/when we change that init stuff).
 
-greg k-h
+My idea about adding an initcall level was for pure convenience, but
+may be wrong. It's handy to have the console inited before the rest
+that's all ;) We can leave that out for now, maybe just linking
+drivers/video before the rest is enough to get that anyway.
+
+Ben.
+
+
 
 
 -------------------------------------------------------

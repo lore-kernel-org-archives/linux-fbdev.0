@@ -1,21 +1,22 @@
-From: Sven Luther <sven.luther@wanadoo.fr>
-Subject: Re: Re: [forum] Re: Announcement: Modification to the base XFree86(TM) license.
-Date: Fri, 30 Jan 2004 23:29:02 +0100
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: Cursor patch.
+Date: Thu, 29 Jan 2004 12:20:51 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040130222902.GA11885@iliana>
-References: <20040129115838.A70069@xfree86.org> <1075423804.12536.28.camel@gaston> <16410.33783.236964.200047@xf11.fra.suse.de> <20040130173238.GA8599@iliana> <16410.44981.237411.858354@xf11.fra.suse.de>
+Message-ID: <20040129122051.798dfcaa.akpm@osdl.org>
+References: <1075251935.6296.243.camel@gaston>
+	<Pine.LNX.4.44.0401291952240.11251-100000@phoenix.infradead.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Amh8T-0008Oa-Pk
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Jan 2004 14:29:13 -0800
-Received: from smtp1.wanadoo.fr ([193.252.22.30] helo=mwinf0101.wanadoo.fr)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Amh8R-0005Le-8d
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Jan 2004 14:29:11 -0800
-Content-Disposition: inline
-In-Reply-To: <16410.44981.237411.858354@xf11.fra.suse.de>
+	id 1AmhZz-000252-3I
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Jan 2004 14:57:39 -0800
+Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1AmIeY-0007gI-0g
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 29 Jan 2004 12:20:42 -0800
+In-Reply-To: <Pine.LNX.4.44.0401291952240.11251-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,44 +27,21 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Egbert Eich <eich@XFree86.Org>
-Cc: forum@XFree86.Org, devel@XFree86.Org, linux-fbdev-devel@lists.sourceforge.net
+To: James Simmons <jsimmons@infradead.org>
+Cc: benh@kernel.crashing.org, geert@linux-m68k.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, Jan 30, 2004 at 08:25:40PM +0100, Egbert Eich wrote:
-> Sven Luther writes:
->  > 
->  > Maybe a decision on both parts on this would be ok ? XFree86 could make
->  > sure the licence of the driver code would not conflict with the GPL,
->  > keeping the old one for example, and the fbdev driver authors would
->  > dual-licence the code, both GPL and the old xfree86 licence would do
->  > just fine. Benjamin, what do you think about this ?
->  > 
->  > BTW, CCing this to the linux-fbdev mailing list.
->  > 
+James Simmons <jsimmons@infradead.org> wrote:
+>
 > 
-> Yes, a personal agreement between driver developers would also work.
-> However they tend to change and other people will make contributions
-> who all would have to agree also. 
-> I don't know if a general dual license agreement in the kernel 
-> file header would be possible. Also it could get removed once 
-> the author changes. Just like the license in the XFree86 driver 
-> could be amended. 
+> I really like to create a cursor patch and push it main line. With this 
+> patch I coudl sync several drivers afterwards. What do you think?
+> 
 
-I guess already some drivers have such a dual licencing.
+You can write the cursor patch, sync drivers to it, test them all together
+then we can merge them all together.  There's no need to submit the cursor
+patch earlier.
 
-> Doing this now for existing fbdev driver would involve to ask
-> anyone who has contributed little more than a typo fix.
 
-Yeah, that would be rather problematic, but anyway, most of the things
-move from the XFree86 code to fbdev code, and most often, it is not code
-that is copied, but the register information and such. It is always
-easier to get specs if you are working for XFree86 than if you plan to
-do some kernel driver work.
-
-Friendly,
-
-Sven Luther
 
 
 -------------------------------------------------------

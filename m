@@ -1,15 +1,11 @@
-From: tmika@t-online.de (Thorsten Mika)
-Subject: contrast on a fixed frequency monitor
-Date: Sat, 13 Jul 2002 10:55:38 +0200
+From: =?iso-8859-1?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>
+Subject: Card's view of framebuffer offset into userspace?
+Date: Sun, 14 Jul 2002 16:10:29 +0300
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20020713105538.7bb776f2.tmika@t-online.de>
+Message-ID: <agrt6u$5f0$2@main.gmane.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mailout08.sul.t-online.com ([194.25.134.20])
-	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17TIgw-0001Dj-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 13 Jul 2002 01:55:50 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -19,25 +15,18 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-fbdev-users@lists.sourceforge.net
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-hi list,
+Is there a way to ge the framebuffer offset to userspace? I hacked
+DirectFB to draw to the crtc2 display but currently I've had to hardcode
+the framebuffer offset. So I need something I can feed to tmy G400.
 
-i am a newbie to linux-fbdev and got a problem:
-
-i am trying to use the fbdev stuff from 2.4.18 on a ati rage lt (mach 64) chipset to make it sync the textmode on my hitachi hm4419-d fixed frequency monitor. everything runs fine so far, i can load the atyfb module and make fbset switch the video settings to a readable image, buit obviously the contrast and brightness of the image are very high. switching over to the restarted (non-xvfb-)x-server reveals an image that is a bit scrambled in some parts (like being doubled in parts, but not completely messed up) which is also equipped with far too much contrast. turning down the contrast on the monitor makes things a bit better, but it still is very high making me fear for my monitor's health :-)
-
-any hint?
-
-thx in advance,
-
-  thorsten
--- 
-Thorsten Mika                                mailto:tmika@t-online.de
-Hamm / Germany                                            TM5173-RIPE
-
-p.s.: this is my 3rd try to get it sent to the list. i can't see it on the webpage, but if it's a moderated list and my message needs to be checked before it appears on the webpage i excuse to the moderator :)
+--=20
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
 
 
 -------------------------------------------------------

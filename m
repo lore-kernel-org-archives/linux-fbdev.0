@@ -1,46 +1,39 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Fw: Problem with 2.6.11-bk[3456]
-Date: Fri, 11 Mar 2005 23:11:30 +1100
-Message-ID: <1110543090.5810.96.camel@gaston>
-References: <20050310204728.3969cfa1.akpm@osdl.org>
-	 <1110516944.32556.352.camel@gaston>
-	 <1110542957.2667.5.camel@alpha.digital-domain.net>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Benjamin Herrenschmidt <benh-XVmvHMARGAS8U2dJNN8I7kB+6BGkLq7r@public.gmane.org>
+Subject: Re: [Linux-fbdev-devel] Re: inappropriate use of in_atomic()
+Date: Fri, 11 Mar 2005 23:26:13 +1100
+Message-ID: <1110543974.5809.98.camel@gaston>
+References: <20050310204006.48286d17.akpm@osdl.org>
+	 <20050311091142.GB22415@fi.muni.cz> <20050311014601.166ae43d.akpm@osdl.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D9izg-0000br-El
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 11 Mar 2005 04:11:52 -0800
-Received: from gate.crashing.org ([63.228.1.57])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1D9izf-0004X5-Vr
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 11 Mar 2005 04:11:52 -0800
-In-Reply-To: <1110542957.2667.5.camel@alpha.digital-domain.net>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+In-Reply-To: <20050311014601.166ae43d.akpm-3NddpPZAyC0@public.gmane.org>
+Sender: acpi-devel-admin-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
+Errors-To: acpi-devel-admin-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/acpi-devel>,
+	<mailto:acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
+List-Help: <mailto:acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/acpi-devel>,
+	<mailto:acpi-devel-request-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=acpi-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Clayton <andrew@digital-domain.net>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@osdl.org>
+To: Linux Fbdev development list <linux-fbdev-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org>
+Cc: Jan Kasprzak <kas-0hYGf3jDe+XrBKCeMvbIDA@public.gmane.org>, Paul Mackerras <paulus-eUNUBHrolfbYtjvyW6yDsg@public.gmane.org>, jt-yAE0UhLNZJawPNPzzlOzwdBPR1lH4CV8@public.gmane.org, javier-UOFnMJzu7Pp1eVVWpSVkNqxOck334EZe@public.gmane.org, acpi-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, linux1394-devel-5NWGOfrQmneRv+LV9MX5uipxlwaOVQ5f@public.gmane.org, roland-nF87da4h5whBDgjK7y7TUQ@public.gmane.org, Linux Kernel list <linux-kernel-u79uwXL29TY76Z2rM5mHXA@public.gmane.org>
 
+On Fri, 2005-03-11 at 01:46 -0800, Andrew Morton wrote:
+> Jan Kasprzak <kas-0hYGf3jDe+XrBKCeMvbIDA@public.gmane.org> wrote:
+> >
+> > This may be the cause of 
+> > 
+> >  http://bugme.osdl.org/show_bug.cgi?id=4150
+> 
+> Looks that way, yes.
 
-> Hi Ben,
-> 
-> No, I'm not using radeonfb/framebuffer, just the normal VGA mode.
-> 
-> 
-> Thanks for the reply.
-
-Well, Andrew, at least this one isn't a radeonfb regression :)
+Note that it would be interesting to fix that (I mean the reliability of
+is_atomic() or an alternative). I agree it's quite bad to rely on that
+in practice, but there are a few corner cases where it's useful (like
+oops handling in fbdev's etc...)
 
 Ben.
 

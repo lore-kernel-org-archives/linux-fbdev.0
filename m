@@ -1,25 +1,26 @@
-From: Jurriaan <thunder7@xs4all.nl>
-Subject: Re: Does framebuffer support 24 bit colors?
-Date: Sat, 19 Jun 2004 06:51:56 +0200
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: Sane behavior of fbset
+Date: Sat, 19 Jun 2004 14:13:28 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040619045156.GA4038@middle.of.nowhere>
-References: <40D395B8.4040808@integrated-devices.com>
-Reply-To: Jurriaan <thunder7@xs4all.nl>
+Message-ID: <200406191413.28339.adaplas@hotpop.com>
+References: <200406180945.12444.adaplas@hotpop.com> <200406190240.26228.adaplas@hotpop.com> <20040619031650.GC14319@havoc.gtf.org>
+Reply-To: adaplas@pol.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BbXqA-0007VE-PE
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 21:52:30 -0700
-Received: from smtp-out5.xs4all.nl ([194.109.24.6])
+	id 1BbZ6K-0005eg-8x
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 23:13:16 -0700
+Received: from snickers.hotpop.com ([38.113.3.51])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BbXqA-0005Te-8q
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 21:52:30 -0700
-Received: from zeeotter.xs4all.nl (zeeotter.xs4all.nl [80.126.31.149])
-	by smtp-out5.xs4all.nl (8.12.10/8.12.10) with ESMTP id i5J4qRUY074448
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 19 Jun 2004 06:52:27 +0200 (CEST)
+	id 1BbZ6J-0001aP-Uu
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 23:13:16 -0700
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by snickers.hotpop.com (Postfix) with SMTP id 7E9C670952
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 19 Jun 2004 05:12:10 +0000 (UTC)
+In-Reply-To: <20040619031650.GC14319@havoc.gtf.org>
 Content-Disposition: inline
-In-Reply-To: <40D395B8.4040808@integrated-devices.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,26 +31,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Srinivasa Deevi <sdeevi@integrated-devices.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: David Eger <eger@havoc.gtf.org>, jsimmons@infradead.org
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Srinivasa Deevi <sdeevi@integrated-devices.com>
-Date: Fri, Jun 18, 2004 at 06:24:08PM -0700
-> Hi all
-> 
-> does frame buffer support 24 bit colors ? What should I do to make it 
-> work with 24 colors pixels in LCD ?
-> 
-Depends on the framebuffer. Matrox does for sure, radeonfb doesn't, for
-others, check the source.
+On Saturday 19 June 2004 11:16, David Eger wrote:
+> On Sat, Jun 19, 2004 at 02:40:46AM +0800, Antonino A. Daplas wrote:
+> > In 2.6
+> >
+> > 1. If you use fbset, you will get screen corruption or hang the GPU
+> >
+> > 2. stty will do the function of fbset.  However, stty will only pass rows
+> > and cols (xres and yres respectively).  There is no information for bit
+> > depth, timings, virtual resolution, etc.
+>
+> So *this* is what's going on with my port of the cirrusfb driver--why fbset
+> wasn't working... for radeonfb fbset still works in 2.6, so i didn't
+> realize there was this problem... What's so wonky with the fbset code path
+> that screws things up? and why does stty work?
 
-Jurriaan
--- 
-It is forbidden to kill; therefore all murderers are punished unless they kill
-in large numbers and to the sound of trumpets.
-        Voltaire - War
-Debian (Unstable) GNU/Linux 2.6.7 2x6078 bogomips load 0.02
+The flow of fbset is upstream:  fbset->fbdev->fbcon->vc (2.4 code)
+The flow of stty is downstream: stty->vc->fbcon->fbdev (2.6 code)
+
+I don't know how radeonfb does it though.
+
+Tony
+
+
 
 
 -------------------------------------------------------

@@ -1,15 +1,19 @@
-From: Hanno =?ISO-8859-15?Q?B=F6ck?= <hanno@gmx.de>
-Subject: Fix for Radeon Framebuffer in 2.5
-Date: Tue, 8 Apr 2003 00:38:54 +0200
+From: Richard Drummond <lists@rcdrummond.net>
+Subject: Re: Why am I shocked?
+Date: Mon, 7 Apr 2003 22:06:47 -0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030408003854.47614717.hanno@gmx.de>
+Message-ID: <200304072206.47720.lists@rcdrummond.net>
+References: <3E91C9F4.9060504@starpower.net>
+Reply-To: lists@rcdrummond.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from imap.gmx.net ([213.165.65.60] helo=mail.gmx.net)
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 192fGT-00050l-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 07 Apr 2003 15:38:58 -0700
+Received: from conure.mail.pas.earthlink.net ([207.217.120.54])
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 192jLf-0000c3-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 07 Apr 2003 20:00:35 -0700
+In-Reply-To: <3E91C9F4.9060504@starpower.net>
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,32 +24,26 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>, linux-fbdev-devel@lists.sourceforge.net
+To: Alan Grimes <alangrimes@starpower.net>, linux-fbdev-devel@lists.sourceforge.net
 
-Below is a fix for the radeonfb.
-I own one of those radeon mobility cards reporting 0 megs of ram
-instead of 8. However, it must be 8 Megs, not 8 kilobyte.
-With this fix, radeonfb works fine with 2.5-kernels on my system.
+Hi Alan
 
-Please apply this patch to the next updates you send to linus.
+On Monday 07 April 2003 13:56, Alan Grimes wrote:
+> I try to do a test-run of the thing and quickly discover that my lowly
+> old ATI Rage PRO Turbo based card was not supported at all! --
+> *incredible*. I had always known that leenooks was a piece of crap but
+> this is astonishing!!!!
 
-cu,
+Perhaps if you were less derisory then people might be more inclined to help 
+you. You could also describe your problem in a bit more detail. The kernel 
+atyfb driver supports most Rage Pro cards. I know because I have used it (at 
+least in Kernel 2.4 - I can't vouch whether the driver has been ported to 2.5 
+yet). Is this the driver you are trying to use? Or are you using the vesafb 
+driver?
 
-Hanno
+Cheers,
+Rich
 
-
-
---- linux-2.5.66-1/drivers/video/radeonfb.c	2003-04-01 11:16:11.000000000 +0200
-+++ linux-2.5.66/drivers/video/radeonfb.c	2003-04-07 14:20:10.000000000 +0200
-@@ -2936,7 +2936,7 @@
- 		switch (pdev->device) {
- 			case PCI_DEVICE_ID_ATI_RADEON_LY:
- 			case PCI_DEVICE_ID_ATI_RADEON_LZ:
--				rinfo->video_ram = 8192;
-+				rinfo->video_ram = 8192 * 1024;
- 				break;
- 			default:
- 				break;
 
 
 -------------------------------------------------------

@@ -1,28 +1,20 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: radeonfb & fbdev code status
-Date: Sun, 16 Nov 2003 18:20:29 +1100
+From: John Zielinski <grim@undead.cc>
+Subject: How can I make an inverse virtual screen?
+Date: Sun, 16 Nov 2003 02:26:59 -0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1068967229.4645.64.camel@gaston>
-References: <70AC3EE8-17AD-11D8-A894-0003931DDB42@caltech.edu>
-	 <1068959152.5157.50.camel@gaston>
-	 <EFF3F4D4-1804-11D8-A894-0003931DDB42@caltech.edu>
-Reply-To: benh@kernel.crashing.org
+Message-ID: <3FB726C3.5070108@undead.cc>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1ALHE8-0000vq-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 15 Nov 2003 23:21:44 -0800
-Received: from griffin-can-au.getin2net.com ([203.43.225.34])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.24)
-	id 1ALHDQ-0000mK-PM
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 15 Nov 2003 23:21:01 -0800
-Received: from gaston ([10.100.1.33])
-	by griffin-can-au.getin2net.com (8.11.6/8.11.6) with ESMTP id hAG7KqU12031
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 16 Nov 2003 18:20:52 +1100
-In-Reply-To: <EFF3F4D4-1804-11D8-A894-0003931DDB42@caltech.edu>
+	id 1ALHJs-000264-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 15 Nov 2003 23:27:40 -0800
+Received: from gw-undead3.tht.net ([216.126.84.18] helo=mail.undead.cc)
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.24)
+	id 1ALHJJ-0003lm-4J
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 15 Nov 2003 23:27:05 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -32,27 +24,21 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Jordan Benjamin <jordanb@caltech.edu>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Sun, 2003-11-16 at 18:17, Jordan Benjamin wrote:
-> Thanks for a very informative reply. My only other question now is: 
-> where can I find the current radeonfb code? I apologize if this should 
-> be obvious to me (I do have an excuse though--I'm recovering from 
-> throat surgery and on a lot of painkillers!). Thanks,
+I just booted my linux test box hooked up to my HDTV.  The fb console 
+started in 1920x540 mode.  Sweet!  The problem however is overscan.  Is 
+there a easy way of doing an inverse virtual screen?  I want the virtual 
+screen to be smaller than the real screen.  I was thinking to look into 
+the way the logo is handled as that does the top of the screen and 
+somehow make it do the same for the sides and top.
 
-The up-to-date version of the "new" driver can always be found in
-my "powermac" tree which, I suppose, will work just fine on non-pmac
-as well and is available either via bk
-(bk://ppc.bkbits.net/linuxppc-2.5-benh) or via rsync
-(source.mvista.org::linuxppc-2.5-benh)
+Any other suggestions?
 
-I think the current fbdev patches have a fairly recent version too,
-but I'd prefer if we did the debugging using my tree so I can push
-updates along as we find problems
+John
 
-Ben.
+
 
 
 

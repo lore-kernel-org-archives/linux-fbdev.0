@@ -1,52 +1,140 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Re: fbdv/fbcon pending problems
-Date: Tue, 24 Feb 2004 19:33:13 +1100
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1077611593.28488.162.camel@gaston>
-References: <Pine.LNX.4.44.0402231823570.11599-100000@phoenix.infradead.org>
-	 <1077576644.5960.77.camel@gaston>
-	 <Pine.GSO.4.58.0402240936270.3187@waterleaf.sonytel.be>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: Apollo framebuffer sysfs
+Date: Tue, 24 Feb 2004 17:08:00 +0000 (GMT)
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <Pine.LNX.4.44.0402241707330.24952-100000@phoenix.infradead.org>
+References: <Pine.GSO.4.58.0402240931140.3187@waterleaf.sonytel.be>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <Pine.GSO.4.58.0402240931140.3187@waterleaf.sonytel.be>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AvYG9-0007pq-K9
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 00:49:45 -0800
-Received: from gate.crashing.org ([63.228.1.57] ident=root)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1AvY83-00033h-BD
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 00:41:23 -0800
-In-Reply-To: <Pine.GSO.4.58.0402240936270.3187@waterleaf.sonytel.be>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
 To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> What about renaming it to FB_ACTIVE_RESIZE?
+Okay. Applied. Try this patch. If you are happy with it send it to linus.
 
-Because it's not actually setting any mode, just returns a
-valid "var" :) For now, fbcon will just do a set_var
-FB_ACTIVATE_NOW right away, but userland may want to use
-that to build mode lists without actually changing the mode...
-
-Ben.
-
-
-
-
--------------------------------------------------------
-SF.Net is sponsored by: Speed Start Your Linux Apps Now.
-Build and deploy apps & Web services for Linux with
-a free DVD software kit from IBM. Click Now!
-http://ads.osdn.com/?ad_id=1356&alloc_id=3438&op=click
+--- linus-2.6/drivers/video/dnfb.c	2004-02-18 20:59:07.000000000 -0800
++++ fbdev-2.6/drivers/video/dnfb.c	2004-02-23 15:58:26.000000000 -0800
+@@ -103,8 +103,6 @@
+ 
+ #define SWAP(A) ((A>>8) | ((A&0xff) <<8))
+ 
+-static struct fb_info fb_info;
+-
+ /* frame buffer operations */
+ 
+ static int dnfb_blank(int blank, struct fb_info *info);
+@@ -119,7 +117,7 @@
+ 	.fb_cursor	= soft_cursor,
+ };
+ 
+-struct fb_var_screeninfo dnfb_var __initdata = {
++struct fb_var_screeninfo dnfb_var __devinitdata = {
+ 	.xres		1280,
+ 	.yres		1024,
+ 	.xres_virtual	2048,
+@@ -130,7 +128,7 @@
+ 	.vmode		FB_VMODE_NONINTERLACED,
+ };
+ 
+-static struct fb_fix_screeninfo dnfb_fix __initdata = {
++static struct fb_fix_screeninfo dnfb_fix __devinitdata = {
+ 	.id		"Apollo Mono",
+ 	.smem_start	(FRAME_BUFFER_START + IO_BASE),
+ 	.smem_len	FRAME_BUFFER_LEN,
+@@ -148,7 +146,7 @@
+ 	return 0;
+ }
+ 
+-static 
++static
+ void dnfb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
+ {
+ 
+@@ -224,21 +222,38 @@
+ 	out_8(AP_CONTROL_0, NORMAL_MODE);
+ }
+ 
++/*
++ * Initialization
++ */
+ 
+-unsigned long __init dnfb_init(unsigned long mem_start)
++static int __devinit dnfb_probe(struct device *device)
+ {
+-	int err;
++	struct platform_device *dev = to_platform_device(device);
++	struct fb_info *info;
++	int err = 0;
++
++	info = framebuffer_alloc(0, &dev->dev);
++	if (!info)
++		return -ENOMEM;
++
++	info->fbops = &dn_fb_ops;
++	info->fix = dnfb_fix;
++	info->var = dnfb_var;
++	info->screen_base = (u_char *) info->fix.smem_start;
++
++	err = fb_alloc_cmap(&info->cmap, 2, 0);
++	if (err < 0) {
++		framebuffer_release(info);
++		return err;
++	}
+ 
+-	fb_info.fbops = &dn_fb_ops;
+-	fb_info.fix = dnfb_fix;
+-	fb_info.var = dnfb_var;
+-	fb_info.screen_base = (u_char *) fb_info.fix.smem_start;
+-
+-	fb_alloc_cmap(&fb_info.cmap, 2, 0);
+-
+-	err = register_framebuffer(&fb_info);
+-	if (err < 0)
+-		panic("unable to register apollo frame buffer\n");
++	err = register_framebuffer(info);
++	if (err < 0) {
++		fb_dealloc_cmap(&info->cmap);
++		framebuffer_release(info);
++		return err;
++	}
++	dev_set_drvdata(&dev->dev, info);
+ 
+ 	/* now we have registered we can safely setup the hardware */
+ 	out_8(AP_CONTROL_3A, RESET_CREG);
+@@ -249,7 +264,31 @@
+ 	out_be16(AP_ROP_1, SWAP(0x3));
+ 
+ 	printk("apollo frame buffer alive and kicking !\n");
+-	return mem_start;
++	return err;
++}
++
++static struct device_driver dnfb_driver = {
++	.name	= "dnfb",
++	.bus	= &platform_bus_type,
++	.probe	= dnfb_probe,
++};
++
++static struct platform_device dnfb_device = {
++	.name	= "dnfb",
++};
++
++int __init dnfb_init(void)
++{
++	int ret;
++
++	ret = driver_register(&dnfb_driver);
++
++	if (!ret) {
++		ret = platform_device_register(&dnfb_device);
++		if (ret)
++			driver_unregister(&dnfb_driver);
++	}
++	return ret;
+ }
+ 
+ MODULE_LICENSE("GPL");

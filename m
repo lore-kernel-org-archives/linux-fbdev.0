@@ -1,25 +1,17 @@
-From: amavisd-new <postmaster@dns1.netsurf.it>
-Subject: VIRUS (Worm.SomeFool.P) IN YOUR MAIL
-Date: Thu,  8 Jul 2004 10:56:06 +0200 (CEST)
+From: _Svc_NortonAV@synergon.hu
+Subject: (SMTP) Virus found in a message you sent
+Date: Thu, 8 Jul 2004 15:30:52 +0000 (UTC)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <VS13145-06@dns1>
-References: <20040708085553.A6CB8228258@mailhub.netsurf.it>
-Mime-Version: 1.0
-Content-Type: multipart/report; report-type=delivery-status;
-    boundary="----------=_1089276966-13145-9"
+Message-ID: <E1BiaRs-0000cT-BS@sc8-sf-mx1.sourceforge.net>
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BiUgK-0001M6-0C
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Jul 2004 01:55:04 -0700
-Received: from dns1.netsurf.it ([212.110.52.2] helo=mailhub.netsurf.it)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1BiUgJ-0001gI-At
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Jul 2004 01:55:03 -0700
-Received: from localhost (unknown [127.0.0.1])
-	by mailhub.netsurf.it (Postfix) with ESMTP id 062202282A1
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu,  8 Jul 2004 08:56:06 +0000 (UTC)
-In-Reply-To: <20040708085553.A6CB8228258@mailhub.netsurf.it>
+	id 1BiaRs-0002N9-RG
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Jul 2004 08:04:32 -0700
+Received: from cache.synergon.hu ([194.149.60.26] helo=cache1.synergon.hu)
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.34)
+	id 1BiaRs-0000cT-BS
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Jul 2004 08:04:32 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,83 +21,32 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Date: Thu Jul  8 08:05:13 2004
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
 
-This is a multi-part message in MIME format...
+(SMTP) A virus was found in a message sent by this
+account.
 
-------------=_1089276966-13145-9
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+--- Scan information follows ---
 
-VIRUS ALERT
+Result: Virus Detected
+Virus Name: W32.Netsky.C@mm
+File Attachment: secrets.exe
+Attachment Status: deleted
 
-Our virus checker found
-    virus: Worm.SomeFool.P
-in your email to the following recipient:
--> ometti.while1.com@mailhub.netsurf.it
+--- Original message information follows ---
 
-Delivery of the email was stopped!
-
-Please check your system for viruses,
-or ask your system administrator to do so.
-
-For your reference, here are headers from your email:
-------------------------- BEGIN HEADERS -----------------------------
-Received: from while1.com (unknown [61.154.14.103])
-	by mailhub.netsurf.it (Postfix) with ESMTP id A6CB8228258
-	for <ometti@while1.com>; Thu,  8 Jul 2004 08:55:53 +0000 (UTC)
 From: linux-fbdev-devel@lists.sourceforge.net
-To: ometti@while1.com
-Subject: Mail Delivery (failure ometti@while1.com)
-Date: Thu, 8 Jul 2004 16:55:36 +0800
-MIME-Version: 1.0
-Content-Type: multipart/related;
-	type="multipart/alternative";
-	boundary="----=_NextPart_000_001B_01C0CA80.6B015D10"
-X-Priority: 3
-X-MSMail-Priority: Normal
-Message-Id: <20040708085553.A6CB8228258@mailhub.netsurf.it>
--------------------------- END HEADERS ------------------------------
+To: bakay.arpad@synergon.hu
+Date: Thu, 8 Jul 2004 23:03:22 +0800
+Subject: dear
+Received: from cache1.synergon.hu ([194.149.60.26])
+ by sy2ba-smtp.synergon.hu (SAVSMTP 3.1.0.29) with SMTP id M2004070817032725031
+ for <bakay.arpad@synergon.hu>; Thu, 08 Jul 2004 17:03:27 +0200
 
-------------=_1089276966-13145-9
-Content-Type: message/delivery-status
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Description: Delivery error report
-
-Reporting-MTA: dns; dns1
-Received-From-MTA: smtp; mailhub.netsurf.it ([127.0.0.1])
-Arrival-Date: Thu,  8 Jul 2004 10:56:05 +0200 (CEST)
-
-Final-Recipient: rfc822; ometti.while1.com@mailhub.netsurf.it
-Action: failed
-Status: 5.7.1
-Diagnostic-Code: smtp; 550 5.7.1 Message content rejected, id=13145-06 - VIRUS: Worm.SomeFool.P
-Last-Attempt-Date: Thu,  8 Jul 2004 10:56:06 +0200 (CEST)
-
-------------=_1089276966-13145-9
-Content-Type: text/rfc822-headers
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Description: Undelivered-message headers
-
-Received: from while1.com (unknown [61.154.14.103])
-	by mailhub.netsurf.it (Postfix) with ESMTP id A6CB8228258
-	for <ometti@while1.com>; Thu,  8 Jul 2004 08:55:53 +0000 (UTC)
-From: linux-fbdev-devel@lists.sourceforge.net
-To: ometti@while1.com
-Subject: Mail Delivery (failure ometti@while1.com)
-Date: Thu, 8 Jul 2004 16:55:36 +0800
-MIME-Version: 1.0
-Content-Type: multipart/related;
-	type="multipart/alternative";
-	boundary="----=_NextPart_000_001B_01C0CA80.6B015D10"
-X-Priority: 3
-X-MSMail-Priority: Normal
-Message-Id: <20040708085553.A6CB8228258@mailhub.netsurf.it>
-
-------------=_1089276966-13145-9--
 
 
 -------------------------------------------------------

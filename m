@@ -1,25 +1,21 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH]: Round 2
-Date: 13 Jan 2004 09:10:17 +0800
+From: Sven Luther <sven.luther@wanadoo.fr>
+Subject: Re: Bug#226973: xserver-xfree86: [glint] second card at wrong resolution
+Date: Tue, 13 Jan 2004 08:41:58 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1073956222.3778.19.camel@localhost.localdomain>
+Message-ID: <20040113074158.GF4863@iliana>
+References: <20040109163119.GA10151@scowler.net> <20040112121558.GA24511@iliana> <20040112215543.GB2150@scowler.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-eTojRALXr6L/stKxmRVU"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AgD5y-0006zd-6s
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 12 Jan 2004 17:11:50 -0800
-Received: from twix.hotpop.com ([38.113.3.71])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AgD5x-0002GN-AG
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 12 Jan 2004 17:11:49 -0800
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by twix.hotpop.com (Postfix) with SMTP id 6EBE9BDF178
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 13 Jan 2004 01:04:08 +0000 (UTC)
-Received: from [203.177.116.202] (unknown [203.177.116.202])
-	by smtp-3.hotpop.com (Postfix) with ESMTP id DD102BDF297
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 13 Jan 2004 01:03:56 +0000 (UTC)
+	id 1AgJBj-0003bB-16
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 12 Jan 2004 23:42:11 -0800
+Received: from smtp4.wanadoo.fr ([193.252.22.27] helo=mwinf0402.wanadoo.fr)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1AgJBh-0001oR-67
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 12 Jan 2004 23:42:09 -0800
+Content-Disposition: inline
+In-Reply-To: <20040112215543.GB2150@scowler.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,384 +25,970 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-
-
---=-eTojRALXr6L/stKxmRVU
-Content-Type: text/plain
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Clint Adams <schizo@debian.org>
+Cc: Sven Luther <sven.luther@wanadoo.fr>, 226973@bugs.debian.org, linux-fbdev-devel@lists.sourceforge.net
 
-Hi,
+On Mon, Jan 12, 2004 at 04:55:43PM -0500, Clint Adams wrote:
+> > Could you also provide the /var/log/XFree86.0.log, and please CC me on
+> > this bugreport.
+> 
+> Sure.    I don't know if this is relevant, but the first card is is
+> picked up by the PM2 framebuffer driver (the second is not, because the
+> driver doesn't support multiple cards--I'm trying to copy the multiple
+> card support from pm3fb but I don't really know what I'm doing.
 
-Attached is a patch against linux-2.6.1 + fbdev.diff.  Fixed several 
-bugs/oversights spotted by Luca (Thanks).
+Ok, this may be the problem. The first one is initialized by the pm2fb,
+while the second is not. This mean either some initialization problems,
+or the fact that X doesn't initialize some values set by pm2fb.
 
-Tony
+What kernel are you using, maybe it would be best to work on a 2.6
+kernel and try to adapt the pm2fb to the new framework or something.
 
+Can you describe me the symptoms again ? what exactly did you see on the
+second head ?
 
+Also, i am CCing the linux-fbdev mailing list, as there are chance that
+they would have an insight on this.
 
+Friendly,
 
---=-eTojRALXr6L/stKxmRVU
-Content-Disposition: attachment; filename=fb2-linux-2.6.1.diff.gz
-Content-Type: application/x-gzip; name=fb2-linux-2.6.1.diff.gz
-Content-Transfer-Encoding: base64
+Sven Luther
 
-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
-
---=-eTojRALXr6L/stKxmRVU--
-
-
+> /var/log/XFree86.0.log:
+> 
+> This is a pre-release version of XFree86, and is not supported in any
+> way.  Bugs may be reported to XFree86@XFree86.Org and patches submitted
+> to fixes@XFree86.Org.  Before reporting bugs in pre-release versions,
+> please check the latest version in the XFree86 CVS repository
+> (http://www.XFree86.Org/cvs).
+> 
+> XFree86 Version 4.3.0.1 (Debian 4.3.0-0pre1v3 20030929061855 ilmari@ilmari.org)
+> Release Date: 15 August 2003
+> X Protocol Version 11, Revision 0, Release 6.6
+> Build Operating System: Linux 2.4.18 sparc [ELF] 
+> Build Date: 29 September 2003
+> 	Before reporting problems, check http://www.XFree86.Org/
+> 	to make sure that you have the latest version.
+> Module Loader present
+> OS Kernel: Linux version 2.4.24 (clint@rashudo) (gcc version 3.3.3 20031229 (prerelease) (Debian)) #1 Mon Jan 12 14:44:22 EST 2004 
+> Markers: (--) probed, (**) from config file, (==) default setting,
+>          (++) from command line, (!!) notice, (II) informational,
+>          (WW) warning, (EE) error, (NI) not implemented, (??) unknown.
+> (==) Log file: "/var/log/XFree86.0.log", Time: Mon Jan 12 15:30:54 2004
+> (==) Using config file: "/etc/X11/XF86Config-4"
+> (==) ServerLayout "Default Layout"
+> (**) |-->Screen "Default Screen" (0)
+> (**) |   |-->Monitor "Sun"
+> (**) |   |-->Device "TSI Raptor GFX 8P"
+> (**) |-->Screen "Screen Two" (1)
+> (**) |   |-->Monitor "Sun2"
+> (**) |   |-->Device "TSI Raptor GFX 8P 2"
+> (**) |-->Input Device "Generic Keyboard"
+> (**) Option "XkbRules" "xfree86"
+> (**) XKB: rules: "xfree86"
+> (**) Option "XkbModel" "pc104"
+> (**) XKB: model: "pc104"
+> (**) Option "XkbLayout" "us"
+> (**) XKB: layout: "us"
+> (==) Keyboard: CustomKeycode disabled
+> (**) |-->Input Device "Configured Mouse"
+> (WW) The directory "/usr/lib/X11/fonts/CID" does not exist.
+> 	Entry deleted from font path.
+> (WW) The directory "/usr/lib/X11/fonts/cyrillic" does not exist.
+> 	Entry deleted from font path.
+> (WW) `fonts.dir' not found (or not valid) in "/var/lib/defoma/x-ttcidfont-conf.d/dirs/CID".
+> 	Entry deleted from font path.
+> 	(Run 'mkfontdir' on "/var/lib/defoma/x-ttcidfont-conf.d/dirs/CID").
+> (**) FontPath set to "unix/:7100,/usr/lib/X11/fonts/Type1,/usr/lib/X11/fonts/Speedo,/usr/lib/X11/fonts/misc,/usr/lib/X11/fonts/100dpi,/usr/lib/X11/fonts/75dpi,/var/lib/defoma/x-ttcidfont-conf.d/dirs/TrueType"
+> (==) RgbPath set to "/usr/X11R6/lib/X11/rgb"
+> (==) ModulePath set to "/usr/X11R6/lib/modules"
+> (++) using VT number 7
+> 
+> (WW) Open APM failed (/dev/apm_bios) (No such file or directory)
+> (II) Module ABI versions:
+> 	XFree86 ANSI C Emulation: 0.2
+> 	XFree86 Video Driver: 0.6
+> 	XFree86 XInput driver : 0.4
+> 	XFree86 Server Extension : 0.2
+> 	XFree86 Font Renderer : 0.4
+> (II) Loader running on linux
+> (II) LoadModule: "bitmap"
+> (II) Loading /usr/X11R6/lib/modules/fonts/libbitmap.a
+> (II) Module bitmap: vendor="The XFree86 Project"
+> 	compiled for 4.3.0.1, module version = 1.0.0
+> 	Module class: XFree86 Font Renderer
+> 	ABI class: XFree86 Font Renderer, version 0.4
+> (II) Loading font Bitmap
+> (II) LoadModule: "pcidata"
+> (II) Loading /usr/X11R6/lib/modules/libpcidata.a
+> (II) Module pcidata: vendor="The XFree86 Project"
+> 	compiled for 4.3.0.1, module version = 1.0.0
+> 	ABI class: XFree86 Video Driver, version 0.6
+> (II) PCI: PCI scan (all values are in hex)
+> (II) PCI: 00:00:0: chip 108e,a001 card 0000,0000 rev 00 class 06,00,00 hdr 00
+> (II) PCI: 00:03:0: chip 10b9,7101 card 0000,0000 rev 00 class 00,00,00 hdr 00
+> (II) PCI: 00:05:0: chip 1011,0024 card 0000,0000 rev 03 class 06,04,00 hdr 01
+> (II) PCI: 00:07:0: chip 10b9,1533 card 10b9,1533 rev 00 class 06,01,00 hdr 00
+> (II) PCI: 00:08:0: chip 10b9,5451 card 10b9,5451 rev 01 class 04,01,00 hdr 00
+> (II) PCI: 00:0c:0: chip 108e,1100 card 0000,0000 rev 01 class 06,80,00 hdr 80
+> (II) PCI: 00:0c:1: chip 108e,1101 card 0000,0000 rev 01 class 02,00,00 hdr 80
+> (II) PCI: 00:0c:2: chip 108e,1102 card 0000,0000 rev 01 class 0c,00,10 hdr 80
+> (II) PCI: 00:0c:3: chip 108e,1103 card 0000,0000 rev 01 class 0c,03,10 hdr 80
+> (II) PCI: 00:0d:0: chip 10b9,5229 card 0000,0000 rev c3 class 01,01,ff hdr 00
+> (II) PCI: 00:13:0: chip 1002,4752 card 0000,0000 rev 65 class 03,00,00 hdr 00
+> (II) PCI: 01:00:0: chip 3d3d,0009 card 1227,0006 rev 01 class 03,80,00 hdr 00
+> (II) PCI: 01:01:0: chip 3d3d,0009 card 1227,0006 rev 01 class 03,80,00 hdr 00
+> (II) PCI: End of PCI scan
+> (II) Host-to-PCI bridge:
+> (II) Bus 0: bridge is at (0:0:0), (0,0,1), BCTRL: 0x0008 (VGA_EN is set)
+> (II) Bus 0 I/O range:
+> 	[0] -1	1	0x00000000 - 0x00ffffff (0x1000000) IX[B]
+> (II) Bus 0 non-prefetchable memory range:
+> 	[0] -1	1	0x00000000 - 0xffffffff (0x0) MX[B]
+> (II) Bus 0 prefetchable memory range:
+> 	[0] -1	1	0x00000000 - 0xffffffff (0x0) MX[B]
+> (II) PCI-to-PCI bridge:
+> (II) Bus 1: bridge is at (0:5:0), (0,1,1), BCTRL: 0x0000 (VGA_EN is cleared)
+> (II) Bus 1 non-prefetchable memory range:
+> 	[0] -1	1	0x03000000 - 0x057fffff (0x2800000) MX[B]
+> (II) PCI-to-ISA bridge:
+> (II) Bus -1: bridge is at (0:7:0), (0,-1,-1), BCTRL: 0x0008 (VGA_EN is set)
+> (!!) More than one possible primary device found
+> (--) PCI: (0:3:0) ALi Corporation M7101 PMU rev 0
+> (--) PCI: (0:19:0) ATI Technologies Inc Rage XL rev 101, Mem @ 0x06000000/24, 0x00426000/12, I/O @ 0x0b00/8, BIOS @ 0x00440000/17
+> (--) PCI: (1:0:0) 3DLabs Permedia II 2D+3D rev 1, Mem @ 0x03000000/17, 0x03800000/23, 0x04000000/23, BIOS @ 0x03020000/16
+> (--) PCI: (1:1:0) 3DLabs Permedia II 2D+3D rev 1, Mem @ 0x03040000/17, 0x04800000/23, 0x05000000/23, BIOS @ 0x03030000/16
+> (II) Addressable bus resource ranges are
+> 	[0] -1	1	0x00000000 - 0xffffffff (0x0) MX[B]
+> 	[1] -1	1	0x00000000 - 0x00ffffff (0x1000000) IX[B]
+> (II) OS-reported resource ranges:
+> 	[0] -1	1	0xffffffff - 0xffffffff (0x1) MX[B]
+> 	[1] -1	1	0x000f0000 - 0x000fffff (0x10000) MX[B]
+> 	[2] -1	1	0x000c0000 - 0x000effff (0x30000) MX[B]
+> 	[3] -1	1	0x00000000 - 0x0009ffff (0xa0000) MX[B]
+> 	[4] -1	1	0x00ffffff - 0x00ffffff (0x1) IX[B]
+> 	[5] -1	1	0x00000000 - 0x00000000 (0x1) IX[B]
+> (II) Active PCI resource ranges:
+> 	[0] -1	1	0x02000000 - 0x02007fff (0x8000) MX[B]
+> 	[1] -1	1	0x00422000 - 0x004227ff (0x800) MX[B]
+> 	[2] -1	1	0x00420000 - 0x004207ff (0x800) MX[B]
+> 	[3] -1	1	0x00400000 - 0x0041ffff (0x20000) MX[B]
+> 	[4] -1	1	0x01800000 - 0x01ffffff (0x800000) MX[B]
+> 	[5] -1	1	0x07000000 - 0x07ffffff (0x1000000) MX[B]
+> 	[6] -1	1	0x00424000 - 0x00424fff (0x1000) MX[B]
+> 	[7] -1	1	0x03030000 - 0x0303ffff (0x10000) MX[B](B)
+> 	[8] -1	1	0x05000000 - 0x057fffff (0x800000) MX[B](B)
+> 	[9] -1	1	0x04800000 - 0x04ffffff (0x800000) MX[B](B)
+> 	[10] -1	1	0x03040000 - 0x0305ffff (0x20000) MX[B](B)
+> 	[11] -1	1	0x03020000 - 0x0302ffff (0x10000) MX[B](B)
+> 	[12] -1	1	0x04000000 - 0x047fffff (0x800000) MX[B](B)
+> 	[13] -1	1	0x03800000 - 0x03ffffff (0x800000) MX[B](B)
+> 	[14] -1	1	0x03000000 - 0x0301ffff (0x20000) MX[B](B)
+> 	[15] -1	1	0x00440000 - 0x0045ffff (0x20000) MX[B](B)
+> 	[16] -1	1	0x00426000 - 0x00426fff (0x1000) MX[B](B)
+> 	[17] -1	1	0x06000000 - 0x06ffffff (0x1000000) MX[B](B)
+> 	[18] -1	1	0x00000a20 - 0x00000a2f (0x10) IX[B]
+> 	[19] -1	1	0x00000a08 - 0x00000a0b (0x4) IX[B]
+> 	[20] -1	1	0x00000a10 - 0x00000a17 (0x8) IX[B]
+> 	[21] -1	1	0x00000a18 - 0x00000a1b (0x4) IX[B]
+> 	[22] -1	1	0x00000a00 - 0x00000a07 (0x8) IX[B]
+> 	[23] -1	1	0x00000900 - 0x000009ff (0x100) IX[B]
+> 	[24] -1	1	0x00000b00 - 0x00000bff (0x100) IX[B](B)
+> (II) Active PCI resource ranges after removing overlaps:
+> 	[0] -1	1	0x02000000 - 0x02007fff (0x8000) MX[B]
+> 	[1] -1	1	0x00422000 - 0x004227ff (0x800) MX[B]
+> 	[2] -1	1	0x00420000 - 0x004207ff (0x800) MX[B]
+> 	[3] -1	1	0x00400000 - 0x0041ffff (0x20000) MX[B]
+> 	[4] -1	1	0x01800000 - 0x01ffffff (0x800000) MX[B]
+> 	[5] -1	1	0x07000000 - 0x07ffffff (0x1000000) MX[B]
+> 	[6] -1	1	0x00424000 - 0x00424fff (0x1000) MX[B]
+> 	[7] -1	1	0x03030000 - 0x0303ffff (0x10000) MX[B](B)
+> 	[8] -1	1	0x05000000 - 0x057fffff (0x800000) MX[B](B)
+> 	[9] -1	1	0x04800000 - 0x04ffffff (0x800000) MX[B](B)
+> 	[10] -1	1	0x03040000 - 0x0305ffff (0x20000) MX[B](B)
+> 	[11] -1	1	0x03020000 - 0x0302ffff (0x10000) MX[B](B)
+> 	[12] -1	1	0x04000000 - 0x047fffff (0x800000) MX[B](B)
+> 	[13] -1	1	0x03800000 - 0x03ffffff (0x800000) MX[B](B)
+> 	[14] -1	1	0x03000000 - 0x0301ffff (0x20000) MX[B](B)
+> 	[15] -1	1	0x00440000 - 0x0045ffff (0x20000) MX[B](B)
+> 	[16] -1	1	0x00426000 - 0x00426fff (0x1000) MX[B](B)
+> 	[17] -1	1	0x06000000 - 0x06ffffff (0x1000000) MX[B](B)
+> 	[18] -1	1	0x00000a20 - 0x00000a2f (0x10) IX[B]
+> 	[19] -1	1	0x00000a08 - 0x00000a0b (0x4) IX[B]
+> 	[20] -1	1	0x00000a10 - 0x00000a17 (0x8) IX[B]
+> 	[21] -1	1	0x00000a18 - 0x00000a1b (0x4) IX[B]
+> 	[22] -1	1	0x00000a00 - 0x00000a07 (0x8) IX[B]
+> 	[23] -1	1	0x00000900 - 0x000009ff (0x100) IX[B]
+> 	[24] -1	1	0x00000b00 - 0x00000bff (0x100) IX[B](B)
+> (II) OS-reported resource ranges after removing overlaps with PCI:
+> 	[0] -1	1	0xffffffff - 0xffffffff (0x1) MX[B]
+> 	[1] -1	1	0x000f0000 - 0x000fffff (0x10000) MX[B]
+> 	[2] -1	1	0x000c0000 - 0x000effff (0x30000) MX[B]
+> 	[3] -1	1	0x00000000 - 0x0009ffff (0xa0000) MX[B]
+> 	[4] -1	1	0x00ffffff - 0x00ffffff (0x1) IX[B]
+> 	[5] -1	1	0x00000000 - 0x00000000 (0x1) IX[B]
+> (II) All system resource ranges:
+> 	[0] -1	1	0xffffffff - 0xffffffff (0x1) MX[B]
+> 	[1] -1	1	0x000f0000 - 0x000fffff (0x10000) MX[B]
+> 	[2] -1	1	0x000c0000 - 0x000effff (0x30000) MX[B]
+> 	[3] -1	1	0x00000000 - 0x0009ffff (0xa0000) MX[B]
+> 	[4] -1	1	0x02000000 - 0x02007fff (0x8000) MX[B]
+> 	[5] -1	1	0x00422000 - 0x004227ff (0x800) MX[B]
+> 	[6] -1	1	0x00420000 - 0x004207ff (0x800) MX[B]
+> 	[7] -1	1	0x00400000 - 0x0041ffff (0x20000) MX[B]
+> 	[8] -1	1	0x01800000 - 0x01ffffff (0x800000) MX[B]
+> 	[9] -1	1	0x07000000 - 0x07ffffff (0x1000000) MX[B]
+> 	[10] -1	1	0x00424000 - 0x00424fff (0x1000) MX[B]
+> 	[11] -1	1	0x03030000 - 0x0303ffff (0x10000) MX[B](B)
+> 	[12] -1	1	0x05000000 - 0x057fffff (0x800000) MX[B](B)
+> 	[13] -1	1	0x04800000 - 0x04ffffff (0x800000) MX[B](B)
+> 	[14] -1	1	0x03040000 - 0x0305ffff (0x20000) MX[B](B)
+> 	[15] -1	1	0x03020000 - 0x0302ffff (0x10000) MX[B](B)
+> 	[16] -1	1	0x04000000 - 0x047fffff (0x800000) MX[B](B)
+> 	[17] -1	1	0x03800000 - 0x03ffffff (0x800000) MX[B](B)
+> 	[18] -1	1	0x03000000 - 0x0301ffff (0x20000) MX[B](B)
+> 	[19] -1	1	0x00440000 - 0x0045ffff (0x20000) MX[B](B)
+> 	[20] -1	1	0x00426000 - 0x00426fff (0x1000) MX[B](B)
+> 	[21] -1	1	0x06000000 - 0x06ffffff (0x1000000) MX[B](B)
+> 	[22] -1	1	0x00ffffff - 0x00ffffff (0x1) IX[B]
+> 	[23] -1	1	0x00000000 - 0x00000000 (0x1) IX[B]
+> 	[24] -1	1	0x00000a20 - 0x00000a2f (0x10) IX[B]
+> 	[25] -1	1	0x00000a08 - 0x00000a0b (0x4) IX[B]
+> 	[26] -1	1	0x00000a10 - 0x00000a17 (0x8) IX[B]
+> 	[27] -1	1	0x00000a18 - 0x00000a1b (0x4) IX[B]
+> 	[28] -1	1	0x00000a00 - 0x00000a07 (0x8) IX[B]
+> 	[29] -1	1	0x00000900 - 0x000009ff (0x100) IX[B]
+> 	[30] -1	1	0x00000b00 - 0x00000bff (0x100) IX[B](B)
+> (II) LoadModule: "GLcore"
+> (II) Loading /usr/X11R6/lib/modules/extensions/libGLcore.a
+> Skipping "/usr/X11R6/lib/modules/extensions/libGLcore.a:m_debug_clip.o":  No symbols found
+> Skipping "/usr/X11R6/lib/modules/extensions/libGLcore.a:m_debug_norm.o":  No symbols found
+> Skipping "/usr/X11R6/lib/modules/extensions/libGLcore.a:m_debug_xform.o":  No symbols found
+> Skipping "/usr/X11R6/lib/modules/extensions/libGLcore.a:m_debug_vertex.o":  No symbols found
+> (II) Module GLcore: vendor="The XFree86 Project"
+> 	compiled for 4.3.0.1, module version = 1.0.0
+> 	ABI class: XFree86 Server Extension, version 0.2
+> (II) LoadModule: "bitmap"
+> (II) Reloading /usr/X11R6/lib/modules/fonts/libbitmap.a
+> (II) Loading font Bitmap
+> (II) LoadModule: "dbe"
+> (II) Loading /usr/X11R6/lib/modules/extensions/libdbe.a
+> (II) Module dbe: vendor="The XFree86 Project"
+> 	compiled for 4.3.0.1, module version = 1.0.0
+> 	Module class: XFree86 Server Extension
+> 	ABI class: XFree86 Server Extension, version 0.2
+> (II) Loading extension DOUBLE-BUFFER
+> (II) LoadModule: "ddc"
+> (II) Loading /usr/X11R6/lib/modules/libddc.a
+> (II) Module ddc: vendor="The XFree86 Project"
+> 	compiled for 4.3.0.1, module version = 1.0.0
+> 	ABI class: XFree86 Video Driver, version 0.6
+> (II) LoadModule: "dri"
+> (II) Loading /usr/X11R6/lib/modules/extensions/libdri.a
+> (II) Module dri: vendor="The XFree86 Project"
+> 	compiled for 4.3.0.1, module version = 1.0.0
+> 	ABI class: XFree86 Server Extension, version 0.2
+> (II) Loading sub module "drm"
+> (II) LoadModule: "drm"
+> (II) Loading /usr/X11R6/lib/modules/linux/libdrm.a
+> (II) Module drm: vendor="The XFree86 Project"
+> 	compiled for 4.3.0.1, module version = 1.0.0
+> 	ABI class: XFree86 Server Extension, version 0.2
+> (II) Loading extension XFree86-DRI
+> (II) LoadModule: "extmod"
+> (II) Loading /usr/X11R6/lib/modules/extensions/libextmod.a
+> (II) Module extmod: vendor="The XFree86 Project"
+> 	compiled for 4.3.0.1, module version = 1.0.0
+> 	Module class: XFree86 Server Extension
+> 	ABI class: XFree86 Server Extension, version 0.2
+> (II) Loading extension SHAPE
+> (II) Loading extension MIT-SUNDRY-NONSTANDARD
+> (II) Loading extension BIG-REQUESTS
+> (II) Loading extension SYNC
+> (II) Loading extension MIT-SCREEN-SAVER
+> (II) Loading extension XC-MISC
+> (II) Loading extension XFree86-VidModeExtension
+> (II) Loading extension XFree86-Misc
+> (II) Loading extension XFree86-DGA
+> (II) Loading extension DPMS
+> (II) Loading extension FontCache
+> (II) Loading extension TOG-CUP
+> (II) Loading extension Extended-Visual-Information
+> (II) Loading extension XVideo
+> (II) Loading extension XVideo-MotionCompensation
+> (II) Loading extension X-Resource
+> (II) LoadModule: "freetype"
+> (II) Loading /usr/X11R6/lib/modules/fonts/libfreetype.a
+> (II) Module freetype: vendor="The XFree86 Project"
+> 	compiled for 4.3.0.1, module version = 2.0.2
+> 	Module class: XFree86 Font Renderer
+> 	ABI class: XFree86 Font Renderer, version 0.4
+> (II) Loading font FreeType
+> (II) LoadModule: "glx"
+> (II) Loading /usr/X11R6/lib/modules/extensions/libglx.a
+> (II) Module glx: vendor="The XFree86 Project"
+> 	compiled for 4.3.0.1, module version = 1.0.0
+> 	ABI class: XFree86 Server Extension, version 0.2
+> (II) Loading sub module "GLcore"
+> (II) LoadModule: "GLcore"
+> (II) Reloading /usr/X11R6/lib/modules/extensions/libGLcore.a
+> (II) Loading extension GLX
+> (II) LoadModule: "int10"
+> (II) Loading /usr/X11R6/lib/modules/libint10.a
+> (II) Module int10: vendor="The XFree86 Project"
+> 	compiled for 4.3.0.1, module version = 1.0.0
+> 	ABI class: XFree86 Video Driver, version 0.6
+> (II) LoadModule: "record"
+> (II) Loading /usr/X11R6/lib/modules/extensions/librecord.a
+> (II) Module record: vendor="The XFree86 Project"
+> 	compiled for 4.3.0.1, module version = 1.13.0
+> 	Module class: XFree86 Server Extension
+> 	ABI class: XFree86 Server Extension, version 0.2
+> (II) Loading extension RECORD
+> (II) LoadModule: "speedo"
+> (II) Loading /usr/X11R6/lib/modules/fonts/libspeedo.a
+> Skipping "/usr/X11R6/lib/modules/fonts/libspeedo.a:spencode.o":  No symbols found
+> (II) Module speedo: vendor="The XFree86 Project"
+> 	compiled for 4.3.0.1, module version = 1.0.1
+> 	Module class: XFree86 Font Renderer
+> 	ABI class: XFree86 Font Renderer, version 0.4
+> (II) Loading font Speedo
+> (II) LoadModule: "type1"
+> (II) Loading /usr/X11R6/lib/modules/fonts/libtype1.a
+> (II) Module type1: vendor="The XFree86 Project"
+> 	compiled for 4.3.0.1, module version = 1.0.2
+> 	Module class: XFree86 Font Renderer
+> 	ABI class: XFree86 Font Renderer, version 0.4
+> (II) Loading font Type1
+> (II) Loading font CID
+> (II) LoadModule: "vbe"
+> (II) Loading /usr/X11R6/lib/modules/libvbe.a
+> (II) Module vbe: vendor="The XFree86 Project"
+> 	compiled for 4.3.0.1, module version = 1.1.0
+> 	ABI class: XFree86 Video Driver, version 0.6
+> (II) LoadModule: "glint"
+> (II) Loading /usr/X11R6/lib/modules/drivers/glint_drv.o
+> (II) Module glint: vendor="The XFree86 Project"
+> 	compiled for 4.3.0.1, module version = 1.0.0
+> 	Module class: XFree86 Video Driver
+> 	ABI class: XFree86 Video Driver, version 0.6
+> (II) LoadModule: "mouse"
+> (II) Loading /usr/X11R6/lib/modules/input/mouse_drv.o
+> (II) Module mouse: vendor="The XFree86 Project"
+> 	compiled for 4.3.0.1, module version = 1.0.0
+> 	Module class: XFree86 XInput Driver
+> 	ABI class: XFree86 XInput driver, version 0.4
+> (II) GLINT: driver for 3Dlabs chipsets: gamma, gamma2, ti_pm2, ti_pm, r4,
+> 	pm4, pm3, pm2v, pm2, pm, 300sx, 500tx, mx, delta
+> (II) Primary Device is: 
+> (--) Chipset pm2v found
+> (--) Chipset pm2v found
+> (II) resource ranges after xf86ClaimFixedResources() call:
+> 	[0] -1	1	0xffffffff - 0xffffffff (0x1) MX[B]
+> 	[1] -1	1	0x000f0000 - 0x000fffff (0x10000) MX[B]
+> 	[2] -1	1	0x000c0000 - 0x000effff (0x30000) MX[B]
+> 	[3] -1	1	0x00000000 - 0x0009ffff (0xa0000) MX[B]
+> 	[4] -1	1	0x02000000 - 0x02007fff (0x8000) MX[B]
+> 	[5] -1	1	0x00422000 - 0x004227ff (0x800) MX[B]
+> 	[6] -1	1	0x00420000 - 0x004207ff (0x800) MX[B]
+> 	[7] -1	1	0x00400000 - 0x0041ffff (0x20000) MX[B]
+> 	[8] -1	1	0x01800000 - 0x01ffffff (0x800000) MX[B]
+> 	[9] -1	1	0x07000000 - 0x07ffffff (0x1000000) MX[B]
+> 	[10] -1	1	0x00424000 - 0x00424fff (0x1000) MX[B]
+> 	[11] -1	1	0x03030000 - 0x0303ffff (0x10000) MX[B](B)
+> 	[12] -1	1	0x05000000 - 0x057fffff (0x800000) MX[B](B)
+> 	[13] -1	1	0x04800000 - 0x04ffffff (0x800000) MX[B](B)
+> 	[14] -1	1	0x03040000 - 0x0305ffff (0x20000) MX[B](B)
+> 	[15] -1	1	0x03020000 - 0x0302ffff (0x10000) MX[B](B)
+> 	[16] -1	1	0x04000000 - 0x047fffff (0x800000) MX[B](B)
+> 	[17] -1	1	0x03800000 - 0x03ffffff (0x800000) MX[B](B)
+> 	[18] -1	1	0x03000000 - 0x0301ffff (0x20000) MX[B](B)
+> 	[19] -1	1	0x00440000 - 0x0045ffff (0x20000) MX[B](B)
+> 	[20] -1	1	0x00426000 - 0x00426fff (0x1000) MX[B](B)
+> 	[21] -1	1	0x06000000 - 0x06ffffff (0x1000000) MX[B](B)
+> 	[22] -1	1	0x00ffffff - 0x00ffffff (0x1) IX[B]
+> 	[23] -1	1	0x00000000 - 0x00000000 (0x1) IX[B]
+> 	[24] -1	1	0x00000a20 - 0x00000a2f (0x10) IX[B]
+> 	[25] -1	1	0x00000a08 - 0x00000a0b (0x4) IX[B]
+> 	[26] -1	1	0x00000a10 - 0x00000a17 (0x8) IX[B]
+> 	[27] -1	1	0x00000a18 - 0x00000a1b (0x4) IX[B]
+> 	[28] -1	1	0x00000a00 - 0x00000a07 (0x8) IX[B]
+> 	[29] -1	1	0x00000900 - 0x000009ff (0x100) IX[B]
+> 	[30] -1	1	0x00000b00 - 0x00000bff (0x100) IX[B](B)
+> (II) resource ranges after xf86ClaimFixedResources() call:
+> 	[0] -1	1	0xffffffff - 0xffffffff (0x1) MX[B]
+> 	[1] -1	1	0x000f0000 - 0x000fffff (0x10000) MX[B]
+> 	[2] -1	1	0x000c0000 - 0x000effff (0x30000) MX[B]
+> 	[3] -1	1	0x00000000 - 0x0009ffff (0xa0000) MX[B]
+> 	[4] -1	1	0x02000000 - 0x02007fff (0x8000) MX[B]
+> 	[5] -1	1	0x00422000 - 0x004227ff (0x800) MX[B]
+> 	[6] -1	1	0x00420000 - 0x004207ff (0x800) MX[B]
+> 	[7] -1	1	0x00400000 - 0x0041ffff (0x20000) MX[B]
+> 	[8] -1	1	0x01800000 - 0x01ffffff (0x800000) MX[B]
+> 	[9] -1	1	0x07000000 - 0x07ffffff (0x1000000) MX[B]
+> 	[10] -1	1	0x00424000 - 0x00424fff (0x1000) MX[B]
+> 	[11] -1	1	0x03030000 - 0x0303ffff (0x10000) MX[B](B)
+> 	[12] -1	1	0x05000000 - 0x057fffff (0x800000) MX[B](B)
+> 	[13] -1	1	0x04800000 - 0x04ffffff (0x800000) MX[B](B)
+> 	[14] -1	1	0x03040000 - 0x0305ffff (0x20000) MX[B](B)
+> 	[15] -1	1	0x03020000 - 0x0302ffff (0x10000) MX[B](B)
+> 	[16] -1	1	0x04000000 - 0x047fffff (0x800000) MX[B](B)
+> 	[17] -1	1	0x03800000 - 0x03ffffff (0x800000) MX[B](B)
+> 	[18] -1	1	0x03000000 - 0x0301ffff (0x20000) MX[B](B)
+> 	[19] -1	1	0x00440000 - 0x0045ffff (0x20000) MX[B](B)
+> 	[20] -1	1	0x00426000 - 0x00426fff (0x1000) MX[B](B)
+> 	[21] -1	1	0x06000000 - 0x06ffffff (0x1000000) MX[B](B)
+> 	[22] -1	1	0x00ffffff - 0x00ffffff (0x1) IX[B]
+> 	[23] -1	1	0x00000000 - 0x00000000 (0x1) IX[B]
+> 	[24] -1	1	0x00000a20 - 0x00000a2f (0x10) IX[B]
+> 	[25] -1	1	0x00000a08 - 0x00000a0b (0x4) IX[B]
+> 	[26] -1	1	0x00000a10 - 0x00000a17 (0x8) IX[B]
+> 	[27] -1	1	0x00000a18 - 0x00000a1b (0x4) IX[B]
+> 	[28] -1	1	0x00000a00 - 0x00000a07 (0x8) IX[B]
+> 	[29] -1	1	0x00000900 - 0x000009ff (0x100) IX[B]
+> 	[30] -1	1	0x00000b00 - 0x00000bff (0x100) IX[B](B)
+> (II) resource ranges after probing:
+> 	[0] -1	1	0xffffffff - 0xffffffff (0x1) MX[B]
+> 	[1] -1	1	0x000f0000 - 0x000fffff (0x10000) MX[B]
+> 	[2] -1	1	0x000c0000 - 0x000effff (0x30000) MX[B]
+> 	[3] -1	1	0x00000000 - 0x0009ffff (0xa0000) MX[B]
+> 	[4] -1	1	0x02000000 - 0x02007fff (0x8000) MX[B]
+> 	[5] -1	1	0x00422000 - 0x004227ff (0x800) MX[B]
+> 	[6] -1	1	0x00420000 - 0x004207ff (0x800) MX[B]
+> 	[7] -1	1	0x00400000 - 0x0041ffff (0x20000) MX[B]
+> 	[8] -1	1	0x01800000 - 0x01ffffff (0x800000) MX[B]
+> 	[9] -1	1	0x07000000 - 0x07ffffff (0x1000000) MX[B]
+> 	[10] -1	1	0x00424000 - 0x00424fff (0x1000) MX[B]
+> 	[11] -1	1	0x03030000 - 0x0303ffff (0x10000) MX[B](B)
+> 	[12] -1	1	0x05000000 - 0x057fffff (0x800000) MX[B](B)
+> 	[13] -1	1	0x04800000 - 0x04ffffff (0x800000) MX[B](B)
+> 	[14] -1	1	0x03040000 - 0x0305ffff (0x20000) MX[B](B)
+> 	[15] -1	1	0x03020000 - 0x0302ffff (0x10000) MX[B](B)
+> 	[16] -1	1	0x04000000 - 0x047fffff (0x800000) MX[B](B)
+> 	[17] -1	1	0x03800000 - 0x03ffffff (0x800000) MX[B](B)
+> 	[18] -1	1	0x03000000 - 0x0301ffff (0x20000) MX[B](B)
+> 	[19] -1	1	0x00440000 - 0x0045ffff (0x20000) MX[B](B)
+> 	[20] -1	1	0x00426000 - 0x00426fff (0x1000) MX[B](B)
+> 	[21] -1	1	0x06000000 - 0x06ffffff (0x1000000) MX[B](B)
+> 	[22] 0	1	0x000a0000 - 0x000affff (0x10000) MS[B]
+> 	[23] 0	1	0x000b0000 - 0x000b7fff (0x8000) MS[B]
+> 	[24] 0	1	0x000b8000 - 0x000bffff (0x8000) MS[B]
+> 	[25] 1	1	0x000a0000 - 0x000affff (0x10000) MS[B]
+> 	[26] 1	1	0x000b0000 - 0x000b7fff (0x8000) MS[B]
+> 	[27] 1	1	0x000b8000 - 0x000bffff (0x8000) MS[B]
+> 	[28] -1	1	0x00ffffff - 0x00ffffff (0x1) IX[B]
+> 	[29] -1	1	0x00000000 - 0x00000000 (0x1) IX[B]
+> 	[30] -1	1	0x00000a20 - 0x00000a2f (0x10) IX[B]
+> 	[31] -1	1	0x00000a08 - 0x00000a0b (0x4) IX[B]
+> 	[32] -1	1	0x00000a10 - 0x00000a17 (0x8) IX[B]
+> 	[33] -1	1	0x00000a18 - 0x00000a1b (0x4) IX[B]
+> 	[34] -1	1	0x00000a00 - 0x00000a07 (0x8) IX[B]
+> 	[35] -1	1	0x00000900 - 0x000009ff (0x100) IX[B]
+> 	[36] -1	1	0x00000b00 - 0x00000bff (0x100) IX[B](B)
+> 	[37] 0	1	0x000003b0 - 0x000003bb (0xc) IS[B]
+> 	[38] 0	1	0x000003c0 - 0x000003df (0x20) IS[B]
+> 	[39] 1	1	0x000003b0 - 0x000003bb (0xc) IS[B]
+> 	[40] 1	1	0x000003c0 - 0x000003df (0x20) IS[B]
+> (II) Setting vga for screen 0.
+> (II) Setting vga for screen 1.
+> (**) GLINT(0): Depth 24, (--) framebuffer bpp 32
+> (==) GLINT(0): RGB weight 888
+> (==) GLINT(0): Default visual is TrueColor
+> (==) GLINT(0): Using gamma correction (1.0, 1.0, 1.0)
+> (==) GLINT(0): Using HW cursor
+> (--) GLINT(0): Not using Linux framebuffer device
+> (--) GLINT(0): Chipset: "pm2v"
+> (--) GLINT(0): Linear framebuffer at 0x4000000
+> (--) GLINT(0): MMIO registers at 0x3010000
+> (II) Loading sub module "int10"
+> (II) LoadModule: "int10"
+> (II) Reloading /usr/X11R6/lib/modules/libint10.a
+> (II) GLINT(0): Initializing int10
+> (II) Multi Device Card detected: [1:0:0][1:1:0]
+> (EE) GLINT(0): Cannot read V_BIOS (5)
+> (--) GLINT(0): VideoRAM: 8192 kByte
+> (II) Loading sub module "ramdac"
+> (II) LoadModule: "ramdac"
+> (II) Loading /usr/X11R6/lib/modules/libramdac.a
+> (II) Module ramdac: vendor="The XFree86 Project"
+> 	compiled for 4.3.0.1, module version = 0.1.0
+> 	ABI class: XFree86 Video Driver, version 0.6
+> (--) GLINT(0): FIFO Size is 256 DWORDS
+> (==) GLINT(0): Min pixel clock is 16 MHz
+> (--) GLINT(0): Max pixel clock is 110 MHz
+> (II) GLINT(0): Sun: Using hsync range of 30.00-82.00 kHz
+> (II) GLINT(0): Sun: Using vrefresh range of 50.00-120.00 Hz
+> (II) GLINT(0): Clock range:  16.25 to 110.00 MHz
+> (II) GLINT(0): Not using default mode "320x175" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "320x200" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "360x200" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "320x240" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "320x240" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "320x240" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "320x240" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "400x300" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "400x300" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "400x300" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "400x300" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "400x300" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "1024x768" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "512x384" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "512x384" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "512x384" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "512x384" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "512x384" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "576x432" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "640x480" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "1280x960" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "640x480" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "640x512" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "1280x1024" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "640x512" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "1280x1024" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "640x512" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "1600x1200" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "800x600" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "1600x1200" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "800x600" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "1600x1200" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "800x600" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "1600x1200" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "800x600" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "1600x1200" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "800x600" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "1792x1344" (insufficient memory for mode)
+> (II) GLINT(0): Not using default mode "896x672" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "1792x1344" (insufficient memory for mode)
+> (II) GLINT(0): Not using default mode "896x672" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "1856x1392" (insufficient memory for mode)
+> (II) GLINT(0): Not using default mode "928x696" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "1856x1392" (insufficient memory for mode)
+> (II) GLINT(0): Not using default mode "928x696" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "1920x1440" (insufficient memory for mode)
+> (II) GLINT(0): Not using default mode "960x720" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "1920x1440" (insufficient memory for mode)
+> (II) GLINT(0): Not using default mode "960x720" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "416x312" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "576x384" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "1400x1050" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "700x525" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "1400x1050" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "700x525" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "800x512" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "1920x1440" (insufficient memory for mode)
+> (II) GLINT(0): Not using default mode "960x720" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "2048x1536" (insufficient memory for mode)
+> (II) GLINT(0): Not using default mode "1024x768" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "2048x1536" (insufficient memory for mode)
+> (II) GLINT(0): Not using default mode "1024x768" (bad mode clock/interlace/doublescan)
+> (II) GLINT(0): Not using default mode "2048x1536" (insufficient memory for mode)
+> (II) GLINT(0): Not using default mode "1024x768" (bad mode clock/interlace/doublescan)
+> (--) GLINT(0): Virtual size is 1280x1024 (pitch 1280)
+> (**) GLINT(0): *Default mode "1280x1024": 108.0 MHz, 64.0 kHz, 60.0 Hz
+> (II) GLINT(0): Modeline "1280x1024"  108.00  1280 1328 1440 1688  1024 1025 1028 1066 +hsync +vsync
+> (**) GLINT(0):  Default mode "1280x960": 108.0 MHz, 60.0 kHz, 60.0 Hz
+> (II) GLINT(0): Modeline "1280x960"  108.00  1280 1376 1488 1800  960 961 964 1000 +hsync +vsync
+> (**) GLINT(0):  Default mode "1152x864": 108.0 MHz, 67.5 kHz, 75.0 Hz
+> (II) GLINT(0): Modeline "1152x864"  108.00  1152 1216 1344 1600  864 865 868 900 +hsync +vsync
+> (**) GLINT(0):  Default mode "1152x768": 65.0 MHz, 44.2 kHz, 54.8 Hz
+> (II) GLINT(0): Modeline "1152x768"   65.00  1152 1178 1314 1472  768 771 777 806 +hsync +vsync
+> (**) GLINT(0):  Default mode "1024x768": 94.5 MHz, 68.7 kHz, 85.0 Hz
+> (II) GLINT(0): Modeline "1024x768"   94.50  1024 1072 1168 1376  768 769 772 808 +hsync +vsync
+> (**) GLINT(0):  Default mode "1024x768": 78.8 MHz, 60.1 kHz, 75.1 Hz
+> (II) GLINT(0): Modeline "1024x768"   78.80  1024 1040 1136 1312  768 769 772 800 +hsync +vsync
+> (**) GLINT(0):  Default mode "1024x768": 75.0 MHz, 56.5 kHz, 70.1 Hz
+> (II) GLINT(0): Modeline "1024x768"   75.00  1024 1048 1184 1328  768 771 777 806 -hsync -vsync
+> (**) GLINT(0):  Default mode "1024x768": 65.0 MHz, 48.4 kHz, 60.0 Hz
+> (II) GLINT(0): Modeline "1024x768"   65.00  1024 1048 1184 1344  768 771 777 806 -hsync -vsync
+> (**) GLINT(0):  Default mode "832x624": 57.3 MHz, 49.7 kHz, 74.6 Hz
+> (II) GLINT(0): Modeline "832x624"   57.28  832 864 928 1152  624 625 628 667 -hsync -vsync
+> (**) GLINT(0):  Default mode "800x600": 56.3 MHz, 53.7 kHz, 85.1 Hz
+> (II) GLINT(0): Modeline "800x600"   56.30  800 832 896 1048  600 601 604 631 +hsync +vsync
+> (**) GLINT(0):  Default mode "800x600": 49.5 MHz, 46.9 kHz, 75.0 Hz
+> (II) GLINT(0): Modeline "800x600"   49.50  800 816 896 1056  600 601 604 625 +hsync +vsync
+> (**) GLINT(0):  Default mode "800x600": 50.0 MHz, 48.1 kHz, 72.2 Hz
+> (II) GLINT(0): Modeline "800x600"   50.00  800 856 976 1040  600 637 643 666 +hsync +vsync
+> (**) GLINT(0):  Default mode "800x600": 40.0 MHz, 37.9 kHz, 60.3 Hz
+> (II) GLINT(0): Modeline "800x600"   40.00  800 840 968 1056  600 601 605 628 +hsync +vsync
+> (**) GLINT(0):  Default mode "800x600": 36.0 MHz, 35.2 kHz, 56.2 Hz
+> (II) GLINT(0): Modeline "800x600"   36.00  800 824 896 1024  600 601 603 625 +hsync +vsync
+> (**) GLINT(0):  Default mode "640x480": 36.0 MHz, 43.3 kHz, 85.0 Hz
+> (II) GLINT(0): Modeline "640x480"   36.00  640 696 752 832  480 481 484 509 -hsync -vsync
+> (**) GLINT(0):  Default mode "640x480": 31.5 MHz, 37.5 kHz, 75.0 Hz
+> (II) GLINT(0): Modeline "640x480"   31.50  640 656 720 840  480 481 484 500 -hsync -vsync
+> (**) GLINT(0):  Default mode "640x480": 31.5 MHz, 37.9 kHz, 72.8 Hz
+> (II) GLINT(0): Modeline "640x480"   31.50  640 664 704 832  480 489 491 520 -hsync -vsync
+> (**) GLINT(0):  Default mode "640x480": 25.2 MHz, 31.5 kHz, 60.0 Hz
+> (II) GLINT(0): Modeline "640x480"   25.20  640 656 752 800  480 490 492 525 -hsync -vsync
+> (**) GLINT(0):  Default mode "720x400": 35.5 MHz, 37.9 kHz, 85.0 Hz
+> (II) GLINT(0): Modeline "720x400"   35.50  720 756 828 936  400 401 404 446 -hsync +vsync
+> (**) GLINT(0):  Default mode "640x400": 31.5 MHz, 37.9 kHz, 85.1 Hz
+> (II) GLINT(0): Modeline "640x400"   31.50  640 672 736 832  400 401 404 445 -hsync +vsync
+> (**) GLINT(0):  Default mode "640x350": 31.5 MHz, 37.9 kHz, 85.1 Hz
+> (II) GLINT(0): Modeline "640x350"   31.50  640 672 736 832  350 382 385 445 +hsync -vsync
+> (++) GLINT(0): DPI set to (100, 100)
+> (II) Loading sub module "fb"
+> (II) LoadModule: "fb"
+> (II) Loading /usr/X11R6/lib/modules/libfb.a
+> (II) Module fb: vendor="The XFree86 Project"
+> 	compiled for 4.3.0.1, module version = 1.0.0
+> 	ABI class: XFree86 ANSI C Emulation, version 0.2
+> (II) Loading sub module "xaa"
+> (II) LoadModule: "xaa"
+> (II) Loading /usr/X11R6/lib/modules/libxaa.a
+> (II) Module xaa: vendor="The XFree86 Project"
+> 	compiled for 4.3.0.1, module version = 1.1.0
+> 	ABI class: XFree86 Video Driver, version 0.6
+> (II) Loading sub module "ddc"
+> (II) LoadModule: "ddc"
+> (II) Reloading /usr/X11R6/lib/modules/libddc.a
+> (II) Loading sub module "i2c"
+> (II) LoadModule: "i2c"
+> (II) Loading /usr/X11R6/lib/modules/libi2c.a
+> (II) Module i2c: vendor="The XFree86 Project"
+> 	compiled for 4.3.0.1, module version = 1.2.0
+> 	ABI class: XFree86 Video Driver, version 0.6
+> (II) GLINT(0): I2C bus "DDC" initialized.
+> (II) GLINT(0): I2C bus "Video" initialized.
+> (**) GLINT(1): Depth 24, (--) framebuffer bpp 32
+> (==) GLINT(1): RGB weight 888
+> (==) GLINT(1): Default visual is TrueColor
+> (==) GLINT(1): Using gamma correction (1.0, 1.0, 1.0)
+> (==) GLINT(1): Using HW cursor
+> (--) GLINT(1): Not using Linux framebuffer device
+> (--) GLINT(1): Chipset: "pm2v"
+> (--) GLINT(1): Linear framebuffer at 0x5000000
+> (--) GLINT(1): MMIO registers at 0x3050000
+> (II) Loading sub module "int10"
+> (II) LoadModule: "int10"
+> (II) Reloading /usr/X11R6/lib/modules/libint10.a
+> (II) GLINT(1): Initializing int10
+> (II) Multi Device Card detected: [1:0:0][1:1:0]
+> (EE) GLINT(1): Cannot read V_BIOS (5)
+> (--) GLINT(1): VideoRAM: 4096 kByte
+> (II) Loading sub module "ramdac"
+> (II) LoadModule: "ramdac"
+> (II) Reloading /usr/X11R6/lib/modules/libramdac.a
+> (--) GLINT(1): FIFO Size is 256 DWORDS
+> (==) GLINT(1): Min pixel clock is 16 MHz
+> (--) GLINT(1): Max pixel clock is 110 MHz
+> (II) GLINT(1): Sun2: Using hsync range of 30.00-82.00 kHz
+> (II) GLINT(1): Sun2: Using vrefresh range of 50.00-120.00 Hz
+> (II) GLINT(1): Clock range:  16.25 to 110.00 MHz
+> (II) GLINT(1): Not using default mode "320x175" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "320x200" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "360x200" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "320x240" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "320x240" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "320x240" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "320x240" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "400x300" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "400x300" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "400x300" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "400x300" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "400x300" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "1024x768" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "512x384" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "512x384" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "512x384" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "512x384" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "512x384" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "576x432" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "1280x960" (insufficient memory for mode)
+> (II) GLINT(1): Not using default mode "640x480" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "1280x960" (insufficient memory for mode)
+> (II) GLINT(1): Not using default mode "640x480" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "1280x1024" (insufficient memory for mode)
+> (II) GLINT(1): Not using default mode "640x512" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "1280x1024" (insufficient memory for mode)
+> (II) GLINT(1): Not using default mode "640x512" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "1280x1024" (insufficient memory for mode)
+> (II) GLINT(1): Not using default mode "640x512" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "1600x1200" (insufficient memory for mode)
+> (II) GLINT(1): Not using default mode "800x600" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "1600x1200" (insufficient memory for mode)
+> (II) GLINT(1): Not using default mode "800x600" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "1600x1200" (insufficient memory for mode)
+> (II) GLINT(1): Not using default mode "800x600" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "1600x1200" (insufficient memory for mode)
+> (II) GLINT(1): Not using default mode "800x600" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "1600x1200" (insufficient memory for mode)
+> (II) GLINT(1): Not using default mode "800x600" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "1792x1344" (insufficient memory for mode)
+> (II) GLINT(1): Not using default mode "896x672" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "1792x1344" (insufficient memory for mode)
+> (II) GLINT(1): Not using default mode "896x672" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "1856x1392" (insufficient memory for mode)
+> (II) GLINT(1): Not using default mode "928x696" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "1856x1392" (insufficient memory for mode)
+> (II) GLINT(1): Not using default mode "928x696" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "1920x1440" (insufficient memory for mode)
+> (II) GLINT(1): Not using default mode "960x720" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "1920x1440" (insufficient memory for mode)
+> (II) GLINT(1): Not using default mode "960x720" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "416x312" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "576x384" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "1400x1050" (insufficient memory for mode)
+> (II) GLINT(1): Not using default mode "700x525" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "1400x1050" (insufficient memory for mode)
+> (II) GLINT(1): Not using default mode "700x525" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "1600x1024" (insufficient memory for mode)
+> (II) GLINT(1): Not using default mode "800x512" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "1920x1440" (insufficient memory for mode)
+> (II) GLINT(1): Not using default mode "960x720" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "2048x1536" (insufficient memory for mode)
+> (II) GLINT(1): Not using default mode "1024x768" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "2048x1536" (insufficient memory for mode)
+> (II) GLINT(1): Not using default mode "1024x768" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using default mode "2048x1536" (insufficient memory for mode)
+> (II) GLINT(1): Not using default mode "1024x768" (bad mode clock/interlace/doublescan)
+> (II) GLINT(1): Not using mode "1280x1024" (no mode of this name)
+> (--) GLINT(1): Virtual size is 1152x864 (pitch 1152)
+> (**) GLINT(1):  Default mode "1152x864": 108.0 MHz, 67.5 kHz, 75.0 Hz
+> (II) GLINT(1): Modeline "1152x864"  108.00  1152 1216 1344 1600  864 865 868 900 +hsync +vsync
+> (**) GLINT(1):  Default mode "1152x768": 65.0 MHz, 44.2 kHz, 54.8 Hz
+> (II) GLINT(1): Modeline "1152x768"   65.00  1152 1178 1314 1472  768 771 777 806 +hsync +vsync
+> (**) GLINT(1):  Default mode "1024x768": 94.5 MHz, 68.7 kHz, 85.0 Hz
+> (II) GLINT(1): Modeline "1024x768"   94.50  1024 1072 1168 1376  768 769 772 808 +hsync +vsync
+> (**) GLINT(1):  Default mode "1024x768": 78.8 MHz, 60.1 kHz, 75.1 Hz
+> (II) GLINT(1): Modeline "1024x768"   78.80  1024 1040 1136 1312  768 769 772 800 +hsync +vsync
+> (**) GLINT(1):  Default mode "1024x768": 75.0 MHz, 56.5 kHz, 70.1 Hz
+> (II) GLINT(1): Modeline "1024x768"   75.00  1024 1048 1184 1328  768 771 777 806 -hsync -vsync
+> (**) GLINT(1):  Default mode "1024x768": 65.0 MHz, 48.4 kHz, 60.0 Hz
+> (II) GLINT(1): Modeline "1024x768"   65.00  1024 1048 1184 1344  768 771 777 806 -hsync -vsync
+> (**) GLINT(1):  Default mode "832x624": 57.3 MHz, 49.7 kHz, 74.6 Hz
+> (II) GLINT(1): Modeline "832x624"   57.28  832 864 928 1152  624 625 628 667 -hsync -vsync
+> (**) GLINT(1):  Default mode "800x600": 56.3 MHz, 53.7 kHz, 85.1 Hz
+> (II) GLINT(1): Modeline "800x600"   56.30  800 832 896 1048  600 601 604 631 +hsync +vsync
+> (**) GLINT(1):  Default mode "800x600": 49.5 MHz, 46.9 kHz, 75.0 Hz
+> (II) GLINT(1): Modeline "800x600"   49.50  800 816 896 1056  600 601 604 625 +hsync +vsync
+> (**) GLINT(1):  Default mode "800x600": 50.0 MHz, 48.1 kHz, 72.2 Hz
+> (II) GLINT(1): Modeline "800x600"   50.00  800 856 976 1040  600 637 643 666 +hsync +vsync
+> (**) GLINT(1):  Default mode "800x600": 40.0 MHz, 37.9 kHz, 60.3 Hz
+> (II) GLINT(1): Modeline "800x600"   40.00  800 840 968 1056  600 601 605 628 +hsync +vsync
+> (**) GLINT(1):  Default mode "800x600": 36.0 MHz, 35.2 kHz, 56.2 Hz
+> (II) GLINT(1): Modeline "800x600"   36.00  800 824 896 1024  600 601 603 625 +hsync +vsync
+> (**) GLINT(1):  Default mode "640x480": 36.0 MHz, 43.3 kHz, 85.0 Hz
+> (II) GLINT(1): Modeline "640x480"   36.00  640 696 752 832  480 481 484 509 -hsync -vsync
+> (**) GLINT(1):  Default mode "640x480": 31.5 MHz, 37.5 kHz, 75.0 Hz
+> (II) GLINT(1): Modeline "640x480"   31.50  640 656 720 840  480 481 484 500 -hsync -vsync
+> (**) GLINT(1):  Default mode "640x480": 31.5 MHz, 37.9 kHz, 72.8 Hz
+> (II) GLINT(1): Modeline "640x480"   31.50  640 664 704 832  480 489 491 520 -hsync -vsync
+> (**) GLINT(1):  Default mode "640x480": 25.2 MHz, 31.5 kHz, 60.0 Hz
+> (II) GLINT(1): Modeline "640x480"   25.20  640 656 752 800  480 490 492 525 -hsync -vsync
+> (**) GLINT(1):  Default mode "720x400": 35.5 MHz, 37.9 kHz, 85.0 Hz
+> (II) GLINT(1): Modeline "720x400"   35.50  720 756 828 936  400 401 404 446 -hsync +vsync
+> (**) GLINT(1):  Default mode "640x400": 31.5 MHz, 37.9 kHz, 85.1 Hz
+> (II) GLINT(1): Modeline "640x400"   31.50  640 672 736 832  400 401 404 445 -hsync +vsync
+> (**) GLINT(1):  Default mode "640x350": 31.5 MHz, 37.9 kHz, 85.1 Hz
+> (II) GLINT(1): Modeline "640x350"   31.50  640 672 736 832  350 382 385 445 +hsync -vsync
+> (++) GLINT(1): DPI set to (100, 100)
+> (II) Loading sub module "fb"
+> (II) LoadModule: "fb"
+> (II) Reloading /usr/X11R6/lib/modules/libfb.a
+> (II) Loading sub module "xaa"
+> (II) LoadModule: "xaa"
+> (II) Reloading /usr/X11R6/lib/modules/libxaa.a
+> (II) Loading sub module "ddc"
+> (II) LoadModule: "ddc"
+> (II) Reloading /usr/X11R6/lib/modules/libddc.a
+> (II) Loading sub module "i2c"
+> (II) LoadModule: "i2c"
+> (II) Reloading /usr/X11R6/lib/modules/libi2c.a
+> (II) GLINT(1): I2C bus "DDC" initialized.
+> (II) GLINT(1): I2C bus "Video" initialized.
+> (--) Depth 24 pixmap format is 32 bpp
+> (II) do I need RAC?  Yes, I do.
+> (II) LoadModule: "rac"
+> (II) Loading /usr/X11R6/lib/modules/librac.a
+> (II) Module rac: vendor="The XFree86 Project"
+> 	compiled for 4.3.0.1, module version = 1.0.0
+> 	ABI class: XFree86 Video Driver, version 0.6
+> (II) resource ranges after preInit:
+> 	[0] 1	1	0x05000000 - 0x057fffff (0x800000) MX[B]
+> 	[1] 1	1	0x04800000 - 0x04ffffff (0x800000) MX[B]
+> 	[2] 1	1	0x03040000 - 0x0305ffff (0x20000) MX[B]
+> 	[3] 0	1	0x04000000 - 0x047fffff (0x800000) MX[B]
+> 	[4] 0	1	0x03800000 - 0x03ffffff (0x800000) MX[B]
+> 	[5] 0	1	0x03000000 - 0x0301ffff (0x20000) MX[B]
+> 	[6] -1	1	0xffffffff - 0xffffffff (0x1) MX[B]
+> 	[7] -1	1	0x000f0000 - 0x000fffff (0x10000) MX[B]
+> 	[8] -1	1	0x000c0000 - 0x000effff (0x30000) MX[B]
+> 	[9] -1	1	0x00000000 - 0x0009ffff (0xa0000) MX[B]
+> 	[10] -1	1	0x02000000 - 0x02007fff (0x8000) MX[B]
+> 	[11] -1	1	0x00422000 - 0x004227ff (0x800) MX[B]
+> 	[12] -1	1	0x00420000 - 0x004207ff (0x800) MX[B]
+> 	[13] -1	1	0x00400000 - 0x0041ffff (0x20000) MX[B]
+> 	[14] -1	1	0x01800000 - 0x01ffffff (0x800000) MX[B]
+> 	[15] -1	1	0x07000000 - 0x07ffffff (0x1000000) MX[B]
+> 	[16] -1	1	0x00424000 - 0x00424fff (0x1000) MX[B]
+> 	[17] -1	1	0x03030000 - 0x0303ffff (0x10000) MX[B](B)
+> 	[18] -1	1	0x05000000 - 0x057fffff (0x800000) MX[B](B)
+> 	[19] -1	1	0x04800000 - 0x04ffffff (0x800000) MX[B](B)
+> 	[20] -1	1	0x03040000 - 0x0305ffff (0x20000) MX[B](B)
+> 	[21] -1	1	0x03020000 - 0x0302ffff (0x10000) MX[B](B)
+> 	[22] -1	1	0x04000000 - 0x047fffff (0x800000) MX[B](B)
+> 	[23] -1	1	0x03800000 - 0x03ffffff (0x800000) MX[B](B)
+> 	[24] -1	1	0x03000000 - 0x0301ffff (0x20000) MX[B](B)
+> 	[25] -1	1	0x00440000 - 0x0045ffff (0x20000) MX[B](B)
+> 	[26] -1	1	0x00426000 - 0x00426fff (0x1000) MX[B](B)
+> 	[27] -1	1	0x06000000 - 0x06ffffff (0x1000000) MX[B](B)
+> 	[28] 0	1	0x000a0000 - 0x000affff (0x10000) MS[B](OprD)
+> 	[29] 0	1	0x000b0000 - 0x000b7fff (0x8000) MS[B](OprD)
+> 	[30] 0	1	0x000b8000 - 0x000bffff (0x8000) MS[B](OprD)
+> 	[31] 1	1	0x000a0000 - 0x000affff (0x10000) MS[B](OprD)
+> 	[32] 1	1	0x000b0000 - 0x000b7fff (0x8000) MS[B](OprD)
+> 	[33] 1	1	0x000b8000 - 0x000bffff (0x8000) MS[B](OprD)
+> 	[34] -1	1	0x00ffffff - 0x00ffffff (0x1) IX[B]
+> 	[35] -1	1	0x00000000 - 0x00000000 (0x1) IX[B]
+> 	[36] -1	1	0x00000a20 - 0x00000a2f (0x10) IX[B]
+> 	[37] -1	1	0x00000a08 - 0x00000a0b (0x4) IX[B]
+> 	[38] -1	1	0x00000a10 - 0x00000a17 (0x8) IX[B]
+> 	[39] -1	1	0x00000a18 - 0x00000a1b (0x4) IX[B]
+> 	[40] -1	1	0x00000a00 - 0x00000a07 (0x8) IX[B]
+> 	[41] -1	1	0x00000900 - 0x000009ff (0x100) IX[B]
+> 	[42] -1	1	0x00000b00 - 0x00000bff (0x100) IX[B](B)
+> 	[43] 0	1	0x000003b0 - 0x000003bb (0xc) IS[B](OprD)
+> 	[44] 0	1	0x000003c0 - 0x000003df (0x20) IS[B](OprD)
+> 	[45] 1	1	0x000003b0 - 0x000003bb (0xc) IS[B](OprD)
+> 	[46] 1	1	0x000003c0 - 0x000003df (0x20) IS[B](OprD)
+> (II) GLINT(0): I2C device "DDC:ddc2" registered at address 0xA0.
+> (II) GLINT(0): I2C device "DDC:ddc2" removed.
+> (II) GLINT(0): Using XFree86 Acceleration Architecture (XAA)
+> 	Screen to screen bit blits
+> 	Solid filled rectangles
+> 	8x8 mono pattern filled rectangles
+> 	Indirect CPU to Screen color expansion
+> 	Solid Lines
+> 	Offscreen Pixmaps
+> 	Driver provided WriteBitmap replacement
+> 	Driver provided WritePixmap replacement
+> 	Setting up tile and stipple cache:
+> 		20 128x128 slots
+> 		5 256x256 slots
+> (==) GLINT(0): Backing store disabled
+> (==) GLINT(0): Silken mouse enabled
+> (**) Option "dpms"
+> (**) GLINT(0): DPMS enabled
+> (II) GLINT(0): direct rendering disabled
+> (II) GLINT(0): Initializing Xv driver rev. 4
+> (II) GLINT(0): Xv frontend scaler enabled
+> (==) RandR enabled
+> (II) GLINT(1): I2C device "DDC:ddc2" registered at address 0xA0.
+> (II) GLINT(1): I2C device "DDC:ddc2" removed.
+> (II) GLINT(1): I2C device "DDC:ddc2" registered at address 0xA0.
+> (II) GLINT(1): I2C device "DDC:ddc2" removed.
+> (II) GLINT(1): Manufacturer: SUN  Model: 577  Serial#: 206324300
+> (II) GLINT(1): Year: 2000  Week: 37
+> (II) GLINT(1): EDID Version: 1.2
+> (II) GLINT(1): Analog Display Input,  Input Voltage Level: 0.700/0.300 V
+> (II) GLINT(1): Sync:  Separate  Composite  SyncOnGreen
+> (II) GLINT(1): Max H-Image Size [cm]: horiz.: 40  vert.: 30
+> (II) GLINT(1): Gamma: 2.50
+> (II) GLINT(1): DPMS capabilities: StandBy Suspend Off; RGB/Color Display
+> (II) GLINT(1): redX: 0.625 redY: 0.340   greenX: 0.280 greenY: 0.605
+> (II) GLINT(1): blueX: 0.155 blueY: 0.070   whiteX: 0.283 whiteY: 0.298
+> (II) GLINT(1): Supported VESA Video Modes:
+> (II) GLINT(1): 720x400@70Hz
+> (II) GLINT(1): 720x400@88Hz
+> (II) GLINT(1): 640x480@60Hz
+> (II) GLINT(1): 640x480@67Hz
+> (II) GLINT(1): 640x480@72Hz
+> (II) GLINT(1): 640x480@75Hz
+> (II) GLINT(1): 800x600@56Hz
+> (II) GLINT(1): 800x600@60Hz
+> (II) GLINT(1): 800x600@72Hz
+> (II) GLINT(1): 800x600@75Hz
+> (II) GLINT(1): 832x624@75Hz
+> (II) GLINT(1): 1024x768@87Hz (interlaced)
+> (II) GLINT(1): 1024x768@60Hz
+> (II) GLINT(1): 1024x768@70Hz
+> (II) GLINT(1): 1024x768@75Hz
+> (II) GLINT(1): 1280x1024@75Hz
+> (II) GLINT(1): 1152x870@75Hz
+> (II) GLINT(1): Manufacturer's mask: 0
+> (II) GLINT(1): Supported Future Video Modes:
+> (II) GLINT(1): #0: hsize: 1280  vsize 1024  refresh: 76  vid: 36993
+> (II) GLINT(1): #1: hsize: 1152  vsize 921  refresh: 76  vid: 36977
+> (II) GLINT(1): #2: hsize: 1280  vsize 1024  refresh: 75  vid: 36737
+> (II) GLINT(1): #3: hsize: 1280  vsize 1024  refresh: 67  vid: 34689
+> (II) GLINT(1): #4: hsize: 1152  vsize 921  refresh: 66  vid: 34417
+> (II) GLINT(1): #5: hsize: 1024  vsize 768  refresh: 75  vid: 20321
+> (II) GLINT(1): #6: hsize: 1600  vsize 1200  refresh: 75  vid: 20393
+> (II) GLINT(1): #7: hsize: 1280  vsize 1024  refresh: 112  vid: 46209
+> (II) GLINT(1): Ranges: V min: 48  V max: 160 Hz, H min: 30  H max: 121 kHz, PixClock max 210 MHz
+> (II) GLINT(1): Monitor name: GDM-5410
+> (II) GLINT(1): Serial No: 0037LB3148
+> (II) GLINT(1): Supported additional Video Mode:
+> (II) GLINT(1): clock: 135.0 MHz   Image Size:  364 x 291 mm
+> (II) GLINT(1): h_active: 1280  h_sync: 1312  h_sync_end 1376 h_blank_end 1664 h_border: 0
+> (II) GLINT(1): v_active: 1024  v_sync: 1026  v_sync_end 1034 v_blanking: 1066 v_border: 0
+> (II) GLINT(1): Using XFree86 Acceleration Architecture (XAA)
+> 	Screen to screen bit blits
+> 	Solid filled rectangles
+> 	8x8 mono pattern filled rectangles
+> 	Indirect CPU to Screen color expansion
+> 	Solid Lines
+> 	Offscreen Pixmaps
+> 	Driver provided WriteBitmap replacement
+> 	Driver provided WritePixmap replacement
+> 	Setting up tile and stipple cache:
+> 		9 128x46 slots
+> (==) GLINT(1): Backing store disabled
+> (==) GLINT(1): Silken mouse enabled
+> (**) Option "dpms"
+> (**) GLINT(1): DPMS enabled
+> (II) GLINT(1): direct rendering disabled
+> (II) GLINT(1): Initializing Xv driver rev. 4
+> (II) GLINT(1): Xv frontend scaler enabled
+> (==) RandR enabled
+> (II) Entity 0 shares no resources
+> (II) Entity 1 shares no resources
+> (II) Initializing built-in extension MIT-SHM
+> (II) Initializing built-in extension XInputExtension
+> (II) Initializing built-in extension XTEST
+> (II) Initializing built-in extension XKEYBOARD
+> (II) Initializing built-in extension LBX
+> (II) Initializing built-in extension XC-APPGROUP
+> (II) Initializing built-in extension SECURITY
+> (II) Initializing built-in extension XINERAMA
+> (II) Initializing built-in extension XFree86-Bigfont
+> (II) Initializing built-in extension RENDER
+> (II) Initializing built-in extension RANDR
+> (II) Keyboard "Generic Keyboard" handled by legacy driver
+> (**) Option "Protocol" "ImPS/2"
+> (**) Configured Mouse: Protocol: "ImPS/2"
+> (**) Configured Mouse: Core Pointer
+> (**) Option "Device" "/dev/input/mice"
+> (**) Configured Mouse: Emulate3Buttons, Emulate3Timeout: 50
+> (==) Configured Mouse: Buttons: 3
+> (II) XINPUT: Adding extended input device "Configured Mouse" (type: MOUSE)
+> (II) Server_Terminate keybinding not found
+> (II) Configured Mouse: ps2EnableDataReporting: succeeded
+> Warning: font renderer for ".pcf" already registered at priority 0
+> Warning: font renderer for ".pcf.Z" already registered at priority 0
+> Warning: font renderer for ".pcf.gz" already registered at priority 0
+> Warning: font renderer for ".snf" already registered at priority 0
+> Warning: font renderer for ".snf.Z" already registered at priority 0
+> Warning: font renderer for ".snf.gz" already registered at priority 0
+> Warning: font renderer for ".bdf" already registered at priority 0
+> Warning: font renderer for ".bdf.Z" already registered at priority 0
+> Warning: font renderer for ".bdf.gz" already registered at priority 0
+> Warning: font renderer for ".pmf" already registered at priority 0
+> Could not init font path element unix/:7100, removing from list!
+> (II) 3rd Button detected: disabling emulate3Button
+> (II) Screen 0 shares mem & io resources
+> (II) Screen 1 shares mem & io resources
+> (WW) Open APM failed (/dev/apm_bios) (No such file or directory)
+> (II) Screen 0 shares mem & io resources
+> (II) Screen 1 shares mem & io resources
+> (II) Screen 0 shares mem & io resources
+> (II) Screen 1 shares mem & io resources
+> (II) Entity 0 shares no resources
+> (II) Entity 1 shares no resources
+> (II) Configured Mouse: ps2EnableDataReporting: succeeded
 
 
 -------------------------------------------------------

@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
 Subject: Re: Fw: 2.6.11, framebuffer
-Date: Tue, 15 Feb 2005 07:50:53 +0800
-Message-ID: <200502150750.53844.adaplas@hotpop.com>
-References: <20050214100348.3542b897.akpm@osdl.org>
+Date: Tue, 15 Feb 2005 07:52:19 +0800
+Message-ID: <200502150752.19379.adaplas@hotpop.com>
+References: <20050214100348.3542b897.akpm@osdl.org> <4210F9A6.4060302@comcast.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D0q06-0003J1-Tj
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Feb 2005 15:51:34 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.61])
+	id 1D0q14-0003TG-E3
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Feb 2005 15:52:34 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.71])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1D0q03-0002Ek-BN
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Feb 2005 15:51:34 -0800
+	id 1D0q13-0002LU-1P
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Feb 2005 15:52:34 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id BCDECE279B5
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 14 Feb 2005 23:51:14 +0000 (UTC)
-In-Reply-To: <20050214100348.3542b897.akpm@osdl.org>
+	by smtp-out.hotpop.com (Postfix) with SMTP id 5EDED13E672F
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 14 Feb 2005 23:52:16 +0000 (UTC)
+In-Reply-To: <4210F9A6.4060302@comcast.net>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -30,42 +30,27 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>
-Cc: stegall@bayou.uni-linz.ac.at
+To: linux-fbdev-devel@lists.sourceforge.net, Zack Smith <plinius@comcast.net>
 
-On Tuesday 15 February 2005 02:03, Andrew Morton wrote:
-> Begin forwarded message:
+On Tuesday 15 February 2005 03:19, Zack Smith wrote:
+> > I cannot start a frame buffer on 2.6,11x using
+> > hardware with the
+> >     intel 915g
+> > chip. Either it crashes or nothing happens, depending on modules,
+> > kernel compilation etc. Nothing works.
 >
-> Date: Mon, 14 Feb 2005 12:56:08 +0100 (CET)
-> From: stegall@bayou.uni-linz.ac.at
-> To: akpm@osdl.org
-> Subject: 2.6.11, framebuffer
+> Similarly:
 >
+> With kernel 2.6.9 using an Intel 82852/82855 (not sure which)
+> and compiling the kernel with the VESA framebuffer, starting
+> up with vga requested at 1024x768 16bit, the framebuffer
+> console doesn't start.
 >
-> framebuffer, intel, 915g
+> I also tried the Intel framebuffer and that didn't work either.
 >
-> Greetings,
-> complaints were requested, but I am not sure this is the correct
-> place to make them:
->
-> I cannot start a frame buffer on 2.6,11x using
-> hardware with the
->     intel 915g
-> chip. Either it crashes or nothing happens, depending on modules,
-> kernel compilation etc. Nothing works.
->
-> One thing I did see was
->
->    allocation failed: out of vmalloc space - use
-> vmalloc=<size> to increase size.
->
-> I realize that this chip is ``new'', but
-> it works quite satisfactorily  on 2.4.10* !
+> Both start up as text.
 
-What driver are you using vesafb or intelfb? 915 support is a very recent
-addition.
-
-Can you send your dmesg and kernel config?
+Can you send your dmesg for both intelfb and vesafb enabled.
 
 Tony
 

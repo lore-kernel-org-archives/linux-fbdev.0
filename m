@@ -1,31 +1,38 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: [BK fbdev] Yet again more fbdev updates.
-Date: Mon, 9 Dec 2002 16:23:08 -0800 (PST)
+From: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [BK fbdev] Yet again more fbdev updates.
+Date: Mon, 9 Dec 2002 23:37:49 +0000
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.33.0212091621180.2360-100000@maxwell.earthlink.net>
+Message-ID: <20021209233749.A8008@infradead.org>
+References: <Pine.LNX.4.33.0212091621180.2360-100000@maxwell.earthlink.net>
 Mime-Version: 1.0
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.33.0212091621180.2360-100000@maxwell.earthlink.net>; from jsimmons@infradead.org on Mon, Dec 09, 2002 at 04:23:08PM -0800
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@transmeta.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linus Torvalds <torvalds@transmeta.com>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+On Mon, Dec 09, 2002 at 04:23:08PM -0800, James Simmons wrote:
+> 
+> Hi Linus!!!
+> 
+>   Here are the fbdev updates people have so been waiting for. Several
+> drivers have been ported. Many fixes have been implemented and many nice
+> features have been added as well. Please pull the changes. They have been
+> tested by people on this list. Thank you.
+> 
+> bk://fbdev.bkbits.net/fbdev-2.5
 
-Hi Linus!!!
+Linus,
 
-  Here are the fbdev updates people have so been waiting for. Several
-drivers have been ported. Many fixes have been implemented and many nice
-features have been added as well. Please pull the changes. They have been
-tested by people on this list. Thank you.
+any chance you could pull James' updates?  He has been sending fbdev updates
+that fix known issues with many drivers for a long time but I can't even
+remember when you merged it the last time.  Most fbdev drivers are pretty
+unusable in mainline without his fixes.
 
-bk://fbdev.bkbits.net/fbdev-2.5
+James,
 
-MS: (n) 1. A debilitating and surprisingly widespread affliction that
-renders the sufferer barely able to perform the simplest task. 2. A disease.
-
-James Simmons  [jsimmons@users.sf.net] 	                ____/|
-fbdev/console/gfx developer                             \ o.O|
-http://www.linux-fbdev.org                               =(_)=
-http://linuxgfx.sourceforge.net                            U
-http://linuxconsole.sourceforge.net
+could you please provide diffstat output, bk changes -L output and a
+unified diff for review of the actual changes?

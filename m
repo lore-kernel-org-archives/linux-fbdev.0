@@ -1,16 +1,17 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: Re: Rage128 as secondary adapter
-Date: Fri, 10 Jan 2003 11:40:49 -0800 (PST)
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: clipping
+Date: Fri, 10 Jan 2003 19:39:47 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030110194049.21039.qmail@web14904.mail.yahoo.com>
-References: <Pine.LNX.4.44.0301101930030.18287-100000@phoenix.infradead.org>
+Message-ID: <Pine.LNX.4.44.0301101936110.18287-100000@phoenix.infradead.org>
+References: <Pine.GSO.4.21.0301092242210.8148-100000@vervain.sonytel.be>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from web14904.mail.yahoo.com ([216.136.225.56])
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18X51U-0000yY-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Jan 2003 11:40:56 -0800
-In-Reply-To: <Pine.LNX.4.44.0301101930030.18287-100000@phoenix.infradead.org>
+Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18X51E-0000px-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Jan 2003 11:40:41 -0800
+In-Reply-To: <Pine.GSO.4.21.0301092242210.8148-100000@vervain.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,43 +21,38 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Stefan Reinauer <stepan@suse.de>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Antonino Daplas <adaplas@pol.net>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
---- James Simmons <jsimmons@infradead.org> wrote:
-> So it is a matter of time before they will release
-> this info.
+
+> > I thought about this. Originally I did have this function but removed it.
+> > WHat do you think Geert?
 > 
+> Yes, that's OK.
+> 
+> But I was most concerned about fb_ops.fb_imageblit(), since clipping impacts
+> fb_image.data as well. IIRC, all (most?) current clipping implementations
+> modify fb_image.{dx,dy,width,height} only, without updating fb_image.data.
 
-If you can get me the info, I will do the work. I own
-both Rage and Radeon cards so I can do some testing.
-I'll also add DDC support if they'll give me that
-info.
+Good point. Of course we could ignore pieces of data in that image instead 
+of altering the data. Altering the entire data would be expensive.
 
-I spent last night disassembling their ROMs. The reset
-procedure is not too difficult. But I would much
-rather do it with support from ATI documentation. It
-is easy to misinterpret a disassembly.
+> > > The other option (which I don't like) is just to check the passed
+> > > fb_var_screeninfo in the put_var ioctl against the current console
+> > > window size.  But this is not foolproof as we will not be sure of the
+> > > resulting window size _after_ the fb_set_var() call.
+> > 
+> > Yuck!!! The other way is better.
+> 
+> Well, in between the calls to fb_ops.fb_check_var() and fb_ops.set_par() you
+> can still perform that check. But it's indeed ugly.
 
-Do you have a personal contact there? Maybe they can
-be convinced to publicly release documentation for
-their older products. I'm sure NVidia doesn't care how
-the Rage chip works any more. It would make a good PR
-release about ATI being a community citizen. It would
-also free their developer relations group from
-hassling with open source developers on older cards.
+Altering to the framebuffer via /dev/fb that would effect the tty should 
+not remain after the final close of /dev/fb. Instead the console should 
+reset to its previous state before we first opened /dev/fb.
 
-
-=====
-Jon Smirl
-jonsmirl@yahoo.com
-
-__________________________________________________
-Do you Yahoo!?
-Yahoo! Mail Plus - Powerful. Affordable. Sign up now.
-http://mailplus.yahoo.com
 
 
 -------------------------------------------------------

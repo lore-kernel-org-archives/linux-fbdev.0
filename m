@@ -1,13 +1,16 @@
-From: Ian Romanick <idr@us.ibm.com>
+From: Jon Smirl <jonsmirl@yahoo.com>
 Subject: Re: [Dri-devel] Two Linux framebuffer patches, Radeon and Rage128
-Date: Sun, 10 Aug 2003 15:44:21 -0700
+Date: Sun, 10 Aug 2003 20:57:43 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3F36CAC5.7060504@us.ibm.com>
-References: <20030810213238.95434.qmail@web14905.mail.yahoo.com>
+Message-ID: <20030811035743.49382.qmail@web14903.mail.yahoo.com>
+References: <3F36CAC5.7060504@us.ibm.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-In-Reply-To: <20030810213238.95434.qmail@web14905.mail.yahoo.com>
+Received: from web14903.mail.yahoo.com ([216.136.225.55])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19m3oV-00050M-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 10 Aug 2003 20:57:43 -0700
+In-Reply-To: <3F36CAC5.7060504@us.ibm.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -17,58 +20,63 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Jon Smirl <jonsmirl@yahoo.com>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Ian Romanick <idr@us.ibm.com>
 Cc: fb-devel <linux-fbdev-devel@lists.sourceforge.net>, dri-devel <dri-devel@lists.sourceforge.net>
 
-Jon Smirl wrote:
+As far as I know linux/pci_ids.h is not being
+generated, it is hand built. That probably explains
+why it had about 15 entries in it that were wrong for
+the Radeon/Rage128.
 
-> These add all known Radeon and Rage128 PCI IDs to
-> their respective framebuffer drivers. It also updates
-> linux/pci_ids.h with these IDs.
-> 
-> Both drivers will display pretty_name if
-> CONFIG_PCI_NAMES is enabled, otherwise a name is
-> generated.
-> 
-> Please check over the chip family definitions in the
-> framebuffer files. The Radeon ones are more likely to
-> be wrong. I also made the Radeon FB claim secondary
-> adapters but not do anything with them. This will make
-> them display in /proc as being owned by the driver.
-> For this to work right the devices ID have to be in
-> the correct secondary family. I may not have these all
-> right since I don't have the doc.
-> 
-> I removed about 15 definitions from pci_ids.h that
-> were wrong.
-> 
-> The rage128 patch is newer than the last one. I had a
-> typo in an IFDEF. Rage128 add PCI IDs and fixes bug
-> when modprobe didn't work.
+My understanding is that drivers/pci/pci.ids is
+semi-hand built. It is partially generated from
+http://pciids.sf.net/ and then hand diffed. It can be
+config'ed out of the kernel by unchecking PCI
+Names/PCI_CONFIG_NAMES. When there are no pretty name
+available from PCI names then I generate one from chip
+ID and PCI ID. This name is only used to log the
+sign-on message so that you know the driver loaded and
+found your card.
 
-Did you see a very similar patch that I sent to dri-devel a week or two 
-ago?  Isn't pci_ids.h generated automatically from drivers/pci/pci.ids? 
-  The patch that I sent to dri-devel updates / cleans-up 
-drivers/pci/pci.ids and had a Python script to generate a table that 
-looks very similar to the radeonfb_pci_table.  It seems that 
-automatically generating that data from pci.ids is a better solution 
-that doing it by hand.
+I would like to find a more authoritative database of
+which chip family the various chip IDs belong to. I
+would also like to know for sure whether each is PCI,
+AGP, or secondary. Is there a way to get this info
+from the cards themselves and not hardcode it? It also
+would be nice to have a scipt to generate the code for
+the drivers, but we need a good database to run it
+against.
 
-I think using something more like my PCI ID structure would help cut out 
-some code in the Radeon FB driver because instead of just having an enum 
-in the table, you could have a pointer to a structure (such as the 
-correct entry in the radeon_chip_info table) that would eliminate some 
-of those extra switch-statements.
+I'm working on the embedded Mesa code. Embedded Mesa
+does not use XFree xf86PciInfo.h, instead it relies on
+the Linux framebuffer drivers to identify the cards
+via the modules/PCI hotplug system. The Rage128/Radeon
+framebuffer drivers are not heavily used so I'm being
+forced to update them. 
 
-My changes only cover the Radeon family.  Once that much got into DRI I 
-had plans to make similar changes for the Rage128 and MGA families of chips.
+Embedded Mesa does need chip family info and PCI/AGP
+status. I should probably modifiy the framebuffer
+drivers to make this info accessible. Right now the
+embedded Mesa drivers regenerate it based on chip ID
+thus duplicating the chip ID/family data. 
 
-Check:
-
-http://marc.theaimsgroup.com/?l=dri-devel&m=105979521324026&w=2
+For Linux the best solution would be to simply merge
+the framebuffer and 3D drivers into a single driver. A
+lot of duplicated code would be eliminated. That would
+solve other problems too like locking and register
+stomping.
 
 
+=====
+Jon Smirl
+jonsmirl@yahoo.com
+
+__________________________________
+Do you Yahoo!?
+Yahoo! SiteBuilder - Free, easy-to-use web site design software
+http://sitebuilder.yahoo.com
 
 
 -------------------------------------------------------

@@ -1,112 +1,227 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] Close race with fbcon notifer
-Date: Tue, 10 Feb 2004 15:23:18 +1100
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1076386997.893.14.camel@gaston>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Newest fbdev patch to go mainline.
+Date: Tue, 10 Feb 2004 06:36:03 +0000 (GMT)
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <Pine.LNX.4.44.0402100634430.32169-100000@phoenix.infradead.org>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AqPRD-0004sE-LM
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Feb 2004 20:23:55 -0800
-Received: from gate.crashing.org ([63.228.1.57] ident=root)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1AqPRC-0000x9-5l
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Feb 2004 20:23:54 -0800
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-diff -urN fbdev-2.5/drivers/video/console/fbcon.c linuxppc-2.5-benh/drivers/video/console/fbcon.c
---- fbdev-2.5/drivers/video/console/fbcon.c	2004-02-09 14:48:31.000000000 +1100
-+++ linuxppc-2.5-benh/drivers/video/console/fbcon.c	2004-02-10 15:21:29.754526880 +1100
-@@ -602,7 +602,6 @@
+
+First step to incorporate the new cursor api. It s abig patch so I broke 
+it into pieces. Give it a try.
+
+
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/console/fbcon.c fbdev-2.6/drivers/video/console/fbcon.c
+--- linus-2.6/drivers/video/console/fbcon.c	2004-02-04 16:09:28.000000000 -0800
++++ fbdev-2.6/drivers/video/console/fbcon.c	2004-02-09 05:54:59.000000000 -0800
+@@ -323,7 +323,7 @@
+ 	unsigned int buf_align = info->pixmap.buf_align - 1;
+ 	unsigned int scan_align = info->pixmap.scan_align - 1;
+ 	unsigned int idx = vc->vc_font.width >> 3;
+-	u8 mask, *src, *dst, *dst0;
++	u8 *src, *dst, *dst0;
  
- 	/* on which frame buffer will we open this console? */
- 	info = registered_fb[(int) con2fb_map[unit]];
--	
- 	if (info->var.accel_flags)
- 		fb_display[unit].scrollmode = SCROLL_YNOMOVE;
- 	else
-@@ -2255,16 +2254,24 @@
+ 	while (count) {
+ 		if (count > maxcnt)
+@@ -342,9 +342,9 @@
+ 			src = vc->vc_font.data + (scr_readw(s++) & charmask)*
+ 			cellsize;
+ 			dst = dst0;
+-			mask = (u8) (0xfff << shift_high);
+-			move_buf_unaligned(info, dst, src, pitch, image->height,
+-					mask, shift_high, shift_low, mod, idx);
++			fb_move_buf_unaligned(info, &info->pixmap, dst, pitch, src,
++						idx, image->height, shift_high, 
++						shift_low, mod);
+ 			shift_low += mod;
+ 			dst0 += (shift_low >= 8) ? width : width - 1;
+ 			shift_low &= 7;
+@@ -387,7 +387,8 @@
+ 		while (k--) {
+ 			src = vc->vc_font.data + (scr_readw(s++)&charmask)*cellsize;
+ 			dst = dst0;
+-			move_buf_aligned(info, dst, src, pitch, width, image->height);
++			fb_move_buf_aligned(info, &info->pixmap, dst, pitch, src, 
++						width, image->height);
+ 			dst0 += width;
+ 		}
+ 		info->fbops->fb_imageblit(info, image);
+@@ -462,7 +463,7 @@
+ 	image.data = dst;
+ 	src = vc->vc_font.data + (c & charmask) * vc->vc_font.height * width;
  
- static void fbcon_resumed(struct fb_info *info)
- {
--	struct vc_data *vc = vc_cons[info->currcon].d;
-+	struct vc_data *vc;
-+
-+	if (info->currcon < 0)
-+		return;
-+	vc = vc_cons[info->currcon].d;
+-	move_buf_aligned(info, dst, src, pitch, width, image.height);
++	fb_move_buf_aligned(info, &info->pixmap, dst, pitch, src, width, image.height);
  
- 	update_screen(vc->vc_num);
- }
- 
- static void fbcon_mode_changed(struct fb_info *info)
- {
--	struct vc_data *vc = vc_cons[info->currcon].d;
-+	struct vc_data *vc;
- 	int rows, cols;
- 
-+	if (info->currcon < 0)
-+		return;
-+	vc = vc_cons[info->currcon].d;
-+
- 	/* This isn't perfect yet. If we change one console, we
- 	 * don't change them all and we switch back to the wrong
- 	 * mode on next console switch. We need to either keep a
-@@ -2339,6 +2346,7 @@
- 	.notifier_call	= fbcon_event_notify,
+ 	info->fbops->fb_imageblit(info, &image);
+ 	atomic_dec(&info->pixmap.count);
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/fbmem.c fbdev-2.6/drivers/video/fbmem.c
+--- linus-2.6/drivers/video/fbmem.c	2004-02-08 08:58:43.000000000 -0800
++++ fbdev-2.6/drivers/video/fbmem.c	2004-02-09 05:42:18.000000000 -0800
+@@ -389,7 +389,7 @@
  };
  
-+static int fbcon_event_notifier_registered;
+ #define NUM_FB_DRIVERS	(sizeof(fb_drivers)/sizeof(*fb_drivers))
+-#define FBPIXMAPSIZE	8192
++#define FBPIXMAPSIZE	16384
  
- int __init fb_console_init(void)
- {
-@@ -2349,14 +2357,24 @@
- 	take_over_console(&fb_con, first_fb_vc, last_fb_vc, fbcon_is_default);
- 	info = registered_fb[num_registered_fb-1];	
+ extern const char *global_mode_option;
  
--	fb_register_client(&fbcon_event_notifer);
-+	acquire_console_semaphore();
-+	if (!fbcon_event_notifier_registered) {
-+		fb_register_client(&fbcon_event_notifer);
-+		fbcon_event_notifier_registered = 1;
-+	} 
-+	release_console_semaphore();
- 
- 	return 0;
+@@ -405,52 +405,54 @@
+ /*
+  * Drawing helpers.
+  */
+-u8 sys_inbuf(u8 *src)
++u8 sys_inbuf(struct fb_info *info, u8 *src)
+ {	
+ 	return *src;
  }
  
- void __exit fb_console_exit(void)
+-void sys_outbuf(u8 *src, u8 *dst, unsigned int size)
++void sys_outbuf(struct fb_info *info, u8 *dst, u8 *src, unsigned int size)
  {
--	fb_unregister_client(&fbcon_event_notifer);
-+	acquire_console_semaphore();
-+	if (fbcon_event_notifier_registered) {
-+		fb_unregister_client(&fbcon_event_notifer);
-+		fbcon_event_notifier_registered = 0;
-+	}
-+	release_console_semaphore();
- 	give_up_console(&fb_con);
+ 	memcpy(dst, src, size);
  }	
  
-
-
-
-
--------------------------------------------------------
-The SF.Net email is sponsored by EclipseCon 2004
-Premiere Conference on Open Tools Development and Integration
-See the breadth of Eclipse activity. February 3-5 in Anaheim, CA.
-http://www.eclipsecon.org/osdn
+-void move_buf_aligned(struct fb_info *info, u8 *dst, u8 *src, u32 d_pitch, 
+-			u32 s_pitch, u32 height)
++void fb_move_buf_aligned(struct fb_info *info, struct fb_pixmap *buf,
++			u8 *dst, u32 d_pitch, u8 *src, u32 s_pitch,
++			u32 height)
+ {
+ 	int i;
+ 
+ 	for (i = height; i--; ) {
+-		info->pixmap.outbuf(src, dst, s_pitch);
++		buf->outbuf(info, dst, src, s_pitch);
+ 		src += s_pitch;
+ 		dst += d_pitch;
+ 	}
+ }
+ 
+-void move_buf_unaligned(struct fb_info *info, u8 *dst, u8 *src, u32 d_pitch, 
+-			u32 height, u32 mask, u32 shift_high, u32 shift_low,
+-			u32 mod, u32 idx)
++void fb_move_buf_unaligned(struct fb_info *info, struct fb_pixmap *buf, 
++			u8 *dst, u32 d_pitch, u8 *src, u32 idx,
++			u32 height, u32 shift_high, u32 shift_low,
++			u32 mod)
+ {
++	u8 mask = (u8) (0xfff << shift_high), tmp;
+ 	int i, j;
+-	u8 tmp;
+ 
+ 	for (i = height; i--; ) {
+ 		for (j = 0; j < idx; j++) {
+-			tmp = info->pixmap.inbuf(dst+j);
++			tmp = buf->inbuf(info, dst+j);
+ 			tmp &= mask;
+ 			tmp |= *src >> shift_low;
+-			info->pixmap.outbuf(&tmp, dst+j, 1);
++			buf->outbuf(info, dst+j, &tmp, 1);
+ 			tmp = *src << shift_high;
+-			info->pixmap.outbuf(&tmp, dst+j+1, 1);
++			buf->outbuf(info, dst+j+1, &tmp, 1);
+ 			src++;
+ 		}
+-		tmp = info->pixmap.inbuf(dst+idx);
++		tmp = buf->inbuf(info, dst+idx);
+ 		tmp &= mask;
+ 		tmp |= *src >> shift_low;
+-		info->pixmap.outbuf(&tmp, dst+idx, 1);
++		buf->outbuf(info, dst+idx, &tmp, 1);
+ 		if (shift_high < mod) {
+ 			tmp = *src << shift_high;
+-			info->pixmap.outbuf(&tmp, dst+idx+1, 1);
++			buf->outbuf(info, dst+idx+1, &tmp, 1);
+ 		}	
+ 		src++;
+ 		dst += d_pitch;
+@@ -1397,7 +1399,7 @@
+ EXPORT_SYMBOL(fb_blank);
+ EXPORT_SYMBOL(fb_pan_display);
+ EXPORT_SYMBOL(fb_get_buffer_offset);
+-EXPORT_SYMBOL(move_buf_unaligned);
+-EXPORT_SYMBOL(move_buf_aligned);
++EXPORT_SYMBOL(fb_move_buf_unaligned);
++EXPORT_SYMBOL(fb_move_buf_aligned);
+ 
+ MODULE_LICENSE("GPL");
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/softcursor.c fbdev-2.6/drivers/video/softcursor.c
+--- linus-2.6/drivers/video/softcursor.c	2004-01-27 19:48:12.000000000 -0800
++++ fbdev-2.6/drivers/video/softcursor.c	2004-02-09 05:51:57.000000000 -0800
+@@ -70,7 +70,7 @@
+ 	} else 
+ 		memcpy(src, cursor->image.data, dsize);
+ 	
+-	move_buf_aligned(info, dst, src, d_pitch, s_pitch, info->cursor.image.height);
++	fb_move_buf_aligned(info, &info->pixmap, dst, d_pitch, src, s_pitch, info->cursor.image.height);
+ 	info->cursor.image.data = dst;
+ 	
+ 	info->fbops->fb_imageblit(info, &info->cursor.image);
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/include/linux/fb.h fbdev-2.6/include/linux/fb.h
+--- linus-2.6/include/linux/fb.h	2004-02-08 08:58:43.000000000 -0800
++++ fbdev-2.6/include/linux/fb.h	2004-02-09 05:50:43.000000000 -0800
+@@ -347,23 +347,23 @@
+  * format the hardware needs.
+  */
+ 
+-#define FB_PIXMAP_DEFAULT 1     /* used internally by fbcon */
+-#define FB_PIXMAP_SYSTEM  2     /* memory is in system RAM  */
+-#define FB_PIXMAP_IO      4     /* memory is iomapped       */
+-#define FB_PIXMAP_SYNC    256   /* set if GPU can DMA       */
++#define FB_PIXMAP_DEFAULT 1     /* used internally by fbcon	*/
++#define FB_PIXMAP_SYSTEM  2     /* memory is in system RAM	*/
++#define FB_PIXMAP_IO      4     /* memory is iomapped		*/
++#define FB_PIXMAP_SYNC    256   /* set if GPU can DMA		*/
+ 
+ struct fb_pixmap {
+-	u8 *addr;		/* pointer to memory                    */
+-	u32 size;		/* size of buffer in bytes              */
+-	u32 offset;		/* current offset to buffer             */
+-	u32 buf_align;		/* byte alignment of each bitmap        */
+-	u32 scan_align;		/* alignment per scanline               */
+-	u32 access_align;	/* alignment per read/write             */
+-	u32 flags;		/* see FB_PIXMAP_*                      */
+-					  /* access methods                */
+-	void (*outbuf)(u8 *dst, u8 *addr, unsigned int size); 
+-	u8   (*inbuf) (u8 *addr);
+-	spinlock_t lock;                  /* spinlock                      */
++	u8 *addr;		/* pointer to memory			*/
++	u32 size;		/* size of buffer in bytes		*/
++	u32 offset;		/* current offset to buffer		*/
++	u32 buf_align;		/* byte alignment of each bitmap	*/
++	u32 scan_align;		/* alignment per scanline		*/
++	u32 access_align;	/* alignment per read/write		*/
++	u32 flags;		/* see FB_PIXMAP_*			*/
++				/* access methods			*/
++	void (*outbuf)(struct fb_info *info, u8 *addr, u8 *src, unsigned int size);
++	u8   (*inbuf) (struct fb_info *info, u8 *addr);
++	spinlock_t lock;	/* spinlock				*/
+ 	atomic_t count;
+ };
+ 
+@@ -520,12 +520,12 @@
+ extern int fb_prepare_logo(struct fb_info *fb_info);
+ extern int fb_show_logo(struct fb_info *fb_info);
+ extern u32 fb_get_buffer_offset(struct fb_info *info, u32 size);
+-extern void move_buf_unaligned(struct fb_info *info, u8 * dst, u8 * src,
+-				u32 d_pitch, u32 height, u32 mask,
+-				u32 shift_high, u32 shift_low, u32 mod,
+-				u32 idx);
+-extern void move_buf_aligned(struct fb_info *info, u8 * dst, u8 * src,
+-				u32 d_pitch, u32 s_pitch, u32 height);
++extern void fb_move_buf_unaligned(struct fb_info *info, struct fb_pixmap *buf,
++				u8 *dst, u32 d_pitch, u8 *src, u32 idx,
++				u32 height, u32 shift_high, u32 shift_low, u32 mod);
++extern void fb_move_buf_aligned(struct fb_info *info, struct fb_pixmap *buf,
++				u8 *dst, u32 d_pitch, u8 *src, u32 s_pitch,
++				u32 height);
+ extern struct fb_info *registered_fb[FB_MAX];
+ extern int num_registered_fb;
+ 

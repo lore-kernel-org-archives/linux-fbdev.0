@@ -1,16 +1,22 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: FB model basic issues (WAS: radeon, apertures & memory mapping)
-Date: Tue, 15 Mar 2005 09:37:53 +1100
-Message-ID: <1110839873.5673.41.camel@gaston>
-References: <1110677744.19810.80.camel@gaston>
-	 <9e47339105031219223e606a52@mail.gmail.com>
-	 <1110696189.5787.100.camel@gaston>  <1110774523.4003.511.camel@localhost>
-	 <1110784327.5787.288.camel@gaston>  <1110817205.4004.527.camel@localhost>
-	 <1110837171.5863.16.camel@gaston>  <1110838356.4003.548.camel@localhost>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: [PATCH 3/5] sisfb: Trivial cleanups
+Date: Tue, 15 Mar 2005 07:06:03 +0800
+Message-ID: <200503150706.03026.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-In-Reply-To: <1110838356.4003.548.camel@localhost>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1DAyfO-0007uF-Qw
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Mar 2005 15:08:06 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DAyfO-0003mo-AE
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Mar 2005 15:08:06 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id EBCCBF9630A
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 14 Mar 2005 23:07:51 +0000 (UTC)
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -22,68 +28,44 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, dri-devel@lists.sourceforge.net, Jon Smirl <jonsmirl@yahoo.com>, xorg@lists.freedesktop.org
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, c.lucas@ifrance.com, domen@coderock.org, Thomas Winischhofer <thomas@winischhofer.net>
 
+  sis_main.c vfree() checking cleanups.
+  convert from pci_module_init to pci_register_driver
 
-> Be that as it may, it remains a fact that such a change would break
-> existing installations...
-> 
-> I think that mode setting and memory allocation should be separated. X
-> will always reserve enough video RAM for the largest resolution it uses
-> for the screen contents.
+  (from:http://kerneljanitors.org/TODO).
 
-But X has no control on where fbdev will allocate memory. We are
-thinking with the "new model" in mind, and so far, a mode setting is
-under control of the framebuffer. Content of video memory (framebuffer,
-textures, overlay, whatever) simply cannot be considered as preserved
-accross mode switches.
+Signed-off by: James Lamanna <jlamanna@gmail.com>
+Signed-off-by: Domen Puncer <domen@coderock.org>
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
+---
 
-We can't also block all evolutions just because we have to support a
-broken model. We'll need to find a way to deal with that. An idea would
-be for me to do the clearing only when I come from a different bit depth
-or from text mode. That is, what i want to avoid, is those artifacts
-caused by incorrect bit depth content. A strict mode change isn't an
-issue in this case. That would solve my immediate problem.
+ sis_main.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-_BUT_ in the long run, X will have to be smarter. Current UseFBDev or X
-"fbdev" can't support dual head properly on top of fbdev anyway, so that
-means I have some flexibility. The second head will probably" move on
-mode switches since I intend to allocate it at the top of the accessible
-aperture as described by Jon.
+diff -Nru a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
+--- a/drivers/video/sis/sis_main.c	2005-03-12 23:25:37 +08:00
++++ b/drivers/video/sis/sis_main.c	2005-03-05 23:13:01 +08:00
+@@ -5640,7 +5640,7 @@
+ 	/* Unmap */
+ 	iounmap(ivideo->video_vbase);
+ 	iounmap(ivideo->mmio_vbase);
+-	if(ivideo->bios_abase) vfree(ivideo->bios_abase);
++	vfree(ivideo->bios_abase);
+ 
+ 	/* Release mem regions */
+ 	release_mem_region(ivideo->video_base, ivideo->video_size);
+@@ -5695,7 +5695,7 @@
+ 	sisfb_setup(options);
+ #endif
+ #endif
+-	return(pci_module_init(&sisfb_driver));
++	return(pci_register_driver(&sisfb_driver));
+ }
+ 
+ #if LINUX_VERSION_CODE > KERNEL_VERSION(2,6,8)
 
-All of that just keep uncovering more and more issues with our current
-fbdev model though. From discussions we had so far, it uncovers the
-problem of arbitration. That is, can we simply afford having a process
-mmap /dev/fb and blast things to it without any arbitration like we do
-today ?
-
-If the answer is yes, then we are in deep trouble for lots of reason:
-
- - VGA Arbitration might require us to flip/flop MEM/IO enable bits
- - Swapper control as explained earlier unless I can "reserve" a swapper
-   for each head, that is manage to have one aperture per head
- - Engine discipline. What if the client on head 0 (like current X) uses
-   the engine ? Even if the one on head 1 doesn't, simple framebuffer
-   accesses can be enough to lock up the card.
- - etc....
-
-I think that Jon's dream of having totally independant heads that can
-run 2 separate applications is a long way away and we have sort-of to
-tie /dev/fb's together, though I don't know how to acheive that in
-practice, unless we switch to a new API that can enforce it. The current
-fbdev API cannot.
-
-DRI can do such things afaik (manage several contexts etc...), at least
-provides the infrastructure for it. But until all clients are DRI
-clients, we have a problem. That means that any direct fb client has to
-take over the entire card. All heads. There is simply no choice, and
-that doesn't even help with the VGA arbitration issue which still
-require explicit lock/unlock around accesses.
-
-I'm open to suggestions...
-
-Ben.
 
 
 

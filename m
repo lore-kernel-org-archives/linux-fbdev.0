@@ -1,14 +1,17 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: dead code in fbcon
-Date: Mon, 10 Feb 2003 10:24:27 +0100 (MET)
+From: Sven Luther <luther@dpt-info.u-strasbg.fr>
+Subject: Re: Radeon 9000 on a linux 2.4.18 kernel.
+Date: Mon, 10 Feb 2003 17:59:33 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0302101022190.25020-100000@vervain.sonytel.be>
+Message-ID: <20030210165933.GA692@iliana>
+References: <20030124090423.GA1690@iliana> <Pine.BSF.4.50.0301241108120.74886-100000@shell.unixbox.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+Received: from smtp-out-6.wanadoo.fr ([193.252.19.25] helo=mel-rto6.wanadoo.fr)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18iAC1-0008Ih-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 10 Feb 2003 01:25:38 -0800
+	id 18iHHb-0002g7-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 10 Feb 2003 08:59:52 -0800
+Content-Disposition: inline
+In-Reply-To: <Pine.BSF.4.50.0301241108120.74886-100000@shell.unixbox.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -18,54 +21,43 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Ani Joshi <ajoshi@unixbox.com>
+Cc: Sven Luther <luther@dpt-info.u-strasbg.fr>, linux-fbdev-devel@lists.sourceforge.net
 
+On Fri, Jan 24, 2003 at 11:09:46AM -0800, Ani Joshi wrote:
+> 
+> Try patching your 2.4.18 with
+> 
+> http://gate.crashing.org/~ajoshi/radeonfb-0.1.6.diff.gz
+> 
+> (I forget which kernel I made this diff against, but it shouldn't complain
+> much.)
 
-fbcon_changevar() contains some code (copy-and-pasted from
-fbcon_set_display()?) which is never used because save is never set to
-non-NULL.
+It is a diff against 2.4.20, but i managed to apply the needed changes
+from 2.4.18->2.4.19->2.4.20, so it didn't complain much. Still, there
+were some stuff missing, but i think i got it right.
 
---- linux-2.5.59/drivers/video/console/fbcon.c	Fri Jan 17 12:09:27 2003
-+++ linux-geert-2.5.59/fbcon.c	Mon Feb 10 10:19:58 2003
-@@ -766,7 +766,6 @@
- 		struct vc_data *vc = p->conp;
- 		int nr_rows, nr_cols;
- 		int old_rows, old_cols;
--		unsigned short *save = NULL, *q;
- 		int i, charcnt = 256;
- 		struct font_desc *font;
- 
-@@ -846,15 +845,6 @@
- 		 	vt_cons[vc->vc_num]->vc_mode == KD_TEXT) {
- 			accel_clear_margins(vc, p, 0);
- 			update_screen(con);
--		}
--		if (save) {
--			q = (unsigned short *) (vc->vc_origin +
--						vc->vc_size_row *
--						old_rows);
--			scr_memcpyw(q, save, logo_lines * nr_cols * 2);
--			vc->vc_y += logo_lines;
--			vc->vc_pos += logo_lines * vc->vc_size_row;
--			kfree(save);
- 		}
- 
- 		if (con == fg_console && softback_buf) {
+Anyway i built the kernel and launched it, it now recognize my radeon
+9000, but my DVI connected monitor complains about wrong timings (it say
+18,5KHz & 23Hz, which is not supported by the monitor). Anyway, here is
+the relevant output :
 
-Gr{oetje,eeting}s,
+radeonfb: ref_clk=2700, ref_div=12, xclk=25000 defaults
+radeonfb: detected DFP panel size from registers: 1024x768
+Console: switching to colour frame buffer device 80x30
+radeonfb: ATI Radeon 9000 If DDR SGRAM 64 MB
+radeonfb: DVI port DFP monitor connected
+radeonfb: CRT port no monitor connected
 
-						Geert
+Tell me if another part of the log is needed.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+I will try connecting a analog monitor and see what happens.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Friendly,
 
+Sven Luther
 
 
 -------------------------------------------------------

@@ -1,111 +1,78 @@
-From: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
-Subject: Re: Linux 2.4.29-pre1 (was: Re: [PATCH] vga16fb: Fix frame buffer bad memory mapping)
-Date: Wed, 1 Dec 2004 08:59:35 -0200
-Message-ID: <20041201105935.GD2250@dmt.cyclades>
-References: <200411252301.iAPN1mo4023046@hera.kernel.org> <Pine.GSO.4.61.0411271640560.13674@waterleaf.sonytel.be> <20041130112947.GB3041@dmt.cyclades> <Pine.GSO.4.61.0412010946090.21508@waterleaf.sonytel.be>
+From: Kronos <kronos@people.it>
+Subject: Re: [PATCH 2.4.29-pre1] radeonfb: don't try to ioreamp the entire VRAM [was: Re: why does radeonfb work fine in 2.6, but not in 2.4.29-pre1?]
+Date: Wed, 1 Dec 2004 21:37:12 +0100
+Message-ID: <20041201203711.GA21008@dreamland.darkstar.lan>
+References: <20041128184606.GA2537@middle.of.nowhere> <20041201161455.GA14817@dreamland.darkstar.lan> <Pine.GSO.4.61.0412011724010.26820@waterleaf.sonytel.be>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261326AbULARGE@vger.kernel.org>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1CZbDp-0008R7-UO
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 01 Dec 2004 12:37:09 -0800
+Received: from mail-relay-2.tiscali.it ([213.205.33.42])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CZbDo-0000pC-Pa
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 01 Dec 2004 12:37:09 -0800
 Content-Disposition: inline
-In-Reply-To: <Pine.GSO.4.61.0412010946090.21508@waterleaf.sonytel.be>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
+In-Reply-To: <Pine.GSO.4.61.0412011724010.26820@waterleaf.sonytel.be>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: vince@arm.linux.org.uk, Linux Kernel Development <linux-kernel@vger.kernel.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Marcelo Tosatti <marcelo.tosatti@cyclades.com>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-On Wed, Dec 01, 2004 at 09:48:29AM +0100, Geert Uytterhoeven wrote:
-> On Tue, 30 Nov 2004, Marcelo Tosatti wrote:
-> > On Sat, Nov 27, 2004 at 04:54:12PM +0100, Geert Uytterhoeven wrote:
-> > > On Thu, 25 Nov 2004, Linux Kernel Mailing List wrote:
-> > > > ChangeSet 1.1543, 2004/11/25 13:16:49-02:00, vince@arm.linux.org.uk
-> > > > 
-> > > > 	[PATCH] vga16fb: Fix frame buffer bad memory mapping
-> > > > 	
-> > > > 	The vga16fb driver uses a direct ioremap on 0xa00000 to gain access to
-> > > > 	the vga card. This is wrong on architectures other than x86, every
-> > > > 	other driver uses VGA_MAP_MEM macro from vga.h to ensure the correct
-> > > > 	memory mapping.
-> > > > 	
-> > > > 	All this patch does is add the mapping macro this has been tested and
-> > > > 	works on ARM systems The driver no longer maps parts of kernel
-> > > > 	workspace and modifies it.
-> > > 
-> > > This fix is not correct!
-> > > 
-> > > > diff -Nru a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
-> > > > --- a/drivers/video/vga16fb.c	2004-11-25 15:01:51 -08:00
-> > > > +++ b/drivers/video/vga16fb.c	2004-11-25 15:01:51 -08:00
-> > > > @@ -142,7 +142,7 @@
-> > > >  	memset(fix, 0, sizeof(struct fb_fix_screeninfo));
-> > > >  	strcpy(fix->id,"VGA16 VGA");
-> > > >  
-> > > > -	fix->smem_start = VGA_FB_PHYS;
-> > > > +	fix->smem_start = VGA_MAP_MEM(VGA_FB_PHYS);
-> > > >  	fix->smem_len = VGA_FB_PHYS_LEN;
-> > > >  	fix->type = FB_TYPE_VGA_PLANES;
-> > > >  	fix->visual = FB_VISUAL_PSEUDOCOLOR;
-> > > 
-> > > fix->smem_start: Although I agree VGA_FB_PHYS is not the correct value on
-> > > machines other than PC, VGA_MAP_MEM(VGA_FB_PHYS) is not appropriate either,
-> > > because fix->smem_start is supposed to be a CPU _physical_ address, not a
-> > > virtual address.
-> > > 
-> > > However, this value isn't really used, except by (very rare) userspace that
-> > > wants to mmap the frame buffer through /dev/mem instead of /dev/fb*, so an
-> > > incorrect value doesn't really harm.
-> > > 
-> > > > @@ -896,7 +896,7 @@
-> > > >  
-> > > >  	/* XXX share VGA_FB_PHYS region with vgacon */
-> > > >  
-> > > > -        vga16fb.video_vbase = ioremap(VGA_FB_PHYS, VGA_FB_PHYS_LEN);
-> > > > +        vga16fb.video_vbase = ioremap(VGA_MAP_MEM(VGA_FB_PHYS), VGA_FB_PHYS_LEN);
-> > > >  	if (!vga16fb.video_vbase) {
-> > > >  		printk(KERN_ERR "vga16fb: unable to map device\n");
-> > > >  		return -ENOMEM;
-> > > 
-> > > ioremap(): VGA_MAP_MEM() already a _virtual_ address:
-> > > 
-> > > | include/asm-alpha/vga.h:#define VGA_MAP_MEM(x)   ((unsigned long) ioremap((x), 0))
-> > > | include/asm-arm/vga.h:#define VGA_MAP_MEM(x)     (PCIMEM_BASE + (x))
-> > > | include/asm-i386/vga.h:#define VGA_MAP_MEM(x) (unsigned long)phys_to_virt(x)
-> > > | include/asm-ia64/vga.h:#define VGA_MAP_MEM(x)    ((unsigned long) ioremap((x), 0))
-> > > | include/asm-mips/vga.h:#define VGA_MAP_MEM(x) ((unsigned long)0xb0000000 + (unsigned long)(x))
-> > > | include/asm-ppc/vga.h:#define VGA_MAP_MEM(x) (x + vgacon_remap_base)
-> > > | include/asm-ppc64/vga.h:#define VGA_MAP_MEM(x) ((unsigned long) ioremap((x), 0))
-> > > | include/asm-sparc64/vga.h:#define VGA_MAP_MEM(x) (x)
-> > > | include/asm-x86_64/vga.h:#define VGA_MAP_MEM(x) (unsigned long)phys_to_virt(x)
-> > > 
-> > > Doing a double ioremap(), or ioremap(phys_to_virt()) will break for sure...
-> > > 
-> > > BTW, on (PReP/CHRP) PPC ioremap() on ISA memory space `just works' because
-> > > __ioremap() adds _ISA_MEM_BASE to the passed pointer if it's smaller than
-> > > 16*1024*1024. And yes, vga16fb used to work fine on my CHRP LongTrail
-> > > (before the machine itself died :-(.
-> > > 
-> > > Yes, ISA memory space is a mess to do right in a portable way...
+Il Wed, Dec 01, 2004 at 05:25:52PM +0100, Geert Uytterhoeven ha scritto: 
+> > Make fb layer aware of the difference between the ioremap()'ed VRAM and
+> > total available VRAM.
+> > smem_len in struct fb_fix_screeninfo still contains the amount of
+> > physical VRAM (reported to userspace via FBIOGET_FSCREENINFO ioctl) and
+> > the new field mapped_vram contains the amount of VRAM actually
+> > ioremap()'ed by drivers (used in read/write/mmap operations).
+> > Since there was unused padding at the end of struct fb_fix_screeninfo
+> > binary compatibility with userspace utilities is retained.
+> > If mapped_vram is not set it's assumed that the entire framebuffer is
+> > mapped, thus other drivers are unaffected by this patch.
 > > 
-> > Geert, 
+> > The patch has been tested by Jurriaan <thunder7@xs4all.nl>.
 > > 
-> > I'll guest I'll just revert the whole change then... Do you have a
+> > Signed-off-by: Luca Tettamanti <kronos@people.it>
+> > 
+> > --- a/include/linux/fb.h	2004-11-30 18:30:08.000000000 +0100
+> > +++ b/include/linux/fb.h	2004-11-30 18:33:00.000000000 +0100
+> > @@ -126,7 +126,8 @@
+> >  					/* (physical address) */
+> >  	__u32 mmio_len;			/* Length of Memory Mapped I/O  */
+> >  	__u32 accel;			/* Type of acceleration available */
+> > -	__u16 reserved[3];		/* Reserved for future compatibility */
+> > +	__u32 mapped_vram;		/* Amount of ioremap()'ed VRAM */
+> > +	__u16 reserved[1];		/* Reserved for future compatibility */
+> >  };
 > 
-> Yes, please.
+> I don't really like this patch. mapped_vram doesn't matter for user space at
+> all, so it does not belong to fb_fix_screeninfo.
 
-Done.
+Hmm, it looked sensible to me since it's the max amount of data that
+userspace can read (or write) from /dev/fb%d.
+Putting mapped_vram in fb_info would be acceptable?
 
-> 
-> > better suggestion? 
-> 
-> Replacing
-> 
->     vga16fb.video_vbase = ioremap(VGA_FB_PHYS, VGA_FB_PHYS_LEN);
-> 
-> by
-> 
->     vga16fb.video_vbase = VGA_MAP_MEM(VGA_FB_PHYS);
-> 
-> will probably work, since that's what vgacon does, but I'd like to see it
-> tested first anyway.
+Luca
+-- 
+Home: http://kronoz.cjb.net
+Carpe diem, quam minimum credula postero. (Q. Horatius Flaccus)
 
-I think Andrew merged a similar patch into v2.6 months ago. 
+
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now. 
+http://productguide.itmanagersjournal.com/

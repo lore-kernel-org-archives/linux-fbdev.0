@@ -1,19 +1,15 @@
-From: Javier Marcet <jmarcet@pobox.com>
-Subject: Re: matroxfb dualhead instabilities
-Date: Wed, 16 Oct 2002 02:17:15 +0200
+From: "Petr Vandrovec" <VANDROVE@vc.cvut.cz>
+Subject: Re: Another problem, seemingly coming f
+Date: Wed, 16 Oct 2002 09:00:27 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20021016001715.GA11672@jerry.marcet.dyndns.org>
-References: <20021016000809.GA19682@jerry.marcet.dyndns.org>
+Message-ID: <4BECCE234BB@vcnet.vc.cvut.cz>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="OXfL5xGRrasGEqWY"
+Content-Transfer-Encoding: 7BIT
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from 137-123-adsl.red.retevision.es ([80.224.123.137] helo=jerry.marcet.dyndns.org)
+Received: from mailgw.cvut.cz ([147.32.3.235])
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 181bsE-00018l-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 15 Oct 2002 17:17:18 -0700
-Content-Disposition: inline
-In-Reply-To: <20021016000809.GA19682@jerry.marcet.dyndns.org>
+	id 181iAw-0003wA-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 16 Oct 2002 00:01:03 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,43 +19,42 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: "Carlo E. Prelz" <fluido@fluido.as>
+Cc: linux-fbdev-devel@lists.sourceforge.net, gif@bek.no
 
+On 15 Oct 02 at 22:29, Carlo E. Prelz wrote:
+> > > the image that I am attaching has been sent to all three
+> > 
+> > Unfortunately I do not see anything. I see horizontal black lines
+> > on all three monitors, and nothing else...
+> 
+> I am now adding a version where I underline - with yellow lines - the
+> places where these artifacts appear.
 
---OXfL5xGRrasGEqWY
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Ah, these ones... What pixclocks do you use? It is like if CRTC2 has
+not enough memory bandwidth available, and so it displays stale data.
+But it looks strange anyway. I'm afraid that I cannot help you,
+sorry. You can try experimenting with different pixclocks, different
+bit depths, and so on. But I cannot explain why it happens only
+when old Millennium is also in the box.
+ 
+> Everything happens as expected. First both good, then both bad, then
+> first bad and second good.
 
-* Javier Marcet <jmarcet@pobox.com> [021016 02:11]:
+So it is really caused by CRTC2, not by Maven. Even more strange, then 
+it looks like that CRTC2 bus accesses are only possible source of problem
+(it could be also subpicture displayed over picture, but because of
+subpicture is YUV, while your corruption is copy of RGB surface, I think
+that it is impossible).
 
-BTW, I have a Matrox G400MAX, and use it on an ASUS A7V133 with an
-Athlon 1800XP.
-
-The commandline I use to set up matroxfb at boot time is:
-video=3Dmatrox:mem:32,xres:1280,yres:960,left:264,right:24,hslen:160,upper:=
-47,lower:1,vslen:3,pixclock:6024,sync:0x03,depth:32,pan
-
-I can send you my dmesg if needed.
-
-
---=20
-Javier Marcet <jmarcet@pobox.com>
-Saint Louis University, Madrid Campus
-
---OXfL5xGRrasGEqWY
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.0.7 (GNU/Linux)
-
-iEYEARECAAYFAj2ssAsACgkQx/ptJkB7fry//QCfeQKTsoMhnFoBVbkmbPxlMPFe
-u6EAoIP30r+gWJpvMERjbH7eixrFeOK/
-=r2Id
------END PGP SIGNATURE-----
-
---OXfL5xGRrasGEqWY--
+Only problem I can think of is that system VCO frequency is always set
+to 133333 kHz (for G100/200/400) in matroxfb_DAC1064.c. Your PINS
+suggest that 200MHz are correct system clocks for your chip.
+                                                    Thanks,
+                                                        Petr Vandrovec
+                                                        vandrove@vc.cvut.cz
+                                                        
 
 
 -------------------------------------------------------

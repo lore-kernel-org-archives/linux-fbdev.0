@@ -1,134 +1,54 @@
-From: Sylvain Meyer <sylvain.meyer@worldonline.fr>
-Subject: Re: Fw: device mapper & cryptsetup error and
-   intelfb
-Date: Wed, 05 Jan 2005 17:50:13 +0100
-Message-ID: <41DC1AC5.9010602@worldonline.fr>
-References: <20050104175159.244105a7.akpm@osdl.org>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Jesper Juhl <juhl-lkml@dif.dk>
+Subject: [PATCH] kill problematic variable from drivers/video/fbmem.c
+Date: Thu, 6 Jan 2005 00:50:38 +0100 (CET)
+Message-ID: <Pine.LNX.4.61.0501060032150.3492@dragon.hygekrogen.localhost>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CmEN0-0007mt-Gy
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 05 Jan 2005 08:50:50 -0800
-Received: from smtp9.wanadoo.fr ([193.252.22.22])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CmEMw-0006DQ-0H
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 05 Jan 2005 08:50:50 -0800
-Received: from me-wanadoo.net (localhost [127.0.0.1])
-	by mwinf0906.wanadoo.fr (SMTP Server) with SMTP id 64BA81C001E1
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed,  5 Jan 2005 17:50:38 +0100 (CET)
-Received: from worldonline.fr (AGrenoble-152-1-26-121.w82-122.abo.wanadoo.fr [82.122.144.121])
-	by mwinf0906.wanadoo.fr (SMTP Server) with ESMTP id 8D9641C001A4
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed,  5 Jan 2005 17:50:37 +0100 (CET)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S262675AbVAEXll@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
 
-    Hi,
 
-    I will only answer the intelfb problem. Are you using X ? I had=20
-problems with the cursor and X, so i did a trick to restore the hw=20
-cursor after an X session. And it's the messages you are seeing. Have=20
-you always a good cursor, if yes the trick works and all is ok !
+My standard config generated a new warning for me with 2.6.10-bk8 : 
 
-Sylvain
+  CC      drivers/video/fbmem.o
+drivers/video/fbmem.c: In function `fb_set_var':
+drivers/video/fbmem.c:719: warning: ISO C90 forbids mixed declarations and code
 
-Andrew Morton a =E9crit:
+Upon investigating I saw that it was the variable 'int err' that caused it 
+and I also noticed that we might as well just kill that variable.
 
->intelfb glitch...
->
->
->Begin forwarded message:
->
->Date: Wed, 29 Dec 2004 17:52:34 +0100
->From: Mateusz Berezecki <mateuszb@gmail.com>
->To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
->Subject: device mapper & cryptsetup error and   intelfb
->
->
->1)
->Dec 29 17:42:41 localhost kernel: device-mapper: crypt: Error allocating=
-=20
->crypto tfm
->Dec 29 17:42:42 localhost kernel: device-mapper: error adding target to=20
->table
->Dec 29 17:42:47 localhost udev[18896]: removing device node '/dev/dm-0'
->
->invoked with command:
->
->losetup /dev/loop0 /home/mb/fs1&&cryptsetup create crloop /dev/loop0 &&=20
->mount /dev/mapper/crloop /media/crypted
->
->2)
->
->i also get a plenty of  such messages
->
->intelfb: intelfb_check_var: accel_flags is 1
->intelfb: the cursor was killed - restore it !!
->intelfb: size 8, 16   pos 488, 0
->intelfb: intelfb_check_var: accel_flags is 1
->intelfb: the cursor was killed - restore it !!
->intelfb: size 8, 16   pos 792, 80
->intelfb: intelfb_check_var: accel_flags is 1
->intelfb: the cursor was killed - restore it !!
->intelfb: size 8, 16   pos 184, 752
->
->Is it normal behaviour ?
->
->
->hardware info:
->
->0000:00:02.0 VGA compatible controller: Intel Corp.=20
->82845G/GL[Brookdale-G]/GE Chipset Integrated Graphics Device (rev 03)
->thats from lspci
->and lspci -v
->
->0000:00:02.0 VGA compatible controller: Intel Corp.=20
->82845G/GL[Brookdale-G]/GE Chipset Integrated Graphics Device (rev 03)=20
->(prog-if 00 [VGA])
->        Subsystem: Dell: Unknown device 0149
->        Flags: bus master, fast devsel, latency 0, IRQ 11
->        Memory at e0000000 (32-bit, prefetchable) [size=3D128M]
->        Memory at f6f80000 (32-bit, non-prefetchable) [size=3D512K]
->        Capabilities: [d0] Power Management version 1
->
->Maybe this helps.
->-
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" =
-in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
->
->
->-------------------------------------------------------
->The SF.Net email is sponsored by: Beat the post-holiday blues
->Get a FREE limited edition SourceForge.net t-shirt from ThinkGeek.
->It's fun and FREE -- well, almost....http://www.thinkgeek.com/sfshirt
->_______________________________________________
->Linux-fbdev-devel mailing list
->Linux-fbdev-devel@lists.sourceforge.net
->https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
->
-> =20
->
+I can see 4 reasons to get rid of this variable :
+
+1) it causes a warning.
+2) it shadows a variable of the same name in the enclosing scope.
+3) it is declared after code in the block, thus causing trouble for C89 
+compilers like gcc 2.95.3 that we claim to still support.
+4) it is completely unnessesary since we can reuse the 'err' variable 
+declared at the start of the function without any trouble.
+
+Patch that kills off the variable below.
+Patch has been compile tested and boot tested.
+
+
+Signed-off-by: Jesper Juhl <juhl-lkml@dif.dk>
+
+diff -up linux-2.6.10-bk8-orig/drivers/video/fbmem.c linux-2.6.10-bk8/drivers/video/fbmem.c
+--- linux-2.6.10-bk8-orig/drivers/video/fbmem.c	2005-01-06 00:04:45.000000000 +0100
++++ linux-2.6.10-bk8/drivers/video/fbmem.c	2005-01-06 00:26:15.000000000 +0100
+@@ -716,7 +716,6 @@ fb_set_var(struct fb_info *info, struct 
+ 		if ((var->activate & FB_ACTIVATE_MASK) == FB_ACTIVATE_NOW) {
+ 			struct fb_videomode mode;
+ 			info->var = *var;
+-			int err = 0;
+ 
+ 			if (info->fbops->fb_set_par)
+ 				info->fbops->fb_set_par(info);
 
 
 
 
-
--------------------------------------------------------
-The SF.Net email is sponsored by: Beat the post-holiday blues
-Get a FREE limited edition SourceForge.net t-shirt from ThinkGeek.
-It's fun and FREE -- well, almost....http://www.thinkgeek.com/sfshirt
+PS. Please keep me on CC.

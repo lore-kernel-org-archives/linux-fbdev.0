@@ -1,24 +1,20 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: Patch to add mode setting to sysfs
-Date: Fri, 18 Feb 2005 15:41:32 +0800
-Message-ID: <200502181541.32958.adaplas@hotpop.com>
-References: <9e4733910502161430ff1dad1@mail.gmail.com> <200502180804.46005.adaplas@hotpop.com> <9e47339105021723274951c76c@mail.gmail.com>
+Date: Fri, 18 Feb 2005 10:42:12 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0502181041180.721@numbat.sonytel.be>
+References: <9e4733910502161430ff1dad1@mail.gmail.com> <200502180804.46005.adaplas@hotpop.com>
+ <9e473391050217185912a7d3d7@mail.gmail.com> <200502181531.05517.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D23UQ-0001lb-BW
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Feb 2005 00:27:54 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.71])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1D23UP-0006vt-Vo
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Feb 2005 00:27:54 -0800
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 00C0E1405D2B
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Feb 2005 07:41:34 +0000 (UTC)
-In-Reply-To: <9e47339105021723274951c76c@mail.gmail.com>
-Content-Disposition: inline
+	id 1D24ei-0005pu-DZ
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Feb 2005 01:42:36 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1D24ef-0000hb-Ow
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Feb 2005 01:42:36 -0800
+In-Reply-To: <200502181531.05517.adaplas@hotpop.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,24 +25,31 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Jon Smirl <jonsmirl@gmail.com>, adaplas@pol.net, James Simmons <jsimmons@www.infradead.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Jon Smirl <jonsmirl@gmail.com>, adaplas@pol.net, James Simmons <jsimmons@pentafluge.infradead.org>
 
-On Friday 18 February 2005 15:27, Jon Smirl wrote:
-> Next version of sysfs patch. Fills out more attributes. Feel free to
-> add code for missing implementations. Modifies fbcon to copy mode
-> structure instead of taking a reference to it. Modular fbdev is
+On Fri, 18 Feb 2005, Antonino A. Daplas wrote:
+> On Friday 18 February 2005 10:59, Jon Smirl wrote:
+> > fbcon really need to know the entire mode structure or could it work
+> > with just the resolution?
+> 
+> fbcon only needs xres, yres, vxres and vyres.  But in order to preserve
+> the graphics state per console, everything in var is required.
 
-Modifying fbcon to get a copy of the mode still won't work.  What if
-the consoles are at 1600x1200, and then you plug in a new monitor
-capable only of 1024x768 max?  So you still need to send an
-event, and fbcon needs to capture this event so it can resize the
-consoles to fit the new monitor.
+And visual/color depth (for modes `less' than 16 colors).
 
-Tony
+Gr{oetje,eeting}s,
 
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

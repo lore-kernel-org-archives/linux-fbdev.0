@@ -1,12 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [Linux-fbdev-users] RE: Crosstool for EBD9312..
-Date: Wed, 9 Mar 2005 13:47:19 +0800
-Message-ID: <200503091347.19442.adaplas@hotpop.com>
-References: <4EE0CBA31942E547B99B3D4BFAB348113A4797@mail.esn.co.in>
+Subject: Re: Re: [PATCH 8/10] fbdev: Allow core fb to be built as a module
+Date: Wed, 9 Mar 2005 13:48:35 +0800
+Message-ID: <200503091348.35322.adaplas@hotpop.com>
+References: <200503060816.55890.adaplas@hotpop.com> <9e47339105030720507cc34a68@mail.gmail.com> <20050307205808.60301d30.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-In-Reply-To: <4EE0CBA31942E547B99B3D4BFAB348113A4797@mail.esn.co.in>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1D8u47-00050T-RU
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 08 Mar 2005 21:49:03 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1D8u43-0007lo-7o
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 08 Mar 2005 21:49:03 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id C570FF7FEB1
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed,  9 Mar 2005 05:48:49 +0000 (UTC)
+In-Reply-To: <20050307205808.60301d30.akpm@osdl.org>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -19,58 +30,49 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-users@lists.sourceforge.net, "Mukund JB." <mukundjb@esntechnologies.co.in>, linux-fbdev-devel@lists.sourceforge.net
-Cc: geert@linux-m68k.org, Michael Burian <dynmail1@gassner-waagen.at>, komal_shah802003@yahoo.com
+To: Andrew Morton <akpm@osdl.org>, Jon Smirl <jonsmirl@gmail.com>
+Cc: adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net
 
-On Monday 07 March 2005 21:36, Mukund JB. wrote:
-> Hi all,
+On Tuesday 08 March 2005 12:58, Andrew Morton wrote:
+> Jon Smirl <jonsmirl@gmail.com> wrote:
+> > Did you fix this or do I need to send another patch?
 >
-> I also have a doubt regarding Accelarated Display driver.
-> Would u define an Accelerated display driver?
-
-An accelerated driver means that most of the drawing is done by
-the GPU (the processor of the graphics card) while an unaccelerated driver
-implies that drawing is done by the main CPU.
-
+> I fixed it.
 >
-> Is it the driver to a Accelerated display card?
-
-The driver is implementing the features of the card.
-
 >
-> 			Or
 >
-> Is it like accelerated display driver has a different meaning. I mean,
-> it has the set features which will not be there on a normal driver for
-> the same card?
+> We seem to have a few newish fbdev bugs btw:
+>
+> From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+> To: linux-kernel@vger.kernel.org, jim.hague@acm.org,
+> linux-fbdev-devel@lists.sourceforge.net Subject: [2.6.11 Permedia-2
+> Framebuffer] driver broken (?).
 >
 
-The effect of software versus accelerated is the same.  The main difference
-is that the GPU does the work if accelerated, the CPU if not.  And the CPU
-version will be slower because it has to do other work besides drawing, and
-the data that is processed by the CPU has to go to and from the bus.  The
-GPU has no such constraints.
+Resolved by Jim Hague in another thread.  If you haven't seen it yet,
+here's the patch.
 
-> How can I implement a accelerated driver?
+--- drivers/video/pm2fb.c.orig  2005-03-07 15:35:28.000000000 +0000
++++ drivers/video/pm2fb.c       2005-03-07 18:34:13.000000000 +0000
+@@ -747,7 +747,7 @@
+        }
+        if ((info->var.vmode & FB_VMODE_MASK)==FB_VMODE_DOUBLE)
+                video |= PM2F_LINE_DOUBLE;
+-       if (info->var.activate==FB_ACTIVATE_NOW)
++       if ((info->var.activate & FB_ACTIVATE_MASK)==FB_ACTIVATE_NOW)
+                video |= PM2F_VIDEO_ENABLE;
+        par->video = video;
 
-You need to know the details of the particular chipset you are working on.
 
-> Can I use the existing code of a framebuffer driver & do that? I heard
-
-Yes, if the framebuffer driver implements console acceleration.
-
-> in the groups saying framebuffer driver is not an accelerated driver.
 >
+> From: Henrik Persson <root@fulhack.info>
+> To: unlisted-recipients:;;@localhost.localdomain (no To-header on input)
+> Cc: dtor@mail.ru, linux-kernel@vger.kernel.org
+> Subject: Re: Touchpad "tapping" changes in 2.6.11?
+>
+> 	("Well, -mm1 didn't quite agree with my savage gfx drivers")
 
-Yes, the framebuffer driver only implements acceleration for the console.
-
-> Please take the pain of explaining how a framebuffer driver is different
-> form accelerated driver?
-
-Essentially, a framebuffer driver only exposes the video memory to its
-clients, period.  You can read from or write to this memory, but you have
-to use the CPU to do this.  In order to implement acceleration, you need
-to know how to talk to the GPU.
+Any details on this?
 
 Tony
 

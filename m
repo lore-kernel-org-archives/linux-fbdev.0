@@ -1,17 +1,17 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Links not working (fwd)
-Date: Wed, 9 Jul 2003 00:12:23 +0100 (BST)
+Subject: Re: [RADEONFB] Cursor gone
+Date: Wed, 9 Jul 2003 00:17:51 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0307090012050.32323-100000@phoenix.infradead.org>
-References: <Pine.GSO.4.21.0307030945270.4422-100000@vervain.sonytel.be>
+Message-ID: <Pine.LNX.4.44.0307090017130.32323-100000@phoenix.infradead.org>
+References: <20030703155449.GA5399@dreamland.darkstar.lan>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19a1dr-0008Gl-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 08 Jul 2003 16:12:59 -0700
-In-Reply-To: <Pine.GSO.4.21.0307030945270.4422-100000@vervain.sonytel.be>
+	id 19a1j8-0001fv-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 08 Jul 2003 16:18:27 -0700
+In-Reply-To: <20030703155449.GA5399@dreamland.darkstar.lan>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,46 +23,25 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Nitin Mahajan <Nitin@soc-soft.com>
+To: Kronos <kronos@kronoz.cjb.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
 
-Ah. The poor website. It needs some tiding up.
+Strange. DO you get this effect my latest patch.
+
+http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
 
 
-On Thu, 3 Jul 2003, Geert Uytterhoeven wrote:
-
-> ---------- Forwarded message ----------
-> Date: Thu, 3 Jul 2003 11:43:06 +0530
-> From: Nitin Mahajan <Nitin@soc-soft.com>
-> To: Geert.Uytterhoeven@sonycom.com
-> Subject: Links not working
+> Hi,
+> sometimes  when I  switch to  console from  X I  loose the  cursors. The
+> problem seems to be random (it doesn't appear if I don't start X though)
+> and I'm unable  to find a pattern to reproduce  it. I'm using 2.5.73 now
+> but I first  saw this bug in 2.5.70 (hadn't  tried previous kernel, I'll
+> check asap).
 > 
-> Hi! Geert! 
-> A lot of links on this page are not working,what can be th reason?
-> http://linux-fbdev.sourceforge.net/
-> regards,
->  
-> Nitin Mahajan
-> Socrates Software India Pvt Ltd...
-> mail:nitin@soc-soft.com
-> Ph:51101667. Mobile : 9886099925
-> ======================================
-> The Lord gave us two ends -- one to sit on and the other to think with.
-> Success depends on which one we use the most.
->  
+> How can I pinpoint the bug?
 > 
-> 
-> 
-> -------------------------------------------------------
-> This SF.Net email sponsored by: Free pre-built ASP.NET sites including
-> Data Reports, E-commerce, Portals, and Forums are available now.
-> Download today and enter to win an XBOX or Visual Studio .NET.
-> http://aspnet.click-url.com/go/psa00100006ave/direct;at.asp_061203_01/01
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+> Luca
 > 
 
 

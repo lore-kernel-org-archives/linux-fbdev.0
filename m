@@ -1,51 +1,173 @@
-From: Kronos <kronos@kronoz.cjb.net>
-Subject: [RADEONFB] Cursor gone
-Date: Thu, 3 Jul 2003 17:54:49 +0200
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030703155449.GA5399@dreamland.darkstar.lan>
-Reply-To: kronos@kronoz.cjb.net
+From: James Simmons <jsimmons@infradead.org>
+Subject: New fbdev updates.
+Date: Thu, 3 Jul 2003 18:55:58 +0100 (BST)
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <Pine.LNX.4.44.0307031847570.16727-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail-4.tiscali.it ([195.130.225.150])
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19Y6QA-0006Qm-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 03 Jul 2003 08:54:54 -0700
-Received: from dreamland.darkstar.lan (217.133.181.253) by mail-4.tiscali.it (6.7.016)
-        id 3EE063B4010C2B6D for linux-fbdev-devel@lists.sourceforge.net; Thu, 3 Jul 2003 17:54:45 +0200
-Content-Disposition: inline
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
 
-Hi,
-sometimes  when I  switch to  console from  X I  loose the  cursors. The
-problem seems to be random (it doesn't appear if I don't start X though)
-and I'm unable  to find a pattern to reproduce  it. I'm using 2.5.73 now
-but I first  saw this bug in 2.5.70 (hadn't  tried previous kernel, I'll
-check asap).
+Hi!
+   
+   I have updates to the framebuffer layer. Alot of bug fixes accumlated. 
+A couple of driver updates as well. I have more code to go in but haven't 
+had time to add them in. Please test. This is not the final code going in 
+just yet. More needs to be done. The patches are at the usual
 
-How can I pinpoint the bug?
+    http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
 
-Luca
--- 
-Reply-To: kronos@kronoz.cjb.net
-Home: http://kronoz.cjb.net
-Alcuni pensano che io sia una persona orribile, ma non vero. Ho il
-cuore di un ragazzino - in un vaso sulla scrivania.
+or BK
+    bk://fbdev.bkbits.net/fbdev-2.5
 
+Note: 
+   The NVIDIA driver hasn't been updated to the new cursor fixes. I 
+haven't had time to fix it yet. So it doesn't compile. Also the i810 
+driver might have issues with the cursor changes. 
+   Skeleton i2c support is added. It hasn't been tested or even compiles 
+in yet. 
 
--------------------------------------------------------
-This SF.Net email sponsored by: Free pre-built ASP.NET sites including
-Data Reports, E-commerce, Portals, and Forums are available now.
-Download today and enter to win an XBOX or Visual Studio .NET.
-http://aspnet.click-url.com/go/psa00100006ave/direct;at.asp_061203_01/01
+ Documentation/fb/neofb.txt    |   27 
+ MAINTAINERS                   |    5 
+ drivers/char/vt_ioctl.c       |   12 
+ drivers/video/Kconfig         |   62 
+ drivers/video/Makefile        |    4 
+ drivers/video/cfbimgblt.c     |    2 
+ drivers/video/chipsfb.c       |    4 
+ drivers/video/console/fbcon.c |  351 -
+ drivers/video/console/fbcon.h |    2 
+ drivers/video/controlfb.c     |   10 
+ drivers/video/epson1355fb.c   |  967 +++--
+ drivers/video/fbmem.c         |  105 
+ drivers/video/g364fb.c        |   78 
+ drivers/video/logo/logo.c     |    5 
+ drivers/video/macfb.c         |   34 
+ drivers/video/neofb.c         |  198 -
+ drivers/video/platinumfb.c    |   10 
+ drivers/video/pvr2fb.c        |  846 +---
+ drivers/video/riva/fbdev.c    |    2 
+ drivers/video/sis/300vtbl.h   | 2426 +++----------
+ drivers/video/sis/310vtbl.h   | 2495 ++------------
+ drivers/video/sis/init.c      | 1816 ++++++----
+ drivers/video/sis/init.h      | 2335 ++++++++++++-
+ drivers/video/sis/init301.c   | 7444 +++++++++++++++++++++---------------------
+ drivers/video/sis/init301.h   |  209 -
+ drivers/video/sis/initdef.h   |  169 
+ drivers/video/sis/oem300.h    |  495 --
+ drivers/video/sis/oem310.h    |   31 
+ drivers/video/sis/osdef.h     |  122 
+ drivers/video/sis/sis_accel.c |   66 
+ drivers/video/sis/sis_accel.h |   10 
+ drivers/video/sis/sis_main.c  | 3194 +++++++++---------
+ drivers/video/sis/sis_main.h  |  509 +-
+ drivers/video/sis/vgatypes.h  |   63 
+ drivers/video/sis/vstruct.h   |  116 
+ drivers/video/skeletonfb.c    |   74 
+ drivers/video/softcursor.c    |   72 
+ drivers/video/valkyriefb.c    |  548 ---
+ drivers/video/vesafb.c        |   17 
+ drivers/video/vgastate.c      |    1 
+ include/linux/fb.h            |   88 
+ include/linux/linux_logo.h    |    4 
+ include/video/epson1355.h     |   64 
+ include/video/neomagic.h      |  241 -
+ include/video/sisfb.h         |   85 
+ 45 files changed, 12788 insertions(+), 12630 deletions(-)
+
+through these ChangeSets:
+
+<jsimmons@kozmo.(none)> (03/07/03 1.1251)
+   [NEOMAGIC FBDEV] Fixed a nasty bug in the copyarea function. It wasn't testing for the condition when both regions have the same y coordinates but are over lapping. This casued a corrpution of data. Also started ot used the macros in vga.h.
+
+<jsimmons@kozmo.(none)> (03/06/30 1.1246)
+   [LOGO] Display the correct logo for MIPS DEC workstations.
+
+<jsimmons@kozmo.(none)> (03/06/25 1.1240)
+   [FBCON] Removed the crappy ROP_COPY/ROP_XOR test for flashing the cursor. Now we disable and enable the cursor timer instead.
+
+<jsimmons@kozmo.(none)> (03/06/24 1.1238)
+   [FBDEV] Now we can use a specific hardware mapper for different hardware functionality.
+
+<jsimmons@kozmo.(none)> (03/06/23 1.1234)
+   [VGA CORE] Added needed vmalloc header.
+
+<jsimmons@kozmo.(none)> (03/06/23 1.1231)
+   [FBCON] When using 512 characters, the mouse pointer starts using the wrong complement_mask after a console reset.
+
+<jsimmons@kozmo.(none)> (03/06/23 1.1230)
+   [FBDEV] Made chipsfb/controlfb/platinumfb use the xxfb kernel command line string.
+
+<jsimmons@maxwell.earthlink.net> (03/06/18 1.1226)
+   [MAC FBDEV] Bug fixes.
+
+<jsimmons@maxwell.earthlink.net> (03/06/15 1.1222)
+   [SIS FBDEV] More updates for the SIS driver. 
+
+<jsimmons@maxwell.earthlink.net> (03/06/14 1.1220)
+   [CONTROL/PLATINUM FBDEV] Fix to match change in fb_set_var.
+
+<jsimmons@maxwell.earthlink.net> (03/06/10 1.1216)
+   [FBDEV] Fixed a issue with soft_cursor. It only worked with drivers with a pixmap.scan_align of 1. Now it will work with any.
+
+<jsimmons@kozmo.(none)> (03/06/07 1.1210)
+   [SIS FBDEV] Fixed sysnc issue.
+
+<jsimmons@kozmo.(none)> (03/06/05 1.1206)
+   [FBCON] Cleared out the struct fb_cursor we passed in. Other wise we get random data being used.
+
+<jsimmons@kozmo.(none)> (03/05/30 1.1201)
+   [FBDEV GENERIC ACCEL] Fixed why logo was not displayed for some.
+
+<jsimmons@maxwell.earthlink.net> (03/05/24 1.1188.1.3)
+   [VALKYRUE FBDEV] Ported to new api.
+
+<jsimmons@maxwell.earthlink.net> (03/05/23 1.1188.1.1)
+   [FBDEV] Updates to explain the new cursor api.
+
+<jsimmons@maxwell.earthlink.net> (03/05/23 1.1188)
+   [EPSON FRAMEBUFFER] Ported to the new api. Added support for the arm platform.
+
+<jsimmons@maxwell.earthlink.net> (03/05/15 1.1127.2.18)
+   [SIS FBDEV] SIS Framebuffer updates.
+                 - Added preliminary and untested support for SiS660
+                 - Added DDC support
+                 - Enhanced proprietary programming API for compatibility with X driver
+                   and upcoming SDL updates and upcoming vidix driver for mplayer
+                 - Fixes for video bridge output on various HW combinations
+                 - Fixes in TV detection
+                 - Reduced source size by removing duplicated data
+                 - Updated Kconfig descriptions
+
+<jsimmons@maxwell.earthlink.net> (03/05/14 1.1113.1.2)
+   [PVR2 FBDEV] Port of the Dreamcast Frambuffer to the new api.
+
+<jsimmons@maxwell.earthlink.net> (03/05/12 1.1063.3.19)
+   [FBCON] set_con2fb_map wasn't testing to see the VC we where mapping to actually exist. Now it does. 
+   
+           I add code to fbcon_cursor to reset the hotspot if it was changed by userland. 
+
+<jsimmons@maxwell.earthlink.net> (03/05/12 1.1063.3.17)
+   [RIVA FBDEV] Removal of exccess variable. Kills off a few warnings.
+
+<jsimmons@maxwell.earthlink.net> (03/05/12 1.1063.3.16)
+   [VESA FBDEV] Removed the EDID code. The results where mixed. It worked for some but not for others.
+
+<jsimmons@maxwell.earthlink.net> (03/05/12 1.1063.3.15)
+   [CONSOLE] This patch fixes the problem of not being able to set the fonts on VCs other than the first one. This also was the bug that was casuing dual head (vga and mda) to lock up.
+
+<jsimmons@kozmo.(none)> (03/05/02 1.1042.122.2)
+   [FBDEV] Synced to kdev_t change.
+
+<jsimmons@kozmo.(none)> (03/04/22 1.1042.37.2)
+   [FBDEV] Moved pixmap to the kernel side of the header. Will not be needed for ioctl calls at the present time.
+   
+   [FBCON] Lots more optimizations.
+
+<jsimmons@kozmo.(none)> (03/04/21 1.1042.37.1)
+   [LOGO] Removed fb_ prefix. Wil be used by other drivers such as the newport driver.
+   
+   [G354 FBDEV] Now use the final cursor api.

@@ -1,87 +1,75 @@
-From: Nigel Cunningham <ncunningham@cyclades.com>
-Subject: Re: i810 BUG summary. Was Re: [SoftwareSuspend-devel] [Announce] 
-	2.1.7 for 2.6.11-rc4
-Date: Thu, 17 Feb 2005 15:39:25 +1100
-Message-ID: <1108615165.4471.13.camel@desktop.cunningham.myip.net.au>
-References: <42141C01.nail5A31PHQ9L@berlios.de>
-Reply-To: ncunningham@cyclades.com
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Fw: [Bugme-new] [Bug 4217] New: radeonfb makes system hang and
+ LCD "burn"
+Date: Thu, 17 Feb 2005 19:41:37 +1100
+Message-ID: <1108629697.5425.75.camel@gaston>
+References: <20050215121555.54c63ed2.akpm@osdl.org>
+	 <1108502142.13394.2.camel@gaston> <87fyzxsdo7.fsf@kataplop.net>
+	 <1108504143.13376.14.camel@gaston> <87r7jggxc7.fsf@kataplop.net>
+	 <1108592133.5533.6.camel@gaston>  <87brajlim7.fsf@kataplop.net>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-In-Reply-To: <42141C01.nail5A31PHQ9L@berlios.de>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-To: mhf@berlios.de, FrameBuffer Devel <linux-fbdev-devel@lists.sourceforge.net>
-Cc: SoftwareSuspend Development <softwaresuspend-devel@lists.berlios.de>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, pavel@suse.cz, akpm@osdl.org
+Content-Transfer-Encoding: quoted-printable
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1D1hEg-0004xO-7X
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 00:42:10 -0800
+Received: from gate.crashing.org ([63.228.1.57])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1D1hEe-0005EP-KF
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 00:42:10 -0800
+In-Reply-To: <87brajlim7.fsf@kataplop.net>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Marc =?ISO-8859-1?Q?Poulhi=E8s?= <marc.poulhies@epfl.ch>
+Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi Michael.
-
-Perhaps this belongs with the framebuffer devel guys? I'll copy them
-now. Antonio et al, have I called it right?
-
-Regards,
-
-Nigel
-
-On Thu, 2005-02-17 at 15:22, mhf@berlios.de wrote:
-> Hi Nigel!
-> 
-> On Wednesday 16 February 2005 05:22, Nigel Cunningham wrote:
-> > Hi Michael.
+On Thu, 2005-02-17 at 09:02 +0100, Marc Poulhi=E8s wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+>=20
+> > On Wed, 2005-02-16 at 19:43 +0100, Marc Poulhi=E8s wrote:
+> >> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> >>=20
+> >> > Try building radeonfb in the kernel and booting with
+> >> > radeonfb.default_dynclk=3D-1, let me know if that works. fbdev's i=
+n
+> >> > modules have always been sort-of dodgy....
+> >>=20
+> >> Ok, did that. Same result. The only thing displayed is the system
+> >> caret. I can see it moving left and right while the system boots and
+> >> "displays" the messages (X is working nicely).
 > >
-> > On Tue, 2005-02-15 at 22:32, mhf@berlios.de wrote:
-> > > - Removing intel-agp as well fixes the problem and X
-> > > can be started alright after resume.
-> >
-> > Did you see Karol's patch? It looks like it should
-> > improve your situation.
-> 
-> It did :-)
-> 
-> >
-> > Did you get any joy out of the posting to LKML?
-> >
-> 
-> Yes, Andrew suggested privately thqt screen should come back
-> as prior to S3 and Pavel sees the setfont issue as a bug.
-> 
-> 2.6.11-rc4 i810 bugs:
-> 
-> 1) Screen comes back in 25 line mode but scroll remains at
-> last set linecount. (also on all other displays tested like 
-> savage or sis or via.
-> 
-> 2) setfont dies on resume from S3.
-> 
-> 3) A scroll problem in console mode with gentoo portage and
-> likely othe apps which scroll lines of random length 
-> 
-> 4) With X wo DRM random colored bands flash over the screen 
-> when running some programs and shellscripts as if it would 
-> send the data bus instead of video data to the DAC. A 
-> swsusp2 cycles fixes it until the next S3 cycle.
-> 
-> 5) Then DRM (20050211 snapshot) dies on resume.
-> 
-> Guess it's time to find an i810 datasheet and go digging.
-> 
-> Otherwise, No issues seen wrt swsusp 2.1.7 on 2.6.11-rc4.
-> 
-> Good news is that S3 seems to be quite stable also when 
-> interleaved with swsusp2. There were no failures. 
-> 
-> Lastly, I'd like to see the ACPI alarm function work to do 
-> stress testing in a loop:
-> 
-> 1) set alarm to current time + xx sec
-> 2) enter S3 or S4/swsusp2
-> 3) on resume triggered by alarm continue from step 1.
->   
-> Regards
-> Michael
--- 
-Nigel Cunningham
-Software Engineer, Canberra, Australia
-http://www.cyclades.com
+> > Well... looks like radeonfb is actually working ... You can try booti=
+ng
+> > with radeonfb.noaccel=3D1 on your kernel command line and tell me wha=
+t's
+> > up ? I looks like your fbcon is having trouble actually. Not sure wha=
+t's
+> > up, I haven't had any report of that so far.
+>=20
+> Same result as without (screen "burns").
 
-Ph: +61 (2) 6292 8028      Mob: +61 (417) 100 574
+Well, I sent a patch that might fix the "burning" effect, if you could
+get the latest bk, and try again...
+
+Thanks,
+Ben.
+
+
+
+
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

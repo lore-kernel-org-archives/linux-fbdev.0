@@ -1,83 +1,61 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: [Linux-fbdev-devel] [PATCH][FBDEV]: fb_putcs() and
-	fb_setfont() methods
-Date: 05 Jan 2003 06:06:21 +0800
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1041717978.1052.23.camel@localhost.localdomain>
-References: <Pine.LNX.4.44.0301042058240.24903-100000@phoenix.infradead.org>
+From: Petr Vandrovec <vandrove@vc.cvut.cz>
+Subject: Re: [PATCH][FBDEV]: fb_putcs() and fb_setfont() methods
+Date: Sun, 5 Jan 2003 00:17:29 +0100
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <20030104231729.GA1188@ppc.vc.cvut.cz>
+References: <20030104204131.GD1319@ppc.vc.cvut.cz> <Pine.LNX.4.44.0301042109340.24903-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44.0301042058240.24903-100000@phoenix.infradead.org>
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from r2l120.mistral.cz
+	([62.245.75.120] helo=ppc.vc.cvut.cz ident=root)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18UxYN-0005Tq-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 04 Jan 2003 15:18:07 -0800
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44.0301042109340.24903-100000@phoenix.infradead.org>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel List <linux-kernel@vger.kernel.org>
+Cc: Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel List <linux-kernel@vger.kernel.org>
 
-On Sun, 2003-01-05 at 05:07, James Simmons wrote:
+On Sat, Jan 04, 2003 at 09:12:24PM +0000, James Simmons wrote:
 > 
-> Rejected. I have put thought into it and the whole point was to not allow 
+> > I'll be happier with character coordinates for text mode. 
+> 
+> Yuck!! Using fbcon for text modes is just bloat. For hardware text mode it 
+> is much better to write a nice small console driver like newport_con.c
 
-Personally, that's fine by me since I have no need for those 2
-extensions.  But please apply the accel_putcs() buffer overrun patch.
+When I said before christmas that I'll have to write matroxcon to get
+reasonable functionality, you laughed... Now, it is clear that there is
+no other way...
+ 
+> > could decide on case-by-case basis whether it will use its own code or 
+> > generic without touching pointer (without modifying potentially constant
+> > fb_ops structure common to all fbdev instances).
+> 
+> The patch was rejected. I working on your driver. I can throw in a text 
+> mode driver as well. 
 
-BTW, attached is another patch that will change the resolution of the
-console via tty ioctl TIOCSWINSZ.  I'm not sure if this is the correct
-solution, but it's the only one I can think of without really adding a
-lot of extra code.  This is implemented by adding a con_resize() hook to
-fbcon, so the window size can be changed such as by using:
-
-stty cols 128 rows 48 (1024x768 with font 8x16)
-
-The new window size should also be preserved per console.  Still, there
-are other fb parameters that can screw up the console (such as changing
-yres_virtual and bits_per_pixel) but the window size is the most
-important.
-
-Tony 
-
-diff -Naur linux-2.5.54/drivers/video/console/fbcon.c linux/drivers/video/console/fbcon.c
---- linux-2.5.54/drivers/video/console/fbcon.c	2003-01-04 21:58:47.000000000 +0000
-+++ linux/drivers/video/console/fbcon.c	2003-01-04 21:58:24.000000000 +0000
-@@ -1871,6 +1871,25 @@
- }
+You can throw anything in and out, of course... It is GPL, after all.
+Only question left is whether I'll be satisfied with functionality you
+offer.
+						Best regards,
+							Petr Vandrovec
+							vandrove@vc.cvut.cz
  
 
-+static int fbcon_resize(struct vc_data *vc, unsigned int width, 
-+			unsigned int height)
-+{
-+	struct display *p = &fb_display[vc->vc_num];
-+	struct fb_info *info = p->fb_info;
-+	struct fb_var_screeninfo var = info->var;
-+	int err;
-+
-+	var.xres = width * vc->vc_font.width;
-+	var.yres = height * vc->vc_font.height;
-+	var.activate = FB_ACTIVATE_NOW;
-+
-+	err = fb_set_var(&var, info);
-+	return  (err || var.xres != info->var.xres ||
-+		 var.yres != info->var.yres) ?
-+		-EINVAL : 0;
-+	  
-+}
-+
- static int fbcon_switch(struct vc_data *vc)
- {
- 	int unit = vc->vc_num;
-@@ -1920,6 +1939,7 @@
- 
- 	info->currcon = unit;
- 	
-+        fbcon_resize(vc, vc->vc_cols, vc->vc_rows);
- 	update_var(unit, info);
- 	
- 	if (vt_cons[unit]->vc_mode == KD_TEXT)
-@@ -2537,6 +2557,7 @@
- 	.con_invert_region 	= fbcon_invert_region,
- 	.con_screen_pos 	= fbcon_screen_pos,
- 	.con_getxy 		= fbcon_getxy,
-+	.con_resize             = fbcon_resize,
- };
- 
- int __init fb_console_init(void)
+
+-------------------------------------------------------
+This sf.net email is sponsored by:ThinkGeek
+Welcome to geek heaven.
+http://thinkgeek.com/sf

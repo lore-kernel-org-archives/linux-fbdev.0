@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 1/7] nvidiafb: Process boot options earlier
-Date: Sun, 20 Mar 2005 21:08:29 +0800
-Message-ID: <200503202108.31573.adaplas@hotpop.com>
+Subject: [PATCH 7/7] neofb: Set hwaccel flags properly
+Date: Sun, 20 Mar 2005 21:10:01 +0800
+Message-ID: <200503202110.01014.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DD0CV-0001Fe-Jj
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Mar 2005 05:10:39 -0800
+	id 1DD0Cq-0001Ga-16
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Mar 2005 05:11:00 -0800
 Received: from smtp-out.hotpop.com ([38.113.3.71])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1DD0CS-0007lZ-Ru
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Mar 2005 05:10:39 -0800
+	id 1DD0Cp-0007o1-1I
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Mar 2005 05:10:59 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 38FBF14CE796
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 20 Mar 2005 13:10:25 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id 7ED9814CE5FA
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 20 Mar 2005 13:10:52 +0000 (UTC)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -31,41 +31,65 @@ Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-  A few options, such as noscale, are processed after hardware
-  has been configured which render them useless. This manifest
-  as failure of DVI displays to scale.
-
-  Process them earlier.
+  Not all neomagic chipsets are capable of hardware acceleration.
+  Set the hwaccel flags only for chipsets that can do so.
 
 From: Antonino Daplas <adaplas@pol.net>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- nvidia.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ neofb.c |   16 +++++++++++++---
+ 1 files changed, 13 insertions(+), 3 deletions(-)
 
-diff -Nru a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
---- a/drivers/video/nvidia/nvidia.c	2005-03-20 20:09:13 +08:00
-+++ b/drivers/video/nvidia/nvidia.c	2005-03-15 18:42:12 +08:00
-@@ -1353,8 +1353,6 @@
- 	if (!hwcur)
- 		info->fbops->fb_cursor = soft_cursor;
- 	info->var.accel_flags = (!noaccel);
--	par->FpScale = (!noscale);
--	par->paneltweak = paneltweak;
+diff -Nru a/drivers/video/neofb.c b/drivers/video/neofb.c
+--- a/drivers/video/neofb.c	2005-03-19 05:33:32 +08:00
++++ b/drivers/video/neofb.c	2005-03-19 06:10:30 +08:00
+@@ -2030,6 +2030,7 @@
  
- 	switch (par->Architecture) {
- 	case NV_ARCH_04:
-@@ -1486,6 +1484,8 @@
- 		printk(KERN_INFO PFX "flatpanel support enabled\n");
+ 	par->internal_display = internal;
+ 	par->external_display = external;
++	info->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
  
- 	par->CRTCnumber = forceCRTC;
-+	par->FpScale = (!noscale);
-+	par->paneltweak = paneltweak;
+ 	switch (info->fix.accel) {
+ 	case FB_ACCEL_NEOMAGIC_NM2070:
+@@ -2049,15 +2050,27 @@
+ 		break;
+ 	case FB_ACCEL_NEOMAGIC_NM2200:
+ 		sprintf(info->fix.id, "MagicGraph 256AV");
++		info->flags |= FBINFO_HWACCEL_IMAGEBLIT |
++		               FBINFO_HWACCEL_COPYAREA |
++                	       FBINFO_HWACCEL_FILLRECT;
+ 		break;
+ 	case FB_ACCEL_NEOMAGIC_NM2230:
+ 		sprintf(info->fix.id, "MagicGraph 256AV+");
++		info->flags |= FBINFO_HWACCEL_IMAGEBLIT |
++		               FBINFO_HWACCEL_COPYAREA |
++                	       FBINFO_HWACCEL_FILLRECT;
+ 		break;
+ 	case FB_ACCEL_NEOMAGIC_NM2360:
+ 		sprintf(info->fix.id, "MagicGraph 256ZX");
++		info->flags |= FBINFO_HWACCEL_IMAGEBLIT |
++		               FBINFO_HWACCEL_COPYAREA |
++                	       FBINFO_HWACCEL_FILLRECT;
+ 		break;
+ 	case FB_ACCEL_NEOMAGIC_NM2380:
+ 		sprintf(info->fix.id, "MagicGraph 256XL+");
++		info->flags |= FBINFO_HWACCEL_IMAGEBLIT |
++		               FBINFO_HWACCEL_COPYAREA |
++                	       FBINFO_HWACCEL_FILLRECT;
+ 		break;
+ 	}
  
- 	/* enable IO and mem if not already done */
- 	pci_read_config_word(pd, PCI_COMMAND, &cmd);
-
+@@ -2069,9 +2082,6 @@
+ 	info->fix.accel = id->driver_data;
+ 
+ 	info->fbops = &neofb_ops;
+-	info->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN |
+-		FBINFO_HWACCEL_IMAGEBLIT | FBINFO_HWACCEL_COPYAREA |
+-		FBINFO_HWACCEL_COPYAREA;
+ 	info->pseudo_palette = (void *) (par + 1);
+ 	return info;
+ }
 
 
 

@@ -1,22 +1,19 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] Fix switch from XFree
-Date: Tue, 10 Feb 2004 13:34:47 +0100 (MET)
+From: James Simmons <jsimmons@infradead.org>
+Subject: framebuffer GPM corruption fix.
+Date: Tue, 10 Feb 2004 17:26:51 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0402101334030.2261@waterleaf.sonytel.be>
-References: <1076409397.873.6.camel@gaston> <20040210110622.GA1913@lambda> 
- <1076411840.874.18.camel@gaston>  <20040210112820.GA2273@lambda>
- <1076412661.874.21.camel@gaston>
+Message-ID: <Pine.LNX.4.44.0402101726130.6600-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AqX6M-0004Tx-Db
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 10 Feb 2004 04:34:54 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1AqX65-0005Pu-VU
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 10 Feb 2004 04:34:38 -0800
-In-Reply-To: <1076412661.874.21.camel@gaston>
+	id 1Aqbf1-0003r9-Lr
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 10 Feb 2004 09:26:59 -0800
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1Aqbex-0000jm-Jb
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 10 Feb 2004 09:26:55 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,28 +25,43 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Sven Luther <sven.luther@wanadoo.fr>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Linus Torvalds <torvalds@transmeta.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Tue, 10 Feb 2004, Benjamin Herrenschmidt wrote:
-> > Or to use a different pipe, if the hardware provides accelerated context
-> > switching :)).
->
-> Do we really care ? This is VT switch...
 
-What about resetting the accel engine when switching from KD_GRAPHICS to
-KD_TEXT?
+This patch fixes the GPM cursor corruption people where seeing.
 
-Gr{oetje,eeting}s,
+--- fbcon.c	2004-02-09 16:41:26.000000000 -0800
++++ fbcon.c.fix	2004-02-09 16:41:17.000000000 -0800
+@@ -1826,9 +1826,11 @@
+ 	vc->vc_font.height = h;
+ 	if (vc->vc_hi_font_mask && cnt == 256) {
+ 		vc->vc_hi_font_mask = 0;
+-		if (vc->vc_can_do_color)
++		if (vc->vc_can_do_color) {
+ 			vc->vc_complement_mask >>= 1;
+-
++			vc->vc_s_complement_mask >>= 1;
++		}
++			
+ 		/* ++Edmund: reorder the attribute bits */
+ 		if (vc->vc_can_do_color) {
+ 			unsigned short *cp =
+@@ -1847,9 +1849,11 @@
+ 		}
+ 	} else if (!vc->vc_hi_font_mask && cnt == 512) {
+ 		vc->vc_hi_font_mask = 0x100;
+-		if (vc->vc_can_do_color)
++		if (vc->vc_can_do_color) {
+ 			vc->vc_complement_mask <<= 1;
+-
++			vc->vc_s_complement_mask <<= 1;
++		}
++			
+ 		/* ++Edmund: reorder the attribute bits */
+ 		{
+ 			unsigned short *cp =
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 
 -------------------------------------------------------

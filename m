@@ -1,25 +1,21 @@
-From: amavisd-new <postmaster@tlug.sinica.edu.tw>
-Subject: VIRUS (Worm.SomeFool.P) IN YOUR MAIL
-Date: Tue, 30 Mar 2004 01:21:55 +0800 (CST)
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: scrollmode, accel_flags, fbcon.c ...
+Date: Mon, 29 Mar 2004 18:50:46 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <VS29496-05@tlug.sinica.edu.tw>
-References: <20040329172148.7CF5B227B2@tlug.sinica.edu.tw>
+Message-ID: <Pine.LNX.4.44.0403291824020.15706-100000@phoenix.infradead.org>
+References: <Pine.GSO.4.58.0403281014010.364@waterleaf.sonytel.be>
 Mime-Version: 1.0
-Content-Type: multipart/report; report-type=delivery-status;
-    boundary="----------=_1080580915-29496-1"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B80ST-0001fX-7r
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 09:21:57 -0800
-Received: from tlug.sinica.edu.tw ([140.109.13.42])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B80SS-0005q7-5Q
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 09:21:56 -0800
-Received: from localhost (tlug [127.0.0.1])
-	by tlug.sinica.edu.tw (Postfix) with ESMTP id AF7F822AF1
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 30 Mar 2004 01:21:55 +0800 (CST)
-In-Reply-To: <20040329172148.7CF5B227B2@tlug.sinica.edu.tw>
+	id 1B80uV-0008MS-UV
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 09:50:55 -0800
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1B80uT-0008AG-Qk
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 09:50:54 -0800
+In-Reply-To: <Pine.GSO.4.58.0403281014010.364@waterleaf.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,82 +25,49 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
-
-This is a multi-part message in MIME format...
-
-------------=_1080580915-29496-1
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, David Eger <eger-dated-1080865620.ef4dea@theboonies.us>, Jakub Jelinek <jj@ultra.linux.cz>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-VIRUS ALERT
 
-Our virus checker found
-    virus: Worm.SomeFool.P
-    banned filenames: .zip, .exe
-in your email to the following recipient:
--> chester@linux.org.tw
+> > But an fbdev that implements an accelerated copyarea ?
+> >
+> > I don't want such heuristics in fbcon, they are just asking for trouble,
+> > I think we should redraw on non-accelerated and copy on accelerated,
+> 
+> You mean, if ywrap/ypan is not available/not possible (e.g. partial screen
+> scrolls)? Yes, that makes sense.
 
-Delivery of the email was stopped!
+Sounds like we need to update update_scrollmode. So what do we have so 
+far. 
 
-Please check your system for viruses,
-or ask your system administrator to do so.
+1. test for ywrap/ypan. This test should see if the screen is more than 
+   two whole screens in size. 
 
-For your reference, here are headers from your email:
-------------------------- BEGIN HEADERS -----------------------------
-Received: from linux.org.tw (dh22.internetdsl.tpnet.pl [80.53.243.22])
-	by tlug.sinica.edu.tw (Postfix) with ESMTP id 7CF5B227B2
-	for <chester@linux.org.tw>; Tue, 30 Mar 2004 01:21:48 +0800 (CST)
-From: linux-fbdev-devel@lists.sourceforge.net
-To: chester@linux.org.tw
-Subject: Re: Protected Mail Request
-Date: Mon, 29 Mar 2004 19:22:57 +0200
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0016----=_NextPart_000_0016"
-X-Priority: 3
-X-MSMail-Priority: Normal
-Message-Id: <20040329172148.7CF5B227B2@tlug.sinica.edu.tw>
--------------------------- END HEADERS ------------------------------
+2. Test if xxxfb_copyarea is accelerated. If it is set to YMOVE.
 
-------------=_1080580915-29496-1
-Content-Type: message/delivery-status
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Description: Delivery error report
+3. If xxxfb_copyare is not accelerated then redraw the screen.
 
-Reporting-MTA: dns; tlug.sinica.edu.tw
-Received-From-MTA: smtp; tlug.sinica.edu.tw ([127.0.0.1])
-Arrival-Date: Tue, 30 Mar 2004 01:21:55 +0800 (CST)
+If I'm missing anything let me know.
 
-Final-Recipient: rfc822; chester@linux.org.tw
-Action: failed
-Status: 5.7.1
-Diagnostic-Code: smtp; 550 5.7.1 Message content rejected, id=29496-05 - VIRUS: Worm.SomeFool.P
-Last-Attempt-Date: Tue, 30 Mar 2004 01:21:55 +0800 (CST)
+> Which means additional flags to fb_fix_screeninfo...
 
-------------=_1080580915-29496-1
-Content-Type: text/rfc822-headers
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Description: Undelivered-message headers
+:-( I'm hoping we can develope some kind of nice logic. Often I seen 
+a driver writer use the wrong flag.
 
-Received: from linux.org.tw (dh22.internetdsl.tpnet.pl [80.53.243.22])
-	by tlug.sinica.edu.tw (Postfix) with ESMTP id 7CF5B227B2
-	for <chester@linux.org.tw>; Tue, 30 Mar 2004 01:21:48 +0800 (CST)
-From: linux-fbdev-devel@lists.sourceforge.net
-To: chester@linux.org.tw
-Subject: Re: Protected Mail Request
-Date: Mon, 29 Mar 2004 19:22:57 +0200
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0016----=_NextPart_000_0016"
-X-Priority: 3
-X-MSMail-Priority: Normal
-Message-Id: <20040329172148.7CF5B227B2@tlug.sinica.edu.tw>
+> > One thing I don't like in the new fbcon is the way it deals with the
+> > var structure anyway. I think it should have one var per VC.
+> 
+> I agree.
 
-------------=_1080580915-29496-1--
+Why do we need a var for ever VC. The card is on one hardware state at 
+all times. The only times we nned to be concern with changes is for 
+setfont, resize and VC switching. These are not common occurs. If the 
+fbcon layer can't get the data it needs from struct vc_data then the upper
+console layer is broken.
+
+
 
 
 -------------------------------------------------------

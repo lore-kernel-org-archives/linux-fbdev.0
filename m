@@ -1,22 +1,22 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
 Subject: Re: Resource management.
-Date: Tue, 22 Feb 2005 21:25:54 +0800
-Message-ID: <200502222125.58858.adaplas@hotpop.com>
+Date: Tue, 22 Feb 2005 22:06:29 +0800
+Message-ID: <200502222206.31364.adaplas@hotpop.com>
 References: <Pine.LNX.4.56.0502211908520.14500@pentafluge.infradead.org> <200502220653.01286.adaplas@hotpop.com> <Pine.LNX.4.56.0502212313160.18148@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D3a3N-0000C1-BR
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Feb 2005 05:26:17 -0800
+	id 1D3aga-0002r4-LO
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Feb 2005 06:06:48 -0800
 Received: from smtp-out.hotpop.com ([38.113.3.51])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1D3a3M-0006gq-LO
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Feb 2005 05:26:17 -0800
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1D3agZ-0002rj-Mn
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Feb 2005 06:06:48 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 1FBAC725DE
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 22 Feb 2005 13:26:09 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id C1A3072410
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 22 Feb 2005 14:06:39 +0000 (UTC)
 In-Reply-To: <Pine.LNX.4.56.0502212313160.18148@pentafluge.infradead.org>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -62,24 +62,22 @@ On Tuesday 22 February 2005 07:25, James Simmons wrote:
 >
 > Do you see any other solution to this then?
 
-The structure fb_pixmap was designed originally as a kind of scratchpad, ie,
-this is where each character map is consolidated into a single image before
-writing to the framebuffer.  Of course, this structure is not restricted to
-that role only, but it can be used in different ways, as long as its
-function as a scratchpad is kept in mind.  The only thing we need to know is
-where this scratchpad is located, is it in system RAM or some kind of IO
-memory, and we already have support for that. In short, it was never meant
-as an accessor to different areas of the graphics aperture. which is the
-reason I'm not too keen on info->sprite.
+If you intend to insist on doing this, this is my proposal:
 
-In the example you cited, the epson problem can be easily solved by
-creating an epson-specific fb_read/write.
+The linked list of resources per fb_info can be kept. However, instead
+of doing an fb_find_resource() per call to putcs and cursor, this can
+be done only once, during initialization of fbcon or set_con2fb_map.
+This resource can then be stored in an fbcon-private area. 
 
-However, if you are trying to add features to fbdev, like video overlay,
-textures and the like, then that is a different problem altogether and
-requires a new interface/architecture. Extending the function of structure
-fb_pixmap will just complicate things even more by blurring its role as
-a simple scratchpad area.
+The advantage of this is that fbcon will only look for the resource that
+it needs, ie "scratchpad" but not, for example, "overlay". Similarly, 
+a user video application can totally ignore "scratchpad" but will search for
+"overlay".  Secondly, the performance penalty suffered by the your initial
+patch will be eliminated. We also eliminate one or two more fields in
+fb_info directly accessed by fbcon.
+
+Also, instead of storing the resource type as a string, why not use a
+constant?
 
 Tony
 

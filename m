@@ -1,16 +1,15 @@
-From: "irene7" <irene7@mail2000.com.tw>
-Subject: each character are reverse (fbcon_cfb4)
-Date: Mon, 10 Mar 2003 23:04:38 +0800 (CST)
+From: Alex Bennee <kernel-hacker@bennee.com>
+Subject: How can I test my console driver?
+Date: 11 Mar 2003 09:52:35 +0000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1047308678.13618.irene7@mail2000.com.tw>
-Reply-To: irene7@mail2000.com.tw
+Message-ID: <1047376355.5640.5.camel@cambridge.braddahead>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from ms3.mail2000.com.tw ([211.72.252.187])
+Received: from nimbus19.internetters.co.uk ([209.61.216.65])
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18sOpp-0007tg-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 10 Mar 2003 07:05:02 -0800
+	id 18sgRB-0004TP-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 Mar 2003 01:52:45 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,21 +20,47 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+I sent this to lkml but it probably got missed in the volume of mail.
+Can anyone point me anything that describes how I could test my console
+driver. Would it be the same approach for example as testing the vfb
+frame buffer driver?
 
-=20Hi=20all=20~
+-----Forwarded Message-----
+> Hi,
+> 
+> I'm writting a console driver for an embedded system for which the
+> hardware isn't quite ready yet. As a result I'm building on a PC with a
+> quickly hacked up proc interface so I can test the logic before the
+> final hardware.
+> 
+> On loading the module my code does the following:
+> 
+>     take_over_console(&sh_con, MAX_NR_CONSOLES - 1, MAX_NR_CONSOLES - 1,
+> 1);
+> 
+> Which I understand should associate my new console driver with the last
+> system console (63 in this case). Then to test the console output I do:
+> 
+>     echo "this is a test string" > /dev/vc/63
+> 
+> However my dmesg output shows no sign of any of the console functions
+> being called to write data, although the module itself has loaded
+> succesfully and run the take_over_console code.
+> 
+> Obviously I'm mis-understanding how the console should be accessed but
+> I'm stuck looking for any pointers. I've been looking thorugh the
+> newport_con.c driver for pointers but so far I've not seen any extra
+> magic that I'm missing. Can anyone point me in the right direction/offer
+> some tips?
+> 
 
-=20=20=20I=20am=20porting=20gray-scale=204=20bpp=20LCD=20driver=20.
-=20=20=20i=20used=20fbcon_cfb4=20in=20my=20driver,=20but=20i=20found=20each=20=
-character=20are=20reversed.
-=20=20=20it=20is=20right&=20lift=20reverse,=20not=20up=20and=20down=20revers=
-e=20.
-=20=20=20which=20part=20of=20source=20should=20i=20modified=20to=20reverse=20=
-each=20character.
+-- 
+Alex, homepage: http://www.bennee.com/~alex/
 
-=20Thank=20you=20!
-
+It's not reality or how you perceive things that's important -- it's
+what you're taking for it...
 
 
 

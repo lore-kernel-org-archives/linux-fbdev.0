@@ -1,17 +1,20 @@
-From: Pavel Machek <pavel@suse.cz>
-Subject: Re: fbdev and power management
-Date: Mon, 14 Jul 2003 22:11:43 +0200
+From: "Nitin Mahajan" <Nitin@soc-soft.com>
+Subject: What Flip means???
+Date: Tue, 15 Jul 2003 09:52:53 +0530
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030714201143.GE902@elf.ucw.cz>
-References: <Pine.LNX.4.44.0307090024170.32323-100000@phoenix.infradead.org> <1057750557.514.22.camel@gaston> <20030709151032.A22612@flint.arm.linux.org.uk> <20020105111340.GA2254@zaurus.ucw.cz> <1058200445.515.23.camel@gaston>
+Message-ID: <E519BE9E8DAC6A4B89DA4AD1D2A155B7213BE4@soc-mail.soc-soft.com>
 Mime-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C34A88.C28B9558"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from smtp-out2.iol.cz ([194.228.2.87])
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19c9gA-0007aF-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 14 Jul 2003 13:12:10 -0700
-Content-Disposition: inline
-In-Reply-To: <1058200445.515.23.camel@gaston>
+Received: from [202.138.125.47] (helo=vscrn4.securesynergyonline.com)
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19cHLO-0006yP-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 14 Jul 2003 21:23:15 -0700
+Received: from mail.soc-soft.com (202.56.254.199) by vscrn4.securesynergyonline.com (202.138.125.47), id <1058242441084.232758282.vscrn4.securesynergyonline.com>
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Tue, 15 Jul 2003 09:44:01 +0530
+content-class: urn:content-classes:message
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,40 +24,75 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
+
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01C34A88.C28B9558
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
 Hi!
+Can anyone please tell what "Full Screen Page Flip" or simply flip
+means????
+Thanking u in advance,
+regards,
+=20
+Nitin Mahajan
+mail:nitin@soc-soft.com
+Mobile : 9886099925
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+The Lord gave us two ends -- one to sit on and the other to think with.
+Success depends on which one we use the most.
+=20
 
-> > > I'm slightly concerned by this.  There are a growing amount of drivers
-> > > in 2.5 which are being made to work with the existing power management
-> > > system.  This "new" system seems to have been hanging around for about
-> > > 4 months now with no visible further work, presumably so that a paper
-> > > can be presented before its release.
-> > 
-> > I believe it is bad idea to change driver
-> > model again in 2.6.x-pre. I believe current
-> > solution is pretty much okay.
-> 
-> Current solution is not okay and actually, the save_state/suspend
-> distinction makes no sense. 
-> We have designed a working solution
-> a while ago now, Patrick has it implemented for month, it must
-> get in now or 2.6 will not have proper power management but just
-> "might work" kind of crap
+------_=_NextPart_001_01C34A88.C28B9558
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-save_state/suspend distinction may be irrelevant, but I don't see how
-it makes whole current code "might work" kind of crap.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<TITLE>Message</TITLE>
 
-Can you describe some significant problem with current code? I do not
-think it is good idea to have to touch all drivers in 2.6.0-test time
-without some *good* reason.
-								Pavel
--- 
-When do you have a heart between your knees?
-[Johanka's followup: and *two* hearts?]
+<META content=3D"MSHTML 6.00.2800.1141" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><SPAN class=3D132212104-15072003><FONT face=3DArial=20
+size=3D2>Hi!</FONT></SPAN></DIV>
+<DIV><SPAN class=3D132212104-15072003><FONT face=3DArial size=3D2>Can =
+anyone please=20
+tell what "Full Screen Page Flip" or simply flip =
+means????</FONT></SPAN></DIV>
+<DIV><SPAN class=3D132212104-15072003><FONT face=3DArial =
+size=3D2>Thanking u in=20
+advance,</FONT></SPAN></DIV>
+<DIV><SPAN class=3D132212104-15072003><FONT face=3DArial=20
+size=3D2>regards,</FONT></SPAN></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV align=3Dleft><FONT face=3DVerdana size=3D2>Nitin =
+Mahajan</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DVerdana size=3D2>
+<DIV align=3Dleft><FONT face=3DVerdana=20
+size=3D2>mail:nitin@soc-soft.com</FONT></DIV></FONT></DIV>
+<DIV align=3Dleft><FONT face=3DVerdana size=3D2>Mobile : =
+9886099925</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DVerdana=20
+size=3D2>=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D</FONT></DIV>
+<DIV align=3Dleft><FONT face=3DVerdana size=3D2>The Lord gave us two =
+ends -- one to=20
+sit on and the other to think with. Success depends on which one we use =
+the=20
+most.</FONT></DIV>
+<DIV>&nbsp;</DIV></BODY></HTML>
+
+------_=_NextPart_001_01C34A88.C28B9558--
+Scanned by SecureSynergy VirusScreen Service. 
+For more information log on to : http://www.securesynergyonline.com or http://www.securesynergy.com
 
 
 -------------------------------------------------------

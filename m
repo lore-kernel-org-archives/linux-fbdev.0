@@ -1,21 +1,21 @@
-From: Sven Luther <sven.luther@wanadoo.fr>
-Subject: Re: Bug#226973: xserver-xfree86: [glint] second card at wrong resolution
-Date: Wed, 14 Jan 2004 22:16:43 +0100
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [PATCH] kyrofb support
+Date: Thu, 15 Jan 2004 00:31:10 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040114211643.GA6793@iliana>
-References: <20040109163119.GA10151@scowler.net> <20040112121558.GA24511@iliana> <20040112215543.GB2150@scowler.net> <20040113074158.GF4863@iliana> <20040113154025.GA12817@scowler.net> <20040113160221.GA12752@iliana> <20040114211246.GA31567@scowler.net>
+Message-ID: <Pine.LNX.4.44.0401150029070.335-100000@phoenix.infradead.org>
+References: <20040113174908.487893c7.akpm@osdl.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AgsNw-0002m3-Jh
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Jan 2004 13:17:08 -0800
-Received: from smtp3.wanadoo.fr ([193.252.22.28] helo=mwinf0302.wanadoo.fr)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1AgsNw-0006Lq-8Q
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Jan 2004 13:17:08 -0800
-Content-Disposition: inline
-In-Reply-To: <20040114211246.GA31567@scowler.net>
+	id 1AgvPo-00084o-Tt
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Jan 2004 16:31:16 -0800
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1AgvPo-00039u-G8
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Jan 2004 16:31:16 -0800
+In-Reply-To: <20040113174908.487893c7.akpm@osdl.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,28 +25,35 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Clint Adams <schizo@debian.org>
-Cc: Sven Luther <sven.luther@wanadoo.fr>, 226973@bugs.debian.org, linux-fbdev-devel@lists.sourceforge.net
+To: Andrew Morton <akpm@osdl.org>
+Cc: Paul Mundt <lethal@linux-sh.org>, linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, Jan 14, 2004 at 04:12:46PM -0500, Clint Adams wrote:
-> > You would dump all the possible registers, and see which one is
-> > different. Enabling debugging in the glint driver would also do. You can
-> > safely run no-accel on these for the tests, as this is definitively not
-> > an accel issue, but a video out/ramdac one.
+
+Merge it in. The new changes don't hit the drivers that much. Mainly the 
+new changes are:
+
+1) Finalized cursor api.
+2) i2c support :-)
+3) DMA and memory allocation in general.
+4) sysfs support.
+
+On Tue, 13 Jan 2004, Andrew Morton wrote:
+
+> Paul Mundt <lethal@linux-sh.org> wrote:
+> >
+> > This patch adds support for the Kyro graphics boards (STG4000/PowerVR 3/etc.)
+> >  to 2.6.1. This is a direct port and substantial cleanup / rewrite of the 2.4
+> >  driver that's available in the sh64 tree at linux-sh.bkbits.net. Some of the
+> >  overlay code and the STG4000 bits are still a bit ugly, so be forewarned.
 > 
-> Here's the NoAccel version.
+> OK.  Problem is that the fbdev guys seem to be cooking up an internal API
+> change.  I guess we may as well merge this driver up now and modify it if
+> and when that API change hits the tree.
+> 
+> 
 
-This will not help, X things everything is ok, it is just the graphic
-card output which is problematic. No way to find it in the log, you have
-to look at the way the graphic output registers are programmed. 
-
-Look at the pm2_dac.c stuff.
-
-Friendly,
-
-Sven Luther
 
 
 -------------------------------------------------------

@@ -1,19 +1,18 @@
 From: Fredrik Noring <noring@nocrew.org>
-Subject: Re: rivafb "Badness" using fbdev.diff.gz and
-	2.5.5[45]
-Date: 19 Jan 2003 17:42:25 +0100
+Subject: Re: [PATCH] rivafb sync polarity problem?
+Date: 19 Jan 2003 17:55:30 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1042994545.1071.9.camel@localhost.localdomain>
-References: <1042975785.1296.31.camel@h9n1fls20o980.telia.com> 
-	<1042990791.1058.12.camel@localhost.localdomain>
+Message-ID: <1042995331.1071.23.camel@localhost.localdomain>
+References: <1042980943.12192.34.camel@h9n1fls20o980.telia.com> 
+	<1042993221.978.4.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from maild.telia.com ([194.22.190.101])
+Received: from mailg.telia.com ([194.22.194.26])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18aIVm-0001lI-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 19 Jan 2003 08:41:30 -0800
-In-Reply-To: <1042990791.1058.12.camel@localhost.localdomain>
+	id 18aIiR-0003d3-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 19 Jan 2003 08:54:35 -0800
+In-Reply-To: <1042993221.978.4.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -25,38 +24,33 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="iso-8859-1"
 To: Antonino Daplas <adaplas@pol.net>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Ani Joshi <ajoshi@shell.unixbox.com>
 
-s=F6n 2003-01-19 klockan 16.41 skrev Antonino Daplas:
-> The other patch (in reply to Jak) should hopefully fix the initial=20
-> screen corruption on insmod and the kobject trace message.
+s=F6n 2003-01-19 klockan 17.25 skrev Antonino Daplas:
+> The dotclock should be in picoseconds.  The above will translate to
+> roughly 16MHz only.
 
-It did - thanks!
+Yep. The corresponding modeline in XFree86 4.2 is:
 
-> Can you try running an fbdev-based application, such as X, at 8bpp, just
-> to find out if the hardware is incorrectly initialized from the very
-> start or if this is more fbcon-related?
+  Modeline "768x288" 16.0 768 848 902 1022 288 290 292 312 -hsync -vsync
 
-I've tried two things. This:
+It's a mode designed for regular PAL TV output (through RGB-SCART) and
+it works excellent with XFree86 4.2. The corresponding modeline for NTSC
+looks like this:
 
-   modprobe rivafb     <-- loads OK, no visual side effects
-   modprobe fbcon      <-- garbage graphics, complete hang
+  Modeline "768x240" 16.0 768 848 902 1022 240 243 244 261 -hsync -vsync
 
-And this:
+Hopefully, rivafb will support interlace some day and then these
+modelines will also work:
 
-   modprobe rivafb     <-- loads OK, no visual side effects
-   fbset 640x480-60    <-- screen turns black, complete hang
+  ModeLine "768x485" 16.0 768 848 902 1022 485 491 496 525 -hsync -vsync in=
+terlace
+  ModeLine "768x576" 16.0 768 848 902 1022 576 580 585 625 -hsync -vsync in=
+terlace
 
-The mode looks like this:
+(PAL and NTSC respectively.)
 
-   mode "640x480-60"
-       # D: 25.175 MHz, H: 31.469 kHz, V: 59.94 Hz
-       geometry 640 480 640 480 8
-       timings 39722 48 16 33 10 96 2
-    endmode
-
-I haven't found any crash reports or similar in /var/log/messages. The
-system simply freezes completely.
+For some reason, rivafb will not render any of these modes properly a.t.m.
 
 	Fredrik
 

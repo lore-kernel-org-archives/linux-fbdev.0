@@ -1,10 +1,18 @@
-From: James Simmons <jsimmons@transvirtual.com>
-Subject: [PATCH] Console/tty system patch. II
-Date: Wed, 3 Jul 2002 15:58:45 -0700 (PDT)
+From: Russell King <rmk@arm.linux.org.uk>
+Subject: Re: [PATCH] fbdev updates.
+Date: Thu, 4 Jul 2002 00:03:54 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0207031556140.26377-100000@www.transvirtual.com>
+Message-ID: <20020704000354.B4733@flint.arm.linux.org.uk>
+References: <Pine.LNX.4.44.0207011041320.23794-100000@www.transvirtual.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from caramon.arm.linux.org.uk ([212.18.232.186])
+	by usw-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17PtAK-0006Fs-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 03 Jul 2002 16:04:05 -0700
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44.0207011041320.23794-100000@www.transvirtual.com>; from jsimmons@transvirtual.com on Mon, Jul 01, 2002 at 10:48:41AM -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -14,42 +22,44 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Linux console project <linuxconsole-dev@lists.sourceforge.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: James Simmons <jsimmons@transvirtual.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+On Mon, Jul 01, 2002 at 10:48:41AM -0700, James Simmons wrote:
+> Here are the latest updates to the framebuffer layer. Please test it outso
+> I can push it as soon as possible to Linus.
 
-I fixed that bug with VT switching. Give the new patch a try so I can push
-it to Linus. Thanks!!
+The following comments are from a first review of sa1100fb.[ch] changes.
 
-BK:
-	http://linuxconsole.bkbits.net:8080/dev
+1. It would appear to break sa1100 inverse colourmap stuff.  There are LCD
+   panels out there where it is a rather fundamental requirement to write
+   the palette with "inverted" colourmap values.
 
-diff:
-	http://www.transvirtual.com/~jsimmons/console.diff.gz
+2. I've no idea why you moved "lccr0" and "lccr3" in sa1100fb.h - this
+   looks like noise to me.
 
-diffstat:
+3. I think you replaced "fbi" too many times:
+	+/* Fake monspecs to fill in infonfo structure */
 
- arch/i386/kernel/apm.c         |    2
- arch/ppc/xmon/start.c          |    2
- arch/ppc64/xmon/start.c        |    2
- drivers/acpi/system.c          |    2
- drivers/char/console.c         |   82 ++--
- drivers/char/keyboard.c        |  781 +++++++++++++++++++++--------------------
- drivers/char/sysrq.c           |   46 +-
- drivers/char/tty_io.c          |   15
- include/linux/console_struct.h |    1
- include/linux/sysrq.h          |   13
- 11 files changed, 487 insertions(+), 459 deletions(-)
+4. You're also merging in cpufreq changes from my tree in this patch;
+   however I was going to send these to Linus along with the cpufreq
+   submission so no problem.
 
-   . ---
-   |o_o |
-   |:_/ |   Give Micro$oft the Bird!!!!
-  //   \ \  Use Linux!!!!
- (|     | )
- /'\_   _/`\
- \___)=(___/
+5. I strongly disagree with your apparant decision to make the cpufreq
+   part of the generic framebuffer core (by apparantly adding the notifier
+   block to the core fb_info structure).  Firstly, you've broken sa1100fb.c
+   by not including the relevant definition in fb_info (ok, so cpufreq
+   stuff isn't in Linus' tree yet).  Secondly, it isn't something that all
+   framebuffers require; its only required on SoC devices where the hardware
+   designers have been stingy.  As such, we should NOT penalise the x86
+   people by adding random useless garbage to structures that they're never
+   going to use.
+
+-- 
+Russell King (rmk@arm.linux.org.uk)                The developer of ARM Linux
+             http://www.arm.linux.org.uk/personal/aboutme.html
 
 
 

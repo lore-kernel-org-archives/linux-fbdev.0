@@ -1,23 +1,23 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: I2C standalone vs integrated?
-Date: Thu, 16 Oct 2003 12:14:34 +0200
+Subject: Re: ioremap problem on highmem
+Date: Thu, 16 Oct 2003 12:15:53 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1066299274.644.130.camel@gaston>
-References: <20031016004349.71177.qmail@web14908.mail.yahoo.com>
+Message-ID: <1066299353.1509.132.camel@gaston>
+References: <Pine.LNX.4.44.0310160008440.13660-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1AA5AF-00029F-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 16 Oct 2003 03:15:27 -0700
+	id 1AA5C5-0002El-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 16 Oct 2003 03:17:21 -0700
 Received: from pentafluge.infradead.org ([213.86.99.235])
 	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.22)
-	id 1AA5AD-0005sI-7g
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 16 Oct 2003 03:15:25 -0700
-In-Reply-To: <20031016004349.71177.qmail@web14908.mail.yahoo.com>
+	id 1AA5Bw-00065e-8x
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 16 Oct 2003 03:17:12 -0700
+In-Reply-To: <Pine.LNX.4.44.0310160008440.13660-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -28,26 +28,18 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Jon Smirl <jonsmirl@yahoo.com>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Otto Solares <solca@guug.org>, Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+On Thu, 2003-10-16 at 01:11, James Simmons wrote:
 
-> Also, I2C drivers for Intel810, Savage, Voodoo, etc are implemented as
-> standalone I2C drivers. Ben implemented his and Matrox as an integral part of
-> the fb driver. Wouldn't it be better to implement these all standalone? It's
-> probably the same amount of code, and I can use the standalone ones from Mesa
-> without loading framebuffer support.
+> Its is the userland responability to restore the console state after 
+> leaving KDGRAPHICS mode. You need to save the hardware state before you 
+> leave KDTEXT mode as well. 
 
-(Note: I didn't do the Matrox part)
-
-Regarding the standalone, I'm not too sure about it. I even though about
-not using the linux i2c layer at all, it's not very convenient, and we
-need to wrap the i2c accesses in all sort of tweaks to make DDC work
-properly in all cases (all the stuff in radeon_probe_i2c_connector()
-typically).
-
-I'd rather see things built on top of framebuffer drivers (fbcon staying
-something separate).
+That's a bit nasty as I just wrote, and very unpractical. Especially
+since it's really a _LOT_ simpler for the fbdev to just restore its
+state when going back to KDTEXT.
 
 Ben.
 

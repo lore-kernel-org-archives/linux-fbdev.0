@@ -1,19 +1,19 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Micro patch 3
-Date: Tue, 20 Apr 2004 17:38:56 +0100 (BST)
+Subject: micro patch 4.
+Date: Tue, 20 Apr 2004 17:45:47 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0404201737590.27498-100000@phoenix.infradead.org>
+Message-ID: <Pine.LNX.4.44.0404201739010.27498-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BFyH0-0007rM-6S
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Apr 2004 09:39:02 -0700
+	id 1BFyNb-00014E-MF
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Apr 2004 09:45:51 -0700
 Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1BFyGz-0000va-SC
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Apr 2004 09:39:02 -0700
+	id 1BFyNb-0001Up-2n
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Apr 2004 09:45:51 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,31 +29,29 @@ To: Andrew Morton <akpm@osdl.org>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-Remove extra variable. We use i instead of rc. 
+Set the default access_align variable. This variable tells us how much 
+data the hardware can handle in a single read/write cycle. For example 
+the epson chipset can handle only 16 bit reads and writes to the 
+framebuffer. 
 
 --- linus-2.6/drivers/video/fbmem.c	2004-04-19 16:32:25.000000000 -0700
-+++ fbdev-2.6/drivers/video/fbmem.c	2004-04-20 09:02:55.000000000 -0700
-@@ -1013,7 +1013,7 @@
- 	struct fb_con2fbmap con2fb;
- #endif
- 	struct fb_cmap cmap;
--	int i, rc;
-+	int i;
- 	
- 	if (!fb)
- 		return -ENODEV;
-@@ -1055,9 +1055,9 @@
- 		return 0;
- 	case FBIO_CURSOR:
- 		acquire_console_sem();
--		rc = fb_cursor(info, (struct fb_cursor *) arg);
-+		i = fb_cursor(info, (struct fb_cursor *) arg);
- 		release_console_sem();
--		return rc;
-+		return i;
- #ifdef CONFIG_FRAMEBUFFER_CONSOLE
- 	case FBIOGET_CON2FBMAP:
- 		if (copy_from_user(&con2fb, (void *)arg, sizeof(con2fb)))
++++ fbdev-2.6/drivers/video/fbmem.c	2004-04-20 09:06:07.000000000 -0700
+@@ -1286,6 +1286,7 @@
+ 			fb_info->pixmap.size = FBPIXMAPSIZE;
+ 			fb_info->pixmap.buf_align = 1;
+ 			fb_info->pixmap.scan_align = 1;
++			fb_info->pixmap.access_align = 4;
+ 			fb_info->pixmap.flags = FB_PIXMAP_DEFAULT;
+ 		}
+ 	}	
+@@ -1301,6 +1302,7 @@
+ 			fb_info->sprite.size = FBPIXMAPSIZE;
+ 			fb_info->sprite.buf_align = 1;
+ 			fb_info->sprite.scan_align = 1;
++			fb_info->sprite.access_align = 4;
+ 			fb_info->sprite.flags = FB_PIXMAP_DEFAULT;
+ 		}
+ 	}
 
 
 

@@ -1,66 +1,55 @@
-From: Vladimir Dergachev <volodya@mindspring.com>
-Subject: Re: waitforVBlank, how does this even work?
-Date: Wed, 2 Mar 2005 14:45:27 -0500 (EST)
-Message-ID: <Pine.LNX.4.62.0503021445030.16262@node2.an-vo.com>
-References: <9e473391050301215019081bce@mail.gmail.com> 
- <Pine.LNX.4.62.0503021128001.14333@node2.an-vo.com> 
- <9e473391050302090926854d95@mail.gmail.com>  <Pine.LNX.4.62.0503021212550.14716@node2.an-vo.com>
-  <9e47339105030209302701e9b5@mail.gmail.com>  <Pine.LNX.4.62.0503021242370.15365@node2.an-vo.com>
- <9e47339105030209514b7a3f4c@mail.gmail.com>
-Reply-To: Vladimir Dergachev <volodya@mindspring.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Re: waitforVBlank, how does this even work?
+Date: Thu, 03 Mar 2005 09:38:56 +1100
+Message-ID: <1109803136.5680.104.camel@gaston>
+References: <9e473391050301215019081bce@mail.gmail.com>
+	 <Pine.LNX.4.62.0503021128001.14333@node2.an-vo.com>
+	 <Pine.LNX.4.56.0503021727320.20488@pentafluge.infradead.org>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-In-Reply-To: <9e47339105030209514b7a3f4c@mail.gmail.com>
-Sender: dri-devel-admin@lists.sourceforge.net
-Errors-To: dri-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:dri-devel@lists.sourceforge.net>
-List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=dri-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"; format="flowed"
 Content-Transfer-Encoding: 7bit
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>, DRI developer's list <dri-devel@lists.sourceforge.net>, esellers@users.sourceforge.net
+In-Reply-To: <Pine.LNX.4.56.0503021727320.20488@pentafluge.infradead.org>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Jon Smirl <jonsmirl@gmail.com>, DRI developer's list <dri-devel@lists.sourceforge.net>
+
+On Wed, 2005-03-02 at 17:29 +0000, James Simmons wrote:
+> > Hi Jon,
+> > 
+> >     What about isolating interrupt-handling code into a small driver ?
+> > Something simple to respond to interrupts and call all handlers with a 
+> > certain mask.
+> > 
+> >     This would be useful not only for drm and fbdev but also for km 
+> > (v4l capture module) and stereo-glasses code.
+> 
+> Ultimatly this is the goal. That is what the struct xxx_par is for in 
+> struct fb_info. It is the core driver private data that can be shared by 
+> everyone. Ben would you mind if I reworked your code to have this "core".
+> It will take me some time but I can have it working. I need to do some 
+> fixes for multiple monitor handling anyways.
+
+Wait, wait ... there is already Jon working on the driver, and I plan to
+include part of his recent work along with some initial dual head
+support soon, let's avoid having too many people working at the same
+time on it.
+
+Also, with the merge DRM/fbdev, this will become a non-issue, wether the
+ioctl comes from DRM or fbdev, we'll be able to do the right thing.
+
+Ben.
 
 
-
-On Wed, 2 Mar 2005, Jon Smirl wrote:
-
-> On Wed, 2 Mar 2005 12:45:54 -0500 (EST), Vladimir Dergachev
-> <volodya@mindspring.com> wrote:
->>
->>
->> On Wed, 2 Mar 2005, Jon Smirl wrote:
->>
->>> On Wed, 2 Mar 2005 12:15:18 -0500 (EST), Vladimir Dergachev
->>> <volodya@mindspring.com> wrote:
->>>>> I would find it useful if someone came up with a standard kernel space
->>>>> V4L radeon driver instead of the Gatos stuff.
->>>>
->>>> By "standard" you mean "self-contained", right ?
->>>
->>> One that doesn't depend on X being there.
->>>
->>> Can one be build now that just ignores the memory management hooks?
->>
->> Sure, but you would have to give up using X on that card.
->
-> Is memory management the only reason you need to give up on X?
-
-I think so..
-
-                 best
-
-                     Vladimir Dergachev
-
->
-> -- 
-> Jon Smirl
-> jonsmirl@gmail.com
->
 
 
 -------------------------------------------------------
@@ -68,4 +57,3 @@ SF email is sponsored by - The IT Product Guide
 Read honest & candid reviews on hundreds of IT Products from real users.
 Discover which products truly live up to the hype. Start reading now.
 http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
---

@@ -1,23 +1,25 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: radeonfb_pci_register video memory clear?
-Date: Wed, 23 Jun 2004 10:56:52 -0500
+Subject: Re: Sane behavior of fbset
+Date: Wed, 23 Jun 2004 10:55:50 -0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1088006211.1854.147.camel@gaston>
-References: <40D3A2E1.2060100@undead.cc>
-	 <20040619192744.GA3979@dreamland.darkstar.lan> <40D4980F.3000401@undead.cc>
+Message-ID: <1088006149.1832.145.camel@gaston>
+References: <200406180945.12444.adaplas@hotpop.com>
+	 <200406190240.26228.adaplas@hotpop.com>
+	 <20040619031650.GC14319@havoc.gtf.org>
+	 <200406191413.28339.adaplas@hotpop.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BdAEQ-0004ZE-9z
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 09:04:14 -0700
+	id 1BdAFC-0004aJ-K3
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 09:05:02 -0700
 Received: from gate.crashing.org ([63.228.1.57])
 	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1BdAEP-000261-TS
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 09:04:14 -0700
-In-Reply-To: <40D4980F.3000401@undead.cc>
+	id 1BdAFC-0002EW-68
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 09:05:02 -0700
+In-Reply-To: <200406191413.28339.adaplas@hotpop.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,23 +30,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: John Zielinski <grim@undead.cc>
-Cc: Kronos <kronos@people.it>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: adaplas@pol.net
+Cc: David Eger <eger@havoc.gtf.org>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sat, 2004-06-19 at 14:46, John Zielinski wrote:
-> Kronos wrote:
+
+> The flow of fbset is upstream:  fbset->fbdev->fbcon->vc (2.4 code)
+> The flow of stty is downstream: stty->vc->fbcon->fbdev (2.6 code)
 > 
-> >AFAIK without that radeonfb will display the content of the memory as
-> >random garbage.
-> >  
-> >
-> I does fix it but the side effects I listed make it a bad idea, 
-> especially the fact that the radeonfb driver doesn't own the memory 
-> yet.  Tony has posted a proper fix for the problem so whoever put this 
-> in, please remove it.
+> I don't know how radeonfb does it though.
 
-Provided Tony fix gets upstream instead of beeing lost for 6 more
-monthes in the fbdev tree ...
+I still think (didn't I repeat it often enough) that the whole idea
+of stty "inventing" modes based on console size is broken. We simply
+can't rely on good enough monitor detection & mode list building to
+be able to pick proper modes. Not only our code is far from ready for
+that, but it will also call all sort of problems to users (remember
+you monitors that need different subtle geometry settings for each
+different mode you use ?)
+
+It may have looked like a nice idea, but I think it's just wrong.
+
+fbset sends an ioctl straight to the fbdev, and doesn't update fbcon
+at the moment. The callback mecanism I added for power management
+should allow to restore 2.4 functionality there, but this has not
+been implemented yet afaik.
 
 Ben.
 

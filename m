@@ -1,13 +1,16 @@
-From: Otto Solares <solca@guug.org>
-Subject: Re: dri fb drivers [was: Re: Rage128 and Radeon patches]
-Date: Thu, 14 Aug 2003 14:18:54 -0600
+From: Jon Smirl <jonsmirl@yahoo.com>
+Subject: Re: Re: FBDEV updates.
+Date: Thu, 14 Aug 2003 14:57:46 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030814201854.GD7862@guug.org>
-References: <20030814182631.GC7862@guug.org> <20030814185551.41277.qmail@web14908.mail.yahoo.com>
+Message-ID: <20030814215746.64028.qmail@web14908.mail.yahoo.com>
+References: <Pine.LNX.4.44.0308142150390.15200-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Content-Disposition: inline
-In-Reply-To: <20030814185551.41277.qmail@web14908.mail.yahoo.com>
+Received: from web14908.mail.yahoo.com ([216.136.225.60])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19nQ6N-0005e6-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 14 Aug 2003 14:57:47 -0700
+In-Reply-To: <Pine.LNX.4.44.0308142150390.15200-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -19,36 +22,28 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jon Smirl <jonsmirl@yahoo.com>
-Cc: dri-devel <dri-devel@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: James Simmons <jsimmons@infradead.org>, Otto Solares <solca@guug.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, Aug 14, 2003 at 11:55:51AM -0700, Jon Smirl wrote:
-> --- Otto Solares <solca@guug.org> wrote:
-> > nice work!
-> > 
-> > i know you are working with the dri fb drivers, is
-> > any progress and what is the current state?
-> 
-> I am working on embedded Mesa, which is another name
-> for standalone OpenGL. Embedded Mesa is based on the
-> 3D DRI code but it handles 2D very differently.
-> 
-> Xfree/DRI scans the PCI bus and initializes hardware
-> in it's user space process.  Embedded Mesa instead
-> loads the framebuffer drivers and uses them to
-> initialize the hardware. This makes Embedded Mesa much
-> simpler since it relies on the framebuffer drivers for
-> a lot of things such as mode switching and PCI bus
-> scanning.
+When I was working on Rage128/Radeon drivers and
+fixing them up for the 2.6 modules parameters, I
+noticed that they allow an fb mode as a parameter. How
+is this supose to work? I tried setting a mode and it
+gets copied into the internal structures but the
+display doesn't change. If I modify the driver to
+change the display mode fbconsole gets all confused.
 
-good! IMO this is the future for linux!
-i would like to see this work merged with the dri.sf.net
-folks and a unified set of drivers for both fb and Xfree.
-Is this possible, is this your objective? or embedded
-mesa will always be an standalone project...
+I just left the drviers the way I found them. Mode
+fills in the internal vars but doesn't actually set it.
 
--solca
+=====
+Jon Smirl
+jonsmirl@yahoo.com
 
+__________________________________
+Do you Yahoo!?
+Yahoo! SiteBuilder - Free, easy-to-use web site design software
+http://sitebuilder.yahoo.com
 
 
 -------------------------------------------------------

@@ -1,12 +1,21 @@
-From: "Benno Luthiger" <benno.luthiger@id.ethz.ch>
-Subject: FASD project: Online survey launched
-Date: Mon, 3 May 2004 09:13:42 +0200
+From: "Luiz Fernando N. Capitulino" <lcapitulino@prefeitura.sp.gov.br>
+Subject: Re: Re: [PATCH] - video/tdfxfb.c warning fix.
+Date: Mon, 3 May 2004 13:09:19 -0300
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <000901c430de$2b813ee0$1e238481@openlu>
-Reply-To: <benno.luthiger@id.ethz.ch>
+Message-ID: <20040503160919.GC1219@lorien.prodam>
+References: <20040430180451.GA3119@lorien.prodam> <20040430213513.7bafde36.akpm@osdl.org> <Pine.GSO.4.58.0405012045070.25805@waterleaf.sonytel.be> <20040501120852.139b4ac1.akpm@osdl.org> <Pine.GSO.4.58.0405012115260.25805@waterleaf.sonytel.be>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BKg1N-0007K2-Bm
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 03 May 2004 09:10:21 -0700
+Received: from sampa7.prodam.sp.gov.br ([200.230.190.107])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BKg0r-0002ek-7z
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 03 May 2004 09:09:49 -0700
+Content-Disposition: inline
+In-Reply-To: <Pine.GSO.4.58.0405012115260.25805@waterleaf.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -17,46 +26,43 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: benno.luthiger@id.ethz.ch
+Content-Transfer-Encoding: 7bit
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Andrew Morton <akpm@osdl.org>, lcapitulino@prefeitura.sp.gov.br, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Dear Open Source developer
+Em Sat, May 01, 2004 at 09:16:29PM +0200, Geert Uytterhoeven escreveu:
 
-I am doing a research project on "Fun and Software Development" in which I
-kindly invite you to participate.
-You will find the online survey under http://fasd.ethz.ch/qsf/. The
-questionnaire consists of 53 questions and you will need about 15 minutes to
-complete it.
+| On Sat, 1 May 2004, Andrew Morton wrote:
+| > Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+| > >  > You've taken a bunch of previously-working 3d acceleration functions and
+| > >  > made them configurable, dependent upon CONFIG_EXPERIMENTAL.
+| > >  >
+| > >  > What on earth for?  Will this not gratuitously break people's
+| > >  > previously-working 3d setups?
+| > >
+| > >  No, tdfxfb_cursor() was not used before, causing a compiler warning.
+| > >  tdfxfb_cursor() may work, but we don't know, so we didn't dare to enable it by
+| > >  default. Now the user (he who has the hardware) can enable it, and tell us
+| > >  whether it works or not.
+| >
+| > OK, thanks.  As you can see, it really helps if people explain this sort of
+| > thing in their initial patch (sigh).
+| >
+| > Does the same argument apply to this patch?
+| 
+| Yes. All these patches should enable the currently unused acceleration routines
+| if the corresponding config option is set, and kill the compiler warnings if
+| its not set.
 
-With the FASD project (Fun and Software Development) we want to define the
-motivational significance of fun when software developers decide to engage
-in Open Source projects. What is special about our research project is that
-a similar survey is planned with software developers in commercial firms.
-This procedure allows the immediate comparison between the involved
-individuals and the conditions of production of these two development
-models. Thus we hope to obtain substantial new insights to the phenomenon of
-Open Source Development.
+ Humm, my fault. I thought my comments was enough, will try to make
+better in next time.
 
+PS: Andrew, I always need to think about "be very clear" vs "Andrew's time
+to read e-mails". It is not a easy task. :-)
 
-With many thanks for your participation,
-Benno Luthiger
-
-
-PS:
-The results of the survey will be published under
-http://www.isu.unizh.ch/fuehrung/blprojects/FASD/.
-We have set up the mailing list fasd@webboard.ethz.ch for this study. Please
-see http://fasd.ethz.ch/qsf/mailinglist_de.html for registration to this
-mailing list.
-
-_______________________________________________________________________
-
-Benno Luthiger
-Swiss Federal Institute of Technology Zurich
-8092 Zurich
-
-Mail: benno.luthiger(at)id.ethz.ch
-_______________________________________________________________________
-
+-- 
+Luiz Fernando N. Capitulino
+<http://www.telecentros.sp.gov.br>
 
 
 -------------------------------------------------------

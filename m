@@ -1,17 +1,16 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] imsttfb 2.5.x
-Date: 15 Apr 2003 09:05:41 +0200
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Linux Intel FB Question
+Date: Tue, 15 Apr 2003 10:20:38 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1050390341.5574.105.camel@zion.wanadoo.fr>
-References: <20030412111945.GA537@gajba.net>
+Message-ID: <Pine.GSO.4.21.0304151018030.26578-100000@vervain.sonytel.be>
+References: <20030415042104.88847.qmail@web41603.mail.yahoo.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from amarseille-201-1-6-42.abo.wanadoo.fr ([80.11.137.42] helo=zion.wanadoo.fr)
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 195KUF-0006IY-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 15 Apr 2003 00:04:12 -0700
-In-Reply-To: <20030412111945.GA537@gajba.net>
+	id 195LhP-0003fd-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 15 Apr 2003 01:21:51 -0700
+In-Reply-To: <20030415042104.88847.qmail@web41603.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,29 +20,61 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Boris Bezlaj <boris@gajba.net>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Justin Ducote <justinduc@yahoo.com>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sat, 2003-04-12 at 13:19, Boris Bezlaj wrote:
-> In 2.5.67 imsttfb locks the system when it's time to scrool the text.
-> Patch below fixes that. Otherwise everything seems to work as in 2.4
+On Mon, 14 Apr 2003, Justin Ducote wrote:
+> I would like to use the RADEON frame buffer, with
+> that said I am restricting this senario to the VESA
+> driver ONLY to try and clear up some of my confusion..
 > 
-> --- linux/drivers/video/ORIG_imsttfb.c  2003-04-09 15:11:46.000000000 +0200
-> +++ linux/drivers/video/imsttfb.c       2003-04-11 16:44:07.000000000 +0200
-> @@ -409,7 +409,7 @@
->  static inline u32 read_reg_le32(volatile u32 *base, int regindex)
->  {
->  #ifdef __powerpc__
-> -       in_le32((volatile u32 *) (base + regindex));
-> +       return in_le32((volatile u32 *) (base + regindex));
->  #else
->         return readl(base + regindex);
->  #endif
+> When I boot linux/grub (Redhat 9.0) with the following
+> line:
+> 
+> vga=792
+> 
+> Everything works great, I get 1024x768x16m and it uses
+> the VESA Framebuffer (I think) and everything is
+> great. 
+> 
+> If I try and use this line instead:
+> 
+> video=vesa:mode:1024x768-24@60
+> 
+> NOTHING happens.. 
+> 
+> My understanding was that those two
+> lines should yield the exact same result in theory. I
+> thought they are doing the same thing but the video
+> line does nothing so I am confused and I do not
+> understand whats going on. 
+> 
+> Additionally, 
+> I would like to know what is the relationship
+> between VGA= and VIDEO= 
 
-There is actually no reason not to use readl() on ppc as well
+`vga=' is a way to tell the early boot code in the kernel (before the actual
+Linux kernel is started) to change the video mode using the BIOS.
 
-Ben.
+`video=' is a way to pass initialization parameters to a frame buffer device
+driver, or to just specific the default video mode (yes, `video=1024x768-24@60'
+is OK).
+
+Since vesafb relies on the BIOS setting up the correct video mode, the second
+method won't work with vesafb.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

@@ -1,14 +1,13 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+From: Sven Luther <sven.luther@wanadoo.fr>
 Subject: Re: Re: [Linux-fbdev-devel] Redesign of kernel graphics interface
-Date: Fri, 14 May 2004 22:01:03 +0300
+Date: Fri, 14 May 2004 21:25:03 +0200
 Sender: mesa3d-dev-admin@lists.sourceforge.net
-Message-ID: <20040514190103.GA18868@sci.fi>
-References: <20040514180814.GA18297@sci.fi> <20040514184004.16621.qmail@web14930.mail.yahoo.com>
+Message-ID: <20040514192503.GA27048@pegasos>
+References: <20040514172011.GA11990@pegasos> <20040514173556.5782.qmail@web50101.mail.yahoo.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <mesa3d-dev-admin@lists.sourceforge.net>
 Content-Disposition: inline
-In-Reply-To: <20040514184004.16621.qmail@web14930.mail.yahoo.com>
+In-Reply-To: <20040514173556.5782.qmail@web50101.mail.yahoo.com>
 Errors-To: mesa3d-dev-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
 	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=unsubscribe>
@@ -18,88 +17,69 @@ List-Help: <mailto:mesa3d-dev-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
 	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=mesa3d-dev>
-Content-Type: text/plain; charset="iso-8859-1"
-To: dri-devel <dri-devel@lists.sourceforge.net>, mesa3d-dev <mesa3d-dev@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Alex Deucher <agd5f@yahoo.com>
+Cc: Sven Luther <sven.luther@wanadoo.fr>, Jon Smirl <jonsmirl@yahoo.com>, James Simmons <jsimmons@infradead.org>, Nicolas Souchu <nsouch@free.fr>, dri-devel <dri-devel@lists.sourceforge.net>, mesa3d-dev <mesa3d-dev@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Fri, May 14, 2004 at 11:40:04AM -0700, Jon Smirl wrote:
-> --- Ville Syrj=E4l=E4 <syrjala@sci.fi> wrote:
-> > > I said OpenGL is the only accelerated API available on Linux. Can y=
-ou name
-> > > another?
-> >=20
-> > DirectFB.
->=20
-> Does DirectFB work on anything beside Matrox now?
+On Fri, May 14, 2004 at 10:35:56AM -0700, Alex Deucher wrote:
+> > Notice that this is not really true, as there is no free OpenGL
+> > acceleration for any of the newer graphic cards coming out right now.
+> > The fastest graphic card with full free acceleration is the radeon
+> > 9000,
+> > which is now two generations old. This means that there is no
+> > acceleration outside of the x86 world, since neither ATI nor Nvidia
+> > are
+> > ready to build their proprietary drivers on anything else than x86. 
+> > 
+> 
+> There is the possiblity that graphics vendors may provide an open
+> source DRM and mode setting code and then closed source 3D libraries. 
+> this would at least allow you to at least get something on the screen. 
 
-It works on any card with a working fbdev driver (vga16fb excluded).=20
-Hardware acceleration is available on quite a few chips these days.
+Yes, that would be greatm but i have the feeling that they even see the
+dma buffer handling stuff as highly proprietary or something such.
 
-ati128  cyber5k  mach64  neomagic  nvidia  savage  tdfx
-cle266  i810     matrox  nsc       radeon  sis315
+> > As long as this doesn't change, stating that we have an accelerated
+> > API
+> > for OpenGL in linux is not only dead wrong, but is leading us in a
+> > dangerous direction, where we will depend on a non-free component in
+> > the
+> > kernel and were we are going to forget about graphic support on
+> > anything
+> > non-x86.
+> 
+> well what should we do then?  ignore graphics on linux since most
 
-That's the list of drivers in DirectFB cvs. Plus there is at least one=20
-driver outside the DirectFB tree.
+Well, what to do is a difficult thing, but the least we can do is not
+handle this as if everything is all right, and let declaration as the
+above pass without notice. Technically, it can even be argued that the
+binary-only drm modules are breaking the GPL, altough i know that Linus
+and the rest of the kernel crowd have decided not to pursue this.
 
-I use matrox and mach64 drivers daily. It's been a few years since I=20
-seriously used XFree86.
+So, pursue this issue as we are doing it, but clearly stating that the
+current situation without free low level drivers is not acceptable to
+us. I believe that we are now in a position to put some pressure to at
+least some of the graphic companies to release at least a partial
+integrated drm/fbdev module as free software, but this will not happen
+if we don push for it. (But then, i have a vested interest in this,
+since my main plateform is powerpc, both personally and proffesionnaly).
 
-> > > There is a little acceleration in framebuffer, but I don't know of =
-any
-> > > others. Also, software mesa works just fine to provide OpenGL on du=
-mb 2D
-> > cards.
-> >=20
-> > Using unaccelerated OpenGL for 2D rendering doesn't sound exatly usef=
-ul.=20
->=20
-> There is much more to 2D rendering in things like the Mac UI and Longho=
-rn than
-> can be accomplished with BitBlt. You need transforms, filters and alpha
-> blending. Hardware texturing is much faster than doing it in software. =
-Some of
-> the effects are achieved with pixel shaders. xserver features a fully c=
-omposited
-> window manager, it needs these features to have a fast response time.
->=20
-> OpenGL to me seems like the best pick for these reasons:
-> 1) with have a good open source version, mesa
-> 2) mesa supports a broad number of cards, basically everything there is=
- doc for
+> future graphics chips drivers closed source?  keep the same kludgey
+> xfree86 solution?  We can still provide a solution for non-x86 or chips
+> without 3D, it will just have to be software based (or marginally
+> accelerated using 2d). why re-invent openGL when we already have it? 
+> If we can provide a good system for graphics on linux perhaps more
+> vendors will use it.
 
-Just about as broad as DirectFB.
+Yes, but only if we don forget about non-x86 architectures, and don't
+conform us with a proprietary solution. Remember that many folk build
+the fbdev driver in the kernel to have early fbdev console, and this
+will not be possible with a x86 binary only module.
 
-> 3) OpenGL is a well published API, it is taught in universities and man=
-y books
-> are available
-> 4) It is likely that Nvidia and ATI will support standalone OpenGL stac=
-ks for
-> their high end hardware on Linux
-> 5) OpenGL is cross-platform. For example Cairo is being written with an=
- OpenGL
-> back end. OpenGL Cairo will run on Window and the Mac too. This will ma=
-ke Linux
-> apps more portable.
-> 6) The embedded market has OpenGL-ES which can run in less than 100K.
->=20
-> What would be reasons for picking another API?
+Friendly,
 
-DirectFB is good for a few reasons:
-- Input handling
-- Easy access to hardware overlays
-- YUV formats
-- Ease of porting DirectX applications
-- Good acceleration
-- Easy API / personal preference
-
-I'm not suggesting that everyone start using DirectFB. Everyong should be=
-=20
-able to use any API they want. The kernel should provide just enough to=20
-allow these APIs to be implemented.
-
---=20
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+Sven Luther
 
 
 -------------------------------------------------------

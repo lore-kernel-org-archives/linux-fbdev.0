@@ -1,43 +1,45 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: fbmem.c - fb_mmap
-Date: Fri, 20 Dec 2002 18:46:58 +0000 (GMT)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0212201845550.6471-100000@phoenix.infradead.org>
-References: <20021218030113.4999.qmail@web14901.mail.yahoo.com>
+From: Chris Larson <kergoth@handhelds.org>
+Subject: Re: backlight/frontlight
+Date: Fri, 20 Dec 2002 12:33:59 -0700
+Sender: linux-arm-kernel-admin@lists.arm.linux.org.uk
+Message-ID: <20021220193359.GB4550@rikers.org>
+References: <20021219193645.B25149@flint.arm.linux.org.uk> <Pine.LNX.4.44.0212201813390.6471-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from phoenix.infradead.org ([195.224.96.167])
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18PSBJ-0008TA-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 20 Dec 2002 10:47:33 -0800
-In-Reply-To: <20021218030113.4999.qmail@web14901.mail.yahoo.com>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Return-path: <linux-arm-kernel-admin@lists.arm.linux.org.uk>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44.0212201813390.6471-100000@phoenix.infradead.org>
+Errors-To: linux-arm-kernel-admin@lists.arm.linux.org.uk
+List-Help: <mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=help>
+List-Post: <mailto:linux-arm-kernel@lists.arm.linux.org.uk>
+List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
+	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
+List-Archive: <http://lists.arm.linux.org.uk/pipermail/linux-arm-kernel/>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jon Smirl <jonsmirl@yahoo.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: James Simmons <jsimmons@infradead.org>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Nicolas Pitre <nico@cam.org>, Frank Becker <fbecker@intrinsyc.com>, Chris Larson <kergoth@handhelds.org>, linux-arm-kernel@lists.arm.linux.org.uk, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+* James Simmons (jsimmons@infradead.org) wrote:
+> 
+> Oh. Could someone list all the approaches people toke to solve this 
+> problem. I like to find a solution that covers as many cases as possible.
 
-> fb_mmap contains an ifdef for every architecture on
-> Linux.  Is it possible to implement this using
-> something like ioremap_nocache() and avoid the ifdefs?
+James,
 
-Unfortunely no. We are dealing with special memory that has special needs 
-whcih vary from platform to platform.
+	As far as I know, the two that seem worth looking at, at the moment,
+are Russ Dill's implementation, which was posted to the LAK list in this
+thread, and Nicolas' implementation in the -pxa patches.
+There are obviously others out there, but said other implementations are
+individual hacks for certain machine types, and aren't generally useful.
 
+--
+Chris Larson
+kergoth at handhelds dot org
+OpenZaurus Project Maintainer - http://openzaurus.org/
 
-
--------------------------------------------------------
-This SF.NET email is sponsored by:  The Best Geek Holiday Gifts!
-Time is running out!  Thinkgeek.com has the coolest gifts for
-your favorite geek.   Let your fingers do the typing.   Visit Now.
-T H I N K G E E K . C O M        http://www.thinkgeek.com/sf/
+-------------------------------------------------------------------
+Subscription options: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+FAQ/Etiquette:       http://www.arm.linux.org.uk/armlinux/mailinglists.php

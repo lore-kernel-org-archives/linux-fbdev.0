@@ -1,24 +1,18 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: New fb.h header
-Date: Sun, 01 Feb 2004 12:03:38 +1100
+From: <rosemaryai@vip.sina.com>
+Subject: About framebuffer driver
+Date: Sun, 01 Feb 2004 09:38:33 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1075597418.4368.108.camel@gaston>
-References: <20040129122051.798dfcaa.akpm@osdl.org>
-	 <Pine.LNX.4.44.0401302353290.22830-100000@phoenix.infradead.org>
-	 <20040131164955.456d13e2.akpm@osdl.org>
+Message-ID: <20040201013833.23666.qmail@vip.sina.com.cn>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1An64d-0006jn-8B
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 31 Jan 2004 17:06:55 -0800
-Received: from gate.crashing.org ([63.228.1.57] ident=root)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1An64c-0007xD-RN
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 31 Jan 2004 17:06:54 -0800
-In-Reply-To: <20040131164955.456d13e2.akpm@osdl.org>
+	id 1An6ZM-0003qH-QD
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 31 Jan 2004 17:38:40 -0800
+Received: from [202.108.35.176] (helo=vip.sina.com.cn)
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
+	id 1An6ZM-00076T-2E
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 31 Jan 2004 17:38:40 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,30 +23,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>
-Cc: James Simmons <jsimmons@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Sun, 2004-02-01 at 11:49, Andrew Morton wrote:
-> James Simmons <jsimmons@infradead.org> wrote:
-> >
-> > This header patch fixes the issue of building userland apps with fb.h. It 
-> >  also makes struct fb_pixmap a internal kernel object. Please apply.
-> 
-> It breaks the ppc64 build.
-> 
-> 
-> 
-> drivers/video/cfbfillrect.c:141: warning: implicit declaration of function `__raw_writeq'
-> drivers/video/cfbfillrect.c:141: warning: implicit declaration of function `__raw_readq'
-> drivers/video/cfbimgblt.c: In function `color_imageblit':
-> drivers/video/cfbimgblt.c:110: warning: implicit declaration of function `__raw_readl'
-> drivers/video/cfbimgblt.c:122: warning: implicit declaration of function `__raw_writel'
+Hi,
 
-I'd say the bug is in the ppc64 headers... I'll check that out tomorrow
-with Anton.
 
-Ben.
 
+The kernel I am using is 2.4. When I copy test.bin to /dev/fbdir/0, which function does the Linux call?
+
+
+
+Yours Sincerely,
+
+
+
+Ai Chengshi
+
+===================================================================
 
 
 -------------------------------------------------------

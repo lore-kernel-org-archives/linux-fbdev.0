@@ -1,23 +1,21 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Otto Solares <solca@guug.org>
 Subject: Re: fbdv/fbcon pending problems
-Date: Wed, 25 Feb 2004 13:33:00 +1100
+Date: Tue, 24 Feb 2004 21:15:53 -0600
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1077676380.1129.55.camel@gaston>
-References: <Pine.LNX.4.44.0402250118210.24952-100000@phoenix.infradead.org>
-	 <1077672591.978.49.camel@gaston>  <20040225021808.GB17390@guug.org>
+Message-ID: <20040225031553.GC17390@guug.org>
+References: <20040224214106.GA17390@guug.org> <Pine.LNX.4.44.0402250118210.24952-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Avp62-0004Si-8S
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 18:48:26 -0800
-Received: from gate.crashing.org ([63.228.1.57] ident=root)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1Avoku-0000Tr-Hd
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 18:26:36 -0800
-In-Reply-To: <20040225021808.GB17390@guug.org>
+	id 1Avpem-0001y0-FM
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 19:24:20 -0800
+Received: from guug.galileo.edu ([168.234.203.30])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1AvpJc-0004YF-G6
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 19:02:28 -0800
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44.0402250118210.24952-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,38 +26,98 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Otto Solares <solca@guug.org>
-Cc: James Simmons <jsimmons@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+To: James Simmons <jsimmons@infradead.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
 
+On Wed, Feb 25, 2004 at 01:21:39AM +0000, James Simmons wrote:
+> > On the other side i see a lot of effort in the fbdev acceleration,
+> > it is nice but that effort should be better spent on fixing the layer,
+> > imo, the only user for acceleration is fbcon, any userland app that
+> > use fbdev disables that acceleration so it can map the vmem and ioregs,
+> > and do it's own voodoo if it wants acceleration.  That acceleration
+> > is not "exported" to user space.  I am working in a open source project
+> > that uses mesa-solo with fbdev and many limitations from the layer
+> > itself have been seen.
+> 
+> That is true so far for fillrect and copyarea functions. Imageblit will be 
+> used for read and writes on /dev/fbX. Also it is used for software 
+> cursors. 
 
-> Hmm, how does winxp and macosx get their respectives video modes,
-> what is missing in fbdev for that? MacOSX always gives you valid modes
-> including refresh rates per adaptor/monitor, WinXP always give you valid
-> modes and valid refresh rates for the video card, you actually
-> 'Apply' to test, most of the time it simply works.
+But if acceleration is not disabled you can't map the vmem and io regions.
 
-They do the same as I described. As you wrote, it works most of the
-time. That's the whole point. You submit a "proposed" configuration
-and gets back something .... most of the time, you do get back what
-you asked. But you _might_ not. In some cases, what will happen is
-that the "other" head will be affected. For example, enabling
-mirroring on a non-4.3 LCD laptop like a titanium powerbook while
-having a 4.3 display (CRT) plugged on the second output will cause
-the LCD to be resized to a 4.3 ratio in MacOS.
-So in this case, you get _more_ than what you asked.
+> > By 'fixing the layer' i mean some simple things that could make fbdev
+> > a real graphics solution for linux in the long term:
+> > 
+> > - fbdev_core (will handle the fbdev/sysfs registration, shared by all
+> >               drivers, most important is the modes handling interface).
+> 
+> Pretty much done.
+> 
+> > - fbdev_xxx  (driver for specific hw, it will only export the interesting
+> >               bits like vmem, ioregs, will handle mmap stuff and ioctl's,
+> >               video modes, no accel of any kind).
+> 
+> Have it.
+> 
+> > - fbdev_xxx_accel (acceleration hooks if any for xxx driver, optional module)
+> 
+> We need it for the above reasons.
+> 
+> > - fbdev_con  (handle console -- already modular in 2.6, will use accel hooks
+> >               if not NULL, optional).
+> 
+> We always need the accel hooks. Some how we have to draw the fonts.
 
-> Great! i think your idea is great, does that library will be xserver
-> dependant or will be an independent lib so others projects like mine
-> could benefit from it?  Any bits somewhere?  This alone could boom
-> and revolutionize the graphics solutions for linux.  A step in the
-> right direction for "World Domination" in the desktop field.
+Ok, i get your point about accel.  My point is that accel for userland is
+already there in Mesa-solo with the DRI accelerated drivers or with directfb,
+we just need the basic linux graphics infrastructure with the following
+functionality so specialized libraries (like the above) integrate nicely with
+the fbdev.
 
-It's meant to be independant of anything else but the actual low
-level driver model. Xserver would be one client, but others could
-enter the game of course ;)
+In summary:
 
-Ben.
+1. Card identification.
+	A simple bus_id will do this hopefully on any platform.
+2. Port identification.
+	I don't think exists a form to determine this with the current
+	functionality, MacOSx excells in this area.
+3. Modes list supported by the card per graphics port.
+	As BenH noted, filtered by constraints like mem bandwitdh, etc.
+	hopefully using EDID or any other monitor info present.
+4. Memory mappings.
+	We can currently map the vmem and io regions in userspace.  It
+	current exists problems with highmem but in short it simply works
+	for dumb chips or programable chips so specialized libs (like
+	mesa-solo) can do a decent job.
+5. sysfs interface.
+	So we can control the behavior with libsysfs to change video modes, get
+	card/monitor info, etc.
+6. DRM or card's command queue.
+	For use in the mentioned DRI drivers or any other project based on that.
+7) read/write/other_fs_ops/ioctl.
+	So current fbdev software works without problems.
+8) Graphics console.
 
+1) is trivial.
+2) 3) 5) and 6) is what needs work or is lacking currently.
+4) and 7) 8) are already done and was a major step for graphics on linux in
+   its time.
+
+I am by no means a graphics expert like you or BenH but i think the mentioned
+above should express general userland needs.
+
+> > We have now with 2.6 a good input and sound layers.  Just by fixing
+> > the graphics layer many interesting userland projects could be born.
+> 
+> I agree. The graphics layer is the last frontier.
+
+Yes, it will bring Linux on the Desktop an unavoidable reality, being part
+this basic functionality of the kernel is what one expects from a modern system
+but many could argument that is job for userland libs, probably true, anyway
+we need a (preferably graphics) console early in the boot process.
+
+-otto
 
 
 

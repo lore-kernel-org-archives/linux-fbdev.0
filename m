@@ -1,23 +1,25 @@
-From: Stefan Reinauer <stepan@suse.de>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: Problem with radeon new ROM probe code
-Date: Thu, 25 Sep 2003 14:10:25 +0200
+Date: Thu, 25 Sep 2003 15:41:27 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030925121025.GA30733@suse.de>
-References: <1064425449.15996.58.camel@gaston> <20030924181257.78090.qmail@web14914.mail.yahoo.com> <20030925053916.GA2068@iliana>
+Message-ID: <1064497287.694.8.camel@gaston>
+References: <1064425449.15996.58.camel@gaston>
+	 <20030924181257.78090.qmail@web14914.mail.yahoo.com>
+	 <20030925053916.GA2068@iliana>  <20030925121025.GA30733@suse.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1A2UyW-0002fi-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 25 Sep 2003 05:12:00 -0700
-Received: from ns.suse.de ([195.135.220.2] helo=Cantor.suse.de)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1A2WNz-000254-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 25 Sep 2003 06:42:23 -0700
+Received: from pentafluge.infradead.org ([213.86.99.235])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.22)
-	id 1A2UyV-0005Px-Dt
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Sep 2003 05:11:59 -0700
-Content-Disposition: inline
-In-Reply-To: <20030925053916.GA2068@iliana>
+	id 1A2WNx-0005fo-GJ
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Sep 2003 06:42:21 -0700
+In-Reply-To: <20030925121025.GA30733@suse.de>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -28,35 +30,30 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Sven Luther <sven.luther@wanadoo.fr>
-Cc: Jon Smirl <jonsmirl@yahoo.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michel DXnzer <michel@daenzer.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Stefan Reinauer <stepan@suse.de>
+Cc: Sven Luther <sven.luther@wanadoo.fr>, Jon Smirl <jonsmirl@yahoo.com>, Michel DXnzer <michel@daenzer.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-* Sven Luther <sven.luther@wanadoo.fr> [030925 07:39]:
-> On Wed, Sep 24, 2003 at 11:12:57AM -0700, Jon Smirl wrote:
-> > Is the 'Mac' card being used on a x86 machine?
-> > I thought the ROM code was compiled out on non-X86 machines.
+
+> Whether it's an Open Firmware card or not can be read from the PCI
+> headers stored in the ROM. Check the romheaders utility from OpenBIOS
+> CVS ( http://www.openbios.org/ )
 > 
-> Notice that not all powerpc boxes are in this case. The pegasos at least
-> includes an x86 emulator in the OF which runs the cards bios. I know
-> that the amigaone does the same. So testing for powerpc may well not be
-> enough for detecting OF cards.
+> Look at the code here:
+> http://cvs.openbios.org/cgi-dom/viewcvs.cgi/utils/romheaders.c?rev=1.2&content-type=text/vnd.viewcvs-markup
+> 
+> The program prints whether the rom is OpenFirmware, x86 or HP PA-Risc.
+> Note that graphics cards can theoretically contain ROM images for both
+> x86 and OF in one chip.
 
-Whether it's an Open Firmware card or not can be read from the PCI
-headers stored in the ROM. Check the romheaders utility from OpenBIOS
-CVS ( http://www.openbios.org/ )
+Yup, "Mac" cards can contain in theory both OF and x86 BIOS drivers, though
+I yet have to find a vendor doing that....
 
-Look at the code here:
-http://cvs.openbios.org/cgi-dom/viewcvs.cgi/utils/romheaders.c?rev=1.2&content-type=text/vnd.viewcvs-markup
+Thanks for the pointers to code, I'll dig that out.
 
-The program prints whether the rom is OpenFirmware, x86 or HP PA-Risc.
-Note that graphics cards can theoretically contain ROM images for both
-x86 and OF in one chip.
+Regards,
+Ben.
 
-  Stefan
--- 
-Architecture Team
-    SuSE Linux AG
+
 
 
 -------------------------------------------------------

@@ -1,23 +1,21 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: Re: [PATCH] kyrofb support
-Date: Wed, 14 Jan 2004 15:58:49 +1100
+Date: Wed, 14 Jan 2004 13:45:55 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1074056156.765.23.camel@gaston>
-References: <20040114013306.GB9515@linux-sh.org>
-	 <20040113180926.5fdb0824.akpm@osdl.org>
+Message-ID: <Pine.GSO.4.58.0401141345100.9503@waterleaf.sonytel.be>
+References: <20040114013306.GB9515@linux-sh.org> <20040113180926.5fdb0824.akpm@osdl.org>
+ <20040114022816.GA9990@linux-sh.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AgdDc-000298-8u
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 13 Jan 2004 21:05:28 -0800
-Received: from pentafluge.infradead.org ([213.86.99.235])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1AgdDb-0002lK-S1
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 13 Jan 2004 21:05:28 -0800
-In-Reply-To: <20040113180926.5fdb0824.akpm@osdl.org>
+	id 1AgkPQ-0000mE-4R
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Jan 2004 04:46:08 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1AgkPP-0000pK-LU
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Jan 2004 04:46:07 -0800
+In-Reply-To: <20040114022816.GA9990@linux-sh.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,30 +25,35 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>
-Cc: Paul Mundt <lethal@linux-sh.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@infradead.org>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Andrew Morton <akpm@osdl.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@infradead.org>
 
+On Tue, 13 Jan 2004, Paul Mundt wrote:
+> On Tue, Jan 13, 2004 at 06:09:26PM -0800, Andrew Morton wrote:
+> > In general, what are the fbdev drivers doing here btw?  It's very strange
+> > that some core file (fbmem.c) has to "know" about individual card drivers.
+> > It should be sufficient for the driver to just register itself with the core
+> > at the drivers's module_init() time.
+> >
+> This is done for device ordering as far as I recall. Devices listed first on
+> the command line are numbered first, with the rest coming up in the order that
+> they're listed in fb_drivers[].
 
-> In general, what are the fbdev drivers doing here btw?  It's very strange
-> that some core file (fbmem.c) has to "know" about individual card drivers. 
-> It should be sufficient for the driver to just register itself with the core
-> at the drivers's module_init() time.
-> 
-> Sigh.  Too late to fix that now I guess.
+Indeed. It's there so people can choose which is their primary display, if they
+have multiple cards.
 
-Pre-historical junk that should be killed for 2.7 (I hope).
+Gr{oetje,eeting}s,
 
-There isn't that a bad internal API change, the main of it is the allocation
-and freeing of the fbdev, adapting the driver to that should be trivial. I
-hope James will feed you with the new stuff asap now. Most of my concerns
-about the core stuff are adressed at this point (though I didn't look at
-individual drivers). The fbcon resize stuff is still broken in subtle ways,
-but that shouldn't prevent merging what we have now.
+						Geert
 
-Ben.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

@@ -1,23 +1,24 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: Hotplug blacklist and video devices
-Date: Fri, 18 Feb 2005 16:14:16 -0500
-Message-ID: <9e47339105021813146cf69759@mail.gmail.com>
-References: <9e4733910502181251ea2b95e@mail.gmail.com>
-	 <20050218210822.GB8588@nostromo.devel.redhat.com>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: Patch to add mode setting to sysfs
+Date: Sat, 19 Feb 2005 05:59:02 +0800
+Message-ID: <200502190559.07162.adaplas@hotpop.com>
+References: <9e4733910502161430ff1dad1@mail.gmail.com> <200502181542.50162.adaplas@hotpop.com> <9e473391050218084629ad0935@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D2FSE-00047s-Vv
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Feb 2005 13:14:26 -0800
-Received: from rproxy.gmail.com ([64.233.170.197])
+	id 1D2GAZ-0006P5-DK
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Feb 2005 14:00:15 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.61])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1D2FSD-0002qy-ES
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Feb 2005 13:14:26 -0800
-Received: by rproxy.gmail.com with SMTP id z35so811532rne
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Feb 2005 13:14:16 -0800 (PST)
-In-Reply-To: <20050218210822.GB8588@nostromo.devel.redhat.com>
+	id 1D2GAX-0006hZ-TD
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Feb 2005 14:00:15 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id 08D46E6FC91
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Feb 2005 21:59:14 +0000 (UTC)
+In-Reply-To: <9e473391050218084629ad0935@mail.gmail.com>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,23 +30,33 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Jon Smirl <jonsmirl@gmail.com>, lkml <linux-kernel@vger.kernel.org>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
+To: Jon Smirl <jonsmirl@gmail.com>, adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@www.infradead.org>
 
-On Fri, 18 Feb 2005 16:08:22 -0500, Bill Nottingham <notting@redhat.com> wrote:
-> Under Fedora (and RHEL), they're there because we generally
-> don't want to load them unless the user asked for them.
+On Saturday 19 February 2005 00:46, Jon Smirl wrote:
+> On Fri, 18 Feb 2005 15:42:50 +0800, Antonino A. Daplas
+>
+> <adaplas@hotpop.com> wrote:
+> > On Friday 18 February 2005 15:27, Jon Smirl wrote:
+> > > Next version of sysfs patch. Fills out more attributes. Feel free to
+> > > add code for missing implementations. Modifies fbcon to copy mode
+> > > structure instead of taking a reference to it. Modular fbdev is
+> > > separate patch. Ultimately we should be able to eliminate the IOCTL
+> > > code from fb_core and move it to a compatibility module.
+> >
+> > Okay, I think I can start coding starting from this patch.
+>
+> Do you want to take over the sysfs support? If so, I will make some
+> changes to the radeonfb driver that I need. That will keep up from
+> conflicting.
 
-Is there a specific reason why they are blocked? 
+Actually, I plan to do the fbcon part only, capturing the event. I'll use
+yours as the test bed, but you and James will have to agree on the best way
+to add sysfs support to the fb core.
 
-For example I'm looking at making changes to DRM such that DRM will
-require the corresponding framebuffer driver to be loaded. If you back
-up further this is part of fixing X so that it won't mess with the
-hardware from user space. Mode setting would come from the framebuffer
-driver instead of the X 2D XAA driver.
+Tony
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+
 
 
 -------------------------------------------------------

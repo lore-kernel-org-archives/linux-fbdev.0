@@ -1,19 +1,20 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [patch] framebuffer Kconfig -- add option
- for building cfb*.o (0/2)
-Date: Mon, 14 Feb 2005 13:23:37 +0100 (MET)
-Message-ID: <Pine.GSO.4.61.0502141322060.16209@waterleaf.sonytel.be>
+From: David Vrabel <dvrabel@arcom.com>
+Subject: [patch] Framebuffer kbuild -- add FB_SOFTWARE_CFB_OPS for building
+ cfb*.o (1/2)
+Date: Mon, 14 Feb 2005 12:43:22 +0000
+Message-ID: <42109CEA.4050302@arcom.com>
 References: <421096C6.3030105@arcom.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Content-Transfer-Encoding: 7bit
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D0fGV-0003ji-FD
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Feb 2005 04:23:47 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1D0fGT-0003dC-Pl
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Feb 2005 04:23:47 -0800
+	id 1D0fZa-0004qU-Cc
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Feb 2005 04:43:30 -0800
+Received: from webapps.arcom.com ([194.200.159.168])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1D0fZY-0000Yh-OH
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Feb 2005 04:43:30 -0800
 In-Reply-To: <421096C6.3030105@arcom.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -25,40 +26,52 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: David Vrabel <dvrabel@arcom.com>, linux-fbdev-devel list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Mon, 14 Feb 2005, David Vrabel wrote:
-> This set of two patches add a new option (FB_SOFTWARE_CFB_OPS) to the
-> framebuffer Kconfig to enable building the generic software cfbfillrect,
-> cfbcopyarea and cfbimageblt objects.  This cuts out a lot of stuff from
-> the Makefile and allows drivers in their own directory to be more
-> self-contained.
-> 
-> 1/2 -- add the FB_SOFTWARE_CFB_OPS option to Kconfig and Makefile
-> 2/2 -- make all drivers (where appropriate) select FB_SOFTWARE_CFB_OPS
-> 
-> Please consider applying, thanks.
+Add a FB_SOFTWARE_CFB_OPS option to the framebuffer Kconfig and
+Makefile.  This enables the building of the cfbfillrect, cfbcopyarea and
+cfbimageblt objects.
 
-Thanks, good idea!
+Signed-off-by: David Vrabel <dvrabel@arcom.com>
 
-But I'd prefer to have 3 separate options, since some drivers don't need all 3
-of them, e.g.:
-  - CONFIG_CFB_FILLRECT
-  - CONFIG_CFB_COPYAREA
-  - CONFIG_CFB_IMAGEBLT
+Index: linux-2.6-i386/drivers/video/Kconfig
+===================================================================
+--- linux-2.6-i386.orig/drivers/video/Kconfig	2005-02-14
+11:02:39.000000000 +0000
++++ linux-2.6-i386/drivers/video/Kconfig	2005-02-14 11:27:34.506113502 +0000
+@@ -38,6 +38,14 @@
+ 	  (e.g. an accelerated X server) and that are not frame buffer
+ 	  device-aware may cause unexpected results. If unsure, say N.
 
-Gr{oetje,eeting}s,
++config FB_SOFTWARE_CFB_OPS
++	tristate
++	depends on FB
++	default n
++	---help---
++	  This enables functions for some generic software drawing operations
+for drivers
++	  which don't provide their own (accelerated) ones.
++
+ config FB_MODE_HELPERS
+         bool "Enable Video Mode Handling Helpers"
+         depends on FB
+Index: linux-2.6-i386/drivers/video/Makefile
+===================================================================
+--- linux-2.6-i386.orig/drivers/video/Makefile	2005-02-14
+11:02:39.000000000 +0000
++++ linux-2.6-i386/drivers/video/Makefile	2005-02-14 11:28:49.062987325
++0000
+@@ -13,6 +13,8 @@
+ obj-$(CONFIG_PPC)                 += macmodes.o
+ endif
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
++obj-$(CONFIG_FB_SOFTWARE_CFB_OPS) += cfbfillrect.o cfbcopyarea.o
+cfbimgblt.o
++
+ # Hardware specific drivers go first
+ obj-$(CONFIG_FB_RETINAZ3)         += retz3fb.o
+ obj-$(CONFIG_FB_AMIGA)            += amifb.o c2p.o
 
 
 -------------------------------------------------------

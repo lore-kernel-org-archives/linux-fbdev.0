@@ -1,16 +1,18 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
 Subject: Re: FB model basic issues (WAS: radeon, apertures & memory mapping)
-Date: Thu, 17 Mar 2005 11:28:00 +1100
-Message-ID: <1111019280.15510.85.camel@gaston>
-References: <1110837171.5863.16.camel@gaston>
-	<1110838356.4003.548.camel@localhost> <1110839873.5673.41.camel@gaston>
-	<1110862777.4044.592.camel@localhost> <20050315060138.GA13064@sci.fi>
-	<1110926659.25201.11.camel@gaston> <20050315230522.GA1444@sci.fi>
-	<1110930551.649.47.camel@gaston> <20050316205511.GA18107@sci.fi>
-	<1111015676.7192.58.camel@gaston>  <20050317001409.GA8081@sci.fi>
+Date: Thu, 17 Mar 2005 02:47:13 +0200
+Message-ID: <20050317004713.GB8081@sci.fi>
+References: <1110839873.5673.41.camel@gaston>
+	<1110862777.4044.592.camel@localhost>
+	<20050315060138.GA13064@sci.fi> <4236C770.8020101@hispeed.ch>
+	<1110907029.4001.624.camel@localhost>
+	<1110942559.24296.107.camel@gaston> <20050316200808.GB6651@sci.fi>
+	<a728f9f90503161258181977fa@mail.gmail.com>
+	<20050316210812.GA19937@sci.fi> <1111015801.15509.62.camel@gaston>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20050317001409.GA8081@sci.fi>
+Content-Disposition: inline
+In-Reply-To: <1111015801.15509.62.camel@gaston>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
 	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
@@ -22,58 +24,44 @@ List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
 Sender: xorg-bounces@lists.freedesktop.org
 Errors-To: xorg-bounces@lists.freedesktop.org
 Content-Type: text/plain; charset="iso-8859-1"
-To: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Cc: Jon Smirl <jonsmirl@yahoo.com>, Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>, dri-devel@lists.sourceforge.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, xorg@lists.freedesktop.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>, Jon Smirl <jonsmirl@yahoo.com>, xorg@lists.freedesktop.org, Alex Deucher <alexdeucher@gmail.com>, dri-devel@lists.sourceforge.net
 
-On Thu, 2005-03-17 at 02:14 +0200, Ville Syrj=E4l=E4 wrote:
-> On Thu, Mar 17, 2005 at 10:27:56AM +1100, Benjamin Herrenschmidt wrote:
-> > On Wed, 2005-03-16 at 22:55 +0200, Ville Syrj=E4l=E4 wrote:
-> > > On Wed, Mar 16, 2005 at 10:49:11AM +1100, Benjamin Herrenschmidt wr=
-ote:
-> > > > In the meantime, can you tell me more about your arbitration sche=
-me ?
-> > >=20
-> > > There is a lock associated with the graphics card. The lock is alwa=
-ys=20
-> > > taken before programming the hardware. Other things wanting access =
-to the=20
-> > > hardware wait until the lock is released.
-> >=20
-> > Ok, so it would be easy to have directFB use an external arbiter with=
-out
-> > breaking existing clients ? It will need at least to use the vga arbi=
-ter
-> > that I'm about to finish, that should allow at least to have X on one
-> > card and directFB on another without conflict.
+On Thu, Mar 17, 2005 at 10:30:01AM +1100, Benjamin Herrenschmidt wrote:
+> On Wed, 2005-03-16 at 23:08 +0200, Ville Syrj=E4l=E4 wrote:
+> > On Wed, Mar 16, 2005 at 03:58:07PM -0500, Alex Deucher wrote:
 >=20
-> Is the vga arbiter required for something else besides access to some=20
-> legacy ports? DirectFB only uses legacy ports to wait for vsync if a=20
-> better method is not available.
+> > I haven't seen anyone coming forward with a design/code for the memor=
+y=20
+> > manager.
+> >=20
+> > In the meantime I'm assuming that people might want to make some use =
+of=20
+> > their dualhead cards...
+>=20
+> Are you aware that with the current fbdev API, there will simply be no
+> working use of dual head ? As soon as somebody will try to do 2
+> different things on the 2 heads, it will either lockup due to lack of
+> engine arbitration, or have wrong endianness, or whatever ...
 
-Yes. I need to extend the Arbiter API a bit in fact to deal with clients
-that don't "know" if the card is doing legacy decoding like you.
+I understand you can't have userspace program the accelerator while=20
+someone else is doing the same thing. Oh and I now understand that the=20
+same really applies to direct framebuffer access due to the swapper. I=20
+hadn't really thought about that issue before since I don't own a=20
+big-endian system. I really must try to get one...
 
-The problem is that unless the card you are using is not doing any
-legacy decoding (has been set not to decode legacy VGA IO ports and
-legacy VGA memory), trying to use another card in the system that does
-decode them requires switching off IO and MEM access on you. Even if you
-aren't actually using those legacy stuff, the simple fact that the card
-is decoding them mean it needs to be disabled.
+So basically to fix both issues we need some locks everyone must acquire=20
+before accessing the hardware.
 
-(In fact, it could be avoided in some cases where the card is under a
-different P2P bridge by just disabling VGA forwarding, but that's the
-aribter salad, as a client, you don't have to "know" that).
+With the current "mmap() registers and go" interface the accelerator lock=
+=20
+wouldn't actually guarantee anything but it would allow well behaving=20
+applications to share the accelerator. Good behaviour is already expected=
+=20
+from the applications anyway due to the direct access to hardware=20
+registers.
 
-So the arbiter provides calls to "lock" some resources and deals with
-eventually ping-pong'ing IOs. It's currently providing APIs to lock
-legacy IO and legacy MEM and to inform the arbiter that the card isn't
-decoding some or all of the legacy stuff (to put it out of the arbiter
-hands basically). It needs an addition to the API I posted for cases
-where you don't know if the card is doing legacy decoding, to indicate
-you want to access the normal memory/IO resources of the card, and
-implictely lock the legacy ones if they are beeing decoded. I'm working
-on it, I hope to have something to start playin with soon, there are
-some issues to deal with the kernel vga console though that i'm trying
-to iron out.
-
-Ben.
+--=20
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/

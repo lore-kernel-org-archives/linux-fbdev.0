@@ -1,18 +1,18 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: radeon framebuffer
-Date: 26 Jun 2003 10:15:20 +0200
+From: linux-fbdev-announce-admin@lists.sourceforge.net
+Subject: Your message to Linux-fbdev-announce awaits moderator approval
+Date: Thu, 26 Jun 2003 11:52:06 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1056615320.13642.74.camel@gaston>
-References: <200306232145.01589.wturkal@cbu.edu>
-	 <1056551922.13642.49.camel@gaston>  <200306251342.31473.wturkal@cbu.edu>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Message-ID: <E19VbrD-0001BX-00@sc8-sf-list2.sourceforge.net>
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from amarseille-201-1-1-152.w193-252.abo.wanadoo.fr ([193.252.38.152] helo=gaston)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19VRvY-0000P1-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 26 Jun 2003 01:16:21 -0700
-In-Reply-To: <200306251342.31473.wturkal@cbu.edu>
+Received: from sc8-sf-list2-b.sourceforge.net ([10.3.1.14] helo=sc8-sf-list2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19Vbqp-00028e-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 26 Jun 2003 11:52:07 -0700
+Received: from sc8-sf-list1-b.sourceforge.net ([10.3.1.13] helo=sc8-sf-list1.sourceforge.net)
+	by sc8-sf-list2.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19VbrD-0001BX-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 26 Jun 2003 11:52:31 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,27 +22,23 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Warren Turkal <wturkal@cbu.edu>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 2003-06-25 at 20:42, Warren Turkal wrote:
+Your mail to 'Linux-fbdev-announce' with the subject
 
-> Radeon Mobility 7500 in a laptop. Apparently, the monitor is connected through 
-> DVI. BTW, there was a fix for radeon screen blanking on DVI in the XFree86 
-> bugzilla at http://bugs.xfree86.org/cgi-bin/bugzilla/show_bug.cgi?id=26. I 
-> think you could probably use it to fix console blanking for the radeon.
-> 
-> BTW, I am not on the list.
+    Re: Application
 
-If it's a laptop, it's probably LVDS. I indeed changed the code to retreive
-the EDID from BIOS for laptops based on recent XFree driver, though I haven't
-updated the 2.5 codebase with that change yet.
+Is being held until the list moderator can review it for approval.
 
-Thanks for the URL for the blanking fix.
+The reason it is being held:
 
-Ben.
+    Message body is too big: 111484 bytes but there's a limit of 40 KB
 
+Either the message will get posted to the list, or you will receive
+notification of the moderator's decision.
 
 
 -------------------------------------------------------

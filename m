@@ -1,67 +1,102 @@
-From: Otto Solares <solca@guug.org>
-Subject: Re: [Linux-fbdev-devel] fbdv/fbcon pending problems
-Date: Tue, 24 Feb 2004 15:41:06 -0600
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20040224214106.GA17390@guug.org>
-References: <1077497593.5960.28.camel@gaston> <20040224023759.GA16499@guug.org> <Pine.GSO.4.58.0402240935090.3187@waterleaf.sonytel.be>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: fbdv/fbcon pending problems
+Date: Wed, 25 Feb 2004 01:21:39 +0000 (GMT)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.LNX.4.44.0402250118210.24952-100000@phoenix.infradead.org>
+References: <20040224214106.GA17390@guug.org>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.GSO.4.58.0402240935090.3187@waterleaf.sonytel.be>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1Avnsf-0005ec-Pr
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 17:30:33 -0800
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1AvnXc-0008JO-Mi
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 17:08:49 -0800
+In-Reply-To: <20040224214106.GA17390@guug.org>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
+To: Otto Solares <solca@guug.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
 
-On Tue, Feb 24, 2004 at 09:35:35AM +0100, Geert Uytterhoeven wrote:
-> On Mon, 23 Feb 2004, Otto Solares wrote:
-> > On Mon, Feb 23, 2004 at 11:53:14AM +1100, Benjamin Herrenschmidt wrote:
-> > - bus_id for each fbdev, so from userland became posible to identify
-> >   to which card we are controlling.  I know it should be exported via
-> >   sysfs but an ioctl should be really handy as when you program for
-> >   fbdev anyway you have to use ioctl's, just to get the bus_is will
-> >   be a pain use sysfs.
+
+> Sure, hopefully fbdev drivers became more 'intelligent', with just a
 > 
-> But the goal is to replace these ioctl()s by sysfs, too, isn't it?
+> echo "1024x768x16-75" > /sys/class/fbdev/0/geometry
+> 
+> they will compute internally the timings or get it from EDID and
+> glad the user with something correct for the hardware.
+> 
+> cat /sys/class/fbdev/0/modes
+> 
+> will give you the modes supported by the card.
 
-Sure, hopefully fbdev drivers became more 'intelligent', with just a
+Yes.
+ 
+> On the other side i see a lot of effort in the fbdev acceleration,
+> it is nice but that effort should be better spent on fixing the layer,
+> imo, the only user for acceleration is fbcon, any userland app that
+> use fbdev disables that acceleration so it can map the vmem and ioregs,
+> and do it's own voodoo if it wants acceleration.  That acceleration
+> is not "exported" to user space.  I am working in a open source project
+> that uses mesa-solo with fbdev and many limitations from the layer
+> itself have been seen.
 
-echo "1024x768x16-75" > /sys/class/fbdev/0/geometry
+That is true so far for fillrect and copyarea functions. Imageblit will be 
+used for read and writes on /dev/fbX. Also it is used for software 
+cursors. 
 
-they will compute internally the timings or get it from EDID and
-glad the user with something correct for the hardware.
+> By 'fixing the layer' i mean some simple things that could make fbdev
+> a real graphics solution for linux in the long term:
+> 
+> - fbdev_core (will handle the fbdev/sysfs registration, shared by all
+>               drivers, most important is the modes handling interface).
 
-cat /sys/class/fbdev/0/modes
+Pretty much done.
 
-will give you the modes supported by the card.
+> - fbdev_xxx  (driver for specific hw, it will only export the interesting
+>               bits like vmem, ioregs, will handle mmap stuff and ioctl's,
+>               video modes, no accel of any kind).
 
-On the other side i see a lot of effort in the fbdev acceleration,
-it is nice but that effort should be better spent on fixing the layer,
-imo, the only user for acceleration is fbcon, any userland app that
-use fbdev disables that acceleration so it can map the vmem and ioregs,
-and do it's own voodoo if it wants acceleration.  That acceleration
-is not "exported" to user space.  I am working in a open source project
-that uses mesa-solo with fbdev and many limitations from the layer
-itself have been seen.
+Have it.
 
-By 'fixing the layer' i mean some simple things that could make fbdev
-a real graphics solution for linux in the long term:
+> - fbdev_xxx_accel (acceleration hooks if any for xxx driver, optional module)
 
-- fbdev_core (will handle the fbdev/sysfs registration, shared by all
-              drivers, most important is the modes handling interface).
-- fbdev_xxx  (driver for specific hw, it will only export the interesting
-              bits like vmem, ioregs, will handle mmap stuff and ioctl's,
-              video modes, no accel of any kind).
-- fbdev_xxx_accel (acceleration hooks if any for xxx driver, optional module)
-- fbdev_con  (handle console -- already modular in 2.6, will use accel hooks
-              if not NULL, optional).
-- fbdev_xxx_drm (will handle the DRM for xxx using hooks from fbdev, so we
-              could have just a single entity inside the kernel handling a
-              specific device, and not the current mess within fbdev and
-              drm, optional).
+We need it for the above reasons.
 
-We have now with 2.6 a good input and sound layers.  Just by fixing
-the graphics layer many interesting userland projects could be born.
+> - fbdev_con  (handle console -- already modular in 2.6, will use accel hooks
+>               if not NULL, optional).
 
--otto
+We always need the accel hooks. Some how we have to draw the fonts.
+
+> - fbdev_xxx_drm (will handle the DRM for xxx using hooks from fbdev, so we
+>               could have just a single entity inside the kernel handling a
+>               specific device, and not the current mess within fbdev and
+>               drm, optional).
+
+That will be the future.
+
+> We have now with 2.6 a good input and sound layers.  Just by fixing
+> the graphics layer many interesting userland projects could be born.
+
+I agree. The graphics layer is the last frontier.
+
+
+
+
+-------------------------------------------------------
+SF.Net is sponsored by: Speed Start Your Linux Apps Now.
+Build and deploy apps & Web services for Linux with
+a free DVD software kit from IBM. Click Now!
+http://ads.osdn.com/?ad_id=1356&alloc_id=3438&op=click

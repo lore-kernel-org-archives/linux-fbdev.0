@@ -1,20 +1,25 @@
-From: Mail Delivery Subsystem <MAILER-DAEMON@aol.com>
-Subject: Returned mail: User unknown
-Date: Wed, 7 Jul 2004 11:44:55 -0400 (EDT)
+From: amavisd-new <postmaster@dns1.netsurf.it>
+Subject: VIRUS (Worm.SomeFool.P) IN YOUR MAIL
+Date: Thu,  8 Jul 2004 10:56:06 +0200 (CEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200407071544.LAB02413@rly-yh03.mx.aol.com>
+Message-ID: <VS13145-06@dns1>
+References: <20040708085553.A6CB8228258@mailhub.netsurf.it>
 Mime-Version: 1.0
 Content-Type: multipart/report; report-type=delivery-status;
-	boundary="LAB02413.1089215095/rly-yh03.mx.aol.com"
+    boundary="----------=_1089276966-13145-9"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BiEbk-0002BN-0W
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 07 Jul 2004 08:45:16 -0700
-Received: from omr-d06.mx.aol.com ([205.188.156.71])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1BiEbj-0001mU-IQ
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 07 Jul 2004 08:45:15 -0700
+	id 1BiUgK-0001M6-0C
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Jul 2004 01:55:04 -0700
+Received: from dns1.netsurf.it ([212.110.52.2] helo=mailhub.netsurf.it)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
+	id 1BiUgJ-0001gI-At
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Jul 2004 01:55:03 -0700
+Received: from localhost (unknown [127.0.0.1])
+	by mailhub.netsurf.it (Postfix) with ESMTP id 062202282A1
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu,  8 Jul 2004 08:56:06 +0000 (UTC)
+In-Reply-To: <20040708085553.A6CB8228258@mailhub.netsurf.it>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,77 +31,81 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 To: linux-fbdev-devel@lists.sourceforge.net
 
-This is a MIME-encapsulated message
+This is a multi-part message in MIME format...
 
---LAB02413.1089215095/rly-yh03.mx.aol.com
+------------=_1089276966-13145-9
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-The original message was received at Wed, 7 Jul 2004 11:44:34 -0400 (EDT)
-from host137-212.pool81115.interbusiness.it [81.115.212.137]
+VIRUS ALERT
 
+Our virus checker found
+    virus: Worm.SomeFool.P
+in your email to the following recipient:
+-> ometti.while1.com@mailhub.netsurf.it
 
-*** ATTENTION ***
+Delivery of the email was stopped!
 
-Your e-mail is being returned to you because there was a problem with its
-delivery.  The address which was undeliverable is listed in the section
-labeled: "----- The following addresses had permanent fatal errors -----".
+Please check your system for viruses,
+or ask your system administrator to do so.
 
-The reason your mail is being returned to you is listed in the section
-labeled: "----- Transcript of Session Follows -----".
-
-The line beginning with "<<<" describes the specific reason your e-mail could
-not be delivered.  The next line contains a second error message which is a
-general translation for other e-mail servers.
-
-Please direct further questions regarding this message to your e-mail
-administrator.
-
---AOL Postmaster
-
-
-
-   ----- The following addresses had permanent fatal errors -----
-<ralphwm@aol.com>
-
-   ----- Transcript of session follows -----
-... while talking to air-yh04.mail.aol.com.:
->>> RCPT To:<ralphwm@aol.com>
-<<< 550 MAILBOX NOT FOUND
-550 <ralphwm@aol.com>... User unknown
-
---LAB02413.1089215095/rly-yh03.mx.aol.com
-Content-Type: message/delivery-status
-
-Reporting-MTA: dns; rly-yh03.mx.aol.com
-Arrival-Date: Wed, 7 Jul 2004 11:44:34 -0400 (EDT)
-
-Final-Recipient: RFC822; ralphwm@aol.com
-Action: failed
-Status: 5.1.1
-Remote-MTA: DNS; air-yh04.mail.aol.com
-Diagnostic-Code: SMTP; 550 MAILBOX NOT FOUND
-Last-Attempt-Date: Wed, 7 Jul 2004 11:44:55 -0400 (EDT)
-
---LAB02413.1089215095/rly-yh03.mx.aol.com
-Content-Type: text/rfc822-headers
-
-Received: from  aol.com (host137-212.pool81115.interbusiness.it [81.115.212.137]) by rly-yh03.mx.aol.com (v100.23) with ESMTP id MAILRELAYINYH36-2b840ec1a5149; Wed, 07 Jul 2004 11:44:19 -0400
+For your reference, here are headers from your email:
+------------------------- BEGIN HEADERS -----------------------------
+Received: from while1.com (unknown [61.154.14.103])
+	by mailhub.netsurf.it (Postfix) with ESMTP id A6CB8228258
+	for <ometti@while1.com>; Thu,  8 Jul 2004 08:55:53 +0000 (UTC)
 From: linux-fbdev-devel@lists.sourceforge.net
-To: ralphwm@aol.com
-Subject: Mail Delivery (failure ralphwm@aol.com)
-Date: Wed, 7 Jul 2004 17:44:52 +0200
+To: ometti@while1.com
+Subject: Mail Delivery (failure ometti@while1.com)
+Date: Thu, 8 Jul 2004 16:55:36 +0800
 MIME-Version: 1.0
 Content-Type: multipart/related;
 	type="multipart/alternative";
 	boundary="----=_NextPart_000_001B_01C0CA80.6B015D10"
 X-Priority: 3
 X-MSMail-Priority: Normal
-X-AOL-IP: 81.115.212.137
-X-AOL-SCOLL-SCORE: 1:XXX:XX
-X-AOL-SCOLL-URL_COUNT: 1
-Message-ID: <200407071144.2b840ec1a5149@rly-yh03.mx.aol.com>
+Message-Id: <20040708085553.A6CB8228258@mailhub.netsurf.it>
+-------------------------- END HEADERS ------------------------------
 
---LAB02413.1089215095/rly-yh03.mx.aol.com--
+------------=_1089276966-13145-9
+Content-Type: message/delivery-status
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Content-Description: Delivery error report
 
+Reporting-MTA: dns; dns1
+Received-From-MTA: smtp; mailhub.netsurf.it ([127.0.0.1])
+Arrival-Date: Thu,  8 Jul 2004 10:56:05 +0200 (CEST)
+
+Final-Recipient: rfc822; ometti.while1.com@mailhub.netsurf.it
+Action: failed
+Status: 5.7.1
+Diagnostic-Code: smtp; 550 5.7.1 Message content rejected, id=13145-06 - VIRUS: Worm.SomeFool.P
+Last-Attempt-Date: Thu,  8 Jul 2004 10:56:06 +0200 (CEST)
+
+------------=_1089276966-13145-9
+Content-Type: text/rfc822-headers
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Content-Description: Undelivered-message headers
+
+Received: from while1.com (unknown [61.154.14.103])
+	by mailhub.netsurf.it (Postfix) with ESMTP id A6CB8228258
+	for <ometti@while1.com>; Thu,  8 Jul 2004 08:55:53 +0000 (UTC)
+From: linux-fbdev-devel@lists.sourceforge.net
+To: ometti@while1.com
+Subject: Mail Delivery (failure ometti@while1.com)
+Date: Thu, 8 Jul 2004 16:55:36 +0800
+MIME-Version: 1.0
+Content-Type: multipart/related;
+	type="multipart/alternative";
+	boundary="----=_NextPart_000_001B_01C0CA80.6B015D10"
+X-Priority: 3
+X-MSMail-Priority: Normal
+Message-Id: <20040708085553.A6CB8228258@mailhub.netsurf.it>
+
+------------=_1089276966-13145-9--
 
 
 -------------------------------------------------------

@@ -1,21 +1,21 @@
-From: Jurriaan <thunder7@xs4all.nl>
-Subject: Re: Computer with 1GB and radeonfb
-Date: Sat, 31 May 2003 07:42:13 +0200
+From: Sven Luther <sven.luther@wanadoo.fr>
+Subject: radeonfb on pegasos powerpc motherboard and X endianess problem
+Date: Wed, 4 Jun 2003 16:54:23 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030531054213.GA7494@middle.of.nowhere>
-References: <elmo105432563416005480015305@arbeitspferd>
-Reply-To: thunder7@xs4all.nl
+Message-ID: <20030604145423.GA22876@iliana>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from smtpzilla5.xs4all.nl ([194.109.127.141])
+Received: from smtp3.wanadoo.fr ([193.252.22.25] helo=mwinf0601.wanadoo.fr)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19Lz8q-0006vA-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 30 May 2003 22:42:56 -0700
-Received: from zeeotter.xs4all.nl (zeeotter.xs4all.nl [80.126.31.149])
-	by smtpzilla5.xs4all.nl (8.12.9/8.12.9) with ESMTP id h4V5gb2B049152
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 31 May 2003 07:42:53 +0200 (CEST)
+	id 19NZer-0002M3-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 04 Jun 2003 07:54:33 -0700
+Received: from iliana (unknown [81.49.168.167])
+	by mwinf0601.wanadoo.fr (SMTP Server) with ESMTP id 89FF03400159
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed,  4 Jun 2003 16:54:24 +0200 (CEST)
+Received: from luther by iliana with local (Exim 3.36 #1 (Debian))
+	id 19NZeh-0005yF-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 04 Jun 2003 16:54:23 +0200
 Content-Disposition: inline
-In-Reply-To: <elmo105432563416005480015305@arbeitspferd>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,80 +27,56 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Martin Sieper <msi@ngi-box.de>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-From: Martin Sieper <msi@ngi-box.de>
-Date: Fri, May 30, 2003 at 10:13:54PM +0200
-> Hello developers,
-> 
-> I have a P4 computer with 1GB of RAM and a Radeon 9100 and I'm
-> using linux 2.4.20.
-> 
-> I had try the vesafb but it's failed. OK I've found a
-> patch for big memory on this list  and now vasafb works fine.
-> 
-> The radeonfb doesn't work. OK I've found these patch
-> radeonfb-041103-2.4.20.diff also on this list but the
-> radeonfb doesn't work:
-> 
-> May 30 13:22:22 arbeitspferd kernel: radeonfb_pci_register BEGIN
-> May 30 13:22:22 arbeitspferd kernel: radeonfb: ref_clk=2700, ref_div=12, xclk=20000 from BIOS
-> May 30 13:22:22 arbeitspferd kernel: radeonfb: probed DDR SGRAM 131072k videoram
-> May 30 13:22:22 arbeitspferd kernel: BIOS 4 scratch = 2000002
-> May 30 13:22:22 arbeitspferd kernel: FP_GEN_CNTL: 0, FP2_GEN_CNTL: 8
-> May 30 13:22:22 arbeitspferd kernel: TMDS_TRANSMITTER_CNTL: 10000082, TMDS_CNTL: 1000000, LVDS_GEN_CNTL: 0
-> May 30 13:22:22 arbeitspferd kernel: DAC_CNTL: ff604002, DAC_CNTL2: 0, CRTC_GEN_CNTL: 2000200
-> May 30 13:22:22 arbeitspferd kernel: radeonfb: cannot map FB
-> 
-> I think it's also a big memory problem like the vesafb.
-> I'm not a kernel hacker, can someone help me please?
-> 
-There were two patches floating around - one to limit the amount of
-reserved memory, and one to increase the amount of kernel memory you can
-reserve.
+Hello,
 
-The first one probably only affects the vesafb-driver. You could adapt
-it to the radeonfb-driver, just search for the correct lines in the
-radeonfb source and change them like the patch changes them.
-There's nothing like booting a kernel whose sources you've changed
-yourself to make you feel the power of open source :-)
+I finally have a working pegasos motherboard as well as a working kernel
+with a 1.6 radeonfb. I have also installed Daniel Stone's X 4.3.0
+debian/sid packages, and notice the following :
 
-The second one should also work with the radeonfb driver. It looks
-something like this:
+  1) radeonfb works fine in 8bpp and 32bpp but depth 15 and 16 only give
+  me some very dark grey.
 
-====================================================================
-This means with "mem=512M", you will probably have about 500M of
-vmalloc space, which is more than enough to ioremap the framebuffer.
+  2) when running X with the UseFBDev option the colors are bad, i guess
+  it is an endianess problem. (with and without accel)
 
-With the full 1 GB of memory, you might think that there would be no
-vmalloc space available at all.  However, <asm/page.h> defines a
-constant VMALLOC_RESERVE (which by default is 128 MB), and the kernel
-makes sure that there is at least this much vmalloc space available.
-However, by the time you load the module, at least some of this space
-has been consumed, so the ioremap fails.  (If nothing else uses
-vmalloc space, just loading a module will call vmalloc() to get space
-for the module to be loaded into!)
+  3) When running X without the UseFBDev option, the colors are good,
+  but i get garbage when i return to the console. Not exactly garbage,
+  at first it is ok, but when i enter a line or somehow pan the screen,
+  the corruption start. Doing a vt switch and back redraws a clean
+  screen.
 
-One not very good way for you to proceed would be to change the
-definition of VMALLOC_RESERVE from (128 << 20) to something like (256
-<< 20), which should leave the driver room to ioremap the framebuffer.
-This is a little ugly.  However, I don't see why a framebuffer driver
-would need to ioremap _all_ of a video card's memory -- so a better
-solution would be to fix the driver to only ioremap what it needs to.
-=====================================================================
+So, i think something is wrong. The kernel was forked around the
+2.4.18-rc4 time in a messy way, i am actually working on bringing the
+patch in sync with the newer ppc trees. Matroxfb also had problems and
+Petr told me that it probably was an endianess issue back then. I am
+using a Radeon 9000 board.
 
-HTH,
-Jurriaan
--- 
-REAL LIFE MANAGEMENT 'DILBERT QUOTATIONS':
-4: This project is so important, we can't let things that are more
-   important interfere with it. (Advertising/Marketing manager, United
-   Parcel Service)
-Debian (Unstable) GNU/Linux 2.5.70 4112 bogomips load av: 0.38 0.13 0.11
+So, since this is a pegasos, based on the pop specification, which in
+turn are related to the chrp ones, and i was told that most chrp
+motherboard did endianess inversion in the northbridge or something
+such, and i believe that the pegasos doesn't do so, is it possible that
+this is the cause, and that XFree86 know how to program the graphic card
+to do endianess conversion, and fbdev knows not, or maybe that the
+XFree86 radeon driver doesn't know how to act exactly and accidentally
+reverts the endianess conversion or something such.
+
+Using the fbdev driver in xfree86, i get a seemingly working X, but the
+background X image is yellowish and the mode is not set correctly it is
+correct, but the image is a bit smaller than the screen, and centered or
+moved to the right.
+
+Does someone know with more exactitude what the situation is exactly
+with regard the kernel and endianess conversion with the different
+powerpc subarches.
+
+Friendly,
+
+Sven Luther
 
 
 -------------------------------------------------------
-This SF.net email is sponsored by: eBay
-Get office equipment for less on eBay!
-http://adfarm.mediaplex.com/ad/ck/711-11697-6916-5
+This SF.net email is sponsored by:  Etnus, makers of TotalView, The best
+thread debugger on the planet. Designed with thread debugging features
+you've never dreamed of, try TotalView 6 free at www.etnus.com.

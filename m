@@ -1,17 +1,18 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: clipping
-Date: Fri, 10 Jan 2003 19:39:47 +0000 (GMT)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: LCD scaling type
+Date: 10 Jan 2003 20:42:24 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0301101936110.18287-100000@phoenix.infradead.org>
-References: <Pine.GSO.4.21.0301092242210.8148-100000@vervain.sonytel.be>
+Message-ID: <1042227743.705.22.camel@zion.wanadoo.fr>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18X51E-0000px-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Jan 2003 11:40:41 -0800
-In-Reply-To: <Pine.GSO.4.21.0301092242210.8148-100000@vervain.sonytel.be>
+Received: from amarseille-201-1-3-14.abo.wanadoo.fr ([193.253.250.14] helo=zion.wanadoo.fr)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18X53C-0001Vo-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Jan 2003 11:42:42 -0800
+Received: from benh by zion.wanadoo.fr with local (Exim 3.36 #1 (Debian))
+	id 18X52u-0000Gs-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Jan 2003 20:42:24 +0100
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,38 +22,32 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Antonino Daplas <adaplas@pol.net>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+Hi !
 
-> > I thought about this. Originally I did have this function but removed it.
-> > WHat do you think Geert?
-> 
-> Yes, that's OK.
-> 
-> But I was most concerned about fb_ops.fb_imageblit(), since clipping impacts
-> fb_image.data as well. IIRC, all (most?) current clipping implementations
-> modify fb_image.{dx,dy,width,height} only, without updating fb_image.data.
+When setting a mode on an LCD display that is not exactly the
+native mode of that display, we can, on some chips, setup a
+scaler. However, most of the time, we have 2 difference choices
+for setting up this scaler: It can preserve or not preserve
+the aspect ratio. A typical example is the titnium powerbook's 1152x768
+mode. If I set it to 1024x768, I can get either horizontal scaling (not
+preserving aspect ratio) or no scaling with black bars on left & right
+(preserving aspect ratio).
 
-Good point. Of course we could ignore pieces of data in that image instead 
-of altering the data. Altering the entire data would be expensive.
+While in most case you actually want to preserve the aspect ratio, it
+would still I beleive make sense to let the user choose it. 
 
-> > > The other option (which I don't like) is just to check the passed
-> > > fb_var_screeninfo in the put_var ioctl against the current console
-> > > window size.  But this is not foolproof as we will not be sure of the
-> > > resulting window size _after_ the fb_set_var() call.
-> > 
-> > Yuck!!! The other way is better.
-> 
-> Well, in between the calls to fb_ops.fb_check_var() and fb_ops.set_par() you
-> can still perform that check. But it's indeed ugly.
+Could we define one of the reserved fields in fb_var_screeninfo as
+beeing a "flags" field for such things ? There are a couple of other
+things that we may want to stuff into such a bitfield later, I'd suggest
+reserving one 32 bits field for such flags.
 
-Altering to the framebuffer via /dev/fb that would effect the tty should 
-not remain after the final close of /dev/fb. Instead the console should 
-reset to its previous state before we first opened /dev/fb.
+Ben.
 
+-- 
+Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 
 -------------------------------------------------------

@@ -1,22 +1,21 @@
-From: Sven Luther <sven.luther@wanadoo.fr>
-Subject: Re: tdfx & multiple voodoo cards : supposed to work ?
-Date: Thu, 30 Oct 2003 15:31:53 +0100
+From: "Richard Drummond" <evilrich@rcdrummond.net>
+Subject: [PATCH] Multi-head fix for tdfxfb driver
+Date: Thu, 30 Oct 2003 15:46:33 -0000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20031030143153.GA9070@iliana>
-References: <20031030140342.05AEC15DCC@mail03.powweb.com>
+Message-ID: <20031030154638.28D3315D57@mail03.powweb.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1AFDqH-0007PU-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 30 Oct 2003 06:32:05 -0800
-Received: from smtp6.wanadoo.fr ([193.252.22.25] helo=mwinf0604.wanadoo.fr)
+	id 1AFF0L-0001V8-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 30 Oct 2003 07:46:33 -0800
+Received: from mail03.powweb.com ([63.251.216.36])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AFDqC-0004aZ-HM
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 30 Oct 2003 06:32:00 -0800
+	id 1AFF0L-0008Gt-Ch
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 30 Oct 2003 07:46:33 -0800
 Content-Disposition: inline
-In-Reply-To: <20031030140342.05AEC15DCC@mail03.powweb.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,46 +26,20 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Richard Drummond <evilrich@rcdrummond.net>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Sven Luther <sven.luther@wanadoo.fr>
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>, James Simmons <jsimmons@infradead.org>
 
-On Thu, Oct 30, 2003 at 02:03:38PM -0000, Richard Drummond wrote:
-> Hi Sven
-> 
-> > Mmm, that sounds nice. do you have OF based drivers for them in your
-> > mac ? I need to port the pegasos patches to 2.6.x first though.
-> 
-> Yes. They are both OF cards and both are initialized by OF. Your cards have a
-> VGA BIOS? Well, I guess that shouldn't be a problem. The Peggy's BIOS
-> emulator must be able to cope with I/O ports not being in the usual (x86)
-> place - because chances are they won't be anyway even for a single card. Does
-> the Pegasos boot the BIOS on a secondardy gfx card automatically? If not,
+Hi All
 
-I am not sure, i think it does, at least in the devel tree.
+This patch (against 2.6.0-test9) corrects a bug in the tdfxfb driver with
+regard to multi-head set-ups. The driver was stomping all over its default
+fb_fix_screeninfo struct (the global, tdfx_fix) when initializing a card -
+which could potentially causes problems when the time comes to set up the
+next card. This fix makes it copy tdfx_fix first and modify only that copy.
 
-> you're back to the usual x86 problem of having to soft-boot the BIOS
-> yourself. Which will be a problem for you because I suppose the BIOS emulator
-> isn't accessible post-boot. However, it should be possible to initialize a
+Cheers,
+Rich
 
-But then, i have access to the OF sources, so ...
-But then again, i am not much in x86 emulation stuff.
-
-> second Voodoo card without using its BIOS, but I've no idea how easy or
-> difficult that might be. Fun and games. ;-)
-
-Thanks for the info, i will be looking into this.
-
-> Of course, you have to get 2.6 working first or hack the 2.4 driver for
-> multi-head support . . .
-
-Should not be that much difficult, the only thing stopping me from doing
-it was the fact that i had heard no positive records of radeonfb
-working in the ppc tree and was busy with other stuff.
-
-Friendly,
-
-Sven Luther
 
 
 -------------------------------------------------------

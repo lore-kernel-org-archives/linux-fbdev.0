@@ -1,158 +1,67 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] ppc32: uninorth-agp suspend support
-Date: Wed, 02 Mar 2005 09:04:12 +1100
-Message-ID: <1109714652.5611.26.camel@gaston>
-References: <1109651140.7669.17.camel@gaston>
-	 <20050301212347.GB2129@elf.ucw.cz>
+Subject: Re: [PATCH] sysfs support for fbdev
+Date: Wed, 02 Mar 2005 10:49:00 +1100
+Message-ID: <1109720940.5611.57.camel@gaston>
+References: <9e47339105030102003ee47879@mail.gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-In-Reply-To: <20050301212347.GB2129@elf.ucw.cz>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1D6H9D-0007Zs-4N
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 01 Mar 2005 15:51:27 -0800
+Received: from gate.crashing.org ([63.228.1.57])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1D6H8x-00079d-7m
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 01 Mar 2005 15:51:26 -0800
+Received: from gaston (localhost [127.0.0.1])
+	by gate.crashing.org (8.12.8/8.12.8) with ESMTP id j21NnjgJ018668
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 1 Mar 2005 17:49:46 -0600
+In-Reply-To: <9e47339105030102003ee47879@mail.gmail.com>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andrew Morton <akpm@osdl.org>, Linux Kernel list <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tue, 2005-03-01 at 22:23 +0100, Pavel Machek wrote:
-> Hi!
+On Tue, 2005-03-01 at 05:00 -0500, Jon Smirl wrote:
+> Not finished yet but here's an update.
 > 
-> > (This is for -mm, to be merged along with the aty128fb and radeonfb
-> > related patches).
-> > 
-> > This patch adds suspend/resume support to the Apple UniNorth AGP bridge
-> > to make sure AGP is properly disabled when the machine goes to sleep.
-> > Without this, the r300 based laptops will fail to wakeup from sleep when
-> > using the new experimental r300 DRI driver. It should also improve
-> > reliablility in general with other chips.
+> Merges Antonio's fbcon support
+> Creates monitor device inside of fbdev
+> Creates two fbdev devices for radeonfb
 > 
-> > --- linux-work.orig/drivers/char/agp/uninorth-agp.c	2005-03-01 13:53:32.000000000 +1100
-> > +++ linux-work/drivers/char/agp/uninorth-agp.c	2005-03-01 14:36:54.000000000 +1100
-> > @@ -155,6 +161,56 @@
-> >  	uninorth_tlbflush(NULL);
-> >  }
-> >  
-> > +#ifdef CONFIG_PM
-> > +static int agp_uninorth_suspend(struct pci_dev *pdev, u32 state)
+> The changes in class.c are temporary GregKH promises a real fix soon.
+> Patch is 1000+ lines so I made it an attachment.
 > 
-> pm_message_t state, please.
+> Making the monitor device inside of the fbdev allows hotplug to work
+> for monitors. Now all I need to do is hook up the radeon interrupt.
+> When finished, unplug the monitor, get interrupt, build monitor
+> device, get hotplug event, helper builds modelist, set modelist to
+> fbdev, this causes sysfs attribute change event, hal then dbus hears
+> this, X rebuilds the display. Still a few weeks of work to go.
+> 
+> If anyone wants to help implement some of the other attributes, send
+> me a patch and I will incorporate it.
 
-Oops :) 
+I can already get some of the radeonfb bits in for 2.6.12, that will
+make things easier. I'll let you know.
 
-From paulus@samba.org Mon Feb 28 18:49:35 2005
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [203.10.76.45]) by gate.crashing.org
-	(8.12.8/8.12.8) with ESMTP id j210nZgJ030407 for
-	<benh@kernel.crashing.org>; Mon, 28 Feb 2005 18:49:35 -0600
-Received: by ozlabs.org (Postfix, from userid 1003) id 0B4B767A75; Tue,  1
-	Mar 2005 11:50:51 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <16931.48662.891571.16324@cargo.ozlabs.ibm.com>
-Date: Tue, 1 Mar 2005 11:57:58 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: benh@kernel.crashing.org
-Subject: agp sleep patch
-X-Mailer: VM 7.19 under Emacs 21.3.1
-X-Spam-Checker-Version: SpamAssassin 3.0.1 (2004-10-22) on gate.crashing.org
-X-Spam-Level: 
-X-Spam-Status: No, score=-3.3 required=5.0 tests=AWL,BAYES_00 autolearn=ham
-	version=3.0.1
-Status:   
-X-Evolution-Source: pop://benh@localhost:10110
-Content-Transfer-Encoding: 8bit
+Ben.
 
-Index: linux-work/drivers/char/agp/uninorth-agp.c
-===================================================================
---- linux-work.orig/drivers/char/agp/uninorth-agp.c	2005-03-01 13:53:32.000000000 +1100
-+++ linux-work/drivers/char/agp/uninorth-agp.c	2005-03-02 09:01:00.000000000 +1100
-@@ -6,6 +6,7 @@
- #include <linux/init.h>
- #include <linux/pagemap.h>
- #include <linux/agp_backend.h>
-+#include <linux/delay.h>
- #include <asm/uninorth.h>
- #include <asm/pci-bridge.h>
- #include "agp.h"
-@@ -51,6 +52,11 @@
- 
- static void uninorth_cleanup(void)
- {
-+	u32 tmp;
-+
-+	pci_read_config_dword(agp_bridge->dev, UNI_N_CFG_GART_CTRL, &tmp);
-+	if (!(tmp & UNI_N_CFG_GART_ENABLE))
-+		return;
- 	pci_write_config_dword(agp_bridge->dev, UNI_N_CFG_GART_CTRL,
- 			UNI_N_CFG_GART_ENABLE | UNI_N_CFG_GART_INVAL);
- 	pci_write_config_dword(agp_bridge->dev, UNI_N_CFG_GART_CTRL,
-@@ -155,6 +161,59 @@
- 	uninorth_tlbflush(NULL);
- }
- 
-+#ifdef CONFIG_PM
-+static int agp_uninorth_suspend(struct pci_dev *pdev, pm_message_t state)
-+{
-+	u32 cmd;
-+	u8 agp;
-+	struct pci_dev *device = NULL;
-+
-+	if (state != PMSG_SUSPEND)
-+		return 0;
-+
-+	/* turn off AGP on the video chip, if it was enabled */
-+	for_each_pci_dev(device) {
-+		/* Don't touch the bridge yet, device first */
-+		if (device == pdev)
-+			continue;
-+		/* Only deal with devices on the same bus here, no Mac has a P2P
-+		 * bridge on the AGP port, and mucking around the entire PCI tree
-+		 * is source of problems on some machines because of a bug in
-+		 * some versions of pci_find_capability() when hitting a dead device
-+		 */
-+		if (device->bus != pdev->bus)
-+			continue;
-+		agp = pci_find_capability(device, PCI_CAP_ID_AGP);
-+		if (!agp)
-+			continue;
-+		pci_read_config_dword(device, agp + PCI_AGP_COMMAND, &cmd);
-+		if (!(cmd & PCI_AGP_COMMAND_AGP))
-+			continue;
-+		printk("uninorth-agp: disabling AGP on device %s\n", pci_name(device));
-+		cmd &= ~PCI_AGP_COMMAND_AGP;
-+		pci_write_config_dword(device, agp + PCI_AGP_COMMAND, cmd);
-+	}
-+	
-+	/* turn off AGP on the bridge */
-+	agp = pci_find_capability(pdev, PCI_CAP_ID_AGP);
-+	pci_read_config_dword(pdev, agp + PCI_AGP_COMMAND, &cmd);
-+	if (cmd & PCI_AGP_COMMAND_AGP) {
-+		printk("uninorth-agp: disabling AGP on bridge %s\n", pci_name(pdev));
-+		cmd &= ~PCI_AGP_COMMAND_AGP;
-+		pci_write_config_dword(pdev, agp + PCI_AGP_COMMAND, cmd);
-+	}
-+	/* turn off the GART */
-+	uninorth_cleanup();
-+
-+	return 0;
-+}
-+
-+static int agp_uninorth_resume(struct pci_dev *pdev)
-+{
-+	return 0;
-+}
-+#endif
-+
- static int uninorth_create_gatt_table(void)
- {
- 	char *table;
-@@ -369,6 +428,10 @@
- 	.id_table	= agp_uninorth_pci_table,
- 	.probe		= agp_uninorth_probe,
- 	.remove		= agp_uninorth_remove,
-+#ifdef CONFIG_PM
-+	.suspend	= agp_uninorth_suspend,
-+	.resume		= agp_uninorth_resume,
-+#endif
- };
- 
- static int __init agp_uninorth_init(void)
+
+
+
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

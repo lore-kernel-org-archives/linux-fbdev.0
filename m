@@ -1,15 +1,22 @@
-From: "Petr Vandrovec" <VANDROVE@vc.cvut.cz>
-Subject: Re: Card's view of framebuffer offset i
-Date: Mon, 15 Jul 2002 11:09:26 +0200
+From: Sven Luther <luther@lambda.u-strasbg.fr>
+Subject: board with broken vga ...
+Date: Thu, 18 Jul 2002 09:51:46 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <AF4348F5A21@vcnet.vc.cvut.cz>
+Message-ID: <20020718075146.GA6020@lambda.u-strasbg.fr>
 Mime-Version: 1.0
-Content-Transfer-Encoding: Quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from zikova.cvut.cz ([147.32.235.100])
-	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17U1rZ-0007mN-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 15 Jul 2002 02:09:49 -0700
+Received: from dpt-info.u-strasbg.fr ([130.79.44.193])
+	by usw-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17V5un-0000KP-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 18 Jul 2002 00:41:33 -0700
+Received: from lambda.u-strasbg.fr (lambda.u-strasbg.fr [130.79.90.63])
+	by dpt-info.u-strasbg.fr (8.12.3/8.12.3/Debian -4) with ESMTP id g6I7fTmR017212
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 18 Jul 2002 09:41:29 +0200
+Received: from luther by lambda.u-strasbg.fr with local (Exim 3.35 #1 (Debian))
+	id 17V64g-0001ZP-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 18 Jul 2002 09:51:46 +0200
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -19,35 +26,37 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Ville Syrjaelae <syrjala@sci.fi>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On 15 Jul 02 at 4:56, Ville Syrj=E4l=E4 wrote:
-> On Mon, Jul 15, 2002 at 02:02:14AM +0200, Petr Vandrovec wrote:
-> > On Sun, Jul 14, 2002 at 04:10:29PM +0300, Ville Syrj=E4l=E4 wrote:
-> > > Is there a way to ge the framebuffer offset to userspace? I hacked
-> > > DirectFB to draw to the crtc2 display but currently I've had to hard=
-code
-> > > the framebuffer offset. So I need something I can feed to tmy G400.
-> > 
-> > In what environment? With matroxfb you have special framebuffer which
-> > is displayed by CRTC2 engine.
-> 
-> > Offset is not explicitly exported, but
-> > if you'll take low 24 bits from fb_start, you'll get offset on
-> > G400/G450/G550 devices.
-> 
-> I don't see such a thing anywhere. Do you mean smem_start? Ok just tried
-> with (smem_start + offset & 0x1ffffff) and it works for both heads. So
-> that's actually 25 bits. Maybe I should just use 28 bits to accomodate
-> larger framebuffers?
+Hello, ...
 
-No. You must use exactly 25 bits on G400/G450/G550 series, because of
-upper 7 bits are random: framebuffer apperture is 32MB on them, and upper
-7 bits specify framebuffer position in PCI MMIO address space.
-                                                Petr Vandrovec
-                                                
+i am looking again at pm3fb (still old style one though).
+
+Permedia3 (and probably permedia2 also) has a problem with accessing vga
+stuff in mmio mode, which makes it not work correctly when the text from
+the vga console mode is copied over to the fbcon at the switch.
+
+I have the understanding that you moved this stuff over to some other
+place and not the pm3fb driver itself (but where ?)
+
+I now know how to get this data by looking at the framebuffer directly
+(it is found starting at framebuffer addr + 0 in 8 byte steps.), but
+need to know how i can hook it in, to write it back.
+
+Also, the size of this text is somewhat of a mistery for me still.
+
+Ok, that said, i suppose ours are the only boards with such problems,
+but since there is so much taken out of the drivers in your new setup
+and put in a common place, would it not solve this problem if there were
+an additional function which driver could provide (or fill in NULL if
+there was no proble), for retrieving this data, which fbcon can write
+back later on ?
+
+Friendly,
+
+Sven Luther
 
 
 -------------------------------------------------------

@@ -1,17 +1,20 @@
 From: Antonino Daplas <adaplas@pol.net>
 Subject: Re: Some questions
-Date: 06 Mar 2003 17:58:06 +0800
+Date: 06 Mar 2003 18:05:37 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1046944674.1332.68.camel@localhost.localdomain>
-References: <Pine.GSO.4.21.0303061006180.28248-100000@vervain.sonytel.be>
+Message-ID: <1046945135.1209.76.camel@localhost.localdomain>
+References: <Pine.LNX.4.44.0303051939470.27760-100000@phoenix.infradead.org>	<1046913411
+	 .1206.185.camel@localhost.localdomain> 	<3E670B82.30900@winischhofer.net>
+	<1046942633.1330.54.camel@localhost.localdomain> 
+	<3E671848.5020506@winischhofer.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from pine.compass.com.ph ([202.70.96.37])
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18qs7M-0002o1-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 06 Mar 2003 01:56:48 -0800
-In-Reply-To: <Pine.GSO.4.21.0303061006180.28248-100000@vervain.sonytel.be>
+	id 18qsEa-0004DM-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 06 Mar 2003 02:04:17 -0800
+In-Reply-To: <3E671848.5020506@winischhofer.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,42 +25,41 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Thomas Winischhofer <thomas@winischhofer.net>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Thomas Winischhofer <thomas@winischhofer.net>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, 2003-03-06 at 17:12, Geert Uytterhoeven wrote:
+On Thu, 2003-03-06 at 17:43, Thomas Winischhofer wrote:
+> > Mode checking is not simply looking at xres and yres, but also looking
+> > at htotal, and vtotal to derive hsync, vsync and pixelclock.  These are
+> > then compared to the monitor/graphics card's capability.  If any of the
+> > values fall outside the limits then the mode is not valid.  Otherwise,
+> > the new mode should still produce a usable display, perhaps not the one
+> > the user wants (ie refresh rate is lower).  By this time though, the
+> > user can freely use fbset to fine tune all the timings.
 > 
-> What if fbcon implements a text console _on top of_ fbdev? I.e. it uses the
-> current resolution?
+> Perhaps I have not made myself clear:
 > 
-> If you use stty to change the number of cols/rows, or change the font, or use
-> fbset, your text console may end up being smaller or larger than the real
-> screen size, in which case margins are cleared, or columns/lines are lost.
-> (Optionally, we can center the text console if it's smaller than the real
->  screen size.)
+> I start with a default 800x600-60. Pixelclock in var is now X.
 > 
-
-Which is basically what stty does for the standard console (except that
-lines are not lost, but wrapped, and margins are not cleared).
-
-So, we need to reimplement the clipping code.
-
-> IMHO this is the most orthogonal approach. Fbcon takes care of the text
-> console, fbdev takes care of the graphics hardware and the video mode. Both
-> parts do (try to) not influence each other.
+> fbcon_resize adapts the xres and yres, leaving the pixelclock alone.
 > 
-> Optionally, fbset can call stty to change the number of cols/rows, if the user
-> wants that.
+> The driver sees upon the check_var call: xres, yres and X - the old 
+> pixelclock (which is non-zero).
+> 
+> That pixelclock *COULD* be valid, but it COULD also be invalid! There is 
+> no way of distinguishing!
 > 
 
-Or even a simple script that basically does "fbset 1024x768-60 && stty
-cols 128 rows 48". Of course, adding this to fbset itself will make it
-transparent to the user.
+Yes, there is.  Using the "stale" pixelclock, htotal and vtotal,
+calculate hsync and vsync.  Compare this with your monitor's limit -- if
+any fall outside, the entire mode, pixelclock and all is not valid.
 
-Sounds very logical to me :-)
+(see fb_get_mode() and fb_validate_mode() in fbmon.c)
+
+And if you use very narrow vsync and hsync ranges, then the "stale"
+pixelclock will always most certainly be invalid.
 
 Tony
-
 
 
 

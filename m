@@ -1,23 +1,27 @@
-From: Richard Smith <rsmith@bitworks.com>
-Subject: Re: Re: Usage of readb() and friends...
-Date: Wed, 03 Mar 2004 18:14:37 -0600
+From: Mail Delivery Subsystem <MAILER-DAEMON@d01as04.pok.ibm.com>
+Subject: Returned mail: see transcript for details
+Date: Thu, 4 Mar 2004 03:19:28 -0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <404674ED.1080704@bitworks.com>
-References: <Pine.LNX.4.44.0403032331140.30666-100000@phoenix.infradead.org>
-Reply-To: rsmith@bitworks.com
+Message-ID: <200403040819.i248JShw028218@d01as04.pok.ibm.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/report; report-type=delivery-status;
+	boundary="i248JShw028218.1078388368/d01as04.pok.ibm.com"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Aygja-0007Vl-93
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Mar 2004 16:29:06 -0800
-Received: from b44.xdsl.pgtc.com ([198.70.248.44] helo=bitworks.com)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1AygWO-0004aP-4r
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Mar 2004 16:15:28 -0800
-Received: from bitworks.com [192.168.1.22] by bitworks.com [127.0.0.1] with SMTP (MDaemon.v2.7.SP4.R) for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 03 Mar 2004 18:14:07 -0600
-In-Reply-To: <Pine.LNX.4.44.0403032331140.30666-100000@phoenix.infradead.org>
+	id 1AyoIK-0008DF-2D
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 Mar 2004 00:33:28 -0800
+Received: from e5.ny.us.ibm.com ([32.97.182.105])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1Ayo4v-00070U-BK
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 Mar 2004 00:19:37 -0800
+Received: from northrelay01.pok.ibm.com (northrelay01.pok.ibm.com [9.56.224.149])
+	by e5.ny.us.ibm.com (8.12.10/8.12.2) with ESMTP id i248JTJr747664
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 4 Mar 2004 03:19:29 -0500
+Received: from d01as04.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by northrelay01.pok.ibm.com (8.12.10/NCO/VER6.6) with ESMTP id i248JXEf101306
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 4 Mar 2004 03:19:34 -0500
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,47 +31,94 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-James Simmons wrote:
+This is a MIME-encapsulated message
 
->>>The driver that died was 9 Gigs. 
->>
->>Ok. But do you _have_ to have that much.  Will 4 get you going? Or if 
->>you can do multiple drives I have a few you could raid them or lvm them 
->>into a big drive.
-> 
-> No problem. Th reason for such a big drive before was it was a SuSE 
-> distro. like most distors they throw everything including the kitchen sink 
-> at you. I was use a debian system which I would strip down. I have no 
-> problem doing mulitple drives. LVM is really cool :-)
-> 
+--i248JShw028218.1078388368/d01as04.pok.ibm.com
 
-Ok. Then I have 3 4Gib drives you can turn into a 12Gib setup.  if you 
-can work out the SCA issue.  They are SCA drives.
+The original message was received at Thu, 4 Mar 2004 03:19:26 -0500
+from e4.esmtp.ibm.com [9.14.6.104]
 
->>Unless you have a RAID backplane in your setup I doubt you motherboard 
->>does SCA (80-pin) devices.  Nice if so then nice motherboard.
+   ----- The following addresses had permanent fatal errors -----
+<bash@vnet.ibm.com>
+    (reason: 550 5.1.1 <bash@vnet.ibm.com>... User 'bash' is not a registered gateway user)
 
-> I don't think so then.
+   ----- Transcript of session follows -----
+... while talking to d01av03.pok.ibm.com.:
+>>> DATA
+<<< 550 5.1.1 <bash@vnet.ibm.com>... User 'bash' is not a registered gateway user
+550 5.1.1 <bash@vnet.ibm.com>... User unknown
+<<< 503 Need RCPT (recipient)
 
-The 80-pin connector for SCA has both Power and scsi ID all in one which 
-is why its used for RAID backplanes.  They make SCA to 50 and 68 pin 
-adapters that have std pc power jacks on them.  You will still need a 
-terminator though probally.
+--i248JShw028218.1078388368/d01as04.pok.ibm.com
+Content-Type: message/delivery-status
 
-Have you looked on e-bay?  9Gib 68 pin drives are closeing for <= $20 
-18Gib for < $30.  Which is less than what 3 SCA to 68 pin converters is 
-going to cost.
+Reporting-MTA: dns; d01as04.pok.ibm.com
+Received-From-MTA: DNS; e4.esmtp.ibm.com
+Arrival-Date: Thu, 4 Mar 2004 03:19:26 -0500
 
-I have $20 I'll donate for you to buy a new drive.  Got a pay-pal or 
-someother internet money account?
+Final-Recipient: RFC822; bash@vnet.ibm.com
+Action: failed
+Status: 5.1.1
+Remote-MTA: DNS; d01av03.pok.ibm.com
+Diagnostic-Code: SMTP; 550 5.1.1 <bash@vnet.ibm.com>... User 'bash' is not a registered gateway user
+Last-Attempt-Date: Thu, 4 Mar 2004 03:19:28 -0500
 
--- 
-Richard A. Smith
-rsmith@bitworks.com
+--i248JShw028218.1078388368/d01as04.pok.ibm.com
+Content-Type: message/rfc822
 
+Return-Path: <linux-fbdev-devel@lists.sourceforge.net>
+Received: from e4.ny.us.ibm.com (e4.esmtp.ibm.com [9.14.6.104])
+	by d01as04.pok.ibm.com (8.12.10/8.12.10) with ESMTP id i248JQhw028175
+	for <bash@vnet.ibm.com>; Thu, 4 Mar 2004 03:19:26 -0500
+Received: from vnet.ibm.com ([211.108.6.68])
+	by e4.ny.us.ibm.com (8.12.10/8.12.9) with ESMTP id i248JOK0681868
+	for <bash@vnet.ibm.com>; Thu, 4 Mar 2004 03:19:24 -0500
+Message-Id: <200403040819.i248JOK0681868@e4.ny.us.ibm.com>
+From: linux-fbdev-devel@lists.sourceforge.net
+To: bash@vnet.ibm.com
+Subject: Re: Approved
+Date: Thu, 4 Mar 2004 17:19:30 +0900
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_0010_00002932.00002BA1"
+X-Priority: 3
+X-MSMail-Priority: Normal
+
+This is a multi-part message in MIME format.
+
+------=_NextPart_000_0010_00002932.00002BA1
+Content-Type: text/plain;
+	charset="Windows-1252"
+Content-Transfer-Encoding: 7bit
+
+See the attached file for details.
+
+------=_NextPart_000_0010_00002932.00002BA1
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+
+
+all_document.pif is removed from here because it contains a virus.
+
+------=_NextPart_000_0010_00002932.00002BA1--
+
+
+
+--i248JShw028218.1078388368/d01as04.pok.ibm.com
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+
+Found virus WORM_NETSKY.D in file all_document.pif
+The file is deleted.
+
+IBM's antivirus detection system has identified a virus in an attachment to this e-mail.  The attachment has been deleted.  No further reporting or action is required on your part.  THIS EMAIL IS NOW SAFE TO OPEN.  Visit w3.ibm.com/virus for more information.
+
+
+--i248JShw028218.1078388368/d01as04.pok.ibm.com--
 
 
 

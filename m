@@ -1,34 +1,86 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: fbdev documentation patch
-Date: Mon, 26 Jan 2004 22:05:34 +0000 (GMT)
+Subject: monochrome display fix.
+Date: Mon, 26 Jan 2004 22:13:20 +0000 (GMT)
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.44.0401262202280.5445-100000@phoenix.infradead.org>
+Message-ID: <Pine.LNX.4.44.0401262212140.5445-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Linus Torvalds <torvalds@transmeta.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
 
-Hi!
+[CONSOLE] Don't let a monochrome display stomp all over the console color 
+values.
 
-  The below patch updates the framebuffer docs to reflect the requirement 
-that all driver names must end in fb. Please apply.
-
---- linus-2.6/Documentation/fb/modedb.txt	2004-01-26 13:31:19.000000000 -0800
-+++ fbdev-2.6/Documentation/fb/modedb.txt	2004-01-26 16:32:23.000000000 -0800
-@@ -51,10 +51,10 @@
-     Drivers that support modedb boot options
-     Boot Name	  Cards Supported
+--- linus-2.6/drivers/char/vt.c	2004-01-26 13:34:39.000000000 -0800
++++ fbdev-2.5/drivers/char/vt.c	2004-01-21 17:36:26.000000000 -0800
+@@ -1062,7 +1062,8 @@
+ 	underline = 0;
+ 	reverse = 0;
+ 	blink = 0;
+-	color = def_color;
++	if (can_do_color)
++		color = def_color;
+ }
  
--    ami		- Amiga chipset frame buffer
-+    amifb	- Amiga chipset frame buffer
-     aty128fb	- ATI Rage128 / Pro frame buffer
-     atyfb	- ATI Mach64 frame buffer
--    tdfx	- 3D Fx frame buffer
-+    tdfxfb	- 3D Fx frame buffer
-     tridentfb	- Trident (Cyber)blade chipset frame buffer
- 
- BTW, only a few drivers use this at the moment. Others are to follow
+ /* console_sem is held */
+@@ -1135,7 +1136,8 @@
+ 				  * with white underscore (Linux - use
+ 				  * default foreground).
+ 				  */
+-				color = (def_color & 0x0f) | background;
++				if (can_do_color)
++					color = (def_color & 0x0f) | background;
+ 				underline = 1;
+ 				break;
+ 			case 39: /* ANSI X3.64-1979 (SCO-ish?)
+@@ -1143,19 +1145,23 @@
+ 				  * Reset colour to default? It did this
+ 				  * before...
+ 				  */
+-				color = (def_color & 0x0f) | background;
++				if (can_do_color)
++					color = (def_color & 0x0f) | background;
+ 				underline = 0;
+ 				break;
+ 			case 49:
+-				color = (def_color & 0xf0) | foreground;
++				if (can_do_color)
++					color = (def_color & 0xf0) | foreground;
+ 				break;
+ 			default:
+-				if (par[i] >= 30 && par[i] <= 37)
+-					color = color_table[par[i]-30]
+-						| background;
+-				else if (par[i] >= 40 && par[i] <= 47)
+-					color = (color_table[par[i]-40]<<4)
+-						| foreground;
++				if (can_do_color) {
++					if (par[i] >= 30 && par[i] <= 37)
++						color = color_table[par[i]-30]
++							| background;
++					else if (par[i] >= 40 && par[i] <= 47)
++						color = (color_table[par[i]-40]<<4)
++							| foreground;
++				}
+ 				break;
+ 		}
+ 	update_attr(currcons);
+@@ -1290,9 +1296,11 @@
+ 			}
+ 			break;
+ 		case 8:	/* store colors as defaults */
+-			def_color = attr;
+-			if (hi_font_mask == 0x100)
+-				def_color >>= 1;
++			if (can_do_color) {
++				def_color = attr;
++				if (hi_font_mask == 0x100)
++					def_color >>= 1;
++			}	
+ 			default_attr(currcons);
+ 			update_attr(currcons);
+ 			break;

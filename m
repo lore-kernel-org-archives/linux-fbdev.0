@@ -1,22 +1,25 @@
-From: Guido Guenther <agx@sigxcpu.org>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
 Subject: Re: Re: [PATCH] fbdev: Fix IO access in rivafb
-Date: Sat, 13 Nov 2004 12:22:35 +0100
-Message-ID: <20041113112234.GA5523@bogon.ms20.nix>
-References: <200411080521.iA85LbG6025914@hera.kernel.org> <200411090402.22696.adaplas@hotpop.com> <Pine.LNX.4.58.0411081211270.2301@ppc970.osdl.org> <200411090608.02759.adaplas@hotpop.com> <Pine.LNX.4.58.0411081422560.2301@ppc970.osdl.org> <20041112125125.GA3613@bogon.ms20.nix> <Pine.LNX.4.58.0411120755570.2301@ppc970.osdl.org> <20041112191852.GA4536@bogon.ms20.nix> <1100309972.20511.103.camel@gaston>
+Date: Sat, 13 Nov 2004 20:00:30 +0800
+Message-ID: <200411132000.31465.adaplas@hotpop.com>
+References: <200411080521.iA85LbG6025914@hera.kernel.org> <1100309972.20511.103.camel@gaston> <20041113112234.GA5523@bogon.ms20.nix>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CSw2D-00028n-GL
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 13 Nov 2004 03:25:37 -0800
-Received: from honk1.physik.uni-konstanz.de ([134.34.140.224])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.41)
-	id 1CSw2C-0001ds-2Z
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 13 Nov 2004 03:25:37 -0800
+	id 1CSwaS-0004lQ-4u
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 13 Nov 2004 04:01:00 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.51])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1CSwaQ-0007hc-P8
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 13 Nov 2004 04:00:59 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id 41ADB718E6
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 13 Nov 2004 12:00:45 +0000 (UTC)
+In-Reply-To: <20041113112234.GA5523@bogon.ms20.nix>
 Content-Disposition: inline
-In-Reply-To: <1100309972.20511.103.camel@gaston>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,51 +31,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Guido Guenther <agx@sigxcpu.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, adaplas@pol.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
 
-On Sat, Nov 13, 2004 at 12:39:32PM +1100, Benjamin Herrenschmidt wrote:
-> On Fri, 2004-11-12 at 20:18 +0100, Guido Guenther wrote:
-> 
-> > O.k., it was the __raw_{write,read}b which broke things, not the
-> > "alignment". This one works:
-> > 
-> > diff -u -u linux-2.6.10-rc1-mm5.orig/drivers/video/riva/riva_hw.h linux-2.6.10-rc1-mm5/drivers/video/riva/riva_hw.h
-> > --- linux-2.6.10-rc1-mm5.orig/drivers/video/riva/riva_hw.h	2004-11-12 13:42:54.000000000 +0100
-> > +++ linux-2.6.10-rc1-mm5/drivers/video/riva/riva_hw.h	2004-11-12 17:39:22.000000000 +0100
-> > @@ -75,8 +75,8 @@
-> >   */
-> >  #include <asm/io.h>
-> >  
-> > -#define NV_WR08(p,i,d)  (__raw_writeb((d), (void __iomem *)(p) + (i)))
-> > -#define NV_RD08(p,i)    (__raw_readb((void __iomem *)(p) + (i)))
-> > +#define NV_WR08(p,i,d)  (writeb((d), (void __iomem *)(p) + (i)))
-> > +#define NV_RD08(p,i)    (readb((void __iomem *)(p) + (i)))
-> 
-> Interesting. The only difference here should be barriers. I hate the
-> lack of barriers in that driver ... I'm not sure the driver may not have
-Yes, it's a real pain. Missing barriers in RIVA_FIFO_FREE caused lots of
-lockups, until I found them in your 2.4 tree.
+On Saturday 13 November 2004 19:22, Guido Guenther wrote:
+> On Sat, Nov 13, 2004 at 12:39:32PM +1100, Benjamin Herrenschmidt wrote:
+> > On Fri, 2004-11-12 at 20:18 +0100, Guido Guenther wrote:
+> In 2.6.10-rc1-mm5 {in,out}_8 and read/writeb are exactly identical, only
+> __raw_{read,write}b is different. So you mean __raw_{read,write}b in the
+> above? (no nitpicking, just want to be sure I understand this
+> correctly).
 
-> other bugs related to the lack of them in the 16 and 32 bits accessors.
-> It does use non-barrier version on purpose in some accel ops though,
-> when filling the fifo with pixels, but that's pretty much the only case
-> where it makes sense.
-> 
-> > There aren't any, I actually attached the wrong patch. The non-working
-> > version has __raw_{read,write}b8 instead of {read,write}b8. In 2.6.9
-> > riva_hw.h used {in,out}_8 for NV_{RD,WR}08 so using the "non-raw"
-> > writeb/readb now looks correct since these map to {in,out}_8 now.
-> 
-> {in,out}_8 are ppc-specific things that are identical to readb/writeb
-> indeed, with barriers.
-In 2.6.10-rc1-mm5 {in,out}_8 and read/writeb are exactly identical, only
-__raw_{read,write}b is different. So you mean __raw_{read,write}b in the
-above? (no nitpicking, just want to be sure I understand this
-correctly).
-Cheers,
- -- Guido
+Why not use in_be* and out_be* for __raw_read and raw_write?  If I
+understand correctly, they also have barriers.  Or would that hurt
+performance?
+
+Tony
+
+
 
 
 -------------------------------------------------------

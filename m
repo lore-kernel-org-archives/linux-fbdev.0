@@ -1,48 +1,63 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [Linux-fbdev-devel] Re: open messes up the screen
-Date: Fri, 18 Mar 2005 05:05:09 +0800
-Message-ID: <200503180505.10779.adaplas@hotpop.com>
-References: <20050315150934.GA6687@tpapp.student.princeton.edu> <20050315173827.GA10301@pants.nu> <1110949031.14171.137.camel@gaston>
-Reply-To: adaplas@pol.net
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Fwd: linux-kernel radeonfb: Display corruption with power
+ managment, after a while it goes away automatically
+Date: Fri, 18 Mar 2005 10:55:39 +1100
+Message-ID: <1111103739.25179.25.camel@gaston>
+References: <20050317234540.12743.qmail@web53307.mail.yahoo.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-In-Reply-To: <1110949031.14171.137.camel@gaston>
-Content-Disposition: inline
-Resent-Message-ID: <wbNIoB.A.Md.5UfOCB@murphy>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1DC4qu-0004qe-BD
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Mar 2005 15:56:32 -0800
+Received: from gate.crashing.org ([63.228.1.57])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1DC4qr-00060t-UG
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Mar 2005 15:56:32 -0800
+In-Reply-To: <20050317234540.12743.qmail@web53307.mail.yahoo.com>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:debian-powerpc@lists.debian.org>
-List-Help: <mailto:debian-powerpc-request@lists.debian.org?subject=help>
-List-Subscribe: <mailto:debian-powerpc-request@lists.debian.org?subject=subscribe>
-List-Unsubscribe: <mailto:debian-powerpc-request@lists.debian.org?subject=unsubscribe>
-List-Archive: <http://lists.debian.org/debian-powerpc/>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Brad Boyer <flar@allandria.com>
-Cc: Tamas K Papp <tpapp@Princeton.EDU>, Debian PPC <debian-powerpc@lists.debian.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Tony Daplas <aadaplas@yahoo.com>
+Cc: adaplas@pol.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, sebastian_ml@gmx.net
 
-On Wednesday 16 March 2005 12:57, Benjamin Herrenschmidt wrote:
-> > Well, open is really openvt. It fiddles around with the console to
-> > start up a program on a new virtual console. X doesn't always like
-> > that, but it should work better than that. The vt change should
-> > trigger X to properly cleanup the screen before the switch. I'd
-> > say file a bug.
->
-> It's not a VT change issue. It's an old bug of the fbcon code that
-> causes opening a VT to reset the palette on the current fb even when not
-> in front.
->
+On Thu, 2005-03-17 at 15:45 -0800, Tony Daplas wrote:
 
-Can you try this patch?
+> > I have a desktop computer with a radeon 9250 agp
+> > card from connect3d. I
+> > append radeonfb.default_dynclk=1 when loading the
+> > kernel or use options
+> > radeonfb default.dynclk=1 when using modules. I
+> > understand the power
+> > managment feature is mostly for mobility cards for
+> > laptops, but I like
+> > it very much because my card stays much cooler with
+> > it.
+> > The problem is that, no matter if I load the module
+> > or build it
+> > statically in the kernel the screen gets garbled
+> > until init says it's
+> > "Setting user font".
 
-diff -Nru a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
---- a/drivers/video/console/fbcon.c	2005-03-16 07:39:24 +08:00
-+++ b/drivers/video/console/fbcon.c	2005-03-18 04:58:31 +08:00
-@@ -2331,6 +2331,9 @@
- 	if (fbcon_is_inactive(vc, info))
- 		return -EINVAL;
- 
-+	if (!CON_IS_VISIBLE(vc))
-+		return 0;
-+
- 	depth = fb_get_color_depth(&info->var);
- 	if (depth > 3) {
- 		for (i = j = 0; i < 16; i++) {
+Not forcing the power management makes a difference ?
+
+Ben.
+
+
+
+
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

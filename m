@@ -1,17 +1,13 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: v2.4.21 vesafb oddity (fwd)
-Date: Fri, 27 Jun 2003 10:29:26 +0200 (MEST)
+From: QUOTA-GUARD@antai-genecon.com
+Subject: Failure notice: user's disk quota exceeded!
+Date: Fri, 27 Jun 2003 19:42:24 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0306271029160.2794-100000@vervain.sonytel.be>
-Mime-Version: 1.0
+Message-ID: <2003627194224.78792.quarkmail@vipmx6.hichina.com>
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=witte.sonytel.be)
+Received: from [210.192.103.166] (helo=vipmx6.hichina.com)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19VocQ-0004ba-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 27 Jun 2003 01:30:06 -0700
-Received: from vervain.sonytel.be (localhost [127.0.0.1])
-	by witte.sonytel.be (8.12.9/8.12.9) with ESMTP id h5R8TPpI005964
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 27 Jun 2003 10:29:26 +0200 (MEST)
+	id 19VrdK-00082N-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 27 Jun 2003 04:43:15 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,63 +17,33 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
----------- Forwarded message ----------
-Date: Fri, 27 Jun 2003 14:17:14 +0600 (GMT-6)
-From: ishan_jayawardena@yahoo.co.uk
-To: geert@linux-m68k.org
-Cc: alan@lxorguk.ukuu.org.uk
-Subject: v2.4.21 vesafb oddity
+Hi, This is the mail deliver program at antai-genecon.com
 
+Sorry, Your message to <exh@antai-genecon.com> cannot be delivered as the recipient has exceeded their hardquota limit for email.However a small (< 1KB) message will be delivered should you wish to inform the person you tried to email.
 
-Greetings,
+--- Below this line is a copy of the header. ---
 
-Thanks for taking the time to read this.
-At least for the VESAFB driver in 2.4.21, the framebuffer size is being 
-miscalculated. This yields wildly different values with different modes.
-e.g. (The memory on the card is 2M)
+Received: from 202.120.115.165 (HELO PANPAN) (envelope-from linux-fbdev-devel@lists.sourceforge.net)
+	by vipmx6.hichina.com (quarkmail-1.2.1) with ESMTP id S1003846AbTF0LmU
+	for exh@antai-genecon.com; Fri, 27 Jun 2003 19:42:20 +0800
+From: <linux-fbdev-devel@lists.sourceforge.net>
+To: <exh@antai-genecon.com>
+Subject: Re: Application
+Date: Fri, 27 Jun 2003 19:42:10 +0800
+Importance: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2600.0000
+X-MSMail-Priority: Normal
+X-Priority: 3 (Normal)
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="CSmtpMsgPart123X456_000_002B9E42"
 
---- fbdmesg-2.4.21	Fri Jun 27 00:01:53 2003
-+++ fbdmesg-2.4.21-ac2	Fri Jun 27 00:08:52 2003
-
- . . .
-
--vesafb: framebuffer at 0xf4000000, mapped to 0xc4800000, size 12288k
-+vesafb: framebuffer at 0xf4000000, mapped to 0xc4800000, size 2048k
- vesafb: mode is 1024x768x16, linelength=2048, pages=0
- vesafb: protected mode interface info at c000:5db2
-
- . . .
-
-In mode 791 (1024x768x16bpp) the stock kernel reports 12288k, while the 
--ac kernel correctly reports 2048k. In lower modes (800x600x16bpp etc.) 
-both kernels report values less than 2048k (1875k, etc.). The patch below 
-reverts this back to the v2.2 behaviour.
-I'm afraid I just don't know the time at which this anomaly began, except 
-that 2.4.20 (-acN and stock) was fine.
-
---- linux/drivers/video/vesafb.c.1	Fri Jun 27 00:18:25 2003
-+++ linux/drivers/video/vesafb.c	Fri Jun 27 00:27:29 2003
-@@ -520,7 +520,7 @@ int __init vesafb_init(void)
- 	video_width         = screen_info.lfb_width;
- 	video_height        = screen_info.lfb_height;
- 	video_linelength    = screen_info.lfb_linelength;
--	video_size          = screen_info.lfb_width *	screen_info.lfb_height * video_bpp;
-+	video_size          = screen_info.lfb_size * 65536;
- 	video_visual = (video_bpp == 8) ?
- 		FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
- 
-
--- 
-"Lies, lies, all is lies! Yet beyond I tell you, beauteous and eternal
-stands the Truth, Macumazahn."
- - Zikali
-
-
-
+------------------------------------------------
 
 
 

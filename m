@@ -1,73 +1,84 @@
-From: "Buttchereit, Axel (XL)" <XL@XLsigned.net>
-Subject: Re: [patch] intelfb: add (partial) support for
- 915G
-Date: Sat, 29 Jan 2005 16:52:12 +0100
-Message-ID: <41FBB12C.4090305@XLsigned.net>
-References: <41FB1AEB.4090206@XLsigned.net> <200501292003.59146.adaplas@hotpop.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Jesper Juhl <juhl-lkml@dif.dk>
+Subject: [PATCH] copy_*_user return value checks added to kyro fb...
+Date: Sun, 30 Jan 2005 17:29:03 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0501301720560.2731@dragon.hygekrogen.localhost>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261719AbVA3Q0N@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Cuutp-0000dj-29
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 29 Jan 2005 07:52:37 -0800
-Received: from mail.goracer.de ([62.75.192.134])
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.41)
-	id 1Cuutn-0001Am-Do
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 29 Jan 2005 07:52:37 -0800
-In-Reply-To: <200501292003.59146.adaplas@hotpop.com>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Paul Mundt <lethal@chaoticdreams.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
 
-Antonino A. Daplas wrote:
-> On Saturday 29 January 2005 13:11, Buttchereit, Axel (XL) wrote:
-> 
->>Add (partial) support for 915G
->>  No HW cursor at the moment
->>  Screen is blanked but signal/sync is not switched off
-> 
-> 
-> Is the driver usable?  If not, make it work with your machine at least.
->
+Hi,
 
-The driver works with my machine. Both as a module and statically linked.
-
-Support is partial/incomplete, because
-  - hwcursor does not work, i. e. I haven't managed yet to
-    derive the special code for hwcursor on 915G from
-    the XFree86/Xorg-code. That is why I'm hard-wiring the
-    value of hwcusror to "0" on 915G.
-  - DPMS does nor work properly, but I do not know whether this
-    is because of my incomplete patch, because of my
-    hardware or because of the kernel (version).
-
-Furthermore I think that support for the mobila variant 915GM,
-should be inlcuded, but I haven't got the hardware.
-
-I would be happy to get feedback from a user that has tried the patched
-and the unpatched "intelfb" with current 2.6.10 on 830/855/865 to
-see what is wrong with DPMS and from a user that has the 915GM.
-
-The "final" patch should support "hwcusor", "DPMS" and 915GM.
-
-Cheers
---Axel
+Here's a patch that makes sure the return value of copy_from/to_user gets 
+checked and handled in drivers/video/kyro/fbdev.c
+It also updates a comment at the top of the file that lists the files name 
+and location.
+Please review and consider applying.
 
 
--------------------------------------------------------
-This SF.Net email is sponsored by: IntelliVIEW -- Interactive Reporting
-Tool for open source databases. Create drag-&-drop reports. Save time
-by over 75%! Publish reports on the web. Export to DOC, XLS, RTF, etc.
-Download a FREE copy at http://www.intelliview.com/go/osdn_nl
+Signed-off-by: Jesper Juhl <juhl-lkml@dif.dk>
+
+diff -up linux-2.6.11-rc2-bk7-orig/drivers/video/kyro/fbdev.c linux-2.6.11-rc2-bk7/drivers/video/kyro/fbdev.c
+--- linux-2.6.11-rc2-bk7-orig/drivers/video/kyro/fbdev.c	2004-12-24 22:33:49.000000000 +0100
++++ linux-2.6.11-rc2-bk7/drivers/video/kyro/fbdev.c	2005-01-30 17:25:18.000000000 +0100
+@@ -1,5 +1,5 @@
+ /*
+- *  linux/drivers/video/kyro/kyrofb.c
++ *  linux/drivers/video/kyro/fbdev.c
+  *
+  *  Copyright (C) 2002 STMicroelectronics
+  *  Copyright (C) 2003, 2004 Paul Mundt
+@@ -594,7 +594,8 @@ static int kyrofb_ioctl(struct inode *in
+ 
+ 	switch (cmd) {
+ 	case KYRO_IOCTL_OVERLAY_CREATE:
+-		copy_from_user(&ol_create, argp, sizeof(overlay_create));
++		if (copy_from_user(&ol_create, argp, sizeof(overlay_create)))
++			return -EFAULT;
+ 
+ 		if (kyro_dev_overlay_create(ol_create.ulWidth,
+ 					    ol_create.ulHeight, 0) < 0) {
+@@ -604,8 +605,9 @@ static int kyrofb_ioctl(struct inode *in
+ 		}
+ 		break;
+ 	case KYRO_IOCTL_OVERLAY_VIEWPORT_SET:
+-		copy_from_user(&ol_viewport_set, argp,
+-			       sizeof(overlay_viewport_set));
++		if (copy_from_user(&ol_viewport_set, argp,
++			       sizeof(overlay_viewport_set)))
++			return -EFAULT;
+ 
+ 		if (kyro_dev_overlay_viewport_set(ol_viewport_set.xOrgin,
+ 						  ol_viewport_set.yOrgin,
+@@ -625,13 +627,16 @@ static int kyrofb_ioctl(struct inode *in
+ 		}
+ 		break;
+ 	case KYRO_IOCTL_UVSTRIDE:
+-		copy_to_user(argp, &deviceInfo.ulOverlayUVStride, sizeof(unsigned long));
++		if (copy_to_user(argp, &deviceInfo.ulOverlayUVStride, sizeof(unsigned long)))
++			return -EFAULT;
+ 		break;
+ 	case KYRO_IOCTL_STRIDE:
+-		copy_to_user(argp, &deviceInfo.ulOverlayStride, sizeof(unsigned long));
++		if (copy_to_user(argp, &deviceInfo.ulOverlayStride, sizeof(unsigned long)))
++			return -EFAULT;
+ 		break;
+ 	case KYRO_IOCTL_OVERLAY_OFFSET:
+-		copy_to_user(argp, &deviceInfo.ulOverlayOffset, sizeof(unsigned long));
++		if (copy_to_user(argp, &deviceInfo.ulOverlayOffset, sizeof(unsigned long)))
++			return -EFAULT;
+ 		break;
+ 	}
+ 
+
+
+
+-- 
+Jesper Juhl
+
+PS. Please CC: me on replies.

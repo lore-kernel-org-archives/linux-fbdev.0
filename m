@@ -1,19 +1,21 @@
-From: Richard Drummond <lists@rcdrummond.net>
-Subject: Re: [PATCH] Big-endian fixes for tdfxfb in 2.4.21
-Date: Thu, 24 Jul 2003 21:53:13 -0500
+From: Jurriaan <thunder7@xs4all.nl>
+Subject: Re: Request for donation
+Date: Fri, 25 Jul 2003 07:12:21 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200307242153.14002.lists@rcdrummond.net>
-References: <Pine.LNX.4.44.0307250040290.7845-100000@phoenix.infradead.org>
-Reply-To: lists@rcdrummond.net
+Message-ID: <20030725051221.GB6978@middle.of.nowhere>
+References: <200307210138.34164.alex.kern@gmx.de>
+Reply-To: thunder7@xs4all.nl
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from swan.mail.pas.earthlink.net ([207.217.120.123])
+Received: from smtpzilla5.xs4all.nl ([194.109.127.141])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19fsdD-0001za-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 24 Jul 2003 19:48:31 -0700
-In-Reply-To: <Pine.LNX.4.44.0307250040290.7845-100000@phoenix.infradead.org>
+	id 19fusa-0006c0-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 24 Jul 2003 22:12:32 -0700
+Received: from zeeotter.xs4all.nl (zeeotter.xs4all.nl [80.126.31.149])
+	by smtpzilla5.xs4all.nl (8.12.9/8.12.9) with ESMTP id h6P5CTET080928
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 25 Jul 2003 07:12:29 +0200 (CEST)
 Content-Disposition: inline
+In-Reply-To: <200307210138.34164.alex.kern@gmx.de>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -24,37 +26,37 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+To: Alexander Kern <alex.kern@gmx.de>
+Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi James
+From: Alexander Kern <alex.kern@gmx.de>
+Date: Mon, Jul 21, 2003 at 01:38:34AM +0200
+> Hello list,
+> 
+> I am trying to add support for ATI Rage 3D Mobility M1, and have some success 
+> on my notebook. I have god tree another species from Ebay too, Rage 3D IIc, 
+> Rage Turbo Pro and Rage Pro. All are AGP. I need one "Pre RAGE 3D" mach64 for 
+> testing.
+> 
+> Unfortunately I don't found anything on Ebay. If anybody have one from these 
+> cards:
+> 
+> "mach64GX (ATI888GX00)", "mach64CX (ATI888CX00)" - only PCI, I don't have ISA 
+> slots anymore.
+> 
+> "mach64CT (ATI264CT)", "mach64ET (ATI264ET)", "mach64VTA3 (ATI264VT)", 
+> "mach64VTA4 (ATI264VT)", "mach64VTB (ATI264VTB)", "mach64VT4 (ATI264VT4)"
+> 
+I'm trying to acquire a Mach64VT card (PCI), which I hope will be one of
+the above models.
 
-On Thursday 24 July 2003 06:41 pm, James Simmons wrote:
-> > Ooops. I apologize. It turns out that I didn't test this as thoroughly as
-> > I had thought. Although the Voodoo3 works perfectly, 16-bit and 32-bit
-> > modes are still broken on the Voodoo4.
->
-> I have a Voodoo 5 so I can give it a try this week end. I don't have docs
-> on the latest cards. I will apply the patch to 2.5.X this weekend.
-
-I have been doing some experimenting with the Voodoo4 on my Mac, and I have 
-made a little progress. By doing register dumps and general snooping about to 
-discover how MacOS sets up the card, I've found that the card actually 
-supports a big-endian aperture on the framebuffer (this is different from how 
-big-endian support works on the Voodoo3). As I don't have docs, there's a lot 
-of guess-work involved, and I haven't got it working 100% reliably yet - but 
-once I do I'll supply a patch.
-
-I'm also working on getting the hwcursor working. The patch I produced against 
-2.4.21 does contain fixes for the hwcursor on the Voodoo3 for big-endian 
-machines. Again, though, because the different way byte-swizzling works on 
-the Voodoo4/5, it doesn't work there in 16- and 32-bit modes. When I get the 
-big-endian fixes for the Voodoo4/5 finished, I'll have look at the hwcursor 
-on 2.5/2.6 . . . 
-
-Cheers,
-Rich
-
+Jurriaan
+-- 
+Someone on IRC was very sad about the uptime of his machine wrapping
+from 497 days to 0.
+	linux-kernel
+Debian (Unstable) GNU/Linux 2.6.0-test1-ac2 4112 bogomips load av: 0.05 0.08 0.13
 
 
 -------------------------------------------------------

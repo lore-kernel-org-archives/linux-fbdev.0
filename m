@@ -1,69 +1,54 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [Linux-fbdev-devel] "remap_page_range" i810 compile time problem ..
-Date: Fri, 11 Mar 2005 11:47:13 +0800
-Message-ID: <200503111147.14726.adaplas@hotpop.com>
-References: <4EE0CBA31942E547B99B3D4BFAB348113A48FA@mail.esn.co.in>
-Reply-To: linux-fbdev-users@lists.sourceforge.net
+From: Andrew Morton <akpm@osdl.org>
+Subject: inappropriate use of in_atomic()
+Date: Thu, 10 Mar 2005 20:40:06 -0800
+Message-ID: <20050310204006.48286d17.akpm@osdl.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-In-Reply-To: <4EE0CBA31942E547B99B3D4BFAB348113A48FA@mail.esn.co.in>
-Content-Disposition: inline
-Sender: linux-fbdev-users-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-users-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-users>,
-	<mailto:linux-fbdev-users-request@lists.sourceforge.net?subject=unsubscribe>
+Sender: linux1394-devel-admin@lists.sourceforge.net
+Errors-To: linux1394-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux1394-devel>,
+	<mailto:linux1394-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-users@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-users-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-users>,
-	<mailto:linux-fbdev-users-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-users>
+List-Post: <mailto:linux1394-devel@lists.sourceforge.net>
+List-Help: <mailto:linux1394-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux1394-devel>,
+	<mailto:linux1394-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux1394-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, "Mukund JB." <mukundjb@esntechnologies.co.in>, adaplas@pol.net, linux-fbdev-users@lists.sourceforge.net
-
-On Thursday 10 March 2005 13:26, Mukund JB. wrote:
-> Hi adaplas,
->
-> > > I have problem with compiling the i810fb driver downloaded from
-> > > Sourceforge site.
-> > > I have D/W the i810fb patch "linux-i810fb-0.0.35.tar.bz2".
-> > >
-> > > When I run the make modules I get the following error
-> >
-> > Try the i810fb-lite driver.  If that does not work, let me know what
-> > kernel version you are using.
->
-> I got it.
-> The " remap_page_range" API the i810fb driver is using is old & when I
-> modifies the API with required parameters , I  compiled well & worked.
->
-> When I inserted the module using the modprobe i.e
->
-> Modprobe i810fb vram=2 xres=1024 bpp=16 hsync1=30 hsync2=55 vsync1=50
-> vsync2=85 accel=1 rotate=1
->
-> the screen rotated. GREAT.
->
-> But when I try this without accel=1 rotation fails. Can u just narrate
-> me what is accel accentually doing?
-
-Because if accel is on, the driver is using it's own version of drawing
-functions which are flexible enough that additional features can be added,
-such as screen rotation.
-
-If accel is off, the driver will use the generic functions which cannot do
-screen rotation.  Of course, one can write a software version that can do
-screen rotation.
-
->
-> Also, the font I am getting looks linear & is not good? I do I modify
-> the font format
-
-Use setfont.
-
-Tony
+To: Paul Mackerras <paulus@samba.org>, Jean Tourrilhes <jt@bougret.hpl.hp.com>, javier@tudela.mad.ttd.net, linux-fbdev-devel@lists.sourceforge.net, acpi-devel@lists.sourceforge.net, linux1394-devel@lists.sourceforge.net, Roland Dreier <roland@topspin.com>
+Cc: linux-kernel@vger.kernel.org
 
 
+in_atomic() is not a reliable indication of whether it is currently safe
+to call schedule().
+
+This is because the lockdepth beancounting which in_atomic() uses is only
+accumulated if CONFIG_PREEMPT=y.  in_atomic() will return false inside
+spinlocks if CONFIG_PREEMPT=n.
+
+Consequently the use of in_atomic() in the below files is probably
+deadlocky if CONFIG_PREEMPT=n:
+
+	arch/ppc64/kernel/viopath.c
+	drivers/net/irda/sir_kthread.c
+	drivers/net/wireless/airo.c
+	drivers/video/amba-clcd.c
+	drivers/acpi/osl.c
+	drivers/ieee1394/ieee1394_transactions.c
+	drivers/infiniband/core/mad.c
+
+Note that the same beancounting is used for the "scheduling while atomic"
+warning, so if the code calls schedule with locks held, we won't get a
+warning.  Both are tied to CONFIG_PREEMPT=y.
+
+The kernel provides no reliable runtime way of detecting whether or not it
+is safe to call schedule().
+
+Can we please find ways to change the above code to not use in_atomic()? 
+Then we can whack #ifndef MODULE around its definition to reduce
+reoccurrences.  Will probably rename it to something more scary as well.
+
+Thanks.
 
 
 -------------------------------------------------------

@@ -1,23 +1,13 @@
-From: Ingo Oeser <ioe-lkml@rameria.de>
+From: Keith Whitwell <keith@tungstengraphics.com>
 Subject: Re: [Dri-devel] Re: DRM and pci_driver conversion
-Date: Mon, 27 Oct 2003 16:37:30 +0200
+Date: Mon, 27 Oct 2003 15:10:20 +0000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200310271537.30435.ioe-lkml__21583.9665303522$1067274709@rameria.de>
-References: <Pine.LNX.4.44.0310251116140.4083-100000@home.osdl.org> <3F9ACC58.5010707@pobox.com>
+Message-ID: <3F9D355C.8070103@tungstengraphics.com>
+References: <Pine.LNX.4.44.0310251116140.4083-100000@home.osdl.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1AE8gG-0001rg-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 27 Oct 2003 06:49:16 -0800
-Received: from smtprelay02.ispgateway.de ([62.67.200.157])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.24)
-	id 1AE8ba-00072L-B9
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 27 Oct 2003 06:44:26 -0800
-In-Reply-To: <3F9ACC58.5010707@pobox.com>
-Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44.0310251116140.4083-100000@home.osdl.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,42 +17,91 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: Egbert Eich <eich@xfree86.org>, Jon Smirl <jonsmirl@yahoo.com>, Eric Anholt <eta@lclark.edu>, kronos@kronoz.cjb.net, Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net, dri-devel <dri-devel@lists.sourceforge.net>, Linus Torvalds <torvalds@osdl.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: Egbert Eich <eich@xfree86.org>, Jon Smirl <jonsmirl@yahoo.com>, Eric Anholt <eta@lclark.edu>, kronos@kronoz.cjb.net, Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net, dri-devel <dri-devel@lists.sourceforge.net>, Jeff Garzik <jgarzik@pobox.com>
 
-On Saturday 25 October 2003 21:17, Jeff Garzik wrote:
-> Graphics processors are growing more general, too -- moving towards
-> generic vector/data processing engines.  I bet you'll see an optimal
-> model emerge where you have some sort of "JIT" for GPU microcode in
-> userspace.  Multiple apps pipeline X/GL/hardware commands into the JIT,
-> which in turn pipelines data and microcode commands to the GPU kernel
+Linus Torvalds wrote:
+> On Sat, 25 Oct 2003, Egbert Eich wrote:
+> 
+>>Speaking of XFree86: when I developed the PCI resource stuff in 
+>>XFree86 I was trying to get support from kernel folks to get the 
+>>appropriate user space interfaces into the kernel. When I got 
+>>nowhere I decided to do everything myself. 
+> 
+> 
+> There won't be any "user space interfaces". There are perfectly good 
+> in-kernel interfaces, and anybody who needs them needs to be in kernel 
+> space. Ie the kernel interfaces are for kernel modules, not for user space 
+> accesses.
+> 
+> The kernel module can be a simple interface layer like DRI, but the thing 
+> is, it needs to be specific to some kind of hardware. I refuse to have 
+> some kind of crap "user space driver" interface - drivers in user space 
+> are a mistake. 
+> 
+> 
+>>Is there any API that allows one to do this from user space?
+> 
+> 
+> No. And I don't really see any huge reason for it.
+> 
+> 
+>>There are plenty of XFree86 drivers around that don't have a
+>>DRM kernel module and it should  be possible to run those which
+>>do without DRI support, therefore it would be a good if the
+>>XFree86 driver could do this registration itself.
+> 
+> 
+> If you do this, do it _right_. Look at what X really needs, and make a
+> driver for it. A _real_ driver. Not just a half-hearted "we want to do
+> things in user space, but we can't".
+> 
+> Face it, a good graphics driver needs more than just "set up the ROM". It
+> needs DMA access, and the ability to use interrupts. It needs a real 
 > driver.
+> 
+> It basically needs something like what the DRI modules tend to do.
+> 
+> I'd be really happy to have real graphics drivers in the kernel, but quite
+> frankly, so far the abstractions I've seen have sucked dead donkeys
+> through a straw. "fbcon" does way too much (it's not a driver, it's more a
+> text delivery system and a mode switcher). And DRI is too complex and
+> fluid to be a good low-level driver.
+> 
+> Quite frankly, I'd much rather see a low-level graphics driver that does
+> _two_ things, and those things only:
+> 
+>  - basic hardware enumeration and setup (and no, "basic setup" does not
+>    mean "mode switching": it literally means things like doing the 
+>    pci_enable_device() stuff.
+> 
+>  - serialization and arbitrary command queuing from a _trusted_ party (ie
+>    it could take command lists from the X server, but not from untrusted
+>    clients). This part basically boils down to "DMA and interrupts". This 
+>    is the part that allows others to wait for command completion, "enough 
+>    space in the ring buffers" etc. But it does _not_ know or care what the 
+>    commands are.
+> 
+> Then, fbcon and DRI and X could all three use these basics - and they'd be
+> _so_ basic that the hardware layer could be really stable (unlike the DRI
+> code that tends to have to upgrade for each new type of command that DRI
+> adds - since it has to take care of untrusted clients. So DRI would
+> basically use the low-level driver as a separate module, the way it
+> already uses AGP).
 
-These "JIT" is needed also for another reason: 
+That makes sense - the abstraction of dma engine away from the 
+security-providing gumpf that is so much of the DRM modules, to form a single 
+kernel-level "owner" of the graphics hardware.
 
-	There are contraints for GPU commands and the pipelines need to
-	be modelled, like CPU piplines are modelled in a compiler. But
-	more like the pipelines of some early long instruction word
-	processors, where issuing to a used pipeline will cause random
-	behavior and crashes. So the JIT doesn't should also emit
-	synchronization points. 
+This would also answer various questions that float around regarding who is 
+the ultimate "owner" of the graphics hardware - in particular, who is 
+responsible for virtualization of the graphics memory.
 
-With this JIT in place, there need to be just some hardware description
-files (backends) and some API (GL, DirectX, X) description files
-(frontends).
+Of course, that's a trickier task because it is one which doesn't just rip 
+existing code out of various poorly-conceived modules.
 
-Now we just need some funding for that and the datasheets. Then it's
-doable.
-
-I see just one showstopper: Cheating in benchmarks isn't possible anymore.
-
-PS: That's basically the GGI approach taken further.
-
-Regards
-
-Ingo Oeser
-
+Keith
 
 
 

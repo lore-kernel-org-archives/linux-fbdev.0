@@ -1,86 +1,76 @@
-From: Siim Vahtre <siim@pld.ttu.ee>
-Subject: cat /dev/fb1 produces kernel bug
-Date: Sun, 23 Feb 2003 20:07:59 +0200 (EET)
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.SOL.4.31.0302231958260.28624-100000@pitsa.pld.ttu.ee>
+From: Antonino Daplas <adaplas@pol.net>
+Subject: Re: cat /dev/fb1 produces kernel bug
+Date: 24 Feb 2003 05:34:24 +0800
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <1046035982.1308.74.camel@localhost.localdomain>
+References: <Pine.SOL.4.31.0302231958260.28624-100000@pitsa.pld.ttu.ee>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from pine.compass.com.ph ([202.70.96.37])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18n3kw-0005Ly-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 23 Feb 2003 13:33:54 -0800
+In-Reply-To: <Pine.SOL.4.31.0302231958260.28624-100000@pitsa.pld.ttu.ee>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: Siim Vahtre <siim@pld.ttu.ee>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel List <linux-kernel@vger.kernel.org>
+
+On Mon, 2003-02-24 at 02:07, Siim Vahtre wrote:
+
+> Call Trace:
+>  [<c020e678>] kobject_register+0x58/0x70
+>  [<c021a58b>] bus_add_driver+0x5b/0xe0
+>  [<c021a9df>] driver_register+0x2f/0x40
+>  [<c017a8e3>] create_proc_entry+0x83/0xd0
+>  [<c021170b>] pci_register_driver+0x4b/0x60
+>  [<c010507f>] init+0x3f/0x160
+>  [<c0105040>] init+0x0/0x160
+>  [<c010726d>] kernel_thread_helper+0x5/0x18
+> 
+
+For a quick fix, try this:
+
+diff -Naur linux-2.5.61/drivers/video/riva/fbdev.c linux/drivers/video/riva/fbdev.c
+--- linux-2.5.61/drivers/video/riva/fbdev.c	2003-02-16 00:49:23.000000000 +0000
++++ linux/drivers/video/riva/fbdev.c	2003-02-23 21:30:50.000000000 +0000
+@@ -1961,12 +1961,10 @@
+ 
+ int __init rivafb_init(void)
+ {
+-	int err;
+-	err = pci_module_init(&rivafb_driver);
+-	if (err)
+-		return err;
+-	pci_register_driver(&rivafb_driver);
+-	return 0;
++	if (pci_register_driver(&rivafb_driver) > 0) 
++		return 0;
++	pci_unregister_driver(&rivafb_driver);
++	return -ENODEV;
+ }
+ 
+
+Or Try James' patch...
+http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
+
+...and Geert's "Logo Updates" which he just sent recently.
+
+Tony
 
 
-2.5.62 kernel that is compiled without devfs and without module support.
 
-/proc/devices shows: Character devices: 29 fb
-
-ls -l /dev |grep fb shows:
-crw-rw----    1 root     video     29,   0 Mar 14  2002 fb0
-crw--w----    1 root     video     29,   1 Mar 14  2002 fb0autodetect
-crw--w----    1 root     video     29,   0 Mar 14  2002 fb0current
-crw--w----    1 root     video     29,  32 Mar 14  2002 fb1
-crw--w----    1 root     video     29,  33 Mar 14  2002 fb1autodetect
-crw--w----    1 root     video     29,  32 Mar 14  2002 fb1current
-
-Relevant pieces of kernel configuration:
-CONFIG_FRAMEBUFFER_CONSOLE=y
-CONFIG_FBCON_ADVANCED=y
-CONFIG_FB=y
-CONFIG_VIDEO_SELECT=y
-CONFIG_FB_RIVA=y
-# CONFIG_FB_VIRTUAL is not set
-
-When the thing boots up it says:
-
-rivafb: nVidia device/chipset 10DE0110
-rivafb: Detected CRTC controller 0 being used
-rivafb: RIVA MTRR set to ON
-rivafb: PCI nVidia NV10 framebuffer ver 0.9.5b (nVidiaGeForce2-M, 64MB @
-0xE8000000)
-Badness in kobject_register at lib/kobject.c:152
-Call Trace:
- [<c020e678>] kobject_register+0x58/0x70
- [<c021a58b>] bus_add_driver+0x5b/0xe0
- [<c021a9df>] driver_register+0x2f/0x40
- [<c017a8e3>] create_proc_entry+0x83/0xd0
- [<c021170b>] pci_register_driver+0x4b/0x60
- [<c010507f>] init+0x3f/0x160
- [<c0105040>] init+0x0/0x160
- [<c010726d>] kernel_thread_helper+0x5/0x18
-
-Console: switching to colour frame buffer device 80x30
-
-...although that little error came along, everything is working very
-well in general. However, when I do "cat /dev/fb1" (which is completely
-sick, I have no fb1 !?), I get following:
-
- <1>Unable to handle kernel NULL pointer dereference at virtual address
-0000016d printing eip:
-c0288e1d
-*pde = 00000000
-Oops: 0000
-CPU:    0
-EIP:    0060:[<c0288e1d>]    Not tainted
-EFLAGS: 00010202
-EIP is at fb_open+0x1d/0x50
-eax: ffffffed   ebx: 00000000   ecx: 00000000   edx: 00000001
-esi: c50a8a40   edi: c64ad114   ebp: ffffffe9   esp: c3a63f30
-ds: 007b   es: 007b   ss: 0068
-Process cat (pid: 1342, threadinfo=c3a62000 task=c1ac1860)
-Stack: 00000000 ffffffed c01558b6 c64ad114 c50a8a40 c50a8a40 c64ad114
-c7fba560
-       c014b7ee c64ad114 c50a8a40 00008000 00000000 c3a88000 c3a62000
-c014b678
-       c4b81e00 c7fba560 00008000 c3a63f80 c4b81e00 c7fba560 c3a88000
-c57fd29c
-Call Trace:
- [<c01558b6>] chrdev_open+0x66/0x80
- [<c014b7ee>] dentry_open+0x16e/0x180
- [<c014b678>] filp_open+0x68/0x70
- [<c014ba8b>] sys_open+0x5b/0x90
- [<c01095df>] syscall_call+0x7/0xb
-
-Code: 8b 82 6c 01 00 00 83 78 04 00 75 07 89 c8 83 c4 08 c3 90 c7
- Segmentation fault.
+-------------------------------------------------------
+This SF.net email is sponsored by: SlickEdit Inc. Develop an edge.
+The most comprehensive and flexible code editor you can use.
+Code faster. C/C++, C#, Java, HTML, XML, many more. FREE 30-Day Trial.
+www.slickedit.com/sourceforge

@@ -1,35 +1,25 @@
-From: ramprasad <ramprasad@ncoretech.com>
-Subject: Console on CRT
-Date: Mon, 22 Nov 2004 18:13:35 +0530
-Message-ID: <41A1DEF7.6040407@ncoretech.com>
-References: <418F6D37.7050104@ncoretech.com>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: Re: [2.6 patch] drivers/video/: misc cleanups
+Date: Tue, 23 Nov 2004 04:46:47 +0800
+Message-ID: <200411230446.50784.adaplas@hotpop.com>
+References: <20041121153702.GB2829@stusta.de> <200411221055.07693.adaplas@hotpop.com> <Pine.GSO.4.61.0411221043040.7323@waterleaf.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CWDb3-0005Ng-Gs
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 22 Nov 2004 04:47:09 -0800
-Received: from premium.exocore.com ([203.197.173.224])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1CWDb2-0007Yg-60
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 22 Nov 2004 04:47:09 -0800
-Received: from mail.ncoretech.com (dsl.ncoretech.com [61.95.205.91])
-	by premium.exocore.com (8.12.8/8.12.8) with ESMTP id iAMCl1Ak030837
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 22 Nov 2004 18:17:01 +0530
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by mail.ncoretech.com (Postfix) with ESMTP id EFB205FF82
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 22 Nov 2004 18:17:37 +0530 (IST)
-Received: from mail.ncoretech.com ([127.0.0.1])
- by localhost (mail.ncoretech.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 22466-05 for <linux-fbdev-devel@lists.sourceforge.net>;
- Mon, 22 Nov 2004 18:17:37 +0530 (IST)
-Received: from ncoretech.com (ws184.ncoretech.com [192.168.1.184])
-	by mail.ncoretech.com (Postfix) with ESMTP id 71DB85FF4D
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 22 Nov 2004 18:17:37 +0530 (IST)
-In-Reply-To: <418F6D37.7050104@ncoretech.com>
+	id 1CWL5j-0005H7-DK
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 22 Nov 2004 12:47:19 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1CWL5h-0003Md-U8
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 22 Nov 2004 12:47:19 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id 35CEAA193C2
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 22 Nov 2004 20:47:05 +0000 (UTC)
+In-Reply-To: <Pine.GSO.4.61.0411221043040.7323@waterleaf.sonytel.be>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -40,19 +30,51 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net, Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Adrian Bunk <bunk@stusta.de>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-Hi All,
-    I am working on 2.4.19-rmk7-pxa1 kernel. I have an epson 13506 chip 
-interfaced to PXA processor.I want to direct the boot messages to my CRT 
-and also i want to use CRT as my terminal.Now i have drected my messages 
-to my serial port.(kernel boot parmeter console=ttyS0,115200). I am 
-seeing an linux logo on my CRT.I am using the drivers from epson website.
-Any pointers on how to go about.
+On Monday 22 November 2004 17:43, Geert Uytterhoeven wrote:
+> On Mon, 22 Nov 2004, Antonino A. Daplas wrote:
+> > On Sunday 21 November 2004 23:58, Adrian Bunk wrote:
+> > > On Sun, Nov 21, 2004 at 04:37:02PM +0100, Adrian Bunk wrote:
+> > > > The patch below does the following cleanups under drivers/video/ :
+> > > > - make some needlessly global code static
+> > > > - the following was needlessly EXPORT_SYMBOL'ed:
+> > > >   - fbcon.c: fb_con
+> > > >   - mdacon.c: fb_blank
+> > > >   - fbmon.c: get_EDID_from_firmware (completely unused)
+> > > >...
+> > >
+> > > I forgot one thing:
+> > >
+> > > Please review my global_mode_option removal in modedb.c .
+> > >
+> > > It was always NULL and I'd say the only usage was wrong (although it
+> > > had no practical effect).
+> >
+> > Should be ok to remove it.  I only see fb_find_mode using it, and as
+> > you've concluded, usage is not very clear.
+> >
+> > BTW: The global_mode_option, previously, is filled up when no driver is
+> > specified in the boot options, such as "video=1024x768@60".  But this was
+> > removed during the fb initialization cleanup.
+>
+> What a pity... It allowed people to not have to care about the name of
+> their graphics driver(s)...
+>
 
-Thanks in advance,
-Ramprasad
+The absence of the driver name array will make it a bit difficult to differentiate
+between options passed specifically to drivers vs the global mode option.
+
+We can bring global_mode_option back. Since driver names always have a
+terminating "fb", we can search for the "fb:" substring and if not found,
+then it's a global_mode_option.
+
+Is that okay?
+
+Tony
+
 
 
 

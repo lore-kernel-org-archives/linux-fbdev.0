@@ -1,24 +1,47 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: xxx_check_var
-Date: 11 Dec 2002 10:08:49 +0100
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1039597729.538.39.camel@zion>
-References: <Pine.LNX.4.33.0212102219010.2617-100000@maxwell.earthlink.net>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: grayscale penguin?
+Date: Tue, 10 Dec 2002 14:20:55 -0800 (PST)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.LNX.4.33.0212101418570.2617-100000@maxwell.earthlink.net>
+References: <Pine.GSO.4.21.0212101455170.13391-100000@vervain.sonytel.be>
 Mime-Version: 1.0
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from flamingo.mail.pas.earthlink.net ([207.217.120.232])
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18Lrw6-0006BC-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 10 Dec 2002 13:29:02 -0800
+In-Reply-To: <Pine.GSO.4.21.0212101455170.13391-100000@vervain.sonytel.be>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.33.0212102219010.2617-100000@maxwell.earthlink.net>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 2002-12-11 at 07:32, James Simmons wrote:
-> 
->  For the pmu_sleep_notifier can you pass in a specific struct fb_info or
-> do you need to make a list of all of them?
 
-So far, I need to make that list. But sooner or later, those notifiers
-will go away and I'll use the PCI and/or new driver model PM features.
+> Should we add a penguin logo for greyscale displays as well?
+>
+> Simon Budig already created one a while ago (cfr.
+> http://home.tvd.be/cr26864/Linux/fbdev/logo.html and
+> http://www.home.unix-ag.org/simon/kernel-pingu/).
 
-Ben.
+Hm. Do we need it? A few drivers fake greyscale by creating a grey scale
+colormap. We should try it with the default image. If it doesn't work then
+we can include it.
+
+
+
+
+
+-------------------------------------------------------
+This sf.net email is sponsored by:
+With Great Power, Comes Great Responsibility 
+Learn to use your power at OSDN's High Performance Computing Channel
+http://hpc.devchannel.org/

@@ -1,67 +1,48 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Linux framebuffer on i865
-Date: Thu, 26 Feb 2004 11:00:17 +0100 (MET)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0402261059010.17026@waterleaf.sonytel.be>
-References: <042V8L912@server5.heliogroup.fr>
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Subject: Re: [Linux-fbdev-devel] Re: fbdv/fbcon pending problems
+Date: Thu, 26 Feb 2004 16:11:01 +0100
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <1077808260.2677.98.camel@thor.asgaard.local>
+References: <1077497593.5960.28.camel@gaston>
+	 <200402241657.37382.sgy-lkml@amc.com.au>
+	 <Pine.GSO.4.58.0402240935390.3187@waterleaf.sonytel.be>
+	 <200402251812.26624.sgy-lkml@amc.com.au>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AwISy-0005Lb-AN
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 26 Feb 2004 02:10:04 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AwIJe-0008Ry-MR
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 26 Feb 2004 02:00:26 -0800
-In-Reply-To: <042V8L912@server5.heliogroup.fr>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Hubert Tonneau <hubert.tonneau@fullpliant.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <200402251812.26624.sgy-lkml@amc.com.au>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"
+To: Stuart Young <sgy-lkml@amc.com.au>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
 
-	Hi Hubert,
+On Wed, 2004-02-25 at 08:14, Stuart Young wrote:=20
+> On Tue, 24 Feb 2004 07:36 pm, Geert Uytterhoeven wrote:
+> >
+> > There should be an ANSI escape sequence for resetting the scroll re=
+gion.
+> > Just send that to the console.
+>=20
+> Yup there is. It's Esc [r , however this also returns the cursor to t=
+he top of=20
+> the screen. You can use Esc [s & Esc [u to save and restore the curre=
+nt=20
+> cursor position, so it's just a matter of putting them around it thus=
+:
+>  Esc [s Esc [r Esc [u
+>=20
+> Or with echo (in a bash script - \\'s to escape it from the shell):
+>  echo -ne \\033[s\\033[r\\033[u
+>=20
+> Now there is a problem with this solution: This leaves the logo (and =
+any=20
+> boot-time drawn graphics in the unscrollable region) on the screen.
 
-> I've sucessfully used Linux 2.4 intel frame buffer written by David Dawes
-> as the only alternative to get around buggy bioses that make VESA unusable.
-> He seems to have no plan to port it to 2.6, and I have no idea about required
-> changes since they are Linux frame buffer internal API changes.
->
-> Do you have plans to make the port since the frame buffer maintainer his
-> probably the guy the best knows what needs to be adjusted ?
-
-I don't have the hardware, so I cannot test it.
-
-Any other takers?
-
-> Please also notice that the URL listed in Linux MAINTAINERS file seems to be dead:
-> http://www.linux-fbdev.org
-
-Thanks, we're already aware of that...
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Should it? :)
 
 
--------------------------------------------------------
-SF.Net is sponsored by: Speed Start Your Linux Apps Now.
-Build and deploy apps & Web services for Linux with
-a free DVD software kit from IBM. Click Now!
-http://ads.osdn.com/?ad_id=1356&alloc_id=3438&op=click
+--=20
+Earthling Michel D=C3=A4nzer      |     Debian (powerpc), X and DRI dev=
+eloper
+Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=3Ddaen=
+zer

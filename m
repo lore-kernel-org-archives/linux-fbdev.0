@@ -1,17 +1,16 @@
-From: Alex Pavloff <apavloff@eason.com>
-Subject: National Geode drivers
-Date: Wed, 21 Aug 2002 16:35:39 -0700
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [PATCH] broken cfb* support in the 2.5.31-bk
+Date: Thu, 22 Aug 2002 10:06:24 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <D3AF5F134D627243993F2F2FC32EE4D20CE1B9@mailman.eason.com>
+Message-ID: <Pine.LNX.4.33.0208220950170.8777-100000@maxwell.earthlink.net>
+References: <15708.14066.32752.365661@argo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from a.smtp-out.sonic.net ([208.201.224.38])
-	by usw-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17hf0o-00079g-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 21 Aug 2002 16:35:42 -0700
-Received: from mailman.eason.com (adsl-209-204-139-80.sonic.net [209.204.139.80])
-	by ultra.sonic.net (8.11.6/8.8.5) with ESMTP id g7LNZeD07168
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 21 Aug 2002 16:35:40 -0700
+Received: from snipe.mail.pas.earthlink.net ([207.217.120.62])
+	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17hvm5-0005nv-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 22 Aug 2002 10:29:37 -0700
+In-Reply-To: <15708.14066.32752.365661@argo.ozlabs.ibm.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,32 +20,66 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "'linux-fbdev-devel@lists.sourceforge.net'" <linux-fbdev-devel@lists.sourceforge.net>
+To: Paul Mackerras <paulus@au1.ibm.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-Hello folks,
+> > That was done to push people to port there drivers to the new api.
+>
+> Well, what _is_ the new API?
 
-I figure this is a good place to put a message about this so people will be
-able find this in the future.  I have sucessfully compiled National
-Semiconductor's 1.1.7 Geode kernel framebuffer driver for Linux 2.4.19, and
-had the screen come up.  The files are at www.eason.com/linux.    They work,
-but they aren't pretty.  (They ARE for multiple OSes/chipsets though).
+From the details in skeletonfb.c.
 
-The drivers are chock-full of features that are commented out and for
-different platforms.  This specific configuration works on an Advantech
-PCM-5820 board, and I suspect it would work on most of the similar boards
-out there.  
+ *  I have started rewriting this driver as a example of the upcoming new API
+ *  The primary goal is to remove the console code from fbdev and place it
+ *  into fbcon.c. This reduces the code and makes writing a new fbdev driver
+ *  easy since the author doesn't need to worry about console internals. It
+ *  also allows the ability to run fbdev without a console/tty system on top
+ *  of it.
+ *
+ *  First the roles of struct fb_info and struct display have changed. Struct
+ *  display will go away. The way the the new framebuffer console code will
+ *  work is that it will act to translate data about the tty/console in
+ *  struct vc_data to data in a device independent way in struct fb_info. Then
+ *  various functions in struct fb_ops will be called to store the device
+ *  dependent state in the par field in struct fb_info and to change the
+ *  hardware to that state. This allows a very clean seperation of the fbdev
+ *  layer from the console layer. It also allows one to use fbdev on its own
+ *  which is a bounus for embedded devices. The reason this approach works is
+ *  for each framebuffer device when used as a tty/console device is allocated
+ *  a set of virtual terminals to it. Only one virtual terminal can be active
+ *  per framebuffer device. We already have all the data we need in struct
+ *  vc_data so why store a bunch of colormaps and other fbdev specific data
+ *  per virtual terminal.
 
-Later 1.2.0 drivers are also available on the above mentioned site, but it
-appears all they do is add more hooks for National's custom framebuffer
-acceleration.
+ *  As you can see doing this makes the con parameter pretty much useless
+ *  for struct fb_ops functions, as it should be. Also having struct
+ *  fb_var_screeninfo and other data in fb_info pretty much eliminates the
+ *  need for get_fix and get_var. Once all drivers use the fix, var, and cmap
+ *  fbcon can be written around these fields. This will also eliminate the
+ *  need to regenerate struct fb_var_screeninfo, struct fb_fix_screeninfo
+ *  struct fb_cmap every time get_var, get_fix, get_cmap functions are called
+ *  as many drivers do now.
 
-Alex Pavloff
-Software Engineer
-Eason Technology
- 
+See skeletonfb.c for further details.
+
+> Anyway, you could apply this patch, for a start.  I wish you would be
+> a bit more careful about details.
+
+Done. Well the good news is I have aquired more hardware for different
+platforms to test my work on :-)
+
+MS: (n) 1. A debilitating and surprisingly widespread affliction that
+renders the sufferer barely able to perform the simplest task. 2. A disease.
+
+James Simmons  [jsimmons@users.sf.net] 	                ____/|
+fbdev/console/gfx developer                             \ o.O|
+http://www.linux-fbdev.org                               =(_)=
+http://linuxgfx.sourceforge.net                            U
+http://linuxconsole.sourceforge.net
+
 
 
 -------------------------------------------------------

@@ -1,24 +1,19 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: atyfb expert needed
-Date: Tue, 17 Feb 2004 17:41:12 +1100
+From: James Simmons <jsimmons@infradead.org>
+Subject: FrameMasterII fbdev updates.
+Date: Wed, 18 Feb 2004 18:28:00 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1077000071.1056.171.camel@gaston>
-References: <1076537453.868.123.camel@gaston>
-	 <200402131641.29028.alex.kern@gmx.de> <1076714453.7304.103.camel@gaston>
-	 <200402141626.39311.alex.kern@gmx.de>  <1076997609.1046.168.camel@gaston>
+Message-ID: <Pine.LNX.4.44.0402181823110.10389-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Asz0B-0005z4-QZ
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 16 Feb 2004 22:46:39 -0800
-Received: from gate.crashing.org ([63.228.1.57] ident=root)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	id 1AtWVN-0004GA-86
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 18 Feb 2004 10:33:05 -0800
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1AsyqF-00006I-MH
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 16 Feb 2004 22:36:23 -0800
-In-Reply-To: <1076997609.1046.168.camel@gaston>
+	id 1AtWJJ-0002tj-7B
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 18 Feb 2004 10:20:37 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,82 +23,179 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Alexander Kern <alex.kern@gmx.de>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@infradead.org>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Ok, that patch makes it back working for me based on the version
-in James fbdev tree.
 
-I don't know _WHY_, but I couldn't get it to not lockup without
-adding the to wait_for_idle after the fillrect & copyarea.
+Hi!
 
-James, please apply.
+  Can you test this patch. It is a port of the driver to use sysfs. 
 
-Ben.
-
-===== drivers/video/aty/mach64_accel.c 1.12 vs edited =====
---- 1.12/drivers/video/aty/mach64_accel.c	Mon Feb  9 18:10:12 2004
-+++ edited/drivers/video/aty/mach64_accel.c	Tue Feb 17 17:38:29 2004
-@@ -186,7 +186,7 @@
- 	wait_for_fifo(2, par);
- 	aty_st_le32(DST_Y_X, (x << 16) | y, par);
- 	aty_st_le32(DST_HEIGHT_WIDTH, (width << 16) | height, par);
--	par->blitter_may_be_busy = 1;
-+       	par->blitter_may_be_busy = 1;
- }
+--- linus-2.6/drivers/video/fm2fb.c	2004-02-16 23:36:11.000000000 -0800
++++ fbdev-2.6/drivers/video/fm2fb.c	2004-02-17 18:20:24.000000000 -0800
+@@ -127,11 +127,6 @@
  
- void atyfb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
-@@ -236,6 +236,8 @@
- 	aty_st_le32(SRC_HEIGHT1_WIDTH1, (width << 16) | area->height, par);
- 	aty_st_le32(DST_CNTL, direction | rotation, par);
- 	draw_rect(dx, dy, width, area->height, par);
+ static volatile unsigned char *fm2fb_reg;
+ 
+-#define arraysize(x)	(sizeof(x)/sizeof(*(x)))
+-
+-static struct fb_info fb_info;
+-static u32 pseudo_palette[17];
+-
+ static struct fb_fix_screeninfo fb_fix __initdata = {
+ 	.smem_len =	FRAMEMASTER_REG,
+ 	.type =		FB_TYPE_PACKED_PIXELS,
+@@ -202,7 +197,7 @@
+ static int fm2fb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+                          u_int transp, struct fb_info *info)
+ {
+-	if (regno > 15)
++	if (regno > 255)
+ 		return 1;
+ 	red >>= 8;
+ 	green >>= 8;
+@@ -216,66 +211,91 @@
+      *  Initialisation
+      */
+ 
+-int __init fm2fb_init(void)
++static struct zorro_device_id fm2fb_devices[] = {
++	{ ZORRO_PROD_BSC_FRAMEMASTER_II, NULL },
++	{ ZORRO_PROD_HELFRICH_RAINBOW_II, NULL },
++	{ 0, 0 }
++};	
 +
-+	wait_for_idle(par);
- }
- 
- void atyfb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
-@@ -274,6 +276,8 @@
- 		    DST_LAST_PEL | DST_Y_TOP_TO_BOTTOM |
- 		    DST_X_LEFT_TO_RIGHT | rotation, par);
- 	draw_rect(dx, rect->dy, width, rect->height, par);
++static struct zorro_driver fm2fb_driver = {
++	.name		= "fm2fb",
++	.id_table	= fm2fb_devices,
++	.probe		= fm2fb_probe,
++};	
 +
-+	wait_for_idle(par);
- }
++static int __devint fm2fb_probe(struct zorro_dev *dev,
++				const struct zorro_device_id *id)
+ {
+-	struct zorro_dev *z = NULL;
++	struct fb_info *info;
+ 	unsigned long *ptr;
+ 	int is_fm;
+ 	int x, y;
  
- void atyfb_imageblit(struct fb_info *info, const struct fb_image *image)
-@@ -419,9 +423,9 @@
- 		}
- 	} else {
- 		u32 *pbitmap;
--		for(pbitmap = (u32*)(image->data); dwords; dwords--, pbitmap++) {
-+		for (pbitmap = (u32*)(image->data); dwords; dwords--, pbitmap++) {
- 			wait_for_fifo(1, par);
--			aty_st_le32(HOST_DATA0, *pbitmap, par);
-+			aty_st_le32(HOST_DATA0, le32_to_cpup(pbitmap), par);
- 		}
+-	while ((z = zorro_find_device(ZORRO_WILDCARD, z))) {
+-		if (z->id == ZORRO_PROD_BSC_FRAMEMASTER_II)
+-			is_fm = 1;
+-		else if (z->id == ZORRO_PROD_HELFRICH_RAINBOW_II)
+-			is_fm = 0;
+-		else
+-			continue;
++	if (id->id == ZORRO_PROD_BSC_FRAMEMASTER_II)
++		is_fm = 1;
++	else if (id->id == ZORRO_PROD_HELFRICH_RAINBOW_II)
++		is_fm = 0;
+ 		
+-		if (!request_mem_region(z->resource.start, FRAMEMASTER_SIZE, "fm2fb"))
+-			continue;
++	if (!zorro_request_device(z,"fm2fb"))
++		return -ENXIO;
+ 
+-		/* assigning memory to kernel space */
+-		fb_fix.smem_start = z->resource.start;
+-		fb_info.screen_base = ioremap(fb_fix.smem_start, FRAMEMASTER_SIZE);
+-		fb_fix.mmio_start = fb_fix.smem_start + FRAMEMASTER_REG;
+-		fm2fb_reg  = (unsigned char *)(fb_info.screen_base+FRAMEMASTER_REG);
++	info = framebuffer_alloc(256 * sizeof(u32), &dev->dev);	
++	if (!info) {
++		zorro_release_dev(z);
++		return -ENOMEM;
++	}
++		
++	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0) {
++		framebuffer_release(info);
++		zorro_release_dev(z);
++		return -ENOMEM;
++	}	
+ 	
+-		strcpy(fb_fix.id, is_fm ? "FrameMaster II" : "Rainbow II");
+-
+-		/* make EBU color bars on display */
+-		ptr = (unsigned long *)fb_fix.smem_start;
+-		for (y = 0; y < 576; y++) {
+-			for (x = 0; x < 96; x++) *ptr++ = 0xffffff;/* white */
+-			for (x = 0; x < 96; x++) *ptr++ = 0xffff00;/* yellow */
+-			for (x = 0; x < 96; x++) *ptr++ = 0x00ffff;/* cyan */
+-			for (x = 0; x < 96; x++) *ptr++ = 0x00ff00;/* green */
+-			for (x = 0; x < 96; x++) *ptr++ = 0xff00ff;/* magenta */
+-			for (x = 0; x < 96; x++) *ptr++ = 0xff0000;/* red */
+-			for (x = 0; x < 96; x++) *ptr++ = 0x0000ff;/* blue */
+-			for (x = 0; x < 96; x++) *ptr++ = 0x000000;/* black */
+-		}
+-		fm2fb_blank(0, NULL);
+-
+-		if (fm2fb_mode == -1)
+-			fm2fb_mode = FM2FB_MODE_PAL;
+-
+-		fb_info.fbops = &fm2fb_ops;
+-		fb_info.var = fb_var_modes[fm2fb_mode];
+-		fb_info.screen_base = (char *)fb_fix.smem_start;
+-		fb_info.pseudo_palette = pseudo_palette;
+-		fb_info.fix = fb_fix;
+-		fb_info.flags = FBINFO_FLAG_DEFAULT;
++	/* assigning memory to kernel space */
++	fb_fix.smem_start = zorro_resource_start(z);
++	info->screen_base = ioremap(fb_fix.smem_start, FRAMEMASTER_SIZE);
++	fb_fix.mmio_start = fb_fix.smem_start + FRAMEMASTER_REG;
++	fm2fb_reg  = (unsigned char *)(info->screen_base+FRAMEMASTER_REG);
++	
++	strcpy(fb_fix.id, is_fm ? "FrameMaster II" : "Rainbow II");
+ 
+-		/* The below fields will go away !!!! */
+-		fb_alloc_cmap(&fb_info.cmap, 16, 0);
++	/* make EBU color bars on display */
++	ptr = (unsigned long *)fb_fix.smem_start;
++	for (y = 0; y < 576; y++) {
++		for (x = 0; x < 96; x++) *ptr++ = 0xffffff;/* white */
++		for (x = 0; x < 96; x++) *ptr++ = 0xffff00;/* yellow */
++		for (x = 0; x < 96; x++) *ptr++ = 0x00ffff;/* cyan */
++		for (x = 0; x < 96; x++) *ptr++ = 0x00ff00;/* green */
++		for (x = 0; x < 96; x++) *ptr++ = 0xff00ff;/* magenta */
++		for (x = 0; x < 96; x++) *ptr++ = 0xff0000;/* red */
++		for (x = 0; x < 96; x++) *ptr++ = 0x0000ff;/* blue */
++		for (x = 0; x < 96; x++) *ptr++ = 0x000000;/* black */
++	}
++	fm2fb_blank(0, info);
+ 
+-		if (register_framebuffer(&fb_info) < 0)
+-			return -EINVAL;
++	if (fm2fb_mode == -1)
++		fm2fb_mode = FM2FB_MODE_PAL;
+ 
+-		printk("fb%d: %s frame buffer device\n", fb_info.node, fb_fix.id);
+-		return 0;
++	info->fbops = &fm2fb_ops;
++	info->var = fb_var_modes[fm2fb_mode];
++	info->pseudo_palette = info->par;
++	info->par = NULL;
++	info->fix = fb_fix;
++	info->flags = FBINFO_FLAG_DEFAULT;
++
++	if (register_framebuffer(info) < 0) {
++		fb_dealloc_cmap(&info->cmap);
++		framebuffer_release(info);
++		zorro_release_dev(z);
++		return -EINVAL;
  	}
- 
-@@ -430,4 +434,6 @@
- 	/* restore pix_width */
- 	wait_for_fifo(1, par);
- 	aty_st_le32(DP_PIX_WIDTH, pix_width_save, par);
+-	return -ENXIO;
++	printk("fb%d: %s frame buffer device\n", info->node, fb_fix.id);
++	return 0;
++}
 +
-+	wait_for_idle(par);
++static int __init fm2fb_init(void)
++{
++	return zorro_register_driver(&fm2fb_driver);
  }
-===== drivers/video/aty/atyfb_base.c 1.39 vs edited =====
---- 1.39/drivers/video/aty/atyfb_base.c	Mon Feb  9 18:10:12 2004
-+++ edited/drivers/video/aty/atyfb_base.c	Tue Feb 17 15:21:05 2004
-@@ -343,7 +343,7 @@
  
- 	/* Mach64 LT */
- 	{ 0x4c54, 0x4c54, 0x00, 0x00, m64n_lt, 135, 63, 63, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP },
--	{ 0x4c47, 0x4c47, 0x00, 0x00, m64n_ltg, 230, 63, 63, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT | M64F_LT_SLEEP | M64F_G3_PB_1024x768 },
-+	{ 0x4c47, 0x4c47, 0x00, 0x00, m64n_ltg, 230, 63, 63, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_SDRAM_MAGIC_PLL | M64F_FIFO_24 | M64F_EXTRA_BRIGHT | M64F_LT_SLEEP | M64F_G3_PB_1024x768 },
- 
- 	/* Mach64 GTC (3D RAGE PRO) */
- 	{ 0x4742, 0x4742, 0x00, 0x00, m64n_gtc_ba, 230, 100, 100, M64F_GT | M64F_INTEGRATED | M64F_RESET_3D | M64F_GTB_DSP | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT },
-
+ int __init fm2fb_setup(char *options)
 
 
 

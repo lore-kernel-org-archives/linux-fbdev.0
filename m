@@ -1,59 +1,39 @@
-From: Sven Luther <luther@dpt-info.u-strasbg.fr>
-Subject: Re: [Linux-fbdev-devel] Re: [PATCH] save_flags/cli in drivers/video/pm3fb.c
-Date: Mon, 25 Nov 2002 18:53:33 +0100
-Sender: kernel-janitor-discuss-admin@lists.sourceforge.net
-Message-ID: <20021125175333.GA5091@iliana>
-References: <Pine.LNX.4.44.0211232001050.15858-200000@top.qwarx.com> <3DE1F4EB.2050207@irisa.fr>
+From: Jens Axboe <axboe@suse.de>
+Subject: Re: Tridentfb updates?
+Date: Mon, 25 Nov 2002 19:13:52 +0100
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <20021125181352.GF11884@suse.de>
+References: <Pine.LNX.4.44.0211221146240.30881-100000@blessed.joshisanerd.com> <1038185518.28491.24.camel@irongate.swansea.linux.org.uk>
 Mime-Version: 1.0
-Return-path: <kernel-janitor-discuss-admin@lists.sourceforge.net>
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <3DE1F4EB.2050207@irisa.fr>
-Errors-To: kernel-janitor-discuss-admin@lists.sourceforge.net
-List-Help: <mailto:kernel-janitor-discuss-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:kernel-janitor-discuss@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/kernel-janitor-discuss>,
-	<mailto:kernel-janitor-discuss-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/kernel-janitor-discuss>,
-	<mailto:kernel-janitor-discuss-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=kernel-janitor-discuss>
+In-Reply-To: <1038185518.28491.24.camel@irongate.swansea.linux.org.uk>
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Romain Dolbeau <dolbeau@irisa.fr>
-Cc: Chris Wilson <chris@qwirx.com>, Linux Kernel Janitors <kernel-janitor-discuss@lists.sourceforge.net>, Trivial Patch Monkey <trivial@rustcorp.com.au>, linux-fbdev-devel@lists.sourceforge.net
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Josh Myer <jbm@joshisanerd.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Mon, Nov 25, 2002 at 11:01:15AM +0100, Romain Dolbeau wrote:
-> Chris Wilson wrote:
+On Mon, Nov 25 2002, Alan Cox wrote:
+> On Fri, 2002-11-22 at 17:49, Josh Myer wrote:
+> > Hi,
+> > 
+> > I've got an EPIA board, with a trident CyberBlade chipset. Does anyone
+> > have doco on this chipset? The random Xfree stuff available from VIA is
+> > less-than-enlightening (I'm not familiar with X internals).
+> > 
+> > I'm basically just interested in getting FB working for NTSC output.
 > 
-> >Since I can't compile this driver on my architecture, I'm afraid I haven't 
-> >been able to test this patch at all.
-> 
-> This patch is relevant for 2.5.x only, and pm3fb can't compile
-> and work on 2.5.x. The FB API was changed, and FB drivers
-> need to be rewritten. As I never found a 2.5.x release that
-> would compile on my box (no x86 here), I didn't port pm3fb.
-> 
-> BTW, pm3fb should not be integrated in 2.5.x, it was submitted
-> only to 2.4.x and somehow found its way in 2.5.x. I don't
-> maintain pm3fb on 2.5.x, never has, and likely never will.
-> 
-> The proper fix for pm3fb in 2.5 is to delete it, at least
-> until someone else rewrite it or until 2.5.x can actually
-> compile and work on PowerPC and I can rewrite it myself.
+> The chipset docs are freely downloadable from VIA (including the 3d
+> info). The TV on the epia is a seperate chip. I use the vesa mode switch
+> to program that
 
-I have plans for doing a full rewrite of pm3fb for 2.5, just not really
-the times right now. I will do it before 2.6 (or 3.0 or whatever) is
-released though. I have already done some work, just not filled in the
-mode changes and other such. That said, it may be on the limit of my
-NDA, which was supposed to be for XFree86 only (altough i guess the
-current XFree86 code counts as available from other source though.
+For the record, a friend of mine pointed me to:
 
-Friendly,
+http://epiafb.sourceforge.net/
 
-Sven Luther
+today. fb sort of works, the mode initialization doesn't get the mode
+quite right it seems, but a manual fbset works for me afterwards.
 
-
--------------------------------------------------------
-This SF.net email is sponsored by: Get the new Palm Tungsten T 
-handheld. Power & Color in a compact size! 
-http://ads.sourceforge.net/cgi-bin/redirect.pl?palm0002en
+-- 
+Jens Axboe

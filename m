@@ -1,17 +1,16 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: radeonfb on linuxppc_2_4 tree ...
-Date: 16 Jun 2003 19:11:06 +0200
+From: Russell King <rmk@arm.linux.org.uk>
+Subject: [BUG] 2.5.71: no cursor until tty output
+Date: Mon, 16 Jun 2003 19:00:42 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1055783465.622.3.camel@gaston>
-References: <20030616165534.GA6319@iliana>
+Message-ID: <20030616190042.F13312@flint.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from griffon.mipsys.com ([217.167.51.129] helo=gaston)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19RxWA-0007Jd-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 16 Jun 2003 10:11:42 -0700
-In-Reply-To: <20030616165534.GA6319@iliana>
+Received: from caramon.arm.linux.org.uk ([212.18.232.186])
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19RyHu-0002Sn-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 16 Jun 2003 11:01:02 -0700
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,20 +21,24 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Sven Luther <sven.luther@wanadoo.fr>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net, Linux Kernel List <linux-kernel@vger.kernel.org>
 
-On Mon, 2003-06-16 at 18:55, Sven Luther wrote:
-> Hello, 
-> 
-> I am trying to build a linuxppc_2_4 bk tree checked out with the 2.4.21
-> tag. But i get this error :
+There appears to be a bug in fbcon where the soft cursor does not appear
+on the screen until some tty output occurs.  I suspect soft cursor is
+missing some initialisation somewhere; I have once seen some random garbage
+flashing on the screen instead of the cursor, which seems to be where
+the cursor is supposed to be.
 
-It's my fault ;)
+When tty output occurs, the characters appear where the garbage was, and
+the normal cursor appears.
 
-Use the one in the linuxppc_2_4_benh tree at least until I fix linuxppc_2_4
+I've noticed this on several fbcon drivers, so I don't believe it is a
+generic fbcon bug.
 
-Ben.
+-- 
+Russell King (rmk@arm.linux.org.uk)                The developer of ARM Linux
+             http://www.arm.linux.org.uk/personal/aboutme.html
 
 
 

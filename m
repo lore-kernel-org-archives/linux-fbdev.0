@@ -1,18 +1,20 @@
-From: Gutko <gutko@poczta.onet.pl>
-Subject: Re: Console Framebuffer Issues / GeForce4 - Red
- Hat stock kernel 2.4.20-13.9
-Date: Sat, 24 May 2003 19:58:13 +0200
+From: Nicolas Souchu <nsouch@free.fr>
+Subject: Re: matrox ported to new framework?
+Date: Sun, 25 May 2003 10:46:17 +0000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3ECFB2B5.60004@poczta.onet.pl>
-References: <200305241339.23874.rkvaughan@carolina.rr.com>
+Message-ID: <20030525104617.B2238@armor.free.fr>
+References: <20030524195429.A2238@armor.free.fr> <20030524174846.49900.qmail@web14913.mail.yahoo.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from smtp3.poczta.onet.pl ([213.180.130.29])
+Received: from postfix3-2.free.fr ([213.228.0.169])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19JdHq-0007zD-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 24 May 2003 10:58:30 -0700
-In-Reply-To: <200305241339.23874.rkvaughan@carolina.rr.com>
+	id 19JqvP-0002ew-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 25 May 2003 01:32:15 -0700
+Received: from armor.fastether (nas-cbv-7-62-147-152-61.dial.proxad.net [62.147.152.61])
+	by postfix3-2.free.fr (Postfix) with SMTP id 19C5AC10B
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 25 May 2003 10:32:13 +0200 (CEST)
+Content-Disposition: inline
+In-Reply-To: <20030524174846.49900.qmail@web14913.mail.yahoo.com>; from jonsmirl@yahoo.com on Sat, May 24, 2003 at 10:48:46AM -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,67 +24,47 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-Robert Keith Vaughan wrote:
-> Hello:
-> 
-> I apologize if this is the wrong list to post to, but it was suggested in a 
-> post I dug up through a google search.  I normally like to figure things out 
-> for myself, but this one is really starting to tick me off.
-> 
-> I am using Red Hat 9.0 with the stock 2.4.20-13.9 kernel.  I am attempting to 
-> get framebuffer support working on the console with little success. The 
-> relevant PC specs are as follows:
-> 
-> Athlon XP 2000+
-> 1 GB RAM
-> Geforce4 ti4400
-> 
->>From what I have been able to ascertain, vesafb is compiled into this kernel 
-> instead of loading as a module.  I looked at the information for the rivafb 
-> driver and it doesn't appear to support the GeForce4 cards.  What info I have 
-> been able to dig up suggests that you can get non-accelerated framebuffer 
-> support for the GeForce4 using vesafb.  I cannot, however, get it to work.
-> 
-> I have tried to pass the following kernel arguments via grub.  All I get is a 
-> blank screen"
-> 
-> video=vesafb,xres:1024,yres:768,bpp:16 vga=791
-> 
-> 	AND (just in case I COULD get the rivafb module to support it)
-> 
-> video=rivafb,xres:1024,yres:768,bpp:16 vga=791 
-> 
-> I have played around with the bpp and vga= settings (trying 8, 16 and 24 
-> respectively) .  No luck.  Get a blank console up until kdm loads. And I 
-> don't see anthing in the dmesg logs either.  Sigh.
-> 
-> When I issue fbset I get the following error:
-> 
->   open /dev/fb0: No such device
-> 
-> Which leads me to believe that the stock kernel isn't seeing a framebuffer 
-> device despite the fact that vesafb is compiled in.  
-> 
-> I have not yet tried to compile a custom kernel precisely because of 1.) 
-> vesafb is complied into this kernel, AND 2.) Nothing I have read seems to 
-> indicate that compiling rivafb into the kernel will help with my issue ( and 
-> I have not been able to get rivafb to load as a module in any event...)
-> 
-> So, I am stumped.  I'm sure its something stupid on my part....but could 
-> anyone tell me A.) what I am doing wrong here, and/or B.) if anyone has 
-> gotten console framebuffer support running on a stock Red Hat kernel...
-> 
-> Thanks for putting up with the long winded (and I sure stupid) questions..
-> 
-> Keith Vaughan
-> 
-  try passing "mem=512M" to kernel in lilo. It worked for me...I also 
-have 1GB of ram
+On Sat, May 24, 2003 at 10:48:46AM -0700, Jon Smirl wrote:
+> --- Nicolas Souchu <nsouch@free.fr> wrote:
+> > Also, I have a AIW (Rage128) 32MB that is neither
+> > supported by
+> > 2.4.9 nor by 2.5.69. Any hint?
+> > 
+> Not all of the Rage128 PCI ids are in the id table.
+> Just try adding all of the ones from the kernel
+> include file. I have yet to find one that didn't work.
+> I believe the ID for the AGP AIW is missing from the
+> driver's table.
 
+This is not what I meant. The id is already in the table
+but when booting with the framebuffer activated, I get
+garbage on the screen.
 
+The detail is:
+
+none1@pci1:0:0: class=0x030000 card=0x00281002 chip=0x52461002 rev=0x00 hdr=0x00
+    vendor   = 'ATI Technologies'
+    device   = 'Rage 128 GL AGP 2x Rage Fury 16/32MB'
+    class    = display
+    subclass = VGA
+
+> I have the PCI AIW 1002:5044. Something is strange
+> with the driver on 2.5.69. It will work if compiled
+> in, but it won't initialize with a modprobe. There is
+
+I use the driver only wired in the kernel.
+
+You certainly need more inputs to digg. How should I produce debug output?
+
+Nicholas
+
+-- 
+Nicholas Souchu - nsouch@free.fr
 
 
 -------------------------------------------------------

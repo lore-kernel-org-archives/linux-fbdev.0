@@ -1,24 +1,29 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
- one works ;-)
-Date: Tue, 27 Apr 2004 13:21:16 +0200 (MEST)
+From: postmaster@intel.com
+Subject: Delivery Status Notification (Failure)
+Date: Tue, 27 Apr 2004 07:35:29 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0404271319520.14434@waterleaf.sonytel.be>
-References: <Pine.LNX.4.44.0404240035400.5826-100000@phoenix.infradead.org>
- <1083025364.11575.4.camel@gaston> <Pine.GSO.4.58.0404271050540.14434@waterleaf.sonytel.be>
- <Pine.LNX.4.58.0404271119001.31905@rosencrantz.theboonies.us>
- <1083060616.16475.4.camel@gaston>
+Message-ID: <bExDwNw9Y000005ff@orsmsx331.amr.corp.intel.com>
 Mime-Version: 1.0
+Content-Type: multipart/report; report-type=delivery-status;
+	boundary="9B095B5ADSN=_01C42C19A90F90A100000F21orsmsx331.amr.co"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIQeT-0005oW-L8
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 04:21:25 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIQeT-0000f0-3t
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 04:21:25 -0700
-In-Reply-To: <1083060616.16475.4.camel@gaston>
+	id 1BITgU-0003Ic-U6
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 07:35:42 -0700
+Received: from fmr01.intel.com ([192.55.52.18] helo=hermes.fm.intel.com)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BITgU-0002OW-OH
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 07:35:42 -0700
+Received: from petasus.fm.intel.com (petasus.fm.intel.com [10.1.192.37])
+	by hermes.fm.intel.com (8.12.9-20030918-01/8.12.9/d: major-outer.mc,v 1.15 2004/01/30 18:16:28 root Exp $) with ESMTP id i3REZaZu006242
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 27 Apr 2004 14:35:37 GMT
+Received: from orsmsxvs041.jf.intel.com (orsmsxvs041.jf.intel.com [192.168.65.54])
+	by petasus.fm.intel.com (8.12.9-20030918-01/8.12.9/d: major-inner.mc,v 1.10 2004/03/01 19:21:36 root Exp $) with SMTP id i3REZcmN028661
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 27 Apr 2004 14:35:42 GMT
+Received: from orsmsx331.amr.corp.intel.com ([192.168.65.56])
+ by orsmsxvs041.jf.intel.com (SAVSMTP 3.1.2.35) with SMTP id M2004042707352909412
+ for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 27 Apr 2004 07:35:29 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,35 +33,90 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
+
+This is a MIME-formatted message.  
+Portions of this message may be unreadable without a MIME-capable mail program.
+
+--9B095B5ADSN=_01C42C19A90F90A100000F21orsmsx331.amr.co
+Content-Type: text/plain; charset=
+
+This is an automatically generated Delivery Status Notification.
+
+Delivery to the following recipients failed.
+
+       jung-ik.lee@intel.com
+
+
+
+
+--9B095B5ADSN=_01C42C19A90F90A100000F21orsmsx331.amr.co
+Content-Type: message/delivery-status
+
+Reporting-MTA: dns;orsmsx331.amr.corp.intel.com
+Received-From-MTA: dns;orsmsxvs040.jf.intel.com
+Arrival-Date: Tue, 27 Apr 2004 07:35:29 -0700
+
+Final-Recipient: rfc822;jung-ik.lee@intel.com
+Action: failed
+Status: 5.1.1
+
+--9B095B5ADSN=_01C42C19A90F90A100000F21orsmsx331.amr.co
+Content-Type: message/rfc822
+
+Received: from orsmsxvs040.jf.intel.com ([192.168.65.206]) by orsmsx331.amr.corp.intel.com with Microsoft SMTPSVC(5.0.2195.6713);
+	 Tue, 27 Apr 2004 07:35:29 -0700
+Received: from talaria.jf.intel.com ([10.7.209.7])
+ by orsmsxvs040.jf.intel.com (SAVSMTP 3.1.2.35) with SMTP id M2004042707352923410
+ for <jung-ik.lee@intel.com>; Tue, 27 Apr 2004 07:35:29 -0700
+Received: from hermes.jf.intel.com (hermes.jf.intel.com [10.7.208.7])
+	by talaria.jf.intel.com (8.12.9-20030918-01/8.12.9/d: major-inner.mc,v 1.10 2004/03/01 19:21:36 root Exp $) with ESMTP id i3REY6QP007423
+	for <jung-ik.lee@intel.com>; Tue, 27 Apr 2004 14:34:06 GMT
+Received: from intel.com (dsl-200-78-97-236.prod-infinitum.com.mx [200.78.97.236])
+	by hermes.jf.intel.com (8.12.9-20030918-01/8.12.9/d: major-outer.mc,v 1.15 2004/01/30 18:16:28 root Exp $) with ESMTP id i3REZhBK007105
+	for <jung-ik.lee@intel.com>; Tue, 27 Apr 2004 14:35:44 GMT
+Message-Id: <200404271435.i3REZhBK007105@hermes.jf.intel.com>
+From: linux-fbdev-devel@lists.sourceforge.net
+To: jung-ik.lee@intel.com
+Subject: Re: hi
+Date: Tue, 27 Apr 2004 09:36:34 -0500
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_0016----=_NextPart_000_0016"
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Scanned-By: MIMEDefang 2.31 (www . roaringpenguin . com / mimedefang)
+Return-Path: linux-fbdev-devel@lists.sourceforge.net
+X-OriginalArrivalTime: 27 Apr 2004 14:35:29.0238 (UTC) FILETIME=[E3245F60:01C42C64]
+
+This is a multi-part message in MIME format.
+
+------=_NextPart_000_0016----=_NextPart_000_0016
+Content-Type: text/plain;
+	charset="Windows-1252"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, James Simmons <jsimmons@infradead.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tue, 27 Apr 2004, Benjamin Herrenschmidt wrote:
-> > I like the approach.  It sounds like this is the sensible replacement for
-> > the vague semantics we have now in var.accel_flags / FB_ACCELF_TEXT.
-> >
-> > I'm currently running through the radeon code trying to figure who all
-> > twiddles var before it gets set to registers and how to rework fbcon to be
-> > sensible...
->
-> The whole var thing is too messy right now. Especially, the lack of a
-> per-VT var right now makes things even more difficult
+Please read the important document.
 
-Agreed, too. It took me much effort to make the console subsystem aware of
-different-sized VTs a few years ago, so we should make use of that :-)
 
-Gr{oetje,eeting}s,
+------=_NextPart_000_0016----=_NextPart_000_0016
+Content-Type: text/plain;
+	name="DELETED0.TXT"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+	filename="DELETED0.TXT"
 
-						Geert
+RmlsZSBhdHRhY2htZW50OiBwcm9kdWN0X2p1bmctaWsubGVlLnppcApBIGZpbGUgYXR0YWNo
+ZWQgdG8gdGhpcyBlbWFpbCB3YXMgcmVtb3ZlZA0KYmVjYXVzZSBpdCB3YXMgaW5mZWN0ZWQg
+d2l0aCBhIHZpcnVzLg0KDQpSZXN1bHQ6IFZpcnVzIERldGVjdGVkDQpWaXJ1cyBOYW1lOiBX
+MzIuTmV0c2t5LlBAbW0NCkZpbGUgQXR0YWNobWVudDogcHJvZHVjdF9qdW5nLWlrLmxlZS56
+aXANCkF0dGFjaG1lbnQgU3RhdHVzOiBkZWxldGVkDQo=
+------=_NextPart_000_0016----=_NextPart_000_0016--
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+
+
+--9B095B5ADSN=_01C42C19A90F90A100000F21orsmsx331.amr.co--
 
 
 -------------------------------------------------------

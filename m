@@ -1,26 +1,21 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+From: John Zielinski <grim@undead.cc>
 Subject: Re: [PATCH] neofb patches
-Date: Thu, 29 Apr 2004 00:26:41 +0200
+Date: Wed, 28 Apr 2004 18:46:48 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1083191201.18413.73.camel@thor.asgaard.local>
-References: <Pine.LNX.4.44.0404271938330.20536-100000@phoenix.infradead.org>
-	 <408EE34F.8080106@undead.cc> <1083107454.16544.42.camel@gaston>
-	 <20040428002037.GE22495@guug.org> <1083112565.20473.10.camel@gaston>
-	 <20040428070832.GA23411@guug.org>
-	 <1083147416.18416.24.camel@thor.asgaard.local>
-	 <20040428163730.GA24448@guug.org>
+Message-ID: <40903458.4070406@undead.cc>
+References: <Pine.LNX.4.44.0404281829410.1187-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIxVu-00079e-Qi
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 15:26:46 -0700
-Received: from netline-mail1.netline.ch ([195.141.226.27])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIxVu-0008LE-6N
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 15:26:46 -0700
-In-Reply-To: <20040428163730.GA24448@guug.org>
+	id 1BIxpP-0003I2-9c
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 15:46:55 -0700
+Received: from ns2.undead.cc ([216.126.84.18] helo=mail.undead.cc)
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
+	id 1BIxpP-0003dF-0a
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 15:46:55 -0700
+In-Reply-To: <Pine.LNX.4.44.0404281829410.1187-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,54 +25,54 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="utf-8"
-To: Otto Solares <solca@guug.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: James Simmons <jsimmons@infradead.org>
+Cc: Otto Solares <solca@guug.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 2004-04-28 at 18:37, Otto Solares wrote:
-> On Wed, Apr 28, 2004 at 12:16:56PM +0200, Michel Dänzer wrote:
-> > On Wed, 2004-04-28 at 09:08, Otto Solares wrote:
-> > > 
-> > > I like the fbdev abstraction but it has too many limitations:
-> > 
-> > [...]
-> > 
-> > > - It dangerously coexists currently with the DRM queues and
-> > >   SAREA areas.  
-> > 
-> > How does a DRM SAREA matter to a framebuffer device?
-> 
-> It matters as long as the SAREA have a hardware lock
-> to synchronize access to the hardware.  That lock must
-> be owned by a single entity in the kernel, or at least
-> the fbdev drivers must be aware of that lock, 
+James Simmons wrote:
 
-Why? The purpose of the DRM lock is arbitration and state management
-between DRM clients. It's not necessarily connected to direct hardware
-access.
+>This has always been. In the old days when X crashed you lost your 
+>display. That was life. The X drivers are better but its up to X to 
+>restore the console.
+>
+>  
+>
+By that logic we'd still be using kernel 1.0.  ;)   I still don't see a 
+problem with fbcon resetting the video card to what it thinks it should 
+be when it regains control of the framebuffer.   But like everything 
+else in the kernel, we'll prove it works first before suggesting it be 
+included in the official release.
 
-> it would be more simple if the fbdev drivers take care of it being
-> the single entity in the kernel taking care of the hardware.
+>Plus with the software cursor we do use fb_imageblit. Also I'm 
+>beginning to realize we need to clear out the framebuffer memory.
+>People complain about left over junk on there screen when the console 
+>takes over. 
+>
+>  
+>
+No, no, no!  :)   I want to see my boot up messages before the console 
+takes over, especially if the kernel dies during bootup.  I've already 
+posted a fix for this a while back for just the radeon driver but it's 
+very easy to modify the other drivers.  It's just one line of code per 
+driver and one line to fb.h . 
 
-Jon Smirl thinks it should be the DRM...
+What happens is that the vga console tries to copy screen memory to it's 
+save buffer when it's being shut down but the fb driver has already 
+reconfigured the memory aperature layout.  A call to do_blank_screen(1) 
+right before the mode switch will cause the vga console to save screen 
+memory at that point.  This needs to be done in the drivers.  If it were 
+done in fbcon then any prink's in the drivers would "unblank" the vga 
+console and mess things up again.
 
-> > > Both must merge in fbdev.
-> > 
-> > I agree that they should cooperate properly, but I don't see how it
-> > follows that they must merge.
-> 
-> DRM and fbdev must merge so i repeat: just a single
-> kernel entity should own FIFO queues, shared locks,
-> DMA, the framebuffer, IO registers, interrupts, etc.
+>routines. Look at the debate about how to handle setting the resolution.
+>Yipes it been fierce.
+>
+>  
+>
+Sorry!  I seem to have a nack at starting these things....  :)
 
-A small low-level driver could handle this, which both the framebuffer
-device and the DRM use. Linus has proposed this approach, and I must say
-I like it.
+John
 
-
--- 
-Earthling Michel Dänzer      |     Debian (powerpc), X and DRI developer
-Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=daenzer
 
 
 

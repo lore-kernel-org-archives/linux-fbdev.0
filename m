@@ -1,21 +1,21 @@
 From: Alexander Kern <alex.kern@gmx.de>
-Subject: [PATCH 5/7]
-Date: Sun, 21 Mar 2004 20:38:59 +0100
+Subject: [PATCH 7/7]
+Date: Sun, 21 Mar 2004 20:39:53 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200403212038.59461.alex.kern@gmx.de>
+Message-ID: <200403212039.53093.alex.kern@gmx.de>
 References: <200403212033.39808.alex.kern@gmx.de>
 Mime-Version: 1.0
 Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_T9eXA03/4K0IL/B"
+  boundary="Boundary-00=_J+eXAIH/2kytqGv"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B58mx-0001yT-KZ
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 21 Mar 2004 11:39:15 -0800
-Received: from pop.gmx.de ([213.165.64.20] helo=mail.gmx.net)
+	id 1B58nj-0002IP-GC
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 21 Mar 2004 11:40:03 -0800
+Received: from pop.gmx.net ([213.165.64.20] helo=mail.gmx.net)
 	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1B58mw-0002sw-1I
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 21 Mar 2004 11:39:14 -0800
+	id 1B58nh-00035a-Tz
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 21 Mar 2004 11:40:02 -0800
 In-Reply-To: <200403212033.39808.alex.kern@gmx.de>
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -28,9 +28,10 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: James Simmons <jsimmons@infradead.org>
 
 
---Boundary-00=_T9eXA03/4K0IL/B
+--Boundary-00=_J+eXAIH/2kytqGv
 Content-Type: text/plain;
   charset="utf-8"
 Content-Transfer-Encoding: 7bit
@@ -38,92 +39,125 @@ Content-Disposition: inline
 
 
 
---Boundary-00=_T9eXA03/4K0IL/B
+--Boundary-00=_J+eXAIH/2kytqGv
 Content-Type: text/x-diff;
   charset="utf-8";
-  name="05_mach64-revers-hwtriple.diff"
+  name="07_mach64-aux_correct.diff"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment;
-	filename="05_mach64-revers-hwtriple.diff"
+	filename="07_mach64-aux_correct.diff"
 
+Only in linux-2.6.alex/drivers/video/aty/: .atyfb.o.cmd
+Only in linux-2.6.alex/drivers/video/aty/: .atyfb_base.o.cmd
+Only in linux-2.6.alex/drivers/video/aty/: .built-in.o.cmd
+Only in linux-2.6.alex/drivers/video/aty/: .mach64_accel.o.cmd
+Only in linux-2.6.alex/drivers/video/aty/: .mach64_ct.o.cmd
+Only in linux-2.6.alex/drivers/video/aty/: .mach64_cursor.o.cmd
 diff -U 3 -H -d -I '*.o' -p -r -- linux-2.6.4/drivers/video/aty/atyfb.h linux-2.6.alex/drivers/video/aty/atyfb.h
---- linux-2.6.4/drivers/video/aty/atyfb.h	2004-03-18 20:02:44.000000000 +0100
-+++ linux-2.6.alex/drivers/video/aty/atyfb.h	2004-03-18 20:30:47.000000000 +0100
-@@ -193,7 +193,7 @@ struct atyfb_par {
- #define M64F_LT_SLEEP		0x00040000
- #define M64F_XL_DLL		0x00080000
- #define M64F_MFB_FORCE_4	0x00100000
--#define M64F_NO_HW_TRIPLE	0x00200000
-+#define M64F_HW_TRIPLE		0x00200000
+--- linux-2.6.4/drivers/video/aty/atyfb.h	2004-03-19 21:18:14.000000000 +0100
++++ linux-2.6.alex/drivers/video/aty/atyfb.h	2004-03-20 21:25:44.620076176 +0100
+@@ -163,7 +163,8 @@ struct atyfb_par {
+ 	u16 lcd_hblank_len;
+ 	u16 lcd_vblank_len;
+ #endif
+-	int aux_app; /* auxiliary aperture */
++	unsigned long aux_start; /* auxiliary aperture */
++	unsigned long aux_size;
+ };
  
      /*
-      *  Register access
 Only in linux-2.6.alex/drivers/video/aty/: atyfb.h.orig
 Only in linux-2.6.alex/drivers/video/aty/: atyfb.o
 diff -U 3 -H -d -I '*.o' -p -r -- linux-2.6.4/drivers/video/aty/atyfb_base.c linux-2.6.alex/drivers/video/aty/atyfb_base.c
---- linux-2.6.4/drivers/video/aty/atyfb_base.c	2004-03-18 20:21:31.000000000 +0100
-+++ linux-2.6.alex/drivers/video/aty/atyfb_base.c	2004-03-18 20:29:52.000000000 +0100
-@@ -283,26 +283,29 @@ static unsigned long phys_size[FB_MAX] _
- static unsigned long phys_guiregbase[FB_MAX] __initdata = { 0, };
- #endif
+--- linux-2.6.4/drivers/video/aty/atyfb_base.c	2004-03-20 21:20:18.748616168 +0100
++++ linux-2.6.alex/drivers/video/aty/atyfb_base.c	2004-03-20 21:33:24.479166968 +0100
+@@ -1267,11 +1267,11 @@ static int atyfb_set_par(struct fb_info 
+ 			aty_st_le32(BUS_CNTL, 0x680000f9, par);
+ 		} else if (M64_HAS(MOBIL_BUS)) {
+ 			aty_st_le32(DAC_CNTL, 0x80010102, par);
+-			aty_st_le32(BUS_CNTL, 0x7b33a040 | (par->aux_app ? BUS_APER_REG_DIS : 0), par);
++			aty_st_le32(BUS_CNTL, 0x7b33a040 | (par->aux_start ? BUS_APER_REG_DIS : 0), par);
+ 		} else {
+ 			/* GT */
+ 			aty_st_le32(DAC_CNTL, 0x86010102, par);
+-			aty_st_le32(BUS_CNTL, 0x7b23a040 | (par->aux_app ? BUS_APER_REG_DIS : 0), par);
++			aty_st_le32(BUS_CNTL, 0x7b23a040 | (par->aux_start ? BUS_APER_REG_DIS : 0), par);
+ 			aty_st_le32(EXT_MEM_CNTL, aty_ld_le32(EXT_MEM_CNTL, par) | 0x5000001, par);
+ 		}
+ 		aty_st_le32(MEM_CNTL, tmp, par);
+@@ -2250,7 +2250,7 @@ static int __init aty_init(struct fb_inf
+ 	 *  the full 8 MB of video RAM on 8 MB boards
+ 	 */
  
--#define ATI_CHIP_88800GX (M64F_GX | M64F_NO_HW_TRIPLE)
--#define ATI_CHIP_88800CX ATI_CHIP_88800GX
--#define ATI_CHIP_264CT     (M64F_CT | M64F_INTEGRATED | M64F_CT_BUS | M64F_MAGIC_FIFO | M64F_NO_HW_TRIPLE)
-+#define ATI_CHIP_88800GX   (M64F_GX)
-+#define ATI_CHIP_88800CX    ATI_CHIP_88800GX
-+#define ATI_CHIP_264CT     (M64F_CT | M64F_INTEGRATED | M64F_CT_BUS | M64F_MAGIC_FIFO)
- #define ATI_CHIP_264ET      ATI_CHIP_264CT
+-	if (!par->aux_app &&
++	if (!par->aux_start &&
+ 		(info->fix.smem_len == 0x800000 || (par->bus_type == ISA && info->fix.smem_len == 0x400000)))
+ 		info->fix.smem_len -= GUI_RESERVE;
  
--#define ATI_CHIP_264VT     (M64F_VT | M64F_INTEGRATED | M64F_VT_BUS | M64F_MAGIC_FIFO | M64F_FIFO_24 | M64F_NO_HW_TRIPLE)
--#define ATI_CHIP_264VTA4   (ATI_CHIP_264VT | M64F_MAGIC_POSTDIV)
--#define ATI_CHIP_264GT     (M64F_GT | M64F_INTEGRATED               | M64F_MAGIC_FIFO | M64F_FIFO_24 | M64F_NO_HW_TRIPLE | M64F_EXTRA_BRIGHT)
--#define ATI_CHIP_264VTB    (M64F_VT | M64F_INTEGRATED | M64F_VT_BUS | M64F_GTB_DSP    | M64F_FIFO_24 | M64F_NO_HW_TRIPLE)
--#define ATI_CHIP_264GTB    (M64F_GT | M64F_INTEGRATED               | M64F_GTB_DSP    | M64F_FIFO_24 | M64F_NO_HW_TRIPLE | M64F_EXTRA_BRIGHT | M64F_SDRAM_MAGIC_PLL) 
--#define ATI_CHIP_264VT3    (ATI_CHIP_264VTB | M64F_SDRAM_MAGIC_PLL)
-+#define ATI_CHIP_264VT     (M64F_VT | M64F_INTEGRATED | M64F_VT_BUS | M64F_MAGIC_FIFO | M64F_FIFO_24)
-+#define ATI_CHIP_264VTA4   (ATI_CHIP_264VT                                                           | M64F_MAGIC_POSTDIV)
-+#define ATI_CHIP_264GT     (M64F_GT | M64F_INTEGRATED               | M64F_MAGIC_FIFO | M64F_FIFO_24 | M64F_EXTRA_BRIGHT)
-+#define ATI_CHIP_264VTB    (M64F_VT | M64F_INTEGRATED | M64F_VT_BUS | M64F_GTB_DSP    | M64F_FIFO_24)
-+#define ATI_CHIP_264GTB    (M64F_GT | M64F_INTEGRATED               | M64F_GTB_DSP    | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT) 
-+#define ATI_CHIP_264VT3    (ATI_CHIP_264VTB                                                          | M64F_SDRAM_MAGIC_PLL)
- /*#define ATI_CHIP_264GTDVD  ?*/
--#define ATI_CHIP_264LT     (M64F_GT | M64F_INTEGRATED               | M64F_GTB_DSP    | M64F_FIFO_24 | M64F_NO_HW_TRIPLE)
-+#define ATI_CHIP_264LT     (M64F_GT | M64F_INTEGRATED               | M64F_GTB_DSP    | M64F_FIFO_24)
- #define ATI_CHIP_264LTG    (ATI_CHIP_264LT                                                           | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT)
--#define ATI_CHIP_264VT4    (M64F_VT | M64F_INTEGRATED               | M64F_GTB_DSP    | M64F_FIFO_24 | M64F_NO_HW_TRIPLE)
--#define ATI_CHIP_264GT2C   (M64F_GT | M64F_INTEGRATED               | M64F_GTB_DSP    | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT)
--#define ATI_CHIP_264GTPRO  (M64F_GT | M64F_INTEGRATED               | M64F_GTB_DSP                   | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT | M64F_RESET_3D)
--#define ATI_CHIP_264LTPRO  (M64F_GT | M64F_INTEGRATED               | M64F_GTB_DSP                                          | M64F_EXTRA_BRIGHT | M64F_RESET_3D)
--#define ATI_CHIP_264XL     (ATI_CHIP_264GTPRO | M64F_XL_DLL | M64F_MFB_FORCE_4)
--#define ATI_CHIP_MOBILITY  (ATI_CHIP_264LTPRO | M64F_XL_DLL | M64F_MFB_FORCE_4 | M64F_MOBIL_BUS )
-+#define ATI_CHIP_264VT4    (M64F_VT | M64F_INTEGRATED               | M64F_GTB_DSP    | M64F_FIFO_24)
-+
-+#define ATI_MODERN_SET     (M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_EXTRA_BRIGHT | M64F_HW_TRIPLE)
-+
-+#define ATI_CHIP_264GT2C   (ATI_MODERN_SET | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL)
-+#define ATI_CHIP_264GTPRO  (ATI_MODERN_SET                | M64F_SDRAM_MAGIC_PLL | M64F_RESET_3D)
-+#define ATI_CHIP_264LTPRO  (ATI_MODERN_SET                                       | M64F_RESET_3D)
-+#define ATI_CHIP_264XL     (ATI_MODERN_SET                | M64F_SDRAM_MAGIC_PLL | M64F_RESET_3D | M64F_XL_DLL | M64F_MFB_FORCE_4)
-+#define ATI_CHIP_MOBILITY  (ATI_MODERN_SET                                       | M64F_RESET_3D | M64F_XL_DLL | M64F_MFB_FORCE_4 | M64F_MOBIL_BUS )
+@@ -2259,7 +2259,7 @@ static int __init aty_init(struct fb_inf
+ 	 *  if the auxiliary aperture is used so we can access
+ 	 *  the full 8 MB of video RAM on 8 MB boards.
+ 	 */
+-	if (par->aux_app)
++	if (par->aux_start)
+ 		aty_st_le32(BUS_CNTL, aty_ld_le32(BUS_CNTL, par) | BUS_APER_REG_DIS, par);
  
- static struct {
- 	u16 pci_id;
-diff -U 3 -H -d -I '*.o' -p -r -- linux-2.6.4/drivers/video/aty/mach64_accel.c linux-2.6.alex/drivers/video/aty/mach64_accel.c
---- linux-2.6.4/drivers/video/aty/mach64_accel.c	2004-03-13 21:13:43.000000000 +0100
-+++ linux-2.6.alex/drivers/video/aty/mach64_accel.c	2004-03-18 20:22:50.000000000 +0100
-@@ -345,7 +345,7 @@ void atyfb_imageblit(struct fb_info *inf
- 		 * since Rage 3D IIc we have DP_HOST_TRIPLE_EN bit
- 		 * this hwaccelerated triple has an issue with not aligned data
- 		 */
--		if (!M64_HAS(NO_HW_TRIPLE) && image->width % 8 == 0)
-+		if (M64_HAS(HW_TRIPLE) && image->width % 8 == 0)
- 			pix_width |= DP_HOST_TRIPLE_EN;
+ 	/* Clear the video memory */
+@@ -3063,7 +3063,8 @@ static int __devinit atyfb_setup_generic
+ 	raddr = addr + 0x7ff000UL;
+ 	rrp = &pdev->resource[2];
+ 	if ((rrp->flags & IORESOURCE_MEM) && request_mem_region(rrp->start, rrp->end - rrp->start + 1, "atyfb")) {
+-		par->aux_app = 1;
++		par->aux_start = rrp->start;
++		par->aux_size = rrp->end - rrp->start + 1;
+ 		raddr = rrp->start;
+ 		printk(KERN_INFO "atyfb: using auxiliary register aperture\n");
  	}
+@@ -3073,8 +3074,8 @@ static int __devinit atyfb_setup_generic
+ 	if (par->ati_regbase == 0)
+ 		return -ENOMEM;
  
+-	info->fix.mmio_start += par->aux_app ? 0x400 : 0xc00;
+-	par->ati_regbase += par->aux_app ? 0x400 : 0xc00;
++	info->fix.mmio_start += par->aux_start ? 0x400 : 0xc00;
++	par->ati_regbase += par->aux_start ? 0x400 : 0xc00;
+ 
+ 	/*
+ 	 * Enable memory-space accesses using config-space
+@@ -3211,6 +3212,9 @@ err_release_io:
+ 		iounmap((void *) info->screen_base);
+ #endif
+ err_release_mem:
++	if(par->aux_start)
++		release_mem_region(par->aux_start, par->aux_size);
++
+ 	release_mem_region(par->res_start, par->res_size);
+ err_free:
+ 	framebuffer_release(info);
+@@ -3302,8 +3306,12 @@ static void __devexit atyfb_remove(struc
+ 	if (par->mmap_map)
+ 		kfree(par->mmap_map);
+ #endif
++	if (par->aux_start)
++		release_mem_region(par->aux_start, par->aux_size);
++
+ 	if (par->res_start)
+ 		release_mem_region(par->res_start, par->res_size);
++
+ 	framebuffer_release(info);
+ }
+ 
+Only in linux-2.6.alex/drivers/video/aty/: atyfb_base.c.orig
+Only in linux-2.6.alex/drivers/video/aty/: atyfb_base.o
+Only in linux-2.6.alex/drivers/video/aty/: built-in.o
+Only in linux-2.6.alex/drivers/video/aty/: mach64_accel.c.orig
+Only in linux-2.6.alex/drivers/video/aty/: mach64_accel.o
+Only in linux-2.6.alex/drivers/video/aty/: mach64_ct.c.orig
+Only in linux-2.6.alex/drivers/video/aty/: mach64_ct.o
+Only in linux-2.6.alex/drivers/video/aty/: mach64_cursor.o
+Only in linux-2.6.alex/drivers/video/aty/: xlinit.c.orig
 
-
---Boundary-00=_T9eXA03/4K0IL/B--
+--Boundary-00=_J+eXAIH/2kytqGv--
 
 
 -------------------------------------------------------

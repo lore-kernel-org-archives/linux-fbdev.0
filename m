@@ -1,21 +1,20 @@
-From: "Michael McLagan" <mmclagan@invlogic.com>
-Subject: Bug in register_framebuffer ??
-Date: Tue, 25 Nov 2003 16:20:42 -0500 (EST)
+From: John Zielinski <grim@undead.cc>
+Subject: Restoring Screen when coming back from KD_GRAPHICS
+Date: Wed, 26 Nov 2003 03:11:40 -0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200311252120.hAPLKipU000562@utility.invlogic.com>
-Reply-To: "Michael McLagan" <mmclagan@invlogic.com>
+Message-ID: <3FC4603C.2000702@undead.cc>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1AOkc8-0002ZO-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 25 Nov 2003 13:20:52 -0800
-Received: from utility.invlogic.com ([198.182.196.8] ident=root)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AOkc7-0004gK-W7
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 25 Nov 2003 13:20:52 -0800
+	id 1AOum9-0000BU-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 26 Nov 2003 00:11:53 -0800
+Received: from gw-undead3.tht.net ([216.126.84.18] helo=mail.undead.cc)
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.24)
+	id 1AOum9-0000bu-7m
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 26 Nov 2003 00:11:53 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -25,54 +24,60 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
-Cc: "nufan_wfk@yahoo.com" <nufan_wfk@yahoo.com>, "ivtv@kernel.dk" <ivtv@kernel.dk>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net, jsimmons@infradead.org
 
-Hello,
+I was playing with the fbtest program and noticed some minor glitches.  
+You could see corruption in the graphics where the console was still 
+trying to output text from the program.  After exiting the program's 
+output would mix in with the saved screen.
 
-   I'm looking into a problem with the ivtv (Hauppauge PVR) frame buffer
-driver and I came across this piece of code in fbmem.c, line 782, v2.4.22:
+So I modified the fbtest program to do ioctl to KD_GRAPHICS at startup 
+and KD_TEXT on exit and the graphics corruption went away.  I also 
+didn't save/restore the framebuffer if we started in KD_TEXT on entry.  
+This made things worse as now the graphics output was still plus the old 
+text and the programs output would now appear after scrolling one line.
 
->		for (j = 0; j < MAX_NR_CONSOLES; j++)
->			if (con2fb_map[j] == i) {
->				if (owner)
->					__MOD_INC_USE_COUNT(owner);
->				if (!fb_info->fbops->fb_open)
->					continue;
->				if (!fb_info->fbops->fb_open(fb_info,0))
->					continue;
->				if (owner)
->					__MOD_DEC_USE_COUNT(owner);
->			}
->		fb_ever_opened[i] = 1;
+I checked the kernel to see why the screen wasn't being refreshed when 
+switching back to KD_TEXT.   I found that if the fbdev driver has a 
+blanking routine the fbcon driver doesn't do a update_screen call.  And 
+the fbdev if it's using vesa blanking doesn't restore the screen nor 
+does it return 1 to tell the vt driver to redraw the screen.
 
-  I believe this is causing us a problem with the module usage count
-being incremented despite there being no visible use on the system.  
-Since the driver doesn't define fb_open, it looks like the above will
-increment the use count without decrementing it.
+So here's a small patch that makes fbcon always restore the screen after 
+the screen is unblanked:
 
-Should it be coded:
+diff -urNX dontdiff fbdev/drivers/video/console/fbcon.c linux/drivers/video/console/fbcon.c
+--- fbdev/drivers/video/console/fbcon.c	2003-11-26 01:11:00.000000000 -0500
++++ linux/drivers/video/console/fbcon.c	2003-11-26 01:07:20.000000000 -0500
+@@ -1688,11 +1688,13 @@
+ 				accel_clear(vc, info, real_y(p, 0),
+ 					    0, height, vc->vc_cols);
+ 			vc->vc_video_erase_char = oldc;
+-		} else
+-			update_screen(vc->vc_num);
+-		return 0;
++		} 
+ 	} else
+-		return fb_blank(info, blank);
++		fb_blank(info, blank);
++		
++	if (!blank)
++		update_screen(vc->vc_num);
++	return 0;
+ }
+ 
+ static void fbcon_free_font(struct display *p)
 
-		for (j = 0; j < MAX_NR_CONSOLES; j++)
-			if ((con2fb_map[j] == i) && fb_info->fbops->fb_open) {
-			    if (owner) {
-				__MOD_INC_USE_COUNT(owner);
-			        if (!fb_info->fbops->fb_open(fb_info,0))
-				    __MOD_DEC_USE_COUNT(owner);
-			    } else {
-				fb_info->fbops->fb_open(fb_info,0);
-			    }
-			}
-		fb_ever_opened[i] = 1;
 
-Seems to me that does the same thing without artificially inflating
-the module usage count.
 
-If that makes sense, could someone either let me know or pass it on 
-to Marcelo and Linus (assuming 2.6 uses the same piece of code)?
+I think that this is the simplest way of doing it as the other two 
+options would require to either change the vt driver to send a leaving 
+KD_TEXT call or to change the fbcon driver to remember if each console 
+was in graphics mode or not.
 
-   Michael
+John
+
 
 
 

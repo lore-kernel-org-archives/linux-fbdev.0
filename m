@@ -1,22 +1,23 @@
-From: James Simmons <jsimmons@infradead.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
- one works ;-)
-Date: Wed, 28 Apr 2004 00:24:43 +0100 (BST)
+	one works ;-)
+Date: Wed, 28 Apr 2004 09:25:11 +1000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0404280023360.23153-100000@phoenix.infradead.org>
-References: <408EE5EB.6080705@undead.cc>
+Message-ID: <1083108311.16476.56.camel@gaston>
+References: <Pine.LNX.4.44.0404280013210.23153-100000@phoenix.infradead.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIbwZ-000128-4a
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:24:51 -0700
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1BIc2X-0002SU-P6
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:31:01 -0700
+Received: from gate.crashing.org ([63.228.1.57] ident=root)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1BIbwW-0002yy-56
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:24:48 -0700
-In-Reply-To: <408EE5EB.6080705@undead.cc>
+	id 1BIc2X-0003wv-BV
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:31:01 -0700
+In-Reply-To: <Pine.LNX.4.44.0404280013210.23153-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,26 +27,36 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: John Zielinski <grim@undead.cc>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@infradead.org>
+Cc: John Zielinski <grim@undead.cc>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-
-> No, this would not be for the stable release.  But what I'm saying is 
-> that it's nice that a program cleans up after itself but we shouldn't 
-> rely on it.  Take resources like memory, file handles, sockets, etc.  
-> Most program release those resources when the shut down normally but 
-> what if they seg fault or exit unexpectedly?  The kernel cleans up after 
-> the process regardless.
+On Wed, 2004-04-28 at 09:18, James Simmons wrote:
+> > a regression from 2.4 and I don't think his patch will be more invasive
+> > than the rest of the changes you have been doing lately ;)
+> > 
+> > Face it, the current fbcon resize mecanism is just broken. It cannot
+> > work properly without full mode management in all drivers. A per-VT var
+> > along with fbcon properly adapting it's size to the VT's var would bring
+> > us back to 2.4 level of functionality at least, which is a good thing.
 > 
-> So if a fb program restores the mode properly then we should do nothing 
-> but if it doesn't either because of a bad programming or an unexpected 
-> termination then we should reset the mode to what the user has selected 
-> for their console.
+> I refuse to have hacks to deal with a cripple VT system. What is 
+> acceptable is that we add what we need to struct vc_data. You do that and 
+> I have no problem then. From what I can see we need the following.
+> 
+> 1) Color depth.
+> 2) Frequency.
+> 3) Over scan color.
 
-Trust me. I wish the console would cleanup itself. It would take a good 
-amount of work to redo.
+No, no, no ... We don't need those, we need a var structure, that's all.
+
+> Anything else? 
+> 
+> Personally I rather add these to struct vc_data. Consider if we ever had 
+> hardware that supported different hardware text modes. Say some at 
+> different color depths. I rather do this!!
+
+
 
 
 

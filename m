@@ -1,23 +1,34 @@
-From: "Randy.Dunlap" <rddunlap@osdl.org>
-Subject: Re: The nvidiafb driver is requiring too much
- vmalloc space and other problems.
-Date: Thu, 31 Mar 2005 15:18:26 -0800
-Message-ID: <424C8542.9020607@osdl.org>
-References: <a44ae5cd05033014597bb3a2e@mail.gmail.com> <1112310608.31848.181.camel@gaston>
+From: Mirko Parthey <mirko.parthey@informatik.tu-chemnitz.de>
+Subject: PROBLEM with i810fb: changing the resolution garbles the screen
+Date: Thu, 31 Mar 2005 23:16:43 +0200
+Message-ID: <20050331211642.GA4786@stilzchen.informatik.tu-chemnitz.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DH8vn-0007Kx-Vd
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 31 Mar 2005 15:18:31 -0800
-Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.41)
-	id 1DH8vl-0001o4-Td
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 31 Mar 2005 15:18:31 -0800
-In-Reply-To: <1112310608.31848.181.camel@gaston>
+	id 1DH725-0008QV-9g
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 31 Mar 2005 13:16:53 -0800
+Received: from lana.hrz.tu-chemnitz.de ([134.109.132.3])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1DH71z-0003Sr-BW
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 31 Mar 2005 13:16:53 -0800
+Received: from hedwig.hrz.tu-chemnitz.de ([134.109.132.173] helo=mailbox.hrz.tu-chemnitz.de)
+	by lana.hrz.tu-chemnitz.de with esmtp (Exim 4.41)
+	id 1DH71w-0003ZI-3F
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 31 Mar 2005 23:16:44 +0200
+Received: from maximus.informatik.tu-chemnitz.de ([134.109.192.246] ident=mail)
+	by mailbox.hrz.tu-chemnitz.de with esmtp (Exim 4.43)
+	id 1DH71w-0001vc-1n
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 31 Mar 2005 23:16:44 +0200
+Received: from stilzchen.informatik.tu-chemnitz.de ([134.109.192.209] ident=mail)
+	by maximus.informatik.tu-chemnitz.de with esmtp (Exim 3.35 #1 (Debian))
+	id 1DH71v-00082d-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 31 Mar 2005 23:16:43 +0200
+Received: from mpa by stilzchen.informatik.tu-chemnitz.de with local (Exim 3.35 #1 (Debian))
+	id 1DH71v-0001GP-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 31 Mar 2005 23:16:43 +0200
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,36 +39,77 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@osdl.org>, "Antonino A. Daplas" <adaplas@pol.net>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Benjamin Herrenschmidt wrote:
-> On Wed, 2005-03-30 at 14:59 -0800, Miles Lane wrote:
-> 
->>Hello,
->>
->>With guidance from Randy Dunlap, it has been determined that
->>the nvidiafb driver will fail to operate correctly unless more than
->>128M of memory is provided by using "vmalloc=".  The default 
->>kernel configuration provides for 128M, but Randy found that:
-> 
-> 
->  .../...
-> 
-> it's a problem with ioremap of the framebuffer ? (which uses get_vm_area
-> as well) or is there an actual vmalloc in there ?
+When loading the modules in the order shown below, the framebuffer console
+initializes fine to the default mode allowing for 80x30 characters:
+# modprobe agpgart
+# modprobe intel-agp
+# modprobe i810fb hsync1=30 hsync2=62 vsync1=50 vsync2=85
+# modprobe fbcon
 
-It's ioremap of the frame buffer -- 128 MB being requested and it
-fails if the default 128 MB kernel vmalloc area size is used.
+However, when using fbset to increase the resolution, only the video
+timings get changed, but the kernel doesn't adapt the number of text
+columns and lines accordingly:
+# fbset 800x600-75
+# resize
+COLUMNS=80;
+LINES=30;
+[...]
 
-> In radeonfb, I had to limit the amount of vram actually ioremap'd by the
-> kernel because of that.
+The characters are printed clearly, but they appear in a rectangle
+smaller than the screen.  This "window" is usually offset by 1/3 screen
+size from the top, sometimes it even seems to be partially off-screen at
+the bottom.
+The rest of the screen contains meaningless pixel patterns.
 
-I guess that Tony will know what to do when he sees this....
+The video timings on the first console were restored simply by switching
+to another console and back (I had changed the resolution only on the
+first console).  In my opinion, this should not happen either - the
+first console should stay at its resolution even when switching between
+consoles of different resolutions.
 
--- 
-~Randy
+Kernel Versions tested:
+2.6.11.6
+2.6.12-rc1
+using a configuration similar to Debian's 2.6.10 Kernel for 686 processors,
+almost everything is built as a module.
+
+CPU: Celeron (Mendocino), 468 MHz
+
+Hardware information:
+# lspci -vv
+0000:00:00.0 Host bridge: Intel Corp. 82810 GMCH [Graphics Memory Controller Hub] (rev 03)
+    Subsystem: Intel Corp. 82810 GMCH [Graphics Memory Controller Hub]
+    Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+    Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort+ >SERR- <PERR-
+    Latency: 0
+
+0000:00:01.0 VGA compatible controller: Intel Corp. 82810 CGC [Chipset Graphics Controller] (rev 03) (prog-if 00 [VGA])
+    Subsystem: Micro-Star International Co., Ltd.: Unknown device 2001
+    Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+    Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+    Latency: 0
+    Interrupt: pin A routed to IRQ 12
+    Region 0: Memory at d8000000 (32-bit, prefetchable) [size=64M]
+    Region 1: Memory at dc100000 (32-bit, non-prefetchable) [size=512K]
+    Capabilities: [dc] Power Management version 1
+        Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+        Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+[...]
+
+Previously, I was using Kernel 2.4.27 with the i810fb-lite patches,
+which did not show the problem described above.
+
+I hope you find my information helpful in fixing this.
+I'll be happy to provide further details if necessary.
+Should I have made a mistake in using the driver, please point it out to
+me.
+
+Thanks for your work,
+Mirko
 
 
 -------------------------------------------------------

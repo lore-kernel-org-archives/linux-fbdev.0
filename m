@@ -1,63 +1,60 @@
-From: Zack <plinius@comcast.net>
-Subject: Re: fbdraw 0.1 available
-Date: Sun, 12 Sep 2004 17:31:20 -0700
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <4144EA58.4080900@comcast.net>
-References: <41426651.2010201@comcast.net> <200409120340.04133.adaplas@hotpop.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: jhf@rivenstone.net (Joseph Fannin)
+Subject: Re: [Linux-fbdev-devel] fbdev broken in current bk for PPC
+Date: Sun, 12 Sep 2004 21:52:59 -0400
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <20040913015259.GA2784@samarkand.rivenstone.net>
+References: <1094783022.2667.106.camel@gaston> <200409110504.09812.adaplas@hotpop.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C6ekT-0002uJ-Ta
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 12 Sep 2004 17:31:13 -0700
-Received: from rwcrmhc12.comcast.net ([216.148.227.85])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1C6ekS-0000Uq-GT
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 12 Sep 2004 17:31:13 -0700
-In-Reply-To: <200409120340.04133.adaplas@hotpop.com>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
-
-Antonino A. Daplas wrote:
-
-> 1. First, you need to follow Documentation/CodingStyle.
-
-OK, I've made some strides in that direction.
-
-> 2. Do not directly access framebuffer memory, use: 
-> 3. Do not use copy_{to|from}_user when the destination/source is the
-> framebuffer.
-> 4. Do not memset the framebuffer.  You can probably create an equivalent
-> function using fb_read/write.  (Once, we have fb_memset and fb_memcpy, but
-> they're gone in 2.6).
-
-Fixed.
-
-Incidentally I am wondering, with cross-platform compatibility
-in mind I have been coding assuming that fb_{read|write}[wl] must be
-short/long aligned. Is that assumption correct?
-
-I've also added my copyarea routine. At first I tried to make use
-of cfb_copyarea but it proved very buggy in 24bpp.
-
-New code is at http://home.comcast.net/~plinius.
-Cheers,
-Zack
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Kj7319i9nmIyA2yE"
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S264903AbUIMBxQ@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <200409110504.09812.adaplas@hotpop.com>
+List-Id: <fbdev-devel.lists.sourceforge.net
+To: adaplas@pol.net
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Kernel list <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@osdl.org>
 
 
--------------------------------------------------------
-This SF.Net email is sponsored by: YOU BE THE JUDGE. Be one of 170
-Project Admins to receive an Apple iPod Mini FREE for your judgement on
-who ports your project to Linux PPC the best. Sponsored by IBM. 
-Deadline: Sept. 13. Go here: http://sf.net/ppc_contest.php
+--Kj7319i9nmIyA2yE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Sat, Sep 11, 2004 at 05:04:09AM +0800, Antonino A. Daplas wrote:
+
+> Hi Ben,
+>=20
+> How about this patch?  This brings back the old way of setting up the
+> drivers, supports:
+>=20
+> video=3Dxxxfb:off
+> video=3Dofonly
+>=20
+> Your patch that brings offb to the very last of the Makefile is needed.
+
+    Applying these two patches to 2.6.9-rc1-mm4 makes the framebuffer
+console on my Powermac work again.  This box has an ATI RAGE chip on
+the motherboard I don't often use, so being able to do video=3Datyfb:off
+lets me keep the driver around -- thanks!
+
+--=20
+Joseph Fannin
+jhf@rivenstone.net
+
+"Bull in pure form is rare; there is usually some contamination by data."
+    -- William Graves Perry Jr.
+
+--Kj7319i9nmIyA2yE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.5 (GNU/Linux)
+
+iD8DBQFBRP17Wv4KsgKfSVgRAiBvAJ9PZsqswnU2qZcSswuFTCtP34xVdgCbBDy7
+R3KHXHIXTVgwLj6JgcRtWzI=
+=vn3H
+-----END PGP SIGNATURE-----
+
+--Kj7319i9nmIyA2yE--

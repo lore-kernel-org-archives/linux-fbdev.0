@@ -1,20 +1,22 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
+From: Kronos <kronos@kronoz.cjb.net>
 Subject: Re: Re: [PATCH] Remove voodoo code from i2c
-Date: Fri, 5 Mar 2004 20:02:53 -0800 (PST)
+Date: Sat, 6 Mar 2004 16:08:45 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040306040253.30871.qmail@web14913.mail.yahoo.com>
-References: <1078544564.6327.146.camel@gaston>
+Message-ID: <20040306150845.GB901@dreamland.darkstar.lan>
+References: <20040306004747.GA3218@dreamland.darkstar.lan> <20040306021016.46831.qmail@web14916.mail.yahoo.com>
+Reply-To: kronos@kronoz.cjb.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AzTG2-0003KR-Rd
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Mar 2004 20:17:50 -0800
-Received: from web14913.mail.yahoo.com ([216.136.225.240])
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1AzT1Z-0004an-QU
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Mar 2004 20:02:53 -0800
-In-Reply-To: <1078544564.6327.146.camel@gaston>
+	id 1AzdeZ-0006vc-VC
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 06 Mar 2004 07:23:51 -0800
+Received: from mailr-2.tiscali.it ([212.123.84.82])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1AzdPm-0002T6-4f
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 06 Mar 2004 07:08:34 -0800
+Content-Disposition: inline
+In-Reply-To: <20040306021016.46831.qmail@web14916.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -24,54 +26,33 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="windows-1252"
-Content-Transfer-Encoding: quoted-printable
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Kronos <kronos@kronoz.cjb.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
---- Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> On Sat, 2004-03-06 at 13:10, Jon Smirl wrote:
-> > Can this be written as a generic i2c probe function by calling i2c chan=
-el
-> > functions instead of directly calling radeon_gpio_setscl, etc? The i2c
-> chanel
-> > functions will then in turn call radeon_gpio_setscl, etc.
->=20
-> Why ? we aren't doing normal i2c big banging here, just hacking
-> around.
+Il Fri, Mar 05, 2004 at 06:10:16PM -0800, Jon Smirl ha scritto: 
+> Can this be written as a generic i2c probe function by calling i2c chanel
+> functions instead of directly calling radeon_gpio_setscl, etc? The i2c chanel
+> functions will then in turn call radeon_gpio_setscl, etc.
 
-If I understand correctly, this code is needed to enable DDC on older monit=
-ors.=20
-If this is the case it is a generic problem and it needs to be corrected in=
- all
-of the framebuffer drivers. Correcting it in all of the drivers is easier i=
-f the
-code is written in the generic i2c form.
+You can't use the i2c layer because you just send empty start-stop
+sequencies on the bus, no real data. You must use bit banging functions:
 
-Also, how do we know this is working? Nobody can come up with one of the
-monitors that needs this or even a spec describing it.
+struct i2c_algo_bit_data *bits = adapter->algo_data;
 
-The discussion about this got started around a port of 2.4 ddcmon (i2c devi=
-ce
-driver like eeprom) to 2.6 and sysfs. The code in the radeon driver is not =
-in
-ddcmon and the question is, should it be added? If it should be added it ne=
-eds
-to be converted to the i2c generic form, not the radeon specific one.
+Then you use ->{s,g}et{scl,sda}. Remeber to pass bits->data to those
+functions.
 
-
-=3D=3D=3D=3D=3D
-Jon Smirl
-jonsmirl@yahoo.com
-
-__________________________________
-Do you Yahoo!?
-Yahoo! Search - Find what you=92re looking for faster
-http://search.yahoo.com
+Luca
+-- 
+Home: http://kronoz.cjb.net
+"It is more complicated than you think"
+                -- The Eighth Networking Truth from RFC 1925
 
 
 -------------------------------------------------------
 This SF.Net email is sponsored by: IBM Linux Tutorials
 Free Linux tutorial presented by Daniel Robbins, President and CEO of
 GenToo technologies. Learn everything from fundamentals to system
-administration.http://ads.osdn.com/?ad_id=3D1470&alloc_id=3D3638&op=3Dclick
+administration.http://ads.osdn.com/?ad_id=1470&alloc_id=3638&op=click

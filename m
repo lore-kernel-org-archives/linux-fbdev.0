@@ -1,22 +1,18 @@
-From: Sven Luther <luther@dpt-info.u-strasbg.fr>
-Subject: matroxfb broken in 2.5.51 ?
-Date: Wed, 11 Dec 2002 13:42:58 +0100
+From: Aleksandr Koltsoff <czr@iki.fi>
+Subject: anyone working on radeonfb?
+Date: Thu, 12 Dec 2002 14:23:08 +0200 (EET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20021211124258.GA9108@iliana>
+Message-ID: <Pine.LNX.4.44.0212121419410.31977-100000@iohazard.tts.fi>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from smtp-out-2.wanadoo.fr ([193.252.19.254] helo=mel-rto2.wanadoo.fr)
+Received: from iohazard.tts.fi ([193.94.244.252])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18M6Cg-0000dT-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 11 Dec 2002 04:43:06 -0800
-Received: from mel-rta10.wanadoo.fr (193.252.19.193) by mel-rto2.wanadoo.fr (6.7.015)
-        id 3DF630960007D034 for linux-fbdev-devel@lists.sourceforge.net; Wed, 11 Dec 2002 13:42:59 +0100
-Received: from iliana (80.14.193.77) by mel-rta10.wanadoo.fr (6.7.015)
-        id 3DF6325A0006393C for linux-fbdev-devel@lists.sourceforge.net; Wed, 11 Dec 2002 13:42:59 +0100
-Received: from luther by iliana with local (Exim 3.36 #1 (Debian))
-	id 18M6CY-0002NJ-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 11 Dec 2002 13:42:58 +0100
-Content-Disposition: inline
+	id 18MSNX-0001fw-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 12 Dec 2002 04:23:48 -0800
+Received: from czr (helo=localhost)
+	by iohazard.tts.fi with local-esmtp (Exim 3.35 #1 (Debian))
+	id 18MSMu-0008K4-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 12 Dec 2002 14:23:08 +0200
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -26,33 +22,30 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Hello, ...
+hello
 
-matroxfb seems broken in 2.5.51 :
+is anyone actively maintaining the radeon fb driver in the 2.4 series?
 
-  gcc -Wp,-MD,drivers/video/matrox/.matroxfb_base.o.d -D__KERNEL__ -Iinclude -Wall -Wstrict-prototypes -Wno-trigraphs -O2 -fno-strict-aliasing -fno-common -pipe -mpreferred-stack-boundary=2 -march=i686 -malign-functions=4 -Iarch/i386/mach-generic -fomit-frame-pointer -nostdinc -iwithprefix include -DKBUILD_BASENAME=matroxfb_base -DKBUILD_MODNAME=matroxfb_base -DEXPORT_SYMTAB  -c -o drivers/video/matrox/matroxfb_base.o
-  drivers/video/matrox/matroxfb_base.c
-  In file included from drivers/video/matrox/matroxfb_base.c:105:
-  drivers/video/matrox/matroxfb_base.h:52: video/fbcon.h: No such file or directory
-  drivers/video/matrox/matroxfb_base.h:53: video/fbcon-cfb4.h: No such file or directory
-  drivers/video/matrox/matroxfb_base.h:54: video/fbcon-cfb8.h: No such file or directory
-  drivers/video/matrox/matroxfb_base.h:55: video/fbcon-cfb16.h: No such file or directory
-  drivers/video/matrox/matroxfb_base.h:56: video/fbcon-cfb24.h: No such file or directory
-  drivers/video/matrox/matroxfb_base.h:57: video/fbcon-cfb32.h: No such file or directory
-  In file included from drivers/video/matrox/matroxfb_base.c:105:
-  drivers/video/matrox/matroxfb_base.h:341: warning: `struct display' declared inside parameter list
-  drivers/video/matrox/matroxfb_base.h:341: warning: its scope is only this definition or declaration, which is probably not what you want.
+I've started reviving and older hacked version (based on mplayer radeonfb)
+of the driver. The version I have has proper panning and accel console
+(almost, 32bit mode is causing some minor head-aches still).
 
-Mmm, maybe it is only because the fbcon.h and co did not get moved to
-the right place or something such, will check.
+I'd like to eventually sync my version with the kernel one (and yes, I
+know that the mplayer version is way off Linus coding style, and yes, it's
+based somewhat on xfree86, but I'm willing to work that out eventually).
 
-Friendly,
+currently I have only some radeon boards left, but no DVI anymore, so I'll
+need someone with DVI displays as well. Also I have no access to PPCs, so
+would need someone to test the newer driver there as well if possible.
 
-Sven Luther
+thanks :-)
+
+ak.
+
 
 
 -------------------------------------------------------

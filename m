@@ -1,23 +1,24 @@
-From: sylvain ferriol <sferriol@imag.fr>
-Subject: bug in new tga framebuffer on dec 21030
-Date: Fri, 24 Sep 2004 18:29:07 +0200
+From: Kronos <kronos@people.it>
+Subject: Re: kbuild
+Date: Fri, 24 Sep 2004 19:03:15 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <41544B53.4060008@imag.fr>
+Message-ID: <20040924170315.GA11905@dreamland.darkstar.lan>
+References: <4152FE4A.732A42BB@orpatec.ch>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CAqtc-00072z-Ab
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Sep 2004 07:18:00 -0700
-Received: from gauss.mathematik.uni-oldenburg.de ([134.106.106.200])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CAqtb-0006EM-Ln
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Sep 2004 07:18:00 -0700
-Received: from imag.fr (dhcp-sn164-08.hrz.uni-oldenburg.de [134.106.164.18])
-	by gauss.mathematik.uni-oldenburg.de (Postfix) with ESMTP id 0B7124BCF6
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 24 Sep 2004 16:17:43 +0200 (CEST)
+	id 1CAtTb-0006er-VY
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Sep 2004 10:03:19 -0700
+Received: from mail-relay-3.tiscali.it ([213.205.33.43])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1CAtTY-0004wE-QJ
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Sep 2004 10:03:19 -0700
+Received: from dreamland.darkstar.lan (82.84.183.132) by mail-relay-3.tiscali.it (7.1.021.3)
+        id 4111154D00C25323 for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Sep 2004 19:03:06 +0200
+Content-Disposition: inline
+In-Reply-To: <4152FE4A.732A42BB@orpatec.ch>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,17 +28,61 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
 
-hello
-i'm testing debian installer on alpha and it does not work because we 
-use 2.4.27 with the new tga framebuffer.
-but it does not work with dec 21030 tga 8 plane card.
-I succeed to install woody on this computer because it uses 2.2 kernel 
-and tga driver works
+Il Thu, Sep 23, 2004 at 06:48:10PM +0200, Otto Wyss ha scritto: 
+> *This message was transferred with a trial version of CommuniGate(tm) Pro*
+> IMO kbuild makes it easy to test new framebuffer drivers by anyone. So
+> I've started to document the tester's part on the web
+> "http://linux-fvdev.sourceforge.net/index.php?page=kbuilddocs.html". Now
+> it would be nice if someone could create a correct Makefile for a
+> framebuffer (preferable radeonfb) and send it to me, so I can put it
+> into the linux-fbdev CVS.
 
-sylvain
+It's very simple, a skeleton would be like that:
+
+obj-m += myfb.o
+
+If the object is composed by 2 or more files:
+
+obj-m += myfb.o
+myfb-objs := file1.o file2.o file3.o
+
+Note that this will build a module regardless of what the user has in his
+.config file. For drivers that has suboptions (like I2C bus for
+radeonfb) you can either:
+- rely on the .config from user. In this case you can just copy and
+  adapt a bit the Makefile from the kernel tree. For radeonfb:
+
+obj-m += radeonfb.o
+
+radeonfb-y                              := radeon_base.o radeon_pm.o radeon_monitor.o radeon_accel.o
+radeonfb-$(CONFIG_FB_RADEON_I2C)        += radeon_i2c.o
+radeonfb-objs                           := $(radeonfb-y)
+
+- force some options. In this case you may have to define some symbols
+  manualy. Like this:
+
+obj-m += radeonfb.o
+
+# Force CONFIG_FB_RADEON_I2C
+EXTRA_CFLAGS := -DCONFIG_FB_RADEON_I2C
+
+radeonfb-objs   := radeon_base.o radeon_pm.o radeon_monitor.o radeon_accel.o radeon_i2c.o
+
+Also note that some driver may need some header not present in the build
+directory nor in the the standard include path. radeonfb, for example,
+include "../edid.h".
+
+HTH,
+Luca
+-- 
+Home: http://kronoz.cjb.net
+Se il  destino di un uomo  e` annegare, anneghera` anche  in un bicchier
+d'acqua.
+Proverbio yddish
 
 
 -------------------------------------------------------

@@ -1,23 +1,21 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 3/3] [FBDEV]: Hardware State
-	Notification
-Date: Wed, 23 Jun 2004 11:02:53 -0500
+From: John Zielinski <grim@undead.cc>
+Subject: Re: Sane behavior of fbset
+Date: Wed, 23 Jun 2004 13:29:25 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1088006572.1855.154.camel@gaston>
-References: <200406220639.26576.adaplas@hotpop.com>
+Message-ID: <40D9BDF5.2080603@undead.cc>
+References: <200406180945.12444.adaplas@hotpop.com>	 <200406190240.26228.adaplas@hotpop.com>	 <20040619031650.GC14319@havoc.gtf.org>	 <200406191413.28339.adaplas@hotpop.com> <1088006149.1832.145.camel@gaston>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BdALX-00054w-GK
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 09:11:35 -0700
-Received: from gate.crashing.org ([63.228.1.57])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1BdALX-0003gQ-13
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 09:11:35 -0700
-In-Reply-To: <200406220639.26576.adaplas@hotpop.com>
+	id 1BdBZ4-0004bV-Ma
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 10:29:38 -0700
+Received: from ns2.undead.cc ([216.126.84.18] helo=mail.undead.cc)
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
+	id 1BdBZ4-0007wk-96
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 10:29:38 -0700
+In-Reply-To: <1088006149.1832.145.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,43 +25,45 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: adaplas@pol.net
-Cc: James Simmons <jsimmons@infradead.org>, Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: adaplas@pol.net, David Eger <eger@havoc.gtf.org>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Mon, 2004-06-21 at 17:39, Antonino A. Daplas wrote:
-> Hi,
-> 
-> **This patch is more of an RFC.  BenH probably has similar code.
-> 
-> This patch adds a method (con_notify) that will notify console drivers of 
-> impending console switches, passing them with the about-to-be-old (last)
-> vc structure and about-to-be-new (wanted) vc structure.  The console 
-> drivers can then elect to pass selected information to low-level drivers.
-> 
-> This is important to fbcon so it can detect a switch from a graphics console to a
-> text console and vice versa. This will give underlying drivers a chance to update
-> its hardware state. This is added via the  method fbcon_state_switch(). Fbcon
-> will, however, do a set_par if the _state_switch method is not availabe and if
-> switching from a KD_GRAPHICS console.
-> 
-> Also updated rivafb to take advantage of this method.  With this, switching
-> to/from X with XFree86/Org nv driver works.  Usually it hangs without the
-> option usefbdev, or gets a Sig11 if with option usefbdev.
-> 
-> (Unfortunately it doesn't work for nVidia's binary nvidia driver, switching to 
-> the console is possible, switching back to X will hang the machine).
+Benjamin Herrenschmidt wrote:
 
-You don't need that. A method for that was _ALREADY_ added to the kernel,
-it's based on the fact that the blank() callback is called on switches
-between KD_TEXT and KD_GRAPHICS. After discussing the issue with Linus,
-we decided to add a parameter to it indicating the nature of the
-switch. You should be able to rely on that. Actually, if you look at
-the code, I'm forcing a set_par in this case. If this doesn't work, then
-I may have missed a code path, and that should be fixed but there is no
-need at this point to change the infrastructure.
+>It may have looked like a nice idea, but I think it's just wrong.
+>  
+>
+I think that the implementation is wrong, not the whole idea.  Currently 
+the vt_resize ioctl changes the vt size then tries to set the resolution 
+leading to a whole bunch of problems when a suitable resolution can't be 
+found and makes the fbset result ion change code path ugly as well.
 
-Ben.
+What should happen is that the vt_resize ioctl should be sent to the 
+console driver first and then the console driver calls back the vt layer 
+with the modified  row and column numbers based on the closest 
+resolution found.
+
+So what we have right now is:
+
+vt_ioctl (VT_RESIZE) -> vc_resize -> resize_screen -> con_resize ->  
+fb_set_var -> fbcon_event_notify -> vc_resize*
+
+* or equivilent code depending on who's patch you use
+
+Which should be:
+
+vt_ioctl (VT_RESIZE) -> resize_screen -> con_resize -> fb_set_var & 
+vc_resize
+
+You'd have to have a per vt var in order to have different console sizes 
+on different vt's this way.  The reason for not using the 
+fbcon_event_notify is that it won't be called when the vt is not in the 
+forground and I don't belive that a we need to resize the console when 
+switching between different vt's.  A vc_resize would the be necessary in 
+the fb_ioctl FBIOPUT_VSCREENINFO code path in this case.
+
+John
 
 
 

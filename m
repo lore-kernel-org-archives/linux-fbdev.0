@@ -1,19 +1,15 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: 2.5.51 -- rivafb is whacky (characters
- flipped on vertical axis, 640x480 usable area shown inside a higher-res
- area, etc).
-Date: Fri, 13 Dec 2002 05:09:34 +0000 (GMT)
+From: =?iso-8859-1?Q?Andr=E9_Stierenberg?= <stierenberg@gmx.de>
+Subject: Mirrored and shiftet fonts and logos
+Date: Sat, 14 Dec 2002 20:53:32 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0212130508050.10929-100000@phoenix.infradead.org>
-References: <1039705243.1006.1.camel@localhost.localdomain>
+Message-ID: <004501c2a3ab$015a5eb0$ee3c078b@nb1>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18Mi5U-0003Xb-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 12 Dec 2002 21:10:12 -0800
-In-Reply-To: <1039705243.1006.1.camel@localhost.localdomain>
+Received: from imap.gmx.net ([213.165.64.20] helo=mail.gmx.net)
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18NIPr-0006j3-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 14 Dec 2002 11:57:39 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,23 +19,41 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: Miles Lane <miles.lane@attbi.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-fbdev-devel@lists.sourceforge.net
+
+Hello,
+
+i=B4m using the framebuffer driver pxafb for my board using the pxa process=
+or
+(Accelent IDP). I have a 4 bit monocrom display. when I run the framebuffer
+I have some problems. The text in the console it in some way shifted. The
+two parts of the font are switched. The first 4 pixels are at dest+2 and the
+last 4 pixels at dest+0. And both parts are mirrored. Now I have done the
+following in fbcon_cfb4.c in function fbcon_cfb4_putcs:
+
+  for (rows =3D fontheight(p), dest =3D dest0; rows-- ; dest +=3D bytes) {
+      fb_writew((nibbletab_cfb4[rv(*cdat) >> 4] & eorx) ^ bgx, dest+2);
+      fb_writew((nibbletab_cfb4[rv(*cdat++) & 0xf] & eorx) ^ bgx, dest+0);
+  }
 
 
-> Can you test the attached patch (rivafb1.diff)?  It fixes some things: 
+The function rv will reverse the bit order (bit 1 is bit 8, bit 2 is bit 7..
+etc.).
+And i have swaped the destination offset.
+Now the characters are printed correctly. And in the linux logo, the
+pinguin, something is also wrong. It seems the some pixels are mirrored too
+whereas other pixels are correct.
 
-I tested the patch. The colors are still messed up :-( I'm running at 8 
-bpp mode. I applied the patch since it fixed some important things. 
-I also add support and more functionality. I still have some to go.
- 
+What could this be and in what way can i fix the problem?
+
+Andre
+
 
 
 
 -------------------------------------------------------
 This sf.net email is sponsored by:
-With Great Power, Comes Great Responsibility 
+With Great Power, Comes Great Responsibility=20
 Learn to use your power at OSDN's High Performance Computing Channel
 http://hpc.devchannel.org/

@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 1/9][FBDEV]: Do the deletion of mode entries at fbdev level
-Date: Sat, 21 Aug 2004 21:33:04 +0800
+Subject: [PATCH 8/9][SGIVWFB]: Salvage sgivwfb from James' tree
+Date: Sat, 21 Aug 2004 21:25:34 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200408212042.48584.adaplas@hotpop.com>
+Message-ID: <200408212121.20889.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1ByW0w-0008EH-U3
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 21 Aug 2004 06:34:34 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.61])
+	id 1ByW0S-0008A7-Kn
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 21 Aug 2004 06:34:04 -0700
+Received: from smtp-out.hotpop.com ([38.113.3.51])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1ByW0w-0008La-9V
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 21 Aug 2004 06:34:34 -0700
+	id 1ByW0S-0008Gz-0c
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 21 Aug 2004 06:34:04 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id B608B7B3CC3
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 21 Aug 2004 13:34:25 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id AE4B07421F
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 21 Aug 2004 13:33:53 +0000 (UTC)
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,102 +34,254 @@ Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 Hi,
 
-If a request for deletion of an entry in the mode database is requested, do 
-it at core fbdev level instead of doing it at the console level.
+Took code from James'  tree to be hopefully included in the mm tree so it can
+receive more testing.
 
 Tony
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- console/fbcon.c |   12 ++++++------
- fbmem.c         |   24 ++++++++++++++++--------
- 2 files changed, 22 insertions(+), 14 deletions(-)
+ sgivwfb.c |  129 ++++++++++++++++++++++++++++++++++++++++++++------------------
+ 1 files changed, 92 insertions(+), 37 deletions(-)
 
-diff -uprN linux-2.6.8.1-mm3-orig/drivers/video/console/fbcon.c linux-2.6.8.1-mm3/drivers/video/console/fbcon.c
---- linux-2.6.8.1-mm3-orig/drivers/video/console/fbcon.c	2004-08-21 18:26:53.000000000 +0800
-+++ linux-2.6.8.1-mm3/drivers/video/console/fbcon.c	2004-08-21 18:36:27.045024320 +0800
-@@ -2671,8 +2671,8 @@ static void fbcon_modechanged(struct fb_
- 	}
- }
+diff -uprN linux-2.6.8.1-mm3-orig/drivers/video/sgivwfb.c linux-2.6.8.1-mm3/drivers/video/sgivwfb.c
+--- linux-2.6.8.1-mm3-orig/drivers/video/sgivwfb.c	2004-08-21 18:26:53.000000000 +0800
++++ linux-2.6.8.1-mm3/drivers/video/sgivwfb.c	2004-08-21 18:59:59.711266408 +0800
+@@ -22,7 +22,7 @@
+ #include <asm/mtrr.h>
  
--static void fbcon_mode_deleted(struct fb_info *info,
--			       struct fb_videomode *mode)
-+static int fbcon_mode_deleted(struct fb_info *info,
-+			      struct fb_videomode *mode)
+ #define INCLUDE_TIMING_TABLE_DATA
+-#define DBE_REG_BASE default_par.regs
++#define DBE_REG_BASE par->regs
+ #include <video/sgivw.h>
+ 
+ struct sgivw_par {
+@@ -44,9 +44,6 @@ struct sgivw_par {
+ extern unsigned long sgivwfb_mem_phys;
+ extern unsigned long sgivwfb_mem_size;
+ 
+-static struct sgivw_par default_par;
+-static u32 pseudo_palette[17];
+-static struct fb_info fb_info;
+ static int ypan = 0;
+ static int ywrap = 0;
+ 
+@@ -162,7 +159,7 @@ static unsigned long get_line_length(int
+  *              console.
+  */
+ 
+-static void dbe_TurnOffDma(void)
++static void dbe_TurnOffDma(struct sgivw_par *par)
  {
- 	struct fb_info *fb_info;
- 	struct display *p;
-@@ -2694,8 +2694,7 @@ static void fbcon_mode_deleted(struct fb
- 			break;
- 		}
+ 	unsigned int readVal;
+ 	int i;
+@@ -367,7 +364,7 @@ static int sgivwfb_check_var(struct fb_v
+ /*
+  *  Setup flatpanel related registers.
+  */
+-static void sgivwfb_setup_flatpanel(struct dbe_timing_info *currentTiming)
++static void sgivwfb_setup_flatpanel(struct sgivw_par *par, struct dbe_timing_info *currentTiming)
+ {
+ 	int fp_wid, fp_hgt, fp_vbs, fp_vbe;
+ 	u32 outputVal = 0;
+@@ -429,7 +426,7 @@ static int sgivwfb_set_par(struct fb_inf
+ 	/* Turn on dotclock PLL */
+ 	DBE_SETREG(ctrlstat, 0x20000000);
+ 
+-	dbe_TurnOffDma();
++	dbe_TurnOffDma(par);
+ 
+ 	/* dbe_CalculateScreenParams(); */
+ 	maxPixelsPerTileX = 512 / bytesPerPixel;
+@@ -453,7 +450,7 @@ static int sgivwfb_set_par(struct fb_inf
+ 		DBE_SETREG(vt_xy, 0x00000000);
+ 		udelay(1);
+ 	} else
+-		dbe_TurnOffDma();
++		dbe_TurnOffDma(par);
+ 
+ 	/* dbe_Initdbe(); */
+ 	for (i = 0; i < 256; i++) {
+@@ -567,7 +564,7 @@ static int sgivwfb_set_par(struct fb_inf
+ 	DBE_SETREG(vt_hcmap, outputVal);
+ 
+ 	if (flatpanel_id != -1)
+-		sgivwfb_setup_flatpanel(currentTiming);
++		sgivwfb_setup_flatpanel(par, currentTiming);
+ 
+ 	outputVal = 0;
+ 	temp = currentTiming->vblank_start - currentTiming->vblank_end - 1;
+@@ -752,16 +749,30 @@ int __init sgivwfb_setup(char *options)
+ /*
+  *  Initialisation
+  */
+-int __init sgivwfb_init(void)
++static void sgivwfb_release(struct device *device)
++{
++}	
++
++static int __init sgivwfb_probe(struct device *device)
+ {
++	struct platform_device *dev = to_platform_device(device);
++	struct sgivw_par *par;	
++	struct fb_info *info;
+ 	char *monitor;
+ 
++	info = framebuffer_alloc(sizeof(struct sgivw_par) + sizeof(u32) * 256, &dev->dev); 
++	if (!info)
++		return -ENOMEM;
++	par = info->par;
++	
+ 	if (!request_mem_region(DBE_REG_PHYS, DBE_REG_SIZE, "sgivwfb")) {
+ 		printk(KERN_ERR "sgivwfb: couldn't reserve mmio region\n");
++		framebuffer_release(info);
+ 		return -EBUSY;
  	}
--	if (!found)
--		fb_delete_videomode(mode, &info->monspecs.modelist);
-+	return found;
+-	default_par.regs = (struct asregs *) ioremap_nocache(DBE_REG_PHYS, DBE_REG_SIZE);
+-	if (!default_par.regs) {
++
++	par->regs = (struct asregs *) ioremap_nocache(DBE_REG_PHYS, DBE_REG_SIZE);
++	if (!par->regs) {
+ 		printk(KERN_ERR "sgivwfb: couldn't ioremap registers\n");
+ 		goto fail_ioremap_regs;
+ 	}
+@@ -773,66 +784,110 @@ int __init sgivwfb_init(void)
+ 	sgivwfb_fix.ywrapstep = ywrap;
+ 	sgivwfb_fix.ypanstep = ypan;
+ 
+-	fb_info.fix = sgivwfb_fix;
++	info->fix = sgivwfb_fix;
+ 
+ 	switch (flatpanel_id) {
+ 		case FLATPANEL_SGI_1600SW:
+-			fb_info.var = sgivwfb_var1600sw;
++			info->var = sgivwfb_var1600sw;
+ 			monitor = "SGI 1600SW flatpanel";
+ 			break;
+ 		default:
+-			fb_info.var = sgivwfb_var;
++			info->var = sgivwfb_var;
+ 			monitor = "CRT";
+ 	}
+ 
+ 	printk(KERN_INFO "sgivwfb: %s monitor selected\n", monitor);
+ 
+-	fb_info.fbops = &sgivwfb_ops;
+-	fb_info.pseudo_palette = pseudo_palette;
+-	fb_info.par = &default_par;
+-	fb_info.flags = FBINFO_DEFAULT;
++	info->fbops = &sgivwfb_ops;
++	info->pseudo_palette = (void *) (par + 1);
++	info->flags = FBINFO_DEFAULT;
+ 
+-	fb_info.screen_base = ioremap_nocache((unsigned long) sgivwfb_mem_phys, sgivwfb_mem_size);
+-	if (!fb_info.screen_base) {
++	info->screen_base = ioremap_nocache((unsigned long) sgivwfb_mem_phys, sgivwfb_mem_size);
++	if (!info->screen_base) {
+ 		printk(KERN_ERR "sgivwfb: couldn't ioremap screen_base\n");
+ 		goto fail_ioremap_fbmem;
+ 	}
+ 
+-	fb_alloc_cmap(&fb_info.cmap, 256, 0);
++	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0)
++		goto fail_color_map;
+ 
+-	if (register_framebuffer(&fb_info) < 0) {
++	if (register_framebuffer(info) < 0) {
+ 		printk(KERN_ERR "sgivwfb: couldn't register framebuffer\n");
+ 		goto fail_register_framebuffer;
+ 	}
+ 
++	dev_set_drvdata(&dev->dev, info);
++	
+ 	printk(KERN_INFO "fb%d: SGI DBE frame buffer device, using %ldK of video memory at %#lx\n",      
+-		fb_info.node, sgivwfb_mem_size >> 10, sgivwfb_mem_phys);
++		info->node, sgivwfb_mem_size >> 10, sgivwfb_mem_phys);
+ 	return 0;
+-
++	
+ fail_register_framebuffer:
+-	iounmap((char *) fb_info.screen_base);
++	fb_dealloc_cmap(&info->cmap);
++fail_color_map:
++	iounmap((char *) info->screen_base);
+ fail_ioremap_fbmem:
+-	iounmap(default_par.regs);
++	iounmap(par->regs);
+ fail_ioremap_regs:
+ 	release_mem_region(DBE_REG_PHYS, DBE_REG_SIZE);
++	framebuffer_release(info);
+ 	return -ENXIO;
  }
  
- static int fbcon_event_notify(struct notifier_block *self, 
-@@ -2704,6 +2703,7 @@ static int fbcon_event_notify(struct not
- 	struct fb_event *event = (struct fb_event *) data;
- 	struct fb_info *info = event->info;
- 	struct fb_videomode *mode;
-+	int ret = 0;
+-#ifdef MODULE
+-MODULE_LICENSE("GPL");
++static int sgivwfb_remove(struct device *device)
++{
++	struct fb_info *info = dev_get_drvdata(device);
++
++	if (info) {
++		struct sgivw_par *par = info->par;
++		
++		unregister_framebuffer(info);
++		dbe_TurnOffDma(par);
++		iounmap(par->regs);
++		iounmap(info->screen_base);
++		release_mem_region(DBE_REG_PHYS, DBE_REG_SIZE);
++	}
++	return 0;
++}	
++
++static struct device_driver sgivwfb_driver = {
++	.name	= "sgivwfb",
++	.bus	= &platform_bus_type,
++	.probe	= sgivwfb_probe,
++	.remove	= sgivwfb_remove,
++};
++
++static struct platform_device sgivwfb_device = {
++	.name	= "sgivwfb",
++	.id	= 0,
++	.dev	= {
++		.release = sgivwfb_release,
++	}
++};
  
- 	switch(action) {
- 	case FB_EVENT_SUSPEND:
-@@ -2717,11 +2717,11 @@ static int fbcon_event_notify(struct not
- 		break;
- 	case FB_EVENT_MODE_DELETE:
- 		mode = (struct fb_videomode *) event->data;
--		fbcon_mode_deleted(info, mode);
-+		ret = fbcon_mode_deleted(info, mode);
- 		break;
- 	}
- 
--	return 0;
+-int init_module(void)
++int __init sgivwfb_init(void)
+ {
+-	return sgivwfb_init();
++	int ret;
++
++	ret = driver_register(&sgivwfb_driver);
++	if (!ret) {
++		ret = platform_device_register(&sgivwfb_device);
++		if (ret)
++			driver_unregister(&sgivwfb_driver);
++	}
 +	return ret;
  }
  
- /*
-diff -uprN linux-2.6.8.1-mm3-orig/drivers/video/fbmem.c linux-2.6.8.1-mm3/drivers/video/fbmem.c
---- linux-2.6.8.1-mm3-orig/drivers/video/fbmem.c	2004-08-21 18:26:53.000000000 +0800
-+++ linux-2.6.8.1-mm3/drivers/video/fbmem.c	2004-08-21 18:36:27.048023864 +0800
-@@ -1089,18 +1089,26 @@ fb_set_var(struct fb_info *info, struct 
+-void cleanup_module(void)
++#ifdef MODULE
++MODULE_LICENSE("GPL");
++
++static void __exit sgivwfb_exit(void)
+ {
+-	unregister_framebuffer(&fb_info);
+-	dbe_TurnOffDma();
+-	iounmap(regs);
+-	iounmap(&fb_info.screen_base);
+-	release_mem_region(DBE_REG_PHYS, DBE_REG_SIZE);
++	platform_device_unregister(&sgivwfb_device);
++	driver_unregister(&sgivwfb_driver);
+ }
  
- 	if (var->activate & FB_ACTIVATE_INV_MODE) {
- 		struct fb_videomode mode1, mode2;
--		struct fb_event event;
-+		int ret = 0;
- 
- 		fb_var_to_videomode(&mode1, var);
- 		fb_var_to_videomode(&mode2, &info->var);
- 		/* make sure we don't delete the videomode of current var */
--		if (fb_mode_is_equal(&mode1, &mode2))
--			return -EINVAL;
--		event.info = info;
--		event.data = &mode1;
--		notifier_call_chain(&fb_notifier_list, FB_EVENT_MODE_DELETE,
--				    &event);
--		return 0;
-+		ret = fb_mode_is_equal(&mode1, &mode2);
++module_init(sgivwfb_init);
++module_exit(sgivwfb_exit);
 +
-+		if (!ret) {
-+		    struct fb_event event;
-+
-+		    event.info = info;
-+		    event.data = &mode1;
-+		    ret = notifier_call_chain(&fb_notifier_list,
-+					      FB_EVENT_MODE_DELETE, &event);
-+		}
-+
-+		if (!ret)
-+		    fb_delete_videomode(&mode1, &info->monspecs.modelist);
-+
-+		return ret;
- 	}
- 
- 	if ((var->activate & FB_ACTIVATE_FORCE) ||
+ #endif				/* MODULE */
 
 
 

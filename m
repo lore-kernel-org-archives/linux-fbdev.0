@@ -1,47 +1,40 @@
-From: Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [Dri-devel] Re: DRM and pci_driver conversion
-Date: Fri, 24 Oct 2003 13:06:36 -0400
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20031024170636.GA28582@gtf.org>
-References: <3F987E18.9080606@pobox.com> <Pine.LNX.4.44.0310240931090.6051-100000@home.osdl.org>
+From: Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [Dri-devel] Re: [Linux-fbdev-devel] DRM and pci_driver conversion
+Date: Fri, 24 Oct 2003 10:59:07 -0700 (PDT)
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <Pine.LNX.4.44.0310241051450.8177-100000@home.osdl.org>
+References: <20031024165718.GA4972@vana.vc.cvut.cz>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0310240931090.6051-100000@home.osdl.org>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <20031024165718.GA4972@vana.vc.cvut.cz>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: Jon Smirl <jonsmirl@yahoo.com>, Eric Anholt <eta@lclark.edu>, kronos@kronoz.cjb.net, Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net, dri-devel <dri-devel@lists.sourceforge.net>
+To: Petr Vandrovec <vandrove@vc.cvut.cz>
+Cc: Jeff Garzik <jgarzik@pobox.com>, Jon Smirl <jonsmirl@yahoo.com>, Eric Anholt <eta@lclark.edu>, kronos@kronoz.cjb.net, Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net, dri-devel <dri-devel@lists.sourceforge.net>
 
-On Fri, Oct 24, 2003 at 09:44:38AM -0700, Linus Torvalds wrote:
-> So wouldn't it be nice if we just had those ten lines as a generic
-> function like
+
+On Fri, 24 Oct 2003, Petr Vandrovec wrote:
 > 
-> 	int pci_enable_rom(struct pci_device *dev)
-> 	{
-> 		...
-> 
-> 	int pci_disable_rom(..);
+> It would be nice if it works... For matrox hardware I have to map ROM
+> over framebuffer (it is solution recommended by datasheet), as there is
+> no way to get memory range allocated for ROM unless ROM was left enabled
+> all the time.
 
-Yes.  Agreed,
+That's fine - it sounds like Matrox hardware is just buggy, and then you 
+will never be able to use the generic "enable ROM" routines. That 
+shouldn't detract from other drivers doing it, though. 
 
-	Jeff
+On the other hand, we might well be able to work around the matrox
+behaviour if we really want to: writing all-ones to the register should
+work, and that is the way we figure out the size of the allocation anyway.  
 
+So this is one of those things where having a generic routine and knowing
+a bit about some implementation oddities migth well work out. Maybe some
+other cards have the same odd behaviour.
 
+But since Matrox has a separate recommended solution in their datasheets,
+I suspect the right thing is just to ignore Matrox when talking about the 
+generic thing.
 
-
-
--------------------------------------------------------
-This SF.net email is sponsored by: The SF.net Donation Program.
-Do you like what SourceForge.net is doing for the Open
-Source Community?  Make a contribution, and help us add new
-features and functionality. Click here: http://sourceforge.net/donate/
+		Linus

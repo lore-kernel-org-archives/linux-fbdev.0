@@ -1,20 +1,22 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] Fix atyfb build on ppc
-Date: Fri, 1 Apr 2005 10:45:59 +0200 (CEST)
-Message-ID: <Pine.LNX.4.62.0504011045030.6801@numbat.sonytel.be>
-References: <200503311828.j2VISgPd028711@hera.kernel.org>
+From: <evt@texelsoft.com>
+Subject: problem with modular asiliant driver
+Date: Tue, 5 Apr 2005 16:21:55 -0400
+Message-ID: <200504052021.CZG39831@ms3.netsolmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DHHn6-0004J9-4z
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 01 Apr 2005 00:46:08 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DHHn3-0005gl-Dd
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 01 Apr 2005 00:46:08 -0800
-In-Reply-To: <200503311828.j2VISgPd028711@hera.kernel.org>
+	id 1DIuYo-0002ma-U3
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 05 Apr 2005 13:22:06 -0700
+Received: from omr1.netsolmail.com ([216.168.230.162])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DIuYn-00060L-DF
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 05 Apr 2005 13:22:06 -0700
+Received: from ms3.netsolmail.com (IDENT:mirapoint@[216.168.230.176])
+	by omr1.netsolmail.com (8.12.10/8.12.10) with ESMTP id j35KLwTh001314
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 5 Apr 2005 16:21:59 -0400 (EDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -25,63 +27,22 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, 31 Mar 2005, Linux Kernel Mailing List wrote:
+I'm trying to build the asiliantfb driver from 2.6.8.1 as a
+module but when I do that, since fb_console_init() and
+reset_vc() have long since run, the fb_setcolreg member
+function (asiliantfb_setcolreg)is not getting called. Hence I
+wind up with a black screen. Can anybody point me at a driver
+that works as a module and/or advise me on how to fix this?
+Thanks.
 
-> ChangeSet 1.2305, 2005/03/31 08:49:44-08:00, benh@kernel.crashing.org
-> 
-> 	[PATCH] Fix atyfb build on ppc
-> 	
-> 	This patch fixes a build problem with atyfb on ppc.  It uses the stuff in
-> 	macmodes.c, but doesn't trigger the build of it.  So if no other driver
-> 	using macmodes is built, the link will fail.
-> 	
-> 	Signed-off-by: David Woodhouse <dwmw2@infradead.org>
-> 	Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 	Signed-off-by: Andrew Morton <akpm@osdl.org>
-> 	Signed-off-by: Linus Torvalds <torvalds@osdl.org>
-> 
-> 
-> 
->  Makefile |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> 
-> diff -Nru a/drivers/video/Makefile b/drivers/video/Makefile
-> --- a/drivers/video/Makefile	2005-03-31 10:28:55 -08:00
-> +++ b/drivers/video/Makefile	2005-03-31 10:28:55 -08:00
-> @@ -30,8 +30,8 @@
->  obj-$(CONFIG_FB_MATROX)		  += matrox/
->  obj-$(CONFIG_FB_RIVA)		  += riva/ vgastate.o
->  obj-$(CONFIG_FB_NVIDIA)		  += nvidia/
-> -obj-$(CONFIG_FB_ATY)		  += aty/
-> -obj-$(CONFIG_FB_ATY128)		  += aty/
-> +obj-$(CONFIG_FB_ATY)		  += aty/ macmodes.o
-> +obj-$(CONFIG_FB_ATY128)		  += aty/ macmodes.o
->  obj-$(CONFIG_FB_RADEON)		  += aty/
->  obj-$(CONFIG_FB_SIS)		  += sis/
->  obj-$(CONFIG_FB_KYRO)             += kyro/
-
-Isn't this one obsoleted by `fbdev: Kconfig fix for macmodes and PPC', which
-also went in?
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-evt
 
 
 -------------------------------------------------------
-This SF.net email is sponsored by Demarc:
-A global provider of Threat Management Solutions.
-Download our HomeAdmin security software for free today!
-http://www.demarc.com/info/Sentarus/hamr30
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

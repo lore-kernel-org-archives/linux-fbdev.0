@@ -1,18 +1,17 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: [PATCH]: More optimization for
-	accel_putcs()
-Date: 23 Feb 2003 19:07:47 +0800
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: fbcon_redraw_clear()
+Date: Sun, 23 Feb 2003 13:15:32 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1045998151.1188.2.camel@localhost.localdomain>
-References: <1045884656.1188.7.camel@localhost.localdomain>
+Message-ID: <Pine.GSO.4.21.0302231314540.28532-100000@vervain.sonytel.be>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from pine.compass.com.ph ([202.70.96.37])
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18mtye-000367-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 23 Feb 2003 03:07:24 -0800
-In-Reply-To: <1045884656.1188.7.camel@localhost.localdomain>
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18mv36-0002iT-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 23 Feb 2003 04:16:04 -0800
+Received: from vervain.sonytel.be (mail.sonytel.be [10.17.0.26])
+	by mail.sonytel.be (8.9.0/8.8.6) with ESMTP id NAA09466
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 23 Feb 2003 13:15:26 +0100 (MET)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,59 +21,24 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Antonino Daplas <adaplas@pol.net>
-Cc: James Simmons <jsimmons@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sat, 2003-02-22 at 11:32, Antonino Daplas wrote:
-> Geert, James,
-> 
-> Here's a patch for linux-2.5.61 + James' fbdev.diff so accel_putcs()
-> will do only 1 fb_imageblit() at the end when fontwidth is not divisible
-> by 8.  Tested on 4x6 and 12x22 fonts.  There should be a significant
-> performance increase even with the generic functions, however, the
-> greatest gain can be seen on drivers with accelerated fb_imageblit(). 
-> Here are some numbers:
-> 
 
-The optimization logic is flawed :-(  Please apply this patch also.
+fbcon_redraw_clear() uses fbcon_putc() to clear characters one by one, which is
+slow.
 
-Tony
+Gr{oetje,eeting}s,
 
-diff -Naur linux-2.5.61-fbdev/drivers/video/console/fbcon.c linux-2.5.61/drivers/video/console/fbcon.c
---- linux-2.5.61-fbdev/drivers/video/console/fbcon.c	2003-02-23 18:54:32.000000000 +0800
-+++ linux-2.5.61/drivers/video/console/fbcon.c	2003-02-23 18:58:05.000000000 +0800
-@@ -400,7 +400,7 @@
- 			image.width = vc->vc_font.width * cnt;
- 			pitch = (image.width + 7)/8;
- 			while (k--) {
--				src = p->fontdata + (scr_readw(s++)&charmask)*
-+				src = p->fontdata + (scr_readw(s++)&charmask)* 
- 					cellsize;
- 				dst = dst0;
- 				mask = (u8) (0xfff << shift_high);
-@@ -412,15 +412,18 @@
- 						src++;
- 					}
- 					dst[idx] &= mask;
--					dst[idx] |= *src++ >> shift_low;
-+					dst[idx] |= *src >> shift_low;
-+					if (shift_high < mod)
-+						dst[idx+1] = *src << shift_high;
-+					src++;
- 					dst += pitch;
- 				}
- 				shift_low += mod;
-+				dst0 += (shift_low >= 8) ? width : width - 1;
- 				shift_low &= 7;
- 				shift_high = 8 - shift_low;
--				dst0 += (shift_low) ? width - 1 : width;
- 			}
--
-+			
- 			info->fbops->fb_imageblit(info, &image);
- 			image.dx += cnt * vc->vc_font.width;
- 			count -= cnt;
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

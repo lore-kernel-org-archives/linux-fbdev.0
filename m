@@ -1,17 +1,14 @@
-From: Martin Schulze <joey@infodrom.org>
-Subject: Re: Re: [macro@ds2.pg.gda.pl: Re: PMAG-A support?]
-Date: Tue, 12 Aug 2003 19:28:12 +0200
+From: Jon Smirl <jonsmirl@yahoo.com>
+Subject: Rage128 fb driver and Mode parameter
+Date: Tue, 12 Aug 2003 15:16:56 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030812172812.GE8511@finlandia.infodrom.north.de>
-References: <20030812155339.GC8511@finlandia.infodrom.north.de> <Pine.GSO.3.96.1030812183047.7029J-100000@delta.ds2.pg.gda.pl>
+Message-ID: <20030812221656.36408.qmail@web14911.mail.yahoo.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from luonnotar.infodrom.org ([195.124.48.78])
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19md5L-0000qd-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 12 Aug 2003 10:37:27 -0700
-Content-Disposition: inline
-In-Reply-To: <Pine.GSO.3.96.1030812183047.7029J-100000@delta.ds2.pg.gda.pl>
+Received: from web14911.mail.yahoo.com ([216.136.225.249])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19mhRo-0002v2-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 12 Aug 2003 15:16:56 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,36 +20,28 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Maciej W. Rozycki" <macro@ds2.pg.gda.pl>
-Cc: Thiemo Seufer <ica2_ts@csv.ica.uni-stuttgart.de>, Karsten Merker <karsten@excalibur.cologne.de>, linux-fbdev-devel@lists.sourceforge.net
+To: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-Maciej W. Rozycki wrote:
-> On Tue, 12 Aug 2003, Martin Schulze wrote:
-> 
-> > >  Hmm, I can only see PMAG-A-specific changes here -- does it mean the
-> > > driver now works as is with no changes to the generic fb code?  If that is
-> > > the case, I'll apply the patch to the MIPS CVS right now.
-> > 
-> > The changes to generic code were sent in a separate mail.  I've resent
-> > it to an archive: http://www.infodrom.org/Mail-Archive/misc/2003/0010.html
-> 
->  I've seen that, but as I understand it's needed just for the Penguin logo
-> to be displayed correctly upon boot, right?  The logo might be nice to
-> have, but it's secondary -- if the console tty output works without that
-> part, I'd consider the driver ready to use and let the logo be fixed
-> independently. 
+The Rage128 driver allows a mode=800x600 type
+parameter when it is loaded. The driver is taking the
+mode info and loading it into it's internal structs
+but then not setting the mode.
 
-Yes.  In that case you are absolutely correct.  The console works
-without the logo, of course.
+If I modify the driver to actually set the mode, it
+appears that the framebuffer driver is confused and
+still draws in the old mode.
 
-Regards,
+How is this supporse to work? Should it be legal to
+set the mode when the Rage128 driver is loaded with insmod?
 
-	Joey
+=====
+Jon Smirl
+jonsmirl@yahoo.com
 
--- 
-GNU GPL: "The source will be with you... always."
-
-Please always Cc to me when replying to me on the lists.
+__________________________________
+Do you Yahoo!?
+Yahoo! SiteBuilder - Free, easy-to-use web site design software
+http://sitebuilder.yahoo.com
 
 
 -------------------------------------------------------

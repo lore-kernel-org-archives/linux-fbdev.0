@@ -1,59 +1,40 @@
-From: "sottek" <sottek@sottekland.com>
-Subject: Current discussion about the future of free software graphics
-Date: Tue, 11 May 2004 13:09:48 -0500
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200405111309.AA504430924@sottekland.com>
-Reply-To: <sottek@sottekland.com>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [Linux-fbdev-devel] Re: RE: [Dri-devel] Memory
+ management of AGP and VRAM
+Date: Tue, 11 May 2004 19:48:50 +0100 (BST)
+Sender: mesa3d-dev-admin@lists.sourceforge.net
+Message-ID: <Pine.LNX.4.44.0405111942080.17349-100000@phoenix.infradead.org>
+References: <16545.1085.173860.37370@xf11.fra.suse.de>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+Return-path: <mesa3d-dev-admin@lists.sourceforge.net>
+In-Reply-To: <16545.1085.173860.37370@xf11.fra.suse.de>
+Errors-To: mesa3d-dev-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
+	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+List-Post: <mailto:mesa3d-dev@lists.sourceforge.net>
+List-Help: <mailto:mesa3d-dev-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
+	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=mesa3d-dev>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: eich@pdx.freedesktop.org, agd5f@yahoo.com, michel@daenzer.net, keithp@keithp.com, jonsmirl@yahoo.com, jsimmons@infradead.org
-Cc: linux-fbdev-devel@lists.sourceforge.net, dri-devel@lists.sourceforge.net
+To: Egbert Eich <eich@pdx.freedesktop.org>
+Cc: Jon Smirl <jonsmirl@yahoo.com>, Ian Romanick <idr@us.ibm.com>, dri-devel <dri-devel@lists.sourceforge.net>, mesa3d-dev <mesa3d-dev@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-Can we wrap this up the discussion and try to get to a consensus on
-design requirements? I think most of the opinions are starting to
-solidify enough to start hashing out the requirements and actual
-design.
 
-Also, we probably want to drop the communication down to just one
-list? I think dri-devel seems to have the widest group of subscribers.
+> I'm not speaking about a text mode. 
+> I would think on most systems the firmware would provide some reasonable
+> initial mode that the kernel can use. If there is no such firmware one 
+> would expect there is some preboot software that is used to bootstrap the
+> kernel that could do such a setup - using a number of fixed modes hard
+> coded in tables. (It is a pain to debug, though).
 
-To start the ball rolling here is a few requirements that I have. We
-can build up the list and veto as needed to try and get to a working 
-set.
-
-1: Design must provide a mechanism for basic mode setting in a
-device independent manner from an application with user level
-permissions. ("Basic" to be defined)
-2: Design must provide a mechanism for any number of driver dependent
-extensions.
-3: Design must provide a mechanism to allow the kernel to draw oops
-or console messages to the screen in any mode.
-4: Design must insure that user applications may not set the hardware
-into an unstable state that could lead to lockup or damage display
-devices.
-5: Design must incorporate a bi-direction API versioning system. The
-application must indicate the API version it is expecting first,
-followed by the driver's reply.
-
-And some that may require some discussion:
-6: Design must provide a mechnism by which the driver can inform a
-user application of acceptable modes that may later be applied to
-hardware.
-7: Design must provide a mechnism for user level applications to
-use rendering features of hardware in a secure manner.
-8: Design must provide a mechanism for multi-framebuffer and
-multi-display per framebuffer devices to be controlled.
+   You haven't done to work much with embedded hardware. So instead of one 
+graphics driver initailzing the hardware for every platform we need to 
+force all the embedded companies out there to add code to there boot 
+setups to initialize the different possible graphics cards out there. 
+That is alot of duplicated work for nothing.
 
 
 

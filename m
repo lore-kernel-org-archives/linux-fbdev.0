@@ -1,16 +1,16 @@
-From: Axel.Zeuner@gmx.de
-Subject: intelfb port to 2.6
-Date: Tue, 5 Aug 2003 11:33:21 +0200
+From: "Somsak Sriprayoonsakul" <ssy@hpcnc.cpe.ku.ac.th>
+Subject: Can't correctly set palette
+Date: Wed, 6 Aug 2003 15:24:39 +0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200308051133.21392.Axel.Zeuner@gmx.de>
+Message-ID: <002101c35bf4$3ec19e10$16226c9e@hpcncd.cpe.ku.ac.th>
+Reply-To: "Somsak Sriprayoonsakul" <ssy@hpcnc.cpe.ku.ac.th>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from imap.gmx.net ([213.165.64.20] helo=mail.gmx.net)
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19jyEV-0004gt-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 05 Aug 2003 02:35:55 -0700
-Content-Disposition: inline
+Received: from nontri.ku.ac.th ([158.108.2.71] helo=ku.ac.th)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19kJcv-0003Ec-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 06 Aug 2003 01:26:34 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,13 +22,33 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: kraxel@goldbach.in-berlin.de
 
-Hi,
-is anybody working on porting the frame buffer driver for the intel 
-830/../855GM/865 chips to linux 2.6?
+Hello,
+    I am trying to create a graphical RedHat Linux bootup using Frame Buffer
+pixmap drawing (with the help of bogl library with bogl_put function). After
+successfully display the image from the command prompt. I try to add my
+image-drawing command to rc script, however, the image appeared to use wrong
+palette, all color are distorted. It seems that if I am trying to display
+the image in the different VT than the Vt that is running the program, the
+color palette will always distort (using chvt xx && ./show_image). I try to
+get the frame buffer palette using ioctl(FBIOGETCMAP) but it alwasy return
+zero fb_cmap. What have I done wrong? Here are the details of my platform
 
-Best regards
-Axel Zeuner
+frame buffer driver: vesafb (passing vga=0x301 at boot time)
+image: 640x480 - 7 bit indexed color.
+
+PS: Don't tell me to use default color palette. I need to display a nice 7
+bit image in console mode.
+
+------------------------------------------------------------------------
+Somsak Sriprayoonsakul
+
+High Performance Computing and Networking Center
+Kasetsart University
+ssy@hpcnc.cpe.ku.ac.th
+----------------------------------------------------------------------------
+---
 
 
 

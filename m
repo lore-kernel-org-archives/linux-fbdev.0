@@ -1,17 +1,17 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: RE: 2.5.70 - Blank Screen with VESA VGA Framebuffer
-Date: Fri, 13 Jun 2003 11:24:58 +0200 (MEST)
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Subject: Re: X endianess problem
+Date: 13 Jun 2003 11:27:38 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0306131123460.11546-100000@vervain.sonytel.be>
-References: <0BCBFEACE44CF0469CF5EBF7F6B61253446914@chn-snr-msg.wipro.com>
+Message-ID: <1055496457.1853.88.camel@thor.holligenstrasse29.lan>
+References: <200306101104.h5AB40k12305@panix3.panix.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=witte.sonytel.be)
+Received: from [195.141.226.27] (helo=netline-mail1.netline.ch)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19Qkoy-0004De-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 13 Jun 2003 02:26:08 -0700
-In-Reply-To: <0BCBFEACE44CF0469CF5EBF7F6B61253446914@chn-snr-msg.wipro.com>
+	id 19QkqU-0004ya-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 13 Jun 2003 02:27:42 -0700
+In-Reply-To: <200306101104.h5AB40k12305@panix3.panix.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,56 +21,49 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="iso-8859-1"
-To: Parag Warudkar <parag.warudkar@wipro.com>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Jochen Roth <jochen@panix.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, 13 Jun 2003, Parag Warudkar wrote:
-> You mean to say you have 2.5.XX working with VESA VGA Framebuffer or AT=
-YFB?
-> If yes, could you please direct me to relevant sources / patches?
-
-I mean atyfb in 2.4.20. But it's not yet working out-of-the-box, it needs=
- an
-program to play with some registers, and more investigation. Stay tuned...
-
-> -----Original Message-----
-> From: Geert Uytterhoeven [mailto:geert@linux-m68k.org]=20
-> Sent: Friday, June 13, 2003 2:24 PM
-> To: Parag Warudkar
-> Cc: James Simmons; Linux Frame Buffer Device Development
-> Subject: RE: [Linux-fbdev-devel] 2.5.70 - Blank Screen with VESA VGA Fr=
-amebuffer
+On Tue, 2003-06-10 at 13:04, Jochen Roth wrote:=20
+> I just finished reading through the radeonfb/endianness thread. I am
+> working on an old IBM PReP thin client with an S3 Trio64V2/DX.
 >=20
-> On Fri, 13 Jun 2003, Parag Warudkar wrote:
-> > No. Atyfb hasn't worked for me in 2.4.20. If I use video=3Datyfb, I g=
-et a
-> > corrupted white screen which is beyond my capabilities to describe!! =
-:)
+> I started out with 2.4.19 from kernel.org and added startup code and
+> some patches for prep_pci.c etc. I am testing this under XFree86
+> 4.1.0.1 with the fbdev module, current stable ppc off of debian.org.
 >=20
-> OK, so there's no point in trying atyfb in 2.5.x, it won't work neither.
+> I got the 16bit console stuff working by byte-swapping the packed
+> rgb words in the _setcolreg handler. Same code basically as in the
+> clgenfb.c, for instance.
 >=20
-> > The graphics chip is ATI RAGE Mobility M1(LT) AGP2X - a MACH64 Deriva=
-te
-> > with 8Mb RAM..  For X, 3D acceleration (DRI, direct rendering) works
->=20
-> So you probably have the same version as I have. Thanks to Dani=EBl Man=
-tione,
-> it's almost working, though.
+> Neither X nor fbi get the byte order right, though.
 
-Gr{oetje,eeting}s,
+I think they just assume native byte order.
 
-						Geert
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m6=
-8k.org
+> BTW, based on my debug output X never turns off the accelerator. Is
+> that OK?
 
-In personal conversations with technical people, I call myself a hacker. =
-But
-when I'm talking to journalists I just say "programmer" or something like=
- that.
-							    -- Linus Torvalds
+fbdevHWMapMMIO() in 4.3.0 seems to disable it.
+
+
+> The hardware documentation for my chip says that there is supposed to
+> be an endian-swapped mapping for the frame buffer, essentially the
+> second 32MB of the 64MB total bar0. As far as I can tell this second
+> mapping does not byte-swap the video buffer.
+
+Well, there's no single byte swapping working for all cases, maybe you
+need to configure it by writing to some register(s)?
+
+If there's indeed no way to have the hardware handle the byte order,
+you'd probably have to fix each app. Should be relatively easy in the X
+fbdev driver by using a special shadowUpdate function.
+
+
+--=20
+Earthling Michel D=E4nzer   \  Debian (powerpc), XFree86 and DRI developer
+Software libre enthusiast  \     http://svcs.affero.net/rm.php?r=3Ddaenzer
 
 
 

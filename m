@@ -1,25 +1,20 @@
-From: Suresh Chandra Mannava <Mannava@GameBox.net>
-Subject: implementing vga16fb
-Date: Tue, 23 Mar 2004 10:58:32 +0530
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: implementing vga16fb
+Date: Tue, 23 Mar 2004 10:47:17 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <405FCB00.2070601@GameBox.net>
+Message-ID: <Pine.GSO.4.58.0403231045120.4928@waterleaf.sonytel.be>
+References: <405FCB00.2070601@GameBox.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B5ePd-0006FU-CH
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 22 Mar 2004 21:25:17 -0800
-Received: from snickers.hotpop.com ([38.113.3.51])
+	id 1B5iVI-0003Gk-Lg
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 23 Mar 2004 01:47:24 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1B5ePc-0005Ox-Bd
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 22 Mar 2004 21:25:16 -0800
-Received: from gamebox.net (kubrick.hotpop.com [38.113.3.103])
-	by snickers.hotpop.com (Postfix) with SMTP id 784D172C1D
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 23 Mar 2004 04:50:24 +0000 (UTC)
-Received: from GameBox.net (unknown [61.247.252.55])
-	by smtp-2.hotpop.com (Postfix) with ESMTP id 5CBEF1833FF
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 23 Mar 2004 05:11:34 +0000 (UTC)
+	id 1B5iVG-0000Ms-OR
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 23 Mar 2004 01:47:22 -0800
+In-Reply-To: <405FCB00.2070601@GameBox.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,43 +24,42 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Suresh Chandra Mannava <Mannava@GameBox.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Dear Friends,
+On Tue, 23 Mar 2004, Suresh Chandra Mannava wrote:
+> I read that VESAfb is only for Intel(x86) platforms, has any body
+> implemented Vesafb on other platforms?
 
-I am a new to framebuffer, we are implementing kernel framebuffer 
-support for the new CPU architecture. I have some basic questions 
-related to vga16fb. Please provide some inputs and drive us for 
-successful implementation of framebuffer.
+Vesafb relies on the BIOS setting up the video mode _before_ the kernel is
+started.
 
-Even though we are having PCI ATI Rage XL graphic card, we are 
-interested in implementing generic vga16fb for an initial test.
+> Is vga16fb a CPU architecture dependent? Even though I didn't find any
+> architecture dependent sections in the code, Is there any code section
+> that to be modified in vga16fb.c?
 
-Here are my few queries,
+I used vga16fb on PPC a while ago. Make sure the video RAM address in ISA
+memory space is correct.
 
-I read that VESAfb is only for Intel(x86) platforms, has any body 
-implemented Vesafb on other platforms?
+> And lastly, we are testing this framebuffer on 2.6Mhz FPGA(0.16
+> Bogomips) with kernel 2.4.7. Are there any other methods (solutions) for
+> debugging framebuffer code with out using printk's?
 
-Is vga16fb a CPU architecture dependent? Even though I didn't find any 
-architecture dependent sections in the code, Is there any code section 
-that to be modified in vga16fb.c?
+I assume you mean `printk() on the frame buffer'.
+printk() on a serial port?
 
-What are the corresponding files need to be modified for implementing 
-framebuffer support for newer platforms.
+Gr{oetje,eeting}s,
 
-And lastly, we are testing this framebuffer on 2.6Mhz FPGA(0.16 
-Bogomips) with kernel 2.4.7. Are there any other methods (solutions) for 
-debugging framebuffer code with out using printk's?
+						Geert
 
-I request your help.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Regards,
-
-Suresh Chandra Mannava.
-
-
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

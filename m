@@ -1,26 +1,22 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: monitor detection through ddc/edid stuff.
-Date: Mon, 13 Sep 2004 05:16:55 +0800
+From: Zack <plinius@comcast.net>
+Subject: Re: fbdraw 0.1 available
+Date: Sun, 12 Sep 2004 17:31:20 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200409130516.55866.adaplas@hotpop.com>
-References: <20040910111627.GA14811@pegasos> <200409121811.01426.adaplas@hotpop.com> <20040912143632.GA31746@pegasos>
+Message-ID: <4144EA58.4080900@comcast.net>
+References: <41426651.2010201@comcast.net> <200409120340.04133.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C6bia-0007d1-Bj
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 12 Sep 2004 14:17:04 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.61])
+	id 1C6ekT-0002uJ-Ta
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 12 Sep 2004 17:31:13 -0700
+Received: from rwcrmhc12.comcast.net ([216.148.227.85])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1C6biZ-0004ZX-Hw
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 12 Sep 2004 14:17:04 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id BE46B7E3555
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 12 Sep 2004 21:16:42 +0000 (UTC)
-In-Reply-To: <20040912143632.GA31746@pegasos>
-Content-Disposition: inline
+	id 1C6ekS-0000Uq-GT
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 12 Sep 2004 17:31:13 -0700
+In-Reply-To: <200409120340.04133.adaplas@hotpop.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,25 +26,34 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Sven Luther <sven.luther@wanadoo.fr>, adaplas@pol.net
 
-On Sunday 12 September 2004 22:36, Sven Luther wrote:
-> if (fix->visual == FB_VISUAL_TRUECOLOR || fix->visual ==
-> FB_VISUAL_DIRECTCOLOR) depth = var->green.length + var->red.length +
-> var->blue.length;
-> else
-> 	depth = var->green.length
->
-> instead. Hope this is ok.
->
+Antonino A. Daplas wrote:
 
-Yes, that should cover most of the visuals.
+> 1. First, you need to follow Documentation/CodingStyle.
 
-Tony
+OK, I've made some strides in that direction.
 
+> 2. Do not directly access framebuffer memory, use: 
+> 3. Do not use copy_{to|from}_user when the destination/source is the
+> framebuffer.
+> 4. Do not memset the framebuffer.  You can probably create an equivalent
+> function using fb_read/write.  (Once, we have fb_memset and fb_memcpy, but
+> they're gone in 2.6).
 
+Fixed.
+
+Incidentally I am wondering, with cross-platform compatibility
+in mind I have been coding assuming that fb_{read|write}[wl] must be
+short/long aligned. Is that assumption correct?
+
+I've also added my copyarea routine. At first I tried to make use
+of cfb_copyarea but it proved very buggy in 24bpp.
+
+New code is at http://home.comcast.net/~plinius.
+Cheers,
+Zack
 
 
 -------------------------------------------------------

@@ -1,22 +1,22 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 1/9] fbdev: Cleanup i2c code of rivafb
-Date: Tue, 21 Dec 2004 23:33:51 +0800
-Message-ID: <20041221213624.52ED31A0256@smtp-1.hotpop.com>
+Subject: [PATCH 2/9] fbdev: Revive BIOS-less booting for Rage XL cards
+Date: Tue, 21 Dec 2004 23:33:54 +0800
+Message-ID: <20041221213632.289D41A0273@smtp-1.hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CgrgS-0007VF-Pw
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 21 Dec 2004 13:36:44 -0800
+	id 1Cgrgg-0007Vq-FO
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 21 Dec 2004 13:36:58 -0800
 Received: from smtp-out.hotpop.com ([38.113.3.61])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CgrgS-0002NI-9b
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 21 Dec 2004 13:36:44 -0800
+	id 1Cgrgf-0002PJ-UE
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 21 Dec 2004 13:36:58 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id CD50BC13B62
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 21 Dec 2004 21:36:30 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id A3BD1C14A69
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 21 Dec 2004 21:36:44 +0000 (UTC)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -32,122 +32,135 @@ Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-- Change timings to as close as possible to VESA specs and
-  use msecs_to_jiffies() instead of hard-coded number
-- Attempt to read all i2c busses regardless of chipset type
+The file drivers/video/aty/xlinit.c is currently unused.  This file might be
+useful to boot some types of RageXL cards on non-x86 platforms.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- fbdev.c      |    8 +++++---
- rivafb-i2c.c |   44 +++++++++++++-------------------------------
- 2 files changed, 18 insertions(+), 34 deletions(-)
+ Makefile     |    2 ++
+ atyfb.h      |   24 +++++++++++++++++++-----
+ atyfb_base.c |    5 ++++-
+ xlinit.c     |   15 +--------------
+ 4 files changed, 26 insertions(+), 20 deletions(-)
 
-diff -Nru a/drivers/video/riva/fbdev.c b/drivers/video/riva/fbdev.c
---- a/drivers/video/riva/fbdev.c	2004-12-18 20:36:25 +08:00
-+++ b/drivers/video/riva/fbdev.c	2004-11-23 21:21:29 +08:00
-@@ -1769,17 +1769,19 @@
- static int __devinit riva_get_EDID_i2c(struct fb_info *info)
- {
- 	struct riva_par *par = (struct riva_par *) info->par;
-+	struct fb_var_screeninfo var;
- 	int i;
- 
- 	NVTRACE_ENTER();
- 	riva_create_i2c_busses(par);
--	for (i = par->bus; i >= 1; i--) {
--		riva_probe_i2c_connector(par, i, &par->EDID);
--		if (par->EDID) {
-+	for (i = 0; i < par->bus; i++) {
-+		riva_probe_i2c_connector(par, i+1, &par->EDID);
-+		if (par->EDID && !fb_parse_edid(par->EDID, &var)) {
- 			printk(PFX "Found EDID Block from BUS %i\n", i);
- 			break;
- 		}
- 	}
+diff -Nru a/drivers/video/aty/Makefile b/drivers/video/aty/Makefile
+--- a/drivers/video/aty/Makefile	2004-11-06 06:21:26 +08:00
++++ b/drivers/video/aty/Makefile	2004-11-23 21:17:17 +08:00
+@@ -5,6 +5,8 @@
+ atyfb-y				:= atyfb_base.o mach64_accel.o mach64_cursor.o
+ atyfb-$(CONFIG_FB_ATY_GX)	+= mach64_gx.o
+ atyfb-$(CONFIG_FB_ATY_CT)	+= mach64_ct.o
++atyfb-$(CONFIG_FB_ATY_XL_INIT)  += xlinit.o
 +
- 	NVTRACE_LEAVE();
- 	return (par->EDID) ? 1 : 0;
- }
-diff -Nru a/drivers/video/riva/rivafb-i2c.c b/drivers/video/riva/rivafb-i2c.c
---- a/drivers/video/riva/rivafb-i2c.c	2004-10-19 20:24:18 +08:00
-+++ b/drivers/video/riva/rivafb-i2c.c	2004-11-23 21:21:30 +08:00
-@@ -19,6 +19,7 @@
- #include <linux/delay.h>
- #include <linux/pci.h>
- #include <linux/fb.h>
-+#include <linux/jiffies.h>
+ atyfb-objs			:= $(atyfb-y)
  
- #include <asm/io.h>
- 
-@@ -106,8 +107,7 @@
- 	chan->algo.getsda		= riva_gpio_getsda;
- 	chan->algo.getscl		= riva_gpio_getscl;
- 	chan->algo.udelay		= 40;
--	chan->algo.mdelay               = 5;
--	chan->algo.timeout		= 20;
-+	chan->algo.timeout		= msecs_to_jiffies(2);
- 	chan->algo.data 		= chan;
- 
- 	i2c_set_adapdata(&chan->adapter, chan);
-@@ -127,39 +127,18 @@
- 
- void riva_create_i2c_busses(struct riva_par *par)
- {
-+	par->bus = 3;
-+
- 	par->chan[0].par	= par;
- 	par->chan[1].par	= par;
- 	par->chan[2].par        = par;
- 
--	par->bus = 0;
+ radeonfb-y			:= radeon_base.o radeon_pm.o radeon_monitor.o radeon_accel.o
+diff -Nru a/drivers/video/aty/atyfb.h b/drivers/video/aty/atyfb.h
+--- a/drivers/video/aty/atyfb.h	2004-10-27 14:58:07 +08:00
++++ b/drivers/video/aty/atyfb.h	2004-11-23 21:17:17 +08:00
+@@ -83,13 +83,13 @@
+ 	u8 pll_gen_cntl;
+ 	u8 mclk_fb_div;
+ 	u8 mclk_fb_mult; /* 2 ro 4 */
+-/*	u8 sclk_fb_div;*/
++	u8 sclk_fb_div;
+ 	u8 pll_vclk_cntl;
+ 	u8 vclk_post_div;
+ 	u8 vclk_fb_div;
+ 	u8 pll_ext_cntl;
+-/*	u8 ext_vpll_cntl;
+-	u8 spll_cntl2;*/
++	u8 ext_vpll_cntl;
++	u8 spll_cntl2;
+ 	u32 dsp_config; /* Mach64 GTB DSP */
+ 	u32 dsp_on_off; /* Mach64 GTB DSP */
+ 	u32 dsp_loop_latency;
+@@ -215,7 +215,6 @@
+ #define M64F_XL_DLL		0x00080000
+ #define M64F_MFB_FORCE_4	0x00100000
+ #define M64F_HW_TRIPLE		0x00200000
 -
--	switch ((par->pdev->device >> 4) & 0xff) {
--	case 0x17:
--	case 0x18:
--	case 0x25:
--	case 0x28:
--	case 0x30:
--	case 0x31:
--	case 0x32:
--	case 0x33:
--	case 0x34:
--		par->chan[2].ddc_base   = 0x50;
--		par->bus++;
--		riva_setup_i2c_bus(&par->chan[2], "BUS3");
--	case 0x04:
--	case 0x05:
--	case 0x10:
--	case 0x11:
--	case 0x15:
--	case 0x20:
--		par->chan[1].ddc_base	= 0x36;
--		par->bus++;
--		riva_setup_i2c_bus(&par->chan[1], "BUS2");
--	case 0x03:
--		par->chan[0].ddc_base	= 0x3e;
--		par->bus++;
--		riva_setup_i2c_bus(&par->chan[0], "BUS1");
--	}
-+	par->chan[0].ddc_base = 0x3e;
-+	par->chan[1].ddc_base = 0x36;
-+	par->chan[2].ddc_base = 0x50;
-+	riva_setup_i2c_bus(&par->chan[0], "BUS1");
-+	riva_setup_i2c_bus(&par->chan[1], "BUS2");
-+	riva_setup_i2c_bus(&par->chan[2], "BUS3");
+     /*
+      *  Register access
+      */
+@@ -246,6 +245,19 @@
+ #endif
  }
  
- void riva_delete_i2c_busses(struct riva_par *par)
-@@ -172,6 +151,9 @@
- 		i2c_bit_del_bus(&par->chan[1].adapter);
- 	par->chan[1].par = NULL;
++static inline void aty_st_le16(int regindex, u16 val,
++			       const struct atyfb_par *par)
++{
++	/* Hack for bloc 1, should be cleanly optimized by compiler */
++	if (regindex >= 0x400)
++		regindex -= 0x800;
++#ifdef CONFIG_ATARI
++	out_le16((volatile u16 *)(par->ati_regbase + regindex), val);
++#else
++	writel(val, par->ati_regbase + regindex);
++#endif
++}
++
+ static inline u8 aty_ld_8(int regindex, const struct atyfb_par *par)
+ {
+ 	/* Hack for bloc 1, should be cleanly optimized by compiler */
+@@ -343,4 +355,6 @@
  
-+	if (par->chan[2].par)
-+		i2c_bit_del_bus(&par->chan[2].adapter);
-+	par->chan[2].par = NULL;
- }
+ extern void aty_reset_engine(const struct atyfb_par *par);
+ extern void aty_init_engine(struct atyfb_par *par, struct fb_info *info);
+-
++extern int  atyfb_xl_init(struct fb_info *info);
++extern void aty_st_pll_ct(int offset, u8 val, const struct atyfb_par *par);
++extern u8   aty_ld_pll_ct(int offset, const struct atyfb_par *par);
+diff -Nru a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
+--- a/drivers/video/aty/atyfb_base.c	2004-12-01 19:35:50 +08:00
++++ b/drivers/video/aty/atyfb_base.c	2004-11-23 21:17:17 +08:00
+@@ -2279,9 +2279,12 @@
+ 		par->dac_ops = &aty_dac_ct;
+ 		par->pll_ops = &aty_pll_ct;
+ 		par->bus_type = PCI;
++#ifdef CONFIG_FB_ATY_XL_INIT
++		if (IS_XL(par->pci_id))
++			atyfb_xl_init(info);
++#endif
+ 		par->ram_type = (aty_ld_le32(CONFIG_STAT0, par) & 0x07);
+ 		ramname = aty_ct_ram[par->ram_type];
+-
+ 		/* for many chips, the mclk is 67 MHz for SDRAM, 63 MHz otherwise */
+ 		if (par->pll_limits.mclk == 67 && par->ram_type < SDRAM)
+ 			par->pll_limits.mclk = 63;
+diff -Nru a/drivers/video/aty/xlinit.c b/drivers/video/aty/xlinit.c
+--- a/drivers/video/aty/xlinit.c	2004-10-23 02:52:37 +08:00
++++ b/drivers/video/aty/xlinit.c	2004-11-23 21:17:17 +08:00
+@@ -105,19 +105,6 @@
+ 	{ 0x37,	0x00000000 }
+ };
  
- static u8 *riva_do_probe_i2c_edid(struct riva_i2c_chan *chan)
+-static inline u32 aty_ld_lcd(u8 lcd_reg, struct atyfb_par *par)
+-{
+-	aty_st_8(LCD_INDEX, lcd_reg, par);
+-	return aty_ld_le32(LCD_DATA, par);
+-}
+-
+-static inline void aty_st_lcd(u8 lcd_reg, u32 val,
+-			      struct atyfb_par *par)
+-{
+-	aty_st_8(LCD_INDEX, lcd_reg, par);
+-	aty_st_le32(LCD_DATA, val, par);
+-}
+-
+ static void reset_gui(struct atyfb_par *par)
+ {
+ 	aty_st_8(GEN_TEST_CNTL+1, 0x01, par);
+@@ -205,7 +192,7 @@
+ 		// the MCLK, XCLK are 120MHz on victoria card
+ 		par->mclk_per = 1000000/120;
+ 		par->xclk_per = 1000000/120;
+-		par->features &= ~M64F_MFB_TIMES_4;
++		par->features &= ~M64F_MFB_FORCE_4;
+ 	}
+ 	
+ 	/*
 
 
 

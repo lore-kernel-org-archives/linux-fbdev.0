@@ -1,17 +1,16 @@
-From: Nico Schottelius <schottelius@wdt.de>
-Subject: 2.5.60/atyfb
-Date: Sat, 15 Feb 2003 16:11:28 +0100
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Re: New logo code [CONFIG OPTIONS]
+Date: Mon, 17 Feb 2003 11:36:51 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030215151128.GA478@schottelius.org>
+Message-ID: <Pine.GSO.4.21.0302171135100.16817-100000@vervain.sonytel.be>
+References: <20030215153154.GB469@schottelius.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="fdj2RfSjLxBAspz7"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [213.69.232.58] (helo=schottelius.net)
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18kieJ-00077t-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Feb 2003 02:37:23 -0800
-Content-Disposition: inline
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18kiet-00077D-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Feb 2003 02:37:59 -0800
+In-Reply-To: <20030215153154.GB469@schottelius.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,73 +20,41 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Nico Schottelius <schottelius@wdt.de>
+Cc: Torrey Hoffman <thoffman@arnor.net>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
+On Sat, 15 Feb 2003, Nico Schottelius wrote:
+> I think if the patch and the features talked about are included in the
+> kernel we'll have (names are not correct)
+> 
+> CONFIG_LOGO=y/n
+> CONFIG_LOGO_XRES=128
+> CONFIG_LOGO_YRES=64
+> CONFIG_LOGO_BPP=8
 
---fdj2RfSjLxBAspz7
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The 3 above are stored in struct linux_logo.
 
-Hello!
+> CONFIG_LOGO_PATH="" # (/usr/src/linux/.../logo/tux.pnm)
+> CONFIG_LOGO_POS_X="left|center|right"  # or absolute ?
+> CONFIG_LOGO_POS_Y="top|center|bottom"  # like X windows +110,+200 ?
+> CONFIG_LOGO_BGCOL=#ef0000              # depends on bpp of framebuffer... 
 
-I retried using atyfb with 2.5.60:
-Afterloading atyfb the only thing left is the cursor.
-i don't see anything else anymore..i see the cursor moving, but that's all.
-btw, i am using a laptop (means lcd)...
+I prefer to store the background color in struct linux_logo as well. And it
+must be a palette index, not an RGB triplet, I think.
 
-can somebody tell me whether playing around with fbset could make things
-working?
+Gr{oetje,eeting}s,
 
-Nico
+						Geert
 
-lspci:
-01:00.0 VGA compatible controller: ATI Technologies Inc 3D Rage P/M Mobilit=
-y AGP 2x (rev 64)
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-dmesg:
-atyfb: 3D RAGE Mobility (PCI) [0x4c4d rev 0x64] 8M SDRAM, 29.498928 MHz XTA=
-L, 230 MHz PLL, 50 Mhz MCLK
-fb0: ATY Mach64 frame buffer device on PCI
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
-flapp:~ # fbset -fb /dev/fb/0=20
-
-mode "640x480-60"
-    # D: 25.075 MHz, H: 31.343 kHz, V: 59.701 Hz
-    geometry 640 480 640 13075 8
-    timings 39881 48 16 33 10 96 2
-    accel true
-    rgba 8/0,8/0,8/0,0/0
-endmode
-
-
-flapp:~ # fbset -fb /dev/fb/0 -xres 1024 -yres 768
-dmesg:
-not enough video RAM
-
-flapp:~ # fbset -fb /dev/fb/0 -xres 800 -yres 600
-dmesg:
-not enough video RAM
-
---=20
-Please send your messages pgp-signed and/or pgp-encrypted (don't encrypt ma=
-ils
-to mailing list!). If you don't know what pgp is visit www.gnupg.org.
-(public pgp key: ftp.schottelius.org/pub/familiy/nico/pgp-key)
-
---fdj2RfSjLxBAspz7
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.0.7 (GNU/Linux)
-
-iD8DBQE+TligtnlUggLJsX0RArXmAJ4/RAz5SCpfII1swuELm2gUzDET4gCfTv9r
-mbWhCjfwcnwqw4A9N2RgjXQ=
-=AnyM
------END PGP SIGNATURE-----
-
---fdj2RfSjLxBAspz7--
 
 
 -------------------------------------------------------

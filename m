@@ -1,21 +1,24 @@
-From: David Eger <eger@havoc.gtf.org>
-Subject: Re: radeon_pm.c locking problem
-Date: Fri, 2 Jul 2004 16:14:04 -0400
+From: Javier Marcet <javier-ml-gmane@marcet.info>
+Subject: Re: [PATCH][FBCON]: Mode Switch in fbcon_blank()
+Date: Sat, 3 Jul 2004 02:43:20 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040702201404.GA3395@havoc.gtf.org>
-References: <40E59B82.7000807@undead.cc>
+Message-ID: <20040703004320.GA18288@marcet.info>
+References: <200406301047.57423.adaplas@hotpop.com> <1088564019.1922.12.camel@gaston> <cc3d6r$d5v$1@sea.gmane.org> <200407022337.20156.adaplas@hotpop.com>
+Reply-To: Javier Marcet <javier@marcet.info>
 Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="45Z9DzgjV8m4Oswq"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BgUQJ-0005O1-PH
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 02 Jul 2004 13:14:15 -0700
-Received: from havoc.gtf.org ([216.162.42.101])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1BgUQJ-0003h6-0D
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 02 Jul 2004 13:14:15 -0700
+	id 1BgYcq-0006A2-3G
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 02 Jul 2004 17:43:28 -0700
+Received: from www.marcet.info ([213.60.130.45] helo=mail.marcet.info)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1BgYcp-0001Fz-CJ
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 02 Jul 2004 17:43:28 -0700
 Content-Disposition: inline
-In-Reply-To: <40E59B82.7000807@undead.cc>
+In-Reply-To: <200407022337.20156.adaplas@hotpop.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,46 +28,75 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: John Zielinski <grim@undead.cc>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: "Antonino A. Daplas" <adaplas@hotpop.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net
 
-I saw the post; the function affected is this:
 
-static void radeon_pm_program_v2clk(struct radeonfb_info *rinfo)
-{
-        /* Set v2clk to 65MHz */
-        OUTPLL(pllPIXCLKS_CNTL,
-                INPLL(pllPIXCLKS_CNTL) & ~PIXCLKS_CNTL__PIX2CLK_SRC_SEL_MASK);
+--45Z9DzgjV8m4Oswq
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-        OUTPLL(pllP2PLL_REF_DIV, 0x0000000c);
-        OUTPLL(pllP2PLL_CNTL, 0x0000bf00);
-        OUTPLL(pllP2PLL_DIV_0, 0x00020074 | P2PLL_DIV_0__P2PLL_ATOMIC_UPDATE_W);
+* Antonino A. Daplas <adaplas@hotpop.com> [040702 17:36]:
 
-        OUTPLL(pllP2PLL_CNTL, INPLL(pllP2PLL_CNTL) & ~P2PLL_CNTL__P2PLL_SLEEP);
-        mdelay(1);
+>> > Well... I don't know. It seem to work, so it's probably an acceptable
+>> > workaround, but I'd like to find out what's wrong with doing it in bla=
+nk
+>> > precisely (that is what is the bug in XFree or in the kernel VT), since
+>> > it's shared by many X drivers, I don't suppose it's a bug in them.
 
-        OUTPLL(pllP2PLL_CNTL, INPLL(pllP2PLL_CNTL) & ~P2PLL_CNTL__P2PLL_RESET);
-        mdelay( 1);
+>> This was included in 2.6.7-mm5 -that's how I noticed it- and I had to
+>> revert it.
 
-        OUTPLL(pllPIXCLKS_CNTL,
-                (INPLL(pllPIXCLKS_CNTL) & ~PIXCLKS_CNTL__PIX2CLK_SRC_SEL_MASK)
-                | (0x03 << PIXCLKS_CNTL__PIX2CLK_SRC_SEL__SHIFT));
-        mdelay( 1);
-}
+>> I use radeonfb and when switching from X to console my two monitors will
+>> go out of sync. The VT is actually there since I can type on it, but I
+>> can't see anything on neither of my two monitors :(
 
-and the checker program catches the cases where we do something like:
+>Grr, I was a little tentative about this patch, hoping against hope that it
+>will work for all drivers, but you've proven me wrong.  Anyway, we now have
+>at least 2 drivers that requires reinitialization at different stages, rad=
+eonfb
+>requires it at fbcon_blank() and rivafb at fbcon_switch().  And I really d=
+on't
+>know how to fix it except to look closely at X (and I dread looking at X's=
+ code...)
+>and the VT code (ditto).
 
-OUTPLL(foo, INPLL(bar) & ~blah);
+>Can you try the patch below?  It works for the rivafb, hopefully it works =
+for yours.
 
-because both OUTPLL and INPLL grab rinfo->reg_lock.
+Hi Antonio,
+sorry for not answering sooner, I thought I had done before leaving to
+work.
+Well, with this patch in addition to your original one, it works right
+again with my radeon frame buffer & X :)
 
-I think the right solution here - because it's logically one change, no:
-Reprogramming the pixel clocks? is to just use the primitive __OUTPLL and
-__INPLL and do the locking ourselves around the whole sequence.
+For me it's fine. Thanks for your help ;-)
 
--dte
+If I can be of any help, trying further patches or whatever, please ask.
+
+
+--=20
+If A equals success, then the formula is _=08A =3D _=08X + _=08Y + _=08Z.  =
+_=08X is work.  _=08Y
+is play.  _=08Z is keep your mouth shut.
+s		-- Albert Einstein
+
+Javier Marcet <javier@marcet.info>
+
+--45Z9DzgjV8m4Oswq
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.9.8 (GNU/Linux)
+
+iEYEARECAAYFAkDmASgACgkQx/ptJkB7frwV/QCghbyOFJwJzN0PBDofScGdGxkb
+dlEAn1cPqHE6AzZmojZqgbGi5JdYLgeR
+=f31P
+-----END PGP SIGNATURE-----
+
+--45Z9DzgjV8m4Oswq--
 
 
 -------------------------------------------------------

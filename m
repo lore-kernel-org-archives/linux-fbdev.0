@@ -1,19 +1,19 @@
 From: syrjala@sci.fi
-Subject: [PATCH 0/8] Some atyfb patches
-Date: Thu, 17 Mar 2005 05:07:51 +0200 (EET)
-Message-ID: <20050317030751.A77B67A@kuori.saunalahti.fi>
+Subject: [PATCH 5/8] atyfb: Rage XL/XC cleanup
+Date: Thu, 17 Mar 2005 05:07:52 +0200 (EET)
+Message-ID: <20050317030752.CC7197A@kuori.saunalahti.fi>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DBlMZ-00057u-Sp
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Mar 2005 19:07:55 -0800
+	id 1DBlMa-000585-B7
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Mar 2005 19:07:56 -0800
 Received: from gw02.mail.saunalahti.fi ([195.197.172.116])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DBlMW-0005vY-TQ
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Mar 2005 19:07:55 -0800
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DBlMX-0003Ig-Q2
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Mar 2005 19:07:56 -0800
 Received: from kuori.saunalahti.fi (kuori.saunalahti.fi [195.197.175.23])
-	by gw02.mail.saunalahti.fi (Postfix) with ESMTP id DBCE2BA39C
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 17 Mar 2005 05:07:51 +0200 (EET)
+	by gw02.mail.saunalahti.fi (Postfix) with ESMTP id F3965BA3AC
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 17 Mar 2005 05:07:52 +0200 (EET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,15 +29,36 @@ Content-Type: text; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Cc: alex.kern@gmx.de
 
-Here's a collection of patches for atyfb.
+Clean up 3D Rage XL/XC chip descriptions.
 
-I'm pretty sure patches 1-5 are fine as is.
+Signed-off-by: Ville Syrjala <syrjala@sci.fi>
+---
 
-Patches 6 and 7 change some of the chip descriptions. I'm not 100% sure 
-about the changes so I'd appreciate any comments.
+ atyfb_base.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-Patch 8 changes the power management code so I really need some comments 
-on it. I don't want to break any working setups.
+diff -urN linux/drivers/video/aty/atyfb_base.c linux/drivers/video/aty/atyfb_base.c
+--- linux/drivers/video/aty/atyfb_base.c	2005-03-17 04:08:40.000000000 +0200
++++ linux/drivers/video/aty/atyfb_base.c	2005-03-17 04:08:45.000000000 +0200
+@@ -409,12 +409,12 @@
+ 	{ PCI_CHIP_MACH64LP, "3D RAGE LT PRO (Mach64 LP, PCI)", 230, 100, 100, 135, ATI_CHIP_264LTPRO },
+ 	{ PCI_CHIP_MACH64LQ, "3D RAGE LT PRO (Mach64 LQ, PCI)", 230, 100, 100, 135, ATI_CHIP_264LTPRO },
+ 
+-	{ PCI_CHIP_MACH64GM, "3D RAGE XL (Mach64 GM, AGP)", 230, 83, 63, 135, ATI_CHIP_264XL },
+-	{ PCI_CHIP_MACH64GN, "3D RAGE XL (Mach64 GN, AGP)", 230, 83, 63, 135, ATI_CHIP_264XL },
+-	{ PCI_CHIP_MACH64GO, "3D RAGE XL (Mach64 GO, PCI-66/BGA)", 230, 83, 63, 135, ATI_CHIP_264XL },
+-	{ PCI_CHIP_MACH64GR, "3D RAGE XL (Mach64 GR, PCI-33MHz)", 230, 83, 63, 135, ATI_CHIP_264XL },
+-	{ PCI_CHIP_MACH64GL, "3D RAGE XL (Mach64 GL, PCI)", 230, 83, 63, 135, ATI_CHIP_264XL },
+-	{ PCI_CHIP_MACH64GS, "3D RAGE XL (Mach64 GS, PCI)", 230, 83, 63, 135, ATI_CHIP_264XL },
++	{ PCI_CHIP_MACH64GM, "3D RAGE XL (Mach64 GM, AGP 2x)", 230, 83, 63, 135, ATI_CHIP_264XL },
++	{ PCI_CHIP_MACH64GN, "3D RAGE XC (Mach64 GN, AGP 2x)", 230, 83, 63, 135, ATI_CHIP_264XL },
++	{ PCI_CHIP_MACH64GO, "3D RAGE XL (Mach64 GO, PCI-66)", 230, 83, 63, 135, ATI_CHIP_264XL },
++	{ PCI_CHIP_MACH64GL, "3D RAGE XC (Mach64 GL, PCI-66)", 230, 83, 63, 135, ATI_CHIP_264XL },
++	{ PCI_CHIP_MACH64GR, "3D RAGE XL (Mach64 GR, PCI-33)", 230, 83, 63, 135, ATI_CHIP_264XL },
++	{ PCI_CHIP_MACH64GS, "3D RAGE XC (Mach64 GS, PCI-33)", 230, 83, 63, 135, ATI_CHIP_264XL },
+ 
+ 	{ PCI_CHIP_MACH64LM, "3D RAGE Mobility P/M (Mach64 LM, AGP 2x)", 230, 83, 125, 135, ATI_CHIP_MOBILITY },
+ 	{ PCI_CHIP_MACH64LN, "3D RAGE Mobility L (Mach64 LN, AGP 2x)", 230, 83, 125, 135, ATI_CHIP_MOBILITY },
 
 
 

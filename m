@@ -1,30 +1,28 @@
-From: Lucas Correia Villa Real <lucasvr@gobolinux.org>
-Subject: Re: Multiple simultaneous FB output.
-Date: Wed, 25 Aug 2004 13:42:07 -0300
+From: David Eger <eger@havoc.gtf.org>
+Subject: Re: Framebuffer drivers maintainers
+Date: Sat, 28 Aug 2004 00:39:38 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200408251342.07943.lucasvr@gobolinux.org>
-References: <200408232328.33371.niteowl@altern.org>
+Message-ID: <20040828043938.GA1150@havoc.gtf.org>
+References: <41270AD0.FE6C7970@orpatec.ch>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C00oL-0005DJ-Fz
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 Aug 2004 09:39:45 -0700
-Received: from itapoa.terra.com.br ([200.154.55.227])
+	id 1C0v0J-00077e-19
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 27 Aug 2004 21:39:51 -0700
+Received: from havoc.gtf.org ([216.162.42.101])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1C00oI-000229-RA
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 Aug 2004 09:39:45 -0700
-Received: from pasto.terra.com.br (pasto.terra.com.br [200.154.55.137])
-	by itapoa.terra.com.br (Postfix) with ESMTP id BB575DD4B9F
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 25 Aug 2004 13:39:38 -0300 (BRT)
-Received: from ummagumma.ozzmosis.net (200-203-050-191.nhoce7002.dsl.brasiltelecom.net.br [200.203.50.191])
-	(authenticated user lucasvr)
-	by pasto.terra.com.br (Postfix) with ESMTP id 8032A794084
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 25 Aug 2004 13:39:38 -0300 (BRT)
-In-Reply-To: <200408232328.33371.niteowl@altern.org>
+	id 1C0v0H-00048q-EE
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 27 Aug 2004 21:39:50 -0700
+Received: from havoc.gtf.org (havoc.gtf.org [127.0.0.1])
+	by havoc.gtf.org (Postfix) with ESMTP id 3FB2B76AE
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 28 Aug 2004 00:39:39 -0400 (EDT)
+Received: (from eger@localhost)
+	by havoc.gtf.org (8.12.10/8.12.10/Submit) id i7S4dcoB001390
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 28 Aug 2004 00:39:38 -0400
 Content-Disposition: inline
+In-Reply-To: <41270AD0.FE6C7970@orpatec.ch>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,48 +33,23 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Hi,
+radeonfb:
+   Ben Herrenschmidt took over from Ani Joshi for 2.6, though he's pretty busy,
+   so radeonfb maintainership tends to be a group effort.  I ported copyarea() 
+   and fillrect() from the X radeon driver, so that accel code is my fault ;-)
 
-I guess you can try to 'export FRAMEBUFFER=/dev/fb1' and launch your 
-application from an X-terminal (which should be probably using your /dev/fb0 
-interface).
+cirrusfb:
+   I ported this to 2.6 after several years of bit rot, so I guess that makes me
+   the de facto maintainer ;-)
 
-I'm not sure about console focus, but since they are different drivers I don't 
-think there will be problems regarding console focus.
-
-Lucas
-
-
-On Monday 23 August 2004 18:28, niteowl@altern.org wrote:
-> Hi all!
-> Is it possible to use multiple graphic cards (i.e. a AGP G200 and a pair of
-> PCI Milennium II) and to visualize multiple fremebuffers *simultaneously*?
->
-> All I want to do is to use a text console or X on the G200 (/dev/fb0) and
-> to visualize some application's output on /dev/fb1 and /dev/fb2 without
-> having to switch console and, above all, avoiding the system to blank
-> consoles without focus.
->
-> Thanks.
->
-> --Niteowl
->
->
-> -------------------------------------------------------
-> SF.Net email is sponsored by Shop4tech.com-Lowest price on Blank Media
-> 100pk Sonic DVD-R 4x for only $29 -100pk Sonic DVD+R for only $33
-> Save 50% off Retail on Ink & Toner - Free Shipping and Free Gift.
-> http://www.shop4tech.com/z/Inkjet_Cartridges/9_108_r285
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+-David Eger
 
 
 -------------------------------------------------------
-SF.Net email is sponsored by Shop4tech.com-Lowest price on Blank Media
-100pk Sonic DVD-R 4x for only $29 -100pk Sonic DVD+R for only $33
-Save 50% off Retail on Ink & Toner - Free Shipping and Free Gift.
-http://www.shop4tech.com/z/Inkjet_Cartridges/9_108_r285
+This SF.Net email is sponsored by BEA Weblogic Workshop
+FREE Java Enterprise J2EE developer tools!
+Get your free copy of BEA WebLogic Workshop 8.1 today.
+http://ads.osdn.com/?ad_id=5047&alloc_id=10808&op=click

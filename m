@@ -1,29 +1,21 @@
-From: Lucas Correia Villa Real <lucasvr@gobolinux.org>
-Subject: Re: Re: Fbdev magics
-Date: Fri, 7 May 2004 00:26:54 -0300
+From: Mikael Eriksson <miffe-miffe@telia.com>
+Subject: Re: Mobility M1 refresh code problem 2.4.26?
+Date: Fri, 07 May 2004 09:57:53 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200405070026.54372.lucasvr@gobolinux.org>
-References: <200405050027.58630.lucasvr@terra.com.br> <Pine.GSO.4.58.0405061112110.12096@waterleaf.sonytel.be>
+Message-ID: <409B4181.3080301@telia.com>
+References: <20040430150627.GB1543@sci.fi> <Pine.LNX.4.44.0404301707110.12865-100000@phoenix.infradead.org> <20040501004059.GD30285@guug.org> <409A91D6.4000508@bitworks.com> <409A98A5.2040809@telia.com> <409AA194.8090609@bitworks.com> <Pine.GSO.4.58.0405062241550.20729@waterleaf.sonytel.be> <409AAA39.8000304@bitworks.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BLw0M-0001er-9C
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 06 May 2004 20:26:30 -0700
-Received: from chiapa.terra.com.br ([200.154.55.224])
+	id 1BM0G8-000333-75
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 07 May 2004 00:59:04 -0700
+Received: from av5-2-sn4.m-sp.skanova.net ([81.228.10.111])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BLw0L-0004j5-Gm
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 06 May 2004 20:26:29 -0700
-Received: from tucuman.terra.com.br (tucuman.terra.com.br [200.154.55.139])
-	by chiapa.terra.com.br (Postfix) with ESMTP id 4D74BEC3D1
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri,  7 May 2004 00:26:25 -0300 (BRT)
-Received: from ummagumma.ozzmosis.net (200-203-051-117.nhoce7002.dsl.brasiltelecom.net.br [200.203.51.117])
-	(authenticated user lucasvr)
-	by tucuman.terra.com.br (Postfix) with ESMTP id 08EFD3C016
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri,  7 May 2004 00:26:25 -0300 (BRT)
-In-Reply-To: <Pine.GSO.4.58.0405061112110.12096@waterleaf.sonytel.be>
-Content-Disposition: inline
+	id 1BM0G7-0004sc-GG
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 07 May 2004 00:59:03 -0700
+In-Reply-To: <409AAA39.8000304@bitworks.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,71 +25,80 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: RSmith@bitworks.com
+Cc: geert@linux-m68k.org, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thursday 06 May 2004 06:17, Geert Uytterhoeven wrote:
-...
-> So you cannot access the frame buffer memory from the CPU, except through
-> sending commands to the LCD controller, right?
+Richard Smith wrote:
+> Geert Uytterhoeven wrote:
+> 
+>> On Thu, 6 May 2004, Richard Smith wrote:
+>>
+>>> Hmmm... I had GX set.  Unsetting and rebuilding did change things.  the
+>>
+>>
+>>
+>> Strange, {en,dis}abling GX should matter for Mach64 GX chips only.
+> 
+> 
+> Could be some randomness in what I'm seeing.  I haven't done it enough 
+> times repeatedly to verify it does the same thing every time.
+> 
+> I rebuilt from a make clean and got the same result.  I enabled DEBUG in 
+> the driver now and heres the output.  Can you enable debug and check 
+> against your good setup.
+> 
+> atyfb: using auxiliary register aperture
+> atyfb: Mach64 BIOS is located at c0000, mapped at c00c0000.
+> atyfb: BIOS contains driver information table.
+> atyfb: colour active matrix monitor detected: Samsung LT141X4-156
+> ati kernel:         id=2, 1024x768 pixels, 262144 colours (LT mode)
+> ati kernel:         supports 60 Hz refresh rates, default 60 Hz
+> ati kernel:         LCD CRTC parameters: 15384 167 127 130 0 17 805 767 
+> 769 6
+> ati kernel: atyfb: 3D RAGE Mobility (PCI) [0x4c4d rev 0x64] 8M SDRAM, 
+> 29.498928 MHz XTAL, 230 MHz PLL, 83 Mhz MCLK, 125 Mhz XCLK
+> ati kernel: BUS_CNTL DAC_CNTL MEM_CNTL EXT_MEM_CNTL CRTC_GEN_CNTL 
+> DSP_CONFIG DSP_ON_OFF CLOCK_CNTL
+> ati kernel: 7333a001 8601200a 10c57a3b e0000c81     02402200 00570628   
+> 049e05f8   00400a00
+> ati kernel: PLL ac ac 40 4c 87 03 c0 d4 d4 d4 00 f9 80 1b 00 00 0e cf 40 
+> 00 50 f6 ac 03 40 00 24 fd 00 00 00 02 06 ac 06 ac 03 24 fd 00
+> ati kernel: BUS_CNTL DAC_CNTL MEM_CNTL EXT_MEM_CNTL CRTC_GEN_CNTL 
+> DSP_CONFIG DSP_ON_OFF
+> ati kernel: 7333a001 8601200a 10c57a3b e0000c81     02402200 00570628   
+> 049e05f8
+> ati kernel: PLL ac ac 41 ec 89 03 c0 d4 d4 d4 00 00 80 1b 00 00 0e cf 40 
+> 00 50 b6 ac 10 40 00 24 fd 00 00 00 02 06 ac 06 ac 03 24 fd 00
+> ati kernel: Console: switching to colour frame buffer device 128x48
+> 
+This is what I get:
+<6>devfs: v1.12c (20020818) Richard Gooch (rgooch@atnf.csiro.au)
+<6>devfs: boot_options: 0x0
+<6>atyfb: using auxiliary register aperture
+<6>atyfb: Mach64 BIOS is located at c0000, mapped at c00c0000.
+<6>atyfb: BIOS contains driver information table.
+<6>atyfb: colour active matrix monitor detected: Samsung LT141X4-156
+<4>        id=2, 1024x768 pixels, 262144 colours (LT mode)
+<6>        supports 60 Hz refresh rates, default 60 Hz
+<6>        LCD CRTC parameters: 15384 167 127 130 0 17 805 767 769 6
+<4>atyfb: 3D RAGE Mobility (PCI) [0x4c4d rev 0x64] 8M SDRAM, 29.498928 
+MHz XTAL, 230 MHz PLL, 83 Mhz MCLK, 125 Mhz XCLK
+<4>BUS_CNTL DAC_CNTL MEM_CNTL EXT_MEM_CNTL CRTC_GEN_CNTL DSP_CONFIG 
+DSP_ON_OFF CLOCK_CNTL
+<4>7333a001 8601200a 10c57a3b e0000c81     02402200      00570628 
+049e05f8   00400a00
+<4>PLL ac ac 40 4c 87 03 c0 d4 d4 d4 00 f9 80 1b 00 00 0e cf 40 00 50 f6 
+ac 03 40 00 24 fd 00 00 00 02 06 ac 06 ac 03 24 fd 00
+<4>BUS_CNTL DAC_CNTL MEM_CNTL EXT_MEM_CNTL CRTC_GEN_CNTL DSP_CONFIG 
+DSP_ON_OFF
+<4>7333a001 8601200a 10c57a3b e0000c81     02402200      00570628   049e05f8
+<4>PLL ac ac 41 ec 89 03 c0 d4 d4 d4 00 00 80 1b 00 00 0e cf 40 00 50 b6 
+ac 10 40 00 24 fd 00 00 00 02 06 ac 06 ac 03 24 fd 00
+<4>Console: switching to colour frame buffer device 80x25
 
-Right, but today I discovered that the display controller allows to have DMA 
-access for every "page" (8 lines on the display). Cool! ;-)
-
-> > ...
-> > - how is the "refresh" done by fbdev? I don't want to keep sending the
-> > same data to the display if there isn't any update to be done.
->
-> If the frame buffer memory is accessible directly by the CPU, it will be
-> updated automatically. If not, things get more difficult:
->   - For text console output, 2.4.x will do direct accesses to the frame
-> buffer, which won't work.
->     In 2.6.x, fbcon will call the fb_{fillrect,copyarea,imageblit}()
-> routines of your fbdev driver, so you can handle that easily
->   - For graphics from user space, things are more complex, since the
->     application cannot mmap() your frame buffer memory. Either you use a
-> shadow frame buffer that updates the hardware periodically, or teach your
-> application to talk to the LCD controller directly.
-
-Given that DMA facility, I started to write the code with a frame buffer of 
-the same size of the screen and installed an interrupt handler for the DMA; 
-when a transfer of a page is done, it interrupts and I can switch this page 
-and select another "page" to be automatically updated to the display.
-
-It won't update the entire display at a single time, but it will probably make 
-the magic. At least I got the impression that this could be a good logic, 
-I'll do some tests tomorrow and will tell if everything worked fine then :-)
-
-
-> > - also related to this refresh: I haven't seen any interrupt being
-> > handled by many fbdev drivers. Is this ok? How will fbdev knows when the
-> > card is trying to communicate with the CPU?
->
-> Most drivers don't use interrupts yet, because until recently (speaking
-> about 2.6), you could not use them there.
-
-I've seen some LCD display drivers for embedded devices that handled it 
-directly with request_irq() on 2.4. As I could see from the bottom layers of 
-fbdev, an interrupt handler in a driver doesn't seem to hurt anyone there.. 
-or am I wrong?
-
-> > - given that I can be told when the user is going to write some data to
-> > the fbdev (should I implement my own fb_read and fb_write operations?),
-> > is there an automatic way to get only the pixels that he's modifying?
-> > This would save a lot of unnecessary transfers to the display as well.
->
-> You should implement your own fb_{read,write}() if the CPU cannot access
-> the frame buffer memory directly.
->
-> > Just forgot to tell that I'm running Linux 2.4.20 for ARM.
->
-> 2.6 would make life simpler for you :-)
-
-Sure, I'll give a look for 2.6 fbdev ASAP, it already seems to have a better 
-interface, just by looking into the headers.
-
-Cheers, and thanks for the reply,
-Lucas
+Also XFree reports refresh rate code 7
+Btw, which bios version do you have?
 
 
 -------------------------------------------------------

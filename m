@@ -1,24 +1,26 @@
-From: David Eger <eger-sender-da68b9@theboonies.us>
-Subject: Re: Re: [PATCH] sisfb accel capabilities
-Date: Thu,  3 Jun 2004 08:26:49 -0500
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: [PATCH] fb accel capabilities (resend against 2.6.7-rc2)
+Date: Thu, 3 Jun 2004 23:07:13 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1086269209.40bf27191fe1c@mail.theboonies.us>
-References: <20040603024412.GE20951@havoc.gtf.org>
-	<40BEF4ED.7090909@winischhofer.net>
-Reply-To: David Eger <eger-dated-1086874014.cda599@theboonies.us>
+Message-ID: <200406032307.13121.adaplas@hotpop.com>
+References: <20040603023653.GA20951@havoc.gtf.org>
+Reply-To: adaplas@pol.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BVsFG-0007a3-B6
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 03 Jun 2004 06:26:58 -0700
-Received: from not.theboonies.us ([66.139.79.224])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.30)
-	id 1BVsFF-0004yq-VO
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 03 Jun 2004 06:26:58 -0700
-In-Reply-To: <40BEF4ED.7090909@winischhofer.net>
+	id 1BVtoN-0005lr-8n
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 03 Jun 2004 08:07:19 -0700
+Received: from babyruth.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BVtoM-00007I-QZ
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 03 Jun 2004 08:07:18 -0700
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by babyruth.hotpop.com (Postfix) with SMTP id 0E50C57D90C
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu,  3 Jun 2004 14:33:03 +0000 (UTC)
+In-Reply-To: <20040603023653.GA20951@havoc.gtf.org>
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,50 +31,91 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Thomas Winischhofer <thomas@winischhofer.net>
-Cc: David Eger <eger@havoc.gtf.org>, linux-fbdev-devel@lists.sourceforge.net
+To: David Eger <eger@havoc.gtf.org>, Andrew Morton <akpm@osdl.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-Quoting Thomas Winischhofer <thomas@winischhofer.net>:
+On Thursday 03 June 2004 10:36, David Eger wrote:
 
-> David Eger wrote:
-> > The following patch updates sisfb for the new fb accel capabilities
-> > patch I'm sending upstream.  By default, this patch will rely on your
-> > copyarea() and fillrect() accel functions instead of the panning.
+I haven't tested the patch, but here's a few comments:
+
+So, 
+
+1. SCROLL_ACCEL = no panning + copyarea;
+2. SCROLL_REDRAW = no panning + imageblit;
+3. SCROLL_PAN/SCROLL_WRAP = pan/wrap + copyarea;
+
+Are these correct?
+
+Assuming the above is correct, then the logic in update_scrollmode() may not 
+be optimal.
+
+>  static __inline__ void updatescrollmode(struct display *p, struct fb_info
+> *info, struct vc_data *vc) {
+> -	int m;
+> +	int cap = info->flags;
 >
-> Could you give me any hint why this should be faster than panning?
+> -	if (p->scrollmode & __SCROLL_YFIXED)
+> -		return;
+> -	if (divides(info->fix.ywrapstep, vc->vc_font.height) &&
+> -	    divides(vc->vc_font.height, info->var.yres_virtual))
+> -		m = __SCROLL_YWRAP;
+> -	else if (divides(info->fix.ypanstep, vc->vc_font.height) &&
+> +	if ((cap & FBINFO_HWACCEL_COPYAREA) && !(cap & FBINFO_HWACCEL_DISABLED))
+> +		p->scrollmode = SCROLL_ACCEL;
 
-The logic to prefer copyarea()/fillrect() to panning is in the main patch.  If
-panning is faster than using these for most cards, then the default when both
-are available should be panning as you say.  But I'll need numbers to determine
-that ;-)  I think many drivers just map a chunk of video ram just big enough
-for the requested resolution, so panning does zero for them :-/
+We should also check if the hardware is capable of panning/wrapping.  If it 
+is, then the scrolling mode should be SCROLL_PAN/WRAP. An accelerated drawing 
+function combined with panning/wrapping is extremely fast.
 
-> 1) fillrect and copyarea WERE (resp. ARE) being called here despite your
-> previous statement that they were not. Fillrect is used to clear every
-> line after pressing enter, and copyrect was used to copy the buffer to
-> the start of the virtual screen when the end was reached.)
+> +	else if ((cap & FBINFO_HWACCEL_YWRAP) &&
+> +		 divides(info->fix.ywrapstep, vc->vc_font.height) &&
+> +		 divides(vc->vc_font.height, info->var.yres_virtual))
+> +		p->scrollmode = SCROLL_WRAP;
+> +	else if ((cap & FBINFO_HWACCEL_YPAN) &&
+> +		 divides(info->fix.ypanstep, vc->vc_font.height) &&
 
-bizarre.  For radeonfb, fillrect() was called to clear the last line as you say,
-but copyarea() never was.  I'll have to dig back through the old code to really
- grok your statement.
+In the above case, we should also check if accelerated copyarea is availble or 
+if fb reading is fast.  Because if fb reading is slow and accel copyarea is 
+not available,  the resulting scrolling action will not be smooth. In this 
+case, SCROLL_REDRAW may be a better scrolling mode even if it's slower than 
+SCROLL_PAN/WRAP.
 
-> 2) I still don't understand the meaning of FBINFO_HWACCEL_XPAN
-> (especially as your sisfb patch sets it although sisfb did not support
-> x-panning until yesterday evening...)
+>  		 info->var.yres_virtual >= info->var.yres + vc->vc_font.height)
+> -		m = __SCROLL_YPAN;
+> -	else if (p->scrollmode & __SCROLL_YNOMOVE)
+> -		m = __SCROLL_YREDRAW;
+> +		p->scrollmode = SCROLL_PAN;
+> +	else if (cap & FBINFO_READS_FAST)
+> +		/* okay, we'll use software version of accel funcs... */
+> +		p->scrollmode = SCROLL_ACCEL;
 
-Good catch.  My patch should not set that flag, as it's inaccurate for your
-driver.  My bad.  Good thing these are going through the individual driver
-maintainers ;-)
+This is similar with the above.  If panning/wrapping is available and fb 
+reading is very fast, then SCROLL_PAN/WRAP is probably preferrable than just 
+SCROLL_ACCEL.
 
-> > Please test the core patch + this patch, and let me know your console
-> > works.  I'm interested to hear what speeds you see :-)
->
-> I will, but it will take some while. I need to merge your changes into
-> my development version (which has been modified quite a bit).
+>  	else
+> -		m = __SCROLL_YMOVE;
+> -	p->scrollmode = (p->scrollmode & ~__SCROLL_YMASK) | m;
+> +		p->scrollmode = SCROLL_REDRAW;
 
-Thanks.
+Ditto.
 
--dte
+Personally, the pseudocode below might be better.
+
+If (pan/wrap is available) {
+	if (fb reading is fast || accel copyarea is available)
+		SCROLL_PAN/WRAP;	
+	else 
+		SCROLL_REDRAW; /* since SCROLL_PAN/WRAP_REDRAW not available */
+} else {
+	if (fb_reading is fast || accel copyarea is available)
+		SCROLL_ACCEL;
+	else
+		SCROLL_REDRAW;
+}
+ 
+Tony
+
 
 
 

@@ -1,21 +1,22 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH] neofb patches
-Date: Wed, 28 Apr 2004 00:21:13 +0100 (BST)
+Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
+ one works ;-)
+Date: Wed, 28 Apr 2004 00:24:43 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0404280019070.23153-100000@phoenix.infradead.org>
-References: <1083107454.16544.42.camel@gaston>
+Message-ID: <Pine.LNX.4.44.0404280023360.23153-100000@phoenix.infradead.org>
+References: <408EE5EB.6080705@undead.cc>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIbt8-0000HS-Gs
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:21:18 -0700
+	id 1BIbwZ-000128-4a
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:24:51 -0700
 Received: from phoenix.infradead.org ([213.86.99.234])
 	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1BIbt7-0002DM-Tc
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:21:18 -0700
-In-Reply-To: <1083107454.16544.42.camel@gaston>
+	id 1BIbwW-0002yy-56
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:24:48 -0700
+In-Reply-To: <408EE5EB.6080705@undead.cc>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,31 +28,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: John Zielinski <grim@undead.cc>, Geert Uytterhoeven <geert@linux-m68k.org>, Alex Stewart <alex@foogod.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: John Zielinski <grim@undead.cc>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> > I can see how vgacon and fbcon would walk all over each other but how 
-> > would a serial console
-> > mess things up?
+> No, this would not be for the stable release.  But what I'm saying is 
+> that it's nice that a program cleans up after itself but we shouldn't 
+> rely on it.  Take resources like memory, file handles, sockets, etc.  
+> Most program release those resources when the shut down normally but 
+> what if they seg fault or exit unexpectedly?  The kernel cleans up after 
+> the process regardless.
 > 
-> Same question... Where is the problem ?
+> So if a fb program restores the mode properly then we should do nothing 
+> but if it doesn't either because of a bad programming or an unexpected 
+> termination then we should reset the mode to what the user has selected 
+> for their console.
 
-Say two people are logged in. One on a serial console and another on the 
-framebuffer console. The person starts X fbdev from the serial console. 
-Ooops the fbcon user lost his console.
-
-> We need several level of arbitration, I'm not sure hwo to do that at
-> this point and I don't have time to dive into the DRI side of things.
-> 
-> Jon Smirl has been working on embedded mesa & moving DRI outside of
-> X. Unfortunately, last I heard, he was still on his trip of re-inventing
-> everything including replacing the fbdev's with his own stuff instead
-> of moving from what we have ...
-
-Ug. This is sad :-(
-
-
+Trust me. I wish the console would cleanup itself. It would take a good 
+amount of work to redo.
 
 
 

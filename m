@@ -1,79 +1,88 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Fw: [Bugme-new] [Bug 4217] New: radeonfb makes system hang and
- LCD "burn"
-Date: Wed, 16 Feb 2005 08:49:02 +1100
-Message-ID: <1108504143.13376.14.camel@gaston>
-References: <20050215121555.54c63ed2.akpm@osdl.org>
-	 <1108502142.13394.2.camel@gaston>  <87fyzxsdo7.fsf@kataplop.net>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Frans Pop <aragorn@tiscali.nl>
+Subject: Re: [atyfb] No display on Sparc Ultra 10 with kernel 2.6.10-rc2 or later
+Date: Wed, 16 Feb 2005 03:27:51 +0100
+Message-ID: <200502160328.00148.aragorn@tiscali.nl>
+References: <200502140251.00645.aragorn@tiscali.nl> <200502152010.22880.adaplas@hotpop.com> <20050215084958.1f68b39b.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D1AZv-0000Gm-Fh
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Feb 2005 13:49:55 -0800
-Received: from gate.crashing.org ([63.228.1.57])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1D1AZu-0000S3-4E
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Feb 2005 13:49:55 -0800
-In-Reply-To: <87fyzxsdo7.fsf@kataplop.net>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+Content-Type: multipart/signed;
+  boundary="nextPart2352160.gDsNIb2Vma";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+In-Reply-To: <20050215084958.1f68b39b.davem@davemloft.net>
+Resent-Message-ID: <WOZ4gD.A.LkG.t-qECB@murphy>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Marc =?ISO-8859-1?Q?Poulhi=E8s?= <marc.poulhies@epfl.ch>
-Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+List-Post: <mailto:debian-sparc@lists.debian.org>
+List-Help: <mailto:debian-sparc-request@lists.debian.org?subject=help>
+List-Subscribe: <mailto:debian-sparc-request@lists.debian.org?subject=subscribe>
+List-Unsubscribe: <mailto:debian-sparc-request@lists.debian.org?subject=unsubscribe>
+List-Archive: <http://lists.debian.org/debian-sparc/>
+To: "David S. Miller" <davem@davemloft.net>, adaplas@pol.net
+Cc: debian-sparc@lists.debian.org, sparclinux@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 2005-02-15 at 22:42 +0100, Marc Poulhi=E8s wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
->=20
-> > On Tue, 2005-02-15 at 12:15 -0800, Andrew Morton wrote:
-> >>=20
-> >> Begin forwarded message:
-> >>=20
-> >> Date: Tue, 15 Feb 2005 12:03:52 -0800
-> >> From: bugme-daemon@osdl.org
-> >> To: bugme-new@lists.osdl.org
-> >> Subject: [Bugme-new] [Bug 4217] New: radeonfb makes system hang and =
-LCD "burn"
-> >
-> > What if you load the module with option "default_dynclk=3D-1" ?
-> >
-> > (Or if radeonfb is built-in, do radeonfb.default_dynclk=3D-1 on the k=
-ernel
-> > command line).=20
->=20
-> Seems to work a bit more. Module loads correctly, system is still
-> responding, but display is not correct. System caret seems to be the
-> only thing displayed, and it moves when I type, but no characters get
-> displayed.
->=20
-> Do you need some more informations? (like debug output)=20
+--nextPart2352160.gDsNIb2Vma
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Try building radeonfb in the kernel and booting with
-radeonfb.default_dynclk=3D-1, let me know if that works. fbdev's in
-modules have always been sort-of dodgy....
+On Tuesday 15 February 2005 17:49, David S. Miller wrote:
+> On sparc, when "mode" is NULL, we should always use default_var as
+> setup by PROM probed values.
+>
+> Here is the fix:
 
-The "dynclk" thing has issues, the upstream code from ATI has some bugs
-plus there is something weird going on which I suspect might be a
-miscompile of a bit of code in there. I'll send a patch working around
-that today.
+Excellent!
+Tested the patch with 2.6.11-rc3-bk2 and AFAICT it completely restores the=
+=20
+old behavior. I guess that solves the regression since 2.6.10-rc2.
 
-Ben.
+Please let me know if this patch will be submitted for inclusion as is so=20
+I can also submit it for inclusion in the Debian 2.6.10 kernel.
 
 
+=46rom my experiences in tracing and testing this, I have a couple of=20
+questions I'd like to put before you and the lists. (I should add that my=20
+experience with sparcs is still very limited.)
+
+I would like to set a lower default resolution as my monitor barely=20
+supports 1152x900@66. I tried two things:
+=2D # eeprom output-device=3Dscreen:r1024x768x70
+  This seems to be completely ignored during boot; resolution is still
+  1152x900.
+
+=2D boot with parameter 'video=3Datyfb:1024x768@70'
+  This does work, but csync is not set to high and so the monitor again
+  goes into suspend; after 'fbset -csync high' the monitor turns on.
+  Is csync something that needs to be set by the user or should the driver
+  take care of that also at frequencies other then 1152x900?
 
 
--------------------------------------------------------
-SF email is sponsored by - The IT Product Guide
-Read honest & candid reviews on hundreds of IT Products from real users.
-Discover which products truly live up to the hype. Start reading now.
-http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
+The second question concerns the use of Stop-A.
+With the console at 1152x900@66, if I press Stop-A, I get the openprom=20
+prompt. The screen has the last display before pressing Stop-A with a=20
+white square inside it containing the openprom display (filling about 75%=20
+of the screen).
+If I do the same at 1024x768@70, I get a garbled display (no readable text=
+=20
+from the openprom). I can still press go to return to linux though and=20
+the display is restored after clearing it.
+
+Can/should this be fixed or should the conclusion be that resolutions=20
+other than 1152x900@66 are just not supported?
+
+Cheers,
+=46rans Pop
+
+--nextPart2352160.gDsNIb2Vma
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.5 (GNU/Linux)
+
+iD8DBQBCEq+wgm/Kwh6ICoQRAlhhAJ4xx6wi3T6lyxfvno66gqaKWOteeACgykPe
+b2YUXgsP8BbFS2NlPahxveA=
+=qOEG
+-----END PGP SIGNATURE-----
+
+--nextPart2352160.gDsNIb2Vma--

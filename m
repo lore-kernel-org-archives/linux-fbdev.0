@@ -1,14 +1,17 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH] font selection logic
-Date: Sat, 28 Dec 2002 00:50:54 +0100 (MET)
+From: Richard Henderson <rth@twiddle.net>
+Subject: Re: [FB PATCH]
+Date: Fri, 27 Dec 2002 15:54:51 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0212280047280.17067-100000@vervain.sonytel.be>
+Message-ID: <20021227155451.A3942@twiddle.net>
+References: <20021227150934.A3005@twiddle.net> <Pine.GSO.4.21.0212280025150.17067-100000@vervain.sonytel.be>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+Received: from are.twiddle.net ([64.81.246.98])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18S4HK-0005yo-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 27 Dec 2002 15:52:35 -0800
+	id 18S4KI-0006RF-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 27 Dec 2002 15:55:38 -0800
+Content-Disposition: inline
+In-Reply-To: <Pine.GSO.4.21.0212280025150.17067-100000@vervain.sonytel.be>; from Geert.Uytterhoeven@sonycom.com on Sat, Dec 28, 2002 at 12:25:58AM +0100
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -18,69 +21,19 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Linus Torvalds <torvalds@transmeta.com>
+
+On Sat, Dec 28, 2002 at 12:25:58AM +0100, Geert Uytterhoeven wrote:
+> Strange, it's defined in drivers/video/fbmem.c in my copy of 2.5.53.
+
+Ah.  It's not exported, so fbcon as a module fails.
+Not sure how I missed it with a grep...
 
 
-Doesn't this look better?
-
---- linux-2.5.53/drivers/video/console/Makefile	Fri Dec 20 11:42:38 2002
-+++ linux-geert-2.5.53/drivers/video/console/Makefile	Sat Dec 28 00:51:12 2002
-@@ -10,30 +10,16 @@
- # Font handling
- font-objs := fonts.o
- 
--ifeq ($(CONFIG_FONT_SUN8x16),y)
--	font-objs += font_sun8x16.o
--endif
--ifeq ($(CONFIG_FONT_SUN12x22),y)
--	font-objs += font_sun12x22.o
--endif	
--ifeq ($(CONFIG_FONT_8x8),y)
--	font-objs += font_8x8.o
--endif	
--ifeq ($(CONFIG_FONT_8x16),y)
--	font-objs += font_8x16.o
--endif	
--ifeq ($(CONFIG_FONT_6x11),y)
--	font-objs += font_6x11.o
--endif	
--ifeq ($(CONFIG_FONT_PEARL_8x8),y)
--	font-objs += font_pearl_8x8.o
--endif	
--ifeq ($(CONFIG_FONT_ACORN_8x8),y)
--	font-objs += font_acorn_8x8.o
--endif	
--ifeq ($(CONFIG_FONT_MINI_4x6),y)
--	font-objs += font_mini_4x6.o
--endif	
-+font-objs-$(CONFIG_FONT_SUN8x16)   += font_sun8x16.o
-+font-objs-$(CONFIG_FONT_SUN12x22)  += font_sun12x22.o
-+font-objs-$(CONFIG_FONT_8x8)       += font_8x8.o
-+font-objs-$(CONFIG_FONT_8x16)      += font_8x16.o
-+font-objs-$(CONFIG_FONT_6x11)      += font_6x11.o
-+font-objs-$(CONFIG_FONT_PEARL_8x8) += font_pearl_8x8.o
-+font-objs-$(CONFIG_FONT_ACORN_8x8) += font_acorn_8x8.o
-+font-objs-$(CONFIG_FONT_MINI_4x6)  += font_mini_4x6.o
-+
-+font-objs += $(font-objs-y)
- 
- # Each configuration option enables a list of files.
- 
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
+r~
 
 
 -------------------------------------------------------

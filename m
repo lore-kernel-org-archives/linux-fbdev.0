@@ -1,21 +1,21 @@
-From: Kronos <kronos@people.it>
-Subject: Re: radeonfb_pci_register video memory clear?
-Date: Sat, 19 Jun 2004 21:27:44 +0200
+From: John Zielinski <grim@undead.cc>
+Subject: Re: 2.6.7 still garbage upon start
+Date: Sat, 19 Jun 2004 15:27:10 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040619192744.GA3979@dreamland.darkstar.lan>
-References: <40D3A2E1.2060100@undead.cc>
+Message-ID: <40D4938E.6090406@undead.cc>
+References: <40D21E31.5070904@winischhofer.net> <40D2E96A.9000605@undead.cc> <Pine.GSO.4.58.0406181516460.11779@waterleaf.sonytel.be> <200406190240.31144.adaplas@hotpop.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BblVJ-0007P1-SG
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 19 Jun 2004 12:27:53 -0700
-Received: from mail-relay-3.tiscali.it ([212.123.84.93])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BblVJ-00079X-G3
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 19 Jun 2004 12:27:53 -0700
-Content-Disposition: inline
-In-Reply-To: <40D3A2E1.2060100@undead.cc>
+	id 1BblUm-0007Og-5k
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 19 Jun 2004 12:27:20 -0700
+Received: from mail.undead.cc ([216.126.84.18])
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
+	id 1BblUl-0001ty-Kr
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 19 Jun 2004 12:27:19 -0700
+In-Reply-To: <200406190240.31144.adaplas@hotpop.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,24 +25,21 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: John Zielinski <grim@undead.cc>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: adaplas@pol.net
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Thomas Winischhofer <thomas@winischhofer.net>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Il Fri, Jun 18, 2004 at 10:20:17PM -0400, John Zielinski ha scritto: 
-> *This message was transferred with a trial version of CommuniGate(tm) Pro*
-> I'm just wondering why the clearing of video memory was added to 
-> radeonfb_pci_register? 
+Antonino A. Daplas wrote:
 
-AFAIK without that radeonfb will display the content of the memory as
-random garbage.
+>1. Solution: Move this set_par call to fbcon_init instead.
+>  
+>
+One thing I just noticed about your patch, if we move the set_par 
+shouldn't the vc_resize move with it?
 
-Luca
--- 
-Home: http://kronoz.cjb.net
-Software is like sex; it's better when it's free.
-Linus Torvalds
+John
+
+
 
 
 -------------------------------------------------------

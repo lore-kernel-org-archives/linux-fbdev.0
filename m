@@ -1,16 +1,14 @@
-From: "Galen C. Hunt"  <gchunt@cs.rochester.edu>
-Subject: I no longer read email sent to this address
-Date: Thu, 3 Jul 2003 02:26:29 -0400 (EDT)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Links not working (fwd)
+Date: Thu, 3 Jul 2003 09:45:41 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200307030626.h636QTU07821@slate.cs.rochester.edu>
+Message-ID: <Pine.GSO.4.21.0307030945270.4422-100000@vervain.sonytel.be>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from gate.cs.rochester.edu ([192.5.53.207])
+Received: from mail2.sonytel.be ([195.0.45.172] helo=witte.sonytel.be)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19XxYC-0007yv-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 02 Jul 2003 23:26:36 -0700
-Received: from slate.cs.rochester.edu (slate.cs.rochester.edu [192.5.53.101]) by gate.cs.rochester.edu (8.11.6+Sun/004) with ESMTP id h636QTs13185 for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 3 Jul 2003 02:26:29 -0400 (EDT)
-Received: (from gchunt@localhost) by slate.cs.rochester.edu (8.11.6+Sun/004) id h636QTU07821 for linux-fbdev-devel@lists.sourceforge.net; Thu, 3 Jul 2003 02:26:29 -0400 (EDT)
+	id 19XynN-0005Uw-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 03 Jul 2003 00:46:21 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,19 +18,30 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Nitin Mahajan <Nitin@soc-soft.com>
 
-Due to a large volume of SPAM, I no longer read email sent to this account.
-Your message regarding "Re: Movie" will not be read.
+---------- Forwarded message ----------
+Date: Thu, 3 Jul 2003 11:43:06 +0530
+From: Nitin Mahajan <Nitin@soc-soft.com>
+To: Geert.Uytterhoeven@sonycom.com
+Subject: Links not working
 
-If you wish to contact me, please use my new email address:
-
-         g a l e n h @ m i c r o s o f t . c o m
-
-Thanks.
-galen
+Hi! Geert! 
+A lot of links on this page are not working,what can be th reason?
+http://linux-fbdev.sourceforge.net/
+regards,
+ 
+Nitin Mahajan
+Socrates Software India Pvt Ltd...
+mail:nitin@soc-soft.com
+Ph:51101667. Mobile : 9886099925
+======================================
+The Lord gave us two ends -- one to sit on and the other to think with.
+Success depends on which one we use the most.
+ 
 
 
 

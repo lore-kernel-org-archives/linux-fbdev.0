@@ -1,22 +1,21 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH] ATI Mach64 accelerated imgblit
- (sligthly improved)
-Date: Fri, 30 Jan 2004 21:49:22 +0000 (GMT)
+From: Sven Luther <sven.luther@wanadoo.fr>
+Subject: Re: Re: [forum] Re: Announcement: Modification to the base XFree86(TM) license.
+Date: Fri, 30 Jan 2004 23:29:02 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0401302148520.22830-100000@phoenix.infradead.org>
-References: <200401231858.28965.alex.kern@gmx.de>
+Message-ID: <20040130222902.GA11885@iliana>
+References: <20040129115838.A70069@xfree86.org> <1075423804.12536.28.camel@gaston> <16410.33783.236964.200047@xf11.fra.suse.de> <20040130173238.GA8599@iliana> <16410.44981.237411.858354@xf11.fra.suse.de>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AmgVx-0002gx-MY
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Jan 2004 13:49:25 -0800
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.30)
-	id 1AmgVx-0006kR-11
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Jan 2004 13:49:25 -0800
-In-Reply-To: <200401231858.28965.alex.kern@gmx.de>
+	id 1Amh8T-0008Oa-Pk
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Jan 2004 14:29:13 -0800
+Received: from smtp1.wanadoo.fr ([193.252.22.30] helo=mwinf0101.wanadoo.fr)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1Amh8R-0005Le-8d
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Jan 2004 14:29:11 -0800
+Content-Disposition: inline
+In-Reply-To: <16410.44981.237411.858354@xf11.fra.suse.de>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,37 +25,45 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexander Kern <alex.kern@gmx.de>
-Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+To: Egbert Eich <eich@XFree86.Org>
+Cc: forum@XFree86.Org, devel@XFree86.Org, linux-fbdev-devel@lists.sourceforge.net
 
-
-I have a new patch at 
-http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz.
-
-
-On Fri, 23 Jan 2004, Alexander Kern wrote:
-
-> Am Montag, 19. Januar 2004 19:11 schrieben Sie:
-> > > No, it's only imageblit, which has issue.
-> > > Regards
-> > > Alex Kern
-> >
-> > Applied your patch. I tested it and it works wonderful. I haven't tested
-> > in 24 bpp mode tho. I think that is a minor issue.
-> Hi James,
+On Fri, Jan 30, 2004 at 08:25:40PM +0100, Egbert Eich wrote:
+> Sven Luther writes:
+>  > 
+>  > Maybe a decision on both parts on this would be ok ? XFree86 could make
+>  > sure the licence of the driver code would not conflict with the GPL,
+>  > keeping the old one for example, and the fbdev driver authors would
+>  > dual-licence the code, both GPL and the old xfree86 licence would do
+>  > just fine. Benjamin, what do you think about this ?
+>  > 
+>  > BTW, CCing this to the linux-fbdev mailing list.
+>  > 
 > 
-> will you update your fbdev.diff.gz? What about resync and submit it again to 
-> mm tree?
-> 
-> Here is one better patch for accelerated imageblit. It looks like mach64 has a 
-> problems with buildin trippler and unaligned data. Manual tripple path works 
-> now!
-> 
-> Regards Alex
-> 
+> Yes, a personal agreement between driver developers would also work.
+> However they tend to change and other people will make contributions
+> who all would have to agree also. 
+> I don't know if a general dual license agreement in the kernel 
+> file header would be possible. Also it could get removed once 
+> the author changes. Just like the license in the XFree86 driver 
+> could be amended. 
 
+I guess already some drivers have such a dual licencing.
+
+> Doing this now for existing fbdev driver would involve to ask
+> anyone who has contributed little more than a typo fix.
+
+Yeah, that would be rather problematic, but anyway, most of the things
+move from the XFree86 code to fbdev code, and most often, it is not code
+that is copied, but the register information and such. It is always
+easier to get specs if you are working for XFree86 than if you plan to
+do some kernel driver work.
+
+Friendly,
+
+Sven Luther
 
 
 -------------------------------------------------------

@@ -1,17 +1,18 @@
-From: James Simmons <jsimmons@infradead.org>
+From: Dave Jones <davej@codemonkey.org.uk>
 Subject: Re: CONFIG_VIDEO_SELECT stole my will to live
-Date: Tue, 20 May 2003 17:55:41 +0100 (BST)
+Date: Tue, 20 May 2003 18:18:21 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0305201752240.28600-100000@phoenix.infradead.org>
-References: <20030520155138.GA29450@suse.de>
+Message-ID: <20030520171821.GA31761@suse.de>
+References: <20030520155138.GA29450@suse.de> <Pine.LNX.4.44.0305201752240.28600-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
+Received: from deviant.impure.org.uk ([195.82.120.238] ident=root)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19IAPY-0006BL-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 20 May 2003 09:56:25 -0700
-In-Reply-To: <20030520155138.GA29450@suse.de>
+	id 19IAhM-0006E2-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 20 May 2003 10:14:48 -0700
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44.0305201752240.28600-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,34 +22,21 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@codemonkey.org.uk>
+To: James Simmons <jsimmons@infradead.org>
 Cc: Brett <generica@email.com>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
+On Tue, May 20, 2003 at 05:55:41PM +0100, James Simmons wrote:
 
-> On Wed, May 21, 2003 at 12:14:50AM +1000, Brett wrote:
-> 
->  > since 2.5.67-bk5. I have been unable to boot my laptop
->  > tonight, I finally traced it back to
->  > http://linux.bkbits.net:8080/linux-2.5/cset@1.1006
-> 
-> good work.
-> 
->  > the video card is a chips and tech 65545
->  > i'd just like to know where to go from here, so that I can return to 
->  > booting with CONFIG_VIDEO_SELECT set 
-> 
-> Possibly the card's VGA BIOS has 'issues' with that call.
+ > > Wasn't the EDID stuff getting backed out anyways ?
+ > Only in the VESA driver. Some people did have luck with the BIOS EDID info 
+ > so I like to keep the BIOS call in there. 
 
-This is most likely the case. I just tested out the configuration he has 
-and it worked for me. I'm running vga=5 right now. For teh majority it 
-works but as usual there are some broken BIOS that cause issues. 
+That code runs way earlier than before we get to do any PCI quirks,
+so fixing that one up could be interesting.
 
-> Wasn't the EDID stuff getting backed out anyways ?
-
-Only in the VESA driver. Some people did have luck with the BIOS EDID info 
-so I like to keep the BIOS call in there. 
+		Dave
 
 
 

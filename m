@@ -1,61 +1,66 @@
-From: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [announce 7/7] fbsplash - documentation
-Date: Wed, 9 Mar 2005 16:40:09 +0100
-Message-ID: <200503091640.10421.arnd@arndb.de>
-References: <20050308021706.GH26249@spock.one.pl> <200503090117.12755.arnd@arndb.de> <20050309020527.GA20294@spock.one.pl>
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: Re: [announce 7/7] fbsplash - documentation
+Date: Wed, 9 Mar 2005 11:54:30 -0500
+Message-ID: <9e4733910503090854e245740@mail.gmail.com>
+References: <20050308021706.GH26249@spock.one.pl>
+	 <200503080418.08804.arnd@arndb.de>
+	 <20050308223728.GA11065@spock.one.pl>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-In-Reply-To: <20050309020527.GA20294@spock.one.pl>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: Michal Januszewski <spock@gentoo.org>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1D94S9-0004WE-5k
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 09 Mar 2005 08:54:33 -0800
+Received: from rproxy.gmail.com ([64.233.170.196])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1D94S8-0005WZ-MG
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 09 Mar 2005 08:54:33 -0800
+Received: by rproxy.gmail.com with SMTP id i8so253276rne
+        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 09 Mar 2005 08:54:31 -0800 (PST)
+In-Reply-To: <20050308223728.GA11065@spock.one.pl>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org
 
-On Middeweken 09 M=C3=A4rz 2005 03:05, Michal Januszewski wrote:
-> On Wed, Mar 09, 2005 at 01:17:11AM +0100, Arnd Bergmann wrote:
-> change_console()
-> complete_change_console()
-> switch_screen() =3D=3D redraw_screen()
-> con_switch() =3D=3D fbcon_switch()
->=20
-> From inside fbcon_switch(), we need to call the splash helper to get =
-a
-> new picture for the theme 'bar' which is used on tty2. The splash hel=
-per
-> does an ioctl and we're back in the kernel.. with the console semapho=
-re
-> already held.
+On Tue, 8 Mar 2005 23:37:29 +0100, Michal Januszewski <spock@gentoo.org> wrote:
+> On Tue, Mar 08, 2005 at 04:18:07AM +0100, Arnd Bergmann wrote:
+> 
+> > It should probably just use its own hotplug agent instead of calling
+> > the helper directly.
+> 
+> I've just had a look at it, and it seems possible. From what I have seen
+> in the firmware_class.c code, it would require:
+>  - registering a class somewhere in the initializaton code
+>  - every time a request from fbcon is generated:
+>    - register the class device
+>    - create a timer
+>    - call kobject_hotplug() to send the event to userspace
+>    - unregister the device
 
-Ok, I now saw that you call call_usermodehelper with wait=3D=3D1. Why i=
-s that
-necessary? If you don't wait there, you don't need any hacks around the
-console semaphore, because the helper will simply wait for change_conso=
-le
-to finish.
-=20
-> What are the alternatives to the ioctl? A relatively clean way of
-> feeding the data back to the kernel would be using sysfs. However, to
-> make it sane we would have to export the various components of struct
-> vc_splash in /sys/class/tty/tty<x> (otherwise, we would probabky have
-> to pass aggreaget data types through a sysfs entry -- something that =
-is
-> IMO much worse than an ioctl). That however could be a little
-> problematic -- tty_class is currently defined as a class_simple.
-> To add entries other than the standard 'dev' we would have to define =
-a
-> completely new class, right? That sounds like a rather intrusive
-> change..
+framebuffer already has a class registered. check out /sys/class/grpahics.
 
-Right. I don't think that sysfs is the right interface for this problem=
-=2E
-=46or a short moment I had the idea that you could write an escape sequ=
-ence
-to the tty device, but that would race against the regular output.
-An ioctl on the tty device is probably the best you can do here, but
-if that's not possible, creating a misc device in order to do ioctl on =
-it
-is a rather ugly hack.
+You should be able to just call request_firmware and have it download
+your image whenever you need it. It doesn't have to be firmware,
+request_firmware will download anything.
 
- Arnd <><
+-- 
+Jon Smirl
+jonsmirl@gmail.com
+
+
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

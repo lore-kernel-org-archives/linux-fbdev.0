@@ -1,25 +1,22 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: Re: Problem with current fb_get_color_depth function
-Date: Wed, 3 Nov 2004 06:10:12 +0800
-Message-ID: <200411030610.12231.adaplas@hotpop.com>
-References: <20041010225903.GA2418@darjeeling.triplehelix.org> <200410110832.19978.adaplas@hotpop.com> <20041102055555.GJ6361@triplehelix.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/8] fbcon: Do not touch hardware if vc_mode != KD_TEXT
+Date: Wed, 03 Nov 2004 09:27:01 +1100
+Message-ID: <1099434421.20294.19.camel@gaston>
+References: <200411021946.06302.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CP6rO-0007Oi-F5
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Nov 2004 14:10:38 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CP6rM-0005We-Gj
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Nov 2004 14:10:38 -0800
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 0C91D982EAD
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue,  2 Nov 2004 22:10:22 +0000 (UTC)
-In-Reply-To: <20041102055555.GJ6361@triplehelix.org>
-Content-Disposition: inline
+	id 1CP7Ed-0004wK-Kg
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Nov 2004 14:34:39 -0800
+Received: from gate.crashing.org ([63.228.1.57])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1CP7Ec-0004Zo-PK
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Nov 2004 14:34:39 -0800
+In-Reply-To: <200411021946.06302.adaplas@hotpop.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,52 +28,30 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Joshua Kwan <joshk@triplehelix.org>
-Cc: linux-kernel mailing list <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
+To: adaplas@pol.net
+Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tuesday 02 November 2004 13:55, Joshua Kwan wrote:
-> [ long overdue follow-up ]
->
-> On Mon, Oct 11, 2004 at 08:33:10AM +0800, Antonino A. Daplas wrote:
-> > So, linux_logo_224 cannot be drawn when visual is directcolor at RGB555
-> > or RGB565 because the logo clut requirements exceeds the hardware clut
-> > capability. You need to use a logo image with a lower depth such as the
-> > 16-color logo, linux_logo_16.
->
-> This is weird, because removing that conditional from fb_get_color_depth
-> allows a 224-color logo to show correctly on my Radeon framebuffer, in
-> full color.
->
-> Otherwise, it is dithered to kingdom come and mostly appears all orange
-> and black.
->
-> You may be right conceptually, but the fact of the matter is that this
-> is a regression because 224-color logos work perfectly with the old
-> fb_get_color_depth. So what is the real problem?
->
+On Tue, 2004-11-02 at 19:46 +0800, Antonino A. Daplas wrote:
+> The frambuffer console is still writing to the graphics hardware even if the
+> hardware is not owned anymore by the console.  This can lead to crashes with
+> some hardware.
+> 
+> A trace of the source indicates that it comes from almost anywhere, anytime.
+> 
+> The fix is to return immediately if vc_mode != KD_TEXT.  The test is placed in 
+> the following functions if not already present.
+> 
+> fbcon_cursor()
+> fbcon_putcs()
+> fbcon_clear()
+> fbcon_bmove() 
+> fbcon_blank() 
 
-After giving it a lot of thought, perhaps you are not booting at 16 bpp, but
-at 8bpp pseudocolor.  However, radeonfb's default var use only a red, green,
-and blue length of 6.  Try this patch and let me know if it helps.
+Since the exact same thing must be done if the fbdev are "asleep", can't
+we just have a kind of inline helper fbcon_useable() that does both test
+and make sure every place is properly dealt with ?
 
-Tony
-
-diff -Nru a/drivers/video/aty/radeon_monitor.c b/drivers/video/aty/radeon_monitor.c
---- a/drivers/video/aty/radeon_monitor.c	2004-10-27 14:58:07 +08:00
-+++ b/drivers/video/aty/radeon_monitor.c	2004-10-28 06:04:32 +08:00
-@@ -12,9 +12,9 @@
- 	.xres_virtual	= 640,
- 	.yres_virtual	= 480,
- 	.bits_per_pixel = 8,
--	.red		= { 0, 6, 0 },
--	.green		= { 0, 6, 0 },
--	.blue		= { 0, 6, 0 },
-+	.red		= { 0, 8, 0 },
-+	.green		= { 0, 8, 0 },
-+	.blue		= { 0, 8, 0 },
- 	.activate	= FB_ACTIVATE_NOW,
- 	.height		= -1,
- 	.width		= -1,
+Ben.
 
 
 

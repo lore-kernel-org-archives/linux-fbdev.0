@@ -1,22 +1,25 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: fbdev upstream
-Date: Mon, 5 Jan 2004 15:41:06 +0100 (MET)
+From: tomas carnecky <tom@dbservice.com>
+Subject: opengl for framebuffer
+Date: Mon, 05 Jan 2004 16:35:10 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0401051538300.3740@waterleaf.sonytel.be>
-References: <3FD6C52C.7090906@undead.cc>  <3FDBB97F.4070207@undead.cc> 
- <1072254049.739.61.camel@gaston>  <3FE9F9C3.20605@undead.cc>
- <1072305777.15461.13.camel@gaston>
+Message-ID: <3FF9842E.5090807@dbservice.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AdVur-0000Wm-JC
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 06:41:13 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
+	id 1AdWl8-0003HA-W0
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 07:35:14 -0800
+Received: from [213.133.97.13] (helo=matterhorn.dbservice.com)
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1AdVur-0007xx-2T
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 06:41:13 -0800
-In-Reply-To: <1072305777.15461.13.camel@gaston>
+	id 1AdWl8-0000qn-JF
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 07:35:14 -0800
+Received: from localhost (localhost [127.0.0.1])
+	by matterhorn.dbservice.com (Postfix on SuSE Linux 8.0 (i386)) with ESMTP id 723A91B138
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  5 Jan 2004 16:35:13 +0100 (CET)
+Received: from dbservice.com (emmen.dbservice.com [62.65.141.13])
+	by matterhorn.dbservice.com (Postfix on SuSE Linux 8.0 (i386)) with ESMTP id 2ED62191D6
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  5 Jan 2004 16:35:11 +0100 (CET)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,38 +29,37 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: John Zielinski <grim@undead.cc>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, 25 Dec 2003, Benjamin Herrenschmidt wrote:
-> On Thu, 2003-12-25 at 07:40, John Zielinski wrote:
-> The idea is that fbcon will use FB_ACTIVATE_FIND instead of
-> FB_ACTIVATE_TEST, which I defined to be "pick a mode suitable for the
-> display based solely on xres/yres). In radeonfb, when you enable the
+Hi ,
 
-Can't you overload the `round up if it doesn't fit' rule to achieve this,
-instead of by adding FB_ACTIVATE_FIND?
+I'm looking for a opengl library for the framebuffer devices.
+I found an project (http://fbdri.sf.net) but they released only one 
+tarball,
+and that was about two years ago. Anyone knows another project?
 
-I.e. the procedure becomes:
+I think there is a port of the XFree86 xserver to the framebuffer,
+but I don't want to use this large bunch of applications and libraries,
+just to get opengl working on the framebuffer.
 
-    memset(var, 0, sizeof(*var);
-    var.xres = wanted_xres;
-    var.yres = wanted_yres;
-    var.bits_per_pixel = wanted_bpp;
-    ioctl(fd, FBIOPUT_VSCREENINFO, &var);
+Long ago, I had the idea to write a collection of libraries to make 
+opengl 3D
+acceleration avilable without a xserver or framebuffer. It works now 
+(somehow).
+There exists a _really_ small documentation 
+(www.dbservice.com/tom/graphics.html).
 
-Gr{oetje,eeting}s,
+I'd like to know what you think about it.
 
-						Geert
+-- 
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+wereHamster a.k.a. Tom Carnecky   Emmen, Switzerland
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+(GC 3.1) GIT d+ s+: a--- C++ UL++ P L++ E- W++ N++ !o !K  w ?O ?M
+          ?V PS PE ?Y PGP t ?5 X R- tv b+ ?DI D+ G++ e-- h! !r !y+
+
+
 
 
 -------------------------------------------------------

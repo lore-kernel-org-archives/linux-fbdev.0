@@ -1,26 +1,20 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: query (critical problem)
-Date: Fri, 16 Jul 2004 07:07:43 +0800
+From: Thomas Winischhofer <thomas@winischhofer.net>
+Subject: Re: long time of switch console->X (fast opposite
+ way)
+Date: Sun, 18 Jul 2004 02:48:25 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200407160707.46619.adaplas@hotpop.com>
-References: <004a01c46a64$af896ef0$7c04b40a@dlh.st.com>
-Reply-To: adaplas@pol.net
+Message-ID: <40F9C8D9.9010605@winischhofer.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BlFLM-0005XQ-LV
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 15 Jul 2004 16:08:48 -0700
-Received: from babyruth.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1BlFLM-0007Nj-Av
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 15 Jul 2004 16:08:48 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by babyruth.hotpop.com (Postfix) with SMTP id D6C73693A15
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 15 Jul 2004 22:22:15 +0000 (UTC)
-In-Reply-To: <004a01c46a64$af896ef0$7c04b40a@dlh.st.com>
-Content-Disposition: inline
+	id 1Blzqv-0007We-PU
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 17 Jul 2004 17:48:29 -0700
+Received: from [213.229.38.18] (helo=home.winischhofer.net)
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.34)
+	id 1Blzqv-0002BT-5D
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 17 Jul 2004 17:48:29 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,41 +24,32 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Manish RATHI <manish.rathi@st.com>, linux-fbdev-devel@lists.sourceforge.net
-
-On Thursday 15 July 2004 20:10, Manish RATHI wrote:
-> Hi,
-> I've ported linux on our chip using  linux kernel 2.4.20. On chip we have a
-> display interface on which epson panel is attached. We've written a display
-> driver using framebuffer driver as a upper layer.
->
-> Problem with this driver is that due to framebuffer concept we don't know
-> when data is updated in framebuffer as this is done by application.
->
-> So we don't know when to transfer data from framebuffer to panel memory.
-> how a driver can know this trigger.
->
-> B'coz of this we have only one option left that is always transfer data
-> to dif panel from fraembuffer irrespective of any trigger.
->
-> This will create power problem.
->
-> As i understand microwindows/qt or any graphics package call open, mmap
-> from framebuffer. Whenever it draw a line it doesn't call any driver
-> interface.
->
-> Is there any solution?
-> Is there any standard interface of application with driver which tell
-> that data is to be updated from frmebuffer to panel memory?
-
-You can try file read and write instead of mmap to access the framebuffer.
-Otherwise, you can try trapping all accesses to the memory, but this wil
-involve hacking kernel internals.
-
-Tony
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Miernik <miernik@ctnet.pl>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
 
+ > The problem I have it takes 6.7 seconds to switch from console to X
+ > with <Alt><F7>. The 6.7 s time is very consistent, every time I
+ > measure it. It's very long and annoying.
+
+This is very probably related to a problem with your mouse (which some 
+versions of X reset during startup). Check your XF86Config and the X log 
+for related messages. This is, however, not any of my drivers' fault.
+
+Besides, sisfb does not support 1152x864 at 60Hz. This mode is (yet) 
+only supported at 75 and 85Hz, both of which exceed the HSync range of 
+your monitor. Hence the log entries (which BTW only appear when the 
+display mode is switched and not "every several minutes").
+
+Thomas
+
+
+-- 
+Thomas Winischhofer
+Vienna/Austria
+thomas AT winischhofer DOT net          *** http://www.winischhofer.net/
+twini AT xfree86 DOT org
 
 
 -------------------------------------------------------

@@ -1,17 +1,18 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH]: image.depth fix to accomodate monochrome cards
-Date: Wed, 12 Feb 2003 20:50:05 +0000 (GMT)
+From: Antonino Daplas <adaplas@pol.net>
+Subject: Re: Passing the torch [was  Re: fbcon
+	scrolling madness + fbset corruption]
+Date: 13 Feb 2003 07:37:50 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0302122037530.31435-100000@phoenix.infradead.org>
-References: <Pine.GSO.4.21.0302051602060.16681-100000@vervain.sonytel.be>
+Message-ID: <1045092917.3527.134.camel@localhost.localdomain>
+References: <Pine.LNX.4.44.0302121740570.31435-100000@phoenix.infradead.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18j3q5-0006SY-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 12 Feb 2003 12:50:41 -0800
-In-Reply-To: <Pine.GSO.4.21.0302051602060.16681-100000@vervain.sonytel.be>
+Received: from pine.compass.com.ph ([202.70.96.37])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18j6RV-0003lw-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 12 Feb 2003 15:37:29 -0800
+In-Reply-To: <Pine.LNX.4.44.0302121740570.31435-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,33 +22,37 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-
-> > 1.  Changed meaning of image.depth.  If image.depth == 0, it flags for
-> > color expansion, otherwise, it flags for image drawing (without color
-> > expansion).  This change is to accomodate monochrome cards so they can
-> > differentiate character drawing from logo drawing.
+On Thu, 2003-02-13 at 01:46, James Simmons wrote:
 > 
-> What's the status of this issue? Monochrome is still broken due to this.
+> > No one's commented on this yet.
+> > 
+> > James?
+> 
+> Sorry about the silence. The last month I have been devoting all my time 
+> to look for work. As of next month I will be out of money. Meaning no home 
+> to live in thus no internet. Because of this I like to have someone 
 
-Ug. There are a few issues left to deal with. 
+This is unfortunate :-(
 
-1) The cursor issue. We need to add in the cusor ioctl call for people to 
-use. Theortically there should be no issues with using soft_cursor with 
-full color images with xxfb_imageblit. I like to see dest go away in 
-struct fb_cursor. It's a matter of taking advantage of the upper console 
-layer here. We shouldn't have any static variables in accel_cursor because 
-if we have multiple cards we have problems. I plan to work on that.
+> replace me. Antonino you have done some really great work. I like you to 
+> replace me to work with Geert to further the framebuffer layer. I still 
+> have a month left to live on so I will contribute as much as I can. Thank 
+> you.
+> 
 
-2) Tileblits and stuff. I have been thinking about this and I really like 
-to make it even more generic. We also have seperate buffers for textures 
-for example which could also be used to draw fonts. The first thing is
-allocating or retreiving memory space for where to store the images. 
-Second is to draw it. I guess a index of position would be used.
+I would like to help as much as I can with the development. However, I
+won't be able to manage the BK repository since I don't have broadband
+access (cannot recover from a failed bk clone).  It's best if you leave
+this to someone who can.  
+
+I'll be of better help if we can populate the CVS repository in
+sourceforge?
+
+Tony  
 
 
 

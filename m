@@ -1,24 +1,20 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: Patch to add mode setting to sysfs
-Date: Sat, 19 Feb 2005 05:59:02 +0800
-Message-ID: <200502190559.07162.adaplas@hotpop.com>
-References: <9e4733910502161430ff1dad1@mail.gmail.com> <200502181542.50162.adaplas@hotpop.com> <9e473391050218084629ad0935@mail.gmail.com>
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: sysfs support for framebuffer
+Date: Fri, 18 Feb 2005 17:35:25 -0500
+Message-ID: <9e4733910502181435f60371c@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D2GAZ-0006P5-DK
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Feb 2005 14:00:15 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.61])
+	id 1D2Gj3-0000Ei-Nx
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Feb 2005 14:35:53 -0800
+Received: from rproxy.gmail.com ([64.233.170.192])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1D2GAX-0006hZ-TD
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Feb 2005 14:00:15 -0800
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 08D46E6FC91
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Feb 2005 21:59:14 +0000 (UTC)
-In-Reply-To: <9e473391050218084629ad0935@mail.gmail.com>
-Content-Disposition: inline
+	id 1D2Gj1-0001uY-04
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Feb 2005 14:35:53 -0800
+Received: by rproxy.gmail.com with SMTP id j1so860rnf
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Feb 2005 14:35:26 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,33 +26,41 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Jon Smirl <jonsmirl@gmail.com>, adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@www.infradead.org>
+To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-On Saturday 19 February 2005 00:46, Jon Smirl wrote:
-> On Fri, 18 Feb 2005 15:42:50 +0800, Antonino A. Daplas
->
-> <adaplas@hotpop.com> wrote:
-> > On Friday 18 February 2005 15:27, Jon Smirl wrote:
-> > > Next version of sysfs patch. Fills out more attributes. Feel free to
-> > > add code for missing implementations. Modifies fbcon to copy mode
-> > > structure instead of taking a reference to it. Modular fbdev is
-> > > separate patch. Ultimately we should be able to eliminate the IOCTL
-> > > code from fb_core and move it to a compatibility module.
-> >
-> > Okay, I think I can start coding starting from this patch.
->
-> Do you want to take over the sysfs support? If so, I will make some
-> changes to the radeonfb driver that I need. That will keep up from
-> conflicting.
+What are the attributes needed for framebuffers in sysfs? 
+This is the list I came up with, are there more?
 
-Actually, I plan to do the fbcon part only, capturing the event. I'll use
-yours as the test bed, but you and James will have to agree on the best way
-to add sysfs support to the fb core.
+bits_per_pixel - r/w color depth
+blank - w set the vesa blank state
+color_map - r/w control the color map
+console - r/w? map of console number to fb device
+cursor - r/w x/y position of the cursor
+mode - r/w set the display mode
+modes - list of valid modes
+pan - r/w x/y of the pan offset
+virtual_size - r/w x/y of the virtual size
 
-Tony
+modes is designed to let a user space root app set the list of valid
+modes into the driver
+ownership of all other attributes are assigned by pam to the display user
+mode must be an entry from the list of modes, this prevents a user
+from setting in a damaging mode
 
+The list is based on the current fbdev IOCTLs. All attributes appear
+in /sys/class/graphics/fb0/xxxx
+Current patch is in the "Patch to add mode setting to sysfs" thread.
 
+fbdev also needs to generate events to let the xserver know if things
+have been changed. These can come up through hotplug to dbus.
+
+bits_per_pixel, mode, virtual_size - mode event
+blank - blank event
+modes - modes event
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
 
 
 -------------------------------------------------------

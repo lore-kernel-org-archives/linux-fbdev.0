@@ -1,18 +1,18 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: When is the Linux Logo ( penguin ) drawn on
- startup in 2.4.20 ?
-Date: Wed, 9 Jul 2003 00:54:11 +0100 (BST)
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Subject: Re: Re: New fbdev updates.
+Date: 09 Jul 2003 11:24:36 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0307090051480.32323-100000@phoenix.infradead.org>
-References: <20030708234530.9697.qmail@web11905.mail.yahoo.com>
+Message-ID: <1057742674.3978.32.camel@thor.holligenstrasse29.lan>
+References: <Pine.LNX.4.44.0307031847570.16727-100000@phoenix.infradead.org>
+	 <3F05761E.9060205@coyotegulch.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from phoenix.infradead.org ([195.224.96.167])
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19a2II-0001GD-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 08 Jul 2003 16:54:47 -0700
-In-Reply-To: <20030708234530.9697.qmail@web11905.mail.yahoo.com>
+Received: from [195.141.226.27] (helo=netline-mail1.netline.ch)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19aBGf-00033E-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 09 Jul 2003 02:29:41 -0700
+In-Reply-To: <3F05761E.9060205@coyotegulch.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,66 +22,31 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Wayne Gowcher <wgowcher@yahoo.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"
+To: Scott Robert Ladd <coyote@coyotegulch.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+
+On Fri, 2003-07-04 at 14:42, Scott Robert Ladd wrote:
+> James Simmons wrote:
+> >    I have updates to the framebuffer layer. Alot of bug fixes accumlate=
+d.=20
+> > A couple of driver updates as well. I have more code to go in but haven=
+'t=20
+> > had time to add them in. Please test. This is not the final code going =
+in=20
+> > just yet. More needs to be done.
+>=20
+> Any chance of getting the radeonfb DFP-on-DVI working? I'm more than
+> willing to work on it, if no one else has the hardware. I can at least
+> try to get it working on the Radeon 9000.
+
+BTW, there have recently been updates in this area in XFree86 CVS, in
+case you want something to look at.
 
 
-> I am trying to debug a Xpert98 PCI graphics card on a
-> mips system with a 2.4.20 kernel. 
-
-Really cool. Are you using a serial console? If that is the case you can 
-transfer the printks from tty0 to ttyS0. After that you can in the aty 
-driver and in fbcon.c enable DEBUG. This shoudl give you lots of data. 
-Hope I gave you enough detail. If not I can give you teh exact steps.
- 
-P.S
-	I have a patch that allows you to boot that card without a BIOS 
-emulator :-) I really like it if you could test it on 2.5.X.
- 
-I am using vga
-> emulation to read the gfx card's ROM and initialize
-> the card. I know the card is being somewhat
-> initialized because after the vga emulation has
-> completed, the vga monitor shows lots of colored
-> squares / random colors etc. I have single stepped
-> into the code and noticed that within aty_init() the
-> call to fb_memset() clears the screen to black. But
-> after that nothing else happens - ie nothing else is
-> output to the screen.
-> 
-> Single stepping is proving to be very slow, and I
-> don't really know the framebuffer code, so I would be
-> very grateful if someone on the list could suggest
-> which routines I need to set breakpoints in and / or
-> what may be the cause of my non-existent penguin.
-> 
-> Please Note, I have successfully used a cirrus logic
-> PCI gfx card in the same system and it outputs the
-> penguin to the vga monitor, so i know the system is
-> capable of it.
-> 
-> TIA
-> 
-> Wayne
-> 
-> __________________________________
-> Do you Yahoo!?
-> SBC Yahoo! DSL - Now only $29.95 per month!
-> http://sbc.yahoo.com
-> 
-> 
-> -------------------------------------------------------
-> This SF.Net email sponsored by: Parasoft
-> Error proof Web apps, automate testing & more.
-> Download & eval WebKing and get a free book.
-> www.parasoft.com/bulletproofapps
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-> 
+--=20
+Earthling Michel D=E4nzer   \  Debian (powerpc), XFree86 and DRI developer
+Software libre enthusiast  \     http://svcs.affero.net/rm.php?r=3Ddaenzer
 
 
 

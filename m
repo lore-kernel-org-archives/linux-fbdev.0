@@ -1,25 +1,33 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [PATCH] fix for using >16 pixel wide font in fb console
-Date: Mon, 8 Nov 2004 18:34:26 +0800
-Message-ID: <200411081834.26877.adaplas@hotpop.com>
-References: <Pine.LNX.4.58.0411080202040.5524@glomgold-9.cs.helsinki.fi> <200411081816.15633.adaplas@hotpop.com>
+From: ramprasad <ramprasad@ncoretech.com>
+Subject: EPSON S1D13506 driver
+Date: Mon, 08 Nov 2004 18:27:27 +0530
+Message-ID: <418F6D37.7050104@ncoretech.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CR6rA-0001Sj-Oo
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 08 Nov 2004 02:34:40 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CR6r9-0002u7-70
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 08 Nov 2004 02:34:40 -0800
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 250D69C2536
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  8 Nov 2004 10:34:26 +0000 (UTC)
-In-Reply-To: <200411081816.15633.adaplas@hotpop.com>
-Content-Disposition: inline
+	id 1CR8wv-000847-8d
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 08 Nov 2004 04:48:45 -0800
+Received: from premium.exocore.com ([203.197.173.224])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1CR8wu-0001zU-21
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 08 Nov 2004 04:48:45 -0800
+Received: from mail.ncoretech.com (dsl.ncoretech.com [61.95.205.91])
+	by premium.exocore.com (8.12.8/8.12.8) with ESMTP id iA8CmaGk025376
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 8 Nov 2004 18:18:37 +0530
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by mail.ncoretech.com (Postfix) with ESMTP id 69B3D5FF82
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  8 Nov 2004 18:18:36 +0530 (IST)
+Received: from mail.ncoretech.com ([127.0.0.1])
+ by localhost (mail.ncoretech.com [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id 22748-05 for <linux-fbdev-devel@lists.sourceforge.net>;
+ Mon,  8 Nov 2004 18:18:35 +0530 (IST)
+Received: from ncoretech.com (ws184.ncoretech.com [192.168.1.184])
+	by mail.ncoretech.com (Postfix) with ESMTP id DA7E05FF4D
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  8 Nov 2004 18:18:35 +0530 (IST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,45 +38,21 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: jjaakkol@cs.Helsinki.FI
 
-On Monday 08 November 2004 18:16, Antonino A. Daplas wrote:
-> On Monday 08 November 2004 08:17, Jani Jaakkola wrote:
+Hi,
+	I am using epson 13506 CRT chip on my PXA board. Now that the chip has 
+been initilised and i am seeing a garbage display on my CRT.I am not 
+seeing any penguin on my CRT, but it looks like penguin.In the left top 
+corner i can see a 80x80 space with little dots and there are  lot of 
+colour dots on the CRT screen.Can anybody give me some pointers what 
+could be wrong with this.
 
-> PS: Diff is against 2.6.10-rc1-mm3
+I am using 2.4.19-rmk7-pxa1 kernel.
 
-And I forgot to attach the patch :-)
-
-Tony
-
-diff -Nru a/drivers/video/softcursor.c b/drivers/video/softcursor.c
---- a/drivers/video/softcursor.c	2004-10-27 16:28:36 +08:00
-+++ b/drivers/video/softcursor.c	2004-11-08 18:10:58 +08:00
-@@ -28,16 +28,17 @@
- 	if (info->state != FBINFO_STATE_RUNNING)
- 		return 0;
- 
--	src = kmalloc(64 + sizeof(struct fb_image), GFP_ATOMIC);
-+	s_pitch = (cursor->image.width + 7) >> 3;
-+	dsize = s_pitch * cursor->image.height;
- 
-+	src = kmalloc(dsize + sizeof(struct fb_image), GFP_ATOMIC);
- 	if (!src)
- 		return -ENOMEM;
- 
--	image = (struct fb_image *) (src + 64);
-+	image = (struct fb_image *) (src + dsize);
- 	*image = cursor->image;
--	s_pitch = (image->width + 7) >> 3;
--	dsize = s_pitch * image->height;
- 	d_pitch = (s_pitch + scan_align) & ~scan_align;
-+
- 	size = d_pitch * image->height + buf_align;
- 	size &= ~buf_align;
- 	dst = fb_get_buffer_offset(info, &info->pixmap, size);
-
+Thanks in advance,
+Ramprasad
 
 
 

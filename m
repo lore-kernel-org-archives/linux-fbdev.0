@@ -1,19 +1,19 @@
 From: "Luiz Fernando N. Capitulino" <lcapitulino@prefeitura.sp.gov.br>
-Subject: [PATCH] - video/tridentfb.c warning fix.
-Date: Mon, 19 Apr 2004 16:28:07 -0300
+Subject: [PATCH] - video/hgafb.c warning fix.
+Date: Mon, 19 Apr 2004 17:09:34 -0300
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040419162807.7ba9c5ec.lcapitulino@prefeitura.sp.gov.br>
+Message-ID: <20040419170934.700d2c0a.lcapitulino@prefeitura.sp.gov.br>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BFej4-0002ii-Ir
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 19 Apr 2004 12:46:42 -0700
+	id 1BFf7Z-0000R7-Lt
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 19 Apr 2004 13:12:01 -0700
 Received: from sampa7.prodam.sp.gov.br ([200.230.190.107])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BFej4-0005KY-2y
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 19 Apr 2004 12:46:42 -0700
+	id 1BFf7Z-0004SJ-7i
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 19 Apr 2004 13:12:01 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,83 +30,79 @@ Cc: jsimmons@infradead.org, linux-fbdev-devel@lists.sf.net
 
  Andrew,
 
- Speaking with frame buffer people, we agree with this
-patch to fix the warning:
+ It is the something of video/tridentfb.c: accelerations
+functions which can be selected by the user. The patch also
+fixes the warnings:
 
-drivers/video/tridentfb.c:455: warning: `tridentfb_fillrect' defined but not used
-drivers/video/tridentfb.c:473: warning: `tridentfb_copyarea' defined but not used
+drivers/video/hgafb.c:452: warning: `hgafb_fillrect' defined but not used
+drivers/video/hgafb.c:472: warning: `hgafb_copyarea' defined but not used
+drivers/video/hgafb.c:502: warning: `hgafb_imageblit' defined but not used
 
- the patch is here:
+ Here is the patch:
 
- drivers/video/Kconfig     |    8 ++++++++
- drivers/video/tridentfb.c |   13 ++++++++-----
- 2 files changed, 16 insertions(+), 5 deletions(-)
+ drivers/video/Kconfig |    8 ++++++++
+ drivers/video/hgafb.c |   15 ++++++++++++---
+ 2 files changed, 20 insertions(+), 3 deletions(-)
 
 
+diff -X dontdiff -Nparu a/drivers/video/hgafb.c a~/drivers/video/hgafb.c
+--- a/drivers/video/hgafb.c	2004-01-09 10:30:36.000000000 -0200
++++ a~/drivers/video/hgafb.c	2004-04-16 20:58:49.000000000 -0300
+@@ -448,6 +448,10 @@ static int hgafb_blank(int blank_mode, s
+ 	return 0;
+ }
+ 
++/*
++ * Accel functions
++ */
++#ifdef CONFIG_FB_HGA_ACCEL
+ static void hgafb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
+ {
+ 	u_int rows, y;
+@@ -510,6 +514,11 @@ static void hgafb_imageblit(struct fb_in
+ 		*dest = d;
+ 	}
+ }
++#else /* !CONFIG_FB_HGA_ACCEL */
++#define hgafb_fillrect cfb_fillrect
++#define hgafb_copyarea cfb_copyarea
++#define hgafb_imageblit cfb_imageblit
++#endif /* CONFIG_FB_HGA_ACCEL */
+ 
+ 
+ static struct fb_ops hgafb_ops = {
+@@ -519,9 +528,9 @@ static struct fb_ops hgafb_ops = {
+ 	.fb_setcolreg	= hgafb_setcolreg,
+ 	.fb_pan_display	= hgafb_pan_display,
+ 	.fb_blank	= hgafb_blank,
+-	.fb_fillrect	= cfb_fillrect, //hgafb_fillrect,
+-	.fb_copyarea	= cfb_copyarea,	//hgafb_copyarea,
+-	.fb_imageblit	= cfb_imageblit,//hgafb_imageblit,
++	.fb_fillrect	= hgafb_fillrect,
++	.fb_copyarea	= hgafb_copyarea,
++	.fb_imageblit	= hgafb_imageblit,
+ };
+ 		
+ /* ------------------------------------------------------------------------- *
 diff -X dontdiff -Nparu a/drivers/video/Kconfig a~/drivers/video/Kconfig
 --- a/drivers/video/Kconfig	2004-04-16 20:03:09.000000000 -0300
-+++ a~/drivers/video/Kconfig	2004-04-16 20:04:24.000000000 -0300
-@@ -772,6 +772,14 @@ config FB_TRIDENT
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called tridentfb.
++++ a~/drivers/video/Kconfig	2004-04-16 20:57:56.000000000 -0300
+@@ -308,6 +308,14 @@ config FB_HGA
+ 	  As this card technology is 15 years old, most people will answer N
+ 	  here.
  
-+config FB_TRIDENT_ACCEL
-+	bool "Trident Acceleration functions (EXPERIMENTAL)"
-+	depends on FB_TRIDENT
++config FB_HGA_ACCEL
++	bool "Hercules mono Acceleration functions (EXPERIMENTAL)"
++	depends on FB_HGA
 +	---help---
-+	This will compile the Trident frame buffer device with
++	This will compile the Hercules mono graphics with
 +	acceleration functions.
 +
 +
- config FB_PM3
- 	tristate "Permedia3 support"
- 	depends on FB && PCI && BROKEN
-diff -X dontdiff -Nparu a/drivers/video/tridentfb.c a~/drivers/video/tridentfb.c
---- a/drivers/video/tridentfb.c	2004-04-16 20:03:29.000000000 -0300
-+++ a~/drivers/video/tridentfb.c	2004-04-16 20:42:26.000000000 -0300
-@@ -450,7 +450,7 @@ static struct accel_switch accel_image =
- /*
-  * Accel functions called by the upper layers
-  */
--
-+#ifdef CONFIG_FB_TRIDENT_ACCEL
- static void tridentfb_fillrect(struct fb_info * info, const struct fb_fillrect *fr)
- {
- 	int bpp = info->var.bits_per_pixel;
-@@ -474,6 +474,11 @@ static void tridentfb_copyarea(struct fb
- 	acc->copy_rect(ca->sx,ca->sy,ca->dx,ca->dy,ca->width,ca->height);
- 	acc->wait_engine();
- }
-+#else /* !CONFIG_FB_TRIDENT_ACCEL */
-+#define tridentfb_fillrect cfb_fillrect
-+#define tridentfb_copyarea cfb_copyarea
-+#endif /* CONFIG_FB_TRIDENT_ACCEL */
-+
- 
- /*
-  * Hardware access functions
-@@ -1265,10 +1270,8 @@ static struct fb_ops tridentfb_ops = {
- 	.fb_blank = tridentfb_blank,
- 	.fb_check_var = tridentfb_check_var,
- 	.fb_set_par = tridentfb_set_par,
--//	.fb_fillrect = tridentfb_fillrect,
--//	.fb_copyarea= tridentfb_copyarea,
--	.fb_fillrect = cfb_fillrect,
--	.fb_copyarea= cfb_copyarea,
-+	.fb_fillrect = tridentfb_fillrect,
-+	.fb_copyarea= tridentfb_copyarea,
- 	.fb_imageblit = cfb_imageblit,
- 	.fb_cursor = soft_cursor,
- };
+ config VIDEO_SELECT
+ 	bool
+ 	depends on FB && X86
 
- The functions: tridentfb_copyarea() and tridentfb_fillrect() can be
-used to acceleration, but it is not tested.
-
- I don't like the idea to comment it because they will be forgoten.
-
- James agreed to this patch.
-
-PS: I'll send the video/hga.c, it is the some case.
 
 -- 
 Luiz Fernando N. Capitulino

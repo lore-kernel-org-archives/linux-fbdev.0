@@ -1,21 +1,22 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: James Simmons <jsimmons@www.infradead.org>
 Subject: Re: [announce 0/7] fbsplash - The Framebuffer
  Splash
-Date: Wed, 9 Mar 2005 21:33:44 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0503092133300.8551@numbat.sonytel.be>
-References: <20050308015731.GA26249@spock.one.pl> <200503091301.15832.adaplas@hotpop.com>
- <9e473391050308220218cc26a3@mail.gmail.com> <Pine.LNX.4.62.0503091033400.22598@numbat.sonytel.be>
+Date: Wed, 9 Mar 2005 20:45:22 +0000 (GMT)
+Message-ID: <Pine.LNX.4.56.0503092043380.7510@pentafluge.infradead.org>
+References: <20050308015731.GA26249@spock.one.pl>  <200503091301.15832.adaplas@hotpop.com>
+  <9e473391050308220218cc26a3@mail.gmail.com>  <Pine.LNX.4.62.0503091033400.22598@numbat.sonytel.be>
  <1110392212.3116.215.camel@localhost.localdomain>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D97si-00083l-Oj
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 09 Mar 2005 12:34:12 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1D97sh-0001cR-1v
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 09 Mar 2005 12:34:12 -0800
+	id 1D983i-0000JA-Qb
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 09 Mar 2005 12:45:34 -0800
+Received: from pentafluge.infradead.org ([213.146.154.40])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1D983h-00064L-DA
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 09 Mar 2005 12:45:34 -0800
 In-Reply-To: <1110392212.3116.215.camel@localhost.localdomain>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -30,9 +31,9 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Michal Januszewski <spock@gentoo.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>, "Antonino A. Daplas" <adaplas@hotpop.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Michal Januszewski <spock@gentoo.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>, "Antonino A. Daplas" <adaplas@hotpop.com>
 
-On Wed, 9 Mar 2005, Alan Cox wrote:
+
 > On Mer, 2005-03-09 at 09:34, Geert Uytterhoeven wrote:
 > > On Wed, 9 Mar 2005, Jon Smirl wrote:
 > > > Another idea would be to build a console is user space. Think of it as
@@ -45,18 +46,10 @@ On Wed, 9 Mar 2005, Alan Cox wrote:
 > Jon is the origin of those ideas not me, I'm merely supporting them
 > providing there is still a basic kernel side console.
 
-Thanks for correcting me!
+Thank you. We need some kind of basic console in the kernel. I'm not the 
+biggest fan of eye candy. So moving the console to userspace for eye candy 
+is a dumb idea.
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 
 -------------------------------------------------------

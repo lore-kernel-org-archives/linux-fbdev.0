@@ -1,35 +1,42 @@
-From: Olaf Hering <olh@suse.de>
-Subject: Re: [Linux-fbdev-devel] Re: 2.6.11-rc5, rivafb i2c oops, bogus error handling
-Date: Tue, 1 Mar 2005 13:02:21 +0100
-Message-ID: <20050301120221.GA10091@suse.de>
-References: <Pine.LNX.4.58.0502232014190.18997@ppc970.osdl.org> <20050227203214.GA15572@suse.de> <200502282241.55815.adaplas@hotpop.com>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: [Linux-fbdev-devel] RFC: disallow modular framebuffers
+Date: Tue, 1 Mar 2005 20:49:25 +0800
+Message-ID: <200503012049.25809.adaplas@hotpop.com>
+References: <20050301024118.GF4021@stusta.de>
+Reply-To: adaplas@pol.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
+In-Reply-To: <20050301024118.GF4021@stusta.de>
 Content-Disposition: inline
-In-Reply-To: <200502282241.55815.adaplas@hotpop.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-nvidia@lists.surfsouth.com, Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Adrian Bunk <bunk@stusta.de>, adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
- On Mon, Feb 28, Antonino A. Daplas wrote:
+On Tuesday 01 March 2005 10:41, Adrian Bunk wrote:
+> Hi,
+>
+> while looking how to fix modular FB_SAVAGE_* (both FB_SAVAGE_I2C=m and
+> FB_SAVAGE_ACCEL=m are currently broken) I asked myself:
+>
+> Do modular framebuffers really make sense?
+>
+> OK, distributions like to make everything modular, but all the
+> framebuffer drivers I've looked at parse driver specific options in
+> their *_setup function only in the non-modular case.
+>
+> And most framebuffer drivers contain a module_exit function.
+> Is there really any case where this is both reasonable and working?
 
-> On Monday 28 February 2005 04:32, Olaf Hering wrote:
-> >  On Wed, Feb 23, Linus Torvalds wrote:
-> > > This time it's really supposed to be a quickie, so people who can, please
-> > > check it out, and we'll make the real 2.6.11 asap.
-> >
-> > Here is another one, probably not new.
-> > Is riva_get_EDID_i2c a bit too optimistic by not having a $i2cadapter_ok
-> > member in riva_par->riva_i2c_chan? It calls riva_probe_i2c_connector
-> > even if riva_create_i2c_busses fails to register all 3 busses.
-> >
-> 
-> Thanks,
-> 
-> Can you try this?
-> 
-> Fixed error handling in rivafb-i2c.c if bus registration fails.
+Only a few drivers are capable of being unloaded with the possiblity of
+restoring the vga console (i810fb and rivafb), when CONFIG_FBCON = n.
 
-I havent heard back from the reporter, yet.
+If CONFIG_FBCON=y, it's not possible to unload the module unless 2 drivers
+are loaded at the same time. One driver can be mapped to the console, so the
+other can be unloaded.  Although not important from the user's POV, it is
+quite helpful when debugging/developing drivers.
+
+Currently fbcon cannot be unloaded, it will freeze the system.
+
+Tony

@@ -1,58 +1,63 @@
-From: David Eger <eger@theboonies.us>
-Subject: FB accel capabilities patch
-Date: Wed, 19 May 2004 11:36:21 +0200 (CEST)
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.58.0405191118170.4760@rosencrantz.theboonies.us>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: FB accel capabilities patch
+Date: Wed, 19 May 2004 03:03:19 -0700
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <20040519030319.1f0e6eec.akpm@osdl.org>
+References: <Pine.LNX.4.58.0405191118170.4760@rosencrantz.theboonies.us>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org-S262488AbUESJcQ@vger.kernel.org>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: akpm@osdl.org
-Cc: Linux Frame Buffer Dev <linux-fbdev-devel@lists.sourceforge.net>, linux-kernel@vger.kernel.org
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BQNvR-0002AO-D9
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 19 May 2004 03:03:49 -0700
+Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BQNvQ-00034H-Sw
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 19 May 2004 03:03:48 -0700
+In-Reply-To: <Pine.LNX.4.58.0405191118170.4760@rosencrantz.theboonies.us>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: David Eger <eger@theboonies.us>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+
+David Eger <eger@theboonies.us> wrote:
+>
+> A month or two ago I noticed that the framebuffer console driver doesn't
+>  know to do proper framebuffer acceleration in Linux 2.6;
+
+For what fbdev operations will acceleration be used?
+
+> I've implemented
+>  a solution Geert suggested where each framebuffer driver advertizes its 
+>  hardware capabilities via fb_info->flags.  Please apply to -mm so I can 
+>  get wider testing.
+
+The larger patch gets a bunch of rejects against Linus's current tree. 
+Please update and resend.
+
+Please send the patches via email, too.  That way lots of people help to
+check your code and it's considerably less fiddly at my end.
+
+Canonical form is one patch per email, with the changelog at the top of the
+email, with a useful Subject: which describes the patch.  Each patch email
+will have a different subject, and that subject ain't the name of the file
+which holds the patch!  The patch will be in the body of the email of your
+MUA is halfway sane.  As an attachment if not.
+
+Thanks.
 
 
-Dear Andrew,
-
-A month or two ago I noticed that the framebuffer console driver doesn't
-know to do proper framebuffer acceleration in Linux 2.6;  I've implemented
-a solution Geert suggested where each framebuffer driver advertizes its 
-hardware capabilities via fb_info->flags.  Please apply to -mm so I can 
-get wider testing.
-
-The patches are at:
-
-http://www.yak.net/random/fbdev-patches/accel-cap-take2/relative2mainline/
-
-The core of these patches is enabling the use of the following flags:
-
-+/* FBIF = FB_Info.Flags */
-+#define FBIF_MODULE		0x0001	/* Low-level driver is a module */
-+#define FBIF_HWACCEL_DISABLED	0x0002
-+
-+/* hints */
-+#define FBIF_PARTIAL_PAN_OK	0x0040 /* otw use pan only for double-buffering */
-+#define FBIF_READS_FAST		0x0080 /* soft-copy faster than rendering */
-+
-+/* hardware supported ops */
-+#define FBIF_HWACCEL_NONE	0x0000
-+#define FBIF_HWACCEL_COPYAREA	0x0100
-+#define FBIF_HWACCEL_FILLRECT	0x0200
-+#define FBIF_HWACCEL_ROTATE	0x0400
-+#define FBIF_HWACCEL_IMAGEBLIT	0x0800
-+#define FBIF_HWACCEL_XPAN	0x1000
-+#define FBIF_HWACCEL_YPAN	0x2000
-+#define FBIF_HWACCEL_YWRAP	0x4000
-
-Patches to each individual driver will trickle in as I get to them;
-Since these are only hints to the "application" of fbcon, the fact that 
-the hints aren't yet accurate for all drivers (default is zero/one depending
-on if the fb driver is a module) is OK, and nothing should break with these
-patches.  Each driver also doesn't have to reimplement a noaccel flag 
-(to disable acceleration, mainly for testing new accel code), since it
-will be already in fb_info now ;-)
-
--dte
-
----
-getting bounce messages from me? let me know and you'll go on my whitelist
+-------------------------------------------------------
+This SF.Net email is sponsored by: SourceForge.net Broadband
+Sign-up now for SourceForge Broadband and get the fastest
+6.0/768 connection for only $19.95/mo for the first 3 months!
+http://ads.osdn.com/?ad_id=2562&alloc_id=6184&op=click

@@ -1,22 +1,22 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] [FBDEV]: Core fbcon fixes
-Date: Wed, 23 Jun 2004 10:59:41 -0500
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Sane behavior of fbset
+Date: Wed, 23 Jun 2004 18:08:27 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1088006381.3562.149.camel@gaston>
-References: <200406220638.34214.adaplas@hotpop.com>
+Message-ID: <Pine.GSO.4.58.0406231808080.13111@waterleaf.sonytel.be>
+References: <200406180945.12444.adaplas@hotpop.com> <200406190240.26228.adaplas@hotpop.com>
+ <20040619031650.GC14319@havoc.gtf.org> <200406191413.28339.adaplas@hotpop.com>
+ <1088006149.1832.145.camel@gaston>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BdAIQ-0004sk-9V
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 09:08:22 -0700
-Received: from gate.crashing.org ([63.228.1.57])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1BdAIP-0004Tl-Qv
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 09:08:21 -0700
-In-Reply-To: <200406220638.34214.adaplas@hotpop.com>
+	id 1BdAIr-0004uN-6O
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 09:08:49 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BdAIq-0004bJ-LB
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 09:08:48 -0700
+In-Reply-To: <1088006149.1832.145.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,31 +26,44 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: adaplas@pol.net
-Cc: James Simmons <jsimmons@infradead.org>, Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Antonino Daplas <adaplas@pol.net>, David Eger <eger@havoc.gtf.org>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Mon, 2004-06-21 at 17:39, Antonino A. Daplas wrote:
-> This patch fixes the following bugs/regressions for fbcon:
-> 
-> 1. Initialize and update global arrays used by fbcon during initialization
-> and and by set_con2fbmap code.
-> 
-> 2. Fixed screen corruption (white rectangle) at initial mode setting
-> plaguing cards with VGA cores and with VGA console enabled. 
-> (vga16fb, however, still shows remnants of previous text if boot logo
-> is enabled)
-> 
-> 3. Improved fbcon_startup/fbcon_init code.  
-> 
-> 4. Fixed set_con2fbmap code -- should support multiple devices mapped to
-> different consoles.
+On Wed, 23 Jun 2004, Benjamin Herrenschmidt wrote:
+> > The flow of fbset is upstream:  fbset->fbdev->fbcon->vc (2.4 code)
+> > The flow of stty is downstream: stty->vc->fbcon->fbdev (2.6 code)
+> >
+> > I don't know how radeonfb does it though.
+>
+> I still think (didn't I repeat it often enough) that the whole idea
+> of stty "inventing" modes based on console size is broken. We simply
+> can't rely on good enough monitor detection & mode list building to
+> be able to pick proper modes. Not only our code is far from ready for
+> that, but it will also call all sort of problems to users (remember
+> you monitors that need different subtle geometry settings for each
+> different mode you use ?)
+>
+> It may have looked like a nice idea, but I think it's just wrong.
+>
+> fbset sends an ioctl straight to the fbdev, and doesn't update fbcon
+> at the moment. The callback mecanism I added for power management
+> should allow to restore 2.4 functionality there, but this has not
+> been implemented yet afaik.
 
-Looks good on a quick overview.
+Oh yes, patches for that are starting to flow around!
 
-Ben.
+Gr{oetje,eeting}s,
 
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

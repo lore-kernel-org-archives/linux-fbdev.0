@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 9/15] fbdev: Add __iomem annotations to cyber2000fb
-Date: Fri, 29 Oct 2004 09:58:43 +0800
+Subject: [PATCH 11/15] fbdev: Add __iomem annotations to hgafb
+Date: Fri, 29 Oct 2004 09:58:49 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200410290958.43035.adaplas@hotpop.com>
+Message-ID: <200410290958.49211.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CNM4p-0006YF-Pv
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Oct 2004 19:01:15 -0700
+	id 1CNM5T-0006ha-Hk
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Oct 2004 19:01:55 -0700
 Received: from smtp-out.hotpop.com ([38.113.3.51])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CNM4n-0001tK-Jw
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Oct 2004 19:01:15 -0700
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CNM5T-0000aN-0d
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Oct 2004 19:01:55 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 840CF75230
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 29 Oct 2004 01:59:09 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id 61EC672A2E
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 29 Oct 2004 01:59:17 +0000 (UTC)
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,44 +30,86 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Russell King <rmk@arm.linux.org.uk>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Ferenc Bakonyi <fero@drama.obuda.kando.hu>
 
-Add __iomem annotations to cyber2000fb
+Add __iomem annotations to hgafb
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
- cyber2000fb.c |    4 ++--
- cyber2000fb.h |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ hgafb.c |   18 ++++++++++--------
+ 1 files changed, 10 insertions(+), 8 deletions(-)
 
-diff -Nru a/drivers/video/cyber2000fb.c b/drivers/video/cyber2000fb.c
---- a/drivers/video/cyber2000fb.c	2004-10-27 14:58:07 +08:00
-+++ b/drivers/video/cyber2000fb.c	2004-10-28 22:57:58 +08:00
-@@ -66,8 +66,8 @@
- 	struct display_switch	*dispsw;
- 	struct display		*display;
- 	struct pci_dev		*dev;
--	unsigned char 		*region;
--	unsigned char		*regs;
-+	unsigned char 		__iomem *region;
-+	unsigned char		__iomem *regs;
- 	u_int			id;
- 	int			func_use_count;
- 	u_long			ref_ps;
-diff -Nru a/drivers/video/cyber2000fb.h b/drivers/video/cyber2000fb.h
---- a/drivers/video/cyber2000fb.h	2004-10-19 20:21:33 +08:00
-+++ b/drivers/video/cyber2000fb.h	2004-10-28 22:57:58 +08:00
-@@ -466,8 +466,8 @@
+diff -Nru a/drivers/video/hgafb.c b/drivers/video/hgafb.c
+--- a/drivers/video/hgafb.c	2004-10-27 14:58:07 +08:00
++++ b/drivers/video/hgafb.c	2004-10-28 23:24:53 +08:00
+@@ -66,9 +66,9 @@
+ #define HGA_TXT			0
+ #define HGA_GFX			1
  
- struct cyberpro_info {
- 	struct pci_dev	*dev;
--	unsigned char	*regs;
--	char		*fb;
-+	unsigned char	__iomem *regs;
-+	char		__iomem *fb;
- 	char		dev_name[32];
- 	unsigned int	fb_size;
- 	unsigned int	chip_id;
+-static inline u8* rowaddr(struct fb_info *info, u_int row)
++static inline u8 __iomem * rowaddr(struct fb_info *info, u_int row)
+ {
+-        return info->screen_base + HGA_ROWADDR(row);
++	return (u8 __iomem *) (fb_readl(info->screen_base + HGA_ROWADDR(row)));
+ }
+ 
+ static int hga_mode = -1;			/* 0 = txt, 1 = gfx mode */
+@@ -455,7 +455,7 @@
+ static void hgafb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
+ {
+ 	u_int rows, y;
+-	u8 *dest;
++	u8 __iomem *dest;
+ 
+ 	y = rect->dy;
+ 
+@@ -466,7 +466,7 @@
+ 			//fb_memset(dest, rect->color, (rect->width >> 3));
+ 			break;
+ 		case ROP_XOR:
+-			*dest = ~*dest;
++			fb_writeb(~(fb_readb(dest)), dest);
+ 			break;
+ 		}
+ 	}
+@@ -475,7 +475,8 @@
+ static void hgafb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
+ {
+ 	u_int rows, y1, y2;
+-	u8 *src, *dest;
++	u8 __iomem *src;
++	u8 __iomem *dest;
+ 
+ 	if (area->dy <= area->sy) {
+ 		y1 = area->sy;
+@@ -504,14 +505,15 @@
+ 
+ static void hgafb_imageblit(struct fb_info *info, const struct fb_image *image)
+ {
+-	u8 *dest, *cdat = (u8 *) image->data;
++	u8 __iomem *dest;
++	u8 *cdat = (u8 *) image->data;
+ 	u_int rows, y = image->dy;
+ 	u8 d;
+ 
+ 	for (rows = image->height; rows--; y++) {
+ 		d = *cdat++;
+ 		dest = rowaddr(info, y) + (image->dx >> 3);
+-		*dest = d;
++		fb_writeb(d, dest);
+ 	}
+ }
+ #else /* !CONFIG_FB_HGA_ACCEL */
+@@ -570,7 +572,7 @@
+ 	fb_info.monspecs.vfmax = 10000;
+ 	fb_info.monspecs.dpms = 0;
+ 	fb_info.fbops = &hgafb_ops;
+-	fb_info.screen_base = (char *)hga_fix.smem_start;
++	fb_info.screen_base = (char __iomem *)hga_fix.smem_start;
+ 
+         if (register_framebuffer(&fb_info) < 0)
+                 return -EINVAL;
+
 
 
 

@@ -1,21 +1,24 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] fbdev/radeonfb: Remove bugus radeonfb_read/write
-Date: Mon, 13 Sep 2004 14:30:02 +1000
+From: "Mukund JB." <mukundjb@esntechnologies.co.in>
+Subject: NEWBIE Help please.
+Date: Mon, 13 Sep 2004 12:39:28 +0530
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1095049802.24290.260.camel@gaston>
+Message-ID: <4EE0CBA31942E547B99B3D4BFAB3481110764D@mail.esn.co.in>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C6iWT-0006Un-5J
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 12 Sep 2004 21:33:01 -0700
-Received: from gate.crashing.org ([63.228.1.57])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.34)
-	id 1C6iWS-00048j-6S
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 12 Sep 2004 21:33:01 -0700
+	id 1C6kzg-0004fl-4A
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 13 Sep 2004 00:11:20 -0700
+Received: from [202.125.86.130] (helo=ns2.astrainfonets.net)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1C6kze-0004lx-RQ
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 13 Sep 2004 00:11:20 -0700
+Received: from mail.esn.co.in ([202.125.80.34])
+	by ns2.astrainfonets.net (8.12.8p1/8.12.8) with ESMTP id i8D76hUE013849
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 13 Sep 2004 07:06:44 GMT
+Content-class: urn:content-classes:message
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,199 +29,327 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linus Torvalds <torvalds@osdl.org>, "Antonino A. Daplas" <adaplas@hotpop.com>
-
-This patch kills the bogus radeonfb_read/write routines. In order to do so,
-it adds a new member to fb_info, along with screen_base, which is screen_size,
-indicating the mapped area. The default fb_read/write will now use that instead
-of fix->smem_len if it is non-0, and radeonfb now sets it to the mapped size
-of the framebuffer.
-
-Ben.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-===== drivers/video/fbmem.c 1.127 vs edited =====
---- 1.127/drivers/video/fbmem.c	2004-09-08 16:33:07 +10:00
-+++ edited/drivers/video/fbmem.c	2004-09-13 14:03:44 +10:00
-@@ -506,6 +506,7 @@
- 	struct fb_info *info = registered_fb[fbidx];
- 	u32 *buffer, *dst, *src;
- 	int c, i, cnt = 0, err = 0;
-+	unsigned long total_size;
- 
- 	if (!info || ! info->screen_base)
- 		return -ENODEV;
-@@ -516,12 +517,16 @@
- 	if (info->fbops->fb_read)
- 		return info->fbops->fb_read(file, buf, count, ppos);
- 	
--	if (p >= info->fix.smem_len)
-+	total_size = info->screen_size;
-+	if (total_size == 0)
-+		total_size = info->fix.smem_len;
-+
-+	if (p >= total_size)
- 	    return 0;
--	if (count >= info->fix.smem_len)
--	    count = info->fix.smem_len;
--	if (count + p > info->fix.smem_len)
--		count = info->fix.smem_len - p;
-+	if (count >= total_size)
-+	    count = total_size;
-+	if (count + p > total_size)
-+		count = total_size - p;
- 
- 	cnt = 0;
- 	buffer = kmalloc((count > PAGE_SIZE) ? PAGE_SIZE : count,
-@@ -572,6 +577,7 @@
- 	struct fb_info *info = registered_fb[fbidx];
- 	u32 *buffer, *dst, *src;
- 	int c, i, cnt = 0, err;
-+	unsigned long total_size;
- 
- 	if (!info || !info->screen_base)
- 		return -ENODEV;
-@@ -582,13 +588,17 @@
- 	if (info->fbops->fb_write)
- 		return info->fbops->fb_write(file, buf, count, ppos);
- 	
--	if (p > info->fix.smem_len)
-+	total_size = info->screen_size;
-+	if (total_size == 0)
-+		total_size = info->fix.smem_len;
-+
-+	if (p > total_size)
- 	    return -ENOSPC;
--	if (count >= info->fix.smem_len)
--	    count = info->fix.smem_len;
-+	if (count >= total_size)
-+	    count = total_size;
- 	err = 0;
--	if (count + p > info->fix.smem_len) {
--	    count = info->fix.smem_len - p;
-+	if (count + p > total_size) {
-+	    count = total_size - p;
- 	    err = -ENOSPC;
- 	}
- 	cnt = 0;
-===== drivers/video/aty/radeon_base.c 1.27 vs edited =====
---- 1.27/drivers/video/aty/radeon_base.c	2004-09-11 12:08:04 +10:00
-+++ edited/drivers/video/aty/radeon_base.c	2004-09-13 14:05:55 +10:00
-@@ -1702,68 +1702,6 @@
- }
- 
- 
--
--static ssize_t radeonfb_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
--{
--	unsigned long p = *ppos;
--	struct inode *inode = file->f_dentry->d_inode;
--	int fbidx = iminor(inode);
--	struct fb_info *info = registered_fb[fbidx];
--	struct radeonfb_info *rinfo = info->par;
--	
--	if (p >= rinfo->mapped_vram)
--	    return 0;
--	if (count >= rinfo->mapped_vram)
--	    count = rinfo->mapped_vram;
--	if (count + p > rinfo->mapped_vram)
--		count = rinfo->mapped_vram - p;
--	radeonfb_sync(info);
--	if (count) {
--	    void __iomem *base_addr;
--
--	    base_addr = info->screen_base;
--	    count -= copy_to_user(buf, base_addr+p, count);	/* Ayee!! */
--	    if (!count)
--		return -EFAULT;
--	    *ppos += count;
--	}
--	return count;
--}
--
--static ssize_t radeonfb_write(struct file *file, const char __user *buf, size_t count,
--			      loff_t *ppos)
--{
--	unsigned long p = *ppos;
--	struct inode *inode = file->f_dentry->d_inode;
--	int fbidx = iminor(inode);
--	struct fb_info *info = registered_fb[fbidx];
--	struct radeonfb_info *rinfo = info->par;
--	int err;
--
--	if (p > rinfo->mapped_vram)
--	    return -ENOSPC;
--	if (count >= rinfo->mapped_vram)
--	    count = rinfo->mapped_vram;
--	err = 0;
--	if (count + p > rinfo->mapped_vram) {
--	    count = rinfo->mapped_vram - p;
--	    err = -ENOSPC;
--	}
--	radeonfb_sync(info);
--	if (count) {
--	    void __iomem *base_addr;
--
--	    base_addr = info->screen_base;
--	    count -= copy_from_user(base_addr+p, buf, count);	/* Ayee!! */
--	    *ppos += count;
--	    err = -EFAULT;
--	}
--	if (count)
--		return count;
--	return err;
--}
--
--
- static struct fb_ops radeonfb_ops = {
- 	.owner			= THIS_MODULE,
- 	.fb_check_var		= radeonfb_check_var,
-@@ -1776,8 +1714,6 @@
- 	.fb_fillrect		= radeonfb_fillrect,
- 	.fb_copyarea		= radeonfb_copyarea,
- 	.fb_imageblit		= radeonfb_imageblit,
--	.fb_read		= radeonfb_read,
--	.fb_write		= radeonfb_write,
- 	.fb_cursor		= soft_cursor,
- };
- 
-@@ -1796,7 +1732,7 @@
- 		    | FBINFO_HWACCEL_YPAN;
- 	info->fbops = &radeonfb_ops;
- 	info->screen_base = rinfo->fb_base;
--
-+	info->screen_size = rinfo->mapped_vram;
- 	/* Fill fix common fields */
- 	strlcpy(info->fix.id, rinfo->name, sizeof(info->fix.id));
-         info->fix.smem_start = rinfo->fb_base_phys;
-@@ -2242,12 +2178,6 @@
- 	}
- 
- 	RTRACE("radeonfb: mapped %ldk videoram\n", rinfo->mapped_vram/1024);
--
--
--	/* Argh. Scary arch !!! */
--#ifdef CONFIG_PPC64
--	rinfo->fb_base = IO_TOKEN_TO_ADDR(rinfo->fb_base);
--#endif
- 
- 	/*
- 	 * Check for required workaround for PLL accesses
-===== include/linux/fb.h 1.82 vs edited =====
---- 1.82/include/linux/fb.h	2004-09-11 12:08:04 +10:00
-+++ edited/include/linux/fb.h	2004-09-13 14:01:45 +10:00
-@@ -603,6 +603,7 @@
- 	struct fb_cmap cmap;		/* Current cmap */
- 	struct fb_ops *fbops;
- 	char __iomem *screen_base;	/* Virtual address */
-+	unsigned long screen_size;	/* Amount of ioremapped VRAM or 0 */ 
- 	int currcon;			/* Current VC. */
- 	void *pseudo_palette;		/* Fake palette of 16 colors */ 
- #define FBINFO_STATE_RUNNING	0
+To: linux-fbdev-devel@lists.sourceforge.net
 
 
+Hello all,
+
+=20
+
+I am having a basic problem of understanding how does the FRAMEBUFFER
+driver really goes.
+
+=20
+
+I have just written a sample framebuffer driver, I am attaching the code
+here to this mail.
+
+I have the following doubts. I went through the complete mail list where
+in found no answers for these questions Probably I am asking silly ones,
+please help this newbie.
+
+=20
+
+QUESTION 1 :
+
+is the framebuffer driver restricted to just graphical applications?
+
+Is there a different framebuffer driver for console(ALT+CTRL+F1)? Is
+framebuffer mechaninism used on the console too?
+
+=20
+
+=20
+
+QUESTION 2 :
+
+When I have a framebuffer driver already on my system, I know I can I
+always insert another framebuffer driver which will be given a minor
+number of '1' and is integrated into the kernel on insertion. But, my
+question is : what is the active framebuffer driver now?
+
+Is the active framebuffer driver the new one or the old one?=20
+
+=20
+
+I read from a site that setting the global variable "FRAMEBUFFER" as
+"/dev/fb1" will activate my driver? please explain how it goes, if this
+is true.
+
+=20
+
+QUESTION 3 :
+
+Can u please explain briefly what functionality I need to implement
+regarding the follong function which exists in "fb_ops" structure.
+
+fb_get_fix=20
+
+fb_get_var
+
+fb_set_var
+
+fb_get_cmap
+
+fb_set_cmap
+
+fb_pan_display
+
+fb_ioctl
+
+=20
+
+Please provide me a link where in I can get a detailed description of
+the above.
+
+=20
+
+Here is the code I want to insert as a framebuffer module.=20
+
+=20
+
+    /*
+
+     *  Initialization
+
+     */
+
+=20
+
+int __init xxxfb_init(void)
+
+{
+
+    fb_info.gen.fbhw =3D &xxx_switch;
+
+    fb_info.gen.fbhw->detect();
+
+    strcpy(fb_info.gen.info.modename, "XXX");
+
+    fb_info.gen.info.changevar =3D NULL;
+
+    fb_info.gen.info.node =3D -1;
+
+    fb_info.gen.info.fbops =3D &xxxfb_ops;
+
+    fb_info.gen.info.disp =3D &disp;
+
+    fb_info.gen.info.switch_con =3D &xxxfb_switch;
+
+    fb_info.gen.info.updatevar =3D &xxxfb_update_var;
+
+    fb_info.gen.info.blank =3D &xxxfb_blank;
+
+    fb_info.gen.info.flags =3D FBINFO_FLAG_DEFAULT;
+
+=20
+
+    /* This should give a reasonable default video mode */
+
+//  fbgen_get_var(&disp.var, -1, &fb_info.gen.info);
+
+//  fbgen_do_set_var(&disp.var, 1, &fb_info.gen);
+
+//  fbgen_set_disp(-1, &fb_info.gen);
+
+//  fbgen_install_cmap(0, &fb_info.gen);
+
+ =20
+
+  if (register_framebuffer(&fb_info.gen.info) < 0)
+
+            return -EINVAL;
+
+    printk(KERN_INFO "fb%d: %s frame buffer device\n",
+GET_FB_IDX(fb_info.gen.info.node),
+
+               fb_info.gen.info.modename);
+
+=20
+
+    /* uncomment this if your driver cannot be unloaded */
+
+    /* MOD_INC_USE_COUNT; */
+
+    return 0;
+
+}
+
+=20
+
+=20
+
+    /*
+
+     *  Cleanup
+
+     */
+
+=20
+
+void xxxfb_cleanup(struct fb_info *info)
+
+{
+
+    /*
+
+     *  If your driver supports multiple boards, you should unregister
+and
+
+     *  clean up all instances.
+
+     */
+
+=20
+
+    unregister_framebuffer(info);
+
+    /* ... */
+
+}
+
+=20
+
+=20
+
+    /*
+
+     *  Setup
+
+     */
+
+=20
+
+/*
+------------------------------------------------------------------------
+- */
+
+=20
+
+=20
+
+    /*
+
+     *  Frame buffer operations
+
+     */
+
+=20
+
+/* If all you need is that - just don't define ->fb_open */
+
+static int xxxfb_open(const struct fb_info *info, int user)
+
+{
+
+    return 0;
+
+}
+
+=20
+
+/* If all you need is that - just don't define ->fb_release */
+
+static int xxxfb_release(const struct fb_info *info, int user)
+
+{
+
+    return 0;
+
+}
+
+=20
+
+=20
+
+    /*
+
+     *  In most cases the `generic' routines (fbgen_*) should be
+satisfactory.
+
+     *  However, you're free to fill in your own replacements.
+
+     */
+
+=20
+
+static struct fb_ops xxxfb_ops =3D {
+
+            owner:               THIS_MODULE,
+
+            fb_open:            xxxfb_open,    /* only if you need it to
+do something */
+
+            fb_release:        xxxfb_release, /* only if you need it to
+do something */
+
+//          fb_get_fix:         fbgen_get_fix,=20
+
+//          fb_get_var:         fbgen_get_var,
+
+//          fb_set_var:         fbgen_set_var,
+
+//          fb_get_cmap:     fbgen_get_cmap,
+
+//          fb_set_cmap:     fbgen_set_cmap,
+
+//          fb_pan_display:  fbgen_pan_display,
+
+//          fb_ioctl: xxxfb_ioctl,   /* optional */
+
+};
+
+=20
+
+=20
+
+/*
+------------------------------------------------------------------------
+- */
+
+=20
+
+=20
+
+    /*
+
+     *  Modularization
+
+     */
+
+=20
+
+#ifdef MODULE
+
+MODULE_LICENSE("GPL");
+
+int init_module(void)
+
+{
+
+    return xxxfb_init();
+
+}
+
+=20
+
+void cleanup_module(void)
+
+{
+
+    xxxfb_cleanup(void);
+
+}
+
+#endif /* MODULE */
+
+=20
+
+=20
+
+regards & and thanks for the help,
+
+Mukund jampala
 
 
 -------------------------------------------------------

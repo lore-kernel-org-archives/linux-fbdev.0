@@ -1,16 +1,22 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: fb_imageblit semantic
-Date: Mon, 17 Mar 2003 15:46:59 +0100 (MET)
+From: "Kendall Bennett" <KendallB@scitechsoft.com>
+Subject: Re: Finding Aki M Laukkanen's VESAFBD project?
+Date: Mon, 17 Mar 2003 10:22:35 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0303171545040.17453-100000@vervain.sonytel.be>
-References: <1047911032.2684.79.camel@localhost.localdomain>
+Message-ID: <3E75A1EB.8118.1424F41D@localhost>
+References: <3E71B0FE.1534.4BFD86E@localhost>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7BIT
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18uvuz-0002Si-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Mar 2003 06:48:50 -0800
-In-Reply-To: <1047911032.2684.79.camel@localhost.localdomain>
+Received: from adsl-63-195-13-70.dsl.chic01.pacbell.net ([63.195.13.70] helo=mail.scitechsoft.com)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18uzFq-0003RD-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Mar 2003 10:22:34 -0800
+Received: from KENDALLB (adsl-63-195-13-78.dsl.chic01.pacbell.net [63.195.13.78])
+	by mail.scitechsoft.com (8.12.8/8.12.5) with ESMTP id h2HIMpPD029001
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Mar 2003 10:22:52 -0800
+In-reply-to: <1047855538.1251.77.camel@localhost.localdomain>
+Content-description: Mail message body
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,63 +26,68 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: Petr Vandrovec <vandrove@vc.cvut.cz>, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On 17 Mar 2003, Antonino Daplas wrote:
-> On Mon, 2003-03-17 at 21:47, Geert Uytterhoeven wrote:
-> > BTW, I just realized there's no need to distinguish between monochrome copy and
-> > monochrome-to-color expansion. The monochrome logo code just has to write the
-> > correct values to fb_image.[fb]gcolor. I.e. all zeroes or all ones (number of
-> > bits = var.bits_per_pixel, so it works for 8-bit monochrome, too).
-> > 
+Antonino Daplas <adaplas@pol.net> wrote:
+
+> > A long time ago in early 2000, Aki M Laukkanen was a guy working on a 
+> > VESA framebuffer console daemon for Linux. This driver was structured as 
+> > a as a user land daemon that the kernel vesafb console driver would call 
+> > back into once the system was up, allowing the userland VESA driver to 
+> > use the vm86() service to change modes, program the palette and other 
+> > useful things that can't be done by the basic VESA driver that uses a 
+> > mode set previously by LILO or GRUB.
 > 
-> I remember mentioning this to you before, and you said that there might
-> be rare cases that fgcolor can be equal to bgcolor.  However, using -1
-> instead for bg_color/fg_color may work, at least for the current setup
-> and only for monochrome, (except perhaps 32-bit monochrome, if there is
-> such a thing)
+> That is a very neat project :-)  It can also be expanded to
+> something not just the VESA driver will use, but as a general
+> interface whenever the BIOS services are to be needed.  
 
-No, you wanted to distinguish between monochrome expansion and color copy by
-setting fb_image.[fb]gcolor to -1.
+Yes, it could. It also doesn't need to be used just for VESA/BIOS 
+services, but could be used to implement real mode fbconsole drivers 
+using existing driver modules from XFree86 if desired.
 
-> I still prefer splitting fb_imageblit() into two though, and still keep
-> image->depth for logo drawing only, to allow for future expansion.
+> BTW:  I want to initialize multiple VGA adapters during the early
+> boot sequence.  The machine will be in real mode, so there's no
+> such thing as copy-on-write.  I'm pretty sure it's not possible,
+> but do you know of a way to disable the BIOS write protection of
+> the C000:0000 segment? 
 
-OK.
+I don't think it is possible to do this because the BIOS is in ROM on the 
+graphics card. If the system BIOS is shadowing it (quite likely) then it 
+would be possible, but you would need to know how to disable the write 
+protection in the system chipset which is probably different for each 
+motherboard.
 
-> > > Do we still use the LUT?  
-> > 
-> > Yes. An alternative is to enlarge the pseudo palette to 256 entries (if there
-> 
-> Yes.  Which also means logo drawing will also work for quirky drivers,
-> and the upper layer will be finally totally independent of the low level
-> drivers.
-> 
-> > are enough number of colors). But since imageblit is done for the logo only,
-> > doing the transform from LUT index to pixel value in imageblit is OK, I think.
-> > 
-> 
-> Yes, I also prefer referring to the LUT whatever the format even for
-> character drawing.  I don't expect any noticeable performance penalty
-> except for logo drawing.  The way it's currently done is because,
-> looking at all drivers, not one fills up the pseudo_palette when bpp <=
-> 8.
+The other option is to use the x86emu BIOS emulator project. Then you 
+don't need to do any of this stuff and instead can warm boot all the 
+graphics controllers using the BIOS from the card (see the sample 
+'warmboot' program included in the source code archives). The code is 
+presently 32-bit specific I believe, so you would have two choices for 
+running this from real mode - port the code to a 16-bit C compiler or 
+port it to run in 32-bit real mode. I assume you are probably thinking of 
+during the boot phase of GRUB or LILO, so at that point you will have 
+full control and should be able to execute 32-bit real mode code. You may 
+even be able to put the machine into protected mode and run the code as 
+32-bit protected mode code also if needed (but you would need to then 
+write your own protected mode kernel).
 
-There are some, that have RGB332 truecolor.
+The BIOS emulator code is available from:
 
-Gr{oetje,eeting}s,
+ftp://ftp.scitechsoft.com/devel/x86emu
 
-						Geert
+I think...
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Regards,
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+---
+Kendall Bennett
+Chief Executive Officer
+SciTech Software, Inc.
+Phone: (530) 894 8400
+http://www.scitechsoft.com
+
+~ SciTech SNAP - The future of device driver technology! ~
 
 
 

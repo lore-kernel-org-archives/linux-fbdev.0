@@ -1,91 +1,51 @@
-From: "Kendall Bennett" <KendallB@scitechsoft.com>
+From: Jon Smirl <jonsmirl@gmail.com>
 Subject: Re: Generic VESA framebuffer driver and Video card BOOT?
-Date: Fri, 15 Oct 2004 15:22:51 -0700
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <416FEB4B.25470.2A1DBC0@localhost>
-References: <416FAF05.30267.1B66C92@localhost>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+Date: Fri, 15 Oct 2004 19:02:55 -0400
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <9e47339104101516027860bb1e@mail.gmail.com>
+References: <416FB275.6425.1C3D985@localhost>
+	 <9e4733910410151319159482ce@mail.gmail.com>
+	 <416FEB4B.9875.2A1DBFE@localhost>
+Reply-To: Jon Smirl <jonsmirl@gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CIaTe-0005xH-C9
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Oct 2004 15:23:10 -0700
-Received: from mail.scitechsoft.com ([63.195.13.67])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.41)
-	id 1CIaTd-0007GT-AT
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Oct 2004 15:23:10 -0700
-In-reply-to: <41701D1C.70705@comcast.net>
-Content-description: Mail message body
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S266687AbUJOXC6@vger.kernel.org>
+In-Reply-To: <416FEB4B.9875.2A1DBFE@localhost>
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Zachary Smith <plinius@comcast.net>, linux-fbdev-devel@lists.sourceforge.net
+To: Kendall Bennett <kendallb@scitechsoft.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-Zachary Smith <plinius@comcast.net> wrote:
+On Fri, 15 Oct 2004 15:22:51 -0700, Kendall Bennett
+<kendallb@scitechsoft.com> wrote:
+> What about non-x86 platforms such as PowerPC and MIPS embedded devices
+> that want video (TiVo type platforms, media players etc). How would these
+> fit into the picture? Would this require the boot loader (ie: U-Boot or
+> whatever) to have the ability to POST the card?
 
-> Kendall Bennett wrote:
-> > Zachary Smith <plinius@comcast.net> wrote:
-> > 
-> >>The problem of x86-only BIOSes is one of the videocard
-> >>manufacturers' own making which, in the spirit of good engineering,
-> >>they should fix before requiring a downstream kludge. 
-> 
->  > Forgetting the fact that the BIOS image is x86, why
->  > not think about the x86 BIOS image as being a set of 'generic'
->  > instructions or p-code
-> 
-> Yes, this idea occurred to me after I posted my response.
-> 
-> But if you're going to add x86 emulation to the non-x86 kernels
-> perhaps it would be nice if you could find a way to permit users to
-> run x86 applications as well seamlessly. 
+There is the assumption that whatever BIOS the device has can get up a
+very early console that can output critical error messages before the
+kernel and early user space is loaded. For example the "I can't find
+the kernel" or  "initramfs is missing" error message. This also
+assumes that the BIOS can post whatever display it is using.
 
-Well there is a big difference between a simple CPU emulator and a full 
-fledged machine emulation environment. Although if you only plan to run 
-Linux user space programs that might be easier to handle because you just 
-need to handle the system calls. But you would still need x86 shared 
-libraries and such which at the end of the day doesn't make much sense 
-(too much bloat). 
+I'm not trying to fix the problem of getting early boot messages out
+of a Mac with an x86 card plugged into it. The card will work after
+early user space initializes. The right way to fix that would be to
+switch to something like LinuxBIOS and build the x86 emulator into it.
 
-Also the emulator only emulates real mode code at present. It had full 
-support for 32-bit instructions and could probably be tweaked to run user 
-space 32-bit code, but it has never been tested.
+Also note that a lot of what you think are early boot messages are not
+really being printed out during early boot. The kernel queues printks
+until a console is running and then outputs them. An example of
+queuing is the processor initialization messages for the first
+processor. I believe there is a way to force messages like this to
+print as they occur using the BIOS on x86.
 
-> Although that would introduce a tradeoff: kernel code should be
-> small which is bound to be slow in the case of an emulator, which
-> is OK for running BIOS code, but a user running apps probably
-> prefer optimized code which may be bigger. 
+> Or perhaps the VideoBoot module would be a useful addition to the VGA
+> boot driver compiled into the kernel to bring up the video card into a
+> sane state on any system (even a dumb framebuffer linear mode) so a fully
+> accelerated console driver in user space can take over later on?
 
-Probably. Although we have been very surprised at just how well the 
-PowerPC compiled version of the emulator runs BIOS code. It seems the 
-PowerPC compilers can optimise the code a lot better than x86 compilers.
-
-Regards,
-
----
-Kendall Bennett
-Chief Executive Officer
-SciTech Software, Inc.
-Phone: (530) 894 8400
-http://www.scitechsoft.com
-
-~ SciTech SNAP - The future of device driver technology! ~
-
-
-
-
--------------------------------------------------------
-This SF.net email is sponsored by: IT Product Guide on ITManagersJournal
-Use IT products in your business? Tell us what you think of them. Give us
-Your Opinions, Get Free ThinkGeek Gift Certificates! Click to find out more
-http://productguide.itmanagersjournal.com/guidepromo.tmpl
+-- 
+Jon Smirl
+jonsmirl@gmail.com

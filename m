@@ -1,21 +1,22 @@
-From: James Simmons <jsimmons@infradead.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: Re: fbdev cursor part 1.
-Date: Sun, 22 Feb 2004 22:37:03 +0000 (GMT)
+Date: Mon, 23 Feb 2004 11:35:51 +1100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0402222234120.2390-100000@phoenix.infradead.org>
-References: <200402222206.15070.alex.kern@gmx.de>
+Message-ID: <1077496550.5960.9.camel@gaston>
+References: <Pine.LNX.4.44.0402222234120.2390-100000@phoenix.infradead.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Av2L1-0004ag-Dx
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 22 Feb 2004 14:44:39 -0800
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1Av4Iq-0001Np-58
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 22 Feb 2004 16:50:32 -0800
+Received: from gate.crashing.org ([63.228.1.57] ident=root)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1Av22z-0004YM-RF
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 22 Feb 2004 14:26:02 -0800
-In-Reply-To: <200402222206.15070.alex.kern@gmx.de>
+	id 1Av40h-0003Pr-2h
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 22 Feb 2004 16:31:47 -0800
+In-Reply-To: <Pine.LNX.4.44.0402222234120.2390-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,41 +26,37 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Alexander Kern <alex.kern@gmx.de>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@infradead.org>
+Cc: Alexander Kern <alex.kern@gmx.de>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-
-> > > Andrew, that one seem to work fine for me, been hammered for some time
-> > > in the fbdev tree. It should go to -mm for a while imho so we get more
-> > > broader testing, and eventually in 2.6.4
-> >
-> > Please do.
-> Hi,
+> ment ;-)
 > 
-> James, would you do part 2 of cursor patch? I convert here
-> mach64 driver to pci_table solution, it works ok on my notebook. Base is 2.6.3 
-> + fix_double_console_init + cursor_part 1, but cursor is broken. On console 
-> it is invisible, in mc it looks correct.
+> I plan to submit the latets mach64 driver from BK to linus as soon as the 
+> first part of the cursor patch goes in. It gives enough of the new 
+> cursor api to do a dump of all the drivers in the 2.5 fbdev tree. Could you
+> make your patch against the fbdev-2.5 bk tree? Try my patch 
 > 
-> The difference to todays aty driver in mainline is too big, and it can broke 
-> old errata rich chip versions, which I'm not own. Should it be submitted as 
-> aty_new? Just like a radeon driver did it?
+> http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
 > 
-> Regards Alex
-> 
-> P.S. I have trouble to merge your patches from mailing-list. Have you they 
-> somewhere in internet? Or send they as attachment ;-)
+> If it doesn't work I will put a new one you there.
 
-I plan to submit the latets mach64 driver from BK to linus as soon as the 
-first part of the cursor patch goes in. It gives enough of the new 
-cursor api to do a dump of all the drivers in the 2.5 fbdev tree. Could you
-make your patch against the fbdev-2.5 bk tree? Try my patch 
+Note that I'm having some troubles with James current mach64 bk on a
+wallstreet PowerBook (mach64 LT-G). There is an endian bug in the
+imageblt implementation, I don't know if the chip can be instructed
+to do the endian flip, so I modified the function storing to the
+fifo, that appear to work, at least with 8 bits mode ;)
 
-http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
+But I'm having lockups, very regular. I haven't been able to figure
+out why though. Adding a wait_for_idle() at the end of both fillrect
+and copyarea() seem to make them disappear (well, almost, I had _one_
+still once). It's weird as those shouldn't be necessary.
 
-If it doesn't work I will put a new one you there.
+Maybe we should add a timeout on the wait_* functions with an engine
+reset, that would be sub-optimal, but at least we wouldn't lockup the
+box (if that is possible of course).
+
+Ben.
 
 
 

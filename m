@@ -1,26 +1,26 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: Re: 2.6.11-rc5
-Date: Sat, 26 Feb 2005 11:58:28 +1100
-Message-ID: <1109379509.14993.104.camel@gaston>
+Date: Sat, 26 Feb 2005 11:57:22 +1100
+Message-ID: <1109379442.14993.102.camel@gaston>
 References: <Pine.LNX.4.58.0502232014190.18997@ppc970.osdl.org>
 	 <20050224145049.GA21313@suse.de> <1109287708.15026.25.camel@gaston>
 	 <20050225070813.GA13735@suse.de> <1109316551.14993.63.camel@gaston>
 	 <20050225172945.GA31211@suse.de>
 	 <Pine.LNX.4.56.0502251758370.20213@pentafluge.infradead.org>
-	 <20050225202423.GA24282@suse.de>  <20050225212157.GA31227@suse.de>
+	 <20050225202423.GA24282@suse.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D4qIm-0007U9-Jz
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 25 Feb 2005 16:59:24 -0800
+	id 1D4qHi-0007SO-Nt
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 25 Feb 2005 16:58:18 -0800
 Received: from gate.crashing.org ([63.228.1.57])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1D4qIm-0007nr-2S
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 25 Feb 2005 16:59:24 -0800
-In-Reply-To: <20050225212157.GA31227@suse.de>
+	id 1D4qHh-0002Ay-8q
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 25 Feb 2005 16:58:18 -0800
+In-Reply-To: <20050225202423.GA24282@suse.de>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,31 +32,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Olaf Hering <olh@suse.de>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Fri, 2005-02-25 at 22:21 +0100, Olaf Hering wrote:
->  On Fri, Feb 25, Olaf Hering wrote:
+On Fri, 2005-02-25 at 21:24 +0100, Olaf Hering wrote:
+>  On Fri, Feb 25, James Simmons wrote:
 > 
-> >  On Fri, Feb 25, James Simmons wrote:
 > > 
+> > > cfb_imageblit(320) dst1 fa51a800 base e0b80000 bitstart 1999a800
+> > > fast_imageblit(237) s daea4000 dst1 fa51a800
+> > > fast_imageblit(269) j 1 fa51a800 0
+> > > Unable to handle kernel paging request at virtual address fa51a800
 > > > 
-> > > > cfb_imageblit(320) dst1 fa51a800 base e0b80000 bitstart 1999a800
-> > > > fast_imageblit(237) s daea4000 dst1 fa51a800
-> > > > fast_imageblit(269) j 1 fa51a800 0
-> > > > Unable to handle kernel paging request at virtual address fa51a800
-> > > > 
-> > > > is bitstart incorrect or is the thing just not (yet) mapped?
-> > > 
-> > > Looks like the screen_base is not mapped to.
+> > > is bitstart incorrect or is the thing just not (yet) mapped?
 > > 
-> > rc3 worked ok, rc4 does not. testing the -bk snapshots now.
+> > Looks like the screen_base is not mapped to.
 > 
-> bk8 works, bk9 breaks, it contains the radeonfb update.
-> it works ok if the driver is compiled into the kernel.
+> rc3 worked ok, rc4 does not. testing the -bk snapshots now.
 
-Ah, that's a good point. Can you send me the dmesg outputs of in kernel
-vs. in module with radeonfb verbose debug enabled ?
+Oh, it's probably the new radeonfb, I have no doubt about that, but I
+think the problems has to do with a bogus mode. Maybe set_par is simply
+failing and the fbdev layer still tries to tap the card or something
+like that. Please, enable verbose debug, add some printk's around
+set_par to check what the mode looks like and what gets ioremap'ed.
 
 Ben.
 

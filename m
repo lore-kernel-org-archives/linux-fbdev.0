@@ -1,22 +1,23 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: radeonfb problem in test8-mm1
-Date: Wed, 22 Oct 2003 18:14:18 +0100 (BST)
+From: "Carlo E. Prelz" <fluido@fluido.as>
+Subject: Re: [FBDEV UPDATE] Newer patch.
+Date: Wed, 22 Oct 2003 22:38:40 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0310221813310.25125-100000@phoenix.infradead.org>
-References: <20031022145429.GA12481@guug.org>
+Message-ID: <20031022203840.GA11277@casa.fluido.as>
+References: <Pine.LNX.4.44.0310221814290.25125-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1ACN5D-0006Jt-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 22 Oct 2003 10:47:43 -0700
-Received: from [213.86.99.234] (helo=phoenix.infradead.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1ACPnY-00040G-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 22 Oct 2003 13:41:40 -0700
+Received: from a205017.upc-a.chello.nl ([62.163.205.17] helo=mail.fluido.as)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.22)
-	id 1ACMbu-0006yP-54
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 22 Oct 2003 10:17:26 -0700
-In-Reply-To: <20031022145429.GA12481@guug.org>
+	id 1ACPnM-0005hV-7H
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 22 Oct 2003 13:41:28 -0700
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44.0310221814290.25125-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -26,21 +27,31 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Otto Solares <solca@guug.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
+	Subject: [Linux-fbdev-devel] [FBDEV UPDATE] Newer patch.
+	Date: mer, ott 22, 2003 at 06:31:22 +0100
 
-> I have a radeon 9200 (RV280 RADEON_Ya).
-> I easily added support for it to kernels test8 and test8-mm1.
-> test8 kernel have old radeonfb driver.
-> test8-mm1 kernel has benh's new radeonfb driver (or some strange derivative).
+Quoting James Simmons (jsimmons@infradead.org):
 
-Ug. I plan to add Ben's latest driver in the next few days. I just need to 
-add some missing functionality.
+>   I have a new patch against 2.6.0-test8. This patch is a few fixes and I 
+> added back in functionality for switching the video mode for fbcon via 
+> fbset again. Give it a try and let me know the results.
+> 
+> http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
 
+Any hope of merging in the latest radeon stuff from Ben? The code in
+your patch is an old version...
 
+Carlo
+
+-- 
+  *         Se la Strada e la sua Virtu' non fossero state messe da parte,
+* K * Carlo E. Prelz - fluido@fluido.as             che bisogno ci sarebbe
+  *               di parlare tanto di amore e di rettitudine? (Chuang-Tzu)
 
 
 -------------------------------------------------------

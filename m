@@ -1,18 +1,18 @@
 From: David Eger <eger@havoc.gtf.org>
-Subject: [PATCH] aty128fb accel capabilities
-Date: Wed, 2 Jun 2004 22:42:31 -0400
+Subject: [PATCH] sisfb accel capabilities
+Date: Wed, 2 Jun 2004 22:44:12 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040603024231.GD20951@havoc.gtf.org>
+Message-ID: <20040603024412.GE20951@havoc.gtf.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BViBl-0002cR-4S
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 02 Jun 2004 19:42:41 -0700
+	id 1BViDp-0002zb-VU
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 02 Jun 2004 19:44:49 -0700
 Received: from havoc.gtf.org ([216.162.42.101])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BViBk-0007n8-Tg
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 02 Jun 2004 19:42:40 -0700
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BViDp-0003Jf-GO
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 02 Jun 2004 19:44:49 -0700
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -25,125 +25,215 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Brad Douglas <brad@neruo.com>
+To: Thomas Winischhofer <thomas@winischhofer.net>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
 
-Dear Brad,
+Dear Thomas,
 
-The following patch updates aty128fb for the new fb accel capabilities
-patch I'm sending upstream.  Please test the core patch + this patch,
-and let me know it works for you.
+The following patch updates sisfb for the new fb accel capabilities
+patch I'm sending upstream.  By default, this patch will rely on your
+copyarea() and fillrect() accel functions instead of the panning. 
+Please test the core patch + this patch, and let me know your console
+works.  I'm interested to hear what speeds you see :-)
+
+Also, using fbset to turn acceleration on and off ought to work, though
+i still think this is better done via sysfs... just don't have time to
+learn that ATM...
 
 -dte
 
-aty128fb: (Rage 128) update to new fbinfo.flags accel capabilities
-  
-Signed-off-by: David Eger <eger@havoc.gtf.org>
+sisfb: update to new fbinfo.flags accel capabilities
 
-diff -Nru a/drivers/video/aty/aty128fb.c b/drivers/video/aty/aty128fb.c
---- a/drivers/video/aty/aty128fb.c	Wed Jun  2 22:45:51 2004
-+++ b/drivers/video/aty/aty128fb.c	Wed Jun  2 22:45:51 2004
-@@ -342,6 +342,7 @@
- };
+Signed-off-by: David Eger <eger@havoc.gtf.org>
  
- static char *mode_option __initdata = NULL;
-+static int noaccel = 0;
+# drivers/video/sis/sis_main.h
+#   2004/06/02 22:49:50+02:00 eger@rosencrantz.theboonies.us +1 -1
+#   get rid of referece to setup variable
+# 
+# drivers/video/sis/sis_main.c
+#   2004/06/02 22:49:49+02:00 eger@rosencrantz.theboonies.us +33 -35
+#   migrate to new fbinfo->flags hwaccel semantics;
+#   
+#   get rid of attempt to do "wrap" in pan_display, 
+#   as the code doesn't seem to indicate it actually ever worked.
+#   wrap is just a weird amiga thing anyways ;-)
+# 
+# drivers/video/sis/sis_accel.h
+#   2004/06/02 22:49:49+02:00 eger@rosencrantz.theboonies.us +0 -1
+#   get rid of referece to setup variable
+# 
+# drivers/video/sis/sis_accel.c
+#   2004/06/02 22:49:49+02:00 eger@rosencrantz.theboonies.us +0 -1
+#   get rid of referece to setup variable
+# 
+diff -Nru a/drivers/video/sis/sis_accel.c b/drivers/video/sis/sis_accel.c
+--- a/drivers/video/sis/sis_accel.c	Wed Jun  2 22:51:34 2004
++++ b/drivers/video/sis/sis_accel.c	Wed Jun  2 22:51:34 2004
+@@ -79,7 +79,6 @@
  
- #ifdef CONFIG_PPC_PMAC
- static int default_vmode __initdata = VMODE_1024_768_60;
-@@ -395,7 +396,6 @@
- 	struct aty128_crtc crtc;
- 	struct aty128_pll pll;
- 	struct aty128_ddafifo fifo_reg;
--	u32 accel_flags;
- 	struct aty128_constants constants;  /* PLL and others      */
- 	void *regbase;                      /* remapped mmio       */
- 	u32 vram_size;                      /* onboard video ram   */
-@@ -1487,6 +1487,13 @@
- 	if ((err = aty128_decode_var(&info->var, par)) != 0)
- 		return err;
+ extern struct     video_info ivideo;
+ extern VGA_ENGINE sisvga_engine;
+-extern int sisfb_accel;
  
-+#ifdef STUPID_ACCELF_TEXT_SHIT
-+	if (info->var.accel_flags == FB_ACCELF_TEXT)
+ static const int sisALUConv[] =
+ {
+diff -Nru a/drivers/video/sis/sis_accel.h b/drivers/video/sis/sis_accel.h
+--- a/drivers/video/sis/sis_accel.h	Wed Jun  2 22:51:34 2004
++++ b/drivers/video/sis/sis_accel.h	Wed Jun  2 22:51:34 2004
+@@ -525,7 +525,6 @@
+                        int srcx, int height, int width);
+ #endif
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,34)
+-extern int sisfb_accel;
+ void fbcon_sis_fillrect(struct fb_info *info, const struct fb_fillrect *rect);
+ void fbcon_sis_copyarea(struct fb_info *info, const struct fb_copyarea *area);
+ #endif
+diff -Nru a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
+--- a/drivers/video/sis/sis_main.c	Wed Jun  2 22:51:34 2004
++++ b/drivers/video/sis/sis_main.c	Wed Jun  2 22:51:34 2004
+@@ -1104,10 +1104,19 @@
+ 		ivideo.org_x = ivideo.org_y = 0;
+ 		ivideo.video_linelength = ivideo.video_width * (ivideo.video_bpp >> 3);
+ 		ivideo.accel = 0;
++#if defined(STUPID_ACCELF_TEXT_SHIT) || LINUX_VERSION_CODE < KERNEL_VERSION(2,6,5)
++	if (var->accel_flags == FB_ACCELF_TEXT)
 +		info->flags &= ~FBINFO_HWACCEL_DISABLED;
 +	else
 +		info->flags |= FBINFO_HWACCEL_DISABLED;
 +#endif
-+
- 	if (par->blitter_may_be_busy)
- 		wait_for_idle(par);
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,5)
++		ivideo.accel = !(info->flags & FBINFO_HWACCEL_DISABLED);
++#else
+ 		if(sisfb_accel) {
+ 		   ivideo.accel = (var->accel_flags & FB_ACCELF_TEXT) ? -1 : 0;
+ 		}
+-
++#endif
+ 		sisfb_set_vparms();
  
-@@ -1532,7 +1539,7 @@
- 		aty128_set_lcd_enable(par, par->lcd_on);
- 	}
- #endif
--	if (par->accel_flags & FB_ACCELF_TEXT)
-+	if (!(info->flags & FBINFO_HWACCEL_DISABLED))
- 		aty128_init_engine(par);
+ 		ivideo.current_width = ivideo.video_width;
+@@ -1654,14 +1663,11 @@
+ {
+ 	int err;
  
- #ifdef CONFIG_BOOTX_TEXT
-@@ -1569,7 +1576,6 @@
- 	par->crtc = crtc;
- 	par->pll = pll;
- 	par->fifo_reg = fifo_reg;
--	par->accel_flags = var->accel_flags;
+-	if (var->vmode & FB_VMODE_YWRAP) {
+-		if (var->yoffset < 0 || var->yoffset >= fb_display[con].var.yres_virtual || var->xoffset)
+-			return -EINVAL;
+-	} else {
+-		if (var->xoffset+fb_display[con].var.xres > fb_display[con].var.xres_virtual ||
+-		    var->yoffset+fb_display[con].var.yres > fb_display[con].var.yres_virtual)
+-			return -EINVAL;
+-	}
++	if (var->vmode & FB_VMODE_YWRAP)
++		return -EINVAL;
++	if (var->xoffset+fb_display[con].var.xres > fb_display[con].var.xres_virtual ||
++	    var->yoffset+fb_display[con].var.yres > fb_display[con].var.yres_virtual)
++		return -EINVAL;
+ 
+         if(con == currcon) {
+ 	   if((err = sisfb_pan_var(var)) < 0) return err;
+@@ -1669,10 +1675,6 @@
+ 
+ 	fb_display[con].var.xoffset = var->xoffset;
+ 	fb_display[con].var.yoffset = var->yoffset;
+-	if (var->vmode & FB_VMODE_YWRAP)
+-		fb_display[con].var.vmode |= FB_VMODE_YWRAP;
+-	else
+-		fb_display[con].var.vmode &= ~FB_VMODE_YWRAP;
  
  	return 0;
  }
-@@ -1591,7 +1597,6 @@
+@@ -2060,30 +2062,21 @@
+ {
+ 	int err;
  
- 	var->height = -1;
- 	var->width = -1;
--	var->accel_flags = par->accel_flags;
++	if (var->vmode & FB_VMODE_YWRAP) 
++	    	return -EINVAL;
+ 	if (var->xoffset > (var->xres_virtual - var->xres))
+ 		return -EINVAL;
+ 	if (var->yoffset > (var->yres_virtual - var->yres))
+ 		return -EINVAL;
+ 
+-	if (var->vmode & FB_VMODE_YWRAP) {
+-		if (var->yoffset < 0 ||
+-		    var->yoffset >= info->var.yres_virtual ||
+-		    var->xoffset)
+-		    	return -EINVAL;
+-	} else {
+-		if (var->xoffset + info->var.xres > info->var.xres_virtual ||
+-		    var->yoffset + info->var.yres > info->var.yres_virtual)
+-			return -EINVAL;
+-	}
++	if (var->xoffset + info->var.xres > info->var.xres_virtual ||
++	    var->yoffset + info->var.yres > info->var.yres_virtual)
++		return -EINVAL;
+     
+ 	if((err = sisfb_pan_var(var)) < 0) return err;
+ 
+ 	info->var.xoffset = var->xoffset;
+ 	info->var.yoffset = var->yoffset;
+-	if (var->vmode & FB_VMODE_YWRAP)
+-		info->var.vmode |= FB_VMODE_YWRAP;
+-	else
+-		info->var.vmode &= ~FB_VMODE_YWRAP;
  
  	return 0;
- }           
-@@ -1686,8 +1691,11 @@
- 		return 0;
+ }
+@@ -2111,7 +2104,7 @@
+ 	mmio_off = PAGE_ALIGN((start & ~PAGE_MASK) + ivideo.heapstart);
+ 	if(off >= mmio_off) {
+ 		off -= mmio_off;		
+-		if(info->var.accel_flags) return -EINVAL;
++		if (!(info->flags & FBINFO_HWACCEL_DISABLED)) return -EINVAL;
  
- 	while ((this_opt = strsep(&options, ",")) != NULL) {
-+		if (!strncmp(this_opt, "noaccel", 7)) {
-+			noaccel = 1;
-+		}
- #ifdef CONFIG_PMAC_PBOOK
--		if (!strncmp(this_opt, "lcd:", 4)) {
-+		else if (!strncmp(this_opt, "lcd:", 4)) {
- 			default_lcd_on = simple_strtoul(this_opt+4, NULL, 0);
- 			continue;
- 		} else if (!strncmp(this_opt, "crt:", 4)) {
-@@ -1771,7 +1779,9 @@
+ 		start = (unsigned long) ivideo.mmio_base;
+ 		len = PAGE_ALIGN((start & ~PAGE_MASK) + sisfb_mmio_size);
+@@ -4897,12 +4890,12 @@
+ 	   	   }
+ 	        }
  
- 	/* fill in info */
- 	info->fbops = &aty128fb_ops;
--	info->flags = FBINFO_FLAG_DEFAULT;
-+	info->flags = FBINFO_DEFAULT
-+		    | FBINFO_HWACCEL_XPAN
-+		    | FBINFO_HWACCEL_YPAN;
- 
- #ifdef CONFIG_PMAC_PBOOK
- 	par->lcd_on = default_lcd_on;
-@@ -1830,8 +1840,9 @@
- 				var = default_var;
- 	}
- 
--	var.accel_flags &= ~FB_ACCELF_TEXT;
--//	var.accel_flags |= FB_ACCELF_TEXT;/* FIXME Will add accel later */
+-		ivideo.accel = 0;
+-		if(sisfb_accel) {
+-		   ivideo.accel = -1;
+-		   default_var.accel_flags |= FB_ACCELF_TEXT;
+-		   sisfb_initaccel();
+-		}
++		ivideo.accel = sisfb_accel;
++		sisfb_initaccel();
++
 +#ifdef STUPID_ACCELF_TEXT_SHIT
-+	var.accel_flags = noaccel ? 0 : FB_ACCELF_TEXT;
++		default_var.accel_flags = sisfb_accel ? FB_ACCELF_TEXT : 0;
 +#endif
  
- 	if (aty128fb_check_var(&var, info)) {
- 		printk(KERN_ERR "aty128fb: Cannot set default mode.\n");
-@@ -2454,6 +2465,8 @@
- MODULE_AUTHOR("(c)1999-2003 Brad Douglas <brad@neruo.com>");
- MODULE_DESCRIPTION("FBDev driver for ATI Rage128 / Pro cards");
- MODULE_LICENSE("GPL");
-+module_param(noaccel, bool, 0);
-+MODULE_PARM_DESC(noaccel, "bool: disable acceleration");
- module_param(mode_option, charp, 0);
- MODULE_PARM_DESC(mode, "Specify resolution as \"<xres>x<yres>[-<bpp>][@<refresh>]\" ");
- #ifdef CONFIG_MTRR
+ 		if(sisfb_ypan) {
+ 		   /* Maximize regardless of sisfb_max at startup */
+@@ -4914,7 +4907,12 @@
+ 	    	   }
+ 		}
+ 
+-		sis_fb_info->flags = FBINFO_FLAG_DEFAULT;
++		sis_fb_info->flags = FBINFO_DEFAULT
++				   | FBINFO_HWACCEL_YPAN
++				   | FBINFO_HWACCEL_XPAN
++				   | FBINFO_HWACCEL_COPYAREA
++				   | FBINFO_HWACCEL_FILLRECT
++				   | ((sisfb_accel) ? 0 : FBINFO_HWACCEL_DISABLED);
+ 		sis_fb_info->var = default_var;
+ 		sis_fb_info->fix = sisfb_fix;
+ 		sis_fb_info->par = &ivideo;
+diff -Nru a/drivers/video/sis/sis_main.h b/drivers/video/sis/sis_main.h
+--- a/drivers/video/sis/sis_main.h	Wed Jun  2 22:51:34 2004
++++ b/drivers/video/sis/sis_main.h	Wed Jun  2 22:51:34 2004
+@@ -402,7 +402,7 @@
+ static int sisfb_fstn = 0;
+ 
+ VGA_ENGINE sisvga_engine = UNKNOWN_VGA;
+-int 	   sisfb_accel = -1;
++static int sisfb_accel = -1; /* synced to !(info.flags & FBINFO_HWACCEL_DISABLED */
+ 
+ /* These are to adapted according to VGA_ENGINE type */
+ static int sisfb_hwcursor_size = 0;
 
 
 -------------------------------------------------------

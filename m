@@ -1,32 +1,47 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: atyfb in 2.5.51
-Date: Sun, 22 Dec 2002 14:40:11 +0100 (MET)
+Subject: Re: [Linux-fbdev-devel] [PATCH] fix endian problem in color_imageblit
+Date: Mon, 23 Dec 2002 10:07:35 +0100 (MET)
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.GSO.4.21.0212221438110.11726-100000@vervain.sonytel.be>
-References: <1039775215.25097.5.camel@irongate.swansea.linux.org.uk>
+Message-ID: <Pine.GSO.4.21.0212231004040.12134-100000@vervain.sonytel.be>
+References: <20021221092744.A23531@flint.arm.linux.org.uk>
 Mime-Version: 1.0
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <1039775215.25097.5.camel@irongate.swansea.linux.org.uk>
+In-Reply-To: <20021221092744.A23531@flint.arm.linux.org.uk>
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: "David S. Miller" <davem@redhat.com>, James Simmons <jsimmons@infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Russell King <rmk@arm.linux.org.uk>
+Cc: Antonino Daplas <adaplas@pol.net>, James Simmons <jsimmons@infradead.org>, Paul Mackerras <paulus@samba.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On 13 Dec 2002, Alan Cox wrote:
-> On Fri, 2002-12-13 at 08:53, Geert Uytterhoeven wrote:
-> > (At first I thought you meant an instruction where the opcode crosses those
-> >  two memory types, but we don't put code in video RAM...)
+On Sat, 21 Dec 2002, Russell King wrote:
+> On Sat, Dec 21, 2002 at 11:45:44AM +0800, Antonino Daplas wrote:
+> > The pseudopalette will only matter for truecolor and directcolor as the
+> > rest of the visuals bypasses the pseudopalette.  Typecasting to
+> > "unsigned long" rather than "u32" is also safer (even for bpp16) since
+> > in 64-bit machines, the drawing functions use fb_writeq instead of
+> > fb_writel.
 > 
-> I did. The frame buffer drivers support mmap(). x86 has no "non-exec"
-> bit. So any user able to open /dev/fb can bring down such a box. Similar
-> things apply with early athlon and prefetching /dev/fb
+> Erm, what does the size of the drawing functions have to do with the
+> size of the pseudo palette.  The pseudo palette is only there to encode
+> the pixel values for the 16 console colours.
 
-Weird... So it really crashes the box, not just throwing an exception?
-On PPC you cannot use prefetching on non-cached memory, but if you try it won't
-take down the whole box.
+Indeed.
 
-Then make sure /dev/fb is accessible by `trusted' users on such machines.
+> This means that a 64-bit pseudo palette would only be useful if you have
+> a graphics card that supports > 32bpp, otherwise a 32-bit pseudo palette
+> is perfectly adequate, even if you are using fb_writeq.
+
+Yep. Cards with bpp > 32 are rumoured to exist, but there is no fbdev support
+for them right now.
+
+> (note that fbcon doesn't support > 32bpp, so we will only ever look at
+> the first 32 bits, and having it be 64-bit would just be a needless
+> waste of space imho.)
+
+And this can be fixed, once we have some fbdev driver that uses bpp > 32.
+
+Note that the size of the entries in the pseudo palette used to depend on the
+mode, i.e. u16 for bpp = 16, u32 for bpp = 24 or 32.
 
 Gr{oetje,eeting}s,
 

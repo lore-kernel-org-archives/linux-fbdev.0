@@ -1,76 +1,68 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: Patch to add mode setting to sysfs
-Date: Thu, 17 Feb 2005 21:50:16 +0800
-Message-ID: <200502172150.16256.adaplas@hotpop.com>
-References: <9e4733910502161430ff1dad1@mail.gmail.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Frans Pop <aragorn@tiscali.nl>
+Subject: Re: [atyfb] No display on Sparc Ultra 10 with kernel 2.6.10-rc2 or later
+Date: Thu, 17 Feb 2005 15:16:05 +0100
+Message-ID: <200502171516.14390.aragorn@tiscali.nl>
+References: <200502140251.00645.aragorn@tiscali.nl> <200502170702.58630.adaplas@hotpop.com> <200502170724.36195.adaplas@hotpop.com>
 Mime-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart9319971.t4USBE9oAj";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D1m37-00049T-FH
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 05:50:33 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1D1m36-0000Ov-SZ
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 05:50:33 -0800
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 841FEDF7DA1
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 17 Feb 2005 13:50:24 +0000 (UTC)
-In-Reply-To: <9e4733910502161430ff1dad1@mail.gmail.com>
-Content-Disposition: inline
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+In-Reply-To: <200502170724.36195.adaplas@hotpop.com>
+Resent-Message-ID: <PZr9sD.A.EjC.vcKFCB@murphy>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, Jon Smirl <jonsmirl@gmail.com>
+List-Post: <mailto:debian-sparc@lists.debian.org>
+List-Help: <mailto:debian-sparc-request@lists.debian.org?subject=help>
+List-Subscribe: <mailto:debian-sparc-request@lists.debian.org?subject=subscribe>
+List-Unsubscribe: <mailto:debian-sparc-request@lists.debian.org?subject=unsubscribe>
+List-Archive: <http://lists.debian.org/debian-sparc/>
+To: adaplas@pol.net
+Cc: "David S. Miller" <davem@davemloft.net>, debian-sparc@lists.debian.org, sparclinux@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Thursday 17 February 2005 06:30, Jon Smirl wrote:
-> This is a first pass at adding two new sysfs attributes to
-> /sys/class/graphics/fb0 for setting modes. There are two attributes:
-> modes which contains a list of valid modes, and mode which is the
-> current mode. To switch modes echo one of the entries from the modes
-> list to the mode attribute.
-> The D,V,S on the modes represents Detailed, Vesa, Standard from the DDC
-> info.
+--nextPart9319971.t4USBE9oAj
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+On Thursday 17 February 2005 00:24, Antonino A. Daplas wrote:
+> > Try this patch and let me know.
+> >
+> > video=atyfb:comp_sync:<n>,vert_sync:<n>,hor_sync:<n>
+> >
+> > n = 0 (low), 1 (high)
+
+I've tested with the following combinations:
+- append="video=atyfb:comp_sync:1,1024x768@70"
+  Works perfectly: csync is high and good display.
+- append="video=atyfb:comp_sync:1,hor_sync:1,vert_sync:0,1024x768@70"
+  csync is high, but for some reason not hsync; display is good.
+- append="video=atyfb:1024x768@70,comp_sync:1"
+  Same results as first test.
+
+The sync settings were checked with 'fbset -i'.
+
+> BTW, the mode string should always be the last parameter, ie;
 >
-> modes is root writable. It can also be used to set the list of modes.
-> For example a /etc file could add modes that are not in the monitor's
-> DDC.
->
-> mode is user writable. PAM would set ownership of mode at user login
-> time. This provides a safe way  for a user to set the mode without
-> being root. You can only set the mode to one of the modes on the list.
->
-> If this code looks good I'll do another pass that adds some more
-> features and makes it more robust.
+> video=atyfb:comp_sync:1,1024x768@70
 
-Looks very interesting, and I will try it soon.  A few comments:
+Hmmm. Wonder why you say that (considering the result of my last test).
 
-+                       fb_videomode_to_var(&var, mode);
-+                       var.activate |= FB_ACTIVATE_FORCE;
-+                       var.bits_per_pixel = 32;
+Should these new options also be documented in Documentation/fb/?
 
-Instead of hardcoding some of the fields in var, why not
-copy it from the current var?  Ie:
+Cheers,
+Frans
 
-var = info->var;
-fb_videomode_to_var(&var, mode);
+--nextPart9319971.t4USBE9oAj
+Content-Type: application/pgp-signature
 
-Tony
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.5 (GNU/Linux)
 
+iD8DBQBCFKcugm/Kwh6ICoQRAjf6AKCzH+tGfg76/gtIivwxlSr/YOKBBQCdEBVa
+frEiiLsOoSmRNgskjpEVgIc=
+=+fYK
+-----END PGP SIGNATURE-----
 
-
-
--------------------------------------------------------
-SF email is sponsored by - The IT Product Guide
-Read honest & candid reviews on hundreds of IT Products from real users.
-Discover which products truly live up to the hype. Start reading now.
-http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
+--nextPart9319971.t4USBE9oAj--

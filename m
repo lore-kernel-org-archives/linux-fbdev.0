@@ -1,23 +1,17 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: LCD scaling type
-Date: 11 Jan 2003 20:42:27 +0800
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Re: [PATCH]: image.depth fix to accomodate
+ monochrome cards
+Date: Sat, 11 Jan 2003 14:24:05 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1042288803.977.83.camel@localhost.localdomain>
-References: <1042227743.705.22.camel@zion.wanadoo.fr>
-	<1042268184.932.165.camel@localhost.localdomain>
-	<1042278469.541.27.camel@zion.wanadoo.fr>
-	<1042279649.955.18.camel@localhost.localdomain>
-	<1042283284.541.38.camel@zion.wanadoo.fr>
-	<1042284929.977.46.camel@localhost.localdomain> 
-	<1042286909.541.43.camel@zion.wanadoo.fr>
+Message-ID: <Pine.GSO.4.21.0301111422040.18570-100000@vervain.sonytel.be>
+References: <1042254692.932.31.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from willow.compass.com.ph ([202.70.96.38])
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18XL7w-0005fe-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 11 Jan 2003 04:52:41 -0800
-In-Reply-To: <1042286909.541.43.camel@zion.wanadoo.fr>
+	id 18XLda-0001nk-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 11 Jan 2003 05:25:23 -0800
+In-Reply-To: <1042254692.932.31.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,32 +21,57 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Antonino Daplas <adaplas@pol.net>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sat, 2003-01-11 at 20:08, Benjamin Herrenschmidt wrote:
+On 11 Jan 2003, Antonino Daplas wrote:
+> On Sat, 2003-01-11 at 03:43, Geert Uytterhoeven wrote:
+> > On Fri, 10 Jan 2003, James Simmons wrote:
+> > >    I'm just not to crazy about the depth equal zero thing. I just pitcure 
+> > > developers having a hard time with it.
+> > 
+> > Monochrome color expansion just works differently: it expands the zeroes and
+> > ones in a bitmap based on fg_color and bg_color, while image drawing draws an
+> > image containing colormap indices to the frame buffer.
+> > 
+> > Do you have a better suggestion?
+> > 
 > 
-> For my immediate need, however, I still think turning one of the
-> reserved fields of var_screeninfo into a "mode_flags" would be useful,
-> we can already define a FB_MFLAG_LCD_FULLSCALE flag that would ask the
-> driver to not bother keeping aspect ratio (the idea here is that keeping
-> aspect ratio is the default, so 0, even if that's nor really working yet
-> in radeonfb or aty128fb).
->  
+> If James is a bit skeptical about this, how about doing it this way:
+> 
+> If image.fg_color and image.bg_color == 0, then each byte of image.data
+> is an index to the pseudo_palette, or the actual pixel, whatever the
+> case may be.  Otherwise, image.data is a monochrome bitmap that should
+> be expanded using fg_color and bg_color.
+> 
+> No other changes will be needed except that mono cards have to test for
+> fg_color and bg_color, and we need to memset the fb_image structure to 0
+> in fb_set_logo(). Non-mono cards will continue testing for image.depth.
+> 
+> Do you think this will work?  The only problem I can think of is a color
+> expansion request where both bg and fg is 0.
 
-I wasn't contradicting you.  A new feature that can be supported by
-different hardware and is quite useful deserves a unique flag, and I
-definitely agree with that.  I don't to see my desktop flattened top to
-bottom if I can prevent it.
+And that can happen, try <ESC>[31m<ESC>[41m to set both to red.
 
-But aside from the above, I also need a field which is interpreted
-differently from driver to driver, and is so nebulous that it doesn't
-deserve its own flag.  Just something that can be used to poke the
-hardware from user space without writing a utility each time. 
-Currently, I'm doing this by setting bits in var->nonstd.
+> Or to totally eliminate the above possibility, add an extra field in
+> struct fb_image to denote color expansion vs logo drawing.  Again, only
+> mono cards will need to do this test.
 
-Tony
+Ugh, why invent a new field if we can use an existing field? depth == 0 is
+invalid for image blitting anyway.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

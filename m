@@ -1,81 +1,51 @@
-From: Alexander Kern <alex.kern@gmx.de>
-Subject: Re: [PATCH resend] aty rage 3d mobility m1
-Date: Sun, 25 May 2003 13:19:18 +0200
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200305251319.18941.alex.kern@gmx.de>
-References: <200305192313.02275.alex.kern@gmx.de> <20030523235137.A47510@armor.free.fr>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] update valkyriefb driver
+Date: Sun, 25 May 2003 15:46:47 +0200 (MEST)
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <Pine.GSO.4.21.0305251539340.11403-100000@vervain.sonytel.be>
+References: <16079.23215.864277.374639@argo.ozlabs.ibm.com>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <16079.23215.864277.374639@argo.ozlabs.ibm.com>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail.gmx.de ([213.165.64.20] helo=mail.gmx.net)
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19JtXi-000220-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 25 May 2003 04:19:58 -0700
-In-Reply-To: <20030523235137.A47510@armor.free.fr>
-Content-Disposition: inline
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Nicolas Souchu <nsouch@free.fr>
-Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+To: Paul Mackerras <paulus@samba.org>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Am Samstag, 24. Mai 2003 01:51 schrieb Nicolas Souchu:
-> On Mon, May 19, 2003 at 11:13:02PM +0200, Alexander Kern wrote:
-> > Hello,
-> >
-> > here is it, one large, but minimal intrusive in my eyes.
-> > Tested on ARMADA 15" mobility AGP 1400x1050 and Desktop PC K7S5A + ATI
-> > Rage IIc and ATI Rage Pro
->
-> Hi,
->
-> I've tried 3 of atyfb drivers: 2.4.9, 2.5.68 then this one.
->
-> None gives satisfaction to my Mobility board. I browsed the web,
-> saw some guys having the problem of the black screen (in early 2000)...
->
-> That chipset (0x4d4c integratied in ATI AGP desktop) is known to be hard to
-> init?
->
-> Any hint appreciated :)
->
-> Thanks,
->
-> Nicholas
+On Sat, 24 May 2003, Paul Mackerras wrote:
+> This patch updates the valkyriefb driver to the new API.  It compiles
+> OK, but I haven't been able to test it.  I have simplified the driver
+> quite a bit using the knowledge that there can only ever be one
+> valkyrie graphics adaptor in a system - it is the built-in graphics
+> adaptor on various ancient mac and powermac machines, and we access it
+> at a hard-coded address, so we can only handle one.
 
-Hallo Nicholas,
+Thanks! It compiles fine without any warnings on m68k!
 
-what exactly is your hardware, best do 
-lspci -vv -d 1002:
-lspci -vv -d 1002: -n
-and send output to me. What is your problem, screen steel black, but machine 
-works(you can reboot it with ctrl+alt+del) or it crash. If it works, but you 
-don't seee anymore, you can switch debug on.
-In /usr/src/linux/drivers/video/atyfb_base.c change
+However, in addition you want to apply the patch below. macmodes.o is only
+there for m68k (but it shouldn't harm for PPC), while you do need the cfb*.o
+files on both platforms.
 
-#undef DEBUG
+--- linux-2.5.69/drivers/video/Makefile	Tue Apr  8 10:05:26 2003
++++ linux-m68k-2.5.69/drivers/video/Makefile	Sun May 25 15:40:39 2003
+@@ -26,7 +26,7 @@
+ obj-$(CONFIG_FB_IGA)              += igafb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+ obj-$(CONFIG_FB_CONTROL)          += controlfb.o
+ obj-$(CONFIG_FB_PLATINUM)         += platinumfb.o
+-obj-$(CONFIG_FB_VALKYRIE)         += valkyriefb.o
++obj-$(CONFIG_FB_VALKYRIE)         += valkyriefb.o macmodes.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+ obj-$(CONFIG_FB_CT65550)          += chipsfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+ obj-$(CONFIG_FB_ANAKIN)           += anakinfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+ obj-$(CONFIG_FB_CLPS711X)         += clps711xfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
 
-in
+Gr{oetje,eeting}s,
 
-#define DEBUG
+						Geert
 
-your boot.msg or after reboot boot.omsg will contain more info
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Thanks for testing
-
-Alex
-
-
-
--------------------------------------------------------
-This SF.net email is sponsored by: ObjectStore.
-If flattening out C++ or Java code to make your application fit in a
-relational database is painful, don't do it! Check out ObjectStore.
-Now part of Progress Software. http://www.objectstore.net/sourceforge
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds

@@ -1,16 +1,21 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Re: status
-Date: Thu, 28 Nov 2002 00:02:56 +0100 (MET)
+From: Ramprasad <ramprasad@ncoretech.com>
+Subject: Full screen linux-logo
+Date: Sat, 30 Nov 2002 19:04:07 +0530
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0211272357060.5044-100000@vervain.sonytel.be>
-References: <1038260153.1027.26.camel@skalman>
+Message-ID: <3DE8BE4F.2707958F@ncoretech.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+Received: from [164.164.42.6] (helo=gateway.ncoretech.com)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18HBE7-0004Tc-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 27 Nov 2002 15:04:16 -0800
-In-Reply-To: <1038260153.1027.26.camel@skalman>
+	id 18I7mW-0002u1-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 30 Nov 2002 05:35:43 -0800
+Received: from mail.ncoretech.com (IDENT:root@mail.ncoretech.com [192.168.1.3])
+	by gateway.ncoretech.com (8.10.0/8.10.0) with ESMTP id gAUDZD024622
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 30 Nov 2002 19:05:13 +0530
+Received: from ncoretech.com (ws225.ncoretech.com [192.168.1.225])
+	by mail.ncoretech.com (8.10.0/8.10.0) with ESMTP id gAUDc0629476
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 30 Nov 2002 19:08:00 +0530
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,46 +25,25 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Johan Bolmsjo <johan@nocrew.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux/m68k <linux-m68k@lists.linux-m68k.org>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On 25 Nov 2002, Johan Bolmsjo wrote:
-> For what it's worth, the interleaved modes on atari works like this:
-> 
-> The bitplanes are interleaved on 16 bit big-endian word basis so if you
-> have two bitplanes, bit 0 of the first 16 pixels would be in the first
-> 16 bit word in the display memory, bit 1 of the first 16 pixels would be
-> in the second word. With bit 0 I mean as masked out by & 0x0001 in C,
-> and bit 1 as masked out by 0x0002.
+Hi All,
 
-Thanks! This is exactly the kind of information I needed!
+I am working on  assabet board with 320x240 mono LCD panel , kernel
+2.4.18 i want to display  full screen logo while boot up.  I have set
+the pixel clock value = 70000 , and bpp is 4  bit.
 
-I added simple unoptimized support for Atari interleaved bitplanes to fbtest.
-When I know I got the basics right, I can start writing optimized drawing
-routines.
+I am not getting the logo. i get 4 small , compressed linux logo .
+Then i changed the pixclock to 171521 and bpp to 8. now  iam getting the
+full logo  but there is lot of wavey lines.......
 
-Anyone who cares to give it a try? Just check out CVS module `fbtest' from
-http://sourceforge.net/cvs/?group_id=908, type `make' and run `fbtest' for all
-available color depths (use fbset first), and tell me whether it works.
+I am using the patchs given  by arnor.net
 
-If no one is left with an Atari with Linux/m68k installed, I can create a
-ramdisk containing fbset and fbtest, so you just need ataboot and a kernel to
-test it.
+Can anybody guide me ...
 
-Thanks!
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Thanks in advance,
+Ramprasad
 
 
 

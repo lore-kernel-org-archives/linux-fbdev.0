@@ -1,20 +1,22 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] neofb patches
-Date: Wed, 28 Apr 2004 20:03:26 +0200 (MEST)
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
+ one works ;-)
+Date: Wed, 28 Apr 2004 20:05:15 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0404281958460.11982@waterleaf.sonytel.be>
-References: <Pine.LNX.4.44.0404281829410.1187-100000@phoenix.infradead.org>
+Message-ID: <Pine.LNX.4.44.0404281923360.1187-100000@phoenix.infradead.org>
+References: <Pine.GSO.4.58.0404281948260.11982@waterleaf.sonytel.be>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BItPD-0005N5-NA
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 11:03:35 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BItPD-0001A3-97
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 11:03:35 -0700
-In-Reply-To: <Pine.LNX.4.44.0404281829410.1187-100000@phoenix.infradead.org>
+	id 1BIuNv-0004b5-GH
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 12:06:19 -0700
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1BIuNu-00083J-ND
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 12:06:19 -0700
+In-Reply-To: <Pine.GSO.4.58.0404281948260.11982@waterleaf.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,42 +28,55 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Otto Solares <solca@guug.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, John Zielinski <grim@undead.cc>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 28 Apr 2004, James Simmons wrote:
-> > - Wasted effort in accel engines handling is only useful to fbcon,
-> >   nobody needs acceleration to drive a X x Y character matrix
-> >   in fbcon.  The argument that hw without a framebuffer will
-> >   exist and that's why the accel engine must be used is BS,
-> >   the PC, the BIOS and the video framebuffers will never die,
-> >   framebuffer exists in the best video cards money can buy
-> >   today and it exists in planned cards from major manufacturers
-> >   for tomorrow, probably the framebuffer can't be accessed when
-> >   the accel engine is being used in forthcoming cards but that
-> >   is completely a different story.
->
-> I disagree. It's also a performace issue. Even if we use software
-> drawing routines the fbcon layer still needs to draw a image, fill
-> a region and copy a area. We can't just dump that into fbcon easily.
 
-Indeed. Try to work for a while on an unaccelerated fbcon console and you'll
-notice why you want acceleration.
+> > > Your logic is only ever valid once every single fbdev is capable of
+> > > doing proper mode management & validation. And even then, there isn't
+> > > a 1:1 relationchip between a mode and an fbcon size.
+> >
+> >   But we do have the proper data already. Its called modedb. I have two
+> 
+> So I cannot have a mode that's not in modedb, since it won't survive switching
+> VTs.
 
-Hardware without a CPU-accessible frame buffer is not the reason, so far those
-hardware was not driven by fbcon/fbdev but by their own console drivers (e.g.
-Indy Newport and the never merged TI34010 GSP driver).
+Well its a bug in fbdev that we can't alter the modedb. Especially that we 
+have in struct fb_info struct fb_monspecs  which has a modedb field. We 
+need to add the functionally to export the drivers modedb to userland and 
+vice versa.
 
-Gr{oetje,eeting}s,
+> > reasons for why I hate to have a var in struct display. One is that it
+> > makes fbcon heavier. You now have a extra var in every struct display.
+> 
+> ... vs. a (non __init) modedb that stays in RAM after bootup.
+> 
+> Besides the initial mode (modedb, EDID, kernel arg, ...), I'd like to keep mode
+> databases in userspace where possible.
 
-						Geert
+That kind of sucks for modular fbdev drivers. Also with EDID data the 
+driver creates the respected modedb it can work with. Consider the case 
+where we have a fbdev driver all happy. Now we unplug the monitor and plug 
+in a different kind. With the new monitor the old mode doesn't work. How 
+do we handle this? Even if you say you can load the new database from 
+userland before we change monitors we still have to create a database.
+With EDID we can generate those modes. But its driver side. 
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> > Usually the user has several if not all VCs at the same resolution. That
+> > means there is alot of duplication of the same data for now reason. If we
+> 
+> Alternatively, make the vars in struct display pointers to reference counted
+> data, so initially they all point to the same var. But I don't know if it's
+> worth the extra effort.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Thats a possibity. Of course we still have modedb and it is needed for the 
+above reasons.
+
+> But I'm still limited to the modes in modedb.
+
+Not if we fix modedb to take userland modes.
+
+
 
 
 -------------------------------------------------------

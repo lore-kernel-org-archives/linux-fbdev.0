@@ -1,18 +1,17 @@
-From: sydmsw@kpmg.com.au
-Subject: RE: A virus was detected in your message Re: Approved
-Date: Fri, 22 Aug 2003 16:31:25 +1000 (EAST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: EDID for radeonfb
+Date: 21 Aug 2003 23:10:46 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <T6436ec552acb1e5e1a54c@melextgw10.kpmg.com.au>
+Message-ID: <1061500246.18043.15.camel@gaston>
+References: <20030821205110.89821.qmail@web14912.mail.yahoo.com>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="2452874.25.18816"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from melextgw10.kpmg.com.au ([203.30.94.26])
+Received: from amarseille-201-1-4-31.w217-128.abo.wanadoo.fr ([217.128.74.31] helo=gaston)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19q5SW-0002FS-00
-	for <Linux-fbdev-devel@lists.sourceforge.net>; Thu, 21 Aug 2003 23:31:40 -0700
-Received: from AUSYDSRV07.au.kworld.kpmg.com (ausydsrv07.au.kworld.kpmg.com) by melextgw10.kpmg.com.au
- (Content Technologies SMTPRS 4.3.6) with ESMTP id <T6436ec552acb1e5e1a54c@melextgw10.kpmg.com.au> for <Linux-fbdev-devel@lists.sourceforge.net>;
- Fri, 22 Aug 2003 16:36:27 +1000
+	id 19q64l-0001dD-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 22 Aug 2003 00:11:12 -0700
+In-Reply-To: <20030821205110.89821.qmail@web14912.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,25 +21,39 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: Linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: kronos@kronoz.cjb.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@infradead.org>
+
+On Thu, 2003-08-21 at 22:51, Jon Smirl wrote:
+> Is GregKH designing the EDID thorough sysfs scheme? I haven't seen a proposal
+> on how it is going to work. We need to coordinate with that so that we don't
+> end up with a different EDID scheme for every card.
+
+Imho, the fbdev should be a separate device from the monitor:
+
+fbdev -> fbmon -> EDID
+
+The EDID should be a property of the monitor
+
+So fbdev should instanciate a monitor object for each head after
+detection. It's still unclear for me how to deal with the various
+types of monitors though
+
+ - EDID available
+ - Mac old style "sense code" available
+ - fixed mode known based on motherboard (old mac laptops among others,
+   probably some embedded)
+ - unknown
+
+The EDID shall be used to build a modedb of available modes for this
+display, the driver doing validation based on that, though a flag to
+set_var would still be useful to force a mode that doesn't pass
+validation (EDIDs can be wrong...)
 
 
---2452874.25.18816
-Content-Type: text/plain; charset=US-ASCII
+Ben.
 
-Your message entitled
-
-"Re: Approved"
-
-contains a Virus, according to our Anti-Virus software, and has not reached the intended recipient.  Please remove the virus from this message before resending.
-
-A copy of the original message has been quarantined on our Server. 
-
-For more information contact
-
-mailadmin@kpmg.com.au
-
---2452874.25.18816--
 
 
 -------------------------------------------------------

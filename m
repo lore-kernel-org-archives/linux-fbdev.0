@@ -1,21 +1,24 @@
 From: James Simmons <jsimmons@www.infradead.org>
-Subject: Re: Patch to add mode setting to sysfs
-Date: Thu, 17 Feb 2005 22:13:32 +0000 (GMT)
-Message-ID: <Pine.LNX.4.56.0502172210030.10099@pentafluge.infradead.org>
-References: <9e4733910502161430ff1dad1@mail.gmail.com> 
- <200502172150.16256.adaplas@hotpop.com> <9e47339105021712494955212d@mail.gmail.com>
+Subject: Re: Running fb core as a module
+Date: Thu, 17 Feb 2005 22:16:36 +0000 (GMT)
+Message-ID: <Pine.LNX.4.56.0502172214350.10099@pentafluge.infradead.org>
+References: <9e473391050216173115f37838@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D1tu3-0001hB-Fs
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 14:13:43 -0800
+	id 1D1twu-000236-JT
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 14:16:40 -0800
 Received: from pentafluge.infradead.org ([213.146.154.40])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1D1tu1-0003Mr-HA
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 14:13:43 -0800
-In-Reply-To: <9e47339105021712494955212d@mail.gmail.com>
+	id 1D1twu-0006XE-0l
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 14:16:40 -0800
+Received: from jsimmons (helo=localhost)
+	by pentafluge.infradead.org with local-esmtp (Exim 4.43 #1 (Red Hat Linux))
+	id 1D1twq-0002jo-VB
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 22:16:38 +0000
+In-Reply-To: <9e473391050216173115f37838@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,46 +31,16 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: adaplas@pol.net, James Simmons <jsimmons@pentafluge.infradead.org>, linux-fbdev-devel@lists.sourceforge.net
+To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
 
+> Is there a patch floating around for turning the core of fbdev into a
+> module? Why isn't running fbdev as a module an option? It would make
+> debugging fbdev core much simpler.
 
-> On Thu, 17 Feb 2005 21:50:16 +0800, Antonino A. Daplas
-> <adaplas@hotpop.com> wrote:
-> > Instead of hardcoding some of the fields in var, why not
-> > copy it from the current var?  Ie:
-> > 
-> > var = info->var;
-> > fb_videomode_to_var(&var, mode);
-> 
-> I added this change, plus more robust error handing. Add attributes
-> for virtual resolution and bpp.
-> 
-> I also fixed fb so that it works as module.
-
-Seperate the make fbdev modular into another patch. Also I have a feeling 
-that will open a whole new can of worms. Also please create something 
-like
-
-static struct attribute *frame_attrs[] = {
-	&class_device_attr_dev.attr,
-	&class_device_attr_name.attr,
-	NULL
-};
-
-and do 
-
-for (i = 0; i < ARRAY_SIZE(frame_class_device_attributes); i++) {
-               rc = class_device_create_file(&info->class_dev, frame_class_device_attributes[i]);
-               if (unlikely(rc)) {
-                       /* Not fatal */
-                       printk(KERN_WARNING "Unable to create device file  for framebuffer %d\n", info->node);
-             }
-       }
-
-
-Did you see me email with my ideas about the sysfs structure?
+I agree. Of course you would need either a graphics card boot from a non 
+primary slot or work with serial console :-) Of course that opens alot of 
+other issues with races. We have to look into it in depth.
 
 
 

@@ -1,22 +1,23 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: When copy, which function the operation
- system calls
-Date: Tue, 20 Jan 2004 00:23:00 +0000 (GMT)
+From: Richard Smith <rsmith@bitworks.com>
+Subject: still ..Confused about atyfb and M1
+Date: Mon, 19 Jan 2004 19:48:55 -0600
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0401200021510.2709-100000@phoenix.infradead.org>
-References: <00d301c3dcd4$67afae50$3d01a8c0@tcentel.com>
+Message-ID: <400C8907.6080809@bitworks.com>
+References: <20040117063816.87535.qmail@web14913.mail.yahoo.com>	 <200401171303.13802.alex.kern@gmx.de> <1074466378.813.12.camel@gaston>
+Reply-To: RSmith@bitworks.com
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Aijfe-0006vo-Uk
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 19 Jan 2004 16:23:06 -0800
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.30)
-	id 1Aijfe-0003xl-FV
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 19 Jan 2004 16:23:06 -0800
-In-Reply-To: <00d301c3dcd4$67afae50$3d01a8c0@tcentel.com>
+	id 1Ail1o-00081D-Sb
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 19 Jan 2004 17:50:04 -0800
+Received: from b44.xdsl.pgtc.com ([198.70.248.44] helo=bitworks.com)
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
+	id 1Ail1n-0004zS-Pg
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 19 Jan 2004 17:50:03 -0800
+Received: from bitworks.com [192.168.1.22] by bitworks.com [127.0.0.1] with SMTP (MDaemon.v2.7.SP4.R) for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 19 Jan 2004 19:45:23 -0600
+In-Reply-To: <1074466378.813.12.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,23 +27,24 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Ai Chengshi <rosemaryai@vip.sina.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: benh@kernel.crashing.org
+Cc: Alexander Kern <alex.kern@gmx.de>, Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@infradead.org>
 
+Benjamin Herrenschmidt wrote:
 
-> Hi,
+>>Mach64 MOBILITY M1 works by me for ages. I submitted all patches to James for 
+>>months. They are in fbdev.diff.gz. But I dont think, they will be merged with 
+>>vanilla very soon.
 > 
-> When I typed cp test.bin /dev/fbdir/0, which function does the Linux call? 
 
-fb_write in fbmem.c.
+   I grabbed fbdev.diff.gz from infradead (is this the canonical 
+source?) and patched my 2.6.1 tree.  But I still don't see my 0x4c52 
+device id listed in the tables.
 
-> And if I want to write the content in the buffer to LCD controller GRAM, 
-> where should I add this function?
-
-Which kernel, v2.4 or v2.6? The api is different in each case.
-
+-- 
+Richard A. Smith
+rsmith@bitworks.com
 
 
 

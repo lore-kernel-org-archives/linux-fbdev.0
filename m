@@ -1,16 +1,17 @@
-From: Thomas Winischhofer <thomas@winischhofer.net>
-Subject: Re: Some questions
-Date: Tue, 11 Mar 2003 22:03:18 +0100
+From: Antonino Daplas <adaplas@pol.net>
+Subject: Re: Reading the EDID block for x86 machines
+Date: 12 Mar 2003 05:33:08 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3E6E4F16.1080307@winischhofer.net>
-References: <Pine.LNX.4.44.0303111607080.23668-100000@phoenix.infradead.org>
+Message-ID: <1047418384.1100.5.camel@localhost.localdomain>
+References: <Pine.LNX.4.44.0303111537420.23668-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from static213-229-38-018.adsl.inode.at ([213.229.38.18] helo=home.winischhofer.net)
+Received: from pine.compass.com.ph ([202.70.96.37])
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18sqv5-0002IH-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 Mar 2003 13:04:19 -0800
+	id 18srPu-0003Dh-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 Mar 2003 13:36:10 -0800
+In-Reply-To: <Pine.LNX.4.44.0303111537420.23668-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,56 +21,27 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@infradead.org>
-Cc: Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-James Simmons wrote:
->>However, the brokenness is really on the driver side.  They are unable
->>to change the video mode unless they are supplied with the correct
->>timing parameters where in fact they actually have the best knowledge on
->>how to calculate them.  
->>
->>So the question:  Do we let fbcon spoonfeed the timings to fbdev, or do
->>we let the drivers calculate it for themselves?  I go for the latter, as
->>fbcon really should not have any business with hardware.
+On Tue, 2003-03-11 at 23:49, James Simmons wrote:
+> > Anyway, I need help in testing the code (especially the Detailed
+> > Information part).  Just apply the attached patch, disable Enhanced Disk
+> > Driver support (under Processor Type and Features), and enable EDID
+> > support (under Graphics option).  Finally, add the following line to the
+> > fbdev driver that you use (anywhere, but a good place is the init code):
 > 
-> 
-> I agree. 
+> Diable Enhanced Disk support :-( I have a few suggestions. One we add a 
+> pointer to struct screen_info that points to the edid information. We can 
+> use phys_to_virt to translate that address into virtual memory. I can 
+> create a patch today and store it in the BK tree. 
 
-Me Too(tm). SiSfb (sorry for mentioning this one over and over, but 
-that's the only one I am working on) does that now, according to the 
-following assumptions:
+I think I found a chunk of around 500 bytes between INITRD and EDD, so
+we can squeeze in EDID in there :-)  Although I'm confident on this,
+I'll feel better if someone who boots with initrd can test it.
 
-If old_x == new_x && old_y == new_y && old_clock == new_clock
-
-	-> assume a change in depth, hence recalculate the clock
-	based on the htotal and vtotal values (which are calculated
-	using var's horizontal and vertical timing.
-
-else if (old_x != new_x || old_y != new_y) && old_clock == new_clock
-
-	-> assume a mode change originating from fbcon_resize (where
-	only xres and yres are changed, everything else left unchanged; 	 
-hence, use the default clock (user selectable) because clock is
-	invalid.
-
-else if(timings are valid)
-
-	-> use these timings, they originate from an application
-	using the framebuffer device properly (directFB, for instance)
-
-else -> use default clock
-
-Works perfectly. Tested all possible applications (mplayer, sdl stuff, 
-etc), no problems.
-
-Thomas
-
--- 
-Thomas Winischhofer
-Vienna/Austria
-mailto:thomas@winischhofer.net          *** http://www.winischhofer.net
+Tony
 
 
 

@@ -1,17 +1,18 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Why moving driver includes ?
-Date: 28 Mar 2003 14:18:44 +0100
+From: Petr Vandrovec <vandrove@vc.cvut.cz>
+Subject: 2.5.66 fbdev performance (was Re: Re: FBdev updates)
+Date: Fri, 28 Mar 2003 15:19:28 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1048857524.12125.2.camel@zion.wanadoo.fr>
-References: <Pine.LNX.4.44.0303280443170.11648-100000@phoenix.infradead.org>
+Message-ID: <20030328141928.GB2051@vana.vc.cvut.cz>
+References: <Pine.LNX.4.44.0302200108090.20350-100000@phoenix.infradead.org> <20030220150201.GD13507@codemonkey.org.uk> <20030220182941.GK14445@vana.vc.cvut.cz> <1045787031.2051.9.camel@localhost.localdomain> <20030303203500.GA2916@vana.vc.cvut.cz>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from griffon.mipsys.com ([217.167.51.129] helo=zion.wanadoo.fr)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18ytks-0006Q4-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 28 Mar 2003 05:18:46 -0800
-In-Reply-To: <Pine.LNX.4.44.0303280443170.11648-100000@phoenix.infradead.org>
+Received: from vana.vc.cvut.cz ([147.32.240.58] ident=root)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18yuhm-0007tC-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 28 Mar 2003 06:19:39 -0800
+Content-Disposition: inline
+In-Reply-To: <20030303203500.GA2916@vana.vc.cvut.cz>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,25 +23,69 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: Antonino Daplas <adaplas@pol.net>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi James !
+Hello,
+  I see a problem with new pixmap based code...
+There is 25% slowdown for 8x16 8bpp videomode 
+after upgrading from 2.5.63 to 2.5.66 :-(
 
-Why did you move the driver includes to include/video ? What is 
-the reasoning here ?
+Setup as usual, 1024x768, 100Hz, secondary
+head doing nothing (i.e. no fbtv...), CPU
+doing nothing except running this test.
+P4 1.6GHz, MGA G550. Shown value is system
+time in seconds needed to repaint screen 1000
+times (avg. from 3 tests) (you can treat it 
+as time in milliseconds needed to repaint 
+screen once).
 
-For example, drivers/video/radeon.h moved to include/video/radeon.h
+Although speedup for 12x22 font is very nice,
+it looks to me that we paid too much for it.
 
-Is this to be able to share register definitions with the DRM drivers ?
-(I doubt this will ever happen as the DRM is rather self contained)
+Problem is in the new pixmap handling, especially
+pixbuf.output - so now instead of memcpy we
+call some function for copying each byte from
+font to temporary buffer. As you can see,
+"constant" portion of time, independent of
+color depth, increased by 1sec for unaccelerated
+and by 0.75sec for accelerated putcs.
+It is 5% to 25% slowdown (5% for 32bpp unaccelerated,
+25% for 8bpp accelerated).
 
-I would have preferred those includes to stay next to their respective
-drivers (though renaming radeon.h to radeonfb.h might have made some
-sense).
+And while we are still faster than 2.4.x, we were
+even better...
+				Petr
 
-Regards,
-Ben.
+NOACCEL, 8x16
+        2.4.19+fbtv  2.5.63+fbtv  2.5.63  2.5.66
+8bpp    10.02         6.96         5.62    6.62
+16bpp   20.05        13.25        10.62   11.63
+24bpp   30.03        19.05        15.13   16.07
+32bpp   45.00        25.74        20.54   21.62
+
+ACCEL, 8x16
+        2.4.19+fbtv  2.5.63+fbtv  2.5.63  2.5.66
+8bpp     7.48         3.38         3.00    3.75
+16bpp    7.50         3.38         3.01    3.76
+24bpp    7.53         3.56         3.53    4.23
+32bpp    8.95         4.37         4.33    5.05
+
+NOACCEL, 12x22
+        2.4.19+fbtv  2.5.63+fbtv  2.5.63  2.5.66
+8bpp    11.54        13.35        10.93    8.96
+16bpp   20.00        22.02        18.03   13.61
+24bpp   30.03        35.83        29.53   18.07
+32bpp   40.12        44.48        36.75   23.22
+
+ACCEL, 12x22
+        2.4.19+fbtv  2.5.63+fbtv  2.5.63  2.5.66
+8bpp     8.57        14.87        12.90    5.72
+16bpp    8.57        14.93        12.92    5.72
+24bpp    8.56        15.13        13.10    6.20
+32bpp    8.56        15.52        13.76    6.98
+
 
 
 

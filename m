@@ -1,16 +1,17 @@
-From: Thomas Winischhofer <thomas@winischhofer.net>
-Subject: Re: Some questions
-Date: Wed, 05 Mar 2003 15:16:36 +0100
+From: Sven Luther <luther@dpt-info.u-strasbg.fr>
+Subject: Re: Feature Freeze?
+Date: Wed, 5 Mar 2003 15:21:27 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3E6606C4.801@winischhofer.net>
-References: <3E65EAFB.7020208@winischhofer.net> <1046870342.1291.86.camel@localhost.localdomain>
+Message-ID: <20030305142127.GA3565@iliana>
+References: <20030305134355.GA3105@iliana> <Pine.GSO.4.21.0303051502350.23176-100000@vervain.sonytel.be>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [213.229.38.66] (helo=mail.falke.at)
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18qZjy-0007NU-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 06:19:27 -0800
+Received: from smtp-out-2.wanadoo.fr ([193.252.19.254] helo=mel-rto2.wanadoo.fr)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18qZmP-0007vB-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 06:21:57 -0800
+Content-Disposition: inline
+In-Reply-To: <Pine.GSO.4.21.0303051502350.23176-100000@vervain.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,57 +21,52 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Antonino Daplas <adaplas@pol.net>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Sven Luther <luther@dpt-info.u-strasbg.fr>, Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+On Wed, Mar 05, 2003 at 03:04:57PM +0100, Geert Uytterhoeven wrote:
+> On Wed, 5 Mar 2003, Sven Luther wrote:
+> > On Wed, Mar 05, 2003 at 08:46:52PM +0800, Antonino Daplas wrote:
+> > > On Wed, 2003-03-05 at 19:05, Sven Luther wrote:
+> > > > On Wed, Mar 05, 2003 at 04:26:04PM +0800, Antonino Daplas wrote:
+> > > > > I believe it's time to finalize what is needed/not needed for the
+> > > > > framebuffer framework:
+> > > > > 
+> > > > > 1. Text mode support?
+> > > > 
+> > > > Would this work also on arches which don't traditionnaly do text mode ?
+> > > > Like ppc for example. 
+> > > 
+> > > Yes, pixel-based drawing is still the default.  It's only for drivers
+> > > (matrox and sbus) where it might be needed.
+> > 
+> > And do you think there is a chance of standard vgacon working on a ppc
+> > board ? I have a pegasos powerpc/pop based board, and its OF use a x86
+> > emulator to boot the card into vga textmode. matroxfb is broken on it
+> > last i tried, and radeonfb was not uptodate in the kernel that was
+> > provided, and i there is problems with other fbdevs also, so it
+> > would be nice if it was possible to use vgacon on such hardware, until
+> > the fbdevs are fixed, but it is a bit hard to fix things without a
+> > working console.
+> 
+> If your BIOS initializes your graphics card to VGA text mode, vgacon should
+> work. The same is true for vga16fb.
 
-Further to my mail from a few minutes ago:
+It is just a configuration thingy then ? 
 
-I wrote:
- > But I noticed another issue here:
- >
- > When switching to gfx mode during boot (ie as soon as the penguin
- > appears), the text console is aligned correctly at all edges, with all
- > lines visible.
+> Vga16fb works on the S3 in my LongTrail, iff I first run a BIOS emulator to
+> initialize the card to textmode. Never tried vgacon, since the BIOS emulator is
+> a userspace program and vga16fb can be modular.
 
- > But when "initial console" starts, the mode is again changed, and now
- > the last line of text is nearly invisible, its upper half appears at
- > the lower screen edge, the lower half is below the screen's edge. The
- > space between the penguin and the text is notably thicker.
- >
- > This can be recovered by switching to another VT and back. This makes
- > the penguin disappear, and restores the console dimensions/edges to
- > normal.
+Mmm, but since the emulator is run in OF, this would be ok ?
 
- > Interestingly, this only happens with 800x600; this mode is chosen
- > upon requesting 800x592 (because of the font size). At 1024x768,
- > everything is as it should.
+Do you think that vesafb would work also ?
 
-I am almost sure that this has to do with the fact that I adapt var in 
-my check_var from 800x592 to 800x600. Console (or whoever) seems to 
-attempt to change the mode to its initially desired dimension on many 
-occasions.
+Friendly,
 
-- This leads to the (unncessary) second mode switch during boot (when 
-the "initial console" starts), assumingly because the xres does not 
-match fontsize * rows,
-
-- and probably is the reason for that vertical offset I see after this 
-mode switch: The text area on the screen is shifted down by exactly 8 
-pixels - 600-592=8
-
-Any hints?
-
-Thomas
-
--- 
-Thomas Winischhofer
-Vienna/Austria
-mailto:thomas@winischhofer.net            http://www.winischhofer.net/
-
-
-
+Sven Luther
 
 
 -------------------------------------------------------

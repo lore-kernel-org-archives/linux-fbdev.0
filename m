@@ -1,19 +1,17 @@
-From: Chris Howells <chrish@gmx.co.uk>
-Subject: Re: Possible bug: nasty interaction between framebuffer and DRI/DRM
-Date: Fri, 31 May 2002 19:39:13 +0100
+From: James Simmons <jsimmons@transvirtual.com>
+Subject: RE:Whats the scoop for the apollo framebuffers?
+Date: Fri, 31 May 2002 11:50:02 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200205311939.13659.chrish@gmx.co.uk>
-References: <Pine.GSO.4.21.0205311407530.1147-100000@vervain.sonytel.be>
+Message-ID: <Pine.LNX.4.44.0205311148410.3190-100000@www.transvirtual.com>
+References: <OF23FD3867.7218A6AF-ONC1256BCA.0057E5DF-C1256BCA.0059138E@antall.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from msgdirector2.onetel.net.uk ([212.67.96.149] ident=mirapoint)
-	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17DrMT-00056f-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 31 May 2002 11:42:53 -0700
-In-Reply-To: <Pine.GSO.4.21.0205311407530.1147-100000@vervain.sonytel.be>
-Content-Description: clearsigned data
-Content-Disposition: inline
+Received: from www.transvirtual.com ([206.14.214.140])
+	by usw-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17DrTW-0005g6-00
+	for <Linux-fbdev-devel@lists.sourceforge.net>; Fri, 31 May 2002 11:50:10 -0700
+In-Reply-To: <OF23FD3867.7218A6AF-ONC1256BCA.0057E5DF-C1256BCA.0059138E@antall.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,30 +21,32 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: Text/Plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: e.fuste@focal.fr
+Cc: Linux-fbdev-devel@lists.sourceforge.net
 
-=2D----BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
 
-Hi,
+> >I noticed dnfb.c and dn_cfb4.c and dn_cfb8.c. They look the same except
+> >for different modes. Anyone have a clue here?
+>
+> Yes, the only functionnal one was dnfb.c, the others were for testing
+> purpose:
 
-On Friday 31 May 2002 1:08 pm, Geert Uytterhoeven wrote:
+So would it be safe to remove dn_cfb4[8].c ?
 
-> Do you use `option UseFBDev' in your XF86Config?
+> Developpers Peter (and me for a less big part) had only the mono frame
+> buffer board.
+> There is color boards for Apollo DN workstation for which I have docs, but
+> I no longuer
+> have access to the hardware, color fb or Apollo. Basic color fb management
+> is similar to
+> the mono one.
+> Apollo hardware is ISA based, perhaps someone still have some working one.
+> I stoped working on Linux Apollo port because of lack of hardware.
 
-No I'm not. Should I be?
+I ported over dnfb.c to the new api. I will post for people to try it.
 
-Cheers
-
-=2D----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.0.6 (GNU/Linux)
-Comment: For info see http://www.gnupg.org
-
-iD8DBQE898NRF8Iu1zN5WiwRAiU5AJ95WKTct4sFOXe+ruIMvlICGxyhFACggQvB
-0RaUngCVTJQdFTS3H3ceb7c=3D
-=3D/n6Q
-=2D----END PGP SIGNATURE-----
 
 
 _______________________________________________________________

@@ -1,36 +1,83 @@
-From: Unknown <unknown@unknown.invalid>
-Subject: Virus Detected by Network Associates, Inc. Webshield SMTP V4.5 MR1a P0803.345
-Date: Sat, 8 May 2004 12:29:58 +0000 (UTC)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <E1BMQwK-0003At-1Q@sc8-sf-mx2.sourceforge.net>
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BMQwN-0008Ji-JZ
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 08 May 2004 05:28:27 -0700
-Received: from 195-86-125-42.dsl.easynet.nl ([195.86.125.42] helo=MRNL1.MASTERVOLT.INTRA)
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
-	id 1BMQwK-0003At-1Q
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 08 May 2004 05:28:24 -0700
-From: <>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+From: Jon Smirl <jonsmirl@yahoo.com>
+Subject: Re: RE: [Dri-devel] Memory management of AGP and VRAM
+Date: Sun, 9 May 2004 09:45:14 -0700 (PDT)
+Sender: mesa3d-dev-admin@lists.sourceforge.net
+Message-ID: <20040509164514.17651.qmail@web14922.mail.yahoo.com>
+References: <409BFE5B.5020308@us.ibm.com>
+Mime-Version: 1.0
+Return-path: <mesa3d-dev-admin@lists.sourceforge.net>
+In-Reply-To: <409BFE5B.5020308@us.ibm.com>
+Errors-To: mesa3d-dev-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
+	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Date: Sat May 08 14:29:39 2004
-MIME-Version: 1.0
+List-Post: <mailto:mesa3d-dev@lists.sourceforge.net>
+List-Help: <mailto:mesa3d-dev-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
+	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=mesa3d-dev>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Ian Romanick <idr@us.ibm.com>, Egbert Eich <eich@pdx.freedesktop.org>
+Cc: dri-devel <dri-devel@lists.sourceforge.net>, mesa3d-dev <mesa3d-dev@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-Network Associates WebShield SMTP V4.5 MR1a P0803.345 on MRNL1 detected virus
-W32/Netsky.p@MM in attachment message.scr from <linux-fbdev-devel@lists.sourceforge.net> and
-it was Deleted.
+Can you run grub or lilo on these machines?
+
+Also, these is no rule saying a device driver can't have several tables of _init
+register values that can be used to set the mode on a primary monitor at boot. I
+would just like to see all of the code that does DDC decoding and modeline
+computations moved to user space. When you add up that code there is about 40K
+of it in the fbdriver and about 50K in the radeon driver. When the fbdev drivers
+start probing for multiple heads, TV support, etc that code is going to get even
+larger. Since the code is used only rarely (in kernel terms) this code should be
+in user space instead of the driver.
+
+I've also proposed that if you really, really want to you could do the DDC
+probing the in driver at boot and mark all of the code _init. Then the user
+space code would take over after that. Note that I'm talking about early
+userspace (initrd) timeframe, not normal user space.
+
+--- Ian Romanick <idr@us.ibm.com> wrote:
+> Egbert Eich wrote:
+> 
+> > However chipset probing/display device probing and mode setting isn't
+> > required to live in kernel space. Portability and system stability 
+> > arguments speak against it. In fact only Apple MAC users seem to
+> > advocate this idea to be able to an initial video mode on their
+> > systems.
+> 
+> Allow me to speak up for users of IBM pSeries hardware or Sun SPARC 
+> hardware.  Users of those systems face exactly the same issues as Mac 
+> users.  I imagine most embedded systems will be in the same boat.  Being 
+> forced to use a serial console for early boot messages is so 1980's. ;)
+> 
+> The kernel doesn't need to have support for everything, but I think it's 
+> important to have at least minimal support.
+> 
+> 
+> 
+> 
+> -------------------------------------------------------
+> This SF.Net email is sponsored by Sleepycat Software
+> Learn developer strategies Cisco, Motorola, Ericsson & Lucent use to 
+> deliver higher performing products faster, at low TCO.
+> http://www.sleepycat.com/telcomwpreg.php?From=osdnemail3
+> _______________________________________________
+> Mesa3d-dev mailing list
+> Mesa3d-dev@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/mesa3d-dev
+
+=====
+Jon Smirl
+jonsmirl@yahoo.com
+
+
+	
+		
+__________________________________
+Do you Yahoo!?
+Win a $20,000 Career Makeover at Yahoo! HotJobs  
+http://hotjobs.sweepstakes.yahoo.com/careermakeover 
 
 
 -------------------------------------------------------

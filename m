@@ -1,47 +1,74 @@
-From: Richard Smith <rsmith@bitworks.com>
-Subject: Re: [Linux-fbdev-devel] Generic VESA framebuffer driver and Video
- card BOOT?
-Date: Mon, 18 Oct 2004 16:04:50 -0500
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <41742FF2.9090409@bitworks.com>
-References: <4173B865.26539.117B09BD@localhost> <4173C981.13925.11BDE111@localhost>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: [RFC] Does fbdev need a cursor API for userland?
+Date: Tue, 19 Oct 2004 04:56:31 +0800
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <200410190456.32643.adaplas@hotpop.com>
+References: <200410172347.15516.adaplas@hotpop.com> <200410181905.56602.adaplas@hotpop.com> <Pine.GSO.4.61.0410181359040.23486@waterleaf.sonytel.be>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S267378AbUJRVHS@vger.kernel.org>
-In-Reply-To: <4173C981.13925.11BDE111@localhost>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: KendallB@scitechsoft.com
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1CJeSW-0005q6-0r
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 13:50:24 -0700
+Received: from smtp-out.hotpop.com ([38.113.3.71])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1CJeSV-0000VU-G7
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 13:50:23 -0700
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id D9A2411605C7
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 18 Oct 2004 20:50:09 +0000 (UTC)
+In-Reply-To: <Pine.GSO.4.61.0410181359040.23486@waterleaf.sonytel.be>
+Content-Disposition: inline
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: Geert Uytterhoeven <geert@linux-m68k.org>, adaplas@pol.net
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Jon Smirl <jonsmirl@gmail.com>
 
-Kendall Bennett wrote:
+On Monday 18 October 2004 20:01, Geert Uytterhoeven wrote:
+> On Mon, 18 Oct 2004, Antonino A. Daplas wrote:
+> > On Monday 18 October 2004 17:35, Geert Uytterhoeven wrote:
+> > > On Mon, 18 Oct 2004, Antonino A. Daplas wrote:
+> > > > The restore_fb_contents/save_fb_contents cannot be done generically. 
+> > > > Not all framebuffers have a linear format, there are some that are
+> > > > planar such as amifb and vga16fb.  This means that we need to add
+> > > > per-driver hooks just to save and restore the framebuffer contents.
+> > >
+> > > Can't we use fb_imageblit() for restore?
+> >
+> > fb_imageblit() is limited because it uses the pseudo_palette.  Even if
+> > we expand the palette to 256 entries, it won't be able to handle formats
+> > > 8bpp. More than 256 is not practical. Plus, fb_imageblit is limited to
+> > 1->bpp, and 8->bpp expansion.
+>
+> What about expanding fb_imageblit() to handle 32-bit ARGB as well? Then it
+> can handle most canonical formats (1 bpp monochrome, 8-bit CLUT, 32-bit
 
-> Richard Smith <rsmith@bitworks.com> wrote:
-> 
-> Good, so my assumption was incorrect which I am happy about. Since it 
-> makes the work we did more useful ;-)
-> 
-> Anyway in your case do you need diagnostic messages just from the kernel 
-> or from the firmware as well?
+Meaning, fb_imageblit needs to do 32-bit ARGB to native fb format conversion
+on the fly.  How can we do that generically without fb_imageblit knowing the
+format of the framebuffer? For example, how do we convert 32-bit ARGB to
+8-bit Pseudocolor?
 
-Firmware messages are the most critical since none of the app code is 
-running yet and can't self-heal or cry for help.
+Isn't it much simpler to just have a set_image() where the source block is
+in the same format as the framebuffer so it doesn't have to do format
+conversions?
 
-Some units boot off of a compact flash.  Try as we might to make these 
-babies robust they do fail.  So in that case the boot message from the 
-firmware needs to be displayed.  In other cases the system net boots 
-which increases the firmware error message level by about a factor of 10.
+Tony
 
- > To get it in the firmware the video boot
- > code would need to be ported there (U-Boot has a version of it already,
- > but it is the only firmware I am aware of that supports this).
 
-LinuxBIOS has some suport for this.  Not by emulation though.  It uses 
-the bios from the BOCHS project as a payload.  Some glue drops the 
-system back into real mode and runs the BOCHS bios which scans the 
-legacy regions for ROM expansion modules.  So as long as I copy my video 
-bios up int 0x0C0000 prior to this I get video.  Otherwise I have to 
-wait until X comes up and soft-boots the display device.
 
--- 
-Richard A. Smith
+
+-------------------------------------------------------
+This SF.net email is sponsored by: IT Product Guide on ITManagersJournal
+Use IT products in your business? Tell us what you think of them. Give us
+Your Opinions, Get Free ThinkGeek Gift Certificates! Click to find out more
+http://productguide.itmanagersjournal.com/guidepromo.tmpl

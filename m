@@ -1,51 +1,67 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [Linux-fbdev-devel] Re: [PATCH 5/5] [I810FB]: i810fb fixes
-Date: Sat, 31 Jul 2004 18:32:29 +0800
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <200407311832.29250.adaplas@hotpop.com>
-References: <200407290955.29735.adaplas@hotpop.com> <20040731000754.GF2746@fs.tum.de>
-Reply-To: adaplas@pol.net
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Subject: Re: [Question] Colour management
+Date: Sat, 31 Jul 2004 16:31:29 +0300
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <20040731133129.GA12797@sci.fi>
+References: <20040722184937.GA11361@sci.fi> <200407260647.03489.adaplas@hotpop.com> <200407302012.36325.alex.kern@gmx.de> <200407311826.27332.adaplas@hotpop.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S267936AbUGaKcr@vger.kernel.org>
-In-Reply-To: <20040731000754.GF2746@fs.tum.de>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BqtxX-00059K-2R
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 31 Jul 2004 06:31:35 -0700
+Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1BqtxV-0002W9-VM
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 31 Jul 2004 06:31:34 -0700
+Received: from kuori.saunalahti.fi (kuori.saunalahti.fi [195.197.175.23])
+	by gw01.mail.saunalahti.fi (Postfix) with ESMTP id 33CAF4614F
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 31 Jul 2004 16:31:30 +0300 (EEST)
 Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-To: Adrian Bunk <bunk@fs.tum.de>
-Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, linux-kernel@vger.kernel.org
+In-Reply-To: <200407311826.27332.adaplas@hotpop.com>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Oops, forgot the X86_64 dependency.
+On Sat, Jul 31, 2004 at 06:26:27PM +0800, Antonino A. Daplas wrote:
+> 	In directcolor mode where the channel size !=3D CLUT register size, se=
+tting
+> the CLUT is a bit tricky.=20
+>=20
+> Take for example, RGB555. Assuming an 8-bit CLUT size, each channel can=
+ only
+> accept a total of 32 entries (2 power of 5).  Since an 8-bit CLUT has 2=
+56 entries,
+> then the driver needs to step by 8 (256/32).  The code is like this the=
+n:
+>=20
+> red_reg[index * 8] =3D red
+> green_reg[index * 8] =3D green
+> blue_reg[index * 8] =3D blue
+>=20
+> Some hardware require that all 8 entries needs to be filled up.
 
-Tony
+I noticed you do this in i810fb. What happens if you don't do this?
 
-1. Make i810fb depend on X86 but not X86_64
-2. Fixed typo in i810_init_monspecs(). Reported by Manuel Lauss <slauss@resi.at>.
+AFAIK mach64 doesn't need this.
 
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
+--=20
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
 
-diff -uprN linux-2.6.8-rc2-mm1-orig/drivers/video/i810/i810_main.c linux-2.6.8-rc2-mm1/drivers/video/i810/i810_main.c
---- linux-2.6.8-rc2-mm1-orig/drivers/video/i810/i810_main.c	2004-07-31 16:52:12.341681400 +0800
-+++ linux-2.6.8-rc2-mm1/drivers/video/i810/i810_main.c	2004-07-31 16:53:18.937557288 +0800
-@@ -1656,7 +1656,7 @@ static void __devinit i810_init_monspecs
- 		info->monspecs.hfmax = hsync2;
- 	if (!info->monspecs.hfmin)
- 		info->monspecs.hfmin = hsync1;
--	if (hsync1 < hsync2) 
-+	if (hsync2 < hsync1) 
- 		info->monspecs.hfmin = hsync2;
- 
- 	if (!vsync1)
-diff -uprN linux-2.6.8-rc2-mm1-orig/drivers/video/Kconfig linux-2.6.8-rc2-mm1/drivers/video/Kconfig
---- linux-2.6.8-rc2-mm1-orig/drivers/video/Kconfig	2004-07-31 16:52:12.337682008 +0800
-+++ linux-2.6.8-rc2-mm1/drivers/video/Kconfig	2004-07-31 18:29:37.812034832 +0800
-@@ -457,7 +457,7 @@ config FB_RIVA_DEBUG
- 
- config FB_I810
- 	tristate "Intel 810/815 support (EXPERIMENTAL)"
--	depends on FB && EXPERIMENTAL && PCI	
-+	depends on FB && EXPERIMENTAL && PCI && X86 && !X86_64	
- 	select AGP
- 	select AGP_INTEL
- 	help
+
+-------------------------------------------------------
+This SF.Net email is sponsored by OSTG. Have you noticed the changes on
+Linux.com, ITManagersJournal and NewsForge in the past few weeks? Now,
+one more big change to announce. We are now OSTG- Open Source Technology
+Group. Come see the changes on the new OSTG site. www.ostg.com

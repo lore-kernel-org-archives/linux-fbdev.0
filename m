@@ -1,75 +1,59 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: const fb_{fillrect,copyarea,image}?
-Date: Tue, 7 Jan 2003 22:31:34 +0100 (MET)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0301072227110.21057-100000@vervain.sonytel.be>
-References: <Pine.LNX.4.44.0301072119370.17129-100000@phoenix.infradead.org>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: 2.5.54: radeonfb almost works
+Date: Tue, 7 Jan 2003 21:34:13 +0000 (GMT)
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <Pine.LNX.4.44.0301072124250.17129-100000@phoenix.infradead.org>
+References: <3E14315E.F80B3DFF@aitel.hist.no>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18W1L3-0008Uj-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 07 Jan 2003 13:32:45 -0800
-In-Reply-To: <Pine.LNX.4.44.0301072119370.17129-100000@phoenix.infradead.org>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <3E14315E.F80B3DFF@aitel.hist.no>
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Helge Hafting <helgehaf@aitel.hist.no>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tue, 7 Jan 2003, James Simmons wrote:
-> > Wouldn't it make sense to make the fb_{fillrect,copyarea,image} parameters of
-> > the fb_ops.fb_{fillrect,copyarea,image}() operations const? This would protect
-> > us against side effects when reusing the fb_{fillrect,copyarea,image} structs
-> > without reinitializing their contents (as is currently done by the logo drawing
-> > code in fbcon_show_logo() on SMP).
+
+> Just booting with video=radeon gives me a 640x400
+> mode.  There's some initial garbage (looks like early boot
+> messages converted to graphichs at the wrong resolution)
+> on the screen, but that isn't a problem.  The low resolution
+> is, though.
+
+640x480 is normal. 
+
+ 
+> I first tried "fbset 1280x1024-60", which changed
+> the resolution, but the console was still a
+> small 640x400 thing in the upper left corner of
+> the 1280x1024 display.  Not very useful.
+
+Because fbset is only useful for setting /dev/fb. You want to use stty
+to set the resolution now. The advantage of this is we don't end up
+with a console mode of 80 3/4 columns by 30 1/4 rows. 
+Try
+
+stty cols 160 rows 64 
+
+assuming you are using 8x16 fonts.
+ 
+> So I tried booting with video=radeon:1280x1024-32@60
+> That gave me a blank screen, the monitor complained
+> about "no signal".
 > 
-> Where is this exactly?
+> But I logged in blind, and ran fbset 1280x1024-60
+> again.  This gave me the console I want.
+> 1280x1024 resolution, with 160x64 characters.
 
-drivers/video/fbmem.c:fb_show_logo() initializes only image.dx in each loop
-iteration:
+Sounds like a monitor timings issue. fbset cheats by taking
+times from the /etc/fb.mods file. I'm working on patch 
+that was sent to me to deal with this.
 
-| for (x = 0; x < num_online_cpus() * (LOGO_W + 8) &&
-|      x < info->var.xres - (LOGO_W + 8); x += (LOGO_W + 8)) {
-|         image.dx = x;
-|         info->fbops->fb_imageblit(info, &image);
-|         done = 1;
-| }
+> Another problem comes up when running X.  Switching
+> from X to some virtual console always gives me the
+> "no signal" thing, and I have to type the fbset
+> command blind before the console becomes
+> visible.  Switching back to X is never a problem.
 
-> > Of course this means that we have to modify the clipping code, which currently
-> > just modifies the passed structure.
-> 
-> :-( That is done to prevent someone from passing data that is larger than 
-> the framebuffer.
-
-You can still do clipping without modifying the passed structure, right?
-
-BTW, is it possible that someone passes data that is larger (except for bugs)?
-We have control over what happens in the kernel. Data passed from userspace is
-a different issue, of course.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
-
-
--------------------------------------------------------
-This SF.NET email is sponsored by:
-SourceForge Enterprise Edition + IBM + LinuxWorld = Something 2 See!
-http://www.vasoftware.com
+Same problem again. It is a monitor timings issue. 
+We are working on this.

@@ -1,22 +1,16 @@
-From: "Kendall Bennett" <KendallB@scitechsoft.com>
-Subject: Re: Help with Aki Laukkanen's vesafbd project?
-Date: Thu, 20 Mar 2003 12:14:13 -0800
+From: Christoph Hellwig <hch@lst.de>
+Subject: [PATCH] intelfb fixes
+Date: Fri, 21 Mar 2003 19:37:03 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3E79B095.4261.E4B631B@localhost>
-References: <3E78BC18.9671.A905E64@localhost>
+Message-ID: <20030321193703.A12179@lst.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from adsl-63-195-13-70.dsl.chic01.pacbell.net ([63.195.13.70] helo=mail.scitechsoft.com)
+Received: from verein.lst.de ([212.34.181.86])
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18w6Qo-00063p-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 20 Mar 2003 12:14:30 -0800
-Received: from KENDALLB (adsl-63-195-13-78.dsl.chic01.pacbell.net [63.195.13.78])
-	by mail.scitechsoft.com (8.12.8/8.12.5) with ESMTP id h2KKEtPD016339
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 20 Mar 2003 12:14:56 -0800
-In-reply-to: <1048135312.1207.32.camel@localhost.localdomain>
-Content-description: Mail message body
+	id 18wROK-0005Fm-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 21 Mar 2003 10:37:21 -0800
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,82 +21,262 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: marcelo@conectiva.com.br
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-Antonino Daplas <adaplas@pol.net> wrote:
+It looks like someone is trying to make the kernel looling as messy
+as XFree..
 
-> > > I'm more inclined to generalize this as a vm86 daemon.  What I'm
-> > > thinking is to create a character device /dev/vm86.  
-> > 
-> > Right, that is actually not a bad idea, especially as a way for making 
-> > vm86 services available to Linux kernel modules. However one of the 
-> > offshoots of the vesafbd daemon is also the ability to handle full mode 
-> > setting and blitting from the userland daemon without needing the vm86() 
-> > BIOS support (ie: using XFree86 modules or allowing other vendor supplied 
-> > modules to support this).
-> 
-> I think that's not a problem, except perhaps for efficiency.  For
-> instance, if the kernel module sent a request for int 0x10 with AX
-> = 0x4f02 (Set VBE mode), the user daemon can choose to either: 
-> 
-> a. parse the request so it is compatible with XFree86 or some non-VBE
-> modules for video mode changing
+Remove the silly symlinking rules from the intelfb makefile and remove
+one of the copies of the private copy of modedb in intelfb.  Maybe
+someone who actually has the hardware could fix it to properly use
+modedb directly.
 
-Yes, that is true, provided everything that can be done has an interface 
-via the regular VBE standard.
 
-> Similarly for blits, we can use the VBE/AF standard.
-
-Actually no, because the VBE/AF standard is a loadable driver module 
-interface, and the only ratified standard of VBE/AF 1.0 was only an 
-assembler interface. VBE/AF 2.0 which had a C calling interface is dead 
-and was never ratified by VESA. Instead we took what was good about 
-VBE/AF 2.0, killed what was bad and created SciTech Nucleus which has now 
-morphed into what is SciTech SNAP today.
-
-So if you wanted an acceleration interface in this daemon, it could not 
-be done via a BIOS style interface since there is no standard for this.
-
-> This should make the kernel->user interface as simple and as
-> generic as possible, and we just let the user daemon do whatever it
-> wants perhaps with some suggestions from the kernel (such as "use
-> the BIOS exclusively" or "use the BIOS only as a last resort"). 
-
-Being a daemon IMHO the suggestions would be better coming from the user 
-when the daemon starts up ;-)
-
-> > > This way, the interface can be useful for other subsystems (APM, IDE,
-> > > etc).  Plus, the interface will be very simple (the request structure
-> > > will just contain x86's register set, the bus, device, function number,
-> > > and perhaps a few flags) and it need not know if this is graphics,
-> > > block, power, etc.  
-> > 
-> > I like the idea, but the downside is that some people on the Linux kernel 
-> > list feel that the availability of a generic BIOS interface would allow 
-> > hardware vendors to be 'lazy' and rely on these services, making their 
-> > code less portable to non-x86 platforms. Hence the generic vm86d project 
-> > might be a bit of a hard sell for those folks ;-)
-> 
-> Hmm, I hope not.  Using the BIOS is just too inefficient.
-
-Inefficient, but it would work. Personally I don't see it as a big issue, 
-but that is what some folks said on the kernel lists.
-
-Regards,
-
----
-Kendall Bennett
-Chief Executive Officer
-SciTech Software, Inc.
-Phone: (530) 894 8400
-http://www.scitechsoft.com
-
-~ SciTech SNAP - The future of device driver technology! ~
-
+--- 1.1/drivers/video/intel/Makefile	Sun Feb 23 19:07:33 2003
++++ edited/drivers/video/intel/Makefile	Fri Mar 21 16:46:30 2003
+@@ -8,11 +8,3 @@
+ include $(TOPDIR)/Rules.make
+ 
+ intelfbdrv.o: builtinmodes.c
+-
+-builtinmodes.c: modes.c
+-	rm -f builtinmodes.c
+-	ln -s modes.c builtinmodes.c
+-
+-clean:
+-	rm -f core *.o *.a *.s builtinmodes.c
+-
+--- 1.1/drivers/video/intel/modes.c	Sun Feb 23 19:07:47 2003
++++ edited/drivers/video/intel/modes.c	Fri Mar 21 16:46:37 2003
+@@ -1,222 +0,0 @@
+-
+-/*
+- * THIS FILE IS AUTOMATICALLY GENERATED BY fbmode.pl -- DO NOT EDIT
+- */
+-
+-static struct fb_videomode modedb[] = {
+-    {
+-	/* 640x350 @ 85 Hz, 37.9 kHz hsync */
+-	"640x350@85", 85, 640, 350, 31746, 96, 32, 60, 32, 64, 3,
+-	FB_SYNC_HOR_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 640x400 @ 85 Hz, 37.9 kHz hsync */
+-	"640x400@85", 85, 640, 400, 31746, 96, 32, 41, 1, 64, 3,
+-	FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 720x400 @ 85 Hz, 37.9 kHz hsync */
+-	"720x400@85", 85, 720, 400, 28169, 108, 36, 42, 1, 72, 3,
+-	FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 640x480 @ 60 Hz, 31.5 kHz hsync */
+-	"640x480@60", 60, 640, 480, 39683, 48, 16, 33, 10, 96, 2,
+-	0, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 640x480 @ 73 Hz, 37.9 kHz hsync */
+-	"640x480@73", 73, 640, 480, 31746, 128, 24, 29, 9, 40, 2,
+-	0, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 640x480 @ 75 Hz, 37.5 kHz hsync */
+-	"640x480@75", 75, 640, 480, 31746, 120, 16, 16, 1, 64, 3,
+-	0, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 640x480 @ 85 Hz, 43.3 kHz hsync */
+-	"640x480@85", 85, 640, 480, 27778, 80, 56, 25, 1, 56, 3,
+-	0, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 800x600 @ 56 Hz, 35.2 kHz hsync */
+-	"800x600@56", 56, 800, 600, 27778, 128, 24, 22, 1, 72, 2,
+-	FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 800x600 @ 60 Hz, 37.9 kHz hsync */
+-	"800x600@60", 60, 800, 600, 25000, 88, 40, 23, 1, 128, 4,
+-	FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 800x600 @ 72 Hz, 48.1 kHz hsync */
+-	"800x600@72", 72, 800, 600, 20000, 64, 56, 23, 37, 120, 6,
+-	FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 800x600 @ 75 Hz, 46.9 kHz hsync */
+-	"800x600@75", 75, 800, 600, 20202, 160, 16, 21, 1, 80, 3,
+-	FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 800x600 @ 85 Hz, 53.7 kHz hsync */
+-	"800x600@85", 85, 800, 600, 17762, 152, 32, 27, 1, 64, 3,
+-	FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1024x768 @ 60 Hz, 48.4 kHz hsync */
+-	"1024x768@60", 60, 1024, 768, 15385, 160, 24, 29, 3, 136, 6,
+-	0, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1024x768 @ 70 Hz, 56.5 kHz hsync */
+-	"1024x768@70", 70, 1024, 768, 13333, 144, 24, 29, 3, 136, 6,
+-	0, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1024x768 @ 75 Hz, 60.1 kHz hsync */
+-	"1024x768@75", 75, 1024, 768, 12690, 176, 16, 28, 1, 96, 3,
+-	FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1024x768 @ 85 Hz, 68.7 kHz hsync */
+-	"1024x768@85", 85, 1024, 768, 10582, 208, 48, 36, 1, 96, 3,
+-	FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1152x864 @ 75 Hz, 67.5 kHz hsync */
+-	"1152x864@75", 75, 1152, 864, 9259, 256, 64, 32, 1, 128, 3,
+-	FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1280x960 @ 60 Hz, 60.0 kHz hsync */
+-	"1280x960@60", 60, 1280, 960, 9259, 312, 96, 36, 1, 112, 3,
+-	FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1280x960 @ 85 Hz, 85.9 kHz hsync */
+-	"1280x960@85", 85, 1280, 960, 6734, 224, 64, 47, 1, 160, 3,
+-	FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1280x1024 @ 60 Hz, 64.0 kHz hsync */
+-	"1280x1024@60", 60, 1280, 1024, 9259, 248, 48, 38, 1, 112, 3,
+-	FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1280x1024 @ 75 Hz, 80.0 kHz hsync */
+-	"1280x1024@75", 75, 1280, 1024, 7407, 248, 16, 38, 1, 144, 3,
+-	FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1280x1024 @ 85 Hz, 91.1 kHz hsync */
+-	"1280x1024@85", 85, 1280, 1024, 6349, 224, 64, 44, 1, 160, 3,
+-	FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1600x1200 @ 60 Hz, 75.0 kHz hsync */
+-	"1600x1200@60", 60, 1600, 1200, 6173, 304, 64, 46, 1, 192, 3,
+-	FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1600x1200 @ 65 Hz, 81.2 kHz hsync */
+-	"1600x1200@65", 65, 1600, 1200, 5698, 304, 64, 46, 1, 192, 3,
+-	FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1600x1200 @ 70 Hz, 87.5 kHz hsync */
+-	"1600x1200@70", 70, 1600, 1200, 5291, 304, 64, 46, 1, 192, 3,
+-	FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1600x1200 @ 75 Hz, 93.8 kHz hsync */
+-	"1600x1200@75", 75, 1600, 1200, 4938, 304, 64, 46, 1, 192, 3,
+-	FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1600x1200 @ 85 Hz, 106.2 kHz hsync */
+-	"1600x1200@85", 85, 1600, 1200, 4357, 304, 64, 46, 1, 192, 3,
+-	FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1792x1344 @ 60 Hz, 83.7 kHz hsync */
+-	"1792x1344@60", 60, 1792, 1344, 4883, 328, 128, 46, 1, 200, 3,
+-	FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1792x1344 @ 75 Hz, 106.3 kHz hsync */
+-	"1792x1344@75", 75, 1792, 1344, 3831, 352, 96, 69, 1, 216, 3,
+-	FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1856x1392 @ 60 Hz, 86.4 kHz hsync */
+-	"1856x1392@60", 60, 1856, 1392, 4581, 352, 96, 43, 1, 224, 3,
+-	FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1856x1392 @ 75 Hz, 112.5 kHz hsync */
+-	"1856x1392@75", 75, 1856, 1392, 3472, 352, 128, 104, 1, 224, 3,
+-	FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1920x1440 @ 60 Hz, 90.0 kHz hsync */
+-	"1920x1440@60", 60, 1920, 1440, 4274, 344, 128, 56, 1, 208, 3,
+-	FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1920x1440 @ 75 Hz, 112.5 kHz hsync */
+-	"1920x1440@75", 75, 1920, 1440, 3367, 352, 144, 56, 1, 224, 3,
+-	FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 832x624 @ 75 Hz, 49.7 kHz hsync */
+-	"832x624@75", 75, 832, 624, 17457, 224, 32, 39, 1, 64, 3,
+-	0, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1152x768 @ 55 Hz, 44.2 kHz hsync */
+-	"1152x768@55", 55, 1152, 768, 15386, 158, 26, 29, 3, 136, 6,
+-	FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1400x1050 @ 60 Hz, 64.9 kHz hsync */
+-	"1400x1050@60", 60, 1400, 1050, 8197, 240, 88, 18, 2, 152, 12,
+-	FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1400x1050 @ 75 Hz, 81.5 kHz hsync */
+-	"1400x1050@75", 75, 1400, 1050, 6418, 128, 64, 26, 2, 320, 12,
+-	FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1600x1024 @ 60 Hz, 64.0 kHz hsync */
+-	"1600x1024@60", 60, 1600, 1024, 9354, 30, 20, 37, 3, 20, 3,
+-	0, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 1920x1440 @ 85 Hz, 128.5 kHz hsync */
+-	"1920x1440@85", 85, 1920, 1440, 2930, 368, 152, 68, 1, 216, 3,
+-	FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 2048x1536 @ 60 Hz, 95.3 kHz hsync */
+-	"2048x1536@60", 60, 2048, 1536, 3746, 376, 152, 49, 1, 224, 3,
+-	FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 2048x1536 @ 75 Hz, 120.2 kHz hsync */
+-	"2048x1536@75", 75, 2048, 1536, 2937, 392, 168, 63, 1, 224, 3,
+-	FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    },
+-    {
+-	/* 2048x1536 @ 85 Hz, 137.0 kHz hsync */
+-	"2048x1536@85", 85, 2048, 1536, 2577, 392, 168, 72, 1, 224, 3,
+-	FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
+-    }
+-};
+-
+-static int num_modes = sizeof(modedb) / sizeof(modedb[0]);
+-
+-#define DFLT_MODE 3
+-
 
 
 -------------------------------------------------------
-This SF.net email is sponsored by: Tablet PC.  
-Does your code think in ink? You could win a Tablet PC. 
-Get a free Tablet PC hat just for playing. What are you waiting for? 
-http://ads.sourceforge.net/cgi-bin/redirect.pl?micr5043en
+This SF.net email is sponsored by:Crypto Challenge is now open! 
+Get cracking and register here for some mind boggling fun and 
+the chance of winning an Apple iPod:
+http://ads.sourceforge.net/cgi-bin/redirect.pl?thaw0031en

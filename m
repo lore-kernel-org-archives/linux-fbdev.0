@@ -1,51 +1,90 @@
-From: Kronos <kronos@kronoz.cjb.net>
-Subject: Re: [2.5.59] radeonfb not working
-Date: Fri, 14 Feb 2003 23:33:33 +0100
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030214223333.GA745@dreamland.darkstar.lan>
-References: <20030129152703.GA539@dreamland.darkstar.lan> <Pine.LNX.4.44.0302122003230.31435-100000@phoenix.infradead.org>
-Reply-To: kronos@kronoz.cjb.net
+From: James Simmons <jsimmons@infradead.org>
+Subject: [FBDEV patch] More updates.
+Date: Fri, 14 Feb 2003 23:26:22 +0000 (GMT)
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <Pine.LNX.4.44.0302142321320.7167-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail-3.tiscali.it ([195.130.225.149] helo=mail.tiscali.it)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18joPl-0000iG-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 14 Feb 2003 14:34:37 -0800
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0302122003230.31435-100000@phoenix.infradead.org>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
-
-Il Wed, Feb 12, 2003 at 08:04:19PM +0000, James Simmons ha scritto: 
-> > If   I  append   a  specific   video  mode   I'll  get   "out  of   scan
-> > range"   or  "no   signal"  depending   on  the   video  mode. This   is
-> > "video=radeon:640x480-16@85" (no signal):
-> 
-> Ug. The default mode in the modeb must be not supported by your card. Can 
-> you try lowering the value for 85.
-
-I tried 75, 70, 60 without success. Btw both monitor and video card can
-handle 640x480@85Hz (the monitor can go up to 100Hz).
-
-Luca
--- 
-Reply-To: kronos@kronoz.cjb.net
-Home: http://kronoz.cjb.net
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
 
--------------------------------------------------------
-This SF.NET email is sponsored by: FREE  SSL Guide from Thawte
-are you planning your Web Server Security? Click here to get a FREE
-Thawte SSL guide and find the answers to all your  SSL security issues.
-http://ads.sourceforge.net/cgi-bin/redirect.pl?thaw0026en
+Hi!
+
+ Here is the new fbdev patch. It is big because of the new logo code.Many 
+bug fixes. 
+
+You can do a pull at bk://fbdev.bkbits.net/fbdev-2.5
+
+The diff is at 
+
+http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
+
+The changes are
+
+ arch/mips64/Kconfig                        |    4 
+ arch/ppc/syslib/prom.c                     |    3 
+ arch/ppc/syslib/prom_init.c                |   28 
+ arch/ppc64/kernel/prom.c                   |   27 
+ drivers/char/vt.c                          |    8 
+ drivers/video/Kconfig                      |    1 
+ drivers/video/Makefile                     |    3 
+ drivers/video/aty/atyfb_base.c             |    6 
+ drivers/video/aty/mach64_accel.c           |   45 
+ drivers/video/aty/mach64_ct.c              |  356 +++---
+ drivers/video/aty/mach64_cursor.c          |    4 
+ drivers/video/aty/mach64_gx.c              |   18 
+ drivers/video/cfbcopyarea.c                |   42 
+ drivers/video/cfbfillrect.c                |   12 
+ drivers/video/cfbimgblt.c                  |   90 -
+ drivers/video/console/fbcon.c              |   60 -
+ drivers/video/console/newport_con.c        |   69 -
+ drivers/video/fbmem.c                      |  142 +-
+ drivers/video/fbmon.c                      |    3 
+ drivers/video/hgafb.c                      |    9 
+ drivers/video/i810/i810.h                  |    7 
+ drivers/video/i810/i810_accel.c            |   64 -
+ drivers/video/i810/i810_main.c             |  392 +------
+ drivers/video/i810/i810_main.h             |    2 
+ drivers/video/logo/Kconfig                 |   67 +
+ drivers/video/logo/Makefile                |   27 
+ drivers/video/logo/logo.c                  |  100 +
+ drivers/video/logo/logo_dec_clut224.ppm    | 1603 +++++++++++++++++++++++++++++
+ drivers/video/logo/logo_linux_clut224.ppm  | 1603 +++++++++++++++++++++++++++++
+ drivers/video/logo/logo_linux_mono.pbm     |  202 +++
+ drivers/video/logo/logo_linux_vga16.ppm    | 1603 +++++++++++++++++++++++++++++
+ drivers/video/logo/logo_mac_clut224.ppm    | 1603 +++++++++++++++++++++++++++++
+ drivers/video/logo/logo_parisc_clut224.ppm | 1603 +++++++++++++++++++++++++++++
+ drivers/video/logo/logo_sgi_clut224.ppm    | 1603 +++++++++++++++++++++++++++++
+ drivers/video/logo/logo_sun_clut224.ppm    | 1603 +++++++++++++++++++++++++++++
+ drivers/video/logo/logo_superh_clut224.ppm | 1603 +++++++++++++++++++++++++++++
+ drivers/video/logo/logo_superh_mono.pbm    |  202 +++
+ drivers/video/logo/logo_superh_vga16.ppm   | 1603 +++++++++++++++++++++++++++++
+ drivers/video/maxinefb.c                   |    2 
+ drivers/video/maxinefb.h                   |   37 
+ drivers/video/modedb.c                     |    8 
+ drivers/video/neofb.c                      |   81 +
+ drivers/video/pmag-ba-fb.c                 |    2 
+ drivers/video/pmag-ba-fb.h                 |   24 
+ drivers/video/pmagb-b-fb.c                 |    2 
+ drivers/video/pmagb-b-fb.h                 |   32 
+ drivers/video/radeonfb.c                   |    1 
+ drivers/video/riva/fbdev.c                 |  274 ++--
+ drivers/video/skeletonfb.c                 |    6 
+ drivers/video/sstfb.c                      |   14 
+ drivers/video/sstfb.h                      |  355 ------
+ drivers/video/tdfxfb.c                     |    4 
+ drivers/video/tridentfb.c                  |    2 
+ drivers/video/vga16fb.c                    |  100 -
+ include/linux/fb.h                         |   18 
+ include/linux/linux_logo.h                 | 1435 -------------------------
+ include/video/mach64.h                     |   61 +
+ include/video/maxinefb.h                   |   37 
+ include/video/pmag-ba-fb.h                 |   24 
+ include/video/pmagb-b-fb.h                 |   32 
+ include/video/sstfb.h                      |  355 ++++++
+ include/video/vga.h                        |   16 
+ 62 files changed, 16488 insertions(+), 2854 deletions(-)

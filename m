@@ -1,38 +1,86 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Linux-fbdev-devel] Re: radeon, apertures & memory mapping
-Date: Mon, 14 Mar 2005 08:52:46 +1100
-Message-ID: <1110750766.14684.160.camel@gaston>
-References: <1110677744.19810.80.camel@gaston>
-	<20050313082216.GA7362@sci.fi> <1110705646.14684.126.camel@gaston>
-	<20050313103936.GA11002@sci.fi> <1110715499.14684.132.camel@gaston>
-	<9e473391050313081937cde207@mail.gmail.com>
-	<20050313174714.GA15871@sci.fi>
-	<9e4733910503130956401e1107@mail.gmail.com>
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: Fw: [PATCH][2.6.11-mm3] CONFIG_FB_ATY linkage error on PPC32
+Date: Sun, 13 Mar 2005 16:55:37 -0500
+Message-ID: <9e47339105031313553994f15a@mail.gmail.com>
+References: <20050313132844.7270c817.akpm@osdl.org>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-In-Reply-To: <9e4733910503130956401e1107@mail.gmail.com>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1DAb3u-0007Bk-GQ
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Mar 2005 13:55:50 -0800
+Received: from rproxy.gmail.com ([64.233.170.195])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1DAb3r-000165-1l
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Mar 2005 13:55:50 -0800
+Received: by rproxy.gmail.com with SMTP id z35so2686292rne
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 13 Mar 2005 13:55:37 -0800 (PST)
+In-Reply-To: <20050313132844.7270c817.akpm@osdl.org>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/xorg>
-List-Post: <mailto:xorg@lists.freedesktop.org>
-List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
-Sender: xorg-bounces@lists.freedesktop.org
-Errors-To: xorg-bounces@lists.freedesktop.org
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, dri-devel@lists.sourceforge.net, xorg@lists.freedesktop.org
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Mikael Pettersson <mikpe@csd.uu.se>
+
+That will break x86. 
+
+I should move macmodes into the fb base module on PPC and then export
+the needed symbols.
+
+I'll try to eyeball a patch but I haven't figured out yet how to do
+remote ppc builds.
 
 
-> The best model would be to chuck the AGP/PCI Express interface on the
-> board and have a hyperchannel instead. Hyperchannel provides full
-> cache consistency without all of these flushing problems. The GPU
-> really is another specialized CPU, give it a CPU class memory
-> interface.
+On Sun, 13 Mar 2005 13:28:44 -0800, Andrew Morton <akpm@osdl.org> wrote:
+> ack?
+> 
+> Begin forwarded message:
+> 
+> Date: Sun, 13 Mar 2005 00:27:01 +0100 (MET)
+> From: Mikael Pettersson <mikpe@csd.uu.se>
+> To: akpm@osdl.org
+> Cc: linux-kernel@vger.kernel.org
+> Subject: [PATCH][2.6.11-mm3] CONFIG_FB_ATY linkage error on PPC32
+> 
+> 
+> On ppc32 the ATI Mach64 frame buffer references symbols on macmodes.o.
+> In Linus' 2.6.11 macmodes.o is automatically included, but not so in
+> 2.6.11-mm3, causing linkage errors.
+> 
+> The quick-and-dirty hack below worked for me.
+> 
+> /Mikael
+> 
+> --- linux-2.6.11-mm2/drivers/video/Makefile.~1~ 2005-03-09 23:20:08.000000000 +0100
+> +++ linux-2.6.11-mm2/drivers/video/Makefile     2005-03-11 18:03:29.000000000 +0100
+> @@ -29,7 +29,7 @@ obj-$(CONFIG_FB_PM3)            += pm3fb.o
+>  obj-$(CONFIG_FB_MATROX)                  += matrox/
+>  obj-$(CONFIG_FB_RIVA)            += riva/ vgastate.o
+>  obj-$(CONFIG_FB_NVIDIA)                  += nvidia/
+> -obj-$(CONFIG_FB_ATY)             += aty/
+> +obj-$(CONFIG_FB_ATY)             += aty/ macmodes.o
+>  obj-$(CONFIG_FB_ATY128)                  += aty/
+>  obj-$(CONFIG_FB_RADEON)                  += aty/
+>  obj-$(CONFIG_FB_SIS)             += sis/
+> 
 
-You mean HyperTransport ? Well, PCI Express isn't far from that
-neither...
 
-Ben.
+-- 
+Jon Smirl
+jonsmirl@gmail.com
+
+
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

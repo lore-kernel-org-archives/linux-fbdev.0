@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 2/7] fbdev: fix logo drawing failure for vga16fb
-Date: Fri, 10 Sep 2004 05:34:34 +0800
+Subject: [PATCH 1/7] fbdev: remove unnecessary banshee_wait_idle from tdfxfb
+Date: Fri, 10 Sep 2004 05:34:29 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200409100534.34919.adaplas@hotpop.com>
+Message-ID: <200409100534.29454.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C5WYW-0000Av-7t
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 09 Sep 2004 14:34:12 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.71])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1C5WYV-0002Be-5Q
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 09 Sep 2004 14:34:12 -0700
+	id 1C5WYT-0000A0-53
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 09 Sep 2004 14:34:09 -0700
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
+	id 1C5WYS-0005fA-GK
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 09 Sep 2004 14:34:09 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 515F310D67CF
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu,  9 Sep 2004 21:33:56 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id 3FF5379BAA1
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu,  9 Sep 2004 21:33:54 +0000 (UTC)
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,26 +32,65 @@ Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, linux-kernel@vger.kernel.org
 
-This fixes the logo failing to draw in vga16fb due to faulty boolean logic.
+- This patch removes the unnecessary call to banshee_wait_idle() from
+  tdfxfb_copyarea, imageblit and fillrect.  Removal of the sync will garner
+  an additional ~20% in scrolling speed.
+
+- Removes "inverse" which generates a compile warning if modular.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
-  vga16fb.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+ tdfxfb.c |    9 +--------
+ 1 files changed, 1 insertion(+), 8 deletions(-)
 
-diff -uprN linux-2.6.9-rc1-mm4-orig/drivers/video/vga16fb.c linux-2.6.9-rc1-mm4/drivers/video/vga16fb.c
---- linux-2.6.9-rc1-mm4-orig/drivers/video/vga16fb.c	2004-09-07 21:18:35.000000000 +0800
-+++ linux-2.6.9-rc1-mm4/drivers/video/vga16fb.c	2004-09-07 21:30:39.059300648 +0800
-@@ -1306,7 +1306,7 @@ void vga16fb_imageblit(struct fb_info *i
- {
- 	if (image->depth == 1)
- 		vga_imageblit_expand(info, image);
--	else if (image->depth <= info->var.bits_per_pixel)
-+	else
- 		vga_imageblit_color(info, image);
+diff -uprN linux-2.6.9-rc1-mm4-orig/drivers/video/tdfxfb.c linux-2.6.9-rc1-mm4/drivers/video/tdfxfb.c
+--- linux-2.6.9-rc1-mm4-orig/drivers/video/tdfxfb.c	2004-09-08 12:45:38.552927032 +0800
++++ linux-2.6.9-rc1-mm4/drivers/video/tdfxfb.c	2004-09-08 12:47:28.012286680 +0800
+@@ -202,7 +202,6 @@ static unsigned long do_lfb_size(struct 
+  */
+ static int  nopan   = 0;
+ static int  nowrap  = 1;      // not implemented (yet)
+-static int  inverse = 0;
+ static char *mode_option __initdata = NULL;
+ 
+ /* ------------------------------------------------------------------------- 
+@@ -921,7 +920,6 @@ static void tdfxfb_fillrect(struct fb_in
+ 	tdfx_outl(par,	COMMAND_2D, COMMAND_2D_FILLRECT | (tdfx_rop << 24));
+ 	tdfx_outl(par,	DSTSIZE,    rect->width | (rect->height << 16));
+ 	tdfx_outl(par,	LAUNCH_2D,  rect->dx | (rect->dy << 16));
+-	banshee_wait_idle(info);
  }
  
+ /*
+@@ -957,7 +955,6 @@ static void tdfxfb_copyarea(struct fb_in
+ 	tdfx_outl(par,	DSTSIZE,   area->width | (area->height << 16));
+ 	tdfx_outl(par,	DSTXY,     dx | (dy << 16));
+ 	tdfx_outl(par,	LAUNCH_2D, sx | (sy << 16)); 
+-	banshee_wait_idle(info);
+ }
+ 
+ static void tdfxfb_imageblit(struct fb_info *info, const struct fb_image *image) 
+@@ -1025,7 +1022,6 @@ static void tdfxfb_imageblit(struct fb_i
+ 		case 2:  tdfx_outl(par,	LAUNCH_2D,*(u16*)chardata); break;
+ 		case 3:  tdfx_outl(par,	LAUNCH_2D,*(u16*)chardata | ((chardata[3]) << 24)); break;
+ 	}
+-	banshee_wait_idle(info);
+ }
+ #endif /* CONFIG_FB_3DFX_ACCEL */
+ 
+@@ -1392,10 +1388,7 @@ void tdfxfb_setup(char *options)
+ 	while ((this_opt = strsep(&options, ",")) != NULL) {	
+ 		if (!*this_opt)
+ 			continue;
+-		if (!strcmp(this_opt, "inverse")) {
+-			inverse = 1;
+-			fb_invert_cmaps();
+-		} else if(!strcmp(this_opt, "nopan")) {
++		if(!strcmp(this_opt, "nopan")) {
+ 			nopan = 1;
+ 		} else if(!strcmp(this_opt, "nowrap")) {
+ 			nowrap = 1;
 
 
 

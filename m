@@ -1,17 +1,16 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Possible bug: nasty interaction between
- framebuffer and DRI/DRM
-Date: Fri, 31 May 2002 22:10:53 +0200 (MEST)
+Subject: Re: Adding an fb_sync() operation to fb_ops
+Date: Fri, 31 May 2002 22:14:30 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0205312209030.13028-100000@vervain.sonytel.be>
-References: <200205311939.13659.chrish@gmx.co.uk>
+Message-ID: <Pine.GSO.4.21.0205312213000.13028-100000@vervain.sonytel.be>
+References: <Pine.LNX.4.44.0205311240100.3190-100000@www.transvirtual.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from mail.sonytel.be ([193.74.243.200])
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17Dsjq-0004xA-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 31 May 2002 13:11:07 -0700
-In-Reply-To: <200205311939.13659.chrish@gmx.co.uk>
+	id 17DsnS-0005EB-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 31 May 2002 13:14:50 -0700
+In-Reply-To: <Pine.LNX.4.44.0205311240100.3190-100000@www.transvirtual.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,18 +22,30 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Chris Howells <chrish@gmx.co.uk>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: James Simmons <jsimmons@transvirtual.com>
+Cc: Antonino Daplas <adaplas@pol.net>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-On Fri, 31 May 2002, Chris Howells wrote:
-> On Friday 31 May 2002 1:08 pm, Geert Uytterhoeven wrote:
+On Fri, 31 May 2002, James Simmons wrote:
+> > Secondly (not related to the topic), I was wondering if we can change
+> > the color value passed to fillrect and imageblit.  Presently, the
+> > palette index is always passed regardless of the visual. Should the
+> > color value passed be reflective of the framebuffer format instead?
+> > Pass a palette index if pseudocolor, an RGB value for truecolor, etc.
+> >
+> > Doing the latter will simplify the low-level drawing function and at the
+> > same time, it will make the drawing functions more flexible -- ie,
+> > possiblity of exporting to userspace.
 > 
-> > Do you use `option UseFBDev' in your XF86Config?
-> 
-> No I'm not. Should I be?
+> We had this discussion sometime ago. We discovered it was just impossible
+> to handle all the possible different color formats in the higher levels.
+> We ended up with way to many #ifdefs. So it was decided to let the drivers
+> handle it instead. Actually if you wanted it to be useable to userland
+> then it makes even more sense to use the color map index instead. Think
+> about all the if() statements you would need in userland.
 
-Yes. Without that option, the X server will change the graphics chip's
-registers behind the back of aty128fb.
+Userland can easily set up function pointers, depending on the used format
+(for commonly used formats). Even for the generic case it can be done without
+too much loss of efficiency using look-up tables, cfr. fbtest.
 
 Gr{oetje,eeting}s,
 

@@ -1,13 +1,12 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Re: [Dri-devel] Re: [Linux-fbdev-devel] Redesign
- of kernel graphics interface
-Date: Tue, 11 May 2004 00:58:42 +0100 (BST)
+From: "Sottek, Matthew J" <matthew.j.sottek@intel.com>
+Subject: RE: [Linux-fbdev-devel] Current discussion about the future of free software graphics
+Date: Mon, 10 May 2004 17:11:01 -0700
 Sender: mesa3d-dev-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0405110057000.8016-100000@phoenix.infradead.org>
-References: <20040510204742.GA12863@guug.org>
+Message-ID: <A98078D7EF5BEA4D8D8FD797FFBBC75F0742A3A6@fmsmsx402.fm.intel.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <mesa3d-dev-admin@lists.sourceforge.net>
-In-Reply-To: <20040510204742.GA12863@guug.org>
+content-class: urn:content-classes:message
 Errors-To: mesa3d-dev-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
 	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=unsubscribe>
@@ -17,31 +16,49 @@ List-Help: <mailto:mesa3d-dev-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
 	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=mesa3d-dev>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Otto Solares <solca@guug.org>
-Cc: Nicolas Souchu <nsouch@free.fr>, Jon Smirl <jonsmirl@yahoo.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, dri-devel <dri-devel@lists.sourceforge.net>, mesa3d-dev <mesa3d-dev@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: =?iso-8859-1?Q?Michel_D=E4nzer?= <michel@daenzer.net>, xserver@freedesktop.org, mesa3d-dev@lists.sourceforge.net, dri-devel@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net
 
 
-> On Mon, May 10, 2004 at 10:39:50PM +0000, Nicolas Souchu wrote:
-> > Do apps manage their swap? No. I think the OS should be responsible for
-> > placing the data (vertices, textures, commands) at the right/best place
-> > for the HW 3D engine and the client should only fill virtual memory.
-> 
-> > http://www.freebsd.org/~nsouch/kgi4BSD
-> 
-> Browsing through kgi.sf.net I found that they have proper multihead
-> and DDC2 support.  They just lack DRI integrated into KGI and it will
-> rock from my user perspective.
-> 
-> Is true that the BSDs are adopting KGI as their unified kernel
-> graphics layer?
+>It does, or the ioctl must verify the register data, which could =
+require
+>about the same amount of code as computing it in the kernel in the =
+first
+>place (possibly even more; the problem changes from computing a valid
+>combination of register values for a specific requested mode to =
+limiting
+>the huge number of register value combinations to those that don't lock
+>up the chip or worse). I've pointed this out several times before, but
+>nobody has presented a solution yet. Will the userspace code live in a
+>daemon that runs as root? Or will only privileged processes be allowed
+>to change display properties?
 
-It looks like BSD is heading in the right direction. If this lame idea of 
-a userland library goes threw I wil quite fbdev developement and go over 
-to BSD then. Either that or fork the tree and start my company with my 
-work.
+I am in agreement with Michel on this point.
+There is a privilege problem.
+Either you trust the data coming from user-space to kernel-space
+implicitly which means the user-space process now must be privileged,
+or you don't trust user-space and you have to re-validate the data =
+coming
+into the kernel.
+The former doesn't buy you much. Now you have another root running =
+deamon
+floating around to be a security problem.
+The latter's protocol and re-validation is difficult to the point of =
+being
+a complete waste of effort.
 
+I have conceded that I am fine with a user-space mode setting API
+as long as there is no imposed user/kernel split. For those who's chips
+would require too much code to revalidate, they can just put the whole
+mode setting in the kernel. I think we will discover that many of the
+more advanced drivers will end up taking this route.
+
+In the end I think this design is more complicated than is necessary. =
+The
+end goal should be to minimize privileged code, not just kernel code. =
+When
+you go with a split design you are forcing more privileged code than if
+all the code lived in the same place.
 
 
 

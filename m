@@ -1,62 +1,59 @@
-From: Komal Shah <komal_shah802003@yahoo.com>
-Subject: Re: Fb rotation 2.6.x
-Date: Wed, 16 Mar 2005 05:59:23 -0800 (PST)
-Message-ID: <20050316135923.8064.qmail@web53605.mail.yahoo.com>
-References: <200503160747.20530.adaplas@hotpop.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Subject: Re: [Linux-fbdev-devel] Re: FB model basic issues (WAS: radeon,
+	apertures & memory mapping)
+Date: Wed, 16 Mar 2005 16:09:48 +0200
+Message-ID: <20050316140948.GA20074@sci.fi>
+References: <1110837171.5863.16.camel@gaston>
+	<1110838356.4003.548.camel@localhost>
+	<1110839873.5673.41.camel@gaston>
+	<1110862777.4044.592.camel@localhost>
+	<20050315060138.GA13064@sci.fi>
+	<Pine.LNX.4.62.0503150946180.30569@numbat.sonytel.be>
+	<20050315133628.GA16051@sci.fi> <1110929582.25201.34.camel@gaston>
+	<1110950509.5594.31.camel@localhost>
+	<1110954676.5271.2.camel@gaston>
 Mime-Version: 1.0
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DBZ3b-0004EX-Gt
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Mar 2005 05:59:31 -0800
-Received: from web53605.mail.yahoo.com ([206.190.37.38])
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.41)
-	id 1DBZ3Z-0006Lk-7r
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Mar 2005 05:59:31 -0800
-In-Reply-To: <200503160747.20530.adaplas@hotpop.com>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+In-Reply-To: <1110954676.5271.2.camel@gaston>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
+	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/xorg>
+List-Post: <mailto:xorg@lists.freedesktop.org>
+List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
+	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
+Sender: xorg-bounces@lists.freedesktop.org
+Errors-To: xorg-bounces@lists.freedesktop.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>, Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, dri-devel@lists.sourceforge.net, xorg@lists.freedesktop.org
 
---- "Antonino A. Daplas" <adaplas@hotpop.com> wrote:
-> Sometimes people use multiple fbdevs mapped to
-> different consoles, so a
-> set_par() is called for each fb_info mapped for
-> each console.
+On Wed, Mar 16, 2005 at 05:31:16PM +1100, Benjamin Herrenschmidt wrote:
+> On Wed, 2005-03-16 at 00:21 -0500, Michel D=E4nzer wrote:
+>=20
+> > > >=20
+> > > > Actually people do use it on big-endian systems but since neither=
+ the=20
+> > > > mach64, ati128 or radeon drivers play with the swapper settings I=
+ can only=20
+> > > > assume that they haven't been tested very extensively.
+> > >=20
+> > > You are wrong here, all of those 3 drivers do play with the swapper
+> > > setting, [...]
+> >=20
+> > I think he was referring to the DirectFB drivers.
 
-Thanx for the reply. My kernel seems to be old 2.6.9 -
-compared to the patches you had supplied me. I should
-update my omap242x tree to 2.6.11 atleast. So that it
-can cover the all the changes which were went in for
-fbcon.
+Exactly. I prorably should have mentioned that explicitly.
 
-But before that too, I will try to call set_par only
-once and update the var info as you had suggested in
-the patch , and will let you know about what happens
-on LCD panel :-).
+> Well, do they "revert" it after atyfb/aty128fb/radeonfb set it then ?
+> it's definitely set on mode switch.
 
----Komal Shah
+The point is that there can be offscreen surfaces with different depth=20
+than the fbdev surface.
 
-
-		
-__________________________________ 
-Do you Yahoo!? 
-Yahoo! Small Business - Try our new resources site!
-http://smallbusiness.yahoo.com/resources/ 
-
-
--------------------------------------------------------
-SF email is sponsored by - The IT Product Guide
-Read honest & candid reviews on hundreds of IT Products from real users.
-Discover which products truly live up to the hype. Start reading now.
-http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
+--=20
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/

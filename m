@@ -1,17 +1,14 @@
-From: Alex Deucher <alexdeucher@gmail.com>
-Subject: Re: FB model basic issues (WAS: radeon, apertures & memory mapping)
-Date: Wed, 16 Mar 2005 16:17:37 -0500
-Message-ID: <a728f9f90503161317373ccef6@mail.gmail.com>
-References: <1110837171.5863.16.camel@gaston> <1110839873.5673.41.camel@gaston>
-	<1110862777.4044.592.camel@localhost> <20050315060138.GA13064@sci.fi>
-	<4236C770.8020101@hispeed.ch> <1110907029.4001.624.camel@localhost>
-	<1110942559.24296.107.camel@gaston> <20050316200808.GB6651@sci.fi>
-	<a728f9f90503161258181977fa@mail.gmail.com>
-	<20050316210812.GA19937@sci.fi>
-Reply-To: Alex Deucher <alexdeucher@gmail.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [Linux-fbdev-devel] Re: FB model basic issues (WAS: radeon,
+	apertures & memory mapping)
+Date: Thu, 17 Mar 2005 10:20:07 +1100
+Message-ID: <1111015207.15509.49.camel@gaston>
+References: <1110837171.5863.16.camel@gaston>
+	<1110954676.5271.2.camel@gaston> <20050316140948.GA20074@sci.fi>
+	<200503161148.58067.ajax@nwnk.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20050316210812.GA19937@sci.fi>
+In-Reply-To: <200503161148.58067.ajax@nwnk.net>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
 	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
@@ -23,62 +20,29 @@ List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
 Sender: xorg-bounces@lists.freedesktop.org
 Errors-To: xorg-bounces@lists.freedesktop.org
 Content-Type: text/plain; charset="iso-8859-1"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, =?ISO-8859-1?Q?Michel_D=E4nzer?= <michel@daenzer.net>, Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, dri-devel@lists.sourceforge.net, xorg@lists.freedesktop.org
+To: Adam Jackson <ajax@nwnk.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Jon Smirl <jonsmirl@yahoo.com>, xorg@lists.freedesktop.org, dri-devel@lists.sourceforge.net, Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
 
-On Wed, 16 Mar 2005 23:08:12 +0200, Ville Syrj=E4l=E4 <syrjala@sci.fi> wrot=
+On Wed, 2005-03-16 at 11:48 -0500, Adam Jackson wrote:
+> On Wednesday 16 March 2005 09:09, Ville Syrj=E4l=E4 wrote:
+> > On Wed, Mar 16, 2005 at 05:31:16PM +1100, Benjamin Herrenschmidt wrot=
 e:
-> On Wed, Mar 16, 2005 at 03:58:07PM -0500, Alex Deucher wrote:
-> > On Wed, 16 Mar 2005 22:08:08 +0200, Ville Syrj=E4l=E4 <syrjala@sci.fi> =
-wrote:
-> > > On Wed, Mar 16, 2005 at 02:09:18PM +1100, Benjamin Herrenschmidt wrot=
-e:
-> > > >
-> > > > > It's ugly, but that's not the point. The point is that all deploy=
-ed
-> > > > > versions of X (and even current X.org CVS head still, in fact) ma=
-ke this
-> > > > > assumption.
-> > > >
-> > > > Oh, that's fine and that's not a problem. I will only repaint the
-> > > > framebuffer on bit depth or line lenght changes. I'm trying to talk
-> > > > about the _future_ here. That is support for dual head at the fbdev
-> > > > level and other niceties.
-> > >
-> > > I don't see the current system slowly evolving into some superb futur=
-e
-> > > system with an in kernel memory manager. The current APIs just have t=
-oo
-> > > many limitations. I think the memory manager must be the foundation o=
-f
-> > > everything and after it's in place the fbdev API should be able to us=
-e it.
-> > > The only change to simple fbdev apps would be that they can't get acc=
-ess
-> > > to any offscreen memory as they do now. Something like DirectFB would=
- need
-> > > to change to accomodate the new system but I don't see that as a prob=
-lem.
-> > >
-> > > I think the best short term option for radeonfb is to simply follow
-> > > matroxfb's example and cut the memory into two parts. The cutoff poin=
-t
-> > > should probably be configurable via a module option.
-> > >
+> > > Well, do they "revert" it after atyfb/aty128fb/radeonfb set it then=
+ ?
+> > > it's definitely set on mode switch.
 > >
-> > if we are going to go through the trouble to do it at all why not do
-> > it "the right way"?
+> > The point is that there can be offscreen surfaces with different dept=
+h
+> > than the fbdev surface.
 >=20
-> I haven't seen anyone coming forward with a design/code for the memory
-> manager.
->=20
-> In the meantime I'm assuming that people might want to make some use of
-> their dualhead cards...
->=20
+> _Will_ be.  Otherwise GL and Render performance drops through the floor=
+.
 
-Good point.
+Yes, but again, GL/DRI knows how to play with the swapper, that is not
+my point. Looks like people here prefer arguing for the sake of it
+rather than trying to make progress...
 
-> --
-> Ville Syrj=E4l=E4
-> syrjala@sci.fi
-> http://www.sci.fi/~syrjala/
->
+I think I'll just decide something randomly in radeonfb and let folks
+cope with it.
+
+Ben.

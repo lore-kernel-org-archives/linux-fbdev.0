@@ -1,23 +1,21 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
-	one works ;-)
-Date: Thu, 29 Apr 2004 10:50:51 +1000
+From: Otto Solares <solca@guug.org>
+Subject: Re: [PATCH] neofb patches
+Date: Wed, 28 Apr 2004 19:06:12 -0600
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1083199850.20089.110.camel@gaston>
-References: <Pine.LNX.4.44.0404290100490.3125-100000@phoenix.infradead.org>
+Message-ID: <20040429010612.GC24584@guug.org>
+References: <Pine.LNX.4.44.0404271938330.20536-100000@phoenix.infradead.org> <408EE34F.8080106@undead.cc> <1083107454.16544.42.camel@gaston> <20040428002037.GE22495@guug.org> <1083112565.20473.10.camel@gaston> <20040428070832.GA23411@guug.org> <1083147416.18416.24.camel@thor.asgaard.local> <20040428163730.GA24448@guug.org> <1083191201.18413.73.camel@thor.asgaard.local> <1083195769.20089.106.camel@gaston>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIzrw-0004jG-V2
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 17:57:40 -0700
-Received: from gate.crashing.org ([63.228.1.57] ident=root)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1BIzrw-0006n7-IB
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 17:57:40 -0700
-In-Reply-To: <Pine.LNX.4.44.0404290100490.3125-100000@phoenix.infradead.org>
+	id 1BIzzr-0005qA-Og
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 18:05:51 -0700
+Received: from guug.org ([168.234.203.30])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BIzzr-0008RH-AU
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 18:05:51 -0700
+Content-Disposition: inline
+In-Reply-To: <1083195769.20089.106.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,27 +26,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, John Zielinski <grim@undead.cc>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, 2004-04-29 at 10:02, James Simmons wrote:
-> > > How do you feel about using modedb handling in fbcon. Let me create this 
-> > > patch and test it out. If it works then we can resolve this issue.
-> > 
-> > No, no, no...
-> > 
-> > First, we would have to fix all drivers to properly probe monitors or
-> > provide some valid monitor data for things that cannot be probed. Then,
-> > I don't think modedb is really an fbcon matter. I completely agree with
-> > Geert here, I think the current scheme is backward.
-> 
-> No we don't. We have the default modedb. I already tested a patch using 
-> modedb. It works like a charm :-) I can stty all I want!!!! 
+On Thu, Apr 29, 2004 at 09:42:50AM +1000, Benjamin Herrenschmidt wrote:
+> The idea here is to have a small per-card low level driver (no common
+> API or little of it) used to do the IRQ, fifo/ring management & blasting
+> of registers. Everything else is client of this driver, including
+> possibly fbcon. That also means we move all of mode management to
+> userland, which I tend to slowly agree with. Remember that in 2.7, we
+> may have an initramfs with klibc etc... thus we can have userland code
+> shipping along with the kernel.
 
-On your monitor... then most TFT owners will curse you :)
+The fbdev is low-level, i vote for fbdev to be the single entity
+for graphics in linux.
 
-Ben.
+> I started working on a userland API do deal with all of the mode
+> management cruft that could be implemented either on top of fbdev or
+> something else, but I didn't have time to finish. And I think Jon Smirl
+> started his own different thing (of course) there...
 
+I would like to see that basic stuff being done in the kernel like
+mode setting.  The drivers should have a better idea of modes than
+libraries in userspace.
+
+-otto
 
 
 

@@ -1,61 +1,60 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [Linux-fbdev-devel] fbdev broken in current bk for PPC
-Date: Fri, 10 Sep 2004 13:28:57 +0800
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <200409101328.57431.adaplas@hotpop.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: fbdev broken in current bk for PPC
+Date: Fri, 10 Sep 2004 16:00:02 +1000
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <1094796002.14398.118.camel@gaston>
 References: <1094783022.2667.106.camel@gaston>
-Reply-To: adaplas@pol.net
+	 <200409101328.57431.adaplas@hotpop.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S268138AbUIJFab@vger.kernel.org>
-In-Reply-To: <1094783022.2667.106.camel@gaston>
-Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1C5eTn-0004lk-Mf
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 09 Sep 2004 23:01:52 -0700
+Received: from gate.crashing.org ([63.228.1.57])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.34)
+	id 1C5eTK-00049M-JI
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 09 Sep 2004 23:01:31 -0700
+In-Reply-To: <200409101328.57431.adaplas@hotpop.com>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Kernel list <linux-kernel@vger.kernel.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@osdl.org>
+To: adaplas@pol.net
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
 
-On Friday 10 September 2004 10:23, Benjamin Herrenschmidt wrote:
-> Recent changes upstream are breaking fbdev on pmacs.
->
-> I haven't had time to go deep into that (but I suspect Linus sees it
-> too on his own g5 unless he removed offb from his .config).
->
-> From what I see, it seems that offb is kicking in by default, reserves
-> the mmio regions, and then whatever chip driver loads can't access them.
->
-> offb is supposed to be a "fallback" driver in case no fbdev is taking
-> over, it should also be "forced" in with video=ofonly kernel command
-> line. This logic has been broken.
->
+On Fri, 2004-09-10 at 15:28, Antonino A. Daplas wrote:
 
-Hi Ben,
+> If fb_get_options returns an error, drivers will not proceed with their
+> initialization. The second method is more compatible with the
+> previous setup semantics.
+> 
+> I told Geert that if the changes did bite us, then I have no choice
+> but to add support for the second method.
+> 
+> So, if you think that the first method is not enough, then I will add the
+> second method. Let me know.
 
-Actually, I was thinking about this problem with offb.  I was planning on
-adding video=offb:off support for offb, and then place offb at the very top
-drivers Makefile (the reason why I placed it there, but forgot to add the
-setup support for offb).  So, without the 'off' option, offb becomes the
-first driver that gets initialized by reason that it's at the top, and with
-the 'off' option, it just exits initialization immediately, giving the other
-drivers a chance to get through.
+I submited a patch moving offb to the bottom of the Makefile to at
+least restore normal drivers. For ofonly, a bit more hackish, but
+what about failing register_framebuffer for anything but offb ?
 
-This first method is easy to add.
+Ben.
 
-The second method is not harder but will involve, again, changes to all 
-drivers.  The only sane method I can think of is to change fb_get_options so
-it returns an error if:
 
-a. "off" option is enabled
-b. "ofonly" is enabled but only if name != "offb"
 
-If fb_get_options returns an error, drivers will not proceed with their
-initialization. The second method is more compatible with the
-previous setup semantics.
 
-I told Geert that if the changes did bite us, then I have no choice
-but to add support for the second method.
-
-So, if you think that the first method is not enough, then I will add the
-second method. Let me know.
-
-Tony
+-------------------------------------------------------
+This SF.Net email is sponsored by: YOU BE THE JUDGE. Be one of 170
+Project Admins to receive an Apple iPod Mini FREE for your judgement on
+who ports your project to Linux PPC the best. Sponsored by IBM. 
+Deadline: Sept. 13. Go here: http://sf.net/ppc_contest.php

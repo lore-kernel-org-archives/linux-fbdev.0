@@ -1,21 +1,22 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Re: [PATCH] Fix get_std_timing
-Date: Thu, 11 Mar 2004 23:32:59 +0000 (GMT)
+From: Unknown <unknown@unknown.invalid>
+Subject: Undeliverable message returned to sender
+Date: Fri, 12 Mar 2004 19:22:34 +0000 (UCT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0403112332370.7443-100000@phoenix.infradead.org>
-References: <1079045205.9746.297.camel@gaston>
-Mime-Version: 1.0
+Message-ID: <20040312192234.A51D7289404@mail42-haw-R.bigfish.com>
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B1Zxf-00066Q-U6
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 11 Mar 2004 15:51:35 -0800
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1B1sXL-0006lE-Qu
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 12 Mar 2004 11:41:39 -0800
+Received: from mail-haw.bigfish.com ([12.129.199.61] helo=mail42-haw-R.bigfish.com)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1B1Zfm-00039z-Le
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 11 Mar 2004 15:33:06 -0800
-In-Reply-To: <1079045205.9746.297.camel@gaston>
+	id 1B1roL-0003Jy-UC
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 12 Mar 2004 10:55:09 -0800
+Received: from localhost.localdomain (localhost.localdomain [127.0.0.1])
+	by mail42-haw-R.bigfish.com (Postfix) with ESMTP id A51D7289404
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 12 Mar 2004 19:22:34 +0000 (UCT)
+From: Content Filter <>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,22 +26,40 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Andrew Morton <akpm@osdl.org>, Kronos <kronos@kronoz.cjb.net>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
+This message was created automatically by mail delivery software.
 
-> > I just tested the vanilla kernel with the radeon card. Then I tested it 
-> > with my montior patch. It worked :-) I'm writing to you from that machine. 
-> > So it is safe to apply the patch.
-> 
-> I'll give it a try. Note that if that's the fbmon changes (plus GTF fix)
-> that were in the fbdev tree so far, I can confirm they work fine.
+Delivery failed for the following recipients(s):
+ 	chris.schuh@pcsupport.com
 
-Yes they are. I plan to work on the stty crashes tonight.
+The message you sent contained an attachment which the recipient has chosen to block.
+Usually these sort of attachments are blocked to prevent malicious software from
+being sent to the recipient in question.
 
+The name(s) of the blocked file(s) follow:
+	your_document.pif
 
+To send this file, please place it in a compressed archive using WinZip (http://www.winzip.com) or the archive software of your choice.
+
+----- Original Message Header -----
+Received: by mail42-haw (MessageSwitch) id 1079119354609104_27401; Fri, 12 Mar 2004 19:22:34 +0000 (UCT)
+Received: from pcsupport.com (r200-40-181-146.adsl.anteldata.net.uy [200.40.181.146])
+	by mail42-haw.bigfish.com (Postfix) with ESMTP id 0671D2893EE
+	for <chris.schuh@pcsupport.com>; Fri, 12 Mar 2004 19:22:21 +0000 (UCT)
+From: linux-fbdev-devel@lists.sourceforge.net
+To: chris.schuh@pcsupport.com
+Subject: Re: Re: Document
+Date: Fri, 12 Mar 2004 16:22:22 -0300
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_0009_000016BE.00003CC1"
+X-Priority: 3
+X-MSMail-Priority: Normal
+Message-Id: <20040312192221.0671D2893EE@mail42-haw.bigfish.com>
 
 
 -------------------------------------------------------

@@ -1,25 +1,25 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [PATCH 2.4.29-pre1] radeonfb: don't try to ioreamp the entire VRAM [was: Re: why does radeonfb work fine in 2.6, but not in 2.4.29-pre1?]
-Date: Thu, 2 Dec 2004 05:50:38 +0800
-Message-ID: <200412020550.38324.adaplas@hotpop.com>
-References: <20041128184606.GA2537@middle.of.nowhere> <Pine.GSO.4.61.0412011724010.26820@waterleaf.sonytel.be> <20041201203711.GA21008@dreamland.darkstar.lan>
+From: Andrew Zabolotny <zap@homelink.ru>
+Subject: Re: Re: Backlight support
+Date: Thu, 2 Dec 2004 01:34:37 +0300
+Message-ID: <20041202013437.5d63234e.zap@homelink.ru>
+References: <40ED4FAC.70406@ticino.com>
+	<1089274696.4740.3.camel@localhost>
+	<41AB2E71.8080809@imc-berlin.de>
+	<f9d2a5e104112916252c253a2b@mail.gmail.com>
+	<017c01c4d6f9$a34fc010$0f01a8c0@max>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CZcNg-0005bu-6B
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 01 Dec 2004 13:51:24 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.61])
+	id 1CZd4K-0000jN-Fn
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 01 Dec 2004 14:35:28 -0800
+Received: from mail.homelink.ru ([81.9.33.123] helo=eltel.net)
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CZcNc-0003h5-2D
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 01 Dec 2004 13:51:24 -0800
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 9B7FBAE6113
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed,  1 Dec 2004 21:51:04 +0000 (UTC)
-In-Reply-To: <20041201203711.GA21008@dreamland.darkstar.lan>
-Content-Disposition: inline
+	id 1CZd4G-0001nv-N2
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 01 Dec 2004 14:35:28 -0800
+In-Reply-To: <017c01c4d6f9$a34fc010$0f01a8c0@max>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,53 +31,55 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, Kronos <kronos@people.it>
-Cc: Marcelo Tosatti <marcelo.tosatti@cyclades.com>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: rpurdie@rpsys.net, russ.dill@gmail.com, steven.scholz@imc-berlin.de, lenz@cs.wisc.edu
 
-On Thursday 02 December 2004 04:37, Kronos wrote:
-> Il Wed, Dec 01, 2004 at 05:25:52PM +0100, Geert Uytterhoeven ha scritto:
-> > > Make fb layer aware of the difference between the ioremap()'ed VRAM and
-> > > total available VRAM.
-> > > smem_len in struct fb_fix_screeninfo still contains the amount of
-> > > physical VRAM (reported to userspace via FBIOGET_FSCREENINFO ioctl) and
-> > > the new field mapped_vram contains the amount of VRAM actually
-> > > ioremap()'ed by drivers (used in read/write/mmap operations).
-> > > Since there was unused padding at the end of struct fb_fix_screeninfo
-> > > binary compatibility with userspace utilities is retained.
-> > > If mapped_vram is not set it's assumed that the entire framebuffer is
-> > > mapped, thus other drivers are unaffected by this patch.
-> > >
-> > > The patch has been tested by Jurriaan <thunder7@xs4all.nl>.
-> > >
-> > > Signed-off-by: Luca Tettamanti <kronos@people.it>
-> > >
-> > > --- a/include/linux/fb.h	2004-11-30 18:30:08.000000000 +0100
-> > > +++ b/include/linux/fb.h	2004-11-30 18:33:00.000000000 +0100
-> > > @@ -126,7 +126,8 @@
-> > >  					/* (physical address) */
-> > >  	__u32 mmio_len;			/* Length of Memory Mapped I/O  */
-> > >  	__u32 accel;			/* Type of acceleration available */
-> > > -	__u16 reserved[3];		/* Reserved for future compatibility */
-> > > +	__u32 mapped_vram;		/* Amount of ioremap()'ed VRAM */
-> > > +	__u16 reserved[1];		/* Reserved for future compatibility */
-> > >  };
-> >
-> > I don't really like this patch. mapped_vram doesn't matter for user space
-> > at all, so it does not belong to fb_fix_screeninfo.
->
-> Hmm, it looked sensible to me since it's the max amount of data that
-> userspace can read (or write) from /dev/fb%d.
+On Tue, 30 Nov 2004 16:28:26 -0000
+"Richard Purdie" <rpurdie@rpsys.net> wrote:
 
-Userspace already use fix.line_length * var.yres_virtual to compute the
-amount it can access, which is not necessarily equal to the mapped vram.
+> I think the above patch was nearly there. The issues seemed to be with
+> the method of associating framebuffer devices with their backlights.
+> I've come up with a solution to that problem (see below) so that code
+> can be removed from that patch and that should make it acceptable for
+> mainstream kernel inclusion.
+I confirm that the solution you proposed is quite suitable for the job.
+I've already modified the lcd/backlight subsystem, and I have a few
+comments;
 
-> Putting mapped_vram in fb_info would be acceptable?
+a) First of all, the implementation of your idea looks quite well
+(it's simpler and cleaner than the old method), although initially I
+didn't like it (mea culpa). I have removed a lot of now unneeded code
+from b/l support, and also it removes a lot of lcd/backlight
+maintainance code from the framebuffer drivers(pxafb, sa11xxfb,
+mq11xxfb). Last but not least, it removed the class_find_device()
+function that was the sticking point in the discussion with gkh.
 
-Yes, that is a more sensible solution.
+b) No modification is needed to the existing lcd/backlight drivers
+(there are about ten of them in hh.org cvs). I've added just one more
+function pointer in the lcd_properties and backlight_properties to a
+function that gets a fb_info and examinates if it is the
+framebuffer to which the lcd/backlight is attached to. If the function
+is NULL, the framebuffer is considered to match (since in PDAs there's
+only one framebuffer, this perfectly fits already existing drivers).
 
-Tony
+c) There's a problem though; if someone will REALLY want to inspect
+the fb_info, it would be very helpful to be able to deduce somehow the
+'struct device' associated with the framebuffer, since the fb_info
+itself doesn't contain anything more useful than the current resolution
+and pixel format. Knowing the device (and its position on the parent
+bus) the backlight/lcd driver will know exactly what to look at. I've
+seen some semi-commented code in 2.6.10 which tells me there are plans
+to integrate the fb_info into the sysfs (and, therefore, to add a
+class_device somewhere in the fb_info); this will allow also the b/l
+drivers to find the associated framebuffer device. Am I correct in my
+assumptions?
 
+As soon as handhelds.org will be up, I'll be able to test the code and,
+once it'll work, I'll send a patch to linux-fbdev-devel@.
 
+-- 
+Greetings,
+   Andrew
 
 
 -------------------------------------------------------

@@ -1,56 +1,88 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [PATCH 2/8] fbdev: Fix access to ROM in aty128fb
-Date: Tue, 2 Nov 2004 09:31:55 -0500
-Message-ID: <9e47339104110206315e87779e@mail.gmail.com>
-References: <200411021946.09621.adaplas@hotpop.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+Subject: Re: [Linux-fbdev-devel] Help re Frame Buffer/Console Problems
+Date: Tue, 2 Nov 2004 18:03:56 +0000 (GMT)
+Message-ID: <Pine.LNX.4.10.10411021743001.4822-100000@mtfhpc.demon.co.uk>
+References: <200411020746.27871.adaplas@hotpop.com>
 Mime-Version: 1.0
+Return-path: <ultralinux-owner@vger.kernel.org>
+In-Reply-To: <200411020746.27871.adaplas@hotpop.com>
+Sender: ultralinux-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1COzhW-0001ar-Fs
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Nov 2004 06:31:58 -0800
-Received: from rproxy.gmail.com ([64.233.170.202])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1COzhV-0002a8-F0
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Nov 2004 06:31:58 -0800
-Received: by rproxy.gmail.com with SMTP id 79so242714rnk
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 02 Nov 2004 06:31:56 -0800 (PST)
-In-Reply-To: <200411021946.09621.adaplas@hotpop.com>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: "Antonino A. Daplas" <adaplas@hotpop.com>
+To: adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net, jsimmons@infradead.org, geert@linux-m68k.org, sparclinux@vger.kernel.org, ultralinux@vger.kernel.org, linux-kernel@vger.kernel.org, wli@holomorphy.com
 
-Have you looked at the new PCI API for ROM access in the -mm tree yet?
-It is in the bk-pci patch and should be going into linus' tree sooner
-or later. It will allow you to get rid of some common code in a lot of
-the fbdev drivers.
+Hi all,
 
-pci_map_rom/pci_unmap_rom
+I have identified what is going on. My CG3 console uses the same font and
+exactly overlaps prom console. [I have re-inserted the console margin code
+for my CG3 driver]. The timing is such that the prom overwrites the
+console text (using colour 255) a fraction later than the fbcon code.
 
-It also tracks the boot video card. pci_map_rom for that card returns
-a pointer to the shadow ROM copy at C0000. That let's you
-transparently get to laptop ROMs that are stored compressed in the
-system ROM.
+The two problems to be solved are (apart from seting the red,green and
+blue structures up for the cg series fb cards):
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+1) The prom write (from -p) needs to be disabled as soon as an alternative
+console becomes active (either prom console, fbcon console or serial
+console). This has probably been the major cause of hassel.
 
+2) The restore pallet function (see cgsix.c in the 2.2.x or 2.4.x kernels)
+needs to be re-introduced in some form and called when exiting fbcon so
+that the prom does not end up as black on black. My prom uses fg=255,
+bg=0. Does any one know if this is standard for all sparc boot proms.
 
--------------------------------------------------------
-This SF.Net email is sponsored by:
-Sybase ASE Linux Express Edition - download now for FREE
-LinuxWorld Reader's Choice Award Winner for best database on Linux.
-http://ads.osdn.com/?ad_id=5588&alloc_id=12065&op=click
+I need to tidy up my code before I start work on the first of these two
+problems. The second one should not catch me out as I am using colour
+255 as my margin colour and it is set to "Dark Slate Grey" so I do not 
+have a black on black prom console.
+
+If any one wants a linux 2.6.10 CG3 driver with software margins then let
+me know and I will post an appropriate patch.
+
+Regards
+	Mark Fortescue.
+
+On Tue, 2 Nov 2004, Antonino A. Daplas wrote:
+
+> On Tuesday 02 November 2004 01:32, Mark Fortescue wrote:
+> > Hi all,
+> >
+> > Thanks for the info Antonino. I see you spotted my typing error. Yes it is
+> > the 2.6.10-rc1-bk6 kernel. The oter error is the 2.2.8.1. It should be
+> > 2.6.8.1.
+> >
+> > The cgthree driver does not currently set up the all->info.var.red,
+> > all->info.var.green or all->info.var.blue structures. Putting a value of 8
+> > in the length field of these structures (correct for the cgthree) does get
+> > me my logo back but I am still getting black on black text. It makes it
+> > very difficult to read. It is begining to look like there is something
+> > werid going on with the colour pallet stuf for PSEUDO_COLOUR.
+> >
+> 
+> I doubt that the problem is at the driver layer since you were able to
+> see the logo. It's probably higher up.
+> 
+> Try this mod, hardwire the foreground color to 0x07.
+> 
+> Edit drivers/video/console/bitblit.c:bit_putcs() and change this line:
+> 
+> image.fg_color = fg;
+> image.bg_color = bg;
+> 
+> to
+> 
+> image.fg_color = 0x07070707;
+> image.bg_color = 0x0;
+> 
+> You can also try the reverse:
+> 
+> image.fg_color = 0x0;
+> image.bg_color = 0x07070707
+> 
+> If you get visible text, the problem is either in fbcon.c or vt.c.
+> 
+> Tony
+> 
+> 
+

@@ -1,22 +1,22 @@
-From: Otto Solares <solca@guug.org>
-Subject: Re: [PATCH] neofb patches
-Date: Wed, 28 Apr 2004 10:37:30 -0600
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
+ one works ;-)
+Date: Wed, 28 Apr 2004 17:48:29 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040428163730.GA24448@guug.org>
-References: <Pine.LNX.4.44.0404271938330.20536-100000@phoenix.infradead.org> <408EE34F.8080106@undead.cc> <1083107454.16544.42.camel@gaston> <20040428002037.GE22495@guug.org> <1083112565.20473.10.camel@gaston> <20040428070832.GA23411@guug.org> <1083147416.18416.24.camel@thor.asgaard.local>
+Message-ID: <Pine.LNX.4.44.0404281746550.1187-100000@phoenix.infradead.org>
+References: <1083146438.20091.72.camel@gaston>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIs3i-0008FV-Mt
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 09:37:18 -0700
-Received: from guug.org ([168.234.203.30])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIs3i-0005u6-De
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 09:37:18 -0700
-Content-Disposition: inline
-In-Reply-To: <1083147416.18416.24.camel@thor.asgaard.local>
+	id 1BIsEv-0002nr-GS
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 09:48:53 -0700
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1BIsEt-0000CX-Nb
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 09:48:53 -0700
+In-Reply-To: <1083146438.20091.72.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,45 +26,29 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, John Zielinski <grim@undead.cc>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, Apr 28, 2004 at 12:16:56PM +0200, Michel D=E4nzer wrote:
-> On Wed, 2004-04-28 at 09:08, Otto Solares wrote:
-> >=20
-> > I like the fbdev abstraction but it has too many limitations:
->=20
-> [...]
->=20
-> > - It dangerously coexists currently with the DRM queues and
-> >   SAREA areas. =20
->=20
-> How does a DRM SAREA matter to a framebuffer device?
 
-It matters as long as the SAREA have a hardware lock
-to synchronize access to the hardware.  That lock must
-be owned by a single entity in the kernel, or at least
-the fbdev drivers must be aware of that lock, it would
-be more simple if the fbdev drivers take care of it being
-the single entity in the kernel taking care of the
-hardware.
+> > Agreed. We need a per-VT var.
+> > 
+> > The way I see it (and have always seen it), fbcon implements a text console _on
+> > top of_ fbdev, just like vgacon implements a text console on top of the VGA
+> > hardware. Not the other way around!
+> 
+> Then I must say we are in violent agreement :)
 
-> > Both must merge in fbdev.
->=20
-> I agree that they should cooperate properly, but I don't see how it
-> follows that they must merge.
+How do you feel about using modedb handling in fbcon. Let me create this 
+patch and test it out. If it works then we can resolve this issue.
 
-DRM and fbdev must merge so i repeat: just a single
-kernel entity should own FIFO queues, shared locks,
-DMA, the framebuffer, IO registers, interrupts, etc.
 
--otto
 
 
 
 -------------------------------------------------------
 This SF.Net email is sponsored by: Oracle 10g
-Get certified on the hottest thing ever to hit the market... Oracle 10g.=20
-Take an Oracle 10g class now, and we'll give you the exam FREE.=20
-http://ads.osdn.com/?ad_id=3D3149&alloc_id=3D8166&op=3Dclick
+Get certified on the hottest thing ever to hit the market... Oracle 10g. 
+Take an Oracle 10g class now, and we'll give you the exam FREE. 
+http://ads.osdn.com/?ad_id=3149&alloc_id=8166&op=click

@@ -1,21 +1,21 @@
-From: viking <viking@flying-brick.caverock.net.nz>
-Subject: Tridentfb troubles
-Date: Tue, 22 Mar 2005 11:26:57 +1200
-Message-ID: <20050321232657.GB7281@flying-brick.caverock.net.nz>
-References: <pan.2005.03.20.21.53.36.929746@brick.flying-brick.caverock.net.nz> <20050320164129.44d3a065.akpm@osdl.org> <20050321072601.GA31826@flying-brick.caverock.net.nz> <20050320233227.2c7b8013.akpm@osdl.org> <20050321202546.GA7281@flying-brick.caverock.net.nz> <20050321124426.53d75b3e.akpm@osdl.org>
+From: Jim Hague <jim.hague@acm.org>
+Subject: Re: [2.6.11 Permedia-2 Framebuffer] driver broken (?).
+Date: Tue, 22 Mar 2005 09:41:06 -0000 (GMT)
+Message-ID: <XFMail.20050322094106.jim.hague@acm.org>
+References: <Pine.LNX.4.60.0503220030230.12537@poirot.grange>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DDWN1-0007CE-2a
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Mar 2005 15:31:39 -0800
-Received: from [203.184.24.70] (helo=brick.flying-brick.caverock.net.nz)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	id 1DDftA-0004zc-AV
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Mar 2005 01:41:28 -0800
+Received: from cpc1-oxfd2-6-0-cust43.oxfd.cable.ntl.com ([81.103.191.43] helo=fluffy.bear-cave.org.uk)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.41)
-	id 1DDWMv-0004Zz-J9
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Mar 2005 15:31:37 -0800
-Content-Disposition: inline
-In-Reply-To: <20050321124426.53d75b3e.akpm@osdl.org>
+	id 1DDft8-00054i-Kg
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Mar 2005 01:41:28 -0800
+In-Reply-To: <Pine.LNX.4.60.0503220030230.12537@poirot.grange>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,77 +27,49 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: Andrew Morton <akpm@osdl.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 
-On Mon, Mar 21, 2005 at 12:44:26PM -0800, Andrew Morton wrote:
-> 
-> Guys, we seem to have a tridentfb regression in 2.6.12-rc1.
-> 
-> viking <viking@flying-brick.caverock.net.nz> wrote:
-> >
-> > Also (and this is something I've noticed since I tried tridentfb) the video
-> >  buffer never seems to get cleared, except when I change virtual terminals,
-> >  then change back to the terminal concerned. THEN it's cleared. So for the
-> >  moment, I've gone back to using VESAfb.
+On 21-Mar-2005 Guennadi Liakhovetski wrote:
+> On Mon, 21 Mar 2005, Andrew Morton wrote:
+>> Guennadi, could you please confirm that
+>>=20
+>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.12-r=
+c1/2.6.
+>> 12-rc1-mm1/broken-out/pm2fb-x-and-vt-switching-crash-fix.patch
+>>=20
+>> fixes this one?
+>=20
+> As discussed with Jim on linux-fbdev-devel this patch fixes the vt / X=20
+> switching problem. We still don't know why starting with 2.4.11 I have =
+to=20
+> switch CONFIG_FB_PM2_FIFO_DISCONNECT off to restore colours / images.
+> [...]
+> I traced this breakage down to the patch to=20
+> pm2fb.c after 2.6.10-rc2. Jim wanted to try to reproduce this problem w=
+ith=20
+> my fb-geometry / colour settings, but I haven't heard from him since th=
+en,=20
 
-**********
-Actually, it's in every release I've ever tested. 
-**********
+FIrst off, so we're all clear, the problem with vt/X switching was defini=
+tely a
+pm2fb bug exposed by chages in fbcon, and is definitely fixed by the abov=
+e
+patch. Please apply.
 
-I hadn't mentioned it before, because vesafb does what I want, apart from not
-being resizable.  I have a Apollo MVP4, VIA686A (or B) video chipset, though
-the Video shows itself as a CyberBlade/i7:
+As to Guennadi's problem with colours and images, I've been trying to
+reproduce locally without success, hence silence. My pm2fb-on-Sparc
+correspondent hasn't seen this either, and I've had no other reports.
 
-brick$ lspci -v -v
-...
-01:00.0 VGA compatible controller: Trident Microsystems CyberBlade/i7 (rev 5d)
-(prog-if 00 [VGA])
-Subsystem: FIRST INTERNATIONAL Computer Inc: Unknown device 9915
-Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping-
-SERR- FastB2B-
-Status: Cap+ 66Mhz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort-
-<MAbort- >SERR- <PERR-
-Latency: 32
-Interrupt: pin A routed to IRQ 10
-Region 0: Memory at e5800000 (32-bit, non-prefetchable) [size=8M]
-Region 1: Memory at e6000000 (32-bit, non-prefetchable) [size=128K]
-Region 2: Memory at e5000000 (32-bit, non-prefetchable) [size=8M]
-Expansion ROM at <unassigned> [disabled] [size=64K]
-Capabilities: [80] AGP version 1.0
-Status: RQ=33 Iso- ArqSz=0 Cal=0 SBA+ ITACoh- GART64- HTrans- 64bit- FW- AGP3-
-Rate=x1,x2
-Command: RQ=1 ArqSz=0 Cal=0 SBA- AGP- GART64- 64bit- FW- Rate=<none>
-Capabilities: [90] Power Management version 1
-Flags: PMEClk- DSI+ D1+ D2+ AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+I have one possible clue, which I'll pursue with Guennadi off-list.
 
-
-I have via-agp and agpgart loaded, though those aren't for 2d. Not sure what
-else to tell you, to be honest. If I put BOTH the vesafb AND the tridentfb
-into the kernel, and select vesafb on lilo (video=vesafb:mtrr,ypan), the
-kernel boots up using tridentfb regardless.
-
-The 640x480-60 (the one the kernel seems to boot up on unless told otherwise)
-screenmode looks absolutely shocking, with a very wiggly screen mainly in the
-X direction. That's probably due to the definition in drivers/video/modedb.c,
-something I can either tweak myself, or avoid using.
-
-I'll do more testing, see what I come up with aside from that. You may need to
-tell me what other details you want though.
-
-Andrew - you still wish to be CC:ed on this video issue?
-
--- 
- /|   _,.:*^*:.,   |\  Cheers from the Viking family, including Pippin, our cat
-| |_/'  viking@ `\_| |
-|    flying-brick    | $FunnyMail   : What do you mean, I've lost the plot?
- \_.caverock.net.nz_/     5.40      : I planted them carrots right here!!
+--=20
+Jim Hague - jim.hague@acm.org          Never trust a computer you can't l=
+ift.
 
 
 -------------------------------------------------------
 SF email is sponsored by - The IT Product Guide
 Read honest & candid reviews on hundreds of IT Products from real users.
 Discover which products truly live up to the hype. Start reading now.
-http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
+http://ads.osdn.com/?ad_id=3D6595&alloc_id=3D14396&op=3Dclick

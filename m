@@ -1,29 +1,22 @@
-From: Andrew Walrond <andrew@walrond.org>
-Subject: Re: ATI Rage XL on x86_64
-Date: Thu, 27 Jan 2005 14:54:03 +0000
-Message-ID: <200501271454.03706.andrew@walrond.org>
-References: <200501260910.14102.andrew@walrond.org> <20050126105459.GA13231@sci.fi> <200501261209.46735.andrew@walrond.org>
+From: Zack Smith <plinius@comcast.net>
+Subject: Re: Optimized cfbimgblt.c
+Date: Thu, 27 Jan 2005 12:06:35 -0800
+Message-ID: <41F949CB.405@comcast.net>
+References: <Pine.LNX.4.56.0501192015560.20796@pentafluge.infradead.org> <200501252058.13632.adaplas@hotpop.com> <Pine.LNX.4.56.0501262104140.15652@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: multipart/alternative;
-  boundary="Boundary-00=_LCQ+BH+K9hgW83i"
-Content-Transfer-Encoding: 7bit
+ boundary="------------090100060609090107010604"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CuB2L-0004MF-Pa
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 27 Jan 2005 06:54:21 -0800
-Received: from [62.24.231.113] (helo=cenedra.walrond.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1CuB2J-0004Gv-BB
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 27 Jan 2005 06:54:22 -0800
-Received: from [62.24.231.115] (helo=orac.walrond.org)
-	by cenedra.walrond.org with esmtp (Exim 4.34)
-	id 1CuB23-0000v6-R9
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 27 Jan 2005 14:54:08 +0000
-In-Reply-To: <200501261209.46735.andrew@walrond.org>
-Content-Disposition: inline
+	id 1CuD97-0002m6-On
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 27 Jan 2005 09:09:29 -0800
+Received: from rwcrmhc11.comcast.net ([204.127.198.35])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1CuD97-0007tn-1K
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 27 Jan 2005 09:09:29 -0800
+In-Reply-To: <Pine.LNX.4.56.0501262104140.15652@pentafluge.infradead.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -36,73 +29,110 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 To: linux-fbdev-devel@lists.sourceforge.net
 
---Boundary-00=_LCQ+BH+K9hgW83i
-Content-Type: text/plain;
-  charset="iso-8859-1"
+This is a multi-part message in MIME format.
+--------------090100060609090107010604
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 
-On Wednesday 26 January 2005 12:09, Andrew Walrond wrote:
+
+I just want to make a tangential comment, call it trivia almost,
+but if we wanted to use my in-kernel GUI -- FBUI -- to handle
+the graphics during startup, including the penguin image, or
+even to handle the virtual console terminal itself or the login
+prompt, then I expect that can be done.
+
+Zack Smith
+home.comcast.net/~plinius/fbui.html
+
+
+James Simmons wrote:
+
+>>Hi James,
+>>
+>>Tested on vesafb: works
+>>Tested on rivafb: crashes on fb_show_logo().
+>>    
+>>
 >
-> When I try video=atyfb:1024x768-8@60, I get even less output:
+>Ug!! Which video card are you using,what logos are you attempting to 
+>draw, and if you could post the oops trace? This is really strange. I 
+>tested the code with Radeon, 3Dfx, NeoMagic, and the VesaFB driver. They 
+>all worked. Also the riva drives used cfb_imageblit for the logo. Tomorrow 
+>I will pull out my TNT2 card to see what happens. 
 >
->  atyfb: using auxiliary register aperture
->  atyfb: 3D RAGE XL (Mach64 GR, PCI-33MHz) [0x4752 rev 0x27]
->  atyfb: 8M SDRAM (2:1) (32-bit) 29.498928 MHz XTAL, 230MHz PLL, 83 MHz MCLK
-> 63MHz XCLK
->  atyfb: fb0: ATY Mach64 frame buffer device on PCI
 >
-> In all cases, the screen blanks for a moment during boot, then reppears in
-> original 80x25 format.
+>-------------------------------------------------------
+>This SF.Net email is sponsored by: IntelliVIEW -- Interactive Reporting
+>Tool for open source databases. Create drag-&-drop reports. Save time
+>by over 75%! Publish reports on the web. Export to DOC, XLS, RTF, etc.
+>Download a FREE copy at http://www.intelliview.com/go/osdn_nl
+>_______________________________________________
+>Linux-fbdev-devel mailing list
+>Linux-fbdev-devel@lists.sourceforge.net
+>https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+>
+>  
+>
 
-FYI I have resolved this issue.
 
-I had CONFIG_FRAMEBUFFER_CONSOLE=m
-
-in the kernel config. I think the frambuffer code was working fine (explaining 
-the screen blanking during boot), but then the console subsystem 
-reconfiguring the display back to text mode.
-
-Changing to CONFIG_FRAMEBUFFER_CONSOLE=y fixed this.
-
-This is obviously a 'gotcha' to remember for the future, but perhaps also a 
-candidate for further thought, since all subsequent use of the fb device (for 
-graphics) produced a corrupt display.
-
-Andrew Walrond
-
---Boundary-00=_LCQ+BH+K9hgW83i
-Content-Type: text/html;
-  charset="iso-8859-1"
+--------------090100060609090107010604
+Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 
-<html><head><meta name="qrichtext" content="1" /></head><body style="font-size:10pt;font-family:Bitstream Vera Sans">
-<p>On Wednesday 26 January 2005 12:09, Andrew Walrond wrote:</p>
-<p>&gt;</p>
-<p>&gt; When I try video=atyfb:1024x768-8@60, I get even less output:</p>
-<p>&gt;</p>
-<p>&gt;  atyfb: using auxiliary register aperture</p>
-<p>&gt;  atyfb: 3D RAGE XL (Mach64 GR, PCI-33MHz) [0x4752 rev 0x27]</p>
-<p>&gt;  atyfb: 8M SDRAM (2:1) (32-bit) 29.498928 MHz XTAL, 230MHz PLL, 83 MHz MCLK</p>
-<p>&gt; 63MHz XCLK</p>
-<p>&gt;  atyfb: fb0: ATY Mach64 frame buffer device on PCI</p>
-<p>&gt;</p>
-<p>&gt; In all cases, the screen blanks for a moment during boot, then reppears in</p>
-<p>&gt; original 80x25 format.</p>
-<p></p>
-<p>FYI I have resolved this issue.</p>
-<p></p>
-<p>I had CONFIG_FRAMEBUFFER_CONSOLE=m</p>
-<p></p>
-<p>in the kernel config. I think the frambuffer code was working fine (explaining the screen blanking during boot), but then the console subsystem reconfiguring the display back to text mode.</p>
-<p></p>
-<p>Changing to CONFIG_FRAMEBUFFER_CONSOLE=y fixed this.</p>
-<p></p>
-<p>This is obviously a 'gotcha' to remember for the future, but perhaps also a candidate for further thought, since all subsequent use of the fb device (for graphics) produced a corrupt display.</p>
-<p></p>
-<p>Andrew Walrond</p>
-<p></p>
-</body></html>
---Boundary-00=_LCQ+BH+K9hgW83i--
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html;charset=ISO-8859-1" http-equiv="Content-Type">
+  <title></title>
+</head>
+<body bgcolor="#ffffff" text="#000000">
+<br>
+I just want to make a tangential comment, call it trivia almost,<br>
+but if we wanted to use my in-kernel GUI -- FBUI -- to handle<br>
+the graphics during startup, including the penguin image, or <br>
+even to handle the virtual console terminal itself or the login<br>
+prompt, then I expect that can be done.<br>
+<br>
+Zack Smith<br>
+home.comcast.net/~plinius/fbui.html<br>
+<br>
+<br>
+James Simmons wrote:
+<blockquote
+ cite="midPine.LNX.4.56.0501262104140.15652@pentafluge.infradead.org"
+ type="cite">
+  <blockquote type="cite">
+    <pre wrap="">Hi James,
+
+Tested on vesafb: works
+Tested on rivafb: crashes on fb_show_logo().
+    </pre>
+  </blockquote>
+  <pre wrap=""><!---->
+Ug!! Which video card are you using,what logos are you attempting to 
+draw, and if you could post the oops trace? This is really strange. I 
+tested the code with Radeon, 3Dfx, NeoMagic, and the VesaFB driver. They 
+all worked. Also the riva drives used cfb_imageblit for the logo. Tomorrow 
+I will pull out my TNT2 card to see what happens. 
+
+
+-------------------------------------------------------
+This SF.Net email is sponsored by: IntelliVIEW -- Interactive Reporting
+Tool for open source databases. Create drag-&amp;-drop reports. Save time
+by over 75%! Publish reports on the web. Export to DOC, XLS, RTF, etc.
+Download a FREE copy at <a class="moz-txt-link-freetext" href="http://www.intelliview.com/go/osdn_nl">http://www.intelliview.com/go/osdn_nl</a>
+_______________________________________________
+Linux-fbdev-devel mailing list
+<a class="moz-txt-link-abbreviated" href="mailto:Linux-fbdev-devel@lists.sourceforge.net">Linux-fbdev-devel@lists.sourceforge.net</a>
+<a class="moz-txt-link-freetext" href="https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel">https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel</a>
+
+  </pre>
+</blockquote>
+<br>
+</body>
+</html>
+
+--------------090100060609090107010604--
 
 
 -------------------------------------------------------

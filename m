@@ -1,77 +1,51 @@
-From: joshk@triplehelix.org (Joshua Kwan)
-Subject: Re: [Linux-fbdev-devel] Re: Problem with current fb_get_color_depth function
-Date: Thu, 11 Nov 2004 00:27:55 -0800
-Message-ID: <20041111082755.GE2815@triplehelix.org>
-References: <20041010225903.GA2418@darjeeling.triplehelix.org> <200410110832.19978.adaplas@hotpop.com> <20041102055555.GJ6361@triplehelix.org> <200411030610.12231.adaplas@hotpop.com>
+From: "Jan Beulich" <JBeulich@novell.com>
+Subject: logo_shown check in fbcon_scoll
+Date: Thu, 11 Nov 2004 12:01:29 +0100
+Message-ID: <s19348d4.015__19009.150696411$1100175381$gmane$org@emea1-mh.id2.novell.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="sHrvAb52M6C8blB9"
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S262191AbUKKI2T@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1CSDqn-0007iI-ES
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 11 Nov 2004 04:14:53 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CSDqm-0001xn-D3
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 11 Nov 2004 04:14:53 -0800
+Received: from waterleaf.sonytel.be (mail.sonytel.be [43.221.60.197])
+	by witte.sonytel.be (8.12.10/8.12.10) with ESMTP id iABCEmGU000769
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 11 Nov 2004 13:14:48 +0100 (MET)
 Content-Disposition: inline
-In-Reply-To: <200411030610.12231.adaplas@hotpop.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel mailing list <linux-kernel@vger.kernel.org>
+Resent-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+ReSent-Message-ID: <Pine.GSO.4.61.0411111314460.6942@waterleaf.sonytel.be>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-kernel@vger.kernel.org
+
+Wouldn't it seem reasonable that the logo_shown check in the SM_UP case
+should similarly be done in the SM_DOWN case?
+
+Thanks, Jan
+-
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
 
 
---sHrvAb52M6C8blB9
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, Nov 03, 2004 at 06:10:12AM +0800, Antonino A. Daplas wrote:
-> After giving it a lot of thought, perhaps you are not booting at 16 bpp, =
-but
-> at 8bpp pseudocolor.  However, radeonfb's default var use only a red, gre=
-en,
-> and blue length of 6.  Try this patch and let me know if it helps.
-
-The patch rejects against 2.6.10-rc1, but re-adapted, it works. Here is the
-updated patch for radeon_monitor.c.
-
-Thanks a lot for your help!
-
-and in case this is final,
-Signed-off-by: Joshua Kwan <joshk@triplehelix.org>
-
---=20
-Joshua Kwan
-
---- a/drivers/video/aty/radeon_monitor.c	2004-11-10 23:38:18.000000000 -0800
-+++ b/drivers/video/aty/radeon_monitor.c	2004-11-10 23:38:21.000000000 -0800
-@@ -8,7 +8,7 @@
-=20
- static struct fb_var_screeninfo radeonfb_default_var =3D {
-         640, 480, 640, 480, 0, 0, 8, 0,
--        {0, 6, 0}, {0, 6, 0}, {0, 6, 0}, {0, 0, 0},
-+        {0, 8, 0}, {0, 8, 0}, {0, 8, 0}, {0, 0, 0},
-         0, 0, -1, -1, 0, 39721, 40, 24, 32, 11, 96, 2,
-         0, FB_VMODE_NONINTERLACED
- };
-
---sHrvAb52M6C8blB9
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-Comment: http://triplehelix.org/~joshk/pubkey_gpg.asc
-
-iQIVAwUBQZMiiqOILr94RG8mAQIfgRAA5MjnqgQrUFnfBlgRdkhjoKEG/q2Dizvz
-ZPxMnH5Sb6uiq8zXok5viUljWtF/JTFf6vwdTabNZq0Kc7pXSI2MSp7AcOKpGap8
-qpXojfpdd97S8/92+WKqrGr0fEVGmLdPmQVr3SMp7uMmBn+kbiNA11AnYzMVb+WB
-zazqkhKAL9YQsPphBirdh9RTKZBq5k6glMNSx0EWqOQHFnK+Vs92NfjhuGJw+A5W
-NZV07qiDiOHUnnbXw+/bxjpJ4zWraz9HihmuYfWeeA7U/qQ9e+vYUSlDY4U6dh81
-K3vPKqoCIsvRBEn84bgNjRkCSxxNyjXlRbGIc1fTy8d8WO7TIACgFVUuCBXLdrCP
-zhpmdxmqmUJLLI/fDy2gr6d0d6rixNdeKXRZyREH4UVykXcDyQ56LXn2U0C9QIEy
-93f//Wc/Xe2onSGyeNE15iAqhVge6wxcOzyxmYTbOzEZfP4JOKDj3nJ/JYu9ZtBB
-3g6ofTzh6DZx0f+OGyXfGmu25RRK4kvDJnHXsVA6dQSLZoJUZO1cZ/uSzGmbHfLK
-X2l5lsYrpUOWWTedhI4W1wSLD89rHK0WpqfDyWQ+P3sIofZ08Do6TD87JkScS6K4
-SPMCbmLHMpdEHE8yTqrBlCiV5figwMfTo7yYY9uLfNHxhRv+JYkbz7P8z+iboxay
-I9Y6Z7ITToM=
-=zbCO
------END PGP SIGNATURE-----
-
---sHrvAb52M6C8blB9--
+-------------------------------------------------------
+This SF.Net email is sponsored by:
+Sybase ASE Linux Express Edition - download now for FREE
+LinuxWorld Reader's Choice Award Winner for best database on Linux.
+http://ads.osdn.com/?ad_id=5588&alloc_id=12065&op=click

@@ -1,27 +1,71 @@
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [Linux-fbdev-devel] Generic VESA framebuffer driver and Video
-	card BOOT?
-Date: Fri, 15 Oct 2004 13:45:10 +0100
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1097844301.9863.11.camel@localhost.localdomain>
-References: <416E6ADC.3007.294DF20D@localhost> <87d5zkqj8h.fsf@bytesex.org>
-	 <Pine.GSO.4.61.0410151437050.10040@waterleaf.sonytel.be>
+From: Helge Hafting <helgehaf@aitel.hist.no>
+Subject: Re: Generic VESA framebuffer driver and Video card BOOT?
+Date: Fri, 15 Oct 2004 13:48:27 +0000
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <1097848107l.20759l.0l@hh>
+References: <416E6ADC.3007.294DF20D@localhost>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S266511AbUJONvZ@vger.kernel.org>
-In-Reply-To: <Pine.GSO.4.61.0410151437050.10040@waterleaf.sonytel.be>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>, penguinppc-team@lists.penguinppc.org
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1CISMI-0004JT-7s
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Oct 2004 06:43:02 -0700
+Received: from hermine.aitel.hist.no ([158.38.50.15])
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
+	id 1CISM7-0005WP-Uj
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Oct 2004 06:43:02 -0700
+In-Reply-To: <416E6ADC.3007.294DF20D@localhost> (from
+	KendallB@scitechsoft.com on Thu Oct 14 21:02:36 2004)
+Content-Disposition: inline
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"; delsp="Yes"; format="Flowed"
+To: Kendall Bennett <KendallB@scitechsoft.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, penguinppc-team@lists.penguinppc.org
 
-On Gwe, 2004-10-15 at 13:38, Geert Uytterhoeven wrote:
-> Why not? Of course you won't get any output before the graphics card has been
-> re-initialized to a sane and usable state...
+On 14-10-2004 21:02:36, Kendall Bennett wrote:
+> Hello All,
+[...]
+> So what we would like to find out is how much interest there might be
+> in
+> both an updated VESA framebuffer console driver as well as the code
+> for
+> the Video card BOOT process being contributed to the maintstream
+> kernel.
 
-That will depend on the system. The AMD64 boxes I have all allow the
-bios to post the video card on S3 resume. 
+The BOOT stuff is very interesting.  Currently, both my videocards
+(in the same pc)
+have nice hw-specific framebuffer drivers, but they require that
+the card is initialized by the bios first and this only ever
+happens to one of the cards.  Xfree _can_ do the job, but way
+too late for setting up the framebuffer device.
 
-For a lot of other stuff we can run the bios directly on the resume path
-without emulation (or for intel call the video restore bios
-int). For the rest this could be a useful weapon.
+> If there is interest, we would start out by first contributing the
+> core
+> emulator and Video BOOT code, and then work on building a better VESA
+> framebuffer console driver.
+
+Having video BOOT would be great, and please make it independent
+of the framebuffer drivers.  I might want to try your vesa driver,
+but I might also want to use the hw-accelerated chip specific driver
+that happens to need an initialized video card.
+
+Helge Hafting
+
+
+
+
+-------------------------------------------------------
+This SF.net email is sponsored by: IT Product Guide on ITManagersJournal
+Use IT products in your business? Tell us what you think of them. Give us
+Your Opinions, Get Free ThinkGeek Gift Certificates! Click to find out more
+http://productguide.itmanagersjournal.com/guidepromo.tmpl

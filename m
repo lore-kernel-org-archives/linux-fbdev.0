@@ -1,25 +1,25 @@
-From: amavisd-new <postmaster@vice.cs.mu.oz.au>
-Subject: VIRUS (W32/Netsky.q@MM) IN MAIL FROM YOU
-Date: Sat, 26 Jun 2004 15:37:01 +1000 (EST)
+From: Jaap van den Handel <jaap@quest-innovations.com>
+Subject: /dev/fb device files are not created.
+Date: Sat, 26 Jun 2004 12:58:25 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <VS21562-05@vice.cs.mu.oz.au>
-References: <200406260536.i5Q5avrd018360@mulga.cs.mu.OZ.AU>
+Message-ID: <1088247505.40dd56d1e5047@webmail.quest-innovations.com>
 Mime-Version: 1.0
-Content-Type: multipart/report; report-type=delivery-status;
- boundary="----------=_1088228221-21562-5"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Be5sB-0007rn-CS
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 25 Jun 2004 22:37:07 -0700
-Received: from vice.cs.mu.oz.au ([128.250.36.83])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1Be5sA-0004YG-O7
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 25 Jun 2004 22:37:06 -0700
-Received: from localhost (vice [127.0.0.1])
-	by vice.cs.mu.oz.au (Postfix) with ESMTP id 95E2EBD6C0
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 26 Jun 2004 15:37:01 +1000 (EST)
-In-Reply-To: <200406260536.i5Q5avrd018360@mulga.cs.mu.OZ.AU>
+	id 1BeB0K-0007dM-Im
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 26 Jun 2004 04:05:52 -0700
+Received: from otto.isd-holland.nl ([62.221.254.21])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BeB0K-0005Mf-6X
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 26 Jun 2004 04:05:52 -0700
+Received: from quest-innovations.nl (62-221-244-197.dsl.fiberworld.nl [62.221.244.197])
+	by otto.isd-holland.nl (Postfix) with ESMTP id B52B336409D
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 26 Jun 2004 13:05:48 +0200 (CEST)
+Received: (from apache@localhost)
+	by quest-innovations.nl (8.11.6/8.11.6) id i5QAwQu03558
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 26 Jun 2004 12:58:26 +0200
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,88 +29,45 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-This is a multi-part message in MIME format...
+Hi,=20
 
-------------=_1088228221-21562-5
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+I'm still working on the frame buffer driver for the vga solution my comp=
+any =20
+has developed. I created a test program which prints the memory addresses=
+.
 
-VIRUS ALERT
+When I tried to run the test program I found out that suddenly
+the /dev/fb* files are not created anymore when the driver registers itse=
+lf.
 
-Our content checker found
-    virus: W32/Netsky.q@MM
-    banned name: msg5492.pif
-in email presumably from you (<linux-fbdev-devel@lists.sourceforge.net>), to the following recipient:
--> bhat@localhost
+when I create the files manually, the vfb.o and our own driver both seem =
+to=20
+return address 0x00000003 I think this cannot be ok.
 
-Please check your system for viruses,
-or ask your system administrator to do so.
+Is there somebody who knows what the problem might be?
 
-Delivery of the email was stopped!
+Thanks in advance
+Jaap van den Handel
 
 
-For your reference, here are headers from your email:
-------------------------- BEGIN HEADERS -----------------------------
-Return-Path: <linux-fbdev-devel@lists.sourceforge.net>
-Received: from mulga.cs.mu.OZ.AU (mulga.cs.mu.OZ.AU [128.250.1.22])
-	by vice.cs.mu.oz.au (Postfix) with ESMTP id EEA3DBD660
-	for <bhat@vice.cs.mu.OZ.AU>; Sat, 26 Jun 2004 15:37:00 +1000 (EST)
-Received: from mundook.cs.mu.oz.au (c-67-160-232-193.client.comcast.net [67.160.232.193]) by mulga.cs.mu.OZ.AU with ESMTP
-	id i5Q5avrd018360 for <bhat@mundook.cs.mu.oz.au>; Sat, 26 Jun 2004 15:36:58 +1000 (EST)
-Message-Id: <200406260536.i5Q5avrd018360@mulga.cs.mu.OZ.AU>
-From: linux-fbdev-devel@lists.sourceforge.net
-To: bhat@mundook.cs.mu.oz.au
-Subject: Delivery (bhat@mundook.cs.mu.oz.au)
-Date: Fri, 25 Jun 2004 22:37:00 -0700
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0016----=_NextPart_000_0016"
-X-Priority: 1
-X-MSMail-Priority: High
--------------------------- END HEADERS ------------------------------
 
-------------=_1088228221-21562-5
-Content-Type: message/delivery-status
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Description: Delivery error report
+Confidentiality Note:
+This e-mail and any attachments are confidential and the information here=
+in
+is property of Quest Innovations B.V.. If you are not the intended recipi=
+ent(s) of this e-mail,you are hereby notified that any dissemination, dis=
+tribution,=20
+copying, use of or reliance upon the information contained within this e-=
+mail=20
+or attachments is unauthorized and strictly prohibited. If you have recei=
+ved
+this e-mail in error, please notify us immediately by returning it to the
+sender and delete this copy from your system.
 
-Reporting-MTA: dns; vice.cs.mu.oz.au
-Received-From-MTA: smtp; vice.cs.mu.oz.au ([127.0.0.1])
-Arrival-Date: Sat, 26 Jun 2004 15:37:01 +1000 (EST)
-
-Final-Recipient: rfc822; bhat@localhost
-Action: failed
-Status: 5.7.1
-Diagnostic-Code: smtp; 550 5.7.1 Message content rejected, id=21562-05 - VIRUS: W32/Netsky.q@MM
-Last-Attempt-Date: Sat, 26 Jun 2004 15:37:01 +1000 (EST)
-
-------------=_1088228221-21562-5
-Content-Type: text/rfc822-headers
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Description: Undelivered-message headers
-
-Received: from mulga.cs.mu.OZ.AU (mulga.cs.mu.OZ.AU [128.250.1.22])
-	by vice.cs.mu.oz.au (Postfix) with ESMTP id EEA3DBD660
-	for <bhat@vice.cs.mu.OZ.AU>; Sat, 26 Jun 2004 15:37:00 +1000 (EST)
-Received: from mundook.cs.mu.oz.au (c-67-160-232-193.client.comcast.net [67.160.232.193]) by mulga.cs.mu.OZ.AU with ESMTP
-	id i5Q5avrd018360 for <bhat@mundook.cs.mu.oz.au>; Sat, 26 Jun 2004 15:36:58 +1000 (EST)
-Message-Id: <200406260536.i5Q5avrd018360@mulga.cs.mu.OZ.AU>
-From: linux-fbdev-devel@lists.sourceforge.net
-To: bhat@mundook.cs.mu.oz.au
-Subject: Delivery (bhat@mundook.cs.mu.oz.au)
-Date: Fri, 25 Jun 2004 22:37:00 -0700
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0016----=_NextPart_000_0016"
-X-Priority: 1
-X-MSMail-Priority: High
-
-------------=_1088228221-21562-5--
+Quest Innovations B.V.
 
 
 -------------------------------------------------------

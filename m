@@ -1,19 +1,21 @@
-From: Paul Mackerras <paulus@samba.org>
-Subject: Re: PPC64 prom logo
-Date: Tue, 25 Mar 2003 07:28:26 +1100 (EST)
+From: Louis Garcia <louisg00@bellsouth.net>
+Subject: radeonfb and 2.5.66
+Date: 24 Mar 2003 23:39:13 -0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <15999.27242.738276.356568@nanango.paulus.ozlabs.org>
-References: <Pine.LNX.4.44.0303241856480.22808-100000@phoenix.infradead.org>
-	<Pine.GSO.4.21.0303242020520.20509-100000@vervain.sonytel.be>
-Reply-To: paulus@samba.org
+Message-ID: <1048567152.2455.5.camel@tiger>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from dp.samba.org ([66.70.73.150] helo=lists.samba.org)
+Received: from mail207.mail.bellsouth.net ([205.152.58.147] helo=imf43bis.bellsouth.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18xYgv-00087a-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 24 Mar 2003 12:37:09 -0800
-In-Reply-To: <Pine.GSO.4.21.0303242020520.20509-100000@vervain.sonytel.be>
+	id 18xgDE-0004PD-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 24 Mar 2003 20:39:00 -0800
+Received: from host4-null.null.bellsouth.net ([68.155.65.210])
+          by imf43bis.bellsouth.net
+          (InterMail vM.5.01.04.25 201-253-122-122-125-20020815) with ESMTP
+          id <20030325043241.URWS29247.imf43bis.bellsouth.net@host4-null.null.bellsouth.net>
+          for <linux-fbdev-devel@lists.sourceforge.net>;
+          Mon, 24 Mar 2003 23:32:41 -0500
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -24,43 +26,18 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/PPC64 Development <linuxppc64-dev@lists.linuxppc.org>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Geert Uytterhoeven writes:
+Does anyone know if the radeonfb in 2.5.66 supports the dvi port on my
+radeon 7500 QW? I've compiled the driver in and appended video=radeon to
+grub and I still get vga.
 
-> On Mon, 24 Mar 2003, James Simmons wrote:
-> > > --- linux-2.5.x/arch/ppc64/kernel/prom.c.orig	Sun Mar 23 11:37:52 2003
-> > > +++ linux-2.5.x/arch/ppc64/kernel/prom.c	Sun Mar 23 11:39:35 2003
-> > > @@ -1271,7 +1271,8 @@
-> > >
-> > >  #ifdef CONFIG_FB_LOGO_LINUX_CLUT224
-> > >  		clut = RELOC(RELOC(&logo_linux_clut224)->clut);
-> > > -		for (i = 0; i < logo_linux_clut224.clutsize; i++, clut += 3)
-> > > +		for (i = 0; i < RELOC(&logo_linux_clut224)->clutsize;
-> > > +		     i++, clut += 3)
-> > >  			if (prom_set_color(ih, i + 32, clut[0], clut[1],
-> > >  					   clut[2]) != 0)
-> > >  				break;
-> > >
-> >
-> > Shoudln't that be clut = RELOC(&logo_linux_clut2 instead?
-> 
-> I don't think so. First the logo_linux_clut224 symbol has to be relocated,
-> followed by the pointer to the CLUT.
+--Lou 
 
-Actually, you should use RELOC on a variable (an L-value) or PTRRELOC
-on a value (an R-value), so it should look like this:
-
-	clut = PTRRELOC(RELOC(logo_linux_clut224.clut));
-	for (i = 0; i < RELOC(logo_linux_clut224.clutsize); i++, clut += 3)
-
-etc.  I'll test on an actual ppc64 box and send a tested patch.
-
-Paul.
 
 
 -------------------------------------------------------
-This sf.net email is sponsored by:ThinkGeek
-Welcome to geek heaven.
-http://thinkgeek.com/sf
+This SF.net email is sponsored by:
+The Definitive IT and Networking Event. Be There!
+NetWorld+Interop Las Vegas 2003 -- Register today!
+http://ads.sourceforge.net/cgi-bin/redirect.pl?keyn0001en

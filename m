@@ -1,22 +1,24 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 4/8] fbcon: Disable fbcon cursor if vt softcursor is enabled
-Date: Thu, 11 Nov 2004 10:15:28 +0800
-Message-ID: <20041111022443.6941F1A0228@smtp-1.hotpop.com>
+Subject: Re: [PATCH 1/2] fbdev: S3 Savage Framebuffer Driver
+Date: Thu, 11 Nov 2004 10:23:29 +0800
+Message-ID: <200411111023.29902.adaplas@hotpop.com>
+References: <200410230436.42009.adaplas@hotpop.com> <20041110191735.GA19864@middle.of.nowhere>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CS4dw-00052I-95
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Nov 2004 18:25:00 -0800
+	id 1CS4dD-000512-N4
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Nov 2004 18:24:15 -0800
 Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CS4dt-0004RG-Tl
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Nov 2004 18:24:58 -0800
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CS4dC-0006fk-Ef
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Nov 2004 18:24:15 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id EFD5B9D8353
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 11 Nov 2004 02:24:47 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id 6E9619CF4F9
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 11 Nov 2004 02:24:00 +0000 (UTC)
+In-Reply-To: <20041110191735.GA19864@middle.of.nowhere>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -29,194 +31,289 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>
-Cc: Gerd Knorr <kraxel@bytesex.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net, Jurriaan <thunder7@xs4all.nl>
 
-Problem reported by Gerd Knorr:
+On Thursday 11 November 2004 03:17, Jurriaan wrote:
+> From: Antonino A. Daplas <adaplas@hotpop.com>
+> Date: Sat, Oct 23, 2004 at 04:36:41AM +0800
+>
+> > S3 Savage Frambuffer Driver for the following chipsets:
+> >
+> > Savage 3D
+> > Savage MX
+> > Savage 4
+> > Savage 2000
+> > ProSavage
+> > SuperSavage
+>
+> Excellent. I tried this (in 2.6.10-rc1-mm4) with my Thinkpad T23, which
+> has a SuperSavage IX/C SDR according to lspci.
+>
+> If I compile the framebuffer into the kernel, it hangs during boot. The
+> oops is only partly visible, but the first line of the traceback
+> contains savage_setup_i2c_bus.
 
-  (1) boot with vesafb (thats what I'm using, maybe it shows on other
-      framebuffers and/or vgacon as well).
-  (2) login into one terminal, then type "echo -ne '\033[?17;15;239c'".
-      You should have a nice, yellow and *not* blinking cursor block.
-      That is what I have in my .profile because I can't stand the
-      blinking cursors.
-  (3) Switch to another terminal.  The cursor goes into blinking
-      underscore mode now (i.e. the default cursor).
-  (4) Switch back to the first terminal.  Now you have a yellow block
-      with the last two pixel lines (i.e. the underscore) blinking.
+Ok, this is a bug that is triggered when the particular chipset has no
+i2c support.
 
-This bug is caused by both fbcon_cursor and vt softcursor being active at
-the same time.
+>
+> If I compile it as a module, it comes up with 800x600, which looks like
+> sh*t on a 1024x768 lcd panel. All my attempts to change the resolution,
+> either with fbset, or variations on this command
+>
+> modprobe savagefb mode=1024x768-60
+>
+> didn't work.
 
-Fix:
-- Disable fbcon_cursor if vt softcursor is active
-  (vc->vc_cursor_type & 0x10) != 0.
-- Recheck/reload fbcon cursor for each vt switch
+Ok, this is another bug that prevents mode changing if the EDID block
+is not found.
 
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
+>
+> Would you give me any hints on how to get it to come up with 1024x768?
 
- bitblit.c  |   33 +++++++++++++++++++++------------
- fbcon.c    |    3 +++
- fbcon.h    |    1 +
- tileblit.c |    3 ++-
- 4 files changed, 27 insertions(+), 13 deletions(-)
+With the attached patch, which fixes both bugs, you can boot with:
 
-diff -Nru a/drivers/video/console/bitblit.c b/drivers/video/console/bitblit.c
---- a/drivers/video/console/bitblit.c	2004-10-23 02:52:37 +08:00
-+++ b/drivers/video/console/bitblit.c	2004-11-09 10:36:30 +08:00
-@@ -243,7 +243,7 @@
- 	unsigned short charmask = vc->vc_hi_font_mask ? 0x1ff : 0xff;
- 	int w = (vc->vc_font.width + 7) >> 3, c;
- 	int y = real_y(p, vc->vc_y);
--	int attribute;
-+	int attribute, use_sw = (vc->vc_cursor_type & 0x10);
- 	char *src;
- 
- 	cursor.set = 0;
-@@ -252,7 +252,8 @@
- 	attribute = get_attribute(info, c);
- 	src = vc->vc_font.data + ((c & charmask) * (w * vc->vc_font.height));
- 
--	if (ops->cursor_state.image.data != src) {
-+	if (ops->cursor_state.image.data != src ||
-+	    ops->cursor_reset) {
- 	    ops->cursor_state.image.data = src;
- 	    cursor.set |= FB_CUR_SETIMAGE;
- 	}
-@@ -271,34 +272,39 @@
- 	}
- 
- 	if (ops->cursor_state.image.fg_color != fg ||
--	    ops->cursor_state.image.bg_color != bg) {
-+	    ops->cursor_state.image.bg_color != bg ||
-+	    ops->cursor_reset) {
- 		ops->cursor_state.image.fg_color = fg;
- 		ops->cursor_state.image.bg_color = bg;
- 		cursor.set |= FB_CUR_SETCMAP;
- 	}
- 
- 	if ((ops->cursor_state.image.dx != (vc->vc_font.width * vc->vc_x)) ||
--	    (ops->cursor_state.image.dy != (vc->vc_font.height * y))) {
-+	    (ops->cursor_state.image.dy != (vc->vc_font.height * y)) ||
-+	    ops->cursor_reset) {
- 		ops->cursor_state.image.dx = vc->vc_font.width * vc->vc_x;
- 		ops->cursor_state.image.dy = vc->vc_font.height * y;
- 		cursor.set |= FB_CUR_SETPOS;
- 	}
- 
- 	if (ops->cursor_state.image.height != vc->vc_font.height ||
--	    ops->cursor_state.image.width != vc->vc_font.width) {
-+	    ops->cursor_state.image.width != vc->vc_font.width ||
-+	    ops->cursor_reset) {
- 		ops->cursor_state.image.height = vc->vc_font.height;
- 		ops->cursor_state.image.width = vc->vc_font.width;
- 		cursor.set |= FB_CUR_SETSIZE;
- 	}
- 
--	if (ops->cursor_state.hot.x || ops->cursor_state.hot.y) {
-+	if (ops->cursor_state.hot.x || ops->cursor_state.hot.y ||
-+	    ops->cursor_reset) {
- 		ops->cursor_state.hot.x = cursor.hot.y = 0;
- 		cursor.set |= FB_CUR_SETHOT;
- 	}
- 
--	if ((cursor.set & FB_CUR_SETSIZE) ||
--	    ((vc->vc_cursor_type & 0x0f) != p->cursor_shape)
--	    || ops->cursor_state.mask == NULL) {
-+	if (cursor.set & FB_CUR_SETSIZE ||
-+	    vc->vc_cursor_type != p->cursor_shape ||
-+	    ops->cursor_state.mask == NULL ||
-+	    ops->cursor_reset) {
- 		char *mask = kmalloc(w*vc->vc_font.height, GFP_ATOMIC);
- 		int cur_height, size, i = 0;
- 		u8 msk = 0xff;
-@@ -309,10 +315,11 @@
- 		if (ops->cursor_state.mask)
- 			kfree(ops->cursor_state.mask);
- 		ops->cursor_state.mask = mask;
--		p->cursor_shape = vc->vc_cursor_type & 0x0f;
+video=savagefb:1024x768@60
+
+and use fbset to your heart's content. But without an EDID block, no mode
+validating is done.
+
+> I would love to see if it's faster than the vesa framebuffer I've been
+> using so far.
+
+Should be, at least console-wise, if acceleration is enabled. Significant,
+but not to full potential, since in accelerated mode, the virtual resolution
+is limited at 4096.
+
+Thanks for reporting the bugs.  I'm also submitting the patch to Andrew.
+
+Tony
+
+diff -Nru a/drivers/video/savage/savagefb-i2c.c b/drivers/video/savage/savagefb-i2c.c
+--- a/drivers/video/savage/savagefb-i2c.c	2004-10-27 15:25:25 +08:00
++++ b/drivers/video/savage/savagefb-i2c.c	2004-11-11 09:55:43 +08:00
+@@ -141,32 +141,37 @@
+ static int savage_setup_i2c_bus(struct savagefb_i2c_chan *chan,
+ 				const char *name)
+ {
+-	int rc;
++	int (*add_bus)(struct i2c_adapter *) = symbol_get(i2c_bit_add_bus);
++	int rc = 0;
 +
-+		p->cursor_shape = vc->vc_cursor_type;
- 		cursor.set |= FB_CUR_SETSHAPE;
++	if (add_bus && chan->par) {
++		strcpy(chan->adapter.name, name);
++		chan->adapter.owner		= THIS_MODULE;
++		chan->adapter.id		= I2C_ALGO_SAVAGE;
++		chan->adapter.algo_data		= &chan->algo;
++		chan->adapter.dev.parent	= &chan->par->pcidev->dev;
++		chan->algo.udelay		= 40;
++		chan->algo.mdelay               = 5;
++		chan->algo.timeout		= 20;
++		chan->algo.data 		= chan;
++
++		i2c_set_adapdata(&chan->adapter, chan);
++
++		/* Raise SCL and SDA */
++		chan->algo.setsda(chan, 1);
++		chan->algo.setscl(chan, 1);
++		udelay(20);
++
++		rc = add_bus(&chan->adapter);
++		if (rc == 0)
++			dev_dbg(&chan->par->pcidev->dev,
++				"I2C bus %s registered.\n", name);
++		else
++			dev_warn(&chan->par->pcidev->dev,
++				 "Failed to register I2C bus %s.\n", name);
++	} else
++		chan->par = NULL;
  
--		switch (vc->vc_cursor_type & 0x0f) {
-+		switch (p->cursor_shape & CUR_HWMASK) {
- 		case CUR_NONE:
- 			cur_height = 0;
- 			break;
-@@ -348,7 +355,7 @@
- 	case CM_DRAW:
- 	case CM_MOVE:
- 	default:
--		ops->cursor_state.enable = 1;
-+		ops->cursor_state.enable = (use_sw) ? 0 : 1;
+-	strcpy(chan->adapter.name, name);
+-	chan->adapter.owner		= THIS_MODULE;
+-	chan->adapter.id		= I2C_ALGO_SAVAGE;
+-	chan->adapter.algo_data		= &chan->algo;
+-	chan->adapter.dev.parent	= &chan->par->pcidev->dev;
+-	chan->algo.udelay		= 40;
+-	chan->algo.mdelay               = 5;
+-	chan->algo.timeout		= 20;
+-	chan->algo.data 		= chan;
+-
+-	i2c_set_adapdata(&chan->adapter, chan);
+-
+-	/* Raise SCL and SDA */
+-	chan->algo.setsda(chan, 1);
+-	chan->algo.setscl(chan, 1);
+-	udelay(20);
+-
+-	rc = i2c_bit_add_bus(&chan->adapter);
+-	if (rc == 0)
+-		dev_dbg(&chan->par->pcidev->dev,
+-			"I2C bus %s registered.\n", name);
+-	else
+-		dev_warn(&chan->par->pcidev->dev,
+-			 "Failed to register I2C bus %s.\n", name);
+ 	return rc;
+ }
+ 
+@@ -174,7 +179,7 @@
+ {
+ 	struct savagefb_par *par = (struct savagefb_par *)info->par;
+ 	par->chan.par	= par;
+-
++
+ 	switch(info->fix.accel) {
+ 	case FB_ACCEL_PROSAVAGE_DDRK:
+ 	case FB_ACCEL_PROSAVAGE_PM:
+@@ -193,6 +198,8 @@
+ 		par->chan.algo.getsda = savage4_gpio_getsda;
+ 		par->chan.algo.getscl = savage4_gpio_getscl;
+ 		break;
++	default:
++		par->chan.par = NULL;
+ 	}
+ 
+ 	savage_setup_i2c_bus(&par->chan, "SAVAGE DDC2");
+@@ -202,9 +209,12 @@
+ void savagefb_delete_i2c_busses(struct fb_info *info)
+ {
+ 	struct savagefb_par *par = (struct savagefb_par *)info->par;
++	int (*del_bus)(struct i2c_adapter *) =
++		symbol_get(i2c_bit_del_bus);
++
++	if (del_bus && par->chan.par)
++		del_bus(&par->chan.adapter);
+ 
+-	if (par->chan.par)
+-		i2c_bit_del_bus(&par->chan.adapter);
+ 	par->chan.par = NULL;
+ }
+ EXPORT_SYMBOL(savagefb_delete_i2c_busses);
+@@ -212,6 +222,8 @@
+ static u8 *savage_do_probe_i2c_edid(struct savagefb_i2c_chan *chan)
+ {
+ 	u8 start = 0x0;
++	int (*transfer)(struct i2c_adapter *, struct i2c_msg *, int) =
++		symbol_get(i2c_transfer);
+ 	struct i2c_msg msgs[] = {
+ 		{
+ 			.addr	= SAVAGE_DDC,
+@@ -223,20 +235,23 @@
+ 			.len	= EDID_LENGTH,
+ 		},
+ 	};
+-	u8 *buf;
++	u8 *buf = NULL;
+ 
+-	buf = kmalloc(EDID_LENGTH, GFP_KERNEL);
+-	if (!buf) {
+-		dev_warn(&chan->par->pcidev->dev, "Out of memory!\n");
+-		return NULL;
++	if (transfer && chan->par) {
++		buf = kmalloc(EDID_LENGTH, GFP_KERNEL);
++		if (buf) {
++			msgs[1].buf = buf;
++
++			if (transfer(&chan->adapter, msgs, 2) != 2) {
++				dev_dbg(&chan->par->pcidev->dev,
++					"Unable to read EDID block.\n");
++				kfree(buf);
++				buf = NULL;
++			}
++		}
+ 	}
+-	msgs[1].buf = buf;
+ 
+-	if (i2c_transfer(&chan->adapter, msgs, 2) == 2)
+-		return buf;
+-	dev_dbg(&chan->par->pcidev->dev, "Unable to read EDID block.\n");
+-	kfree(buf);
+-	return NULL;
++	return buf;
+ }
+ 
+ int savagefb_probe_i2c_connector(struct savagefb_par *par, u8 **out_edid)
+diff -Nru a/drivers/video/savage/savagefb.c b/drivers/video/savage/savagefb.c
+--- a/drivers/video/savage/savagefb.c	2004-10-30 19:10:43 +08:00
++++ b/drivers/video/savage/savagefb.c	2004-11-11 09:55:43 +08:00
+@@ -738,7 +738,7 @@
+ 		}
+ 	}
+ 
+-	if (!mode_valid && !list_empty(&info->modelist))
++	if (!mode_valid && info->monspecs.modedb_len)
+ 		return -EINVAL;
+ 
+ 	/* Is the mode larger than the LCD panel? */
+@@ -1821,43 +1821,43 @@
+ 		break;
+ 	case FB_ACCEL_SAVAGE_MX_MV:
+ 		par->chip = S3_SAVAGE_MX;
+-		snprintf (info->fix.id, 16, "S3 Savage/MX-MV");
++		snprintf (info->fix.id, 16, "Savage/MX-MV");
+ 		break;
+ 	case FB_ACCEL_SAVAGE_MX:
+ 		par->chip = S3_SAVAGE_MX;
+-		snprintf (info->fix.id, 16, "S3 Savage/MX");
++		snprintf (info->fix.id, 16, "Savage/MX");
+ 		break;
+ 	case FB_ACCEL_SAVAGE_IX_MV:
+ 		par->chip = S3_SAVAGE_MX;
+-		snprintf (info->fix.id, 16, "S3 Savage/IX-MV");
++		snprintf (info->fix.id, 16, "Savage/IX-MV");
+ 		break;
+ 	case FB_ACCEL_SAVAGE_IX:
+ 		par->chip = S3_SAVAGE_MX;
+-		snprintf (info->fix.id, 16, "S3 Savage/IX");
++		snprintf (info->fix.id, 16, "Savage/IX");
+ 		break;
+ 	case FB_ACCEL_PROSAVAGE_PM:
+ 		par->chip = S3_PROSAVAGE;
+-		snprintf (info->fix.id, 16, "S3 ProSavage");
++		snprintf (info->fix.id, 16, "ProSavagePM");
+ 		break;
+ 	case FB_ACCEL_PROSAVAGE_KM:
+ 		par->chip = S3_PROSAVAGE;
+-		snprintf (info->fix.id, 16, "S3 ProSavage");
++		snprintf (info->fix.id, 16, "ProSavageKM");
+ 		break;
+ 	case FB_ACCEL_S3TWISTER_P:
+ 		par->chip = S3_PROSAVAGE;
+-		snprintf (info->fix.id, 16, "S3 Twister");
++		snprintf (info->fix.id, 16, "TwisterP");
+ 		break;
+ 	case FB_ACCEL_S3TWISTER_K:
+ 		par->chip = S3_PROSAVAGE;
+-		snprintf (info->fix.id, 16, "S3 TwisterK");
++		snprintf (info->fix.id, 16, "TwisterK");
+ 		break;
+ 	case FB_ACCEL_PROSAVAGE_DDR:
+ 		par->chip = S3_PROSAVAGE;
+-		snprintf (info->fix.id, 16, "S3 ProSavage DDR");
++		snprintf (info->fix.id, 16, "ProSavageDDR");
+ 		break;
+ 	case FB_ACCEL_PROSAVAGE_DDRK:
+ 		par->chip = S3_PROSAVAGE;
+-		snprintf (info->fix.id, 16, "S3 ProSavage DDR-K");
++		snprintf (info->fix.id, 16, "ProSavage8");
  		break;
  	}
  
-@@ -367,6 +374,8 @@
- 	cursor.rop = ROP_XOR;
+@@ -2033,14 +2033,13 @@
  
- 	info->fbops->fb_cursor(info, &cursor);
-+
-+	ops->cursor_reset = 0;
- }
  
- void fbcon_set_bitops(struct fbcon_ops *ops)
-diff -Nru a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
---- a/drivers/video/console/fbcon.c	2004-11-08 09:32:38 +08:00
-+++ b/drivers/video/console/fbcon.c	2004-11-09 10:36:31 +08:00
-@@ -1889,6 +1889,7 @@
- 	int i, prev_console, do_set_par = 0;
+ 	fb_destroy_modedb(info->monspecs.modedb);
+-	info->monspecs.modedb_len = 0;
+ 	info->monspecs.modedb = NULL;
  
- 	info = registered_fb[con2fb_map[vc->vc_num]];
-+
- 	if (softback_top) {
- 		int l = fbcon_softback_size / vc->vc_size_row;
- 		if (softback_lines)
-@@ -1904,6 +1905,7 @@
- 			softback_top = 0;
- 		}
- 	}
-+
- 	if (logo_shown >= 0) {
- 		struct vc_data *conp2 = vc_cons[logo_shown].d;
+ 	err = register_framebuffer (info);
+ 	if (err < 0)
+ 		goto failed;
  
-@@ -1953,6 +1955,7 @@
- 	}
+-	printk (KERN_INFO "fb: %s frame buffer device\n",
++	printk (KERN_INFO "fb: S3 %s frame buffer device\n",
+ 		info->fix.id);
  
- 	set_blitting_type(vc, info, p);
-+	((struct fbcon_ops *)info->fbcon_par)->cursor_reset = 1;
- 
- 	vc->vc_can_do_color = (fb_get_color_depth(info) != 1);
- 	vc->vc_complement_mask = vc->vc_can_do_color ? 0x7700 : 0x0800;
-diff -Nru a/drivers/video/console/fbcon.h b/drivers/video/console/fbcon.h
---- a/drivers/video/console/fbcon.h	2004-11-06 06:21:26 +08:00
-+++ b/drivers/video/console/fbcon.h	2004-11-09 10:36:31 +08:00
-@@ -65,6 +65,7 @@
- 	struct fb_cursor cursor_state;
-         int    currcon;	                /* Current VC. */
- 	int    cursor_flash;
-+	int    cursor_reset;
- 	char  *cursor_data;
- };
-     /*
-diff -Nru a/drivers/video/console/tileblit.c b/drivers/video/console/tileblit.c
---- a/drivers/video/console/tileblit.c	2004-10-19 20:23:16 +08:00
-+++ b/drivers/video/console/tileblit.c	2004-11-09 16:29:13 +08:00
-@@ -84,10 +84,11 @@
- 			struct display *p, int mode, int fg, int bg)
- {
- 	struct fb_tilecursor cursor;
-+	int use_sw = (vc->vc_cursor_type & 0x01);
- 
- 	cursor.sx = vc->vc_x;
- 	cursor.sy = vc->vc_y;
--	cursor.mode = (mode == CM_ERASE) ? 0 : 1;
-+	cursor.mode = (mode == CM_ERASE || use_sw) ? 0 : 1;
- 	cursor.fg = fg;
- 	cursor.bg = bg;
- 
+ 	/*
 
 
 

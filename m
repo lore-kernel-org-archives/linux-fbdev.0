@@ -1,20 +1,22 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] fbcursor warning in 2.6.6-rc3
-Date: Wed, 28 Apr 2004 15:36:44 +0200 (MEST)
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
+ one works ;-)
+Date: Wed, 28 Apr 2004 17:29:44 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0404281535040.3644@waterleaf.sonytel.be>
-References: <Pine.GSO.4.44.0404281221150.24906-100000@math.ut.ee>
+Message-ID: <Pine.LNX.4.44.0404281709260.1187-100000@phoenix.infradead.org>
+References: <1083110007.20091.5.camel@gaston>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIpGs-00013c-TG
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 06:38:42 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIpGp-0008Ky-9f
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 06:38:39 -0700
-In-Reply-To: <Pine.GSO.4.44.0404281221150.24906-100000@math.ut.ee>
+	id 1BIrwW-000697-Ef
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 09:29:52 -0700
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1BIrwV-0004G7-Ux
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 09:29:52 -0700
+In-Reply-To: <1083110007.20091.5.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,38 +28,40 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Meelis Roos <mroos@linux.ee>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: John Zielinski <grim@undead.cc>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 28 Apr 2004, Meelis Roos wrote:
-> This is 2.6.6-rc3 and I get the following warning on several
-> architectures:
->
->   CC      drivers/video/fbmem.o
-> drivers/video/fbmem.c: In function `fb_cursor':
-> drivers/video/fbmem.c:917: warning: passing arg 1 of `copy_from_user' discards qualifiers from pointer target type
->
-> The code is
-> if (copy_from_user(cursor.image.data, sprite->image.data, size) ||
->
-> cursor.image.data is const char *. Since copy_from_user actually changes
-> that, we should probably cast it manually:
 
-    [...]
 
-Yep, that's the fix I have in my local tree as well. However, I'm not 100%
-satisfied with it (I do like const, but hate superfluous casts).
+> > No. Look the logic should go from the upper VT layer to the lower driver 
+> > to accomplish something. Not the reverse.
+> > 
+> > struct vc_data -> native console driver structure --> fbdev
+> 
+> But the upper VT layer has no clue about what a graphic mode can be and
+> we know well enough that we _need_ to be able to enforce graphics mode
+> or want to play with them by manipulating var structures, without losing
+> the console.
+> 
+> Your logic is only ever valid once every single fbdev is capable of
+> doing proper mode management & validation. And even then, there isn't
+> a 1:1 relationchip between a mode and an fbcon size.
 
-Gr{oetje,eeting}s,
+  But we do have the proper data already. Its called modedb. I have two 
+reasons for why I hate to have a var in struct display. One is that it
+makes fbcon heavier. You now have a extra var in every struct display. 
+Usually the user has several if not all VCs at the same resolution. That 
+means there is alot of duplication of the same data for now reason. If we 
+use modedb to fill in the extra data then we don't need the extra data in
+each struct display. The bonus there is permentally stored data to represent 
+that one mode to everybody!! Much lighter.
+  Second I have seen the fbset method to set the VC fail miserably. Whereas I 
+have never seen using modedb at boot time fail unless the mode is not supported.  
+There have been many times where using fbset has left my screen blank :-( 
+  I'm going to create a patch that uses modedb in fbcon to set the mode. 
+This will solve all our problems for the most part.
 
-						Geert
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 
 -------------------------------------------------------

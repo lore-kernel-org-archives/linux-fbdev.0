@@ -1,52 +1,75 @@
-From: Martin Waitz <tali@admingilde.org>
-Subject: Re: [Linux-fbdev-devel] Generic VESA framebuffer driver and Video card BOOT?
-Date: Sun, 17 Oct 2004 14:07:28 +0200
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20041017120728.GC10532@admingilde.org>
-References: <416E6ADC.3007.294DF20D@localhost> <87d5zkqj8h.fsf@bytesex.org> <Pine.GSO.4.61.0410151437050.10040@waterleaf.sonytel.be> <87y8i8p1jq.fsf@bytesex.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="uXxzq0nDebZQVNAZ"
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S269050AbUJQMIS@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <87y8i8p1jq.fsf@bytesex.org>
-List-Id: <fbdev-devel.lists.sourceforge.net
-To: Gerd Knorr <kraxel@bytesex.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Linux Kernel Development <linux-kernel@vger.kernel.org>, penguinppc-team@lists.penguinppc.org
+From: Miernik <miernik@ctnet.pl>
+Subject: wierd neofb framebuffer problem, blank screen if no CD drive
+Date: Tue, 12 Oct 2004 08:53:18 -0000
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <20041017131312.3ACA.0.NOFFLE@localhost.localdomain.local>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1CJBFi-0003HF-6V
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 17 Oct 2004 06:39:14 -0700
+Received: from main.gmane.org ([80.91.229.2])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1CJBFi-0002tz-23
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 17 Oct 2004 06:39:14 -0700
+Received: from list by main.gmane.org with local (Exim 3.35 #1 (Debian))
+	id 1CJBFf-0007DQ-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 17 Oct 2004 15:39:11 +0200
+Received: from 82.160.30.99 ([82.160.30.99])
+        by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+        id 1AlnuQ-0007hv-00
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 17 Oct 2004 15:39:11 +0200
+Received: from miernik by 82.160.30.99 with local (Gmexim 0.1 (Debian))
+        id 1AlnuQ-0007hv-00
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 17 Oct 2004 15:39:11 +0200
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-fbdev-users@lists.sourceforge.net
+
+Up till today everything was OK. Today I upgraded kernel from 2.6.8-3 to
+2.6.8-4 Debian revision.
+
+And I always started my laptop wth vga=303 parameter to get 800x600
+screen, instead of the ugly emulated 640x480 (LCD physical resolution is
+800x600).
+
+This loaded vesafb framebuffer. After this upgrade, a few seconds
+after GRUB boots, and the vesafb is activated, the screen goes blank,
+and laptop doesn't continue the boot (the HDD led doesn't light)
+If I remove vga=303, it boots normally.
+
+Then: I downgraded the kernel back to 2.6.8-3, but it didn't help!
+
+And one more interesting thing: I have a bay where I can put in a
+CD-ROM, a floppy or a battery.
+
+And if the CD-drive is in the bay (may be without any CD), it boots OK
+even with the vga=303 800x500 framebuffer.
+
+any ideas?
+
+-- 
+Miernik             _________________________  xmpp:miernik@amessage.info
+___________________/_______________________/      mailto:miernik@ffii.org
+Why software shouldn't be covered by patents
+http://bladeenc.mp3.no/articles/software_patents.html
 
 
---uXxzq0nDebZQVNAZ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-hi :)
-
-On Fri, Oct 15, 2004 at 03:13:13PM +0200, Gerd Knorr wrote:
-> You have a application running which uses the framebuffer device, then
-> suspend with that app running.  You'll have to restore the state of
-> the device _before_ restarting all the userspace proccesses, otherwise
-> the app will not be very happy.
-
-As long as the app only interfaces with the framebuffer device and not
-directly with the hardware it won't notice.
-The apps data will simply not show up on the screen until the
-usermode helper finishes.
-
---=20
-Martin Waitz
-
---uXxzq0nDebZQVNAZ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.5 (GNU/Linux)
-
-iD8DBQFBcmCAj/Eaxd/oD7IRApmhAJ45kTqnLsgLQHd8x9hUTFZmCxAHYwCggy7v
-Qh14l7v0bNmkxsgj9b2qazQ=
-=61cb
------END PGP SIGNATURE-----
-
---uXxzq0nDebZQVNAZ--
+-------------------------------------------------------
+This SF.net email is sponsored by: IT Product Guide on ITManagersJournal
+Use IT products in your business? Tell us what you think of them. Give us
+Your Opinions, Get Free ThinkGeek Gift Certificates! Click to find out more
+http://productguide.itmanagersjournal.com/guidepromo.tmpl

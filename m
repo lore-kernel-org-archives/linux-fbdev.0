@@ -1,22 +1,21 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Fw: [Bugme-new] [Bug 4217] New: radeonfb makes system hang and
- LCD "burn"
-Date: Wed, 16 Feb 2005 08:15:42 +1100
-Message-ID: <1108502142.13394.2.camel@gaston>
-References: <20050215121555.54c63ed2.akpm@osdl.org>
+From: James Simmons <jsimmons@www.infradead.org>
+Subject: Re: [PATCH] Logo code fixes part 2.
+Date: Tue, 15 Feb 2005 21:25:46 +0000 (GMT)
+Message-ID: <Pine.LNX.4.56.0502152121050.6455@pentafluge.infradead.org>
+References: <Pine.LNX.4.56.0502141821240.7796@pentafluge.infradead.org>
+ <Pine.LNX.4.62.0502151011050.10480@numbat.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D1A3h-0006vP-PR
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Feb 2005 13:16:37 -0800
-Received: from gate.crashing.org ([63.228.1.57])
+	id 1D1ACo-0007Ph-7i
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Feb 2005 13:26:02 -0800
+Received: from pentafluge.infradead.org ([213.146.154.40])
 	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1D1A3g-00030c-25
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Feb 2005 13:16:37 -0800
-In-Reply-To: <20050215121555.54c63ed2.akpm@osdl.org>
+	id 1D1ACl-00046q-Ix
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Feb 2005 13:26:02 -0800
+In-Reply-To: <Pine.LNX.4.62.0502151011050.10480@numbat.sonytel.be>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,59 +26,46 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, marc.poulhies@epfl.ch
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: James Simmons <jsimmons@pentafluge.infradead.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tue, 2005-02-15 at 12:15 -0800, Andrew Morton wrote:
-> 
-> Begin forwarded message:
-> 
-> Date: Tue, 15 Feb 2005 12:03:52 -0800
-> From: bugme-daemon@osdl.org
-> To: bugme-new@lists.osdl.org
-> Subject: [Bugme-new] [Bug 4217] New: radeonfb makes system hang and LCD "burn"
 
-What if you load the module with option "default_dynclk=-1" ?
+> On Mon, 14 Feb 2005, James Simmons wrote:
+> > --- linus-2.6/drivers/video/logo/logo.c	2005-02-11 16:55:28.000000000 -0800
+> > +++ fbdev-2.6/drivers/video/logo/logo.c	2005-02-14 10:19:21.000000000 -0800
+> > @@ -66,8 +66,10 @@
+> >  		logo = &logo_linux_clut224;
+> >  #endif
+> >  #ifdef CONFIG_LOGO_DEC_CLUT224
+> > -		/* DEC Linux logo on MIPS/MIPS64 */
+> > +		/* DEC Linux logo on MIPS/MIPS64 or ALPHA */
+> > +#ifndef CONFIG_ALPHA
+>    ^^^^^^^^^^^^^^^^^^^^
+> Wouldn't it be more logical to put a `#ifdef CONFIG_MIPS' here?
 
-(Or if radeonfb is built-in, do radeonfb.default_dynclk=-1 on the kernel
-command line). 
+We could do that. I guess CONFIG_MIPS is more understandable.
 
-Ben.
 
 > 
-> http://bugme.osdl.org/show_bug.cgi?id=4217
+> >  		if (mips_machgroup == MACH_GROUP_DEC)
+> > +#endif
+> >  			logo = &logo_dec_clut224;
+> >  #endif
+> >  #ifdef CONFIG_LOGO_MAC_CLUT224
 > 
->            Summary: radeonfb makes system hang and LCD "burn"
->     Kernel Version: 2.6.11-rc3
->             Status: NEW
->           Severity: high
->              Owner: jsimmons@infradead.org
->          Submitter: marc.poulhies@epfl.ch
+> Gr{oetje,eeting}s,
 > 
+> 						Geert
 > 
-> Distribution: debian sid
-> Hardware Environment:i686, Radeon Mobility M7 LW [Radeon Mobility 7500]
-> Software Environment:
-> Problem Description:
-> When radeonfb gets loaded, system hangs and LCD display (this is a laptop)
-> "burns" (seems classic when noone handles the display).
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 > 
-> Steps to reproduce:
-> Starts in single user, then "modprobe radeonfb"
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+> 							    -- Linus Torvalds
 > 
-> I tried to get some debug information by compiling the debug support, but I
-> can't get kernel message to another computer (I tried with netcat).
-> This seems to cause some problem with DRI also. I boot without radeonfb, X
-> starts, then a switch to console has the same effect (freeze + "burn")
-> 
-> (same with -rc4)
-> 
-> ------- You are receiving this mail because: -------
-> You are on the CC list for the bug, or are watching someone who is.
--- 
-Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
 
 
 -------------------------------------------------------

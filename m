@@ -1,44 +1,37 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: [FBDEV]: Framebuffer driver for Intel 810/815 chipsets
-Date: 11 Dec 2002 15:46:21 +0500
+From: "David S. Miller" <davem@redhat.com>
+Subject: Re: atyfb in 2.5.51
+Date: 11 Dec 2002 00:42:29 -0800
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1039603490.1147.80.camel@localhost.localdomain>
+Message-ID: <1039596149.24691.2.camel@rth.ninka.net>
+References: <Pine.LNX.4.33.0212102215450.2617-100000@maxwell.earthlink.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.33.0212102215450.2617-100000@maxwell.earthlink.net>
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-James,
+On Tue, 2002-12-10 at 22:18, James Simmons wrote:
+> > AFAIK, the X "mach64" driver in XF 4.* doesn't care about UseFBDev.
+> > Marc Aurele La France (maintainer of this driver) is basically allergic
+> > to kernel fbdev support.
+> 
+> :-(
 
-It seems the fbdev framework is stable enough, and already in the
-development tree.  So, I'm submitting a driver for the Intel 810/815 for
-review and perhaps inclusion to your tree (to get more testing), and
-hopefully merge with Linus's tree.
+I've always stated that the whole fbdev model was flawed, it makes
+basic assumptions about how a video card's memory and registers are
+accessed (ie. the programming model) and many popular cards absolutely
+do not fit into that model.
 
-The patch is against linux-2.5.51, but will not work yet because of 2
-reasons:
+> I will have to go threw the X code to fix that :-(
 
-1. agpgart is not working for the i810
-2. support for early agp initialization needs to be added.
+There is nothing to fix.  You simply must restore the video state when
+the last mmap() client goes away.  The __sparc__ code does exactly that.
 
-Once #1 is fixed, the driver should work as a module.  And once #2 gets
-included, the driver can be compiled statically.  Dave Jones (thanks for
-the help, by the way) has already #2 in his tree (tested and works), and
-is currently working on #1 (I have a hacked version at home).
-
-The driver should be compliant with fbdev-2.5, and should support most
-if not all features that are to be expected (modularity, state saving
-and restoring, full hardware support, etc).  One thing also that's very
-important for many people is that the driver will work with XFree86 with
-its native i810 drivers without further modification, and quite stably
-too.
-
-The patch is at
-http://i810fb.sourceforge.net/linux-2.5.51-i810fb.diff.gz
-
-Thanks,
-
-Tony
+I think relying on an application that mmap's a card to perfectly
+restore the state would work in a perfect world, one we do not live
+in.  Furthermore, fixing up the state like I am suggesting makes life
+much simpler for people actually working on things like X servers and
+other programs directly programming the ATI chip.

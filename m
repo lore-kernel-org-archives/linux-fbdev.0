@@ -1,25 +1,25 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: sparc64, 2 x mach64 & 2.6.8-rc4: no working XFree86
-Date: Sat, 14 Aug 2004 21:24:34 +0000 (UTC)
+Subject: Re: patch fixing background next to penguin logo in monochrome
+Date: Sun, 15 Aug 2004 00:43:02 +0000 (UTC)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200409150521.47587.adaplas@hotpop.com>
-References: <20040814135408.GM21828@azrael.luon.net>
+Message-ID: <200409150839.00693.adaplas@hotpop.com>
+References: <1092254183.4209.16.camel@joy.home> <200409130746.32631.adaplas@hotpop.com> <Pine.GSO.4.58.0408131002030.28832@waterleaf.sonytel.be>
 Reply-To: adaplas@pol.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bw5z3-0000Vk-VV
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 14 Aug 2004 14:22:37 -0700
+	id 1Bw93v-0000g3-B9
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 14 Aug 2004 17:39:51 -0700
 Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1Bw5z3-0002Z2-5N
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 14 Aug 2004 14:22:37 -0700
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1Bw93u-0002nA-Vo
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 14 Aug 2004 17:39:51 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id D881B798835
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 14 Aug 2004 20:27:30 +0000 (UTC)
-In-Reply-To: <20040814135408.GM21828@azrael.luon.net>
+	by smtp-out.hotpop.com (Postfix) with SMTP id D3E06798B8C
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 14 Aug 2004 23:44:41 +0000 (UTC)
+In-Reply-To: <Pine.GSO.4.58.0408131002030.28832@waterleaf.sonytel.be>
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,35 +30,36 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Date: Wed, 15 Sep 2004 05:21:45 +0800
+Date: Wed, 15 Sep 2004 08:38:58 +0800
 Content-Type: text/plain; charset="us-ascii"
-To: Admar Schoonen <admar@luon.net>, linux-fbdev-devel@lists.sourceforge.net
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Petr Stehlik <pstehlik@sophics.cz>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, "Christian T. Steigies" <cts@debian.org>
 
-On Saturday 14 August 2004 21:54, Admar Schoonen wrote:
-> Hi
+On Friday 13 August 2004 16:05, Geert Uytterhoeven wrote:
+> >
+> > diff -uprN linux-2.4-orig/drivers/video/fbcon.c
+> > linux-2.4/drivers/video/fbcon.c ---
+> > linux-2.4-orig/drivers/video/fbcon.c	2004-09-13 07:40:18.194333488 +0800
+> > +++ linux-2.4/drivers/video/fbcon.c	2004-09-13 07:41:52.302026944 +0800
+> > @@ -1930,6 +1930,7 @@ static int fbcon_switch(struct vc_data *
+> >  	(*info->switch_con)(unit, info);
+> >      if (p->dispsw->clear_margins && vt_cons[unit]->vc_mode == KD_TEXT)
+> >  	p->dispsw->clear_margins(conp, p, 0);
+> > +    conp->vc_can_do_color = p->var.bits_per_pixel != 1;
+> >      if (logo_shown == -2) {
+> >  	/* G.S.: Display a line above the Boot Logo to state what
+> >  	* version of the kernel we are booting.
 >
-> I have a sun blade 100 with 1 onboard PGX64 and 1 pci card PGX64 (both
-> Ati mach64 cards).
+> I don't think it's needed: I saw no artifacts when switching between a
+> monochrome and a color VC or vice versa.
 >
-> With linux 2.4 series, both framebuffers worked, and XFree86 worked on
-> both cards.
+> When looking at the source, conp->vc_can_do_color is initialized in
+> fbcon_setup(), which is called from fbcon_changevar(), which is called by
+> the fbdev if the resolution or color depth was changed.
 >
-> With 2.6.X (X <= 7), only the primary (onboard) card worked ; secondary
-> was always black in console and in XFree86.
 
-con2fb was broken before that version.
-
->
-> Starting with 2.6.8-rc1, the console works on both cards again, however,
-> XFree86 doesn't work anymore. It crashes with signal 11 even before it
-> can display it's famous black & white dot pattern.
-
-I tried with 1 PCI and 1 AGP nVidia card, PCI is primary.  I use vesafb on the
-primary, and I have no problems launching X on the secondary.  If I initialize
-the secondary card's ROM-BIOS, I can also modprobe rivafb and launch X-fbdev on
-both the primary and secondary.
-
-I cannot use rivafb for both because of conflicts.
+Okay.  I wasn't too sure of that since I'm not very familiar with the 2.4
+code.
 
 Tony
 

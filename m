@@ -1,13 +1,13 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH] Macfb compile fixes
-Date: Sat, 26 Jul 2003 16:51:44 +0200
+Subject: [PATCH] MIPS DEC/SGI Linux logo
+Date: Sat, 26 Jul 2003 16:51:56 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200307261451.h6QEpiES002358@callisto.of.borg>
+Message-ID: <200307261451.h6QEpusD002436@callisto.of.borg>
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from amsfep15-int.chello.nl ([213.46.243.28])
+Received: from amsfep11-int.chello.nl ([213.46.243.20])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19gQLC-0005VA-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 26 Jul 2003 07:48:10 -0700
+	id 19gQLF-0005VL-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 26 Jul 2003 07:48:13 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,94 +21,21 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Linus Torvalds <torvalds@transmeta.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Linux Fbdev <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux Fbdev <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-Macfb compile fixes
+MIPS: Show the correct logo on DEC and SGI machines.
 
---- linux-2.6.x/drivers/video/macfb.c	Mon May  5 10:32:15 2003
-+++ linux-m68k-2.6.x/drivers/video/macfb.c	Sun Jun  8 11:24:51 2003
-@@ -233,11 +233,11 @@
- 		
- 		/* Loop until we get to the register we want */
- 		for (i = 0; i < regno; i++) {
--			nubus_writeb(info->cmap[i].red >> 8, &dafb_cmap_regs->lut);
-+			nubus_writeb(info->cmap.red[i] >> 8, &dafb_cmap_regs->lut);
- 			nop();
--			nubus_writeb(info->cmap[i].green >> 8, &dafb_cmap_regs->lut);
-+			nubus_writeb(info->cmap.green[i] >> 8, &dafb_cmap_regs->lut);
- 			nop();
--			nubus_writeb(info->cmap[i].blue >> 8, &dafb_cmap_regs->lut);
-+			nubus_writeb(info->cmap.blue[i] >> 8, &dafb_cmap_regs->lut);
- 			nop();
- 		}
- 	}
-@@ -528,10 +528,10 @@
- 	 *  != 0 for invalid regno.
- 	 */
- 	
--	if (regno >= info->cmap.len)
-+	if (regno >= fb_info->cmap.len)
- 		return 1;
- 
--	switch (info->var.bits_per_pixel) {
-+	switch (fb_info->var.bits_per_pixel) {
- 	case 1:
- 		/* We shouldn't get here */
- 		break;
-@@ -539,21 +539,21 @@
- 	case 4:
- 	case 8:
- 		if (macfb_setpalette)
--			macfb_setpalette(regno, red, green, blue, info);
-+			macfb_setpalette(regno, red, green, blue, fb_info);
- 		else
- 			return 1;
- 		break;
- 	case 16:
--		if (info->var.red.offset == 10) {
-+		if (fb_info->var.red.offset == 10) {
- 			/* 1:5:5:5 */
--			((u32*) (info->pseudo_palette))[regno] =
-+			((u32*) (fb_info->pseudo_palette))[regno] =
- 					((red   & 0xf800) >>  1) |
- 					((green & 0xf800) >>  6) |
- 					((blue  & 0xf800) >> 11) |
- 					((transp != 0) << 15);
- 		} else {
- 			/* 0:5:6:5 */
--			((u32*) (info->pseudo_palette))[regno] =
-+			((u32*) (fb_info->pseudo_palette))[regno] =
- 					((red   & 0xf800)      ) |
- 					((green & 0xfc00) >>  5) |
- 					((blue  & 0xf800) >> 11);
-@@ -565,19 +565,19 @@
- 		red   >>= 8;
- 		green >>= 8;
- 		blue  >>= 8;
--		((u32 *)(info->pseudo_palette))[regno] =
--			(red   << info->var.red.offset)   |
--			(green << info->var.green.offset) |
--			(blue  << info->var.blue.offset);
-+		((u32 *)(fb_info->pseudo_palette))[regno] =
-+			(red   << fb_info->var.red.offset)   |
-+			(green << fb_info->var.green.offset) |
-+			(blue  << fb_info->var.blue.offset);
- 		break;
- 	case 32:
- 		red   >>= 8;
- 		green >>= 8;
- 		blue  >>= 8;
--		((u32 *)(info->pseudo_palette))[regno] =
--			(red   << info->var.red.offset)   |
--			(green << info->var.green.offset) |
--			(blue  << info->var.blue.offset);
-+		((u32 *)(fb_info->pseudo_palette))[regno] =
-+			(red   << fb_info->var.red.offset)   |
-+			(green << fb_info->var.green.offset) |
-+			(blue  << fb_info->var.blue.offset);
- 		break;
-     }
-     return 0;
+--- linux-2.6.x/drivers/video/logo/logo.c	Tue May 27 19:03:30 2003
++++ linux-m68k-2.6.x/drivers/video/logo/logo.c	Sat Jun 28 14:54:12 2003
+@@ -66,7 +66,7 @@
+ #endif
+ #ifdef CONFIG_LOGO_DEC_CLUT224
+ 		/* DEC Linux logo on MIPS/MIPS64 */
+-		if (mips_machgroup == MACH_GROUP_SGI)
++		if (mips_machgroup == MACH_GROUP_DEC)
+ 			logo = &logo_dec_clut224;
+ #endif
+ #ifdef CONFIG_LOGO_MAC_CLUT224
 
 Gr{oetje,eeting}s,
 

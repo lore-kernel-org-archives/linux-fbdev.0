@@ -1,21 +1,22 @@
-From: Benoit Peccatte <benoit.peccatte@enst-bretagne.fr>
-Subject: Matrox fb
-Date: 20 Apr 2003 10:24:39 +0200
+From: David Lerner <dsl@zai.com>
+Subject: setting mode for tdfx driver
+Date: Sun, 20 Apr 2003 11:09:40 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1050827079.1008.4.camel@peck>
+Message-ID: <3EA2B834.8050808@zai.com>
+References: <1050827079.1008.4.camel@peck>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from laposte.enst-bretagne.fr ([192.108.115.3])
+Received: from lakemtao04.cox.net ([68.1.17.241])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 197A8B-0005yH-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 20 Apr 2003 01:24:59 -0700
-Received: from resel.enst-bretagne.fr (maisel-gw.enst-bretagne.fr [192.44.76.8])
-	by laposte.enst-bretagne.fr (8.11.6p2/8.11.6/2003.04.01) with ESMTP id h3K8Opl21617
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 20 Apr 2003 10:24:51 +0200
-Received: from localhost.localdomain (peck.maisel.enst-bretagne.fr [172.16.19.180])
-	by resel.enst-bretagne.fr (8.12.3/8.12.3/Debian-6.3) with ESMTP id h3K8Oewi032313
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 20 Apr 2003 10:24:40 +0200
+	id 197GS1-00057l-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 20 Apr 2003 08:09:53 -0700
+Received: from zai.com ([68.100.117.250]) by lakemtao04.cox.net
+          (InterMail vM.5.01.04.05 201-253-122-122-105-20011231) with ESMTP
+          id <20030420150940.FAOB13930.lakemtao04.cox.net@zai.com>
+          for <linux-fbdev-devel@lists.sourceforge.net>;
+          Sun, 20 Apr 2003 11:09:40 -0400
+In-Reply-To: <1050827079.1008.4.camel@peck>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -25,20 +26,42 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Hi,
+I have been using the tdfx device with various kernels and it has
+come up as desired with the kernel parameter
+video=tdfx:1280x1024@61. This stoped working with kernel 2.5.66.
 
-I've juste given a try on the 2.5.67 kernel and
-found that matroxfb didn't even compile.
-Is there anybody working on it ? Is there somewhere
-a full description of what changed between the old
-framebuffer structure and the new one ?
+Digging through the source code reveals that the driver now responds 
+to the name tdfxfb. The Documentation/fb/modedb.txt file should be 
+updated to reflect this change. It reads:
 
-Thank you,
-Benoit
+     Drivers that support modedb boot options
+     Boot Name     Cards Supported
 
+     ami         - Amiga chipset frame buffer
+     aty128fb    - ATI Rage128 / Pro frame buffer
+     atyfb       - ATI Mach64 frame buffer
+     tdfx        - 3D Fx frame buffer
+
+It should read:
+
+     Drivers that support modedb boot options
+     Boot Name     Cards Supported
+
+     amifb       - Amiga chipset frame buffer
+     aty128fb    - ATI Rage128 / Pro frame buffer
+     atyfb       - ATI Mach64 frame buffer
+     tdfxfb      - 3D Fx frame buffer
+
+
+A patch submission by the responsible maintainer will help others 
+using the tdfx/tdfxfb driver. I believe that the indicated change 
+for the ami driver is also required.
+
+Thanks,
+Dave
 
 
 

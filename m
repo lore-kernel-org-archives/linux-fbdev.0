@@ -1,43 +1,68 @@
-From: Fredrik Noring <noring@nocrew.org>
-Subject: Multiple rivafb devices?
-Date: 02 Feb 2003 20:21:45 +0100
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1044213706.20472.149.camel@h9n1fls20o980.telia.com>
+From: Russell King <rmk@arm.linux.org.uk>
+Subject: Re: fbcon scrolling madness + fbset corruption
+Date: Sun, 2 Feb 2003 19:57:44 +0000
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <20030202195744.C32007@flint.arm.linux.org.uk>
+References: <20030119200340.A13758@flint.arm.linux.org.uk> <1043026112.988.4.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from maild.telia.com ([194.22.190.101])
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18fPg2-0007sx-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 02 Feb 2003 11:21:14 -0800
-Received: from h9n1fls20o980.telia.com (h9n1fls20o980.telia.com [213.65.208.9])
-	by maild.telia.com (8.12.5/8.12.5) with ESMTP id h12JKehp004324
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 2 Feb 2003 20:20:41 +0100 (CET)
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <1043026112.988.4.camel@localhost.localdomain>; from adaplas@pol.net on Mon, Jan 20, 2003 at 09:29:38AM +0800
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Linux Kernel List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@infradead.org>
 
-I have two Nvidia cards (one AGP and one PCI) and would like rivafb
-to initialise both. I understand that currently isn't possible?
+On Mon, Jan 20, 2003 at 09:29:38AM +0800, Antonino Daplas wrote:
+> fb_pan_display() does not test for YWRAP.  Can you try this?
 
-Would it be difficult to implement support for multiple cards?
+This doesn't appear to solve the ywrap problem - I still get
+places where the screen doesn't scroll.  I decided to write a
+small program to dump out the contents of fb_var_screeninfo, and
+where stuff goes horribly wrong:
 
-Thanks,
+bash-2.04# ./tst
+Visible: 1280x1024
+Virtual: 1280x1632
+BPP    : 8
+Offset : +0+2352
+bash-2.04# ./tst
+Visible: 1280x1024
+Virtual: 1280x1632
+BPP    : 8
+Offset : +0+2392
 
-	Fredrik
+Up to the point where it goes wrong:
 
+bash-2.04# ./tst
+Visible: 1280x1024
+Virtual: 1280x1632
+BPP    : 8
+Offset : +0+528
+bash-2.04# ./tst
+Visible: 1280x1024
+Virtual: 1280x1632
+BPP    : 8
+Offset : +0+568
+bash-2.04# ./tst
+Visible: 1280x1024	<--- this is the last line on the screen
+Virtual: 1280x1632
+BPP    : 8
+Offset : +0+608
+bash-2.04#
 
+So it looks like something isn't limiting the yoffset in the generic
+console layer; an xoffset of 2392 when the maximum virtual Y is 1632
+is just nonsense.
 
+I also noticed an additional problem with fbcon: if I change the
+resolution using fbset, the change occurs, except I end up with
+corrupted mess on the screen (the reminents of the original display.)
+The shell prompt is nowhere to be seen.
 
--------------------------------------------------------
-This SF.NET email is sponsored by:
-SourceForge Enterprise Edition + IBM + LinuxWorld = Something 2 See!
-http://www.vasoftware.com
+Hitting ^L clears the screen and then the shell prompt is visiable.
+
+-- 
+Russell King (rmk@arm.linux.org.uk)                The developer of ARM Linux
+             http://www.arm.linux.org.uk/personal/aboutme.html

@@ -1,81 +1,59 @@
-From: Jesper Juhl <juhl-lkml@dif.dk>
-Subject: [PATCH][resend] drivers/video/kyro/fbdev.c ignoring return value of
- copy_*_user
-Date: Fri, 4 Mar 2005 15:26:33 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0503041514110.2794@dragon.hygekrogen.localhost>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: Fw: Initialisation sequencing.
+Date: Fri, 4 Mar 2005 04:07:11 +0800
+Message-ID: <200503040407.11449.adaplas@hotpop.com>
+References: <200503031438.48357.adaplas@hotpop.com> <4226D649.4000408@f2s.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Paul Mundt <lethal@chaoticdreams.org>
-Cc: linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, LKML <linux-kernel@vger.kernel.org>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1D6wbq-0002Yt-M6
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 03 Mar 2005 12:07:46 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1D6wbZ-0001Qd-0V
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 03 Mar 2005 12:07:46 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id D4DBFF500F2
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu,  3 Mar 2005 20:07:17 +0000 (UTC)
+In-Reply-To: <4226D649.4000408@f2s.com>
+Content-Disposition: inline
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: Ian Molton <spyro@f2s.com>, adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net
+
+On Thursday 03 March 2005 17:18, Ian Molton wrote:
+> Antonino A. Daplas wrote:
+> > If your backlight driver depends on the video driver, then you
+> > just have to initialize backlight after video.
+> >
+> > Why not place your backlight driver in after drivers/video in
+> > drivers/Makefile?
+>
+> What about the modular case ?
+
+Are you using the backlight architecture in drivers/video/backlight? Shouldn't
+the backlight driver pull the video driver first?  I think you can do that if you
+make the backlight driver depend on the video driver.
+
+Tony
 
 
-Hi, 
-
-2.6.11 still contain these warnings :
-
-drivers/video/kyro/fbdev.c:597: warning: ignoring return value of `copy_from_user', declared with attribute warn_unused_result
-drivers/video/kyro/fbdev.c:607: warning: ignoring return value of `copy_from_user', declared with attribute warn_unused_result
-drivers/video/kyro/fbdev.c:628: warning: ignoring return value of `copy_to_user', declared with attribute warn_unused_result
-drivers/video/kyro/fbdev.c:631: warning: ignoring return value of `copy_to_user', declared with attribute warn_unused_result
-drivers/video/kyro/fbdev.c:634: warning: ignoring return value of `copy_to_user', declared with attribute warn_unused_result
-
-Here's a patch that has been send before but obviously didn't make it in. 
-re-diff'ed against 2.6.11
 
 
-Signed-off-by: Jesper Juhl <juhl-lkml@dif.dk>
-
---- linux-2.6.11-orig/drivers/video/kyro/fbdev.c	2005-03-02 08:37:31.000000000 +0100
-+++ linux-2.6.11/drivers/video/kyro/fbdev.c	2005-03-04 15:12:54.000000000 +0100
-@@ -1,5 +1,5 @@
- /*
-- *  linux/drivers/video/kyro/kyrofb.c
-+ *  linux/drivers/video/kyro/fbdev.c
-  *
-  *  Copyright (C) 2002 STMicroelectronics
-  *  Copyright (C) 2003, 2004 Paul Mundt
-@@ -594,7 +594,8 @@ static int kyrofb_ioctl(struct inode *in
- 
- 	switch (cmd) {
- 	case KYRO_IOCTL_OVERLAY_CREATE:
--		copy_from_user(&ol_create, argp, sizeof(overlay_create));
-+		if (copy_from_user(&ol_create, argp, sizeof(overlay_create)))
-+			return -EFAULT;
- 
- 		if (kyro_dev_overlay_create(ol_create.ulWidth,
- 					    ol_create.ulHeight, 0) < 0) {
-@@ -604,8 +605,9 @@ static int kyrofb_ioctl(struct inode *in
- 		}
- 		break;
- 	case KYRO_IOCTL_OVERLAY_VIEWPORT_SET:
--		copy_from_user(&ol_viewport_set, argp,
--			       sizeof(overlay_viewport_set));
-+		if (copy_from_user(&ol_viewport_set, argp,
-+			       sizeof(overlay_viewport_set)))
-+			return -EFAULT;
- 
- 		if (kyro_dev_overlay_viewport_set(ol_viewport_set.xOrgin,
- 						  ol_viewport_set.yOrgin,
-@@ -625,13 +627,16 @@ static int kyrofb_ioctl(struct inode *in
- 		}
- 		break;
- 	case KYRO_IOCTL_UVSTRIDE:
--		copy_to_user(argp, &deviceInfo.ulOverlayUVStride, sizeof(unsigned long));
-+		if (copy_to_user(argp, &deviceInfo.ulOverlayUVStride, sizeof(unsigned long)))
-+			return -EFAULT;
- 		break;
- 	case KYRO_IOCTL_STRIDE:
--		copy_to_user(argp, &deviceInfo.ulOverlayStride, sizeof(unsigned long));
-+		if (copy_to_user(argp, &deviceInfo.ulOverlayStride, sizeof(unsigned long)))
-+			return -EFAULT;
- 		break;
- 	case KYRO_IOCTL_OVERLAY_OFFSET:
--		copy_to_user(argp, &deviceInfo.ulOverlayOffset, sizeof(unsigned long));
-+		if (copy_to_user(argp, &deviceInfo.ulOverlayOffset, sizeof(unsigned long)))
-+			return -EFAULT;
- 		break;
- 	}
- 
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

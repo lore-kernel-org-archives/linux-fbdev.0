@@ -1,21 +1,22 @@
 From: John Zielinski <grim@undead.cc>
-Subject: Re: [PATCH] neofb patches
-Date: Tue, 27 Apr 2004 18:48:47 -0400
+Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
+ one works ;-)
+Date: Tue, 27 Apr 2004 18:59:55 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <408EE34F.8080106@undead.cc>
-References: <Pine.LNX.4.44.0404271938330.20536-100000@phoenix.infradead.org>
+Message-ID: <408EE5EB.6080705@undead.cc>
+References: <Pine.LNX.4.44.0404272330480.23153-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIbNn-0001eI-0F
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 15:48:55 -0700
-Received: from mail.undead.cc ([216.126.84.18])
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
-	id 1BIbNm-0004cY-Ag
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 15:48:54 -0700
-In-Reply-To: <Pine.LNX.4.44.0404271938330.20536-100000@phoenix.infradead.org>
+	id 1BIbYd-0004DO-30
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:00:07 -0700
+Received: from ghoul.undead.cc ([216.126.84.18] helo=mail.undead.cc)
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
+	id 1BIbYc-00052p-KV
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:00:07 -0700
+In-Reply-To: <Pine.LNX.4.44.0404272330480.23153-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,26 +28,27 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: James Simmons <jsimmons@infradead.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Alex Stewart <alex@foogod.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 James Simmons wrote:
 
->I wouldn't bank on that. I seen this solution fall short. Consider a system 
->where we have a serial console, vgacon, and fbcon (say hgafb). Well I 
->leave it to the imagination what can go wrong. 
+>This breaks the way linux works. It is up to the program to restore the 
+>console. The same case for vgacon. The X server is the one that restores 
+>the graphics hardware back to the VGA text mode. This patch would not ne 
+>accepted for a stable release. 
 >  
 >
-I can see how vgacon and fbcon would walk all over each other but how 
-would a serial console
-mess things up?
+No, this would not be for the stable release.  But what I'm saying is 
+that it's nice that a program cleans up after itself but we shouldn't 
+rely on it.  Take resources like memory, file handles, sockets, etc.  
+Most program release those resources when the shut down normally but 
+what if they seg fault or exit unexpectedly?  The kernel cleans up after 
+the process regardless.
 
->I agree we need arbitration. Eventually fbdev and dri have to merge. Mode 
->setting is still best handled kernel side. That is just a reality.
->
->  
->
-Arbitration would be best.  How would it be done generally?  Some 
-mechanism that arbitrates based on mem/io ranges or something else?
+So if a fb program restores the mode properly then we should do nothing 
+but if it doesn't either because of a bad programming or an unexpected 
+termination then we should reset the mode to what the user has selected 
+for their console.
 
 John
 

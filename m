@@ -1,15 +1,15 @@
-From: Alexander Kern <alex.kern@gmx.de>
-Subject: Request for donation
-Date: Mon, 21 Jul 2003 01:38:34 +0200
+From: Alexander Kern <alex.kern@gmx.de> (by way of Alexander Kern <alex.kern@gmx.de>)
+Subject: [PATCH] ATI Rage 3D Mobility M1 one more try
+Date: Mon, 21 Jul 2003 01:45:08 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200307210138.34164.alex.kern@gmx.de>
+Message-ID: <200307210145.08549.alex.kern@gmx.de>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from pop.gmx.net ([213.165.64.20] helo=mail.gmx.net)
+Received: from mail.gmx.net ([213.165.64.20])
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19eNni-0006mT-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 20 Jul 2003 16:41:10 -0700
+	id 19eNsC-00028K-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 20 Jul 2003 16:45:48 -0700
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
@@ -22,33 +22,21 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Nicolas Souchu <nsouch@free.fr>
 
-Hello list,
+Hi,
 
-I am trying to add support for ATI Rage 3D Mobility M1, and have some success 
-on my notebook. I have god tree another species from Ebay too, Rage 3D IIc, 
-Rage Turbo Pro and Rage Pro. All are AGP. I need one "Pre RAGE 3D" mach64 for 
-testing.
+I have found some dumn bugs,
+If you willing test it, you can find the patch on
 
-Unfortunately I don't found anything on Ebay. If anybody have one from these 
-cards:
+http://home.arcor-online.de/alexander.khe/ati_mobility/ati_mobility_m1.2.5.75
+.patch.bz2
 
-"mach64GX (ATI888GX00)", "mach64CX (ATI888CX00)" - only PCI, I don't have ISA 
-slots anymore.
+Patch should be applyable to 2.6.test* too.
 
-"mach64CT (ATI264CT)", "mach64ET (ATI264ET)", "mach64VTA3 (ATI264VT)", 
-"mach64VTA4 (ATI264VT)", "mach64VTB (ATI264VTB)", "mach64VT4 (ATI264VT4)"
-
-PCI or AGP,
-
-or ATI Rage 3D XL, and he don't need it, I'll be very glad to get it as 
-donation. Postalexpenses in Europe, can be made good.
-
-Thanks
-
-Alex Kern
-
-
+Regards Alex Kern
+P.S. 22.07 - 31.08 I am on vacance. As my mailbox is only 30 MB, please do
+ not send important and big things inside this time.
 
 
 

@@ -1,23 +1,24 @@
-From: Richard Smith <rsmith@bitworks.com>
-Subject: Re: Generic VESA framebuffer driver and Video
- card BOOT?
-Date: Mon, 18 Oct 2004 20:39:23 -0500
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [RFC] Does fbdev need a cursor API for
+ userland?
+Date: Tue, 19 Oct 2004 10:01:51 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <4174704B.9050601@bitworks.com>
-References: <9e47339104101814166bf4cfe5@mail.gmail.com> <41740384.5783.12A07B14@localhost>
+Message-ID: <Pine.GSO.4.61.0410190958340.13789@waterleaf.sonytel.be>
+References: <200410172347.15516.adaplas@hotpop.com> <200410190456.32643.adaplas@hotpop.com>
+ <Pine.GSO.4.61.0410182257220.2414@waterleaf.sonytel.be>
+ <200410190534.26894.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CJiyj-0001so-FB
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 18:39:57 -0700
-Received: from [69.4.201.55] (helo=bitworks.com)
+	id 1CJowO-0006uR-Rh
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 19 Oct 2004 01:01:56 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CJiyd-0007Q5-N8
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 18:39:57 -0700
-In-Reply-To: <41740384.5783.12A07B14@localhost>
+	id 1CJowN-0002eN-6r
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 19 Oct 2004 01:01:56 -0700
+In-Reply-To: <200410190534.26894.adaplas@hotpop.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,43 +28,56 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: KendallB@scitechsoft.com
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: adaplas@pol.net
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Jon Smirl <jonsmirl@gmail.com>
 
-Kendall Bennett wrote:
+On Tue, 19 Oct 2004, Antonino A. Daplas wrote:
+> On Tuesday 19 October 2004 05:00, Geert Uytterhoeven wrote:
+> > On Tue, 19 Oct 2004, Antonino A. Daplas wrote:
+> > > On Monday 18 October 2004 20:01, Geert Uytterhoeven wrote:
+> > > > On Mon, 18 Oct 2004, Antonino A. Daplas wrote:
+> > > > > On Monday 18 October 2004 17:35, Geert Uytterhoeven wrote:
+> > > > > > On Mon, 18 Oct 2004, Antonino A. Daplas wrote:
+> >
+> > I didn't intend it to do conversions. 32-bit ARGB would be used for
+> > truecolor visuals only.
+> >
+> > > Isn't it much simpler to just have a set_image() where the source block
+> > > is in the same format as the framebuffer so it doesn't have to do format
+> > > conversions?
+> >
+> > Yes it is.
+> >
+> > The fb_imageblit() approach is just more generic, and could (in theory) be
+> > used from user space as well, allowing applications to not have to care
+> > about the actual frame buffer format anymore. All they have to handle is
+> > 1-bit monochrome, 8-bit pseudocolor and 32-bit ARGB truecolor.
+> >
+> 
+> We still have to do conversions, say from 32-bit ARGB to RGB565.  And this
+> is just for truecolor.
 
-> Actually there is nothing wrong with the x86 BIOS from the perspective of 
-> functionality and useability (or bloat for that matter). It contains all 
-> the functionality we need and armed with something like the x86 emulator 
-> we can use it for what we need on any platform.
+Indeed.
 
-> IMHO that is the best solution to the problem because it will be using 
-> code that has been heavily tested by the vendor. The one thing x86 Video 
-> BIOS'es can do reliably is POST the graphics card ;-)
+> How about directcolor?
 
-I'm just going to take your word on this since you have messed with far 
-more video bioses than I.  I've just got a few too many scars over the 
-years from trying to make the whole BIOS sub-system robust enough for 
-embedded standards.
+You're right. And currently directcolor is treated like pseudocolor w.r.t. the
+console and the penguin logo.
 
-> That would be nice if you could trim it down ;-) Would certainly save a 
+Hmm, bad idea, at least for saving/restore for the cursor.
 
-Check out linux-tiny (http://www.selenic.com/tiny-about/)
+Gr{oetje,eeting}s,
 
-> lot of code bloat. But if you do that, then you would need this code in 
-> the kernel since now it would be the boot loader as well ;-)
+						Geert
 
-Exactly. Which is why I like your project and I think its a good thing. 
-    The only reason I have to carry around the legacy BIOS baggage is 
-for video.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-How big is your in-kernel implementation?
-
--- 
-Richard A. Smith
-
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

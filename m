@@ -1,25 +1,21 @@
-From: Jurriaan <thunder7@xs4all.nl>
-Subject: Re: why does radeonfb work fine in 2.6, but not in 2.4.29-pre1?
-Date: Tue, 30 Nov 2004 07:55:55 +0100
-Message-ID: <20041130065555.GA20972@middle.of.nowhere>
-References: <20041128184606.GA2537@middle.of.nowhere> <20041129213510.GA9551@dreamland.darkstar.lan>
+From: "Richard Purdie" <rpurdie@rpsys.net>
+Subject: Re: Backlight support
+Date: Tue, 30 Nov 2004 16:28:26 -0000
+Message-ID: <017c01c4d6f9$a34fc010$0f01a8c0@max>
+References: <40ED4FAC.70406@ticino.com> <1089274696.4740.3.camel@localhost><41AB2E71.8080809@imc-berlin.de> <f9d2a5e104112916252c253a2b@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CZ1vS-0006sX-6B
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Nov 2004 22:55:50 -0800
-Received: from smtp-vbr4.xs4all.nl ([194.109.24.24])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CZ1vQ-0004Rk-Oz
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Nov 2004 22:55:49 -0800
-Received: from zeeotter.xs4all.nl (zeeotter.xs4all.nl [80.126.31.149])
-	by smtp-vbr4.xs4all.nl (8.12.11/8.12.11) with ESMTP id iAU6tha7041026
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 30 Nov 2004 07:55:47 +0100 (CET)
-	(envelope-from jurriaan@rivierenland.xs4all.nl)
-Content-Disposition: inline
-In-Reply-To: <20041129213510.GA9551@dreamland.darkstar.lan>
+	id 1CZAsG-0001nT-7v
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 Nov 2004 08:29:08 -0800
+Received: from tim.rpsys.net ([194.106.48.114] ident=0)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1CZAsF-0008Jg-55
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 Nov 2004 08:29:08 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,49 +26,63 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Kronos <kronos@people.it>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Type: text/plain; format="flowed"; charset="us-ascii"; reply-type="original"
+To: Russ Dill <russ.dill@gmail.com>, Steven Scholz <steven.scholz@imc-berlin.de>, John Lenz <lenz@cs.wisc.edu>, zap@homelink.ru
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-fbdev-devel@lists.sourceforge.net
 
-From: Kronos <kronos@people.it>
-Date: Mon, Nov 29, 2004 at 10:35:10PM +0100
-> Il Sun, Nov 28, 2004 at 07:46:06PM +0100, Jurriaan ha scritto: 
-> > The same radeonfb-setup works fine in every 2.6 kernel I can remember
-> > (last tested with 2.6.10-rc2-mm3) but give the dreaded 'cannot map FB'
-> > in 2.4.29-pre1.
-> > 
-> > The card has 128 Mb of ram, and my system has 3 Mb of RAM.
-> > 
-> > Is there any reason the ioremap() call works on 2.6, but doesn't on 2.4?
-> 
-> Driver in 2.6 only ioremap()s the memory needed for the framebuffer,
-> while the one in 2.4 ioremap()s all the VRAM (and fails).
-> 
-> > Is there any way to test 2.4 with my radeonfb and all of my memory?
-> 
-> I proposed the following patch some time ago (for 2.4.28-pre2 IIRC) as a
-> quick fix:
-> 
-Thanks. I found that patch on google. Problem is: when I look through
-the radeonfb in 2.6, I don't see any assignments to rinfo->video_ram
-that indicate it maps less than the full amount.
+John Lenz:
+> Perhaps the patch being referred to is the "Backlight and LCD module
+> patches" that Andrew Zabolotny and I proposed on lkml?
 
-> 
-> Problem is that fix->smem_len is used both by FBIOGET_FSCREENINFO to
-> report the amount of VRAM to userspace and by read/write/mmap on fb
-> for bounds checking. So with my patch FBIOGET_FSCREENINFO reports mapped
-> VRAM instead of physical VRAM.
-> 
-> smem_len should be splitted in (say) smem_mapped (for read/write/mmap)
-> and smem_total_vram (for FBIOGET_FSCREENINFO). I'll code something
-> tomorrow... -ENEEDSLEEP ;)
-> 
-Thanks,
-Jurriaan
--- 
-All wiyht. Rho sritched mg kegtops awound?
-Debian (Unstable) GNU/Linux 2.6.10-rc2-mm3 2x6078 bogomips load load 0.24
+I think the above patch was nearly there. The issues seemed to be with the
+method of associating framebuffer devices with their backlights. I've come
+up with a solution to that problem (see below) so that code can be removed
+from that patch and that should make it acceptable for mainstream kernel
+inclusion.
+
+Russ Dill:
+> The driver/bus/device model driver? Probably just no one there with
+> the time to spend on it. It be a real help, and would be a good use of
+> sysfs (for changing contrast, getting info, etc).
+
+I'm keen to get this sorted out and I agree its an ideal use of sysfs. I'm
+still getting up to speed on sysfs though...
+
+Steven Scholz:
+> Where can I find the most recent version of your patch?
+
+I've had a discussion with Andrew. I think he's going to find the latest
+version of the and post it for inclusion without the problematic parts...
+Andrew?
+
+> Excuse me ignorance, but what is "frontlight"?
+
+I think a frontlight shines onto the display and reflects off a reflector at
+the back of the LCD. A backlight lights it from the rear. As far as the
+sysfs representations go, they'll be essentially identical. You can read a
+frontlit display without the light in strong light. The backlit display
+always needs the backlight.
+
+My solution for associating backlight drivers with framebuffer drivers is
+for the backlight driver to call fb_register_client() and register for fb
+events. You can then intercept blanking requests (FB_EVENT_BLANK) which get
+passed with an fb_info struct and the new blanking setting. It's entirely up
+to the backlight driver how it tells which displays it should be blanking.
+For something like my PDA, there is only one framebuffer/LCD to blank but in
+other cases you would analyse fb_info. (FB_EVENT_BLANK is destined for
+2.6.11)
+
+I propose this discussion should move to linux-fbdev-devel and hopefully
+Andrew will provide a sysfs representation we can discuss (maybe with some
+comments from lkml).
+
+I have one implementation question though - should backlight drivers be in
+the arch folder (arch/arm/mach-pxa in my case) or should
+drivers/video/backlights be created? They're all likely to be using
+fb_register_client() so maybe the latter would be preferred?
+
+Richard
+
 
 
 -------------------------------------------------------

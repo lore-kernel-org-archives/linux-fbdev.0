@@ -1,17 +1,13 @@
-From: nomero <nomero@users.sourceforge.net>
-Subject: My Matrox G200 died with 2.5.51
-Date: Mon, 16 Dec 2002 10:47:16 +0100
+From: joachim.henke@stud.tu-ilmenau.de
+Subject: 3DFX framebuffer driver v0.2.2
+Date: 16 Dec 2002 18:45 UT
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3DFDA124.10707@users.sf.net>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Message-ID: <E18O0I8-0005IH-00@sc8-sf-list1.sourceforge.net>
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from relay-3.fastweb.it ([213.140.2.42] helo=mailres.fastwebnet.it)
+Received: from smtp-a.d2-net.de ([139.7.30.102])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18NrqP-0005UX-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 16 Dec 2002 01:47:25 -0800
-Received: from users.sf.net (1.21.244.113) by mailres.fastwebnet.it (6.5.032)
-        id 3DEB93B60019D242 for linux-fbdev-devel@lists.sourceforge.net; Mon, 16 Dec 2002 10:47:17 +0100
+	id 18O0I8-0005IH-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 16 Dec 2002 10:48:36 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,24 +17,38 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Hi all.
-I compiled the new 2.5.51 kernel and enabled the new framebuffer with 
-the VESA generic driver.
-My system is a Slackware 8.0. My graphic card was a Matrox G200 and the 
-resolution of fb console was 1024 X 768, 16M of colors (0x318).
-When I rebooted with my new kernel, i noted that fb didn't work well 
-(when i switched from a tty to another, some parts of the first tty were 
-"pasted" to the second).
-When I rebooted, my Matrox G200 died definetly.  I've made something 
-wrong or it's an fb's bug?
-If it is a bug, I hope to have been helpful.
-see you,
+On http://www.medex.hu/~danthe/tdfx/ I found a newer version of the tdfxfb
+driver. It was a patch against linux 2.4.4 . I don't know why it never went
+into the kernel. Maybe Linus was too busy at that time?
 
-    Moreno
+The current kernel still contains version 0.1.3 which is rather old. Much
+work has been done until version 0.2.2, mainly support for:
 
+* non-8 dot wide fonts
+* multihead
+* full 8/16/24/32 bit color (fixes the ugly bootup penguin)
+* MIPS
+* module options
+
+I think it's worth to give it a chance and to continue development on the
+base of that code. So I "ported" it to kernel 2.4.2x. Get this new patch
+here:
+
+http://tu-ilmenau.de/~johe-ii/3dfx-0.2.2-2.4.21-pre1.diff.gz
+
+I just merged the improvements that happened to v0.1.3 while it was in the
+kernel and did some source formating.
+
+Be encouraged to test it, do further improvements and please take it into
+the kernel!
+
+Thank you
+	Joachim
 
 
 

@@ -1,57 +1,66 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: [Linux-fbdev-devel] 2.5.66 fbdev performance (was Re: Re:
-	FBdev updates)
-Date: 29 Mar 2003 02:50:08 +0800
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1048877364.1000.17.camel@localhost.localdomain>
-References: <Pine.LNX.4.44.0302200108090.20350-100000@phoenix.infradead.org>
-	<20030220150201.GD13507@codemonkey.org.uk>
-	<20030220182941.GK14445@vana.vc.cvut.cz>
-	<1045787031.2051.9.camel@localhost.localdomain>
-	<20030303203500.GA2916@vana.vc.cvut.cz> 
-	<20030328141928.GB2051@vana.vc.cvut.cz>
+From: Walt H <waltabbyh@comcast.net>
+Subject: vesafb problem with 1GB Ram and possible fix
+Date: Fri, 28 Mar 2003 12:59:55 -0800
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <3E84B7CB.1010604@comcast.net>
+References: <3E8329D2.7040909@comcast.net> <20030327190222.GA4060@middle.of.nowhere> <3E837ADD.9080209@comcast.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <20030328141928.GB2051@vana.vc.cvut.cz>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-To: Petr Vandrovec <vandrove@vc.cvut.cz>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from 12-229-98-127.client.attbi.com ([12.229.98.127] helo=waltsathlon.localhost.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18z0xJ-0001Rj-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 28 Mar 2003 13:00:05 -0800
+Received: from comcast.net (localhost [127.0.0.1])
+	by waltsathlon.localhost.net (Postfix) with ESMTP id 8DA31843E22
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 28 Mar 2003 12:59:56 -0800 (PST)
+In-Reply-To: <3E837ADD.9080209@comcast.net>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, 2003-03-28 at 22:19, Petr Vandrovec wrote:
-> 
-> Problem is in the new pixmap handling, especially
-> pixbuf.output - so now instead of memcpy we
-> call some function for copying each byte from
-> font to temporary buffer. As you can see,
-> "constant" portion of time, independent of
-> color depth, increased by 1sec for unaccelerated
-> and by 0.75sec for accelerated putcs.
-> It is 5% to 25% slowdown (5% for 32bpp unaccelerated,
-> 25% for 8bpp accelerated).
-> 
+I've got a Chaintech 7KDD dual processor 760MPX MB with 1 GB RAM. I had 
+   problem getting vesafb or rivafb to work. I got ioremap errors during 
+nitialization, which appear to be because vesafb tries to ioremap the 
+entire 128MB framebuffer of my video card. It's a GeForce 4 Ti4600 with 
+128MB Ram. Through correspondence on the general linux-kernel mailing 
+list, I learned about changing the vmalloc reserved space from 128 to 
+256MB, but that didn't work for me as it evidently blows away high-mem IO.
 
-Actually, the slowdown is caused not just by the overhead of the
-read/write methods, but also due to the extra work padding and aligning
-the bitmaps according to requirements of the hardware.  This was because
-James wanted support for buffers located not just in system memory but
-also graphics/dma memory.
+Well, here's what I've done. I've made a change in video/vesafb.c to
+change __init vesafb_init to only allocate the amount of memory required 
+  for the requested video mode of the framebuffer (I think). So far, it 
+appears to work fine. I haven't tried many modes yet, but it's worked 
+with what I've thrown at it. Thanks again,
 
-The result is that unaccelerated imageblit will slow down while properly
-written accelerated imageblit will experience some speed up (not much,
-probably around 5%).
+The trivial change I made was changing this:
 
-We can:
+video_size	= screen_info.lfb_size * 65536;
 
-1. partially reverse the code so it behaves similarly to 2.5.63. 
-Support for writing to graphics/dma memory will go away.  
+to this:
 
-2. split the code path:  one will go to the '2.5.63' path, the other
-will go to the '2.5.66' path, depending on the setting of info->pixmap.
+video_size	= screen_info.lfb_width * screen_info.lfb_height * video_bpp;
 
-3. keep the code as is
 
-Personally, I prefer #1, but it's up to James/Geert.
+I'm not a kernel hacker, so if I'm overlooking something please let me 
+know. I've tested this a fair amount and it appears to be working on my 
+end. Please CC me on any replies. Thanks,
 
-Tony
+-Walt
+
+
+
+
+-------------------------------------------------------
+This SF.net email is sponsored by:
+The Definitive IT and Networking Event. Be There!
+NetWorld+Interop Las Vegas 2003 -- Register today!
+http://ads.sourceforge.net/cgi-bin/redirect.pl?keyn0001en

@@ -1,30 +1,25 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: Re: [PATCH] fbdev: Fix IO access in rivafb
-Date: Sun, 14 Nov 2004 10:49:32 +1100
-Message-ID: <1100389772.20592.131.camel@gaston>
+Date: Sun, 14 Nov 2004 10:52:00 +1100
+Message-ID: <1100389920.20511.133.camel@gaston>
 References: <200411080521.iA85LbG6025914@hera.kernel.org>
-	 <200411090402.22696.adaplas@hotpop.com>
-	 <Pine.LNX.4.58.0411081211270.2301@ppc970.osdl.org>
-	 <200411090608.02759.adaplas@hotpop.com>
-	 <Pine.LNX.4.58.0411081422560.2301@ppc970.osdl.org>
-	 <20041112125125.GA3613@bogon.ms20.nix>
-	 <Pine.LNX.4.58.0411120755570.2301@ppc970.osdl.org>
-	 <20041112191852.GA4536@bogon.ms20.nix> <1100309972.20511.103.camel@gaston>
-	 <20041113112234.GA5523@bogon.ms20.nix>
+	 <200411132000.31465.adaplas@hotpop.com>
+	 <Pine.LNX.4.58.0411130959280.4100@ppc970.osdl.org>
+	 <200411140529.48977.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CT7ex-0005B4-7R
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 13 Nov 2004 15:50:23 -0800
+	id 1CT7hH-0005cX-3j
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 13 Nov 2004 15:52:47 -0800
 Received: from gate.crashing.org ([63.228.1.57])
 	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1CT7eu-0006bh-Hk
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 13 Nov 2004 15:50:23 -0800
-In-Reply-To: <20041113112234.GA5523@bogon.ms20.nix>
+	id 1CT7hG-0006yM-J6
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 13 Nov 2004 15:52:46 -0800
+In-Reply-To: <200411140529.48977.adaplas@hotpop.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -36,20 +31,25 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Guido Guenther <agx@sigxcpu.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, adaplas@pol.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+To: adaplas@pol.net
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linus Torvalds <torvalds@osdl.org>, Guido Guenther <agx@sigxcpu.org>, Linux Kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
 
-On Sat, 2004-11-13 at 12:22 +0100, Guido Guenther wrote:
+On Sun, 2004-11-14 at 05:29 +0800, Antonino A. Daplas wrote:
+> On Sunday 14 November 2004 02:00, Linus Torvalds wrote:
+> > On Sat, 13 Nov 2004, Antonino A. Daplas wrote:
+> > > Why not use in_be* and out_be* for __raw_read and raw_write?
+> >
+> > Please don't start using some stupid magic ppc-specific macros for a
+> > driver that has no reason to be PPC-specific. It then only causes bugs
+> > that show on one platform and not another.
+> 
+> I'm not. I'm just wondering that if the other approach was taken (keep the
+> hardware in little endian mode), then the write/read* macros, which are just
+> wrappers for in_le*/out_le*, would have been used. Would it help fix (or
+> cover up) bugs that are in PPC but not x86? 
 
-> > {in,out}_8 are ppc-specific things that are identical to readb/writeb
-> > indeed, with barriers.
-
-> In 2.6.10-rc1-mm5 {in,out}_8 and read/writeb are exactly identical, only
-> __raw_{read,write}b is different. So you mean __raw_{read,write}b in the
-> above? (no nitpicking, just want to be sure I understand this
-> correctly).
-
-I just meant they are identical and they have both barriers, sorry.
+If you switch the HW to LE, I'm afraid you'll lockup when VT switching
+back & forth with X ...
 
 Ben.
 

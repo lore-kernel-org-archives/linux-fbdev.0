@@ -1,21 +1,18 @@
-From: John Zielinski <grim@undead.cc>
-Subject: Re: Changing modes with fbset
-Date: Sat, 13 Dec 2003 20:14:39 -0500
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Hw cursor Fbdev (fwd)
+Date: Fri, 19 Dec 2003 10:42:37 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3FDBB97F.4070207@undead.cc>
-References: <3FD6C52C.7090906@undead.cc>
+Message-ID: <Pine.GSO.4.58.0312191042240.29115@waterleaf.sonytel.be>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AVKqV-0001uR-2F
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 13 Dec 2003 17:14:55 -0800
-Received: from gw-undead3.tht.net ([216.126.84.18] helo=mail.undead.cc)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.24)
-	id 1AVKqU-00014O-Iv
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 13 Dec 2003 17:14:54 -0800
-In-Reply-To: <3FD6C52C.7090906@undead.cc>
+	id 1AXH9j-0001eM-Oy
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Dec 2003 01:42:47 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.24)
+	id 1AXH9e-0002WX-Hk
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Dec 2003 01:42:42 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,35 +22,30 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Alper Akcan <alper@xynth.org>
 
-Found it.  It's a bug in fbcon.c where the rows and cols were mixed up 
-so fbcon_resize tries to set the mode again with xres and yres 
-reversed.  Didn't happen during boot as fbcon_state_manager is 
-registered after the console is taken over.
+---------- Forwarded message ----------
+Date: Fri, 19 Dec 2003 07:13:45 +0200
+From: Alper Akcan <alper@xynth.org>
+To: geertu@users.sourceforge.net
+Subject: Hw cursor Fbdev
 
+Hi,
 
-diff -urNX dontdiff linux.old/drivers/video/console/fbcon.c linux/drivers/video/console/fbcon.c
---- linux.old/drivers/video/console/fbcon.c	2003-12-13 19:32:14.000000000 -0500
-+++ linux/drivers/video/console/fbcon.c	2003-12-13 19:34:48.000000000 -0500
-@@ -2261,8 +2261,8 @@
- 			// Switch resolution size
- 			int rows, cols;
- 			
--			rows = info->var.xres / vc->vc_font.height;
--			cols = info->var.yres / vc->vc_font.width;
-+			rows = info->var.yres / vc->vc_font.height;
-+			cols = info->var.xres / vc->vc_font.width;
-         		fbcon_resize(vc, cols, rows);
- 			info->state |= flag;
- 			}
+Is there any sample kod showing how we should use frame buffer hw cursor
+support?
 
+I have tried so many things but could not get any working code... All i had is
+segfaults..
 
+I have TNT2M64 (rivafb)
 
-John
+Thanks for any reply
 
-
+Alper.
 
 
 -------------------------------------------------------

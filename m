@@ -1,22 +1,22 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: Re: [PATCH] - video/tdfxfb.c warning fix.
-Date: Sat, 1 May 2004 21:16:29 +0200 (MEST)
+Date: Sat, 1 May 2004 21:17:02 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0405012115260.25805@waterleaf.sonytel.be>
+Message-ID: <Pine.GSO.4.58.0405012116490.25805@waterleaf.sonytel.be>
 References: <20040430180451.GA3119@lorien.prodam> <20040430213513.7bafde36.akpm@osdl.org>
  <Pine.GSO.4.58.0405012045070.25805@waterleaf.sonytel.be>
- <20040501120852.139b4ac1.akpm@osdl.org>
+ <20040501120852.139b4ac1.akpm@osdl.org> <20040501120936.62c6db39.akpm@osdl.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BJzyT-0005bu-D6
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 01 May 2004 12:16:33 -0700
+	id 1BJzz0-0005f8-5V
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 01 May 2004 12:17:06 -0700
 Received: from witte.sonytel.be ([80.88.33.193])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BJzyS-00025S-Rs
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 01 May 2004 12:16:33 -0700
-In-Reply-To: <20040501120852.139b4ac1.akpm@osdl.org>
+	id 1BJzyz-0002By-LW
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 01 May 2004 12:17:05 -0700
+In-Reply-To: <20040501120936.62c6db39.akpm@osdl.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,26 +32,19 @@ To: Andrew Morton <akpm@osdl.org>
 Cc: lcapitulino@prefeitura.sp.gov.br, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
 On Sat, 1 May 2004, Andrew Morton wrote:
-> Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> >  > You've taken a bunch of previously-working 3d acceleration functions and
-> >  > made them configurable, dependent upon CONFIG_EXPERIMENTAL.
-> >  >
-> >  > What on earth for?  Will this not gratuitously break people's
-> >  > previously-working 3d setups?
+> Andrew Morton <akpm@osdl.org> wrote:
 > >
-> >  No, tdfxfb_cursor() was not used before, causing a compiler warning.
-> >  tdfxfb_cursor() may work, but we don't know, so we didn't dare to enable it by
-> >  default. Now the user (he who has the hardware) can enable it, and tell us
-> >  whether it works or not.
+> >  Does the same argument apply to this patch?
 >
-> OK, thanks.  As you can see, it really helps if people explain this sort of
-> thing in their initial patch (sigh).
+> And to this one?
 >
-> Does the same argument apply to this patch?
+>
+> From: "Luiz Fernando N. Capitulino" <lcapitulino@prefeitura.sp.gov.br>
+>
+> Make HGA acceleration functions selectable in kernel config, fix these
+> warnings:
 
-Yes. All these patches should enable the currently unused acceleration routines
-if the corresponding config option is set, and kill the compiler warnings if
-its not set.
+Yep.
 
 Gr{oetje,eeting}s,
 

@@ -1,12 +1,15 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [Linux-fbdev-users] fb0 for console & fb1 for every one
-Date: Wed, 23 Apr 2003 18:55:45 +0100 (BST)
+From: joachim.henke@stud.tu-ilmenau.de
+Subject: Re: 3DFX framebuffer driver v0.2.2
+Date: Thu, 24 Apr 2003 09:28:53 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0304231852060.2573-100000@phoenix.infradead.org>
-References: <7A5D4FEED80CD61192F2001083FC1CF9065175@CHARLY>
+Message-ID: <3EA7A045.5040509@stud.tu-ilmenau.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-In-Reply-To: <7A5D4FEED80CD61192F2001083FC1CF9065175@CHARLY>
+Received: from piggy.rz.tu-ilmenau.de ([141.24.4.8])
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 198d1R-0007FB-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 24 Apr 2003 02:28:05 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -16,56 +19,33 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Filipau, Ihar" <ifilipau@sussdd.de>
-Cc: "'linux-fbdev-users@lists.sourceforge.net'" <linux-fbdev-users@lists.sourceforge.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 23 Apr 2003, Filipau, Ihar wrote:
+The URL doesn't work anymore. Get the patch from here:
+http://www.stud.tu-ilmenau.de/~johe-ii/3dfx-0.2.2-2.4.20.diff.gz
 
-> 	[ CC me please - not subscribed ]
+James Simmons wrote:
+>>The current kernel still contains version 0.1.3 which is rather old. Much
+>>work has been done until version 0.2.2, mainly support for:
+>>
+>>* non-8 dot wide fonts
+>>* multihead
+>>* full 8/16/24/32 bit color (fixes the ugly bootup penguin)
+>>* MIPS
+>>* module options
+>>
+>>I think it's worth to give it a chance and to continue development on the
+>>base of that code. So I "ported" it to kernel 2.4.2x. Get this new patch
+>>here:
+>>
+>>http://tu-ilmenau.de/~johe-ii/3dfx-0.2.2-2.4.21-pre1.diff.gz
+>>
+>>I just merged the improvements that happened to v0.1.3 while it was in the
+>>kernel and did some source formating.
 > 
-> 	I have a little question.
-> 	More conceptual - documentation says nothing about it.
-> 	At least I found nothing.
-> 	Any fingering to RTFM is welcome.
 > 
-> 	We have piece of custom hardware which has 
-> 	two displays: LCD and RTC.
-> 	[ Kernel vanilla 2.4.20. ]
-> 	We are using vga16 for RTC - testing/support/debug go here.
-> 	We are using (heavily fixed) driver for sed1374 Epson 
-> 	chip as a second frame buffer device.
-> 
-> 	And now we are hitting a lot of problems with the fact that 
-> 	FBs is heavily biased in direction of consoles.
-> 	But our second FB is used solely for graphics!
-> 	We do not need a console on it! (but mc there looks nice ;)
-> 
-> 	The Question:
-> 	Is there any patch for fbmem to remove its (looks like
-> 	intentional) links to fbcon? move them where they (as 
-> 	I believe) should be - fbcon?
->
-> 	When I was recommending FB interface - I expected that fbcon 
-> 	stack up on fbmem. Was my impression from docs. But that's not
-> 	true.
-
-Yes. The Linux 2.5.X is done this way. Try the latest tree. Note the 
-framebuffer api has changed.
-
-> 	Currently we are doing a lot of stupid stuff like change of 
-> 	controlling terminal, hiding the cursor, switching off the 
-> 	console blanking, etc.
-> 
-> 	Is there any way to avoid this stuff?
-
-The new fbdev api in 2.5.X avoids this. Also it is possible to do the 
-setup you are talking about. Compile in the fbdev driver you want as a 
-console and the other one as a module. Boot and you will have a 
-framebuffer console on that one card. Now for the modular driver just load 
-it. Modular drivers are not actually mapped to the console. To do that you 
-need to use con2fb. 
+> Thanks. I'm looking over the patch now and will intergrate it into 2.5.X
 
 
 

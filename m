@@ -1,17 +1,20 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH] Tile Blitting
-Date: Thu, 27 Feb 2003 19:48:47 +0000 (GMT)
+From: Andrea Mazzoleni <amadvance@users.sourceforge.net>
+Subject: Re: Possible Bug in radeonfb (?)
+Date: Thu, 27 Feb 2003 19:00:09 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0302271946340.8243-100000@phoenix.infradead.org>
-References: <1046370303.12970.27.camel@thor>
+Message-ID: <20030227180009.GB7346@elitel.biz>
+References: <20030225182115.GB2487@elitel.biz> <1046246472.11751.44.camel@localhost.localdomain>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18oU20-0001zO-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 27 Feb 2003 11:49:24 -0800
-In-Reply-To: <1046370303.12970.27.camel@thor>
+Received: from lisa.lombardiacom.it ([212.34.224.193] helo=mail2.elitel.it)
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18oVQt-0000FR-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 27 Feb 2003 13:19:12 -0800
+Received: (from am@localhost)
+	by darkstar.example.net (8.12.4/8.12.4) id h1RI09ot007429
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 27 Feb 2003 19:00:09 +0100
+Content-Disposition: inline
+In-Reply-To: <1046246472.11751.44.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,38 +24,20 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Cc: Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
+On 02/26, Antonino Daplas wrote:
+> Probably does not matter, unless you intend to use very, very low
+> dotclocks (< 10MHz).
+Yes. My intention is to use the Frame Buffer drivers for TVs and Arcade
+Monitors. Generally they need very low pixel clocks, like 5-6 MHz.
 
-> On Don, 2003-02-27 at 15:15, Antonino Daplas wrote: 
-> > On Thu, 2003-02-27 at 09:18, James Simmons wrote:
-> >  
-> > > > Thus, the restriction that the buffer must be completely copied by the
-> > > > driver before returning.  And because of this restriction, an extra copy
-> > > > which might be unnecessary cannot be avoided (this was noted by Petr).
-> > > > 
-> > > > Treating the buffer as a ringbuffer, we eliminate these restrictions.
-> > > 
-> > > I didn't realize that the below was a ringbuffer implementation. The name
-> > > threw me off. 
-> > 
-> > Well, it's not strictly a ringbuffer implementation.  This would require
-> > a head and tail pointer where fbcon will adjust the tail and the
-> > driver/hardware will adjust the head.  This will be very difficult to
-> > implement in a device independent manner.  So we just cheat by issuing
-> > an fb_sync() per loop to flush all pending commands.
-> 
-> That still seems suboptimal though. What the DRM often does is have the
-> chip write an age value to a scratch register when it's done processing
-> something. Maybe something like that could be used to avoid waiting for
-> the chip to go idle at all?
+-- 
+Andrea Mazzoleni
+935A 2D3C 5C70 BCD6 CB0C  ED89 7C19 4321 6340 3F6D
 
-Don't waste your time. I'm removing all the changes that have been done 
-since 2.5.51. After that I will no longer be co-maintainter of the 
-framebuffer layer. 
 
 
 

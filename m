@@ -1,23 +1,21 @@
-From: Andrew Morton <akpm@osdl.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: Re: [RFC] Video Mode Handling
-Date: Mon, 9 Aug 2004 01:03:26 -0700
+Date: Mon, 9 Aug 2004 10:08:57 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040809010326.305620a7.akpm@osdl.org>
-References: <200408090944.01414.adaplas@hotpop.com>
-	<20040808230412.6dc16bf4.akpm@osdl.org>
-	<Pine.GSO.4.58.0408090920511.14159@waterleaf.sonytel.be>
+Message-ID: <Pine.GSO.4.58.0408091006580.14159@waterleaf.sonytel.be>
+References: <200408090944.01414.adaplas@hotpop.com> <20040808230412.6dc16bf4.akpm@osdl.org>
+ <200408091559.45202.adaplas@hotpop.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bu59d-0000kj-Pz
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Aug 2004 01:05:13 -0700
-Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
+	id 1Bu5DJ-0001bQ-JN
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Aug 2004 01:09:01 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1Bu59d-0006DD-Ad
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Aug 2004 01:05:13 -0700
-In-Reply-To: <Pine.GSO.4.58.0408090920511.14159@waterleaf.sonytel.be>
+	id 1Bu5DJ-0006g2-0N
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Aug 2004 01:09:01 -0700
+In-Reply-To: <200408091559.45202.adaplas@hotpop.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,13 +25,13 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: adaplas@pol.net, adaplas@hotpop.com, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Andrew Morton <akpm@osdl.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->
-> On Sun, 8 Aug 2004, Andrew Morton wrote:
+On Mon, 9 Aug 2004, Antonino A. Daplas wrote:
+> On Monday 09 August 2004 14:04, Andrew Morton wrote:
 > > "Antonino A. Daplas" <adaplas@hotpop.com> wrote:
 > > > Most fbdev developers are proposing to bring back the per-display var
 > > >  structures to ease the difficulty of video mode handling.  This proposal
@@ -43,35 +41,32 @@ Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 > > Surprised.
 > >
 > > By how much does this increase the kernel's memory footprint?
-> 
-> Indeed, you need a full mode database per driver.
+>
+> Each var is approx 140 bytes multiplied by the number of consoles, which
+> is 64. James is in the embedded systems market, so I can see his point.
 
-Sorry, that's way outside my area of knowledge ;)
+IMHO embedded is much better off with configuring MAX_NR_CONSOLES to a smaller
+value, or disabling virtual consoles completely.
 
-> > And how much simpler would the code be if we were to bring back the
-> > per-display var structures?
-> >
-> > IOW: what's the tradeoff here?
-> 
->   - per-display var:
->       - increase memory footprint by
->         MAX_NR_CONSOLES.*sizeof(struct var_screen_info)
+Even on desktop systems, most people don't need more than 8 VCs.
 
-I see no var_screen_info.  sizeof(struct screen_info) is 56 bytes, and
-there are 63 of them.  This is a negligible amount of memory!
+> BTW:  The series of patches addresses all of the above.  It can save the
+> settings per display, but with only half the memory requirement of a per-display
 
->       + simpler code
->       + 100% compatible with 2.4
-> 
->   - private modedb:
->       - increase memory footprint by full mode database per driver.
->       - more complex (and larger) code
->       - subtle differences with 2.4, because not the whole var is saved
->         (BTW, which fields do you want to save, and which not, so I can
-> 	 evaluate the impact on some drivers?)
+But it doesn't save the full var, which may cause subtle differences.
 
-Well gee.  If we're talking about 3k, or even 10k or 30k, let's go with the
-simplest code?
+BTW, if size matters, you can save the full var without the reserved fields.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

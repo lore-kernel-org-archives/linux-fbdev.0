@@ -1,16 +1,18 @@
-From: Kronos <kronos@kronoz.cjb.net>
-Subject: EDID for radeonfb
-Date: Wed, 20 Aug 2003 00:33:50 +0200
+From: Alex Bennee <kernel-hacker@bennee.com>
+Subject: [PATCH] Export fbcon_font functions
+Date: 20 Aug 2003 11:22:22 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030819223350.GA838@dreamland.darkstar.lan>
-Reply-To: kronos@kronoz.cjb.net
+Message-ID: <11205.5462239825$1061380570@news.gmane.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail-8.tiscali.it ([195.130.225.154])
+Received: from host81-152-26-251.range81-152.btcentralplus.com ([81.152.26.251] helo=cambridge.braddahead)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19pF6r-0002tv-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 19 Aug 2003 15:37:49 -0700
-Content-Disposition: inline
+	id 19pQUr-00031y-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 20 Aug 2003 03:47:21 -0700
+Received: from localhost (localhost [127.0.0.1])
+	by cambridge.braddahead (Postfix) with ESMTP id E92C01C1E2
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 20 Aug 2003 11:22:22 +0100 (BST)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,40 +23,62 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: James Simmons <jsimmons@infradead.org>, Jon Smirl <jonsmirl@yahoo.com>
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-i2c-algo-bit.o: read 128 bytes.
-needed 0 jiffies
-read_EDID: i2c_transfer = 2
-0x0 0xff 0xff 0xff 0xff 0xff 0xff
-EDID v1 signature!
-RADEON_GPIO_Y_1: hi
-EDID checksum passed.
-Dumping data:
-0x0 0xff 0xff 0xff 0xff 0xff 0xff 0x0 0x41 0xc 0x18 0x8 0xa3 0x6 0x0 0x0
-0x14 0xd 0x1 0x3 0x1f 0x22 0x1b 0x78 0xea 0xc 0x95 0xa2 0x56 0x4c 0x96 0x25
-0x1a 0x50 0x54 0xbf 0xef 0x80 0x71 0x4a 0x71 0x4f 0x81 0x40 0x81 0x80 0x1 0x1 
-0x1 0x1 0x1 0x1 0x1 0x1 0x30 0x2a 0x0 0x98 0x51 0x0 0x2a 0x40 0x30 0x70
-0x13 0x0 0x52 0xe 0x11 0x0 0x0 0x1e 0x0 0x0 0x0 0xff 0x0 0x20 0x48 0x44
-0x20 0x20 0x30 0x30 0x31 0x36 0x39 0x39 0xa 0x20 0x0 0x0 0x0 0xfc 0x0 0x50
-0x68 0x69 0x6c 0x69 0x70 0x73 0x20 0x31 0x37 0x30 0x53 0x34 0x0 0x0 0x0 0xfd 
-0x0 0x38 0x4c 0x1e 0x52 0xe 0x0 0xa 0x20 0x20 0x20 0x20 0x20 0x20 0x0 0x22
+I've added these exports as modulerised console drivers need to have
+some way of getting the fonts they need (and it seemed cleane than
+exporting all the actualy font defs themselves).
 
-Ok, I've a working implementation of the I2C code for radeonfb :)
-The bug was very stupid: 0x50 became 0x20 and I spent a couple of weeks
-wondering why it didn't work...
+diff -ru linux-2.4.21.ref/drivers/video/fonts.c
+linux-2.4.21/drivers/video/fonts.c
+--- linux-2.4.21.ref/drivers/video/fonts.c	2001-03-03 02:38:39.000000000
++0000
++++ linux-2.4.21/drivers/video/fonts.c	2003-08-19 10:42:54.000000000
++0100
+@@ -20,6 +20,7 @@
+ #include <asm/setup.h>
+ #endif
+ #include <video/font.h>
++#include <linux/module.h>	/* EXPORT_SYMBOL def */
+ 
+ #define NO_FONTS
+ 
+@@ -86,6 +87,7 @@
+    return NULL;
+ }
+ 
++EXPORT_SYMBOL(fbcon_find_font);
+ 
+ /**
+  *	fbcon_get_default_font - get default font
+@@ -129,3 +131,5 @@
+     }
+     return g;
+ }
++
++EXPORT_SYMBOL(fbcon_get_default_font);
+diff -ru linux-2.4.21.ref/drivers/video/Makefile
+linux-2.4.21/drivers/video/Makefile
+--- linux-2.4.21.ref/drivers/video/Makefile	2003-06-13
+15:51:37.000000000 +0100
++++ linux-2.4.21/drivers/video/Makefile	2003-08-18 18:43:53.000000000
++0100
+@@ -15,7 +15,7 @@
+ 		  fbcon-iplan2p8.o fbcon-vga-planes.o fbcon-cfb16.o \
+ 		  fbcon-cfb2.o fbcon-cfb24.o fbcon-cfb32.o fbcon-cfb4.o \
+ 		  fbcon-cfb8.o fbcon-mac.o fbcon-mfb.o \
+-		  cyber2000fb.o sa1100fb.o fbcon-hga.o fbgen.o
++		  cyber2000fb.o sa1100fb.o fbcon-hga.o fbgen.o fonts.o
+ 
+ # Each configuration option enables a list of files.
+ 
 
-I've tested the code on a R300 board but it should work on any radeon. I
-need a couple of day to merge  it into radeonfb and to test. I'll send a
-patch ASAP.
-
-Luca
 -- 
-Reply-To: kronos@kronoz.cjb.net
-Home: http://kronoz.cjb.net
-Runtime error 6D at f000:a12f : user incompetente
+Alex, homepage: http://www.bennee.com/~alex/
+Meskimen's Law:
+	There's never time to do it right, but there's always time to
+	do it over.
+
 
 
 -------------------------------------------------------

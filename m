@@ -1,19 +1,23 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: Large framebuffers and HIGHMEM systems
-Date: Tue, 9 Sep 2003 14:28:24 -0700 (PDT)
+From: Kronos <kronos@kronoz.cjb.net>
+Subject: Re: Re: New radeonfb, mostly untested
+Date: Tue, 9 Sep 2003 23:52:29 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030909212824.95374.qmail@web14916.mail.yahoo.com>
+Message-ID: <20030909215229.GA19113@dreamland.darkstar.lan>
+References: <1062960554.647.34.camel@gaston> <Pine.LNX.4.44.0309090054470.23354-100000@phoenix.infradead.org> <20030909175404.GA8039@dreamland.darkstar.lan> <1063131198.642.5.camel@gaston> <20030909192430.GA10981@dreamland.darkstar.lan> <1063136237.639.42.camel@gaston> <20030909204544.GA16724@dreamland.darkstar.lan> <1063141651.20501.50.camel@gaston>
+Reply-To: kronos@kronoz.cjb.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19wq2G-0004bk-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 09 Sep 2003 14:28:28 -0700
-Received: from web14916.mail.yahoo.com ([216.136.225.229])
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.22)
-	id 19wq2D-0006bK-7u
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Sep 2003 14:28:25 -0700
+	id 19wqRC-0007xT-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 09 Sep 2003 14:54:14 -0700
+Received: from mail-1.tiscali.it ([195.130.225.147])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
+	id 19wqRB-0002JV-BZ
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Sep 2003 14:54:13 -0700
+Content-Disposition: inline
+In-Reply-To: <1063141651.20501.50.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -25,39 +29,55 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: James Simmons <jsimmons@infradead.org>, Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Fbdev needs to come up with a general solution for mapping large framebuffers
-on systems with over 1GB memory. For example my system does not have 64MB of
-free address space below 1GB, this causes my framebuffer drivers to fail when
-loading. With RAM prices at $200 for 1GB memory 1GB systems will be common
-during the 2.6 timeframe.
+Il Tue, Sep 09, 2003 at 11:07:31PM +0200, Benjamin Herrenschmidt ha scritto: 
+> 
+> > 
+> > struct fb_info *framebuffer_alloc(size_t size, struct device *dev) {
+> >         struct fb_info *ret;
+> > 
+> >         ret = kmalloc(sizeof(struct fb_info) + size, GFP_KERNEL);
+> >         if (!ret)
+> >                 return NULL;
+> >         memset(ret, 0, sizeof(struct fb_info) + size);
+> 
+> Except I would also make sure that there is some alignement of the
+> private part, if possible on L1 cache line size
 
-There are many possible solutions...
-1) add reserve=XXXX to the kernel at boot. Drawback to this is reserving
-256-512MB takes this memory out of lowmem kernel use. This will push page
-tables into highmem slowing the whole system down.
-2) Only map a 2048x2048x32 piece of the framebuffer. This still uses 16MB of
-address space which may not always be available. It could be possible to modify
-the kernel to always reserve this much address space at boot.
-3) Only map what is actually needed on each mode change. Mode change could fail
-at run time if not enough free address space.
-4) Map the buffer into the highmem address space using the highmem access
-macros.
-5) Map the fb in a user process and send it signals to draw.
+struct fb_info *framebuffer_alloc(size_t size, struct device *dev) {
+        unsigned char *ret;
+        struct fb_info *info;
+        int align;
 
-I would also suggest modifying all current fb drivers to print a message about
-adding reserve=xxxxx at boot if their ioremap() of the fb fails. This will at
-least point people at an immediate work around.
+        if (size)
+                align = L1_CACHE_BYTES - (sizeof(struct fb_info) % L1_CACHE_BYTES);
+        else
+                align = 0;
+        
+        ret = kmalloc(sizeof(struct fb_info) + align + size, GFP_KERNEL);
+        if (!ret)
+                return NULL;
+        memset(ret, 0, sizeof(struct fb_info) + size + align);
+        info = (struct fb_info *)ret;
+        info->class_dev.dev = dev;
 
-=====
-Jon Smirl
-jonsmirl@yahoo.com
+        if (size)
+                info->par = ret + align;
 
-__________________________________
-Do you Yahoo!?
-Yahoo! SiteBuilder - Free, easy-to-use web site design software
-http://sitebuilder.yahoo.com
+        return info;
+}
+                
+How does it look? Is there a smarter way to do it?
+
+Luca
+-- 
+Reply-To: kronos@kronoz.cjb.net
+Home: http://kronoz.cjb.net
+The trouble with computers is that they do what you tell them, 
+not what you want.
+D. Cohen
 
 
 -------------------------------------------------------

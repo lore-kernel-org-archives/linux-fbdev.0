@@ -1,76 +1,58 @@
-From: James Simmons <jsimmons@www.infradead.org>
-Subject: Re: [patch] generic framebuffer support, cleanups
- and buglets with BPP < 32 (fwd)
-Date: Wed, 16 Feb 2005 20:07:56 +0000 (GMT)
-Message-ID: <Pine.LNX.4.56.0502162005090.23410@pentafluge.infradead.org>
-References: <Pine.LNX.4.62.0502161022440.12747@numbat.sonytel.be>
- <200502162155.53719.adaplas@hotpop.com> <200502161506.45868.eckhardt@satorlaser.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Frans Pop <aragorn@tiscali.nl>
+Subject: Re: [atyfb] No display on Sparc Ultra 10 with kernel 2.6.10-rc2 or later
+Date: Wed, 16 Feb 2005 23:10:03 +0100
+Message-ID: <200502162310.12703.aragorn@tiscali.nl>
+References: <200502140251.00645.aragorn@tiscali.nl> <200502161927.58344.adaplas@hotpop.com> <20050216075140.77ae3563.davem@davemloft.net>
 Mime-Version: 1.0
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D1VSu-0004X2-Sj
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 12:08:04 -0800
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1D1VSt-0003uz-4I
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 12:08:04 -0800
-Received: from jsimmons (helo=localhost)
-	by pentafluge.infradead.org with local-esmtp (Exim 4.43 #1 (Red Hat Linux))
-	id 1D1VSm-00069E-Av
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 20:07:58 +0000
-In-Reply-To: <200502161506.45868.eckhardt@satorlaser.com>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: multipart/signed;
+  boundary="nextPart6563438.3IMlraUbTm";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+In-Reply-To: <20050216075140.77ae3563.davem@davemloft.net>
+Resent-Message-ID: <bHtT-B.A.Nz.GT8ECB@murphy>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:debian-sparc@lists.debian.org>
+List-Help: <mailto:debian-sparc-request@lists.debian.org?subject=help>
+List-Subscribe: <mailto:debian-sparc-request@lists.debian.org?subject=subscribe>
+List-Unsubscribe: <mailto:debian-sparc-request@lists.debian.org?subject=unsubscribe>
+List-Archive: <http://lists.debian.org/debian-sparc/>
+To: "David S. Miller" <davem@davemloft.net>
+Cc: adaplas@pol.net, debian-sparc@lists.debian.org, sparclinux@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
+--nextPart6563438.3IMlraUbTm
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I will give the patch a test run. Before you do that I have a few 
-improvements myself. Mainly I nuked the BYTES_PER_LONG and SHIFT_PER_LONG 
-variables.
+On Wednesday 16 February 2005 16:51, David S. Miller wrote:
+> On Wed, 16 Feb 2005 19:27:57 +0800 Antonino A. Daplas wrote:
+> > Nope, those are proposed options.  If nobody disagrees, I can easily
+> > add this for atyfb.
+>
+> Please do.
+>
+> BTW, for Sparc we may wish to inherit the CSYNC setting from
+> default_var.
 
-On Wed, 16 Feb 2005, Ulrich Eckhardt wrote:
+Sounds like a nice idea.
 
-> Antonino A. Daplas wrote:
-> > Patch is linewrapped.  Please resend.  Text attachment is okay.
-> 
-> Ok, resending. I'll repeat the description so it all is in one place. Here we 
-> go...
-> 
-> 
-> Changes:
->  * removed trailing whitespace
->  * use helper function for common bitwise operations
->  * fixed several cases where either the wrong mask was used for bitops
->    or the mask was computed falsely, messing up <32 BPP support
->  * added self-tests for bitcpy_rev() algorithm in module-init function
->  * no need to use explicitly sized integers in some cases
->  * added a few comments where things weren't obvious to me
-> 
-> I tested these changes on an Au1100 based board, using the patches to its 
-> framebuffer code that were posted here by Christian Pellegrin[1]. I had this 
-> code working both on a 16BPP color LCD and a 4BPP monochrome one.
-> 
-> Uli
-> 
-> [1] http://www.linux-mips.org/archives/linux-mips/2005-01/msg00095.html
-> What happened to those, btw? They at least Work For Me(tm).
-> 
+If you have a patch that you would like to have tested, feel free to mail=20
+me.
 
+Cheers,
+=46JP
 
--------------------------------------------------------
-SF email is sponsored by - The IT Product Guide
-Read honest & candid reviews on hundreds of IT Products from real users.
-Discover which products truly live up to the hype. Start reading now.
-http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
+--nextPart6563438.3IMlraUbTm
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.5 (GNU/Linux)
+
+iD8DBQBCE8TEgm/Kwh6ICoQRAh76AJ96bEvDhaPTTgPllsNlDDqaV8SYhQCgqQc4
+/7EOhAx+wKOn0tNiE3vTWM0=
+=wdrf
+-----END PGP SIGNATURE-----
+
+--nextPart6563438.3IMlraUbTm--

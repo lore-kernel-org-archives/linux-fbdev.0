@@ -1,21 +1,24 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [patch] triviial: add PCI id to atyfb
-Date: Tue, 6 Jan 2004 22:58:08 +0000 (GMT)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] VT locking
+Date: Wed, 07 Jan 2004 10:08:49 +1100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0401062258020.21143-100000@phoenix.infradead.org>
-References: <200312251913.07445.jhanne@gmx.de>
+Message-ID: <1073430528.4067.27.camel@gaston>
+References: <1073349182.9504.175.camel@gaston>
+	 <Pine.GSO.4.58.0401061725250.5752@waterleaf.sonytel.be>
+	 <1073425440.773.10.camel@gaston>  <20040106140002.6806757b.akpm@osdl.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1Ae09M-0007au-0D
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 14:58:12 -0800
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1Ae0KQ-000089-7r
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 15:09:38 -0800
+Received: from pentafluge.infradead.org ([213.86.99.235])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1Ae09L-0004C9-EI
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 14:58:11 -0800
-In-Reply-To: <200312251913.07445.jhanne@gmx.de>
+	id 1Ae0KP-0004uB-Dp
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 15:09:37 -0800
+In-Reply-To: <20040106140002.6806757b.akpm@osdl.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,26 +28,27 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Johann Hanne <jhanne@gmx.de>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: Andrew Morton <akpm@osdl.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Kernel list <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@infradead.org>
 
 
-Applied.
+> That's OK, it's just in there for a soak-test at present - this stuff is
+> quite a long way away, yes?
 
+The VT locking on the debug crude hack ? :)
 
-On Thu, 25 Dec 2003, Johann Hanne wrote:
+Well it depends :) If nobody complains, it could get in pretty fast :)
+In any case, please report me any trigger of the WARN_ON... I didn't
+chield everything yet with the console sem, so there may still be
+some of them coming from the low level code.
 
-> Hi,
-> 
-> the PCI id in this patch is used on an HP NetServer LH3000, where I've also 
-> successfully tested it.
-> 00:07.0 VGA compatible controller: ATI Technologies Inc 3D Rage IIC (rev 7a)
-> 00:07.0 Class 0300: 1002:4759 (rev 7a)
-> 
-> Cheers, Johann
-> 
+> It's probably just easiest for you to work against current -bk, send me a
+> single rolled up patch whenever you have new things for people to test. 
+> When we're happy with it all we can do a bk merge of everything.
+
+Ok.
+
 
 
 

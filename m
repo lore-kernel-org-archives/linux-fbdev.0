@@ -1,53 +1,65 @@
-From: Otto Wyss <otto.wyss@orpatec.ch>
-Subject: Project update, new website
-Date: Thu, 19 Aug 2004 21:53:55 +0200
-Sender: linux-fbdev-users-admin@lists.sourceforge.net
-Message-ID: <41250552.F3C8E8A9@orpatec.ch>
-Reply-To: linux-fbdev-users@lists.sourceforge.net
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: 2.6.8.1-mm2
+Date: Thu, 19 Aug 2004 23:08:50 -0700
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <20040819230850.09d7d274.akpm@osdl.org>
+References: <20040819014204.2d412e9b.akpm@osdl.org>
+	<20040820005019.GB6374@logos.cnet>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-users-admin@lists.sourceforge.net>
-Errors-To: linux-fbdev-users-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-users>,
-	<mailto:linux-fbdev-users-request@lists.sourceforge.net?subject=unsubscribe>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1By2bn-0005EX-9r
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 19 Aug 2004 23:10:39 -0700
+Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1By2bl-0008Q9-PD
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 19 Aug 2004 23:10:39 -0700
+In-Reply-To: <20040820005019.GB6374@logos.cnet>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-users@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-users-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-users>,
-	<mailto:linux-fbdev-users-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-users>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, linux-fbdev-users@lists.sourceforge.net
+To: Marcelo Tosatti <marcelo.tosatti@cyclades.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Hi,
 
-since my own project wyoDesktop "http://wyodesktop.sourceforge.net/"
-depends on many and good framebuffer drivers and linux-fbdev looked a
-little outdated I volunteered to take care of it. So far I've remove
-hopefully all spam messages from the mailing lists and will try to keep
-them clean. I also installed a new web site
-"http://linux-fbdev.sourceforge.net/", the old one is still available
-under "http://linux-fbdev.sourceforge.net/old/". 
+(switched mailing lists)
 
-Some questions about the new site:
-- The new driver list is just a draft of the old list. If you are the
-maintainer of framebuffer driver and you or your driver isn't listed,
-post the information here or to me.
-- I haven't installed CVS access for any driver so far, if you would
-like it for your driver just say so. To see how it goes, have a look at
-the wxCode project "http://wxcode.sourceforge.net/".
-- Any documentation is missing, please inform me what and where.
-- Any driver status information is missing, ditto.
+Marcelo Tosatti <marcelo.tosatti@cyclades.com> wrote:
+>
+> On Thu, Aug 19, 2004 at 01:42:04AM -0700, Andrew Morton wrote:
+> > 
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.8.1/2.6.8.1-mm2/
+> > 
+> > - Added Tony Luck's ia64 devel tree to the -mm "external trees" lineup.
+> > 
+> > - The monster memory leak which some people were seeing with audio CD
+> 
+> Hi Andrew,
+> 
+> Just annoying your arse, I get this:
+> 
+>   LD      .tmp_vmlinux1
+> drivers/built-in.o(.text+0xa1bde): In function `radeon_match_mode':
+> : undefined reference to `vesa_modes'
+> drivers/built-in.o(.text+0xa1cbd): In function `radeon_match_mode':
+> : undefined reference to `vesa_modes'
+> make: ** [.tmp_vmlinux1] Erro 1
+> 
+> Known already?
 
-I hope this update motivates anyone, developers and users, to renew any
-effort to increase quality and quantity of the framebuffer drivers. If
-anyone has some spare time and wants to help out just post a message
-here or direct to me. 
+nope.  That symbol is exported to modules.
 
-O. Wyss
-
--- 
-See a huge pile of work at "http://wyodesktop.sourceforge.net/"
+Please send .config.
 
 
 -------------------------------------------------------

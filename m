@@ -1,16 +1,16 @@
 From: Dave Jones <davej@codemonkey.org.uk>
 Subject: Re: CONFIG_VIDEO_SELECT stole my will to live
-Date: Tue, 20 May 2003 18:18:21 +0100
+Date: Tue, 20 May 2003 18:24:28 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030520171821.GA31761@suse.de>
+Message-ID: <20030520172428.GA32478@suse.de>
 References: <20030520155138.GA29450@suse.de> <Pine.LNX.4.44.0305201752240.28600-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from deviant.impure.org.uk ([195.82.120.238] ident=root)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19IAhM-0006E2-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 20 May 2003 10:14:48 -0700
+	id 19IAnF-0000el-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 20 May 2003 10:20:54 -0700
 Content-Disposition: inline
 In-Reply-To: <Pine.LNX.4.44.0305201752240.28600-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -29,12 +29,20 @@ Cc: Brett <generica@email.com>, linux-kernel@vger.kernel.org, linux-fbdev-devel@
 
 On Tue, May 20, 2003 at 05:55:41PM +0100, James Simmons wrote:
 
- > > Wasn't the EDID stuff getting backed out anyways ?
- > Only in the VESA driver. Some people did have luck with the BIOS EDID info 
- > so I like to keep the BIOS call in there. 
 
-That code runs way earlier than before we get to do any PCI quirks,
-so fixing that one up could be interesting.
+ > > Possibly the card's VGA BIOS has 'issues' with that call.
+ > This is most likely the case. I just tested out the configuration he has 
+ > and it worked for me. I'm running vga=5 right now. For teh majority it 
+ > works but as usual there are some broken BIOS that cause issues. 
+
+Or possibly..
+It looks to me that the store_edid function is unconditionally calling
+the READ EDID function without first having called the installation
+check function. (Int 10h ax=4f15 bx=0)
+
+Ralf Brown's interrupt list (which is pretty much definitive afaik)
+also notes that for the READ EDID function, dx should be 0, we are
+using 1. Is there a reason for this ?
 
 		Dave
 

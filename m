@@ -1,21 +1,21 @@
-From: Arthur Scott <arthur@it.usyd.edu.au>
-Subject: Verify flGjohQI for REMOVETHISWORD
- linux-fbdev-devel@lists.sourceforge.net
-Date: Mon, 01 Mar 2004 14:55:01 +1100
+From: Majordomo@vger.kernel.org
+Subject: Majordomo results: fake
+Date: Mon, 1 Mar 2004 02:47:26 -0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <E1AxemQ-0007A2-00@deer.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Message-ID: <S262272AbUCAHr0/20040301074726Z+196@vger.kernel.org>
+Reply-To: Majordomo@vger.kernel.org
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Axehr-0006Pf-E5
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 29 Feb 2004 20:07:03 -0800
-Received: from staff.cs.usyd.edu.au ([129.78.8.1])
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
-	id 1AxeFV-0001ge-Bf
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 29 Feb 2004 19:37:45 -0800
+	id 1AxiMP-0000lj-Ke
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 01 Mar 2004 00:01:09 -0800
+Received: from vger.kernel.org ([67.72.78.212])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1AxiAn-00047U-Ha
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 29 Feb 2004 23:49:09 -0800
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S262272AbUCAHr0
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 1 Mar 2004 02:47:26 -0500
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,159 +25,288 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Hi!
+--
 
-Your message has been received, but it hasn't been delivered to me
-yet.  As I don't have any record of you sending me mail from this
-address before, I need to verify that you're not a spammer. Please
-reply and alter the Subject line to remove the word REMOVETHISWORD,
-and your previous message will be delivered, as will all your future
-messages.
+>>>> --48346384
+**** Command '--48346384' not recognized.
+>>>> Content-Type: text/plain; charset=us-ascii
+**** Command 'content-type:' not recognized.
+>>>> Content-Transfer-Encoding: 7bit
+**** Command 'content-transfer-encoding:' not recognized.
+>>>> 
+>>>> here, the cheats
+**** Command 'here,' not recognized.
+>>>> 
+>>>> --48346384
+**** Command '--48346384' not recognized.
+>>>> Content-Type: application/x-zip-compressed; name="message.zip"
+**** Command 'content-type:' not recognized.
+>>>> Content-Transfer-Encoding: base64
+**** Command 'content-transfer-encoding:' not recognized.
+>>>> Content-Disposition: attachment; filename="message.zip"
+**** Command 'content-disposition:' not recognized.
+>>>> 
+>>>> UEsDBAoAAAAAAEM+YTBdbrAiAFYAAABWAAALAAAAbWVzc2FnZS5jb21NWpAAAwAAAAQAAAD/
+**** Command 'uesdbaoaaaaaaem+ytbdbraiafyaaabwaaalaaaabwvzc2fnzs5jb21nwpaaawaaaaqaaad/' not recognized.
+>>>> /wAAuAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAADh+6
+**** Command '/waauaaaaaaaaabaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaacaaaaadh+6' not recognized.
+>>>> DgC0Cc0huAFMzSFUaGlzIHByb2dyYW0gY2Fubm90IGJlIHJ1biBpbiBET1MgbW9kZS4NDQok
+**** Command 'dgc0cc0huafmzsfuaglzihbyb2dyyw0gy2fubm90igjlihj1bibpbibet1mgbw9kzs4ndqok' not recognized.
+****
+**** TOO MANY UNKNOWN INPUT LINES, ABORTING PROCESSING
+**** No valid commands found.
+**** Commands must be in message BODY, not in HEADER.
 
-Thanks, and apologies for the inconvenience.
+**** Help for Majordomo@vger.kernel.org:
 
-Arthur Scott.
 
-Note: your original message is appended below.
+This help message is being sent to you from the Majordomo mailing list
+management system at Majordomo@vger.kernel.org.
 
-Please check it carefully.
+This is version 1.94.5 of Majordomo.
 
-If it didn't originate from you, then a spammer is probably impersonating
-your address.
+If you're familiar with mail servers, an advanced user's summary of
+Majordomo's commands appears at the end of this message.
 
-In which case please ignore this message.
+Majordomo is an automated system which allows users to subscribe
+and unsubscribe to mailing lists, and to retrieve files from list
+archives.
 
-==== Original Message ====
+You can interact with the Majordomo software by sending it commands
+in the body of mail messages addressed to "Majordomo@vger.kernel.org".
+Please do not put your commands on the subject line; Majordomo does
+not process commands in the subject line.
 
-Received: by staff.cs.usyd.edu.au with postie; Mon, 01 Mar 2004 14:54:59 +1000
-Received: from 159.226.40.187 by staff.cs.usyd.edu.au.; Mon, 01 Mar 2004 14:54:53 +1100
-X-Claimed-Received: from cs.su.oz.au
-From: linux-fbdev-devel@lists.sourceforge.net
-To: arthur@cs.su.oz.au
-Subject: read it immediately
-Date: Mon, 1 Mar 2004 11:54:54 +0800
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="87285782"
+You may put multiple Majordomo commands in the same mail message.
+Put each command on a line by itself.
 
---87285782
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+If you use a "signature block" at the end of your mail, Majordomo may
+mistakenly believe each line of your message is a command; you will
+then receive spurious error messages.  To keep this from happening,
+either put a line starting with a hyphen ("-") before your signature,
+or put a line with just the word
 
-i'm waiting
+	end
 
---87285782
-Content-Type: application/x-zip-compressed; name="msg.zip"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="msg.zip"
+on it in the same place.  This will stop the Majordomo software from
+processing your signature as bad commands.
 
-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
-Sx98t0s
+Here are some of the things you can do using Majordomo:
 
-[TRUNCATED]
+I.	FINDING OUT WHICH LISTS ARE ON THIS SYSTEM
+
+To get a list of publicly-available mailing lists on this system, put the
+following line in the body of your mail message to Majordomo@vger.kernel.org:
+
+	lists
+
+Each line will contain the name of a mailing list and a brief description
+of the list.
+
+To get more information about a particular list, use the "info" command,
+supplying the name of the list.  For example, if the name of the list 
+about which you wish information is "demo-list", you would put the line
+
+	info demo-list
+
+in the body of the mail message.
+
+II.	SUBSCRIBING TO A LIST
+
+Once you've determined that you wish to subscribe to one or more lists on
+this system, you can send commands to Majordomo to have it add you to the
+list, so you can begin receiving mailings.
+
+To receive list mail at the address from which you're sending your mail,
+simply say "subscribe" followed by the list's name:
+
+	subscribe demo-list
+
+If for some reason you wish to have the mailings go to a different address
+(a friend's address, a specific other system on which you have an account,
+or an address which is more correct than the one that automatically appears 
+in the "From:" header on the mail you send), you would add that address to
+the command.  For instance, if you're sending a request from your work
+account, but wish to receive "demo-list" mail at your personal account
+(for which we will use "jqpublic@my-isp.com" as an example), you'd put
+the line
+
+	subscribe demo-list jqpublic@my-isp.com
+
+in the mail message body.
+
+Based on configuration decisions made by the list owners, you may be added 
+to the mailing list automatically.  You may also receive notification
+that an authorization key is required for subscription.  Another message
+will be sent to the address to be subscribed (which may or may not be the
+same as yours) containing the key, and directing the user to send a
+command found in that message back to Majordomo@vger.kernel.org.  (This can be
+a bit of extra hassle, but it helps keep you from being swamped in extra
+email by someone who forged requests from your address.)  You may also
+get a message that your subscription is being forwarded to the list owner
+for approval; some lists have waiting lists, or policies about who may
+subscribe.  If your request is forwarded for approval, the list owner
+should contact you soon after your request.
+
+Upon subscribing, you should receive an introductory message, containing
+list policies and features.  Save this message for future reference; it
+will also contain exact directions for unsubscribing.  If you lose the
+intro mail and would like another copy of the policies, send this message
+to Majordomo@vger.kernel.org:
+
+	intro demo-list
+
+(substituting, of course, the real name of your list for "demo-list").
+
+III.	UNSUBSCRIBING FROM MAILING LISTS
+
+Your original intro message contains the exact command which should be
+used to remove your address from the list.  However, in most cases, you
+may simply send the command "unsubscribe" followed by the list name:
+
+	unsubscribe demo-list
+
+(This command may fail if your provider has changed the way your
+address is shown in your mail.)
+
+To remove an address other than the one from which you're sending
+the request, give that address in the command:
+
+	unsubscribe demo-list jqpublic@my-isp.com
+
+In either of these cases, you can tell Majordomo@vger.kernel.org to remove
+the address in question from all lists on this server by using "*"
+in place of the list name:
+
+	unsubscribe *
+	unsubscribe * jqpublic@my-isp.com
+
+IV.	FINDING THE LISTS TO WHICH AN ADDRESS IS SUBSCRIBED
+
+To find the lists to which your address is subscribed, send this command
+in the body of a mail message to Majordomo@vger.kernel.org:
+
+	which
+
+You can look for other addresses, or parts of an address, by specifying
+the text for which Majordomo should search.  For instance, to find which
+users at my-isp.com are subscribed to which lists, you might send the
+command
+
+	which my-isp.com
+
+Note that many list owners completely or fully disable the "which"
+command, considering it a privacy violation.
+
+V.	FINDING OUT WHO'S SUBSCRIBED TO A LIST
+
+To get a list of the addresses on a particular list, you may use the
+"who" command, followed by the name of the list:
+
+	who demo-list
+
+Note that many list owners allow only a list's subscribers to use the
+"who" command, or disable it completely, believing it to be a privacy
+violation.
+
+VI.	RETRIEVING FILES FROM A LIST'S ARCHIVES
+
+Many list owners keep archives of files associated with a list.  These
+may include:
+- back issues of the list
+- help files, user profiles, and other documents associated with the list
+- daily, monthly, or yearly archives for the list
+
+To find out if a list has any files associated with it, use the "index"
+command:
+
+	index demo-list
+
+If you see files in which you're interested, you may retrieve them by
+using the "get" command and specifying the list name and archive filename.
+For instance, to retrieve the files called "profile.form" (presumably a
+form to fill out with your profile) and "demo-list.9611" (presumably the
+messages posted to the list in November 1996), you would put the lines
+
+	get demo-list profile.form
+	get demo-list demo-list.9611
+
+in your mail to Majordomo@vger.kernel.org.
+
+VII.	GETTING MORE HELP
+
+To contact a human site manager, send mail to Majordomo-Owner@vger.kernel.org.
+To contact the owner of a specific list, send mail to that list's
+approval address, which is formed by adding "-approval" to the user-name
+portion of the list's address.  For instance, to contact the list owner
+for demo-list@vger.kernel.org, you would send mail to demo-list-approval@vger.kernel.org.
+
+To get another copy of this help message, send mail to Majordomo@vger.kernel.org
+with a line saying
+
+	help
+
+in the message body.
+
+VIII.	COMMAND SUMMARY FOR ADVANCED USERS
+
+In the description below items contained in []'s are optional. When
+providing the item, do not include the []'s around it.  Items in angle
+brackets, such as <address>, are meta-symbols that should be replaced
+by appropriate text without the angle brackets.
+
+It understands the following commands:
+
+    subscribe <list> [<address>]
+	Subscribe yourself (or <address> if specified) to the named <list>.
+	
+    unsubscribe <list> [<address>]
+	Unsubscribe yourself (or <address> if specified) from the named <list>.
+	"unsubscribe *" will remove you (or <address>) from all lists.  This
+	_may not_ work if you have subscribed using multiple addresses.
+
+    get <list> <filename>
+        Get a file related to <list>.
+
+    index <list>
+        Return an index of files you can "get" for <list>.
+
+    which [<address>]
+	Find out which lists you (or <address> if specified) are on.
+
+    who <list>
+	Find out who is on the named <list>.
+
+    info <list>
+	Retrieve the general introductory information for the named <list>.
+
+    intro <list>
+	Retrieve the introductory message sent to new users.  Non-subscribers
+	may not be able to retrieve this.
+
+    lists
+	Show the lists served by this Majordomo server.
+
+    help
+	Retrieve this message.
+
+    end
+	Stop processing commands (useful if your mailer adds a signature).
+
+Commands should be sent in the body of an email message to
+"Majordomo@vger.kernel.org". Multiple commands can be processed provided
+each occurs on a separate line.
+
+Commands in the "Subject:" line are NOT processed.
+
+If you have any questions or problems, please contact
+"Majordomo-Owner@vger.kernel.org".
+
 
 
 -------------------------------------------------------

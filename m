@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 7/10] fbdev: Generic drawing function cleanups 2
-Date: Sun, 6 Mar 2005 08:16:52 +0800
-Message-ID: <200503060816.52085.adaplas@hotpop.com>
+Subject: [PATCH 10/10] fbdev: Cleanups in driver/video
+Date: Sun, 6 Mar 2005 08:17:04 +0800
+Message-ID: <200503060817.05006.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D7jUC-00073Z-Tm
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 05 Mar 2005 16:19:08 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.51])
+	id 1D7jUw-00075T-Ph
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 05 Mar 2005 16:19:54 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.71])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1D7jUB-0000Ba-DZ
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 05 Mar 2005 16:19:08 -0800
+	id 1D7jUv-0000G9-6e
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 05 Mar 2005 16:19:54 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id B50EE736CB
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun,  6 Mar 2005 00:18:59 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id CF9EF147878C
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun,  6 Mar 2005 00:19:42 +0000 (UTC)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -29,630 +29,1233 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@www.infradead.org>, ":"@smtp-3.hotpop.com
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Adrian Bunk <bunk@stusta.de>
 
-  From James Simmons <jsimmons@www.infradead.org>:
+  This patch contains cleanups including the following:
+  - make needlessly global code static
+  - remove the needlessly #ifdef MODULE from several module_exit
+  - remove or #if 0 the following unused global functions:
+    - fbmon.c: fb_create_modedb
+    - fbmon.c: fb_get_monitor_limits
+    - nvidia/nv_i2c.c: nvidia_delete_i2c_busses
+    - nvidia/nv_setup.c: NVEnablePalette
+    - nvidia/nv_setup.c: NVReadDacMask
+  - remove the following unneeded EXPORT_SYMBOL's:
+    - fbmon.c: fb_create_modedb
+    - fbmon.c: fb_get_monitor_limits
+    - hgafb.c: hgafb_setup
 
-  Replaced LONG_MASK, SHIFT_PER_LONG, BYTES_PER_LONG with dynamic
-  variables. This will allow drivers in the future to control how much
-  data to read/write from the framebuffer.
-
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- cfbcopyarea.c |  185 ++++++++++++++++------------------------------------------
- cfbfillrect.c |   90 ++++++++++++----------------
- 2 files changed, 94 insertions(+), 181 deletions(-)
+ drivers/video/aty/aty128fb.c        |   13 +-----
+ drivers/video/aty/atyfb.h           |    1
+ drivers/video/aty/atyfb_base.c      |   14 +++---
+ drivers/video/aty/mach64_ct.c       |    7 ++-
+ drivers/video/aty/mach64_cursor.c   |    2
+ drivers/video/aty/radeon_base.c     |   46 ++++++++++------------
+ drivers/video/aty/radeon_pm.c       |    4 -
+ drivers/video/aty/radeonfb.h        |    1
+ drivers/video/backlight/backlight.c |    2
+ drivers/video/backlight/lcd.c       |    2
+ drivers/video/cyber2000fb.c         |    6 +-
+ drivers/video/fbmem.c               |    9 +---
+ drivers/video/fbmon.c               |   14 ------
+ drivers/video/geode/gx1fb_core.c    |    4 -
+ drivers/video/hgafb.c               |   14 +-----
+ drivers/video/i810/i810_main.c      |    2
+ drivers/video/imsttfb.c             |    7 +--
+ drivers/video/intelfb/intelfbdrv.c  |   73 ++++++++++++++++--------------------
+ drivers/video/intelfb/intelfbdrv.h  |    2
+ drivers/video/neofb.c               |   16 ++++---
+ drivers/video/nvidia/nv_accel.c     |    4 -
+ drivers/video/nvidia/nv_i2c.c       |    2
+ drivers/video/nvidia/nv_of.c        |    1
+ drivers/video/nvidia/nv_proto.h     |    5 --
+ drivers/video/nvidia/nv_setup.c     |    4 +
+ drivers/video/nvidia/nvidia.c       |    4 -
+ drivers/video/pm2fb.c               |   60 ++++++++++-------------------
+ drivers/video/radeonfb.c            |   44 +++++++++------------
+ drivers/video/riva/fbdev.c          |    8 +--
+ drivers/video/tdfxfb.c              |   51 +++++++++++--------------
+ drivers/video/vesafb.c              |   12 -----
+ drivers/video/vfb.c                 |   12 +----
+ include/linux/fb.h                  |    3 -
+ 33 files changed, 190 insertions(+), 259 deletions(-)
 
-diff -Nru a/drivers/video/cfbcopyarea.c b/drivers/video/cfbcopyarea.c
---- a/drivers/video/cfbcopyarea.c	2005-03-05 00:18:24 +08:00
-+++ b/drivers/video/cfbcopyarea.c	2005-03-05 07:46:05 +08:00
-@@ -1,7 +1,7 @@
- /*
-  *  Generic function for frame buffer with packed pixels of any depth.
-  *
-- *      Copyright (C)  June 1999 James Simmons
-+ *      Copyright (C)  1999-2005 James Simmons <jsimmons@www.infradead.org>
-  *
-  *  This file is subject to the terms and conditions of the GNU General Public
-  *  License.  See the file COPYING in the main directory of this archive for
-@@ -33,18 +33,12 @@
- #include <asm/types.h>
- #include <asm/io.h>
+diff -Nru a/drivers/video/aty/aty128fb.c b/drivers/video/aty/aty128fb.c
+--- a/drivers/video/aty/aty128fb.c	2005-03-05 00:18:23 +08:00
++++ b/drivers/video/aty/aty128fb.c	2005-03-01 09:59:50 +08:00
+@@ -425,11 +425,6 @@
  
--#define LONG_MASK  (BITS_PER_LONG - 1)
+ #define round_div(n, d) ((n+(d/2))/d)
+ 
+-    /*
+-     *  Interface used by the world
+-     */
+-int aty128fb_init(void);
 -
- #if BITS_PER_LONG == 32
- #  define FB_WRITEL fb_writel
- #  define FB_READL  fb_readl
--#  define SHIFT_PER_LONG 5
--#  define BYTES_PER_LONG 4
- #else
- #  define FB_WRITEL fb_writeq
- #  define FB_READL  fb_readq
--#  define SHIFT_PER_LONG 6
--#  define BYTES_PER_LONG 8
+ static int aty128fb_check_var(struct fb_var_screeninfo *var,
+ 			      struct fb_info *info);
+ static int aty128fb_set_par(struct fb_info *info);
+@@ -1648,7 +1643,8 @@
+ 	return 0;
+ }
+ 
+-int __init aty128fb_setup(char *options)
++#ifndef MODULE
++static int __init aty128fb_setup(char *options)
+ {
+ 	char *this_opt;
+ 
+@@ -1701,6 +1697,7 @@
+ 	}
+ 	return 0;
+ }
++#endif  /*  MODULE  */
+ 
+ 
+ /*
+@@ -2454,7 +2451,7 @@
+ }
+ 
+ 
+-int __init aty128fb_init(void)
++static int __init aty128fb_init(void)
+ {
+ #ifndef MODULE
+ 	char *option = NULL;
+@@ -2474,7 +2471,6 @@
+ 
+ module_init(aty128fb_init);
+ 
+-#ifdef MODULE
+ module_exit(aty128fb_exit);
+ 
+ MODULE_AUTHOR("(c)1999-2003 Brad Douglas <brad@neruo.com>");
+@@ -2485,6 +2481,5 @@
+ #ifdef CONFIG_MTRR
+ module_param_named(nomtrr, mtrr, invbool, 0);
+ MODULE_PARM_DESC(nomtrr, "bool: Disable MTRR support (0 or 1=disabled) (default=0)");
+-#endif
  #endif
  
+diff -Nru a/drivers/video/aty/atyfb.h b/drivers/video/aty/atyfb.h
+--- a/drivers/video/aty/atyfb.h	2005-01-12 06:10:17 +08:00
++++ b/drivers/video/aty/atyfb.h	2005-03-01 09:21:51 +08:00
+@@ -334,7 +334,6 @@
+      */
+ 
+ extern int aty_init_cursor(struct fb_info *info);
+-extern int atyfb_cursor(struct fb_info *info, struct fb_cursor *cursor);
+ 
      /*
-@@ -63,21 +57,20 @@
+      *  Hardware acceleration
+diff -Nru a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
+--- a/drivers/video/aty/atyfb_base.c	2005-03-05 00:18:23 +08:00
++++ b/drivers/video/aty/atyfb_base.c	2005-03-01 09:59:45 +08:00
+@@ -265,7 +265,7 @@
+      *  Interface used by the world
       */
  
- static void
--bitcpy(unsigned long __iomem *dst, int dst_idx,
--       const unsigned long __iomem *src, int src_idx,
--       unsigned n)
-+bitcpy(unsigned long __iomem *dst, int dst_idx, const unsigned long __iomem *src,
-+	int src_idx, int bits, unsigned n)
+-struct fb_var_screeninfo default_var = {
++static struct fb_var_screeninfo default_var = {
+ 	/* 640x480, 60 Hz, Non-Interlaced (25.175 MHz dotclock) */
+ 	640, 480, 640, 480, 0, 0, 8, 0,
+ 	{0, 8, 0}, {0, 8, 0}, {0, 8, 0}, {0, 0, 0},
+@@ -2990,7 +2990,7 @@
+ 
+ #ifdef __i386__
+ #ifdef CONFIG_FB_ATY_GENERIC_LCD
+-void aty_init_lcd(struct atyfb_par *par, u32 bios_base)
++static void aty_init_lcd(struct atyfb_par *par, u32 bios_base)
  {
- 	unsigned long first, last;
- 	int const shift = dst_idx-src_idx;
- 	int left, right;
+ 	u32 driv_inf_tab, sig;
+ 	u16 lcd_ofs;
+@@ -3589,7 +3589,8 @@
  
- 	first = ~0UL >> dst_idx;
--	last = ~(~0UL >> ((dst_idx+n) % BITS_PER_LONG));
-+	last = ~(~0UL >> ((dst_idx+n) % bits));
+ #endif /* CONFIG_PCI */
  
- 	if (!shift) {
- 		// Same alignment for source and dest
- 
--		if (dst_idx+n <= BITS_PER_LONG) {
-+		if (dst_idx+n <= bits) {
- 			// Single word
- 			if (last)
- 				first &= last;
-@@ -90,11 +83,11 @@
- 				FB_WRITEL( comp( FB_READL(src), FB_READL(dst), first), dst);
- 				dst++;
- 				src++;
--				n -= BITS_PER_LONG-dst_idx;
-+				n -= bits - dst_idx;
- 			}
- 
- 			// Main chunk
--			n /= BITS_PER_LONG;
-+			n /= bits;
- 			while (n >= 8) {
- 				FB_WRITEL(FB_READL(src++), dst++);
- 				FB_WRITEL(FB_READL(src++), dst++);
-@@ -118,17 +111,17 @@
- 		int m;
- 		// Different alignment for source and dest
- 
--		right = shift & (BITS_PER_LONG-1);
--		left = -shift & (BITS_PER_LONG-1);
-+		right = shift & (bits - 1);
-+		left = -shift & (bits - 1);
- 
--		if (dst_idx+n <= BITS_PER_LONG) {
-+		if (dst_idx+n <= bits) {
- 			// Single destination word
- 			if (last)
- 				first &= last;
- 			if (shift > 0) {
- 				// Single source word
- 				FB_WRITEL( comp( FB_READL(src) >> right, FB_READL(dst), first), dst);
--			} else if (src_idx+n <= BITS_PER_LONG) {
-+			} else if (src_idx+n <= bits) {
- 				// Single source word
- 				FB_WRITEL( comp(FB_READL(src) << left, FB_READL(dst), first), dst);
- 			} else {
-@@ -150,19 +143,19 @@
- 				// Single source word
- 				FB_WRITEL( comp(d0 >> right, FB_READL(dst), first), dst);
- 				dst++;
--				n -= BITS_PER_LONG-dst_idx;
-+				n -= bits - dst_idx;
- 			} else {
- 				// 2 source words
- 				d1 = FB_READL(src++);
- 				FB_WRITEL( comp(d0<<left | d1>>right, FB_READL(dst), first), dst);
- 				d0 = d1;
- 				dst++;
--				n -= BITS_PER_LONG-dst_idx;
-+				n -= bits - dst_idx;
- 			}
- 
- 			// Main chunk
--			m = n % BITS_PER_LONG;
--			n /= BITS_PER_LONG;
-+			m = n % bits;
-+			n /= bits;
- 			while (n >= 4) {
- 				d1 = FB_READL(src++);
- 				FB_WRITEL(d0 << left | d1 >> right, dst++);
-@@ -204,28 +197,27 @@
-      */
- 
- static void
--bitcpy_rev(unsigned long __iomem *dst, int dst_idx,
--           const unsigned long __iomem *src, int src_idx,
--           unsigned n)
-+bitcpy_rev(unsigned long __iomem *dst, int dst_idx, const unsigned long __iomem *src,
-+		int src_idx, int bits, unsigned n)
+-int __init atyfb_setup(char *options)
++#ifndef MODULE
++static int __init atyfb_setup(char *options)
  {
- 	unsigned long first, last;
- 	int shift;
+ 	char *this_opt;
  
--	dst += (n-1)/BITS_PER_LONG;
--	src += (n-1)/BITS_PER_LONG;
--	if ((n-1) % BITS_PER_LONG) {
--		dst_idx += (n-1) % BITS_PER_LONG;
--		dst += dst_idx >> SHIFT_PER_LONG;
--		dst_idx &= BITS_PER_LONG-1;
--		src_idx += (n-1) % BITS_PER_LONG;
--		src += src_idx >> SHIFT_PER_LONG;
--		src_idx &= BITS_PER_LONG-1;
-+	dst += (n-1)/bits;
-+	src += (n-1)/bits;
-+	if ((n-1) % bits) {
-+		dst_idx += (n-1) % bits;
-+		dst += dst_idx >> (ffs(bits) - 1);
-+		dst_idx &= bits - 1;
-+		src_idx += (n-1) % bits;
-+		src += src_idx >> (ffs(bits) - 1);
-+		src_idx &= bits - 1;
+@@ -3657,8 +3658,9 @@
  	}
- 
- 	shift = dst_idx-src_idx;
- 
--	first = ~0UL << (BITS_PER_LONG-1-dst_idx);
--	last = ~(~0UL << (BITS_PER_LONG-1-((dst_idx-n) % BITS_PER_LONG)));
-+	first = ~0UL << (bits - 1 - dst_idx);
-+	last = ~(~0UL << (bits - 1 - ((dst_idx-n) % bits)));
- 
- 	if (!shift) {
- 		// Same alignment for source and dest
-@@ -247,7 +239,7 @@
- 			}
- 
- 			// Main chunk
--			n /= BITS_PER_LONG;
-+			n /= bits;
- 			while (n >= 8) {
- 				FB_WRITEL(FB_READL(src--), dst--);
- 				FB_WRITEL(FB_READL(src--), dst--);
-@@ -269,8 +261,8 @@
- 	} else {
- 		// Different alignment for source and dest
- 
--		int const left = -shift & (BITS_PER_LONG-1);
--		int const right = shift & (BITS_PER_LONG-1);
-+		int const left = -shift & (bits-1);
-+		int const right = shift & (bits-1);
- 
- 		if ((unsigned long)dst_idx+1 >= n) {
- 			// Single destination word
-@@ -311,8 +303,8 @@
- 			n -= dst_idx+1;
- 
- 			// Main chunk
--			m = n % BITS_PER_LONG;
--			n /= BITS_PER_LONG;
-+			m = n % bits;
-+			n /= bits;
- 			while (n >= 4) {
- 				d1 = FB_READL(src--);
- 				FB_WRITEL(d0 >> right | d1 << left, dst--);
-@@ -353,10 +345,11 @@
- {
- 	u32 dx = area->dx, dy = area->dy, sx = area->sx, sy = area->sy;
- 	u32 height = area->height, width = area->width;
--	int x2, y2, vxres, vyres;
- 	unsigned long const bits_per_line = p->fix.line_length*8u;
--	int dst_idx = 0, src_idx = 0, rev_copy = 0;
- 	unsigned long __iomem *dst = NULL, *src = NULL;
-+	int bits = BITS_PER_LONG, bytes = bits >> 3;
-+	int dst_idx = 0, src_idx = 0, rev_copy = 0;
-+	int x2, y2, vxres, vyres;
- 
- 	if (p->state != FBINFO_STATE_RUNNING)
- 		return;
-@@ -385,8 +378,7 @@
- 	width = x2 - dx;
- 	height = y2 - dy;
- 
--	if ((width==0)
--	  ||(height==0))
-+	if ((width==0) ||(height==0))
- 		return;
- 
- 	/* update sx1,sy1 */
-@@ -394,15 +386,12 @@
- 	sy += (dy - area->dy);
- 
- 	/* the source must be completely inside the virtual screen */
--	if (sx < 0 || sy < 0 ||
--	    (sx + width) > vxres ||
--	    (sy + height) > vyres)
-+	if (sx < 0 || sy < 0 || (sx + width) > vxres || (sy + height) > vyres)
- 		return;
- 
- 	/* if the beginning of the target area might overlap with the end of
- 	the source area, be have to copy the area reverse. */
--	if ((dy == sy && dx > sx) ||
--	    (dy > sy)) {
-+	if ((dy == sy && dx > sx) || (dy > sy)) {
- 		dy += height;
- 		sy += height;
- 		rev_copy = 1;
-@@ -410,9 +399,8 @@
- 
- 	// split the base of the framebuffer into a long-aligned address and the
- 	// index of the first bit
--	dst = src = (unsigned long __iomem *)((unsigned long)p->screen_base &
--				      ~(BYTES_PER_LONG-1));
--	dst_idx = src_idx = 8*((unsigned long)p->screen_base & (BYTES_PER_LONG-1));
-+	dst = src = (unsigned long __iomem *)((unsigned long)p->screen_base & ~(bytes-1));
-+	dst_idx = src_idx = 8*((unsigned long)p->screen_base & (bytes-1));
- 	// add offset of source and target area
- 	dst_idx += dy*bits_per_line + dx*p->var.bits_per_pixel;
- 	src_idx += sy*bits_per_line + sx*p->var.bits_per_pixel;
-@@ -424,93 +412,26 @@
- 		while (height--) {
- 			dst_idx -= bits_per_line;
- 			src_idx -= bits_per_line;
--			dst += dst_idx >> SHIFT_PER_LONG;
--			dst_idx &= LONG_MASK;
--			src += src_idx >> SHIFT_PER_LONG;
--			src_idx &= LONG_MASK;
--			bitcpy_rev(dst, dst_idx, src, src_idx,
--				   width*p->var.bits_per_pixel);
-+			dst += dst_idx >> (ffs(bits) - 1);
-+			dst_idx &= (bytes - 1);
-+			src += src_idx >> (ffs(bits) - 1);
-+			src_idx &= (bytes - 1);
-+			bitcpy_rev(dst, dst_idx, src, src_idx, bits,
-+				width*p->var.bits_per_pixel);
- 		}
- 	} else {
- 		while (height--) {
--			dst += dst_idx >> SHIFT_PER_LONG;
--			dst_idx &= LONG_MASK;
--			src += src_idx >> SHIFT_PER_LONG;
--			src_idx &= LONG_MASK;
--			bitcpy(dst, dst_idx, src, src_idx,
--			       width*p->var.bits_per_pixel);
-+			dst += dst_idx >> (ffs(bits) - 1);
-+			dst_idx &= (bytes - 1);
-+			src += src_idx >> (ffs(bits) - 1);
-+			src_idx &= (bytes - 1);
-+			bitcpy(dst, dst_idx, src, src_idx, bits,
-+				width*p->var.bits_per_pixel);
- 			dst_idx += bits_per_line;
- 			src_idx += bits_per_line;
- 		}
- 	}
+ 	return 0;
  }
--#undef CFB_DEBUG
--#ifdef CFB_DEBUG
--/** all this init-function does is to perform a few unittests.
--The idea it always to invoke the function to test on a predefined bitmap and
--compare the results to the expected output.
--TODO:
-- - this currently only tests bitcpy_rev, as that was the only one giving me trouble
-- - this assumes 32 bit longs
-- - not sure about endianess, I only tested this on a 32 bit MIPS little endian system
-- - could reuse testcases to test forward copying, too, just reverse the operation
--*/
--int __init cfb_copyarea_init(void)
--{
--	char const* comment = 0;
--	printk( KERN_INFO "cfb_copyarea_init()\n");
--	{
--		comment = "copy a single u32, source and target u32-aligned";
--		u32 tmp[] =          { 0xaaaaaaaau, 0x55555555u, 0xffffffffu, 0x00000000u };
--		u32 const expect[] = { 0xaaaaaaaau, 0xaaaaaaaau, 0xffffffffu, 0x00000000u };
--
--		bitcpy_rev( tmp, 0, tmp+1, 0, 32);
--
--		if( 0!=memcmp( expect, tmp, sizeof tmp))
--			goto error;
--	}
--
--	{
--		comment = "copy a single u32, source u32-aligned";
--		u32 tmp[] =          { 0x11112222u, 0x33334444u, 0x55556666u, 0x77778888u };
--		u32 const expect[] = { 0x11112222u, 0x22224444u, 0x55551111u, 0x77778888u };
--
--		bitcpy_rev( tmp, 0, tmp+1, 16, 32);
--
--		if( 0!=memcmp( expect, tmp, sizeof tmp))
--			goto error;
--	}
--
--	{
--		comment = "copy a single u32, target u32-aligned";
--		u32 tmp[] =          { 0x11112222u, 0x33334444u, 0x55556666u, 0x77778888u };
--		u32 const expect[] = { 0x11112222u, 0x33334444u, 0x44441111u, 0x77778888u };
--
--		bitcpy_rev( tmp, 16, tmp+2, 0, 32);
--
--		if( 0!=memcmp( expect, tmp, sizeof tmp))
--			goto error;
--	}
--
--	{
--		comment = "copy two u32, source and target u32-aligned";
--		u32 tmp[] =          { 0xaaaaaaaau, 0x55555555u, 0xffffffffu, 0x00000000u };
--		u32 const expect[] = { 0xaaaaaaaau, 0xaaaaaaaau, 0x55555555u, 0x00000000u };
--
--		bitcpy_rev( tmp, 0, tmp+1, 0, 64);
--
--		if( 0!=memcmp( expect, tmp, sizeof tmp))
--			goto error;
--	}
--
--	return 0;
--
--error:
--	printk( KERN_ERR " framebuffer self-test(%s) failed\n", comment);
--	return -1;
--}
--module_init(cfb_copyarea_init);
++#endif  /*  MODULE  */
+ 
+-int __init atyfb_init(void)
++static int __init atyfb_init(void)
+ {
+ #ifndef MODULE
+     char *option = NULL;
+@@ -3677,7 +3679,7 @@
+     return 0;
+ }
+ 
+-void __exit atyfb_exit(void)
++static void __exit atyfb_exit(void)
+ {
+ #ifdef CONFIG_PCI
+ 	pci_unregister_driver(&atyfb_driver);
+@@ -3685,9 +3687,7 @@
+ }
+ 
+ module_init(atyfb_init);
+-#ifdef MODULE
+ module_exit(atyfb_exit);
 -#endif
  
- EXPORT_SYMBOL(cfb_copyarea);
+ MODULE_DESCRIPTION("FBDev driver for ATI Mach64 cards");
+ MODULE_LICENSE("GPL");
+diff -Nru a/drivers/video/aty/mach64_ct.c b/drivers/video/aty/mach64_ct.c
+--- a/drivers/video/aty/mach64_ct.c	2004-10-27 14:58:07 +08:00
++++ b/drivers/video/aty/mach64_ct.c	2005-03-06 06:45:07 +08:00
+@@ -359,7 +359,8 @@
+ #endif
+ }
  
-diff -Nru a/drivers/video/cfbfillrect.c b/drivers/video/cfbfillrect.c
---- a/drivers/video/cfbfillrect.c	2005-03-05 00:18:24 +08:00
-+++ b/drivers/video/cfbfillrect.c	2005-03-06 07:11:25 +08:00
-@@ -26,13 +26,9 @@
- #if BITS_PER_LONG == 32
- #  define FB_WRITEL fb_writel
- #  define FB_READL  fb_readl
--#  define SHIFT_PER_LONG 5
--#  define BYTES_PER_LONG 4
+-void __init aty_get_pll_ct(const struct fb_info *info, union aty_pll *pll)
++static void __init aty_get_pll_ct(const struct fb_info *info,
++				  union aty_pll *pll)
+ {
+ 	struct atyfb_par *par = (struct atyfb_par *) info->par;
+ 	u8 tmp, clock;
+@@ -382,7 +383,9 @@
+ 	}
+ }
+ 
+-int __init aty_init_pll_ct(const struct fb_info *info, union aty_pll *pll) {
++static int __init aty_init_pll_ct(const struct fb_info *info,
++				 union aty_pll *pll)
++{
+ 	struct atyfb_par *par = (struct atyfb_par *) info->par;
+ 	u8 mpost_div, xpost_div, sclk_post_div_real, sclk_fb_div, spll_cntl2;
+ 	u32 q, i, memcntl, trp;
+diff -Nru a/drivers/video/aty/mach64_cursor.c b/drivers/video/aty/mach64_cursor.c
+--- a/drivers/video/aty/mach64_cursor.c	2004-11-17 18:15:17 +08:00
++++ b/drivers/video/aty/mach64_cursor.c	2005-03-01 09:22:10 +08:00
+@@ -71,7 +71,7 @@
+ 	0xa8, 0x28, 0x88, 0x08, 0xa0, 0x20, 0x80, 0x00
+ };
+ 
+-int atyfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
++static int atyfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ {
+ 	struct atyfb_par *par = (struct atyfb_par *) info->par;
+ 	u16 xoff, yoff;
+diff -Nru a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
+--- a/drivers/video/aty/radeon_base.c	2005-03-05 00:18:23 +08:00
++++ b/drivers/video/aty/radeon_base.c	2005-03-01 10:00:55 +08:00
+@@ -1139,7 +1139,8 @@
+ }
+ 
+ 
+-void radeon_save_state (struct radeonfb_info *rinfo, struct radeon_regs *save)
++static void radeon_save_state (struct radeonfb_info *rinfo,
++			       struct radeon_regs *save)
+ {
+ 	/* CRTC regs */
+ 	save->crtc_gen_cntl = INREG(CRTC_GEN_CNTL);
+@@ -2486,27 +2487,8 @@
+ #endif /* CONFIG_PM */
+ };
+ 
+-int __init radeonfb_setup (char *options);
+-
+-int __init radeonfb_init (void)
+-{
+ #ifndef MODULE
+-	char *option = NULL;
+-
+-	if (fb_get_options("radeonfb", &option))
+-		return -ENODEV;
+-	radeonfb_setup(option);
+-#endif
+-	return pci_module_init (&radeonfb_driver);
+-}
+-
+-
+-void __exit radeonfb_exit (void)
+-{
+-	pci_unregister_driver (&radeonfb_driver);
+-}
+-
+-int __init radeonfb_setup (char *options)
++static int __init radeonfb_setup (char *options)
+ {
+ 	char *this_opt;
+ 
+@@ -2540,12 +2522,28 @@
+ 	}
+ 	return 0;
+ }
++#endif  /*  MODULE  */
+ 
+-module_init(radeonfb_init);
++static int __init radeonfb_init (void)
++{
++#ifndef MODULE
++	char *option = NULL;
+ 
+-#ifdef MODULE
+-module_exit(radeonfb_exit);
++	if (fb_get_options("radeonfb", &option))
++		return -ENODEV;
++	radeonfb_setup(option);
+ #endif
++	return pci_module_init (&radeonfb_driver);
++}
++
++
++static void __exit radeonfb_exit (void)
++{
++	pci_unregister_driver (&radeonfb_driver);
++}
++
++module_init(radeonfb_init);
++module_exit(radeonfb_exit);
+ 
+ MODULE_AUTHOR("Ani Joshi");
+ MODULE_DESCRIPTION("framebuffer driver for ATI Radeon chipset");
+diff -Nru a/drivers/video/aty/radeon_pm.c b/drivers/video/aty/radeon_pm.c
+--- a/drivers/video/aty/radeon_pm.c	2005-03-05 00:18:24 +08:00
++++ b/drivers/video/aty/radeon_pm.c	2005-03-01 09:31:44 +08:00
+@@ -27,7 +27,7 @@
+ 
+ #include "ati_ids.h"
+ 
+-void radeon_pm_disable_dynamic_mode(struct radeonfb_info *rinfo)
++static void radeon_pm_disable_dynamic_mode(struct radeonfb_info *rinfo)
+ {
+ 	u32 tmp;
+ 
+@@ -229,7 +229,7 @@
+ 	radeon_msleep(16);
+ }
+ 
+-void radeon_pm_enable_dynamic_mode(struct radeonfb_info *rinfo)
++static void radeon_pm_enable_dynamic_mode(struct radeonfb_info *rinfo)
+ {
+ 	u32 tmp;
+ 
+diff -Nru a/drivers/video/aty/radeonfb.h b/drivers/video/aty/radeonfb.h
+--- a/drivers/video/aty/radeonfb.h	2005-03-05 00:18:24 +08:00
++++ b/drivers/video/aty/radeonfb.h	2005-03-01 09:24:32 +08:00
+@@ -647,7 +647,6 @@
+ 
+ /* Other functions */
+ extern int radeon_screen_blank(struct radeonfb_info *rinfo, int blank, int mode_switch);
+-extern void radeon_save_state (struct radeonfb_info *rinfo, struct radeon_regs *save);
+ extern void radeon_write_mode (struct radeonfb_info *rinfo, struct radeon_regs *mode,
+ 			       int reg_only);
+ 
+diff -Nru a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
+--- a/drivers/video/backlight/backlight.c	2005-01-15 04:10:38 +08:00
++++ b/drivers/video/backlight/backlight.c	2005-03-01 09:32:25 +08:00
+@@ -111,7 +111,7 @@
+ 	kfree(bd);
+ }
+ 
+-struct class backlight_class = {
++static struct class backlight_class = {
+ 	.name = "backlight",
+ 	.release = backlight_class_release,
+ };
+diff -Nru a/drivers/video/backlight/lcd.c b/drivers/video/backlight/lcd.c
+--- a/drivers/video/backlight/lcd.c	2005-01-15 04:10:38 +08:00
++++ b/drivers/video/backlight/lcd.c	2005-03-01 09:33:50 +08:00
+@@ -111,7 +111,7 @@
+ 	kfree(ld);
+ }
+ 
+-struct class lcd_class = {
++static struct class lcd_class = {
+ 	.name = "lcd",
+ 	.release = lcd_class_release,
+ };
+diff -Nru a/drivers/video/cyber2000fb.c b/drivers/video/cyber2000fb.c
+--- a/drivers/video/cyber2000fb.c	2005-03-05 00:18:24 +08:00
++++ b/drivers/video/cyber2000fb.c	2005-03-01 10:01:44 +08:00
+@@ -1306,7 +1306,8 @@
+  * Parse Cyber2000fb options.  Usage:
+  *  video=cyber2000:font:fontname
+  */
+-int
++#ifndef MODULE
++static int
+ cyber2000fb_setup(char *options)
+ {
+ 	char *opt;
+@@ -1328,6 +1329,7 @@
+ 	}
+ 	return 0;
+ }
++#endif  /*  MODULE  */
+ 
+ /*
+  * The CyberPro chips can be placed on many different bus types.
+@@ -1717,7 +1719,7 @@
+  *
+  * Tony: "module_init" is now required
+  */
+-int __init cyber2000fb_init(void)
++static int __init cyber2000fb_init(void)
+ {
+ 	int ret = -1, err;
+ 
+diff -Nru a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+--- a/drivers/video/fbmem.c	2005-03-03 07:21:47 +08:00
++++ b/drivers/video/fbmem.c	2005-03-06 06:45:06 +08:00
+@@ -1189,7 +1189,7 @@
+  *
+  */
+ 
+-int __init
++static int __init
+ fbmem_init(void)
+ {
+ 	create_proc_read_entry("fb", 0, NULL, fbmem_read_proc, NULL);
+@@ -1206,20 +1206,19 @@
+ 	return 0;
+ }
+ 
+-void __exit
++#ifdef MODULE
++module_init(fbmem_init);
++static void __exit
+ fbmem_exit(void)
+ {
+ 	class_simple_destroy(fb_class);
+ }
+ 
+-#ifdef MODULE
+-module_init(fbmem_init);
+ module_exit(fbmem_exit);
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("Framebuffer base");
  #else
- #  define FB_WRITEL fb_writeq
- #  define FB_READL  fb_readq
--#  define SHIFT_PER_LONG 6
--#  define BYTES_PER_LONG 8
+ subsys_initcall(fbmem_init);
+-subsys_exitcall(fbmem_exit);
  #endif
  
+ int fb_new_modelist(struct fb_info *info)
+diff -Nru a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+--- a/drivers/video/fbmon.c	2005-02-01 23:21:28 +08:00
++++ b/drivers/video/fbmon.c	2005-03-01 09:41:54 +08:00
+@@ -518,7 +518,7 @@
+  * This function builds a mode database using the contents of the EDID
+  * data
+  */
+-struct fb_videomode *fb_create_modedb(unsigned char *edid, int *dbsize)
++static struct fb_videomode *fb_create_modedb(unsigned char *edid, int *dbsize)
+ {
+ 	struct fb_videomode *mode, *m;
+ 	unsigned char *block;
+@@ -593,7 +593,7 @@
+ 		kfree(modedb);
+ }
+ 
+-int fb_get_monitor_limits(unsigned char *edid, struct fb_monspecs *specs)
++static int fb_get_monitor_limits(unsigned char *edid, struct fb_monspecs *specs)
+ {
+ 	int i, retval = 1;
+ 	unsigned char *block;
+@@ -1197,17 +1197,9 @@
+ {
+ 	return NULL;
+ }
+-struct fb_videomode *fb_create_modedb(unsigned char *edid, int *dbsize)
+-{
+-	return NULL;
+-}
+ void fb_destroy_modedb(struct fb_videomode *modedb)
+ {
+ }
+-int fb_get_monitor_limits(unsigned char *edid, struct fb_monspecs *specs)
+-{
+-	return 1;
+-}
+ int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var,
+ 		struct fb_info *info)
+ {
+@@ -1282,6 +1274,4 @@
+ 
+ EXPORT_SYMBOL(fb_get_mode);
+ EXPORT_SYMBOL(fb_validate_mode);
+-EXPORT_SYMBOL(fb_create_modedb);
+ EXPORT_SYMBOL(fb_destroy_modedb);
+-EXPORT_SYMBOL(fb_get_monitor_limits);
+diff -Nru a/drivers/video/geode/gx1fb_core.c b/drivers/video/geode/gx1fb_core.c
+--- a/drivers/video/geode/gx1fb_core.c	2005-03-05 00:35:04 +08:00
++++ b/drivers/video/geode/gx1fb_core.c	2005-03-01 09:42:31 +08:00
+@@ -264,9 +264,9 @@
+ }
+ 
+ 
+-struct fb_info *gx1fb_info;
++static struct fb_info *gx1fb_info;
+ 
+-int __init gx1fb_init(void)
++static int __init gx1fb_init(void)
+ {
+ 	struct fb_info *info;
+         struct geodefb_par *par;
+diff -Nru a/drivers/video/hgafb.c b/drivers/video/hgafb.c
+--- a/drivers/video/hgafb.c	2005-01-15 04:01:47 +08:00
++++ b/drivers/video/hgafb.c	2005-03-01 09:43:41 +08:00
+@@ -412,7 +412,8 @@
+  *	A zero is returned on success and %-EINVAL for failure.
+  */
+ 
+-int hgafb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info)
++static int hgafb_pan_display(struct fb_var_screeninfo *var,
++			     struct fb_info *info)
+ {
+ 	if (var->vmode & FB_VMODE_YWRAP) {
+ 		if (var->yoffset < 0 || 
+@@ -548,7 +549,7 @@
+ 	 *  Initialization
+ 	 */
+ 
+-int __init hgafb_init(void)
++static int __init hgafb_init(void)
+ {
+ 	if (fb_get_options("hgafb", NULL))
+ 		return -ENODEV;
+@@ -584,15 +585,6 @@
+ 
+         printk(KERN_INFO "fb%d: %s frame buffer device\n",
+                fb_info.node, fb_info.fix.id);
+-	return 0;
+-}
+-
+-	/*
+-	 *  Setup
+-	 */
+-
+-int __init hgafb_setup(char *options)
+-{
+ 	return 0;
+ }
+ 
+diff -Nru a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_main.c
+--- a/drivers/video/i810/i810_main.c	2005-03-05 00:18:24 +08:00
++++ b/drivers/video/i810/i810_main.c	2005-03-01 09:45:32 +08:00
+@@ -1997,7 +1997,7 @@
+ 
+ #ifdef MODULE
+ 
+-int __init i810fb_init(void)
++static int __init i810fb_init(void)
+ {
+ 	hsync1 *= 1000;
+ 	hsync2 *= 1000;
+diff -Nru a/drivers/video/imsttfb.c b/drivers/video/imsttfb.c
+--- a/drivers/video/imsttfb.c	2004-11-23 07:50:39 +08:00
++++ b/drivers/video/imsttfb.c	2005-03-01 10:02:22 +08:00
+@@ -1547,7 +1547,7 @@
+ }
+ 
+ #ifndef MODULE
+-int __init 
++static int __init
+ imsttfb_setup(char *options)
+ {
+ 	char *this_opt;
+@@ -1601,7 +1601,7 @@
+ 
+ #endif /* MODULE */
+ 
+-int __init imsttfb_init(void)
++static int __init imsttfb_init(void)
+ {
+ #ifndef MODULE
+ 	char *option = NULL;
+@@ -1619,9 +1619,8 @@
+ 	pci_unregister_driver(&imsttfb_pci_driver);
+ }
+ 
+-#ifdef MODULE
+ MODULE_LICENSE("GPL");
+-#endif
++
+ module_init(imsttfb_init);
+ module_exit(imsttfb_exit);
+ 
+diff -Nru a/drivers/video/intelfb/intelfbdrv.c b/drivers/video/intelfb/intelfbdrv.c
+--- a/drivers/video/intelfb/intelfbdrv.c	2005-03-05 00:18:24 +08:00
++++ b/drivers/video/intelfb/intelfbdrv.c	2005-03-01 10:04:13 +08:00
+@@ -227,42 +227,6 @@
+ module_param(mode, charp, S_IRUGO);
+ MODULE_PARM_DESC(mode,
+ 		 "Initial video mode \"<xres>x<yres>[-<depth>][@<refresh>]\"");
+-/***************************************************************
+- *                     modules entry points                    *
+- ***************************************************************/
+-
+-/* module load/unload entry points */
+-int __init
+-intelfb_init(void)
+-{
+-#ifndef MODULE
+-	char *option = NULL;
+-#endif
+-
+-	DBG_MSG("intelfb_init\n");
+-
+-	INF_MSG("Framebuffer driver for "
+-		"Intel(R) " SUPPORTED_CHIPSETS " chipsets\n");
+-	INF_MSG("Version " INTELFB_VERSION "\n");
+-
+-	if (idonly)
+-		return -ENODEV;
+-
+-#ifndef MODULE
+-	if (fb_get_options("intelfb", &option))
+-		return -ENODEV;
+-	intelfb_setup(option);
+-#endif
+-
+-	return pci_module_init(&intelfb_driver);
+-}
+-
+-static void __exit
+-intelfb_exit(void)
+-{
+-	DBG_MSG("intelfb_exit\n");
+-	pci_unregister_driver(&intelfb_driver);
+-}
+ 
+ #ifndef MODULE
+ #define OPT_EQUAL(opt, name) (!strncmp(opt, name, strlen(name)))
+@@ -322,7 +286,7 @@
+ 	return 1;
+ }
+ 
+-int __init
++static int __init
+ intelfb_setup(char *options)
+ {
+ 	char *this_opt;
+@@ -374,11 +338,40 @@
+ 
+ #endif
+ 
+-module_init(intelfb_init);
++static int __init
++intelfb_init(void)
++{
++#ifndef MODULE
++	char *option = NULL;
++#endif
+ 
+-#ifdef MODULE
+-module_exit(intelfb_exit);
++	DBG_MSG("intelfb_init\n");
++
++	INF_MSG("Framebuffer driver for "
++		"Intel(R) " SUPPORTED_CHIPSETS " chipsets\n");
++	INF_MSG("Version " INTELFB_VERSION "\n");
++
++	if (idonly)
++		return -ENODEV;
++
++#ifndef MODULE
++	if (fb_get_options("intelfb", &option))
++		return -ENODEV;
++	intelfb_setup(option);
+ #endif
++
++	return pci_module_init(&intelfb_driver);
++}
++
++static void __exit
++intelfb_exit(void)
++{
++	DBG_MSG("intelfb_exit\n");
++	pci_unregister_driver(&intelfb_driver);
++}
++
++module_init(intelfb_init);
++module_exit(intelfb_exit);
+ 
+ /***************************************************************
+  *                     mtrr support functions                  *
+diff -Nru a/drivers/video/intelfb/intelfbdrv.h b/drivers/video/intelfb/intelfbdrv.h
+--- a/drivers/video/intelfb/intelfbdrv.h	2005-02-15 21:06:47 +08:00
++++ b/drivers/video/intelfb/intelfbdrv.h	2005-03-06 06:45:07 +08:00
+@@ -28,7 +28,7 @@
+  *    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+ */
+ 
+-int __init intelfb_setup(char *options);
++static int __init intelfb_setup(char *options);
+ static void __devinit get_initial_mode(struct intelfb_info *dinfo);
+ static void update_dinfo(struct intelfb_info *dinfo,
+ 			 struct fb_var_screeninfo *var);
+diff -Nru a/drivers/video/neofb.c b/drivers/video/neofb.c
+--- a/drivers/video/neofb.c	2004-12-18 20:38:35 +08:00
++++ b/drivers/video/neofb.c	2005-03-01 10:04:44 +08:00
+@@ -400,21 +400,21 @@
+  */
+ static int paletteEnabled = 0;
+ 
+-inline void VGAenablePalette(void)
++static inline void VGAenablePalette(void)
+ {
+ 	vga_r(NULL, VGA_IS1_RC);
+ 	vga_w(NULL, VGA_ATT_W, 0x00);
+ 	paletteEnabled = 1;
+ }
+ 
+-inline void VGAdisablePalette(void)
++static inline void VGAdisablePalette(void)
+ {
+ 	vga_r(NULL, VGA_IS1_RC);
+ 	vga_w(NULL, VGA_ATT_W, 0x20);
+ 	paletteEnabled = 0;
+ }
+ 
+-inline void VGAwATTR(u8 index, u8 value)
++static inline void VGAwATTR(u8 index, u8 value)
+ {
+ 	if (paletteEnabled)
+ 		index &= ~0x20;
+@@ -425,7 +425,7 @@
+ 	vga_wattr(NULL, index, value);
+ }
+ 
+-void vgaHWProtect(int on)
++static void vgaHWProtect(int on)
+ {
+ 	unsigned char tmp;
+ 
+@@ -1315,7 +1315,7 @@
+ /*
+  *    (Un)Blank the display.
+  */
+-int neofb_blank(int blank_mode, struct fb_info *info)
++static int neofb_blank(int blank_mode, struct fb_info *info)
+ {
+ 	/*
+ 	 *  Blank the screen if blank_mode != 0, else unblank.
+@@ -2230,7 +2230,8 @@
+ 
+ /* ************************* init in-kernel code ************************** */
+ 
+-int __init neofb_setup(char *options)
++#ifndef MODULE
++static int __init neofb_setup(char *options)
+ {
+ 	char *this_opt;
+ 
+@@ -2258,8 +2259,9 @@
+ 	}
+ 	return 0;
+ }
++#endif  /*  MODULE  */
+ 
+-int __init neofb_init(void)
++static int __init neofb_init(void)
+ {
+ #ifndef MODULE
+ 	char *option = NULL;
+diff -Nru a/drivers/video/nvidia/nv_accel.c b/drivers/video/nvidia/nv_accel.c
+--- a/drivers/video/nvidia/nv_accel.c	2005-03-05 00:35:05 +08:00
++++ b/drivers/video/nvidia/nv_accel.c	2005-03-01 09:51:05 +08:00
+@@ -55,7 +55,7 @@
+ 	}
+ }
+ 
+-void NVDmaKickoff(struct nvidia_par *par)
++static void NVDmaKickoff(struct nvidia_par *par)
+ {
+ 	if (par->dmaCurrent != par->dmaPut) {
+ 		par->dmaPut = par->dmaCurrent;
+@@ -63,7 +63,7 @@
+ 	}
+ }
+ 
+-void NVDmaWait(struct nvidia_par *par, int size)
++static void NVDmaWait(struct nvidia_par *par, int size)
+ {
+ 	int dmaGet;
+ 	int count = 1000000000, cnt;
+diff -Nru a/drivers/video/nvidia/nv_i2c.c b/drivers/video/nvidia/nv_i2c.c
+--- a/drivers/video/nvidia/nv_i2c.c	2005-03-05 00:45:44 +08:00
++++ b/drivers/video/nvidia/nv_i2c.c	2005-03-01 09:52:50 +08:00
+@@ -146,6 +146,7 @@
+ 	nvidia_setup_i2c_bus(&par->chan[2], "BUS3");
+ }
+ 
++#if 0
+ void nvidia_delete_i2c_busses(struct nvidia_par *par)
+ {
+ 	if (par->chan[0].par)
+@@ -161,6 +162,7 @@
+ 	par->chan[2].par = NULL;
+ 
+ }
++#endif  /*  0  */
+ 
+ static u8 *nvidia_do_probe_i2c_edid(struct nvidia_i2c_chan *chan)
+ {
+diff -Nru a/drivers/video/nvidia/nv_of.c b/drivers/video/nvidia/nv_of.c
+--- a/drivers/video/nvidia/nv_of.c	2005-03-05 00:35:05 +08:00
++++ b/drivers/video/nvidia/nv_of.c	2005-03-01 09:53:01 +08:00
+@@ -28,7 +28,6 @@
+ #include "nv_proto.h"
+ 
+ void nvidia_create_i2c_busses(struct nvidia_par *par) {}
+-void nvidia_delete_i2c_busses(struct nvidia_par *par) {}
+ 
+ int nvidia_probe_i2c_connector(struct nvidia_par *par, int conn, u8 **out_edid)
+ {
+diff -Nru a/drivers/video/nvidia/nv_proto.h b/drivers/video/nvidia/nv_proto.h
+--- a/drivers/video/nvidia/nv_proto.h	2005-03-05 00:35:05 +08:00
++++ b/drivers/video/nvidia/nv_proto.h	2005-03-01 09:54:17 +08:00
+@@ -15,10 +15,7 @@
+ u8 NVReadAttr(struct nvidia_par *par, u8 index);
+ void NVWriteMiscOut(struct nvidia_par *par, u8 value);
+ u8 NVReadMiscOut(struct nvidia_par *par);
+-void NVEnablePalette(struct nvidia_par *par);
+-void NVDisablePalette(struct nvidia_par *par);
+ void NVWriteDacMask(struct nvidia_par *par, u8 value);
+-u8 NVReadDacMask(struct nvidia_par *par);
+ void NVWriteDacReadAddr(struct nvidia_par *par, u8 value);
+ void NVWriteDacWriteAddr(struct nvidia_par *par, u8 value);
+ void NVWriteDacData(struct nvidia_par *par, u8 value);
+@@ -36,12 +33,10 @@
+ /* in nvidia-i2c.c */
+ #if defined(CONFIG_FB_NVIDIA_I2C) || defined (CONFIG_PPC_OF)
+ void nvidia_create_i2c_busses(struct nvidia_par *par);
+-void nvidia_delete_i2c_busses(struct nvidia_par *par);
+ int nvidia_probe_i2c_connector(struct nvidia_par *par, int conn,
+ 			       u8 ** out_edid);
+ #else
+ #define nvidia_create_i2c_busses(...)
+-#define nvidia_delete_i2c_busses(...)
+ #define nvidia_probe_i2c_connector(p, c, edid) \
+ do {                                           \
+ 	*(edid) = NULL;                        \
+diff -Nru a/drivers/video/nvidia/nv_setup.c b/drivers/video/nvidia/nv_setup.c
+--- a/drivers/video/nvidia/nv_setup.c	2005-03-05 00:35:05 +08:00
++++ b/drivers/video/nvidia/nv_setup.c	2005-03-01 09:54:32 +08:00
+@@ -108,6 +108,7 @@
+ {
+ 	return (VGA_RD08(par->PVIO, VGA_MIS_R));
+ }
++#if 0
+ void NVEnablePalette(struct nvidia_par *par)
+ {
+ 	volatile u8 tmp;
+@@ -124,14 +125,17 @@
+ 	VGA_WR08(par->PCIO, VGA_ATT_IW, 0x20);
+ 	par->paletteEnabled = 0;
+ }
++#endif  /*  0  */
+ void NVWriteDacMask(struct nvidia_par *par, u8 value)
+ {
+ 	VGA_WR08(par->PDIO, VGA_PEL_MSK, value);
+ }
++#if 0
+ u8 NVReadDacMask(struct nvidia_par *par)
+ {
+ 	return (VGA_RD08(par->PDIO, VGA_PEL_MSK));
+ }
++#endif  /*  0  */
+ void NVWriteDacReadAddr(struct nvidia_par *par, u8 value)
+ {
+ 	VGA_WR08(par->PDIO, VGA_PEL_IR, value);
+diff -Nru a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
+--- a/drivers/video/nvidia/nvidia.c	2005-03-01 00:12:38 +08:00
++++ b/drivers/video/nvidia/nvidia.c	2005-03-01 10:05:14 +08:00
+@@ -1614,7 +1614,7 @@
+  * ------------------------------------------------------------------------- */
+ 
+ #ifndef MODULE
+-int __init nvidiafb_setup(char *options)
++static int __init nvidiafb_setup(char *options)
+ {
+ 	char *this_opt;
+ 
+@@ -1667,7 +1667,7 @@
+  *
+  * ------------------------------------------------------------------------- */
+ 
+-int __devinit nvidiafb_init(void)
++static int __devinit nvidiafb_init(void)
+ {
+ #ifndef MODULE
+ 	char *option = NULL;
+diff -Nru a/drivers/video/pm2fb.c b/drivers/video/pm2fb.c
+--- a/drivers/video/pm2fb.c	2004-12-18 20:38:35 +08:00
++++ b/drivers/video/pm2fb.c	2005-03-06 06:45:07 +08:00
+@@ -1243,47 +1243,13 @@
+ MODULE_DEVICE_TABLE(pci, pm2fb_id_table);
+ 
+ 
+-/*
+- *  Initialization
+- */
+-
+-int __init pm2fb_setup(char *options);
+-
+-int __init pm2fb_init(void)
+-{
+-#ifndef MODULE
+-	char *option = NULL;
+-
+-	if (fb_get_options("pm2fb", &option))
+-		return -ENODEV;
+-	pm2fb_setup(option);
+-#endif
+-
+-	return pci_module_init(&pm2fb_driver);
+-}
+-
+-#ifdef MODULE
+-/*
+- *  Cleanup
+- */
+-
+-static void __exit pm2fb_exit(void)
+-{
+-	pci_unregister_driver(&pm2fb_driver);
+-}
+-#endif
+-
+-/*
+- *  Setup
+- */
+-
+ #ifndef MODULE
+ /**
+  * Parse user speficied options.
+  *
+  * This is, comma-separated options following `video=pm2fb:'.
+  */
+-int __init pm2fb_setup(char *options)
++static int __init pm2fb_setup(char *options)
+ {
+ 	char* this_opt;
+ 
+@@ -1306,13 +1272,31 @@
+ #endif
+ 
+ 
+-/* ------------------------------------------------------------------------- */
+-
+-/* ------------------------------------------------------------------------- */
++static int __init pm2fb_init(void)
++{
++#ifndef MODULE
++	char *option = NULL;
+ 
++	if (fb_get_options("pm2fb", &option))
++		return -ENODEV;
++	pm2fb_setup(option);
++#endif
+ 
++	return pci_module_init(&pm2fb_driver);
++}
+ 
+ module_init(pm2fb_init);
++
++#ifdef MODULE
++/*
++ *  Cleanup
++ */
++
++static void __exit pm2fb_exit(void)
++{
++	pci_unregister_driver(&pm2fb_driver);
++}
++#endif
+ 
+ #ifdef MODULE
+ module_exit(pm2fb_exit);
+diff -Nru a/drivers/video/radeonfb.c b/drivers/video/radeonfb.c
+--- a/drivers/video/radeonfb.c	2005-01-21 19:54:15 +08:00
++++ b/drivers/video/radeonfb.c	2005-03-01 10:07:31 +08:00
+@@ -3109,28 +3109,8 @@
+ 	.remove		= __devexit_p(radeonfb_pci_unregister),
+ };
+ 
+-int __init radeonfb_old_setup (char *options);
+-
+-int __init radeonfb_old_init (void)
+-{
+ #ifndef MODULE
+-	char *option = NULL;
+-
+-	if (fb_get_options("radeonfb_old", &option))
+-		return -ENODEV;
+-	radeonfb_old_setup(option);
+-#endif
+-	return pci_module_init (&radeonfb_driver);
+-}
+-
+-
+-void __exit radeonfb_old_exit (void)
+-{
+-	pci_unregister_driver (&radeonfb_driver);
+-}
+-
+-
+-int __init radeonfb_old_setup (char *options)
++static int __init radeonfb_old_setup (char *options)
+ {
+         char *this_opt;
+ 
+@@ -3156,12 +3136,28 @@
+ 
+ 	return 0;
+ }
++#endif  /*  MODULE  */
+ 
+-module_init(radeonfb_old_init);
++static int __init radeonfb_old_init (void)
++{
++#ifndef MODULE
++	char *option = NULL;
+ 
+-#ifdef MODULE
+-module_exit(radeonfb_old_exit);
++	if (fb_get_options("radeonfb_old", &option))
++		return -ENODEV;
++	radeonfb_old_setup(option);
+ #endif
++	return pci_module_init (&radeonfb_driver);
++}
++
++
++static void __exit radeonfb_old_exit (void)
++{
++	pci_unregister_driver (&radeonfb_driver);
++}
++
++module_init(radeonfb_old_init);
++module_exit(radeonfb_old_exit);
+ 
+ 
+ MODULE_AUTHOR("Ani Joshi");
+diff -Nru a/drivers/video/riva/fbdev.c b/drivers/video/riva/fbdev.c
+--- a/drivers/video/riva/fbdev.c	2005-01-12 06:10:17 +08:00
++++ b/drivers/video/riva/fbdev.c	2005-03-01 09:58:25 +08:00
+@@ -906,7 +906,7 @@
+ }
+ 
+ /* acceleration routines */
+-inline void wait_for_idle(struct riva_par *par)
++static inline void wait_for_idle(struct riva_par *par)
+ {
+ 	while (par->riva.Busy(&par->riva));
+ }
+@@ -923,7 +923,7 @@
+ 
+ }
+ 
+-void riva_setup_accel(struct fb_info *info)
++static void riva_setup_accel(struct fb_info *info)
+ {
+ 	struct riva_par *par = (struct riva_par *) info->par;
+ 
+@@ -2139,7 +2139,7 @@
+  * ------------------------------------------------------------------------- */
+ 
+ #ifndef MODULE
+-int __init rivafb_setup(char *options)
++static int __init rivafb_setup(char *options)
+ {
+ 	char *this_opt;
+ 
+@@ -2189,7 +2189,7 @@
+  *
+  * ------------------------------------------------------------------------- */
+ 
+-int __devinit rivafb_init(void)
++static int __devinit rivafb_init(void)
+ {
+ #ifndef MODULE
+ 	char *option = NULL;
+diff -Nru a/drivers/video/tdfxfb.c b/drivers/video/tdfxfb.c
+--- a/drivers/video/tdfxfb.c	2004-12-18 20:38:36 +08:00
++++ b/drivers/video/tdfxfb.c	2005-03-01 10:22:40 +08:00
+@@ -154,9 +154,6 @@
+ /*
+  *  Frame buffer device API
+  */
+-int tdfxfb_init(void);
+-void tdfxfb_setup(char *options);
+-
+ static int tdfxfb_check_var(struct fb_var_screeninfo *var, struct fb_info *fb); 
+ static int tdfxfb_set_par(struct fb_info *info); 
+ static int tdfxfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue, 
+@@ -1292,6 +1289,28 @@
+ 	return -ENXIO;
+ }
+ 
++#ifndef MODULE
++void tdfxfb_setup(char *options)
++{
++	char* this_opt;
++
++	if (!options || !*options)
++		return;
++
++	while ((this_opt = strsep(&options, ",")) != NULL) {
++		if (!*this_opt)
++			continue;
++		if(!strcmp(this_opt, "nopan")) {
++			nopan = 1;
++		} else if(!strcmp(this_opt, "nowrap")) {
++			nowrap = 1;
++		} else {
++			mode_option = this_opt;
++		}
++	}
++}
++#endif
++
+ /**
+  *      tdfxfb_remove - Device removal
+  *
+@@ -1321,7 +1340,7 @@
+ 	framebuffer_release(info);
+ }
+ 
+-int __init tdfxfb_init(void)
++static int __init tdfxfb_init(void)
+ {
+ #ifndef MODULE
+ 	char *option = NULL;
+@@ -1345,27 +1364,3 @@
+  
+ module_init(tdfxfb_init);
+ module_exit(tdfxfb_exit);
+-
+-
+-#ifndef MODULE
+-void tdfxfb_setup(char *options)
+-{ 
+-	char* this_opt;
+-
+-	if (!options || !*options)
+-		return;
+-
+-	while ((this_opt = strsep(&options, ",")) != NULL) {	
+-		if (!*this_opt)
+-			continue;
+-		if(!strcmp(this_opt, "nopan")) {
+-			nopan = 1;
+-		} else if(!strcmp(this_opt, "nowrap")) {
+-			nowrap = 1;
+-		} else {
+-			mode_option = this_opt;
+-		}
+-	} 
+-}
+-#endif
+-
+diff -Nru a/drivers/video/vesafb.c b/drivers/video/vesafb.c
+--- a/drivers/video/vesafb.c	2005-01-21 19:54:15 +08:00
++++ b/drivers/video/vesafb.c	2005-03-01 10:42:05 +08:00
+@@ -185,7 +185,7 @@
+ 	.fb_cursor	= soft_cursor,
+ };
+ 
+-int __init vesafb_setup(char *options)
++static int __init vesafb_setup(char *options)
+ {
+ 	char *this_opt;
+ 	
+@@ -434,7 +434,7 @@
+ 	.name	= "vesafb",
+ };
+ 
+-int __init vesafb_init(void)
++static int __init vesafb_init(void)
+ {
+ 	int ret;
+ 	char *option = NULL;
+@@ -452,13 +452,5 @@
+ 	return ret;
+ }
+ module_init(vesafb_init);
+-
+-/*
+- * Overrides for Emacs so that we follow Linus's tabbing style.
+- * ---------------------------------------------------------------------------
+- * Local variables:
+- * c-basic-offset: 8
+- * End:
+- */
+ 
+ MODULE_LICENSE("GPL");
+diff -Nru a/drivers/video/vfb.c b/drivers/video/vfb.c
+--- a/drivers/video/vfb.c	2004-12-01 19:35:52 +08:00
++++ b/drivers/video/vfb.c	2005-03-01 10:43:51 +08:00
+@@ -72,12 +72,6 @@
+ static int vfb_enable __initdata = 0;	/* disabled by default */
+ module_param(vfb_enable, bool, 0);
+ 
+-    /*
+-     *  Interface used by the world
+-     */
+-int vfb_init(void);
+-int vfb_setup(char *);
+-
+ static int vfb_check_var(struct fb_var_screeninfo *var,
+ 			 struct fb_info *info);
+ static int vfb_set_par(struct fb_info *info);
+@@ -379,7 +373,8 @@
+ 	return -EINVAL;
+ }
+ 
+-int __init vfb_setup(char *options)
++#ifndef MODULE
++static int __init vfb_setup(char *options)
+ {
+ 	char *this_opt;
+ 
+@@ -396,6 +391,7 @@
+ 	}
+ 	return 1;
+ }
++#endif  /*  MODULE  */
+ 
      /*
-@@ -107,7 +103,7 @@
-      */
+      *  Initialisation
+@@ -492,7 +488,7 @@
+ 	}
+ };
  
- static void
--bitfill32(unsigned long __iomem *dst, int dst_idx, unsigned long pat, unsigned n)
-+bitfill_aligned(unsigned long __iomem *dst, int dst_idx, unsigned long pat, unsigned n, int bits)
+-int __init vfb_init(void)
++static int __init vfb_init(void)
  {
- 	unsigned long first, last;
+ 	int ret = 0;
  
-@@ -115,10 +111,9 @@
- 		return;
+diff -Nru a/include/linux/fb.h b/include/linux/fb.h
+--- a/include/linux/fb.h	2005-03-06 07:06:39 +08:00
++++ b/include/linux/fb.h	2005-03-06 06:45:09 +08:00
+@@ -864,10 +864,7 @@
+ extern int fb_validate_mode(const struct fb_var_screeninfo *var,
+ 			    struct fb_info *info);
+ extern int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var);
+-extern int fb_get_monitor_limits(unsigned char *edid, struct fb_monspecs *specs);
+ extern void fb_edid_to_monspecs(unsigned char *edid, struct fb_monspecs *specs);
+-extern int fb_get_monitor_limits(unsigned char *edid, struct fb_monspecs *specs);
+-extern struct fb_videomode *fb_create_modedb(unsigned char *edid, int *dbsize);
+ extern void fb_destroy_modedb(struct fb_videomode *modedb);
  
- 	first = ~0UL >> dst_idx;
--	last = ~(~0UL >> ((dst_idx+n) % BITS_PER_LONG));
-+	last = ~(~0UL >> ((dst_idx+n) % bits));
- 
--
--	if (dst_idx+n <= BITS_PER_LONG) {
-+	if (dst_idx+n <= bits) {
- 		// Single word
- 		if (last)
- 			first &= last;
-@@ -130,11 +125,11 @@
- 		if (first!= ~0UL) {
- 			FB_WRITEL(comp(pat, FB_READL(dst), first), dst);
- 			dst++;
--			n -= BITS_PER_LONG-dst_idx;
-+			n -= bits - dst_idx;
- 		}
- 
- 		// Main chunk
--		n /= BITS_PER_LONG;
-+		n /= bits;
- 		while (n >= 8) {
- 			FB_WRITEL(pat, dst++);
- 			FB_WRITEL(pat, dst++);
-@@ -164,8 +159,8 @@
-      */
- 
- static void
--bitfill(unsigned long __iomem *dst, int dst_idx, unsigned long pat, int left,
--        int right, unsigned n)
-+bitfill_unaligned(unsigned long __iomem *dst, int dst_idx, unsigned long pat,
-+			int left, int right, unsigned n, int bits)
- {
- 	unsigned long first, last;
- 
-@@ -173,9 +168,9 @@
- 		return;
- 
- 	first = ~0UL >> dst_idx;
--	last = ~(~0UL >> ((dst_idx+n) % BITS_PER_LONG));
-+	last = ~(~0UL >> ((dst_idx+n) % bits));
- 
--	if (dst_idx+n <= BITS_PER_LONG) {
-+	if (dst_idx+n <= bits) {
- 		// Single word
- 		if (last)
- 			first &= last;
-@@ -187,11 +182,11 @@
- 			FB_WRITEL(comp(pat, FB_READL(dst), first), dst);
- 			dst++;
- 			pat = pat << left | pat >> right;
--			n -= BITS_PER_LONG-dst_idx;
-+			n -= bits - dst_idx;
- 		}
- 
- 		// Main chunk
--		n /= BITS_PER_LONG;
-+		n /= bits;
- 		while (n >= 4) {
- 			FB_WRITEL(pat, dst++);
- 			pat = pat << left | pat >> right;
-@@ -218,7 +213,7 @@
-      *  Aligned pattern invert using 32/64-bit memory accesses
-      */
- static void
--bitfill32_rev(unsigned long __iomem *dst, int dst_idx, unsigned long pat, unsigned n)
-+bitfill_aligned_rev(unsigned long __iomem *dst, int dst_idx, unsigned long pat, unsigned n, int bits)
- {
- 	unsigned long val = pat, dat;
- 	unsigned long first, last;
-@@ -227,9 +222,9 @@
- 		return;
- 
- 	first = ~0UL >> dst_idx;
--	last = ~(~0UL >> ((dst_idx+n) % BITS_PER_LONG));
-+	last = ~(~0UL >> ((dst_idx+n) % bits));
- 
--	if (dst_idx+n <= BITS_PER_LONG) {
-+	if (dst_idx+n <= bits) {
- 		// Single word
- 		if (last)
- 			first &= last;
-@@ -242,11 +237,11 @@
- 			dat = FB_READL(dst);
- 			FB_WRITEL(comp(dat ^ val, dat, first), dst);
- 			dst++;
--			n -= BITS_PER_LONG-dst_idx;
-+			n -= bits - dst_idx;
- 		}
- 
- 		// Main chunk
--		n /= BITS_PER_LONG;
-+		n /= bits;
- 		while (n >= 8) {
- 			FB_WRITEL(FB_READL(dst) ^ val, dst);
- 			dst++;
-@@ -287,8 +282,8 @@
-      */
- 
- static void
--bitfill_rev(unsigned long __iomem *dst, int dst_idx, unsigned long pat, int left,
--            int right, unsigned n)
-+bitfill_unaligned_rev(unsigned long __iomem *dst, int dst_idx, unsigned long pat,
-+			int left, int right, unsigned n, int bits)
- {
- 	unsigned long first, last, dat;
- 
-@@ -296,9 +291,9 @@
- 		return;
- 
- 	first = ~0UL >> dst_idx;
--	last = ~(~0UL >> ((dst_idx+n) % BITS_PER_LONG));
-+	last = ~(~0UL >> ((dst_idx+n) % bits));
- 
--	if (dst_idx+n <= BITS_PER_LONG) {
-+	if (dst_idx+n <= bits) {
- 		// Single word
- 		if (last)
- 			first &= last;
-@@ -313,11 +308,11 @@
- 			FB_WRITEL(comp(dat ^ pat, dat, first), dst);
- 			dst++;
- 			pat = pat << left | pat >> right;
--			n -= BITS_PER_LONG-dst_idx;
-+			n -= bits - dst_idx;
- 		}
- 
- 		// Main chunk
--		n /= BITS_PER_LONG;
-+		n /= bits;
- 		while (n >= 4) {
- 			FB_WRITEL(FB_READL(dst) ^ pat, dst);
- 			dst++;
-@@ -349,11 +344,10 @@
- 
- void cfb_fillrect(struct fb_info *p, const struct fb_fillrect *rect)
- {
-+	unsigned long x2, y2, vxres, vyres, height, width, pat, fg;
-+	int bits = BITS_PER_LONG, bytes = bits >> 3;
- 	u32 bpp = p->var.bits_per_pixel;
--	unsigned long x2, y2, vxres, vyres;
--	unsigned long height, width, fg;
- 	unsigned long __iomem *dst;
--	unsigned long pat;
- 	int dst_idx, left;
- 
- 	if (p->state != FBINFO_STATE_RUNNING)
-@@ -388,34 +382,33 @@
- 
- 	pat = pixel_to_pat( bpp, fg);
- 
--	dst = (unsigned long __iomem *)((unsigned long)p->screen_base &
--				~(BYTES_PER_LONG-1));
--	dst_idx = ((unsigned long)p->screen_base & (BYTES_PER_LONG-1))*8;
-+	dst = (unsigned long __iomem *)((unsigned long)p->screen_base & ~(bytes-1));
-+	dst_idx = ((unsigned long)p->screen_base & (bytes - 1))*8;
- 	dst_idx += rect->dy*p->fix.line_length*8+rect->dx*bpp;
- 	/* FIXME For now we support 1-32 bpp only */
--	left = BITS_PER_LONG % bpp;
-+	left = bits % bpp;
- 	if (p->fbops->fb_sync)
- 		p->fbops->fb_sync(p);
- 	if (!left) {
- 		void (*fill_op32)(unsigned long __iomem *dst, int dst_idx,
--		                  unsigned long pat, unsigned n) = NULL;
-+		                  unsigned long pat, unsigned n, int bits) = NULL;
- 
- 		switch (rect->rop) {
- 		case ROP_XOR:
--			fill_op32 = bitfill32_rev;
-+			fill_op32 = bitfill_aligned_rev;
- 			break;
- 		case ROP_COPY:
--			fill_op32 = bitfill32;
-+			fill_op32 = bitfill_aligned;
- 			break;
- 		default:
- 			printk( KERN_ERR "cfb_fillrect(): unknown rop, defaulting to ROP_COPY\n");
--			fill_op32 = bitfill32;
-+			fill_op32 = bitfill_aligned;
- 			break;
- 		}
- 		while (height--) {
--			dst += dst_idx >> SHIFT_PER_LONG;
--			dst_idx &= (BITS_PER_LONG-1);
--			fill_op32(dst, dst_idx, pat, width*bpp);
-+			dst += dst_idx >> (ffs(bits) - 1);
-+			dst_idx &= (bits - 1);
-+			fill_op32(dst, dst_idx, pat, width*bpp, bits);
- 			dst_idx += p->fix.line_length*8;
- 		}
- 	} else {
-@@ -424,8 +417,7 @@
- 		int rot = (left-dst_idx) % bpp;
- 		void (*fill_op)(unsigned long __iomem *dst, int dst_idx,
- 		                unsigned long pat, int left, int right,
--		                unsigned n) = NULL;
--
-+		                unsigned n, int bits) = NULL;
- 
- 		/* rotate pattern to correct start position */
- 		pat = pat << rot | pat >> (bpp-rot);
-@@ -433,21 +425,21 @@
- 		right = bpp-left;
- 		switch (rect->rop) {
- 		case ROP_XOR:
--			fill_op = bitfill_rev;
-+			fill_op = bitfill_unaligned_rev;
- 			break;
- 		case ROP_COPY:
--			fill_op = bitfill;
-+			fill_op = bitfill_unaligned;
- 			break;
- 		default:
- 			printk( KERN_ERR "cfb_fillrect(): unknown rop, defaulting to ROP_COPY\n");
--			fill_op = bitfill;
-+			fill_op = bitfill_unaligned;
- 			break;
- 		}
- 		while (height--) {
--			dst += dst_idx >> SHIFT_PER_LONG;
--			dst_idx &= (BITS_PER_LONG-1);
-+			dst += dst_idx >> (ffs(bits) - 1);
-+			dst_idx &= (bits - 1);
- 			fill_op(dst, dst_idx, pat, left, right,
--				width*bpp);
-+				width*bpp, bits);
- 			r = (p->fix.line_length*8) % bpp;
- 			pat = pat << (bpp-r) | pat >> r;
- 			dst_idx += p->fix.line_length*8;
+ /* drivers/video/modedb.c */
 
 
 

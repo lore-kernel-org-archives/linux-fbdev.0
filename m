@@ -1,26 +1,25 @@
-From: Jon Smirl <jonsmirl@gmail.com>
+From: Andrew Morton <akpm@osdl.org>
 Subject: Re: [PATCH 8/10] fbdev: Allow core fb to be built as a module
-Date: Mon, 7 Mar 2005 19:35:13 -0500
-Message-ID: <9e473391050307163553dbd88e@mail.gmail.com>
+Date: Mon, 7 Mar 2005 16:39:12 -0800
+Message-ID: <20050307163912.14f9f0d4.akpm@osdl.org>
 References: <200503060816.55890.adaplas@hotpop.com>
-	 <20050307022828.54d52983.akpm@osdl.org>
-	 <9e47339105030711117f6ffdc9@mail.gmail.com>
-	 <20050307154355.2fd5094c.akpm@osdl.org>
+	<20050307022828.54d52983.akpm@osdl.org>
+	<9e47339105030711117f6ffdc9@mail.gmail.com>
+	<20050307154355.2fd5094c.akpm@osdl.org>
+	<9e4733910503071605486c9c93@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_991_18914537.1110242113220"
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Content-Transfer-Encoding: 7bit
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D8ShJ-00052T-Tw
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Mar 2005 16:35:41 -0800
-Received: from rproxy.gmail.com ([64.233.170.207])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1D8ShI-0006sk-Hj
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Mar 2005 16:35:41 -0800
-Received: by rproxy.gmail.com with SMTP id z35so2162486rne
-        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 07 Mar 2005 16:35:40 -0800 (PST)
-In-Reply-To: <20050307154355.2fd5094c.akpm@osdl.org>
+	id 1D8Skq-0005BN-Vy
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Mar 2005 16:39:20 -0800
+Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1D8Skn-0005pZ-DH
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Mar 2005 16:39:20 -0800
+In-Reply-To: <9e4733910503071605486c9c93@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,71 +30,52 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: Andrew Morton <akpm@osdl.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Jon Smirl <jonsmirl@gmail.com>
 Cc: adaplas@pol.net, adaplas@hotpop.com, linux-fbdev-devel@lists.sourceforge.net
 
-------=_Part_991_18914537.1110242113220
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Jon Smirl <jonsmirl@gmail.com> wrote:
+>
+> Here's the same patch as an attachment. It is against a clean linus bk tree.
 
-All of the hunks failed because the most of the patch had already been applied.
-Here is the delta you need against 2.6.11 + x.bz2
+Tony has already sent a monster fbdev Kconfig cleanup patch, so your latest
+patch does:
 
-Not sure if ppc will build since I don't have a machine to check it on.
+patching file drivers/video/Kconfig
+Hunk #2 FAILED at 112.
+Hunk #3 FAILED at 120.
+Hunk #4 FAILED at 144.
+Hunk #5 FAILED at 201.
+Hunk #6 succeeded at 292 (offset 80 lines).
+Hunk #7 FAILED at 300.
+Hunk #8 FAILED at 393.
+Hunk #9 FAILED at 410.
+Hunk #10 succeeded at 421 (offset 57 lines).
+Hunk #11 FAILED at 432.
+Hunk #12 FAILED at 447.
+Hunk #13 FAILED at 493.
+Hunk #14 FAILED at 598.
+Hunk #15 succeeded at 1121 (offset 167 lines).
+Hunk #16 succeeded at 1075 (offset 76 lines).
+Hunk #17 FAILED at 1093.
+Hunk #18 FAILED at 1115.
+Hunk #19 FAILED at 1123.
+14 out of 19 hunks FAILED -- saving rejects to file drivers/video/Kconfig.rej
+patching file drivers/video/Makefile
+Hunk #1 FAILED at 8.
+1 out of 1 hunk FAILED -- saving rejects to file drivers/video/Makefile.rej
+patching file drivers/video/console/Makefile
+patching file drivers/video/fbmem.c
+Hunk #1 succeeded at 1205 (offset 1 line).
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
 
-------=_Part_991_18914537.1110242113220
-Content-Type: text/x-diff; name="fbmodfix.patch"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment; filename="fbmodfix.patch"
+I assume that Tony must have fixed up your original or something.
 
-=3D=3D=3D=3D=3D drivers/video/Kconfig 1.75 vs edited =3D=3D=3D=3D=3D
---- 1.75/drivers/video/Kconfig=092005-03-07 19:16:25 -05:00
-+++ edited/drivers/video/Kconfig=092005-03-07 19:30:04 -05:00
-@@ -753,6 +753,7 @@
- =09select FB_CFB_COPYAREA
- =09select FB_CFB_IMAGEBLIT
- =09select FB_SOFT_CURSOR
-+=09select FB_TILEBLITTING
- =09---help---
- =09  Say Y here if you have a Matrox Millennium, Matrox Millennium II,
- =09  Matrox Mystique, Matrox Mystique 220, Matrox Productiva G100, Matrox
-=3D=3D=3D=3D=3D drivers/video/Makefile 1.117 vs edited =3D=3D=3D=3D=3D
---- 1.117/drivers/video/Makefile=092005-03-07 19:16:25 -05:00
-+++ edited/drivers/video/Makefile=092005-03-07 19:30:33 -05:00
-@@ -10,10 +10,6 @@
-=20
- obj-$(CONFIG_FB)                  +=3D fb.o
- fb-y                              :=3D fbmem.o fbmon.o fbcmap.o fbsysfs.o =
-modedb.o
--ifneq ($(CONFIG_FB),n)
--fb-$(CONFIG_PPC)                  +=3D macmodes.o
--# Only include macmodes.o if we have FB support and are PPC
--endif
- fb-objs                           :=3D $(fb-y)
-=20
- obj-$(CONFIG_FB_CFB_FILLRECT)  +=3D cfbfillrect.o
-=3D=3D=3D=3D=3D drivers/video/console/Makefile 1.19 vs edited =3D=3D=3D=3D=
-=3D
---- 1.19/drivers/video/console/Makefile=092004-10-19 05:40:21 -04:00
-+++ edited/drivers/video/console/Makefile=092005-03-07 19:31:46 -05:00
-@@ -25,7 +25,9 @@
- obj-$(CONFIG_VGA_CONSOLE)         +=3D vgacon.o
- obj-$(CONFIG_MDA_CONSOLE)         +=3D mdacon.o
- obj-$(CONFIG_FRAMEBUFFER_CONSOLE) +=3D fbcon.o bitblit.o font.o
--obj-$(CONFIG_FB_TILEBLITTING)     +=3D tileblit.o
-+ifeq ($(CONFIG_FB_TILEBLITTING),y)
-+obj-$(CONFIG_FRAMEBUFFER_CONSOLE)     +=3D tileblit.o
-+endif
-=20
- obj-$(CONFIG_FB_STI)              +=3D sticore.o
-=20
+Sorry, but at this stage of the kernel cycle when I'm 800-900 patches away
+from Linus, things are a bit difficult.  A fixup patch against
+http://www.zip.com.au/~akpm/linux/patches/stuff/x.bz2 would really be
+ideal, please.
 
-------=_Part_991_18914537.1110242113220--
 
 
 -------------------------------------------------------

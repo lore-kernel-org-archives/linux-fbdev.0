@@ -1,24 +1,21 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: fglrx + radeonfb leads to crashes?
-Date: Thu, 18 Mar 2004 12:15:49 +1100
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 2.6][RESEND] fbcon margins colour
+ fix
+Date: Thu, 18 Mar 2004 10:21:31 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1079572548.911.18.camel@gaston>
-References: <200403172018.i2HKI5E0002012@napali.hpl.hp.com>
-	 <1079569590.909.12.camel@gaston>
-	 <1079572996.13243.10.camel@thor.asgaard.local>
+Message-ID: <Pine.GSO.4.58.0403181020320.10688@waterleaf.sonytel.be>
+References: <20040317233135.GB3510@satan.blackhosts>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B3mMH-0006Ce-SK
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Mar 2004 17:30:05 -0800
-Received: from gate.crashing.org ([63.228.1.57] ident=root)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1B3mMF-0000Fa-1y
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Mar 2004 17:30:03 -0800
-In-Reply-To: <1079572996.13243.10.camel@thor.asgaard.local>
+	id 1B3tiZ-0004DG-9A
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 18 Mar 2004 01:21:35 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1B3tiY-0002rn-7C
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 18 Mar 2004 01:21:34 -0800
+In-Reply-To: <20040317233135.GB3510@satan.blackhosts>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,20 +25,30 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Cc: davidm@hpl.hp.com, ajoshi@shell.unixbox.com, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jakub Bogusz <qboosh@pld-linux.org>
+Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
+On Thu, 18 Mar 2004, Jakub Bogusz wrote:
+> I sent it a few times to linux-kernel and at least one to
+> linux-fbdev-devel, but haven't seen any comments - and this annoying
+> changing margins colour seems to be still there in 2.6.4 (at least on
+> tdfxfb).
 
-> Note that I don't have problems switching between radeonfb and an X
-> server from DRI CVS which sets up the card memory layout in the
-> recommended way and never restores it. Am I missing something?
+What happens on `reverse video' (i.e. black on white, like Sun) graphics cards?
+In that case the overscan color is white.
 
-I'm not completely sure what ATI binary does...
+Gr{oetje,eeting}s,
 
-Ben.
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

@@ -1,23 +1,21 @@
-From: jsimmons@pentafluge.infradead.org
+From: John Zielinski <grim@undead.cc>
 Subject: Re: Sane behavior of fbset
-Date: Wed, 23 Jun 2004 21:39:14 +0100 (BST)
+Date: Wed, 23 Jun 2004 17:44:02 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.56.0406232130070.27210@pentafluge.infradead.org>
-References: <200406180945.12444.adaplas@hotpop.com>  <200406190240.26228.adaplas@hotpop.com>
-  <20040619031650.GC14319@havoc.gtf.org>  <200406191413.28339.adaplas@hotpop.com>
- <1088006149.1832.145.camel@gaston> <40D9BDF5.2080603@undead.cc>
+Message-ID: <40D9F9A2.2080708@undead.cc>
+References: <200406180945.12444.adaplas@hotpop.com>  <200406190240.26228.adaplas@hotpop.com>  <20040619031650.GC14319@havoc.gtf.org>  <200406191413.28339.adaplas@hotpop.com> <1088006149.1832.145.camel@gaston> <40D9BDF5.2080603@undead.cc> <Pine.LNX.4.56.0406232130070.27210@pentafluge.infradead.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BdEWf-0006fL-8n
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 13:39:21 -0700
-Received: from [213.146.154.40] (helo=pentafluge.infradead.org)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1BdEWe-0007va-KC
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 13:39:21 -0700
-In-Reply-To: <40D9BDF5.2080603@undead.cc>
+	id 1BdFXR-0004QR-CO
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 14:44:13 -0700
+Received: from mail.undead.cc ([216.126.84.18])
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
+	id 1BdFXQ-0002Ss-TU
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 14:44:13 -0700
+In-Reply-To: <Pine.LNX.4.56.0406232130070.27210@pentafluge.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,66 +25,34 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: John Zielinski <grim@undead.cc>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: jsimmons@pentafluge.infradead.org
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, adaplas@pol.net, David Eger <eger@havoc.gtf.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+jsimmons@pentafluge.infradead.org wrote:
 
-> Benjamin Herrenschmidt wrote:
-> 
-> >It may have looked like a nice idea, but I think it's just wrong.
-> >  
-> >
-> I think that the implementation is wrong, not the whole idea.  Currently 
-> the vt_resize ioctl changes the vt size then tries to set the resolution 
-> leading to a whole bunch of problems when a suitable resolution can't be 
-> found and makes the fbset result ion change code path ugly as well.
-> 
-> What should happen is that the vt_resize ioctl should be sent to the 
-> console driver first and then the console driver calls back the vt layer 
-> with the modified  row and column numbers based on the closest 
-> resolution found.
-> 
-> So what we have right now is:
-> 
-> vt_ioctl (VT_RESIZE) -> vc_resize -> resize_screen -> con_resize ->  
-> fb_set_var -> fbcon_event_notify -> vc_resize*
+>Good catch. We need a flag to determine which layer it came from. Tony 
+>posted a patch dealing with that.
+>  
+>
+I took a look and I'm going to merge that into my kernel and trace 
+trough the ioctl call paths again.  The VT_RESIZE path looks good with 
+his patch but I think that the FBIOPUT_VSCREENINFO may loop through a 
+few functions a second time.  I'll know for sure when I trace things out 
+later.
 
-Good catch. We need a flag to determine which layer it came from. Tony 
-posted a patch dealing with that.
+But my thinking was that vc_resize (or part of it split of into a 
+seperate function) should be the final terminus of the code path.  That 
+way you wouldn't need flags or anything else to break out of the 
+circular code path we have now.  The code would be easier to follow and 
+be less prone to mistakes.
+
+I'll see if I can whip up a patch that works with our current single var 
+to show you what I mean.
+
+John
 
 
-> 
-> * or equivilent code depending on who's patch you use
-> 
-> Which should be:
-> 
-> vt_ioctl (VT_RESIZE) -> resize_screen -> con_resize -> fb_set_var & 
-> vc_resize
-> 
-> You'd have to have a per vt var in order to have different console sizes 
-> on different vt's this way.  The reason for not using the 
-> fbcon_event_notify is that it won't be called when the vt is not in the 
-> forground and I don't belive that a we need to resize the console when 
-> switching between different vt's.  A vc_resize would the be necessary in 
-> the fb_ioctl FBIOPUT_VSCREENINFO code path in this case.
-> 
-> John
-> 
-> 
-> 
-> 
-> -------------------------------------------------------
-> This SF.Net email sponsored by Black Hat Briefings & Training.
-> Attend Black Hat Briefings & Training, Las Vegas July 24-29 - 
-> digital self defense, top technical experts, no vendor pitches, 
-> unmatched networking opportunities. Visit www.blackhat.com
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-> 
 
 
 -------------------------------------------------------

@@ -1,17 +1,17 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Feature Freeze?
-Date: Wed, 5 Mar 2003 18:55:01 +0000 (GMT)
+Subject: Re: Some questions
+Date: Wed, 5 Mar 2003 18:57:47 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0303051853060.27760-100000@phoenix.infradead.org>
-References: <1046877877.1291.186.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44.0303051857070.27760-100000@phoenix.infradead.org>
+References: <3E65EAFB.7020208@winischhofer.net>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18qe3E-0006bX-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 10:55:37 -0800
-In-Reply-To: <1046877877.1291.186.camel@localhost.localdomain>
+	id 18qe5u-0007DD-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 10:58:23 -0800
+In-Reply-To: <3E65EAFB.7020208@winischhofer.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,24 +23,19 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: Sven Luther <luther@dpt-info.u-strasbg.fr>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Thomas Winischhofer <thomas@winischhofer.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
 
-> > > Fbcon needs to be cleaned up, a lot. It still implements the "current
-> > > console or foreground console" concept (only one console active at a
-> > > time).  Also, this is more of a job for linuxconsole than fbdev.  I may
-> > > be wrong though.
-> > 
-> > Mmm, do you know who is working on linuxconsole, and what their plan are ?
+> I am currently porting the SiS framebuffer driver to the - more or less
+> - new API. Better late than never :)
 > 
-> James also. I think the site is http://linuxconsole.sourceforge.net.
+> Anyway, during this, I noticed some issues: (I am using stock 2.5.63 for
+> development, no fbdev patches)
 
-Its me. I have been so busy with fbdev tho I haven't worked on the console 
-project. Plus other events in my life (joblessness) has been keeping me 
-busy doing other things. I have the old ruby code that worked. So it is a 
-matter of porting it over to 2.6 when it comes out. I have been keeping it 
-up to date pretty much (2.5.59). 
+Please try your driver with the patch I post and tell me what problems you 
+still have. Most of those shoudl have been fixes now.
+
 
 
 

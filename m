@@ -1,22 +1,18 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Movie
-Date: Mon, 30 Jun 2003 17:30:02 +0100 (BST)
+From: linux-fbdev-announce-admin@lists.sourceforge.net
+Subject: Your message to Linux-fbdev-announce awaits moderator approval
+Date: Mon, 30 Jun 2003 23:44:12 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0306301728380.21429-100000@phoenix.infradead.org>
-References: <seffab32.070@GW.i-car.org>
-Mime-Version: 1.0
+Message-ID: <E19XEsY-0008Qi-00@sc8-sf-list2.sourceforge.net>
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
+Received: from sc8-sf-list2-b.sourceforge.net ([10.3.1.14] helo=sc8-sf-list2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19X1Y6-00033y-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 30 Jun 2003 09:30:38 -0700
-Received: from localhost.localdomain ([127.0.0.1] helo=localhost)
-	by phoenix.infradead.org with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.10)
-	id 19X1XX-0005eI-00
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 30 Jun 2003 17:30:03 +0100
-In-Reply-To: <seffab32.070@GW.i-car.org>
+	id 19XEs9-0002Wf-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 30 Jun 2003 23:44:13 -0700
+Received: from sc8-sf-list1-b.sourceforge.net ([10.3.1.13] helo=sc8-sf-list1.sourceforge.net)
+	by sc8-sf-list2.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19XEsY-0008Qi-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 30 Jun 2003 23:44:38 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -26,16 +22,23 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
+Your mail to 'Linux-fbdev-announce' with the subject
 
-Ug. It look slike we where mail bombed. I had two messages, Movie and 
-Application, that caused alot of problems for the mailing list. Please 
-don't messages that are larger than 80K. Thank you.
+    Re: Application
 
+Is being held until the list moderator can review it for approval.
 
+The reason it is being held:
+
+    Message body is too big: 111480 bytes but there's a limit of 40 KB
+
+Either the message will get posted to the list, or you will receive
+notification of the moderator's decision.
 
 
 -------------------------------------------------------

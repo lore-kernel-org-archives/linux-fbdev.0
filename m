@@ -1,31 +1,50 @@
-From: Svetoslav Slavtchev <galia@st-peter.stw.uni-erlangen.de>
-Subject: Re: [BK console] console updates.
-Date: Thu, 31 Oct 2002 11:38:58 +0100 (CET)
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1036060738.3dc108420cc60@secure.st-peter.stw.uni-erlangen.de>
-References: <Pine.LNX.4.33.0210301343580.1392-100000@maxwell.earthlink.net> <20021030221231.GB30877@lukas>
+From: Antonino Daplas <adaplas@pol.net>
+Subject: Re: Framebuffer with banked memory
+Date: 31 Oct 2002 19:04:32 +0800
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <1036062186.638.23.camel@daplas>
+References: <20021031040228.12091.qmail@web14205.mail.yahoo.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <20021030221231.GB30877@lukas>
-List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from [203.167.79.9] (helo=willow.compass.com.ph)
+	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 187DAz-0007HQ-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 31 Oct 2002 03:07:49 -0800
+In-Reply-To: <20021031040228.12091.qmail@web14205.mail.yahoo.com>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Andreas Schuldei <andreas@schuldei.org>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux console project <linuxconsole-dev@lists.sourceforge.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: alain volmat <avolmat@yahoo.fr>
+Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-Quoting Andreas Schuldei <andreas@schuldei.org>:
+On Thu, 2002-10-31 at 12:02, alain volmat wrote:
+> 
+> What about adding fb_write / fb_read function in the
+> framebuffer (device dependant) driver. The same way as
+> for fb_mmap. I saw that at the beginning of fb_mmap in
+> fbmem.c, there is a test to see if the device driver
+> contains its own fb_mmap function, if so the device
+> driver fb_mmap will be used instead of the "generic"
+> fb_mmap. What about doing the same thing for fb_write
+> / fb_read.
+> 
+I've seen a post by James sometimes ago about adding fb_write and
+fb_read to info->fbops.  
 
-> > 3) Multi-desktop systems. Already done this. The current code in BK
-> >    doesn't support this just yet as I have a few bug to beat out for
-> >    single headed systems. It will take about one more week to get
-> this
-> >    ready.
-> 
-> this is something i know several people are interested in. and it
-> does not touch core code to add, does it?
-> 
-> This is my personal-favorit-must-go-in-above-all-else-feature.
-> 
+Tony
 
-My too,
-except may be working lvm and soft-raid
+
+
+-------------------------------------------------------
+This sf.net email is sponsored by: Influence the future 
+of Java(TM) technology. Join the Java Community 
+Process(SM) (JCP(SM)) program now. 
+http://ads.sourceforge.net/cgi-bin/redirect.pl?sunm0004en

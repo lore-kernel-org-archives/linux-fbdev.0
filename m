@@ -1,34 +1,19 @@
-From: Guido Guenther <agx@sigxcpu.org>
-Subject: Re: [PATCH] GeForce 5200 on rivafb
-Date: Thu, 23 Dec 2004 21:48:21 +0100
-Message-ID: <20041223204819.GA25233@bogon.ms20.nix>
-References: <200412072347.23194.lucasvr@gobolinux.org>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Fw: [Bugme-new] [Bug 3946] New: sis/sis_main.c compilation error
+Date: Sat, 25 Dec 2004 14:31:18 -0800
+Message-ID: <20041225143118.0303ccc3.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1ChvL7-0007Am-Ti
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Dec 2004 11:43:05 -0800
-Received: from honk1.physik.uni-konstanz.de ([134.34.140.224])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.41)
-	id 1ChvL7-0002WC-7L
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Dec 2004 11:43:05 -0800
-Received: from localhost (localhost.localnet [127.0.0.1])
-	by honk1.physik.uni-konstanz.de (Postfix) with ESMTP id E2D8A2BC3C
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 24 Dec 2004 20:43:00 +0100 (CET)
-Received: from honk1.physik.uni-konstanz.de ([127.0.0.1])
-	by localhost (honk [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
-	id 29906-22 for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 24 Dec 2004 20:42:50 +0100 (CET)
-Received: from bogon.sigxcpu.org (unknown [82.113.119.0])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(No client certificate requested)
-	by honk1.physik.uni-konstanz.de (Postfix) with ESMTP id E05582BC39
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 24 Dec 2004 20:42:46 +0100 (CET)
-Content-Disposition: inline
-In-Reply-To: <200412072347.23194.lucasvr@gobolinux.org>
+	id 1CiKS3-0007SY-Nq
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 25 Dec 2004 14:31:55 -0800
+Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CiKS2-0006OS-Uj
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 25 Dec 2004 14:31:55 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -40,36 +25,80 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Thomas Winischhofer <thomas@winischhofer.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, Dec 07, 2004 at 11:47:23PM -0200, Lucas Correia Villa Real wrote:
-> diff -X dontdiff-2.6 -Nur 2.6.10-rc3-vanilla/drivers/video/riva/fbdev.c 2.6.10-rc3-lucasvr/drivers/video/riva/fbdev.c
-> --- 2.6.10-rc3-vanilla/drivers/video/riva/fbdev.c	2004-12-07 09:58:14.000000000 -0200
-> +++ 2.6.10-rc3-lucasvr/drivers/video/riva/fbdev.c	2004-12-07 22:45:52.000000000 -0200
-> @@ -192,6 +192,10 @@
->  	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
->  	{ PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_700XGL,
->  	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
-> +	{ PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5200_ULTRA,
-> +	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
-> +	{ PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5200,
-> +	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
->  	{ PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_GO_5200,
->  	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
->  	{ 0, } /* terminate list */
-> @@ -1876,6 +1880,8 @@
->  		case 0x0300:   /* GeForceFX 5800 */
->  		case 0x0310:   /* GeForceFX 5600 */
->  		case 0x0320:   /* GeForceFX 5200 */
-> +		case 0x0321:   /* GeForceFX 5200 Ultra */
-> +		case 0x0322:   /* GeForceFX 5200 */
->  		case 0x0330:   /* GeForceFX 5900 */
->  		case 0x0340:   /* GeForceFX 5700 */
->  		     arch =  NV_ARCH_30;
-This last hunk is wrong, we do a (pd->device && 0x0ff0) above that, so
-the 0x0321 and 0x322 parts are never possible.
- -- Guido
+
+
+Begin forwarded message:
+
+Date: Sat, 25 Dec 2004 10:17:21 -0800
+From: bugme-daemon@osdl.org
+To: bugme-new@lists.osdl.org
+Subject: [Bugme-new] [Bug 3946] New: sis/sis_main.c compilation error
+
+
+http://bugme.osdl.org/show_bug.cgi?id=3946
+
+           Summary: sis/sis_main.c compilation error
+    Kernel Version: 2.6.10
+            Status: NEW
+          Severity: normal
+             Owner: drivers_video-other@kernel-bugs.osdl.org
+         Submitter: public@kurt.hindenburg.name
+
+
+/usr/src/linux-2.6.10)> make
+  CHK     include/linux/version.h
+make[1]: `arch/i386/kernel/asm-offsets.s' is up to date.
+  CHK     include/asm-i386/asm_offsets.h
+  CHK     include/linux/compile.h
+  CHK     usr/initramfs_list
+  CC      drivers/video/sis/sis_main.o
+drivers/video/sis/sis_main.c: In function `sisfb_set_par':
+drivers/video/sis/sis_main.c:1817: error: structure has no member named `currcon'
+make[3]: *** [drivers/video/sis/sis_main.o] Error 1
+make[2]: *** [drivers/video/sis] Error 2
+make[1]: *** [drivers/video] Error 2
+make: *** [drivers] Error 2
+
+
+
+
+(/usr/src/linux-2.6.10)> grep sis .config -i
+# CONFIG_BLK_DEV_SIS5513 is not set
+# CONFIG_SIS900 is not set
+# CONFIG_AGP_SIS is not set
+# CONFIG_I2C_SIS5595 is not set
+# CONFIG_I2C_SIS630 is not set
+CONFIG_I2C_SIS96X=m
+CONFIG_FB_SIS=y
+CONFIG_FB_SIS_300=y
+CONFIG_FB_SIS_315=y
+
+
+(/usr/src/linux-2.6.10)> gcc -v
+Reading specs from /usr/lib/gcc-lib/i686-pc-linux-gnu/3.3.4/specs
+Configured with:
+/mnt/part6/portage-tmp/portage/gcc-3.3.4-r1/work/gcc-3.3.4/configure
+--prefix=/usr --bindir=/usr/i686-pc-linux-gnu/gcc-bin/3.3
+--includedir=/usr/lib/gcc-lib/i686-pc-linux-gnu/3.3.4/include
+--datadir=/usr/share/gcc-data/i686-pc-linux-gnu/3.3
+--mandir=/usr/share/gcc-data/i686-pc-linux-gnu/3.3/man
+--infodir=/usr/share/gcc-data/i686-pc-linux-gnu/3.3/info --enable-shared
+--host=i686-pc-linux-gnu --target=i686-pc-linux-gnu --with-system-zlib
+--enable-languages=c,c++ --enable-threads=posix --enable-long-long
+--disable-checking --disable-libunwind-exceptions --enable-cstdio=stdio
+--enable-version-specific-runtime-libs
+--with-gxx-include-dir=/usr/lib/gcc-lib/i686-pc-linux-gnu/3.3.4/include/g++-v3
+--with-local-prefix=/usr/local --enable-shared --enable-nls
+--without-included-gettext --disable-multilib --enable-__cxa_atexit
+--enable-clocale=generic
+Thread model: posix
+gcc version 3.3.4 20040623 (Gentoo Linux 3.3.4-r1, ssp-3.3.2-2, pie-8.7.6)
+
+------- You are receiving this mail because: -------
+You are on the CC list for the bug, or are watching someone who is.
 
 
 -------------------------------------------------------

@@ -1,24 +1,24 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
 Subject: Re: Re: Added 915G to intelfb of 2.6.10-kernel-sources
-Date: Sat, 29 Jan 2005 05:54:24 +0800
-Message-ID: <200501290554.24649.adaplas@hotpop.com>
-References: <41F9BEA6.2030300@XLsigned.net> <41FA6B64.6090506@worldonline.fr>
+Date: Sat, 29 Jan 2005 08:19:07 +0800
+Message-ID: <200501290819.08329.adaplas@hotpop.com>
+References: <41F9BEA6.2030300@XLsigned.net> <200501290554.24649.adaplas@hotpop.com> <41FABFA9.7050709@XLsigned.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CueBc-0008VF-Dw
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Jan 2005 14:01:52 -0800
+	id 1CugMA-0001An-57
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Jan 2005 16:20:54 -0800
 Received: from smtp-out.hotpop.com ([38.113.3.61])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1Cue5j-0004GB-UJ
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Jan 2005 14:01:52 -0800
+	id 1CugM8-0007NP-Q6
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Jan 2005 16:20:54 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 7CBF9D6B53E
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 28 Jan 2005 21:55:30 +0000 (UTC)
-In-Reply-To: <41FA6B64.6090506@worldonline.fr>
+	by smtp-out.hotpop.com (Postfix) with SMTP id 1317BD50197
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 29 Jan 2005 00:20:45 +0000 (UTC)
+In-Reply-To: <41FABFA9.7050709@XLsigned.net>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -30,68 +30,70 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: linux-fbdev-devel@lists.sourceforge.net, Sylvain Meyer <sylvain.meyer@worldonline.fr>, "Buttchereit, Axel (XLsigned)" <XL@XLsigned.net>
+Content-Type: text/plain; charset="us-ascii"
+To: "Buttchereit, Axel (XLsigned)" <XL@XLsigned.net>, adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net, Sylvain Meyer <sylvain.meyer@worldonline.fr>
 
-On Saturday 29 January 2005 00:42, Sylvain Meyer wrote:
->         Hi Axel,
+On Saturday 29 January 2005 06:41, Buttchereit, Axel (XLsigned) wrote:
+> Antonino A. Daplas wrote:
+> > Because the modedb array is marked __init.  You can however pass
+> > the vesa_modes array instead to fb_find_mode().
 >
->     Thanks for your patch but could you format it as described in this
-> document
-> http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt
+> Ah, yes!
+> At the moment "intelfb" does not pass any "modedb" in its call(s) to
+> "fb_find_mode()" which results in using the "__init modedb" in case
+> of "static link" and using no modedb (actually using a not-initialized one)
+> at all, otherwise.
+> Passing "vesa_modes" would make things better when loading
+> "intelfb" as a module, but would change "well known behaviour",
+> when linked statically, though I could perfectly live with an "initfb"
+> that is always using "vesa_modedb".
 >
-> and resend it.
+> Any suggestions?
+
+If you really must, you can pass modedb if compiled statically, and
+vesa_modedb if compiled as a module.
+
 >
-> The best is to use these tools to maintain and send kernel patches
-> http://www.zip.com.au/~akpm/linux/patches/
+> Bumping into driver development for the first time it's quite
+> clear that I do not know many important things that I should know.
+> So please be "forgiving", if I ask stupid questions like this one:
 >
-> Also you should subscribe and send fbdev-related mails to
-> linux-fbdev-devel@lists.sourceforge.net
->
-> Regards
-> Sylvain
->
-> Buttchereit, Axel (XLsigned) a =E9crit:
-> > Hi,
+> How do I detect, if something (intelfb) is loaded as a module or
+> statically linked into the kernel?
+
+What do you mean, detect by whom? Detect by another module
+in the kernel or by userspace?
+
+You can do several things:
+
+1. Use #ifdef MODULE/#endif
+2. Check if CONFIG_FB_INTELFB_MODULE is defined
+3. Check struct fb_info.flags if FBINFO_MODULE is set
+4. Use symbol_get()/symbol_put() and check the return value before calling
+any of the functions of the driver.
+
+> >>>loaded, if
+> >>>"video=intelfb:..." is specified as kernel-parameter?
 > >
-> > though I'm quite sure that the attached patch (intelfb-...) is far
-> > from complete
-> > I think that someone/you (guessing from the comments that you are
-> > maintaining
-> > the code) might be interested in my work.
-
-Can you resend the patch that touches only intelfb?  Also, there are a lot
-of XLSigned with the printk's, what is that?
-
+> > If you want it loaded automatically, compile the driver statically. If
+> > you don't want to load a compiled-in driver, use:
 > >
-> > Having no technical documentation (from Intel) I had to "develop" the
-> > patch by
-> > looking at the xfree/xorg-code that already supports I915G and by using
-> > trial-and-error (My ThinkCentre's internal graphics device is an I915G
-> > and that made me start working on this subject).
-> >
-> > During development and testing I've discovered that the way "intelfb"
-> > and maybe
-> > other framebuffer-drivers are using "modedb" does not work, if
-> > compiled as a
-> > module. The initial "modedb entries" are lost (overwritten?) when
-> > "fb_find_mode"
-> > is called from the module. Linking "intelfb" into the kernel works as
+> > video=intelfb:off
+>
+> This is not exactly what I was asking for. :-)
+> It would be nice, if the module would automatically be loaded in
+> "early boot stage", when specified as a kernel-parameter. But this is
 
-Because the modedb array is marked __init.  You can however pass
-the vesa_modes array instead to fb_find_mode().
-=20
-> > expected.
-> >
-> > ByTheWay: Why isn't the framebuffer module (intelfb) automatically
-> > loaded, if
-> > "video=3Dintelfb:..." is specified as kernel-parameter?
+Because at this stage, userspace hasn't been initialized yet, so you cannot
+automatically load modules (which are stored in the filesystem) without help
+from userspace.
 
-If you want it loaded automatically, compile the driver statically. If you =
-don't
-want to load a compiled-in driver, use:
+> not really important (for me), because using "udev" and "hotplug/coldplug"
+> (on gentoo) finally loads it anyway.
+>
 
-video=3Dintelfb:off
+Yes, that is a better solution.
 
 Tony
 

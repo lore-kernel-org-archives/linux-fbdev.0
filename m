@@ -1,23 +1,23 @@
 From: "Kendall Bennett" <KendallB@scitechsoft.com>
-Subject: Re: Re: Generic VESA framebuffer driver and Video card BOOT?
+Subject: Re: Generic VESA framebuffer driver and Video card BOOT?
 Date: Wed, 20 Oct 2004 10:01:27 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <41763777.27136.1B3B687B@localhost>
-References: <416E6ADC.3007.294DF20D@localhost>
+Message-ID: <41763777.26324.1B3B684C@localhost>
+References: <41740384.5783.12A07B14@localhost>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7BIT
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CKJqI-0000Ja-Iz
+	id 1CKJqI-0000Jb-Jt
 	for linux-fbdev-devel@lists.sourceforge.net; Wed, 20 Oct 2004 10:01:42 -0700
 Received: from mail.scitechsoft.com ([63.195.13.67])
 	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.41)
-	id 1CKJqI-0008S7-3h
+	id 1CKJqI-0008S1-3h
 	for linux-fbdev-devel@lists.sourceforge.net; Wed, 20 Oct 2004 10:01:42 -0700
-In-reply-to: <20041019211114.GC1142@elf.ucw.cz>
+In-reply-to: <20041019214818.GF1142@elf.ucw.cz>
 Content-description: Mail message body
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,53 +34,30 @@ Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
 Pavel Machek <pavel@ucw.cz> wrote:
 
-> BTW, does this look like right way to POST VGA BIOS from real
-> mode? It is what we currently use... and it works on some
-> machines... 
+> > Open Firmware may be a 'nicer' solution, but I guarantee that if the 
+> > vendors started supporting that it would be just a bug ridden as any 16-
+> > bit real mode BIOS code. For the Video BIOS the code always works for 
+> > what it is tested for. Some vendors spend more time testing the VBE BIOS 
+> > side of things fully (if they are smart they have licensed our VBETest 
+> > tools for this purpose). Unfortunatley some vendors do not test this 
+> > stuff thoroughly and it has problems. But the same testing issues would 
+> > exist whether the firmware was written as a 16-bit x86 blob or as an Open 
+> > Firmware blob.
 > 
->         movw    $0xb800, %ax
->         movw    %ax,%fs
->         movw    $0x0e00 + 'L', %fs:(0x10)
+> Actually that 16-bit x86 blob can access any PC hardware, and that's
+> where the stuff gets hard.
 
-What is this for?
+Yes, but there is only a very small set of PC hardware features you need 
+to implement, and most BIOS'es only look at those things for timing 
+purposes. Unfortunately there is no standard for how BIOS'es do internal 
+timing and delay loops, so we emulate them all (8253 timers, speaker 
+ports and CMOS time/date support ;-).
 
->         cli
->         cld
-> 
->         # setup data segment
->         movw    %cs, %ax
->         movw    %ax, %ds                                        # Make ds:0 point to wakeup_start
->         movw    %ax, %ss
->         mov     $(wakeup_stack - wakeup_code), %sp              # Private stack is needed for ASUS board
->         movw    $0x0e00 + 'S', %fs:(0x12)
-
-We have never needed to set up a private stack. What ASUS board was it 
-that you had problems with and needed to do this for?
-
->         pushl   $0                                              # Kill any dangerous flags
->         popfl
-> 
->         movl    real_magic - wakeup_code, %eax
->         cmpl    $0x12345678, %eax
->         jne     bogus_real_magic
-> 
->         testl   $1, video_flags - wakeup_code
->         jz      1f
->         lcall   $0xc000,$3
-
-The call to 0xC000:0x0003 is the entry point to POST the card. However 
-for PCI cards you need to make sure that AX is loaded with the bus, slot 
-and function for the card that is being POST'ed. It will pass this value 
-to the PCI BIOS Int 0x1A functions in order to find itself, so if this is 
-not set many BIOS'es will not work.
-
-The rest of the code you have above seems superfluous to me as we have 
-never needed to do that. Then again we boot the card using the BIOS 
-emulator, which is different because it runs within a protected machine 
-state.
-
-Have you taken a look at the X.org code? They have code in there to POST 
-the video card also (either using vm86() or the BIOS emulator).
+When we come across a new card that doesn't work we figure out why and 
+make new additions to the video boot code. However at this point we think 
+we have covered just about every card out there, as I don't think there 
+are any cards in our labs that don't work at present. If there are, 
+fixing them is just a matter of spending the time to debug it.
 
 Regards,
 

@@ -1,27 +1,24 @@
-From: Yuval Kogman <nothingmuch@woobling.org>
-Subject: Matrox G450 etv, matroxfb_base not loading
-Date: Sat, 28 Aug 2004 16:26:13 +0300
+From: Otto Wyss <otto.wyss@orpatec.ch>
+Subject: Re: Framebuffer drivers maintainers
+Date: Sat, 28 Aug 2004 15:48:52 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040828132613.GA11996@woobling.org>
+Message-ID: <41308D44.8A57100B@orpatec.ch>
+References: <41270AD0.FE6C7970@orpatec.ch> <20040828043938.GA1150@havoc.gtf.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="vkogqOf2sHV7VnPd"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C13Dp-0003va-GV
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 28 Aug 2004 06:26:21 -0700
-Received: from smtp3.actcom.co.il ([192.114.47.65])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.34)
-	id 1C13Dn-0005gf-IR
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 28 Aug 2004 06:26:21 -0700
-Received: from pasta.woobling.org ([192.117.109.142])
-	by smtp3.actcom.co.il (8.12.11/8.12.11) with ESMTP id i7SDQDax010134
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=FAIL)
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 28 Aug 2004 16:26:14 +0300
-Content-Disposition: inline
+	id 1C13Zq-0008AV-4D
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 28 Aug 2004 06:49:06 -0700
+Received: from mail.xor.ch ([212.55.210.163])
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.34)
+	id 1C13Zo-0007Xo-CO
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 28 Aug 2004 06:49:06 -0700
+Received: from orpatec.ch (217.162.130.125)
+          by mail.xor.ch with MERCUR Mailserver (v4.03.03 NjYtMjMxMS00NjIy)
+          for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 28 Aug 2004 15:53:56 +0200
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,82 +28,36 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
 
+David Eger wrote:
+> 
+> radeonfb:
+>    Ben Herrenschmidt took over from Ani Joshi for 2.6, though he's pretty busy,
+>    so radeonfb maintainership tends to be a group effort.  I ported copyarea()
+>    and fillrect() from the X radeon driver, so that accel code is my fault ;-)
+> 
+I can easily list several persons, but prefer just one. Of course anyone
+can develop. Anytime in the future all the lastest driver sources should
+be available via the driver list, so anybody can build a driver with
+kbuild and test it on his station. IMO it makes much more sense to use
+kbuild instead of patching and building the full source.
 
---vkogqOf2sHV7VnPd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> cirrusfb:
+>    I ported this to 2.6 after several years of bit rot, so I guess that makes me
+>    the de facto maintainer ;-)
+> 
+Corrected.
 
-Hi...
+BTW have you seen my thread in the users lists
+"http://sourceforge.net/mailarchive/forum.php?thread_id=5425101&forum_id=2358"
+? Do you have a solution or a workaround?
 
-I've got a matrox g450 etv card. For some reason I'm unable to get the
-framebuffer drivers loaded, and thus cannot capture video with the mgatv
-v4l driver.
+O. Wyss
 
-Here is what I get in the syslog when matroxfb_base is loaded:
-
-Aug 28 16:09:40 pasta ACPI: PCI interrupt 0000:01:00.0[A] -> GSI 16 (level,=
- low) -> IRQ 16
-Aug 28 16:09:40 pasta matroxfb: Matrox G450 detected
-Aug 28 16:09:40 pasta matroxfb: probe of 0000:01:00.0 failed with error -1
-
-The modules do remain loaded though.
-
-
-This is what lspci -v has to say:
-
-0000:01:00.0 VGA compatible controller: Matrox Graphics, Inc. MGA G400 AGP =
-(rev 82) (prog-if 00 [VGA])
-        Subsystem: Matrox Graphics, Inc. Marvel G450 eTV
-        Flags: bus master, medium devsel, latency 32, IRQ 16
-        Memory at ee000000 (32-bit, prefetchable)
-        Memory at e8000000 (32-bit, non-prefetchable) [size=3D16K]
-        Memory at e9000000 (32-bit, non-prefetchable) [size=3D8M]
-        Capabilities: [dc] Power Management version 2
-        Capabilities: [f0] AGP version 2.0
-
-
-Here is my kernel info:
-
-Linux pasta 2.6.8.1 #4 Sat Aug 21 18:43:24 IDT 2004 i686 AMD Athlon(tm) XP =
-2400+ AuthenticAMD GNU/Linux
-
-The kernel is a vanilla tree. Gentoo's dev sources, which have some
-patches, also had the same issues and I thought that they were to
-blame initially.
-
-
-So far I've found no mention of a similar problem via google or on
-the mailing lists. The card is from ebay. Could it be a hardware
-problem? VGA output works well, with the XFree mga driver. I don't
-have the output breakout cable braid (replacement on the way), so
-i can't say much about tv out, etc.
-
-
-Well, that's about all the info I know to give you in advance.
-
-Thanks,
-
---=20
- ()  Yuval Kogman <nothingmuch@woobling.org> 0xEBD27418  perl hacker &
- /\  kung foo master: MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM: neeyah!
-
-
---vkogqOf2sHV7VnPd
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQFBMIf1VCwRwOvSdBgRAgloAJ4+xIsn0fCB054WCSwhc587gQGKdACguSNn
-/ts/kF5f/jaVIzYGMUJMajk=
-=mcNP
------END PGP SIGNATURE-----
-
---vkogqOf2sHV7VnPd--
+-- 
+See a huge pile of work at "http://wyodesktop.sourceforge.net/"
 
 
 -------------------------------------------------------

@@ -1,21 +1,23 @@
-From: David Eger <eger@havoc.gtf.org>
-Subject: Re: accelerated radeonfb produces artifacts on scrolling in 2.6.7
-Date: Wed, 16 Jun 2004 14:41:45 -0400
+From: Timothy Miller <miller@techsource.com>
+Subject: Re: accelerated radeonfb produces artifacts on
+ scrolling in 2.6.7
+Date: Wed, 16 Jun 2004 15:55:32 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040616184145.GA12673@havoc.gtf.org>
-References: <20040616182415.GA8286@middle.of.nowhere>
+Message-ID: <40D0A5B4.7060007@techsource.com>
+References: <20040616182415.GA8286@middle.of.nowhere> <20040616184145.GA12673@havoc.gtf.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BafM9-0004Ck-TF
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 11:41:53 -0700
-Received: from havoc.gtf.org ([216.162.42.101])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BafM9-0006Nj-Ji
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 11:41:53 -0700
-Content-Disposition: inline
-In-Reply-To: <20040616182415.GA8286@middle.of.nowhere>
+	id 1BagEr-0002mM-Qs
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 12:38:25 -0700
+Received: from kinesis.swishmail.com ([209.10.110.86] ident=qmailr)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1BagEr-0001sR-8x
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 12:38:25 -0700
+In-Reply-To: <20040616184145.GA12673@havoc.gtf.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,30 +27,43 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jurriaan <thunder7@xs4all.nl>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: David Eger <eger@havoc.gtf.org>
+Cc: Jurriaan <thunder7@xs4all.nl>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Wed, Jun 16, 2004 at 08:24:15PM +0200, Jurriaan wrote:
-> The radeonfb driver in 2.6.7 produces some interesting artifacts on
-> scrolling, both scrolling horizontally and vertically.
 
-The corruption you are talking about is, I believe, caused by a couple of things:
 
-(1) we're not issuing enough fifo_wait()'s around our accel engine
-    and pan register writes.
-(2) there's some disconnect between writing to fb memory, panning, and
-    copyarea()/fillrect() calls
+David Eger wrote:
+> On Wed, Jun 16, 2004 at 08:24:15PM +0200, Jurriaan wrote:
+> 
+>>The radeonfb driver in 2.6.7 produces some interesting artifacts on
+>>scrolling, both scrolling horizontally and vertically.
+> 
+> 
+> The corruption you are talking about is, I believe, caused by a couple of things:
+> 
+> (1) we're not issuing enough fifo_wait()'s around our accel engine
+>     and pan register writes.
+> (2) there's some disconnect between writing to fb memory, panning, and
+>     copyarea()/fillrect() calls
+> 
+> I sent a hack of a fix for this to Ben a week ago, adding a call to radeonfb_sync()
+> at the end of radeonfb_copyarea() and radeonfb_fillrect().  This seems to fix the
+> problem for me, but you *shouldn't* have to do this.  
+> 
+> I haven't tracked it any further than this.  My next guess would be auditing register 
+> writes and making sure there are enough fifo_wait()'s...
 
-I sent a hack of a fix for this to Ben a week ago, adding a call to radeonfb_sync()
-at the end of radeonfb_copyarea() and radeonfb_fillrect().  This seems to fix the
-problem for me, but you *shouldn't* have to do this.  
 
-I haven't tracked it any further than this.  My next guess would be auditing register 
-writes and making sure there are enough fifo_wait()'s...
+Is this the case even with the off-by-one error in the bitblt code 
+fixed?  In the 2.4 kernel, I got rid of all artifacts by fixing the 
+off-by-one error.
 
--dte
+In case, you don't know what I'm talking about, when you bitblt up or to 
+the left on Radeon, x and y need to be adjusted by (w-1) and/or (h-1), 
+respectively.  The code there, however, adjusted by w and/or h, which is 
+off-by-one.
+
 
 
 -------------------------------------------------------

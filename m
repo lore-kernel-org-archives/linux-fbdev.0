@@ -1,21 +1,19 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Apollo framebuffer sysfs
-Date: Wed, 18 Feb 2004 19:13:49 +0000 (GMT)
+From: nihil <nihil0@freestart.hu>
+Subject: Matrox G450 fbdev, v4l  and TV-OUT question
+Date: Wed, 18 Feb 2004 23:32:44 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0402181910540.10389-100000@phoenix.infradead.org>
-References: <Pine.LNX.4.44.0402181823110.10389-100000@phoenix.infradead.org>
+Message-ID: <1077143563.1716.16.camel@gaia>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AtXDg-0006QY-82
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 18 Feb 2004 11:18:52 -0800
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.30)
-	id 1AtX1Z-00086H-Ls
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 18 Feb 2004 11:06:22 -0800
-In-Reply-To: <Pine.LNX.4.44.0402181823110.10389-100000@phoenix.infradead.org>
+	id 1AtaJ5-0000Am-K9
+	for Linux-fbdev-devel@lists.sourceforge.net; Wed, 18 Feb 2004 14:36:39 -0800
+Received: from 206.126-182-adsl-pool.axelero.hu ([81.182.126.206] helo=pulsus.mine.nu)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1AtaEB-0006GT-29
+	for Linux-fbdev-devel@lists.sourceforge.net; Wed, 18 Feb 2004 14:31:35 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,116 +23,41 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-
+Content-Type: text/plain; charset="us-ascii"
+To: Linux-fbdev-devel@lists.sourceforge.net
 
 Hi!
 
-  Another driver adapted to sysfs. Please test.
+I found out, that up to the kernel version 2.6.2 the setting of the
+bright and contrast for the Matrox G450 TV-OUT doesn't work. However
+it worked in 2.4.xx and also in 2.6.1.
 
---- linus-2.6/drivers/video/dnfb.c	2004-02-16 23:36:09.000000000 -0800
-+++ fbdev-2.6/drivers/video/dnfb.c	2004-02-17 16:49:23.000000000 -0800
-@@ -103,8 +103,6 @@
- 
- #define SWAP(A) ((A>>8) | ((A&0xff) <<8))
- 
--static struct fb_info fb_info;
--
- /* frame buffer operations */
- 
- static int dnfb_blank(int blank, struct fb_info *info);
-@@ -224,22 +222,39 @@
- 	out_8(AP_CONTROL_0, NORMAL_MODE);
- }
- 
-+/*
-+ * Initialization
-+ */
- 
--unsigned long __init dnfb_init(unsigned long mem_start)
-+static int __init dnfb_probe(struct device *device)
- {
--	int err;
--
--	fb_info.fbops = &dn_fb_ops;
--	fb_info.fix = dnfb_fix;
--	fb_info.var = dnfb_var;
--	fb_info.screen_base = (u_char *) fb_info.fix.smem_start;
--
--	fb_alloc_cmap(&fb_info.cmap, 2, 0);
--
--	err = register_framebuffer(&fb_info);
--	if (err < 0)
--		panic("unable to register apollo frame buffer\n");
--
-+	struct platform_device *dev = to_platform_device(device);
-+	struct fb_info *info;
-+	int err = 0;
-+
-+	info = framebuffer_alloc(0, &dev->dev);
-+	if (!info)
-+		return -ENOMEM;
-+		
-+	info->fbops = &dn_fb_ops;
-+	info->fix = dnfb_fix;
-+	info->var = dnfb_var;
-+	info->screen_base = (u_char *) info->fix.smem_start;
-+
-+	err = fb_alloc_cmap(&info->cmap, 2, 0)
-+	if (err < 0) {	
-+		framebuffer_release(info);
-+		return err;
-+	}	
-+	
-+	err = register_framebuffer(info);
-+	if (err < 0) {
-+		fb_dealloc_cmap(&info->cmap);
-+		framebuffer_release(info);
-+		return err;
-+	}
-+	dev_set_drvdata(&dev->dev, info);
-+	
- 	/* now we have registered we can safely setup the hardware */
- 	out_8(AP_CONTROL_3A, RESET_CREG);
- 	out_be16(AP_WRITE_ENABLE, 0x0);
-@@ -249,7 +264,32 @@
- 	out_be16(AP_ROP_1, SWAP(0x3));
- 
- 	printk("apollo frame buffer alive and kicking !\n");
--	return mem_start;
-+	return err;
-+}
-+
-+static struct device_driver dnfb_driver = {
-+	.name	= "dnfb",
-+	.bus	= &platform_bus_type,
-+	.probe	= dnfb_probe,
-+};	
-+
-+static struct platform_device dnfb_device = {
-+	.name	= "dnfb",
-+	.id	= 0,
-+};	
-+
-+int __init dnfb_init(void)
-+{
-+	int ret;
-+
-+	ret = driver_register(&dnfb_driver);
-+
-+	if (!ret) {
-+		ret = platform_device_register(&dnfb_device);
-+		if (ret)
-+			driver_unregister(&dnfb_driver);
-+	}
-+	return ret;
- }
- 
- MODULE_LICENSE("GPL");
+I can get the values with:
+~> v4lctl -c /dev/fb0 list
+attribute  | type   | current | default | comment
+-----------+--------+---------+---------+------------------------
+norm       | choice | (null)  | (null)  |
+input      | choice | (null)  | (null)  |
+bright     | int    |     127 |     127 | range is 0 => 780
+contrast   | int    |     127 |     127 | range is 0 => 1023
+color      | int    |     165 |     165 | range is 0 => 255
+hue        | int    |       0 |       0 | range is 0 => 255
+test outpu | bool   | off     | off     |
 
+But if I try to set a value, I get only an error message:
+~> v4lctl -c /dev/fb0 bright 600
+ioctl: VIDIOC_S_CTRL(id=9963776;value=600): Inappropriate ioctl for device
+
+It is also the same for the contrast:
+~> v4lctl -c /dev/fb0 contrast 800
+ioctl: VIDIOC_S_CTRL(id=9963777;value=800): Inappropriate ioctl for device
+
+What could be the problem? What is changed in the kernel from 2.6.1 to 2.6.2, 
+that causes this problem? If this doesn't work anymore, how can I change the 
+bright/contrast for the TV-OUT on the Matrox G450 card?
+
+Thank you in advance!
+nihil
 
 
 

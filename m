@@ -1,42 +1,55 @@
 From: Adrian Bunk <bunk@stusta.de>
-Subject: Re: [2.6 patch] drivers/video/: misc cleanups
-Date: Sun, 21 Nov 2004 16:58:11 +0100
-Message-ID: <20041121155811.GA2961@stusta.de>
-References: <20041121153702.GB2829@stusta.de>
+Subject: [2.6 patch] tdfxfb.c: make some code static
+Date: Sun, 21 Nov 2004 16:36:39 +0100
+Message-ID: <20041121153639.GY2829@stusta.de>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261767AbUKUQBn@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261686AbUKUPn6@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20041121153702.GB2829@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+To: Hannu Mallat <hmallat@cc.hut.fi>
+Cc: Antonino Daplas <adaplas@pol.net>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Sun, Nov 21, 2004 at 04:37:02PM +0100, Adrian Bunk wrote:
+The patch below makes some needlesly global code static.
 
-> The patch below does the following cleanups under drivers/video/ :
-> - make some needlessly global code static
-> - the following was needlessly EXPORT_SYMBOL'ed:
->   - fbcon.c: fb_con
->   - mdacon.c: fb_blank
->   - fbmon.c: get_EDID_from_firmware (completely unused)
->...
 
-I forgot one thing:
+diffstat output:
+ drivers/video/tdfxfb.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-Please review my global_mode_option removal in modedb.c .
 
-It was always NULL and I'd say the only usage was wrong (although it 
-had no practical effect).
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+--- linux-2.6.10-rc2-mm2-full/drivers/video/tdfxfb.c.old	2004-11-21 15:00:22.000000000 +0100
++++ linux-2.6.10-rc2-mm2-full/drivers/video/tdfxfb.c	2004-11-21 15:00:55.000000000 +0100
+@@ -154,8 +154,8 @@
+ /*
+  *  Frame buffer device API
+  */
+-int tdfxfb_init(void);
+-void tdfxfb_setup(char *options);
++static int tdfxfb_init(void);
++static void tdfxfb_setup(char *options);
+ 
+ static int tdfxfb_check_var(struct fb_var_screeninfo *var, struct fb_info *fb); 
+ static int tdfxfb_set_par(struct fb_info *info); 
+@@ -1356,7 +1356,7 @@
+ 	framebuffer_release(info);
+ }
+ 
+-int __init tdfxfb_init(void)
++static int __init tdfxfb_init(void)
+ {
+ #ifndef MODULE
+ 	char *option = NULL;
+@@ -1383,7 +1383,7 @@
+ 
+ 
+ #ifndef MODULE
+-void tdfxfb_setup(char *options)
++static void tdfxfb_setup(char *options)
+ { 
+ 	char* this_opt;
+ 

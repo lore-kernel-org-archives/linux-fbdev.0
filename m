@@ -1,20 +1,22 @@
 From: David Eger <eger-sender-da68b9@theboonies.us>
-Subject: [PATCH 0/3] fb accel capabilities (aka fast radeon fb, the right way)
-Date: Thu, 13 May 2004 01:45:57 +0200 (CEST)
+Subject: [PATCH 1/3] fb accel capabilities (radeonfb copyarea() fix)
+Date: Thu, 13 May 2004 01:47:46 +0200 (CEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.58.0405130131460.2282@rosencrantz.theboonies.us>
-Reply-To: David Eger <eger-dated-1085010079.06feaf@theboonies.us>
+Message-ID: <Pine.LNX.4.58.0405130146300.2282@rosencrantz.theboonies.us>
+References: <Pine.LNX.4.58.0405130131460.2282@rosencrantz.theboonies.us>
+Reply-To: David Eger <eger-dated-1085010184.0d1137@theboonies.us>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BO3Lp-0001oF-N0
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 May 2004 16:41:25 -0700
+	id 1BO3NT-0002CO-HX
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 May 2004 16:43:07 -0700
 Received: from not.theboonies.us ([66.139.79.224])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1BO3Lp-0002sX-Er
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 May 2004 16:41:25 -0700
+	id 1BO3NT-0008Px-4i
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 May 2004 16:43:07 -0700
+In-Reply-To: <Pine.LNX.4.58.0405130131460.2282@rosencrantz.theboonies.us>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,35 +32,56 @@ To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.n
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 
-I fleshed out Geert's idea from the last radeonfb thread on bringing
-fbcon's interaction with the underlying framebuffer drivers up-to-date.
-Now fbcon should be smart and actually *use* fb-driver provided accel
-functions ;-)
-
-Specifically, I've added a .hwaccel field to fb_fix_screeninfo, which
-should serve as the way framebuffers pass hints to higher layers.
-This should totally obsolete the accel_flags in var (which till now has
-had one half-heartedly used value FB_ACCELF_TEXT).
-
-The patches that follow are:
-
-1) my radeonfb copyarea() fix.  this is already in -mm.
-2) James's fbcon init cleanup, modified for benh's tree.
-3) my fb-accel-capabilities patch
-
-When I boot with this, I have a nice accelerated framebuffer, huzzah.
-This *shouldn't* break anyone's setup.  Please, test this patch!
-Look good?  Comments?
-
-Still not done:
-- get rid of old comments in include/linux/fb.h
-- get rid of all old references to useless var.accel_flags
-- update other drivers to indicate if they have fast accel() funcs
-
--dte
-
----
-getting bounce messages from me? let me know and you'll go on my whitelist
+# This is a BitKeeper generated diff -Nru style patch.
+#
+# ChangeSet
+#   2004/05/12 14:19:47+02:00 eger@rosencrantz.theboonies.us 
+#   radeonfb bug fix: screen corruption when copyarea() gets overlapping rectangles
+# 
+# drivers/video/aty/radeon_accel.c
+#   2004/05/12 14:15:32+02:00 eger@rosencrantz.theboonies.us +17 -4
+#   radeonfb bug fix: screen corruption when copyarea() gets overlapping rectangles
+# 
+diff -Nru a/drivers/video/aty/radeon_accel.c b/drivers/video/aty/radeon_accel.c
+--- a/drivers/video/aty/radeon_accel.c	Wed May 12 15:51:32 2004
++++ b/drivers/video/aty/radeon_accel.c	Wed May 12 15:51:32 2004
+@@ -53,6 +53,18 @@
+ static void radeonfb_prim_copyarea(struct radeonfb_info *rinfo, 
+ 				   const struct fb_copyarea *area)
+ {
++	int xdir, ydir;
++	u32 sx, sy, dx, dy, w, h;
++
++	w = area->width; h = area->height;
++	dx = area->dx; dy = area->dy;
++	sx = area->sx; sy = area->sy;
++	xdir = sx - dx;
++	ydir = sy - dy;
++
++	if ( xdir < 0 ) { sx += w-1; dx += w-1; }
++	if ( ydir < 0 ) { sy += h-1; dy += h-1; }
++
+ 	radeon_fifo_wait(3);
+ 	OUTREG(DP_GUI_MASTER_CNTL,
+ 		rinfo->dp_gui_master_cntl /* i.e. GMC_DST_32BPP */
+@@ -60,12 +72,13 @@
+ 		| ROP3_S 
+ 		| DP_SRC_RECT );
+ 	OUTREG(DP_WRITE_MSK, 0xffffffff);
+-	OUTREG(DP_CNTL, (DST_X_LEFT_TO_RIGHT | DST_Y_TOP_TO_BOTTOM));
++	OUTREG(DP_CNTL, (xdir>=0 ? DST_X_LEFT_TO_RIGHT : 0)
++			| (ydir>=0 ? DST_Y_TOP_TO_BOTTOM : 0));
+ 
+ 	radeon_fifo_wait(3);
+-	OUTREG(SRC_Y_X, (area->sy << 16) | area->sx);
+-	OUTREG(DST_Y_X, (area->dy << 16) | area->dx);
+-	OUTREG(DST_HEIGHT_WIDTH, (area->height << 16) | area->width);
++	OUTREG(SRC_Y_X, (sy << 16) | sx);
++	OUTREG(DST_Y_X, (dy << 16) | dx);
++	OUTREG(DST_HEIGHT_WIDTH, (h << 16) | w);
+ }
+ 
+ 
 
 
 -------------------------------------------------------

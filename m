@@ -1,19 +1,12 @@
-From: David Mosberger <davidm@napali.hpl.hp.com>
-Subject: fglrx + radeonfb leads to crashes?
-Date: Wed, 17 Mar 2004 12:18:05 -0800
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [Linux-fbdev-users] radeon/2.6.5-rc1-mm1 sets strange frequencies
+Date: Wed, 17 Mar 2004 21:48:29 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200403172018.i2HKI5E0002012@napali.hpl.hp.com>
-Reply-To: davidm@hpl.hp.com
+Message-ID: <Pine.LNX.4.44.0403172145380.19415-100000@phoenix.infradead.org>
+References: <20040317073840.GA15392@middle.of.nowhere>
+Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B3hWd-00005O-78
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Mar 2004 12:20:27 -0800
-Received: from palrel10.hp.com ([156.153.255.245])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.30)
-	id 1B3hWZ-0000fO-GM
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Mar 2004 12:20:23 -0800
+In-Reply-To: <20040317073840.GA15392@middle.of.nowhere>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -23,31 +16,50 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: ajoshi@shell.unixbox.com
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Jurriaan <thunder7@xs4all.nl>
+Cc: linux-fbdev-users@lists.sourceforge.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi Ani,
 
-I have a machine here with an ATI FireGL Z1 card.  It works fine with
-the ATI fglrx binary-only driver on 2.6.5-rc1.  However, if radeonfb
-is enabled and I try to stop the X server or switch away from it to
-another virtual console, then the screen display gets all messed up
-and the machine gets stuck.  When this hapens, I periodically see this
-kind of message:
+> After booting 2.6.5-rc1-mm1 with this command-line:
+> 
+> kernel /vmlinuz-265rc1mm1 root=/dev/hda3 video=radeonfb:1600x1200-32@75 acpi=force
+> 
+> I get a warning on my monitor:
+> 
+> fH 271.5 kHz
+> fV 217.2 Hz
 
-  radeonfb: FIFO Timeout !
+I haven't seen that before :-/ The kernel isn't generating that. I just 
+looked threw the code.
 
-Now, this is on ia64 machine so at this point I'm just wondering
-whether this problem also shows up on other machines.  If it's an
-ia64-specific problem, I can look into it.  Otherwise, I guess I'll
-just disable radeonfp for now.
+> That is obviously not what I meant by 1600x1200-32@75.
+> 
+> fbset -V tells me:
+> 
+> Linux Frame Buffer Device Configuration Version 2.1 (23/06/1999)
+> (C) Copyright 1995-1999 by Geert Uytterhoeven
+> 
+> 
+> mode "1600x1200-75"
+>     # D: 202.511 MHz, H: 93.755 kHz, V: 75.004 Hz
+>     geometry 1600 1200 1600 1200 32
+>     timings 4938 304 64 46 1 192 3
+>     hsync high
+>     vsync high
+>     rgba 8/16,8/8,8/0,0/0
+> endmode
 
-Thanks,
+This looks right.
 
-	--david
+
+> Obviously, it's bad that I define what video-mode I want and radeonfb
+> starts changing that to bogus values. The monitor is an Eizo F931,
+> connected via a Rose Electronics Vista KVM.
+
+What is you want exactly?
+
 
 
 -------------------------------------------------------

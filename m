@@ -1,21 +1,23 @@
-From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-Subject: Framebuffers and VC setup (via fbcon.c)
-Date: Tue, 9 Mar 2004 15:39:51 +0100
+From: James Simmons <jsimmons@infradead.org>
+Subject: New HD.
+Date: Tue, 9 Mar 2004 18:19:09 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040309143950.GS17857@lug-owl.de>
+Message-ID: <Pine.LNX.4.44.0403091817150.10284-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="E1BPhOSoTthPQdPL"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B0ifG-0005mc-5n
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Mar 2004 06:57:02 -0800
-Received: from dvmwest.gt.owl.de ([62.52.24.140])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B0iOl-0006nc-6L
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Mar 2004 06:39:59 -0800
-Content-Disposition: inline
+	id 1B0m5Y-0007ya-Ba
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Mar 2004 10:36:24 -0800
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1B0lQt-0001i2-80
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Mar 2004 09:54:23 -0800
+Received: from localhost ([127.0.0.1])
+	by phoenix.infradead.org with esmtp (Exim 4.30 #5 (Red Hat Linux))
+	id 1B0lor-0002sc-MN
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Mar 2004 18:19:09 +0000
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,89 +27,18 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
---E1BPhOSoTthPQdPL
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi folks. I got my new HD and installed a new kernel and the latest debian 
+on it. So I'm back in business. I still haven't rescued the old data yet. 
+Its not to big of a problem. The main thing is I can test my dozens of 
+video cards. Thanks goes out to everyone that wanted to help me and did 
+help me.
 
-Hi!
 
-I've got some trouble getting a local FB console to work, maybe you've
-got some suggestions...
-
-This all happens on a VAX 4000 Model 46. I've already done the FB driver
-(http://cvs.sourceforge.net/viewcvs.py/linux-vax/kernel-2.5/drivers/video/v=
-axlcgfb.c)
-which basically works - cat'ting a properly prepared image to it
-produces a proper display output.
-
-Now I tried to bring CONFIG_VT and CONFIG_FRAMEBUFFER_CONSOLE into the
-game. However, I end up with no working FB console. No penguin image, no
-login prompt. This is because vc->vc_bottom ends up being 0, while it
-should be at around 60.
-
-Adding some printk()s and initcall_debug, here is what happens:
-
-  tty_class_init()
-  chr_dev_init()
-    vaxlcgfb_init()
-  tty_init()
-    vty_init()
-      fb_console_init()
-			"fbcon_startup: mode: VAX LCGfb"
-			"fbcon_startup: visual: 3"
-			"fbcon_startup: res: 1280x1024-8"
-			"Console: switching to frame buffer device"
-  pty_init()
-  fb_console_init()
-  			"Console: switching to frame buffer device"
-  ...
-  vc_init():
-  			currcons=3D0, rows=3D64, cols=3D160, clear=3D1
-			then colors 0..15 are set
-
-Two things look odd to me:
-
-	- fb_console_init is called twice. Once from
-	  tty_init() -> vty_init() -> fb_console_init(), second time
-	  directly as a "normal" __init / module_init() call.
-	- Despite the fact that (quite late in the boot process)
-	  vc_init() is called (with correct looking arguments), I think
-	  it should have been called quite some time earlier. With other
-	  (PC based) graphic cards, the machine just switches to FB mode
-	  after the FB driver is initialized. All further output is put
-	  there. But not here...
-
-I haven't yet really understood how FB and console code work together,
-so it would be nice to have some hints there :)
-
-MfG, JBG
-
---=20
-   Jan-Benedict Glaw       jbglaw@lug-owl.de    . +49-172-7608481
-   "Eine Freie Meinung in  einem Freien Kopf    | Gegen Zensur | Gegen Krieg
-    fuer einen Freien Staat voll Freier B=FCrger" | im Internet! |   im Ira=
-k!
-   ret =3D do_actions((curr | FREE_SPEECH) & ~(NEW_COPYRIGHT_LAW | DRM | TC=
-PA));
-
---E1BPhOSoTthPQdPL
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-
-iD8DBQFATdc2Hb1edYOZ4bsRAluGAKCCf4d6HqFuRzgTdubkQfHpiYiCdACfUMJn
-pAYia4qt4wMUPXWpe7PXYyo=
-=wyKT
------END PGP SIGNATURE-----
-
---E1BPhOSoTthPQdPL--
 
 
 -------------------------------------------------------

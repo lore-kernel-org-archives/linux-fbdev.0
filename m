@@ -1,26 +1,21 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH][RIVAFB]: Updates to rivafb driver
-Date: Thu, 17 Jun 2004 11:34:18 -0500
+From: David Eger <eger@havoc.gtf.org>
+Subject: [PATCH][RIVAFB] rivafb: fb accel capabilities
+Date: Thu, 17 Jun 2004 14:24:47 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1087490056.8697.253.camel@gaston>
-References: <200406160406.07060.adaplas@hotpop.com>
-	 <200406161353.51195.adaplas@hotpop.com>
-	 <20040616173429.GA8601@havoc.gtf.org>
-	 <200406170629.09691.adaplas@hotpop.com>
-	 <20040617001634.GA6013@havoc.gtf.org>
+Message-ID: <20040617182446.GA6355@havoc.gtf.org>
+References: <200406160406.07060.adaplas@hotpop.com> <Pine.LNX.4.56.0406161743100.14901@pentafluge.infradead.org> <20040616132318.1435b0c7.akpm@osdl.org> <200406170629.27427.adaplas@hotpop.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BaztD-0004dp-9d
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Jun 2004 09:37:23 -0700
-Received: from gate.crashing.org ([63.228.1.57])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1BaztB-0002XM-CW
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Jun 2004 09:37:21 -0700
-In-Reply-To: <20040617001634.GA6013@havoc.gtf.org>
+	id 1Bb1ZL-0008Na-8B
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Jun 2004 11:24:59 -0700
+Received: from havoc.gtf.org ([216.162.42.101])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1Bb1ZK-0000P8-UF
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Jun 2004 11:24:59 -0700
+Content-Disposition: inline
+In-Reply-To: <200406170629.27427.adaplas@hotpop.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,34 +26,34 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: David Eger <eger@havoc.gtf.org>
-Cc: adaplas@pol.net, James Simmons <jsimmons@infradead.org>, Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: adaplas@pol.net
+Cc: Andrew Morton <akpm@osdl.org>, jsimmons@pentafluge.infradead.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 2004-06-16 at 19:16, David Eger wrote:
+Dear Andrew,
 
-> > Yeah, even with XOrg/Free86 nv driver, it hangs.  Don't really know the
-> > exact solution, probably a complete re-initialization of the hardware
-> > when switching from X.  But this will require that fbcon recognizes
-> > a switch from X itself which it currently doesn't (unless I'm mistaken).
-> 
-> Back in February, BenH said he was going to work on a patch for this:
-> 
-> http://www.uwsg.iu.edu/hypermail/linux/kernel/0402.2/0247.html
-> 
-> Hey Ben, what ever became of this?  Are there now hooks for this or 
-> something?
+Here's the fb accel capabilities patch for rivafb.
 
-Last time I played with nv & rivafb (a loooong time ago), I found out
-the hangs were caused by some weirdness with the manipulation of the
-endian flip register and got that working. The problem I've been working
-on for restoring console is different, and has to do with forcing a
-call to set-par when coming back from KD_GRAPHICS mode. That is already
-upstream (though I noticed some X driver still mess with the HW after
-the switch back, like the radeon one)
-
-Ben.
+-dte
 
 
+diff -ru linux-2.6.7-rc3-mm2-wrivafb/drivers/video/riva/fbdev.c linux-2.6.7-rc3-mm2-wrivafb2/drivers/video/riva/fbdev.c
+--- linux-2.6.7-rc3-mm2-wrivafb/drivers/video/riva/fbdev.c	2004-06-17 14:08:29.000000000 -0400
++++ linux-2.6.7-rc3-mm2-wrivafb2/drivers/video/riva/fbdev.c	2004-06-16 12:39:11.000000000 -0400
+@@ -1665,7 +1665,12 @@
+ {
+ 	unsigned int cmap_len;
+ 
+-	info->flags = FBINFO_FLAG_DEFAULT;
++	info->flags = FBINFO_DEFAULT
++		    | FBINFO_HWACCEL_XPAN
++		    | FBINFO_HWACCEL_YPAN
++		    | FBINFO_HWACCEL_COPYAREA
++		    | FBINFO_HWACCEL_FILLRECT
++		    | FBINFO_HWACCEL_IMAGEBLIT;
+ 	info->var = rivafb_default_var;
+ 	info->fix.visual = (info->var.bits_per_pixel == 8) ?
+ 				FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_DIRECTCOLOR;
 
 
 -------------------------------------------------------

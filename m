@@ -1,13 +1,13 @@
 From: Egbert Eich <eich@suse.de>
 Subject: Re: Who is stomping PCI config space?
-Date: Fri, 4 Mar 2005 12:21:39 +0100
-Message-ID: <16936.17603.208177.829376@xf14.local>
+Date: Fri, 4 Mar 2005 12:25:47 +0100
+Message-ID: <16936.17851.290824.371736@xf14.local>
 References: <9e4733910503031103552514b9@mail.gmail.com>
-	<42278AEC.4080706@dunaweb.hu>
+	<1109891245.5611.246.camel@gaston>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-In-Reply-To: zboszor@dunaweb.hu wrote on Thursday,
-	3 March 2005 at 23:08:44 +0100 
+In-Reply-To: benh@kernel.crashing.org wrote on Friday,
+	4 March 2005 at 10:07:25 +1100 
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
 	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
@@ -19,38 +19,25 @@ List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
 Sender: xorg-bounces@lists.freedesktop.org
 Errors-To: xorg-bounces@lists.freedesktop.org
 Content-Type: text/plain; charset="us-ascii"
-To: Zoltan Boszormenyi <zboszor@dunaweb.hu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Xserver development <xorg@freedesktop.org>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-Zoltan Boszormenyi writes:
- > Hm. Someone other than a Linux-ruby user finally complaining. :-)
- > Try patching XFree or XOrg with the proper patch
+Benjamin Herrenschmidt writes:
  > 
- > http://www.ltn.lv/~aivils/files/080_pci_isolate_device_feature.diff
- > 
- > for XFree, or
- > 
- > http://www.ltn.lv/~aivils/files/Xorg-6.7.0-isolate_device.patch
- > 
- > for XOrg, it's applicable for XOrg-6.8.x, too.
- > 
- > Then add
- >           Option         "SingleCard" "on"
- > to your Section "ServerLayout".
+ > I had a report of something similar with X and a mach64 ... I haven't
+ > yet investigated, but basically, X is using "fbdev" (so no specific
+ > driver) and seem to be disabling memory access to the card, thus blowing
+ > up the kernel fbdev.
  > 
 
-This patch adds another wart to the resource broker ;-)
-But it may actually help the people who need this advanced 
-feature and know what they are doing.
-I have thought about putting something like this in but was
-discouraged when I saw users trying out every single option
-and then complaining that it didn't work.
+Benjamin,
 
-I would rather go with something 'automatic'. This would be
-a resource broker outside of X.
+I faintly remember adding code to the Xserver that it wouldn't do this
+when you only used fbdev drivers. 
+It may do this for setup (ie. probing) as it has no idea about the drivers
+it is going to encounter. With the new interface I've added we may actually
+change this. I'm already doing this to determine if I need to enable PIO.
 
-Still I'm inclined to adding something like this to the code
-however I'm reluctant to document it so well ;-)
+I need to look at this code again, though.
 
-Cheers,
-	Egbert.
+Egbert.

@@ -1,16 +1,16 @@
 From: "Somsak Sriprayoonsakul" <ssy@hpcnc.cpe.ku.ac.th>
 Subject: Can't correctly set palette
-Date: Wed, 6 Aug 2003 15:24:39 +0700
+Date: Wed, 6 Aug 2003 15:25:33 +0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <002101c35bf4$3ec19e10$16226c9e@hpcncd.cpe.ku.ac.th>
+Message-ID: <002701c35bf4$663764c0$16226c9e@hpcncd.cpe.ku.ac.th>
 Reply-To: "Somsak Sriprayoonsakul" <ssy@hpcnc.cpe.ku.ac.th>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from nontri.ku.ac.th ([158.108.2.71] helo=ku.ac.th)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19kJcv-0003Ec-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 06 Aug 2003 01:26:34 -0700
+	id 19kJdq-0003ul-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 06 Aug 2003 01:27:30 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -37,6 +37,8 @@ zero fb_cmap. What have I done wrong? Here are the details of my platform
 
 frame buffer driver: vesafb (passing vga=0x301 at boot time)
 image: 640x480 - 7 bit indexed color.
+
+I also try libfbx and result is the same.
 
 PS: Don't tell me to use default color palette. I need to display a nice 7
 bit image in console mode.

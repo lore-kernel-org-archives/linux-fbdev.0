@@ -1,20 +1,20 @@
 From: David Vrabel <dvrabel@arcom.com>
-Subject: [patch] Framebuffer kbuild -- add FB_SOFTWARE_CFB_OPS for building
- cfb*.o (1/2)
-Date: Mon, 14 Feb 2005 12:43:22 +0000
-Message-ID: <42109CEA.4050302@arcom.com>
+Subject: [patch] Framebuffer kbuild -- make drivers select FB_SOFTWARE_CFB_OPS
+ (2/2)
+Date: Mon, 14 Feb 2005 12:46:34 +0000
+Message-ID: <42109DAA.9080801@arcom.com>
 References: <421096C6.3030105@arcom.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D0fZa-0004qU-Cc
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Feb 2005 04:43:30 -0800
+	id 1D0fci-0004zN-RB
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Feb 2005 04:46:44 -0800
 Received: from webapps.arcom.com ([194.200.159.168])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1D0fZY-0000Yh-OH
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Feb 2005 04:43:30 -0800
+	id 1D0fce-0000u5-BI
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Feb 2005 04:46:44 -0800
 In-Reply-To: <421096C6.3030105@arcom.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -29,9 +29,9 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Add a FB_SOFTWARE_CFB_OPS option to the framebuffer Kconfig and
-Makefile.  This enables the building of the cfbfillrect, cfbcopyarea and
-cfbimageblt objects.
+Make all framebuffer drivers (where appropriate) select
+FB_SOFTWARE_CFB_OPS instead of specifying the objects in the Makefile
+directly.
 
 Signed-off-by: David Vrabel <dvrabel@arcom.com>
 
@@ -39,30 +39,468 @@ Index: linux-2.6-i386/drivers/video/Kconfig
 ===================================================================
 --- linux-2.6-i386.orig/drivers/video/Kconfig	2005-02-14
 11:02:39.000000000 +0000
-+++ linux-2.6-i386/drivers/video/Kconfig	2005-02-14 11:27:34.506113502 +0000
-@@ -38,6 +38,14 @@
- 	  (e.g. an accelerated X server) and that are not frame buffer
- 	  device-aware may cause unexpected results. If unsure, say N.
++++ linux-2.6-i386/drivers/video/Kconfig	2005-02-14 11:52:54.543501963 +0000
+@@ -70,6 +78,7 @@
+ config FB_CIRRUS
+ 	tristate "Cirrus Logic support"
+ 	depends on FB && (ZORRO || PCI)
++	select FB_SOFTWARE_CFB_OPS
+ 	---help---
+ 	  This enables support for Cirrus Logic GD542x/543x based boards on
+ 	  Amiga: SD64, Piccolo, Picasso II/II+, Picasso IV, or EGS Spectrum.
+@@ -85,6 +94,7 @@
+ config FB_PM2
+ 	tristate "Permedia2 support"
+ 	depends on FB && ((AMIGA && BROKEN) || PCI)
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This is the frame buffer device driver for the Permedia2 AGP frame
+ 	  buffer card from ASK, aka `Graphic Blaster Exxtreme'.  There is a
+@@ -100,6 +110,7 @@
+ config FB_ARMCLCD
+ 	tristate "ARM PrimeCell PL110 support"
+ 	depends on FB && ARM && ARM_AMBA
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This framebuffer device driver is for the ARM PrimeCell PL110
+ 	  Colour LCD controller.  ARM PrimeCells provide the building
+@@ -113,6 +124,7 @@
+ config FB_ACORN
+ 	bool "Acorn VIDC support"
+ 	depends on FB && ARM && ARCH_ACORN
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This is the frame buffer device driver for the Acorn VIDC graphics
+ 	  hardware found in Acorn RISC PCs and other ARM-based machines.  If
+@@ -121,10 +133,12 @@
+ config FB_CLPS711X
+ 	bool "CLPS711X LCD support"
+ 	depends on FB && ARM && ARCH_CLPS711X
++	select FB_SOFTWARE_CFB_OPS
 
-+config FB_SOFTWARE_CFB_OPS
-+	tristate
-+	depends on FB
-+	default n
-+	---help---
-+	  This enables functions for some generic software drawing operations
-for drivers
-+	  which don't provide their own (accelerated) ones.
-+
- config FB_MODE_HELPERS
-         bool "Enable Video Mode Handling Helpers"
-         depends on FB
+ config FB_SA1100
+ 	bool "SA-1100 LCD support"
+ 	depends on FB && ARM && ARCH_SA1100
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This is a framebuffer device for the SA-1100 LCD Controller.
+ 	  See <http://www.linux-fbdev.org/> for information on framebuffer
+@@ -136,6 +150,7 @@
+ config FB_CYBER2000
+ 	tristate "CyberPro 2000/2010/5000 support"
+ 	depends on FB && PCI && (BROKEN || !SPARC64)
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This enables support for the Integraphics CyberPro 20x0 and 5000
+ 	  VGA chips used in the Rebel.com Netwinder and other machines.
+@@ -146,11 +161,13 @@
+ 	bool
+ 	depends on FB && APOLLO
+ 	default y
++	select FB_SOFTWARE_CFB_OPS
+
+ config FB_Q40
+ 	bool
+ 	depends on FB && Q40
+ 	default y
++	select FB_SOFTWARE_CFB_OPS
+
+ config FB_AMIGA
+ 	tristate "Amiga native chipset support"
+@@ -191,6 +208,7 @@
+ config FB_CYBER
+ 	tristate "Amiga CyberVision 64 support"
+ 	depends on FB && ZORRO && BROKEN
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This enables support for the Cybervision 64 graphics card from
+ 	  Phase5. Please note that its use is not all that intuitive (i.e. if
+@@ -202,6 +220,7 @@
+ config FB_VIRGE
+ 	bool "Amiga CyberVision 64/3D support "
+ 	depends on FB && ZORRO && BROKEN
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This enables support for the Cybervision 64/3D graphics card from
+ 	  Phase5. Please note that its use is not all that intuitive (i.e. if
+@@ -221,6 +240,7 @@
+ config FB_FM2
+ 	bool "Amiga FrameMaster II/Rainbow II support"
+ 	depends on FB && ZORRO
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This is the frame buffer device driver for the Amiga FrameMaster
+ 	  card from BSC (exhibited 1992 but not shipped as a CBM product).
+@@ -235,6 +255,7 @@
+ config FB_OF
+ 	bool "Open Firmware frame buffer device support"
+ 	depends on FB && (PPC64 || PPC_OF)
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  Say Y if you want support with Open Firmware for your graphics
+ 	  board.
+@@ -242,6 +263,7 @@
+ config FB_CONTROL
+ 	bool "Apple \"control\" display support"
+ 	depends on FB && PPC_PMAC
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This driver supports a frame buffer for the graphics adapter in the
+ 	  Power Macintosh 7300 and others.
+@@ -249,6 +271,7 @@
+ config FB_PLATINUM
+ 	bool "Apple \"platinum\" display support"
+ 	depends on FB && PPC_PMAC
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This driver supports a frame buffer for the "platinum" graphics
+ 	  adapter in some Power Macintoshes.
+@@ -256,6 +279,7 @@
+ config FB_VALKYRIE
+ 	bool "Apple \"valkyrie\" display support"
+ 	depends on FB && (MAC || PPC_PMAC)
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This driver supports a frame buffer for the "valkyrie" graphics
+ 	  adapter in some Power Macintoshes.
+@@ -263,6 +287,7 @@
+ config FB_CT65550
+ 	bool "Chips 65550 display support"
+ 	depends on FB && PPC
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This is the frame buffer device driver for the Chips & Technologies
+ 	  65550 graphics chip in PowerBooks.
+@@ -270,10 +295,12 @@
+ config FB_ASILIANT
+ 	bool "Chips 69000 display support"
+ 	depends on FB && PCI
++	select FB_SOFTWARE_CFB_OPS
+
+ config FB_IMSTT
+ 	bool "IMS Twin Turbo display support"
+ 	depends on FB && PCI
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  The IMS Twin Turbo is a PCI-based frame buffer card bundled with
+ 	  many Macintosh and compatible computers.
+@@ -287,6 +314,7 @@
+ config FB_VGA16
+ 	tristate "VGA 16-color graphics support"
+ 	depends on FB && (X86 || PPC)
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This is the frame buffer device driver for VGA 16 color graphic
+ 	  cards. Say Y if you have such a card.
+@@ -297,6 +325,7 @@
+ config FB_STI
+ 	tristate "HP STI frame buffer device support"
+ 	depends on FB && PARISC
++	select FB_SOFTWARE_CFB_OPS
+ 	default y
+ 	---help---
+ 	  STI refers to the HP "Standard Text Interface" which is a set of
+@@ -314,16 +343,19 @@
+ config FB_MAC
+ 	bool "Generic Macintosh display support"
+ 	depends on FB && MAC
++	select FB_SOFTWARE_CFB_OPS
+
+ #      bool '  Apple DAFB display support' CONFIG_FB_DAFB
+ config FB_HP300
+ 	bool
+ 	depends on FB && HP300
++	select FB_SOFTWARE_CFB_OPS
+ 	default y
+
+ config FB_TGA
+ 	tristate "TGA framebuffer support"
+ 	depends on FB && ALPHA
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This is the frame buffer device driver for generic TGA graphic
+ 	  cards. Say Y if you have one of those.
+@@ -331,6 +363,7 @@
+ config FB_VESA
+ 	bool "VESA VGA graphics support"
+ 	depends on FB && (X86 || X86_64)
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This is the frame buffer device driver for generic VESA 2.0
+ 	  compliant graphic cards. The older VESA 1.2 cards are not supported.
+@@ -345,6 +378,7 @@
+ config FB_HGA
+ 	tristate "Hercules mono graphics support"
+ 	depends on FB && X86
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  Say Y here if you have a Hercules mono graphics card.
+
+@@ -370,12 +404,14 @@
+ config FB_SGIVW
+ 	tristate "SGI Visual Workstation framebuffer support"
+ 	depends on FB && X86_VISWS
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  SGI Visual Workstation support for framebuffer graphics.
+
+ config FB_GBE
+ 	bool "SGI Graphics Backend frame buffer support"
+ 	depends on FB && (SGI_IP32 || X86_VISWS)
++	select FB_SOFTWARE_CFB_OPS
+  	help
+ 	  This is the frame buffer device driver for SGI Graphics Backend.
+ 	  This chip is used in SGI O2 and Visual Workstation 320/540.
+@@ -400,6 +436,7 @@
+ config FB_BW2
+ 	bool "BWtwo support"
+ 	depends on FB && ((SPARC32 || SPARC64) && FB_SBUS || (SUN3 || SUN3X)
+&& FB_SUN3)
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This is the frame buffer device driver for the BWtwo frame buffer.
+
+@@ -412,6 +449,7 @@
+ config FB_CG6
+ 	bool "CGsix (GX,TurboGX) support"
+ 	depends on FB && ((SPARC32 || SPARC64) && FB_SBUS || (SUN3 || SUN3X)
+&& FB_SUN3)
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This is the frame buffer device driver for the CGsix (GX, TurboGX)
+ 	  frame buffer.
+@@ -419,6 +457,7 @@
+ config FB_PVR2
+ 	tristate "NEC PowerVR 2 display support"
+ 	depends on FB && SH_DREAMCAST
++	select FB_SOFTWARE_CFB_OPS
+ 	---help---
+ 	  Say Y here if you have a PowerVR 2 card in your box.  If you plan to
+ 	  run linux on your Dreamcast, you will have to say Y here.
+@@ -437,6 +476,7 @@
+ config FB_EPSON1355
+ 	bool "Epson 1355 framebuffer support"
+ 	depends on FB && (SUPERH || ARCH_CEIVA)
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  Build in support for the SED1355 Epson Research Embedded RAMDAC
+ 	  LCD/CRT Controller (since redesignated as the S1D13505) as a
+@@ -449,6 +489,7 @@
+ 	select I2C_ALGOBIT if FB_RIVA_I2C
+ 	select I2C if FB_RIVA_I2C
+ 	select FB_MODE_HELPERS
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This driver supports graphics boards with the nVidia Riva/Geforce
+ 	  chips.
+@@ -484,6 +525,7 @@
+ 	select AGP
+ 	select AGP_INTEL
+ 	select FB_MODE_HELPERS
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This driver supports the on-board graphics built in to the Intel 810
+           and 815 chipsets.  Say Y if you have and plan to use such a
+board.
+@@ -541,6 +583,7 @@
+ config FB_MATROX
+ 	tristate "Matrox acceleration"
+ 	depends on FB && PCI
++	select FB_SOFTWARE_CFB_OPS
+ 	---help---
+ 	  Say Y here if you have a Matrox Millennium, Matrox Millennium II,
+ 	  Matrox Mystique, Matrox Mystique 220, Matrox Productiva G100, Matrox
+@@ -696,6 +739,7 @@
+ config FB_RADEON_OLD
+ 	tristate "ATI Radeon display support (Old driver)"
+ 	depends on FB && PCI
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  Choose this option if you want to use an ATI Radeon graphics card as
+ 	  a framebuffer device.  There are both PCI and AGP versions.  You
+@@ -743,6 +787,7 @@
+ config FB_ATY128
+ 	tristate "ATI Rage128 display support"
+ 	depends on FB && PCI
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This driver supports graphics boards with the ATI Rage128 chips.
+ 	  Say Y if you have such a graphics board and read
+@@ -754,6 +799,7 @@
+ config FB_ATY
+ 	tristate "ATI Mach64 display support" if PCI || ATARI
+ 	depends on FB
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This driver supports graphics boards with the ATI Mach64 chips.
+ 	  Say Y if you have such a graphics board.
+@@ -801,6 +847,7 @@
+ 	select I2C_ALGOBIT if FB_SAVAGE_I2C
+ 	select I2C if FB_SAVAGE_I2C
+ 	select FB_MODE_HELPERS
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This driver supports notebooks and computers with S3 Savage PCI/AGP
+ 	  chips.
+@@ -834,6 +881,7 @@
+ config FB_SIS
+ 	tristate "SiS acceleration"
+ 	depends on FB && PCI
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This is the frame buffer device driver for the SiS 300, 315 and
+ 	  330 series VGA chipsets. Specs available at http://www.sis.com
+@@ -858,6 +906,7 @@
+ 	tristate "NeoMagic display support"
+ 	depends on FB && PCI
+ 	select FB_MODE_HELPERS
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This driver supports notebooks with NeoMagic PCI chips.
+ 	  Say Y if you have such a graphics card.
+@@ -868,6 +917,7 @@
+ config FB_KYRO
+ 	tristate "IMG Kyro support"
+ 	depends on FB && PCI
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  Say Y here if you have a STG4000 / Kyro / PowerVR 3 based
+ 	  graphics board.
+@@ -878,6 +928,7 @@
+ config FB_3DFX
+ 	tristate "3Dfx Banshee/Voodoo3 display support"
+ 	depends on FB && PCI
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This driver supports graphics boards with the 3Dfx Banshee/Voodoo3
+ 	  chips. Say Y if you have such a graphics board.
+@@ -911,6 +962,7 @@
+ config FB_TRIDENT
+ 	tristate "Trident support"
+ 	depends on FB && PCI
++	select FB_SOFTWARE_CFB_OPS
+ 	---help---
+ 	  This driver is supposed to support graphics boards with the
+ 	  Trident CyberXXXX/Image/CyberBlade chips mostly found in laptops
+@@ -958,6 +1010,7 @@
+ config FB_FFB
+ 	bool "Creator/Creator3D/Elite3D support"
+ 	depends on FB_SBUS && SPARC64
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This is the frame buffer device driver for the Creator, Creator3D,
+ 	  and Elite3D graphics boards.
+@@ -965,6 +1018,7 @@
+ config FB_TCX
+ 	bool "TCX (SS4/SS5 only) support"
+ 	depends on FB_SBUS
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This is the frame buffer device driver for the TCX 24/8bit frame
+ 	  buffer.
+@@ -972,6 +1026,7 @@
+ config FB_CG14
+ 	bool "CGfourteen (SX) support"
+ 	depends on FB_SBUS
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This is the frame buffer device driver for the CGfourteen frame
+ 	  buffer on Desktop SPARCsystems with the SX graphics option.
+@@ -979,6 +1034,7 @@
+ config FB_P9100
+ 	bool "P9100 (Sparcbook 3 only) support"
+ 	depends on FB_SBUS
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This is the frame buffer device driver for the P9100 card
+ 	  supported on Sparcbook 3 machines.
+@@ -986,6 +1042,7 @@
+ config FB_LEO
+ 	bool "Leo (ZX) support"
+ 	depends on FB_SBUS
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This is the frame buffer device driver for the SBUS-based Sun ZX
+ 	  (leo) frame buffer cards.
+@@ -997,6 +1054,7 @@
+ config FB_IGA
+ 	bool "IGA 168x display support"
+ 	depends on SPARC32 && FB_PCI
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This is the framebuffer device for the INTERGRAPHICS 1680 and
+ 	  successor frame buffer cards.
+@@ -1004,6 +1062,7 @@
+ config FB_HIT
+ 	tristate "HD64461 Frame Buffer support"
+ 	depends on FB && HD64461
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  This is the frame buffer device driver for the Hitachi HD64461 LCD
+ 	  frame buffer card.
+@@ -1011,6 +1070,7 @@
+ config FB_PMAG_BA
+ 	bool "PMAG-BA TURBOchannel framebuffer support"
+ 	depends on FB && DECSTATION && TC
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  Say Y here to directly support the on-board PMAG-BA framebuffer in
+ 	  the 5000/1xx versions of the DECstation.  There is a page dedicated
+@@ -1019,6 +1079,7 @@
+ config FB_PMAGB_B
+ 	bool "PMAGB-B TURBOchannel framebuffer spport"
+ 	depends on FB && DECSTATION && TC
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  Say Y here to directly support the on-board PMAGB-B framebuffer in
+ 	  the 5000/1xx versions of the DECstation.  There is a page dedicated
+@@ -1027,6 +1088,7 @@
+ config FB_MAXINE
+ 	bool "Maxine (Personal DECstation) onboard framebuffer spport"
+ 	depends on FB && DECSTATION && TC
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  Say Y here to directly support the on-board framebuffer in the
+ 	  Maxine (5000/20, /25, /33) version of the DECstation.  There is a
+@@ -1035,6 +1097,7 @@
+ config FB_TX3912
+ 	bool "TMPTX3912/PR31700 frame buffer support"
+ 	depends on FB && NINO
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  The TX3912 is a Toshiba RISC processor based on the MIPS 3900 core
+ 	  see <http://www.toshiba.com/taec/components/Generic/risc/tx3912.htm>.
+@@ -1044,6 +1107,7 @@
+ config FB_68328
+ 	bool "Motorola 68328 native frame buffer support"
+ 	depends on (M68328 || M68EZ328 || M68VZ328)
++	select FB_SOFTWARE_CFB_OPS
+ 	help
+ 	  Say Y here if you want to support the built-in frame buffer of
+ 	  the Motorola 68328 CPU family.
+@@ -1051,6 +1115,7 @@
+ config FB_PXA
+ 	tristate "PXA LCD framebuffer support"
+ 	depends on FB && ARCH_PXA
++	select FB_SOFTWARE_CFB_OPS
+ 	---help---
+ 	  Frame buffer driver for the built-in LCD controller in the Intel
+ 	  PXA2x0 processor.
+@@ -1082,6 +1147,7 @@
+ config FB_VIRTUAL
+ 	tristate "Virtual Frame Buffer support (ONLY FOR TESTING!)"
+ 	depends on FB
++	select FB_SOFTWARE_CFB_OPS
+ 	---help---
+ 	  This is a `virtual' frame buffer device. It operates on a chunk of
+ 	  unswappable kernel memory instead of on the memory of a graphics
 Index: linux-2.6-i386/drivers/video/Makefile
 ===================================================================
 --- linux-2.6-i386.orig/drivers/video/Makefile	2005-02-14
 11:02:39.000000000 +0000
-+++ linux-2.6-i386/drivers/video/Makefile	2005-02-14 11:28:49.062987325
++++ linux-2.6-i386/drivers/video/Makefile	2005-02-14 11:55:41.324139249
 +0000
-@@ -13,6 +13,8 @@
+@@ -13,93 +13,78 @@
  obj-$(CONFIG_PPC)                 += macmodes.o
  endif
 
@@ -72,6 +510,201 @@ cfbimgblt.o
  # Hardware specific drivers go first
  obj-$(CONFIG_FB_RETINAZ3)         += retz3fb.o
  obj-$(CONFIG_FB_AMIGA)            += amifb.o c2p.o
+-obj-$(CONFIG_FB_CLPS711X)         += clps711xfb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_CLPS711X)         += clps711xfb.o
+ obj-$(CONFIG_FB_CYBER)            += cyberfb.o
+-obj-$(CONFIG_FB_CYBER2000)        += cyber2000fb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_PM2)              += pm2fb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_CYBER2000)        += cyber2000fb.o
++obj-$(CONFIG_FB_PM2)              += pm2fb.o
+ obj-$(CONFIG_FB_PM3)		  += pm3fb.o
+-
+-obj-$(CONFIG_FB_MATROX)		  += matrox/ cfbfillrect.o cfbcopyarea.o
+cfbimgblt.o
+-obj-$(CONFIG_FB_RIVA)		  += riva/ cfbimgblt.o cfbfillrect.o \
+-				     cfbcopyarea.o vgastate.o
+-obj-$(CONFIG_FB_ATY)		  += aty/ cfbcopyarea.o cfbfillrect.o cfbimgblt.o
+-obj-$(CONFIG_FB_ATY128)		  += aty/ cfbcopyarea.o cfbfillrect.o cfbimgblt.o
+-obj-$(CONFIG_FB_RADEON)		  += aty/ cfbcopyarea.o cfbfillrect.o cfbimgblt.o
+-obj-$(CONFIG_FB_SIS)		  += sis/ cfbcopyarea.o cfbfillrect.o cfbimgblt.o
+-obj-$(CONFIG_FB_KYRO)             += kyro/ cfbfillrect.o cfbcopyarea.o
+cfbimgblt.o
+-obj-$(CONFIG_FB_SAVAGE)		  += savage/ cfbfillrect.o cfbcopyarea.o \
+-				     cfbimgblt.o
+-obj-$(CONFIG_FB_I810)             += cfbcopyarea.o cfbfillrect.o
+cfbimgblt.o \
+-				     vgastate.o
+-obj-$(CONFIG_FB_INTEL)            += cfbfillrect.o cfbcopyarea.o \
+-	                             cfbimgblt.o
+-
+-obj-$(CONFIG_FB_RADEON_OLD)	  += radeonfb.o cfbfillrect.o cfbcopyarea.o
+cfbimgblt.o
+-obj-$(CONFIG_FB_NEOMAGIC)         += neofb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o vgastate.o
++obj-$(CONFIG_FB_MATROX)		  += matrox/
++obj-$(CONFIG_FB_RIVA)		  += riva/ vgastate.o
++obj-$(CONFIG_FB_ATY)		  += aty/
++obj-$(CONFIG_FB_ATY128)		  += aty/
++obj-$(CONFIG_FB_RADEON)		  += aty/
++obj-$(CONFIG_FB_SIS)		  += sis/
++obj-$(CONFIG_FB_KYRO)             += kyro/
++obj-$(CONFIG_FB_SAVAGE)		  += savage/
++obj-$(CONFIG_FB_I810)             += vgastate.o
++obj-$(CONFIG_FB_RADEON_OLD)	  += radeonfb.o
++obj-$(CONFIG_FB_NEOMAGIC)         += neofb.o vgastate.o
+ obj-$(CONFIG_FB_VIRGE)            += virgefb.o
+-obj-$(CONFIG_FB_3DFX)             += tdfxfb.o cfbimgblt.o
+-ifneq ($(CONFIG_FB_3DFX_ACCEL),y)
+-obj-$(CONFIG_FB_3DFX)             += cfbfillrect.o cfbcopyarea.o
+-endif
+-obj-$(CONFIG_FB_CONTROL)          += controlfb.o macmodes.o
+cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_PLATINUM)         += platinumfb.o macmodes.o
+cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_VALKYRIE)         += valkyriefb.o macmodes.o
+cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_CT65550)          += chipsfb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_IMSTT)            += imsttfb.o cfbimgblt.o
++obj-$(CONFIG_FB_3DFX)             += tdfxfb.o
++obj-$(CONFIG_FB_CONTROL)          += controlfb.o macmodes.o
++obj-$(CONFIG_FB_PLATINUM)         += platinumfb.o macmodes.o
++obj-$(CONFIG_FB_VALKYRIE)         += valkyriefb.o macmodes.o
++obj-$(CONFIG_FB_CT65550)          += chipsfb.o
++obj-$(CONFIG_FB_IMSTT)            += imsttfb.o
+ obj-$(CONFIG_FB_S3TRIO)           += S3triofb.o
+-obj-$(CONFIG_FB_FM2)              += fm2fb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_TRIDENT)	  += tridentfb.o cfbfillrect.o cfbimgblt.o
+cfbcopyarea.o
+-obj-$(CONFIG_FB_STI)              += stifb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_FFB)              += ffb.o sbuslib.o cfbimgblt.o
+cfbcopyarea.o
+-obj-$(CONFIG_FB_CG6)              += cg6.o sbuslib.o cfbimgblt.o
+cfbcopyarea.o
+-obj-$(CONFIG_FB_CG3)              += cg3.o sbuslib.o cfbimgblt.o
+cfbcopyarea.o \
+-				     cfbfillrect.o
+-obj-$(CONFIG_FB_BW2)              += bw2.o sbuslib.o cfbimgblt.o
+cfbcopyarea.o \
+-				     cfbfillrect.o
+-obj-$(CONFIG_FB_CG14)             += cg14.o sbuslib.o cfbimgblt.o
+cfbcopyarea.o \
+-				     cfbfillrect.o
+-obj-$(CONFIG_FB_P9100)            += p9100.o sbuslib.o cfbimgblt.o
+cfbcopyarea.o \
+-				     cfbfillrect.o
+-obj-$(CONFIG_FB_TCX)              += tcx.o sbuslib.o cfbimgblt.o
+cfbcopyarea.o \
+-				     cfbfillrect.o
+-obj-$(CONFIG_FB_LEO)              += leo.o sbuslib.o cfbimgblt.o
+cfbcopyarea.o \
+-				     cfbfillrect.o
+-obj-$(CONFIG_FB_SGIVW)            += sgivwfb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_ACORN)            += acornfb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_FM2)              += fm2fb.o
++obj-$(CONFIG_FB_TRIDENT)	  += tridentfb.o
++obj-$(CONFIG_FB_STI)              += stifb.o
++obj-$(CONFIG_FB_FFB)              += ffb.o sbuslib.o
++obj-$(CONFIG_FB_CG6)              += cg6.o sbuslib.o
++obj-$(CONFIG_FB_CG3)              += cg3.o sbuslib.o
++obj-$(CONFIG_FB_BW2)              += bw2.o sbuslib.o
++obj-$(CONFIG_FB_CG14)             += cg14.o sbuslib.o
++obj-$(CONFIG_FB_P9100)            += p9100.o sbuslib.o
++obj-$(CONFIG_FB_TCX)              += tcx.o sbuslib.o
++obj-$(CONFIG_FB_LEO)              += leo.o sbuslib.o
++obj-$(CONFIG_FB_SGIVW)            += sgivwfb.o
++obj-$(CONFIG_FB_ACORN)            += acornfb.o
+ obj-$(CONFIG_FB_ATARI)            += atafb.o
+-obj-$(CONFIG_FB_MAC)              += macfb.o macmodes.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_HGA)              += hgafb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_IGA)              += igafb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_APOLLO)           += dnfb.o cfbfillrect.o cfbimgblt.o
+-obj-$(CONFIG_FB_Q40)              += q40fb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_TGA)              += tgafb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_HP300)            += hpfb.o cfbfillrect.o cfbimgblt.o
+-obj-$(CONFIG_FB_G364)             += g364fb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_SA1100)           += sa1100fb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_MAC)              += macfb.o macmodes.o
++obj-$(CONFIG_FB_HGA)              += hgafb.o
++obj-$(CONFIG_FB_IGA)              += igafb.o
++obj-$(CONFIG_FB_APOLLO)           += dnfb.o
++obj-$(CONFIG_FB_Q40)              += q40fb.o
++obj-$(CONFIG_FB_TGA)              += tgafb.o
++obj-$(CONFIG_FB_HP300)            += hpfb.o
++obj-$(CONFIG_FB_G364)             += g364fb.o
++obj-$(CONFIG_FB_SA1100)           += sa1100fb.o
+ obj-$(CONFIG_FB_SUN3)             += sun3fb.o
+-obj-$(CONFIG_FB_HIT)              += hitfb.o cfbfillrect.o cfbimgblt.o
+-obj-$(CONFIG_FB_TX3912)           += tx3912fb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_EPSON1355)	  += epson1355fb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_PVR2)             += pvr2fb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_PMAG_BA)          += pmag-ba-fb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_PMAGB_B)          += pmagb-b-fb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_MAXINE)           += maxinefb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_VOODOO1)          += sstfb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_ARMCLCD)	  += amba-clcd.o cfbfillrect.o cfbcopyarea.o
+cfbimgblt.o
+-obj-$(CONFIG_FB_68328)            += 68328fb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_GBE)              += gbefb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_CIRRUS)		  += cirrusfb.o cfbfillrect.o cfbimgblt.o
+cfbcopyarea.o
+-obj-$(CONFIG_FB_ASILIANT)	  += asiliantfb.o cfbfillrect.o cfbcopyarea.o
+cfbimgblt.o
+-obj-$(CONFIG_FB_PXA)		  += pxafb.o cfbimgblt.o cfbcopyarea.o cfbfillrect.o
++obj-$(CONFIG_FB_HIT)              += hitfb.o
++obj-$(CONFIG_FB_TX3912)           += tx3912fb.o
++obj-$(CONFIG_FB_EPSON1355)	  += epson1355fb.o
++obj-$(CONFIG_FB_PVR2)             += pvr2fb.o
++obj-$(CONFIG_FB_PMAG_BA)          += pmag-ba-fb.o
++obj-$(CONFIG_FB_PMAGB_B)          += pmagb-b-fb.o
++obj-$(CONFIG_FB_MAXINE)           += maxinefb.o
++obj-$(CONFIG_FB_VOODOO1)          += sstfb.o
++obj-$(CONFIG_FB_ARMCLCD)	  += amba-clcd.o
++obj-$(CONFIG_FB_68328)            += 68328fb.o
++obj-$(CONFIG_FB_GBE)              += gbefb.o
++obj-$(CONFIG_FB_CIRRUS)		  += cirrusfb.o
++obj-$(CONFIG_FB_ASILIANT)	  += asiliantfb.o
++obj-$(CONFIG_FB_PXA)		  += pxafb.o
+
+ # Platform or fallback drivers go here
+-obj-$(CONFIG_FB_VESA)             += vesafb.o cfbfillrect.o
+cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_VGA16)            += vga16fb.o cfbfillrect.o
+cfbcopyarea.o \
+-	                             cfbimgblt.o vgastate.o
+-obj-$(CONFIG_FB_OF)               += offb.o cfbfillrect.o cfbimgblt.o
+cfbcopyarea.o
++obj-$(CONFIG_FB_VESA)             += vesafb.o
++obj-$(CONFIG_FB_VGA16)            += vga16fb.o vgastate.o
++obj-$(CONFIG_FB_OF)               += offb.o
+
+ # the test framebuffer is last
+-obj-$(CONFIG_FB_VIRTUAL)          += vfb.o cfbfillrect.o cfbcopyarea.o
+cfbimgblt.o
++obj-$(CONFIG_FB_VIRTUAL)          += vfb.o
 
 
 -------------------------------------------------------

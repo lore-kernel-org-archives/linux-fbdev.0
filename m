@@ -1,22 +1,16 @@
-From: Antonino Daplas <adaplas@pol.net>
+From: James Simmons <jsimmons@infradead.org>
 Subject: Re: request_mem_region problem ...
-Date: 02 Nov 2002 06:22:49 +0800
+Date: Fri, 1 Nov 2002 15:23:29 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1036189404.621.7.camel@daplas>
-References: <20021030130016.GA1573@iliana> <1036024416.644.23.camel@daplas>
-	<20021031081007.GB617@iliana> <1036062270.638.25.camel@daplas>
-	<20021101105242.GA702@iliana> <1036179467.572.42.camel@daplas>
-	<20021101195207.GA931@iliana> <1036181217.572.5.camel@daplas>
-	<20021101202246.GA2026@iliana> <1036182603.622.8.camel@daplas> 
-	<20021101212353.GA2163@iliana>
+Message-ID: <Pine.LNX.4.33.0211011522190.11313-100000@maxwell.earthlink.net>
+References: <20021101184307.GA356@iliana>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [203.167.79.9] (helo=willow.compass.com.ph)
+Received: from avocet.mail.pas.earthlink.net ([207.217.120.50])
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 187kDF-000704-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 01 Nov 2002 14:24:21 -0800
-In-Reply-To: <20021101212353.GA2163@iliana>
+	id 187kJ3-0000cr-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 01 Nov 2002 14:30:21 -0800
+In-Reply-To: <20021101184307.GA356@iliana>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -26,48 +20,29 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Sven Luther <luther@dpt-info.u-strasbg.fr>
-Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Antonino Daplas <adaplas@pol.net>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sat, 2002-11-02 at 05:23, Sven Luther wrote:
-> On Sat, Nov 02, 2002 at 04:29:32AM +0800, Antonino Daplas wrote:
-> > It's an irritating bug in the new kernel configurator.  Try make -k if
-> > it complains about the QT libs.
-> 
-> Ok, it worked some, but debian's kernel-package command did not like it,
-> o well, i will have to build it by hand until it is fixed.
-> 
-> BTW, in the old pm3fb driver (which i did not write) a pm3fb_info
-> structure contained the driver local stuff. I suppose, from reading
-> skeletonfb.c, that it is now in the xxx_par (that is pm3fb_par) that
-> private driver info will be found ?
-> 
-Yes, you can stuff all your driver private data in info->par. (fb_info
-can be stuffed in pci_device during pci_probe, I think).
-  
-> Also, since pm3fb_par is placed in include/video/pm3.h, this data will
-> be shared with other entities, like the drm module for example.
-> 
-Yes, but it's optional.
 
-> ...
-> 
-> Mmm, it does not compile :((((
-> 
-> drivers/video/console/vgacon.c: In function `vgacon_adjust_height':
-> drivers/video/console/vgacon.c:890: `i' undeclared (first use in this function)
-> drivers/video/console/vgacon.c:890: (Each undeclared identifier is reported only once
-> drivers/video/console/vgacon.c:890: for each function it appears in.)
-> make[3]: *** [drivers/video/console/vgacon.o] Erreur 1
-> 
-> O, well, i think i will wait another week or so that the new stuff has
-> stabilized a bit more before continuing working on this.
-> 
-Just declare 'int i' and it should work.
+> > > You're correct, the neofb line in the Makefile is for static building
+> > > only.  The cfb_xxx will not compile as modules, yet.  If your driver has
+> > > its own Makefile, just add cfb_xxx.o objects to directly link to them.
+> >
+> > In the next set of changes the cfb* files should be able to be built as
+> > modules!!!!
+>
+> The ones in the patches you failed to send or the one thereafter ?
 
-Tony
+None of them. Still in local tree. I will be sending up stuff in the next
+few minutes.
 
+> BTW, do you think the latest set of changes will be in 2.4.46 or
+> something such ?
+
+I hope so. I do know they are going in. When is the question. I don't mind
+the deal since that means I can fix more things.
 
 
 

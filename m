@@ -1,20 +1,29 @@
-From: John Zielinski <grim@undead.cc>
-Subject: Console takeover screen corruption issue
-Date: Thu, 06 May 2004 22:56:47 -0400
+From: Lucas Correia Villa Real <lucasvr@gobolinux.org>
+Subject: Re: Re: Fbdev magics
+Date: Fri, 7 May 2004 00:26:54 -0300
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <409AFAEF.9060907@undead.cc>
+Message-ID: <200405070026.54372.lucasvr@gobolinux.org>
+References: <200405050027.58630.lucasvr@terra.com.br> <Pine.GSO.4.58.0405061112110.12096@waterleaf.sonytel.be>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="------------020404080708060005050306"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BLvXk-00041u-Gv
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 06 May 2004 19:56:56 -0700
-Received: from mail.undead.cc ([216.126.84.18])
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1BLvXk-0002wJ-7h
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 06 May 2004 19:56:56 -0700
+	id 1BLw0M-0001er-9C
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 06 May 2004 20:26:30 -0700
+Received: from chiapa.terra.com.br ([200.154.55.224])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BLw0L-0004j5-Gm
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 06 May 2004 20:26:29 -0700
+Received: from tucuman.terra.com.br (tucuman.terra.com.br [200.154.55.139])
+	by chiapa.terra.com.br (Postfix) with ESMTP id 4D74BEC3D1
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri,  7 May 2004 00:26:25 -0300 (BRT)
+Received: from ummagumma.ozzmosis.net (200-203-051-117.nhoce7002.dsl.brasiltelecom.net.br [200.203.51.117])
+	(authenticated user lucasvr)
+	by tucuman.terra.com.br (Postfix) with ESMTP id 08EFD3C016
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri,  7 May 2004 00:26:25 -0300 (BRT)
+In-Reply-To: <Pine.GSO.4.58.0405061112110.12096@waterleaf.sonytel.be>
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -24,176 +33,71 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-This is a multi-part message in MIME format.
---------------020404080708060005050306
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Thursday 06 May 2004 06:17, Geert Uytterhoeven wrote:
+...
+> So you cannot access the frame buffer memory from the CPU, except through
+> sending commands to the LCD controller, right?
 
-I've been playing around with trying to find a better solution to the 
-screen corruption that I was getting when the fbcon driver takes over 
-the console.  I came up with the following modifications which are a 
-better solution for the following reasons: 
+Right, but today I discovered that the display controller allows to have DMA 
+access for every "page" (8 lines on the display). Cool! ;-)
 
-1)  Only the vt take_over_console code needs to be changed and not all 
-the console drivers and fb drivers.
-2)  It also keeps the console drivers from accessing freed resources 
-when printk output happens between the calls to con_deinit and visual_init.
+> > ...
+> > - how is the "refresh" done by fbdev? I don't want to keep sending the
+> > same data to the display if there isn't any update to be done.
+>
+> If the frame buffer memory is accessible directly by the CPU, it will be
+> updated automatically. If not, things get more difficult:
+>   - For text console output, 2.4.x will do direct accesses to the frame
+> buffer, which won't work.
+>     In 2.6.x, fbcon will call the fb_{fillrect,copyarea,imageblit}()
+> routines of your fbdev driver, so you can handle that easily
+>   - For graphics from user space, things are more complex, since the
+>     application cannot mmap() your frame buffer memory. Either you use a
+> shadow frame buffer that updates the hardware periodically, or teach your
+> application to talk to the LCD controller directly.
 
-It's the printk's between the call to save_screen and visual_init which 
-cause vgacon to mess up it's saved screen buffer.  Putting the vt in 
-KD_GRAPHICS mode causes all physical output to be deferred until the new 
-console has taken over.
+Given that DMA facility, I started to write the code with a frame buffer of 
+the same size of the screen and installed an interrupt handler for the DMA; 
+when a transfer of a page is done, it interrupts and I can switch this page 
+and select another "page" to be automatically updated to the display.
 
-Comments?
+It won't update the entire display at a single time, but it will probably make 
+the magic. At least I got the impression that this could be a good logic, 
+I'll do some tests tomorrow and will tell if everything worked fine then :-)
 
-John
 
+> > - also related to this refresh: I haven't seen any interrupt being
+> > handled by many fbdev drivers. Is this ok? How will fbdev knows when the
+> > card is trying to communicate with the CPU?
+>
+> Most drivers don't use interrupts yet, because until recently (speaking
+> about 2.6), you could not use them there.
 
---------------020404080708060005050306
-Content-Type: text/plain;
- name="take_over_console_fix"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="take_over_console_fix"
+I've seen some LCD display drivers for embedded devices that handled it 
+directly with request_irq() on 2.4. As I could see from the bottom layers of 
+fbdev, an interrupt handler in a driver doesn't seem to hurt anyone there.. 
+or am I wrong?
 
-diff +requires kdsetmode_kdgetmode
-diff -urNX dontdiff linux-2.6.5/drivers/char/vt.c linux/drivers/char/vt.c
---- linux-2.6.5/drivers/char/vt.c	2004-04-03 22:38:04.000000000 -0500
-+++ linux/drivers/char/vt.c	2004-05-02 20:48:06.000000000 -0400
-@@ -2657,11 +2657,23 @@
- {
- 	int i, j = -1;
- 	const char *desc;
-+	unsigned char saved_kdmode[MAX_NR_CONSOLES]; 
- 
- 	acquire_console_sem();
- 
-+	for (i = first; i <= last; i++) {
-+    		if (vc_cons[i].d && vc_cons[i].d->vc_sw && CON_IS_VISIBLE(vc_cons[i].d)) {
-+			saved_kdmode[i] = vt_kdgetmode(i);
-+			vt_kdsetmode(i, KD_GRAPHICS);
-+		}
-+	}
-+
- 	desc = csw->con_startup();
- 	if (!desc) {
-+		for (i = first; i <= last; i++) {
-+    			if (vc_cons[i].d && vc_cons[i].d->vc_sw && CON_IS_VISIBLE(vc_cons[i].d))
-+				vt_kdsetmode(i, saved_kdmode[i]);
-+		}
- 		release_console_sem();
- 		return;
- 	}
-@@ -2670,7 +2682,6 @@
- 
- 	for (i = first; i <= last; i++) {
- 		int old_was_color;
--		int currcons = i;
- 
- 		con_driver_map[i] = csw;
- 
-@@ -2678,8 +2689,6 @@
- 			continue;
- 
- 		j = i;
--		if (IS_VISIBLE)
--			save_screen(i);
- 		old_was_color = vc_cons[i].d->vc_can_do_color;
- 		vc_cons[i].d->vc_sw->con_deinit(vc_cons[i].d);
- 		visual_init(i, 0);
-@@ -2692,8 +2701,8 @@
- 		if (old_was_color != vc_cons[i].d->vc_can_do_color)
- 			clear_buffer_attributes(i);
- 
--		if (IS_VISIBLE)
--			update_screen(i);
-+		if (CON_IS_VISIBLE(vc_cons[i].d)) 
-+			vt_kdsetmode(i, saved_kdmode[i]);
- 	}
- 	printk("Console: switching ");
- 	if (!deflt)
+> > - given that I can be told when the user is going to write some data to
+> > the fbdev (should I implement my own fb_read and fb_write operations?),
+> > is there an automatic way to get only the pixels that he's modifying?
+> > This would save a lot of unnecessary transfers to the display as well.
+>
+> You should implement your own fb_{read,write}() if the CPU cannot access
+> the frame buffer memory directly.
+>
+> > Just forgot to tell that I'm running Linux 2.4.20 for ARM.
+>
+> 2.6 would make life simpler for you :-)
 
---------------020404080708060005050306
-Content-Type: text/plain;
- name="kdsetmode_kdgetmode"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="kdsetmode_kdgetmode"
+Sure, I'll give a look for 2.6 fbdev ASAP, it already seems to have a better 
+interface, just by looking into the headers.
 
-diff -urNX dontdiff linux-2.6.5/drivers/char/vt_ioctl.c linux/drivers/char/vt_ioctl.c
---- linux-2.6.5/drivers/char/vt_ioctl.c	2004-04-03 22:37:37.000000000 -0500
-+++ linux/drivers/char/vt_ioctl.c	2004-05-02 20:45:16.000000000 -0400
-@@ -357,6 +357,27 @@
- 	return 0;
- }
- 
-+void vt_kdsetmode(unsigned int console, unsigned char mode)
-+{
-+	if (vt_cons[console]->vc_mode == (unsigned char) mode)
-+		return;
-+	vt_cons[console]->vc_mode = (unsigned char) mode;
-+	if (console != fg_console)
-+		return;
-+	/*
-+	 * explicitly blank/unblank the screen if switching modes
-+	 */
-+	if (mode == KD_TEXT)
-+		do_unblank_screen(1);
-+	else
-+		do_blank_screen(1);
-+}
-+
-+unsigned char vt_kdgetmode(unsigned int console)
-+{
-+    return vt_cons[console]->vc_mode;    
-+}
-+
- /*
-  * We handle the console-specific ioctl's here.  We allow the
-  * capability to modify any console, not just the fg_console. 
-@@ -487,24 +508,13 @@
- 		default:
- 			return -EINVAL;
- 		}
--		if (vt_cons[console]->vc_mode == (unsigned char) arg)
--			return 0;
--		vt_cons[console]->vc_mode = (unsigned char) arg;
--		if (console != fg_console)
--			return 0;
--		/*
--		 * explicitly blank/unblank the screen if switching modes
--		 */
- 		acquire_console_sem();
--		if (arg == KD_TEXT)
--			do_unblank_screen(1);
--		else
--			do_blank_screen(1);
-+		vt_kdsetmode(console, (unsigned char)arg);
- 		release_console_sem();
- 		return 0;
- 
- 	case KDGETMODE:
--		ucval = vt_cons[console]->vc_mode;
-+		ucval = vt_kdgetmode(console);
- 		goto setint;
- 
- 	case KDMAPDISP:
-diff -urNX dontdiff linux-2.6.5/include/linux/vt_kern.h linux/include/linux/vt_kern.h
---- linux-2.6.5/include/linux/vt_kern.h	2004-04-03 22:38:12.000000000 -0500
-+++ linux/include/linux/vt_kern.h	2004-05-02 20:42:42.000000000 -0400
-@@ -83,5 +83,7 @@
- int vt_waitactive(int vt);
- void change_console(unsigned int);
- void reset_vc(unsigned int new_console);
-+void vt_kdsetmode(unsigned int console, unsigned char mode);
-+unsigned char vt_kdgetmode(unsigned int console);
- 
- #endif /* _VT_KERN_H */
-
---------------020404080708060005050306--
-
+Cheers, and thanks for the reply,
+Lucas
 
 
 -------------------------------------------------------

@@ -1,20 +1,20 @@
 From: Kronos <kronos@kronoz.cjb.net>
-Subject: [PATCH] aty: New framebuffer_alloc API and class_dev changes
-Date: Mon, 15 Sep 2003 21:36:49 +0200
+Subject: [PATCH] bw2: New framebuffer_alloc API and class_dev changes
+Date: Mon, 15 Sep 2003 21:42:46 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030915193649.GE16370@dreamland.darkstar.lan>
+Message-ID: <20030915194246.GF16370@dreamland.darkstar.lan>
 Reply-To: kronos@kronoz.cjb.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19yzAL-0003Ra-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 15 Sep 2003 12:37:41 -0700
-Received: from mail-3.tiscali.it ([195.130.225.149])
+	id 19yzGE-00046I-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 15 Sep 2003 12:43:46 -0700
+Received: from mail-6.tiscali.it ([195.130.225.152])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 19yzAK-0001jm-E0
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 15 Sep 2003 12:37:40 -0700
+	id 19yzGD-00052v-B1
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 15 Sep 2003 12:43:45 -0700
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
@@ -27,241 +27,178 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: brad@neruo.com, geert@linux-m68k.org
+To: davem@redhat.com
 Cc: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>
 
 Hi,
-this patch converts driver/video/aty to framebuffer_alloc:
+this patch converts driver/video/bw2.c to framebuffer_alloc:
 
-======== drivers/video/aty/aty128fb.c 1.41 ========
-D 1.41 03/09/13 00:35:43+02:00 kronos@kronoz.cjb.net 52 51 23/19/2333
-P drivers/video/aty/aty128fb.c
+======== drivers/video/bw2.c 1.8 ========
+D 1.8 03/09/13 00:38:35+02:00 kronos@kronoz.cjb.net 9 8 34/38/381
+P drivers/video/bw2.c
 C - switch to framebuffer_alloc
 ------------------------------------------------
 
-===== drivers/video/aty/aty128fb.c 1.40 vs 1.41 =====
---- 1.40/drivers/video/aty/aty128fb.c	Fri Aug 22 08:27:08 2003
-+++ 1.41/drivers/video/aty/aty128fb.c	Sat Sep 13 00:35:43 2003
-@@ -362,6 +362,7 @@
- static int aty128fb_ioctl(struct inode *inode, struct file *file, u_int cmd,
- 			  u_long arg, struct fb_info *info);
- static int aty128fb_sync(struct fb_info *info);
-+static void release_aty128fb(struct fb_info *info);
+===== drivers/video/bw2.c 1.7 vs 1.8 =====
+--- 1.7/drivers/video/bw2.c	Fri Aug 22 08:34:52 2003
++++ 1.8/drivers/video/bw2.c	Sat Sep 13 00:38:35 2003
+@@ -119,6 +119,7 @@
+ 	unsigned long		fbsize;
  
-     /*
-      *  Internal routines
-@@ -1536,7 +1537,6 @@
- 	/* fill in info */
- 	info->fbops = &aty128fb_ops;
- 	info->flags = FBINFO_FLAG_DEFAULT;
--	info->dev = &pdev->dev;
+ 	struct sbus_dev		*sdev;
++	struct fb_info		*info;
+ 	struct list_head	list;
+ };
  
- #ifdef CONFIG_PMAC_PBOOK
- 	par->lcd_on = default_lcd_on;
-@@ -1677,16 +1677,14 @@
- 
- 	/* We have the resources. Now virtualize them */
- 	size = sizeof(struct fb_info) + sizeof(struct aty128fb_par);
--	if (!(info = kmalloc(size, GFP_ATOMIC))) {
-+	if (!(info = framebuffer_alloc(sizeof(struct aty128fb_par), &pdev->dev))) {
- 		printk(KERN_ERR "aty128fb: can't alloc fb_info_aty128\n");
- 		goto err_free_mmio;
+@@ -284,94 +285,90 @@
  	}
--	memset(info, 0, size);
--
--	par = (struct aty128fb_par *)(info + 1);
-+	info->release = &release_aty128fb;
+ }
+ 
+-struct all_info {
+-	struct fb_info info;
+-	struct bw2_par par;
+-	struct list_head list;
+-};
+ static LIST_HEAD(bw2_list);
+ 
+ static void bw2_init_one(struct sbus_dev *sdev)
+ {
+-	struct all_info *all;
++	struct bw2_par *par;
++	struct fb_info *info;
+ 	struct resource *resp;
+ #ifdef CONFIG_SUN4
+ 	struct resource res;
+ #endif
+ 	int linebytes;
+ 
+-	all = kmalloc(sizeof(*all), GFP_KERNEL);
+-	if (!all) {
++	info = framebuffer_alloc(sizeof(struct bw2_par), NULL);
++	if (!info) {
+ 		printk(KERN_ERR "bw2: Cannot allocate memory.\n");
+ 		return;
+ 	}
+-	memset(all, 0, sizeof(*all));
 +	par = info->par;
- 	info->pseudo_palette = par->pseudo_palette;
++	par->info = info;
  
--	info->par = par;
- 	info->fix = aty128fb_fix;
+-	INIT_LIST_HEAD(&all->list);
++	INIT_LIST_HEAD(&par->list);
  
- 	/* Virtualize mmio region */
-@@ -1758,15 +1756,9 @@
- 	return -ENODEV;
- }
+-	spin_lock_init(&all->par.lock);
+-	all->par.sdev = sdev;
++	spin_lock_init(&par->lock);
++	par->sdev = sdev;
  
--static void __devexit aty128_remove(struct pci_dev *pdev)
--{
--	struct fb_info *info = pci_get_drvdata(pdev);
-+static void release_aty128fb(struct fb_info *info) {
- 	struct aty128fb_par *par = info->par;
--
--	if (!info)
--		return;
--
--	unregister_framebuffer(info);
-+	
- #ifdef CONFIG_MTRR
- 	if (par->mtrr.vram_valid)
- 		mtrr_del(par->mtrr.vram, info->fix.smem_start,
-@@ -1775,17 +1767,29 @@
- 	iounmap(par->regbase);
- 	iounmap(info->screen_base);
- 
-+#ifdef CONFIG_PMAC_PBOOK
-+	if (info == aty128_fb)
-+		aty128_fb = NULL;
-+#endif
-+}
-+
-+static void __devexit aty128_remove(struct pci_dev *pdev)
-+{
-+	struct fb_info *info = pci_get_drvdata(pdev);
-+
-+	if (!info)
-+		return;
-+
-+	unregister_framebuffer(info);
-+	
- 	release_mem_region(pci_resource_start(pdev, 0),
- 			   pci_resource_len(pdev, 0));
- 	release_mem_region(pci_resource_start(pdev, 1),
- 			   pci_resource_len(pdev, 1));
- 	release_mem_region(pci_resource_start(pdev, 2),
- 			   pci_resource_len(pdev, 2));
--#ifdef CONFIG_PMAC_PBOOK
--	if (info == aty128_fb)
--		aty128_fb = NULL;
--#endif
--	kfree(info);
-+
-+	pci_set_drvdata(pdev, NULL);
- }
- #endif /* CONFIG_PCI */
-
-
-======== drivers/video/aty/atyfb_base.c 1.59 ========
-D 1.59 03/09/13 00:37:36+02:00 kronos@kronoz.cjb.net 70 69 22/38/2575
-P drivers/video/aty/atyfb_base.c
-C - switch to framebuffer_alloc
-------------------------------------------------
-
-===== drivers/video/aty/atyfb_base.c 1.58 vs 1.59 =====
---- 1.58/drivers/video/aty/atyfb_base.c	Mon May 26 02:00:00 2003
-+++ 1.59/drivers/video/aty/atyfb_base.c	Sat Sep 13 00:37:36 2003
-@@ -162,6 +162,7 @@
-      */
- 
- static int aty_init(struct fb_info *info, const char *name);
-+static void release_atyfb(struct fb_info *info);
- #ifdef CONFIG_ATARI
- static int store_video_par(char *videopar, unsigned char m64_num);
+ #ifdef CONFIG_SUN4
+ 	if (!sdev) {
+-		all->par.physbase = sun4_bwtwo_physaddr;
++		par->physbase = sun4_bwtwo_physaddr;
+ 		res.start = sun4_bwtwo_physaddr;
+ 		res.end = res.start + BWTWO_REGISTER_OFFSET + sizeof(struct bw2_regs) - 1;
+ 		res.flags = IORESOURCE_IO;
+ 		resp = &res;
+-		all->info.var.xres = all->info.var.xres_virtual = 1152;
+-		all->info.var.yres = all->info.var.yres_virtual = 900;
+-		all->info.bits_per_pixel = 1;
++		info->var.xres = info->var.xres_virtual = 1152;
++		info->info.var.yres = info->var.yres_virtual = 900;
++		info->info.bits_per_pixel = 1;
+ 		linebytes = 1152 / 8;
+ 	} else
+ #else
+ 	{
+ 		if (!sdev)
+ 			BUG();
+-		all->par.physbase = sdev->reg_addrs[0].phys_addr;
++		par->physbase = sdev->reg_addrs[0].phys_addr;
+ 		resp = &sdev->resource[0];
+-		sbusfb_fill_var(&all->info.var, (sdev ? sdev->prom_node : 0), 1);
++		sbusfb_fill_var(&info->var, (sdev ? sdev->prom_node : 0), 1);
+ 		linebytes = prom_getintdefault(sdev->prom_node, "linebytes",
+-					       all->info.var.xres);
++					       info->var.xres);
+ 	}
  #endif
-@@ -1941,27 +1942,17 @@
- 			if (i < 0)
- 				continue;
  
--			info =
--			    kmalloc(sizeof(struct fb_info), GFP_ATOMIC);
-+			info = framebuffer_alloc(sizeof(struct atyfb_par), &pdev->dev);
- 			if (!info) {
- 				printk
- 				    ("atyfb_init: can't alloc fb_info\n");
- 				return -ENXIO;
- 			}
--			memset(info, 0, sizeof(struct fb_info));
-+			info->release = &release_atyfb;
+-	all->par.regs = (struct bw2_regs *)
++	par->regs = (struct bw2_regs *)
+ 		sbus_ioremap(resp, BWTWO_REGISTER_OFFSET,
+ 			     sizeof(struct bw2_regs), "bw2 regs");
  
--			default_par =
--			    kmalloc(sizeof(struct atyfb_par), GFP_ATOMIC);
--			if (!default_par) {
--				printk
--				    ("atyfb_init: can't alloc atyfb_par\n");
--				kfree(info);
--				return -ENXIO;
--			}
--			memset(default_par, 0, sizeof(struct atyfb_par));
-+			default_par = info->par;
+ 	if (sdev && !prom_getbool(sdev->prom_node, "width"))
+-		bw2_do_default_mode(&all->par, &all->info, &linebytes);
++		bw2_do_default_mode(par, info, &linebytes);
  
- 			info->fix = atyfb_fix;
--			info->par = default_par;
+-	all->par.fbsize = PAGE_ALIGN(linebytes * all->info.var.yres);
++	par->fbsize = PAGE_ALIGN(linebytes * info->var.yres);
  
- 			rp = &pdev->resource[0];
- 			if (rp->flags & IORESOURCE_IO)
-@@ -2220,7 +2211,6 @@
- 			    ioremap(info->fix.mmio_start, 0x1000);
+-	all->info.flags = FBINFO_FLAG_DEFAULT;
+-	all->info.fbops = &bw2_ops;
++	info->flags = FBINFO_FLAG_DEFAULT;
++	info->fbops = &bw2_ops;
+ #if defined(CONFIG_SPARC32)
+ 	if (sdev)
+-		all->info.screen_base = (char *)
++		info->screen_base = (char *)
+ 			prom_getintdefault(sdev->prom_node, "address", 0);
+ #endif
+-	if (!all->info.screen_base)
+-		all->info.screen_base = (char *)
+-			sbus_ioremap(resp, 0, all->par.fbsize, "bw2 ram");
+-	all->info.par = &all->par;
++	if (!info->screen_base)
++		info->screen_base = (char *)
++			sbus_ioremap(resp, 0, par->fbsize, "bw2 ram");
  
- 			if (!default_par->ati_regbase) {
--				kfree(default_par);
- 				kfree(info);
- 				release_mem_region(res_start, res_size);
- 				return -ENOMEM;
-@@ -2312,21 +2302,13 @@
- 			continue;
- 		}
+-	bw2_blank(0, &all->info);
++	bw2_blank(0, info);
  
--		info = kmalloc(sizeof(struct fb_info), GFP_ATOMIC);
-+		info = framebuffer_alloc(sizeof(struct atyfb_par), NULL);
- 		if (!info) {
- 			printk("atyfb_init: can't alloc fb_info\n");
- 			return -ENOMEM;
- 		}
--		memset(info, 0, sizeof(struct fb_info));
--
--		default_par = kmalloc(sizeof(struct atyfb_par), GFP_ATOMIC);
--		if (!default_par) {
--			printk
--			    ("atyfb_init: can't alloc atyfb_par\n");
--			kfree(info);
--			return -ENXIO;
--		}
--		memset(default_par, 0, sizeof(struct atyfb_par));
-+		info->release = &release_atyfb;
-+		default_par = info->par;
+-	bw2_init_fix(&all->info, linebytes);
++	bw2_init_fix(info, linebytes);
  
- 		info->fix = atyfb_fix;
+-	if (register_framebuffer(&all->info) < 0) {
++	if (register_framebuffer(info) < 0) {
+ 		printk(KERN_ERR "bw2: Could not register framebuffer.\n");
+-		kfree(all);
++		kfree(info);
+ 		return;
+ 	}
  
-@@ -2577,18 +2559,8 @@
- 	return 0;
+-	list_add(&all->list, &bw2_list);
++	list_add(&par->list, &bw2_list);
+ 
+ 	printk("bw2: bwtwo at %lx:%lx\n",
+ 	       (long) (sdev ? sdev->reg_addrs[0].which_io : 0),
+-	       (long) all->par.physbase);
++	       (long) par->physbase);
  }
  
--#ifdef MODULE
--int __init init_module(void)
--{
--	atyfb_init();
--	return fb_list ? 0 : -ENXIO;
--}
--
--void cleanup_module(void)
--{
--	struct fb_info *info = fb_list;
--	struct atyfb_par *par = (struct atyfb_par *) info->par;		
--	unregister_framebuffer(info);
-+static void release_atyfb(struct fb_info *info) {
-+	struct atyfb_par *par = (struct atyfb_par *) info->par;
+ int __init bw2_init(void)
+@@ -395,10 +392,9 @@
+ 	struct list_head *pos, *tmp;
  
- #ifndef __sparc__
- 	if (par->ati_regbase)
-@@ -2606,7 +2578,19 @@
- 	if (par->mmap_map)
- 		kfree(par->mmap_map);
- #endif
--	kfree(info);
-+}
-+
-+#ifdef MODULE
-+int __init init_module(void)
-+{
-+	atyfb_init();
-+	return fb_list ? 0 : -ENXIO;
-+}
-+
-+void cleanup_module(void)
-+{
-+	struct fb_info *info = fb_list;
-+	unregister_framebuffer(info);
+ 	list_for_each_safe(pos, tmp, &bw2_list) {
+-		struct all_info *all = list_entry(pos, typeof(*all), list);
++		struct bw2_par *par = list_entry(pos, typeof(*par), list);
+ 
+-		unregister_framebuffer(&all->info);
+-		kfree(all);
++		unregister_framebuffer(par->info);
+ 	}
  }
- 
- #endif
+
 
 Luca
 -- 
 Reply-To: kronos@kronoz.cjb.net
 Home: http://kronoz.cjb.net
-Ci sono due cose che l'uomo non puo` nascondere:
-essere ubriaco ed essere innamorato.
+"I've seen things you people wouldn't believe...
+ Attack Ships on fire off the shores of Orion.
+ I've watched C-beams glitter in the dark off of Tanhauser Gate.
+ All those moments will be lost in time...like tears, in rain.
+ Time to die." -- Roy Batty (played by Rutger Hauer)
 
 
 -------------------------------------------------------

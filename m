@@ -1,19 +1,11 @@
-From: John Zielinski <grim@undead.cc>
-Subject: radeonfb_pci_register video memory clear?
-Date: Fri, 18 Jun 2004 22:20:17 -0400
+From: "Blair Sanderson" <b_sandersonyd@isoleucin.de>
+Subject: Powerful weightloss now available where you are.
+Date: Fri, 18 Jun 2004 22:10:08 -0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <40D3A2E1.2060100@undead.cc>
+Message-ID: <8bad01c455aa$7484a291$12d3dde6__2259.32114194638$1087614621@tk.k-net.dk>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BbVSz-0003Ig-Qb
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 19:20:25 -0700
-Received: from ghoul.undead.cc ([216.126.84.18] helo=mail.undead.cc)
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
-	id 1BbVSz-0004Kv-CI
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 19:20:25 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -23,17 +15,34 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-usb-users@lists.sourceforge.net, linux-usb-devel@lists.sourceforge.net, linux-ntfs-dev@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net
 
-I'm just wondering why the clearing of video memory was added to 
-radeonfb_pci_register?  The memory still belongs to vgacon at this 
-point.  There are a few other problems with this:  there is a noticable 
-delay while the screen is totaly blank,  vgacon can't save the text 
-screen to the shadow buffer, and all further output until the takeover 
-is invisible (vga font is wiped) so an oops here wouldn't be readable.
+Hello, I have a special offer for you...
+WANT TO LOSE WEIGHT?
+The most powerful weightloss is now available
+without prescription. All natural Adipren720
+100% Money Back Guarant=E9e!
+- Lose up to 19% Total Body Weight.
+- Loss of 20-35% abdominal Fat.
+- Up to 300% more Weight Loss while dieting.
+- Increase metabolic rate by 76.9% without Exercise.
+- Reduction of 40-70% overall Fat under skin.
+- Suppresses appetite for sugar.
+- Burns calorized fat.
+- Boost your Confidence level and Self Esteem.
+Get the facts about all-natural Adipren720 <http://diet40.com/>
 
-John
+
+
+---- system information ----
+different Preferences implementations replaced W3C Since documents numbering
+
+endorsement for same could solely sort show information)=20
+personalization Shorthand revised parameters element use nearly existing
+
+localization rely phonebook difficult important report those requests=20
+produced archive) disclose natural Scenario distinct strongly needed=20
 
 
 

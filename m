@@ -1,68 +1,65 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Fw: [PATCH][2.6.11-mm3] CONFIG_FB_ATY linkage error on PPC32
-Date: Sun, 13 Mar 2005 13:28:44 -0800
-Message-ID: <20050313132844.7270c817.akpm@osdl.org>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: radeon, apertures & memory mapping
+Date: Mon, 14 Mar 2005 08:49:13 +1100
+Message-ID: <1110750553.5787.155.camel@gaston>
+References: <1110677744.19810.80.camel@gaston>
+	<20050313082216.GA7362@sci.fi> <1110705646.14684.126.camel@gaston>
+	<20050313103936.GA11002@sci.fi> <1110715499.14684.132.camel@gaston>
+	<9e473391050313081937cde207@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DAaeD-0005yj-GR
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Mar 2005 13:29:17 -0800
-Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.41)
-	id 1DAaeA-0002zu-VR
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Mar 2005 13:29:17 -0800
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+In-Reply-To: <9e473391050313081937cde207@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
+	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/xorg>
+List-Post: <mailto:xorg@lists.freedesktop.org>
+List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
+	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
+Sender: xorg-bounces@lists.freedesktop.org
+Errors-To: xorg-bounces@lists.freedesktop.org
 Content-Type: text/plain; charset="us-ascii"
-To: Jon Smirl <jonsmirl@gmail.com>, linux-fbdev-devel@lists.sourceforge.net
-Cc: Mikael Pettersson <mikpe@csd.uu.se>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, dri-devel@lists.sourceforge.net, xorg@lists.freedesktop.org
 
-ack?
+On Sun, 2005-03-13 at 11:19 -0500, Jon Smirl wrote:
+> On Sun, 13 Mar 2005 23:04:59 +1100, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
+> > 
+> > > AGP as it's currently used is pretty much pointless for software fallbacks
+> > > since reading from AGP memory is nearly as slow as reading from video
+> > > memory.
+> > 
+> > Hrm.. I wouldn't expect _that_ slow. It's uncacheable, right, but still
+> > on a faster bus. Especially if we use it the way we do on ppc where we
+> > actually map the RAM pages directly instead of having processes go
+> > through the GART.
+> 
+> I asked at the Xdev conference if there were page table tricks that
+> would work for accessing GART memory.  Everybody said no but I'm still
+> wondering if there are any.
+> 
+> For example the ppc has an instruction for flushing specific pages
+> from cache, unlike the x86 where you can only flush everything.
+> 
+> So on the ppc you could leave the GART memory mapped normally and
+> cached. Do all of your fallback calculations, then flush the address
+> range from cache. Now tell the GPU to go use it.
+> 
+> Can't GART memory be normally cached RAM as long as we flush the cache
+> before telling the GPU to use it?
 
+For CPU -> GPU transfers, yes, but I'm not sure it would be that
+efficient to do so. We have instructions to flush a cache line. A whole
+page would require a bunch of them, not sure i would be that efficient
+but worth benching maybe.
+> 
+> If you are doing fallback calculations in a 6MB buffer that is 1,500
+> pages. Accessing all of this effectively flushes the data cache. Once
+> you are done with it you probably don't want those pages in the cache
+> anyway.
 
-Begin forwarded message:
+I wouldn't count on it flushing anything
 
-Date: Sun, 13 Mar 2005 00:27:01 +0100 (MET)
-From: Mikael Pettersson <mikpe@csd.uu.se>
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH][2.6.11-mm3] CONFIG_FB_ATY linkage error on PPC32
-
-
-On ppc32 the ATI Mach64 frame buffer references symbols on macmodes.o.
-In Linus' 2.6.11 macmodes.o is automatically included, but not so in
-2.6.11-mm3, causing linkage errors.
-
-The quick-and-dirty hack below worked for me.
-
-/Mikael
-
---- linux-2.6.11-mm2/drivers/video/Makefile.~1~	2005-03-09 23:20:08.000000000 +0100
-+++ linux-2.6.11-mm2/drivers/video/Makefile	2005-03-11 18:03:29.000000000 +0100
-@@ -29,7 +29,7 @@ obj-$(CONFIG_FB_PM3)		  += pm3fb.o
- obj-$(CONFIG_FB_MATROX)		  += matrox/
- obj-$(CONFIG_FB_RIVA)		  += riva/ vgastate.o
- obj-$(CONFIG_FB_NVIDIA)		  += nvidia/
--obj-$(CONFIG_FB_ATY)		  += aty/
-+obj-$(CONFIG_FB_ATY)		  += aty/ macmodes.o
- obj-$(CONFIG_FB_ATY128)		  += aty/
- obj-$(CONFIG_FB_RADEON)		  += aty/
- obj-$(CONFIG_FB_SIS)		  += sis/
-
-
--------------------------------------------------------
-SF email is sponsored by - The IT Product Guide
-Read honest & candid reviews on hundreds of IT Products from real users.
-Discover which products truly live up to the hype. Start reading now.
-http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
+Ben.

@@ -1,71 +1,71 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: Fw: [PATCH][2.6.11-mm3] CONFIG_FB_ATY linkage error on PPC32
-Date: Sun, 13 Mar 2005 15:14:12 -0800
-Message-ID: <20050313151412.060ad5ea.akpm@osdl.org>
-References: <20050313132844.7270c817.akpm@osdl.org>
-	<9e47339105031313553994f15a@mail.gmail.com>
-	<9e4733910503131408cd57b01@mail.gmail.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Subject: Re: radeon, apertures & memory mapping
+Date: Mon, 14 Mar 2005 01:27:35 +0200
+Message-ID: <20050313232735.GA19781@sci.fi>
+References: <1110677744.19810.80.camel@gaston> <20050313082216.GA7362@sci.fi>
+	<1110705646.14684.126.camel@gaston> <20050313103936.GA11002@sci.fi>
+	<1110715499.14684.132.camel@gaston>
+	<9e473391050313081937cde207@mail.gmail.com>
+	<1110750553.5787.155.camel@gaston>
+	<9e47339105031314101c89e50e@mail.gmail.com>
+	<1110752401.19810.177.camel@gaston>
+	<9e47339105031315002a444f00@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DAcIA-0002QZ-Eo
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Mar 2005 15:14:38 -0800
-Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.41)
-	id 1DAcI8-0002rT-Vw
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Mar 2005 15:14:38 -0800
-In-Reply-To: <9e4733910503131408cd57b01@mail.gmail.com>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+In-Reply-To: <9e47339105031315002a444f00@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
+	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/xorg>
+List-Post: <mailto:xorg@lists.freedesktop.org>
+List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
+	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
+Sender: xorg-bounces@lists.freedesktop.org
+Errors-To: xorg-bounces@lists.freedesktop.org
+Content-Type: text/plain; charset="iso-8859-1"
 To: Jon Smirl <jonsmirl@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, mikpe@csd.uu.se
+Cc: Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, dri-devel@lists.sourceforge.net, xorg@lists.freedesktop.org
 
-Jon Smirl <jonsmirl@gmail.com> wrote:
->
-> This should be a more general fix. Mikael can you give it a try on ppc
->  since I don't have one?
-> 
->  If you have time it would also be helpful if you could try building
->  all of the ppc drivers both as modules and built-in just to make sure
->  they build.
-> 
->  There are 77 framebuffer drivers on eight platforms that need to be
->  checked. I tried to get them all right but I don't own all of the
->  needed hardware.
-> 
+On Sun, Mar 13, 2005 at 06:00:01PM -0500, Jon Smirl wrote:
+> On Mon, 14 Mar 2005 09:20:01 +1100, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
+> > Though the flushes may be fast if there is no actual hit in the cache=
+, I
+> > agree. Again, that should be benched.
+> >=20
+> > In fact, i would _love_ to be able to mark AGP memory as cacheable on
+> > ppc, even if there is no performance benefit in the end. The issue is
+> > that currently, we end up having both a cacheable and a non-cacheable
+> > mapping for those pages (the kernel linear mapping still maps those
+> > pages cacheable, and it's almost impossible to get rid of that unless
+> > you are prepared to disable the large pages mapping of kernel space o=
+r
+> > the BATs on ppc32, which would harm kernel performances significantly=
+).
+> >=20
+> > It works, but it's illegal. That means that the CPU might well specul=
+ate
+> > a load from one of these pages in kernel-land just because it happens=
+ to
+> > be next to a page where you are iterating an array, and may then brin=
+g a
+> > bit in the cache from that page.
+>=20
+> That shouldn't matter the page brought in would be for a speculative
+> read and never accessed. It should just fall out of the cache and not
+> be written back. There is only one cachable mapping. In this model
+> writes are always followed by a flush before telling the GPU to access
+> the memory that has just been written.
 
-Confused.  Is Tony's patch OK?
+What about this scenario?
 
->  ===== drivers/video/Makefile 1.120 vs edited =====
->  --- 1.120/drivers/video/Makefile	2005-03-10 03:39:10 -05:00
->  +++ edited/drivers/video/Makefile	2005-03-13 16:56:53 -05:00
->  @@ -10,6 +10,9 @@
->   
->   obj-$(CONFIG_FB)                  += fb.o
->   fb-y                              := fbmem.o fbmon.o fbcmap.o
->  fbsysfs.o modedb.o
->  +ifdef $(CONFIG-PPC)
->  +fb-y				  += macmodes.o
->  +endif
->   fb-objs                           := $(fb-y)
+Speculative read -> AGP master writes new data -> CPU has invalid data in=
+=20
+cache :(
 
-Your email client is mangling whitespace.  This won't apply.
-
-
--------------------------------------------------------
-SF email is sponsored by - The IT Product Guide
-Read honest & candid reviews on hundreds of IT Products from real users.
-Discover which products truly live up to the hype. Start reading now.
-http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
+--=20
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/

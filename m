@@ -1,55 +1,44 @@
-From: Ben Collins <bcollins@debian.org>
-Subject: Re: [FBDEV UPDATE] Newer patch.
-Date: Thu, 23 Oct 2003 19:45:53 -0400
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20031023234552.GB554@phunnypharm.org>
-References: <20031023144315.GA667@phunnypharm.org> <Pine.LNX.4.44.0310232343410.21561-100000@phoenix.infradead.org>
+From: Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: [Dri-devel] Re: DRM and pci_driver conversion
+Date: Thu, 23 Oct 2003 21:19:20 -0400
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <3F987E18.9080606@pobox.com>
+References: <Pine.LNX.4.44.0310231541000.3421-100000@home.osdl.org>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0310232343410.21561-100000@phoenix.infradead.org>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+In-Reply-To: <Pine.LNX.4.44.0310231541000.3421-100000@home.osdl.org>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: Jon Smirl <jonsmirl@yahoo.com>, Eric Anholt <eta@lclark.edu>, kronos@kronoz.cjb.net, Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net, dri-devel <dri-devel@lists.sourceforge.net>
 
-On Thu, Oct 23, 2003 at 11:50:48PM +0100, James Simmons wrote:
-> 
-> > The cursor has changed from a nice underline to a solid white block. 
-> 
-> I seen the problem. Its the wrong color for the background color for the 
-> cursor. I haven't been able to figure out why it went wrong. The specs are 
-> not to clear on this.
-> 
-> > Not only that,
-> > but the block is bigger than the font it is over (if I am on top of
-> > adjacent letters, it covers the entire letter I am on, plus a couple of
-> > pixels of the letter to the right).
-> 
-> Ug. That code is straight from the old driver. Will fix.
-> 
-> > In additition, the cursor now disappears while typing, and navigating
-> > around (on the command line left and right, or even in an editor when
-> > moving the cursor up and down). This disappearing while typing or
-> > navigating is _really_ annoying. If I go left or right a lot, I have to
-> > keep stopping to see where the cursor actually is.
-> 
-> I seen this problem last night with the NVIDIA fbdev driver. I think I 
-> know what the problem is. I will try a fix tonight. 
+Linus Torvalds wrote:
+> [ Jeff: is that PCI ROM enable _really_ that complicated? Ouch. Or is
+>   there some helper function I missed? ]
 
-I noticed one thing, and that is that the mach64 used to use software
-cursor it seems (I remember wondering why atyfb_cursor was never used
-anywhere). It's now using the hw cursor.
 
-Also, I notice with this new code that the random vertical shifting of
-the console doesn't occur anymore like it does with current 2.6.0-test8
-code. For as long as I can remember 2.6.0-test, and way back into
-2.5.5x, this has been a problem with highly active console programs
-(mutt, vim, etc...). Good to see it's going away :)
+The mechanics aren't complicated, but I seem to recall there being a 
+Real Good Reason why you want to leave it disabled 99% of the time.  No, 
+I don't recall that reason :(  But my fuzzy memory seems to think that 
+"enable, grab a slice o 'rom, disable" was viable.
 
--- 
-Debian     - http://www.debian.org/
-Linux 1394 - http://www.linux1394.org/
-Subversion - http://subversion.tigris.org/
-WatchGuard - http://www.watchguard.com/
+	Jeff
+
+
+
+
+
+-------------------------------------------------------
+This SF.net email is sponsored by: The SF.net Donation Program.
+Do you like what SourceForge.net is doing for the Open
+Source Community?  Make a contribution, and help us add new
+features and functionality. Click here: http://sourceforge.net/donate/

@@ -1,64 +1,48 @@
-From: Kronos <kronos@kronoz.cjb.net>
-Subject: Re: DRM and pci_driver conversion
-Date: Thu, 23 Oct 2003 21:04:21 +0200
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20031023190421.GA4567@dreamland.darkstar.lan>
+From: Eric Anholt <eta@lclark.edu>
+Subject: Re: [Linux-fbdev-devel] DRM and pci_driver conversion
+Date: Thu, 23 Oct 2003 14:10:16 -0700
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <1066943415.662.9.camel@leguin>
 References: <1066703516.646.24.camel@leguin>
-Reply-To: kronos@kronoz.cjb.net
+	 <20031023190421.GA4567@dreamland.darkstar.lan>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1ACkl4-0007RM-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 23 Oct 2003 12:04:30 -0700
-Received: from mail-3.tiscali.it ([195.130.225.149])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 1ACkl3-00038x-L8
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Oct 2003 12:04:29 -0700
-Content-Disposition: inline
-In-Reply-To: <1066703516.646.24.camel@leguin>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Eric Anholt <eta@lclark.edu>
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <20031023190421.GA4567@dreamland.darkstar.lan>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: kronos@kronoz.cjb.net
 Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, Jon Smirl <jonsmirl@yahoo.com>
 
-Il Mon, Oct 20, 2003 at 07:31:56PM -0700, Eric Anholt ha scritto: 
-> I recently committed a change to the DRM for Linux in DRI CVS that
-> converted it to use pci_driver and that probe system.  Unfortunately,
-> we've found that there is a conflict between the DRM now and at least
-> the radeon framebuffer.  Both want to attach to the same device, and
-> with pci_driver, the second one to come along doesn't get probe called
-> for that device.  Is there any way to mark things shared, or in some
-> other way get the DRM to attach to a device that's already attached to,
-> in the new model?
+On Thu, 2003-10-23 at 12:04, Kronos wrote:
+> Il Mon, Oct 20, 2003 at 07:31:56PM -0700, Eric Anholt ha scritto: 
+> > I recently committed a change to the DRM for Linux in DRI CVS that
+> > converted it to use pci_driver and that probe system.  Unfortunately,
+> > we've found that there is a conflict between the DRM now and at least
+> > the radeon framebuffer.  Both want to attach to the same device, and
+> > with pci_driver, the second one to come along doesn't get probe called
+> > for that device.  Is there any way to mark things shared, or in some
+> > other way get the DRM to attach to a device that's already attached to,
+> > in the new model?
+> 
+> AFAIK no,  pci_dev only  stores one pointer  to the  driver. Two drivers
+> fiddling with the same hw can be dangerous. What will happen if radeonfb
+> starts using hw  accel, touching registers without  DRM knowing it? What
+> is (IMHO) needed is a common  layer that works with hardware and exposes
+> an interface to both radeonfb and DRM. I think that Jon Smirl is working
+> on something like this.
 
-AFAIK no,  pci_dev only  stores one pointer  to the  driver. Two drivers
-fiddling with the same hw can be dangerous. What will happen if radeonfb
-starts using hw  accel, touching registers without  DRM knowing it? What
-is (IMHO) needed is a common  layer that works with hardware and exposes
-an interface to both radeonfb and DRM. I think that Jon Smirl is working
-on something like this.
+Apparently loading DRM after radeonfb is okay.  Loading radeonfb after
+DRM is okay as long as the DRM is not in use.  For some cards, the fb
+after the DRM would still be okay (sis, tdfx at the moment, for
+example), but it isn't the case on radeon, apparently.  Other than that
+there aren't any issues I know of.
 
-Luca
+I've moved the Linux DRM to old-style probing as pci.txt described,
+which hopefully restores the ability of fb and drm to coexist as well as
+they have in the past.  I hope some linux developers can get this all
+done right so that the two can coexist better.
+
 -- 
-Reply-To: kronos@kronoz.cjb.net
-Home: http://kronoz.cjb.net
-"Sei l'unica donna della mia vita".
-(Adamo)
-
-
--------------------------------------------------------
-This SF.net email is sponsored by: The SF.net Donation Program.
-Do you like what SourceForge.net is doing for the Open
-Source Community?  Make a contribution, and help us add new
-features and functionality. Click here: http://sourceforge.net/donate/
+Eric Anholt                                eta@lclark.edu          
+http://people.freebsd.org/~anholt/         anholt@FreeBSD.org

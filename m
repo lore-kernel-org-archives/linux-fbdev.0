@@ -1,22 +1,21 @@
-From: Paul Mundt <lethal@linux-sh.org>
+From: Tomas Szepe <szepe@pinerecords.com>
 Subject: Re: New FBDev patch
-Date: Thu, 8 Jan 2004 18:05:33 -0500
+Date: Fri, 9 Jan 2004 00:12:17 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040108230533.GA20713@linux-sh.org>
+Message-ID: <20040108231217.GB7085@louise.pinerecords.com>
 References: <Pine.LNX.4.44.0401082108080.12797-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="45Z9DzgjV8m4Oswq"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AejDj-0004iW-HA
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Jan 2004 15:05:43 -0800
-Received: from smtp.golden.net ([199.166.210.31] helo=newsmtp.golden.net)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	id 1AejLB-0005LE-3l
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Jan 2004 15:13:25 -0800
+Received: from louise.pinerecords.com ([213.168.176.16])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1AejDj-00005y-7K
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Jan 2004 15:05:43 -0800
+	id 1AejLA-0005pt-Gp
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Jan 2004 15:13:24 -0800
 Content-Disposition: inline
 In-Reply-To: <Pine.LNX.4.44.0401082108080.12797-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -28,49 +27,51 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@infradead.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
+On Jan-08 2004, Thu, 22:03 +0000
+James Simmons <jsimmons@infradead.org> wrote:
 
---45Z9DzgjV8m4Oswq
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi James,
-
-On Thu, Jan 08, 2004 at 10:03:54PM +0000, James Simmons wrote:
 > This is the latest patch against 2.6.0-rc3. Give it a try.
->=20
 > http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
->=20
-> Here are the changes.
->=20
->  drivers/video/pvr2fb.c                |  846 -
-[snip]
-> <jsimmons@maxwell.earthlink.net> (03/05/14 1.1046.73.2)
->    [PVR2 FBDEV] Port of the Dreamcast Frambuffer to the new api.
->=20
-Please drop this from your patch, it re-introduces a number of parse
-errors that I already fixed in the 2.6 tree.
 
-On another note, I do have some more pvr2fb updates pending, but I'll send
-these to you seperately.
+  GEN     .version
+  CHK     include/linux/compile.h
+  UPD     include/linux/compile.h
+  CC      init/version.o
+  LD      init/built-in.o
+  LD      .tmp_vmlinux1
+drivers/built-in.o(.init.data+0x33c): undefined reference to =12adeonfb_set=
+up'
+make: *** [.tmp_vmlinux1] Error 1
 
+CONFIG_FB=3Dy
+# CONFIG_FB_CIRRUS is not set
+# CONFIG_FB_PM2 is not set
+# CONFIG_FB_CYBER2000 is not set
+# CONFIG_FB_IMSTT is not set
+# CONFIG_FB_VGA16 is not set
+CONFIG_FB_VESA=3Dy
+CONFIG_VIDEO_SELECT=3Dy
+# CONFIG_FB_HGA is not set
+# CONFIG_FB_RIVA is not set
+# CONFIG_FB_I810 is not set
+# CONFIG_FB_MATROX is not set
+CONFIG_FB_RADEON=3Dy
+# CONFIG_FB_ATY128 is not set
+# CONFIG_FB_ATY is not set
+# CONFIG_FB_SIS is not set
+# CONFIG_FB_NEOMAGIC is not set
+# CONFIG_FB_3DFX is not set
+# CONFIG_FB_VOODOO1 is not set
+# CONFIG_FB_TRIDENT is not set
+# CONFIG_FB_PM3 is not set
+# CONFIG_FB_VIRTUAL is not set
 
---45Z9DzgjV8m4Oswq
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.2 (GNU/Linux)
-
-iD8DBQE//eI91K+teJFxZ9wRAmaBAJsF/NmKb8BqQQNiztX8XPxqNs/JWQCfcv5U
-3cgWdlqdMbuAAT5IkBXyBLY=
-=wXei
------END PGP SIGNATURE-----
-
---45Z9DzgjV8m4Oswq--
+--=20
+Tomas Szepe <szepe@pinerecords.com>
 
 
 -------------------------------------------------------

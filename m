@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 2/3] [FBDEV]: Video mode change notify (fbset)
-Date: Tue, 22 Jun 2004 06:39:20 +0800
+Subject: [PATCH 3/3] [FBDEV]: Hardware State Notification
+Date: Tue, 22 Jun 2004 06:39:26 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200406220639.20791.adaplas@hotpop.com>
+Message-ID: <200406220639.26576.adaplas@hotpop.com>
 Reply-To: adaplas@pol.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BcXPm-0002sI-IG
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Jun 2004 15:37:22 -0700
+	id 1BcXPu-0002sd-Vj
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Jun 2004 15:37:30 -0700
 Received: from babyruth.hotpop.com ([38.113.3.61])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BcXPm-0001Yz-2Y
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Jun 2004 15:37:22 -0700
+	id 1BcXPu-0001a6-5k
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Jun 2004 15:37:30 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by babyruth.hotpop.com (Postfix) with SMTP id EA118632925
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 21 Jun 2004 21:57:48 +0000 (UTC)
+	by babyruth.hotpop.com (Postfix) with SMTP id 9D959630D00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 21 Jun 2004 21:57:57 +0000 (UTC)
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,127 +34,279 @@ Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-dev
 
 Hi,
 
-This patch allows fbset to change the video mode and the console
-window size via the notifier call chain.  It will only notify fbcon of
-mode changes from user space.  Changes coming from
-upstream will be ignored.
+**This patch is more of an RFC.  BenH probably has similar code.
 
-The code will only update the current console.
+This patch adds a method (con_notify) that will notify console drivers of 
+impending console switches, passing them with the about-to-be-old (last)
+vc structure and about-to-be-new (wanted) vc structure.  The console 
+drivers can then elect to pass selected information to low-level drivers.
+
+This is important to fbcon so it can detect a switch from a graphics console to a
+text console and vice versa. This will give underlying drivers a chance to update
+its hardware state. This is added via the  method fbcon_state_switch(). Fbcon
+will, however, do a set_par if the _state_switch method is not availabe and if
+switching from a KD_GRAPHICS console.
+
+Also updated rivafb to take advantage of this method.  With this, switching
+to/from X with XFree86/Org nv driver works.  Usually it hangs without the
+option usefbdev, or gets a Sig11 if with option usefbdev.
+
+(Unfortunately it doesn't work for nVidia's binary nvidia driver, switching to 
+the console is possible, switching back to X will hang the machine).
+
+Diff is against linux-2.6.7-mm1
 
 Tony
 
-Against linux-2.6.7-mm1
-
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 
+diff -Naur linux-2.6.7-mm1-orig/drivers/char/vt.c linux-2.6.7-mm1/drivers/char/vt.c
+--- linux-2.6.7-mm1-orig/drivers/char/vt.c	2004-06-21 13:26:48.000000000 +0000
++++ linux-2.6.7-mm1/drivers/char/vt.c	2004-06-21 18:02:33.000000000 +0000
+@@ -617,6 +617,9 @@
+ 		hide_cursor(currcons);
+ 		if (fg_console != new_console) {
+ 			struct vc_data **display = vc_cons[new_console].d->vc_display_fg;
++			if (sw->con_notify)
++				sw->con_notify(vc_cons[fg_console].d,
++					       vc_cons[new_console].d);
+ 			old_console = (*display) ? (*display)->vc_num : fg_console;
+ 			*display = vc_cons[new_console].d;
+ 			fg_console = new_console;
 diff -Naur linux-2.6.7-mm1-orig/drivers/video/console/fbcon.c linux-2.6.7-mm1/drivers/video/console/fbcon.c
---- linux-2.6.7-mm1-orig/drivers/video/console/fbcon.c	2004-06-21 16:49:22.000000000 +0000
-+++ linux-2.6.7-mm1/drivers/video/console/fbcon.c	2004-06-21 17:12:20.896035296 +0000
-@@ -2358,6 +2358,56 @@
- 	update_screen(vc->vc_num);
+--- linux-2.6.7-mm1-orig/drivers/video/console/fbcon.c	2004-06-21 18:01:10.000000000 +0000
++++ linux-2.6.7-mm1/drivers/video/console/fbcon.c	2004-06-21 22:24:55.108534784 +0000
+@@ -2428,6 +2428,31 @@
+ 	return 0;
  }
  
-+static void fbcon_modechanged(struct fb_info *info)
++static void fbcon_notify(struct vc_data *old_vc, struct vc_data *new_vc)
 +{
-+	struct vc_data *vc = vc_cons[info->currcon].d;
-+	struct display *p;
-+	int rows, cols;
++	struct fb_info *old_info = registered_fb[(int) con2fb_map[old_vc->vc_num]];
++	struct fb_info *new_info = registered_fb[(int) con2fb_map[new_vc->vc_num]];
++	int old_vcmode = vt_cons[old_vc->vc_num]->vc_mode;
++	int new_vcmode = vt_cons[new_vc->vc_num]->vc_mode;
 +
-+	if (info->currcon < 0 || vt_cons[info->currcon]->vc_mode !=
-+	    KD_TEXT) 
-+		return;
-+	p = &fb_display[vc->vc_num];
++	if (old_info != new_info || vt_cons[old_vc->vc_num]->vc_mode != 
++	    vt_cons[new_vc->vc_num]->vc_mode) {
++	    if (old_info && old_info->fbops->fb_state_switch)
++		old_info->fbops->fb_state_switch(old_info, 1, 
++						 (old_vcmode == KD_GRAPHICS) ? 1 : 0);
++	    /*
++	     * If old console is in graphics, we call a set_par by default 
++	     */
++	    else if (old_vcmode == KD_GRAPHICS && old_info &&
++		     old_info->fbops->fb_set_par)
++		old_info->fbops->fb_set_par(old_info);
 +
-+	info->var.xoffset = info->var.yoffset = p->yscroll = 0;
-+	vc->vc_can_do_color = info->var.bits_per_pixel != 1;
-+	vc->vc_complement_mask = vc->vc_can_do_color ? 0x7700 : 0x0800;
-+
-+	if (CON_IS_VISIBLE(vc)) {
-+		cols = info->var.xres / vc->vc_font.width;
-+		rows = info->var.yres / vc->vc_font.height;
-+		vc_resize(vc->vc_num, cols, rows);
-+		switch (p->scrollmode) {
-+		case SCROLL_WRAP:
-+			scrollback_phys_max = p->vrows - vc->vc_rows;
-+			break;
-+		case SCROLL_PAN:
-+			scrollback_phys_max = p->vrows - 2 * vc->vc_rows;
-+			if (scrollback_phys_max < 0)
-+				scrollback_phys_max = 0;
-+			break;
-+		default:
-+			scrollback_phys_max = 0;
-+			break;
-+		}	
-+		scrollback_max = 0;
-+		scrollback_current = 0;
-+		update_var(vc->vc_num, info);
-+		fbcon_set_palette(vc, color_table); 	
-+		update_screen(vc->vc_num);
-+		if (softback_buf) { 
-+			int l = fbcon_softback_size / vc->vc_size_row;
-+			if (l > 5)
-+				softback_end = softback_buf + l * vc->vc_size_row;
-+			else {
-+				/* Smaller scrollback makes no sense, and 0 
-+				   would screw the operation totally */
-+				softback_top = 0;
-+			}
-+		}
++	    if (new_info && new_info->fbops->fb_state_switch)
++		new_info->fbops->fb_state_switch(new_info, 0,
++						 (new_vcmode == KD_GRAPHICS) ? 1 : 0);
 +	}
 +}
 +
- static int fbcon_event_notify(struct notifier_block *self, 
- 			      unsigned long action, void *data)
+ /*
+  *  The console `switch' structure for the frame buffer based console
+  */
+@@ -2453,6 +2478,7 @@
+ 	.con_screen_pos 	= fbcon_screen_pos,
+ 	.con_getxy 		= fbcon_getxy,
+ 	.con_resize             = fbcon_resize,
++	.con_notify             = fbcon_notify,
+ };
+ 
+ static struct notifier_block fbcon_event_notifier = {
+diff -Naur linux-2.6.7-mm1-orig/drivers/video/riva/fbdev.c linux-2.6.7-mm1/drivers/video/riva/fbdev.c
+--- linux-2.6.7-mm1-orig/drivers/video/riva/fbdev.c	2004-06-21 13:27:47.000000000 +0000
++++ linux-2.6.7-mm1/drivers/video/riva/fbdev.c	2004-06-21 18:02:18.000000000 +0000
+@@ -498,6 +498,8 @@
+ 	u32 b, tmp;
+ 	u32 *data = (u32 *)data8;
+ 
++	memset_io(par->riva.CURSOR, 0, MAX_CURS * MAX_CURS * 2);
++
+ 	for (i = 0; i < h; i++) {
+ 		b = *data++;
+ 		reverse_order(&b);
+@@ -1444,8 +1446,8 @@
+ 
+ static inline void convert_bgcolor_16(u32 *col)
  {
-@@ -2370,6 +2420,9 @@
- 	case FB_EVENT_RESUME:
- 		fbcon_resumed(info);
- 		break;
-+	case FB_EVENT_MODE_CHANGE:
-+		fbcon_modechanged(info);
-+		break;
+-	*col = ((*col & 0x00007C00) << 9)
+-		| ((*col & 0x000003E0) << 6)
++	*col = ((*col & 0x0000F800) << 8)
++		| ((*col & 0x00007E0) << 5)
+ 		| ((*col & 0x0000001F) << 3)
+ 		|	   0xFF000000;
+ 	mb();
+@@ -1573,27 +1575,29 @@
+ 		par->riva.PRAMDAC[0x0000300/4] = temp;
  	}
- 	    
+ 
+-	if (cursor->set & FB_CUR_SETSIZE) {
+-		info->cursor.image.height = cursor->image.height;
+-		info->cursor.image.width = cursor->image.width;
+-		memset_io(par->riva.CURSOR, 0, MAX_CURS * MAX_CURS * 2);
+-	}
+-
+ 	if (cursor->set & FB_CUR_SETCMAP) {
+ 		info->cursor.image.bg_color = cursor->image.bg_color;
+ 		info->cursor.image.fg_color = cursor->image.fg_color;
+ 	}
+ 
++	if (cursor->set & FB_CUR_SETSIZE) {
++	    info->cursor.image.height = cursor->image.height;
++	    info->cursor.image.width = cursor->image.width;
++	}
++
+ 	if (cursor->set & (FB_CUR_SETSHAPE | FB_CUR_SETCMAP | FB_CUR_SETCUR)) {
++		info->cursor.image.data = cursor->image.data;
++	}
++
++	if (info->cursor.enable) {
+ 		u32 bg_idx = info->cursor.image.bg_color;
+ 		u32 fg_idx = info->cursor.image.fg_color;
+ 		u32 s_pitch = (info->cursor.image.width+7) >> 3;
+ 		u32 d_pitch = MAX_CURS/8;
+-		u8 *dat = (u8 *) cursor->image.data;
++		u8 *dat = (u8 *) info->cursor.image.data;
+ 		u8 *msk = (u8 *) info->cursor.mask;
+ 		u8 src[64];	
+-		
+-		info->cursor.image.data = cursor->image.data;
++
+ 		switch (info->cursor.rop) {
+ 		case ROP_XOR:
+ 			for (i = 0; i < s_pitch * info->cursor.image.height;
+@@ -1624,9 +1628,9 @@
+ 		rivafb_load_cursor_image(par, data, bg, fg,
+ 					 info->cursor.image.width, 
+ 					 info->cursor.image.height);
+-	}
+-	if (info->cursor.enable)
++		
+ 		par->riva.ShowHideCursor(&par->riva, 1);
++	}
  	return 0;
-diff -Naur linux-2.6.7-mm1-orig/drivers/video/fbmem.c linux-2.6.7-mm1/drivers/video/fbmem.c
---- linux-2.6.7-mm1-orig/drivers/video/fbmem.c	2004-06-21 16:49:22.000000000 +0000
-+++ linux-2.6.7-mm1/drivers/video/fbmem.c	2004-06-21 17:12:07.429082584 +0000
-@@ -1005,7 +1005,11 @@
+ }
  
- 			fb_set_cmap(&info->cmap, 1, info);
+@@ -1638,6 +1642,31 @@
+ 	return 0;
+ }
  
--			notifier_call_chain(&fb_notifier_list, FB_EVENT_MODE_CHANGE, info);
-+			if (info->flags & FBINFO_MISC_MODECHANGEUSER) {
-+				notifier_call_chain(&fb_notifier_list, 
-+						    FB_EVENT_MODE_CHANGE, info);
-+				info->flags &= ~FBINFO_MISC_MODECHANGEUSER;
-+			}
++static void rivafb_state_switch(struct fb_info *info, int out, int graphics)
++{
++	struct riva_par *par = (struct riva_par *) info->par;
++
++	if (out) {
++	    if (!graphics) 
++		    par->save_state = par->initial_state;
++	} else {
++		if (graphics) {
++			par->riva.LockUnlock(&par->riva, 0);
++			riva_load_state(par, &par->save_state);
++			par->riva.LockUnlock(&par->riva, 1);
++		} else {
++			riva_common_setup(par);
++			RivaGetConfig(&par->riva, par->Chipset);
++			/* vgaHWunlock() + riva unlock (0x7F) */
++			CRTCout(par, 0x11, 0xFF);
++			par->riva.LockUnlock(&par->riva, 0);
++			
++			info->fbops->fb_set_par(info);
++		}
++	}
++	par->reset = 1;
++}
++
+ /* ------------------------------------------------------------------------- *
+  *
+  * initialization helper functions
+@@ -1659,6 +1688,7 @@
+ 	.fb_imageblit 	= rivafb_imageblit,
+ 	.fb_cursor	= rivafb_cursor,	
+ 	.fb_sync 	= rivafb_sync,
++	.fb_state_switch= rivafb_state_switch,
+ };
+ 
+ static int __devinit riva_set_fbinfo(struct fb_info *info)
+@@ -1758,10 +1788,18 @@
+ #else
+ 	/* XXX use other methods later */
+ #ifdef CONFIG_FB_RIVA_I2C
++	int i;
++
+ 	struct riva_par *par = (struct riva_par *) info->par;
+ 
+ 	riva_create_i2c_busses(par);
+-	riva_probe_i2c_connector(par, 1, &par->EDID);
++	for (i = par->bus; i >= 1; i--) {
++		riva_probe_i2c_connector(par, i, &par->EDID);
++		if (par->EDID) {
++			printk("rivafb: Found EDID Block from BUS %i\n", i);
++			break;
++		}
++	}
+ 	riva_delete_i2c_busses(par);
+ #endif
+ #endif
+@@ -1872,6 +1910,7 @@
+ 			goto err_out_free_nv3_pramin;
  		}
+ 		rivafb_fix.accel = FB_ACCEL_NV3;
++		default_par->bus = 1;
+ 		break;
+ 	case NV_ARCH_04:
+ 	case NV_ARCH_10:
+@@ -1879,6 +1918,7 @@
+ 		default_par->riva.PCRTC0 = (unsigned *)(default_par->ctrl_base + 0x00600000);
+ 		default_par->riva.PRAMIN = (unsigned *)(default_par->ctrl_base + 0x00710000);
+ 		rivafb_fix.accel = FB_ACCEL_NV4;
++		default_par->bus = 2;
+ 		break;
  	}
- 	return 0;
-@@ -1056,7 +1060,9 @@
- 		if (copy_from_user(&var, (void *) arg, sizeof(var)))
- 			return -EFAULT;
- 		acquire_console_sem();
-+		info->flags |= FBINFO_MISC_MODECHANGEUSER;
- 		i = fb_set_var(info, &var);
-+		info->flags &= ~FBINFO_MISC_MODECHANGEUSER;
- 		release_console_sem();
- 		if (i) return i;
- 		if (copy_to_user((void *) arg, &var, sizeof(var)))
-diff -Naur linux-2.6.7-mm1-orig/include/linux/fb.h linux-2.6.7-mm1/include/linux/fb.h
---- linux-2.6.7-mm1-orig/include/linux/fb.h	2004-06-21 16:49:23.000000000 +0000
-+++ linux-2.6.7-mm1/include/linux/fb.h	2004-06-21 17:12:36.452670328 +0000
-@@ -530,6 +530,8 @@
- #define FBINFO_HWACCEL_YPAN		0x2000 /* optional */
- #define FBINFO_HWACCEL_YWRAP		0x4000 /* optional */
  
-+#define FBINFO_MISC_MODECHANGEUSER     0x10000 /* mode change request
-+						  from userspace */
+@@ -1997,6 +2037,8 @@
+ 		iounmap((caddr_t)par->riva.PRAMIN);
+ 		release_mem_region(info->fix.smem_start + 0x00C00000, 0x00008000);
+ 	}
++	if (info->monspecs.modedb) 
++		fb_destroy_modedb(info->monspecs.modedb);
+ 	kfree(info->pixmap.addr);
+ 	kfree(par);
+ 	kfree(info);
+diff -Naur linux-2.6.7-mm1-orig/drivers/video/riva/rivafb.h linux-2.6.7-mm1/drivers/video/riva/rivafb.h
+--- linux-2.6.7-mm1-orig/drivers/video/riva/rivafb.h	2004-06-21 13:27:47.000000000 +0000
++++ linux-2.6.7-mm1/drivers/video/riva/rivafb.h	2004-06-21 18:02:22.000000000 +0000
+@@ -50,6 +50,7 @@
  
- struct fb_info {
- 	int node;
+ 	struct riva_regs initial_state;	/* initial startup video mode */
+ 	struct riva_regs current_state;
++	struct riva_regs save_state;
+ 	struct vgastate state;
+ 	atomic_t ref_count;
+ 	u32 cursor_data[32 * 32/4];
+@@ -60,6 +61,8 @@
+ 	Bool SecondCRTC;
+ 	int FlatPanel;
+ 	struct pci_dev *pdev;
++	int bus;
++	int reset;
+ #ifdef CONFIG_MTRR
+ 	struct { int vram; int vram_valid; } mtrr;
+ #endif
+diff -Naur linux-2.6.7-mm1-orig/include/linux/console.h linux-2.6.7-mm1/include/linux/console.h
+--- linux-2.6.7-mm1-orig/include/linux/console.h	2004-06-21 13:27:00.000000000 +0000
++++ linux-2.6.7-mm1/include/linux/console.h	2004-06-21 18:03:12.000000000 +0000
+@@ -50,6 +50,7 @@
+ 	void	(*con_invert_region)(struct vc_data *, u16 *, int);
+ 	u16    *(*con_screen_pos)(struct vc_data *, int);
+ 	unsigned long (*con_getxy)(struct vc_data *, unsigned long, int *, int *);
++	void    (*con_notify)(struct vc_data *, struct vc_data *);
+ };
+ 
+ extern const struct consw *conswitchp;
+
 
 
 

@@ -1,21 +1,20 @@
-From: John Zielinski <grim@undead.cc>
-Subject: Re: fbdev upstream
-Date: Thu, 25 Dec 2003 11:53:40 -0500
+From: Johann Hanne <jhanne@gmx.de>
+Subject: [patch] triviial: add PCI id to atyfb
+Date: Thu, 25 Dec 2003 19:13:07 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3FEB1614.3080606@undead.cc>
-References: <3FD6C52C.7090906@undead.cc>  <3FDBB97F.4070207@undead.cc>	 <1072254049.739.61.camel@gaston>  <3FE9F9C3.20605@undead.cc>	 <1072305777.15461.13.camel@gaston>  <3FEA3327.6050507@undead.cc>	 <1072313855.15477.26.camel@gaston>  <3FEA430B.603@undead.cc> <1072349172.15476.40.camel@gaston>
+Message-ID: <200312251913.07445.jhanne@gmx.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_ziy6/3kh492W66V"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AZYkH-00011u-BT
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Dec 2003 08:53:57 -0800
-Received: from ns2.undead.cc ([216.126.84.18] helo=mail.undead.cc)
+	id 1AZZz5-0002ny-9b
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Dec 2003 10:13:19 -0800
+Received: from imap.gmx.net ([213.165.64.20] helo=mail.gmx.net)
 	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.24)
-	id 1AZYkG-0003Y0-QI
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Dec 2003 08:53:57 -0800
-In-Reply-To: <1072349172.15476.40.camel@gaston>
+	id 1AZZz4-0008N1-ND
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Dec 2003 10:13:18 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,54 +24,45 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Benjamin Herrenschmidt wrote:
 
->I think we need the driver to have a "detect displays" method
->ultimately, that builds either an identification string, or a
->modelist.
->
->If we go to the ID string way, it could be something like
->
->EDID,<EDID data in hex>
->APPL,<Apple old style sense code>
->FIXD,<fixed mode line>
->
->(the above are random examples coming out of my mind right now)
->
->Or we can have the driver build a modelist. Though if we are going
->to move things to userland, it makes sense to move the modelist building
->down there as well...
->  
->
+--Boundary-00=_ziy6/3kh492W66V
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Sounds good.   That way if fbcon is not being used then userland can 
-worry about everything and if it is used it can parse that data and 
-generate a good startup mode to use.
+Hi,
 
->We also want to define some hotplug events for displays
->
->Finally, we need to extend the fbdev API (via sysfs ?) to separate
->clearly the physical outputs (and detection of what they are connected
->to) from the actual CRTCs and some way to setup the mapping between
->outputs and CRTCs (1 CRTC routed to several outputs, 2 CRTCs on
->2 different outputs, etc..)
->
->I'm about to implement dual head in radeonfb, and the above is hell,
->I want to support mirroring for example, but then, you have only one
->/dev/fb entry and 2 different modes ... things like that...  Getting
->the user API right isn't simple.
->  
->
+the PCI id in this patch is used on an HP NetServer LH3000, where I've also 
+successfully tested it.
+00:07.0 VGA compatible controller: ATI Technologies Inc 3D Rage IIC (rev 7a)
+00:07.0 Class 0300: 1002:4759 (rev 7a)
 
-I see what you mean.  Looks like I need to do some research on sysfs and 
-get more familiar with it.  I'll help out any way I can.
+Cheers, Johann
 
-John
+--Boundary-00=_ziy6/3kh492W66V
+Content-Type: text/x-diff;
+  charset="us-ascii";
+  name="patch-2.4.23-kzviati"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="patch-2.4.23-kzviati"
 
+diff -uNr linux-2.4.23/drivers/video/aty/atyfb_base.c linux-2.4.23-kzviati/drivers/video/aty/atyfb_base.c
+--- linux-2.4.23/drivers/video/aty/atyfb_base.c	2003-12-17 14:07:39.000000000 +0100
++++ linux-2.4.23-kzviati/drivers/video/aty/atyfb_base.c	2003-12-17 14:11:20.000000000 +0100
+@@ -353,6 +353,7 @@
+     { 0x4755, 0x4755, 0x00, 0x00, m64n_gtb,     200,  67,  67, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT },
+     { 0x4756, 0x4756, 0x00, 0x00, m64n_iic_p,   230,  83,  83, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT },
+     { 0x4757, 0x4757, 0x00, 0x00, m64n_iic_a,   230,  83,  83, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT },
++    { 0x4759, 0x4759, 0x00, 0x00, m64n_iic_p,   230,  83,  83, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT },
+     { 0x475a, 0x475a, 0x00, 0x00, m64n_iic_a,   230,  83,  83, M64F_GT | M64F_INTEGRATED | M64F_GTB_DSP | M64F_FIFO_24 | M64F_SDRAM_MAGIC_PLL | M64F_EXTRA_BRIGHT },
+ 
+     /* Mach64 LT */
+
+--Boundary-00=_ziy6/3kh492W66V--
 
 
 

@@ -1,21 +1,21 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH] kyrofb support
-Date: Thu, 15 Jan 2004 00:31:10 +0000 (GMT)
+Subject: Re: Re: [PATCH] kyrofb support
+Date: Thu, 15 Jan 2004 00:34:08 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0401150029070.335-100000@phoenix.infradead.org>
-References: <20040113174908.487893c7.akpm@osdl.org>
+Message-ID: <Pine.LNX.4.44.0401150033430.335-100000@phoenix.infradead.org>
+References: <Pine.GSO.4.58.0401141345100.9503@waterleaf.sonytel.be>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AgvPo-00084o-Tt
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Jan 2004 16:31:16 -0800
+	id 1AgvSg-00008R-7E
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Jan 2004 16:34:14 -0800
 Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1AgvPo-00039u-G8
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Jan 2004 16:31:16 -0800
-In-Reply-To: <20040113174908.487893c7.akpm@osdl.org>
+	id 1AgvSf-0004mD-QC
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Jan 2004 16:34:14 -0800
+In-Reply-To: <Pine.GSO.4.58.0401141345100.9503@waterleaf.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,32 +27,26 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@osdl.org>
-Cc: Paul Mundt <lethal@linux-sh.org>, linux-fbdev-devel@lists.sourceforge.net
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Paul Mundt <lethal@linux-sh.org>, Andrew Morton <akpm@osdl.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
 
-Merge it in. The new changes don't hit the drivers that much. Mainly the 
-new changes are:
-
-1) Finalized cursor api.
-2) i2c support :-)
-3) DMA and memory allocation in general.
-4) sysfs support.
-
-On Tue, 13 Jan 2004, Andrew Morton wrote:
-
-> Paul Mundt <lethal@linux-sh.org> wrote:
-> >
-> > This patch adds support for the Kyro graphics boards (STG4000/PowerVR 3/etc.)
-> >  to 2.6.1. This is a direct port and substantial cleanup / rewrite of the 2.4
-> >  driver that's available in the sh64 tree at linux-sh.bkbits.net. Some of the
-> >  overlay code and the STG4000 bits are still a bit ugly, so be forewarned.
+> On Tue, 13 Jan 2004, Paul Mundt wrote:
+> > On Tue, Jan 13, 2004 at 06:09:26PM -0800, Andrew Morton wrote:
+> > > In general, what are the fbdev drivers doing here btw?  It's very strange
+> > > that some core file (fbmem.c) has to "know" about individual card drivers.
+> > > It should be sufficient for the driver to just register itself with the core
+> > > at the drivers's module_init() time.
+> > >
+> > This is done for device ordering as far as I recall. Devices listed first on
+> > the command line are numbered first, with the rest coming up in the order that
+> > they're listed in fb_drivers[].
 > 
-> OK.  Problem is that the fbdev guys seem to be cooking up an internal API
-> change.  I guess we may as well merge this driver up now and modify it if
-> and when that API change hits the tree.
-> 
-> 
+> Indeed. It's there so people can choose which is their primary display, if they
+> have multiple cards.
+
+Also cards that lack proper resource management can be initalized last.
+
 
 
 

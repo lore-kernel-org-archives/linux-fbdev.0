@@ -1,22 +1,15 @@
-From: Sven Luther <luther@lambda.u-strasbg.fr>
-Subject: board with broken vga ...
-Date: Thu, 18 Jul 2002 09:51:46 +0200
+From: "Petr Vandrovec" <VANDROVE@vc.cvut.cz>
+Subject: Re: board with broken vga ...
+Date: Thu, 18 Jul 2002 11:42:57 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20020718075146.GA6020@lambda.u-strasbg.fr>
+Message-ID: <B3CC4836A3C@vcnet.vc.cvut.cz>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7BIT
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from dpt-info.u-strasbg.fr ([130.79.44.193])
-	by usw-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17V5un-0000KP-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 18 Jul 2002 00:41:33 -0700
-Received: from lambda.u-strasbg.fr (lambda.u-strasbg.fr [130.79.90.63])
-	by dpt-info.u-strasbg.fr (8.12.3/8.12.3/Debian -4) with ESMTP id g6I7fTmR017212
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 18 Jul 2002 09:41:29 +0200
-Received: from luther by lambda.u-strasbg.fr with local (Exim 3.35 #1 (Debian))
-	id 17V64g-0001ZP-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 18 Jul 2002 09:51:46 +0200
-Content-Disposition: inline
+Received: from zikova.cvut.cz ([147.32.235.100])
+	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17V7oa-0004ib-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 18 Jul 2002 02:43:16 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,36 +20,42 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Sven Luther <luther@lambda.u-strasbg.fr>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Hello, ...
+On 18 Jul 02 at 9:51, Sven Luther wrote:
+> 
+> Ok, that said, i suppose ours are the only boards with such problems,
+> but since there is so much taken out of the drivers in your new setup
+> and put in a common place, would it not solve this problem if there were
+> an additional function which driver could provide (or fill in NULL if
+> there was no proble), for retrieving this data, which fbcon can write
+> back later on ?
 
-i am looking again at pm3fb (still old style one though).
+Unfortunately there is no such hook. Fortunately call sequence is:
 
-Permedia3 (and probably permedia2 also) has a problem with accessing vga
-stuff in mmio mode, which makes it not work correctly when the text from
-the vga console mode is copied over to the fbcon at the switch.
+your drivers's init
+   --> look and init devices
+       --> call register_framebuffer
+           --> VGACON reads contents of VGA buffer
+           --> call to fbdev setvar
+           --> upper layer restores screen
+...
+With matroxfb I moved all initialization which changes framebuffer layout
+to the setvar call, and so VGACON finds hardware in VGA, and not MMIO,
+state.
 
-I have the understanding that you moved this stuff over to some other
-place and not the pm3fb driver itself (but where ?)
+You can look at drivers/char/console.c: take_over_console calls
+save_screen, which in turn calls con_save_screen method of vgacon.
+So you can try directly overwritting vgacon's savescreen procedure
 
-I now know how to get this data by looking at the framebuffer directly
-(it is found starting at framebuffer addr + 0 in 8 byte steps.), but
-need to know how i can hook it in, to write it back.
+extern struct consw vga_con;
+vga_con.con_save_screen = myOwnSaveScreen;
 
-Also, the size of this text is somewhat of a mistery for me still.
-
-Ok, that said, i suppose ours are the only boards with such problems,
-but since there is so much taken out of the drivers in your new setup
-and put in a common place, would it not solve this problem if there were
-an additional function which driver could provide (or fill in NULL if
-there was no proble), for retrieving this data, which fbcon can write
-back later on ?
-
-Friendly,
-
-Sven Luther
+if you find that your fbdev is primary VGA device. Of course it is
+not tested, and I cannot recommend doing that...
+                                                    Petr
+                                                    
 
 
 -------------------------------------------------------

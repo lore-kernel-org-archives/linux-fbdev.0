@@ -1,23 +1,25 @@
-From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-Subject: Re: /dev/fb device files are not created.
-Date: Sat, 26 Jun 2004 17:35:07 +0200
+From: Mail Delivery Subsystem <MAILER-DAEMON@mailsv2.nec.co.jp>
+Subject: Returned mail: see transcript for details
+Date: Sun, 27 Jun 2004 05:23:41 +0900 (JST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040626153507.GJ20632@lug-owl.de>
-References: <1088247505.40dd56d1e5047@webmail.quest-innovations.com>
+Message-ID: <200406262023.i5QKNff05675@mailsv2.nec.co.jp>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="gDE3EnWm8Y4j2VPT"
+Content-Type: multipart/report; report-type=delivery-status;
+	boundary="i5QKNff05675.1088281421/mailsv2.nec.co.jp"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BeFD1-00034E-J9
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 26 Jun 2004 08:35:15 -0700
-Received: from dvmwest.gt.owl.de ([62.52.24.140])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BeFD0-0000pM-QN
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 26 Jun 2004 08:35:15 -0700
-Content-Disposition: inline
-In-Reply-To: <1088247505.40dd56d1e5047@webmail.quest-innovations.com>
+	id 1BeJiG-0007Jb-HG
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 26 Jun 2004 13:23:48 -0700
+Received: from tyo202.gate.nec.co.jp ([202.32.8.202])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1BeJiF-0005t0-HX
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 26 Jun 2004 13:23:48 -0700
+Received: from mailgate4.nec.co.jp (mailgate54.nec.co.jp [10.7.69.193])
+	by TYO202.gate.nec.co.jp (8.11.7/3.7W01080315) with ESMTP id i5QKNhY04508
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 27 Jun 2004 05:23:43 +0900 (JST)
+Received: (from root@localhost) by mailgate4.nec.co.jp (8.11.7/3.7W-MAILGATE-NEC)
+	id i5QKNh722047 for linux-fbdev-devel@lists.sourceforge.net; Sun, 27 Jun 2004 05:23:43 +0900 (JST)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,81 +31,119 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 To: linux-fbdev-devel@lists.sourceforge.net
 
+This is a MIME-encapsulated message
 
---gDE3EnWm8Y4j2VPT
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+--i5QKNff05675.1088281421/mailsv2.nec.co.jp
+
+The original message was received at Sun, 27 Jun 2004 05:23:37 +0900 (JST)
+from mailgate91.nec.co.jp [10.7.69.199]
+
+   ----- The following addresses had permanent fatal errors -----
+<yaku@css1.kbnes.nec.co.jp>
+    (reason: 550 Host unknown)
+
+   ----- Transcript of session follows -----
+550 5.1.2 <yaku@css1.kbnes.nec.co.jp>... Host unknown (Name server: css1.kbnes.nec.co.jp.: host not found)
+
+--i5QKNff05675.1088281421/mailsv2.nec.co.jp
+Content-Type: message/delivery-status
+
+Reporting-MTA: dns; mailsv2.nec.co.jp
+Received-From-MTA: DNS; mailgate91.nec.co.jp
+Arrival-Date: Sun, 27 Jun 2004 05:23:37 +0900 (JST)
+
+Final-Recipient: RFC822; yaku@css1.kbnes.nec.co.jp
+Action: failed
+Status: 5.1.2
+Remote-MTA: DNS; css1.kbnes.nec.co.jp
+Diagnostic-Code: SMTP; 550 Host unknown
+Last-Attempt-Date: Sun, 27 Jun 2004 05:23:41 +0900 (JST)
+
+--i5QKNff05675.1088281421/mailsv2.nec.co.jp
+Content-Type: message/rfc822
+
+Return-Path: <linux-fbdev-devel@lists.sourceforge.net>
+Received: from mailgate41.nec.co.jp (mailgate91.nec.co.jp [10.7.69.199]) by mailsv2.nec.co.jp (8.11.7/3.7W-MAILSV2-NEC) with ESMTP
+	id i5QKNbf05651 for <yaku@css1.kbnes.nec.co.jp>; Sun, 27 Jun 2004 05:23:37 +0900 (JST)
+Received: from mailgate3.nec.co.jp ([10.7.69.162]) by mailgate41.nec.co.jp (8.11.7/3.7W-MAILGATE-NEC) with ESMTP
+	id i5QKNa805938 for <yaku@css1.kbnes.nec.co.jp>; Sun, 27 Jun 2004 05:23:36 +0900 (JST)
+Received: (from root@localhost) by mailgate3.nec.co.jp (8.11.7/3.7W-MAILGATE-NEC)
+	id i5QKNZe04433 for yaku@css1.kbnes.nec.co.jp; Sun, 27 Jun 2004 05:23:35 +0900 (JST)
+Received: from TYO260.gate.nec.co.jp (tyo260-l.gate.nec.co.jp [192.168.1.120]) by mailsv26.nec.co.jp (8.11.7/3.7W-MAILSV2-NEC) with ESMTP
+	id i5QKNY304083 for <yaku@css1.kbnes.nec.co.jp>; Sun, 27 Jun 2004 05:23:35 +0900 (JST)
+Received: from css1.kbnes.nec.co.jp (pcp03535499pcs.alico01.fl.comcast.net [68.54.197.217])
+	by TYO260.gate.nec.co.jp (8.11.7/3.7W01080315) with ESMTP id i5QKNOR28672
+	for <yaku@css1.kbnes.nec.co.jp>; Sun, 27 Jun 2004 05:23:24 +0900 (JST)
+Message-Id: <200406262023.i5QKNOR28672@TYO260.gate.nec.co.jp>
+From: linux-fbdev-devel@lists.sourceforge.net
+To: yaku@css1.kbnes.nec.co.jp
+Subject: Mail Delivery (failure yaku@css1.kbnes.nec.co.jp)
+Date: Sat, 26 Jun 2004 16:23:25 -0400
+MIME-Version: 1.0
+Content-Type: multipart/related;
+	type="multipart/alternative";
+	boundary="----=_NextPart_000_001B_01C0CA80.6B015D10"
+X-Priority: 3
+X-MSMail-Priority: Normal
+
+This is a multi-part message in MIME format.
+
+------=_NextPart_000_001B_01C0CA80.6B015D10
+Content-Type: text/plain; charset=iso-2022-jp
+Content-Transfer-Encoding: 7bit
+
+------------------  Virus Warning Message ---
+
+Found virus HTML_Netsky.P in file email-body
+The uncleanable file is deleted.
+
+Have detected viruses in mails sent to you. MAILGATE deleted viruses or files  contained viruses. If you have questions about this message, please consult with virus-admin@nic.nec.co.jp.| あなた宛に送付されたメールからウイルスが検出されたため、該当添付ファイルのみメールから駆除/削除しました。下記URLを参照の上、不明点がある場合、virus-admin@nic.nec.co.jpにご相談下さい。
+
+Found virus WORM_NETSKY.P in file message.scr
+The uncleanable file is deleted.
+
+Have detected viruses in mails sent to you. MAILGATE deleted viruses or files  contained viruses. If you have questions about this message, please consult with virus-admin@nic.nec.co.jp.| あなた宛に送付されたメールからウイルスが検出されたため、該当添付ファイルのみメールから駆除/削除しました。下記URLを参照の上、不明点がある場合、virus-admin@nic.nec.co.jpにご相談下さい。
+
+-About Virus Scan Gate(Only jp): http://www.ipc.nec.co.jp/virus/mgate/ -
+
+------=_NextPart_000_001B_01C0CA80.6B015D10
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_001_001C_01C0CA80.6B015D10"
+
+------=_NextPart_001_001C_01C0CA80.6B015D10
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, 2004-06-26 12:58:25 +0200, Jaap van den Handel <jaap@quest-innovati=
-ons.com>
-wrote in message <1088247505.40dd56d1e5047@webmail.quest-innovations.com>:
-> I'm still working on the frame buffer driver for the vga solution my comp=
-any =20
-> has developed. I created a test program which prints the memory addresses.
 
-Where's actual source code for that? What kind of device is that? PCI
-based? Is it used on PCs? I've never ever seen that piece of hardware,
-there's no pointer to hardware docs, not even a name for that device
-so that anybody could google for it...
+------=_NextPart_001_001C_01C0CA80.6B015D10
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-> when I create the files manually, the vfb.o and our own driver both seem =
-to=20
-> return address 0x00000003 I think this cannot be ok.
 
-Right, looks wrong. From all the data provided about the device and it's
-driver, the best guess for a base address is to read
-(BITS_PER_LONG =3D=3D 32? 4: 8) bytes from /dev/random...
+------------------  Virus Warning Message ---
 
-> Is there somebody who knows what the problem might be?
+email-body is removed from here because it contains a virus.
 
-Not until you put source code on the table and...
+-About Virus Scan Gate(Only jp): http://www.ipc.nec.co.jp/virus/mgate/ -
+------=_NextPart_001_001C_01C0CA80.6B015D10--
 
-> Confidentiality Note:
-> This e-mail and any attachments are confidential and the information here=
-in
-> is property of Quest Innovations B.V.. If you are not the intended recipi=
-ent(s) of this e-mail,you are hereby notified that any dissemination, distr=
-ibution,=20
-> copying, use of or reliance upon the information contained within this e-=
-mail=20
-> or attachments is unauthorized and strictly prohibited. If you have recei=
-ved
-> this e-mail in error, please notify us immediately by returning it to the
-> sender and delete this copy from your system.
->=20
-> Quest Innovations B.V.
+------=_NextPart_000_001B_01C0CA80.6B015D10
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-drop this silly BS on publically accessible, web-archived mailing
-lists:) If it's added to any email sent out from your company, maybe
-you'd ask to officially use something like a @gmx.net based email
-address for kernel development; if you're intending to build a
-proprietary driver, don't expect too much help...
 
-MfG, JBG
+------------------  Virus Warning Message ---
 
---=20
-   Jan-Benedict Glaw       jbglaw@lug-owl.de    . +49-172-7608481
-   "Eine Freie Meinung in  einem Freien Kopf    | Gegen Zensur | Gegen Krieg
-    fuer einen Freien Staat voll Freier B=FCrger" | im Internet! |   im Ira=
-k!
-   ret =3D do_actions((curr | FREE_SPEECH) & ~(NEW_COPYRIGHT_LAW | DRM | TC=
-PA));
+message.scr is removed from here because it contains a virus.
 
---gDE3EnWm8Y4j2VPT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+-About Virus Scan Gate(Only jp): http://www.ipc.nec.co.jp/virus/mgate/ -
+------=_NextPart_000_001B_01C0CA80.6B015D10--
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
 
-iD8DBQFA3ZerHb1edYOZ4bsRAjNlAJsH0kzTdoa7lWLvhxN50KT6tm742QCeIbwV
-nwy6yMfBJ2DoRpaoYUgWDeM=
-=YRvr
------END PGP SIGNATURE-----
 
---gDE3EnWm8Y4j2VPT--
+--i5QKNff05675.1088281421/mailsv2.nec.co.jp--
+
 
 
 -------------------------------------------------------

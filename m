@@ -1,17 +1,17 @@
 From: James Simmons <jsimmons@infradead.org>
 Subject: Re: Some questions
-Date: Thu, 6 Mar 2003 15:25:51 +0000 (GMT)
+Date: Thu, 6 Mar 2003 15:27:03 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0303061524480.4540-100000@phoenix.infradead.org>
-References: <20030306114009.GA1770@iliana>
+Message-ID: <Pine.LNX.4.44.0303061526500.4540-100000@phoenix.infradead.org>
+References: <20030306103156.GA864@iliana>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18qxGW-0004Dc-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 06 Mar 2003 07:26:36 -0800
-In-Reply-To: <20030306114009.GA1770@iliana>
+	id 18qxHX-0004e0-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 06 Mar 2003 07:27:40 -0800
+In-Reply-To: <20030306103156.GA864@iliana>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,18 +27,16 @@ To: Sven Luther <luther@dpt-info.u-strasbg.fr>
 Cc: Antonino Daplas <adaplas@pol.net>, Thomas Winischhofer <thomas@winischhofer.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> > Oops, totally missed your question :-)  But yes, I think the EDID block
-> > contains information about the monitor type, not sure thogh.
+> > (see fb_get_mode() and fb_validate_mode() in fbmon.c)
+> > 
+> > And if you use very narrow vsync and hsync ranges, then the "stale"
+> > pixelclock will always most certainly be invalid.
 > 
-> X finds :
-> 
-> Digital Display Input
-> 
-> So, i guess this is it.
+> BTW, do we have an easy way of knowing if it is an LCD or analog monitor
+> which is attached to the card (or even a TV) ? I think the radeonfb
+> knows how to do this, not sure though.
 
-Yes the EDID block does have info on the monitor type. It even has the 
-vendor name. I wonder if it can detect when you unplug a monitor and plug 
-in a new one?
+Not that I know of.
 
 
 

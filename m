@@ -1,82 +1,80 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Subject: Re: Current discussion about the future of free software graphics
-Date: Thu, 13 May 2004 12:39:06 +0200
-Sender: dri-devel-admin@lists.sourceforge.net
-Message-ID: <1084444744.3032.93.camel@thor.asgaard.local>
-References: <20040512033045.16034.qmail@web14921.mail.yahoo.com>
-Reply-To: dri-devel@lists.sourceforge.net
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 0/3] fb accel capabilities (aka fast
+ radeon fb, the right way)
+Date: Thu, 13 May 2004 13:15:08 +0200 (MEST)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.GSO.4.58.0405131309030.9790@waterleaf.sonytel.be>
+References: <Pine.LNX.4.58.0405130131460.2282@rosencrantz.theboonies.us>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <dri-devel-admin@lists.sourceforge.net>
-In-Reply-To: <20040512033045.16034.qmail@web14921.mail.yahoo.com>
-Errors-To: dri-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BOEBM-0006CR-9g
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 04:15:20 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BOEBL-0007nh-En
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 04:15:19 -0700
+In-Reply-To: <Pine.LNX.4.58.0405130131460.2282@rosencrantz.theboonies.us>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:dri-devel@lists.sourceforge.net>
-List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=dri-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Jon Smirl <jonsmirl@yahoo.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, dri-devel@lists.sourceforge.net
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: David Eger <eger-dated-1085010079.06feaf@theboonies.us>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-On Wed, 2004-05-12 at 05:30, Jon Smirl wrote:
-> If everyone will please read Benh's original post describing this... Ben =
-and I
-> had been emailing on this topic before he wrote this.
->=20
-> --- Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> > I agree with the idea of moving the EDID decoding & mode selection to
-> > userland. In this regard, though, I beleive we should aim toward some
-> > simple library that sits with the kernel, eventually distributed with
-> > the kernel tree, to live in initramfs optionally since it may be
-> > required to even get a console at boot (which is fine, initramfs is
-> > available early). The video cards themselves have PCI drivers that can
-> > "trigger" detection by the library via hotplug, the library could manage
-> > things like persistent configuration, either separate desktops or
-> > geometry of a complex desktop, etc... and eventually notification of
-> > userland clients of mode changes.
-> >=20
-> > One reason for that is lots of monitors lie about their capabilities in
-> > their EDID block, so we want "override" files.
-> >=20
-> > The kernel driver in this case doesn't need to be that much different
-> > than the current fbdev's though, except that we want to move the HW
-> > access for graphics commands to the kernel too, which basically turns
-> > into merging the DRI driver and the fbdev. There is no need, I think, to
-> > re-invent the wheel from scratch here, it would be a lot more realistic
-> > to build on top of those existing pieces.
->=20
-> What this is saying is that very early in the boot process the graphics d=
-river
-> will be initialized. At this point it will generate a hotplug event. This=
- event
-> will be handled by an app and lib that live in initramfs.  This is not sa=
-ying
-> that mode-setting will be delayed until normal user space starts.
+On Thu, 13 May 2004, David Eger wrote:
+> I fleshed out Geert's idea from the last radeonfb thread on bringing
+> fbcon's interaction with the underlying framebuffer drivers up-to-date.
+> Now fbcon should be smart and actually *use* fb-driver provided accel
+> functions ;-)
 
-Sure, because Ben doesn't talk about moving mode-setting to userland at
-all AFAICT. :)
+Nice!
 
+> Specifically, I've added a .hwaccel field to fb_fix_screeninfo, which
+> should serve as the way framebuffers pass hints to higher layers.
 
-> I've already built a very messy prototype by moving the existing fbdev=20
-> code to user space and it works just fine.=20
+I think we agreed to put it in fb_info instead, since it doesn't really matter
+for user space.
 
-Maybe if others could play with this prototype...
+> This should totally obsolete the accel_flags in var (which till now has
+> had one half-heartedly used value FB_ACCELF_TEXT).
 
+Well, we still need a way to know when the fbdev has to reinitialize its accel
+engine, when switching the console from graphics mode (user space does accel)
+to text mode (kernel uses accel). Currently this is done when FB_ACCELF_TEXT is
+set.
 
---=20
-Earthling Michel D=C3=A4nzer      |     Debian (powerpc), X and DRI develop=
-er
-Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=3Ddaenzer
+BTW, we've been talking about allowing kernel messages (mainly oops and panic)
+to show up under X. Since we cannot use the accel engine for that, perhaps we
+need different routines for fb_{fillrect,copyarea,imageblit}() for the
+accelerated vs. non-accelerated cases? And fbcon could compare the function
+pointers, instead of looking at .hwaccel.
 
+(Yes, I know it's still possible to lock up your card when using unaccelerated
+ drawing while an accelerated operation is in progress on some cards).
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------
 This SF.Net email is sponsored by: SourceForge.net Broadband
 Sign-up now for SourceForge Broadband and get the fastest
 6.0/768 connection for only $19.95/mo for the first 3 months!
-http://ads.osdn.com/?ad_id=3D2562&alloc_id=3D6184&op=3Dclick
---
+http://ads.osdn.com/?ad_id=2562&alloc_id=6184&op=click

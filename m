@@ -1,21 +1,21 @@
-From: Kronos <kronos@people.it>
-Subject: Re: why does radeonfb work fine in 2.6, but not in 2.4.29-pre1?
-Date: Mon, 29 Nov 2004 22:35:10 +0100
-Message-ID: <20041129213510.GA9551@dreamland.darkstar.lan>
-References: <20041128184606.GA2537@middle.of.nowhere>
+From: "Richard Purdie" <rpurdie@rpsys.net>
+Subject: fbdev: Add FB_EVENT_BLANK to notify listeners of a blanking status change
+Date: Mon, 29 Nov 2004 22:36:59 -0000
+Message-ID: <01f301c4d664$5c950440$0f01a8c0@max>
+References: <41A36DA5.8090200@fujitsu-siemens.com> <200411280824.01338.adaplas@hotpop.com> <02cc01c4d4e5$75e4e170$0f01a8c0@max> <200411280914.40352.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CYtB0-0003cd-2z
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Nov 2004 13:35:18 -0800
-Received: from mail-relay-4.tiscali.it ([213.205.33.44])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CYtAy-0006gt-Sh
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Nov 2004 13:35:18 -0800
-Content-Disposition: inline
-In-Reply-To: <20041128184606.GA2537@middle.of.nowhere>
+	id 1CYuBa-0008LX-91
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Nov 2004 14:39:58 -0800
+Received: from tim.rpsys.net ([194.106.48.114] ident=0)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1CYuBZ-0001eI-28
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Nov 2004 14:39:58 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,142 +26,58 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; format="flowed"; charset="us-ascii"; reply-type="original"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Jurriaan <thunder7@xs4all.nl>, linux-kernel@vger.kernel.org
+Cc: adaplas@pol.net, zap@homelink.ru
 
-Il Sun, Nov 28, 2004 at 07:46:06PM +0100, Jurriaan ha scritto: 
-> The same radeonfb-setup works fine in every 2.6 kernel I can remember
-> (last tested with 2.6.10-rc2-mm3) but give the dreaded 'cannot map FB'
-> in 2.4.29-pre1.
-> 
-> The card has 128 Mb of ram, and my system has 3 Mb of RAM.
-> 
-> Is there any reason the ioremap() call works on 2.6, but doesn't on 2.4?
+Add FB_EVENT_BLANK to notify listeners of a blanking status change. This 
+allows backlight drivers to be implemented completely separately from any 
+framebuffer driver. The new blanking mode is passed in event.data.
 
-Driver in 2.6 only ioremap()s the memory needed for the framebuffer,
-while the one in 2.4 ioremap()s all the VRAM (and fails).
+Signed-off-by: Richard Purdie <rpurdie@rpsys.net>
 
-> Is there any way to test 2.4 with my radeonfb and all of my memory?
+--- linux-2.6.10-rc2/drivers/video/fbmem.c~fb_blank
++++ linux-2.6.10-rc2/drivers/video/fbmem.c
+@@ -744,9 +744,14 @@
+ fb_blank(struct fb_info *info, int blank)
+ {
+  int err = -EINVAL;
++ struct fb_event event;
 
-I proposed the following patch some time ago (for 2.4.28-pre2 IIRC) as a
-quick fix:
-
---- a/drivers/video/radeonfb.c	2004-06-27 22:26:56.000000000 +0200
-+++ b/drivers/video/radeonfb.c	2004-06-29 19:13:24.000000000 +0200
-@@ -176,7 +176,8 @@
- #define RTRACE		if(0) printk
- #endif
- 
--
-+#define MAX_MAPPED_VRAM (2048*2048*4)
-+#define MIN_MAPPED_VRAM (1024*768*1)
- 
- enum radeon_chips {
- 	RADEON_QD,
-@@ -499,7 +500,8 @@
- 
- 	short chipset;
- 	unsigned char arch;
--	int video_ram;
-+	unsigned int video_ram;
-+	unsigned int mapped_vram;
- 	u8 rev;
- 	int pitch, bpp, depth;
- 	int xres, yres, pixclock;
-@@ -1823,8 +1825,19 @@
- 		}
- 	}
- 
--	rinfo->fb_base = (unsigned long) ioremap (rinfo->fb_base_phys,
--				  		  rinfo->video_ram);
-+	if (rinfo->video_ram < rinfo->mapped_vram)
-+		rinfo->mapped_vram = rinfo->video_ram;
-+	else
-+		rinfo->mapped_vram = MAX_MAPPED_VRAM;
-+	do {
-+		rinfo->fb_base = (unsigned long) ioremap (rinfo->fb_base_phys,
-+				  		  rinfo->mapped_vram);
-+		if (rinfo->fb_base)
-+			break;
+   if (blank > FB_BLANK_POWERDOWN)
+    blank = FB_BLANK_POWERDOWN;
 +
-+		rinfo->mapped_vram /= 2;
-+	} while(rinfo->mapped_vram > MIN_MAPPED_VRAM);
-+	
- 	if (!rinfo->fb_base) {
- 		printk ("radeonfb: cannot map FB\n");
- 		iounmap ((void*)rinfo->mmio_base);
-@@ -1835,6 +1848,7 @@
- 		kfree (rinfo);
- 		return -ENODEV;
- 	}
-+	RTRACE(KERN_INFO "radeonfb: mapped %dk videoram\n", rinfo->mapped_vram/1024);
- 
- 	/* currcon not yet configured, will be set by first switch */
- 	rinfo->currcon = -1;
-@@ -2204,7 +2218,7 @@
-                 printk("radeonfb: using max available virtual resolution\n");
-                 for (i=0; modes[i].xres != -1; i++) {
-                         if (modes[i].xres * nom / den * modes[i].yres <
--                            rinfo->video_ram / 2)
-+                            rinfo->mapped_vram / 2)
-                                 break;
-                 }
-                 if (modes[i].xres == -1) {
-@@ -2217,15 +2231,15 @@
-                 printk("radeonfb: virtual resolution set to max of %dx%d\n",
-                         v->xres_virtual, v->yres_virtual);
-         } else if (v->xres_virtual == -1) {
--                v->xres_virtual = (rinfo->video_ram * den /   
-+                v->xres_virtual = (rinfo->mapped_vram * den /   
-                                 (nom * v->yres_virtual * 2)) & ~15;
-         } else if (v->yres_virtual == -1) {
-                 v->xres_virtual = (v->xres_virtual + 15) & ~15;
--                v->yres_virtual = rinfo->video_ram * den /
-+                v->yres_virtual = rinfo->mapped_vram * den /
-                         (nom * v->xres_virtual *2);
-         } else {
-                 if (v->xres_virtual * nom / den * v->yres_virtual >
--                        rinfo->video_ram) {
-+                        rinfo->mapped_vram) {
-                         return -EINVAL;
-                 }
-         }
-@@ -2261,7 +2275,7 @@
- 	sprintf (fix->id, "ATI Radeon %s", rinfo->name);
-         
-         fix->smem_start = rinfo->fb_base_phys;
--        fix->smem_len = rinfo->video_ram;
-+        fix->smem_len = rinfo->mapped_vram;
- 
-         fix->type = disp->type;
-         fix->type_aux = disp->type_aux;
-@@ -2429,6 +2443,9 @@
-                         return -EINVAL;
-         }
- 
-+	if (((v.xres_virtual * v.yres_virtual * nom) / den) > rinfo->mapped_vram)
-+		return -EINVAL;
-+
-         if (radeonfb_do_maximize(rinfo, var, &v, nom, den) < 0)
-                 return -EINVAL;  
-                 
++ event.info = info;
++ event.data = &blank;
++ notifier_call_chain(&fb_notifier_list, FB_EVENT_BLANK, &event);
 
-Problem is that fix->smem_len is used both by FBIOGET_FSCREENINFO to
-report the amount of VRAM to userspace and by read/write/mmap on fb
-for bounds checking. So with my patch FBIOGET_FSCREENINFO reports mapped
-VRAM instead of physical VRAM.
+  if (info->fbops->fb_blank)
+    err = info->fbops->fb_blank(blank, info);
+--- linux-2.6.10-rc2/include/linux/fb.h~fb_blank
++++ linux-2.6.10-rc2/include/linux/fb.h
+@@ -488,6 +488,8 @@
+ #define FB_EVENT_GET_CONSOLE_MAP        0x06
+ /*      set console to framebuffer mapping */
+ #define FB_EVENT_SET_CONSOLE_MAP        0x07
++/*      Blanking on the display on this fb_info has changed */
++#define FB_EVENT_BLANK                  0x08
 
-smem_len should be splitted in (say) smem_mapped (for read/write/mmap)
-and smem_total_vram (for FBIOGET_FSCREENINFO). I'll code something
-tomorrow... -ENEEDSLEEP ;)
 
-Luca
--- 
-Home: http://kronoz.cjb.net
-E' stato a causa di una donna che ho cominciato a bere e non ho mai
-avuto la cortesia di ringraziarla.
+ struct fb_event {
+--- linux-2.6.10-rc2/drivers/video/console/fbcon.c~fb_blank
++++ linux-2.6.10-rc2/drivers/video/console/fbcon.c
+@@ -2063,8 +2063,7 @@
+    fbcon_cursor(vc, blank ? CM_ERASE : CM_DRAW);
+    ops->cursor_flash = (!blank);
+
+-   if (info->fbops->fb_blank)
+-    ret = info->fbops->fb_blank(blank, info);
++  ret = fb_blank(info, blank);
+
+    if (ret)
+     fbcon_generic_blank(vc, info, blank);
+
+
 
 
 -------------------------------------------------------

@@ -1,22 +1,22 @@
-From: Andrew Walrond <andrew@walrond.org>
-Subject: Re: I want to use fb device for my 3D game. Can it do what I need?
-Date: Sat, 10 Jan 2004 00:03:23 +0000
+From: Javier Villavicencio <jvillavicencio@arnet.com.ar>
+Subject: Re: Re: New FBDev patch (a little report)
+Date: Sat, 10 Jan 2004 14:15:40 -0300
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200401100003.23933.andrew@walrond.org>
-References: <200401092200.10820.andrew@walrond.org> <20040109223421.GC20620@guug.org>
+Message-ID: <20040110141540.0f4e3204.jvillavicencio@arnet.com.ar>
+References: <20040108231217.GB7085@louise.pinerecords.com>
+	<Pine.LNX.4.44.0401090035080.17957-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1Af6bB-0001Od-EM
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Jan 2004 16:03:29 -0800
-Received: from host213-160-108-25.dsl.vispa.com ([213.160.108.25] helo=cenedra.office)
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
-	id 1Af6bA-0003w8-Qx
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Jan 2004 16:03:29 -0800
-In-Reply-To: <20040109223421.GC20620@guug.org>
-Content-Disposition: inline
+	id 1AfMi9-0003Pz-DN
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 10 Jan 2004 09:15:45 -0800
+Received: from [63.246.134.60] (helo=refusespam.com)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1AfMi9-0004n6-0C
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 10 Jan 2004 09:15:45 -0800
+In-Reply-To: <Pine.LNX.4.44.0401090035080.17957-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,24 +27,52 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Otto Solares <solca@guug.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: James Simmons <jsimmons@infradead.org>
 
-On Friday 09 Jan 2004 10:34 pm, Otto Solares wrote:
->
-> Hmm.. cool! how you construct the 3D scenes?
->
-Big question in ... 8 words!
-Quick answer - custom 3D renderer :)
+Hi, I've tested this patch (after the radeon patch update), and it's working
+almost perfect with just one problem: going back from X the framebuffer
+screen is completely distorted, but it can be corrected changing the depth
+with fbset (-depth 8/16/32 and back to the working depth).
+I have a radeon 9600 (or RV350 AP) and of course the -current- 2.6.x
+driver doesn't include this PCI_ID in the code, so it "shouldn't work", but
+I've added (from 2.4) the PCI_ID and some code to recognize/setup the
+rv350 and the current 2.6.x driver -just- worked, I cannot use fbset to
+set resolutions/depths, because it screws up the whole framebuffer. But
+going back from X and to X works ok if I don't touch the framebuffer with
+fbset. This is with my modified verison of the 2.6.x old driver.
+IIRC there was a mail about the binary driver from ATI touching something
+hidden in the chip and that I think may be the cause of this "distortion" when
+switching from and to X (yes, sometimes X screws up when switching from
+framebuffer, but running any GL app corrects everything in X, ej: glxgears).
+So the strange thing about this is the old driver working "almost" correctly
+with the binary X drivers from ATI and the new driver working flawless in 
+console but destroying completely the state of the card when switching
+to/from X (and of course X using binary ATI drivers).
 
->
-> You would probably want to look at SDL's fbdev backend.
->
+Salu2.
+Javier Villavicencio.
 
-Good hint. I've just checked out SDL and it looks useful.
+On Fri, 9 Jan 2004 00:35:20 +0000 (GMT)
+James Simmons <jsimmons@infradead.org> wrote:
 
-Andrew
-
+> 
+> 
+> Try it again. I missed a patch for the radeon.
+> 
+> 
+> 
+> 
+> -------------------------------------------------------
+> This SF.net email is sponsored by: Perforce Software.
+> Perforce is the Fast Software Configuration Management System offering
+> advanced branching capabilities and atomic changes on 50+ platforms.
+> Free Eval! http://www.perforce.com/perforce/loadprog.html
+> _______________________________________________
+> Linux-fbdev-devel mailing list
+> Linux-fbdev-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+> 
 
 
 -------------------------------------------------------

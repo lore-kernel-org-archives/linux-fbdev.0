@@ -1,17 +1,22 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH][2.5] fbcon.c complement_mask bug (fwd)
-Date: Mon, 16 Jun 2003 10:48:34 +0200 (MEST)
+From: Sven Luther <sven.luther@wanadoo.fr>
+Subject: radeonfb on linuxppc_2_4 tree ...
+Date: Mon, 16 Jun 2003 18:55:34 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0306161048230.14770-100000@vervain.sonytel.be>
+Message-ID: <20030616165534.GA6319@iliana>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=witte.sonytel.be)
+Received: from smtp8.wanadoo.fr ([193.252.22.30] helo=mwinf0102.wanadoo.fr)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19Rpg1-0000NW-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 16 Jun 2003 01:49:22 -0700
-Received: from vervain.sonytel.be (localhost [127.0.0.1])
-	by witte.sonytel.be (8.12.9/8.12.9) with ESMTP id h5G8mYpI002318
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 16 Jun 2003 10:48:34 +0200 (MEST)
+	id 19RxGn-00077r-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 16 Jun 2003 09:55:49 -0700
+Received: from iliana (unknown [81.50.248.12])
+	by mwinf0102.wanadoo.fr (SMTP Server) with ESMTP id 9994B1BE7BB5
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 16 Jun 2003 18:55:42 +0200 (CEST)
+Received: from luther by iliana with local (Exim 3.36 #1 (Debian))
+	id 19RxGZ-0001eO-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 16 Jun 2003 18:55:35 +0200
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,58 +26,44 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-fbdev-devel@lists.sourceforge.net
 
----------- Forwarded message ----------
-Date: Sun, 15 Jun 2003 23:34:45 -0400
-From: Chris Heath <chris@heathens.co.nz>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH][2.5] fbcon.c complement_mask bug
+Hello,=20
 
-When using a frame buffer console with a 512-character font, the mouse
-pointer starts using the wrong complement_mask after a console reset.
+I am trying to build a linuxppc_2_4 bk tree checked out with the 2.4.21
+tag. But i get this error :
 
-This patch is against 2.5.71.  It fixes s_complement_mask so that it is
-always a valid default value for complement_mask.
+radeonfb.c: Dans la fonction =AB radeonfb_pci_register =BB:
+radeonfb.c:1004: error: `PCI_DEVICE_ID_RADEON_LY' undeclared (first use in =
+this function)
+radeonfb.c:1004: error: (Each undeclared identifier is reported only once
+radeonfb.c:1004: error: for each function it appears in.)
+radeonfb.c:1005: error: `PCI_DEVICE_ID_RADEON_LZ' undeclared (first use in =
+this function)
+radeonfb.c: Hors de toute fonction :
+radeonfb.c:820: attention : `OUTMC' declared `static' but never defined
+radeonfb.c:821: attention : `INMC' declared `static' but never defined
+radeonfb.c:822: attention : `radeon_pm_disable_dynamic_mode' declared `stat=
+ic' but never defined
+radeonfb.c:823: attention : `radeon_pm_enable_dynamic_mode' declared `stati=
+c' but never defined
+radeonfb.c:824: attention : `radeon_pm_yclk_mclk_sync' declared `static' bu=
+t never defined
+radeonfb.c:825: attention : `radeon_pm_program_mode_reg' declared `static' =
+but never defined
+radeonfb.c:826: attention : `radeon_pm_enable_dll' declared `static' but ne=
+ver defined
+radeonfb.c:827: attention : `radeon_pm_full_reset_sdram' declared `static' =
+but never defined
+make[4]: *** [radeonfb.o] Erreur 1
 
-Chris
+Is this an error of my checkout, or a problem with the 2.4.21 tag of the
+linuxppc_2_4 tree ?
 
+Friendly,
 
---- a/drivers/video/console/fbcon.c	2003-06-01 09:56:46.000000000 -0400
-+++ b/drivers/video/console/fbcon.c	2003-06-15 22:54:47.000000000 -0400
-@@ -1826,8 +1826,10 @@
- 	vc->vc_font.height = h;
- 	if (vc->vc_hi_font_mask && cnt == 256) {
- 		vc->vc_hi_font_mask = 0;
--		if (vc->vc_can_do_color)
-+		if (vc->vc_can_do_color) {
- 			vc->vc_complement_mask >>= 1;
-+			vc->vc_s_complement_mask >>= 1;
-+		}
- 
- 		/* ++Edmund: reorder the attribute bits */
- 		if (vc->vc_can_do_color) {
-@@ -1847,8 +1849,10 @@
- 		}
- 	} else if (!vc->vc_hi_font_mask && cnt == 512) {
- 		vc->vc_hi_font_mask = 0x100;
--		if (vc->vc_can_do_color)
-+		if (vc->vc_can_do_color) {
- 			vc->vc_complement_mask <<= 1;
-+			vc->vc_s_complement_mask <<= 1;
-+		}
- 
- 		/* ++Edmund: reorder the attribute bits */
- 		{
-
--
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
-
+Sven Luther
 
 
 -------------------------------------------------------

@@ -1,20 +1,14 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: Re: [Linux-fbdev-devel] Re: radeon, apertures & memory mapping
-Date: Mon, 14 Mar 2005 18:40:25 +0200
-Message-ID: <20050314164025.GA25171@sci.fi>
-References: <1110715499.14684.132.camel@gaston>
-	<9e473391050313081937cde207@mail.gmail.com>
-	<1110750553.5787.155.camel@gaston>
-	<9e47339105031314101c89e50e@mail.gmail.com>
-	<1110752401.19810.177.camel@gaston>
-	<9e47339105031315002a444f00@mail.gmail.com>
-	<16948.56755.114690.200854@cargo.ozlabs.ibm.com>
-	<20050314005613.GA21434@sci.fi> <1110762359.19810.209.camel@gaston>
-	<ye8zmx68a2b.fsf@horse01.daimi.au.dk>
+From: Donnie Berkholz <spyderous@gentoo.org>
+Subject: Re: radeon, apertures & memory mapping
+Date: Mon, 14 Mar 2005 13:27:03 -0800
+Message-ID: <423601A7.8040305@gentoo.org>
+References: <1110677744.19810.80.camel@gaston>
+	<20050313082216.GA7362@sci.fi>	<1110705646.14684.126.camel@gaston>
+	<20050313103936.GA11002@sci.fi>	<1110715499.14684.132.camel@gaston>
+	<20050314161630.GA21086@sci.fi>
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-In-Reply-To: <ye8zmx68a2b.fsf@horse01.daimi.au.dk>
+In-Reply-To: <20050314161630.GA21086@sci.fi>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
 	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
@@ -26,25 +20,20 @@ List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
 Sender: xorg-bounces@lists.freedesktop.org
 Errors-To: xorg-bounces@lists.freedesktop.org
 Content-Type: text/plain; charset="iso-8859-1"
-To: Soeren Sandmann <sandmann@daimi.au.dk>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Jon Smirl <jonsmirl@yahoo.com>, Paul Mackerras <paulus@samba.org>, xorg@lists.freedesktop.org, dri-devel@lists.sourceforge.net
+To: =?ISO-8859-1?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>
+Cc: Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, dri-devel@lists.sourceforge.net, xorg@lists.freedesktop.org
 
-On Mon, Mar 14, 2005 at 05:30:04PM +0100, Soeren Sandmann wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
->=20
-> > In an ideal world ... However, since we are planning to move the memo=
-ry
-> > manager to the kernel, that would mean a kernel access (syscall, ioct=
-l,
-> > whatever...) twice per access to AGP memory. Not realistic.
->=20
-> Could the user space driver batch many such accesses together and use
-> a lock_many()/unlock_many() API?
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Natrually it should try to do as much as possible during the=20
-lock()/unlock() sequence.
+Ville Syrj=E4l=E4 wrote:
+> Makes me wish I had a PPC box alongside the x86 one.
 
---=20
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+You might like to try http://pearpc.sourceforge.net/.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.0 (GNU/Linux)
+
+iD8DBQFCNgGnXVaO67S1rtsRAuQ+AKCSkimy2poypyjls7ihX2bgtU6CygCfZJWy
+aV1iW/PU2lKhe9MleB5+WyE=3D
+=3DwEq+
+-----END PGP SIGNATURE-----

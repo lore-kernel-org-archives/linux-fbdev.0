@@ -1,21 +1,21 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: New Permedia2 framebuffer driver.
-Date: Wed, 10 Mar 2004 13:32:30 +0100 (MET)
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: Re: fbdev cursor part 1.
+Date: Wed, 10 Mar 2004 17:49:29 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0403101330440.14075@waterleaf.sonytel.be>
-References: <1vN2x-8tz-15@gated-at.bofh.it> <1xP9O-6Rm-13@gated-at.bofh.it>
- <404E669E.6010507@olifantasia.com>
+Message-ID: <Pine.LNX.4.44.0403101747120.24760-100000@phoenix.infradead.org>
+References: <200403051003.45536.alex.kern@gmx.de>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B13A1-0001e5-AD
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Mar 2004 04:50:09 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B12sz-0006FH-1Q
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Mar 2004 04:32:33 -0800
-In-Reply-To: <404E669E.6010507@olifantasia.com>
+	id 1B186w-00060D-Bg
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Mar 2004 10:07:18 -0800
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1B17pm-0006D3-4e
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Mar 2004 09:49:34 -0800
+In-Reply-To: <200403051003.45536.alex.kern@gmx.de>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,48 +27,17 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Martin <nldudok1@olifantasia.com>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Alexander Kern <alex.kern@gmx.de>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-	Hi Martin,
 
-On Wed, 10 Mar 2004, Martin wrote:
-> Geert Uytterhoeven wrote:
-> > On Wed, 3 Mar 2004, James Simmons wrote:
-> >>This patch fixes the permedia2 framebuffer driver. Currently it doesn't
-> >>event compile. This patch only touches the current permedia driver.
-> >>Regular patch is valiable at
-> >>
-> >>http://phoenix.infradead.org/~jsimmons/pm2fb.diff
-> >
-> >
-> > I suggest the following changes:
-> >   - Mark FB_PM2 broken on Amiga, until somebody fixes it (pm2fb.c explicitly
-> >     tests for CONFIG_PCI right now)
-> >   - Always use the standard barrier macros (they do exist on m68k, and map to
-> >     barrier())
-> >   - Fix set_aperture() on big endian (pm2fb_par->depth doesn't exist)
-> >
-> Does this mean the permedia2 is only broken on Amiga or on all the
-> powerpc platforms?
+Sorry about the delay. I have been bug bashing other code in fbdev. Here 
+is your latest driver against the vanillia tree. It works because I have 
+tested on my laptop. I even did some repairs on the software cursor. It 
+now behaves better, except it doesn't like none 8 bit wide fonts.
 
-Its broken on Amiga because the version in 2.6 supports PCI boards only. It may
-work on PCI PPCs, don't know.
+http://phoenix.infradead.org/~jsimmons/mach64.diff.gz
 
-> Also please tell me if this is the right place for these questions.
-
-linux-fbdev-devel@lists.sourceforge.net is more appropriate
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 
 -------------------------------------------------------

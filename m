@@ -1,13 +1,12 @@
-From: Ian Romanick <idr@us.ibm.com>
+From: Linus Torvalds <torvalds@osdl.org>
 Subject: Re: [Dri-devel] Re: DRM and pci_driver conversion
-Date: Mon, 27 Oct 2003 11:38:04 -0800
+Date: Mon, 27 Oct 2003 13:32:15 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3F9D741C.9010501@us.ibm.com>
-References: <16282.45806.428547.279213@zeus.local> <Pine.LNX.4.44.0310251116140.4083-100000@home.osdl.org> <20031027114006.A66611@xfree86.org>
+Message-ID: <Pine.LNX.4.44.0310271316580.1636-100000@home.osdl.org>
+References: <3F9D741C.9010501@us.ibm.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-In-Reply-To: <20031027114006.A66611@xfree86.org>
+In-Reply-To: <3F9D741C.9010501@us.ibm.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -17,63 +16,67 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: David Dawes <dawes@XFree86.Org>
-Cc: dri-devel <dri-devel@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Ian Romanick <idr@us.ibm.com>
+Cc: David Dawes <dawes@XFree86.Org>, dri-devel <dri-devel@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-David Dawes wrote:
-> On Sat, Oct 25, 2003 at 11:37:05AM -0700, Linus Torvalds wrote:
+
+On Mon, 27 Oct 2003, Ian Romanick wrote:
 > 
->>But I'm _not_ interested in some interfaces to let user mode just bypass 
->>the kernel. Because they will not solve any of the other problems that 
->>clearly _do_ need solving, and if the X server continues to believe that 
->>it can just access the hardware directly, it will never play well together 
->>with projects like fbcon/dri.
-> 
-> XFree86 cares more about being a useable X server on a wide range of
-> platforms than on playing well with a few Linux-specific hacks.
-> 
-> The real problem is that you have a mix of ideologies in the Linux
-> kernel, each struggling for supremacy.  Come back to us when you know
-> who the winner is.  At that time I'm sure you'll feel free to re-write
-> history and claim that we should have been doing things that way all
-> along.
+> I'm also baffled by the general animosty shown towards Linux.
 
-I'm really baffled here.  Why would you even say such a thing?  In 
-relation to Linus' *whole* message, your first paragraph and second 
-paragraph are incongruous.  Linus (or anyone else) did not suggest that 
-XFree86 be shoe-horned into any of the existing Linux video driver 
-architectures.  In fact, he said quite the opposite.  He said that 
-XFree86 is trying to do things that really do need kernel support, and 
-all the existing methods for doing that suck.
+I don't think it is animosity vs Linux per se, but I do think that XFree86 
+tends to have a very strong bias against infrastructure change. 
 
-Part of the problem is that, with the exception of DRI, the existing 
-video specific interfaces in Linux were, as far as I know, created 
-without input from XFree86.  You're suggesting that same mistake be 
-repeated.
+Which is somewhat understandable: I'm a kernel person, so infrastructure 
+change is what I'm all about, but most other projects really hate having 
+any kind of rug pulled out from under them. 
 
-I'm also baffled by the general animosty shown towards Linux.  Judging 
-by the traffic on the various lists, it seems to me that Linux and *BSD 
-represent the lion's share of the XFree86 user base.  Making a consious 
-choice to not support those platforms better is making a consious choice 
-to not support our users.  I simply don't understand the rationalle 
-behind such a decision.
+And kernel modules are _nasty_. From past experience, I can just say that
+external kernel modules (ones not integrated into the standard kernel
+tree) just generate a lot of pain on all sides. Users, project developers, 
+and kernel developers universally _hate_ having to try to keep external 
+modules working and debugging the problems that inevitably happen when 
+they don't work.
 
-Not only that, there is no requirement that the drivers use any given 
-kernel interface.  Just because the drivers use a kernel interface on 
-Linux or *BSD does not mean that they have to use a kernel interface on 
-Solaris or HPUX.  There will be growing pains involved in having a 
-kernel path and a non-kernel path.  I think that several of the DRI 
-drivers (Radeon and Rage128) have shown that it *is* doable.
+So animosity toward them is certainly understandable - they just don't
+work very well, and are a total maintenance nightmare.
 
-The next step is to create a kernel interface that is both generic 
-enough and specific enough to acomplish the task at hand.  After 
-watching the development of fbdev / fbcon, DRI, and XFree86 for a long 
-time, I can say that there is no point in squabling over whether or not 
-a kernel interface is useful for performance or necessary for proper 
-device configuration.  Both of those questions have been sufficiently 
-answered.  The question of where we go from here has not been answered.
+This is the reason why I decided I had to follow the DRI CVS tree: just to
+try to make the DRI kernel modules basically irrelevant to most people. My
+theory is that peopel are more likely to happily upgrade the whole kernel
+than to try to fight the version skew that inevitable happens with
+external kernel modules.
 
+This is, btw, also the reason why I have been an asshole about backwards
+compatibility wrt the DRI project, and was less-than-perfectly-polite to
+some people when DRI upgrades caused older setups to fail. That's simply
+because my belief is that version skew is simply unacceptable, which means
+that the only _acceptable_ situation is to try to make it ok to always
+have the most recent kernel.
+
+So otherwise we'd have to go back to the "use external modules" thing,
+which I just don't believe works.
+
+This is also the reason I believe that the only really workable way to
+handle this is to have a very version-neutral (and thus _stupid_)  
+minimal driver for handling the low-level needs of all the projects
+involved (DRI/XFree86/fbcon). Exactly to avoid the possibility of version
+skew.
+
+In other words, I'd keep it so simple that versions don't really matter,
+because the low-level driver doesn't do enough complex things that you'd
+be forced to upgrade it all the time. I don't think fbdev is at all the 
+proper interface - I think the proper interface is something that is so 
+close to the hardware that the hardware _forces_ all issues, and there are 
+never any questions of what the low-level driver should be.
+
+And since people still want to run X on old setups too, clearly X will 
+have to have the ability to have its own user-space module. That's needed 
+for other operating systems _anyway_, so this wouldn't obviate that. 
+
+			Linus
 
 
 

@@ -1,25 +1,23 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH][RIVAFB]: Updates to rivafb driver
-Date: Wed, 16 Jun 2004 13:23:18 -0700
+From: Egmont Koblinger <egmont@uhulinux.hu>
+Subject: Re: Linux 2.6.7 (stty rows 50 columns 140 reports : No such device
+ or address)
+Date: Wed, 16 Jun 2004 23:17:17 +0200 (CEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040616132318.1435b0c7.akpm@osdl.org>
-References: <200406160406.07060.adaplas@hotpop.com>
-	<20040615221710.GA24416@havoc.gtf.org>
-	<200406161044.45807.adaplas@hotpop.com>
-	<200406161353.51195.adaplas@hotpop.com>
-	<Pine.LNX.4.56.0406161743100.14901@pentafluge.infradead.org>
+Message-ID: <Pine.LNX.4.58L0.0406162313450.20508@sziami.cs.bme.hu>
+References: <Pine.LNX.4.58.0406152253390.6392@ppc970.osdl.org> 
+ <20040616095805.GC14936@gemtek.lt>  <40D0432A.1080006@pobox.com>
+ <1087395424.5314.2.camel@swoop.gemtek.lt> <Pine.LNX.4.56.0406161728150.14901@pentafluge.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bagu7-0007mC-11
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 13:21:03 -0700
-Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bagu6-00024g-KO
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 13:21:02 -0700
-In-Reply-To: <Pine.LNX.4.56.0406161743100.14901@pentafluge.infradead.org>
+	id 1BahnN-0006Qf-Uu
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 14:18:09 -0700
+Received: from sziami.cs.bme.hu ([152.66.242.225])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BahnM-0005Rr-Ti
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 14:18:09 -0700
+In-Reply-To: <Pine.LNX.4.56.0406161728150.14901@pentafluge.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,18 +27,47 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: jsimmons@pentafluge.infradead.org
-Cc: adaplas@pol.net, eger@havoc.gtf.org, linux-fbdev-devel@lists.sourceforge.net
+Cc: Zilvinas Valinskas <zilvinas@gemtek.lt>, Jeff Garzik <jgarzik@pobox.com>, Linus Torvalds <torvalds@osdl.org>, Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, David MacKenzie <djm@gnu.ai.mit.edu>
 
-jsimmons@pentafluge.infradead.org wrote:
->
-> Nice. I will apply.
+On Wed, 16 Jun 2004 jsimmons@pentafluge.infradead.org wrote:
 
-And then what will happen?
+Hi,
 
-Patches seem to disappear into the linux-fbdev tree never to be seen again.
-What can we do about this?
+> +#ifdef TIOCGWINSZ
+> +  int size_was_set = 0;
+> +  int cols, rows;
+     ^^^^^^^^^^^^^^^
+These should both be initialized to -1 because...
+
+> -	      set_window_size ((int) integer_arg (argv[k]), -1,
+> -			       fd, device_name);
+> +	      rows = integer_arg (argv[k]);
+> +	      size_was_set = 1;
+
+[...]
+
+> -	      set_window_size (-1, (int) integer_arg (argv[k]),
+> -			       fd, device_name);
+> +	      cols = integer_arg (argv[k]);
+> +	      size_was_set = 1;
+
+...here maybe only one of them is set, but...
+
+> +  if (size_was_set)
+> +    {
+> +      set_window_size (rows, cols, fd, device_name);
+
+...here both of them are used. Looking at the body of size_was_set()
+and the code that was removed from stty it's clear that -1 means don't
+change, while 0 means change to 0.
+
+
+
+-- 
+Egmont
 
 
 -------------------------------------------------------

@@ -1,16 +1,15 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: RE: [PATCH 2.5.68] Epson 1355 Rewrite for 2.5
-Date: Wed, 7 May 2003 10:54:13 +0200 (MEST)
+From: Alex Bennee <kernel-hacker@bennee.com>
+Subject: Loading/Unloading console driver causes segfault
+Date: 07 May 2003 18:42:44 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0305071050400.29816-100000@vervain.sonytel.be>
-References: <006801c31473$47bd51d0$7900000a@bergamot>
+Message-ID: <42031.1385686093$1052329825@news.gmane.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19DKhx-0004KH-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 07 May 2003 01:55:25 -0700
-In-Reply-To: <006801c31473$47bd51d0$7900000a@bergamot>
+Received: from nimbus19.internetters.co.uk ([209.61.216.65])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19DSwR-0008LX-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 07 May 2003 10:42:55 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,48 +19,55 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Christopher Hoover <ch@murgatroid.com>
-Cc: 'James Simmons' <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Wed, 7 May 2003, Christopher Hoover wrote:
-> The cfb generic code works wonderfully well on the EP7212 CPU/EPSON 1355
-> because the processor can do the math in 32-bits just fine, it just
-> needs to issue 16-bit reads and writes to the framebuffer memory.  Since
-> you had that nice FB{READ|WRITE} abstraction in there, it was easy to
-> make a small tweak to be able to use my own FB{READ|WRITE} routines that
-> break each (aligned) FB{READ|WRITE} into two 16-bit reads/writes.
-> That's all that has to happen.  I inlined the speical fb{read|write}
-> routines and got good code with decent performance.
-> 
-> What I'm hearing is that you woud prefer that I include my own routines
-> over the pre-processor hackery.  Be warned that it is mostly going to be
-> a cut-n-paste job -- even if I wrote the routines totally from scratch I
-> would handle 32-bits of pixel(s) at a time.
+Hi,
 
-Personally, I think it wouldn't harm to be make the cfb* routines generic, so
-you can set some defines and #include them to tailer them to your card's
-needs.
+I've been testing a console driver recently which has involved a lot of
+loading/unloading. Although I get away with it sometimes it usually
+segfaults on the second load of the console driver. The bit that seems a
+little suspect to me is the line in console.c:
 
-Even on some 64-bit platforms, you may not want to use 64-bit accesses, e.g.
-because your graphic's card bus is still only 32-bit.
+    vc_cons[i].d->vc_sw->con_deinit(vc_cons[i].d);
 
-I can even think of some more sofistication: on older Amigas, the graphics RAM
-is 16-bit wide and quite slow, while the CPU is 32-bit. So it may make sense to
-always use 32-bit accesses (like is currently done), except for the first and
-last unaligned accesses if they are less or equal than 16-bit.
+Surely if there is no active console driver it should skip. There is a
+test earlier that should skip:
 
-Gr{oetje,eeting}s,
+    if(!vc_cons[i].d || !vc_cons[i].d->vc_sw)
+    	continue;
 
-						Geert
+But as far as I can tell because give_up_console doesn't clear out the
+vc_cons[i].d->vc_sw pointer it can be pointing at garbage. Am I missing
+anything or is this patch garbage?
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+[alex@cambridge char]$ diff -u
+../../../linux-2.4.20.ref/drivers/char/console.c console.c
+--- ../../../linux-2.4.20.ref/drivers/char/console.c.ref2002-11-28
+23:53:12.000000000 +0000
++++ console.c   2003-05-07 18:35:52.000000000 +0100
+@@ -2598,8 +2598,11 @@
+        int i;
+  
+        for(i = 0; i < MAX_NR_CONSOLES; i++)
+-               if (con_driver_map[i] == csw)
+-                       con_driver_map[i] = NULL;
++           if (con_driver_map[i] == csw) {
++               con_driver_map[i] = NULL;
++               if(vc_cons[i].d)
++                   vc_cons[i].d->vc_sw=NULL;
++           }
+ }
+  
+ #endif
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+
+-- 
+Alex, homepage: http://www.bennee.com/~alex/
+
+Loan-department manager:  "There isn't any fine print.  At these
+interest rates, we don't need it."
 
 
 

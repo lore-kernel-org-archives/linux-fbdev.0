@@ -1,24 +1,22 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Re: New FBDev patch (a little report)
-Date: Sun, 11 Jan 2004 18:42:28 +1100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: New FBDev patch
+Date: Sun, 11 Jan 2004 12:09:03 +0000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1073806947.17403.106.camel@gaston>
-References: <20040108231217.GB7085@louise.pinerecords.com>
-	 <Pine.LNX.4.44.0401090035080.17957-100000@phoenix.infradead.org>
-	 <20040110141540.0f4e3204.jvillavicencio@arnet.com.ar>
+Message-ID: <20040111120903.D1931@flint.arm.linux.org.uk>
+References: <20040108232621.B25760@flint.arm.linux.org.uk> <Pine.LNX.4.44.0401090035270.17957-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AfaJR-0001fJ-DL
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 10 Jan 2004 23:47:09 -0800
-Received: from pentafluge.infradead.org ([213.86.99.235])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	id 1AfeP4-0001AZ-K2
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 11 Jan 2004 04:09:14 -0800
+Received: from caramon.arm.linux.org.uk ([212.18.232.186])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1AfaJR-0001tB-1B
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 10 Jan 2004 23:47:09 -0800
-In-Reply-To: <20040110141540.0f4e3204.jvillavicencio@arnet.com.ar>
+	id 1AfeP3-0005C1-T4
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 11 Jan 2004 04:09:14 -0800
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44.0401090035270.17957-100000@phoenix.infradead.org>; from jsimmons@infradead.org on Fri, Jan 09, 2004 at 07:54:50PM +0000
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,17 +27,41 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Javier Villavicencio <jvillavicencio@arnet.com.ar>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Javier !
+On Fri, Jan 09, 2004 at 07:54:50PM +0000, James Simmons wrote:
+> > sizeof(u32) != 32.  Proper fix is to place the pseudopalette array
+> > inside cfb_info, and dispense with this addition here.
+> 
+> You have to make sure the struct fb_info pseudopalette points to the data 
+> in cfb_info. Actually only drivers should allocate the pseudopalette at 
+> boot time if the hardware doesn't support mode change. In the other case 
+> the pseudopalette should be allocated in set_par. 
 
-Please remove yor f*king refuse spam junk ! It doesn't even work
-properly
+I respectfully disagree.  It is not possible to error out of the set_par()
+function - for instance, fb_set_var() contains this code:
 
-Ben.
+                        if (info->fbops->fb_set_par)
+                                info->fbops->fb_set_par(info);
 
+There isn't any error return checking (so why does fb_set_par return an
+int when it isn't used?  It's fairly misleading.)
 
+This all means that if the allocation of the pseudo_palette in set_par
+fails, there's no way to abort the mode change - you _will_ oops in the
+other fbcon layers due to a NULL pseudo_palette pointer.
+
+Plus, we're only talking about an array of 16 32-bit words or 64 bytes.
+That's hardly worth the extra code complexity to separately dynamically
+allocate.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:  2.6 PCMCIA      - http://pcmcia.arm.linux.org.uk/
+                 2.6 Serial core
 
 
 -------------------------------------------------------

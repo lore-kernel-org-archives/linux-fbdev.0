@@ -1,24 +1,25 @@
-From: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-Subject: Get console sem on fbdev ioctls
-Date: Mon, 29 Mar 2004 16:45:55 +0100
+From: amavisd-new <postmaster@tlug.sinica.edu.tw>
+Subject: VIRUS (Worm.SomeFool.P) IN YOUR MAIL
+Date: Tue, 30 Mar 2004 01:21:55 +0800 (CST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <041b01c415a4$ec018940$d100000a@sbs2003.local>
-Reply-To: <benh@kernel.crashing.org>
+Message-ID: <VS29496-05@tlug.sinica.edu.tw>
+References: <20040329172148.7CF5B227B2@tlug.sinica.edu.tw>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/report; report-type=delivery-status;
+    boundary="----------=_1080580915-29496-1"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B7zb4-000532-2P
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 08:26:46 -0800
-Received: from [194.202.64.57] (helo=smtp.paston.co.uk)
+	id 1B80ST-0001fX-7r
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 09:21:57 -0800
+Received: from tlug.sinica.edu.tw ([140.109.13.42])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B7zb2-00079e-Gn
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 08:26:44 -0800
-Received: from 2003SERVER.sbs2003.local (host213-123-250-229.in-addr.btopenworld.com [213.123.250.229])
-	by smtp.paston.co.uk (Postfix) with ESMTP id 124D49B2A1
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 29 Mar 2004 17:29:52 +0100 (BST)
-Content-Class: urn:content-classes:message
+	id 1B80SS-0005q7-5Q
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 09:21:56 -0800
+Received: from localhost (tlug [127.0.0.1])
+	by tlug.sinica.edu.tw (Postfix) with ESMTP id AF7F822AF1
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 30 Mar 2004 01:21:55 +0800 (CST)
+In-Reply-To: <20040329172148.7CF5B227B2@tlug.sinica.edu.tw>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,89 +29,82 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Administrator@smtp.paston.co.uk
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
+To: linux-fbdev-devel@lists.sourceforge.net
 
+This is a multi-part message in MIME format...
 
-Along with my VT race fixes I sent earlier, this is a patch (that may
-need to be applied manually, I hacked the patch file a bit since my
-tree is so different from yours at this point). It takes the console
-semaphore on userland initiated mode change, pan display, ... ioctls.
+------------=_1080580915-29496-1
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-Maybe more are required... This is the basics for at least fbset operations
-to be "safe" (vs. printk/blanking and vs. the console resize code).
+VIRUS ALERT
 
-Note that with that and the VT fixes, I can properly now call vc_resize
-instead of fbcon_resize in fbcon when getting a mode changed callback,
-and that works really better.
+Our virus checker found
+    virus: Worm.SomeFool.P
+    banned filenames: .zip, .exe
+in your email to the following recipient:
+-> chester@linux.org.tw
 
-I basically do that if cols and rows are seen to have changed:
+Delivery of the email was stopped!
 
-	vc_resize(vc->vc_num, cols, rows);
-	if (CON_IS_VISIBLE(vc)) {
-		accel_clear_margins(vc, info, 0);
-		update_screen(vc->vc_num);
-	}
+Please check your system for viruses,
+or ask your system administrator to do so.
 
-Though for stty to work fine, I also had to do proper mode selection/validation
-for which I added this FB_ACTIVATE_FIND option (see my other email on the subject)
-along with proper support in radeonfb.
+For your reference, here are headers from your email:
+------------------------- BEGIN HEADERS -----------------------------
+Received: from linux.org.tw (dh22.internetdsl.tpnet.pl [80.53.243.22])
+	by tlug.sinica.edu.tw (Postfix) with ESMTP id 7CF5B227B2
+	for <chester@linux.org.tw>; Tue, 30 Mar 2004 01:21:48 +0800 (CST)
+From: linux-fbdev-devel@lists.sourceforge.net
+To: chester@linux.org.tw
+Subject: Re: Protected Mail Request
+Date: Mon, 29 Mar 2004 19:22:57 +0200
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_0016----=_NextPart_000_0016"
+X-Priority: 3
+X-MSMail-Priority: Normal
+Message-Id: <20040329172148.7CF5B227B2@tlug.sinica.edu.tw>
+-------------------------- END HEADERS ------------------------------
 
+------------=_1080580915-29496-1
+Content-Type: message/delivery-status
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Content-Description: Delivery error report
 
-diff -urN linux-2.5/drivers/video/fbmem.c linuxppc-2.5-benh/drivers/video/fbmem.c
---- linux-2.5/drivers/video/fbmem.c	2004-01-06 10:05:18.708660576 +1100
-+++ linuxppc-2.5-benh/drivers/video/fbmem.c	2003-12-31 12:38:25.000000000 +1100
-@@ -27,6 +27,7 @@
- #include <linux/init.h>
- #include <linux/linux_logo.h>
- #include <linux/proc_fs.h>
-+#include <linux/console.h>
- #ifdef CONFIG_KMOD
- #include <linux/kmod.h>
- #endif
-@@ -984,7 +995,9 @@
- 	case FBIOPUT_VSCREENINFO:
- 		if (copy_from_user(&var, (void *) arg, sizeof(var)))
- 			return -EFAULT;
-+		acquire_console_sem();
- 		i = fb_set_var(info, &var);
-+		release_console_sem();
- 		if (i) return i;
- 		if (copy_to_user((void *) arg, &var, sizeof(var)))
- 			return -EFAULT;
-@@ -1003,7 +1016,10 @@
- 	case FBIOPAN_DISPLAY:
- 		if (copy_from_user(&var, (void *) arg, sizeof(var)))
- 			return -EFAULT;
--		if ((i = fb_pan_display(info, &var)))
-+		acquire_console_sem();
-+		i = fb_pan_display(info, &var);
-+		release_console_sem();
-+		if (i)
- 			return i;
- 		if (copy_to_user((void *) arg, &var, sizeof(var)))
- 			return -EFAULT;
-@@ -1039,7 +1055,10 @@
- 		return 0;
- #endif	/* CONFIG_FRAMEBUFFER_CONSOLE */
- 	case FBIOBLANK:
--		return fb_blank(info, arg);
-+		acquire_console_sem();
-+		i = fb_blank(info, arg);
-+		release_console_sem();
-+		return i;
- 	default:
- 		if (fb->fb_ioctl == NULL)
- 			return -EINVAL;
+Reporting-MTA: dns; tlug.sinica.edu.tw
+Received-From-MTA: smtp; tlug.sinica.edu.tw ([127.0.0.1])
+Arrival-Date: Tue, 30 Mar 2004 01:21:55 +0800 (CST)
 
--
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+Final-Recipient: rfc822; chester@linux.org.tw
+Action: failed
+Status: 5.7.1
+Diagnostic-Code: smtp; 550 5.7.1 Message content rejected, id=29496-05 - VIRUS: Worm.SomeFool.P
+Last-Attempt-Date: Tue, 30 Mar 2004 01:21:55 +0800 (CST)
 
+------------=_1080580915-29496-1
+Content-Type: text/rfc822-headers
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Content-Description: Undelivered-message headers
 
+Received: from linux.org.tw (dh22.internetdsl.tpnet.pl [80.53.243.22])
+	by tlug.sinica.edu.tw (Postfix) with ESMTP id 7CF5B227B2
+	for <chester@linux.org.tw>; Tue, 30 Mar 2004 01:21:48 +0800 (CST)
+From: linux-fbdev-devel@lists.sourceforge.net
+To: chester@linux.org.tw
+Subject: Re: Protected Mail Request
+Date: Mon, 29 Mar 2004 19:22:57 +0200
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_0016----=_NextPart_000_0016"
+X-Priority: 3
+X-MSMail-Priority: Normal
+Message-Id: <20040329172148.7CF5B227B2@tlug.sinica.edu.tw>
+
+------------=_1080580915-29496-1--
 
 
 -------------------------------------------------------

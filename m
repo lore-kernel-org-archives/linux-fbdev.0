@@ -1,18 +1,17 @@
-From: Andre Dias <aod@unisys.com.br>
-Subject: sis acceleration
-Date: Thu, 30 May 2002 00:59:35 -0300
+From: James Simmons <jsimmons@transvirtual.com>
+Subject: Framebuffer policy [ was Re: Linux 2.5.19]
+Date: Wed, 29 May 2002 22:10:36 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <5.1.0.14.0.20020530004937.019193a8@pop.unisys.com.br>
+Message-ID: <Pine.LNX.4.10.10205292154360.12660-100000@www.transvirtual.com>
+References: <20020530003133.H30585@flint.arm.linux.org.uk>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from gw.incubadora.coppe.ufrj.br ([146.164.9.131] helo=inc)
-	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17DH6d-0000Hi-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 29 May 2002 21:00:07 -0700
-Received: from [146.164.9.154] (helo=aod-laptop.unisys.com.br)
-	by inc with esmtp (Exim 3.12 #1 (Debian))
-	id 17DEKb-00029o-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 29 May 2002 22:02:21 -0300
+Received: from www.transvirtual.com ([206.14.214.140])
+	by usw-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17DIDA-0004Wl-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 29 May 2002 22:10:56 -0700
+In-Reply-To: <20020530003133.H30585@flint.arm.linux.org.uk>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,30 +21,48 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-
-Hi!
-
-I have built the latest 2.4.18 stable several times. But when I try to 
-include as a module the SIS acceleration ( SIS 630/540/730 support only ) 
-for the frame buffer I get this error:
-
-depmod: *** Unresolved symbols in 
-/lib/modules/2.4.18/kernel/drivers/video/sis/sisfb.o
-depmod:         mclk
-depmod:         sisfb_set_dispsw_accel
-depmod:         eclk
-depmod:         sisfb_init_legacy_vga
-depmod:         sisfb_calc_clock_param
-depmod:         sisfb_calc_clock_freq
-make: *** [_modinst_post] Error 1
+To: Russell King <rmk@arm.linux.org.uk>
+Cc: Martin Dalecki <dalecki@evision-ventures.com>, Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Geert Uytterhoeven <geert@linux-m68k.org>
 
 
-does anyone know to whom should I send a bug report?
+> This is about people who think they're god nicking patches from
+> the author and maintainer of drivers and bypassing the maintainer
+> completely.
 
-thanks in advance
+Please no fighting. It is clear the problem is the lack of order here.
+I understand how Russell feels. Most of the time people send in new fbdev
+drivers or good size patches without consulting me or Geert first. I have
+to say it has gotten better. So here goes for policy time:
+
+--------------------------------------------------------------------
+             Framebuffer driver policy.
+
+1) Basic one or few line fixes for drivers can go straight into the
+   kernel. Please don't abuse this.
+
+2) All new drivers must be posted to the fbdev developement list for
+   peer review. Me and/or geert have final fword about them going in.
+   Please note we do get busy so just harass me about your driver. I
+   will not be offended and it pushs me to go do it. I'm the type of
+   person if I don't do it right away I will forget.
+
+   linux-fbdev-devel@lists.sourceforge.net
+
+3) Large changes should be posted to both the framebuffer list and the
+   kernel mailing list as well to the framebuffer author if they
+   are know. Again it is for peer review and wide scale testing. We 
+   need to make clear what drivers where effect. And yes if you are the 
+   maintainer of a driver you should mail yourself. It makes it easier
+   for users to reply to you directly.  
+
+If no one follows these rules then their changes will be ignored. No
+exceptions including for myself.
+
+-----------------------------------------------------------------
+How does this sound? Again sorry about the confusion.
+
 
 
 

@@ -1,23 +1,25 @@
-From: Kronos <kronos@kronoz.cjb.net>
-Subject: Re: [PATCH] cyber2000fb: New framebuffer_alloc API and class_dev changes
-Date: Tue, 16 Sep 2003 00:04:25 +0200
+From: Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH] pvr2fb: New framebuffer_alloc API and class_dev changes
+Date: Mon, 15 Sep 2003 18:06:07 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030915220425.GB27662@dreamland.darkstar.lan>
-References: <20030915194329.GI16370@dreamland.darkstar.lan> <20030915220742.G10328@flint.arm.linux.org.uk> <20030915212809.GA24924@dreamland.darkstar.lan> <20030915223331.H10328@flint.arm.linux.org.uk>
-Reply-To: kronos@kronoz.cjb.net
+Message-ID: <20030915220607.GA2708@linux-sh.org>
+References: <20030915215150.GA27662@dreamland.darkstar.lan>
 Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="YiEDa0DAkWCtVeE4"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19z1TP-0007EM-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 15 Sep 2003 15:05:31 -0700
-Received: from mail-7.tiscali.it ([195.130.225.153])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 19z1TO-0004jQ-QV
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 15 Sep 2003 15:05:31 -0700
+	id 19z1UF-0007IK-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 15 Sep 2003 15:06:23 -0700
+Received: from newsmtp.golden.net ([199.166.210.106])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.22)
+	id 19z1UE-0005Ys-Vx
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 15 Sep 2003 15:06:23 -0700
 Content-Disposition: inline
-In-Reply-To: <20030915223331.H10328@flint.arm.linux.org.uk>
+In-Reply-To: <20030915215150.GA27662@dreamland.darkstar.lan>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,46 +29,85 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Russell King <rmk@arm.linux.org.uk>
+To: Kronos <kronos@kronoz.cjb.net>
 Cc: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>
 
-Il Mon, Sep 15, 2003 at 10:33:31PM +0100, Russell King ha scritto: 
-> > > > +static void release_cfb_info(struct fb_info *info) {
-> > > > +	struct cfb_info *cfb = info->par;
-> > > > +
-> > > > +	iounmap(cfb->region);
-> > > > +	fb_alloc_cmap(&info->cmap, 0, 0);
-> > > > +
-> > > > +	if (cfb->dev)
-> > > > +		pci_release_regions(cfb->dev);
-> > > > +}
-> > > > +
-> > > >  static void __devexit cyberpro_pci_remove(struct pci_dev *dev)
-> > > >  {
-> > > >  	struct cfb_info *cfb = pci_get_drvdata(dev);
-> > > 
-> > > Who says "cfb->dev" remains valid after the PCI device has been removed.
-> > > This looks like a perfect use-after-free bug waiting to happen.
-> > 
-> > cfb->dev is  refcounted, it  won't go  away until we  are done  with the
-> > cleanup. Maybe I misread  driver core code...
-> 
-> pci_request_regions / pci_release_regions does not perform any reference
-> counting on the pci device.
 
-I was referring to class_dev stuff, class_device_add in
-drivers/base/class.c:262
+--YiEDa0DAkWCtVeE4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Luca
--- 
-Reply-To: kronos@kronoz.cjb.net
-Home: http://kronoz.cjb.net
-"L'abilita` politica e` l'abilita` di prevedere quello che
- accadra` domani, la prossima settimana, il prossimo mese e
- l'anno prossimo. E di essere cosi` abili, piu` tardi,
- da spiegare  perche' non e` accaduto."
+This looks fine. I'll merge the framebuffer_alloc() changes into my tree and
+include it with the next batch of pvr2fb updates.
+
+On Mon, Sep 15, 2003 at 11:51:50PM +0200, Kronos wrote:
+> =3D=3D=3D=3D=3D=3D=3D=3D drivers/video/pvr2fb.c 1.17 =3D=3D=3D=3D=3D=3D=
+=3D=3D
+> D 1.17 03/09/12 22:26:04+02:00 kronos@kronoz.cjb.net 19 18 4/8/796
+> P drivers/video/pvr2fb.c
+> C - make it compile again. something went wrong in the merge from 1.14.1.=
+1 to 1.6
+> C - switch to framebuffer_alloc
+> ------------------------------------------------
+>=20
+> =3D=3D=3D=3D=3D drivers/video/pvr2fb.c 1.16 vs 1.17 =3D=3D=3D=3D=3D
+> --- 1.16/drivers/video/pvr2fb.c	Mon Jul 14 20:09:25 2003
+> +++ 1.17/drivers/video/pvr2fb.c	Fri Sep 12 22:26:04 2003
+> @@ -609,17 +610,14 @@
+>  	if (!MACH_DREAMCAST)
+>  		return -ENXIO;
+> =20
+> -	fb_info =3D kmalloc(sizeof(struct fb_info) + sizeof(struct pvr2fb_par) +
+> -			  sizeof(u32) * 16, GFP_KERNEL);
+> +	fb_info =3D framebuffer_alloc(sizeof(struct pvr2fb_par) + sizeof(u32) *=
+ 16, NULL);
+>  =09
+>  	if (!fb_info) {
+>  		printk(KERN_ERR "Failed to allocate memory for fb_info\n");
+>  		return -ENOMEM;
+>  	}
+> =20
+> -	memset(fb_info, 0, sizeof(fb_info) + sizeof(struct pvr2fb_par) + sizeof=
+(u32) * 16);
+> -
+> -	currentpar =3D (struct pvr2fb_par *)(fb_info + 1);
+> +	currentpar =3D fb_info->par;
+> =20
+>  	/* Make a guess at the monitor based on the attached cable */
+>  	if (pvr2_init_cable() =3D=3D CT_VGA) {
+> @@ -665,7 +663,6 @@
+> =20
+>  	fb_info->fbops		=3D &pvr2fb_ops;
+>  	fb_info->fix		=3D pvr2_fix;
+> -	fb_info->par		=3D currentpar;
+>  	fb_info->pseudo_palette	=3D (void *)(fb_info->par + 1);
+>  	fb_info->flags		=3D FBINFO_FLAG_DEFAULT;
+> =20
+> @@ -723,7 +720,6 @@
+>  	}
+>  #endif
+>  	unregister_framebuffer(fb_info);
+> -	kfree(fb_info);
+>  }
+> =20
+>  static int __init pvr2_get_param(const struct pvr2_params *p, const char=
+ *s,
+>=20
+
+--YiEDa0DAkWCtVeE4
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.2 (GNU/Linux)
+
+iD8DBQE/ZjfP1K+teJFxZ9wRAjKsAJ4otd817z+h44HOZVH7YvnrnML0qACbBQE6
+On9t9Gdul4R0nC6O56R291Q=
+=7dCC
+-----END PGP SIGNATURE-----
+
+--YiEDa0DAkWCtVeE4--
 
 
 -------------------------------------------------------

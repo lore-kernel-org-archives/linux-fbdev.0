@@ -1,16 +1,16 @@
-From: "Galen C. Hunt"  <gchunt@cs.rochester.edu>
-Subject: I no longer read email sent to this address
-Date: Thu, 21 Aug 2003 22:01:48 -0400 (EDT)
+From: admin@nation.co.ke
+Subject: Your email message was blocked
+Date: Fri, 22 Aug 2003 05:15:37 +0300
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200308220201.h7M21mK28641@slate.cs.rochester.edu>
+Message-ID: <D00000605f@svr_hqs4_xch_02.nation.co.ke>
 Mime-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="--=9c20936b-2368-4e04-810b-bba74d4b246d"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from gate.cs.rochester.edu ([192.5.53.207])
+Received: from uu-195-202-65-156.uunet.co.ke ([195.202.65.156] helo=NATIONMAIL.nation.co.ke)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19q1Uw-0006Js-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 21 Aug 2003 19:17:54 -0700
-Received: from slate.cs.rochester.edu (slate.cs.rochester.edu [192.5.53.101]) by gate.cs.rochester.edu (8.11.6+Sun/004) with ESMTP id h7M21ns26706 for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 21 Aug 2003 22:01:49 -0400 (EDT)
-Received: (from gchunt@localhost) by slate.cs.rochester.edu (8.11.6+Sun/004) id h7M21mK28641 for linux-fbdev-devel@lists.sourceforge.net; Thu, 21 Aug 2003 22:01:48 -0400 (EDT)
+	id 19q1pV-0002ko-00
+	for <Linux-fbdev-devel@lists.sourceforge.net>; Thu, 21 Aug 2003 19:39:10 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,20 +20,37 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+To: Linux-fbdev-devel@lists.sourceforge.net
+Cc: admin@nation.co.ke
+
+----=9c20936b-2368-4e04-810b-bba74d4b246d
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
 
-Due to a large volume of SPAM, I no longer read email sent to this account.
-Your message regarding "Your details" will not be read.
+MailMarshal (an automated content monitoring gateway) has 
+not delivered the following message:
 
-If you wish to contact me, please use my new email address:
+   Message: B000050b77.00000000.mml
+   From:    Linux-fbdev-devel@lists.sourceforge.net
+   To:      admin@nation.co.ke
+   Subject: Re: Thank you!
 
-         g a l e n h @ m i c r o s o f t . c o m
+This is due to automatic rules that have determined that the 
+intended recipient is not authorized to receive messages with
+Executable file(s) attached.
 
-Thanks.
-galen
+If you believe the message was business related please send a 
+message to admin@nation.co.ke and request that the message be 
+released to its intended recipient.  If no contact is
+made within 5 days the message will automatically be deleted.
 
+MailMarshal Rule: Inbound : Block EXECUTABLE Files
+
+
+Email security by MailMarshal from Marshal Software.
+
+----=9c20936b-2368-4e04-810b-bba74d4b246d--
 
 
 -------------------------------------------------------

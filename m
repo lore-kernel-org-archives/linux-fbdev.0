@@ -1,77 +1,66 @@
-From: Richard Smith <rsmith@bitworks.com>
-Subject: Re: Mobility M1 refresh code problem 2.4.26?
-Date: Thu, 06 May 2004 16:12:25 -0500
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <409AAA39.8000304@bitworks.com>
-References: <20040430150627.GB1543@sci.fi> <Pine.LNX.4.44.0404301707110.12865-100000@phoenix.infradead.org> <20040501004059.GD30285@guug.org> <409A91D6.4000508@bitworks.com> <409A98A5.2040809@telia.com> <409AA194.8090609@bitworks.com> <Pine.GSO.4.58.0405062241550.20729@waterleaf.sonytel.be>
-Reply-To: RSmith@bitworks.com
+From: Jon Smirl <jonsmirl@yahoo.com>
+Subject: Re: [Linux-fbdev-devel] Redesign of kernel graphics interface
+Date: Thu, 6 May 2004 14:42:14 -0700 (PDT)
+Sender: mesa3d-dev-admin@lists.sourceforge.net
+Message-ID: <20040506214214.95811.qmail@web14928.mail.yahoo.com>
+References: <20040506231953.B23760@armor.freesurf.fr>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BLqBG-0000OX-2p
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 06 May 2004 14:13:22 -0700
-Received: from b44.xdsl.pgtc.com ([198.70.248.44] helo=bitworks.com)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1BLqBF-0007mm-Kg
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 06 May 2004 14:13:21 -0700
-Received: from bitworks.com [192.168.1.22] by bitworks.com [127.0.0.1] with SMTP (MDaemon.v2.7.SP4.R) for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 06 May 2004 16:12:22 -0500
-In-Reply-To: <Pine.GSO.4.58.0405062241550.20729@waterleaf.sonytel.be>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+Return-path: <mesa3d-dev-admin@lists.sourceforge.net>
+In-Reply-To: <20040506231953.B23760@armor.freesurf.fr>
+Errors-To: mesa3d-dev-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
+	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: miffe-miffe@telia.com
-Cc: geert@linux-m68k.org, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+List-Post: <mailto:mesa3d-dev@lists.sourceforge.net>
+List-Help: <mailto:mesa3d-dev-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
+	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=mesa3d-dev>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Nicolas Souchu <nsouch@free.fr>
+Cc: dri-devel <dri-devel@lists.sourceforge.net>, mesa3d-dev <mesa3d-dev@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-Geert Uytterhoeven wrote:
-
-> On Thu, 6 May 2004, Richard Smith wrote:
+--- Nicolas Souchu <nsouch@free.fr> wrote:
+> > A major topic that I missed in the original list was how to handle BSD. DRM
+> > is under the BSD license and FB is GPL. If these two code bases are merged,
+> > what are we going to do about BSD? I don't know the appropriate BSD lists 
+> > to post this to so please forward as necessary.
 > 
->>Hmmm... I had GX set.  Unsetting and rebuilding did change things.  the
-> 
-> 
-> Strange, {en,dis}abling GX should matter for Mach64 GX chips only.
+> What is exactly your question concerning licenses?
 
-Could be some randomness in what I'm seeing.  I haven't done it enough 
-times repeatedly to verify it does the same thing every time.
+FB is GPL licensed. DRM is BSD licensed. If FB and DRM are merged the end result
+will be GPL licensed code because of the way the licenses work. To change that
+you would have to get permission from every FB contributor to relicense their
+contribution from GPL to BSD. I suspect that it is pratically impossible to
+track all of the FB contributors down and what do you do if some won't
+cooperate? If the FB/DRM combo is GPL it can't be merged back into the BSD
+kernels. What we could do is build a merged driver and continue to have some of
+the source files licensed BSD and some GPL.
 
-I rebuilt from a make clean and got the same result.  I enabled DEBUG in 
-the driver now and heres the output.  Can you enable debug and check 
-against your good setup.
+The big reason for merging is memory management. If FB supports multiple heads
+it is forced into doing memory management. DRI has memory management needs that
+go far beyond what FB needs so a merged system has to use DRM memory management.
+Ian has made proposals on how to do this and he is working on improving them. 
 
-atyfb: using auxiliary register aperture
-atyfb: Mach64 BIOS is located at c0000, mapped at c00c0000.
-atyfb: BIOS contains driver information table.
-atyfb: colour active matrix monitor detected: Samsung LT141X4-156
-ati kernel:         id=2, 1024x768 pixels, 262144 colours (LT mode)
-ati kernel:         supports 60 Hz refresh rates, default 60 Hz
-ati kernel:         LCD CRTC parameters: 15384 167 127 130 0 17 805 767 
-769 6
-ati kernel: atyfb: 3D RAGE Mobility (PCI) [0x4c4d rev 0x64] 8M SDRAM, 
-29.498928 MHz XTAL, 230 MHz PLL, 83 Mhz MCLK, 125 Mhz XCLK
-ati kernel: BUS_CNTL DAC_CNTL MEM_CNTL EXT_MEM_CNTL CRTC_GEN_CNTL 
-DSP_CONFIG DSP_ON_OFF CLOCK_CNTL
-ati kernel: 7333a001 8601200a 10c57a3b e0000c81     02402200 
-00570628   049e05f8   00400a00
-ati kernel: PLL ac ac 40 4c 87 03 c0 d4 d4 d4 00 f9 80 1b 00 00 0e cf 40 
-00 50 f6 ac 03 40 00 24 fd 00 00 00 02 06 ac 06 ac 03 24 fd 00
-ati kernel: BUS_CNTL DAC_CNTL MEM_CNTL EXT_MEM_CNTL CRTC_GEN_CNTL 
-DSP_CONFIG DSP_ON_OFF
-ati kernel: 7333a001 8601200a 10c57a3b e0000c81     02402200 
-00570628   049e05f8
-ati kernel: PLL ac ac 41 ec 89 03 c0 d4 d4 d4 00 00 80 1b 00 00 0e cf 40 
-00 50 b6 ac 10 40 00 24 fd 00 00 00 02 06 ac 06 ac 03 24 fd 00
-ati kernel: Console: switching to colour frame buffer device 128x48
+BenH and others have made proposals for pushing the mode setting code into a
+user space library in order to reduce kernel footprint and ease debugging. Most
+of the code needed for this library already exists in the current Linux FB
+drivers. I'm not sure if this could be relicensed BSD when it is moved to user
+space.
 
 
+=====
+Jon Smirl
+jonsmirl@yahoo.com
+
+
+	
+		
+__________________________________
+Do you Yahoo!?
+Win a $20,000 Career Makeover at Yahoo! HotJobs  
+http://hotjobs.sweepstakes.yahoo.com/careermakeover 
 
 
 -------------------------------------------------------

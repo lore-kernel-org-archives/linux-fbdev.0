@@ -1,19 +1,17 @@
-From: "Carlo E. Prelz" <fluido@fluido.as>
-Subject: Re: Feature Freeze?
-Date: Thu, 6 Mar 2003 08:03:43 +0100
+From: Sven Luther <luther@dpt-info.u-strasbg.fr>
+Subject: Re: Re: FBdev updates.
+Date: Thu, 6 Mar 2003 08:35:08 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030306070343.GA24575@casa.fluido.as>
-References: <Pine.LNX.4.44.0303051829450.27760-100000@phoenix.infradead.org> <1046913396.1227.176.camel@localhost.localdomain>
+Message-ID: <20030306073508.GA1734@iliana>
+References: <20030303203500.GA2916@vana.vc.cvut.cz> <Pine.LNX.4.44.0303052015250.27760-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from a205017.upc-a.chello.nl
-	([62.163.205.17] helo=mail.fluido.as ident=mail)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18qpQQ-0004oM-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 23:04:19 -0800
+Received: from smtp-out-4.wanadoo.fr ([193.252.19.23] helo=mel-rto4.wanadoo.fr)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18qpwH-0006ap-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 23:37:13 -0800
 Content-Disposition: inline
-In-Reply-To: <1046913396.1227.176.camel@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.44.0303052015250.27760-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -25,74 +23,45 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Petr Vandrovec <vandrove@vc.cvut.cz>, Antonino Daplas <adaplas@pol.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-	Subject: Re: [Linux-fbdev-devel] Feature Freeze?
-	Date: gio, mar 06, 2003 at 09:18:07 +0800
-
-Quoting Antonino Daplas (adaplas@pol.net):
-
-> > > > 2. console resizing using fbset (besides stty)?
-> > > 
-> > > Nice, if it's not too much work.
-> > 
-> > :-( I hope to improve fbcon to handle this.
-> >  
+On Wed, Mar 05, 2003 at 08:22:26PM +0000, James Simmons wrote:
 > 
-> If you're really against using fbset to resize the console, then the
-> first step is to protect the console from the "dangers" of fbset. 
-> Secondly, we can have fbcon_resize() validate the mode instead of just
-> blindly calling fb_set_var().  If it's not valid, then it can also fetch
-> a working mode for it.  The user can then fine tune the timings using
-> fbset afterwards.
+> > Hi,
+> >   while waiting on these updates I updated matroxfb a bit
+> > (ftp://platan.vc.cvut.cz/pub/linux/matrox-latest/matroxfb-2.5.63.gz),
+> > so that it now uses fb_* for cfb modes, and putcs/... hooks for
+> > text mode. I have still dozen of changes in fbcon.c which I have
+> > to eliminate (mainly logo painting and cursor handling - for now
+> > I still use revc method, mainly because of I did not make into it yet).
 > 
+> I grabbed your latest patch and started to merge it with my latest work on 
+> the matrox driver. As soon as I'm done merging my matrox changes I will 
+> send you a patch right away.
 > 
-> So, do we allow fbcon to handle mode validating and fetching, or do we
-> just leave all this to fbdev? At least let's bring out some ideas on how
-> to go about doing this.  Having a working idea, even if dumb, should
-> interest other developers in contributing. 
+> >   My main concern now is 12x22 font... Accelerator setup
+> > is so costly for each separate painted character that for 8bpp 
+> > accelerated version is even slower than unaccelerated one :-(
+> > (and almost twice as slow when compared with 2.4.x).
+> 
+> Try the latest patch I released.
+>  
+> >   And one (or two...) generic questions: why is not pseudo_palette
+> > u32* pseudo_palette, or even directly u32 pseudo_palette[17] ?
+> 
+> pseudo_palette was originally designed to be a pointer to some kind of 
+> data for color register programming. For example many PPC graphics cards 
+> have a color register region. Now you could have that point to 
 
-I see there currently is much activity on the list. I would like to
-present the point of view of a heavy framebuffer user: I write
-multimedia code for artists, and I generally generate video via the
-framebuffer layer, and trusted old matrox cards (from the Millennium
-II to the G550). The general process is:
+Does this correspond to the LUT i have in my boards ?
 
-- open the framebuffer unit
-- FBIOGET_VSCREENINFO
-- change the appropriate values in fb_var_screeninfo
-- FBIOPUT_VSCREENINFO
-- mmap
-- happily write pixels to the memory area
+BTW, what is the point in having a pseudo_palette if you can store
+the colors in the onchip LUT table.
 
-This, multiplied for all the video heads that I use within the same
-program (up to 5 per PC, up to now, *including* the console screen -
-in this case I control the machine from a network connection).
+Friendly,
 
-I am especially in need to change the BPP value (often using 16BPP
-mode), and in a couple of occasions (the latest 2 weeks ago) I had to
-feed the output of old G200's to large monitors who are only capable
-of TV resolution. This means setting the framebuffer to 768x576 (PAL)
-and *interlaced*. The framebuffer model that still survives in 2.4
-allows me to obtain all this. 
-
-I am not much familiar with all the terminology that is used for the
-new layer. Actually, this framebuffer revolution is what keeps me from
-enjoying (!) the kernel bleeding edge, as I used to do since almost 10
-years ago. 
-
-Can I poll the list's huge knowledge to find out if and how I can
-obtain the same result with the new layer?
-
-Thanks a lot in advance...
-
-Carlo 
-
--- 
-  *         Se la Strada e la sua Virtu' non fossero state messe da parte,
-* K * Carlo E. Prelz - fluido@fluido.as             che bisogno ci sarebbe
-  *               di parlare tanto di amore e di rettitudine? (Chuang-Tzu)
+Sven Luther
 
 
 -------------------------------------------------------

@@ -1,109 +1,83 @@
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: inappropriate use of in_atomic()
-Date: Fri, 11 Mar 2005 17:25:11 +1100
-Message-ID: <20050311172511.1fa0919e.sfr@canb.auug.org.au>
-References: <20050310204006.48286d17.akpm@osdl.org>
+From: "Mukund JB." <mukundjb@esntechnologies.co.in>
+Subject: RE: "remap_page_range" i810 compile time problem ..
+Date: Fri, 11 Mar 2005 12:06:33 +0530
+Message-ID: <4EE0CBA31942E547B99B3D4BFAB348113A49D2@mail.esn.co.in>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============0337619689=="
-In-Reply-To: <20050310204006.48286d17.akpm@osdl.org>
+Content-Transfer-Encoding: quoted-printable
+Content-class: urn:content-classes:message
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://ozlabs.org/cgi-bin/mailman/listinfo/linuxppc64-dev>, 
-	<mailto:linuxppc64-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc64-dev>
-List-Post: <mailto:linuxppc64-dev@ozlabs.org>
-List-Help: <mailto:linuxppc64-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/cgi-bin/mailman/listinfo/linuxppc64-dev>, 
-	<mailto:linuxppc64-dev-request@ozlabs.org?subject=subscribe>
-Mime-version: 1.0
-Sender: linuxppc64-dev-bounces@ozlabs.org
-Errors-To: linuxppc64-dev-bounces@ozlabs.org
-To: Andrew Morton <akpm@osdl.org>
-Cc: jt@bougret.hpl.hp.com, javier@tudela.mad.ttd.net, roland@topspin.com, linux-kernel@vger.kernel.org, acpi-devel@lists.sourceforge.net, paulus@samba.org, linuxppc64-dev@ozlabs.org, linux-fbdev-devel@lists.sourceforge.net, linux1394-devel@lists.sourceforge.net
-
---===============0337619689==
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__11_Mar_2005_17_25_11_+1100_XzibCpGjg+vlEUgZ"
-
---Signature=_Fri__11_Mar_2005_17_25_11_+1100_XzibCpGjg+vlEUgZ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-
-Hi Andrew,
-
-On Thu, 10 Mar 2005 20:40:06 -0800 Andrew Morton <akpm@osdl.org> wrote:
->
-> in_atomic() is not a reliable indication of whether it is currently safe
-> to call schedule().
->
-> 	arch/ppc64/kernel/viopath.c
-
-in_atomic() in viopath.c was just used to determine if we had initialised
-enough to be able to wait in a semaphore (i.e. schedule).  Thus it can be
-replaced now with checking system_state for SYSTEM_RUNNING.
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-
-Test booted on iSeries (which is the only place it is used).
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
-diff -ruNp linus/arch/ppc64/kernel/viopath.c linus-in_atomic/arch/ppc64/kernel/viopath.c
---- linus/arch/ppc64/kernel/viopath.c	2005-01-22 06:09:01.000000000 +1100
-+++ linus-in_atomic/arch/ppc64/kernel/viopath.c	2005-03-11 17:19:45.000000000 +1100
-@@ -79,7 +79,7 @@ static void handleMonitorEvent(struct Hv
- /*
-  * We use this structure to handle asynchronous responses.  The caller
-  * blocks on the semaphore and the handler posts the semaphore.  However,
-- * if in_atomic() is true in the caller, then wait_atomic is used ...
-+ * if system_state is not SYSTEM_RUNNING, then wait_atomic is used ...
-  */
- struct doneAllocParms_t {
- 	struct semaphore *sem;
-@@ -465,7 +465,7 @@ static int allocateEvents(HvLpIndex remo
- 	DECLARE_MUTEX_LOCKED(Semaphore);
- 	atomic_t wait_atomic;
- 
--	if (in_atomic()) {
-+	if (system_state != SYSTEM_RUNNING) {
- 		parms.used_wait_atomic = 1;
- 		atomic_set(&wait_atomic, 1);
- 		parms.wait_atomic = &wait_atomic;
-@@ -475,7 +475,7 @@ static int allocateEvents(HvLpIndex remo
- 	}
- 	mf_allocate_lp_events(remoteLp, HvLpEvent_Type_VirtualIo, 250,	/* It would be nice to put a real number here! */
- 			    numEvents, &viopath_donealloc, &parms);
--	if (in_atomic()) {
-+	if (system_state != SYSTEM_RUNNING) {
- 		while (atomic_read(&wait_atomic))
- 			mb();
- 	} else
-
---Signature=_Fri__11_Mar_2005_17_25_11_+1100_XzibCpGjg+vlEUgZ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.0 (GNU/Linux)
-
-iD8DBQFCMTnI4CJfqux9a+8RAjn9AJ9xruaPaahKA3vcSh+xKvL+ir+3jwCfVVDO
-geeW/CNzOmGS9acstKu1byY=
-=k8EP
------END PGP SIGNATURE-----
-
---Signature=_Fri__11_Mar_2005_17_25_11_+1100_XzibCpGjg+vlEUgZ--
-
---===============0337619689==
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+To: adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net, linux-fbdev-users@lists.sourceforge.net
 
-_______________________________________________
-Linuxppc64-dev mailing list
-Linuxppc64-dev@ozlabs.org
-https://ozlabs.org/cgi-bin/mailman/listinfo/linuxppc64-dev
+Hi adaplas,
 
---===============0337619689==--
+Thankful to u for making things clear at every level.
+
+> > But when I try this without accel=3D1 rotation fails. Can u just
+narrate
+> > me what is accel accentually doing?
+>=20
+> Because if accel is on, the driver is using it's own version of
+drawing
+> functions which are flexible enough that additional features can be
+added,
+> such as screen rotation.
+>=20
+> If accel is off, the driver will use the generic functions which
+cannot do
+> screen rotation.  Of course, one can write a software version that can
+do
+> screen rotation.
+
+So, u mean the i810fb driver will process the command line parameters &
+if finds the accel is "1" in the list, it will use its own functions or
+else it will use the generic functions provided in the fbgen.c file.
+
+This is my understanding about fb driver architecture
+
+			Application
+			-----------
+		  XFree86 / Directfb (Embedded)
+			-----------
+			 FB driver
+			-----------
+			 HARDWARE
+
+Are these files below a part of fb driver or do they come under a
+different level in fb driver architecture?
+
+fbcon.c - low level framebuffer based console driver
+fbcon-cfb* - low level framebuffer based operations for 8 bpp packed
+pixels
+How do I differentiate between the above two?
+
+fbcmap.c 	- It handles color mapping
+fbcon-plan2p*
+
+I find fbdevhw.a & I find groups referring to it.
+I think it is a library. If so, give me some inputs where we can use it.
+Please do correct if I am going OFF-TRACK understanding FB drivers.
+
+Where exactly should I place the fbdevhw.a in the above shown
+architecture?
+
+Regards,
+Mukund jampala
+
+
+
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

@@ -1,25 +1,25 @@
 From: tomas carnecky <tom@dbservice.com>
 Subject: opengl for framebuffer
-Date: Mon, 05 Jan 2004 16:35:10 +0100
+Date: Mon, 05 Jan 2004 16:36:12 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3FF9842E.5090807@dbservice.com>
+Message-ID: <3FF9846C.4080709@dbservice.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AdWl8-0003HA-W0
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 07:35:14 -0800
+	id 1AdWm8-0003JM-3C
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 07:36:16 -0800
 Received: from [213.133.97.13] (helo=matterhorn.dbservice.com)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1AdWl8-0000qn-JF
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 07:35:14 -0800
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1AdWm7-0001Wk-Lq
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 07:36:15 -0800
 Received: from localhost (localhost [127.0.0.1])
-	by matterhorn.dbservice.com (Postfix on SuSE Linux 8.0 (i386)) with ESMTP id 723A91B138
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  5 Jan 2004 16:35:13 +0100 (CET)
+	by matterhorn.dbservice.com (Postfix on SuSE Linux 8.0 (i386)) with ESMTP id CDC481BAEA
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  5 Jan 2004 16:36:14 +0100 (CET)
 Received: from dbservice.com (emmen.dbservice.com [62.65.141.13])
-	by matterhorn.dbservice.com (Postfix on SuSE Linux 8.0 (i386)) with ESMTP id 2ED62191D6
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  5 Jan 2004 16:35:11 +0100 (CET)
+	by matterhorn.dbservice.com (Postfix on SuSE Linux 8.0 (i386)) with ESMTP id A5411191D6
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  5 Jan 2004 16:36:12 +0100 (CET)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -52,6 +52,7 @@ There exists a _really_ small documentation
 
 I'd like to know what you think about it.
 
+PS: I'm not subscribed to the list, so please send me a copy.
 -- 
 
 wereHamster a.k.a. Tom Carnecky   Emmen, Switzerland

@@ -1,23 +1,23 @@
 From: James Simmons <jsimmons@infradead.org>
 Subject: Re: tdfx & multiple voodoo cards : supposed to
- work ?
-Date: Thu, 30 Oct 2003 18:42:53 +0000 (GMT)
+ work ? + Mach64Gx question.
+Date: Thu, 30 Oct 2003 18:45:57 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0310301841430.5296-100000@phoenix.infradead.org>
-References: <20031030124835.GA7367@iliana>
+Message-ID: <Pine.LNX.4.44.0310301845220.5296-100000@phoenix.infradead.org>
+References: <20031030183125.GA12087@iliana>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1AFHl3-000626-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 30 Oct 2003 10:42:57 -0800
+	id 1AFHo0-0006Qr-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 30 Oct 2003 10:46:00 -0800
 Received: from [213.86.99.234] (helo=phoenix.infradead.org)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.24)
-	id 1AFHl2-000113-Hb
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 30 Oct 2003 10:42:56 -0800
-In-Reply-To: <20031030124835.GA7367@iliana>
+	id 1AFHnz-0006v3-TH
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 30 Oct 2003 10:46:00 -0800
+In-Reply-To: <20031030183125.GA12087@iliana>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -30,22 +30,28 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Sven Luther <sven.luther@wanadoo.fr>
-Cc: Richard Drummond <evilrich@rcdrummond.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> Yep, that would be nice. I have already included a voodoo patch, but i
-> suppose it only works for the older voodoos. I have neither specs nor
-> hardware for them though.
+> Yep. i am waiting until it is no more 'being updated' but 'updated' :))
+> I am working on debian 2.4.22 powerpc packages anyway, and it is best to
+> run the same kernel i am working on until i am finished with this work
+> anyway.
 
-I can post the specs for the some of the cards.
+I understand. 
+ 
+> > > 00:0f.0 VGA comppatible controller: ATI Technolgies Inc 210888GX [Mach64 GX] (rev 02)
+> > > 
+> > > Any idea on what is going on here (the kernel works, but there is no
+> > > video output).
+> > 
+> > I have this card as well and never got it to work.
+> 
+> On x86 ? But Chris is telling that it used to work well with his 2.2.20
+> or thereabout kernel.
 
-> Mmm, that sounds nice. do you have OF based drivers for them in your
-> mac ? I need to port the pegasos patches to 2.6.x first though.
-
-P.S
-
-   I have a patch to make color maps work with the OpenFirmware fbdev 
-driver and 3Dfx cards. I just haven't got around to appling it.
+Yes. Maybe it is a different card but I think it is that one.
+Have to check.
 
 
 

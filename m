@@ -1,66 +1,53 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] matroxfb update to new API
-Date: Wed, 28 May 2003 10:07:01 +0200 (MEST)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0305281005240.10948-100000@vervain.sonytel.be>
-References: <2BC238B14C4@vcnet.vc.cvut.cz>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Console & FBDev vs. locking
+Date: 28 May 2003 13:46:00 +0200
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <1054122360.602.197.camel@gaston>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=witte.sonytel.be)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19KvzP-0001So-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 28 May 2003 01:08:52 -0700
-In-Reply-To: <2BC238B14C4@vcnet.vc.cvut.cz>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Petr Vandrovec <VANDROVE@vc.cvut.cz>
-Cc: James Simmons <jsimmons@infradead.org>, Nicolas Souchu <nsouch@free.fr>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: linux-kernel mailing list <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: James Simmons <jsimmons@infradead.org>
 
-On Tue, 27 May 2003, Petr Vandrovec wrote:
-> On 27 May 03 at 21:53, James Simmons wrote:
-> > > implements clear_margins as black color and not current background 
-> > > color.
-> > 
-> > It would look bad if the margin where a different color from the screen 
-> > when it was cleared.
-> 
-> Nope. Try running midnight commander. You'll end with cyan (or red or..
-> just random, depending on what was mc doing when scrolling happened) 
-> line at the right and bottom of screen. Do not forget that rectangle around 
-> the picture is always black (even on DFPs there is about 1mm margin between 
-> first pixel and edge), so it seems natural to me that margin should be 
-> always black. Besides that I received two complaints in 16hrs after I
-> switched matroxfb from driver's black clear margin to the generic 
-> implementation using background color.
+Hi !
 
-The implementation using the background color is due to the SPARC guys. Suns
-boot with a black on white console, and the border is white. Personally I don't
-care making it black.
+While working on various power management issues with fbdev, I noticed
+that there's an almost complete lack of locking in there and I've
+spotted several races. Some of them seem to be present at the vt
+subsystem level as well. Unless I've missed something, what we have
+today is:
 
-Gr{oetje,eeting}s,
+All printk originated console call should done with the console
+semaphore held. The console-sem is the de-facto locking mecanism for the
+console today, while not fine-grained, it's probably plenty enough for
+what we need in 2.5 and unless previous implementations which ran with
+irqs off, the console drivers can actually block and rely on HW
+interrupts.
 
-						Geert
+However, the following (at least), break the rule and call the console
+driver in a racy way:
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+ - Most of vt_ioctl.c userland calls. Things like KDSETMODE for example
+can end up into a call to unblank_screen() -> redraw_screen()
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+ - Console blanking/unblanking: worst, that one is called at interrupt
+time from a timer
 
+ - In fbcon: all of the cursor handling (fortunately, _at least_, it's
+no longer calling the driver at interrupt time).
 
+ - Any userland access to fbcon via ioctls, that is mode change for
+example, which can be a tricky task and leave the card in some unuseable
+state until the mode change is complete, do race with anything else.
 
--------------------------------------------------------
-This SF.net email is sponsored by: ObjectStore.
-If flattening out C++ or Java code to make your application fit in a
-relational database is painful, don't do it! Check out ObjectStore.
-Now part of Progress Software. http://www.objectstore.net/sourceforge
+I can produce a patch fixing as much of these as I can find if you agree
+that is the correct way, that is adding acquire_console_sem() in places
+where it belongs, that is almost every of the above, except for the
+blanking timer which has to be deferred to process context.
+
+Any comments ?
+
+Regards,
+Ben.

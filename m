@@ -1,25 +1,24 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Building kernel driver outside of the kernel
- tree
-Date: Fri, 20 Aug 2004 18:04:32 +0200 (MEST)
+Subject: Re: Generic framebuffer driver
+Date: Fri, 20 Aug 2004 18:09:34 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0408201804080.6741@waterleaf.sonytel.be>
-References: <41261A97.4AFBB9C@orpatec.ch>
+Message-ID: <Pine.GSO.4.58.0408201805270.6741@waterleaf.sonytel.be>
+References: <41261BF3.19B87A64@orpatec.ch>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1ByBse-00070H-HE
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 20 Aug 2004 09:04:40 -0700
+	id 1ByBxX-0007kJ-T3
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 20 Aug 2004 09:09:43 -0700
 Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1ByBsc-0007G1-Tg
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 20 Aug 2004 09:04:40 -0700
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
+	id 1ByBxX-0000YO-7c
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 20 Aug 2004 09:09:43 -0700
 Received: from waterleaf.sonytel.be (mail.sonytel.be [43.221.60.197])
-	by witte.sonytel.be (8.12.10/8.12.10) with ESMTP id i7KG4Wn1005045
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 20 Aug 2004 18:04:32 +0200 (MEST)
-In-Reply-To: <41261A97.4AFBB9C@orpatec.ch>
+	by witte.sonytel.be (8.12.10/8.12.10) with ESMTP id i7KG9Zn1005491
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 20 Aug 2004 18:09:35 +0200 (MEST)
+In-Reply-To: <41261BF3.19B87A64@orpatec.ch>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,15 +30,43 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: 'linux-fbdev-devel' <linux-fbdev-devel@lists.sourceforge.net>
 
 On Fri, 20 Aug 2004, Otto Wyss wrote:
-> In kernel 2.6.x it seems to be possible to build drivers (modules)
-> outside of the kernel source. This is very useful for testing out new
-> drivers. Is this anywhere documented? If not can anyone volunteer to
-> write a small documentation?
+> Since I never could acceptable align my monitor screen between Windows,
+> Linux console and Linux X-server I bought a DVI cable and switch to
+> digital mode. Immediately I discovered a fantastic feature of the radeon
+> framebuffer driver, it's able to discover the correct resolution of my
+> LCD monitor.
+>
+> I guess this is a common feature of the digital interface and might be
+> available for any graphic card/monitor with DVI. Does anyone know for
+> sure? If yes this feature would allow to create a generic framebuffer
 
-Documentation/kbuild/modules.txt
+It can work for normal monitors as well, using DDC.
+
+> driver which could be built into the kernel and used right from the
+> start. How nice would it be to have a shiny startup screen right from
+> the start of Linux! All the startup messages could be shown in a decent
+> font (maybe even configurable) and might be surrounded by a nice window.
+> What a difference would it make against the current DOS-like look.
+
+Like what e.g. SUSE does?
+
+> The main task of this generic driver is to detect and switch to the
+> correct resolution and may only handle simple 2D drawing. It should only
+> support common features. It needs only be useful during startup and in
+> cases no specific framebuffer driver exists. And of course it has to
+> stop working and yield any resources when a card specific driver is loaded.
+>
+> Do you also think such a generic driver should exist? Is anyone able to
+> create it, maybe simply extract it from the radeonfb?
+
+This generic driver does not exist. And it's not simple to write, since it's
+hardware dependent.
+
+The closest thing to such a generic driver is the existing vesafb. Perhaps on
+some cards the BIOS uses DDC as well to find a nice video mode?
 
 Gr{oetje,eeting}s,
 

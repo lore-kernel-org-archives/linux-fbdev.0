@@ -1,17 +1,14 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: (no subject)
-Date: 07 Feb 2003 05:55:07 +0800
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: dead code in fbcon
+Date: Mon, 10 Feb 2003 10:24:27 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1044568401.1327.24.camel@localhost.localdomain>
-References: <H9W89N$BB99264CDD033C15A1E92A4E2F5E0F29@libero.it>
+Message-ID: <Pine.GSO.4.21.0302101022190.25020-100000@vervain.sonytel.be>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from willow.compass.com.ph ([202.70.96.38])
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18gtzl-0006YQ-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 06 Feb 2003 13:55:45 -0800
-In-Reply-To: <H9W89N$BB99264CDD033C15A1E92A4E2F5E0F29@libero.it>
+	id 18iAC1-0008Ih-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 10 Feb 2003 01:25:38 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,61 +18,53 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: "p.gilardetti@libero.it" <p.gilardetti@libero.it>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, 2003-02-06 at 23:27, p.gilardetti@libero.it wrote:
-> Hi,
-> I have a problem when I change the bpp value, here is the code:
-> 
-> if( ioctl(fbd, FBIOGET_VSCREENINFO, &var_info) == -1){
-> 	perror("\nError IOCTL 1");
-> 	exit(0);
-> }           
-> printf("\n bpp: %d", var_info.bits_per_pixel);   // output is  bpp: 16
-> var_info.bits_per_pixel = 24;
-> if( ioctl(fbd, FBIOPUT_VSCREENINFO, &var_info) == -1){
-> 	perror("\nError IOCTL 2");
-> 	exit(0);
-> }           
-> The program exit with the following message error: 
-> Error IOCTL 2: Invalid argument
-> 
-> How can I set the bpp value? Should I modify the file /etc/X11/XF86Config?
 
-This will depend on the driver you are using.  vesafb does not support
-any change to fb_var_screeninfo.  Other drivers, may not round off
-invalid values:  ie bpp == 24 is not supported.  Also, increasing bpp
-implies that more video memory will be required if var.xres_virtual and
-var.yres_virtual remains the same.  So try to check xres, yres,
-xres_virtual and yres_virtual against fix.smem_len and
-var.bits_per_pixel.  
+fbcon_changevar() contains some code (copy-and-pasted from
+fbcon_set_display()?) which is never used because save is never set to
+non-NULL.
 
-fix.smem_len >= (var.bits_per_pixel * var.xres_virtual)/8 *
-var.yres_virtual.
+--- linux-2.5.59/drivers/video/console/fbcon.c	Fri Jan 17 12:09:27 2003
++++ linux-geert-2.5.59/fbcon.c	Mon Feb 10 10:19:58 2003
+@@ -766,7 +766,6 @@
+ 		struct vc_data *vc = p->conp;
+ 		int nr_rows, nr_cols;
+ 		int old_rows, old_cols;
+-		unsigned short *save = NULL, *q;
+ 		int i, charcnt = 256;
+ 		struct font_desc *font;
+ 
+@@ -846,15 +845,6 @@
+ 		 	vt_cons[vc->vc_num]->vc_mode == KD_TEXT) {
+ 			accel_clear_margins(vc, p, 0);
+ 			update_screen(con);
+-		}
+-		if (save) {
+-			q = (unsigned short *) (vc->vc_origin +
+-						vc->vc_size_row *
+-						old_rows);
+-			scr_memcpyw(q, save, logo_lines * nr_cols * 2);
+-			vc->vc_y += logo_lines;
+-			vc->vc_pos += logo_lines * vc->vc_size_row;
+-			kfree(save);
+ 		}
+ 
+ 		if (con == fg_console && softback_buf) {
 
-/etc/X11/XF86Config has nothing to with fbdev.
+Gr{oetje,eeting}s,
 
-> 
-> I have another problem, I try to write a simple program that reads frame from framebuffer and then creates a Divx file of a few seconds.
-> I map the framebuffer to a buffer, but the program crash with a segmentation fault:
->                                                  
->     screen_buffer = (char *)malloc(DIM_BUFFER * sizeof(char));
+						Geert
 
-you don't need this step.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
->     screen_buffer = (void *)mmap(0, DIM_BUFFER, PROT_READ, MAP_SHARED, fbd, 0);                 
-
-check if mmap failed, (returns -1).
-> 	
->     encFrame.image = (void *)screen_buffer;  <--- causes seg fault
-
-memcpy(encFrame.image, screen_bufer, DIM_BUFFER) is a more appropriate
-step to get the contents.
-
-Tony
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

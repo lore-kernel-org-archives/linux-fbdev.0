@@ -1,16 +1,23 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: KernelDoc "fb": New Framebuffer help text (fwd)
-Date: Thu, 8 Aug 2002 14:49:50 +0200 (MEST)
+From: Yves =?ISO-8859-1?Q?J=E4ger?= <yves.jaeger@fraenz-jaeger.de>
+Subject: own driver crashes + patch
+Date: 08 Aug 2002 15:01:11 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0208081449170.28174-101000@vervain.sonytel.be>
+Message-ID: <1028811676.1323.26.camel@dilbert>
 Mime-Version: 1.0
-Content-Type: MULTIPART/Mixed; BOUNDARY="----=_NextPart_000_0015_01C23EE6.831AD850"
+Content-Type: multipart/mixed; boundary="=-dOQLehwZt+EsarSXkkVo"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+Received: from moutng.kundenserver.de ([212.227.126.171])
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17cmjw-0000bu-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 08 Aug 2002 05:50:09 -0700
-Content-ID: <Pine.GSO.4.21.0208081449171.28174@vervain.sonytel.be>
+	id 17cmuq-000398-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 08 Aug 2002 06:01:25 -0700
+Received: from [212.227.126.155] (helo=mrelayng1.kundenserver.de)
+	by moutng1.kundenserver.de with esmtp (Exim 3.35 #2)
+	id 17cmui-0007g2-00
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Aug 2002 15:01:16 +0200
+Received: from [62.134.106.54] (helo=dilbert.igfj.westend.de)
+	by mrelayng1.kundenserver.de with asmtp (Exim 3.35 #2)
+	id 17cmui-0000Vj-00
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Aug 2002 15:01:16 +0200
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,124 +27,82 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Bastian Pflieger <wb@illogical.de>
+To: linux-fbdev-devel@lists.sourceforge.net
 
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-  Send mail to mime@docserver.cac.washington.edu for more info.
+--=-dOQLehwZt+EsarSXkkVo
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-------=_NextPart_000_0015_01C23EE6.831AD850
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII
-Content-ID: <Pine.GSO.4.21.0208081449172.28174@vervain.sonytel.be>
+Hi all, 
 
----------- Forwarded message ----------
-Date: Thu, 8 Aug 2002 14:18:48 +0200
-From: Bastian Pflieger <wb@illogical.de>
-To: geert@linux-m68k.org
-Subject: KernelDoc "fb": New Framebuffer help text
+I'm writing a Framebuffer driver for an embedded system that contains an
+LCD display and and Toshiba T6963 controller. 
 
-Hello
+I had the problem, that my driver crashed because the screensize
+(126x64) is lower than the boot-logo (80x80). And this parameter is not
+checked in fbcon.c
 
-I wrote a little help text to setup the SiS Framebuffer. I think
-that is currently missing.
+To see a Kernel with the virtual framebuffer crash, apply the patch
+vfb.diff and enable the Virtual Framebuffer in your configuration and
+kernel command line.
 
-I usally activate the VESA Framebuffer, but a few days ago I bought a cheap
-laptop with a SiS Chipset and I was lost how to activate the SiS
-Framebuffer.
+The workaround is shown in file fbcon-2.4.18.patch. 
+I'm not sure if that is the right place to check the boot-logo size.
+Perhaps somebody has a better idea.
 
-It's no indepth guide or something, just a little help to setup the
-framebuffer quick.
-
-Its my first contribution ever made, so if something wrong or not good
-enough please tell me.
-
-Greetings
-Bastian Pflieger
+Best regards 
+Yves Jaeger 
 
 
-
-------=_NextPart_000_0015_01C23EE6.831AD850
-Content-Type: APPLICATION/OCTET-STREAM; NAME="sisfb.dat"
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Content-ID: <Pine.GSO.4.21.0208081449173.28174@vervain.sonytel.be>
+--=-dOQLehwZt+EsarSXkkVo
 Content-Description: 
-Content-Disposition: ATTACHMENT; FILENAME="sisfb.dat"
+Content-Disposition: inline; filename=vfb.diff
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=ISO-8859-15
 
-SiS Framebuffer=0A=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=0A=
-=0A=
-This is a quick and easy setup guide for SiS first time users.=0A=
-=0A=
-Important note: If you intend to use the hardware acceleration =
-facilities of=0A=
-                the X-Server with your SiS Chipset, you must select the =
-SiS=0A=
-                Framebuffer.=0A=
-=0A=
-                The SiS X-Driver depends on this framebuffer for =
-acceleration.=0A=
-=0A=
-=0A=
-How I activate / setup the framebuffer?=0A=
----------------------------------------=0A=
-=0A=
-There are two important parameters you should set:=0A=
-=0A=
-Parameter   I Description=0A=
-------------I--------------------------------------------------=0A=
-mode        I Selects the resolution and depth. The value=0A=
-            I format is straight forward, so I just give you=0A=
-            I an example: mode=3D1024x768x32 or mode=3D800x600x16=0A=
-            I=0A=
-            I Say "none" if you want the default 80x25 textmode=0A=
-------------I--------------------------------------------------=0A=
-rate        I Selects the vertical refresh rate (Hz).=0A=
-            I Example: rate=3D85 (Default is 60)=0A=
-            I=0A=
-            I (I must admit that I am using a TFT display and=0A=
-            I  cannot verify how good this option works)=0A=
-=0A=
-If you compiled the driver into the kernel you must use the following =
-format=0A=
-for the kernel parameters: video=3Dsisfb:<parameter>:<value>=0A=
-=0A=
-If you use lilo you can insert, for example, the following line in your=0A=
-lilo.conf:=0A=
-=0A=
-append=3D"video=3Dsisfb:mode:1024x768x32 video=3Dsisfb:rate:85"=0A=
-=0A=
-Substitute the example parameter values with your values and restart =
-lilo,=0A=
-so the parameters are automatically set for you every time you boot.=0A=
-=0A=
-There are a lot more useful parameters that may help you to setup your=0A=
-SiS stuff. Instead of repeating them here, point your favourite browser=0A=
-to http://www.winischhofer.net.=0A=
-=0A=
-=0A=
-Where to find more information?=0A=
--------------------------------=0A=
-=0A=
-Visit Thomas Winischhofer's site: http://www.winischhofer.net=0A=
-=0A=
-There you find additional detailed information about the=0A=
-configuration of the framebuffer and the X-Driver.=0A=
-=0A=
-=0A=
-Personal note=0A=
--------------=0A=
-=0A=
-I am _not_ the author of any SiS Chipset support drivers. I wrote this=0A=
-text mainly to help all SiS Fans to get the framebuffer device working=0A=
-right the first time.=0A=
-=0A=
---=0A=
-Bastian Pflieger <wb@illogical.de>=0A=
-Aug 8, 2002=0A=
+--- vfb.c	Wed Aug  7 15:14:05 2002
++++ vfb.c.new	Wed Aug  7 15:34:58 2002
+@@ -62,7 +62,7 @@
+=20
+ static struct fb_var_screeninfo vfb_default =3D {
+     /* 640x480, 8 bpp */
+-    640, 480, 640, 480, 0, 0, 8, 0,
++    128, 64, 128, 64, 0, 0, 1, 0,
+     {0, 8, 0}, {0, 8, 0}, {0, 8, 0}, {0, 0, 0},
+     0, 0, -1, -1, 0, 20000, 64, 64, 32, 32, 64, 2,
+     0, FB_VMODE_NONINTERLACED
 
-------=_NextPart_000_0015_01C23EE6.831AD850--
+--=-dOQLehwZt+EsarSXkkVo
+Content-Disposition: attachment; filename=fbcon-2.4.18.patch
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/x-patch; name=fbcon-2.4.18.patch; charset=ISO-8859-15
+
+diff -ru linux/drivers/video/fbcon.c linux-2.4.18-t6963/drivers/video/fbcon=
+.c
+--- linux/drivers/video/fbcon.c	Mon Feb 25 20:38:07 2002
++++ linux-2.4.18-t6963/drivers/video/fbcon.c	Thu Aug  8 14:43:39 2002
+@@ -754,8 +754,14 @@
+     }
+ =09
+     if (logo) {
+-	logo_shown =3D -2;
+-    	conp->vc_top =3D logo_lines;
++	if (logo_lines > conp->vc_bottom)
++	{
++		logo_shown =3D -1;
++		printk(KERN_INFO "fbcon_startup: disable boot-logo (boot-logo bigger tha=
+n screen).\n");
++	} else {
++		logo_shown =3D -2;
++		conp->vc_top =3D logo_lines;
++	}
+     }
+    =20
+     if (con =3D=3D fg_console && softback_buf) {
+
+--=-dOQLehwZt+EsarSXkkVo--
+
 
 
 -------------------------------------------------------

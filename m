@@ -1,16 +1,16 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: Finding Aki M Laukkanen's VESAFBD project?
-Date: Fri, 14 Mar 2003 15:22:54 -0800 (PST)
+Date: Sat, 15 Mar 2003 10:52:23 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030314232254.8987.qmail@web14904.mail.yahoo.com>
-References: <3E71EDDB.915.5AD977E@localhost>
+Message-ID: <Pine.GSO.4.21.0303151050480.16951-100000@vervain.sonytel.be>
+References: <3E71B0FE.1534.4BFD86E@localhost>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from web14904.mail.yahoo.com ([216.136.225.56])
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18tyVs-0005AP-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 14 Mar 2003 15:22:56 -0800
-In-Reply-To: <3E71EDDB.915.5AD977E@localhost>
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18u8LX-0006Ix-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 15 Mar 2003 01:52:55 -0800
+In-Reply-To: <3E71B0FE.1534.4BFD86E@localhost>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,99 +20,40 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kendall Bennett <KendallB@scitechsoft.com>, linux-fbdev-devel@lists.sourceforge.net
+To: Kendall Bennett <KendallB@scitechsoft.com>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-You can do it either way. With blocking IO you would
-need one thread per adapter. With the signal method
-you can be single threaded and sleep waiting for a
-signal. Both styles will work.
+On Fri, 14 Mar 2003, Kendall Bennett wrote:
+> After some research I discovered that unfortunately Aki was killed in an 
+> accident in January 2001, and hence this project was forgotten about. I 
 
-With single threaded you make an array of handles for
-the framebuffers. When you get a signal you do poll()
-on the array. For each active poll you will need to do
-the IOCTL. Keep looping on poll/IOCTL until the poll
-goes inactive, then sleep waiting for a SIGIO.
+Oops...
 
---- Kendall Bennett <KendallB@scitechsoft.com> wrote:
-> Jon Smirl <jonsmirl@yahoo.com> wrote:
-> 
-> > I noticed the email but I wasn't sure if you knew
-> about the code
-> > from the way your mail was worded. 
-> 
-> ;-)
-> 
-> > I used fasync and poll to implement user space
-> communications in a
-> > driver I just finished.  Use kill_fasync(&fasync,
-> SIGIO) from the
-> > device driver to signal the user app. The signal
-> causes the app to
-> > poll which the driver replies POLLIN to. Polling
-> identifies which
-> > device caused the signal. Now the user app knows
-> it needs to IOCTL
-> > the handle to do whatever the driver needs it to.
-> It only takes
-> > about 100 lines of code to implement the
-> communication. 
-> 
-> Does the user space daemon block waiting to be woken
-> up from the kernel 
-> module? I think the way Aki had it done initially
-> was to have the user 
-> space daemon call into the kernel via an ioctl() or
-> something, and the 
-> kernel would block on that thread and when something
-> needed to be done, 
-> it would fill in the return structure for the
-> ioctl() and then unblock 
-> the thread. The user space daemon would process the
-> ioctl() and and then 
-> call it agin once the service was completed.
-> 
-> Does that system make sense at all?
-> 
-> Thanks!
-> 
-> ---
-> Kendall Bennett
-> Chief Executive Officer
-> SciTech Software, Inc.
-> Phone: (530) 894 8400
-> http://www.scitechsoft.com
-> 
-> ~ SciTech SNAP - The future of device driver
-> technology! ~
-> 
-> 
-> 
->
--------------------------------------------------------
-> This SF.net email is sponsored by:Crypto Challenge
-> is now open! 
-> Get cracking and register here for some mind
-> boggling fun and 
-> the chance of winning an Apple iPod:
->
-http://ads.sourceforge.net/cgi-bin/redirect.pl?thaw0031en
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
->
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+> would very much like to resurrect this project and complete it on Aki's 
+> behalf. Below is the original announcement email from Aki in January 
+> 2000, but none of the links work anymore. If anyone downloaded this code 
+> at the time or knows where to find the code that Aki was working on, 
+> please let me know.
 
+> Download from:
+> http://www.cs.helsinki.fi/u/amlaukka/vesafb/
 
-=====
-Jon Smirl
-jonsmirl@yahoo.com
+Since the code used to be at a university webserver, you may want to ask the
+sysadmin team of cs.helsinki.fi whether they have a backup.
 
-__________________________________________________
-Do you Yahoo!?
-Yahoo! Web Hosting - establish your business online
-http://webhosting.yahoo.com
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 
 -------------------------------------------------------

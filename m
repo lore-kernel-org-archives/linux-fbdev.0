@@ -1,21 +1,21 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Re: Patch for review and testing
-Date: Wed, 28 Jan 2004 11:18:00 +1100
+Subject: Re: Patch for review and testing
+Date: Wed, 28 Jan 2004 12:01:35 +1100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1075249079.5655.229.camel@gaston>
+Message-ID: <1075251694.30622.240.camel@gaston>
 References: <Pine.LNX.4.44.0401272255180.19265-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AldSR-0000bg-RA
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Jan 2004 16:21:27 -0800
+	id 1Ale8g-0003J6-9P
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Jan 2004 17:05:06 -0800
 Received: from gate.crashing.org ([63.228.1.57] ident=root)
 	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1AldSR-0006oO-DE
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Jan 2004 16:21:27 -0800
+	id 1Ale8f-0001YC-Ti
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Jan 2004 17:05:06 -0800
 In-Reply-To: <Pine.LNX.4.44.0401272255180.19265-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,20 +30,15 @@ Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@infradead.org>
 Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@osdl.org>
 
-On Wed, 2004-01-28 at 09:59, James Simmons wrote:
 
-> P.S.
->    Have any idea to know which card is the primary one on intel. I have 
-> been trying to figure that one out for quite some time.
+> Yes. The code is run in real mode before linux is started. 
 
-AFAIK, we need the arch/i386 PCI probe code to "remember", when probing,
-which VGA card had the IO enable bit set. There can be only one, the primary
-one since BIOSes only POST one card.
-
-BTW. What about my set of patches ? Did you have time to have a look ?
+Ok, I've chatted with some x86 folks, it should still be
+possible to check the commandline (cmd_line_ptr defined
+in setup.S).
 
 Ben.
- 
+
 
 
 

@@ -1,63 +1,62 @@
 From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: Re: [Linux-fbdev-devel] Re: FB model basic issues (WAS: radeon,
-	apertures & memory mapping)
-Date: Thu, 17 Mar 2005 21:54:14 +0200
-Message-ID: <20050317195414.GA29118@sci.fi>
-References: <1110907029.4001.624.camel@localhost>
-	<1110942559.24296.107.camel@gaston> <20050316200808.GB6651@sci.fi>
-	<a728f9f90503161258181977fa@mail.gmail.com>
-	<20050316210812.GA19937@sci.fi> <1111015801.15509.62.camel@gaston>
-	<20050317004713.GB8081@sci.fi> <1111021978.15510.97.camel@gaston>
-	<20050317012503.GA20844@sci.fi>
-	<Pine.LNX.4.62.0503171007200.5611@numbat.sonytel.be>
+Subject: Re: [PATCH 0/8] Some atyfb patches
+Date: Thu, 17 Mar 2005 22:08:42 +0200
+Message-ID: <20050317200842.GB29118@sci.fi>
+References: <20050317023054.2B0DB7A@kuori.saunalahti.fi> <200503180345.53067.adaplas@hotpop.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1DC1IT-0000jH-I1
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Mar 2005 12:08:45 -0800
+Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1DC1IS-0001n8-5q
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Mar 2005 12:08:45 -0800
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.62.0503171007200.5611@numbat.sonytel.be>
+In-Reply-To: <200503180345.53067.adaplas@hotpop.com>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/xorg>
-List-Post: <mailto:xorg@lists.freedesktop.org>
-List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
-Sender: xorg-bounces@lists.freedesktop.org
-Errors-To: xorg-bounces@lists.freedesktop.org
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="iso-8859-1"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>, Jon Smirl <jonsmirl@yahoo.com>, xorg@lists.freedesktop.org, Alex Deucher <alexdeucher@gmail.com>, dri-devel@lists.sourceforge.net
+To: adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net, Ville SyrjXlX <syrjala@kotilo.saunalahti.fi>, alex.kern@gmx.de
 
-On Thu, Mar 17, 2005 at 10:08:15AM +0100, Geert Uytterhoeven wrote:
-> On Thu, 17 Mar 2005, Ville [iso-8859-1] Syrj??wrote:
-> > On Thu, Mar 17, 2005 at 12:12:58PM +1100, Benjamin Herrenschmidt wrot=
-e:
-> > > > I understand you can't have userspace program the accelerator whi=
-le=20
-> > > > someone else is doing the same thing. Oh and I now understand tha=
-t the=20
-> > > > same really applies to direct framebuffer access due to the swapp=
-er. =20
-> > >=20
-> > > And you can't have someone program the accelerator while somebody d=
-oes
-> > > direct access neither. It's basically all exclusive.
-> >=20
-> > I haven't seen that happen on any hardware I own. Matrox specs explic=
-itly=20
-> > mention that there is no need to synchronize accelerator and direct=20
-> > framebuffer access.
+On Fri, Mar 18, 2005 at 03:45:53AM +0800, Antonino A. Daplas wrote:
+> On Thursday 17 March 2005 10:30, Ville SyrjXlX wrote:
+> > Here's a collection of patches for atyfb.
+> >
+> > I'm pretty sure patches 1-5 are fine as is.
+> >
+> > Patches 6 and 7 change some of the chip descriptions. I'm not 100% su=
+re
+> > about the changes so I'd appreciate any comments.
+> >
+> > Patch 8 changes the power management code so I really need some comme=
+nts
+> > on it. I don't want to break any working setups.
+> >
 >=20
-> Really?
+> Let me know if you want this to go to the mm tree.
 
-Really.
-
-> I was always given Matrox as an example of a card that would lock up if
-> you access the frame buffer while the accelerator is busy...
-
-Apparently they didn't know what they were talking about.
+I'd like to see what people have to say first.
 
 --=20
 Ville Syrj=E4l=E4
 syrjala@sci.fi
 http://www.sci.fi/~syrjala/
+
+
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

@@ -1,22 +1,22 @@
 From: Sven Luther <sven.luther@wanadoo.fr>
-Subject: Mach64Gx not working on pmac 9500 (Was : tdfx & multiple voodoo cards : supposed to work ? + Mach64Gx question.)
-Date: Thu, 30 Oct 2003 10:56:20 +0100
+Subject: Re: tdfx & multiple voodoo cards : supposed to work ?
+Date: Thu, 30 Oct 2003 12:32:10 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20031030095620.GA5088@iliana>
-References: <20031030064940.GC2115@iliana> <Pine.GSO.4.21.0310301031110.15545-100000@waterleaf.sonytel.be>
+Message-ID: <20031030113210.GA6429@iliana>
+References: <20031029182532.GA1662@dreamland.darkstar.lan> <Pine.LNX.4.44.0310292000530.21040-100000@phoenix.infradead.org> <20031030091541.GA4422@iliana>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1AF9XY-0007tL-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 30 Oct 2003 01:56:28 -0800
-Received: from smtp4.wanadoo.fr ([193.252.22.27] helo=mwinf0401.wanadoo.fr)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AF9XX-0002BE-Pk
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 30 Oct 2003 01:56:27 -0800
+	id 1AFB2J-0002vv-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 30 Oct 2003 03:32:19 -0800
+Received: from smtp1.wanadoo.fr ([193.252.22.30] helo=mwinf0103.wanadoo.fr)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.24)
+	id 1AFB2I-0004ap-LI
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 30 Oct 2003 03:32:18 -0800
 Content-Disposition: inline
-In-Reply-To: <Pine.GSO.4.21.0310301031110.15545-100000@waterleaf.sonytel.be>
+In-Reply-To: <20031030091541.GA4422@iliana>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -28,55 +28,37 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>, debian-powerpc@lists.debian.org, debian-boot@lists.debian.org
-Cc: Chris Tillman <toff1@cox.net>, Sven Luther <sven.luther@wanadoo.fr>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Sven Luther <sven.luther@wanadoo.fr>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Ok.
+On Thu, Oct 30, 2003 at 10:15:41AM +0100, Sven Luther wrote:
+> On Wed, Oct 29, 2003 at 08:04:15PM +0000, James Simmons wrote:
+> > 
+> > > > I have had a report of someone trying to use two voodoo cards on a
+> > > > pegasos/ppc motherboard, and it freezing the kernel (2.4.22 kernel)
+> > > > 
+> > > > Is the tdfx fbdev supposed to be able to handle dual card setups, or not ?
+> > > 
+> > > No, the driver has a statically allocated fb_info. It will blow up.
+> > 
+> > Yeap. Also the driver uses the VGA legacy IO ports. It is possible to run 
+> > the driver without BIOS support. The specs have such info. I just haven't 
+> > got around to it.
+> 
+> Notice : this is on powerpc, but the pegasos OF has support for
+> emulating x86 bioses.
+> 
+> What about running fbdev only on the first head, and have XFree86
+> initialize the second head ? The problem is that just having the two
+> boards in the box freezes the kernel.
 
-Chris, can you have a look at this, and see if can provide this
-information, by using a serial console, or maybe blindly typing :
-  # dmesg >somplace
-and also by visual confirmation ?
+BTW, what is the status of voodoo 4 & 5 with fbdev ? I get reports of
+endianess problems, but this may also be related to XFree86, i will have
+to investigate more.
 
 Friendly,
 
 Sven Luther
-
-On Thu, Oct 30, 2003 at 10:38:45AM +0100, Geert Uytterhoeven wrote:
-> On Thu, 30 Oct 2003, Sven Luther wrote:
-> > BTW, i had had reports from Chris Tillman about what seems an fbdev
-> > failure on his 9500 powermac with 2.4.22 kernels. The pci greaphic cards
-> > declares to be a Mach64GX, and lspci gives :
-> > 
-> > 00:0b.0 Host bridge: Apple Computer Inc. Bandit PowerPC host bridge (rev 02)
-> > 00:0f.0 VGA comppatible controller: ATI Technolgies Inc 210888GX [Mach64 GX] (rev 02)
-> > 00:10.0 Class ff00: Apple Computer Inc. Grand Central I/O (rev 02)
-> > 
-> > 00:0f.0 Class 0300: 1002:4758 (rev 02)
-> > 	Flags: stepping, medium devsel, IRQ 25
-> > 	Memory at 81000000 (32-bit, non-prefetchable)
-> > 
-> > Any idea on what is going on here (the kernel works, but there is no
-> > video output).
-> 
-> Mach64 GX is difficult to handle, since it needs an external clockchip and
-> RAMDAC, unlike the later variants.
-> 
-> The first thing to know is which external clockchip and RAMDAC are used on this
-> particular board? Atyfb should print it during initialization, but it's better
-> to do a visual verification on the board, too.
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
-> 							    -- Linus Torvalds
-> 
 
 
 -------------------------------------------------------

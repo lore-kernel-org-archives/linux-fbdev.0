@@ -1,23 +1,21 @@
-From: Richard Smith <rsmith@bitworks.com>
+From: James Simmons <jsimmons@infradead.org>
 Subject: Re: Re: Usage of readb() and friends...
-Date: Wed, 03 Mar 2004 16:42:17 -0600
+Date: Wed, 3 Mar 2004 23:10:31 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <40465F49.2080002@bitworks.com>
-References: <Pine.LNX.4.44.0403031914060.30666-100000@phoenix.infradead.org>
-Reply-To: rsmith@bitworks.com
+Message-ID: <Pine.LNX.4.44.0403032254230.30666-100000@phoenix.infradead.org>
+References: <40465F49.2080002@bitworks.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AyfI9-00035F-An
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Mar 2004 14:56:41 -0800
-Received: from b44.xdsl.pgtc.com ([198.70.248.44] helo=bitworks.com)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1Ayf4x-0004K6-5i
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Mar 2004 14:43:03 -0800
-Received: from bitworks.com [192.168.1.22] by bitworks.com [127.0.0.1] with SMTP (MDaemon.v2.7.SP4.R) for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 03 Mar 2004 16:42:03 -0600
-In-Reply-To: <Pine.LNX.4.44.0403031914060.30666-100000@phoenix.infradead.org>
+	id 1Ayfin-0001Hh-Hc
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Mar 2004 15:24:13 -0800
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1AyfCR-0003BL-AL
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Mar 2004 14:50:47 -0800
+In-Reply-To: <40465F49.2080002@bitworks.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,31 +25,27 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Richard Smith <rsmith@bitworks.com>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-James Simmons wrote:
 
-> No. I lost my SCSI driver. So I lost my main machine. I need a new driver 
-> but don't have the money to buy a drive right now. Maybe someone would be 
-> kind to donate me a Ultra Wide SCSI 2 drive.
+> Sorry for sending this via the list but I still have not fixed our 
+> mailserver to be able to send mail to james directly.
 > 
-> On Wed, 3 Mar 2004, Benjamin Herrenschmidt wrote:
+> James:
 > 
+> 1) How big of a drive to you have to have?  I've got some 4 gigers I can 
+> donate.
 
-Sorry for sending this via the list but I still have not fixed our 
-mailserver to be able to send mail to james directly.
+The driver that died was 9 Gigs. 
+ 
+> 2) Do you have any way to use SCA drives?
 
-James:
-
-1) How big of a drive to you have to have?  I've got some 4 gigers I can 
-donate.
-
-2) Do you have any way to use SCA drives?
-
--- 
-Richard A. Smith
-rsmith@bitworks.com
+Its a older (4 years old) machine with built in Ultra Wide 2 scsi support. 
+Its 68 pin. I believe my mother board supports 80 pin as well. I have to 
+look.
 
 
 

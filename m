@@ -1,11 +1,21 @@
-From: "Antwan Hastings" <ahastingsxz@pnr.co.za>
-Subject: Get $200 bonus at our Casino!
-Date: Wed, 23 Jun 2004 00:03:30 -0200
+From: David Eger <eger@havoc.gtf.org>
+Subject: Re: [PATCH] cirrusfb: it lives!
+Date: Tue, 22 Jun 2004 23:19:18 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <cddd01c458c6$7512221d$bcd95e4f__2910.84844288907$1087956078@mednet.com.br>
+Message-ID: <20040623031918.GA24055@havoc.gtf.org>
+References: <20040622202758.GA10135@havoc.gtf.org> <40D89865.3040606@pobox.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BcyIK-0007J5-TQ
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Jun 2004 20:19:28 -0700
+Received: from havoc.gtf.org ([216.162.42.101])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BcyIK-0003U2-Dp
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Jun 2004 20:19:28 -0700
+Content-Disposition: inline
+In-Reply-To: <40D89865.3040606@pobox.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -16,30 +26,130 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-usb-users@lists.sourceforge.net, linux-usb-devel@lists.sourceforge.net, linux-ntfs-dev@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: akpm@osdl.org, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Jeff Garzik <garzik@havoc.gtf.org>, jsimmons@infradead.org
 
-Hi, 
-I have a special offer available for you at our casino.
+On Tue, Jun 22, 2004 at 04:36:53PM -0400, Jeff Garzik wrote:
+> David Eger wrote:
+> >Dear Andrew,
+> >
+> >This patch brings the cirrusfb driver up to date with 2.6.  cirrusfb
+> >has suffered bit rot like you wouldn't believe (last updated... 2.3.x 
+> >era?).
+...
 
-$20 to try our internet casino, no deposit is necessary!
-At the casino software's cashier enter bonus code: FR93P
+> >-
+> >-#include "clgenfb.h"
+> >-#include "vga.h"
+> >+#include "video/vga.h"
+> >+#include "video/cirrus.h"
+> 
+> should be <> not "", no?
 
-$200 bonus on your first deposit!
-At the casino software's cashier enter bonus code: FMJKU
+My bad.  I keep thinking <> is for those system headers -- obviously not
+the little project I'm working on ;-)
 
-Allow us to show you our quality operation, fast payouts,
-generous bonuses, and super friendly around-the-clock
-customer support.
+> > /* debugging assertions */
+> >-#ifndef CLGEN_NDEBUG
+> >+#ifndef CIRRUSFB_NDEBUG
+> 
+> IMO it would be nice to split up your patch into one that does all the 
+> cosmetic renames, and one that does the "real stuff".  Makes it far 
+> easier to review.
 
-Click here: http://gozealgaming.com
+Porting the driver to 2.6 did involve a lot of search-and-replace.
+Sorry that it makes checking the diff so hard. I'll try to explain what's
+changed and why,  but splitting the patch into cosmetic+functional isn't
+really something I want to do...  Read on for details.
 
-Best regards,
-Jamie Zawinsky
+C = Cosmetic change
+L = Logical change
+A = API change
+W = register Writing change
+
+(1-CA) fb_info and cirrusfb_info:
+   - mostly cosmetic, but a lot less confusing, and no more nasty casting.
+
+  It used to be stylish to embed struct fb_info_gen (now struct fb_info)
+  as the first member of struct clgenfb_info (now struct cirrusfb_info), 
+  and then you'd cast to the deisred struct.
+  Now we pass the size of our data structure to framebuffer_alloc(), 
+  and we make fb_info and cirrusfb_info reference each other with 
+  pointers (as in radeonfb).
+
+  In the old code, there two declarations were common:
+
+  clgenfb_info *fb_info;
+  clgenfb_info *info;
+
+  since there's also a 'struct fb_info' now, I found this really confusing,
+  and unified usage as:
+
+  cirrusfb_info *cinfo;
+  fb_info *info;
+
+  This accounts for a lot of the search and replace cosmetic upgrade.
+
+(2-A) All of the FB knowledge of FB internals is gone in 2.6
+
+(3-LW) revised maxclock numbers (cirrusfb_board_info_rec.maxclock[5])
+
+	In my quest to get fbset to work, I borrowed some maxclock data
+	from the X.Org tree for various chipsets.  It didn't really seem 
+	to help.  oh well.
+
+(3-LA) upgraded PCI registration
+
+	Instead of doing PCI walking from the driver, we hand off a
+	pci_device_id table to the PCI subsystem and just get called when
+	it finds a relevant board.
+
+(4-L) striking lots of __init and __initdata specifiers
+
+	I was running into some things not working when I moved the call to
+	init_vgachip() from the driver registration to set_par().  I thought
+	perhaps this was due to some things being marked __init accidentally
+	so I axed said annotations.  Turns out it was something else.  See 5.
+
+(5-LA) delayed chip initialization, nasty double-set_par() pseudo-bug
+  
+  Tony says that the fb drivers shouldn't do any chipset initialization
+  until they get a set_par() call.  This way, fb modules can be safely
+  unloaded if no one gets around to using them, and the vga_con -> fbcon
+  hand off is smoother, as fbcon can still grab the back-scroll data from 
+  vga_con...
+
+  In any case, moving the calls to init_vgachip() and fbgen_do_set_var()
+  from driver initialization to set_par() revealed that the cirrus 
+  register-writing function needs to be called twice for a mode change to
+  work.  I don't understand why.
+
+(6-LA) split clgen_decode_var() into the bits that check the var and the
+  bits that actually generate register information (par/regs) to write
+
+  Adding modedb hooks here might actually fix fbset, i think...
+
+(7-LW) No longer write the palette in init_vgachip() nor in set_par().
+  Someone else (fbcon?) seems to be making its own calls to setcolreg()
+  for us.
+
+(8-LW) setcolreg() -- while removing all of the console cruft, I had
+  to try to reconstitute the palette code. I think I got this right, 
+  but I could be off -- the penguin boots in the correct colors at least ;-)
+
+(9-L) pan_display() - we don't do wrap, silly. that's only on the amiga.
+
+(10-L) pan+BLT - to make pan play nicely with copyarea()/fillrect() 
+   I had to add a couple of calls to cirrusfb_WaitBLT() to make sure
+	the engine is idle.
+
+(11-LW) cirrusfb_blank() - I upgraded the switch here to use the new
+  VESA_* blanking mode constants.  I think I translated the right
+  logic for the right blanking levels.
 
 
-
-No thanks: http://izealgaming.biz/u
-
+-dte
 
 
 -------------------------------------------------------

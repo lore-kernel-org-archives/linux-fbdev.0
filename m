@@ -1,22 +1,23 @@
-From: Jim Hague <jim.hague@acm.org>
-Subject: Re: New API and X option UseFBDev
-Date: Tue, 09 Sep 2003 23:59:53 +0100 (BST)
+From: Kronos <kronos@kronoz.cjb.net>
+Subject: Re: Re: New radeonfb, mostly untested
+Date: Tue, 9 Sep 2003 22:45:44 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <XFMail.20030909235953.jim.hague@acm.org>
-References: <20030909164026.GC4428@iliana>
+Message-ID: <20030909204544.GA16724@dreamland.darkstar.lan>
+References: <1062960554.647.34.camel@gaston> <Pine.LNX.4.44.0309090054470.23354-100000@phoenix.infradead.org> <20030909175404.GA8039@dreamland.darkstar.lan> <1063131198.642.5.camel@gaston> <20030909192430.GA10981@dreamland.darkstar.lan> <1063136237.639.42.camel@gaston>
+Reply-To: kronos@kronoz.cjb.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19wrSn-0006GS-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 09 Sep 2003 15:59:57 -0700
-Received: from mta05-svc.ntlworld.com ([62.253.162.45])
+	id 19wpOM-0007Vk-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 09 Sep 2003 13:47:14 -0700
+Received: from mail-2.tiscali.it ([195.130.225.148])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 19wrSm-0000Fm-Uh
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Sep 2003 15:59:57 -0700
-In-Reply-To: <20030909164026.GC4428@iliana>
+	id 19wpOL-000596-Ln
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Sep 2003 13:47:13 -0700
+Content-Disposition: inline
+In-Reply-To: <1063136237.639.42.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,125 +28,71 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Sven Luther <sven.luther@wanadoo.fr>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: James Simmons <jsimmons@infradead.org>, Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On 09-Sep-2003 Sven Luther wrote:
-> Mmm, notice that the :
+Il Tue, Sep 09, 2003 at 09:37:17PM +0200, Benjamin Herrenschmidt ha scritto: 
+> > Most of work consists in changing "." into "->" ;)
+> > Changes to fbmem.c are very similar to Greg KH's patch:
 > 
-> (--) GLINT(0): Linear framebuffer at 0xCE800000
-> (--) GLINT(0): MMIO registers at 0xCFFE0000
-> (EE) GLINT(0): mmap mmio: Invalid argument
-> (EE) GLINT(0): mmap mmio: Invalid argument
+> You probably want to fix more drivers , that would help getting
+> it merged.
+
+I sent radeonfb as an example. I've already fixed chipsfb.c, cyber2000fb.c,
+hgafb.c, imsttfb.c, neofb.c, tdfxfb.c, tridentfb.c, vesafb.c and i810.
+
+> Some comments though:
 > 
-> means that the linear framebuffer and mmio registers, values given to
-> you by pm2fb, are correct (but check this fact with lspci). GLINTMapMem
-> should call fbdevHWMapVidmem, so i suppose the message you see are from
-> fbdevhw. Try enabling the DEBUG #define in glint_driver.c to get a bit
-> more context. 
+> >+static void release_fb_info(struct class_device *class_dev) {
+> >+       struct fb_info *info = to_fb_info(class_dev);
+> >+
+> >+       if (info->release)
+> >+               info->release(info);
+> >+       
+> >+       kfree(info);
+> >+}
+> 
+> Since you provide the implicit kfree(), 
 
-I'd notice that. The code in question is in fbdevhw.c.
+Implicit? What do you mean?
 
-I've abstracted the problem out into the test program below. It mimics what
-fbdehhw.c does, namely open the frame buffer device, get the fix screen info
-and (I'm assuming) mmap() the io (I haven't delved through the detail
-of /dev/fb0).
+> you should also provide an
+> framebuffer_alloc() some for consistency imho. That would take the
+> size of the private structure like for netdevs and allocate both.
 
-I've run this on 2.4.22-pre6-ac1 and it works fine, and by implication, since
-X via UseFBDev has worked since then, since early 2.4. Here's the output:
+Like this?
 
-PAGE_MASK 0xfffff000, ~PAGE_MASK 0xfff
-smem_start 0xcf000000 smem_len 0x400000, mmio_start 0xcffe0000, mmio_len 0x10000
-fb_off 0x0 fb_len 0x400000, mmio_off 0x0, mmio_len 0x10000
-mmap(NULL, 0x10000, PROT_READ | PROT_WRITE, MAP_SHARED, 3, 0x400000)
-Worked - map 0x40016000
+struct fb_info *framebuffer_alloc(size_t size, struct device *dev) {
+        struct fb_info *ret;
 
-On 2.6.0-test3 and 2.6.0-test5 the mmap() fails with EINVAL. Again, the output:
+        ret = kmalloc(sizeof(struct fb_info) + size, GFP_KERNEL);
+        if (!ret)
+                return NULL;
+        memset(ret, 0, sizeof(struct fb_info) + size);
 
-PAGE_MASK 0xfffff000, ~PAGE_MASK 0xfff
-smem_start 0xcf000000 smem_len 0x400000, mmio_start 0xcffe0000, mmio_len 0x10000
-fb_off 0x0 fb_len 0x400000, mmio_off 0x0, mmio_len 0x10000
-mmap(NULL, 0x10000, PROT_READ | PROT_WRITE, MAP_SHARED, 3, 0x400000)
-mmap mmio: Invalid argument (22)
+        ret->class_dev.dev = dev;
 
-As you see, the parameters to mmap() are identical. The problem is fb_len -
-reduce this to, say, 0x3f0000 and mmap() works.
+        if (size)
+                ret->par = ret + 1;
 
-Any suggestions as to where to look next?
-
-Jim
-
-Test prog:
-
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-
-#include <linux/fb.h>
-#include <asm/page.h>
-
-#define FRAMEBUFFER     "/dev/fb0"
-
-int main(int ac, char *av[])
-{
-    struct fb_fix_screeninfo fix;
-    int fd = open(FRAMEBUFFER, O_RDWR, 0);
-    size_t mmio_len, fb_len;
-    unsigned long mmio_off, fb_off;
-    off_t offset;
-    int prot, flags;
-    void* map;
-
-    if ( fd < 0  )
-    {
-        printf("Can't open " FRAMEBUFFER "\n");
-        exit(1);
-    }
-
-    if ( ioctl(fd, FBIOGET_FSCREENINFO, &fix) < 0 )
-        printf("IOCTL failed\n");
-    else
-    {
-        printf("PAGE_MASK 0x%x, ~PAGE_MASK 0x%x\n", PAGE_MASK, ~PAGE_MASK);
-        
-        printf("smem_start 0x%x smem_len 0x%x, "
-               "mmio_start 0x%x, mmio_len 0x%x\n",
-               fix.smem_start, fix.smem_len, fix.mmio_start, fix.mmio_len);
-
-        mmio_off = (unsigned long) fix.mmio_start & ~PAGE_MASK;
-        mmio_len = (mmio_off + fix.mmio_len + ~PAGE_MASK) & PAGE_MASK;
-        fb_off = (unsigned long) fix.smem_start & ~PAGE_MASK;
-        fb_len = (fb_off + fix.smem_len + ~PAGE_MASK) & PAGE_MASK;
-        
-        printf("fb_off 0x%x fb_len 0x%x, "
-               "mmio_off 0x%x, mmio_len 0x%x\n",
-               fb_off, fb_len, mmio_off, mmio_len);
-
-        printf("mmap(NULL, 0x%x, PROT_READ | PROT_WRITE, "
-                        "MAP_SHARED, %d, 0x%x)\n",
-                        mmio_len, fd, fb_len);
-        map = mmap(NULL, mmio_len, PROT_READ | PROT_WRITE, MAP_SHARED,
-                   fd, fb_len);
-        if ( -1 == (long) map )
-            printf("mmap mmio: %s (%d)\n", strerror(errno), errno);
-        else
-        {
-            printf("Worked - map 0x%x\n", map);
-            munmap(map, mmio_len);
-        }
-    }
-
-    close(fd);
-    exit(0);
+        return ret;
 }
 
+> > +static struct class fb_class = {
+> > +	.name		= "video",
+> 
+> I'd rather use "display" here. "video" is too broad and will cause
+> confusion with multimedia stuff.
 
+Ok.
+
+Luca
 -- 
-Jim Hague - jim.hague@acm.org          Never trust a computer you can't lift.
+Reply-To: kronos@kronoz.cjb.net
+Home: http://kronoz.cjb.net
+K.R.O.N.O.S
+Kinetic Replicant Optimized for Nocturnal Observation and Sabotage
 
 
 -------------------------------------------------------

@@ -1,38 +1,83 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [OOPS] Linux v2.5.54 Riva Framebuffer
-Date: Sat, 4 Jan 2003 21:13:34 +0000 (GMT)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0301042113070.24903-100000@phoenix.infradead.org>
-References: <20030103004858.3d291fbe.us15@os.inf.tu-dresden.de>
+From: Antonino Daplas <adaplas@pol.net>
+Subject: Re: [Linux-fbdev-devel] [PATCH][FBDEV]: fb_putcs() and
+	fb_setfont() methods
+Date: 05 Jan 2003 06:06:21 +0800
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <1041717978.1052.23.camel@localhost.localdomain>
+References: <Pine.LNX.4.44.0301042058240.24903-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18UvcU-0006Ot-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 04 Jan 2003 13:14:14 -0800
-In-Reply-To: <20030103004858.3d291fbe.us15@os.inf.tu-dresden.de>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>
-Cc: Linus Torvalds <torvalds@transmeta.com>, linux-kernel@vger.kernel.org, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44.0301042058240.24903-100000@phoenix.infradead.org>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel List <linux-kernel@vger.kernel.org>
 
+On Sun, 2003-01-05 at 05:07, James Simmons wrote:
+> 
+> Rejected. I have put thought into it and the whole point was to not allow 
 
-I'm working on a new imporve driver right now. Can you give me another 
-day.
+Personally, that's fine by me since I have no need for those 2
+extensions.  But please apply the accel_putcs() buffer overrun patch.
 
+BTW, attached is another patch that will change the resolution of the
+console via tty ioctl TIOCSWINSZ.  I'm not sure if this is the correct
+solution, but it's the only one I can think of without really adding a
+lot of extra code.  This is implemented by adding a con_resize() hook to
+fbcon, so the window size can be changed such as by using:
 
+stty cols 128 rows 48 (1024x768 with font 8x16)
 
--------------------------------------------------------
-This sf.net email is sponsored by:ThinkGeek
-Welcome to geek heaven.
-http://thinkgeek.com/sf
+The new window size should also be preserved per console.  Still, there
+are other fb parameters that can screw up the console (such as changing
+yres_virtual and bits_per_pixel) but the window size is the most
+important.
+
+Tony 
+
+diff -Naur linux-2.5.54/drivers/video/console/fbcon.c linux/drivers/video/console/fbcon.c
+--- linux-2.5.54/drivers/video/console/fbcon.c	2003-01-04 21:58:47.000000000 +0000
++++ linux/drivers/video/console/fbcon.c	2003-01-04 21:58:24.000000000 +0000
+@@ -1871,6 +1871,25 @@
+ }
+ 
+
++static int fbcon_resize(struct vc_data *vc, unsigned int width, 
++			unsigned int height)
++{
++	struct display *p = &fb_display[vc->vc_num];
++	struct fb_info *info = p->fb_info;
++	struct fb_var_screeninfo var = info->var;
++	int err;
++
++	var.xres = width * vc->vc_font.width;
++	var.yres = height * vc->vc_font.height;
++	var.activate = FB_ACTIVATE_NOW;
++
++	err = fb_set_var(&var, info);
++	return  (err || var.xres != info->var.xres ||
++		 var.yres != info->var.yres) ?
++		-EINVAL : 0;
++	  
++}
++
+ static int fbcon_switch(struct vc_data *vc)
+ {
+ 	int unit = vc->vc_num;
+@@ -1920,6 +1939,7 @@
+ 
+ 	info->currcon = unit;
+ 	
++        fbcon_resize(vc, vc->vc_cols, vc->vc_rows);
+ 	update_var(unit, info);
+ 	
+ 	if (vt_cons[unit]->vc_mode == KD_TEXT)
+@@ -2537,6 +2557,7 @@
+ 	.con_invert_region 	= fbcon_invert_region,
+ 	.con_screen_pos 	= fbcon_screen_pos,
+ 	.con_getxy 		= fbcon_getxy,
++	.con_resize             = fbcon_resize,
+ };
+ 
+ int __init fb_console_init(void)

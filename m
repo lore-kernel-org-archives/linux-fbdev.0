@@ -1,20 +1,24 @@
-From: James <james@onyx.nurealm.net>
-Subject: tridentfb driver with Thinkpad 365XD
-Date: Fri, 25 Feb 2005 01:46:34 -0700
-Message-ID: <200502250846.j1P8kYt6005969@onyx.nurealm.net>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: Resource management.
+Date: Fri, 25 Feb 2005 07:05:47 +0800
+Message-ID: <200502250705.48630.adaplas@hotpop.com>
+References: <Pine.LNX.4.56.0502211908520.14500@pentafluge.infradead.org> <200502222206.31364.adaplas@hotpop.com> <Pine.LNX.4.56.0502241951001.5491@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D4b7d-0001ph-0F
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 25 Feb 2005 00:46:53 -0800
-Received: from onyx.nurealm.net ([199.45.155.18])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1D4b7N-0002TX-CJ
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 25 Feb 2005 00:46:52 -0800
-Received: from onyx.nurealm.net (localhost.localdomain [127.0.0.1])
-	by onyx.nurealm.net (8.13.1/8.13.0) with ESMTP id j1P8kYt6005969
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 25 Feb 2005 01:46:34 -0700
+	id 1D4S3c-000119-Sj
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 24 Feb 2005 15:06:08 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.71])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1D4S3a-0001aL-BX
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 24 Feb 2005 15:06:08 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id 94717141C0DE
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 24 Feb 2005 23:05:50 +0000 (UTC)
+In-Reply-To: <Pine.LNX.4.56.0502241951001.5491@pentafluge.infradead.org>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -25,45 +29,48 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+To: James Simmons <jsimmons@www.infradead.org>, adaplas@pol.net
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@pentafluge.infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-Hi
+On Friday 25 February 2005 03:57, James Simmons wrote:
+> > If you intend to insist on doing this, this is my proposal:
+> >
+> > The linked list of resources per fb_info can be kept. However, instead
+> > of doing an fb_find_resource() per call to putcs and cursor, this can
+> > be done only once, during initialization of fbcon or set_con2fb_map.
+> > This resource can then be stored in an fbcon-private area.
+>
+> I fixed this in my latest work. Alot of cleanups has happened. Still a few
+> issues to work out.
 
-Can anyone help with this?
+Looks much better. And yes, I also see a few issues but is not your fault.
 
-The XFree86 trident driver has always had a problem with the Thinkpad 365XD
-Trident TGUI 9320 "Cyber" chipset interacting with IBM's DSTN 800x600 LCD.
-On startup, the screen would only display two horizontal orange lines and
-"burn" the LCD, physically damaging the display - with some recovery over
-time, as if each section of the dual scan display had lost the vertical scan
-signal.
+>
+> > The advantage of this is that fbcon will only look for the resource that
+> > it needs, ie "scratchpad" but not, for example, "overlay". Similarly,
+> > a user video application can totally ignore "scratchpad" but will search
+> > for "overlay".  Secondly, the performance penalty suffered by the your
+> > initial patch will be eliminated. We also eliminate one or two more
+> > fields in fb_info directly accessed by fbcon.
+>
+> I removed the scratch pad. We use the data reflecting the "drawable"
+> properties.
+>
+> > Also, instead of storing the resource type as a string, why not use a
+> > constant?
+>
+> We would run out very fast. 
 
-The traditional work-around has been to press Fn and F7, the
-LCD/external-monitor switching function, after the X server is started.  The
-result would be a normal display after a few second delay.  This was
-possible with the XFree86 SVGA driver version 3.3.6 at least.
+With a u32?
 
-The new Xorg trident driver still shows the same problem with the burning
-orange lines, but the "Fn and F7" hack has a problem - the system freezes /
-crashes instantly.  The laptop must be powered down to recover.
+> Plus we would need a index field in the case
+> we have more than one of the same kind.
 
-Now, the reason I'm sending this to linux-fbdev-devel is that the kernel
-trident framebuffer driver seems to have exactly the same problem.  The file
-says "much inspired by the XFree86 4.x Trident driver sources by Alan
-Hourihan".  The problem started with XFree86 4.0, with the change XFree86 3
-to XFree86 4.  Xorg has inherited these driver problems, which have never
-been fixed in XFree86.  The kernel trident framebuffer driver also seems to
-have inherited whatever is causing this problem.
+Then use a u32 for type, u32 for index.
 
-Anyone familiar with the XFree86 3 -> 4 changes?
+Tony
 
-
-Thanks
-
-James
 
 
 

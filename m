@@ -1,21 +1,21 @@
 From: James Simmons <jsimmons@infradead.org>
 Subject: Re: fbdev upstream
-Date: Tue, 6 Jan 2004 00:47:42 +0000 (GMT)
+Date: Tue, 6 Jan 2004 00:51:42 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0401060042030.7347-100000@phoenix.infradead.org>
-References: <3FE9F9C3.20605@undead.cc>
+Message-ID: <Pine.LNX.4.44.0401060049180.7347-100000@phoenix.infradead.org>
+References: <1072305777.15461.13.camel@gaston>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AdfNr-00083V-QK
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 16:47:47 -0800
+	id 1AdfRj-0000G4-KS
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 16:51:47 -0800
 Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1AdfNr-000471-8H
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 16:47:47 -0800
-In-Reply-To: <3FE9F9C3.20605@undead.cc>
+	id 1AdfRh-0005Z1-Nm
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 16:51:46 -0800
+In-Reply-To: <1072305777.15461.13.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,20 +27,30 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: John Zielinski <grim@undead.cc>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: John Zielinski <grim@undead.cc>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> on the list and myself can try it out.  I'm running fbcon on the radeon 
-> machine but I went back to VGA for the nvidia machines as the hardware 
-> cursor bug makes it unusable for any kind of text editing work.  I'll 
-> switch back on those machines when that bug is squashed.
+> Of course, that means we'll have to update more drivers, and platforms
+> with fixed display, like embedded etc... will need some way to deal
+> with that properly in their drivers.
 
-Endian issue for the nvidia card. I have been tracking that bug down. I 
-should have a fix very soon.
- 
-> Agreed.  Let's get what we have rock solid before we try to break it 
-> again.  :)
+Fixed screen size drivers should provide there own modedb. 
+
+> I don't know about that one. It would be interesting to redo some
+> comparison between XFree CVS "nv" driver and rivafb. I don't have any
+> nvidia HW at hand for now though. 
+
+The changes have been alot. It would require me reworking the driver 
+again.
+
+> Also, we just completely lack proper locking, we should at least take
+> the console semaphore around all these operations, which we don't do
+> and thus are racy as hell... the HW cursor and blanking timers are
+> by definition racy too, we need to fix that some way.
+
+The fbcon system has always lacked locking :-( Now it can be fixed.
+k
 
 
 

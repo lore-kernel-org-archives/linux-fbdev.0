@@ -1,90 +1,86 @@
 From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Subject: Re: [Linux-fbdev-devel] Re: FB model basic issues (WAS: radeon,
-	apertures & memory mapping)
-Date: Wed, 16 Mar 2005 00:21:49 -0500
-Message-ID: <1110950509.5594.31.camel@localhost>
-References: <1110696189.5787.100.camel@gaston>
-	<1110774523.4003.511.camel@localhost>
-	<1110784327.5787.288.camel@gaston>
-	<1110817205.4004.527.camel@localhost> <1110837171.5863.16.camel@gaston>
-	<1110838356.4003.548.camel@localhost> <1110839873.5673.41.camel@gaston>
-	<1110862777.4044.592.camel@localhost> <20050315060138.GA13064@sci.fi>
-	<Pine.LNX.4.62.0503150946180.30569@numbat.sonytel.be>
-	<20050315133628.GA16051@sci.fi>  <1110929582.25201.34.camel@gaston>
+Subject: Re: [patch] radeonfb: FB_WAITFORVSYNC
+	implementation
+Date: Wed, 16 Mar 2005 01:19:14 -0500
+Message-ID: <1110953954.5535.49.camel@localhost>
+References: <1110636406.5997.86.camel@atlantis.netenviron.com>
+	 <20050312151318.GA27200@sci.fi>
+	 <1110936530.5511.20.camel@africa.netenviron.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <1110929582.25201.34.camel@gaston>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1DBRsJ-0003nA-SB
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Mar 2005 22:19:23 -0800
+Received: from darkcity.gna.ch ([195.226.6.9])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1DBRsH-0004Lb-0v
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Mar 2005 22:19:23 -0800
+Received: from localhost (localhost [127.0.0.1])
+	by darkcity.gna.ch (Postfix) with ESMTP id 1294F18D09D
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 16 Mar 2005 07:19:20 +0100 (CET)
+Received: from unknown by localhost (amavisd-new, unix socket)
+ id client-XX0nhWXv for <linux-fbdev-devel@lists.sourceforge.net>;
+ Wed, 16 Mar 2005 07:19:18 +0100 (CET)
+Received: from localhost (CPE001124084852-CM014500006147.cpe.net.cable.rogers.com [65.48.154.37])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by darkcity.gna.ch (Postfix) with ESMTP id CE2BD18D09D
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 16 Mar 2005 07:19:16 +0100 (CET)
+Received: from daenzer by localhost with local (Exim 4.50)
+	id 1DBRsA-0002Vp-K2
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Mar 2005 01:19:14 -0500
+In-Reply-To: <1110936530.5511.20.camel@africa.netenviron.com>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/xorg>
-List-Post: <mailto:xorg@lists.freedesktop.org>
-List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
-Sender: xorg-bounces@lists.freedesktop.org
-Errors-To: xorg-bounces@lists.freedesktop.org
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="utf-8"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Jon Smirl <jonsmirl@yahoo.com>, dri-devel@lists.sourceforge.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, xorg@lists.freedesktop.org
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 2005-03-16 at 10:33 +1100, Benjamin Herrenschmidt wrote:
+On Wed, 2005-03-16 at 01:28 +0000, Torgeir Veimo wrote:
+> On Sat, 2005-03-12 at 17:13 +0200, Ville Syrj=C3=A4l=C3=A4 wrote:
+> > On Sat, Mar 12, 2005 at 02:06:45PM +0000, Torgeir Veimo wrote:
 >=20
-> Now, I agree that cutting the vram in half, and reserving  both halves
-> to the "offscreen" needs to each head may help avoiding mode switch on
-> one head busting things used by whoever works on the second head, but
-> I'm not sure that fits the DRM needs very well..
-
-It probably doesn't, but it seems to me like that's all that can be done
-with the current fbdev API.
-
-
-On Wed, 2005-03-16 at 12:51 +1100, Benjamin Herrenschmidt wrote:=20
-> On Wed, 2005-03-16 at 03:47 +0200, Ville Syrj=C3=A4l=C3=A4 wrote:
->=20
-> > There's also the case with Matrox Millennium I/II cards. They must plac=
-e=20
-> > the visible frame buffer so that no line crosses the boundary of memory=
-=20
-> > banks. [...]
-
-That still doesn't require any changes on mode switches as long as the
-pitch stays the same, does it?
-
-> So it alls end up to -> mode switch has to bust memory layout, [...]
-
-Why? All that a mode switch changes is how the current screen surface is
-scanned out. It shouldn't have any implicit effect on memory allocation
-or even contents.
-
-
-> [...] For that to work, it also requires proper arbitration though, so we=
-=20
-> may end up again limit that functionality to clients using the DRM for=20
-> artbitration and lock everything when some guy like DirectFB enters the=20
-> picture.
-
-I was thinking about something like that as well, may be the only way to
-preserve the current fbdev API and offer something more sophisticated.
-
-
-> > > and because
-> > > it seems that directFB has only been tested on little endian machines
-> > > (damn them !) and thus doesn't understand the problem with swapper on
-> > > framebuffer access).
+> > > +		/* clear interrupt */
+> > > +		//OUTREG(GEN_INT_CNTL, int_cntl | CRTC_VBLANK_STAT_ACK);
 > >=20
-> > Actually people do use it on big-endian systems but since neither the=20
-> > mach64, ati128 or radeon drivers play with the swapper settings I can o=
-nly=20
-> > assume that they haven't been tested very extensively.
+> > Why is this commented out?
 >=20
-> You are wrong here, all of those 3 drivers do play with the swapper
-> setting, [...]
+> Well, first of all is it really important to clear the interrupt when
+> enabling it?=20
+>=20
+> From what I've seen the rage128 acknowledges an interrupt by writing to
+> the int_cntl register, while the radeon does it by writing to the
+> int_status register, so I think the above code is not correct..=20
 
-I think he was referring to the DirectFB drivers.
+That's right, so the int_cntl stuff in the interrupt handler is
+superfluous?
+
+
+> I based my code on the matrox fb driver and the atyfb driver. I don't
+> have any documentation on the radeon chipsets, so am working on what I
+> can gather on the net.
+
+Let me point out again that the DRM has perfectly working code for
+this...
 
 
 --=20
 Earthling Michel D=C3=A4nzer      |     Debian (powerpc), X and DRI develop=
 er
 Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=3Ddaenzer
+
+
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

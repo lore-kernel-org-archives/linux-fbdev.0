@@ -1,22 +1,22 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: ioremap problem on highmem
-Date: Thu, 16 Oct 2003 00:11:39 +0100 (BST)
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: FBDEV 2.6.0-test7 updates.
+Date: Wed, 15 Oct 2003 16:17:05 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0310160008440.13660-100000@phoenix.infradead.org>
-References: <20031015011354.GA9654@guug.org>
+Message-ID: <20031015161705.221a579b.akpm@osdl.org>
+References: <Pine.LNX.4.44.0310152345210.13660-100000@phoenix.infradead.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1A9uok-00049K-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 15 Oct 2003 16:12:34 -0700
-Received: from [213.86.99.234] (helo=phoenix.infradead.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.22)
-	id 1A9uod-0003o1-Hf
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 15 Oct 2003 16:12:27 -0700
-In-Reply-To: <20031015011354.GA9654@guug.org>
+	id 1A9usw-0004Un-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 15 Oct 2003 16:16:54 -0700
+Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
+	id 1A9usv-00059g-OH
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 15 Oct 2003 16:16:53 -0700
+In-Reply-To: <Pine.LNX.4.44.0310152345210.13660-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -26,38 +26,57 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Otto Solares <solca@guug.org>
-Cc: Jon Smirl <jonsmirl@yahoo.com>, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@infradead.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Chris Heath <chris@heathens.co.nz>
 
-
-> If something goes wrong nobody will see it, a practical solution will be
-> that people use their favorite console (fbcon,vgacon,epromcon,dummycon,serialcon).
-> when they quit exiting a standalone mesa program with your dri changes (if i
-> understand correctly your dri changes entirely bypass fbdev) we simply return
-> from vt graphics mode to vt text mode, is kernel responsability to restore
-> the console to a usable state, IMO.  I don't know if that is the {fb,vga}con
-> case.
-
-Its is the userland responability to restore the console state after 
-leaving KDGRAPHICS mode. You need to save the hardware state before you 
-leave KDTEXT mode as well. 
-
-> Also we are protected from hardware access by other programs using the vt
-> layer assuming we install proper vt switching signal handlers correctly
-> AND the others programs respect vt switching.
-
-:-( 
-
-> > Want to write the terminal program? or work on the user libs? Go ahead and
-> > start coding. See the drmtest program in the mesa tree.
+James Simmons <jsimmons@infradead.org> wrote:
+>
+> Here is the latest fbdev patches. Please test!!! Many new enhancements. 
+> Several fixes. The patch is against 2.6.0-test7
 > 
-> Ok, let me hack a bit, i have proper vt and input working code.
+> http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
 
-Doesn't help much on non intel platforms. I guess this Mesa solution is 
-only x86 specific :-(
+Cool.  I've had the below fix floating about for a while.  Is it still
+relevant?
 
+
+
+From: Chris Heath <chris@heathens.co.nz>
+
+I am still seeing a lot of cursors being left behind.  It is not a race
+condition or anything -- in the TTY line editor, it happens about 50% of
+the time when you press backspace.
+
+What appears to be happening is the cursor is flashing twice as slowly
+as the driver thinks it is, so of course it's wrong half the time when
+it comes to erase the cursor.
+
+The patch below fixes it for me.
+
+
+
+ drivers/video/softcursor.c |    6 ++++++
+ 1 files changed, 6 insertions(+)
+
+diff -puN drivers/video/softcursor.c~cursor-flashing-fix drivers/video/softcursor.c
+--- 25/drivers/video/softcursor.c~cursor-flashing-fix	2003-08-16 14:01:15.000000000 -0700
++++ 25-akpm/drivers/video/softcursor.c	2003-08-16 14:01:15.000000000 -0700
+@@ -74,6 +74,12 @@ int soft_cursor(struct fb_info *info, st
+ 
+ 	if (info->cursor.image.data)
+ 		info->fbops->fb_imageblit(info, &info->cursor.image);
++
++	if (!info->cursor.enable) {
++		for (i = 0; i < size; i++)
++			dst[i] ^= info->cursor.mask[i];
++	}
++
+ 	return 0;
+ }
+ 
+
+_
 
 
 

@@ -1,23 +1,23 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
-	one works ;-)
-Date: Thu, 29 Apr 2004 09:29:02 +1000
+From: "Alex Stewart" <alex@foogod.com>
+Subject: Re: [PATCH] radeonfb(): memmove() fix -- this one works ;-)
+Date: Wed, 28 Apr 2004 16:35:57 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1083194942.21436.96.camel@gaston>
-References: <Pine.LNX.4.44.0404281709260.1187-100000@phoenix.infradead.org>
+Message-ID: <59301.171.72.5.226.1083195357.squirrel@www.foogod.com>
+References: <20370.159.37.7.254.1083189089.squirrel@www.foogod.com>
+        <Pine.LNX.4.44.0404282252250.3125-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIyah-0005fs-VK
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 16:35:47 -0700
-Received: from gate.crashing.org ([63.228.1.57] ident=root)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	id 1BIyb6-0005me-Ro
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 16:36:12 -0700
+Received: from adsl-209-182-168-213.value.net ([209.182.168.213] helo=firestar.foogod.com)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1BIyah-0005ZP-Ix
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 16:35:47 -0700
-In-Reply-To: <Pine.LNX.4.44.0404281709260.1187-100000@phoenix.infradead.org>
+	id 1BIyb6-0005f8-L9
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 16:36:12 -0700
+In-Reply-To: <Pine.LNX.4.44.0404282252250.3125-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,40 +28,26 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: John Zielinski <grim@undead.cc>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: jsimmons@infradead.org
+Cc: alex@foogod.com, benh@kernel.crashing.org, grim@undead.cc, eger-dated-1083663529.7e8c27@theboonies.us, geert@linux-m68k.org, adaplas@hotpop.com, eger-dated-1082943669.d79d33@theboonies.us, linux-fbdev-devel@lists.sourceforge.net
 
+>> The tty layer alreasy stores the resolution. See asm/termios.h. What
+>> it lacks is depth and frequency. I have to do some digging to see if
+>> the VT220 dealt with that data. I bet it did.
+>>
+>> Well, for what it's worth, I think that's wrong too.
+>
+> Well it's the POSIX standard.
 
->   But we do have the proper data already. Its called modedb. I have two 
-> reasons for why I hate to have a var in struct display. One is that it
-> makes fbcon heavier. You now have a extra var in every struct display. 
-> Usually the user has several if not all VCs at the same resolution. That 
-> means there is alot of duplication of the same data for now reason. If we 
-> use modedb to fill in the extra data then we don't need the extra data in
-> each struct display. The bonus there is permentally stored data to represent 
-> that one mode to everybody!! Much lighter.
+Yeah, I know, but that doesn't mean I have to agree with it.  :)
 
-I don't agree... again. What is the semantics _users_ are the most
-comfortable with ? an stty size or a resolution ? All OSes so far
-let user pick up resolutions (w/h/freq), this is the thing users are
-getting used to :) That's how we should, via fbset or whatever other
-tool we have, set a resolution. The actual fbcon size is just a side
-effect of the resolution and font size.
+Anyway, my point is just that ttys should only care about characters.  In
+the console system, fbcon is what does the translation from a
+character-based display to a pixel-based display.  Thus, nothing above
+fbcon should have any notion (or any need to have a notion) of pixels,
+color depths, frequency timings, or any of that.
 
-Modedb isn't always a solution with some fancy displays too...
-
-Also, if I ever start doing dual head, I'll have interesting side
-effects to deal with, which means for example  that enabling mirroring
-will possibly change the resolution of the primary head. That means that
-I'll have to trigger a mode change in console based on ... a resolution,
-not a console size. I just want the console size to adapt.
-
-Now, wether this mode is common to all VCs or per-VC is a different
-story, I tend to like when it's per-VC for various reasons, one of them
-beeing that if I set something that doesn't work, I can always go back
-to my working VC :)
-
-Ben.
+-alex
 
 
 

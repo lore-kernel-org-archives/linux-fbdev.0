@@ -1,20 +1,25 @@
-From: MAILER-DAEMON@bio.pandasoftware.es (Mail Delivery System)
-Subject: Undelivered Mail Returned to Sender
-Date: Fri,  9 Apr 2004 09:28:53 +0200 (CEST)
+From: Mail Delivery Subsystem <MAILER-DAEMON@mailsv2.nec.co.jp>
+Subject: Returned mail: see transcript for details
+Date: Fri, 9 Apr 2004 22:22:43 +0900 (JST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040409072853.89F611B3E27@bilbao.pandasoftware.es>
+Message-ID: <200404091322.i39DMhb27991@mailsv2.nec.co.jp>
 Mime-Version: 1.0
 Content-Type: multipart/report; report-type=delivery-status;
-	boundary="0B79E1B4070.1081495733/bilbao.pandasoftware.es"
+	boundary="i39DMhb27991.1081516963/mailsv2.nec.co.jp"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BBqRa-0004kc-9s
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Apr 2004 00:28:54 -0700
-Received: from 62-14-249-78.inversas.jazztel.es ([62.14.249.78] helo=bilbao.pandasoftware.es)
+	id 1BBvy6-0002Yw-Lz
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Apr 2004 06:22:50 -0700
+Received: from tyo202.gate.nec.co.jp ([210.143.35.52])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BBqRZ-0002XV-K0
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Apr 2004 00:28:53 -0700
+	id 1BBvy6-0002tK-2D
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Apr 2004 06:22:50 -0700
+Received: from mailgate3.nec.co.jp (mailgate53.nec.co.jp [10.7.69.160] (may be forged))
+	by TYO202.gate.nec.co.jp (8.11.7/3.7W01080315) with ESMTP id i39DMmh28263
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 9 Apr 2004 22:22:48 +0900 (JST)
+Received: (from root@localhost) by mailgate3.nec.co.jp (8.11.7/3.7W-MAILGATE-NEC)
+	id i39DMmD23631 for linux-fbdev-devel@lists.sourceforge.net; Fri, 9 Apr 2004 22:22:48 +0900 (JST)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,131 +31,96 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 To: linux-fbdev-devel@lists.sourceforge.net
 
-This is a MIME-encapsulated message.
+This is a MIME-encapsulated message
 
---0B79E1B4070.1081495733/bilbao.pandasoftware.es
-Content-Description: Notification
-Content-Type: text/plain
+--i39DMhb27991.1081516963/mailsv2.nec.co.jp
 
-This is the Postfix program at host bilbao.pandasoftware.es.
+The original message was received at Fri, 9 Apr 2004 22:22:32 +0900 (JST)
+from mailgate91.nec.co.jp [10.7.69.199]
 
-I'm sorry to have to inform you that the message returned
-below could not be delivered to one or more destinations.
+   ----- The following addresses had permanent fatal errors -----
+<kisimoto@css1.kbnes.nec.co.jp>
+    (reason: 550 Host unknown)
 
-For further assistance, please send mail to <postmaster>
+   ----- Transcript of session follows -----
+550 5.1.2 <kisimoto@css1.kbnes.nec.co.jp>... Host unknown (Name server: css1.kbnes.nec.co.jp.: host not found)
 
-If you do so, please include this problem report. You can
-delete your own text from the message returned below.
-
-			The Postfix program
-
-<ytutun@servodata.com.tr>: host smtpin.netonehosting.com[193.192.100.123] said:
-    550 5.1.1 <ytutun@servodata.com.tr> is not a valid mailbox (in reply to
-    RCPT TO command)
-
---0B79E1B4070.1081495733/bilbao.pandasoftware.es
-Content-Description: Delivery error report
+--i39DMhb27991.1081516963/mailsv2.nec.co.jp
 Content-Type: message/delivery-status
 
-Reporting-MTA: dns; bilbao.pandasoftware.es
-Arrival-Date: Fri,  9 Apr 2004 09:28:52 +0200 (CEST)
+Reporting-MTA: dns; mailsv2.nec.co.jp
+Received-From-MTA: DNS; mailgate91.nec.co.jp
+Arrival-Date: Fri, 9 Apr 2004 22:22:32 +0900 (JST)
 
-Final-Recipient: rfc822; ytutun@servodata.com.tr
+Final-Recipient: RFC822; kisimoto@css1.kbnes.nec.co.jp
 Action: failed
-Status: 5.0.0
-Diagnostic-Code: X-Postfix; host smtpin.netonehosting.com[193.192.100.123]
-    said: 550 5.1.1 <ytutun@servodata.com.tr> is not a valid mailbox (in reply
-    to RCPT TO command)
+Status: 5.1.2
+Remote-MTA: DNS; css1.kbnes.nec.co.jp
+Diagnostic-Code: SMTP; 550 Host unknown
+Last-Attempt-Date: Fri, 9 Apr 2004 22:22:43 +0900 (JST)
 
---0B79E1B4070.1081495733/bilbao.pandasoftware.es
-Content-Description: Undelivered Message
+--i39DMhb27991.1081516963/mailsv2.nec.co.jp
 Content-Type: message/rfc822
 
-Received: from escorpext02.pandasoftware.local (escorpext02 [192.168.100.182])
-	by bilbao.pandasoftware.es (Postfix) with ESMTP id 0B79E1B4070
-	for <ytutun@servodata.com.tr>; Fri,  9 Apr 2004 09:28:52 +0200 (CEST)
-Received: from bilbao.pandasoftware.es ([192.168.100.61]) by escorpext02.pandasoftware.local with Microsoft SMTPSVC(5.0.2195.6713);
-	 Fri, 9 Apr 2004 09:27:35 +0200
-Received: from screen.sarenet.es (filtroweb.sarenet.es [194.30.0.20])
-	by bilbao.pandasoftware.es (Postfix) with ESMTP id 41AC81AF282
-	for <techsupport.turkey@pandasoftware.com>; Fri,  9 Apr 2004 09:29:17 +0200 (CEST)
-Received: from pandasoftware.com (lb233.neoplus.adsl.tpnet.pl [83.30.13.233])
-	by screen.sarenet.es (Postfix) with ESMTP id A63967C4AC
-	for <techsupport.turkey@pandasoftware.com>; Fri,  9 Apr 2004 09:28:35 +0200 (MEST)
+Return-Path: <linux-fbdev-devel@lists.sourceforge.net>
+Received: from mailgate41.nec.co.jp (mailgate91.nec.co.jp [10.7.69.199]) by mailsv2.nec.co.jp (8.11.7/3.7W-MAILSV2-NEC) with ESMTP
+	id i39DMVb27939 for <kisimoto@css1.kbnes.nec.co.jp>; Fri, 9 Apr 2004 22:22:32 +0900 (JST)
+Received: from mailgate4.nec.co.jp (mailgate54.nec.co.jp [10.7.69.197]) by mailgate41.nec.co.jp (8.11.7/3.7W-MAILGATE-NEC) with ESMTP
+	id i39DMVH28029 for <kisimoto@css1.kbnes.nec.co.jp>; Fri, 9 Apr 2004 22:22:31 +0900 (JST)
+Received: (from root@localhost) by mailgate4.nec.co.jp (8.11.7/3.7W-MAILGATE-NEC)
+	id i39DMVA27169 for kisimoto@css1.kbnes.nec.co.jp; Fri, 9 Apr 2004 22:22:31 +0900 (JST)
+Received: from css1.kbnes.nec.co.jp (YahooBB219054210091.bbtec.net [219.54.210.91])
+	by TYO203.gate.nec.co.jp (8.11.7/3.7W02122014) with ESMTP id i39DMLO25107
+	for <kisimoto@css1.kbnes.nec.co.jp>; Fri, 9 Apr 2004 22:22:21 +0900 (JST)
+Message-Id: <200404091322.i39DMLO25107@TYO203.gate.nec.co.jp>
 From: linux-fbdev-devel@lists.sourceforge.net
-To: techsupport.turkey@pandasoftware.com
-Subject: Text
-Date: Fri, 9 Apr 2004 09:28:39 +0200
+To: kisimoto@css1.kbnes.nec.co.jp
+Subject: Re: Your picture
+Date: Fri, 9 Apr 2004 22:22:41 +0900
 MIME-Version: 1.0
 Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0016----=_NextPart_000_0016"
+	boundary="----=_NextPart_000_0009_00002D58.00001A6B"
 X-Priority: 3
 X-MSMail-Priority: Normal
-Message-Id: <20040409072835.A63967C4AC@screen.sarenet.es>
-X-PAA-AntiVirus: Removed W32/Netsky.S.worm
-X-PAA-AntiVirus-Message: Scanned by http://www.pandasoftware.com/PAA
-X-OriginalArrivalTime: 09 Apr 2004 07:27:35.0246 (UTC) FILETIME=[20D096E0:01C41E04]
-X-PAA-AntiVirus: Passed
-X-PAA-AntiVirus-Message: Scanned by http://www.pandasoftware.com/PAA
 
 This is a multi-part message in MIME format.
 
-------=_NextPart_000_0016----=_NextPart_000_0016
+------=_NextPart_000_0009_00002D58.00001A6B
+Content-Type: text/plain; charset=iso-2022-jp
+Content-Transfer-Encoding: 7bit
+
+------------------  Virus Warning Message ---
+
+Found virus WORM_NETSKY.D in file your_picture.pif
+The uncleanable file is deleted.
+
+Have detected viruses in mails sent to you. MAILGATE deleted viruses or files  contained viruses. If you have questions about this message, please consult with virus-admin@nic.nec.co.jp.| あなた宛に送付されたメールからウイルスが検出されたため、該当添付ファイルのみメールから駆除/削除しました。下記URLを参照の上、不明点がある場合、virus-admin@nic.nec.co.jpにご相談下さい。
+
+-About Virus Scan Gate(Only jp): http://www.ipc.nec.co.jp/virus/mgate/ -
+
+------=_NextPart_000_0009_00002D58.00001A6B
 Content-Type: text/plain;
 	charset="Windows-1252"
 Content-Transfer-Encoding: 7bit
 
+Your document is attached.
 
-Hello!
-I have sent the text.
-
-
-+++ X-Attachment-Type: document
-+++ X-Attachment-Status: no virus found
-+++ Powered by the new Norton OnlineAntiVirus
-+++ Free trial: www.norton.com
+------=_NextPart_000_0009_00002D58.00001A6B
+Content-Type: text/plain; charset=iso-2022-jp
+Content-Transfer-Encoding: 7bit
 
 
+------------------  Virus Warning Message ---
 
-------=_NextPart_000_0016----=_NextPart_000_0016
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+your_picture.pif is removed from here because it contains a virus.
 
-
-**********************************************************
-**********************************************************
-
-WARNING: Panda Antivirus GateDefender has detected a virus in file
-attached to this e-mail message!
-
-The attachment has been automatically removed to
-protect your network.
-
-Panda Antivirus GateDefender Administrator: informatica.interna@pandasoftware.es
-
-04/09/04 09:30:26 
-Panda Antivirus GateDefender (Version 5.1 R1c (5.0.60.2)) - http://www.pandasoftware.com/
-Antivirus Vendor: Panda Software
-Scan Engine Version: 4.1.4.307
-Pattern File Version: 3.73609 (Timestamp: 08/04/2004 105938)
-
-Machine name: PandaGD7200-Sist
-Machine IP address: 192.168.100.49
-Server: 192.168.100.182
-Client: 192.168.100.61
-Protocol: SMTP
-
-Virus: "W32/Netsky.S.worm" found!
-Attachment: text2.pif
-
-**********************************************************
-**********************************************************
-
-
-------=_NextPart_000_0016----=_NextPart_000_0016--
+-About Virus Scan Gate(Only jp): http://www.ipc.nec.co.jp/virus/mgate/ -
+------=_NextPart_000_0009_00002D58.00001A6B--
 
 
 
---0B79E1B4070.1081495733/bilbao.pandasoftware.es--
+--i39DMhb27991.1081516963/mailsv2.nec.co.jp--
+
 
 
 -------------------------------------------------------

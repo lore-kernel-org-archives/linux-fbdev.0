@@ -1,16 +1,14 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: RE: 2.5 atyfb on Sparc question
-Date: Sun, 13 Oct 2002 13:08:08 -0700 (PDT)
+Subject: fbdev changes.
+Date: Sun, 13 Oct 2002 13:27:08 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.33.0210131307110.5997-100000@maxwell.earthlink.net>
-References: <61DB42B180EAB34E9D28346C11535A780112FDED@nocmail101.ma.tmpw.net>
+Message-ID: <Pine.LNX.4.33.0210131318420.5997-100000@maxwell.earthlink.net>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from albatross.mail.pas.earthlink.net ([207.217.120.120] helo=albatross.prod.itd.earthlink.net)
+Received: from pintail.mail.pas.earthlink.net ([207.217.120.122])
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 180p8F-0007NP-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 13 Oct 2002 13:14:35 -0700
-In-Reply-To: <61DB42B180EAB34E9D28346C11535A780112FDED@nocmail101.ma.tmpw.net>
+	id 180pQZ-0005e5-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 13 Oct 2002 13:33:31 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,12 +20,56 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchives/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Holzrichter, Bruce" <bruce.holzrichter@monster.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Linus Torvalds <torvalds@transmeta.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
 
-Sorry I have been going threw alot of chabnges recently. Try my lastest
-tree. I just updated it and I'm nearly done change the api.
+Hi!
+
+  The final changes to the fbdev layer are at hand. One of the last
+changes I wanted to purpose was to create a console driectory in
+drivers/video and move all console related stuff into that directory.
+The next step was to move the dri stuff into that directory with the agp
+code possible. The questions I have is should we move the agp code over to
+that directory. Should the DRI code move over directly or should we move
+DRI driver specific code into the same directory as the fbdev driver
+directories? For example in aty directory we have all the ati framebuffer
+and ATI dri code. What do you think?
+
+Second change!! We need a uiversal cursor api. I purposed some time ago a
+api but nothing happend.I like to resolve this final part to remove th
+last bit of console crude from the fbdev layer.
+
+The api I suggested was :
+
+
+/*
+ * hardware cursor control
+ */
+
+#define FB_CUR_SETCUR   0x01
+#define FB_CUR_SETPOS   0x02
+#define FB_CUR_SETHOT   0x04
+#define FB_CUR_SETCMAP  0x08
+#define FB_CUR_SETSHAPE 0x10
+#define FB_CUR_SETALL   0x1F
+
+struct fbcurpos {
+        __u16 x, y;
+};
+
+struct fbcursor {
+        __u16 set;              /* what to set */
+        __u16 enable;           /* cursor on/off */
+        struct fbcurpos pos;    /* cursor position */
+        struct fbcurpos hot;    /* cursor hot spot */
+        struct fb_cmap cmap;    /* color map info */
+        struct fbcurpos size;   /* cursor bit map size */
+        char *image;            /* cursor image bits */
+        char *mask;             /* cursor mask bits */
+};
+
+If you have any suggestion please post you purpose struct. Thank you.
 
 MS: (n) 1. A debilitating and surprisingly widespread affliction that
 renders the sufferer barely able to perform the simplest task. 2. A disease.
@@ -37,44 +79,6 @@ fbdev/console/gfx developer                             \ o.O|
 http://www.linux-fbdev.org                               =(_)=
 http://linuxgfx.sourceforge.net                            U
 http://linuxconsole.sourceforge.net
-
-On Thu, 3 Oct 2002, Holzrichter, Bruce wrote:
-
-> James,
->
-> In a blast from the past, not sure if your still interested, but I have not
-> had a whole lot of time to look at these, due to my job/life, etc,etc...
->
-> If I apply the latest bk to it, I get the following compile error.  As I
-> said, I haven't even had time to grep through the thing to even begin to
-> look, but wanted to report them anyways...
->
-> fbmem.c: In function `fbmem_read_proc':
-> fbmem.c:380: structure has no member named `modename'
-> make[2]: *** [fbmem.o] Error 1
-> make[2]: Leaving directory `/home/bruce/sparctest/drivers/video'
-> make[1]: *** [video] Error 2
-> make[1]: Leaving directory `/home/bruce/sparctest/drivers'
-> make: *** [drivers] Error 2
->
-> Bruce H..
->
-> > -----Original Message-----
-> > From: James Simmons [mailto:jsimmons@infradead.org]
-> > Sent: Thursday, August 22, 2002 3:22 PM
-> > To: Holzrichter, Bruce
-> > Cc: linux-fbdev-devel@lists.sourceforge.net
-> > Subject: RE: [Linux-fbdev-devel] 2.5 atyfb on Sparc question
-> >
-> >
-> >
-> > > > Oops. Fixed now.
-> > > >
-> > > Whoa, that was neat!  ;o)
-> >
-> > Can you try the latest changes in my BK tree.
-> >
->
 
 
 

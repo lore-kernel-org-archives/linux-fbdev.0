@@ -1,22 +1,24 @@
-From: Thiemo Seufer <ica2_ts@csv.ica.uni-stuttgart.de>
-Subject: Re: Re: [macro@ds2.pg.gda.pl: Re: PMAG-A support?]
-Date: Sat, 30 Aug 2003 02:57:21 +0200
+From: Arvind Sankar <arvinds@MIT.EDU>
+Subject: questions about fb_pan_display ioctl
+Date: Sat, 30 Aug 2003 13:02:47 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030830005721.GF27332@rembrandt.csv.ica.uni-stuttgart.de>
-References: <20030814022906.GH10792@rembrandt.csv.ica.uni-stuttgart.de> <Pine.GSO.3.96.1030814140520.14241D-100000@delta.ds2.pg.gda.pl>
+Message-ID: <20030830170247.GA17072@scrubbing-bubbles.mit.edu>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19su4V-000118-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 29 Aug 2003 17:58:31 -0700
-Received: from iris1.csv.ica.uni-stuttgart.de ([129.69.118.2])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 19su4T-00052w-QK
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Aug 2003 17:58:30 -0700
+	id 19t97j-0007W4-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 30 Aug 2003 10:02:51 -0700
+Received: from fort-point-station.mit.edu ([18.7.7.76])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.22)
+	id 19t97i-0001jD-T3
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 30 Aug 2003 10:02:50 -0700
+Received: from grand-central-station.mit.edu (GRAND-CENTRAL-STATION.MIT.EDU [18.7.21.82])
+	by fort-point-station.mit.edu (8.12.4/8.9.2) with ESMTP id h7UH2me9009041
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 30 Aug 2003 13:02:48 -0400 (EDT)
 Content-Disposition: inline
-In-Reply-To: <Pine.GSO.3.96.1030814140520.14241D-100000@delta.ds2.pg.gda.pl>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -28,32 +30,36 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Maciej W. Rozycki" <macro@ds2.pg.gda.pl>
-Cc: Thiemo Seufer <ica2_ts@csv.ica.uni-stuttgart.de>, Karsten Merker <karsten@excalibur.cologne.de>, Martin Schulze <joey@infodrom.org>, linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: arvinds@MIT.EDU
 
-Maciej W. Rozycki wrote:
-> On Thu, 14 Aug 2003, Thiemo Seufer wrote:
-> 
-> > >  I've looked at the patch and have changed the barriers as I deem
-> > > appropriate.  But while doing this, I've noticed the code is insonsistent
-> > > in a few places -- has it been successfully verified on real hardware?
+I was looking through the source, and am mightily confused as to how this
+works.
 
-There are some mb() calls in your patch, I believe a rmb()/wmb() is
-enough in those cases.
+1. The FBIOPAN_DISPLAY ioctl does not error-check var.
+2. fb_pan_display uses info->var to bounds-check var->?offset.
+3. fb_pan_display modifies info->var, but var is what is returned by the ioctl.
+4. The function pointer info->fbops->fb_pan_display takes its args in the opposite
+   order to fb_pan_display! Who came up with this?
+5. vesafb_pan_display uses var to bounds-check var->?offset, which is
+   (a) pointless, since fb_pan_display has bounds-checked it already.
+   (b) buggy, since var has never been error-checked, so var->yres could be anything.
+6. How does wrapping work, when fb_pan_display has already made sure that yoffset
+   cannot cause display to go beyond yres_virtual? The checks in vesafb_pan_display
+   do this only when ywrap is disabled, but fb_pan_display always does it.
+7. vesafb never uses more than 16mb of video ram, so wrapping can _never_ happen on
+   boards with more than 16mb of ram, no?
 
-> > It works on my /260. Which parts look weird to you?
-> 
-> 1. bt431_write_reg_inc() uses u16 for value, even though it only uses 8
-> bits (which of course makes all the calls in bt431_init_cursor() dubious). 
->
-> 2. bt431_load_cursor_sprite() loads control registers instead of the
-> cursor map. 
+All these comments refer to 2.6.0-test4. Point 6 should apply to all the fb devices,
+not just vesafb.
 
-The hardware cursor is still unused. The code there is very experimental,
-and your version is surely an imporvement. :-)
+In 2.4.22, there is no fb_pan_display, but vesafb_pan_display is the same, so it
+turns out that wrapping is allowed, but subject to the issues in 5(b) and 7. The issue
+in 7 is actually worse, because unless the vram option is passed, the video size is
+computed from the mode resolution, so it has nothing to do with the actual amount of
+accessible video memory.
 
-
-Thiemo
+-- arvind
 
 
 -------------------------------------------------------

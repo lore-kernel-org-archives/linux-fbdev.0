@@ -1,21 +1,22 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: RE: Is framebufer driver a replacement for video
- driver?
-Date: Fri, 5 Nov 2004 09:53:17 +0100 (MET)
-Message-ID: <Pine.GSO.4.61.0411050949530.14575@waterleaf.sonytel.be>
-References: <4EE0CBA31942E547B99B3D4BFAB348111ECB33@mail.esn.co.in>
+Subject: Re: [PATCH] fbdev: workaround for broken X
+ servers
+Date: Fri, 5 Nov 2004 10:04:14 +0100 (MET)
+Message-ID: <Pine.GSO.4.61.0411051003160.14575@waterleaf.sonytel.be>
+References: <1099448020.900.25.camel@gaston>  <20041103032613.GA3677@sci.fi>
+ <1099633776.9260.160.camel@gaston>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CPzqa-0004qc-Bt
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Nov 2004 00:53:28 -0800
+	id 1CQ018-000753-Om
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Nov 2004 01:04:22 -0800
 Received: from witte.sonytel.be ([80.88.33.193])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CPzqV-0006FD-4X
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Nov 2004 00:53:28 -0800
-In-Reply-To: <4EE0CBA31942E547B99B3D4BFAB348111ECB33@mail.esn.co.in>
+	id 1CQ014-0000HZ-Ij
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Nov 2004 01:04:22 -0800
+In-Reply-To: <1099633776.9260.160.camel@gaston>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,70 +29,44 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: adaplas@pol.net, tonnerre@thundrix.ch
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: "Antonino A. Daplas" <adaplas@hotpop.com>, Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
 
-On Fri, 5 Nov 2004, Mukund JB. wrote:
-> > > Is there a generic low level driver that will interact with the
-> > > hardware?
+On Fri, 5 Nov 2004, Benjamin Herrenschmidt wrote:
+> > > Index: linux-work/drivers/video/fbmem.c
+> > > ===================================================================
+> > > --- linux-work.orig/drivers/video/fbmem.c	2004-10-26 13:15:55.000000000 +1000
+> > > +++ linux-work/drivers/video/fbmem.c	2004-11-03 13:10:41.324932256 +1100
+> > > @@ -748,6 +748,10 @@
+> > >  	u16 *black = NULL;
+> > >  	int err = 0;
+> > >  	
+> > > +	/* Workaround for broken X servers */
+> > > +	if (blank > VESA_POWERDOWN)
+> > > +		blank = VESA_POWERDOWN;
+> > > +
+> > >  	if (info->fbops->fb_blank && !info->fbops->fb_blank(blank, info))
+> > >  		return 0;
+> > >  
 > > 
-> > Yes and No. Yes, because there are platform drivers that may work with
-> > many cards (VESA, VGA16, OF).  You can consider them as generic.
+> > This goes against documented behaviour (see fb.h). Also drivers/char/vt.c 
+> > seems to agree with fb.h, as do at least atyfb and matroxfb. I also used 
+> > the vesa level+1 convention in DirectFB. So AFAICS this patch would 
+> > confuse console power management, XFree86/X.Org, DirectFB and some fb 
+> > drivers.
 > 
-> Are you talking about the vesafb driver? this being  a generic driver,
-> Will this driver work on any video card? 
+> Ok, can we agree here on what has to be done ? X is hard-coding numbers
+> that don't seem to be make any sense vs. our constants. In radeonfb, I
+> used switch case on constants, not +1, so there is something I'm not
+> getting. Besides, radeon always try to power down TFT panels when
+> blank != 0, maybe I should improve that ... What is this +1 thing, where
+> does it comes from ?
 
-Yep, `VESA' means the vesafb driver. It works on any video card with a VESA 2.0
-compliant BIOS.
+Hmm, I don't remember where this +1 comes from...
 
-> If a card is VESA 2.0 complaint, is there a generic framebuffer driver
-> that will work on it? 
-> 
-> I assume VESA 2.0 standards will define hardware registers.
-
-No, it's a BIOS standard. It standardizes how to talk to the BIOS to set a
-(linear) graphics mode.
-
-> > However, the hardware specific specific driver will work only with a
-> > particular chipset.
-> 
-> What chages from framebuffer driver to framebuffer driver?
-> I think its just hardware accessing.
-
-Yep. But the way you program the graphics chip may differ a lot among different
-graphics chips.
-
-> > > What happens when I say startx at command prompt with XF86Config-4
-> file
-> > > configured for framebuffer driver?
-> > >
-> > > Is it like, When I say startx with XF86Config-4 file configured for
-> > > framebuffer driver, the video we get is a result of X server using
-> the
-> > > framebuffer driver directly? Right?
-> > >
-> > 
-> > Yes.
-> > 
-> > > In this case, Is there a video driver involved in getting the video
-> > > apart from the framebuffer driver?
-> > >
-> > 
-> > The framebuffer driver itself touches the hardware, and usually it's
-> one
-> > driver per chipset.  However, the interface that is used by the
-> > application
-> > is standard.
-> 
-> Let's make this clearer.
-> The video I get after startx is running just on framebuffer driver?
-> There is no other video driver involved in the running video.right?
-
-For unaccelerated operation, yes.
-
-If you want hardware accelerated drawing operations, the X server still has to
-known how to program the graphics chip. The frame buffer device takes care
-about setting the video mode and color palette, and mapping video RAM only.
+But I find all of this a bit strange: IIRC it was PaulM who asked me to add the
+blank ioctl to fb.h, after he added support for blanking to X. So it would
+surprise me a bit if it was wrong :-)
 
 Gr{oetje,eeting}s,
 

@@ -1,20 +1,25 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: fb_write change in your tree
-Date: Tue, 23 Mar 2004 14:57:04 +1100
+From: Suresh Chandra Mannava <Mannava@GameBox.net>
+Subject: implementing vga16fb
+Date: Tue, 23 Mar 2004 10:58:32 +0530
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1080014223.22188.87.camel@gaston>
+Message-ID: <405FCB00.2070601@GameBox.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B5dGY-0000Ff-5F
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 22 Mar 2004 20:11:50 -0800
-Received: from gate.crashing.org ([63.228.1.57] ident=root)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1B5dGX-0004l6-Ed
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 22 Mar 2004 20:11:49 -0800
+	id 1B5ePd-0006FU-CH
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 22 Mar 2004 21:25:17 -0800
+Received: from snickers.hotpop.com ([38.113.3.51])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1B5ePc-0005Ox-Bd
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 22 Mar 2004 21:25:16 -0800
+Received: from gamebox.net (kubrick.hotpop.com [38.113.3.103])
+	by snickers.hotpop.com (Postfix) with SMTP id 784D172C1D
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 23 Mar 2004 04:50:24 +0000 (UTC)
+Received: from GameBox.net (unknown [61.247.252.55])
+	by smtp-2.hotpop.com (Postfix) with ESMTP id 5CBEF1833FF
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 23 Mar 2004 05:11:34 +0000 (UTC)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -24,35 +29,41 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi James !
+Dear Friends,
 
-What is this change to fb_write() in your tree ? It looks very
-wrong to me. You are removing the ability for the driver to
-hook it's own fb_write function, which can be a problem. You
-basically assume copy_from_user() can be used straight with
-the framebuffer as a destination. This is broken. On ppc, for
-example, copy_from_user() may do dcbz's cache instruction on
-the destination. However, the fb is mapped uncacheable, that
-will result in a lot of exceptions during the copy, which is
-plain wrong (or possibly the copy failing completely).
+I am a new to framebuffer, we are implementing kernel framebuffer 
+support for the new CPU architecture. I have some basic questions 
+related to vga16fb. Please provide some inputs and drive us for 
+successful implementation of framebuffer.
 
-What about drivers that are taking great care _NOT_ to map
-the framebuffer (or at least not all of it) to avoid having
-to ioremap hundreds of megabytes in kernel space ?
+Even though we are having PCI ATI Rage XL graphic card, we are 
+interested in implementing generic vga16fb for an initial test.
 
-A driver should be able to never fill scree_base provided
-that it has filled all the accel hooks and provides it's
-own fb_read/write functions (which can be slow as they might
-have to do mapping/unmapping of fb portions on demand, but
-then, mmap is the preferred way for userland to access the
-framebuffer content when that is possible).
+Here are my few queries,
 
+I read that VESAfb is only for Intel(x86) platforms, has any body 
+implemented Vesafb on other platforms?
 
-Ben.
+Is vga16fb a CPU architecture dependent? Even though I didn't find any 
+architecture dependent sections in the code, Is there any code section 
+that to be modified in vga16fb.c?
+
+What are the corresponding files need to be modified for implementing 
+framebuffer support for newer platforms.
+
+And lastly, we are testing this framebuffer on 2.6Mhz FPGA(0.16 
+Bogomips) with kernel 2.4.7. Are there any other methods (solutions) for 
+debugging framebuffer code with out using printk's?
+
+I request your help.
+
+Regards,
+
+Suresh Chandra Mannava.
+
 
 
 

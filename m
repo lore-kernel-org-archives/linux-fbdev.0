@@ -1,17 +1,22 @@
-From: Mail Delivery Subsystem <MAILER-DAEMON@ncrhub5.NCR.COM>
-Subject: Returned mail: see transcript for details
-Date: Tue, 27 Apr 2004 03:32:22 -0400 (EDT)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] neofb patches
+Date: Tue, 27 Apr 2004 10:49:45 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200404270732.i3R7WMDw001602@ncrhub5.NCR.COM>
+Message-ID: <Pine.GSO.4.58.0404271047520.14434@waterleaf.sonytel.be>
+References: <10078.171.72.5.226.1083003170.squirrel@www.foogod.com>
+ <Pine.LNX.4.44.0404261933130.5302-100000@phoenix.infradead.org>
+ <10682.171.72.5.133.1083028534.squirrel@www.foogod.com>
+Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIN4u-0006Ym-5K
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 00:32:28 -0700
-Received: from tan7.ncr.com ([192.127.94.7] helo=ncrhub5.NCR.COM)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIN4t-0004cs-OF
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 00:32:27 -0700
+	id 1BIOI4-000268-5G
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 01:50:08 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BIOI3-0005C6-OZ
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 01:50:07 -0700
+In-Reply-To: <10682.171.72.5.133.1083028534.squirrel@www.foogod.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -21,44 +26,43 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Alex Stewart <alex@foogod.com>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-The original message was received at Tue, 27 Apr 2004 03:32:19 -0400 (EDT)
-from localhost [127.0.0.1]
+On Mon, 26 Apr 2004, Alex Stewart wrote:
+> I've never been too clear on what direction these FB_ACCELF things (and
+> related values) are supposed to be going.  Are they something set by the
+> driver to indicate what it can support, or are they something set by the
+> higher level systems (or the user) to tell the driver what they would like
+> to do?
+>
+> I had figured from the previous code that these flags should be set when
+> calling check_var if the higher-level stuff wanted acceleration for the
+> particular mode setting, and the driver would unset any it wasn't able to
+> support.  This changes the behavior to automatically turning it on
+> whenever the hardware is capable of it, regardless of what the higher
+> level stuff asks for (which is actually probably a better protocol, but is
+> it the way all the other stuff is expecting it to work?).
 
-   ----- The following addresses had permanent fatal errors -----
-<mhagan@wtcpost.daytonoh.ncr.com>
-    (reason: 550 Host unknown)
+It's used to indicate that the frame buffer device uses hardware acceleration
+for rectangle fill/copy and imageblit.
 
-   ----- Transcript of session follows -----
-550 5.1.2 <mhagan@wtcpost.daytonoh.ncr.com>... Host unknown (Name server: wtcpost.daytonoh.ncr.com.: host not found)
+It must be explicitly disabled before a user space application can mmap the
+MMIO registers to do its own hardware acceleration, to avoid accelerator access
+conflicts.
 
-   ----- Message header follows -----
+Gr{oetje,eeting}s,
 
-Return-Path: <linux-fbdev-devel@lists.sourceforge.net>
-Received: from ncrgw3.NCR.COM (localhost [127.0.0.1])
-	by ncrhub5.NCR.COM (8.12.10/8.12.10) with ESMTP id i3R7WJDw001595
-	for <mhagan@wtcpost.daytonoh.ncr.com>; Tue, 27 Apr 2004 03:32:19 -0400 (EDT)
-Received: from wtcpost.daytonoh.ncr.com ([61.144.177.180])
-	by ncrgw3.NCR.COM (8.12.10/8.12.10) with ESMTP id i3R7WBf8022299
-	for <mhagan@wtcpost.daytonoh.ncr.com>; Tue, 27 Apr 2004 03:32:16 -0400 (EDT)
-Message-Id: <200404270732.i3R7WBf8022299@ncrgw3.NCR.COM>
-From: linux-fbdev-devel@lists.sourceforge.net
-To: mhagan@wtcpost.daytonoh.ncr.com
-Subject: Mail Delivery (failure mhagan@wtcpost.daytonoh.ncr.com)
-Date: Tue, 27 Apr 2004 15:32:22 +0800
-MIME-Version: 1.0
-Content-Type: multipart/related;
-	type="multipart/alternative";
-	boundary="----=_NextPart_000_001B_01C0CA80.6B015D10"
-X-Priority: 3
-X-MSMail-Priority: Normal
+						Geert
 
-   ----- Message body suppressed -----
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

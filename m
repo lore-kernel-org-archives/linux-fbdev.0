@@ -1,26 +1,23 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Generic VESA framebuffer driver and Video
- card BOOT?
-Date: Fri, 15 Oct 2004 21:18:56 +0200 (MEST)
+From: Alexander Kern <alex.kern@gmx.de>
+Subject: Re: latest patch for atyfb
+Date: Fri, 15 Oct 2004 21:25:54 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.61.0410152115530.17827@waterleaf.sonytel.be>
-References: <416E6ADC.3007.294DF20D@localhost> <416FAF05.30267.1B66C92@localhost>
- <41701D1C.70705@comcast.net>
+Message-ID: <200410152125.55255.alex.kern@gmx.de>
+References: <200410120024.50968.alex.kern@gmx.de> <200410122042.53878.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CIXbS-00040Y-7U
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Oct 2004 12:19:02 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CIXbP-0006H9-56
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Oct 2004 12:19:02 -0700
-Received: from waterleaf.sonytel.be (mail.sonytel.be [43.221.60.197])
-	by witte.sonytel.be (8.12.10/8.12.10) with ESMTP id i9FJIvMp026668
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 15 Oct 2004 21:18:57 +0200 (MEST)
-In-Reply-To: <41701D1C.70705@comcast.net>
+	id 1CIXiK-0005UT-4b
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Oct 2004 12:26:08 -0700
+Received: from imap.gmx.net ([213.165.64.20] helo=mail.gmx.net)
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
+	id 1CIXiE-0002EI-6a
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Oct 2004 12:26:08 -0700
+In-Reply-To: <200410122042.53878.adaplas@hotpop.com>
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,53 +27,52 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
+To: adaplas@pol.net
+Cc: Arnaud FONTAINE <arnaud.fontaine@free.fr>, =?iso-8859-1?q?Dani=EBl_Mantione?= <daniel@deadlock.et.tudelft.nl>, Geert Uytterhoeven <geert@linux-m68k.org>, James Simmons <jsimmons@infradead.org>, Nicolas Souchu <nsouch@free.fr>, Ville =?iso-8859-1?q?Syrj=E4l=E4?= <syrjala@sci.fi>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-On Fri, 15 Oct 2004, Zachary Smith wrote:
-> Kendall Bennett wrote:
-> > Zachary Smith <plinius@comcast.net> wrote:
-> > 
-> > > The problem of x86-only BIOSes is one of the videocard
-> > > manufacturers' own making which, in the spirit of good engineering,
-> > > they should fix before requiring a downstream kludge. 
-> 
-> > Forgetting the fact that the BIOS image is x86, why
-> > not think about the x86 BIOS image as being a set of 'generic'
-> > instructions or p-code
-> 
-> Yes, this idea occurred to me after I posted my response.
-> 
-> But if you're going to add x86 emulation to the non-x86 kernels
-> perhaps it would be nice if you could find a way to permit
-> users to run x86 applications as well seamlessly.
+Am Dienstag, 12. Oktober 2004 14:42 schrieb Antonino A. Daplas:
 
-Ugh... There's a big difference between a 16-bit 8086 emulator to run BIOS code
-and a full-fletched 32-bit 80386 (or higher) emulator...
+> BTW, can you send me a changelog?
+>
+> Tony
 
-> Although that would introduce a tradeoff: kernel code should be
-> small which is bound to be slow in the case of an emulator,
-> which is OK for running BIOS code, but a user running apps
-> probably prefer optimized code which may be bigger.
+Alphabetical sort, please if I forgot something, add you comment.
+=20
+Alex Kern
+[PATCH] port Daniel Mantione 2.4 driver to 2.6
+[PATCH] add more pci_id number
+[PATCH] add accelerated imgblit
+[PATCH] revert SDRAM_MAGIC_PLL to old behaviour
+[PATCH] do a "from BIOS" initialisation only by __i386__
 
-We already have qemu.
+Arnaud FONTAINE
+[PATCH atyfb] correction for 3D Rage Mobility L
 
-> On the other hand, a person running a free emulator doesn't
-> really have the option of great speed :)
+Geert Uytterhoeven
+[PATCH atyfb] Atari Atyfb fixes
+[PATCH atyfb] Atyfb on Mach64 GX or Atari
+[PATCH 468] m68k sparse floating point
 
-Really? We already have qemu.
+James Simmons
+[PATCH add] port to framebuffer_alloc api
 
-Gr{oetje,eeting}s,
+Nicolas Souchu
+[PATCH] I do not found a copy, but it was incorporated too
 
-						Geert
+Ville Syrj=E4l=E4
+[PATCH] fix pan with doublescan
+[PATCH] another double scan fix
+[PATCH] disable linear aperture register access
+[PATCH] Memory type correction
+[PATCH] atyfb (2.6): Fix mmio_start
+[PATCH] atyfb (2.6): Fix mem_refresh_rate for Mobility
+[PATCH] atyfb (2.6): Add RGB565 support
+[PATCH] atyfb: Blank LCD by turning off backlight voltage
+[PATCH] atyfb: Rage LT LCD register access
+[PATCH] atyfb: vblank irq support
+[PATCH] atyfb: MTRR support
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 
 -------------------------------------------------------

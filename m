@@ -1,60 +1,41 @@
-From: Richard Smith <rsmith@bitworks.com>
-Subject: Re: Mobility M1 refresh code problem 2.4.26?
-Date: Fri, 07 May 2004 14:42:58 -0500
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <409BE6C2.6050903@bitworks.com>
-References: <20040430150627.GB1543@sci.fi> <Pine.LNX.4.44.0404301707110.12865-100000@phoenix.infradead.org> <20040501004059.GD30285@guug.org> <409A91D6.4000508@bitworks.com> <409A98A5.2040809@telia.com> <409AA194.8090609@bitworks.com> <Pine.GSO.4.58.0405062241550.20729@waterleaf.sonytel.be> <409AAA39.8000304@bitworks.com> <409B4181.3080301@telia.com> <409B98F8.2090509@bitworks.com> <409BAC7D.7040706@telia.com>
-Reply-To: RSmith@bitworks.com
+From: Ian Romanick <idr@us.ibm.com>
+Subject: Re: RE: [Dri-devel] Memory management of AGP and VRAM
+Date: Fri, 07 May 2004 14:23:39 -0700
+Sender: mesa3d-dev-admin@lists.sourceforge.net
+Message-ID: <409BFE5B.5020308@us.ibm.com>
+References: <A98078D7EF5BEA4D8D8FD797FFBBC75F0742A3A0@fmsmsx402.fm.intel.com> <16539.63659.810291.931565@xf11.fra.suse.de>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BMBGC-0004fn-T0
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 07 May 2004 12:43:52 -0700
-Received: from b44.xdsl.pgtc.com ([198.70.248.44] helo=bitworks.com)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1BMBGC-0008UO-GM
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 07 May 2004 12:43:52 -0700
-Received: from bitworks.com [192.168.1.22] by bitworks.com [127.0.0.1] with SMTP (MDaemon.v2.7.SP4.R) for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 07 May 2004 14:42:51 -0500
-In-Reply-To: <409BAC7D.7040706@telia.com>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+Return-path: <mesa3d-dev-admin@lists.sourceforge.net>
+In-Reply-To: <16539.63659.810291.931565@xf11.fra.suse.de>
+Errors-To: mesa3d-dev-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
+	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:mesa3d-dev@lists.sourceforge.net>
+List-Help: <mailto:mesa3d-dev-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
+	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=mesa3d-dev>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: miffe-miffe@telia.com
-Cc: geert@linux-m68k.org, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Egbert Eich <eich@pdx.freedesktop.org>
+Cc: dri-devel <dri-devel@lists.sourceforge.net>, mesa3d-dev <mesa3d-dev@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-Mikael Eriksson wrote:
+Egbert Eich wrote:
 
->> It seems our settings are identical.
->>
->>> Also XFree reports refresh rate code 7
->>
->> Ok so its not the refresh rate either. What else can we check?
->>
->>  > Btw, which bios version do you have?
->>
->> A05
-> 
-> 
-> Hmm, try to update, I have A16
-> 
+> However chipset probing/display device probing and mode setting isn't
+> required to live in kernel space. Portability and system stability 
+> arguments speak against it. In fact only Apple MAC users seem to
+> advocate this idea to be able to an initial video mode on their
+> systems.
 
-Where did you find that at.  All I get when I enter my service tag of 
-7bpap on the website is an A14.
+Allow me to speak up for users of IBM pSeries hardware or Sun SPARC 
+hardware.  Users of those systems face exactly the same issues as Mac 
+users.  I imagine most embedded systems will be in the same boat.  Being 
+forced to use a serial console for early boot messages is so 1980's. ;)
 
-I'm also not sure yet how I'm going to do this.  There's no windows 
-partition and I don't have a floppy drive.
-
-Perhaps I can do something creative with a bootable CD and a bootable 
-floppy image.
+The kernel doesn't need to have support for everything, but I think it's 
+important to have at least minimal support.
 
 
 

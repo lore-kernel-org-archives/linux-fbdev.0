@@ -1,52 +1,40 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: FBDEV 2.6.0-test7 updates.
-Date: Fri, 17 Oct 2003 13:18:36 +0200
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1066389516.4777.231.camel@gaston>
-References: <Pine.GSO.4.21.0310162156240.22417-100000@waterleaf.sonytel.be>
+From: Kronos <kronos@kronoz.cjb.net>
+Subject: Re: [Linux-fbdev-devel] Re: FBDEV 2.6.0-test7 updates.
+Date: Fri, 17 Oct 2003 16:26:35 +0200
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <20031017142635.GA463@dreamland.darkstar.lan>
+References: <20031015162056.018737f1.akpm@osdl.org> <Pine.LNX.4.44.0310160022210.13660-100000@phoenix.infradead.org> <20031016091918.GA1002@casa.fluido.as> <1066298431.1407.119.camel@gaston> <20031016101905.GA7454@casa.fluido.as> <1066300935.646.136.camel@gaston> <20031017100412.GA1639@casa.fluido.as>
+Reply-To: kronos@kronoz.cjb.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1AASgu-0006yg-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 17 Oct 2003 04:22:45 -0700
-Received: from pentafluge.infradead.org ([213.86.99.235])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.22)
-	id 1AASgE-0005Xu-8Z
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 17 Oct 2003 04:22:02 -0700
-In-Reply-To: <Pine.GSO.4.21.0310162156240.22417-100000@waterleaf.sonytel.be>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20031017100412.GA1639@casa.fluido.as>
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+To: "Carlo E. Prelz" <fluido@fluido.as>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
 
-
+Il Fri, Oct 17, 2003 at 12:04:12PM +0200, Carlo E. Prelz ha scritto: 
+> Then, when changing to 1280x1024, with command
 > 
-> > --- linux-2.6.0-test7/drivers/video/radeonfb.c	Wed Oct 15 19:12:22 2003
-> > +++ fbdev-2.6/drivers/video/radeonfb.c	Wed Oct 15 19:20:51 2003
-> 
-> drivers/video/radeonfb.c still exists, while the build system now uses the one
-> in drivers/video/aty?
+> /usr/sbin/fbset  -depth 32 1280x1024-60
 
-I haven't checked what James did here. In my tree, I was careful to keep
-both old and new drivers available via 2 separate CONFIG options. 
+fbset doesn't work with linux 2.6.
 
+> Obviously, if I were able to set the default mode to 1280x1024, things
+> would be sunny.
+> video=radeonfb:1280x1024-32@60 
+> and
+> video=radeonfb:mode:1280x1024-32@60 
+> seems not to produce any visible effect. What is the current proper
+> way to initialize radeonfb from LILO?
 
+video=radeonfb radeonfb.mode_option=1280x1024-32@60
 
-
--------------------------------------------------------
-This SF.net email is sponsored by: SF.net Giveback Program.
-SourceForge.net hosts over 70,000 Open Source Projects.
-See the people who have HELPED US provide better services:
-Click here: http://sourceforge.net/supporters.php
+Luca
+-- 
+Reply-To: kronos@kronoz.cjb.net
+Home: http://kronoz.cjb.net
+You and me baby ain't nothin' but mammals
+So let's do it like they do on the Discovery Channel

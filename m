@@ -1,18 +1,16 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: Finding Aki M Laukkanen's VESAFBD project?
-Date: 18 Mar 2003 05:39:04 +0800
+From: Jon Smirl <jonsmirl@yahoo.com>
+Subject: Re: Reading the EDID block for x86 machines
+Date: Mon, 17 Mar 2003 14:02:15 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1047936527.3668.26.camel@localhost.localdomain>
-References: <3E71B0FE.1534.4BFD86E@localhost> 
-	<3E75A1EB.8118.1424F41D@localhost>
+Message-ID: <20030317220215.49788.qmail@web14902.mail.yahoo.com>
+References: <1047933906.3668.18.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from pine.compass.com.ph ([202.70.96.37])
+Received: from web14902.mail.yahoo.com ([216.136.225.54])
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18v2NH-0007AO-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Mar 2003 13:42:27 -0800
-In-Reply-To: <3E75A1EB.8118.1424F41D@localhost>
+	id 18v2gS-0002WL-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Mar 2003 14:02:16 -0800
+In-Reply-To: <1047933906.3668.18.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,27 +21,43 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Kendall Bennett <KendallB@scitechsoft.com>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tue, 2003-03-18 at 02:22, Kendall Bennett wrote:
+The VBIOS should be position independent code and it
+will run at any 64K boundary. The PC bus spec simply
+says the video BIOS defaults to C000, it is not a
+requirement that it be located there. For example if
+you look at the aty128fb driver's find ROM routine
+your will notice that it is searching a broad address
+space for the ROM.
 
-> The other option is to use the x86emu BIOS emulator project. Then you 
-> don't need to do any of this stuff and instead can warm boot all the 
-> graphics controllers using the BIOS from the card (see the sample 
-> 'warmboot' program included in the source code archives). The code is 
-> presently 32-bit specific I believe, so you would have two choices for 
-> running this from real mode - port the code to a 16-bit C compiler or 
-> port it to run in 32-bit real mode. I assume you are probably thinking of 
-> during the boot phase of GRUB or LILO, so at that point you will have 
-> full control and should be able to execute 32-bit real mode code. You may 
+I'm still not convinced that the memory at C000 is
+really hardware write protected, I think it is just
+RAM with a copy of the ROM in it. For example if I
+turn off BIOS shadowing my system will not boot. When
+debugging this I spent some time tracing into the ATI
+ROM and I was pretty sure that they are dependent on
+begin copied into RAM before begin run. 
 
-Interesting, an x86 emulator while in real mode...  This is probably
-worth a try.  Thanks.
+Do you have a DOS floppy around? Just boot into DOS,
+start debug and see if you can change C000:0.
 
-Tony 
+If C000:0 is hardware write protected, there is
+nothing stopping the ROM from begin copied into 8000:0
+or 9000:0 or whatever where there is guaranteed RAM.
+We would just need to temporarily get the kernel out
+of the way.
 
+=====
+Jon Smirl
+jonsmirl@yahoo.com
 
+__________________________________________________
+Do you Yahoo!?
+Yahoo! Platinum - Watch CBS' NCAA March Madness, live on your desktop!
+http://platinum.yahoo.com
 
 
 -------------------------------------------------------

@@ -1,33 +1,20 @@
-From: ramprasad <ramprasad@ncoretech.com>
-Subject: EPSON S1D13506 driver
-Date: Mon, 08 Nov 2004 18:27:27 +0530
-Message-ID: <418F6D37.7050104@ncoretech.com>
+From: Gerd Knorr <kraxel@bytesex.org>
+Subject: cursor bug
+Date: Mon, 8 Nov 2004 17:11:13 +0100
+Message-ID: <20041108161113.GA23504@bytesex>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CR8wv-000847-8d
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 08 Nov 2004 04:48:45 -0800
-Received: from premium.exocore.com ([203.197.173.224])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	id 1CRCFV-0007w7-6A
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 08 Nov 2004 08:20:09 -0800
+Received: from hirsch.in-berlin.de ([192.109.42.6] ident=root)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1CR8wu-0001zU-21
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 08 Nov 2004 04:48:45 -0800
-Received: from mail.ncoretech.com (dsl.ncoretech.com [61.95.205.91])
-	by premium.exocore.com (8.12.8/8.12.8) with ESMTP id iA8CmaGk025376
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 8 Nov 2004 18:18:37 +0530
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by mail.ncoretech.com (Postfix) with ESMTP id 69B3D5FF82
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  8 Nov 2004 18:18:36 +0530 (IST)
-Received: from mail.ncoretech.com ([127.0.0.1])
- by localhost (mail.ncoretech.com [127.0.0.1]) (amavisd-new, port 10024)
- with ESMTP id 22748-05 for <linux-fbdev-devel@lists.sourceforge.net>;
- Mon,  8 Nov 2004 18:18:35 +0530 (IST)
-Received: from ncoretech.com (ws184.ncoretech.com [192.168.1.184])
-	by mail.ncoretech.com (Postfix) with ESMTP id DA7E05FF4D
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  8 Nov 2004 18:18:35 +0530 (IST)
+	id 1CRCFT-0005VG-Bk
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 08 Nov 2004 08:20:09 -0800
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -38,22 +25,35 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi,
-	I am using epson 13506 CRT chip on my PXA board. Now that the chip has 
-been initilised and i am seeing a garbage display on my CRT.I am not 
-seeing any penguin on my CRT, but it looks like penguin.In the left top 
-corner i can see a 80x80 space with little dots and there are  lot of 
-colour dots on the CRT screen.Can anybody give me some pointers what 
-could be wrong with this.
+  Hi,
 
-I am using 2.4.19-rmk7-pxa1 kernel.
+There is annonying cursor bug in recent kernels (started in 2.6.10-rc1
+IIRC).  There kernel seems not to keep track of the cursor state
+correctly when switching virtual terminals.  Here is how to reproduce
+it:
 
-Thanks in advance,
-Ramprasad
+  (1) boot with vesafb (thats what I'm using, maybe it shows on other
+      framebuffers and/or vgacon as well).
+  (2) login into one terminal, then type "echo -ne '\033[?17;15;239c'".
+      You should have a nice, yellow and *not* blinking cursor block.
+      That is what I have in my .profile because I can't stand the
+      blinking cursors.
+  (3) Switch to another terminal.  The cursor goes into blinking
+      underscore mode now (i.e. the default cursor).
+  (4) Switch back to the first terminal.  Now you have a yellow block
+      with the last two pixel lines (i.e. the underscore) blinking.
 
+Oh no.  Please fix that.  Thank you.
+
+  Gerd
+
+-- 
+#define printk(args...) fprintf(stderr, ## args)
 
 
 -------------------------------------------------------

@@ -1,23 +1,21 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: Fw: [Bugme-new] [Bug 2916] New: Console
- font became black on black after upgrade from 2.6.6 to 2.6.7
-Date: Fri, 18 Jun 2004 18:40:23 -0700
+From: John Zielinski <grim@undead.cc>
+Subject: Re: 2.6.7 still garbage upon start
+Date: Fri, 18 Jun 2004 22:09:14 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040618184023.62611839.akpm@osdl.org>
-References: <20040618152036.3f5cd6b3.akpm@osdl.org>
-	<20040619012057.GA14319@havoc.gtf.org>
+Message-ID: <40D3A04A.60203@undead.cc>
+References: <40D21E31.5070904@winischhofer.net> <40D2E96A.9000605@undead.cc> <Pine.GSO.4.58.0406181516460.11779@waterleaf.sonytel.be> <200406190240.31144.adaplas@hotpop.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BbUrE-00088M-9o
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 18:41:24 -0700
-Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BbUrD-0006dm-RI
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 18:41:23 -0700
-In-Reply-To: <20040619012057.GA14319@havoc.gtf.org>
+	id 1BbVIL-0002N9-Gc
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 19:09:25 -0700
+Received: from ns2.undead.cc ([216.126.84.18] helo=mail.undead.cc)
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
+	id 1BbVIL-0002VA-2L
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 19:09:25 -0700
+In-Reply-To: <200406190240.31144.adaplas@hotpop.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,46 +25,32 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: David Eger <eger@havoc.gtf.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, spamhole@gmx.at, dfnsonfsduifb@gmx.de
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: adaplas@pol.net
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Thomas Winischhofer <thomas@winischhofer.net>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-David Eger <eger@havoc.gtf.org> wrote:
+Antonino A. Daplas wrote:
+
+>If the boot logo is not enabled, then everything is okay.  With the boot logo
+>enabled, you will see remnants of old text (not garbage) in the space 
+>provided for the logo.  
 >
-> > # Graphics support
-> > #
-> > CONFIG_FB=y
-> > CONFIG_FB_VESA=y
-> > CONFIG_FB_RADEON=y
-> > 
-> > #
-> > # Console display driver support
-> > #
-> > CONFIG_VGA_CONSOLE=y
-> > CONFIG_DUMMY_CONSOLE=y
-> > # CONFIG_FRAMEBUFFER_CONSOLE is not set
-> 
-> For a typical setup, framebuffer drivers (CONFIG_FB_VESA, CONFIG_FB_RADEON) 
-> are only really useful if you want the console to live on top of them... 
-> so use either:
-> 
-> (1) CONFIG_FB + (CONFIG_FB_VESA | CONFIG_FB_RADEON) + CONFIG_FRAMEBUFFER_CONSOLE
-> 
-> or
-> 
-> (2) CONFIG_VGA_CONSOLE
+>  
+>
+Actually, my problem _was_ with the boot logo not enabled but your patch 
+fixed it.  That misplaced set_par was why it looked like vgacon was 
+still being used and the cause of all my grief. 
 
-Thanks.
+>Please test, and if it works for you, I'll push it upstream.
+>
+>  
+>
+Yes, it does work so please push it.  It just took me a while to test it 
+as I had to figure out what was clearing my video memory.  Once that was 
+disabled I can now see my bootup sequence all the way back to the beginning.
 
-> Please let me know if any of these three setups work.  I wouldn't select
-> both VESA and a specific driver.... eww... I'd guess they would get
-> confused and try to access the same hardware...
+John
 
-This all sounds hard to express via kernel config, but it sounds pretty
-easy to avoid via a few state variables in the kernel.
-
-Do you think it's possible to prevent illegal things from happening at
-runtime?
 
 
 

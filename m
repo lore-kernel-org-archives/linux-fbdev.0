@@ -1,16 +1,16 @@
-From: James Simmons <captain_delete@yahoo.com>
-Subject: Re: RFC: Optimizing putcs()
-Date: Thu, 8 Aug 2002 11:31:52 -0700 (PDT)
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: 2.5 atyfb on Sparc question
+Date: Thu, 8 Aug 2002 11:32:41 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20020808183152.47469.qmail@web13002.mail.yahoo.com>
-References: <1028657448.554.6.camel@daplas>
+Message-ID: <Pine.LNX.4.33.0208081132040.15229-100000@maxwell.earthlink.net>
+References: <1729ACB1873@vcnet.vc.cvut.cz>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from web13002.mail.yahoo.com ([216.136.174.12])
-	by usw-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17cs4h-0006un-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 08 Aug 2002 11:31:55 -0700
-In-Reply-To: <1028657448.554.6.camel@daplas>
+Received: from snipe.mail.pas.earthlink.net ([207.217.120.62])
+	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17csB0-0007v8-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 08 Aug 2002 11:38:26 -0700
+In-Reply-To: <1729ACB1873@vcnet.vc.cvut.cz>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,32 +20,26 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>, jsimmons@infradead.org
-
-> I took a crack at adding support for bpp24 for the
-> cfb_* drawing
-> functions.  I tried to keep the original code as
-> much as possible, so
-> the result may not be optimal.  My test shows though
-> that bpp24 should
-> be as fast as (maybe a tad slower than) bpp32.
-
-Thanks.
- 
-> As for drawing the logo, will the source be
-> containing indices to the
-> palette?
-
-I believe so. I haven't thought much about it.
+To: Petr Vandrovec <VANDROVE@vc.cvut.cz>
+Cc: bruce.holzrichter@monster.com, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-__________________________________________________
-Do You Yahoo!?
-HotJobs - Search Thousands of New Jobs
-http://www.hotjobs.com
+> On  8 Aug 02 at 11:16, James Simmons wrote:
+> > > I also hope that performance problems will be solved
+> > > before we are
+> > > forced to not use putcs.
+> >
+> > It will be :-) I need to one align the data. Second I
+> > plan to implement the patch recently posted here.
+>
+> Patch still showed about 100% slowdown against 2.4.x, if I interpreted
+> yesterday's table correctly. It is better than 1000% slowdown, but still...
+
+I could believe a slow down of 2x but 1000 I don't think so.
+
+
 
 
 -------------------------------------------------------

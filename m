@@ -1,30 +1,17 @@
-From: amavisd-new <postmaster@zimt01.bndlg.de>
-Subject: VIRUS (Worm/NetSky.P) IN MAIL FROM YOU
-Date: Tue, 27 Apr 2004 09:05:12 +0200 (CEST)
+From: Mail Delivery Subsystem <MAILER-DAEMON@ncrhub5.NCR.COM>
+Subject: Returned mail: see transcript for details
+Date: Tue, 27 Apr 2004 03:32:22 -0400 (EDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <VSXXewumxQ@zimt01>
-References: <200404270705.i3R755NZ032732@zimt01.dillingen.de>
-Mime-Version: 1.0
-Content-Type: multipart/report; report-type=delivery-status;
-    boundary="----------=_1083049512-22161-1"
+Message-ID: <200404270732.i3R7WMDw001602@ncrhub5.NCR.COM>
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIMjJ-0002Uz-Gc
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 00:10:09 -0700
-Received: from zimt01.bndlg.de ([194.95.207.3])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1BIMjI-00016m-T6
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 00:10:09 -0700
-Received: from zimt01.bndlg.de (localhost [127.0.0.1])
-	by zimt01.bndlg.de (8.12.11/8.12.11/Debian-3) with ESMTP id i3R7A1M1022850
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NOT)
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 27 Apr 2004 09:10:06 +0200
-Received: (from amavis@localhost)
-	by zimt01.bndlg.de (8.12.11/8.12.11/Debian-3) id i3R75C3l022226
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 09:05:12 +0200
-In-Reply-To: <200404270705.i3R755NZ032732@zimt01.dillingen.de>
+	id 1BIN4u-0006Ym-5K
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 00:32:28 -0700
+Received: from tan7.ncr.com ([192.127.94.7] helo=ncrhub5.NCR.COM)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BIN4t-0004cs-OF
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 00:32:27 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,82 +21,44 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
 
-This is a multi-part message in MIME format...
+The original message was received at Tue, 27 Apr 2004 03:32:19 -0400 (EDT)
+from localhost [127.0.0.1]
 
-------------=_1083049512-22161-1
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+   ----- The following addresses had permanent fatal errors -----
+<mhagan@wtcpost.daytonoh.ncr.com>
+    (reason: 550 Host unknown)
 
-VIRUS ALERT
+   ----- Transcript of session follows -----
+550 5.1.2 <mhagan@wtcpost.daytonoh.ncr.com>... Host unknown (Name server: wtcpost.daytonoh.ncr.com.: host not found)
 
-Our content checker found
-    virus: Worm/NetSky.P
-in email presumably from you (<linux-fbdev-devel@lists.sourceforge.net>), to the following recipient:
--> joe@bndlg.de
+   ----- Message header follows -----
 
-Please check your system for viruses,
-or ask your system administrator to do so.
-
-Delivery of the email was stopped!
-
-
-For your reference, here are headers from your email:
-------------------------- BEGIN HEADERS -----------------------------
 Return-Path: <linux-fbdev-devel@lists.sourceforge.net>
-Received: from bndlg.de (pD95277BF.dip.t-dialin.net [217.82.119.191])
-	by zimt01.dillingen.de (8.12.3/8.12.3/Debian-6.6) with ESMTP id i3R755NZ032732
-	for <joe@bndlg.de>; Tue, 27 Apr 2004 09:05:05 +0200
-Message-Id: <200404270705.i3R755NZ032732@zimt01.dillingen.de>
+Received: from ncrgw3.NCR.COM (localhost [127.0.0.1])
+	by ncrhub5.NCR.COM (8.12.10/8.12.10) with ESMTP id i3R7WJDw001595
+	for <mhagan@wtcpost.daytonoh.ncr.com>; Tue, 27 Apr 2004 03:32:19 -0400 (EDT)
+Received: from wtcpost.daytonoh.ncr.com ([61.144.177.180])
+	by ncrgw3.NCR.COM (8.12.10/8.12.10) with ESMTP id i3R7WBf8022299
+	for <mhagan@wtcpost.daytonoh.ncr.com>; Tue, 27 Apr 2004 03:32:16 -0400 (EDT)
+Message-Id: <200404270732.i3R7WBf8022299@ncrgw3.NCR.COM>
 From: linux-fbdev-devel@lists.sourceforge.net
-To: joe@bndlg.de
-Subject: Notice again
-Date: Tue, 27 Apr 2004 09:04:52 +0200
+To: mhagan@wtcpost.daytonoh.ncr.com
+Subject: Mail Delivery (failure mhagan@wtcpost.daytonoh.ncr.com)
+Date: Tue, 27 Apr 2004 15:32:22 +0800
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0016----=_NextPart_000_0016"
-X-Priority: 3
-X-MSMail-Priority: Normal
--------------------------- END HEADERS ------------------------------
-
-------------=_1083049512-22161-1
-Content-Type: message/delivery-status
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Description: Delivery error report
-
-Reporting-MTA: dns; zimt01
-Arrival-Date: Tue, 27 Apr 2004 09:05:11 +0200 (CEST)
-
-Final-Recipient: rfc822; joe@bndlg.de
-Action: failed
-Status: 5.7.1
-Diagnostic-Code: smtp; 550 5.7.1 Message content rejected, id=XXewumxQ - VIRUS: Worm/NetSky.P
-Last-Attempt-Date: Tue, 27 Apr 2004 09:05:12 +0200 (CEST)
-
-------------=_1083049512-22161-1
-Content-Type: text/rfc822-headers
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Description: Undelivered-message headers
-
-Received: from bndlg.de (pD95277BF.dip.t-dialin.net [217.82.119.191])
-	by zimt01.dillingen.de (8.12.3/8.12.3/Debian-6.6) with ESMTP id i3R755NZ032732
-	for <joe@bndlg.de>; Tue, 27 Apr 2004 09:05:05 +0200
-Message-Id: <200404270705.i3R755NZ032732@zimt01.dillingen.de>
-From: linux-fbdev-devel@lists.sourceforge.net
-To: joe@bndlg.de
-Subject: Notice again
-Date: Tue, 27 Apr 2004 09:04:52 +0200
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0016----=_NextPart_000_0016"
+Content-Type: multipart/related;
+	type="multipart/alternative";
+	boundary="----=_NextPart_000_001B_01C0CA80.6B015D10"
 X-Priority: 3
 X-MSMail-Priority: Normal
 
-------------=_1083049512-22161-1--
+   ----- Message body suppressed -----
+
 
 
 -------------------------------------------------------

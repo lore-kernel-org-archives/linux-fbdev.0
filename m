@@ -1,49 +1,31 @@
-From: Louis Garcia <louisg00@bellsouth.net>
-Subject: Can't disable vga text console
-Date: Fri, 17 Oct 2003 20:48:21 -0400
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1066438101.4388.1.camel@tiger>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [Linux-fbdev-devel] Re: FBDEV 2.6.0-test7 updates.
+Date: Sat, 18 Oct 2003 23:28:33 +0200
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <20031018212833.GA28644@elf.ucw.cz>
+References: <20031015162056.018737f1.akpm@osdl.org> <Pine.LNX.4.44.0310160022210.13660-100000@phoenix.infradead.org> <20031016091918.GA1002@casa.fluido.as> <1066298431.1407.119.camel@gaston> <20031016101905.GA7454@casa.fluido.as> <1066300935.646.136.camel@gaston> <20031017100412.GA1639@casa.fluido.as> <1066387778.661.226.camel@gaston> <20031017111032.GB1639@casa.fluido.as>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1AAfH1-0002gH-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 17 Oct 2003 17:48:51 -0700
-Received: from imf19aec.mail.bellsouth.net ([205.152.59.67])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 1AAfH1-0000Vw-2J
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 17 Oct 2003 17:48:51 -0700
-Received: from [192.168.0.4] ([208.63.239.219])
-          by imf19aec.mail.bellsouth.net
-          (InterMail vM.5.01.05.27 201-253-122-126-127-20021220) with ESMTP
-          id <20031018004816.SKFA1828.imf19aec.mail.bellsouth.net@[192.168.0.4]>
-          for <linux-fbdev-devel@lists.sourceforge.net>;
-          Fri, 17 Oct 2003 20:48:16 -0400
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20031017111032.GB1639@casa.fluido.as>
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+To: pavel@ucw.cz
+Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
 
-I'm testing out the fb driver for 2.6.x and just noticed that vga text
-console is not selectable. The help text says that I can say Y so
-presumably I can say N also. How can I turn off vgs text console so I
-can just have fb support?
+Hi!
 
---Lou
+I tried those updates (over -test8, I downloaded .gz-version, and it
+contained lots of files like include/asm/*, no problems patching,
+through). Well, cursor problems only got worse.
 
+VGA-softcursor problems are still there (backspace leaves ghost
+cursors behind).
 
-
--------------------------------------------------------
-This SF.net email sponsored by: Enterprise Linux Forum Conference & Expo
-The Event For Linux Datacenter Solutions & Strategies in The Enterprise 
-Linux in the Boardroom; in the Front Office; & in the Server Room 
-http://www.enterpriselinuxforum.com
+Cursor problems got *worse*. With vanilla, cursor got corrupted when
+using gpm. Now it is *allways* corrupted :-(. I'm using vesafb.
+								Pavel
+-- 
+When do you have a heart between your knees?
+[Johanka's followup: and *two* hearts?]

@@ -1,20 +1,24 @@
-From: Sven Luther <sven.luther@wanadoo.fr>
-Subject: monitor detection through ddc/edid stuff.
-Date: Fri, 10 Sep 2004 13:16:27 +0200
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: fbdraw 0.1 available
+Date: Sat, 11 Sep 2004 12:53:23 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040910111627.GA14811@pegasos>
+Message-ID: <Pine.GSO.4.58.0409111241390.17924@waterleaf.sonytel.be>
+References: <41426651.2010201@comcast.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C5xC7-00019Z-Nv
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Sep 2004 19:00:51 -0700
-Received: from smtp10.wanadoo.fr ([193.252.22.21] helo=mwinf1003.wanadoo.fr)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1C5jP1-0002oO-6k
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Sep 2004 04:17:18 -0700
-Content-Disposition: inline
+	id 1C65VY-0007XJ-SE
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 11 Sep 2004 03:53:28 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1C65VY-00080M-3x
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 11 Sep 2004 03:53:28 -0700
+Received: from waterleaf.sonytel.be (mail.sonytel.be [43.221.60.197])
+	by witte.sonytel.be (8.12.10/8.12.10) with ESMTP id i8BArNMp023605
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 11 Sep 2004 12:53:24 +0200 (MEST)
+In-Reply-To: <41426651.2010201@comcast.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -24,58 +28,56 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: sven.luther@wanadoo.fr
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Hello,
+On Fri, 10 Sep 2004, Zack wrote:
+> My changes to permit (optional) in-kernel drawing for applications
+> are available. It's only version 0.1 at this point, meaning alpha,
+> but I'm happy with the performance and structure. I've included
+> a test application that allows benchmarking.
+>
+> home.comcast.net/~plinius/fbdraw-0.1.tar.gz
+>
+> To install, move the tarfile to the 2.6.8.1 root dir, and use
+> tar zxfv fbdraw-0.1.tar.gz.
+>
+> Constructive criticism is welcome.
 
-I am currently working on a 3dlabs wildcat vp fbdev driver (my 560 died, but i
-got a 880 Pro :). And i have some questions with the monitor detection and
-ddc/edid stuff.
+A few comments/questions:
 
-I have looked over fbmon.c, and foung that it contains code for parsing the
-EDID data, but not for actually reading it, apart the get_EDID_from_firmware
-which is rather primitive, and doesn't actually do anything (i suppose that
-the edid_info.dummy is read from the x86 bios in some other function).
+  - Is there any special reason why you implement your own fb_fill_area() and
+    fb_copy_area() (which doesn't do anything?), while fb_fillrect() and
+    fb_copyarea() already exist?
 
-I also have quickly overviewed the radeon driver, which has a function to read
-the EDID either from the BIOS or the pmac OF. There seem to be no code
-whatsoever that adds proper EDID reading through the graphic card directly,
-like it is done in XFree86, where one can do in the individual drivers (using
-i2c stuff also) :
+  - Do you have compared the performance of your fbdraw compared to user space
+    mmap()ing the frame buffer and doing all drawings in user space?
 
-	...
-	pBus->BusName = "DDC";
-	pBus->I2CUDelay = WildcatVPI2CUDelay;
-	pBus->I2CPutBits = WildcatVPI2CPutBits;
-	pBus->I2CGetBits = WildcatVPI2CGetBits;
+BTW, I'm also considering exporting fb_fillrect(), fb_copyarea(), and
+fb_imageblit() to userspace, but for a different reason.
 
-These three being smallish functions to delay a bit, and to put/get bits in
-the DCC Clock/Data Out/In registers.
+Right now applications need to know the exact frame buffer layout. For most
+modern PC graphics cards that's OK, since they all do cfb8/16/24/32. But older
+(usually unaccelerated) and embedded hardware may use a different layout (e.g.
+seperate buffers for even and odd display lines on some set top box hardware,
+bitplanes, ...) putting a severe burden on applications.
 
-And then :
+By letting the application draw to a fixed format cfb8 (pseudocolor) or cfb32
+(RGBA) shadow buffer and call the kernel for updating the screen, this can be
+solved in a generic way.  Currently now fb_imageblit() already has to do the
+conversion from cfb8 to native layout anyway.
 
-	pMon = xf86DoEDID_DDC2(pScrn->scrnIndex, pBus);
+Gr{oetje,eeting}s,
 
-There is also a DCC1 function i think, or something such.
+						Geert
 
-Would it make sense to implement such a feature in fbmon.c ? Is fbmon.c the
-right place for this ? Is this already implemented somewhere else, or maybe in
-some private tree somewhere ? 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-As i understand this, we would need some place to set the those three
-function, and then a common function to actually do a real EDID reading
-through the graphic card (get_EDID_from_harware ?).
-
-Does this make sense ? Any hint on how to best implement this ? 
-
-Friendly,
-
-Sven Luther
-
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

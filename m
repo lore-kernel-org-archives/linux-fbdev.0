@@ -1,24 +1,32 @@
-From: Otto Wyss <otto.wyss@orpatec.ch>
-Subject: Re: how to test framebuffer driver
-Date: Wed, 08 Sep 2004 21:24:07 +0200
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: framebuffer ioctl
+Date: Wed, 8 Sep 2004 18:47:54 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <413F5C58.B37C0419@orpatec.ch>
-References: <4EE0CBA31942E547B99B3D4BFAB348111073FB@mail.esn.co.in>
+Message-ID: <9e47339104090815477e1adb14@mail.gmail.com>
+References: <Pine.GSO.4.58.0409041304080.3434@waterleaf.sonytel.be>
+	 <413B4925.5000706@comcast.net> <200409060926.07163.adaplas@hotpop.com>
+	 <413CC0EA.8070709@comcast.net>
+	 <9e4733910409061402372095b1@mail.gmail.com>
+	 <1094505860.31465.211.camel@admin.tel.thor.asgaard.local>
+	 <9e47339104090707172cdc258d@mail.gmail.com>
+	 <1094572321.6095.10.camel@admin.tel.thor.asgaard.local>
+	 <9e47339104090722437b81b373@mail.gmail.com>
+	 <20040908135935.GA4661@sci.fi>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C583J-0001rV-7O
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 08 Sep 2004 12:24:21 -0700
-Received: from mail.xor.ch ([212.55.210.163])
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.34)
-	id 1C583H-0006Jl-8V
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 08 Sep 2004 12:24:21 -0700
-Received: from orpatec.ch (217.162.130.125)
-          by mail.xor.ch with MERCUR Mailserver (v4.03.03 NjYtMjMxMS00NjIy)
-          for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 8 Sep 2004 21:29:22 +0200
+	id 1C5BEM-0007g1-J3
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 08 Sep 2004 15:47:58 -0700
+Received: from rproxy.gmail.com ([64.233.170.206] helo=mproxy.gmail.com)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1C5BEL-0007eH-TF
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 08 Sep 2004 15:47:58 -0700
+Received: by mproxy.gmail.com with SMTP id 79so8462rnl
+        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 08 Sep 2004 15:47:54 -0700 (PDT)
+In-Reply-To: <20040908135935.GA4661@sci.fi>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,25 +36,42 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="iso-8859-1"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-"Mukund JB." wrote:
-> 
-> Can I write an application by directly opening my fb device and
-> performing operations like read/write/ioctl on it.
-> 
-Yes you can, see here
-"http://cvs.sourceforge.net/viewcvs.py/wyodesktop/wyoDesktop/checkdfb/src/app.cpp?view=markup"
-or here
-"http://cvs.sourceforge.net/viewcvs.py/linux-fbdev/fbtest/main.c?view=markup".
-You are welcomed to enhance either test or even write your own. Best if
-you look at this thread as well "http://sourceforge.net/mailarchive/forum.php?thread_id=5445188&forum_id=2357".
+On Wed, 8 Sep 2004 16:59:35 +0300, Ville Syrj=E4l=E4 <syrjala@sci.fi> wrote=
+:
+> I welcome you work on the drm since it appears to reduce the amount of
+> unnecessary user space init code. When the drm gets easier to use other
+> projects may adopt it.
 
-O. Wyss
+Direct use of DRM will satisfy the goal of keeping all of the drivers
+from stomping on each other. I would encourage you to consider using
+mesa but there is no requirement to do so. There is a 300KB open
+source OpenGL-ES implementation that could be ported to DRM if the
+size of mesa is a problem.
 
--- 
-See a huge pile of work at "http://wyodesktop.sourceforge.net/"
+I would encourage people with the skills to write video drivers to
+come help with DRM instead of creating more conflicting drivers. A
+short term goal for DRM is to integrate enough of fbdev in order to be
+able to draw the console from kernel space. We also need help
+implementing Alan's universal mode setting API since it doesn't exist
+yet in any driver.
+
+Most of the conflicts between DRM don't occur from base functionality
+in fbdev and DRM, they originate in the chip specific drivers. It's
+the chip specific drivers that need to be merged.
+
+Merging DRM into fbdev instead of fbdev into DRM was also considered,
+but the complexity of the DRM video memory manager made that too hard.
+On the other hand, if I had known what I know now about how many
+political problems merging fbdev into DRM was going to cause I would
+have just rewritten the DRM memory manager for fbdev and done the
+merge the other way. End result would be the same either way.
+
+--=20
+Jon Smirl
+jonsmirl@gmail.com
 
 
 -------------------------------------------------------

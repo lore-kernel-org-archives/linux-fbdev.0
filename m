@@ -1,16 +1,23 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: RE: [PATCH 2.5.68] Epson 1355 Rewrite for 2.5
-Date: Thu, 8 May 2003 07:33:26 +0200 (MEST)
+From: Ralph <expires-30-06-2003@0x01.de>
+Subject: Unable to set very low resolutions
+Date: Fri, 9 May 2003 19:41:59 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0305080731520.12135-100000@vervain.sonytel.be>
-References: <Pine.LNX.4.44.0305072107440.6566-100000@phoenix.infradead.org>
+Message-ID: <20030509174159.GA7720@endlos.net>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+Received: from moutng.kundenserver.de ([212.227.126.186])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19De3A-0008Bt-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 07 May 2003 22:34:36 -0700
-In-Reply-To: <Pine.LNX.4.44.0305072107440.6566-100000@phoenix.infradead.org>
+	id 19EBr1-00012B-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 09 May 2003 10:40:20 -0700
+Received: from [212.227.126.155] (helo=mrelayng.kundenserver.de)
+	by moutng.kundenserver.de with esmtp (Exim 3.35 #1)
+	id 19EBqz-0002Pz-00
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 May 2003 19:40:17 +0200
+Received: from [217.231.148.63] (helo=elephant.endlos.net)
+	by mrelayng.kundenserver.de with asmtp (Exim 3.35 #1)
+	id 19EBqz-0004dL-00
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 May 2003 19:40:17 +0200
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,45 +27,46 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Christopher Hoover <ch@murgatroid.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 7 May 2003, James Simmons wrote:
-> > Personally, I think it wouldn't harm to be make the cfb* routines generic, so
-> > you can set some defines and #include them to tailer them to your card's
-> > needs.
-> > 
-> > Even on some 64-bit platforms, you may not want to use 64-bit accesses, e.g.
-> > because your graphic's card bus is still only 32-bit.
-> > 
-> > I can even think of some more sofistication: on older Amigas, the graphics RAM
-> > is 16-bit wide and quite slow, while the CPU is 32-bit. So it may make sense to
-> > always use 32-bit accesses (like is currently done), except for the first and
-> > last unaligned accesses if they are less or equal than 16-bit.
-> 
-> I have put alot of though and even tested some raw code for this. The 
-> issue with just replacing the FB_WRITE and FB_READ stuff is more than one 
-> card could be present and each would require a different FB_WRITE. This 
-> would conflict. So what do we do? Ah the answer is use struct pixmap to 
+Hello,
 
-It would not conflict with multiple cards, since if you set some defines and
-#include the cfb* sources, you would get routines with slightly different
-names, cfr. Christopher's approach.
+Are there known issues setting very low resolutions?  I'm using
+kernel 2.4.20 and the aty128fb driver, but from what I hear (or
+rather don't hear) from other people it's not limited to that
+driver.
 
-Gr{oetje,eeting}s,
+The following is a working modeline for my card and my 15.75 kHz
+monitor:
 
-						Geert
+	modeline 320x240  6.04186  \
+	         320 328 352 384  240 244 247 262  -hsync -vsync
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+I've converted that to the following fb.modes entry:
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+	mode "lowres"
+        geometry 320 240 320 240 8
+        timings 165511 32 8 15 4 24 3    
+        hsync low
+        vsync low
+	endmode
 
+But when I try to fbset this mode, I get this instead:
 
+	mode "320x240-103"
+	    # D: 10.410 MHz, H: 27.110 kHz, V: 103.471 Hz
+	    geometry 320 240 320 240 8
+	    timings 96061 14 26 15 4 24 3
+	    accel true
+	    rgba 8/0,8/0,8/0,0/0
+	endmode
+
+How so?  I really want to get this working and I'd be happy to
+provide any information I can.
+
+Ralph
 
 
 -------------------------------------------------------

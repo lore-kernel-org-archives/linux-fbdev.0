@@ -1,24 +1,25 @@
-From: Junio C Hamano <junkio@cox.net>
-Subject: Re: [PATCH] GeForce 5200 on rivafb
-Date: Mon, 13 Dec 2004 23:51:01 -0800
-Message-ID: <7vr7lt8gii.fsf@assigned-by-dhcp.cox.net>
-References: <200412120511.31725.adaplas@hotpop.com>
-	<7vpt1fu97r.fsf@assigned-by-dhcp.cox.net>
-	<200412140452.19873.adaplas@hotpop.com>
-	<200412140547.22222.adaplas@hotpop.com>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: Re: [PATCH] GeForce 5200 on rivafb
+Date: Thu, 16 Dec 2004 04:02:38 +0800
+Message-ID: <200412160402.39863.adaplas@hotpop.com>
+References: <200412120511.31725.adaplas@hotpop.com> <200412140547.22222.adaplas@hotpop.com> <7vr7lt8gii.fsf@assigned-by-dhcp.cox.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CeT56-0003TS-Ej
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 14 Dec 2004 22:56:16 -0800
-Received: from fed1rmmtao11.cox.net ([68.230.241.28])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CeT56-00049K-2B
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 14 Dec 2004 22:56:16 -0800
-In-Reply-To: <200412140547.22222.adaplas@hotpop.com> (Antonino A. Daplas's
- message of "Tue, 14 Dec 2004 05:47:19 +0800")
+	id 1CefMQ-0005PO-OO
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 15 Dec 2004 12:02:58 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1CefMQ-0008Tb-1E
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 15 Dec 2004 12:02:58 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id 31D40B93279
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 15 Dec 2004 20:02:44 +0000 (UTC)
+In-Reply-To: <7vr7lt8gii.fsf@assigned-by-dhcp.cox.net>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,111 +31,45 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Antonino A. Daplas" <adaplas@hotpop.com>
+To: Junio C Hamano <junkio@cox.net>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
->>>>> "AAD" == Antonino A Daplas <adaplas@hotpop.com> writes:
+On Tuesday 14 December 2004 15:51, Junio C Hamano wrote:
+> >>>>> "AAD" == Antonino A Daplas <adaplas@hotpop.com> writes:
+>
+> AAD> Can you try this patch and enable nvidiafb-i2c. It adds your monitor
+> model AAD> to the database of displays with broken edid's and attempts a
+> fix. It AAD> checks first if the monitor is GTF capable, and if it is, sets
+> the input AAD> type from digital to analog. (I don't think digital inputs
+> can be GTF AAD> capable).
+>
+> AAD> Apply this patch too, I forgot to adjust the checksum.
+>
+> Thanks as always for a quick help.
+>
+> With those two patches, your fixup message appears in the boot
+> log 6 times (is it expected?).  The monitor does not go blank
 
-AAD> Can you try this patch and enable nvidiafb-i2c. It adds your monitor model
-AAD> to the database of displays with broken edid's and attempts a fix. It
-AAD> checks first if the monitor is GTF capable, and if it is, sets the input
-AAD> type from digital to analog. (I don't think digital inputs can be GTF
-AAD> capable).
+Yes, it should be printed only once. 
 
-AAD> Apply this patch too, I forgot to adjust the checksum.
+> anymore; it safely defaults to CRTCNumber 0.  Overall, it is as
+> if I am using your nvidiafb driver without nvidia-i2c ;-).
 
-Thanks as always for a quick help.
+No, of course not.  There are certain advantages:
 
-With those two patches, your fixup message appears in the boot
-log 6 times (is it expected?).  The monitor does not go blank
-anymore; it safely defaults to CRTCNumber 0.  Overall, it is as
-if I am using your nvidiafb driver without nvidia-i2c ;-).
+1. Without boot options, your display will automatically go to
+   1024x768@85 Hz, since this is the preferred timing.
 
-Boot time kernel message is attached here.
+2. The driver will refuse modes that exceeds the monitor's operating.
 
-----------------------------------------------------------------
+3.  Because your display is GTF capable, all you need to do is:
 
-nvidiafb: nVidia device/chipset 10DE0110
-nvidiafb: nVidia Corporation NV11 [GeForce2 MX/MX 400]
-fbmon: The EDID Block of Manufacturer: VSC Model: 0x5a44 is known to be broken,
-fbmon: trying to fix input type
-fbmon: The EDID Block of Manufacturer: VSC Model: 0x5a44 is known to be broken,
-fbmon: trying to fix input type
-nvidiafb: EDID found from BUS1
-fbmon: The EDID Block of Manufacturer: VSC Model: 0x5a44 is known to be broken,
-fbmon: trying to fix input type
-fbmon: The EDID Block of Manufacturer: VSC Model: 0x5a44 is known to be broken,
-fbmon: trying to fix input type
-========================================
-Display Information (EDID)
-========================================
-   EDID Version 1.2
-   Manufacturer: VSC
-   Model: 5a44
-   Serial#: 2694881440
-   Year: 2150 Week 14
-   Serial Number: DZ01401434
-   Monitor Name: PF775
-   Display Characteristics:
-      Monitor Operating Limits: From EDID
-           H: 30-97KHz V: 50-180Hz DCLK: 200MHz
-      Analog Display Input: Input Voltage - 0.714V/0.286V
-      Sync: 
-      Max H-size in cm: 160
-      Max V-size in cm: 160
-      Gamma: 2.60
-      DPMS: Active yes, Suspend yes, Standby yes
-      RGB Color Display
-      Chroma
-         RedX:     0.627 RedY:     0.342
-         GreenX:   0.289 GreenY:   0.605
-         BlueX:    0.150 BlueY:    0.070
-         WhiteX:   0.283 WhiteY:   0.298
-      First DETAILED Timing is preferred
-      Display is GTF capable
-fbmon: The EDID Block of Manufacturer: VSC Model: 0x5a44 is known to be broken,
-fbmon: trying to fix input type
-fbmon: The EDID Block of Manufacturer: VSC Model: 0x5a44 is known to be broken,
-fbmon: trying to fix input type
-   Supported VESA Modes
-      720x400@70Hz
-      640x480@60Hz
-      800x600@72Hz
-      800x600@75Hz
-      832x624@75Hz
-      1024x768@87Hz Interlaced
-      1024x768@60Hz
-      1024x768@70Hz
-      1024x768@75Hz
-      1280x1024@75Hz
-      1152x870@75Hz
-      Manufacturer's mask: 0
-   Standard Timings
-      640x480@85Hz
-      800x600@85Hz
-      1528x1146@75Hz
-      1280x960@60Hz
-      1280x960@85Hz
-      1280x1024@85Hz
-      1528x1222@60Hz
-      1600x1200@75Hz
-   Detailed Timings
-      94 MHz 1024 1072 1168 1376 768 769 772 808 +HSync +VSync
+fbset -xres 1600 -yres 1200 /* xres and yres can be any value */
 
-========================================
-nvidiafb: Unable to detect which CRTCNumber...
-...Defaulting to CRTCNumber 0
-nvidiafb: Using CRT on CRTC 0
-nvidiafb: MTRR set to ON
-Console: switching to colour frame buffer device 128x48
-nvidiafb: PCI nVidia NV11 framebuffer (64MB @ 0xD8000000)
-Real Time Clock Driver v1.12
-Linux agpgart interface v0.100 (c) Dave Jones
-agpgart: Detected VIA Twister-K/KT133x/KM133 chipset
-agpgart: Maximum main memory to use for agp memory: 690M
-agpgart: AGP aperture is 128M @ 0xd0000000
+and as long as #2 is satisfied, the modeline for 1600x1200 at the highest
+refresh rate will be computed, no need to enter a modline in /etc/fb.modes.
 
+Tony
 
 
 

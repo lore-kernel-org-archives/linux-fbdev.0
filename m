@@ -1,16 +1,17 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: fb_imageblit()
-Date: Wed, 8 Jan 2003 17:49:44 +0100 (MET)
+Subject: Re: Re: [PATCH]: image.depth fix to accomodate
+ monochrome cards
+Date: Wed, 8 Jan 2003 17:51:43 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0301081746450.21171-100000@vervain.sonytel.be>
-References: <1042043058.982.115.camel@localhost.localdomain>
+Message-ID: <Pine.GSO.4.21.0301081750110.21171-100000@vervain.sonytel.be>
+References: <1042043062.1003.116.camel@localhost.localdomain>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18WJPy-0004EK-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 08 Jan 2003 08:51:03 -0800
-In-Reply-To: <1042043058.982.115.camel@localhost.localdomain>
+	id 18WJRm-0004Qh-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 08 Jan 2003 08:52:54 -0800
+In-Reply-To: <1042043062.1003.116.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,26 +24,78 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Antonino Daplas <adaplas@pol.net>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 On 9 Jan 2003, Antonino Daplas wrote:
-> On Wed, 2003-01-08 at 23:15, Geert Uytterhoeven wrote:
-> > > c. Read color information from pseudopalette if directcolor/truecolor. 
+> On Wed, 2003-01-08 at 17:52, Geert Uytterhoeven wrote:
+> > On 8 Jan 2003, Antonino Daplas wrote:
+> > > On Wed, 2003-01-08 at 05:06, Geert Uytterhoeven wrote: 
+> > > > On 8 Jan 2003, Antonino Daplas wrote:
+> > > > > 2.  diff submitted by Geert: cleaner logo data preparation for
+> > > > > monochrome cards and correct initialization of palette_cmap.transp.
+> > > > 
+> > > > I'll have to do some more fixes there, since the monochrome logo is used not
+> > > > only on monochrome displays, but on all other displays with bits_per_pixel < 4
+> > > > Since the pixel data in fb_image are colormap indices, they have to reflect the
+> > > > correct `black' and `white' colors on such displays.
+> > > > 
+> > > > E.g. on amifb (which supports all bits_per_pixel from 1 through 8) the logo
+> > > > showed up in black-and-blue with bits_per_pixel == 3, cfr. the first two
+> > > > entries of {red,green,blue}8[] in fbcmap.c.
+> > > > 
+> > > 
+> > > Hmm, I see.  I think only linux_logo_bw will be the only one affected,
+> > > since linux_logo_16 happens to match the console palette and in
+> > > linux_logo, we either reset the palette and/or the cmap.
 > > 
-> > Hoever, pseudopalette has entries for the first 16 colors only!
-> > Hence you are limited to the 16 color for directcolor/truecolor modes.
+> > Indeed.
+> > 
+> > > Would expanding each bit to the full bit depth work?  Ie for bpp=8 using
+> > > monochrome data, white is 0 and black is 0xff.
+> > 
+> > For bpp=8 that won't work, since we have 16 console colors only :-)
+> > 
 > 
-> That's why there's an fb_set_logo_directpalette(), for directcolor
-> visuals >= 24bpp, and fb_set_logo_truepalette(), for truecolor, in
-> fb_set_logo().  Basically, it temporarily replaces info->pseudo_palette
-> with one that has 256 entries to match linux_logo.  Logo drawing, using
-> cfb_imageblit() has always worked for me in directcolor and truecolor
-> modes.
+> Of course :-)
+> 
+> > But for bpp=[1-3] that's OK, cfr. fbcmap.c.
+> > 
+> > BTW, perhaps it makes sense to just pass the appropriate `black' and `white'
+> > pixel values to the logo conversion routine? Preferably through a 2-element
+> > array, so we can index it with the logo data bit value instead of using
+> > tests/branches. Then we'd have:
+> > 
+> 
+> Something like this?
+> 
+> static void fb_set_logo(struct fb_info *info, u8 *logo, int needs_logo)
+> {
+> 	int i, j;
+> 	u8 mask[2] = {0,0};
+> 
+> 	switch (needs_logo) {
+> 	case 4:
+> 		for (i = 0; i < (LOGO_W * LOGO_H)/2; i++) { 
+> 			logo[i*2] = linux_logo16[i] >> 4;
+> 			logo[(i*2)+1] = linux_logo16[i] & 0xf;
+> 		}
+> 		break;
+> 	case 1:
+> 	case ~1:
+> 		mask[1] = (u8) ~(BIT_SHIFT(0xffff, info->var.bits_per_pixel));
+> 		for (i = 0; i < (LOGO_W * LOGO_H)/8; i++) {
+> 		       u8 d = linux_logo_bw[i];
+>                        for (j = 0; j < 8; j++, d <<= 1)
+>                                logo[i*8+j] = mask[((d ^ needs_logo) >> 7) & 1];
+> 		}
+> 		break;
+> 	}
+> }
 
-Bummer, /me should read the code more thoroughfully...
+Yes, looks ok.
 
-Perhaps renaming `{saved_,}palette' to `{saved_,}pseudo_palette' would make
-this clearer...
+BTW, you can get rid of the `d ^ needs_logo' inside the loop by initializing
+mask[] based on the value of needs_logo.
 
 Gr{oetje,eeting}s,
 

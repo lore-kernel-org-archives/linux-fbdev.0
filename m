@@ -1,84 +1,57 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: radeonfb: Fix hang on boot with some laptops
-Date: Wed, 16 Feb 2005 13:30:47 +1100
-Message-ID: <1108521047.13376.68.camel@gaston>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: "David S. Miller" <davem@davemloft.net>
+Subject: Re: [atyfb] No display on Sparc Ultra 10 with kernel 2.6.10-rc2 or
+ later
+Date: Tue, 15 Feb 2005 19:20:18 -0800
+Message-ID: <20050215192018.36c9c7e8.davem@davemloft.net>
+References: <200502140251.00645.aragorn@tiscali.nl>
+	<200502152010.22880.adaplas@hotpop.com>
+	<20050215084958.1f68b39b.davem@davemloft.net>
+	<200502160328.00148.aragorn@tiscali.nl>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D1Eyj-0000xp-DC
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Feb 2005 18:31:49 -0800
-Received: from gate.crashing.org ([63.228.1.57])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1D1Eyh-0005rY-RP
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Feb 2005 18:31:49 -0800
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+In-Reply-To: <200502160328.00148.aragorn@tiscali.nl>
+Sender: sparclinux-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Frans Pop <aragorn@tiscali.nl>
+Cc: adaplas@pol.net, debian-sparc@lists.debian.org, sparclinux@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-Hi !
+On Wed, 16 Feb 2005 03:27:51 +0100
+Frans Pop <aragorn@tiscali.nl> wrote:
 
-It appears that access to the PLL registers of the radeon chip is
-unreliable while the card is in "legacy VGA" text mode. I don't have a
-good explanation yet, it might be the BIOS mucking around behind my
-back. This fixes the lockup by moving the code that enables/disables the
-dynamic power management to after the mode is set.
+> Excellent!
+> Tested the patch with 2.6.11-rc3-bk2 and AFAICT it completely restores the 
+> old behavior. I guess that solves the regression since 2.6.10-rc2.
+> 
+> Please let me know if this patch will be submitted for inclusion as is so 
+> I can also submit it for inclusion in the Debian 2.6.10 kernel.
 
-I'm still waiting for a proper explanation from ATI...
+I applied it and will push upstream.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> I would like to set a lower default resolution as my monitor barely 
+> supports 1152x900@66. I tried two things:
+> - # eeprom output-device=screen:r1024x768x70
+>   This seems to be completely ignored during boot; resolution is still
+>   1152x900.
 
+The PROM console driver will only accept certain settings.  I believe
+the allowable settings is documented in the Sun Framebuffer Handbook
+or something like that.
 
-Index: linux-work/drivers/video/aty/radeon_base.c
-===================================================================
---- linux-work.orig/drivers/video/aty/radeon_base.c	2005-02-13 23:18:52.000000000 +1100
-+++ linux-work/drivers/video/aty/radeon_base.c	2005-02-16 13:25:30.000000000 +1100
-@@ -2361,13 +2361,6 @@
- 
- 	pci_set_drvdata(pdev, info);
- 
--	/* Setup Power Management capabilities */
--	if (default_dynclk < -1) {
--		/* -2 is special: means  ON on mobility chips and do not change on others */
--		radeonfb_pm_init(rinfo, rinfo->is_mobility ? 1 : -1);
--	} else
--		radeonfb_pm_init(rinfo, default_dynclk);
--
- 	/* Register with fbdev layer */
- 	ret = register_framebuffer(info);
- 	if (ret < 0) {
-@@ -2376,6 +2369,13 @@
- 		goto err_unmap_fb;
- 	}
- 
-+	/* Setup Power Management capabilities */
-+	if (default_dynclk < -1) {
-+		/* -2 is special: means  ON on mobility chips and do not change on others */
-+		radeonfb_pm_init(rinfo, rinfo->is_mobility ? 1 : -1);
-+	} else
-+		radeonfb_pm_init(rinfo, default_dynclk);
-+
- #ifdef CONFIG_MTRR
- 	rinfo->mtrr_hdl = nomtrr ? -1 : mtrr_add(rinfo->fb_base_phys,
- 						 rinfo->video_ram,
+> - boot with parameter 'video=atyfb:1024x768@70'
+>   This does work, but csync is not set to high and so the monitor again
+>   goes into suspend; after 'fbset -csync high' the monitor turns on.
+>   Is csync something that needs to be set by the user or should the driver
+>   take care of that also at frequencies other then 1152x900?
 
+Unfortunately, the user needs to specify this.  I, at one point, even
+convinced the XFREE86 mach64 maintainer to enable CSYNC by default
+and that broke things for some users and thus the default had to be
+changed back to off.
 
+Therefore the kernel fb driver shouldn't turn CSYNC on by default either.
 
+> The second question concerns the use of Stop-A.
 
--------------------------------------------------------
-SF email is sponsored by - The IT Product Guide
-Read honest & candid reviews on hundreds of IT Products from real users.
-Discover which products truly live up to the hype. Start reading now.
-http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
+If you tell the kernel to use a different resolution than the PROM had,
+stop-a is not going to work.

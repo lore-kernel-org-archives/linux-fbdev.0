@@ -1,15 +1,17 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: [FBDEV updates] Newest framebuffer fixes.
-Date: Thu, 10 Apr 2003 20:09:41 +0100 (BST)
+From: =?ISO-8859-2?Q?Pawe=B3_Go=B3aszewski?= <blues@ds.pg.gda.pl>
+Subject: Re: [FBDEV updates] Newest framebuffer fixes.
+Date: Thu, 10 Apr 2003 23:14:23 +0200 (CEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0304102005330.23030-100000@phoenix.infradead.org>
+Message-ID: <Pine.LNX.4.51L.0304102312090.626@piorun.ds.pg.gda.pl>
+References: <Pine.LNX.4.44.0304102005330.23030-100000@phoenix.infradead.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 193hRD-0004K6-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 10 Apr 2003 12:10:20 -0700
+Received: from pollux.ds.pg.gda.pl ([213.192.76.3] ident=postfix)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 193jNj-0007OC-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 10 Apr 2003 14:14:52 -0700
+In-Reply-To: <Pine.LNX.4.44.0304102005330.23030-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -19,106 +21,78 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Geert Uytterhoeven <geert@linux-m68k.org>, adaplas@pol.net
+Content-Type: TEXT/PLAIN; charset="iso-8859-1"
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+
+On Thu, 10 Apr 2003, James Simmons wrote:
+> Here are the latest framebuffer changes. Some driver updates and a
+> massive cleanup of teh cursor code. Tony please test it on the i810
+> chipset. I tested it on the Riva but there is one bug I can't seem to
+> find. Please test this patch. It is against 2.5.67 BK. It shoudl work
+> against 2.5.67 as well.
+
+No, it doesn't. On clean 2.5.67:
+
+# zcat fbdev.diff.gz |patch -p0
+patching file linus-2.5/Documentation/devices.txt
+patching file linus-2.5/drivers/video/aty/aty128fb.c
+patching file linus-2.5/drivers/video/cfbimgblt.c
+patching file linus-2.5/drivers/video/console/fbcon.c
+patching file linus-2.5/drivers/video/console/fbcon.h
+patching file linus-2.5/drivers/video/controlfb.c
+patching file linus-2.5/drivers/video/fbcmap.c
+patching file linus-2.5/drivers/video/fbmem.c
+Hunk #3 FAILED at 639.
+Hunk #4 succeeded at 705 (offset 1 line).
+Hunk #6 succeeded at 848 (offset 1 line).
+Hunk #8 succeeded at 931 (offset 1 line).
+Hunk #10 succeeded at 974 (offset 1 line).
+Hunk #12 succeeded at 997 (offset 1 line).
+Hunk #14 succeeded at 1151 (offset 1 line).
+1 out of 15 hunks FAILED -- saving rejects to file=20
+linus-2.5/drivers/video/fbmem.c.rej
+patching file linus-2.5/drivers/video/i810/i810.h
+patching file linus-2.5/drivers/video/i810/i810_accel.c
+patching file linus-2.5/drivers/video/i810/i810_dvt.c
+patching file linus-2.5/drivers/video/i810/i810_gtf.c
+patching file linus-2.5/drivers/video/i810/i810_main.c
+patching file linus-2.5/drivers/video/i810/i810_main.h
+patching file linus-2.5/drivers/video/imsttfb.c
+patching file linus-2.5/drivers/video/logo/logo.c
+Hunk #1 FAILED at 33.
+1 out of 1 hunk FAILED -- saving rejects to file linus-2.5/drivers/video/lo=
+go/logo.c.rej
+The next patch would create the file=20
+linus-2.5/drivers/video/logo/logo_linux_clut224.c, which already exists!  A=
+ssume -R? [n]
+Apply anyway? [n]
+Skipping patch.
+1 out of 1 hunk ignored -- saving rejects to file linus-2.5/drivers/video/l=
+ogo/logo_linux_clut224.c.rej
+patching file linus-2.5/drivers/video/logo/logo_linux_mono.c
+patching file linus-2.5/drivers/video/platinumfb.c
+patching file linus-2.5/drivers/video/radeonfb.c
+patching file linus-2.5/drivers/video/riva/fbdev.c
+patching file linus-2.5/drivers/video/softcursor.c
+patching file linus-2.5/drivers/video/tdfxfb.c
+patching file linus-2.5/drivers/video/tgafb.c
+patching file linus-2.5/drivers/video/vga16fb.c
+patching file linus-2.5/include/linux/fb.h
+patching file linus-2.5/include/linux/linux_logo.h
 
 
-Hi!
-
-  Here are the latest framebuffer changes. Some driver updates and a 
-massive cleanup of teh cursor code. Tony please test it on the i810 
-chipset. I tested it on the Riva but there is one bug I can't seem to 
-find. Please test this patch. It is against 2.5.67 BK. It shoudl work 
-against 2.5.67 as well. 
-
-Please test. 
-
-Standard patch is at 
-
-http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
-
-and you can do a bk pull http://fbdev.bkbits.net/fbdev-2.5
-
-Linus, please do a
-
-	bk pull http://gkernel.bkbits.net/fbdev-2.5
-
-This will update the following files:
-
- Documentation/devices.txt       |    7 
- drivers/video/aty/aty128fb.c    |   16 -
- drivers/video/cfbimgblt.c       |    4 
- drivers/video/console/fbcon.c   |  548 ++++++++++++++++++----------------------
- drivers/video/console/fbcon.h   |    1 
- drivers/video/controlfb.c       |   18 -
- drivers/video/fbcmap.c          |   33 +-
- drivers/video/fbmem.c           |  159 ++++++-----
- drivers/video/i810/i810.h       |    6 
- drivers/video/i810/i810_accel.c |  140 +++++-----
- drivers/video/i810/i810_dvt.c   |    3 
- drivers/video/i810/i810_gtf.c   |    7 
- drivers/video/i810/i810_main.c  |  135 ++++-----
- drivers/video/i810/i810_main.h  |    4 
- drivers/video/logo/logo.c       |   69 ++---
- drivers/video/platinumfb.c      |   28 --
- drivers/video/radeonfb.c        |   10 
- drivers/video/riva/fbdev.c      |    2 
- drivers/video/softcursor.c      |  198 +++++++-------
- drivers/video/tdfxfb.c          |   18 -
- drivers/video/tgafb.c           |    2 
- drivers/video/vga16fb.c         |    6 
- include/linux/fb.h              |   16 -
- include/linux/linux_logo.h      |    2 
- 24 files changed, 690 insertions(+), 742 deletions(-)
-
-through these ChangeSets:
-
-<jsimmons@kozmo.(none)> (03/04/02 1.991.1.2)
-   [FBDEV SOFT CURSOR] Test to see if kmalloc failed.
-   
-   [FBCON] Test to see if the user priovides there own work queue.
-
-<jsimmons@kozmo.(none)> (03/04/02 1.991.1.1)
-   [FBDEV] Final cursor code cleanups. Now the burden of handling the cursor code lies on the driver side. The reason for this is that a invalid cursor might come from userland.
-
-<jsimmons@kozmo.(none)> (03/03/31 1.990)
-   [FBDEV] Massive cleanups of the cursor api.
-
-<jsimmons@maxwell.earthlink.net> (03/03/26 1.986)
-   [FBDEV] Documentation on the device numbers of /dev/fb being mulitples of 32 is no longer true. Removed that info.
-   
-   [FBDEV] Logo fixes. Now we can display different color logos on screens of different color depths.
-   
-   [VGA16 FBDEV] Small compile error. Fixed it now.
-
-<jsimmons@maxwell.earthlink.net> (03/03/26 1.984)
-   [I810 FBDEV] Driver updates.
-   
-   [FBCON] Reversed some of my cursor changes.
-
-<jsimmons@kozmo.(none)> (03/03/25 1.983)
-   [FBDEV] The image color depth of zero hack has been killed.
-
-<jsimmons@maxwell.earthlink.net> (03/03/25 1.982)
-   [FBCON] Now we use workqueues so framebuffer code can always work in a process context.
-   
-   [GENERIC CURSOR] Safety check in case kmalloc failes
-
-<jsimmons@maxwell.earthlink.net> (03/03/25 1.981)
-   [FBCON] Could be called outside of a process context. This fixes that.
-
-<jsimmons@maxwell.earthlink.net> (03/03/25 1.979)
-   [RAGE 128/CONTROL/PLATNIUM FBDEV] PPC updates.
-   
-   [RADEON FBDEV] PLL fix for specific type of card.
-
-
+--=20
+pozdr.  Pawe=B3 Go=B3aszewski       =20
+---------------------------------
+worth to see: http://www.againsttcpa.com/
+CPU not found - software emulation...
 
 
 -------------------------------------------------------
-This SF.net email is sponsored by: Etnus, makers of TotalView, The debugger 
-for complex code. Debugging C/C++ programs can leave you feeling lost and 
-disoriented. TotalView can help you find your way. Available on major UNIX 
+This SF.net email is sponsored by: Etnus, makers of TotalView, The debugger=
+=20
+for complex code. Debugging C/C++ programs can leave you feeling lost and=20
+disoriented. TotalView can help you find your way. Available on major UNIX =
+
 and Linux platforms. Try it free. www.etnus.com

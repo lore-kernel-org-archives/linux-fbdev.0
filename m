@@ -1,52 +1,81 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: waitforVBlank, how does this even work?
-Date: Fri, 04 Mar 2005 09:08:27 +1100
-Message-ID: <1109887707.5679.214.camel@gaston>
-References: <9e473391050301215019081bce@mail.gmail.com>
-	 <Pine.LNX.4.62.0503021128001.14333@node2.an-vo.com>
-	 <1109806955.5610.129.camel@gaston>
-	 <Pine.LNX.4.62.0503022003090.17679@node2.an-vo.com>
-	 <1109816602.5610.153.camel@gaston>
-	 <Pine.LNX.4.62.0503022159440.17679@node2.an-vo.com>
-	 <20050303075559.GA7469@sci.fi>
+From: Jesper Juhl <juhl-lkml@dif.dk>
+Subject: [PATCH][resend] drivers/video/kyro/fbdev.c ignoring return value of
+ copy_*_user
+Date: Fri, 4 Mar 2005 15:26:33 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0503041514110.2794@dragon.hygekrogen.localhost>
 Mime-Version: 1.0
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-In-Reply-To: <20050303075559.GA7469@sci.fi>
-Sender: dri-devel-admin@lists.sourceforge.net
-Errors-To: dri-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:dri-devel@lists.sourceforge.net>
-List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=dri-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Cc: Vladimir Dergachev <volodya@mindspring.com>, Jon Smirl <jonsmirl@gmail.com>, fbdev <linux-fbdev-devel@lists.sourceforge.net>, DRI developer's list <dri-devel@lists.sourceforge.net>
+To: Paul Mundt <lethal@chaoticdreams.org>
+Cc: linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, LKML <linux-kernel@vger.kernel.org>
 
 
-> > Oh, but I was not suggesting that. I just meant that interrupt handling 
-> > code is self-contained and can easily serve several consumers.
-> 
-> I'm with you here. And the same should IMHO hold for DMA handling. And for 
-> memory management of course.
+Hi, 
 
-DMA handling is the main piece of what the DRM does, memory management
-is the missing part.
+2.6.11 still contain these warnings :
 
-No, what we really need is just what we said: merging fbdev & DRM and
-adding memory management.
+drivers/video/kyro/fbdev.c:597: warning: ignoring return value of `copy_from_user', declared with attribute warn_unused_result
+drivers/video/kyro/fbdev.c:607: warning: ignoring return value of `copy_from_user', declared with attribute warn_unused_result
+drivers/video/kyro/fbdev.c:628: warning: ignoring return value of `copy_to_user', declared with attribute warn_unused_result
+drivers/video/kyro/fbdev.c:631: warning: ignoring return value of `copy_to_user', declared with attribute warn_unused_result
+drivers/video/kyro/fbdev.c:634: warning: ignoring return value of `copy_to_user', declared with attribute warn_unused_result
 
-Ben.
-
+Here's a patch that has been send before but obviously didn't make it in. 
+re-diff'ed against 2.6.11
 
 
+Signed-off-by: Jesper Juhl <juhl-lkml@dif.dk>
 
--------------------------------------------------------
-SF email is sponsored by - The IT Product Guide
-Read honest & candid reviews on hundreds of IT Products from real users.
-Discover which products truly live up to the hype. Start reading now.
-http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
---
+--- linux-2.6.11-orig/drivers/video/kyro/fbdev.c	2005-03-02 08:37:31.000000000 +0100
++++ linux-2.6.11/drivers/video/kyro/fbdev.c	2005-03-04 15:12:54.000000000 +0100
+@@ -1,5 +1,5 @@
+ /*
+- *  linux/drivers/video/kyro/kyrofb.c
++ *  linux/drivers/video/kyro/fbdev.c
+  *
+  *  Copyright (C) 2002 STMicroelectronics
+  *  Copyright (C) 2003, 2004 Paul Mundt
+@@ -594,7 +594,8 @@ static int kyrofb_ioctl(struct inode *in
+ 
+ 	switch (cmd) {
+ 	case KYRO_IOCTL_OVERLAY_CREATE:
+-		copy_from_user(&ol_create, argp, sizeof(overlay_create));
++		if (copy_from_user(&ol_create, argp, sizeof(overlay_create)))
++			return -EFAULT;
+ 
+ 		if (kyro_dev_overlay_create(ol_create.ulWidth,
+ 					    ol_create.ulHeight, 0) < 0) {
+@@ -604,8 +605,9 @@ static int kyrofb_ioctl(struct inode *in
+ 		}
+ 		break;
+ 	case KYRO_IOCTL_OVERLAY_VIEWPORT_SET:
+-		copy_from_user(&ol_viewport_set, argp,
+-			       sizeof(overlay_viewport_set));
++		if (copy_from_user(&ol_viewport_set, argp,
++			       sizeof(overlay_viewport_set)))
++			return -EFAULT;
+ 
+ 		if (kyro_dev_overlay_viewport_set(ol_viewport_set.xOrgin,
+ 						  ol_viewport_set.yOrgin,
+@@ -625,13 +627,16 @@ static int kyrofb_ioctl(struct inode *in
+ 		}
+ 		break;
+ 	case KYRO_IOCTL_UVSTRIDE:
+-		copy_to_user(argp, &deviceInfo.ulOverlayUVStride, sizeof(unsigned long));
++		if (copy_to_user(argp, &deviceInfo.ulOverlayUVStride, sizeof(unsigned long)))
++			return -EFAULT;
+ 		break;
+ 	case KYRO_IOCTL_STRIDE:
+-		copy_to_user(argp, &deviceInfo.ulOverlayStride, sizeof(unsigned long));
++		if (copy_to_user(argp, &deviceInfo.ulOverlayStride, sizeof(unsigned long)))
++			return -EFAULT;
+ 		break;
+ 	case KYRO_IOCTL_OVERLAY_OFFSET:
+-		copy_to_user(argp, &deviceInfo.ulOverlayOffset, sizeof(unsigned long));
++		if (copy_to_user(argp, &deviceInfo.ulOverlayOffset, sizeof(unsigned long)))
++			return -EFAULT;
+ 		break;
+ 	}
+ 

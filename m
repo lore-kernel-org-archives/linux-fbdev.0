@@ -1,20 +1,18 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Latest Fbdev changes.
-Date: Tue, 26 Nov 2002 20:43:28 +0000 (GMT)
+From: mathijs@mmohlmann.demon.nl (Mathijs Mohlmann)
+Subject: [trivial] timer initialization
+Date: Tue, 26 Nov 2002 20:51:41 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0211262039590.30451-100000@phoenix.infradead.org>
+Message-ID: <20021126195141.GA26539@mmohlmann.demon.nl>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18GmYu-0001J5-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 26 Nov 2002 12:44:05 -0800
-Received: from localhost.localdomain ([127.0.0.1] helo=localhost)
-	by phoenix.infradead.org with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.10)
-	id 18GmYL-0007wk-00
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 26 Nov 2002 20:43:29 +0000
+Received: from mmohlmann.demon.nl ([212.238.27.16] helo=brand.mmohlmann.demon.nl)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18Glpz-0003M9-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 26 Nov 2002 11:57:40 -0800
+Received: from heineken (heineken.mmohlmann.demon.nl [192.168.1.4])
+	by brand.mmohlmann.demon.nl (Postfix) with ESMTP id 46579A6F3
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 26 Nov 2002 20:57:34 +0100 (MET)
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -24,29 +22,33 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
 
-Hi!
+	hi,
 
-  Here is the patch I promised. It is against 2.5.49. Note fbcon is 
-broken. I haven't found the problem yet since using modules is really  
-broken. I started to work on making fbcon modular. Several driver have 
-been updated to the latest changes in the api. THe api is pretty much rock 
-solid now. You can grab the patch at 
+The following is against 2.5 current and fixes an timer
+warning I'm getting during boot.
 
-http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
+	Mathijs
 
-Let me know how it goes.
-
-
-P.S
-   I didn't annouce it on lkml yet because fbcon is broken. Once it is 
-fixed I will push what we have to linus.
-
-
+diff -Nru a/drivers/video/fbcon.c b/drivers/video/fbcon.c
+--- a/drivers/video/fbcon.c	Wed Nov 27 10:42:53 2002
++++ b/drivers/video/fbcon.c	Wed Nov 27 10:42:54 2002
+@@ -230,9 +230,8 @@
+ 
+ static void cursor_timer_handler(unsigned long dev_addr);
+ 
+-static struct timer_list cursor_timer = {
+-    function: cursor_timer_handler
+-};
++static struct timer_list cursor_timer = 
++      TIMER_INITIALIZER(cursor_timer_handler, 0, 0);
+ 
+ static void cursor_timer_handler(unsigned long dev_addr)
+ {
 
 
 -------------------------------------------------------

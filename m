@@ -1,17 +1,18 @@
 From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: Mirrored Display?
-Date: 15 Dec 2002 05:29:33 +0500
+Subject: Re: Re: kernel: matrox fb - missing files,
+	doesn't compile
+Date: 15 Dec 2002 05:30:43 +0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1039911076.1000.39.camel@localhost.localdomain>
-References: <200212131733.42340.kaufmann@sohard.de>
+Message-ID: <1039912121.1008.59.camel@localhost.localdomain>
+References: <A31FF58755A@vcnet.vc.cvut.cz>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from willow.compass.com.ph ([202.70.96.38])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18NJwO-0002GJ-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 14 Dec 2002 13:35:20 -0800
-In-Reply-To: <200212131733.42340.kaufmann@sohard.de>
+	id 18NJxS-0002b4-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 14 Dec 2002 13:36:26 -0800
+In-Reply-To: <A31FF58755A@vcnet.vc.cvut.cz>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,36 +23,92 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Michael Kaufmann <kaufmann@sohard.de>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Petr Vandrovec <VANDROVE@vc.cvut.cz>
+Cc: Ariel <aslinux@dsgml.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Fri, 2002-12-13 at 23:33, Michael Kaufmann wrote:
-> Hello,
-> 
-> i would like to use a mono LCD with a framebuffer driver.
-> 
-> I've modified existing drivers, and after a lot of work i now have a clear
-> picture on my display. Unfortunately, the complete picture is mirrored.
-> The Bootlogo is top/right instead of top/left and the ascii output starts from 
-> right to left. 
-> 
-> Where is the right place to modify this behaviour? 
-> I'm also looking for a possibility to rotate the picture.
-> Because my videocontroller can emulate 15 grayscales, i'm useing 4bpp.
-> 
-> It would be very nice, if someone can guide me in the right direction.
-> 
-Are you using fbcon-cfb4.c to draw the characters?  Is the whole display
-mirrored, including individual characters?  If you run an fb-based app
-(like fbtest for instance), is the display also mirrored?
+On Fri, 2002-12-13 at 15:09, Petr Vandrovec wrote:
+> Current interface just supports only cfb, and only very bad for my needs.
+> And because of matroxfb supports also other modes (such as native text
+> mode, or loading font into accelerator), bye-bye. For now I recommend you 
+> either to not upgrade, or use vesafb. Besides that accel_putcs() does not 
+> call fb_sync when using font width which is not multiple of 8, and that 
+Can you explain why an fb_sync is needed for every character?
 
-If it's the whole display, maybe your hardware supports mirroring (some
-hardware with video overlay need this to support YUV formats that are
-either vertically or horizontally mirrored).  Maybe it has something
-like that.  Otherwise, it will be difficult to correct this without
-rewriting practically everything.
+> with fonts greater than 16*16 pixels (I believe that such fonts are still 
+> supported...) it will corrupt memory...
+
+I agree.  To be more specific, buffer overruns will occur if (xres *
+fontheight/8 > 8192).  The pixmap needs to be dynamically allocated and
+resized somewhere in the fbcon layer (ideally in accel_setup(), but this
+was removed).  For those concerned about this problem, you can try this
+patch as a temporary measure until fbcon is fixed. It should not cause
+to much slowdown:
+
+For anyone concerned, this is a heads up:  The data in the pixmap must
+be read completely by the hardware before exiting, otherwise font
+corruption will occur.  If you think this will be a problem, the
+function can be easily modified to do multiple buffering instead.
+ 
+Comments?
 
 Tony
+
+diff -Naur linux-2.5.51/drivers/video/console/fbcon.c linux/drivers/video/console/fbcon.c
+--- linux-2.5.51/drivers/video/console/fbcon.c	2002-12-14 23:33:50.000000000 +0000
++++ linux/drivers/video/console/fbcon.c	2002-12-14 23:35:10.000000000 +0000
+@@ -390,7 +390,9 @@
+ 	unsigned int cellsize = vc->vc_font.height * width;
+ 	struct fb_image image;
+ 	u16 c = scr_readw(s);
+-	static u8 pixmap[8192];
++	static int xres = 0;
++	static int fontheight = 0;
++	static u8 *pixmap = NULL;
+ 	
+ 	image.fg_color = attr_fgcol(p, c);
+ 	image.bg_color = attr_bgcol(p, c);
+@@ -399,9 +401,24 @@
+ 	image.height = vc->vc_font.height;
+ 	image.depth = 1;
+ 
+-/*	pixmap = kmalloc((info->var.bits_per_pixel + 7) >> 3 *
+-				vc->vc_font.height, GFP_KERNEL); 
+-*/
++	/*
++	 * FIXME: This code segment has to be placed 
++	 *        somewhere else to allow freeing of 
++	 *        memory on exit and to reduce unnecessary
++	 *        processing.
++	 */
++	if (xres != info->var.xres || 
++	    fontheight != vc->vc_font.height) {
++		xres = info->var.xres;
++		fontheight = vc->vc_font.height;
++
++		if (info->fbops->fb_sync)
++			info->fbops->fb_sync(info);
++		if (pixmap != NULL)
++			kfree(pixmap);
++		pixmap = kmalloc((xres + 7)/8 *
++				 fontheight, GFP_KERNEL); 
++	}
+ 				
+ 	if (!(vc->vc_font.width & 7) && pixmap != NULL) {
+ 		unsigned int pitch = width * count, i, j;
+@@ -432,10 +449,6 @@
+ 			image.dx += vc->vc_font.width;
+ 		}	
+ 	}
+-	/*
+-	if (pixmap);
+-		kfree(pixmap);
+-	*/	
+ }
+ 
+ void accel_clear_margins(struct vc_data *vc, struct display *p,
+
+
+
 
 
 

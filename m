@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 3/15] fbdev: Convert MODULE_PARM to module_param in intelfb
-Date: Fri, 29 Oct 2004 09:58:15 +0800
+Subject: [PATCH 13/15] fbdev: Add __iomem annotations to vfb
+Date: Fri, 29 Oct 2004 09:58:54 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200410290958.15912.adaplas@hotpop.com>
+Message-ID: <200410290958.54861.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CNM2B-0005uo-Fl
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Oct 2004 18:58:31 -0700
+	id 1CNM3F-0006Af-8k
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Oct 2004 18:59:37 -0700
 Received: from smtp-out.hotpop.com ([38.113.3.61])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CNM2A-0001Mk-Vk
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Oct 2004 18:58:31 -0700
+	id 1CNM3E-0001bc-FW
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Oct 2004 18:59:37 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 4B4749698CA
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 29 Oct 2004 01:58:24 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id 9DA6394CE6F
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 29 Oct 2004 01:59:24 +0000 (UTC)
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,47 +30,27 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Sylvain Meyer <sylvain.meyer@ifrance.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-fbdev: Convert MODULE_PARM to module_param in intelfb
+Add __iomem annotations to vfb
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
- intelfb.h    |    6 +++---
- intelfbdrv.c |    2 +-
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ vfb.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
-diff -Nru a/drivers/video/intelfb/intelfb.h b/drivers/video/intelfb/intelfb.h
---- a/drivers/video/intelfb/intelfb.h	2004-10-23 23:13:14 +08:00
-+++ b/drivers/video/intelfb/intelfb.h	2004-10-28 20:56:42 +08:00
-@@ -97,12 +97,12 @@
- /* module parameters */
- #define INTELFB_INT_PARAM(name, default, desc)				\
- 	static int name = default;					\
--	MODULE_PARM(name, "i");					        \
-+	module_param(name, int, default);			        \
- 	MODULE_PARM_DESC(name, desc);
+diff -Nru a/drivers/video/vfb.c b/drivers/video/vfb.c
+--- a/drivers/video/vfb.c	2004-10-27 14:58:08 +08:00
++++ b/drivers/video/vfb.c	2004-10-28 23:43:08 +08:00
+@@ -430,7 +430,7 @@
+ 	if (!info)
+ 		goto err;
  
- #define INTELFB_STR_PARAM(name, default, desc)				\
--	static const char *name = default;				\
--	MODULE_PARM(name, "s");				                \
-+	static char *name = (char *) default;				\
-+	module_param(name, charp, default);		                \
- 	MODULE_PARM_DESC(name, desc);
+-	info->screen_base = videomemory;
++	info->screen_base = (char __iomem *)videomemory;
+ 	info->fbops = &vfb_ops;
  
- /* misc macros */
-diff -Nru a/drivers/video/intelfb/intelfbdrv.c b/drivers/video/intelfb/intelfbdrv.c
---- a/drivers/video/intelfb/intelfbdrv.c	2004-10-23 23:13:14 +08:00
-+++ b/drivers/video/intelfb/intelfbdrv.c	2004-10-28 20:56:42 +08:00
-@@ -197,7 +197,7 @@
- INTELFB_INT_PARAM(idonly, 0,
- 		  "Just identify without doing anything else (debug)");
- INTELFB_INT_PARAM(bailearly, 0, "Bail out early, depending on value (debug)");
--INTELFB_STR_PARAM(mode, NULL,
-+INTELFB_STR_PARAM(mode, 0,
- 		  "Initial video mode \"<xres>x<yres>[-<depth>][@<refresh>]\"");
- /***************************************************************
-  *                     modules entry points                    *
+ 	retval = fb_find_mode(&info->var, info, NULL,
 
 
 

@@ -1,20 +1,29 @@
-From: postmaster@telindus.be
-Subject: Delivery Status Notification (Failure)
-Date: Mon, 29 Mar 2004 12:33:19 +0200
+From: Dirk Meul <dirk.meul@rwth-aachen.de>
+Subject: savagefb, s3fb for 2.6.x?
+Date: Mon, 29 Mar 2004 12:41:01 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <idcDjoYAP0000001d@tbe3mx1.telindus.intra>
+Message-ID: <1080556860.3595.0.camel@strohm.informatik.rwth-aachen.de>
 Mime-Version: 1.0
-Content-Type: multipart/report; report-type=delivery-status;
-	boundary="9B095B5ADSN=_01C4157663BA274F000001BAtbe3mx1.telindus"
+Content-Transfer-Encoding: 7BIT
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B7u51-0004k5-97
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 02:33:19 -0800
-Received: from gatekeepermons.telindus.be ([217.136.226.79] helo=tbe3mx1.telindus.intra)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B7u4z-000182-Sj
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 02:33:18 -0800
+	id 1B7uHs-0006aF-Fi
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 02:46:36 -0800
+Received: from ms-2.rz.rwth-aachen.de ([134.130.3.131] helo=ms-dienst.rz.rwth-aachen.de)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1B7uHq-00056d-OT
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 02:46:34 -0800
+Received: from r220-1 (r220-1.rz.RWTH-Aachen.DE [134.130.3.31])
+ by ms-dienst.rz.rwth-aachen.de
+ (iPlanet Messaging Server 5.2 HotFix 1.12 (built Feb 13 2003))
+ with ESMTP id <0HVC0065M30DK3@ms-dienst.rz.rwth-aachen.de> for
+ linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 12:41:02 +0200 (MEST)
+Received: from strohm.informatik.rwth-aachen.de
+ (strohm.informatik.RWTH-Aachen.DE [137.226.116.27])
+	by relay.rwth-aachen.de (8.12.10/8.12.7-1) with ESMTP id i2TAf1JC022964	for
+ <linux-fbdev-devel@lists.sourceforge.net>; Mon,
+ 29 Mar 2004 12:41:01 +0200 (MEST)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -24,63 +33,22 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-This is a MIME-formatted message.  
-Portions of this message may be unreadable without a MIME-capable mail program.
+Hello.
 
---9B095B5ADSN=_01C4157663BA274F000001BAtbe3mx1.telindus
-Content-Type: text/plain; charset=unicode-1-1-utf-7
+Is there a savagefb patch for linux-2.6? And a s3fb patch for i386, or
+an updated patch for vesafb to enable framebuffer for trio chips?
 
-This is an automatically generated Delivery Status Notification.
-
-Delivery to the following recipients failed.
-
-       joma@telindus.be
-
-
+Regards,
+-- 
+                           /"\
+Dirk Meul                  \ /    ASCII Ribbon Campaign
+dirk.meul@rwth-aachen.de    X     Against HTML Mail
+                           / \
 
 
---9B095B5ADSN=_01C4157663BA274F000001BAtbe3mx1.telindus
-Content-Type: message/delivery-status
-
-Reporting-MTA: dns;tbe3mx1.telindus.intra
-Received-From-MTA: dns;Loburg
-Arrival-Date: Mon, 29 Mar 2004 12:33:19 +0200
-
-Final-Recipient: rfc822;joma@telindus.be
-Action: failed
-Status: 5.1.1
-
---9B095B5ADSN=_01C4157663BA274F000001BAtbe3mx1.telindus
-Content-Type: message/rfc822
-
-Received: from Loburg ([10.0.136.3]) by tbe3mx1.telindus.intra with Microsoft SMTPSVC(6.0.3790.0);
-	 Mon, 29 Mar 2004 12:33:19 +0200
-Received: FROM telindus.be BY Loburg ; Mon Mar 29 12:36:23 2004 +0200
-From: linux-fbdev-devel@lists.sourceforge.net
-To: joma@telindus.be
-Subject: Mail Delivery (failure joma@telindus.be)
-Date: Mon, 29 Mar 2004 12:34:41 +0200
-MIME-Version: 1.0
-Content-Type: multipart/related;
-	type="multipart/alternative";
-	boundary="----=_NextPart_000_001B_01C0CA80.6B015D10"
-X-Priority: 3
-X-MSMail-Priority: Normal
-Return-Path: linux-fbdev-devel@lists.sourceforge.net
-Message-ID: <TBE3MX1rcR4ZDgC81Tb00000024@tbe3mx1.telindus.intra>
-X-OriginalArrivalTime: 29 Mar 2004 10:33:19.0045 (UTC) FILETIME=[407E1F50:01C41579]
-
-Network Associates WebShield SMTP V4.5 MR1a on Loburg detected virus W32/Netsky.p@MM
-in attachment unknown from <linux-fbdev-devel@lists.sourceforge.net> and it was
-Deleted and Quarantined.
-
-
-
-
-
---9B095B5ADSN=_01C4157663BA274F000001BAtbe3mx1.telindus--
 
 
 -------------------------------------------------------

@@ -1,18 +1,19 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [BK FBDEV] A few more updates.
-Date: 25 Mar 2003 19:35:54 +0100
+From: Jens Axboe <axboe@suse.de>
+Subject: Re: Framebuffer updates.
+Date: Tue, 25 Mar 2003 19:20:43 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1048617354.10476.6.camel@zion.wanadoo.fr>
-References: <Pine.LNX.4.33.0303251031180.4272-100000@maxwell.earthlink.net>
-	 <1048616901.10476.3.camel@zion.wanadoo.fr>
+Message-ID: <20030325182043.GH30908@suse.de>
+References: <Pine.LNX.4.33.0303251032320.4272-100000@maxwell.earthlink.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from amarseille-201-1-1-200.abo.wanadoo.fr ([193.252.38.200] helo=zion.wanadoo.fr)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18xtHc-0001OO-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 25 Mar 2003 10:36:24 -0800
-In-Reply-To: <1048616901.10476.3.camel@zion.wanadoo.fr>
+Received: from ns.virtualhost.dk
+	([195.184.98.160] helo=virtualhost.dk ident=mail)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18xtKE-0003B1-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 25 Mar 2003 10:39:06 -0800
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.33.0303251032320.4272-100000@maxwell.earthlink.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,26 +24,45 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: James Simmons <jsimmons@infradead.org>
-Cc: Linus Torvalds <torvalds@transmeta.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tue, 2003-03-25 at 19:28, Benjamin Herrenschmidt wrote:
-
-> You "fixed" it by using GFP_ATOMIC but didn't test the result of
-> kmalloc. That is very bad. GFP_ATOMIC can fail (return NULL), thus
-> you will crash the kernel under high memory pressure.
+On Tue, Mar 25 2003, James Simmons wrote:
 > 
-> I think the proper fix is, as you asked me, using a workqueue,
-> that way, you can both use GFP_KERNEL allocations, and avoid
-> the spinlock you added to fbmem.c, thus letting the fb_sync()
-> ops on fbdev's be able to block.
+> As usually I have a patch avalaible at 
+> 
+> http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
+> 
+>  drivers/video/aty/aty128fb.c  |   16 +++++++---------
+>  drivers/video/console/fbcon.c |    4 ++--
+>  drivers/video/controlfb.c     |   18 +++---------------
+>  drivers/video/platinumfb.c    |   28 ++++++++--------------------
+>  drivers/video/radeonfb.c      |   10 ++++++++++
+>  drivers/video/softcursor.c    |    2 +-
+>  6 files changed, 31 insertions(+), 47 deletions(-)
+> 
+> The patch has updates for the ATI Rage 128, Control, and Platnium 
+> framebuffer driver. The Radeon patch adds PLL times for the R* series of
+> cards. Memory is now safe to allocate for the software cursor and inside 
+> fbcon. There still are issues with syncing which cause the cursor on some 
+> systems to become corrupt sometimes. 
 
-Well, actually, creating a workqueue would be overhead since
-it involves one kernel thread per CPU. After more thinking &
-discussion, I beleive you shall rather use keventd existing
-workqueue (schedule_work() will do that)
+-       data = kmalloc(size, GFP_KERNEL);
+-       mask = kmalloc(size, GFP_KERNEL);
++       data = kmalloc(size, GFP_ATOMIC);
++       mask = kmalloc(size, GFP_ATOMIC);
 
-Ben.
+        if (cursor->set & FB_CUR_SETSIZE) {
+                memset(data, 0xff, size);
+
+
+irk, you replaced GFP_KERNEL with GFP_ATOMIC, and even unconditionally
+memset the return without even bothering to check if it succeeded or
+not.
+
+-- 
+Jens Axboe
 
 
 

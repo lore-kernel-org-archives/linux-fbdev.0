@@ -1,31 +1,25 @@
-From: Arnaud FONTAINE <arnaud.fontaine@free.fr>
-Subject: atyfb correction for 3D Rage Mobility L
-Date: Wed, 21 Apr 2004 16:15:22 +0200
+From: Marcelo Ramos <mramos@montevideo.com.uy>
+Subject: Re: pm2fb fixes
+Date: Wed, 21 Apr 2004 13:26:39 -0300
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <408681FA.50607@free.fr>
-References: <E1BGIKG-0004pq-Dv@sc8-sf-list1.sourceforge.net>
+Message-ID: <20040421132639.1d87ba1b@zerocool>
+References: <20040421015118.2caa6e99@zerocool>
+	<XFMail.20040421111442.jim.hague@acm.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig806206AC3DBA722877302E3F"
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="pgp-sha1";
+ boundary="Signature=_Wed__21_Apr_2004_13_26_39_-0300_O6YcjhRfzCaNtH_8"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BGIZR-0008AD-Lf
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 07:19:25 -0700
-Received: from hourri.hittite.isp.9tel.net ([62.62.156.10])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BGIZR-0005p1-9M
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 07:19:25 -0700
-Received: from localhost (unknown [81.185.254.103])
-	by hourri.hittite.isp.9tel.net (Postfix) with ESMTP id BBC441576E7
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 21 Apr 2004 16:46:04 +0200 (CEST)
-Received: from [192.168.1.3] (helo=free.fr)
-	by localhost with esmtp 
-	(Cipher TLSv1:RC4-MD5:128) (Exim 3.35 #1 (Debian))
-	id 1BGIeS-0001YN-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 21 Apr 2004 16:24:36 +0200
-In-Reply-To: <E1BGIKG-0004pq-Dv@sc8-sf-list1.sourceforge.net>
+	id 1BGL4G-0002yd-9z
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 09:59:24 -0700
+Received: from r200-40-228-146.adinet.com.uy ([200.40.228.146] helo=mx2.montevideo.com.uy)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.30)
+	id 1BGL4F-0007y9-GG
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 09:59:23 -0700
+In-Reply-To: <XFMail.20040421111442.jim.hague@acm.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -37,54 +31,58 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 To: linux-fbdev-devel@lists.sourceforge.net
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig806206AC3DBA722877302E3F
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+--Signature=_Wed__21_Apr_2004_13_26_39_-0300_O6YcjhRfzCaNtH_8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi,
-I'm running a Debian sarge on an iBook SE with a 2.6.5 kernel.
-My iBook contains a "3D Rage Mobility L" and I've had some troubles with
-the atyfb: my screen was turning blank.
+El (On) Wed, 21 Apr 2004 11:14:42 +0100 (BST)
+Jim Hague <jim.hague@acm.org> escribi=F3 (wrote):
 
-I've modified the MCLCK and XCLCK of the "3D Rage Mobility L" in
-drivers/video/aty/atyfb_base.c :
+[...]
+> The 2.6 version of pm2fb currently only has three possible arguments, 'mo=
+de',
+> 'lowvsync' and 'lowhsync'. I think I'm the only person needing the last t=
+wo.
+>=20
+> When compiled in to the kernel, the argument syntax imitates other 2.6
+> drivers. Arguments are comma separated, and any argument that isn't 'lowv=
+sync'
+> or'lowhsync' is assumed to be a modedb
+> specification,'<hres>x<vres>-<refresh>'. You probably want:
+>=20
+> video=3Dpm2fb:1024x768-70
 
-# old version
-	{ 0x4c4e, 0x4c4e, 0x00, 0x00, m64n_mob_a, 230, 83, 125, M64F_GT |
-M64F_INTEGRATED | M64F_RESET_3D | M64F_GTB_DSP | M64F_MOBIL_BUS |
-M64F_MFB_FORCE_4 }
+That line didn't work but using @70 instead of -70 worked like a charm. Tha=
+nks
+very much for you info! :)
 
+Now i'm a happy framebuffer user again.
 
-# new version
-	{ 0x4c4e, 0x4c4e, 0x00, 0x00, m64n_mob_a, 230, 50, 50, M64F_GT |
-M64F_INTEGRATED | M64F_RESET_3D | M64F_GTB_DSP | M64F_MOBIL_BUS |
-M64F_MFB_FORCE_4 }
+Keep the excellent work.
 
+Regards.
 
-I don't know if these settings are rights for every architectures, but
-for powerpc it is.
+--=20
+ _____________________________________________________________
+                                        _____  ____________
+  Marcelo Ramos                        |     \/      __    |
+  Fedora Core 1 | Linux 2.6.5          |            |_/    /
+  Socio UYLUG Nro 125                  |                   \
+  Linux registered user #118109        |____|\/|____|\______\
 
-Thanks in advance
-
-Arnaud FONTAINE
-
-
---------------enig806206AC3DBA722877302E3F
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+--Signature=_Wed__21_Apr_2004_13_26_39_-0300_O6YcjhRfzCaNtH_8
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
-Comment: Using GnuPG with Thunderbird - http://enigmail.mozdev.org
+Version: GnuPG v1.2.3 (GNU/Linux)
 
-iD8DBQFAhoIAOm9y8/sAguwRAqNvAKCIxX/LVKRHWY4Eevxp8pgFjxTfXQCgwfu3
-A7V+P1ErzxLz4cUhbrw6Dog=
-=Mie/
+iD8DBQFAhqDEKHiVwzS5rpkRAl3lAKCR+CqjLbFz0VjugAq/DVWgCXJKRwCgkncb
+uwYDNz9DNm5zGb8uhCiKYkI=
+=0LbG
 -----END PGP SIGNATURE-----
 
---------------enig806206AC3DBA722877302E3F--
+--Signature=_Wed__21_Apr_2004_13_26_39_-0300_O6YcjhRfzCaNtH_8--
 
 
 -------------------------------------------------------

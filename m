@@ -1,18 +1,18 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH] 2.5.59 for ATI Mach64(port from
- Daniel code for 2.5.59)
-Date: Fri, 24 Jan 2003 19:07:29 +0000 (GMT)
+Subject: Re: rivafb "Badness" using fbdev.diff.gz and
+ 2.5.5[45]
+Date: Fri, 24 Jan 2003 19:09:33 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0301241907150.6857-100000@phoenix.infradead.org>
-References: <200301181201.48711.alex.kern@gmx.de>
+Message-ID: <Pine.LNX.4.44.0301241908420.6857-100000@phoenix.infradead.org>
+References: <200301182028.33155.rfjak@eircom.net>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
+Received: from phoenix.infradead.org ([195.224.96.167])
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18c9BO-0001Zf-00
-	for <Linux-fbdev-devel@lists.sourceforge.net>; Fri, 24 Jan 2003 11:08:07 -0800
-In-Reply-To: <200301181201.48711.alex.kern@gmx.de>
+	id 18c9DL-0002sE-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 24 Jan 2003 11:10:07 -0800
+In-Reply-To: <200301182028.33155.rfjak@eircom.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -24,20 +24,18 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alexander Kern <alex.kern@gmx.de>
-Cc: Linux-fbdev-devel@lists.sourceforge.net
+To: Jak <rfjak@eircom.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
 
-> Am Freitag, 17. Januar 2003 22:27 schrieb Alexander Kern:
-> > Hi, tested with ATI RAGE 3D MOBILITY M1 (P/M). 1400x1050 works, i assume
-> > all others must work too.
-> 
-> Arrrrh, full speed back.
-> 
-> Please don't beat me, it works only with 1400x1050 on exetern CRT, image 
-> timing for LCD is incorrect
+> Good news is that 2.5.59 seems quite stable as regards framebuffer.
+> It no longer locks up after loading fbcon. But rmmod fbcon still
+> causes instant death accompanied by increased whirring noises from inside
+> box.
 
-Do you want me to applied the changes still?
+rmmod is really broken for fbcon. It shuts down the VT console system. It 
+needs work in this area.
+
 
 
 

@@ -1,21 +1,33 @@
-From: Linus Torvalds <torvalds@osdl.org>
-Subject: Re: Re: [PATCH] fbdev: Fix IO access in rivafb
-Date: Mon, 8 Nov 2004 07:21:53 -0800 (PST)
-Message-ID: <Pine.LNX.4.58.0411080719460.24286@ppc970.osdl.org>
-References: <200411080521.iA85LbG6025914@hera.kernel.org>
- <1099893447.10262.154.camel@gaston> <200411081706.55261.adaplas@hotpop.com>
+From: Dermot Bradley <dermot.bradley@openwave.com>
+Subject: Re: Framebuffer Port guide for 2.4->2.6?
+Date: Mon, 08 Nov 2004 13:33:02 +0000
+Message-ID: <418F758E.3090403@openwave.com>
+References: <41892D53.1060007@cablespeed.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CRBLE-0000WC-3c
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 08 Nov 2004 07:22:00 -0800
-Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CRBLC-0004JW-5t
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 08 Nov 2004 07:22:00 -0800
-In-Reply-To: <200411081706.55261.adaplas@hotpop.com>
+	id 1CR9e2-0007q0-N7
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 08 Nov 2004 05:33:18 -0800
+Received: from oe-im1pub.managedmail.com ([206.46.164.52] helo=oe-im1.bizmailsrvcs.net)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1CR9e0-0007PL-Uq
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 08 Nov 2004 05:33:18 -0800
+Received: from mm-ismta3.bizmailsrvcs.net ([192.168.133.28])
+          by oe-im1.bizmailsrvcs.net
+          (InterMail vM.5.01.06.05 201-253-122-130-105-20030824) with ESMTP
+          id <20041108133310.QJCX10275.oe-im1.bizmailsrvcs.net@mm-ismta3.bizmailsrvcs.net>
+          for <linux-fbdev-devel@lists.sourceforge.net>;
+          Mon, 8 Nov 2004 07:33:10 -0600
+Received: from [10.20.5.111] ([193.129.95.129])
+          by mm-ismta3.bizmailsrvcs.net
+          (InterMail vM.5.01.06.05 201-253-122-130-105-20030824) with ESMTP
+          id <20041108133310.MEWV29412.mm-ismta3.bizmailsrvcs.net@[10.20.5.111]>
+          for <linux-fbdev-devel@lists.sourceforge.net>;
+          Mon, 8 Nov 2004 07:33:10 -0600
+In-Reply-To: <41892D53.1060007@cablespeed.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,30 +38,20 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: adaplas@pol.net
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-
-
-On Mon, 8 Nov 2004, Antonino A. Daplas wrote:
+Kelly Price wrote:
+> Is there a port guide for framebuffer drivers going from 2.4 to 2.6? I'm 
+> trying to port the CT65548 Frambuffer driver over to 2.6.
 > 
-> How about this patch?  This is almost the original macro in riva_hw.h,
-> with the __force annotation.
+> http://members.elysium.pl/ytm/html/linux.html is where the 2.4 version 
+> is at.
 
-Why not just use __raw_readl/__raw_writel?
+This would interest me as I've got a Fuji PT510 with this chip in it.
 
-That's what they exist for, and they still do any IO accesses correctly, 
-which a direct store does not do (it would seriously break on older 
-alphas, for example).
-
-Of course, clearly the thing has never worked on things like alphas 
-anyway, but the point is that accessing IO memory with direct loads and 
-stores really _is_ fundamentally wrong, even if it happens to work on many 
-architectures. The keyword is "happens". 
-
-		Linus
+I'd wondered about trying to port this driver to 2.6 myself but (a) I 
+haven't found the time so far and (b) I'm not really a programmer :-)
 
 
 -------------------------------------------------------

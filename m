@@ -1,77 +1,48 @@
 From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: Re: [PATCH]: image.depth fix to accomodate
-	monochrome cards
-Date: 11 Jan 2003 13:10:18 +0800
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1042254692.932.31.camel@localhost.localdomain>
-References: <Pine.GSO.4.21.0301102041130.18440-100000@vervain.sonytel.be>
+Subject: Re: [Linux-fbdev-devel] [RFC][PATCH][FBDEV]: Setting fbcon's
+	windows size
+Date: 11 Jan 2003 13:10:58 +0800
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <1042255015.932.37.camel@localhost.localdomain>
+References: <Pine.LNX.4.44.0301092140020.5660-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from willow.compass.com.ph ([202.70.96.38])
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18XE4d-0004Ll-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Jan 2003 21:20:47 -0800
-In-Reply-To: <Pine.GSO.4.21.0301102041130.18440-100000@vervain.sonytel.be>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44.0301092140020.5660-100000@phoenix.infradead.org>
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel List <linux-kernel@vger.kernel.org>
 
-On Sat, 2003-01-11 at 03:43, Geert Uytterhoeven wrote:
-> On Fri, 10 Jan 2003, James Simmons wrote:
-> > > I think we still have several corner cases, such as TRUECOLOR with bpp
-> > > <= 8, I'm not sure if that works.
-> > 
-> > The matorx millenium has such a mode. So such things do exist.
-> >  
-> > > -	if (image->depth == 1) {
-> > > +	if (image->depth == 0) {
-> > 
-> > P.S
-> > 
-> >    I'm just not to crazy about the depth equal zero thing. I just pitcure 
-> > developers having a hard time with it.
+On Sat, 2003-01-11 at 02:18, James Simmons wrote:
 > 
-> Monochrome color expansion just works differently: it expands the zeroes and
-> ones in a bitmap based on fg_color and bg_color, while image drawing draws an
-> image containing colormap indices to the frame buffer.
+> > Here's an improved GTF implementation.  I was a bit delayed because I
+> > was trying to find a way to do square roots without using floating
+> > point.  The diff is against linux-2.5.54 + your latest fbdev.diff.
 > 
-> Do you have a better suggestion?
+> Applied. 
 > 
+> > but is more or less usable.  Tested with i810fb and rivafb. (For rivafb,
+> > I have to use a hacked version. The latest one does not work for the
+> > riva128).
+> 
+> What hack did you do? That is based on the latest riva driver from 2.4.2X.
+>  
+I just combined the old riva_hw.c in linux-2.5.52 with the new fbdev.c
+code.  Not too sure why, either the newest riva_hw.c has dropped support
+for old hardware, or we are using it incorrectly.  If I'm to guess, the
+new riva_hw.c did not come from linux-2.4.20, but probably from Xfree86?
 
-If James is a bit skeptical about this, how about doing it this way:
+> > BTW, I downloaded the source code of read-edid, and it seems that the
+> > following monitor limits are parsable from the EDID block: HorizSync,
+> > VertRefresh, DotClock, and GTF capability. We may change info->monspecs
+> > to match that. Also, the EDID contains a list of supported modes, but
+> > there's only 4 of them(?).  
+> 
+> I figured monspec would have to be improved. I'm looking into the EDID 
+> info right now. I'm also looking at read-edid. Next I need to figure out 
+> how to use i2c to get this info.
+> 
+Good luck :-)
 
-If image.fg_color and image.bg_color == 0, then each byte of image.data
-is an index to the pseudo_palette, or the actual pixel, whatever the
-case may be.  Otherwise, image.data is a monochrome bitmap that should
-be expanded using fg_color and bg_color.
-
-No other changes will be needed except that mono cards have to test for
-fg_color and bg_color, and we need to memset the fb_image structure to 0
-in fb_set_logo(). Non-mono cards will continue testing for image.depth.
-
-Do you think this will work?  The only problem I can think of is a color
-expansion request where both bg and fg is 0.
-
-Or to totally eliminate the above possibility, add an extra field in
-struct fb_image to denote color expansion vs logo drawing.  Again, only
-mono cards will need to do this test.
-
-Tony 
-
-
-
-
--------------------------------------------------------
-This SF.NET email is sponsored by:
-SourceForge Enterprise Edition + IBM + LinuxWorld = Something 2 See!
-http://www.vasoftware.com
+Tony

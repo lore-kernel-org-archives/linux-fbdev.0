@@ -1,28 +1,26 @@
-From: <kiran.tigadi@wipro.com>
-Subject: RE: Smart LCD Linux driver
-Date: Fri, 2 Jul 2004 19:16:15 +0530
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: Re: [PATCH][FBCON]: Mode Switch in fbcon_blank()
+Date: Fri, 2 Jul 2004 23:37:20 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <DC91351678E31E4FB24B551221F507ECB771EA@blr-itp-msg.wipro.com>
+Message-ID: <200407022337.20156.adaplas@hotpop.com>
+References: <200406301047.57423.adaplas@hotpop.com> <1088564019.1922.12.camel@gaston> <cc3d6r$d5v$1@sea.gmane.org>
+Reply-To: adaplas@pol.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BgQ4H-00059Z-5M
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 02 Jul 2004 08:35:13 -0700
-Received: from externalmx-1.sourceforge.net ([12.152.184.25])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.34)
-	id 1BgQ4G-0006Hd-Pg
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 02 Jul 2004 08:35:13 -0700
-Received: from wiproecmx2.wipro.com ([164.164.31.6])
-	by externalmx-1.sourceforge.net with esmtp (Exim 4.34)
-	id 1BgVbq-0001uo-1X
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 02 Jul 2004 14:30:18 -0700
-Received: from ec-vwall-wd (ec-vwall-wd.wipro.com [10.200.52.125])
-	by wiproecmx2.wipro.com (8.12.9-20031013/8.12.9) with SMTP id i62DkHNC013978
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 2 Jul 2004 19:16:17 +0530 (IST)
-content-class: urn:content-classes:message
+	id 1BgQ5p-0005Sv-MO
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 02 Jul 2004 08:36:49 -0700
+Received: from twix.hotpop.com ([38.113.3.71])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1BgQ5p-0006Zz-4K
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 02 Jul 2004 08:36:49 -0700
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by twix.hotpop.com (Postfix) with SMTP id CCEA7FD7CCF
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri,  2 Jul 2004 15:18:02 +0000 (UTC)
+In-Reply-To: <cc3d6r$d5v$1@sea.gmane.org>
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,62 +30,121 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: jbglaw@lug-owl.de
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: Javier Marcet <javier-ml-gmane@marcet.info>, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>
 
-Hi,
+On Friday 02 July 2004 18:25, Javier Marcet wrote:
+> Benjamin Herrenschmidt wrote:
+> >> As we've discussed in another thread, below is a diff that will do a
+> >> set_par() as late as possible when there is KD_TEXT<->KD_GRAPHICS
+> >> switch.  The set_par() will be forced in fbcon_resize() instead.
+> >>
+> >> Not sure if this has repercussions with the other drivers, but this
+> >> patch fixed the X nv driver hanging when switching to the console. (I
+> >> believe the crash is actually caused by an early set_par() -- while in
+> >> fbcon_blank. Removing the set_par in fbcon_blank fixed the hang but
+> >> caused cursor sprite and display corruption).
+> >
+> > Well... I don't know. It seem to work, so it's probably an acceptable
+> > workaround, but I'd like to find out what's wrong with doing it in blank
+> > precisely (that is what is the bug in XFree or in the kernel VT), since
+> > it's shared by many X drivers, I don't suppose it's a bug in them.
+>
+> This was included in 2.6.7-mm5 -that's how I noticed it- and I had to
+> revert it.
+>
+> I use radeonfb and when switching from X to console my two monitors will
+> go out of sync. The VT is actually there since I can type on it, but I
+> can't see anything on neither of my two monitors :(
 
-Overview Smart LCD panel
-=A1=F0262144 colors, 65536 colors, 4096 colors and 8 colors display is =
-available by PWM driving.
-=A1=F0Direct data display by video data RAM (normally-white LCD)
-=A1=F0Partial display function Power saving by pausing display process =
-on part of the screen.
-=A1=F0Built-in RAM capacity 6=A1=C1540=A1=C1288=3D933120 bit
-=A1=F0MPU interface Directly connectable to an 16-bit or 8-bit parallel =
-MPU of 80 series
-=A1=F0Plenty of command functions
-=A1=F0Built-in oscillating circuit
+Grr, I was a little tentative about this patch, hoping against hope that it
+will work for all drivers, but you've proven me wrong.  Anyway, we now have
+at least 2 drivers that requires reinitialization at different stages, radeonfb
+requires it at fbcon_blank() and rivafb at fbcon_switch().  And I really don't
+know how to fix it except to look closely at X (and I dread looking at X's code...)
+and the VT code (ditto).
 
-Regards,
-Kiran.T
+Can you try the patch below?  It works for the rivafb, hopefully it works for yours.
 
------Original Message-----
-From: linux-fbdev-devel-admin@lists.sourceforge.net =
-[mailto:linux-fbdev-devel-admin@lists.sourceforge.net] On Behalf Of =
-Jan-Benedict Glaw
-Sent: Friday, July 02, 2004 5:13 PM
-To: linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: [Linux-fbdev-devel] Smart LCD Linux driver
+Andrew,
+
+This patch is ugly as sin but I can't find a good solution without hacking X or
+the vt system.  I've included a big fat comment describing the ugliness.
+
+Tony
+
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
+
+Ugly workaround.  When switching from KD_GRAPHICS to KD_TEXT, the 
+event is captured at fbcon_blank() allowing fbcon to reinitialize the hardware.
+However, some hardware requires the reinitialization to be done immediately,
+others require it to be done later.  Others may need it to be done immediately
+and later, this is the worst case. 
+
+diff -Naur linux-2.6.7-mm5-orig/drivers/video/console/fbcon.c linux-2.6.7-mm5/drivers/video/console/fbcon.c
+--- linux-2.6.7-mm5-orig/drivers/video/console/fbcon.c	2004-07-02 15:09:02.132667752 +0000
++++ linux-2.6.7-mm5/drivers/video/console/fbcon.c	2004-07-02 15:12:29.935076984 +0000
+@@ -1802,8 +1802,31 @@
+ 	struct fb_info *info = registered_fb[(int) con2fb_map[vc->vc_num]];
+ 	struct display *p = &fb_display[vc->vc_num];
+ 
+-	if (mode_switch)
+-		info->flags |= FBINFO_MISC_MODESWITCH;
++	if (mode_switch) {
++		struct fb_var_screeninfo var = info->var;
++
++/* 
++ * HACK ALERT: Some hardware will require reinitializion at this stage,
++ *             others will require it to be done as late as possible.
++ *             For now, we differentiate this with the 
++ *             FBINFO_MISC_MODESWITCHLATE bitflag.  Worst case will be
++ *             hardware that requires it here and another one later.
++ *             A definitive solution may require fixing X or the VT
++ *             system.
++ */
++		if (info->flags & FBINFO_MISC_MODESWITCHLATE)
++			info->flags |= FBINFO_MISC_MODESWITCH;
++
++		if (blank) {
++		    fbcon_cursor(vc, CM_ERASE);
++		    return 0;
++		}
++
++		if (!(info->flags & FBINFO_MISC_MODESWITCHLATE)) {
++			var.activate = FB_ACTIVATE_NOW | FB_ACTIVATE_FORCE;
++			fb_set_var(info, &var);
++		}
++	}
+ 
+ 	fbcon_cursor(vc, blank ? CM_ERASE : CM_DRAW);
+ 
+diff -Naur linux-2.6.7-mm5-orig/drivers/video/riva/fbdev.c linux-2.6.7-mm5/drivers/video/riva/fbdev.c
+--- linux-2.6.7-mm5-orig/drivers/video/riva/fbdev.c	2004-07-02 15:08:39.130164664 +0000
++++ linux-2.6.7-mm5/drivers/video/riva/fbdev.c	2004-07-02 15:12:27.322474160 +0000
+@@ -1681,7 +1681,8 @@
+ 		    | FBINFO_HWACCEL_YPAN
+ 		    | FBINFO_HWACCEL_COPYAREA
+ 		    | FBINFO_HWACCEL_FILLRECT
+-		    | FBINFO_HWACCEL_IMAGEBLIT;
++		    | FBINFO_HWACCEL_IMAGEBLIT
++	            | FBINFO_MISC_MODESWITCHLATE;
+ 	info->var = rivafb_default_var;
+ 	info->fix.visual = (info->var.bits_per_pixel == 8) ?
+ 				FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_DIRECTCOLOR;
+diff -Naur linux-2.6.7-mm5-orig/include/linux/fb.h linux-2.6.7-mm5/include/linux/fb.h
+--- linux-2.6.7-mm5-orig/include/linux/fb.h	2004-07-02 15:09:17.062398088 +0000
++++ linux-2.6.7-mm5/include/linux/fb.h	2004-07-02 15:12:31.318866616 +0000
+@@ -533,6 +533,7 @@
+ #define FBINFO_MISC_MODECHANGEUSER     0x10000 /* mode change request
+ 						  from userspace */
+ #define FBINFO_MISC_MODESWITCH         0x20000 /* mode switch */
++#define FBINFO_MISC_MODESWITCHLATE     0x40000 /* init hardware later */
+ 
+ struct fb_info {
+ 	int node;
+ 
 
 
-On Fri, 2004-07-02 16:50:44 +0530, kiran.tigadi@wipro.com =
-<kiran.tigadi@wipro.com> wrote in message =
-<DC91351678E31E4FB24B551221F507ECB771E4@blr-itp-msg.wipro.com>:
-> Hi,
-> =20
-> I am working on Smart LCD Linux driver interfaced Asynchronous Display =
-
-> controller. I want info in this regard.
-
-Asynchronous display controller? Attached via a serial link (or by other =
-means), but no shared video RAM?
-
-That's one of the more complicated drivers then... You'd need to prepare =
-some buffer you can provide to the FB API and poll it for changes, which =
-you then need to hammer down to your display controller.
-
-MfG, JBG
-
---=20
-   Jan-Benedict Glaw       jbglaw@lug-owl.de    . +49-172-7608481
-   "Eine Freie Meinung in  einem Freien Kopf    | Gegen Zensur | Gegen =
-Krieg
-    fuer einen Freien Staat voll Freier B=A8=B9rger" | im Internet! |   =
-im Irak!
-   ret =3D do_actions((curr | FREE_SPEECH) & ~(NEW_COPYRIGHT_LAW | DRM | =
-TCPA));
 
 
 -------------------------------------------------------

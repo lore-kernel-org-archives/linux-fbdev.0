@@ -1,21 +1,17 @@
-From: Jurriaan <thunder7@xs4all.nl>
-Subject: Re: Framebuffer on modified Radeon 9500
-Date: Sun, 11 May 2003 06:54:36 +0200
+From: =?iso-8859-1?q?alain=20volmat?= <avolmat@yahoo.fr>
+Subject: Framebuffer on banked video memory device (MMAP/NOPAGE)
+Date: Mon, 12 May 2003 06:51:48 +0200 (CEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030511045436.GB3898@middle.of.nowhere>
-References: <E19Eean-0000NG-00@f25.test.onet.pl>
-Reply-To: thunder7@xs4all.nl
+Message-ID: <20030512045148.86794.qmail@web41712.mail.yahoo.com>
+References: <20030511045436.GB3898@middle.of.nowhere>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from smtpzilla3.xs4all.nl ([194.109.127.139])
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19EirW-0004Km-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 10 May 2003 21:55:02 -0700
-Received: from zeeotter.xs4all.nl (zeeotter.xs4all.nl [80.126.31.149])
-	by smtpzilla3.xs4all.nl (8.12.9/8.12.9) with ESMTP id h4B4sxQ2056652
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 11 May 2003 06:54:59 +0200 (CEST)
-Content-Disposition: inline
-In-Reply-To: <E19Eean-0000NG-00@f25.test.onet.pl>
+Received: from web41712.mail.yahoo.com ([66.218.93.129])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19F5I1-00087P-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 11 May 2003 21:51:53 -0700
+In-Reply-To: <20030511045436.GB3898@middle.of.nowhere>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -25,27 +21,81 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: gutko@poczta.onet.pl
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-From: gutko@poczta.onet.pl <gutko@poczta.onet.pl>
-Date: Sun, May 11, 2003 at 02:21:29AM +0200
-> Hello,
-> I'm trying to run (with no effect) radeonfb on X-power Radeon 9500 non pro 128mb, which I modified to 9700 non pro. Some time ago it was loud in internet about this mod. The matter was simple soldering to unlock additional 4 rendering pipes, and a bios change to change hardwane ID's. I took bios from Hercules R9700(non pro). 
-> I tried radeonfb 0.1.8  and it always says: "cannot map FB". I tried vesafb and it doesn't print anything at all. I can use this card only in 80x25 mode on console. X works OK in any resolution, same Windows and all Windows games.
+Hello guys,
 
-[fix your line-length, please. 72 chars is really enough]
+my email concern MMAP / NOPAGE but applied to
+framebuffer so I decided to write here.
+Actually it's about an old story I wrote about few
+months ago; having a framebuffer for a custom chip
+which has video memory banked (ie, I need to set
+manually registers of the chip in order to select
+which bank of the memory I want to be visible from the
+CPU).
+FBCON works perfectly on the top of this framebuffer
+(I have overwritten fb_readb/w/l and fb_writeb/w/l to
+be able to insert those bank switch thing), but I am
+still facing lot of problems concerning MMAP access to
+framebuffer memory.
+In case of MMAP, I cannot control bank switching as
+easier as in case of FBCON. By using the NOPAGE
+handler, I can switch bank but still it seems that it
+doesn't work in the perfect way.
 
-How much memory do you have? If you have 1 gigabyte, does booting with
-mem=512M help?
+First let me explain a bit more; the memory to be
+MMAPed is physical memory (not allocated). Inside the
+mmap function nothing is done except passing the
+structure for the NOPAGE handler; the NOPAGE handler
+is then in charge of calling "remap_page_range" and
+"pgd_offset", "pmd_offset" and "pte_offset".
+I've noticed that in that case, the NOPAGE handler is
+actually only called once per bank. I mean if a page
+has never been mapped before then the nopage handler
+will be called, but after that the nopage handler will
+never again be called. As a result, my display is only
+refresh once (in full) and then after only 1 bank is
+accessed (because the nopage handler is not called).
+In order to have the nopage handler always called, I
+tried to modify my NOPAGE handler to make him FORGET
+about the previous mapped page. (in that case at a
+time only 1 page is always mapped). I don't think it's
+a good solution but currently I use "zap_page_range".
+Well this function was not static but I had to EXPORT
+it to make it available to module. I don't think it is
+the right solution but since I didn't find anybody
+who's facing this problem I've checked a bit memory.c
+to find this function.
 
-HTH,
-Jurriaan
--- 
-Evil Grin no. 13: <<<<<GRIN>>>>>
-Debian (Unstable) GNU/Linux 2.5.69 4112 bogomips load av: 0.30 0.58 0.43
+Actually I'm quite surprise to see that nobody is
+facing this problem, (well maybe it's just my
+misunderstanding of the use of nopage handler), why
+does the NOPAGE handler is only call once. Are there
+any way to make it forget previous page ??
+
+Even with this modification everything doesn't works
+fine, well I got all the display refreshed but it
+seems that (maybe due to timing issue) sometimes it
+mistake bank. I know that this problem is related to
+MMAP/NOPAGE because this problem doesn't happens at
+all for FBCON, even if the way to control the hardware
+is same. I would like to learn more about timing of
+the NOPAGE handler, when is it called ? does the
+process "stop" during that time and wait or just
+continue ?
+
+Sorry ... I noticed that my email is finally more
+related to MMAP/NOPAGE that actually framebuffer
+itself, but I also would like to know if some people
+have framebuffer on banked memory device.
+
+Sincerely,
+Alain
+
+___________________________________________________________
+Do You Yahoo!? -- Une adresse @yahoo.fr gratuite et en fran=E7ais !
+Yahoo! Mail : http://fr.mail.yahoo.com
 
 
 -------------------------------------------------------

@@ -1,66 +1,64 @@
-From: Imago <imago@devinity.de>
-Subject: Fbcon issue
-Date: Mon, 27 Dec 2004 01:52:43 +0100
-Message-ID: <41CF5CDB.8040300@devinity.de>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Jean Delvare <khali@linux-fr.org>
+Subject: [PATCH 2.6] FB: Possible fbcon cleanups
+Date: Sun, 26 Dec 2004 15:13:51 +0100
+Message-ID: <20041226151351.32608309.khali@linux-fr.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CijB5-00031n-EJ
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Dec 2004 16:56:03 -0800
-Received: from p15093822.pureserver.info ([217.160.109.210])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CijB4-0008Nq-MJ
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Dec 2004 16:56:03 -0800
-Received: from [192.168.1.9] (pD9568197.dip.t-dialin.net [217.86.129.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by p15093822.pureserver.info (Postfix) with ESMTP id D7461400145
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 27 Dec 2004 01:55:59 +0100 (CET)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261547AbUL0WDO@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@users.sf.net>, Antonino Daplas <adaplas@pol.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
 
-Hi
-while doing some bug hunting for another project I discovered an issue
-which is imho a bug in fbcon.
-The problem is that each virtual console has its own color palette but
-the framebuffer only has one color map.
-So, for example, if im running fbcon on vt1 and set there a non-default
-colormap and then allocate a new vt, for which the standard
-color palette is set, also the framebuffer colormap is set back to the
-default.Which will lead to color corruption on the actual vt.
-A fix could be to allow setting of color palette only for the foreground
-console,
-ie change following in fbcon.c: fbcon_set_palette() at line 2400:
+Hello,
 
-if (fbcon_is_inactive(vc, info))
-                return -EINVAL;
+While browsing the video/fbcon.c source file (Linux 2.6.10-rc3) I found
+some possible cleanups. Patch follows, feel free to apply all or parts
+of it if it looks OK to you.
 
-to
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
 
-if ( fbcon_is_inactive(vc, info) ||  (vc->vc_num != fg_console) )
-                return -EINVAL;
+--- linux-2.6.10-rc3/drivers/video/fbmon.c.orig	2004-10-24 09:48:34.000000000 +0200
++++ linux-2.6.10-rc3/drivers/video/fbmon.c	2004-12-24 16:18:18.000000000 +0100
+@@ -66,10 +66,9 @@
+ 	},
+ };
+ 
+-const unsigned char edid_v1_header[] = { 0x00, 0xff, 0xff, 0xff,
++static const unsigned char edid_v1_header[] = { 0x00, 0xff, 0xff, 0xff,
+ 	0xff, 0xff, 0xff, 0x00
+ };
+-const unsigned char edid_v1_descriptor_flag[] = { 0x00, 0x00 };
+ 
+ static void copy_string(unsigned char *c, unsigned char *s)
+ {
+@@ -632,7 +631,7 @@
+ 
+ 	fb_get_monitor_limits(edid, specs);
+ 
+-	c = (block[0] & 0x80) >> 7;
++	c = block[0] & 0x80;
+ 	specs->input = 0;
+ 	if (c) {
+ 		specs->input |= FB_DISP_DDI;
+@@ -656,13 +655,10 @@
+ 			DPRINTK("0.700V/0.000V");
+ 			specs->input |= FB_DISP_ANA_700_000;
+ 			break;
+-		default:
+-			DPRINTK("unknown");
+-			specs->input |= FB_DISP_UNKNOWN;
+ 		}
+ 	}
+ 	DPRINTK("\n      Sync: ");
+-	c = (block[0] & 0x10) >> 4;
++	c = block[0] & 0x10;
+ 	if (c)
+ 		DPRINTK("      Configurable signal level\n");
+ 	c = block[0] & 0x0f;
 
-Cu
-Peter
 
-
-
-
--------------------------------------------------------
-SF email is sponsored by - The IT Product Guide
-Read honest & candid reviews on hundreds of IT Products from real users.
-Discover which products truly live up to the hype. Start reading now. 
-http://productguide.itmanagersjournal.com/
+-- 
+Jean Delvare
+http://khali.linux-fr.org/

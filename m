@@ -1,17 +1,14 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [BK FBDEV] String drawing optimizations.
-Date: Thu, 15 May 2003 21:27:38 +0100 (BST)
+From: "Cheshire Cat Fish" <cat_fish@hotmail.com>
+Subject: Re: Questions on more than one framebuffer device
+Date: Thu, 15 May 2003 15:06:20 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0305152104400.6330-100000@phoenix.infradead.org>
-References: <20030513003427.GA19121@vana.vc.cvut.cz>
+Message-ID: <Law15-F38Nx0jQEJCDn000253cc@hotmail.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19GPKq-0001U0-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 15 May 2003 13:28:17 -0700
-In-Reply-To: <20030513003427.GA19121@vana.vc.cvut.cz>
+Received: from f38.law15.hotmail.com ([64.4.23.38] helo=hotmail.com)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19GQrq-0002ce-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 15 May 2003 15:06:26 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,23 +18,32 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; format=flowed; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Petr Vandrovec <vandrove@vc.cvut.cz>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: jsimmons@infradead.org
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
+> > I am wondering if it is even a problem with my driver now.   Xfree86 
+>should
+> > be able to run with multiple fbdev drivers, right?
+>
+>No :-( There exist a bunch of patches for this tho :-)
 
-> What about getting rid of one-char putc, implementing it in terms of
-> putcs? I'm doing it in matroxfb patches, and nobody complained yet, and
-> with current length of {fbcon,accel}_putc{s,} I was not able to find
-> measurable speed difference between putc and putc through putcs variants.
+How do I locate these patches?
 
-Hm. I compressed all the image drawing functions into accel_putcs which is 
-used in many places. I then placed accel_putc() into fbcon_putc(). I could 
-have accel_putcs() called in fbcon_putc(). The advantage is smaller 
-amount of code. The offset is a big more overhead plus a function call. 
-What do people think here?
+Alternatively, where would I begin trying to fix this shortcoming of fbdev?  
+In the fbdev driver (fbdev.c) itself?
 
+Or am I stuck writing an XFree86 driver for my cards?
+
+Thanks,
+Noel.
+--
+A precariously balanced mixture of myopic optimism and rampant paranoia.
+
+_________________________________________________________________
+Add photos to your e-mail with MSN 8. Get 2 months FREE*.  
+http://join.msn.com/?page=features/featuredemail
 
 
 

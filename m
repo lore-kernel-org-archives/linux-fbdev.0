@@ -1,22 +1,21 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Re: [PATCH] - video/tdfxfb.c warning fix.
-Date: Sat, 1 May 2004 21:17:02 +0200 (MEST)
+From: Unknown <unknown@unknown.invalid>
+Subject: Mail could not be delivered
+Date: Sun, 02 May 2004 00:01:11 +0900
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0405012116490.25805@waterleaf.sonytel.be>
-References: <20040430180451.GA3119@lorien.prodam> <20040430213513.7bafde36.akpm@osdl.org>
- <Pine.GSO.4.58.0405012045070.25805@waterleaf.sonytel.be>
- <20040501120852.139b4ac1.akpm@osdl.org> <20040501120936.62c6db39.akpm@osdl.org>
+Message-ID: <E1BK0JZ-0006H2-Ft@sc8-sf-mx2.sourceforge.net>
 Mime-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="----=_NextPartTM-000-a4bc326f-ef00-4e18-8150-b3a60ef10630"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BJzz0-0005f8-5V
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 01 May 2004 12:17:06 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BJzyz-0002By-LW
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 01 May 2004 12:17:05 -0700
-In-Reply-To: <20040501120936.62c6db39.akpm@osdl.org>
+	id 1BK0Ja-0002GK-9Z
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 01 May 2004 12:38:22 -0700
+Received: from net-ctr.oz.kitami-it.ac.jp ([150.97.252.1] helo=inet-fvc.cc.kitami-it.ac.jp)
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
+	id 1BK0JZ-0006H2-Ft
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 01 May 2004 12:38:21 -0700
+From: postmaster
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,36 +25,66 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
+
+
+------=_NextPartTM-000-a4bc326f-ef00-4e18-8150-b3a60ef10630
+Content-type: text/plain
+
+****** Message from InterScan E-Mail VirusWall NT ******
+
+The following mail could not be delivered.
+Reason:  Unable to deliver message to maeda@rock.civil.kitami-it.ac.jp (and other receipients in the same domain). Please check if address is correct.
+*****************     End of message     ***************
+
+------=_NextPartTM-000-a4bc326f-ef00-4e18-8150-b3a60ef10630
+Content-type: message/rfc822
+
+Received: from 81.251.170.121 by inet-fvc.cc.kitami-it.ac.jp (InterScan E-Mail VirusWall NT); Mon, 26 Apr 2004 21:53:29 +0900
+From: linux-fbdev-devel@lists.sourceforge.net
+To: maeda@rock.civil.kitami-it.ac.jp
+Subject: Re: Error in document
+Date: Mon, 26 Apr 2004 14:53:33 +0200
+MIME-Version: 1.0
+X-Priority: 3
+X-MSMail-Priority: Normal
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_0016----=_NextPart_000_0016"
+
+This is a multi-part message in MIME format.
+
+
+------=_NextPart_000_0016----=_NextPart_000_0016
+Content-Type: text/plain;
+	charset="Windows-1252"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@osdl.org>
-Cc: lcapitulino@prefeitura.sp.gov.br, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sat, 1 May 2004, Andrew Morton wrote:
-> Andrew Morton <akpm@osdl.org> wrote:
-> >
-> >  Does the same argument apply to this patch?
->
-> And to this one?
->
->
-> From: "Luiz Fernando N. Capitulino" <lcapitulino@prefeitura.sp.gov.br>
->
-> Make HGA acceleration functions selectable in kernel config, fix these
-> warnings:
+Your important document, correction is finished!
 
-Yep.
+++++ Attachment: No Virus found
+++++ F-Secure AntiVirus - www.f-secure.com
 
-Gr{oetje,eeting}s,
 
-						Geert
+------=_NextPart_000_0016----=_NextPart_000_0016
+Content-Type: text/plain;
+	name="InterScan_SafeStamp.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="InterScan_SafeStamp.txt"
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+****** Message from InterScan E-Mail VirusWall NT ******
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+** ���x���������I ���Y���t������������ attach.zip ���������������������������������������������������������������������������������������F
+
+     WORM_NETSKY.P virus in compressed file document.txt                                                                   .exe
+
+   It has been deleted.
+*****************     End of message     ***************
+
+
+------=_NextPart_000_0016----=_NextPart_000_0016--
+
+------=_NextPartTM-000-a4bc326f-ef00-4e18-8150-b3a60ef10630--
 
 
 -------------------------------------------------------

@@ -1,88 +1,92 @@
-From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
-Subject: Re: [Linux-fbdev-devel] Help re Frame Buffer/Console Problems
-Date: Tue, 2 Nov 2004 18:03:56 +0000 (GMT)
-Message-ID: <Pine.LNX.4.10.10411021743001.4822-100000@mtfhpc.demon.co.uk>
-References: <200411020746.27871.adaplas@hotpop.com>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: [PATCH 6/8] fbcon/fbdev: Remove fbc
+Date: Wed, 3 Nov 2004 05:12:15 +0800
+Message-ID: <200411030512.16925.adaplas@hotpop.com>
+References: <82235870BEB@vcnet.vc.cvut.cz>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <ultralinux-owner@vger.kernel.org>
-In-Reply-To: <200411020746.27871.adaplas@hotpop.com>
-Sender: ultralinux-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, jsimmons@infradead.org, geert@linux-m68k.org, sparclinux@vger.kernel.org, ultralinux@vger.kernel.org, linux-kernel@vger.kernel.org, wli@holomorphy.com
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1CP62r-0003kp-8u
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Nov 2004 13:18:25 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CP62q-0008Ko-Dm
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Nov 2004 13:18:25 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id DBF51984AED
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue,  2 Nov 2004 21:16:44 +0000 (UTC)
+In-Reply-To: <82235870BEB@vcnet.vc.cvut.cz>
+Content-Disposition: inline
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: Petr Vandrovec <VANDROVE@vc.cvut.cz>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, akpm@osdl.org
 
-Hi all,
+On Tuesday 02 November 2004 19:46, Petr Vandrovec wrote:
+> On  2 Nov 04 at 19:46, Antonino A. Daplas wrote:
+> > diff -Nru a/drivers/video/matrox/matroxfb_base.c
+> > b/drivers/video/matrox/matroxfb_base.c ---
+> > a/drivers/video/matrox/matroxfb_base.c  2004-10-23 02:52:37 +08:00 +++
+> > b/drivers/video/matrox/matroxfb_base.c  2004-11-01 08:32:54 +08:00 @@
+> > -1877,16 +1876,21 @@
+> >     }
+> >     printk("fb%d: %s frame buffer device\n",
+> >            ACCESS_FBINFO(fbcon.node), ACCESS_FBINFO(fbcon.fix.id));
+> > -   if (ACCESS_FBINFO(fbcon.currcon) < 0) {
+> > -       /* there is no console on this fb... but we have to initialize
+> > hardware -        * until someone tells me what is proper thing to do */
+> > -       printk(KERN_INFO "fb%d: initializing hardware\n",
+> > -           ACCESS_FBINFO(fbcon.node));
+> > -       /* We have to use FB_ACTIVATE_FORCE, as we had to put
+> > vesafb_defined to the fbcon.var -        * already before, so
+> > register_framebuffer works correctly. */ -       vesafb_defined.activate
+> > |= FB_ACTIVATE_FORCE;
+> > -       fb_set_var(&ACCESS_FBINFO(fbcon), &vesafb_defined);
+> > -   }
+> > +   /*
+> > +    * Tony: If this driver is to be mapped to the console, then
+> > +    *       fbcon will automatically do a set_par for us.  The code
+> > below +    *       may not be needed.
+> > +    */
+>
+> Code below (which you made unconditional now) was executed if and only if
+> there is no fbcon attached to this device.  If there is fbcon attached
+> to this device, fbcon.currcon would be >= 0 after register_framebuffer()
+> (and fbcon's startup already did needed set_*).  If there is no fbcon,
+> this adapter is secondary, and it must be initialized too before leaving
+> driver.  But it must not be initialized before call to
+> register_framebuffer, as otherwise taking over vgacon won't work correctly.
+>
+> You could put some 'ACCESS_FBINFO(flags.hw_initialized) = 1' somewhere
+> into matroxfb's set_par and then test this flag instead of fbcon.currcon.
+>
+> But your current code probably does not work very well on primary adapter.
 
-I have identified what is going on. My CG3 console uses the same font and
-exactly overlaps prom console. [I have re-inserted the console margin code
-for my CG3 driver]. The timing is such that the prom overwrites the
-console text (using colour 255) a fraction later than the fbcon code.
+Why not just leave the hardware uninitialized after register_framebuffer? Then,
+initialize it at the first call to xxxfb_open()?  We can even check a
+flag so we do this only once. This way if people accidentally enabled
+matroxfb but forgot to enable fbcon, they will still get a usable vga
+console.
 
-The two problems to be solved are (apart from seting the red,green and
-blue structures up for the cg series fb cards):
+Tony
 
-1) The prom write (from -p) needs to be disabled as soon as an alternative
-console becomes active (either prom console, fbcon console or serial
-console). This has probably been the major cause of hassel.
 
-2) The restore pallet function (see cgsix.c in the 2.2.x or 2.4.x kernels)
-needs to be re-introduced in some form and called when exiting fbcon so
-that the prom does not end up as black on black. My prom uses fg=255,
-bg=0. Does any one know if this is standard for all sparc boot proms.
 
-I need to tidy up my code before I start work on the first of these two
-problems. The second one should not catch me out as I am using colour
-255 as my margin colour and it is set to "Dark Slate Grey" so I do not 
-have a black on black prom console.
 
-If any one wants a linux 2.6.10 CG3 driver with software margins then let
-me know and I will post an appropriate patch.
-
-Regards
-	Mark Fortescue.
-
-On Tue, 2 Nov 2004, Antonino A. Daplas wrote:
-
-> On Tuesday 02 November 2004 01:32, Mark Fortescue wrote:
-> > Hi all,
-> >
-> > Thanks for the info Antonino. I see you spotted my typing error. Yes it is
-> > the 2.6.10-rc1-bk6 kernel. The oter error is the 2.2.8.1. It should be
-> > 2.6.8.1.
-> >
-> > The cgthree driver does not currently set up the all->info.var.red,
-> > all->info.var.green or all->info.var.blue structures. Putting a value of 8
-> > in the length field of these structures (correct for the cgthree) does get
-> > me my logo back but I am still getting black on black text. It makes it
-> > very difficult to read. It is begining to look like there is something
-> > werid going on with the colour pallet stuf for PSEUDO_COLOUR.
-> >
-> 
-> I doubt that the problem is at the driver layer since you were able to
-> see the logo. It's probably higher up.
-> 
-> Try this mod, hardwire the foreground color to 0x07.
-> 
-> Edit drivers/video/console/bitblit.c:bit_putcs() and change this line:
-> 
-> image.fg_color = fg;
-> image.bg_color = bg;
-> 
-> to
-> 
-> image.fg_color = 0x07070707;
-> image.bg_color = 0x0;
-> 
-> You can also try the reverse:
-> 
-> image.fg_color = 0x0;
-> image.bg_color = 0x07070707
-> 
-> If you get visible text, the problem is either in fbcon.c or vt.c.
-> 
-> Tony
-> 
-> 
-
+-------------------------------------------------------
+This SF.Net email is sponsored by:
+Sybase ASE Linux Express Edition - download now for FREE
+LinuxWorld Reader's Choice Award Winner for best database on Linux.
+http://ads.osdn.com/?ad_id=5588&alloc_id=12065&op=click

@@ -1,24 +1,15 @@
-From: Steven Newbury <steven.newbury1@ntlworld.com>
-Subject: atyfb and radeonfb
-Date: Fri, 08 Nov 2002 15:28:04 +0000
+From: "Bom Luzares-Daplas" <bombom@oak.compass.com.ph>
+Subject: Re: [BK fbdev updates]
+Date: Sat, 9 Nov 2002 10:46:33 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3DCBD804.8050109@ntlworld.com>
+Message-ID: <000001c287a2$a2fdf800$1f6446ca@bom-s-pc>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mta03-svc.ntlworld.com ([62.253.162.43])
+Received: from [203.167.79.9] (helo=willow.compass.com.ph)
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18AB3A-0007Lb-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 08 Nov 2002 07:28:00 -0800
-Received: from nucleus.subatomic.net ([62.253.56.29])
-          by mta03-svc.ntlworld.com
-          (InterMail vM.4.01.03.27 201-229-121-127-20010626) with ESMTP
-          id <20021108152752.MPDK20191.mta03-svc.ntlworld.com@nucleus.subatomic.net>
-          for <linux-fbdev-devel@lists.sourceforge.net>;
-          Fri, 8 Nov 2002 15:27:52 +0000
-Received: from ntlworld.com (nucleus.subatomic.net [127.0.0.1])
-	by nucleus.subatomic.net (8.12.5/8.12.5) with ESMTP id gA8FS4HJ013073
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 8 Nov 2002 15:28:05 GMT
+	id 18ALOi-0005AY-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 08 Nov 2002 18:30:56 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -28,22 +19,92 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Is atyfb in 2.4 known to work with recent Mach64 chips like Rage XL? 
-When I install the driver it detects the chip but results in just a 
-black screen.  I also noticed that it detects WRAM, whereas I am certain 
-it should be SGRAM.  The XFree86 driver detects everything ok and just 
-works.
 
-I have also noticed that the radeonfb driver lacks support for 
-initialising the card if the BIOS hasn't already done it.  I have 
-recently changed from a matrox setup where the matroxfb driver would 
-initialise any matrox cards found irrespective of whether the BIOS 
-decided to do it unless it was told not to.  Is there any chance that 
-this functionality is going to be added to the radeonfb driver?  In 
-2.5/6 perhaps?
+-----Original Message-----
+From: James Simmons <jsimmons@infradead.org>
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Date: Friday, November 08, 2002 8:03 AM
+Subject: Re: [Linux-fbdev-devel] [BK fbdev updates]
+
+
+>
+>> > fbcon_switch has to be rewritten. I'm going threw the process of
+cleaning
+>> > up the upper fbcon layer. Its such a mess. Yuck!!!
+>> Thank goodness for this :)  I was already thinking of adding an 'Option
+>> Usefbdev' for the xfree86 driver.
+>
+>There is already a option like that for XFree86.
+Yes, but not all drivers support it, I think only one of the ATI's.
+
+>
+>> > Yes!!! Of course there is the issue is the framebuffer that actual one
+>> > used for vgacon or is it independent, thinking multihead here.
+>> >
+>> I was trying to confirm if vgacon should restore its own state or not.
+>>
+>> But this one is neat :)  I added VGA save/restore state routines to
+>> fb_open() and fb_release().  I was able to boot to a VGA console, fired
+>> up XFBDev and DirectFB and exited back again to a VGA console.  DirectFB
+>> came back without problems, XFBDev needed a console reset.
+>
+>WOW!!! That is way to awesome. I have always wanted to see that actually
+>work.
+>
+Yeah, I love it too :)
+
+
+>> I guess the save/restore state routines will only be needed for graphics
+>> card with a VGA core.  I think multiple graphics card or multi-head
+>> systems will not be affected since the driver will only be
+>> saving/restoring its own hardware anyway.
+>
+>Correct. One thing I do like is when you insmod a driver it doesn't change
+>the mode. For example for the neomagic fbdev driver I compiled as a module
+>and then insmod while using vgacon. Its didn't change the graphics mode so
+>I was able to find a nasty bug. I could change the video mode once I did a
+>set_var via userland.
+>
+Right, insmoding fbdev does not change the mode, at least that's how the
+i810fb driver works.
+Only upon explicit mode change will it do so.
+
+>> config FONT_8x16
+>> bool "VGA 8x16 font" if FBCON_FONTS
+>> depends on FB && SGI_NEWPORT_CONSOLE=y
+>>
+>> I changed the '&&' operator to '||' in my case.
+>
+>Applied.
+>
+>> > > 5.  The cfb_* drawing functions still behave erratically, especially
+in
+>> > > emacs.  Geert has made some versions that work correctly for me.
+This
+>> > > was discussed in a thread sometimes ago.
+>> >
+>> > Where are the patchs. I like to incorporate them into BK.
+>> The patch exceeded 40K uncompressed, so here's a link:
+>>
+>> http://i810fb.sourceforge.net/draw_ops.diff.gz
+>>
+>> The diff is against 2.5.45 plus your fbdev.diff.
+>
+>It didn't work. Can you send me those files direct. I like to apply them.
+
+The patch did not, or unable to download?  I think Sourceforge had a
+scheduled outage.
+You can try again.  Currently, I'm experiencing a hardware failure, I'm
+currently doing this in
+a Windows box. So I won't be able to send it to you for some days yet.
+
+Tony
+
 
 
 

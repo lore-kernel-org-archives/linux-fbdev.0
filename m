@@ -1,18 +1,15 @@
-From: Petr Vandrovec <vandrove@vc.cvut.cz>
-Subject: Re: Re: FBdev updates.
-Date: Tue, 4 Mar 2003 22:46:32 +0100
+From: Antonino Daplas <adaplas@pol.net>
+Subject: Feature Freeze?
+Date: 05 Mar 2003 16:26:04 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030304214632.GA1756@vana.vc.cvut.cz>
-References: <Pine.LNX.4.44.0302200108090.20350-100000@phoenix.infradead.org> <20030220150201.GD13507@codemonkey.org.uk> <20030220182941.GK14445@vana.vc.cvut.cz> <1045787031.2051.9.camel@localhost.localdomain> <20030303203500.GA2916@vana.vc.cvut.cz> <20030304212906.GA1115@middle.of.nowhere>
+Message-ID: <1046852721.1228.13.camel@localhost.localdomain>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from vana.vc.cvut.cz ([147.32.240.58] ident=root)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18qKFE-0002TI-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 04 Mar 2003 13:46:40 -0800
-Content-Disposition: inline
-In-Reply-To: <20030304212906.GA1115@middle.of.nowhere>
+Received: from pine.compass.com.ph ([202.70.96.37])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18qUCh-0004Tf-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 00:24:43 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,45 +20,40 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jurriaan <thunder7@xs4all.nl>
-Cc: Antonino Daplas <adaplas@pol.net>, James Simmons <jsimmons@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-
-On Tue, Mar 04, 2003 at 10:29:06PM +0100, Jurriaan wrote:
-> > text mode.
-> 
-> There is a regression here: I boot my kernel like this:
-> 
-> kernel /boot/vmlinuz-2563matrox root=/dev/hda7 video=matrox:vesa:0x11E,fv:80,sgram hdc=scsi apm=smp apm=power-off nosmp=1
-> 
-> I see a continuous strip of alternating blocks, of sub-character size,
-> at the extreme right end of my screen. The colors seem linked to the
-> color of the line with the cursor in some way.
-> 
-> After leaving XFRee, a piece of chbg's background picture is shown for a
-> short while, then the blocks return.
-
-Reproduced. Try this (untested) (it is against clean tree, so you'll 
-get some line offsets if you had applied my matroxfb patch). Or set 
-xres to odd value, even values do not work...
-							Petr Vandrovec
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
---- linux/drivers/video/console/fbcon.c	2003-03-03 18:42:37.000000000 +0100
-+++ linux/drivers/video/console/fbcon.c	2003-03-04 22:44:05.000000000 +0100
-@@ -456,7 +456,7 @@
- 	region.color = attr_bgcol_ec(p, vc);
- 	region.rop = ROP_COPY;
- 
--	if (rw & !bottom_only) {
-+	if (rw && !bottom_only) {
- 		region.dx = info->var.xoffset + rs;
- 		region.dy = 0;
- 		region.width = rw;
+Hi,
+
+I believe it's time to finalize what is needed/not needed for the
+framebuffer framework:
+
+1. Text mode support?
+
+2. console resizing using fbset (besides stty)?
+
+3. support for unloading of fbcon if modular?
+
+4. driver specified placement of buffers - for putcs method?
+
+5. flexible logo placement/overlayed logo?
+
+6. generic console display rotation?
+
+7. Anything else?
+
+8. feature freeze deadline?
+
+If you think any of the above is essential, useful, bloat, etc, please
+say so.  If you think there are features in the present code that needs
+to be removed, make it known.
+
+Tony
+
+
 
 
 -------------------------------------------------------
-This SF.net email is sponsored by: Etnus, makers of TotalView, The debugger 
-for complex code. Debugging C/C++ programs can leave you feeling lost and 
-disoriented. TotalView can help you find your way. Available on major UNIX 
-and Linux platforms. Try it free. www.etnus.com
+This sf.net email is sponsored by:ThinkGeek
+Welcome to geek heaven.
+http://thinkgeek.com/sf

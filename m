@@ -1,71 +1,56 @@
-From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
-Subject: Re: [Linux-fbdev-devel] Help re Frame Buffer/Console Problems
-Date: Tue, 2 Nov 2004 14:26:31 +0000 (GMT)
-Message-ID: <Pine.LNX.4.10.10411021416590.4390-100000@mtfhpc.demon.co.uk>
-References: <200411020746.27871.adaplas@hotpop.com>
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [PATCH 2/8] fbdev: Fix access to ROM in aty128fb
+Date: Tue, 2 Nov 2004 09:31:55 -0500
+Message-ID: <9e47339104110206315e87779e@mail.gmail.com>
+References: <200411021946.09621.adaplas@hotpop.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <ultralinux-owner@vger.kernel.org>
-In-Reply-To: <200411020746.27871.adaplas@hotpop.com>
-Sender: ultralinux-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, jsimmons@infradead.org, geert@linux-m68k.org, sparclinux@vger.kernel.org, ultralinux@vger.kernel.org, linux-kernel@vger.kernel.org, wli@holomorphy.com
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1COzhW-0001ar-Fs
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Nov 2004 06:31:58 -0800
+Received: from rproxy.gmail.com ([64.233.170.202])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1COzhV-0002a8-F0
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Nov 2004 06:31:58 -0800
+Received: by rproxy.gmail.com with SMTP id 79so242714rnk
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 02 Nov 2004 06:31:56 -0800 (PST)
+In-Reply-To: <200411021946.09621.adaplas@hotpop.com>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: "Antonino A. Daplas" <adaplas@hotpop.com>
 
-Hi all,
+Have you looked at the new PCI API for ROM access in the -mm tree yet?
+It is in the bk-pci patch and should be going into linus' tree sooner
+or later. It will allow you to get rid of some common code in a lot of
+the fbdev drivers.
 
-I have already hard wired the fg and bg colours. I have got to the point 
-where I am checking the cfbimgblt code where it converts the mono bit font
-image data to the 8bpp pseudo colour screen image data. It is looking
-like there may be a problem with sign extension at this level as the
-pixel value being used apears to be 255.
+pci_map_rom/pci_unmap_rom
 
-I have changed a char *pt to a u8 *pt to see if this helps.
+It also tracks the boot video card. pci_map_rom for that card returns
+a pointer to the shadow ROM copy at C0000. That let's you
+transparently get to laptop ROMs that are stored compressed in the
+system ROM.
 
-Regards
-	Mark Fortescue.
+-- 
+Jon Smirl
+jonsmirl@gmail.com
 
-On Tue, 2 Nov 2004, Antonino A. Daplas wrote:
 
-> On Tuesday 02 November 2004 01:32, Mark Fortescue wrote:
-> > Hi all,
-> >
-> > Thanks for the info Antonino. I see you spotted my typing error. Yes it is
-> > the 2.6.10-rc1-bk6 kernel. The oter error is the 2.2.8.1. It should be
-> > 2.6.8.1.
-> >
-> > The cgthree driver does not currently set up the all->info.var.red,
-> > all->info.var.green or all->info.var.blue structures. Putting a value of 8
-> > in the length field of these structures (correct for the cgthree) does get
-> > me my logo back but I am still getting black on black text. It makes it
-> > very difficult to read. It is begining to look like there is something
-> > werid going on with the colour pallet stuf for PSEUDO_COLOUR.
-> >
-> 
-> I doubt that the problem is at the driver layer since you were able to
-> see the logo. It's probably higher up.
-> 
-> Try this mod, hardwire the foreground color to 0x07.
-> 
-> Edit drivers/video/console/bitblit.c:bit_putcs() and change this line:
-> 
-> image.fg_color = fg;
-> image.bg_color = bg;
-> 
-> to
-> 
-> image.fg_color = 0x07070707;
-> image.bg_color = 0x0;
-> 
-> You can also try the reverse:
-> 
-> image.fg_color = 0x0;
-> image.bg_color = 0x07070707
-> 
-> If you get visible text, the problem is either in fbcon.c or vt.c.
-> 
-> Tony
-> 
-> 
-
+-------------------------------------------------------
+This SF.Net email is sponsored by:
+Sybase ASE Linux Express Edition - download now for FREE
+LinuxWorld Reader's Choice Award Winner for best database on Linux.
+http://ads.osdn.com/?ad_id=5588&alloc_id=12065&op=click

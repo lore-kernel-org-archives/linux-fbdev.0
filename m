@@ -1,17 +1,16 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: const fb_{fillrect,copyarea,image}?
-Date: 10 Jan 2003 18:28:38 +0800
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: clipping
+Date: Fri, 10 Jan 2003 11:45:21 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1042181502.933.301.camel@localhost.localdomain>
-References: <Pine.LNX.4.44.0301091814550.5660-100000@phoenix.infradead.org>
+Message-ID: <Pine.GSO.4.21.0301101144090.9440-100000@vervain.sonytel.be>
+References: <1042172016.933.136.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from willow.compass.com.ph ([202.70.96.38])
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18WwZL-00006W-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Jan 2003 02:39:19 -0800
-In-Reply-To: <Pine.LNX.4.44.0301091814550.5660-100000@phoenix.infradead.org>
+	id 18WwgT-0001e7-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Jan 2003 02:46:42 -0800
+In-Reply-To: <1042172016.933.136.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,51 +20,56 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Antonino Daplas <adaplas@pol.net>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Fri, 2003-01-10 at 02:16, James Simmons wrote: 
-
->  
-> > BTW, is it possible that someone passes data that is larger (except for bugs)?
-> > We have control over what happens in the kernel. Data passed from userspace is
-> > a different issue, of course.
+On 10 Jan 2003, Antonino Daplas wrote:
+> On Fri, 2003-01-10 at 05:24, James Simmons wrote:
+> > > So perhaps, a function something like this:
+> > > 
+> > > void fb_clip(struct fb_fillrect *region, struct fb_fillrect *clip);
+> > > 
+> > > This should not be difficult to implement, and I'll code it if everyone
+> > > agrees.
+> >  
+> > I thought about this. Originally I did have this function but removed it.
+> > WHat do you think Geert?
+> > 
+> > > The other option (which I don't like) is just to check the passed
+> > > fb_var_screeninfo in the put_var ioctl against the current console
+> > > window size.  But this is not foolproof as we will not be sure of the
+> > > resulting window size _after_ the fb_set_var() call.
+> > 
+> > Yuck!!! The other way is better.
+> > 
 > 
-> Yes. Soon the standard ioctl for a cursor will be truly in place. This 
-> means cfb_imageblit could be a issue from userland.
+> Yes, I thought so too :-).
 > 
-If you are going to export the cursor API to userland, then soft_cursor
-is useless, because it implies that we always have a copy of the screen
-under the cursor (so we can restore it when we move the cursor) and it
-also implies that fb_imageblit can support transparency (so the mask
-bits will work).  For soft cursors, the userland has to take care of it.
+> I think one scenario why we need clipping is changing bits_per_pixel,
+> ie, changing from 8->16 will drop your vyres by half and it's difficult
+> to determine this unless you do another check before the set_par(), as
+> Geert mentioned.  Worse still, there is little if no valid memory past
+> vyres but the console thinks there is.  That's where you will get a
+> segfault.
+> 
+> Whereas explicitly doing fbset -vyres 768 will not cause a segfault,
+> because you still have valid framebuffer memory past y=768.
 
-For those with hardware cursors, this is exportable to user space. 
+That depends. On unified memory architectures or if the graphics memory is
+shared by two heads, you may still corrupt someone's memory.
 
-The structure fbcursor has one field that is console specific
-fbcursor.dest which we basically use to invert the cursor image.  So the
-structure that is passed via the cursor ioctl will be slightly
-different, it should not have the 'dest' field.  So when it gets passed
-to fb_cursor(), dest == NULL.  Then this is how drivers can respond: 
+Gr{oetje,eeting}s,
 
-1. soft_cursor - if cursor->dest == NULL, always exit with an error. 
+						Geert
 
-2. hardware cursors which cannot do invert - if cursor->dest == NULL and
-rop == ROP_XOR, exit with an error, otherwise (ROP_COPY), proceed. 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-3. hardware cursors with invert - cursor->dest will be ignored so it has
-full support. 
-
-The rivafb_cursor() and i810fb_cursor() already behaves like #2 already.
-
-Anyway, inverting the cursor image is not commonly used in GUI apps.
-Typically, they just need an opaque cursor + a transparency mask to
-"shape" the cursor. 
-
-Tony  
-
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

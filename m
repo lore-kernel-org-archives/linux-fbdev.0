@@ -1,18 +1,17 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Subject: Re: Questions on more than one framebuffer
-	device
-Date: 15 May 2003 01:07:31 +0200
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [BUG] 2.5.69 - no setfont and loadkeys on tty > 1
+Date: Thu, 15 May 2003 02:10:48 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1052953651.24914.192.camel@thor>
-References: <Pine.LNX.4.44.0305142343120.14201-100000@phoenix.infradead.org>
+Message-ID: <20030515001048.GA14685@elf.ucw.cz>
+References: <20030514224212.GA8124@elf.ucw.cz> <Pine.LNX.4.44.0305142346380.14201-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from netline-be1.netline.ch ([195.141.226.32])
+Received: from smtp-out1.iol.cz ([194.228.2.86])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19G5fo-0002zq-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 14 May 2003 16:28:36 -0700
-In-Reply-To: <Pine.LNX.4.44.0305142343120.14201-100000@phoenix.infradead.org>
+	id 19G6MY-0004gU-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 14 May 2003 17:12:47 -0700
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44.0305142346380.14201-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,28 +21,35 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: James Simmons <jsimmons@infradead.org>
-Cc: Cheshire Cat Fish <cat_fish@hotmail.com>, linux-fbdev-devel@lists.sourceforge.net
+Cc: kernel list <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Don, 2003-05-15 at 00:44, James Simmons wrote:
-> > I am wondering if it is even a problem with my driver now.   Xfree86 sh=
-ould=20
-> > be able to run with multiple fbdev drivers, right?
->=20
-> No :-(=20
+Hi!
 
-Yes, it should. :) It's a bug if it doesn't.
+> > > appears the flashing is the issue. I will see if a hardware cursor
+> > > also has
+> 
+>    Your right. I realize my logic error. I was literally thinking too black 
+> and white. In the case of a cursor that is a white thin line at the bottom 
+> and a grey background. That is whole cursor image!! The mask should be
+> the font image to be drawn. 
+>    You can think of it as the cursor being a big grey cookie with white 
+> frosting decoration on the bottom. Then I come with my font shape cookie 
+> cutter and cut it out.  
 
-> There exist a bunch of patches for this tho :-)
+I'm not sure I follow you.
 
-I'd happily integrate them, any pointers?
+What I do in that echo is set softcursor. It was software cursor even
+on plain vga. Boot into 2.4 to see how it should look like. It works
+even in vga text modes. It is different from softcursor later
+introduced by fbcon. Documentation/VGA-softcursor.txt describes it.
 
-
---=20
-Earthling Michel D=E4nzer   \  Debian (powerpc), XFree86 and DRI developer
-Software libre enthusiast  \     http://svcs.affero.net/rm.php?r=3Ddaenzer
-
+								Pavel
+-- 
+When do you have a heart between your knees?
+[Johanka's followup: and *two* hearts?]
 
 
 -------------------------------------------------------

@@ -1,35 +1,57 @@
 From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [Linux-fbdev-devel] Generic VESA framebuffer driver and Video card BOOT?
-Date: Tue, 19 Oct 2004 23:15:57 +0200
+Subject: Re: Generic VESA framebuffer driver and Video card BOOT?
+Date: Tue, 19 Oct 2004 23:11:14 +0200
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20041019211557.GD1142@elf.ucw.cz>
-References: <200410160551.40635.adaplas@hotpop.com> <416FFFFD.28877.2F2B6C9@localhost>
+Message-ID: <20041019211114.GC1142@elf.ucw.cz>
+References: <416E6ADC.3007.294DF20D@localhost>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S269406AbUJSVVC@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S269863AbUJSVgX@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <416FFFFD.28877.2F2B6C9@localhost>
+In-Reply-To: <416E6ADC.3007.294DF20D@localhost>
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Kendall Bennett <KendallB@scitechsoft.com>
-Cc: Jon Smirl <jonsmirl@gmail.com>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, penguinppc-team@lists.penguinppc.org
 
 Hi!
 
-> > In the case of something like a Mac you would want to keep the
-> > display blank until the early user space code initializes the
-> > display in graphics mode. Only if you get a fatal error before this
-> > would you dump the info using the Open Firmware display. Same
-> > strategy would apply to x86. 
-> 
-> True. On the Mac they use the speakers so the user knows that the machine 
-> is booting. Almost immediately after hitting the power you will hear a 
-> calming sound coming from the speaker, and it might be another 5 seconds 
-> or so before the actual video comes up. 
+> I am writing this email to guage the interest in having code contributed 
+> to the main stream Linux kernel that would support the user of a generic, 
+> full featured VESA framebuffer driver that works on any CPU architecture 
+> along with a generic Video card BOOT or POST mechanism.
 
-Heh, I'm trying to do the some in i386 resume case... If you can call
-square waves at 600Hz "calming sound" :-). Having video early would
-certainly be more welcome.
+BTW, does this look like right way to POST VGA BIOS from real mode? It
+is what we currently use... and it works on some machines...
+
+        movw    $0xb800, %ax
+        movw    %ax,%fs
+        movw    $0x0e00 + 'L', %fs:(0x10)
+
+        cli
+        cld
+
+        # setup data segment
+        movw    %cs, %ax
+        movw    %ax, %ds                                        # Make ds:0 point to wakeup_start
+        movw    %ax, %ss
+        mov     $(wakeup_stack - wakeup_code), %sp              # Private stack is needed for ASUS board
+        movw    $0x0e00 + 'S', %fs:(0x12)
+
+        pushl   $0                                              # Kill any dangerous flags
+        popfl
+
+        movl    real_magic - wakeup_code, %eax
+        cmpl    $0x12345678, %eax
+        jne     bogus_real_magic
+
+        testl   $1, video_flags - wakeup_code
+        jz      1f
+        lcall   $0xc000,$3
+        movw    %cs, %ax
+        movw    %ax, %ds                                        # Bios might have played with that
+        movw    %ax, %ss
+1:
 
 								Pavel
 -- 

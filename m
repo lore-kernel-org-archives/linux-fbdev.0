@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [PATCH 0/8] Some atyfb patches
-Date: Fri, 18 Mar 2005 03:45:53 +0800
-Message-ID: <200503180345.53067.adaplas@hotpop.com>
-References: <20050317023054.2B0DB7A@kuori.saunalahti.fi>
+Subject: Re: Fw: [Bugme-new] [Bug 4347] New: savavgfb ddc eeprom oops when "sensors" used as non-root
+Date: Fri, 18 Mar 2005 04:11:09 +0800
+Message-ID: <200503180411.09538.adaplas@hotpop.com>
+References: <20050317110941.4e5801fa.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DC0wO-0007yI-ID
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Mar 2005 11:45:56 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.61])
+	id 1DC1Kq-0000qY-4r
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Mar 2005 12:11:12 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.71])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DC0wM-0007WO-Ra
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Mar 2005 11:45:56 -0800
+	id 1DC1Kn-00023d-Tj
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Mar 2005 12:11:11 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 0A37DFD3D1E
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 17 Mar 2005 19:45:44 +0000 (UTC)
-In-Reply-To: <20050317023054.2B0DB7A@kuori.saunalahti.fi>
+	by smtp-out.hotpop.com (Postfix) with SMTP id B999D14C427B
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 17 Mar 2005 20:10:56 +0000 (UTC)
+In-Reply-To: <20050317110941.4e5801fa.akpm@osdl.org>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -30,22 +30,17 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, Ville SyrjXlX <syrjala@kotilo.saunalahti.fi>
-Cc: alex.kern@gmx.de
+To: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>
+Cc: khali@linux-fr.org, salahx@yahoo.com
 
-On Thursday 17 March 2005 10:30, Ville SyrjXlX wrote:
-> Here's a collection of patches for atyfb.
->
-> I'm pretty sure patches 1-5 are fine as is.
->
-> Patches 6 and 7 change some of the chip descriptions. I'm not 100% sure
-> about the changes so I'd appreciate any comments.
->
-> Patch 8 changes the power management code so I really need some comments
-> on it. I don't want to break any working setups.
->
+On Friday 18 March 2005 03:09, Andrew Morton wrote:
+> This might be a savagefb bug?
 
-Let me know if you want this to go to the mm tree.
+This is being discussed in another "Who should I write to about this OOPS in
+2,6,11-mm3?".  Just tested a fix by Jean Delvare which, based on my limited
+knowledge on i2c, seems to work.
+
+You're also in the CC list of the said thread, BTW.
 
 Tony
 

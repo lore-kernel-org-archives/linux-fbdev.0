@@ -1,17 +1,18 @@
 From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: [FB PATCH] cfbimgblt isn't 64-bit clean
-Date: 29 Dec 2002 22:58:43 +0800
+Subject: Re: Mirrored Display?
+Date: 29 Dec 2002 23:59:38 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1041173861.1013.9.camel@localhost.localdomain>
-References: <Pine.LNX.4.44.0212290027590.14098-100000@phoenix.infradead.org>
+Message-ID: <1041175846.1210.10.camel@localhost.localdomain>
+References: <Pine.LNX.4.44.0212201947290.6471-100000@phoenix.infradead.org>
+	<200212231204.39625.kaufmann@sohard.de>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from willow.compass.com.ph ([202.70.96.38])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18Sf85-0001bU-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 29 Dec 2002 07:13:30 -0800
-In-Reply-To: <Pine.LNX.4.44.0212290027590.14098-100000@phoenix.infradead.org>
+	id 18Sg3l-000071-00
+	for <Linux-fbdev-devel@lists.sourceforge.net>; Sun, 29 Dec 2002 08:13:06 -0800
+In-Reply-To: <200212231204.39625.kaufmann@sohard.de>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,129 +23,42 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: Richard Henderson <rth@twiddle.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Michael Kaufmann <kaufmann@sohard.de>
+Cc: Linux-fbdev-devel@lists.sourceforge.net
 
-On Sun, 2002-12-29 at 09:16, James Simmons wrote:
+On Mon, 2002-12-23 at 21:04, Michael Kaufmann wrote:
+> Antonino has also answered to my question. And he said that there is nothing 
+> i can do, because user apps will directly acces the framebuffer via read/write 
+> or nmap. I can only patch the console and the show _logo to write the data 
+> mirrored to the videobuffer (a lot of work).
+> So my user apps (like nanoX or directfb/GTK+) must know about the mirrored 
+> display and should write the picturedata mirrored in the framebuffer. 
 > 
-> > The text is written as if it's thinking about handling 64-bit
-> > unsigned long, but it doesn't.  The tables that map bits to
-> > pixels are completely unprepared for this.
-> > 
-> > I thought about widening the tables, but I thought they'd get
-> > unreasonably large.  There's no reason not to go ahead and 
-> > handle this 32-bits at a time.
+> I'm know a litte bit amazed about a rotation feature in next versions. Does 
+> this mean, that the buffer where user apps (or also the console) are writing 
+> there picture data is not directly the videobuffer anymore? Or how does this 
+> rotation feature works?
+I think the rotation hooks are console specific.  
+
 > 
-> I thought the tables would come back to haunt us. The only reason the 
-> tables where introduced was for speed enhancements. I reason the code is 
-> extra complex was so you could pass 64 bits of data across the bus. I 
-> still like to see that happen still. What do you think?
-> 
+> I think it would be a good feature to have 'something' between the framebuffer 
+> and the physical videobuffer to be able to manipulate the picture data (like 
+That is the job of fb libraries.  You can use X (which already has
+support for rotation, so mirroring should be easy to add), or modify
+DirectFB.
 
-Only fast_imageblit() should be affected.  color_imageblit() and
-slow_imageblit() will not be affected.  
-
-fast_imageblit() is used only for 8, 16 and 32 bpp.  We can remove
-fast_imageblit() and just use slow_imageblit() for all color depths, but
-it will suffer a significant slowdown. 
-
-Or we can change fast_imageblit() to always access the framebuffer
-memory 32-bits at a time. The attached patch should fix this.
+> rotation, mirroring, etc.). But i don't know how this peace of software 
+> should detect, changed data in the 'framebuffer' to e.g. mirror in the 
+> videobuffer? Writing the whole buffers from time to time whould be a very
+> bad solution (performance).
+You can probably implement something similar to a shadow framebuffer. 
+You expose this instead of the actual framebuffer (fix->smem_start, and
+info->screen_base), then just refresh the contents of the actual
+framebuffer, say during vsync.  You will have to set up a vsync
+irq_handler or something similar.
 
 Tony
 
-diff -Naur linux-2.5.42/drivers/video/cfbimgblt.c linux/drivers/video/cfbimgblt.c
---- linux-2.5.42/drivers/video/cfbimgblt.c	2002-12-29 14:44:04.000000000 +0000
-+++ linux/drivers/video/cfbimgblt.c	2002-12-29 14:44:23.000000000 +0000
-@@ -88,11 +88,13 @@
- 
- #if defined (__BIG_ENDIAN)
- #define LEFT_POS(bpp)          (BITS_PER_LONG - bpp)
-+#define LEFT_POS32(bpp)        (32 - bpp)
- #define NEXT_POS(pos, bpp)     ((pos) -= (bpp))
- #define SHIFT_HIGH(val, bits)  ((val) >> (bits))
- #define SHIFT_LOW(val, bits)   ((val) << (bits))
- #else
- #define LEFT_POS(bpp)          (0)
-+#define LEFT_POS32(bpp)        (0)
- #define NEXT_POS(pos, bpp)     ((pos) += (bpp))
- #define SHIFT_HIGH(val, bits)  ((val) << (bits))
- #define SHIFT_LOW(val, bits)   ((val) >> (bits))
-@@ -223,25 +225,25 @@
- }
- 
- static inline void fast_imageblit(struct fb_image *image, struct fb_info *p, u8 *dst1, 
--				  unsigned long fgcolor, unsigned long bgcolor) 
-+				  u32 fgcolor, u32 bgcolor) 
- {
- 	int i, j, k, l = 8, n;
--	unsigned long bit_mask, end_mask, eorx; 
--	unsigned long fgx = fgcolor, bgx = bgcolor, pad, bpp = p->var.bits_per_pixel;
--	unsigned long tmp = (1 << bpp) - 1;
--	unsigned long ppw = BITS_PER_LONG/bpp, ppos;
--	unsigned long *dst;
-+	u32 bit_mask, end_mask, eorx; 
-+	u32 fgx = fgcolor, bgx = bgcolor, pad, bpp = p->var.bits_per_pixel;
-+	u32 tmp = (1 << bpp) - 1;
-+	u32 ppw = 32/bpp, ppos;
-+	u32 *dst;
- 	u32 *tab = NULL;
- 	char *src = image->data;
- 		
--	switch (ppw) {
--	case 4:
-+	switch (bpp) {
-+	case 8:
- 		tab = cfb_tab8;
- 		break;
--	case 2:
-+	case 16:
- 		tab = cfb_tab16;
- 		break;
--	case 1:
-+	case 32:
- 		tab = cfb_tab32;
- 		break;
- 	}
-@@ -263,17 +265,17 @@
- 	k = image->width/ppw;
- 
- 	for (i = image->height; i--; ) {
--		dst = (unsigned long *) dst1;
-+		dst = (u32 *) dst1;
- 		
- 		for (j = k; j--; ) {
- 			l -= ppw;
- 			end_mask = tab[(*src >> l) & bit_mask]; 
--			FB_WRITEL((end_mask & eorx)^bgx, dst++);
-+			fb_writel((end_mask & eorx)^bgx, dst++);
- 			if (!l) { l = 8; src++; }
- 		}
- 		if (n) {
- 			end_mask = 0;	
--			ppos = LEFT_POS(bpp);
-+			ppos = LEFT_POS32(bpp);
- 			for (j = n; j > 0; j--) {
- 				l--;
- 				if (*src & (1 << l))
-@@ -281,7 +283,7 @@
- 				NEXT_POS(ppos, bpp);
- 				if (!l) { l = 8; src++; }
- 			}
--			FB_WRITEL((end_mask & eorx)^bgx, dst++);
-+			fb_writel((end_mask & eorx)^bgx, dst++);
- 		}
- 		l -= pad;		
- 		dst1 += p->fix.line_length;	
-@@ -337,7 +339,7 @@
- 		
- 		if (BITS_PER_LONG % bpp == 0 && !start_index && !pitch_index && 
- 		    bpp >= 8 && bpp <= 32 && (image->width & 7) == 0) 
--			fast_imageblit(image, p, dst1, fgcolor, bgcolor);
-+			fast_imageblit(image, p, dst1, (u32) fgcolor, (u32) bgcolor);
- 		else 
- 			slow_imageblit(image, p, dst1, fgcolor, bgcolor, start_index, pitch_index);
- 	}
 
 
 

@@ -1,42 +1,52 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [Linux-fbdev-devel] Help re Frame Buffer/Console Problems
-Date: Sat, 30 Oct 2004 08:25:47 +0800
+From: Adrian Bunk <bunk@stusta.de>
+Subject: 2.6.10-rc1-mm2: intelfb/AGP unknown symbols
+Date: Sat, 30 Oct 2004 05:24:25 +0200
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <200410300825.47096.adaplas@hotpop.com>
-References: <Pine.LNX.4.10.10410291849480.2831-100000@mtfhpc.demon.co.uk>
-Reply-To: adaplas@pol.net
+Message-ID: <20041030032425.GI6677@stusta.de>
+References: <20041029014930.21ed5b9a.akpm@osdl.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S263769AbUJ3A3C@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.10.10410291849480.2831-100000@mtfhpc.demon.co.uk>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S263462AbUJ3D0W@vger.kernel.org>
 Content-Disposition: inline
+In-Reply-To: <20041029014930.21ed5b9a.akpm@osdl.org>
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, Mark Fortescue <mark@mtfhpc.demon.co.uk>, jsimmons@infradead.org, geert@linux-m68k.org
-Cc: sparclinux@vger.kernel.org, ultralinux@vger.kernel.org, linux-kernel@vger.kernel.org, wli@holomorphy.com
+Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@osdl.org>, Dave Jones <davej@redhat.com>, Arjan van de Ven <arjan@infradead.org>, Sylvain Meyer <sylvain.meyer@worldonline.fr>, Antonino Daplas <adaplas@pol.net>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Saturday 30 October 2004 02:22, Mark Fortescue wrote:
-> Hi all,
->
-> I have been trying to get a CG3 sparc clone up and running with linux.
-> Under 2.2.26, the console is fine. During the development of the
-> 2.5.x/2.6.x frame buffer system the CG3 support got broken. I have managed
-> to track done one of the problems (the blanking code had some typing
-> errors in it) and this gave me a logo + black screen and cursor using a
-> linux-2.2.8.1 kernel. Still no console text.
->
-> Given that 2.2.10-rc1-bk6 is available, I have downloaded and applied the
-> appropriate patches and made some additional mods to keep the
-> compiler/linker happy. Now I have a black console, no text, logo or cursor
-> and if I redirect the console output to a serial port I get the following:
+On Fri, Oct 29, 2004 at 01:49:30AM -0700, Andrew Morton wrote:
+>...
+> Changes since 2.6.10-rc1-mm1:
+> 
+>  linus.patch
+>...
+>  bk-agpgart.patch
+>...
 
-I'm assuming 2.6.10-rc1-bk6...
 
-Make sure you correctly fill up the red, green, blue, and transp fields
-in all->info.var.  You can do it in sbufsfb_fill_var, or somewhere
-within cg3.c before the register_framebuffer() part.
+The removal of 3 "unneeded exports" in bk-agpgart.patch conflicts with 
+code adding usage of them in Linus' tree:
 
-As a reminder, info->var and info->fix must be valid prior to framebuffer
-registration.
 
-Tony
+<--  snip  -->
+
+...
+if [ -r System.map ]; then /sbin/depmod -ae -F System.map  2.6.10-rc1-mm2; fi
+WARNING: /lib/modules/2.6.10-rc1-mm2/kernel/drivers/video/intelfb/intelfb.ko needs unknown symbol agp_backend_acquire
+WARNING: /lib/modules/2.6.10-rc1-mm2/kernel/drivers/video/intelfb/intelfb.ko needs unknown symbol agp_copy_info
+WARNING: /lib/modules/2.6.10-rc1-mm2/kernel/drivers/video/intelfb/intelfb.ko needs unknown symbol agp_backend_release
+WARNING: /lib/modules/2.6.10-rc1-mm2/kernel/drivers/video/i810/i810fb.ko needs unknown symbol agp_backend_acquire
+WARNING: /lib/modules/2.6.10-rc1-mm2/kernel/drivers/video/i810/i810fb.ko needs unknown symbol agp_backend_release
+
+<--  snip  -->
+
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed

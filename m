@@ -1,18 +1,17 @@
-From: Robert Keith Vaughan <rkvaughan@carolina.rr.com>
-Subject: Console Framebuffer Issues / GeForce4 - Red Hat stock kernel 2.4.20-13.9
-Date: Sat, 24 May 2003 13:39:23 -0400
+From: Nicolas Souchu <nsouch@free.fr>
+Subject: matrox ported to new framework?
+Date: Sat, 24 May 2003 19:54:29 +0000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200305241339.23874.rkvaughan@carolina.rr.com>
+Message-ID: <20030524195429.A2238@armor.free.fr>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from ms-smtp-02.southeast.rr.com ([24.93.67.83])
+Received: from postfix4-1.free.fr ([213.228.0.62])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19Jcz5-0006x5-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 24 May 2003 10:39:07 -0700
-Received: from zeus.rkvhome.net (clt25-80-124.carolina.rr.com [24.25.80.124])
-	by ms-smtp-02.southeast.rr.com (8.12.5/8.12.2) with ESMTP id h4OHacYf001376
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 24 May 2003 13:36:38 -0400 (EDT)
+	id 19Jd04-0007YL-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 24 May 2003 10:40:08 -0700
+Received: from armor.fastether (nas-cbv-7-62-147-155-250.dial.proxad.net [62.147.155.250])
+	by postfix4-1.free.fr (Postfix) with SMTP id 62E2839EC1
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 24 May 2003 19:40:06 +0200 (CEST)
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
@@ -24,68 +23,29 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-Hello:
 
-I apologize if this is the wrong list to post to, but it was suggested in a 
-post I dug up through a google search.  I normally like to figure things out 
-for myself, but this one is really starting to tick me off.
+The Matrox fb does not compile on my 2.5.69, I guess its port
+to the new fbdev API is not complete. Is a patch in the pipe
+for a near release?
 
-I am using Red Hat 9.0 with the stock 2.4.20-13.9 kernel.  I am attempting to 
-get framebuffer support working on the console with little success. The 
-relevant PC specs are as follows:
+Also, I have a AIW (Rage128) 32MB that is neither supported by
+2.4.9 nor by 2.5.69. Any hint?
 
-Athlon XP 2000+
-1 GB RAM
-Geforce4 ti4400
+Actually, I have a bunch of boards I'd like to see working:
+G450, Matrox MilleniumII, AIW128 32MB, RageMobility, MACH64GX, G200.
 
-From what I have been able to ascertain, vesafb is compiled into this kernel 
-instead of loading as a module.  I looked at the information for the rivafb 
-driver and it doesn't appear to support the GeForce4 cards.  What info I have 
-been able to dig up suggests that you can get non-accelerated framebuffer 
-support for the GeForce4 using vesafb.  I cannot, however, get it to work.
+Seems ok for Matroxes, but that's all :(
 
-I have tried to pass the following kernel arguments via grub.  All I get is a 
-blank screen"
+What's the status of HW support? Any rating about happyness of
+users?
 
-video=vesafb,xres:1024,yres:768,bpp:16 vga=791
-
-	AND (just in case I COULD get the rivafb module to support it)
-
-video=rivafb,xres:1024,yres:768,bpp:16 vga=791 
-
-I have played around with the bpp and vga= settings (trying 8, 16 and 24 
-respectively) .  No luck.  Get a blank console up until kdm loads. And I 
-don't see anthing in the dmesg logs either.  Sigh.
-
-When I issue fbset I get the following error:
-
-  open /dev/fb0: No such device
-
-Which leads me to believe that the stock kernel isn't seeing a framebuffer 
-device despite the fact that vesafb is compiled in.  
-
-I have not yet tried to compile a custom kernel precisely because of 1.) 
-vesafb is complied into this kernel, AND 2.) Nothing I have read seems to 
-indicate that compiling rivafb into the kernel will help with my issue ( and 
-I have not been able to get rivafb to load as a module in any event...)
-
-So, I am stumped.  I'm sure its something stupid on my part....but could 
-anyone tell me A.) what I am doing wrong here, and/or B.) if anyone has 
-gotten console framebuffer support running on a stock Red Hat kernel...
-
-Thanks for putting up with the long winded (and I sure stupid) questions..
-
-Keith Vaughan
+Nicholas
 
 -- 
-
-***************************************
-  Robert Keith Vaughan, CISSP
-  E-mail:  rkvaughan@carolina.rr.com
-**************************************
-
+Nicholas Souchu - nsouch@free.fr
 
 
 -------------------------------------------------------

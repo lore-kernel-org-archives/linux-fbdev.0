@@ -1,20 +1,16 @@
-From: rblalock@inktomi.com
-Subject: Re: Re: That movie
-Date: Thu, 21 Aug 2003 08:21:50 -0700
+From: uce@reliablehosting.com
+Subject: your email was caught by our filters
+Date: Fri, 22 Aug 2003 05:49:30 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <HJZ6OE02.0DP@inbox2.inktomi.com>
-Reply-To: rblalock@inktomi.com
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Message-ID: <789982767@mail.affordablehosting.com>
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from or1.inktomi.com ([209.131.48.34])
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19ps0K-0007Iv-00
-	for <Linux-fbdev-devel@lists.sourceforge.net>; Thu, 21 Aug 2003 09:09:40 -0700
-Received: from inbox2.inktomi.com (inbox2.inktomi.com [209.131.48.29])
-	by or1.inktomi.com (Switch-2.1.0/Switch-2.1.0) with ESMTP id h7LFORk10393
-	for <Linux-fbdev-devel@lists.sourceforge.net>; Thu, 21 Aug 2003 08:24:28 -0700 (PDT)
+Received: from mail.affordablehosting.com ([216.131.95.19])
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19qBMB-0003vA-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 22 Aug 2003 05:49:31 -0700
+Received: from mail.affordablehosting.com
+        by mail.affordablehosting.com (Merak 6.0.5) with SMTP id DUA74198
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 22 Aug 2003 05:49:30 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -24,15 +20,14 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-To: Linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Your Message has been received.
 
-If you have any further questions, please call Inktomi's main
-telephone number at:  650.653.2800
+please remove screen saver from the subject
 
-This message was generated automatically.
 
 
 -------------------------------------------------------

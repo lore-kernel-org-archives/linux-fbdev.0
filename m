@@ -1,32 +1,24 @@
-From: Nigel Cunningham <ncunningham@linuxmail.org>
-Subject: Re: [PATCH] Re: Devices don't get linked to
-	their class.
-Date: Wed, 08 Sep 2004 13:21:38 +1000
+From: "Mukund JB." <mukundjb@esntechnologies.co.in>
+Subject: regarding the structures of framebuffer driver
+Date: Wed, 8 Sep 2004 09:42:20 +0530
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1094613697.2805.1.camel@laptop.cunninghams>
-References: <1094187751.2979.41.camel@laptop.cunninghams>
-	 <1094441896.19674.24.camel@laptop.cunninghams>
-	 <20040907195055.GB6021@dreamland.darkstar.lan>
-	 <200409080855.34209.adaplas@hotpop.com>
+Message-ID: <4EE0CBA31942E547B99B3D4BFAB3481110736B@mail.esn.co.in>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C4szM-0000O6-Ne
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 07 Sep 2004 20:19:16 -0700
-Received: from externalmx-1.sourceforge.net ([12.152.184.25])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.34)
-	id 1C4szJ-0007d2-PS
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 07 Sep 2004 20:19:16 -0700
-Received: from 147.32.220.203.comindico.com.au
-	([203.220.32.147] helo=relay01.kbs.net.au ident=8)
-	by externalmx-1.sourceforge.net with esmtp (Exim 4.41)
-	id 1C4szC-0008H6-AJ
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 07 Sep 2004 20:19:08 -0700
-In-Reply-To: <200409080855.34209.adaplas@hotpop.com>
+	id 1C4tml-0006tD-Aw
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 07 Sep 2004 21:10:19 -0700
+Received: from [202.125.86.130] (helo=ns2.astrainfonets.net)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1C4tmi-0005RN-6d
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 07 Sep 2004 21:10:18 -0700
+Received: from mail.esn.co.in ([202.125.80.34])
+	by ns2.astrainfonets.net (8.12.8p1/8.12.8) with ESMTP id i8845pUE017218
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 8 Sep 2004 04:05:51 GMT
+Content-class: urn:content-classes:message
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -38,37 +30,76 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Kronos <kronos@people.it>
 
-Thanks!
 
-Nigel
 
-On Wed, 2004-09-08 at 10:55, Antonino A. Daplas wrote:
-> > There's framebuffer_alloc for that. I forgot to re-add a struct device *
-> > to fb_info after I added the class_simple stuff:
-> >
-> 
-> Hey, nice!
-> 
-> Nigel, here's an updated patch.  For drivers already using
-> framebuffer_alloc(), we let them be.  For the rest, some I updated to use
-> framebuffer_alloc(), rivafb and i810fb, and the remainder, set info->device
-> during the initialization stage.
-> 
-> I'll push this to Andrew at the end of the week, I'll just let the previous
-> patches I submitted simmer in his tree first.
-> 
-> You need to reverse the patch I sent you.  You'll probably get offsets.
+Hi all,
 
--- 
-Nigel Cunningham
-Pastoral Worker
-Christian Reformed Church of Tuggeranong
-PO Box 1004, Tuggeranong, ACT 2901
+I am very new to video drivers and iam working on framebuffer drivers.
+Pls help me clear my doubts.
+This mail is regarding the structures of framebuffer driver
 
-Many today claim to be tolerant. True tolerance, however, can cope with others
-being intolerant.
+I have some doubt regarding the kernel structures I have found in the
+skeletonfb.c file which model of framebuffer driver.
+
+I am not able to understand the following parts of code :-
+I am separating each section of code by " ******** ".
+
+************************************************************************
+****
+
+/* ------------ Interfaces to hardware functions ------------ */
+
+
+struct fbgen_hwswitch xxx_switch =3D {
+    xxx_detect, xxx_encode_fix, xxx_decode_var, xxx_encode_var,
+xxx_get_par,
+    xxx_set_par, xxx_getcolreg, xxx_setcolreg, xxx_pan_display,
+xxx_blank,
+    xxx_set_disp
+};
+
+/*---------------- chipset specific functions --------------------------
+*/
+
+Followed by comment the above "fbgen_hwswitch" structure functions were
+defined.
+R the function pointers declared in the above "fbgen_hwswitch" structure
+a sort of call back functions.
+Will they be called from the user space (Application like X server)?
+
+If so, where is the list of user space calls from which the above
+functions will be called?=20
+R these user space calls valid whether there is a X server on top of
+framebuffer driver or any other application which can directly interact?
+( I heard from the NET, there will be applications like X server which
+can    directly interact with framebuffer driver. )
+
+************************************************************************
+****
+static struct fb_ops xxxfb_ops =3D {
+	owner:		THIS_MODULE,
+	fb_open:	xxxfb_open,    /* only if you need it to do
+something */
+	fb_release:	xxxfb_release, /* only if you need it to do
+something */
+	fb_get_fix:	fbgen_get_fix,
+	fb_get_var:	fbgen_get_var,
+	fb_set_var:	fbgen_set_var,
+	fb_get_cmap:	fbgen_get_cmap,
+	fb_set_cmap:	fbgen_set_cmap,
+	fb_pan_display:	fbgen_pan_display,
+	fb_ioctl:	xxxfb_ioctl,   /* optional */
+};
+
+Also, where can I find the call backs for these functions?
+Where is XFree86 driver source in /usr/?.
+
+
+Thanks a lot in advance,
+Mukund jampala
+
+
 
 
 

@@ -1,23 +1,23 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: [PATCH] fbdev: workaround for broken X
  servers
-Date: Fri, 5 Nov 2004 13:15:35 +0100 (MET)
-Message-ID: <Pine.GSO.4.61.0411051313130.15464@waterleaf.sonytel.be>
+Date: Fri, 5 Nov 2004 13:25:06 +0100 (MET)
+Message-ID: <Pine.GSO.4.61.0411051324300.15464@waterleaf.sonytel.be>
 References: <1099448020.900.25.camel@gaston> <20041103032613.GA3677@sci.fi>
- <1099633776.9260.160.camel@gaston> <20041105093618.GA15762@sci.fi>
- <Pine.GSO.4.61.0411051052490.15464@waterleaf.sonytel.be> <1099655227.3946.17.camel@gaston>
+ <1099633776.9260.160.camel@gaston>  <20041105093618.GA15762@sci.fi>
+ <1099655196.3946.15.camel@gaston>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CQ329-0007E7-KG
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Nov 2004 04:17:37 -0800
+	id 1CQ3BK-0000eS-Cd
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Nov 2004 04:27:06 -0800
 Received: from witte.sonytel.be ([80.88.33.193])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CQ328-0006rr-Cv
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Nov 2004 04:17:37 -0800
-In-Reply-To: <1099655227.3946.17.camel@gaston>
+	id 1CQ3BG-00007O-7R
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Nov 2004 04:27:06 -0800
+In-Reply-To: <1099655196.3946.15.camel@gaston>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,27 +30,17 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, "Antonino A. Daplas" <adaplas@hotpop.com>
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, "Antonino A. Daplas" <adaplas@hotpop.com>
 
 On Fri, 5 Nov 2004, Benjamin Herrenschmidt wrote:
-> > But every existing application that uses (shiver) the kernel headers will break
-> > after this change...
+> > Maybe it's there because someone wanted to blank the display without 
+> > disabling sync signals.
 > 
-> Geert, can you explain the whole story please ?
+> Is there a point doing so ?
 
-The story about the +1 or the story about the breakage?
-
-The Story About The +1
-----------------------
-Since the VESA levels do not provide a way to blank (`make it black') the
-screen, the +1 is introduced. Hence 0 means unblank, 1 means black screen, 2
-means lowest power save level, and so on...
-
-The Story About The Breakage
-----------------------------
-Every application that passes VESA_*+1 will break when recompiled, since (most
-of) the VESA_* values are incremented by 1 by the patch.
+Yes. Usually you start by making the screen black, and after a while you enter
+deeper power save modes.
 
 Gr{oetje,eeting}s,
 

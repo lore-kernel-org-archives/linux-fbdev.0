@@ -1,23 +1,23 @@
 From: Kronos <kronos@kronoz.cjb.net>
-Subject: Re: Re: New radeonfb, mostly untested
-Date: Mon, 15 Sep 2003 18:00:44 +0200
+Subject: Re: fbdev timings
+Date: Mon, 15 Sep 2003 18:07:39 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030915160044.GB1980@dreamland.darkstar.lan>
-References: <20030914173137.GA2971@dreamland.darkstar.lan> <000801c37b24$257b9100$ba17b1cb@bom>
+Message-ID: <20030915160739.GC1980@dreamland.darkstar.lan>
+References: <20030915073029.GA13799@guug.org>
 Reply-To: kronos@kronoz.cjb.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19yvno-0002JY-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 15 Sep 2003 09:02:12 -0700
-Received: from mail-3.tiscali.it ([195.130.225.149])
+	id 19yvtP-0002gW-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 15 Sep 2003 09:07:59 -0700
+Received: from mail-8.tiscali.it ([195.130.225.154])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 19yvnn-0001CO-VM
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 15 Sep 2003 09:02:12 -0700
+	id 19yvtO-0005hr-Lp
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 15 Sep 2003 09:07:58 -0700
 Content-Disposition: inline
-In-Reply-To: <000801c37b24$257b9100$ba17b1cb@bom>
+In-Reply-To: <20030915073029.GA13799@guug.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -29,69 +29,51 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tony <adaplas@hotpop.com>
-Cc: James Simmons <jsimmons@infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Otto Solares <solca@guug.org>
+Cc: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-Il Mon, Sep 15, 2003 at 08:56:07AM +0800, Tony ha scritto: 
-> The bug may actually be in the following code:
+Il Mon, Sep 15, 2003 at 01:30:29AM -0600, Otto Solares ha scritto: 
+> finally i am coding the video part of a "desktop engine",
+> but i want something that works profesionally, i'm using
+> fbdev and embedded mesa for it, i am trying to get the
+> video modes as automagically as posible, in that regard
+> my plan is to hack get-edid (cause we don't have a proper
+> mechanism from userspace, yea modedb is marked _init
+> and the new edid just works in radeons and only usable
+> too from kernelspace -end of critic :)
+
+Userspace can access edid block via sysfs and can do its own parsing.
+
+> into my software
+> and fallback to a text database like hwdata to obtain
+> monitor specs if edid doesn't work, but i have a problem,
+> how i am supposed to construct fbdev timings with just
+> this info:
 > 
-> static int get_std_timing(unsigned char *block, struct fb_videomode
-> *mode)
-> {
-[cut] 
->  	for (i = 0; i < VESA_MODEDB_SIZE; i++) {
-> 		if (vesa_modes[i].xres == xres &&
-> 		    vesa_modes[i].yres == yres &&
->  		    vesa_modes[i].refresh == refresh) {
->  			*mode = vesa_modes[i];
-> 			break;
->  		} else {
-> 			calc_mode_timings(xres, yres, refresh, mode);
-> 			break;
->  		}
->  	}
-> 	return 1;
-> }
+> - resolution (width x height, 800x600).
+> - hsync range (31-49 Khz)
+> - vsync range (48-80 hz)
 
-Ah, good catch. I  really missed that. This would explain  why XFree and
-radeonfb use different modelines.
+You can use vesa_modes (in modedb.c) or you can use fb_get_mode (see
+fbmon.c).
 
-James, can you apply this patch:
+> i do know that is possible to contruct such timings
+> because the monitor specs in windows xp are stored
+> in /windows/inf/monitor.inf and contains only that
+> variables.  Please any detailed response in how can
+> they construct their timings with just this variables
+> and how can i use it with fbdevs from userspace in 2.6?
 
-===== drivers/video/fbmon.c 1.9 vs edited =====
---- 1.9/drivers/video/fbmon.c	Wed Jun  4 07:55:19 2003
-+++ edited/drivers/video/fbmon.c	Mon Sep 15 17:59:28 2003
-@@ -566,17 +566,19 @@
- 	}
- 	refresh = (block[1] & 0x3f) + 60;
- 
-+	/* First find standard mode from the table of VESA modes */
- 	for (i = 0; i < VESA_MODEDB_SIZE; i++) {
- 		if (vesa_modes[i].xres == xres && 
- 		    vesa_modes[i].yres == yres &&
- 		    vesa_modes[i].refresh == refresh) {
- 			*mode = vesa_modes[i];
--			break;
--		} else {
--			calc_mode_timings(xres, yres, refresh, mode);
--			break;
-+			return 1;
- 		}
- 	}
-+
-+	/* If mode is not found in table, calculate using GTF */
-+	calc_mode_timings(xres, yres, refresh, mode);
-+	
- 	return 1;
- }
-
+You can get  the whole var usign ioctls. Also, once  the class_dev stuff
+is in place  (I'll send patches in few minutes)  every driver can export
+its own stuff via sysfs.
 
 Luca
 -- 
 Reply-To: kronos@kronoz.cjb.net
 Home: http://kronoz.cjb.net
-Il dottore mi ha detto di smettere di fare cene intime per quattro.
-A meno che non ci siamo altre tre persone.
+Non capisco tutta questa eccitazione per il Multitasking: 
+io sono anni che leggo in bagno.
 
 
 -------------------------------------------------------

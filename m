@@ -1,68 +1,96 @@
-From: Denis Vlasenko <vda@ilport.com.ua>
-Subject: [PATCH] print an explanation why i810 fb doesn't come up
-Date: Mon, 28 Mar 2005 15:30:40 +0300
-Message-ID: <200503281530.40665.vda@ilport.com.ua>
+From: "Randy.Dunlap" <rddunlap@osdl.org>
+Subject: Re: Re: 2.6.12-rc1-mm2 -- nvidiafb driver gives
+ black screen
+Date: Mon, 28 Mar 2005 09:12:49 -0800
+Message-ID: <42483B11.6010203@osdl.org>
+References: <a44ae5cd0503242023233dc23f@mail.gmail.com>	 <20050324203118.345c6004.akpm@osdl.org> <a44ae5cd050325205012399ccc@mail.gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_wj/RCHO6QKARCL7"
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261585AbVC1MbF@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net
-
-
---Boundary-00=_wj/RCHO6QKARCL7
-Content-Type: text/plain;
-  charset="koi8-r"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1DFxrK-0000wX-7c
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 28 Mar 2005 09:17:02 -0800
+Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1DFxrJ-00072u-Np
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 28 Mar 2005 09:17:02 -0800
+In-Reply-To: <a44ae5cd050325205012399ccc@mail.gmail.com>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Andrew Morton <akpm@osdl.org>, khali@linux-fr.org, miles.lane@gmail.com
 
-I've spent silly amonunt of time trying to use i810 fb on my new spiffy
-flat panel. This patch will hopefully help other poor souls.
+Miles Lane wrote:
+> On Thu, 24 Mar 2005 20:31:18 -0800, Andrew Morton <akpm@osdl.org> wrote:
+> 
+>>(Added the mailing list - trust that's ok)
+>>
+>>Miles Lane <miles.lane@gmail.com> wrote:
+>>
+>>>Kernel command line: BOOT_IMAGE=Linux ro root=306 video=nvidiafb
+>>>init=/etc/init lang=us apm=power-off nomce
+>>>nvidiafb: nVidia device/chipset 10DE0312
+>>>nvidiafb: nVidia Corporation NV31 [GeForce FX 5600]
+>>>nvidiafb: CRTC0 found
+>>>nvidiafb: CRTC1 not found
+>>>nvidiafb: EDID found from BUS1
+>>>nvidiafb: CRTC 0 appears to have a CRT attached
+>>>nvidiafb: Using CRT on CRTC 0
+>>>
+>>>
+>>>>>I am wondering whether the following two lines point to the problem.
+>>>
+>>>allocation failed: out of vmalloc space - use vmalloc=<size> to increase size.
+>>>nvidiafb: cannot ioremap FB base
+>>
+>>Quite possibly.
+>>
+>>I'll do rc2-mm3 tonight - please test that.  It has fixes.
+> 
+> 
+> Hello Andrew,
+> 
+> mm3 did not fix the problem.  I still get a blank framebuffer console.
+> I still get these two errors:
+> allocation failed: out of vmalloc space - use vmalloc=<size> to increase size.
+> nvidiafb: cannot ioremap FB base
+> Also, I still get the /sys listing Oops when listing the i2c entries
+> for the nvidiafb.
+> Lastly, I get the Oops that halts booting if I include certain other
+> i2c drivers in the build.
+> Removing nvidiafb from the build allows me to get a completely usable
+> build of 2.6.12-rc1-mm3.
+> 
+> I haven't heard anything from the author of the nvidiafb driver about
+> the various issues I have reported.
 
-Patch also fixes module parameter comments.
---
-vda
+I guess that there is some chance that the io_remap_pfn* patches
+are involved with this.  Is there some way to determine exactly which
+io remap kernel calls are involved in "nvidiafb: cannot ioremap FB 
+base" ?  Is that in the exposed source code?  If so, where is that
+source code?  If not, can we determine from the binary which calls
+are being made?  Or should I just make a io_remap debug patch that
+prints out lots of debug info so that we can track this down?
 
---Boundary-00=_wj/RCHO6QKARCL7
-Content-Type: text/x-diff;
-  charset="koi8-r";
-  name="i810_main.c.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="i810_main.c.diff"
 
---- linux-2.6.11.src/drivers/video/i810/i810_main.c.orig	Thu Mar  3 09:30:58 2005
-+++ linux-2.6.11.src/drivers/video/i810/i810_main.c	Mon Mar 28 15:04:58 2005
-@@ -999,8 +999,14 @@ static int i810_check_params(struct fb_v
- 	info->monspecs.dclkmin = 15000000;
- 
- 	if (fb_validate_mode(var, info)) {
--		if (fb_get_mode(FB_MAXTIMINGS, 0, var, info))
-+		if (fb_get_mode(FB_MAXTIMINGS, 0, var, info)) {
-+			int default_sync = (hsync1-HFMIN)|(hsync2-HFMAX)
-+					    |(vsync1-VFMIN)|(vsync2-VFMAX);
-+			printk("i810fb: invalid video mode%s\n",
-+			    default_sync ? "" : 
-+			    ". Specifying vsyncN/hsyncN parameters may help");
- 			return -EINVAL;
-+		}
- 	}
- 	
- 	var->xres = xres;
-@@ -2020,10 +2026,10 @@ MODULE_PARM_DESC(vyres, "Virtual vertica
- 		 " (default = 480)");
- module_param(hsync1, int, 0);
- MODULE_PARM_DESC(hsync1, "Minimum horizontal frequency of monitor in KHz"
--		 " (default = 31)");
-+		 " (default = 29)");
- module_param(hsync2, int, 0);
- MODULE_PARM_DESC(hsync2, "Maximum horizontal frequency of monitor in KHz"
--		 " (default = 31)");
-+		 " (default = 30)");
- module_param(vsync1, int, 0);
- MODULE_PARM_DESC(vsync1, "Minimum vertical frequency of monitor in Hz"
- 		 " (default = 50)");
+-- 
+~Randy
 
---Boundary-00=_wj/RCHO6QKARCL7--
+
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

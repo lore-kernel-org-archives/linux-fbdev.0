@@ -1,128 +1,60 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: fbdev driver and sysfs question.
-Date: Wed, 11 Feb 2004 22:26:45 +0000 (GMT)
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.44.0402112225360.25659-100000@phoenix.infradead.org>
+Subject: Re: atyfb expert needed
+Date: Wed, 11 Feb 2004 22:29:34 +0000 (GMT)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.LNX.4.44.0402112228230.25659-100000@phoenix.infradead.org>
+References: <1076537453.868.123.camel@gaston>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1Ar2sE-0007sn-5V
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 11 Feb 2004 14:30:26 -0800
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1Ar2pw-0002Lv-Av
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 11 Feb 2004 14:28:04 -0800
+In-Reply-To: <1076537453.868.123.camel@gaston>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, alex.kern@gmx.de
+
+On Thu, 12 Feb 2004, Benjamin Herrenschmidt wrote:
+
+> Hi ! I'm calling again for an atyfb expert ;)
+> 
+> The current driver in James tree (with generic lcd support) breaks
+> the display on the LT-G chip of the powerbook wallstreet. I don't
+> have time at the moment to dig into every change (there's a lot).
+> 
+> The "effect" is that the screen appears to be cut in vertical bands,
+> each of them displaying a slightly offseted version of what should be
+> there with some noise near the right edge.
+> 
+> If that symptom rings any bell about what registers can be wrong,
+> that would help me a lot figuring out what's up.
+> 
+> Ben.
+
+The main guy is Alex kern. There is a DEBUG flag in atyfb_base.c. Set it 
+to #define an send the results to Alex. I CC him.
 
 
-I attempted to port over the vesafb driver to show up in the sysfs tree.
-Unfortunely it just hanges my box. From the code can someone tell me what 
-I'm doing wrong?
 
 
---- linus-2.6/drivers/video/vesafb.c	2004-01-27 19:48:12.000000000 -0800
-+++ fbdev-2.6/drivers/video/vesafb.c	2004-02-10 19:43:38.000000000 -0800
-@@ -19,6 +19,7 @@
- #include <linux/fb.h>
- #include <linux/ioport.h>
- #include <linux/init.h>
-+#include <linux/device.h>
- #ifdef __i386__
- #include <video/edid.h>
- #endif
-@@ -47,7 +48,6 @@
- 	.accel	= FB_ACCEL_NONE,
- };
- 
--static struct fb_info fb_info;
- static u32 pseudo_palette[17];
- 
- static int             inverse   = 0;
-@@ -214,8 +214,10 @@
- 	return 0;
- }
- 
--int __init vesafb_init(void)
-+static int __init vesafb_probe(struct device *_dev)
- {
-+	struct platform_device *dev = to_platform_device(_dev);
-+	struct fb_info *info;
- 	int video_cmap_len;
- 	int i;
- 
-@@ -251,8 +253,13 @@
- 		   spaces our resource handlers simply don't know about */
- 	}
- 
--        fb_info.screen_base = ioremap(vesafb_fix.smem_start, vesafb_fix.smem_len);
--	if (!fb_info.screen_base) {
-+	info = framebuffer_alloc(0, &dev->dev); 
-+	if (!info)
-+		return -ENOMEM;
-+	dev_set_drvdata(&dev->dev, info);
-+	
-+        info->screen_base = ioremap(vesafb_fix.smem_start, vesafb_fix.smem_len);
-+	if (!info->screen_base) {
- 		release_mem_region(vesafb_fix.smem_start, vesafb_fix.smem_len);
- 		printk(KERN_ERR
- 		       "vesafb: abort, cannot ioremap video memory 0x%x @ 0x%lx\n",
-@@ -261,7 +268,7 @@
- 	}
- 
- 	printk(KERN_INFO "vesafb: framebuffer at 0x%lx, mapped to 0x%p, size %dk\n",
--	       vesafb_fix.smem_start, fb_info.screen_base, vesafb_fix.smem_len/1024);
-+	       vesafb_fix.smem_start, info->screen_base, vesafb_fix.smem_len/1024);
- 	printk(KERN_INFO "vesafb: mode is %dx%dx%d, linelength=%d, pages=%d\n",
- 	       vesafb_defined.xres, vesafb_defined.yres, vesafb_defined.bits_per_pixel, vesafb_fix.line_length, screen_info.pages);
- 
-@@ -358,22 +365,45 @@
- 		}
- 	}
- 	
--	fb_info.fbops = &vesafb_ops;
--	fb_info.var = vesafb_defined;
--	fb_info.fix = vesafb_fix;
--	fb_info.pseudo_palette = pseudo_palette;
--	fb_info.flags = FBINFO_FLAG_DEFAULT;
-+	info->fbops = &vesafb_ops;
-+	info->var = vesafb_defined;
-+	info->fix = vesafb_fix;
-+	info->pseudo_palette = pseudo_palette;
-+	info->flags = FBINFO_FLAG_DEFAULT;
- 
--	fb_alloc_cmap(&fb_info.cmap, video_cmap_len, 0);
-+	fb_alloc_cmap(&info->cmap, video_cmap_len, 0);
- 
--	if (register_framebuffer(&fb_info)<0)
-+	if (register_framebuffer(info) < 0)
- 		return -EINVAL;
- 
- 	printk(KERN_INFO "fb%d: %s frame buffer device\n",
--	       fb_info.node, fb_info.fix.id);
-+	       info->node, info->fix.id);
- 	return 0;
- }
- 
-+static struct device_driver vesafb_driver = {
-+	.name	= "VESA framebuffer",
-+	.probe	= vesafb_probe,
-+};
-+
-+static struct platform_device vesafb_device = {
-+	.name	= "VESA framebuffer",
-+	.id	= 0,
-+};
-+	
-+int __init vesafb_init(void)
-+{
-+	int ret;
-+
-+	ret = driver_register(&vesafb_driver);
-+	if (!ret) {
-+		ret = platform_device_register(&vesafb_device);
-+		if (ret)
-+			driver_unregister(&vesafb_driver);
-+	}
-+	return ret;
-+}
-+
- /*
-  * Overrides for Emacs so that we follow Linus's tabbing style.
-  * ---------------------------------------------------------------------------
+-------------------------------------------------------
+SF.Net is sponsored by: Speed Start Your Linux Apps Now.
+Build and deploy apps & Web services for Linux with
+a free DVD software kit from IBM. Click Now!
+http://ads.osdn.com/?ad_id=1356&alloc_id=3438&op=click

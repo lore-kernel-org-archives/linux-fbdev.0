@@ -1,23 +1,20 @@
-From: Richard Smith <rsmith@bitworks.com>
-Subject: still ..Confused about atyfb and M1
-Date: Mon, 19 Jan 2004 19:48:55 -0600
+From: "Ai Chengshi" <rosemaryai@vip.sina.com>
+Subject: Re: When copy, which function the operation system calls
+Date: Tue, 20 Jan 2004 11:51:26 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <400C8907.6080809@bitworks.com>
-References: <20040117063816.87535.qmail@web14913.mail.yahoo.com>	 <200401171303.13802.alex.kern@gmx.de> <1074466378.813.12.camel@gaston>
-Reply-To: RSmith@bitworks.com
+Message-ID: <001a01c3df08$ae56ea90$d300a8c0@ACS>
+References: <Pine.LNX.4.44.0401200021510.2709-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Ail1o-00081D-Sb
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 19 Jan 2004 17:50:04 -0800
-Received: from b44.xdsl.pgtc.com ([198.70.248.44] helo=bitworks.com)
+	id 1AimvT-0000qO-2V
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 19 Jan 2004 19:51:39 -0800
+Received: from [202.108.35.178] (helo=vip.sina.com)
 	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
-	id 1Ail1n-0004zS-Pg
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 19 Jan 2004 17:50:03 -0800
-Received: from bitworks.com [192.168.1.22] by bitworks.com [127.0.0.1] with SMTP (MDaemon.v2.7.SP4.R) for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 19 Jan 2004 19:45:23 -0600
-In-Reply-To: <1074466378.813.12.camel@gaston>
+	id 1AimvS-0001dq-08
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 19 Jan 2004 19:51:38 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,24 +24,46 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: benh@kernel.crashing.org
-Cc: Alexander Kern <alex.kern@gmx.de>, Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@infradead.org>
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@infradead.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Benjamin Herrenschmidt wrote:
+Dear James Simmons,
 
->>Mach64 MOBILITY M1 works by me for ages. I submitted all patches to James for 
->>months. They are in fbdev.diff.gz. But I dont think, they will be merged with 
->>vanilla very soon.
-> 
+I have read the Linux framebuffer drivers-HOWTO written by you on the web. I
+found that the drivers you mentioned were most developed on Linux V2.6.
+However, the kernel I used was V2.4. Then how should I do?
 
-   I grabbed fbdev.diff.gz from infradead (is this the canonical 
-source?) and patched my 2.6.1 tree.  But I still don't see my 0x4c52 
-device id listed in the tables.
+Thanks for your help.
 
--- 
-Richard A. Smith
-rsmith@bitworks.com
+Yours sincerely,
+Ai Chengshi
+----- Original Message -----
+From: "James Simmons" <jsimmons@infradead.org>
+To: "Ai Chengshi" <rosemaryai@vip.sina.com>
+Cc: <linux-fbdev-devel@lists.sourceforge.net>
+Sent: Tuesday, January 20, 2004 08:23
+Subject: Re: [Linux-fbdev-devel] When copy, which function the operation
+system calls
+
+
+>
+> > Hi,
+> >
+> > When I typed cp test.bin /dev/fbdir/0, which function does the Linux
+call?
+>
+> fb_write in fbmem.c.
+>
+> > And if I want to write the content in the buffer to LCD controller GRAM,
+> > where should I add this function?
+>
+> Which kernel, v2.4 or v2.6? The api is different in each case.
+>
+>
+>
+>
+>
 
 
 

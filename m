@@ -1,19 +1,21 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: radeonfb on pegasos powerpc motherboard
-	and X endianess problem
-Date: 05 Jun 2003 13:42:30 +0200
+From: Martin Sieper <m.si@ngi.de>
+Subject: Re: Computer with 1GB and radeonfb
+Date: Thu, 05 Jun 2003 14:06:08 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1054813350.701.38.camel@gaston>
-References: <20030604145423.GA22876@iliana> <1054799986.701.20.camel@gaston>
-	 <20030605081925.GA14714@iliana>
+Message-ID: <elmo1054814768183606478160@arbeitspferd>
+References: <elmo105432563416005480015305@arbeitspferd> <20030531054213.GA7494@middle.of.nowhere>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from griffon.mipsys.com ([217.167.51.129] helo=gaston)
+Received: from mx2.ngi.de ([213.191.74.84])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19Nt98-0007Ra-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 05 Jun 2003 04:43:06 -0700
-In-Reply-To: <20030605081925.GA14714@iliana>
+	id 19NtVg-0006MU-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 05 Jun 2003 05:06:24 -0700
+Received: from unknown (HELO arbeitspferd) ([213.20.27.3])
+          (envelope-sender <m.si@ngi.de>)
+          by 0 (qmail-ldap-1.03) with SMTP
+          for <linux-fbdev-devel@lists.sourceforge.net>; 5 Jun 2003 11:55:18 -0000
+In-Reply-To: <20030531054213.GA7494@middle.of.nowhere>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,110 +25,49 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Sven Luther <sven.luther@wanadoo.fr>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, 2003-06-05 at 10:19, Sven Luther wrote:
+Hi Jurriaan,
 
-> Err, is that the same devel tree as the one in linuxppc_2_4_devel ?
+thank you for the answer.
 
-No, it's linuxppc_2_4_benh bk, though you can use rsync to extract
-just radeonfb from rsync.penguinppc.org::benh-devel.
+On Sat, 31 May 2003 07:42:13 +0200, Jurriaan wrote:
+> The first one probably only affects the vesafb-driver. You could adapt
+> it to the radeonfb-driver, just search for the correct lines in the
+> radeonfb source and change them like the patch changes them.
+> There's nothing like booting a kernel whose sources you've changed
+> yourself to make you feel the power of open source :-)
 
-> And no, i cannot really try it out, i need to port the pop+pegasos
-> patches first.
->=20
-> BTW, i have some questions about this :
->=20
->   1) i think the hackyiness nature of it was because they simply #if 0
->   ed out code that didn't fit them, so doing proper #if CONFIG_PEGASOS
->   should clean this out, or was there also other kind of hackiness.
+I have look in the source radeonfb.c and have insert this:
 
-=CC don't have it all in mind now, send me your patches when you are
-done and I'll tell you more.
+--- linux-2.4.20/drivers/video/radeonfb.c.orig	2003-06-05 00:06:54.000000000 +0200
++++ linux-2.4.20/drivers/video/radeonfb.c	2003-06-01 12:19:07.000000000 +0200
+@@ -1714,6 +1714,15 @@
+ 		}
+ 	}
+ 
++	/*
++	 * Hack for big memory (1GB main RAM) problem:
++	 * 	If the card memory bigger as 64MB
++	 *	so limit it to 64MB!
++	 */
++	if ((rinfo->video_ram / 1024) > 65536) {
++		rinfo->video_ram = 65536 * 1024;
++	}
++
+ 
+ 	RTRACE("radeonfb: probed %s %dk videoram\n", (rinfo->ram_type), (rinfo->video_ram/1024));
+ 
 
->   2) head.S has some code which i guess is for early serial logging or
->   something such. I guess such a thing can never be part of the official
->   tree, right ?
+Now the radeonfb works in 8 bit mode but not perfect. There are pixel-trash 
+when I scroll up/down. The 16 bit and 32 bit modes works but I have 
+wrong colors and the same scroll problem. Any idea?
 
-That depends... It can be done cleanly without hacking head.S I beleive,
-but I need to look at the code to tell you exactly
+BTW: my Radeon 9100 has 128 MB RAM
 
->   3) arch/ppc/platforms/chrp_setup.c got patched about io_block_mapping,
->   but this doesn't seem to exist anymore in the current
->   linuxppc_2_4_devel tree. Whatever happened to it, and what replaces it =
-?
+ -Martin
 
-You probably don't need it. Just ioremap what need to be ioremap'ed and
-avoid any hard coded virtual addresses and things should be just fine.
-
-> > >   2) when running X with the UseFBDev option the colors are bad, i gu=
-ess
-> > >   it is an endianess problem. (with and without accel)
-> >=20
-> > What radeon card is this ?
->=20
-> Radeon 9000 non-pro (and thus fanless).
->=20
-> > >   3) When running X without the UseFBDev option, the colors are good,
-> > >   but i get garbage when i return to the console. Not exactly garbage=
-,
-> > >   at first it is ok, but when i enter a line or somehow pan the scree=
-n,
-> > >   the corruption start. Doing a vt switch and back redraws a clean
-> > >   screen.
-> >=20
-> > Known problem. This is actually a bit nasty. X doesn't fully restore th=
-e
-> > engine state (and it's in fact quite difficult to know in which state
-> > it should restore it) and there's no hook in the fbdev layer for
-> > restoring things like that when switching from KD_GRAPHICS back to
-> > KD_TEXT. I'm thinking about adding such a hook in 2.5. Usually, a VT
-> > switch will trigger a restore of the engine state, at least it will
-> > with my version of the driver.
->=20
-> Mmm, so is this a problem in the X server or in the fbdev driver ? I
-> understand that you will fix this in the fbdev since you have a more
-> difficult time doing it in the X driver, but this does mean that the X
-> driver will do a partial save/restore, and that fbdev will then do a
-> full save/restore ? Seems overkill to me. We can either fix it in the
-> fbdev driver (which will know which registers the fbdev needs to backup)
-> or in the X driver (which will know about which register x needs to
-> backup).
-
-Not exactly. I'm not sure X can restore the engine state exactly
-(maybe it can, but imho, it's a bit overkill). I tend to think that
-the fbdev shall do it as it's very much easier. On one side, X would
-have to backup & restore an insane amount of registers, on the other
-side, fbdev can just re-init the engine to the state it wants in a few
-dozen lines of code.
-
-So my idea was to fix the fbdev interface so that fbdev's in general
-have a hook when a console witch from KD_GRAPHICS to KD_TEXT (that
-is basically when fbcon gets back control) so things can be reset
-properly. =20
-
-> Maybe it would be nice if the fbdev driver could save/restore the fbdev
-> used registers, and tell the X driver by a information hook that it did
-> do the saving, and then the X driver would not need to save/restore the
-> registers when UseFBDev was used.
-
-X already save/restore things related to mode setting. The accel engine
-is another problem (and not related to use of UseFBDev or not, the
-problem is the same in both cases).
-
-I don't think any of such 'hooks' in the fbdev<->X interface will be
-ever accepted by X folks like Marc Aurele ;) (He never allowed fbdev
-support to be added to the mach64 driver for example)
-
-> Ah, so it is not true that one chrp, the northbridge did the endianess
-> conversion transparently ?
-
-No. There are strict rules on how endianess has to be dealt between=20
-a BE CPU and the PCI bus, and afaik, all PPCs do it properly.
-
-Ben.
 
 
 -------------------------------------------------------

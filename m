@@ -1,17 +1,17 @@
-From: Otto Solares <solca@guug.org>
-Subject: Re: [PATCH] 3/3 Add I2C/DDC support to radeonfb
-Date: Fri, 22 Aug 2003 19:37:58 -0600
+From: smart.projects@pandora.be
+Subject: [Auto-Respons] Re: Re: Your application
+Date: 21 Aug 2003 13:47:42 -0000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030823013758.GA606@guug.org>
-References: <20030822162513.GD4279@dreamland.darkstar.lan>
-Mime-Version: 1.0
+Message-ID: <20030821134742.18627.qmail@pandora.be>
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from guug.galileo.edu ([168.234.203.30])
+Received: from euros.telenet-ops.be ([195.130.132.55])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19qNRM-00010G-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 22 Aug 2003 18:43:40 -0700
-Content-Disposition: inline
-In-Reply-To: <20030822162513.GD4279@dreamland.darkstar.lan>
+	id 19pqGA-0003aV-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 21 Aug 2003 07:17:54 -0700
+Received: from pop13.pandora.be (menthe.telenet-ops.be [195.130.131.97])
+	by euros.telenet-ops.be (Postfix) with ESMTP id 991BC4D5EB
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 21 Aug 2003 15:47:42 +0200 (MEST)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,18 +21,13 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Kronos <kronos@kronoz.cjb.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Benjamin Herrenschmidt <benh@kernel.crashing.org>, James Simmons <jsimmons@infradead.org>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, Aug 22, 2003 at 06:25:14PM +0200, Kronos wrote:
-> Export EDID data through sysfs.
-
-nice! hopefully fbdev drivers follow the same schema.
-
--solca
-
+Due to the outbreak of mailworm Sobig.F we are being flooded with mails. =
+ We therefore need to filter aggresively. Please try the support form ins=
+tead
 
 
 -------------------------------------------------------

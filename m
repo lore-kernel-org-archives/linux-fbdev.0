@@ -1,17 +1,12 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Linux-fbdev-devel] Re: Who is stomping PCI config space?
-Date: Sat, 05 Mar 2005 09:45:04 +1100
-Message-ID: <1109976305.5611.312.camel@gaston>
+Subject: Re: Who is stomping PCI config space?
+Date: Sat, 05 Mar 2005 09:51:43 +1100
+Message-ID: <1109976703.5610.314.camel@gaston>
 References: <9e4733910503031103552514b9@mail.gmail.com>
-	<1109891245.5611.246.camel@gaston>
-	<9e473391050303161559c17955@mail.gmail.com>
-	<9e47339105030319037f083f7@mail.gmail.com>
-	<1109918459.5610.273.camel@gaston>
-	<16936.20345.249542.65736@xf14.local>
-	<9e473391050304095812a11208@mail.gmail.com>
+	<16936.17069.428202.815866@xf14.local>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-In-Reply-To: <9e473391050304095812a11208@mail.gmail.com>
+In-Reply-To: <16936.17069.428202.815866@xf14.local>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
 	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
@@ -23,37 +18,37 @@ List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
 Sender: xorg-bounces@lists.freedesktop.org
 Errors-To: xorg-bounces@lists.freedesktop.org
 Content-Type: text/plain; charset="us-ascii"
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Egbert Eich <eich@suse.de>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Xserver development <xorg@freedesktop.org>, Jesse Barnes <jbarnes@sgi.com>
+To: Egbert Eich <eich@suse.de>
+Cc: Xserver development <xorg@freedesktop.org>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-On Fri, 2005-03-04 at 12:58 -0500, Jon Smirl wrote:
-> In the past Jesse Barnes has suggested a completely different approach
-> to VGA sharing. Instead of each VT trying to control which VGA device
-> is enabled we keep them all turned off. Then on each access we turn
-> VGA support on just long enough for the access and then turn it back
-> off.
 
-That's what I had in mind too.
+> If you want to access these cards from inside your 
+> kernel you could just check if they are enabled before 
+> you do and enable them if they aren't. 
+> This works as long as you can be sure nobody else will 
+> access legacy resources from anywhere else - this may 
+> be difficult if you have a machine with more than one 
+> CPU, if you have more than one userland process that 
+> may want to access the HW.
+> You should make sure to restore the state before you 
+> return.
 
-> To make this work we have to have a kernel based 'token' for who has
-> the VGA at the moment. This scheme lets multiuser systems work. For
-> big IA64 machines which can support multiple simultaneous VGAs we just
-> have multiple tokens.
+Saving/restoring state doesn't help because of the SMP case.
 
-That means that the arbitrer must need to know how to enable/disable VGA
-decoding on a per-card basis (when it's possible at all), or active
-collaboration with the kernel driver. Also, you can't prevent the
-interrupts from happening unless you also disable them on your card.
-
-> We would just ban VGA access from interrupt context, if you really
-> needed VGA access you would use a workqueue which can be scheduled
-> from the interrupt. None of my driver work needs VGA access from
-> interrupt context, is this true for all drivers? I need access to the
-> video hardware, but not access to the VGA support.
-
-It's not enough.
-
-There is a variety of cases where the only way to turn off VGA access is
-to turn off IO & MEM decoding completely on the card...
-
-Ben.
+> As a note on the side: 
+> The Xserver doesn't 'stomp' over PCI config space any 
+> more without telling the kernel: The code which does 
+> direct PIO banging for config space access doesn't 
+> get used any more unless the user explicitely *asks*
+> for it. 
+> The option to do so is well hidden from the user.
+> This has been this way since X.Org 6.8.0 - I didn't 
+> change this for 6.7.0 for lack of testing.
+> 
+> Egbert.
+> _______________________________________________
+> xorg mailing list
+> xorg@lists.freedesktop.org
+> http://lists.freedesktop.org/mailman/listinfo/xorg
+-- 
+Benjamin Herrenschmidt <benh@kernel.crashing.org>

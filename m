@@ -1,21 +1,14 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: set_par/check-var vs. fbcon
-Date: Wed, 29 Oct 2003 09:19:22 +1100
+Subject: Re: [Dri-devel] Re: DRM and pci_driver
+	conversion
+Date: Wed, 29 Oct 2003 09:26:18 +1100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1067379561.3326.36.camel@gaston>
+Message-ID: <1067379978.3333.44.camel@gaston>
+References: <20031028220940.65607.qmail@web14913.mail.yahoo.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1AEcE6-0001Wo-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 28 Oct 2003 14:22:10 -0800
-Received: from pentafluge.infradead.org ([213.86.99.235])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.24)
-	id 1AEcCB-0000yA-HK
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 28 Oct 2003 14:20:14 -0800
+In-Reply-To: <20031028220940.65607.qmail@web14913.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -26,39 +19,59 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: James Simmons <jsimmons@infradead.org>, Linus Torvalds <torvalds@osdl.org>, Ian Romanick <idr@us.ibm.com>, David Dawes <dawes@XFree86.Org>, dri-devel <dri-devel@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi !
+On Wed, 2003-10-29 at 09:09, Jon Smirl wrote:
 
-I'm having a problem getting proper semantics for set_par/check_var
-calls with 2.6 in radeonfb.
+> Do we really want arbitration between multiple things (FB, X, DRI, etc) all
+> trying to control the video hardware at a register level? This is like writing
+> a multitaking system for device drivers.
+> 
+> Or do we want a single device driver with multiple clients?
 
-So far, I assumed they would be called with a complete structure
-containing mode timings etc... though check_var() would eventually
-fail if not supported and/or slightly "adapt" the var.
+Here, you are going away from Linus suggestion. While it makes sense
+too, it would be a real pain to keep that single driver in sync between
+the different parties, to keep backward compatibility, etc... re-read
+Linus emails on this topic. I tend to agree with him here, what we want
+is a small low level layer that does the strict minimum to provide
+DMA/irq and arbitration.
 
-That is the behaviour that is needed for things like MacOnLinux
-(or even XFree on top of fbdev) to work properly.
+> A major complaint from the framebuffer console people is that we have to do
+> mode setting/EDID in the device driver so that there is a console to look at
+> from the first second the kernel boots. This also means we have to map the
+> framebuffer into kernel space (sucking up to 256MB of kernel address space).
 
-However, when stty is used, the fbcon code will call these with
-a var which is the current one with only the size changed. That
-is it asks for a mode with a different size, but the timings of
-the previous one. This doesn't work properly with radeonfb, and
-I wonder if there is one fbdev that has this working properly
-at all...
+That mode setting / EDID is done in drivers on other platforms as well,
+I don't see the problem here. It's the basic "feature" provided by the
+framebuffer driver, it doesn't only make sense for fbcon but also for
+other framebuffer apps.
 
-For such thing, we need to pick a full mode (timings included)
-that matches the new size... So the semantics expected by the
-call issued from fbcon are more like "pick a mode that has this
-size", though the timings in there are a "hint" to eventually
-pick a mode that has the same vfreq... 
+Mapping the framebuffer into kernel space isn't necessary. It's how
+today's fbcon works, but it's not mandatory. In fact, if fbcon was
+fully accelerated, mapping the fb would be useless.
 
-I wonder... maybe we shall set a specific flag when doing that
-set_var call from fbcon to trigger the intended mecanism. Or
-should we have all check_var()/set_par() calls in drivers
-implement a mecanism by default ? That would prevent userland
-from using the ioctl to change the timings precisely though...
+> In the 2.7 time frame is it possible to write a low level driver like Linus
+> proposed plus a small DSO for mode setting/EDID. 
+
+DSO ? Can you translate ?
+
+> Then write fbconsole as a user
+> space app that is loaded much eariler in the boot process than user-mode
+> currently starts? In other words is there a solution to having a boot time
+> console that doesn't involve running it in a device driver?
+
+So we lose the ability to get early boot messages and printk at
+interrupt time ? no thanks ! Looks you aren't regulary faced with the
+need to debug kernel code ;)
+
+> Another possible solution to the boot time problem would be to write a
+> disposable device driver. The disposable driver would set the mode/EDID and run
+> the console until user mode started; then self destruct. 
+
+fbcon can still be in the kernel. I see no point in your push to move it
+down to userland, provided that it stays a clearly separate entity from the
+fbdev itself, just another client.
 
 Ben.
 

@@ -1,29 +1,20 @@
-From: Lucas Correia Villa Real <lucasvr@gobolinux.org>
-Subject: Re: Screen Refresh
-Date: Wed, 5 May 2004 12:46:11 -0300
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Fbdev magics
+Date: Thu, 6 May 2004 11:17:50 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200405051246.11464.lucasvr@gobolinux.org>
-References: <200405051047.00127.lucasvr@gobolinux.org> <20040505140257.GI29503@lug-owl.de>
+Message-ID: <Pine.GSO.4.58.0405061112110.12096@waterleaf.sonytel.be>
+References: <200405050027.58630.lucasvr@terra.com.br>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BLOdq-0001WP-IF
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 05 May 2004 08:49:02 -0700
-Received: from ibague.terra.com.br ([200.154.55.225])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BLOdq-0000uc-7B
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 05 May 2004 08:49:02 -0700
-Received: from tucuman.terra.com.br (tucuman.terra.com.br [200.154.55.139])
-	by ibague.terra.com.br (Postfix) with ESMTP id 779C0EDE11
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed,  5 May 2004 12:46:04 -0300 (BRT)
-Received: from ummagumma.ozzmosis.net (200-203-051-117.nhoce7002.dsl.brasiltelecom.net.br [200.203.51.117])
-	(authenticated user lucasvr)
-	by tucuman.terra.com.br (Postfix) with ESMTP id 498E83C038
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed,  5 May 2004 12:46:04 -0300 (BRT)
-In-Reply-To: <20040505140257.GI29503@lug-owl.de>
-Content-Disposition: inline
+	id 1BLf0v-0003Ey-E1
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 06 May 2004 02:17:57 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BLf0u-0003N4-Rs
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 06 May 2004 02:17:57 -0700
+In-Reply-To: <200405050027.58630.lucasvr@terra.com.br>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,41 +24,68 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Lucas Correia Villa Real <lucasvr@terra.com.br>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wednesday 05 May 2004 11:02, Jan-Benedict Glaw wrote:
-> On Wed, 2004-05-05 10:47:00 -0300, Lucas Correia Villa Real
-> <lucasvr@gobolinux.org>
->
-> wrote in message <200405051047.00127.lucasvr@gobolinux.org>:
-> > I'm writing a device driver for a monochrome LCD display managed by a
-> > controller that will be plugged into the CPU through a SPI, that is, I
-> > cannot directly memory-map it's address, since the communication will be
-> > done via a serial interface.
->
-> So I see two ways.
->
-> 	If you only want to be able to output text, then you'd register
-> as a console device. You'll then get write accesses, which you can then
-> promote to real hardware.
->
-> 	If you really want to provide a graphical display, you'll need
-> something like two buffers (one the kernel writes to, probably a 2nd one
-> to store the "current" image to only send down the changed pixels).
-> That'll come along with some timed function - not nice, but may work.
->
-> In theory, you'd try to not actually provide a framebuffer (memory), but
-> to simply give pointers to all those accelerated functions. If you've
-> got enough luck, you'll only see these functions called, so that you can
-> do graphics with merely no overhead of polling the whole memory...
+On Wed, 5 May 2004, Lucas Correia Villa Real wrote:
+> I'm starting to write a device driver for a display managed by a controller.
+> It's an LCD with 65x132 pixels produced by Sitronix (ST7565), and is being
+> used on an ARM-based embedded through an SPI interface (that is, I cannot
+> directly memory-map it's address, since the communication will be done by
+> this serial interface).
 
-Hmm, that's a good idea! I'll need to have graphical display, so I think I'll 
-start by writing a first release using this double buffering technique, and 
-later try to play with accelerated functions.
+So you cannot access the frame buffer memory from the CPU, except through
+sending commands to the LCD controller, right?
 
-Thanks for the help!
-Lucas
+> I've read some device drivers code for other LCD devices, and I could have a
+> good idea of how things work. By the way, a few questions couldn't be
+> answered just by looking into their sources:
+>
+> - how is the "refresh" done by fbdev? I don't want to keep sending the same
+> data to the display if there isn't any update to be done.
+
+If the frame buffer memory is accessible directly by the CPU, it will be
+updated automatically. If not, things get more difficult:
+  - For text console output, 2.4.x will do direct accesses to the frame buffer,
+    which won't work.
+    In 2.6.x, fbcon will call the fb_{fillrect,copyarea,imageblit}() routines
+    of your fbdev driver, so you can handle that easily
+  - For graphics from user space, things are more complex, since the
+    application cannot mmap() your frame buffer memory. Either you use a shadow
+    frame buffer that updates the hardware periodically, or teach your
+    application to talk to the LCD controller directly.
+
+> - also related to this refresh: I haven't seen any interrupt being handled by
+> many fbdev drivers. Is this ok? How will fbdev knows when the card is trying
+> to communicate with the CPU?
+
+Most drivers don't use interrupts yet, because until recently (speaking about
+2.6), you could not use them there.
+
+> - given that I can be told when the user is going to write some data to the
+> fbdev (should I implement my own fb_read and fb_write operations?), is there
+> an automatic way to get only the pixels that he's modifying? This would save
+> a lot of unnecessary transfers to the display as well.
+
+You should implement your own fb_{read,write}() if the CPU cannot access the
+frame buffer memory directly.
+
+> Just forgot to tell that I'm running Linux 2.4.20 for ARM.
+
+2.6 would make life simpler for you :-)
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

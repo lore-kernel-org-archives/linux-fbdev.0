@@ -1,8 +1,8 @@
 From: "Tony" <adaplas@hotpop.com>
 Subject: RE: Bug in software cursor flash code, when align!=1?
-Date: Sun, 21 Sep 2003 19:50:28 +0800
+Date: Sun, 21 Sep 2003 20:55:38 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <000601c38036$8d2f9140$9317b1cb@bom>
+Message-ID: <000101c3803f$a7e1e480$f217b1cb@bom>
 References: <20030915083820.GA22164@zensonic.dk>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
@@ -10,15 +10,15 @@ Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1A12dP-00082I-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 21 Sep 2003 04:44:11 -0700
-Received: from babyruth.hotpop.com ([204.57.55.14])
+	id 1A13a5-00035Z-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 21 Sep 2003 05:44:49 -0700
+Received: from twix.hotpop.com ([204.57.55.70])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 1A12dP-0005ax-1M
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 21 Sep 2003 04:44:11 -0700
+	id 1A13a4-0004lM-CG
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 21 Sep 2003 05:44:48 -0700
 Received: from hotpop.com (kubrick.hotpop.com [204.57.55.16])
-	by babyruth.hotpop.com (Postfix) with SMTP id F3CAA21E9CF
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 21 Sep 2003 11:39:09 +0000 (UTC)
+	by twix.hotpop.com (Postfix) with SMTP id 2DDB278FCC1
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 21 Sep 2003 12:44:17 +0000 (UTC)
 In-Reply-To: <20030915083820.GA22164@zensonic.dk>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
@@ -32,42 +32,29 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: text/plain; charset="us-ascii"
 To: "Thomas S. Iversen" <zensonic@zensonic.dk>, linux-fbdev-devel@lists.sourceforge.net
 
+> 
+> Hi Again
+> 
 > Being puzzled by the fact that my software cursor did not work when
-> everything else worked with my accelerated routines I tried
+> everything else worked with my accelerated routines I tried 
 > to investigate
 > where the problem was located. This being when scan_align!=1 which
 > my accel routines need.
 >
 
-There are two main problems with the software cursor code in
-drivers/video/softcursor.c:
-
-1.  First, because it uses info->fbops->fb_imageblit(), this means that
-the source data must be in info->pixmap structure, and secondly, it must
-use info->pixmap.{in|out}buf methods when moving data from one location
-to another.
-
-2. Secondly, and you assessed it correctly, is that info->cursor.image
-is always byte aligned, and so will not work with accelerated imageblit
-routines which has scanline alignment requirements other than 1.
-
-Below is updated code that will transfer (and pad) the final cursor
-image data from info->cursor.image to info->pixmap.  It is of course
-less optimal than current code, but it should be consistent with current
-usage of fb_imageblit(). I'm typing the code on the fly, so no
-guarantees though that it will compile, much less, work.  But the main
-idea is there.
+Oops, sorry, try this instead.
 
 Tony
 
 int soft_cursor(struct fb_info *info, struct fb_cursor *cursor)
 {
+	struct fb_image image;
 	unsigned int scan_align = info->pixmap.scan_align - 1;
 	unsigned int buf_align = info->pixmap.buf_align - 1;
 	u8 *dst = (u8 *) info->cursor.image.data;
 	u8 *s, *d;
 	unsigned int i, size, p, pitch;
-
+	
 	/* p is the source pitch which is always byte aligned */
 	p = (info->cursor.image.width + 7) >> 3;
 
@@ -77,12 +64,12 @@ int soft_cursor(struct fb_info *info, struct fb_cursor *cursor)
 	pitch &= ~scan_align;
 	size = pitch * info->cursor.image.height + buf_align;
 	size &= ~buf_align;
-
+ 	
 	if (cursor->set & FB_CUR_SETSIZE) {
  		info->cursor.image.height = cursor->image.height;
  		info->cursor.image.width = cursor->image.width;
  	}
-
+ 
  	if (cursor->set & FB_CUR_SETPOS) {
 	info->cursor.image.dx = cursor->image.dx;
  		info->cursor.image.dy = cursor->image.dy;
@@ -90,7 +77,7 @@ int soft_cursor(struct fb_info *info, struct fb_cursor *cursor)
 
  	if (cursor->set & FB_CUR_SETHOT)
  		info->cursor.hot = cursor->hot;
-
+ 	
  	if (cursor->set & FB_CUR_SETCMAP) {
  		if (cursor->image.depth == 1) {
  			info->cursor.image.bg_color = cursor->image.bg_color;
@@ -100,13 +87,13 @@ int soft_cursor(struct fb_info *info, struct fb_cursor *cursor)
  				fb_copy_cmap(&cursor->image.cmap, &info->cursor.image.cmap, 0);
 		}
 		info->cursor.image.depth = cursor->image.depth;
- 	}
-
+ 	}	
+ 
  	if (cursor->set & FB_CUR_SETSHAPE) {
  		switch (info->cursor.rop) {
  		case ROP_XOR:
  			for (i = 0; i < size; i++)
- 				dst[i] ^= info->cursor.mask[i];
+ 				dst[i] ^= info->cursor.mask[i]; 
 			break;
  		case ROP_COPY:
  		default:
@@ -115,29 +102,31 @@ int soft_cursor(struct fb_info *info, struct fb_cursor *cursor)
 			break;
  		}
  	}
-
+ 	
  	if (!info->cursor.enable) {
  		for (i = 0; i < size; i++)
  			dst[i] ^= info->cursor.mask[i];
  	}
-
+	
 	/* Once cursor image processing is finished, start transferring
 	   data to pixmap */
 
 	/* First, get a chunk from scratch memory... */
-	d = fb_get_buffer_offset(info, &info->pixmap, size);
+	image = info->cursor.image;
+	image.data = d = fb_get_buffer_offset(info, &info->pixmap, size);
 	s = dst;
 
 	/* ... then move data to scratch memory ... */
-	for (i = info->cursor.image.height; i--; ) {
-		info->pixmap.outbuf(info, d, s, p)
-		d += pitch;
-		s += p;
+	if (info->cursor.image.data) {
+		for (i = info->cursor.image.height; i--; ) {
+			info->pixmap.outbuf(info, d, s, p)	
+			d += pitch;
+			s += p;
+		}
 	}
-
+		
 	/* ... draw the cursor ... */
- 	if (info->cursor.image.data)
- 		info->fbops->fb_imageblit(info, d);
+ 	info->fbops->fb_imageblit(info, &image);
 
 	/* ... tell fb we're done. */
 	atomic_dec(info->pixmap.count);
@@ -145,8 +134,6 @@ int soft_cursor(struct fb_info *info, struct fb_cursor *cursor)
 
  	return 0;
 }
-
-
 
 
 

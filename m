@@ -1,24 +1,23 @@
-From: Mail Delivery Subsystem <MAILER-DAEMON@darmstadt.de>
-Subject: Returned mail: see transcript for details
-Date: Mon, 16 Aug 2004 08:51:35 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: patch fixing background next to penguin logo
+ in monochrome
+Date: Tue, 17 Aug 2004 09:45:34 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200408160651.i7G6pZh10961@gg.darmstadt.de>
+Message-ID: <Pine.GSO.4.58.0408170945120.8552@waterleaf.sonytel.be>
+References: <1092254183.4209.16.camel@joy.home> <200409130625.07250.adaplas@hotpop.com>
+ <Pine.GSO.4.58.0408151425000.3409@waterleaf.sonytel.be>
+ <200409161110.12046.adaplas@hotpop.com>
 Mime-Version: 1.0
-Content-Type: multipart/report; report-type=delivery-status;
-	boundary="i7G6pZh10961.1092639095/gg.darmstadt.de"
-Content-Transfer-Encoding: 8bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BwbLO-0002Vt-Pw
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 15 Aug 2004 23:51:46 -0700
-Received: from outbound.darmstadt.de ([194.127.205.2])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1BwbLN-0004OV-Bj
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 15 Aug 2004 23:51:45 -0700
-Received: from gg.darmstadt.de (localhost.localdomain [127.0.0.1])
-	by outbound.darmstadt.de (Postfix) with ESMTP id 158FCB808E
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 16 Aug 2004 08:45:41 +0200 (CEST)
+	id 1Bwykg-0004ts-Ib
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 17 Aug 2004 00:51:26 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1Bwyfd-0006tS-FI
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 17 Aug 2004 00:51:26 -0700
+In-Reply-To: <200409161110.12046.adaplas@hotpop.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,63 +27,51 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Petr Stehlik <pstehlik@sophics.cz>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, "Christian T. Steigies" <cts@debian.org>
 
-This is a MIME-encapsulated message
+On Thu, 16 Sep 2004, Antonino A. Daplas wrote:
+> On Sunday 15 August 2004 20:25, Geert Uytterhoeven wrote:
+> > > This one is a little difficult since there is currently no method to
+> > > convert monochrome attributes to color and vice versa.  The best one can
+> > > do is to clear all attributes when switching from mono<->color.
+> > >
+> > > When switching, one will get plain text only.  This is  probably better
+> > > than having text with incorrect attributes.
+> > >
+> > > Attached patch is completely untested, but it's the same one in 2.6.
+> >
+> > Doesn't help, still the same behavior :-(
+>
+> I looked at the code, and the flow seems to be like this:
+>
+> fbcon_switch->fb_set_var->changevar->fbcon_setup->update_screen/redraw_screen
+>
+> However, fbcon_setup() updates conp->vc_can_do_color, so by the time
+> the redraw_screen function in console.c checks for the vc_can_do_color field,
+> it always returns equal.
+>
+> So instead of clearing the buffer attributes in redraw_screen(), we do it
+> instead in fbcon_setup().
+>
+> Try the patch below.  You might have to apply them manually as I'm using
+> Suse-9.0 linux kernel, which has the bootsplash code.  Also, all the previous
+> patches need to be reversed.
 
---i7G6pZh10961.1092639095/gg.darmstadt.de
+Applied fine, but still the same result.
 
-The original message was received at Mon, 16 Aug 2004 08:51:10 +0200 (CEST)
-from root@localhost
+Gr{oetje,eeting}s,
 
-   ----- The following addresses had permanent fatal errors -----
-municipality@darmstadt.de
-    (reason: 550 No such recipient)
+						Geert
 
-   ----- Transcript of session follows -----
-... while talking to gwmail.darmstadt.de.:
->>> RCPT To:<municipality@darmstadt.de>
-<<< 550 No such recipient
-550 5.1.1 municipality@darmstadt.de... User unknown
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
---i7G6pZh10961.1092639095/gg.darmstadt.de
-Content-Type: message/delivery-status
-
-Reporting-MTA: dns; gg.darmstadt.de
-Arrival-Date: Mon, 16 Aug 2004 08:51:10 +0200 (CEST)
-
-Final-Recipient: RFC822; municipality@darmstadt.de
-Action: failed
-Status: 5.1.1
-Remote-MTA: DNS; gwmail.darmstadt.de
-Diagnostic-Code: SMTP; 550 No such recipient
-Last-Attempt-Date: Mon, 16 Aug 2004 08:51:35 +0200 (CEST)
-
---i7G6pZh10961.1092639095/gg.darmstadt.de
-Content-Type: text/rfc822-headers
-Content-Transfer-Encoding: 8bit
-
-Return-Path: <linux-fbdev-devel@lists.sourceforge.net>
-Received: (from root@localhost)
-	by gg.darmstadt.de (8.11.6p2G/8.11.6) id i7G6pAi10956
-	for municipality@darmstadt.de; Mon, 16 Aug 2004 08:51:10 +0200 (CEST)
-Received: from inbound.darmstadt.de (10.100.10.33) by extern-gg.darmstadt.de (smtprelay) with ESMTP Mon Aug 16 08:50:54 2004.
-Received: from darmstadt.de (inbound.darmstadt.de [127.0.0.1])
-	by inbound.darmstadt.de (Postfix) with ESMTP id BECE3FC06B
-	for <municipality@darmstadt.de>; Mon, 16 Aug 2004 08:43:21 +0200 (CEST)
-From: linux-fbdev-devel@lists.sourceforge.net
-To: municipality@darmstadt.de
-Subject: Failed (municipality@darmstadt.de)
-Date: Mon, 16 Aug 2004 15:38:34 +0900
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0016----=_NextPart_000_0016"
-X-Priority: 1
-X-MSMail-Priority: High
-Message-Id: <20040816064321.BECE3FC06B@inbound.darmstadt.de>
-
---i7G6pZh10961.1092639095/gg.darmstadt.de--
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

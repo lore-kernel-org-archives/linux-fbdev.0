@@ -1,17 +1,19 @@
-From: Jani Monoses <jani@iv.ro>
-Subject: Re: tridentfb in 2.5.70 broken
-Date: Tue, 10 Jun 2003 12:04:20 +0300
+From: "Parag Warudkar" <parag.warudkar@wipro.com>
+Subject: 2.5.70 - Blank Screen with VESA VGA Framebuffer
+Date: Tue, 10 Jun 2003 15:06:23 +0530
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030610120420.715bbad5.jani@iv.ro>
-References: <20030608212435.17118c5b.b.stolk@chello.nl>
+Message-ID: <0BCBFEACE44CF0469CF5EBF7F6B61253410228@chn-snr-msg.wipro.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from iv.ro ([194.105.28.94])
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19Pet8-0003d0-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 10 Jun 2003 01:53:55 -0700
-In-Reply-To: <20030608212435.17118c5b.b.stolk@chello.nl>
+Received: from wiprom2mx1.wipro.com ([203.197.164.41])
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19PfYV-0005VQ-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 10 Jun 2003 02:36:39 -0700
+Received: from m2vwall5.wipro.com (m2vwall5.wipro.com [10.115.50.5])
+	by wiprom2mx1.wipro.com (8.11.3/8.11.3) with SMTP id h5A9aSC08805
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 10 Jun 2003 15:06:28 +0530 (IST)
+content-class: urn:content-classes:message
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -24,29 +26,24 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
 
+I have a Sony VAIO laptop with ATI Mobility M1 AGP chip. I can use
+XFree86 on 2.4.x if I enable VESA VGA Frame buffer and enable vga=3D788 =
+on
+kernel command line. With Kernel 2.5.70 after enabling VESA VGA
+Framebuffer console and specifying vga=3D commandline, I just get a =
+blank
+screen just after the boot process starts and X doesn't work. (Garbled
+screen). Without the vga=3D commandline, I get normal boot screen but X
+needs the vga=3D option and doesn't work.
 
-> Hi there,
-> 
-> 
-> tridentfb 0.7.8-NEWAPI, as shipping with linux-2.5.70 is broken.
-> in tridentfb_check_var(), the check for nativex should read:
-> 
->         if (flatpanel && nativex && var->xres > nativex)
-> 
-> instead of:
-> 
-> 	if (var->xres > nativex)
-> 
-> otherwise all modes are rejected on a non FP.
+I have tried everything but to no avail. Does anyone know what do I need
+to do in order to get kernel 2.5.X working with Framebuffer console
+(VESA VGA or atyfb) and vga=3D788? I tried video=3Datyfb but that too
+doesn't work..=20
 
-Feel free to send a patch, I don't have time right now, in fact I
-haven't used 2.5 for a long time. In 2.5 all fbdevs now have the fb
-suffix for consistency in boot args but the docs for trident were not
-updated.
-You can send the patch to this list hopefully it will be picked up by
-somebody. If not I'll send it eventually .
-thanks
-Jani
+Regards
+
+Parag
 
 
 -------------------------------------------------------

@@ -1,50 +1,78 @@
 From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: [Linux-fbdev-devel] Re: FBdev updates.
-Date: 04 Mar 2003 05:32:33 +0800
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1046727094.1279.27.camel@localhost.localdomain>
-References: <Pine.LNX.4.44.0302200108090.20350-100000@phoenix.infradead.org>
-	<20030220150201.GD13507@codemonkey.org.uk>
-	<20030220182941.GK14445@vana.vc.cvut.cz>
-	<1045787031.2051.9.camel@localhost.localdomain> 
-	<20030303203500.GA2916@vana.vc.cvut.cz>
+Subject: Re: [PATCH] Tile Blitting
+Date: 04 Mar 2003 05:32:17 +0800
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <1046725840.1277.8.camel@localhost.localdomain>
+References: <Pine.GSO.4.21.0303021312400.9181-100000@vervain.sonytel.be>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <20030303203500.GA2916@vana.vc.cvut.cz>
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from pine.compass.com.ph ([202.70.96.37])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18pxWj-0000T0-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 03 Mar 2003 13:31:13 -0800
+In-Reply-To: <Pine.GSO.4.21.0303021312400.9181-100000@vervain.sonytel.be>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Petr Vandrovec <vandrove@vc.cvut.cz>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: James Simmons <jsimmons@infradead.org>, Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tue, 2003-03-04 at 04:35, Petr Vandrovec wrote:
-
->   My main concern now is 12x22 font... Accelerator setup
-> is so costly for each separate painted character that for 8bpp 
-> accelerated version is even slower than unaccelerated one :-(
-> (and almost twice as slow when compared with 2.4.x).
-
-I submitted a patch to James, which he already applied to his tree, that
-addresses this problem.  It conglomerates the series of bitmaps into 1,
-so only one fb_imageblit is necessary.  It should give faster painting
-than the original 2.5.x code, hopefully faster than 2.4.x code, but
-slower than 8x16 painting because of the additional packing.
-
+On Sun, 2003-03-02 at 20:14, Geert Uytterhoeven wrote:
+> On Thu, 27 Feb 2003, James Simmons wrote:
+> > > On Don, 2003-02-27 at 15:15, Antonino Daplas wrote: 
+> > > > On Thu, 2003-02-27 at 09:18, James Simmons wrote:
+> > > >  
+> > > > > > Thus, the restriction that the buffer must be completely copied by the
+> > > > > > driver before returning.  And because of this restriction, an extra copy
+> > > > > > which might be unnecessary cannot be avoided (this was noted by Petr).
+> > > > > > 
+> > > > > > Treating the buffer as a ringbuffer, we eliminate these restrictions.
+> > > > > 
+> > > > > I didn't realize that the below was a ringbuffer implementation. The name
+> > > > > threw me off. 
+> > > > 
+> > > > Well, it's not strictly a ringbuffer implementation.  This would require
+> > > > a head and tail pointer where fbcon will adjust the tail and the
+> > > > driver/hardware will adjust the head.  This will be very difficult to
+> > > > implement in a device independent manner.  So we just cheat by issuing
+> > > > an fb_sync() per loop to flush all pending commands.
+> > > 
+> > > That still seems suboptimal though. What the DRM often does is have the
+> > > chip write an age value to a scratch register when it's done processing
+> > > something. Maybe something like that could be used to avoid waiting for
+> > > the chip to go idle at all?
+> > 
+> > Don't waste your time. I'm removing all the changes that have been done 
+> > since 2.5.51. After that I will no longer be co-maintainter of the 
+> > framebuffer layer. 
 > 
->   And one (or two...) generic questions: why is not pseudo_palette
-> u32* pseudo_palette, or even directly u32 pseudo_palette[17] ?
+> Are you sure about that?!?!?
+> 
 
-Yes, all drivers should treat the pseudo_palette as u32* anyway, so why
-not change pseudo-palette from void* to u32*?
+I agree.  Actually, I'm not worried about Tile blitting.  It should be
+mature since it's basically a rehash of the 2.4 API.  If I'm going to
+worry about something, it's the standard accel_putcs() code, especially
+if thread-safety is an issue.
 
-> And why we do not fill this pseudo_palette with
-> i * 0x01010101U for 8bpp pseudocolor and i * 0x11111111U for 4bpp
-> pseudocolor? This allowed me to remove couple of switches and tests
-> from acceleration fastpaths (and from cfb_imageblit and cfb_fillrect,
-> but I did not changed these two in my benchmarks below).
+Is thread-safety a real problem?  That was also my concern before, which
+is why I looked at vt.c.  From what I can see, there's always an
+"acquire_console_sem()" before calling any of the console methods. The
+console semaphore is supposed to guarantee serialization and exclusive
+access to the console (see linux/kernel/printk.c).
 
-I also agree for a different reason.  Cards with unconventional formats
-(such as monochrome at 8 bpp - 0 for black , 0xff for white) will not
-work with the current code.
+Tony
 
-Tony  
+
+
+-------------------------------------------------------
+This sf.net email is sponsored by:ThinkGeek
+Welcome to geek heaven.
+http://thinkgeek.com/sf

@@ -1,58 +1,64 @@
-From: Alex Deucher <alexdeucher@gmail.com>
-Subject: Re: [Linux-fbdev-devel] Resource management.
-Date: Tue, 22 Feb 2005 13:59:22 -0500
-Message-ID: <a728f9f90502221059686284a7@mail.gmail.com>
-References: <Pine.LNX.4.56.0502211908520.14500@pentafluge.infradead.org>
-	 <200502220653.01286.adaplas@hotpop.com>
-	 <Pine.LNX.4.56.0502212313160.18148@pentafluge.infradead.org>
-	 <9e473391050221170111610521@mail.gmail.com>
-	 <Pine.LNX.4.56.0502220319330.20949@pentafluge.infradead.org>
-	 <21d7e99705022120462cb9494c@mail.gmail.com>
-	 <9e47339105022121234d0f7f73@mail.gmail.com>
-	 <Pine.LNX.4.56.0502221719440.30102@pentafluge.infradead.org>
-Reply-To: Alex Deucher <alexdeucher@gmail.com>
+From: Jesse Barnes <jbarnes@sgi.com>
+Subject: Re: [PATCH] Provide control of active VGA device on PCI systems
+Date: Tue, 22 Feb 2005 10:50:43 -0800
+Message-ID: <200502221050.43534.jbarnes@sgi.com>
+References: <9e47339105021921507545d084@mail.gmail.com> <9e473391050219230764b0dfd2@mail.gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-In-Reply-To: <Pine.LNX.4.56.0502221719440.30102@pentafluge.infradead.org>
-Sender: dri-devel-admin@lists.sourceforge.net
-Errors-To: dri-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1D3f8a-0005HK-7z
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Feb 2005 10:52:00 -0800
+Received: from omx2-ext.sgi.com ([192.48.171.19] helo=omx2.sgi.com)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1D3f8X-0002Rc-H8
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 22 Feb 2005 10:52:00 -0800
+In-Reply-To: <9e473391050219230764b0dfd2@mail.gmail.com>
+Content-Disposition: inline
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:dri-devel@lists.sourceforge.net>
-List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=dri-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@www.infradead.org>
-Cc: Jon Smirl <jonsmirl@gmail.com>, Dave Airlie <airlied@gmail.com>, James Simmons <jsimmons@pentafluge.infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, adaplas@pol.net, dri-devel@lists.sourceforge.net, xorg@lists.freedesktop.org, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>, benh@kernel.crashing.org
 
-On Tue, 22 Feb 2005 17:23:03 +0000 (GMT), James Simmons
-<jsimmons@www.infradead.org> wrote:
-> 
-> > As far as I know none of the significant contributors on either fbdev
-> > or DRM are being paid to work on the project.
-> 
-> So I have noticed. There is much to do but no real man power. We are
-> talking about this merging but at our rate it will take 5 years to happen.
-> We don't have the man power to do this. So I'm not going to bother
-> merging. Its all pipe dreams here.
-> 
-> 
+On Saturday, February 19, 2005 11:07 pm, Jon Smirl wrote:
+> New version to previous patch. This one adds the hotplug event mentioned
+> before.
+>
+> To achieve secondary card reset:
+>   Load a framebuffer driver.
+>   Driver causes hotplug add event
+>   reset=x environment parm indicates reset, primary cards is false
+>   run user space reset program
+>   read VBIOS content using existing API
+>   turn off all VGA devices, sysfs vga=3
+>   reset the card
+>   restore original VGA devices. sysfs vga=4
+>   set sysfs no_reset=1 to prevent further resets
+>
+> Tomorrow I'll clean up a user space reset app and post it.
 
-with that attitude it's never gonna happen.  I work almost exclusively
-on X, but once we get at least one sample driver done (probably
-radeon, I would be more than happy to devote my limited development
-resources to the new drm/fb super driver.  Right now the kernel FB
-drivers have no benefit for me so I don't use/develop them.  The drm
-just works and I'm more interested in the crtc/modes/outputs handling
-than the command processor control stuff.  I think a lot of X
-developers (and porobably IHVs) will get on board when this happens. 
-X is undermanned as well, but we've managed to do a pretty good job of
-supported a lot of features on a fair number of cards.
+Nice, if this is combined with Ben's suggestion of using a firmware loader 
+type model to deal with POSTing, it seems like we're in pretty good shape.  
+Can you add documentation for this API to 
+Documentation/filesystems/sysfs-<foo>.txt (maybe the pci file or a new file) 
+so that userspace people will be able to figure out how to use it?
 
-Alex
+Also, how does one know if a card is 'primary' or not?  I.e. some BIOSes will 
+POST all cards, some will POST only one, and some will POST none...
+
+Thanks,
+Jesse
 
 
 -------------------------------------------------------
@@ -60,4 +66,3 @@ SF email is sponsored by - The IT Product Guide
 Read honest & candid reviews on hundreds of IT Products from real users.
 Discover which products truly live up to the hype. Start reading now.
 http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
---

@@ -1,16 +1,13 @@
-From: "Maciej W. Rozycki" <macro@ds2.pg.gda.pl>
-Subject: Re: Re: [macro@ds2.pg.gda.pl: Re: PMAG-A support?]
-Date: Thu, 14 Aug 2003 14:19:18 +0200 (MET DST)
+From: Otto Solares <solca@guug.org>
+Subject: dri fb drivers [was: Re: Rage128 and Radeon patches]
+Date: Thu, 14 Aug 2003 12:26:31 -0600
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.3.96.1030814140520.14241D-100000@delta.ds2.pg.gda.pl>
-References: <20030814022906.GH10792@rembrandt.csv.ica.uni-stuttgart.de>
+Message-ID: <20030814182631.GC7862@guug.org>
+References: <20030814034338.25567.qmail@web14907.mail.yahoo.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from delta.ds2.pg.gda.pl ([213.192.72.1] ident=macro)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19nH5G-0000Fz-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 14 Aug 2003 05:20:02 -0700
-In-Reply-To: <20030814022906.GH10792@rembrandt.csv.ica.uni-stuttgart.de>
+Content-Disposition: inline
+In-Reply-To: <20030814034338.25567.qmail@web14907.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,34 +17,32 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thiemo Seufer <ica2_ts@csv.ica.uni-stuttgart.de>
-Cc: Karsten Merker <karsten@excalibur.cologne.de>, Martin Schulze <joey@infodrom.org>, linux-fbdev-devel@lists.sourceforge.net
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: dri-devel <dri-devel@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, 14 Aug 2003, Thiemo Seufer wrote:
+On Wed, Aug 13, 2003 at 08:43:38PM -0700, Jon Smirl wrote:
+> Hopefully these is the last versions. They implement:
+> 1) add every know PCI ID
+> 2) access ROM directly instead of relying on copy in
+> low RAM. This allows multiple cards. Required
+> MPP_TB_CONFIG fix in driver.
+> 3) implemented kernel 2.6 module parameters
+> 4) Cleaned up error paths and made sure resources are
+> released on errors. Both build without compiler
+> warnings now. You can ins/rm mod multiple times
+> without problem. Just don't do it from a window in
+> your X server.
+> 5) Driver marks both primary and secondary devices as
+> being in use.
 
-> >  I've looked at the patch and have changed the barriers as I deem
-> > appropriate.  But while doing this, I've noticed the code is insonsistent
-> > in a few places -- has it been successfully verified on real hardware?
-> 
-> It works on my /260. Which parts look weird to you?
+nice work!
 
-1. bt431_write_reg_inc() uses u16 for value, even though it only uses 8
-bits (which of course makes all the calls in bt431_init_cursor() dubious). 
+i know you are working with the dri fb drivers, is any
+progress and what is the current state?
 
-2. bt431_load_cursor_sprite() loads control registers instead of the
-cursor map. 
-
- See the patch for details.  You may use `diff -b' to get rid of spacing
-clean-ups -- this makes my updates quite clear. 
-
-  Maciej
-
--- 
-+  Maciej W. Rozycki, Technical University of Gdansk, Poland   +
-+--------------------------------------------------------------+
-+        e-mail: macro@ds2.pg.gda.pl, PGP key available        +
+-solca
 
 
 

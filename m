@@ -1,90 +1,111 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: Re: FB model basic issues (WAS: radeon, apertures & memory mapping)
-Date: Tue, 15 Mar 2005 08:01:38 +0200
-Message-ID: <20050315060138.GA13064@sci.fi>
-References: <1110677744.19810.80.camel@gaston>
-	<9e47339105031219223e606a52@mail.gmail.com>
-	<1110696189.5787.100.camel@gaston>
-	<1110774523.4003.511.camel@localhost>
-	<1110784327.5787.288.camel@gaston>
-	<1110817205.4004.527.camel@localhost>
-	<1110837171.5863.16.camel@gaston>
-	<1110838356.4003.548.camel@localhost>
-	<1110839873.5673.41.camel@gaston>
-	<1110862777.4044.592.camel@localhost>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: Re: [PATCH 5/5] s1d13xxxfb: Add support for Epson S1D13806 FB
+Date: Tue, 15 Mar 2005 14:01:17 +0800
+Message-ID: <200503151401.17297.adaplas@hotpop.com>
+References: <200503150706.27357.adaplas@hotpop.com> <20050314184049.2ed12443.akpm@osdl.org>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1DB57V-0003pM-9E
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Mar 2005 22:01:33 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1DB57R-0005Tj-GG
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Mar 2005 22:01:33 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id CD91BF5EA4A
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 15 Mar 2005 06:01:19 +0000 (UTC)
+In-Reply-To: <20050314184049.2ed12443.akpm@osdl.org>
 Content-Disposition: inline
-In-Reply-To: <1110862777.4044.592.camel@localhost>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/xorg>
-List-Post: <mailto:xorg@lists.freedesktop.org>
-List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
-Sender: xorg-bounces@lists.freedesktop.org
-Errors-To: xorg-bounces@lists.freedesktop.org
-Content-Type: text/plain; charset="iso-8859-1"
-To: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Cc: Jon Smirl <jonsmirl@yahoo.com>, dri-devel@lists.sourceforge.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, xorg@lists.freedesktop.org
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: Andrew Morton <akpm@osdl.org>, adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net, varenet@esiee.fr
 
-On Mon, Mar 14, 2005 at 11:59:37PM -0500, Michel D=E4nzer wrote:
-> On Tue, 2005-03-15 at 09:37 +1100, Benjamin Herrenschmidt wrote:
-> > > Be that as it may, it remains a fact that such a change would break
-> > > existing installations...
-> > >=20
-> > > I think that mode setting and memory allocation should be separated=
-. X
-> > > will always reserve enough video RAM for the largest resolution it =
-uses
-> > > for the screen contents.
-> >=20
-> > But X has no control on where fbdev will allocate memory.=20
->=20
-> My understanding is that so far, the fbdev API has pretty much implied
-> that any mode scans out the beginning of the memory accessed via the
-> framebuffer device, unless the panning ioctl is used. IIRC at least
-> DirectFB makes basically the same assumptions as X there.
+On Tuesday 15 March 2005 10:40, Andrew Morton wrote:
+> "Antonino A. Daplas" <adaplas@hotpop.com> wrote:
+> >   Attached to that mail is a patch adding support for Epson S1D13806
+> >    framebuffer device.
+> >
+> >    That driver is intended to be easily used with other S1D13xxx devices,
+> >    hopefully by splitting the header file and changing a few defines.
+> > Since I haven't got the hardware to test that, though, I can only assert
+> > that it works with S1D13806.
+> >
+> >    This driver has been succesfully tested on ARM embedded boards and
+> >    reported working on SH architecture as well.
+> >
+> >    Since this is my first framebuffer driver, I would welcome any
+> >    suggestion/comment about it :)
+> >
+> >    This driver has been built on top of some preliminary ARM specific
+> > work by Ben Dooks, and adapted from existing code (as stated in the
+> > header of s1d13xxxfb.c).
+> >
+> >  Signed-off-by: Thibaut VARENE <varenet@parisc-linux.org>
+> >  Signed-off-by: Antonino Daplas <adaplas@pol.net>
+>
+> I've been going around editing From: lines recently, in cases where it's
+> obvious.  I did so with this patch - please let me know if that is
+> inappropariate.
 
-DirectFB assumes all memory outside var.yres_virtual * fix.line_length is=
-=20
-preserved. A totally valid assumption in my opinion. It allocates all=20
-offscreen memory starting from the top of the memory so overlaps with=20
-fbdev are as rare as possible. Currently it doesn't handle multi head=20
-except for Matrox G400/G450/G550 TV-out but that is handled without fbdev=
-=20
-so no API limitations get in the way.
+No, this is okay.
 
-I think that making the assumption that all memory is preserved when the=20
-memory layout (virtual resolution and depth) doesn't change is perfectly=20
-valid too. That would allow X to do it's Ctrl-Alt-+ and - things without=20
-repainting the whole screen.
+>
+>
+> So the patch will hit bk as:
+>
+> From: Thibaut VARENE <varenet@parisc-linux.org>
+> Signed-off-by: Thibaut VARENE <varenet@parisc-linux.org>
+> Signed-off-by: Antonino Daplas <adaplas@pol.net>
+> Signed-off-by: Andrew Morton <akpm@osdl.org>
+>
+>
+> So
+>
+> a) Thibaut will be identified in the bk logs as the author
+>
+> b) His name will appear in the short-form changelogs, etc.
+>
+> c) The Signed-off-by: line will note that Tony and I also handled this
+>    patch, and possibly made small changes to it.
+>
+> I do this so that contributors get suitable credit, and so that bug
+> reporters have a better chance of finding who to email on the first
+> attempt.
+>
 
-If radeonfb will allocate the buffer for the second head from the top of=20
-the memory users would basically have to guess it's location. matroxfb=20
-simply cuts the memory in two pieces and allocates the buffers from the=20
-start of each piece. I don't really like that approach. Adding a simple=20
-byte_offset field to fb_var_screeninfo would solve the problem quite=20
-nicely but I don't know if such API changes are acceptable at this stage.
+With the patches I send you, the first one in the signed-off line is the
+original contributor of the patch and the changelog. If the original
+contributor did not sign-off, I add a 'From: <author>' with or without the
+e-mail address at the very beginning of the changelog.
 
-> > We are thinking with the "new model" in mind, and so far, a mode sett=
-ing=20
-> > is under control of the framebuffer. Content of video memory (framebu=
-ffer,
-> > textures, overlay, whatever) simply cannot be considered as preserved
-> > accross mode switches.
-> >=20
-> > We can't also block all evolutions just because we have to support a
-> > broken model.=20
->=20
-> I'm not suggesting that, but I do think that tying together mode
-> switching and memory allocation would be a big mistake.
+Anyway, would you like to me to follow the format below to make it
+easier for you?
 
-Indeed.
+> From: Thibaut VARENE <varenet@parisc-linux.org>
+> Signed-off-by: Thibaut VARENE <varenet@parisc-linux.org>
+> Signed-off-by: Antonino Daplas <adaplas@pol.net>
+> Signed-off-by: Andrew Morton <akpm@osdl.org>
 
---=20
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+Tony
+
+
+
+
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

@@ -1,21 +1,21 @@
-From: David Eger <eger@havoc.gtf.org>
-Subject: Re: Mach64 GX driver problems in post 2.4.22 kernels
-Date: Wed, 23 Jun 2004 14:31:33 -0400
+From: jsimmons@pentafluge.infradead.org
+Subject: Re: Where is the latest work for fbdev
+Date: Wed, 23 Jun 2004 19:35:30 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040623183133.GA9205@havoc.gtf.org>
-References: <20040605185647.GG5668@mercury.jahnsnet.de> <20040606104530.GA2231@mercury.jahnsnet.de> <20040618094852.GA9466@mercury.jahnsnet.de>
+Message-ID: <Pine.LNX.4.56.0406231932030.27210@pentafluge.infradead.org>
+References: <200406192227.47534.alex.kern@gmx.de>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BdCX7-0002WL-PA
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 11:31:41 -0700
-Received: from havoc.gtf.org ([216.162.42.101])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BdCX7-0007s4-El
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 11:31:41 -0700
-Content-Disposition: inline
-In-Reply-To: <20040618094852.GA9466@mercury.jahnsnet.de>
+	id 1BdCax-000331-2e
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 11:35:39 -0700
+Received: from [213.146.154.40] (helo=pentafluge.infradead.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.30)
+	id 1BdCav-0007S2-AZ
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 11:35:38 -0700
+In-Reply-To: <200406192227.47534.alex.kern@gmx.de>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,26 +25,38 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thomas Jahns <Thomas.Jahns@epost.de>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Alexander Kern <alex.kern@gmx.de>
+Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-Dear Thomas,
 
-> my problem of non-working display with atyfb and a Mach64 GX card in a  
-> Powermac 7500 is still unsolved and my posting here got no replies.
+Sorry about the delay. Work has been keeping me boged down. In fact I will 
+be leaving saturday for the UK for one week for work. I did manage to 
+create a new patch. COudl you try the atyfb_base.c.new and tell me if it 
+works?
+
+
+On Sat, 19 Jun 2004, Alexander Kern wrote:
+
+> Hello James,
 > 
-
-James just posted a framebuffer update against 2.6.7 that he says
-includes Mach64 updates. It looks like he did a lot of cleanup, and
-possibly some logical changes -- you might try his patch and let him/us
-know if it's any help.
-
-his patch: http://www.infradead.org/~jsimmons/changes.diff
-
--dte
-
+> I would one more time to appeal to you, PLEASE post latest diff between kernel 
+> tree and your. Your site( http://www.infradead.org/~jsimmons/ ) is steel 
+> EMPTY, since months. I dont like to send my work to blackhole.
+> 
+> Anybody other has a diff?
+> 
+> Regards Alex Kern
+> 
+> P.S.
+> What about submitting to mainline
+> 
+> <[Linux-fbdev-devel] Newest fbdev patch to go mainline.
+>  <(James Simmons, Kopie: Linux Kernel Mailing List, Tue Feb 10 07:36:03 2004)
+> 
+> Today is 19 Jun!
+> 
 
 
 -------------------------------------------------------

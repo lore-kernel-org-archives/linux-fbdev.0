@@ -1,19 +1,22 @@
-From: "Luiz Fernando N. Capitulino" <lcapitulino@prefeitura.sp.gov.br>
-Subject: [PATCH] - fix video/fbmem.c warning.
-Date: Fri, 30 Apr 2004 15:10:15 -0300
+From: Otto Solares <solca@guug.org>
+Subject: Re: [PATCH] neofb patches
+Date: Fri, 30 Apr 2004 15:26:15 -0600
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040430181015.GB3119@lorien.prodam>
+Message-ID: <20040430212615.GB30285@guug.org>
+References: <20040428070832.GA23411@guug.org> <1083147416.18416.24.camel@thor.asgaard.local> <20040428163730.GA24448@guug.org> <1083191201.18413.73.camel@thor.asgaard.local> <20040429010725.GD24584@guug.org> <1083243672.18413.148.camel@thor.asgaard.local> <20040429175201.GA26608@guug.org> <1083280337.8281.181.camel@thor.asgaard.local> <20040430011816.GC26704@guug.org> <1083288536.18410.198.camel@thor.asgaard.local>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BJcYQ-0008Vi-1K
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Apr 2004 11:16:06 -0700
-Received: from sampa7.prodam.sp.gov.br ([200.230.190.107])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BJcYP-00079p-JR
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Apr 2004 11:16:05 -0700
+	id 1BJfWJ-0000TG-TT
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Apr 2004 14:26:07 -0700
+Received: from guug.org ([168.234.203.30])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BJfWJ-00070v-Jv
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Apr 2004 14:26:07 -0700
 Content-Disposition: inline
+In-Reply-To: <1083288536.18410.198.camel@thor.asgaard.local>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -23,45 +26,22 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@osdl.org>
-Cc: James Simmons <jsimmons@infraded.org>, linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
+On Fri, Apr 30, 2004 at 03:28:57AM +0200, Michel D=E4nzer wrote:
+> I don't see how that can be done without changing the shared code,
+> effectively un-sharing it. Could just be me though.
 
- Hi,
+Nobody says it would be easy, opossition will be fierce!
 
- The patch bellow fix this warning:
+-otto
 
- drivers/video/fbmem.c: In function `fb_cursor':
- drivers/video/fbmem.c:922: warning: passing arg 1 of `copy_from_user' discards qualifiers from pointer target type
-
- It is only a cast (several other calls for copy_from_user() need that).
-
- drivers/video/fbmem.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
-
-
-diff -X dontdiff -Nparu a/drivers/video/fbmem.c a~/drivers/video/fbmem.c
---- a/drivers/video/fbmem.c	2004-04-26 15:25:52.000000000 -0300
-+++ a~/drivers/video/fbmem.c	2004-04-27 16:48:15.000000000 -0300
-@@ -914,7 +914,7 @@ fb_cursor(struct fb_info *info, struct f
- 			return -ENOMEM;
- 		}
- 		
--		if (copy_from_user(cursor.image.data, sprite->image.data, size) ||
-+		if (copy_from_user((void *) cursor.image.data, sprite->image.data, size) ||
- 		    copy_from_user(cursor.mask, sprite->mask, size)) { 
- 			kfree(cursor.image.data);
- 			kfree(cursor.mask);
-
--- 
-Luiz Fernando N. Capitulino
-<http://www.telecentros.sp.gov.br>
 
 
 -------------------------------------------------------
 This SF.Net email is sponsored by: Oracle 10g
-Get certified on the hottest thing ever to hit the market... Oracle 10g. 
-Take an Oracle 10g class now, and we'll give you the exam FREE. 
-http://ads.osdn.com/?ad_id=3149&alloc_id=8166&op=click
+Get certified on the hottest thing ever to hit the market... Oracle 10g.=20
+Take an Oracle 10g class now, and we'll give you the exam FREE.=20
+http://ads.osdn.com/?ad_id=3D3149&alloc_id=3D8166&op=3Dclick

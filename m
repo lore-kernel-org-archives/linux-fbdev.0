@@ -1,21 +1,21 @@
-From: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: Fw: [2.6.10-bk6] oops in load of atyfb
-Date: Mon, 10 Jan 2005 12:09:20 -0500 (EST)
-Message-ID: <Pine.LNX.3.96.1050110120830.10893B-101000@gatekeeper.tmr.com>
-References: <200501100516.20841.adaplas@hotpop.com>
+From: "Richard Purdie" <rpurdie@rpsys.net>
+Subject: Re: [PATCH 4/9] fbcon/fbdev: Add blanking notification
+Date: Wed, 12 Jan 2005 10:43:08 -0000
+Message-ID: <009001c4f893$87964630$0f01a8c0@max>
+References: <20041221213648.89B701A0278@smtp-1.hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="1170656797-226024367-1105376960=:10893"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Co3Ca-0004zB-W4
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 10 Jan 2005 09:19:36 -0800
-Received: from mail.tmr.com ([216.238.38.203] helo=gatekeeper.tmr.com)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1Co3CZ-000238-UJ
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 10 Jan 2005 09:19:36 -0800
-In-Reply-To: <200501100516.20841.adaplas@hotpop.com>
+	id 1CofyG-00039C-At
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 Jan 2005 02:43:24 -0800
+Received: from tim.rpsys.net ([194.106.48.114] ident=0)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1CofyE-0005ii-Jp
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 Jan 2005 02:43:24 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,240 +26,37 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; format="flowed"; charset="us-ascii"; reply-type="original"
 To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-  Send mail to mime@docserver.cac.washington.edu for more info.
+Tony,
 
---1170656797-226024367-1105376960=:10893
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+I've just switched to using this patch when I updated to 2.6.11-rc1 and I've 
+noticed a problem. Basically my code which is monitoring FB_EVENT_BLANK 
+events doesn't see any.
 
-On Mon, 10 Jan 2005, Antonino A. Daplas wrote:
+> diff -Nru a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+> --- a/drivers/video/console/fbcon.c 2004-11-17 18:15:17 +08:00
+> +++ b/drivers/video/console/fbcon.c 2004-12-21 05:55:41 +08:00
+[...]
+> + if (ops->blank_state != blank) {
+> + if (info->fbops->fb_blank &&
+> +     info->fbops->fb_blank(blank, info))
+> + fbcon_generic_blank(vc, info, blank);
+> +
+> + ops->blank_state = blank;
+> + }
 
-> On Thursday 06 January 2005 08:56, Andrew Morton wrote:
-> > Begin forwarded message:
-> >
-> > Date: Wed, 5 Jan 2005 16:24:02 -0500 (EST)
-> > From: Bill Davidsen <davidsen@tmr.com>
-> > To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-> > Subject: [2.6.10-bk6] oops in load of atyfb
-> >
-> >
-> > After some hours of trying to get video to the atyfb instead of vga16, I
-> > got this. The video= boot option didn't seem to work, loading the module
-> > caused an oops.
-> >
-> > Something borked, out of time to fight with it.
-> 
-> Have you accidentally enabled CONFIG_FB_ATY_XL_INIT?  If you did, recompile
-> with this option off.
+I think this is the problem (in fbcon.c). Instead of calling 
+info->fbops->fb_blank(blank, info)), I think this should call fb_blank(info, 
+blank) (in fbmem.c) which can then make the fbops call itself.
 
-This time the config really is attached...
+If you agree, I'll send a patch (or you can patch it - I don't mind). Let me 
+know...
 
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO, TMR Associates, Inc
-Doing interesting things with little computers since 1979.
+Richard 
 
---1170656797-226024367-1105376960=:10893
-Content-Type: APPLICATION/octet-stream; name="config-2.6.10-bk6-3.gz"
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.LNX.3.96.1050110120920.10893C@gatekeeper.tmr.com>
-Content-Description: 
-
-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
-oHPXQNKIykRL4IpvxAIBYWGaQGJwqViGY0P/sZ/ELOMzif15U0dp7InHH7kq
-QB10+YsF5FM+xN/6cp2gSDRhPkF+SHXTdMLg4OEkjZCmfIF/nH5hAfuShGFT
-VUDCmstWAitNy9evOUwAzOf+8U1FE0WA+2XzlP9x/HVUhtr7kW9fvmx23/Ye
-RL5KZp+USTXyDa3rTABPrRs99bOa5Dd78anQstkKkEGiIamqntlnhY2t0hCw
-SKSVJaAJwpjzVTtXAguqi7aarkTAGI2xDJviALN8/LF5AcBpa758ffv+bfNL
-tx6qk6oEYdEz5g8HHdu0SkxGoimKMPGvTQ8sWfvcjDi2/M7EVDlBmjzYGIiD
-YBzXgooayWVazdZc0mGv26byf3c7nY51o32G6qFlDVsUb22sXVpnKJWGq6pQ
-cRSulLS1rigieNhbLttpQtq9WfbbaZh/O7jWj6R0yVtJCmFo70UmNAhJOw1e
-jXp4eNfOMhY3N73OVZJ+O8mUy/4VjhXJcNhKInC3FhjXCDgsnU1MIjG6HXRv
-WjvnPu51YJOzOPT/O8KILNrZnS9mop2CUoYm5AoNLG+3fZNEiO865MrqyYT1
-7tq3aU4RiMTSIaHKdNWqNgZO1WwFkeKKrWfIooZ0Pnarb111L66lYYSVza5C
-tqZ/rAy69qXFgJfmVbvy5OXD0+b15yfvuH7JP3nY/wwBwcdmLCj8S794mpQw
-qTuPEzQWQrYskEi05OcMyyBP8fUqy3mMySktEvvnXJ895Bn5H9//AJa9/3v7
-mX/d/zpnit7z2/a4eYHELEwjw7EXS1K6XUDZDgIVAfyu0ilpFKQKTBhPJjSa
-2HdFHta712J8dDweNl/fjnlzcKGqRFImwpEZA0mAr1HQ4meD6MLKdv/v5/KM
-/KlZTT0te3+RgSYsIbakvnssoLpzKUxBoE6sAlTbdZMEYbtjLZFT1L3pLXVZ
-usAHvZZeEa6zbqApvgXGtRpfCVDeBXIjUggYhei436tTJATUHNAhWmVM3Hdv
-YIp1mjI5JhEa65cKTCyDYOq+0+y9SM2lVKUWah6x65zXDXWd5K4+uburk7tz
-Te5SY6uoyolliQ9qntgSqhOhex3uWtbh7r9ZB5/LjPbiFj2Ies7jUjJBSjqU
-E4O4rZ2mLHy5x3HmAAV2nAqwCxS7KXy27Hfvui1a5kvc7406bgLSyoLCQnDQ
-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
---1170656797-226024367-1105376960=:10893--
 
 
 -------------------------------------------------------

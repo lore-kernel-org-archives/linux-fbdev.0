@@ -1,48 +1,83 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [Linux-fbdev-devel] Re: 2.6.9 bug: linux logo not displayed in vga16fb (bug found)
-Date: Wed, 27 Oct 2004 05:55:45 +0800
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: [PATCH] radeonfb: If no video memory, exit with error [repost]
+Date: Tue, 26 Oct 2004 16:03:24 -0600
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <200410270555.48087.adaplas@hotpop.com>
-References: <4178CB95.7000505@linbox.com> <417E733C.2040204@linbox.com>
-Reply-To: adaplas@pol.net
+Message-ID: <200410261603.24434.bjorn.helgaas@hp.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261490AbUJZVsd@vger.kernel.org>
-In-Reply-To: <417E733C.2040204@linbox.com>
-Content-Disposition: inline
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_smsfB+Zm1X4evqP"
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261505AbUJZWDt@vger.kernel.org>
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, Ludovic Drolez <ludovic.drolez@linbox.com>, linux-kernel@vger.kernel.org
+To: Andrew Morton <akpm@osdl.org>, ajoshi@shell.unixbox.com, linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, benh@kernel.crashing.org
 
-On Tuesday 26 October 2004 23:54, Ludovic Drolez wrote:
-> Ludovic Drolez wrote:
-> > Hi !
-> >
-> > I used to have a nice vga boot logo with my 2.6.7 kernel, but with the
-> > 2.6.9, my
-> > boot logo has disappeared (same .config)...
-> > It seems to switch to VGA, and some space is reserved for the logo, but
-> > it is not displayed.
-> > The logo appears with vesafb.
->
-> I made a few diffs between my old working 2.6.7 kernel and the 2.6.9 and
-> found something interesting in fbmem.c:
->
+--Boundary-00=_smsfB+Zm1X4evqP
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Should be fixed in the mm tree or the latest bk snapshot. Or you can try this
-very patch.
+Posted this last week (10/21) but haven't seen any response.
+Would you consider this for the next -mm?  Also attached in
+case kmail mangles the whitespace.
 
-Tony
 
-diff -uprN linux-2.6.9-rc1-mm4-orig/drivers/video/vga16fb.c linux-2.6.9-rc1-mm4/drivers/video/vga16fb.c
---- linux-2.6.9-rc1-mm4-orig/drivers/video/vga16fb.c	2004-09-07 21:18:35.000000000 +0800
-+++ linux-2.6.9-rc1-mm4/drivers/video/vga16fb.c	2004-09-07 21:30:39.059300648 +0800
-@@ -1306,7 +1306,7 @@ void vga16fb_imageblit(struct fb_info *i
- {
- 	if (image->depth == 1)
- 		vga_imageblit_expand(info, image);
--	else if (image->depth <= info->var.bits_per_pixel)
-+	else
- 		vga_imageblit_color(info, image);
- }
+[PATCH] radeonfb: If no video memory, exit with error
+
+Nothing good will happen if we try to ioremap and use a zero-sized
+frame buffer.  I observed this problem on an ia64 sx1000 box, where
+the BIOS doesn't run the option ROM.  If we try to continue, radeonfb
+just gets hopelessly confused because the card isn't initialized
+correctly.
+
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+
+===== drivers/video/aty/radeon_base.c 1.32 vs edited =====
+--- 1.32/drivers/video/aty/radeon_base.c 2004-10-19 03:40:34 -06:00
++++ edited/drivers/video/aty/radeon_base.c 2004-10-21 11:50:51 -06:00
+@@ -2186,7 +2186,9 @@
+           rinfo->video_ram = 8192 * 1024;
+           break;
+          default:
+-          break;
++   printk (KERN_ERR "radeonfb: no video RAM reported\n");
++   ret = -ENXIO;
++   goto err_unmap_rom;
+   }
+  }
  
+
+--Boundary-00=_smsfB+Zm1X4evqP
+Content-Type: text/x-diff;
+  charset="us-ascii";
+  name="radeonfb-no-vram.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="radeonfb-no-vram.patch"
+
+[PATCH] radeonfb: If no video memory, exit with error
+
+Nothing good will happen if we try to ioremap and use a zero-sized
+frame buffer.  I observed this problem on an ia64 sx1000 box, where
+the BIOS doesn't run the option ROM.  If we try to continue, radeonfb
+just gets hopelessly confused because the card isn't initialized
+correctly.
+
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+
+===== drivers/video/aty/radeon_base.c 1.32 vs edited =====
+--- 1.32/drivers/video/aty/radeon_base.c	2004-10-19 03:40:34 -06:00
++++ edited/drivers/video/aty/radeon_base.c	2004-10-21 11:50:51 -06:00
+@@ -2186,7 +2186,9 @@
+ 	       		rinfo->video_ram = 8192 * 1024;
+ 	       		break;
+ 	       	default:
+-	       		break;
++			printk (KERN_ERR "radeonfb: no video RAM reported\n");
++			ret = -ENXIO;
++			goto err_unmap_rom;
+ 		}
+ 	}
+ 
+
+--Boundary-00=_smsfB+Zm1X4evqP--

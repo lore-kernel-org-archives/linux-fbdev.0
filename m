@@ -1,15 +1,19 @@
-From: "Petr Vandrovec" <VANDROVE@vc.cvut.cz>
-Subject: Re: Updates to matroxfb: do you want DFP or TVOut on G450/G
-Date: Sat, 8 Jun 2002 03:04:51 +0200
+From: Antonino Daplas <adaplas@pol.net>
+Subject: problem with gen_update_var
+Date: 11 Jun 2002 00:41:12 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <77417CB2C9F@vcnet.vc.cvut.cz>
+Message-ID: <1023690850.568.1.camel@daplas>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
+Content-Type: multipart/mixed; boundary="=-n2UfbWpC+95LBg2bGJmN"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from zikova.cvut.cz ([147.32.235.100])
+Received: from [203.167.79.9] (helo=willow.compass.com.ph)
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17GUfW-0005EA-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 07 Jun 2002 18:05:26 -0700
+	id 17HSCQ-000061-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 10 Jun 2002 09:39:22 -0700
+Received: from [205.136.61.104] (cwc104.compass.com.ph [205.136.61.104])
+	by willow.compass.com.ph (8.9.3/8.9.3) with ESMTP id AAA22695
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 Jun 2002 00:39:16 +0800 (PHT)
+	(envelope-from adaplas@pol.net)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -19,34 +23,46 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Dave Jones <davej@suse.de>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, diego@biurrun.de, jerry.c.t@web.de, mike@pieper-family.de, hollis@austin.ibm.com
+To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-On  8 Jun 02 at 2:57, Dave Jones wrote:
-> On Sat, Jun 08, 2002 at 02:45:39AM +0200, Petr Vandrovec wrote:
->  > (4) You can read PINS through /proc.
->  > (H) Change /proc code to use driverfs instead. Linus refused
->  >     /proc based code already.
-> 
-> One of the first things I ever wrote for Linux was a PINS decoder.
-> It read from /dev/mem to get the PINS structure. Any reason
-> why this isn't good enough, and we need the kernel exporting PINS ?
 
-It does not print decoded structure, it shows it in raw format, 64-128
-bytes, just to avoid userspace parsing /dev/mem because of matroxfb 
-did it already (and matroxfb needs PINS to properly initialize Gx50 
-cards in non-PC hardware). And it may be non-trivial to get PINS from
-userspace at all because of BIOSes may be disabled by firmware 
-(and f.e. on my PC they are disabled for secondary adapters, so 
-simple parsing /dev/mem leads to nowhere because of BIOS is hidden).
+--=-n2UfbWpC+95LBg2bGJmN
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-Besides that, it lives in complete separate file, so it is easy
-to add/remove it.
-                                    Best regards,
-                                        Petr Vandrovec
-                                        vandrove@vc.cvut.cz
-                                        
+Hi,
+
+gen_update_var will break panning/wrapping since it passes info->var to
+fb_pan_display.  However, fbcon updates display->var.
+
+Tony
+
+ 
+
+
+
+
+
+--=-n2UfbWpC+95LBg2bGJmN
+Content-Disposition: attachment; filename=fbgen.c.diff
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=ISO-8859-1
+
+--- fbgen.c.orig	Mon Jun 10 06:30:29 2002
++++ fbgen.c	Mon Jun 10 06:26:44 2002
+@@ -514,6 +514,9 @@
+    =20
+ 	if (con =3D=3D info->currcon) {
+ 		if (info->fbops->fb_pan_display) {
++			info->var.xoffset =3D fb_display[con].var.xoffset;
++			info->var.yoffset =3D fb_display[con].var.yoffset;
++			info->var.vmode =3D fb_display[con].var.vmode;
+ 			if ((err =3D info->fbops->fb_pan_display(&info->var, con, info)))
+ 				return err;
+ 		}
+
+--=-n2UfbWpC+95LBg2bGJmN--
+
 
 _______________________________________________________________
 

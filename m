@@ -1,22 +1,22 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 8/11] pxafb: Reorder add_wait_queue() and set_current_state()
-Date: Thu, 13 Jan 2005 21:01:46 +0800
-Message-ID: <20050113214648.A24C61A019C@smtp-1.hotpop.com>
+Subject: [PATCH 3/11] fbcon: Fix compile error
+Date: Thu, 13 Jan 2005 21:01:28 +0800
+Message-ID: <20050113214619.299C91A00A1@smtp-1.hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CpCo8-00015y-7C
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 Jan 2005 13:47:08 -0800
+	id 1CpCne-000148-RK
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 Jan 2005 13:46:38 -0800
 Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CpCo7-00007r-OJ
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 Jan 2005 13:47:08 -0800
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CpCnd-0000BD-CA
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 Jan 2005 13:46:38 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 65A4ECD4096
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 13 Jan 2005 21:46:54 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id C7B21CAED75
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 13 Jan 2005 21:46:23 +0000 (UTC)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -30,33 +30,27 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Nishanth Aravamudan <nacc@us.ibm.com>, Domen Puncer <domen@coderock.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-  Reorder set_current_state() and add_wait_queue(). There is
-  a chance that a signal could be missed in between the two functions
-  currently.
+Fix missing symbol (fb_con)
 
-Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
-Signed-off-by: Domen Puncer <domen@coderock.org>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- pxafb.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+ fbcon.h |    3 +++
+ 1 files changed, 3 insertions(+)
 
-diff -Nru a/drivers/video/pxafb.c b/drivers/video/pxafb.c
---- a/drivers/video/pxafb.c	2005-01-12 06:10:17 +08:00
-+++ b/drivers/video/pxafb.c	2005-01-11 01:00:25 +08:00
-@@ -740,8 +740,8 @@
- 
- 	DPRINTK("Disabling LCD controller\n");
- 
--	add_wait_queue(&fbi->ctrlr_wait, &wait);
- 	set_current_state(TASK_UNINTERRUPTIBLE);
-+	add_wait_queue(&fbi->ctrlr_wait, &wait);
- 
- 	LCSR = 0xffffffff;	/* Clear LCD Status Register */
- 	LCCR0 &= ~LCCR0_LDM;	/* Enable LCD Disable Done Interrupt */
+diff -Nru a/drivers/video/console/fbcon.h b/drivers/video/console/fbcon.h
+--- a/drivers/video/console/fbcon.h	2005-01-12 06:10:17 +08:00
++++ b/drivers/video/console/fbcon.h	2005-01-13 05:33:21 +08:00
+@@ -162,4 +162,7 @@
+ 			      struct display *p, struct fbcon_ops *ops);
+ #endif
+ extern void fbcon_set_bitops(struct fbcon_ops *ops);
++
++extern const struct consw fb_con;
++
+ #endif /* _VIDEO_FBCON_H */
 
 
 

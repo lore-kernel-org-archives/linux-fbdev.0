@@ -1,19 +1,20 @@
 From: Stephen Hemminger <shemminger@osdl.org>
-Subject: [PATCH 2.6.7-rc2] get rid of fbmem warning
-Date: Mon, 7 Jun 2004 10:10:25 -0700
+Subject: [PATCH] eliminate warnings from unused variable in matrox frame
+ buffer
+Date: Mon, 7 Jun 2004 10:13:13 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040607101025.2e30b001@dell_ss3.pdx.osdl.net>
+Message-ID: <20040607101313.46e02b07@dell_ss3.pdx.osdl.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BXNdp-0002X8-UZ
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Jun 2004 10:10:33 -0700
+	id 1BXNgT-0003B5-Le
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Jun 2004 10:13:17 -0700
 Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BXNdp-00052E-H4
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Jun 2004 10:10:33 -0700
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BXNgT-00037v-0l
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Jun 2004 10:13:17 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -24,24 +25,43 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+To: Petr Vandrovec <vandrove@vc.cvut.cz>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Get rid of warning because fb_image data is declared 'const char *' but is
-being modified by the copy_from_user.
+The parameter 'inverse' is defined and never used, therefore it can be removed.
+This gets rid of a compiler warning when matrox fb is built as a module.
 
-diff -Nru a/drivers/video/fbmem.c b/drivers/video/fbmem.c
---- a/drivers/video/fbmem.c	2004-06-07 10:06:59 -07:00
-+++ b/drivers/video/fbmem.c	2004-06-07 10:06:59 -07:00
-@@ -930,7 +930,7 @@
- 			return -ENOMEM;
- 		}
- 		
--		if (copy_from_user(cursor.image.data, sprite->image.data, size) ||
-+		if (copy_from_user((char *)cursor.image.data, sprite->image.data, size) ||
- 		    copy_from_user(cursor.mask, sprite->mask, size)) { 
- 			kfree(cursor.image.data);
- 			kfree(cursor.mask);
+diff -Nru a/drivers/video/matrox/matroxfb_base.c b/drivers/video/matrox/matroxfb_base.c
+--- a/drivers/video/matrox/matroxfb_base.c	2004-06-07 10:08:03 -07:00
++++ b/drivers/video/matrox/matroxfb_base.c	2004-06-07 10:08:03 -07:00
+@@ -1247,7 +1247,6 @@
+ static int novga;			/* "matrox:novga" */
+ static int nobios;			/* "matrox:nobios" */
+ static int noinit = 1;			/* "matrox:init" */
+-static int inverse;			/* "matrox:inverse" */
+ static int sgram;			/* "matrox:sgram" */
+ #ifdef CONFIG_MTRR
+ static int mtrr = 1;			/* "matrox:nomtrr" */
+@@ -2376,9 +2375,7 @@
+ 				value = 0;
+ 				this_opt += 2;
+ 			}
+-			if (! strcmp(this_opt, "inverse"))
+-				inverse = value;
+-			else if (!strcmp(this_opt, "accel"))
++			if (!strcmp(this_opt, "accel"))
+ 				noaccel = !value;
+ 			else if (!strcmp(this_opt, "pan"))
+ 				nopan = !value;
+@@ -2459,8 +2456,6 @@
+ MODULE_PARM_DESC(sgram, "Indicates that G100/G200/G400 has SGRAM memory (0=SDRAM, 1=SGRAM) (default=0)");
+ MODULE_PARM(inv24, "i");
+ MODULE_PARM_DESC(inv24, "Inverts clock polarity for 24bpp and loop frequency > 100MHz (default=do not invert polarity)");
+-MODULE_PARM(inverse, "i");
+-MODULE_PARM_DESC(inverse, "Inverse (0 or 1) (default=0)");
+ #ifdef CONFIG_FB_MATROX_MULTIHEAD
+ MODULE_PARM(dev, "i");
+ MODULE_PARM_DESC(dev, "Multihead support, attach to device ID (0..N) (default=all working)");
 
 
 -------------------------------------------------------

@@ -1,45 +1,63 @@
-From: Sven Luther <luther@dpt-info.u-strasbg.fr>
-Subject: Re: [Linux-fbdev-devel] Re: FBdev updates.
-Date: Thu, 6 Mar 2003 09:25:21 +0100
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20030306082521.GA1851@iliana>
-References: <20030303203500.GA2916@vana.vc.cvut.cz> <Pine.LNX.4.44.0303052015250.27760-100000@phoenix.infradead.org> <20030306073508.GA1734@iliana> <1046937890.1208.29.camel@localhost.localdomain>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Some questions
+Date: Thu, 6 Mar 2003 09:33:34 +0100 (MET)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.GSO.4.21.0303060932150.28248-100000@vervain.sonytel.be>
+References: <Pine.LNX.4.44.0303051932120.27760-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <1046937890.1208.29.camel@localhost.localdomain>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18qqqF-00063z-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 06 Mar 2003 00:35:04 -0800
+In-Reply-To: <Pine.LNX.4.44.0303051932120.27760-100000@phoenix.infradead.org>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: Sven Luther <luther@dpt-info.u-strasbg.fr>, James Simmons <jsimmons@infradead.org>, Petr Vandrovec <vandrove@vc.cvut.cz>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Antonino Daplas <adaplas@pol.net>, Thomas Winischhofer <thomas@winischhofer.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, Mar 06, 2003 at 04:05:32PM +0800, Antonino Daplas wrote:
-> On Thu, 2003-03-06 at 15:35, Sven Luther wrote:
-> > >  
-> > > >   And one (or two...) generic questions: why is not pseudo_palette
-> > > > u32* pseudo_palette, or even directly u32 pseudo_palette[17] ?
-> > > 
-> > > pseudo_palette was originally designed to be a pointer to some kind of 
-> > > data for color register programming. For example many PPC graphics cards 
-> > > have a color register region. Now you could have that point to 
+On Wed, 5 Mar 2003, James Simmons wrote:
+> > > We should split the monitor programing stuff out from stuff like bpp etc.
+> > > Now if you think about it we can do things like change the bpp without 
+> > > having to redo the monitor programming. This is the flaw with the old and 
+> > > even the new api. 
 > > 
-> > Does this correspond to the LUT i have in my boards ?
-> > 
-> > BTW, what is the point in having a pseudo_palette if you can store
-> > the colors in the onchip LUT table.
-> > 
+> > You could have done that from the beginning. Just look at which fields have
+> > changed and which haven't.
 > 
-> The hardware clut typically stores each color channel separately.  In
-> software terms, this is akin to struct fb_cmap.  The pseudo_palette, on
-> the other hand, is a pixel LUT, the contents of which can be directly
-> written to the framebuffer without it ever knowing the format at all, ie
-> it does not matter if it's RGB or YUV.  This makes the upper layer
-> independent of the low-lever driver (at least in terms of colorspace
-> formats).
+> I should of but didn't because I knew driver would take teh path of lest 
+> resistance to port there drivers. TO much change would have made the 
+> current situtation much much worst. 
 
-Ok, thanks, ...
+One other reason why this isn't done is because X may interfere with it. If we
+don't do a full register update, but change the parts that need a change only,
+we will see less flickering (no PLL reprogramming), but we will suffer if X
+doesn't restore the registers to the exact same values they were before.
 
-Friendly,
+Gr{oetje,eeting}s,
 
-Sven Luther
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
+
+
+-------------------------------------------------------
+This SF.net email is sponsored by: Etnus, makers of TotalView, The debugger 
+for complex code. Debugging C/C++ programs can leave you feeling lost and 
+disoriented. TotalView can help you find your way. Available on major UNIX 
+and Linux platforms. Try it free. www.etnus.com

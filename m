@@ -1,21 +1,21 @@
-From: John Zielinski <grim@undead.cc>
+From: Otto Solares <solca@guug.org>
 Subject: Re: [PATCH] neofb patches
-Date: Wed, 28 Apr 2004 02:59:03 -0400
+Date: Wed, 28 Apr 2004 01:08:32 -0600
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <408F5637.9050903@undead.cc>
-References: <Pine.LNX.4.44.0404280019070.23153-100000@phoenix.infradead.org>        <408EF0D9.6000403@undead.cc>        <1083109849.20091.1.camel@gaston>        <408EFD18.7070702@undead.cc>        <1083112862.20474.14.camel@gaston>        <408F0B61.5090806@undead.cc>        <52520.64.139.3.221.1083122220.squirrel@www.foogod.com>        <408F34BA.2090105@undead.cc> <53283.64.139.3.221.1083128178.squirrel@www.foogod.com>
+Message-ID: <20040428070832.GA23411@guug.org>
+References: <Pine.LNX.4.44.0404271938330.20536-100000@phoenix.infradead.org> <408EE34F.8080106@undead.cc> <1083107454.16544.42.camel@gaston> <20040428002037.GE22495@guug.org> <1083112565.20473.10.camel@gaston>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIj2H-0007LP-WF
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 23:59:14 -0700
-Received: from ns2.undead.cc ([216.126.84.18] helo=mail.undead.cc)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1BIj2H-000536-II
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 23:59:13 -0700
-In-Reply-To: <53283.64.139.3.221.1083128178.squirrel@www.foogod.com>
+	id 1BIjB3-000196-A5
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 00:08:17 -0700
+Received: from guug.galileo.edu ([168.234.203.30] helo=guug.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BIjB2-0006gF-RI
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 00:08:16 -0700
+Content-Disposition: inline
+In-Reply-To: <1083112565.20473.10.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,76 +25,71 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Alex Stewart <alex@foogod.com>
-Cc: benh@kernel.crashing.org, jsimmons@infradead.org, geert@linux-m68k.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Alex Stewart wrote:
+On Wed, Apr 28, 2004 at 10:36:06AM +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2004-04-28 at 10:20, Otto Solares wrote:
+> > On Wed, Apr 28, 2004 at 09:10:55AM +1000, Benjamin Herrenschmidt wrote:
+> > > Jon Smirl has been working on embedded mesa & moving DRI outside of
+> > > X. Unfortunately, last I heard, he was still on his trip of re-inventing
+> > > everything including replacing the fbdev's with his own stuff instead
+> > > of moving from what we have ...
+> > 
+> > Ooops! that will break my software that relies on fbdev and
+> > mesa-solo!
+> 
+> Well, I'm sure there is some good in what he is doing too, I don't 
+> have time to deal with that at the moment, it would be interesting
+> to synchronise properly though.
 
->Umm, the point is you don't have to.  Just create a new VT for whatever
->you're doing.  If you have permission to do it, you will get a VT you can
->work with.  If you don't, you'll get an error.  Ultimately, it shouldn't
->matter whether you're being started from a VT to begin with anyway (a user
->_should_ be able to login via ssh or serial console or whatever and start
->up a framebuffer app if they want to and have the permissions to.  This is
->one of the fundamental principles of unix (the user knows what they want
->to do better than the OS does.  The OS shouldn't get in the way of
->that.)).  If a different user is currently using the framebuffer for their
->console (or app or whatever), the permissions should be set to protect it,
->otherwise it's fair game.
->
->  
->
-Depends on how you look at it.  If a user is on console 1 and starts a 
-simple app (not a desktop environment) having that jump to console 9 is 
-a little confusing.  And there are only so many function keys.  Several 
-X sessions will eat up the remaining function keys.  Once all the 
-function keys are used then it becomes a royal pain switching VTs. 
+Yea, I remember he was trying to solve the very same problems
+I currently have now.  I like the fbdev abstraction but it has
+too many limitations:
 
-As for not mattering whether you're being started from a VT, I'm on the 
-other side of the fence here.  When I ssh into a machine, the text 
-apears on my local maching and not on the remote.  Same goes for the 
-terminal bell and led status.  And when you run an X app the display is 
-local as well.   Now the framebuffer breaks away from that.  When I fire 
-up a framebuffer app the output doesn't appear locally but on the remote 
-machine.  Now I agree that the system shouldn't stop someone from doing 
-this if they really want to.  That's why the fb0, fb1, etc devices 
-wouldn't stop you running them remote and would have the stricter 
-permissions on them (root only for example).
+- Improper video mode handling.  Simply the device driver should
+  hint about valid modes, EDID, etc.
+- When an app crashes the layer is unable to recover it's
+  previous state even when proper semantics exist (KD_TEXT/GRAPH),
+  when the kernel closes the fbdev it must trigger a return to
+  KD_TEXT if in KD_GRAPHICS and set the fix and var settings
+  remembering that settings before leaving KD_TEXT.
+- It should exist a field in the fixed info for the bus_id, so
+  intelligent apps will realize which card is attached to a fbdev.
+- Cards with various display ports must be handled by the layer,
+  with a new API just to handle ports.
+- It dangerously coexists currently with the DRM queues and
+  SAREA areas.  Both must merge in fbdev.
+- VCs mess.
+- Wasted effort in accel engines handling is only useful to fbcon,
+  nobody needs acceleration to drive a X x Y character matrix
+  in fbcon.  The argument that hw without a framebuffer will
+  exist and that's why the accel engine must be used is BS,
+  the PC, the BIOS and the video framebuffers will never die,
+  framebuffer exists in the best video cards money can buy
+  today and it exists in planned cards from major manufacturers
+  for tomorrow, probably the framebuffer can't be accessed when
+  the accel engine is being used in forthcoming cards but that
+  is completely a different story.
 
-Besides, the person that stole my console from under me remotely would 
-be in a world of hurt once I got back into my machine.  :)
+IMHO this must be addressed ASAP if we want to compete with
+Longhorn and MacOSX.  People should realize that fbdev is a
+linux standard that needs to be modernized and it must be fixed,
+we should not devote more resources to implement complex accel
+engines in the fbdev drivers, acceleration has it's place in
+userspace layers like DirectFB or DRI (mesa-solo), not in the
+kernel where a light, simple and elegant solution for graphics
+should exists.
 
->Actually, no, the point I was making is that we should change the
->VT/console code to automatically copy the "current" mapping to a new VT
->when it gets created, so you don't need to remap anything for this case.
->
->  
->
-We're both saying the same thing.  When I said "remap" I meant telling 
-fbcon to assign a particular framebuffer to that console.
+I now understand why Jon Smirl took that hard but neccesary
+path.  Even if we start this for 2.7 it will be too late as
+linux 2.8/3.0 will ship 2-3 years late.
 
->Basically what I'm suggesting pretty much the same thing you are, I'm just
->saying we should do it with the existing VT infrastructure instead of
->creating a new /dev/fb for what's basically a very similar thing to what
->VT is already supposed to handle more generally (controlling which screens
->consoles/apps access and when).
->  
->
+C'mon James, Ben, Geert, driver writers, let's fix the layer!
 
-Pretty much.  The only differences are is that I want the app to always 
-stay on the same VT number and that the programmer only have to deal 
-with one interface.  Why should every frame buffer program be required 
-to carry extra VT code and most programmers will be too lazy or won't 
-know how to include it.  Even fbtest doesn't have any VT code in it.  
-With the code in the kernel even legacy apps will start using the new 
-correct behaviour.
-
-John
-
-
-John
-
+-otto
 
 
 

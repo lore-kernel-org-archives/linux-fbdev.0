@@ -1,58 +1,32 @@
-From: "Mukund JB." <mukundjb@esntechnologies.co.in>
-Subject: "remap_page_range" i810 compile time problem ..
-Date: Wed, 9 Mar 2005 16:44:13 +0530
-Message-ID: <4EE0CBA31942E547B99B3D4BFAB348113A4887@mail.esn.co.in>
-Reply-To: linux-fbdev-users@lists.sourceforge.net
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [Linux-fbdev-devel] [announce 0/7] fbsplash - The Framebuffer Splash
+Date: Wed, 9 Mar 2005 12:38:42 +0100
+Message-ID: <20050309113842.GB30119@elf.ucw.cz>
+References: <20050308015731.GA26249@spock.one.pl> <Pine.LNX.4.56.0503081945510.15646@pentafluge.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-class: urn:content-classes:message
-Sender: linux-fbdev-users-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-users-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-users>,
-	<mailto:linux-fbdev-users-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-users@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-users-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-users>,
-	<mailto:linux-fbdev-users-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-users>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.56.0503081945510.15646@pentafluge.infradead.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-users@lists.sourceforge.net, linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+To: James Simmons <jsimmons@www.infradead.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
+Hi!
 
-Hi all,
+> > Fbsplash - The Framebuffer Splash - is a feature that allows displaying
+> > images in the background of consoles that use fbcon. The project is
+> > partially descended from bootsplash. 
+> 
+> What are you trying to do exactly? I really don't see the point of this 
+> patch.
 
-I have problem with compiling the i810fb driver downloaded from
-Sourceforge site.
-I have D/W the i810fb patch "linux-i810fb-0.0.35.tar.bz2".
-
-When I run the make modules I get the following error
-
-i810_main.c: 643: warning: passing arg 1 of 'remap_page_range_R2baf18f2'
-makes pointer from integer without a cast
-i810_main.c: 643: incompatible type for argument 4 of
-'remap_page_range_R2baf18f2'
-i810_main.c: 643: too few arguments to function
-'remap_page_range_R2baf18f2'
-Make[3]: *** [I810_main.c] Error 1
-........
-......
-
-The call to "remap_page_range()" is as follows:-
-
-return (io_remap_page_range(vma->vm_start, off, vma->vm_end -
-vma->vm_start, vma->vm_page_prot)) ? -EAGAIN : 0;
-
-I am running Redhat 9 Linux.
-
-Regards,
-Mukund jampala
-
-
-
-
--------------------------------------------------------
-SF email is sponsored by - The IT Product Guide
-Read honest & candid reviews on hundreds of IT Products from real users.
-Discover which products truly live up to the hype. Start reading now.
-http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
+At least some Debians, Gentoo and SUSE each use some variant of this
+eye candy; each one with different bugs. It would be nice to at least
+do the splash right (so that it does not require vesafb and therefore
+allows working with suspend-to-RAM).
+								Pavel
+-- 
+People were complaining that M$ turns users into beta-testers...
+...jr ghea gurz vagb qrirybcref, naq gurl frrz gb yvxr vg gung jnl!

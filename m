@@ -1,22 +1,20 @@
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [PATCH] PXA255 LCD Driver
-Date: Thu, 18 Mar 2004 20:36:38 +0000
+From: Petr Baudis <pasky@ucw.cz>
+Subject: [PATCH 2.6] fbcon font cloning fix
+Date: Thu, 18 Mar 2004 22:57:13 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040318203638.A12978@flint.arm.linux.org.uk>
-References: <1079525185.13373.143.camel@icampbell-debian> <Pine.LNX.4.44.0403171723330.15898-100000@phoenix.infradead.org>
+Message-ID: <20040318215713.GA3779@pasky.ji.cz>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B44G8-00089Q-Mi
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 18 Mar 2004 12:36:56 -0800
-Received: from caramon.arm.linux.org.uk ([212.18.232.186])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.30)
-	id 1B44G7-0007i6-7M
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 18 Mar 2004 12:36:55 -0800
+	id 1B45Vz-0006BS-LZ
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 18 Mar 2004 13:57:23 -0800
+Received: from ip-213-226-226-138.ji.cz
+	([213.226.226.138] helo=machine.sinus.cz ident=qmailr)
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
+	id 1B45Vu-0000WY-9p
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 18 Mar 2004 13:57:18 -0800
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0403171723330.15898-100000@phoenix.infradead.org>; from jsimmons@infradead.org on Wed, Mar 17, 2004 at 07:03:06PM +0000
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,23 +26,62 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Ian Campbell <icampbell@arcom.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, Mar 17, 2004 at 07:03:06PM +0000, James Simmons wrote:
-> behavior is struct fb_monspecs. Take a look at it in fb.h. I'm interested 
-> if I got all the needed data from the EDID about a display panel.
+  Hello,
 
-You're thinking too PC-centric.  You don't get EDID data with embedded
-LCD panels.  Instead, you get timing information, number of pixels per
-line, and other parameters either from a PDF or paper datasheet on the
-device.
+  this patch (against 2.6.4) fixes a bug which I hit when migrating from 2.4.
+Basically, when I do setfont during the system boot, the then-spawned ttys do
+not retain the new font but fall back to the default one.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:  2.6 PCMCIA      - http://pcmcia.arm.linux.org.uk/
-                 2.6 Serial core
+  I've tracked that down to a clearly bogus test in fbcon_set_display(),
+because vc->vc_font.width is not set at that time yet (no font has been loaded
+for the new vc). But even if it would (or this was meant to test against
+tmp->vc_font.width), it would mean only *HUGE* fonts would be retained.  And
+even if there were *two* bugs there and it was supposed to be less-than there,
+I couldn't make a sense of the test.
+
+  Please consider applying.
+
+ drivers/video/console/fbcon.c |   22 ++++++++++------------
+ 1 files changed, 10 insertions(+), 12 deletions(-)
+
+  Kind regards,
+                                Petr Baudis
+
+diff -rup linux/drivers/video/console/fbcon.c linux+pasky/drivers/video/console/fbcon.c
+--- linux/drivers/video/console/fbcon.c	Thu Mar 18 22:14:28 2004
++++ linux+pasky/drivers/video/console/fbcon.c	Thu Mar 18 21:32:01 2004
+@@ -746,19 +746,17 @@ static void fbcon_set_display(struct vc_
+ 		struct display *q = &fb_display[i];
+ 		struct vc_data *tmp = vc_cons[i].d;
+ 		
+-		if (vc->vc_font.width > 32) {
+-			/* If we are not the first console on this
+-			   fb, copy the font from that console */
+-			vc->vc_font.width = tmp->vc_font.width;
+-			vc->vc_font.height = tmp->vc_font.height;
+-			vc->vc_font.data = p->fontdata = q->fontdata;
+-			p->userfont = q->userfont;
+-			if (p->userfont) {
+-				REFCOUNT(p->fontdata)++;
+-				charcnt = FNTCHARCNT(p->fontdata);
+-			}
+-			con_copy_unimap(vc->vc_num, i);
++		/* If we are not the first console on this
++		   fb, copy the font from that console */
++		vc->vc_font.width = tmp->vc_font.width;
++		vc->vc_font.height = tmp->vc_font.height;
++		vc->vc_font.data = p->fontdata = q->fontdata;
++		p->userfont = q->userfont;
++		if (p->userfont) {
++			REFCOUNT(p->fontdata)++;
++			charcnt = FNTCHARCNT(p->fontdata);
+ 		}
++		con_copy_unimap(vc->vc_num, i);
+ 	}
+ 
+ 	if (!p->fontdata) {
 
 
 -------------------------------------------------------

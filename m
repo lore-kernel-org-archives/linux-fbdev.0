@@ -1,17 +1,17 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [RADEONFB] Cursor gone
-Date: Wed, 9 Jul 2003 00:17:51 +0100 (BST)
+Subject: fbdev and power management
+Date: Wed, 9 Jul 2003 00:25:28 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0307090017130.32323-100000@phoenix.infradead.org>
-References: <20030703155449.GA5399@dreamland.darkstar.lan>
+Message-ID: <Pine.LNX.4.44.0307090024170.32323-100000@phoenix.infradead.org>
+References: <20030704042052.GL4359@himi.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19a1j8-0001fv-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 08 Jul 2003 16:18:27 -0700
-In-Reply-To: <20030703155449.GA5399@dreamland.darkstar.lan>
+	id 19a1qY-0004mP-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 08 Jul 2003 16:26:06 -0700
+In-Reply-To: <20030704042052.GL4359@himi.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,26 +23,31 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kronos <kronos@kronoz.cjb.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-Strange. DO you get this effect my latest patch.
-
-http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
-
-
-> Hi,
-> sometimes  when I  switch to  console from  X I  loose the  cursors. The
-> problem seems to be random (it doesn't appear if I don't start X though)
-> and I'm unable  to find a pattern to reproduce  it. I'm using 2.5.73 now
-> but I first  saw this bug in 2.5.70 (hadn't  tried previous kernel, I'll
-> check asap).
+> I'm trying to get the radeon M6 in my new Fujitsu Lifebook to handle
+> ACPI S3 suspend and resume properly - at the moment, on resume it
+> fails to do anything. Looking at the driver, the reason is quite
+> obvious (no .suspend and .resume functions defined), but the driver
+> file has code to handle these (apparently only for the PowerBooks,
+> since it's wrapped in a #ifdef CONIG_PMAC_PBOOK). My Lifebook P2120
+> is a Crusoe 5800 based setup, with a PCI M6, so it's not even being
+> built, let alone enabled and used. 
 > 
-> How can I pinpoint the bug?
+> As far as I can tell, if I removed the #ifdef CONFIG_PMAC_PBOOK and
+> split the current radeon_set_suspend up into suspend and resume
+> functions to fit the current power management stuff, it might have
+> some chance of working. Can you tell me if this is a reasonable
+> first step?
 > 
-> Luca
-> 
+> Alternatively, if you have patches that I could test, I'd be quite
+> happy to give them a go - being a guinea pig sounds like fun ;-)
+
+No patches at this time. I need to learn the new power management code. 
+Where are the docs for them ? 
+
 
 
 

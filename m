@@ -1,18 +1,15 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: Re: 2.5.42 compiler error in
-	video/vga16fb.c
-Date: 19 Oct 2002 18:56:09 +0800
+From: Ben Pfaff <blp@cs.stanford.edu>
+Subject: patch: fix vga16fb to work in 2.5.x
+Date: 19 Oct 2002 19:22:35 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1035024946.1283.7.camel@daplas>
-References: <Pine.LNX.4.33.0210180944520.10832-100000@maxwell.earthlink.net>
+Message-ID: <874rbhq26s.fsf@pfaff.Stanford.EDU>
+Reply-To: blp@cs.stanford.edu
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-kwGr4NZ2T/Gq0VMdXOJ5"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [203.167.79.9] (helo=willow.compass.com.ph)
+Received: from pfaff1.stanford.edu ([128.12.189.154] helo=pfaff.Stanford.EDU)
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 182rPi-0007rY-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 19 Oct 2002 04:05:03 -0700
-In-Reply-To: <Pine.LNX.4.33.0210180944520.10832-100000@maxwell.earthlink.net>
+	id 1835l9-0000Fe-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 19 Oct 2002 19:24:07 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,513 +19,288 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: James Simmons <jsimmons@infradead.org>
-Cc: Petr Vandrovec <vandrove@vc.cvut.cz>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-
-
---=-kwGr4NZ2T/Gq0VMdXOJ5
-Content-Type: text/plain
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-
-On Sat, 2002-10-19 at 00:47, James Simmons wrote:
-> 
-> > It looks like that nobody is interested in VGA anymore. Are there
-> > any objections against patch below? It is for current 2.5.42-bk,
-> > and it fixes vga16fb compilability, and adds -depth 8 (to get 320x200, or
-> > 360x480 in planar mode) and -depth 0 (to get fast textmode) to the vga16fb.
-> 
-> I'm working on it.
-> 
-> > If there are no objections, I'll split it up and send to Linus. But as
-> 
-> Wait. I have your work already in the fbdev BK tree. I'm porting it to the
-> new api. I just need to write up a fillrect and copy area function for vga
-> planes mode.
-> 
-I have a fillrect, copyarea and imageblit for vga16 since it was one of
-the first drivers I tested with the new framework.  If you're too busy,
-you may want to use them instead. Never posted it because I don't want
-to preempt Petr.
-
-Tony
-
-
---=-kwGr4NZ2T/Gq0VMdXOJ5
-Content-Disposition: attachment; filename=vgacopyarea.c
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/x-c; name=vgacopyarea.c; charset=ISO-8859-1
-
-/*
- *  linux/drivers/video/fbcon-vga-planes.c -- Low level frame buffer operat=
-ions
- *				  for VGA 4-plane modes
- *
- * Copyright 1999 Ben Pfaff <pfaffben@debian.org> and Petr Vandrovec <VANDR=
-OVE@vc.cvut.cz>
- * Based on code by Michael Schmitz
- * Based on the old macfb.c 4bpp code by Alan Cox
- *
- * This file is subject to the terms and conditions of the GNU General
- * Public License.  See the file COPYING in the main directory of this
- * archive for more details.  */
-
-#include <linux/module.h>
-#include <linux/tty.h>
-#include <linux/console.h>
-#include <linux/string.h>
-#include <linux/fb.h>
-#include <linux/vt_buffer.h>
-
-#include <asm/io.h>
-
-#include <video/fbcon.h>
-#include <video/fbcon-vga-planes.h>
-
-#include "vgaops.h"
-
-void vgaplanes_copyarea(struct fb_info *p, struct fb_copyarea *area)
-{
-	int x, x2, y2, old_dx, old_dy, vxres, vyres;
-	int height, width, line_ofs;
-	char *dst =3D NULL, *src =3D NULL;
-
-	vxres =3D p->var.xres_virtual;
-	vyres =3D p->var.yres_virtual;
-#ifdef FBCON_HAS_ROTATE
-	if (p->var.vmode & (FB_VMODE_ROTATE_CW | FB_VMODE_ROTATE_CCW)) {
-		vxres =3D p->var.yres_virtual;
-		vyres =3D p->var.xres_virtual;
-	}
-#endif
-
-	if (area->dx > vxres ||=20
-	    area->sx > vxres ||
-	    area->dy > vyres ||
-	    area->sy > vyres)
-		return;
-
-	/* clip the destination */
-	old_dx =3D area->dx;
-	old_dy =3D area->dy;
-
-	/*
-	 * We could use hardware clipping but on many cards you get around
-	 * hardware clipping by writing to framebuffer directly.
-	 */
-	x2 =3D area->dx + area->width;
-	y2 =3D area->dy + area->height;
-	area->dx =3D area->dx > 0 ? area->dx : 0;
-	area->dy =3D area->dy > 0 ? area->dy : 0;
-	x2 =3D x2 < vxres ? x2 : vxres;
-	y2 =3D y2 < vyres ? y2 : vyres;
-	area->width =3D x2 - area->dx;
-	area->height =3D y2 - area->dy;
-
-	/* update sx1,sy1 */
-	area->sx +=3D (area->dx - old_dx);
-	area->sy +=3D (area->dy - old_dy);
-
-	/* the source must be completely inside the virtual screen */
-	if (area->sx < 0 || area->sy < 0 ||
-	    (area->sx + area->width) > vxres ||
-	    (area->sy + area->height) > vyres)
-		return;
-
-	width =3D area->width/8;
-	height =3D area->height;
-	line_ofs =3D p->fix.line_length - width;
-
-	setmode(1);
-	setop(0);
-	setsr(0xf);
-
-	if (area->dy < area->sy || (area->dy =3D=3D area->sy && area->dx < area->s=
-x)) {
-		dst =3D p->screen_base + (area->dx/8) + area->dy * p->fix.line_length;
-		src =3D p->screen_base + (area->sx/8) + area->sy * p->fix.line_length;
-		while (height--) {
-			for (x =3D 0; x < width; x++) {
-				readb(src);
-				writeb(0, dst);
-				dst++;
-				src++;
-			}
-			src +=3D line_ofs;
-			dst +=3D line_ofs;
-		}
-	} else {
-		dst =3D p->screen_base + (area->dx/8) + width + (area->dy + height - 1) *=
- p->fix.line_length;
-		src =3D p->screen_base + (area->sx/8) + width + (area->sy + height - 1) *=
- p->fix.line_length;
-		while (height--) {
-			for (x =3D 0; x < width; x++) {
-				dst--;
-				src--;
-				readb(src);
-				writeb(0, dst);
-			}
-			src -=3D line_ofs;
-			dst -=3D line_ofs;
-		}
-	}
-}
-
---=-kwGr4NZ2T/Gq0VMdXOJ5
-Content-Disposition: attachment; filename=vgafillrect.c
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/x-c; name=vgafillrect.c; charset=ISO-8859-1
-
-/*
- *  linux/drivers/video/fbcon-vga-planes.c -- Low level frame buffer operat=
-ions
- *				  for VGA 4-plane modes
- *
- * Copyright 1999 Ben Pfaff <pfaffben@debian.org> and Petr Vandrovec <VANDR=
-OVE@vc.cvut.cz>
- * Based on code by Michael Schmitz
- * Based on the old macfb.c 4bpp code by Alan Cox
- *
- * This file is subject to the terms and conditions of the GNU General
- * Public License.  See the file COPYING in the main directory of this
- * archive for more details.  */
-
-#include <linux/module.h>
-#include <linux/tty.h>
-#include <linux/console.h>
-#include <linux/string.h>
-#include <linux/fb.h>
-#include <linux/vt_buffer.h>
-
-#include <asm/io.h>
-
-#include <video/fbcon.h>
-#include <video/fbcon-vga-planes.h>
-
-#include "vgaops.h"
-
-void vgaplanes_fillrect(struct fb_info *p, struct fb_fillrect *rect)
-{
-	int x, x2, y2, vxres, vyres;
-	int width, height;
-	int line_ofs;
-	char *dst;
-
-	vxres =3D p->var.xres_virtual;
-	vyres =3D p->var.yres_virtual;
-#ifdef FBCON_HAS_ROTATE
-	if (p->var.vmode & (FB_VMODE_ROTATE_CW | FB_VMODE_ROTATE_CCW)) {
-		vxres =3D p->var.yres_virtual;
-		vyres =3D p->var.xres_virtual;
-	}
-#endif
-
-	if (!rect->width || !rect->height ||
-	    rect->dx > vxres ||
-	    rect->dy > vyres)
-		return;
-
-	/* We could use hardware clipping but on many cards you get around
-	 * hardware clipping by writing to framebuffer directly. */
-
-	x2 =3D rect->dx + rect->width;
-	y2 =3D rect->dy + rect->height;
-	x2 =3D x2 < vxres ? x2 : vxres;
-	y2 =3D y2 < vyres ? y2 : vyres;
-	rect->width =3D x2 - rect->dx;
-
-	height =3D y2 - rect->dy;
-	width =3D rect->width/8;
-
-	line_ofs =3D p->fix.line_length - width;
-	dst =3D p->screen_base + (rect->dx/8) + rect->dy * p->fix.line_length;
-
-	switch (rect->rop) {
-	case ROP_COPY:
-		setmode(0);
-		setop(0);
-		setsr(0xf);
-		setcolor(rect->color);
-		selectmask();
-	=09
-		setmask(0xff);
-	=09
-		while (height--) {
-			for (x =3D 0; x < width; x++) {
-				writeb(0, dst);
-				dst++;
-			}
-			dst +=3D line_ofs;
-		}
-		break;
-	case ROP_XOR:
-		setmode(0);
-		setop(0x18);
-		setsr(0xf);
-		setcolor(0xf);
-		selectmask();
-	=09
-		setmask(0xff);
-		while (height--) {
-			for (x =3D 0; x < width; x++) {
-				rmw(dst);
-				dst++;
-			}
-			dst +=3D line_ofs;
-		}
-		break;
-	}
-}
-
---=-kwGr4NZ2T/Gq0VMdXOJ5
-Content-Disposition: attachment; filename=vgaimgblt.c
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/x-c; name=vgaimgblt.c; charset=ISO-8859-1
-
-/*
- *  linux/drivers/video/fbcon-vga-planes.c -- Low level frame buffer operat=
-ions
- *				  for VGA 4-plane modes
- *
- * Copyright 1999 Ben Pfaff <pfaffben@debian.org> and Petr Vandrovec <VANDR=
-OVE@vc.cvut.cz>
- * Based on code by Michael Schmitz
- * Based on the old macfb.c 4bpp code by Alan Cox
- *
- * This file is subject to the terms and conditions of the GNU General
- * Public License.  See the file COPYING in the main directory of this
- * archive for more details.  */
-
-#include <linux/module.h>
-#include <linux/tty.h>
-#include <linux/console.h>
-#include <linux/string.h>
-#include <linux/fb.h>
-#include <linux/vt_buffer.h>
-
-#include <asm/io.h>
-
-#include <video/fbcon.h>
-#include <video/fbcon-vga-planes.h>
-
-#include "vgaops.h"
-
-void vgaplanes_imageblit(struct fb_info *p, struct fb_image *image)
-{
-	int x2, y2, vxres, vyres, i, j;
-	int fg =3D image->fg_color;
-	int bg =3D image->bg_color;
-	int width, height;
-	char *src =3D image->data, *dst;
-
-	vxres =3D p->var.xres_virtual;
-	vyres =3D p->var.yres_virtual;
-
-	/*=20
-	 * We could use hardware clipping but on many cards you get around hardwar=
-e
-	 * clipping by writing to framebuffer directly like we are doing here.=20
-	 */
-	if (image->dx > vxres ||
-	    image->dy > vyres)
-		return;
-
-	x2 =3D image->dx + image->width;
-	y2 =3D image->dy + image->height;
-	image->dx =3D image->dx > 0 ? image->dx : 0;
-	image->dy =3D image->dy > 0 ? image->dy : 0;
-	x2 =3D x2 < vxres ? x2 : vxres;
-	y2 =3D y2 < vyres ? y2 : vyres;
-	image->width  =3D x2 - image->dx;
-	image->height =3D y2 - image->dy;
-
-	width =3D image->width/8;
-	height =3D image->height;
-
-	setmode(2);
-	setop(0);
-	setsr(0xf);
-	setcolor(fg);
-	selectmask();
-
-	setmask(0xff);
-	dst =3D p->screen_base + (image->dx/8) + image->dy * p->fix.line_length;
-	writeb(bg, dst);
-	rmb();
-	readb(dst);
-	setmode(3);
-	wmb();
-
-	for (i =3D 0; i < height; i++) {
-		char *dst1;
-
-		dst1 =3D dst;
-		for (j =3D 0; j < width; j++)=20
-			writeb(*src++, dst1++);
-
-		dst +=3D p->fix.line_length;
-	}
-	wmb();
-}
-
-void egaplanes_imageblit(struct fb_info *p, struct fb_image *image)
-{
-	int x2, y2, vxres, vyres, i, j;
-	int fg =3D image->fg_color;
-	int bg =3D image->bg_color;
-	int width, height;
-	char *src =3D image->data, *dst;
-
-	vxres =3D p->var.xres_virtual;
-	vyres =3D p->var.yres_virtual;
-
-	/*=20
-	 * We could use hardware clipping but on many cards you get around hardwar=
-e
-	 * clipping by writing to framebuffer directly like we are doing here.=20
-	 */
-	if (image->dx > vxres ||
-	    image->dy > vyres)
-		return;
-
-	x2 =3D image->dx + image->width;
-	y2 =3D image->dy + image->height;
-	image->dx =3D image->dx > 0 ? image->dx : 0;
-	image->dy =3D image->dy > 0 ? image->dy : 0;
-	x2 =3D x2 < vxres ? x2 : vxres;
-	y2 =3D y2 < vyres ? y2 : vyres;
-	image->width  =3D x2 - image->dx;
-	image->height =3D y2 - image->dy;
-
-	width =3D image->width/8;
-	height =3D image->height;
-
-	setmode(2);
-	setop(0);
-	selectmask();
-
-	setmask(0xff);
-	dst =3D p->screen_base + (image->dx/8) + image->dy * p->fix.line_length;
-	writeb(bg, dst);
-	rmb();
-	readb(dst);
-	wmb();
-	selectmask();
-	for (i =3D 0; i < height; i++) {
-		char *dst1;
-
-		dst1 =3D dst;
-		for (j =3D 0; j < width; j++) {
-			outb(*src++, GRAPHICS_DATA_REG);
-			wmb();
-			writeb(fg, dst1++);
-		}
-		dst +=3D p->fix.line_length;
-	}
-	wmb();
-}
-		=09
-		=09
-	=09
-
---=-kwGr4NZ2T/Gq0VMdXOJ5
-Content-Disposition: attachment; filename=vgaops.h
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/x-c; name=vgaops.h; charset=ISO-8859-1
-
-/*
- *  linux/drivers/video/vgaops.h -- Low level frame buffer operations
- *				     for VGA 4-plane modes
- *
- * Copyright 1999 Ben Pfaff <pfaffben@debian.org> and Petr Vandrovec <VANDR=
-OVE@vc.cvut.cz>
- * Based on code by Michael Schmitz
- * Based on the old macfb.c 4bpp code by Alan Cox
- *
- * This file is subject to the terms and conditions of the GNU General
- * Public License.  See the file COPYING in the main directory of this
- * archive for more details.  */
-
-
-#define GRAPHICS_ADDR_REG 0x3ce		/* Graphics address register. */
-#define GRAPHICS_DATA_REG 0x3cf		/* Graphics data register. */
-
-#define SET_RESET_INDEX 0		/* Set/Reset Register index. */
-#define ENABLE_SET_RESET_INDEX 1	/* Enable Set/Reset Register index. */
-#define DATA_ROTATE_INDEX 3		/* Data Rotate Register index. */
-#define GRAPHICS_MODE_INDEX 5		/* Graphics Mode Register index. */
-#define BIT_MASK_INDEX 8		/* Bit Mask Register index. */
-
-/* The VGA's weird architecture often requires that we read a byte and
-   write a byte to the same location.  It doesn't matter *what* byte
-   we write, however.  This is because all the action goes on behind
-   the scenes in the VGA's 32-bit latch register, and reading and writing
-   video memory just invokes latch behavior.
-
-   To avoid race conditions (is this necessary?), reading and writing
-   the memory byte should be done with a single instruction.  One
-   suitable instruction is the x86 bitwise OR.  The following
-   read-modify-write routine should optimize to one such bitwise
-   OR. */
-#define rmw(p) \
-{ \
-	readb(p); \
-	writeb(1, p); \
-} \
-
-/* Set the Graphics Mode Register.  Bits 0-1 are write mode, bit 3 is
-   read mode. */
-#define setmode(mode)                                 \
-{                                                     \
-	outb(GRAPHICS_MODE_INDEX, GRAPHICS_ADDR_REG); \
-	outb(mode, GRAPHICS_DATA_REG);                \
-}
-
-/* Select the Bit Mask Register. */
-#define selectmask()                                  \
-{                                                     \
-	outb(BIT_MASK_INDEX, GRAPHICS_ADDR_REG);      \
-}
-
-/* Set the value of the Bit Mask Register.  It must already have been
-   selected with selectmask(). */
-#define setmask(mask)                                 \
-{                                                     \
-	outb(mask, GRAPHICS_DATA_REG);                \
-}
-
-/* Set the Data Rotate Register.  Bits 0-2 are rotate count, bits 3-4
-   are logical operation (0=3DNOP, 1=3DAND, 2=3DOR, 3=3DXOR). */
-#define setop(op)                                    \
-{                                                    \
-	outb(DATA_ROTATE_INDEX, GRAPHICS_ADDR_REG);  \
-	outb(op, GRAPHICS_DATA_REG);                 \
-}
-
-/* Set the Enable Set/Reset Register.  The code here always uses value
-   0xf for this register.  */
-#define setsr(sr)                                        \
-{                                                        \
-	outb(ENABLE_SET_RESET_INDEX, GRAPHICS_ADDR_REG); \
-	outb(sr, GRAPHICS_DATA_REG);                     \
-}
-
-/* Set the Set/Reset Register. */
-#define setcolor(color)                              \
-{                                                    \
-	outb(SET_RESET_INDEX, GRAPHICS_ADDR_REG);    \
-	outb(color, GRAPHICS_DATA_REG);              \
-}
-
-/* Set the value in the Graphics Address Register. */
-#define setindex(index)                              \
-{                                                    \
-	outb(index, GRAPHICS_ADDR_REG);              \
-}
-
---=-kwGr4NZ2T/Gq0VMdXOJ5--
-
-
+To: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Cc: Samuele Kaplun <kaplun@inwind.it>
+
+Here's a patch, along the lines of the differences between vesafb
+between 2.4.19 and 2.5.44, that makes vga16fb work for me under
+2.5.x.  I don't get a penguin at boot-up, but I don't get one
+with vesafb either, and everything else seems to work.
+
+--- linux-2.5.44/drivers/video/vga16fb.c	2002-10-18 21:01:19.000000000 -0700
++++ linux-2.5.44-work/drivers/video/vga16fb.c	2002-10-19 17:04:32.000000000 -0700
+@@ -22,6 +22,7 @@
+ #include <linux/selection.h>
+ #include <linux/ioport.h>
+ #include <linux/init.h>
++#include <linux/interrupt.h>
+ 
+ #include <asm/io.h>
+ 
+@@ -81,22 +82,33 @@
+ /* --------------------------------------------------------------------- */
+ 
+ static struct fb_var_screeninfo vga16fb_defined = {
+-	640,480,640,480,/* W,H, W, H (virtual) load xres,xres_virtual*/
+-	0,0,		/* virtual -> visible no offset */
+-	4,		/* depth -> load bits_per_pixel */
+-	0,		/* greyscale ? */
+-	{0,0,0},	/* R */
+-	{0,0,0},	/* G */
+-	{0,0,0},	/* B */
+-	{0,0,0},	/* transparency */
+-	0,		/* standard pixel format */
+-	FB_ACTIVATE_NOW,
+-	-1,-1,
+-	0,
+-	39721, 48, 16, 39, 8,
+-	96, 2, 0,	/* No sync info */
+-	FB_VMODE_NONINTERLACED,
+-	{0,0,0,0,0,0}
++        .xres           = 640,
++        .yres           = 480,
++        .xres_virtual   = 640,
++        .yres_virtual   = 480,
++        .bits_per_pixel = 4,
++        .activate       = FB_ACTIVATE_NOW,
++        .height         = -1,
++        .width          = -1,
++        .pixclock       = 39721,
++        .left_margin    = 48,
++        .right_margin   = 16,
++        .upper_margin   = 39,
++        .lower_margin   = 8,
++        .hsync_len      = 96,
++        .vsync_len      = 2,
++        .vmode          = FB_VMODE_NONINTERLACED,
++};
++
++static struct fb_fix_screeninfo vga16fb_fix __initdata = {
++        .id             = "VGA16 VGA",
++        .smem_start     = VGA_FB_PHYS,
++        .smem_len       = VGA_FB_PHYS_LEN,
++        .type           = FB_TYPE_VGA_PLANES,
++        .visual         = FB_VISUAL_PSEUDOCOLOR,
++        .xpanstep       = 8,
++        .ypanstep       = 1,
++        .line_length    = 640 / 8,
+ };
+ 
+ static struct display disp;
+@@ -121,69 +133,22 @@
+ #endif
+ }
+ 
+-static int vga16fb_update_var(int con, struct fb_info *info)
+-{
+-	vga16fb_pan_var(info, &fb_display[con].var);
+-	return 0;
+-}
+-
+-static int vga16fb_get_fix(struct fb_fix_screeninfo *fix, int con,
+-			   struct fb_info *info)
+-{
+-	struct display *p;
+-
+-	if (con < 0)
+-		p = &disp;
+-	else
+-		p = fb_display + con;
+-
+-	memset(fix, 0, sizeof(struct fb_fix_screeninfo));
+-	strcpy(fix->id,"VGA16 VGA");
+-
+-	fix->smem_start = VGA_FB_PHYS;
+-	fix->smem_len = VGA_FB_PHYS_LEN;
+-	fix->type = FB_TYPE_VGA_PLANES;
+-	fix->visual = FB_VISUAL_PSEUDOCOLOR;
+-	fix->xpanstep  = 8;
+-	fix->ypanstep  = 1;
+-	fix->ywrapstep = 0;
+-	fix->line_length = p->var.xres_virtual / 8;
+-	return 0;
+-}
+-
+-static int vga16fb_get_var(struct fb_var_screeninfo *var, int con,
+-			 struct fb_info *info)
+-{
+-	if(con==-1)
+-		memcpy(var, &vga16fb_defined, sizeof(struct fb_var_screeninfo));
+-	else
+-		*var=fb_display[con].var;
+-	return 0;
+-}
+-
+ static void vga16fb_set_disp(int con, struct vga16fb_info *info)
+ {
+-	struct fb_fix_screeninfo fix;
+-	struct display *display;
+-
+-	if (con < 0)
+-		display = &disp;
+-	else
+-		display = fb_display + con;
++        struct display *display = (con < 0) ? info->fb_info.disp : (fb_display + con);
+ 
+-	
+-	vga16fb_get_fix(&fix, con, &info->fb_info);
+-
+-	display->visual = fix.visual;
+-	display->type = fix.type;
+-	display->type_aux = fix.type_aux;
+-	display->ypanstep = fix.ypanstep;
+-	display->ywrapstep = fix.ywrapstep;
+-	display->line_length = fix.line_length;
+-	display->next_line = fix.line_length;
+ 	display->can_soft_blank = 1;
++        display->dispsw_data = NULL;
++        display->var = info->fb_info.var;
+ 	display->inverse = 0;
+ 
++        /*
++         * If we are setting all the virtual consoles, also set
++         * the defaults used to create new consoles.
++         */
++        if (con < 0 || info->fb_info.var.activate & FB_ACTIVATE_ALL)
++                info->fb_info.disp->var = info->fb_info.var;
++
+ 	if (info->isVGA)
+ 		display->dispsw = &fbcon_vga_planes;
+ 	else
+@@ -500,13 +465,9 @@
+ {
+ 	struct vga16fb_info *info = (struct vga16fb_info*)fb;
+ 	struct vga16fb_par par;
+-	struct display *display;
++        struct display *display = (con < 0) ? fb->disp : (fb_display + con);
+ 	int err;
+ 
+-	if (con < 0)
+-		display = fb->disp;
+-	else
+-		display = fb_display + con;
+ 	if ((err = vga16fb_decode_var(var, &par, info)) != 0)
+ 		return err;
+ 	vga16fb_encode_var(var, &par, info);
+@@ -552,25 +513,6 @@
+ 	outb_p(0x20, 0x3C0); /* unblank screen */
+ }
+ 
+-static int vga16_getcolreg(unsigned regno, unsigned *red, unsigned *green,
+-			  unsigned *blue, unsigned *transp,
+-			  struct fb_info *fb_info)
+-{
+-	/*
+-	 *  Read a single color register and split it into colors/transparent.
+-	 *  Return != 0 for invalid regno.
+-	 */
+-
+-	if (regno >= 16)
+-		return 1;
+-
+-	*red   = palette[regno].red;
+-	*green = palette[regno].green;
+-	*blue  = palette[regno].blue;
+-	*transp = 0;
+-	return 0;
+-}
+-
+ static void vga16_setpalette(int regno, unsigned red, unsigned green, unsigned blue)
+ {
+ 	outb(regno,       dac_reg);
+@@ -615,19 +557,6 @@
+ 	return 0;
+ }
+ 
+-static int vga16fb_get_cmap(struct fb_cmap *cmap, int kspc, int con,
+-			   struct fb_info *info)
+-{
+-	if (con == info->currcon) /* current console? */
+-		return fb_get_cmap(cmap, kspc, vga16_getcolreg, info);
+-	else if (fb_display[con].cmap.len) /* non default colormap? */
+-		fb_copy_cmap(&fb_display[con].cmap, cmap, kspc ? 0 : 2);
+-	else
+-		fb_copy_cmap(fb_default_cmap(16),
+-		     cmap, kspc ? 0 : 2);
+-	return 0;
+-}
+-
+ static int vga16fb_pan_display(struct fb_var_screeninfo *var, int con,
+ 			       struct fb_info *info) 
+ {
+@@ -811,10 +740,8 @@
+ 
+ static struct fb_ops vga16fb_ops = {
+ 	.owner =	THIS_MODULE,
+-	.fb_get_fix =	vga16fb_get_fix,
+-	.fb_get_var =	vga16fb_get_var,
+ 	.fb_set_var =	vga16fb_set_var,
+-	.fb_get_cmap =	vga16fb_get_cmap,
++	.fb_get_cmap =	gen_get_cmap,
+ 	.fb_set_cmap =	gen_set_cmap,
+ 	.fb_setcolreg =	vga16fb_setcolreg,
+ 	.fb_pan_display =vga16fb_pan_display,
+@@ -839,27 +766,6 @@
+ 	return 0;
+ }
+ 
+-static int vga16fb_switch(int con, struct fb_info *fb)
+-{
+-	struct vga16fb_par par;
+-	struct vga16fb_info *info = (struct vga16fb_info*)fb;
+-
+-	/* Do we have to save the colormap? */
+-	if (fb_display[fb->currcon].cmap.len)
+-		fb_get_cmap(&fb_display[fb->currcon].cmap, 1, vga16_getcolreg,
+-			    fb);
+-	
+-	fb->currcon = con;
+-	vga16fb_decode_var(&fb_display[con].var, &par, info);
+-	vga16fb_set_par(&par, info);
+-	vga16fb_set_disp(con, info);
+-
+-	/* Install new colormap */
+-	do_install_cmap(con, fb);
+-/*	vga16fb_update_var(con, fb); */
+-	return 1;
+-}
+-
+ int __init vga16fb_init(void)
+ {
+ 	int i,j;
+@@ -895,19 +801,22 @@
+ 
+ 	disp.var = vga16fb_defined;
+ 
+-	/* name should not depend on EGA/VGA */
+-	strcpy(vga16fb.fb_info.modename, "VGA16 VGA");
++	strcpy(vga16fb.fb_info.modename, vga16fb_fix.id);
+ 	vga16fb.fb_info.changevar = NULL;
+ 	vga16fb.fb_info.node = NODEV;
++        vga16fb.fb_info.var = vga16fb_defined;
++        vga16fb.fb_info.fix = vga16fb_fix;
+ 	vga16fb.fb_info.fbops = &vga16fb_ops;
+ 	vga16fb.fb_info.screen_base = vga16fb.video_vbase;
+ 	vga16fb.fb_info.disp=&disp;
+ 	vga16fb.fb_info.currcon = -1;
+-	vga16fb.fb_info.switch_con=&vga16fb_switch;
+-	vga16fb.fb_info.updatevar=&vga16fb_update_var;
++	vga16fb.fb_info.switch_con=&gen_switch;
++	vga16fb.fb_info.updatevar=&gen_update_var;
+ 	vga16fb.fb_info.flags=FBINFO_FLAG_DEFAULT;
+ 	vga16fb_set_disp(-1, &vga16fb);
+ 
++	fb_alloc_cmap(&vga16fb.fb_info.cmap, 16, 0);
++
+ 	if (register_framebuffer(&vga16fb.fb_info)<0) {
+ 		iounmap(vga16fb.video_vbase);
+ 		return -EINVAL;
+
+
+-- 
+Aim to please, shoot to kill.
 
 
 -------------------------------------------------------

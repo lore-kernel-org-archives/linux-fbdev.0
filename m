@@ -1,20 +1,21 @@
 From: Egbert Eich <eich@suse.de>
 Subject: Re: [Linux-fbdev-devel] Re: Who is stomping PCI config space?
-Date: Mon, 7 Mar 2005 12:05:10 +0100
-Message-ID: <16940.13670.840807.311073@xf14.local>
+Date: Mon, 7 Mar 2005 12:19:02 +0100
+Message-ID: <16940.14502.277774.189552@xf14.local>
 References: <9e4733910503031103552514b9@mail.gmail.com>
 	<1109891245.5611.246.camel@gaston>
 	<9e473391050303161559c17955@mail.gmail.com>
 	<9e47339105030319037f083f7@mail.gmail.com>
 	<1109918459.5610.273.camel@gaston>
 	<16936.20345.249542.65736@xf14.local>
-	<1109975240.5610.297.camel@gaston>
-	<16937.63967.588170.359548@xf14.local>
-	<1110062390.13594.71.camel@gaston>
+	<9e47339105030409352803c7e1@mail.gmail.com>
+	<1109976157.5680.309.camel@gaston>
+	<16938.847.772446.757968@xf14.local>
+	<1110062539.13594.74.camel@gaston>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 In-Reply-To: benh@kernel.crashing.org wrote on Sunday,
-	6 March 2005 at 09:39:50 +1100 
+	6 March 2005 at 09:42:19 +1100 
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
 	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
@@ -31,60 +32,39 @@ Cc: Egbert Eich <eich@suse.de>, Linux Fbdev development list <linux-fbdev-devel@
 
 Benjamin Herrenschmidt writes:
  > 
- > Yes, you can assume the worst case at first, and later on have the
- > driver disable decoding of legacy stuff and inform your arbiter to stop
- > caring about that specific card, no ?
-
-Right. Actually we had different mechanisms implemented and I also
-had the concept of 'background' driver which would just do this
-without driving any card.
-Unfortunately this has never really been employed much and I would
-have to look how this was designed in detail.
-
- > > 
- > > On a lot of cards there may be situations where VGA registers need to
- > > be accessed for specific purposes.
+ > > How do we deal with interrupts from VGA cards that we don't have a 
+ > > driver for? 
  > 
- > Yup, though "modern" cards usually don't. A radeon operates 100% without
- > access to any legacy resource lately (except the console restore on
- > console switch, but that's fairly isolated and I even removed it on ppc
- > as it breaks things on setups where the card was boostrapped in "no VGA"
- > mode. I personally think it should be done by the kernel). I think
- > nvidia's "remap" the VGA registes somewhere in normal MMIO space, at
- > least I think I remember seeing something like that.
+ > We don't get any, do we ? If we get an interrupt we don't have a driver
+ > for, the system dies usually ;) Well, unless it's an edge interrupt, in
+ > which case we can just drop it on the floor, but PCI interrupts are
+ > level.
 
-How about POSTing? Doesn't the Radeon card have to be POSTed?
+Usually VGA chips are capable of sending interrupts. At least the VGA
+specs had a bit where interrupts can be enabled/disabled.
+I'm surprised that this has not been an issue yet as I'm not sure if
+the BIOS POST always leaves them disabled. For PCI chips they probalbly
+do.
 
  > 
- > > Furthermore it must not be expected that nobody uses older cards which
- > > still require VGA registers.
+ > > We don't service interrupts in this case either.
+ > > Can't we unregister the interrupt handler until everything
+ > > is set up right? Maybe a dump idea...
+ > > Also there is a generic VGA register to control interrupts.
  > 
- > Agreed.
- > 
- > > Is there a way to halt a process that is using VGA registers for the
- > > time the interrupt gets serviced? For example sending a signal to 
- > > this process so that it suspends norml execution waits in a signal 
- > > handler?
- > 
- > Not really. Well, something could be hacked, that is, the current CPU is
- > obviously handling the IRQ, so the process "below" has been halted, but
- > it would require some kind of IPI tricks to also halt other CPUs, quite
- > heavy handed I think.
+ > We have reached the end of my VGA knowledge, but I seriously doubt a VGA
+ > card will issue interrupts if not previously programmed to do so... So
+ > we probably don't have to bother. We only care about interrupts that we
 
-Yes, that's what I was asking. Would there be a way to avoid too
-much overhead in the kernel?
-But maybe your suggestion how to handle the situation where interrupt
-handling that required VGA resources could be dealt with outside the 
-interrupt handler would be sufficient for all cases where this may
-matter.
+Possibly.
 
- > 
- > > All this would only matter for systems with more than one CPU.
- > 
- > Yes, but those are becoming quite common. Also multicore is coming ;)
- > 
+ > have a use for, that is interrupts triggered by cards upon request of
+ > their driver, for things like DMA/AGP command buffer operations, vblank,
+ > monitor detection, ...
 
-I agree.
+The classic use for interrupts has been vblank. We have never used it
+and I've heard reports from some people who have played around with this
+that on some VGA chips it did what it was supposed to on others it didn't.
 
 Cheers,
 	Egbert.

@@ -1,26 +1,31 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: fbdraw 0.1 available
-Date: Sun, 12 Sep 2004 03:40:03 +0800
+From: Sven Luther <sven.luther@wanadoo.fr>
+Subject: Re: monitor detection through ddc/edid stuff.
+Date: Sun, 12 Sep 2004 10:42:40 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200409120340.04133.adaplas@hotpop.com>
-References: <41426651.2010201@comcast.net>
+Message-ID: <20040912084240.GA21563@pegasos>
+References: <20040910111627.GA14811@pegasos> <20040911153625.GA3507@dreamland.darkstar.lan>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C6DmI-0007Vb-3O
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 11 Sep 2004 12:43:18 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1C6DmH-0000Ud-B7
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 11 Sep 2004 12:43:18 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 5E84FE473
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 11 Sep 2004 19:43:06 +0000 (UTC)
-In-Reply-To: <41426651.2010201@comcast.net>
+	id 1C6Pv3-0004sA-CL
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 12 Sep 2004 01:41:09 -0700
+Received: from smtp8.wanadoo.fr ([193.252.22.23] helo=mwinf0808.wanadoo.fr)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
+	id 1C6Pv2-0000W6-L3
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 12 Sep 2004 01:41:09 -0700
+Received: from me-wanadoo.net (localhost [127.0.0.1])
+	by mwinf0808.wanadoo.fr (SMTP Server) with SMTP id 57B5E180011E
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 12 Sep 2004 10:41:01 +0200 (CEST)
+Received: from pegasos (AStrasbourg-251-1-31-86.w82-126.abo.wanadoo.fr [82.126.149.86])
+	by mwinf0808.wanadoo.fr (SMTP Server) with ESMTP id 37E9518000F3
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 12 Sep 2004 10:40:58 +0200 (CEST)
+Received: from luther by pegasos with local (Exim 4.34)
+	id 1C6PwY-0005cp-T6
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 12 Sep 2004 10:42:42 +0200
 Content-Disposition: inline
+In-Reply-To: <20040911153625.GA3507@dreamland.darkstar.lan>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,41 +36,82 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, Zack <plinius@comcast.net>
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Saturday 11 September 2004 10:43, Zack wrote:
-> My changes to permit (optional) in-kernel drawing for applications
-> are available. It's only version 0.1 at this point, meaning alpha,
-> but I'm happy with the performance and structure. I've included
-> a test application that allows benchmarking.
->
-> home.comcast.net/~plinius/fbdraw-0.1.tar.gz
->
-> To install, move the tarfile to the 2.6.8.1 root dir, and use
-> tar zxfv fbdraw-0.1.tar.gz.
->
-> Constructive criticism is welcome.
+On Sat, Sep 11, 2004 at 05:36:25PM +0200, Kronos wrote:
+> Il Fri, Sep 10, 2004 at 01:16:27PM +0200, Sven Luther ha scritto: 
+> > I also have quickly overviewed the radeon driver, which has a function to read
+> > the EDID either from the BIOS or the pmac OF. There seem to be no code
+> > whatsoever that adds proper EDID reading through the graphic card directly,
+> > like it is done in XFree86, where one can do in the individual drivers (using
+> > i2c stuff also) :
+> > 
+> > 	...
+> > 	pBus->BusName = "DDC";
+> > 	pBus->I2CUDelay = WildcatVPI2CUDelay;
+> > 	pBus->I2CPutBits = WildcatVPI2CPutBits;
+> > 	pBus->I2CGetBits = WildcatVPI2CGetBits;
+> >
+> > These three being smallish functions to delay a bit, and to put/get bits in
+> > the DCC Clock/Data Out/In registers.
+> 
+> Ok, you a have a bit-style adapter. i2c kernel core needs function to
+> control SDA and SCL but they can be easily created from X functions.
 
-(Better if you provided an inlined file so it's easier to make comments) 
+Well, i have full specs of the board, so it will be enough to base the code
+on.
 
-Here's a few, just from a quick scan:
+> *GetBits must be splited in getscl (read clock) and getsda (get data),
+> and *PutBits must be splited in setscl and setsda.
 
-1. First, you need to follow Documentation/CodingStyle.
+Yeah, i have seen that.
 
-2. Do not directly access framebuffer memory, use: 
+> I've done that with the radeon driver, look at drivers/video/aty/radeon_i2c.c.
 
-fb_{read|write}{b|w|l}
+Ah, i see, i had searched for it in the place with the rest of the i2c stuff,
+where the prosavage and voodoo i2c code is. Why did you not add it there, but
+in the radeon driver ? Should i do the same, or put it together with the other
+code ? 
 
-3. Do not use copy_{to|from}_user when the destination/source is the
-framebuffer.
+I had seen the voodoo i2c driver, and searched in vain for code using it in
+the tdfx driver.
 
-4. Do not memset the framebuffer.  You can probably create an equivalent
-function using fb_read/write.  (Once, we have fb_memset and fb_memcpy, but
-they're gone in 2.6).
+> > Would it make sense to implement such a feature in fbmon.c ? Is fbmon.c the
+> > right place for this ? Is this already implemented somewhere else, or maybe in
+> > some private tree somewhere ?
+> 
+> We already have a I2C subsystem, all you have to do is create a new
+> adapter and read from it (ie. you put the starting address on bus and
+> start reading).
 
-Tony
+Ok.
 
+> > As i understand this, we would need some place to set the those three
+> > function, and then a common function to actually do a real EDID reading
+> > through the graphic card (get_EDID_from_harware ?).
+> 
+> Well, instead of PutBits/GetBits we have 4 functions, the algorithm is 
+> provided by the i2c subsystem. Look at radeon_do_probe_i2c_edid in the
+> radeon driver, it's not hard to do.
 
+Ok, will look.
+
+> Oh, radeon_probe_i2c_connector contains some "black magic" to wakeup
+> some older boards/monitor. An ATI developer confirmed that it's needed
+> to cover some corner case, probably you don't need that on your board.
+
+No, i don't think so.
+
+Now, another question which has me baffled. In set_par, i set the video mode
+for the card, but i only seem to have access to the bpp, and not the actual
+depth. Since i can distinguish between depth 15 (5551) and 16 (5650), as well
+as between depth 24 (8888) and 30 (AAA2), where do i get the information
+concerning the actual depth used from ? 
+
+Friendly,
+
+Sven Luther
 
 
 -------------------------------------------------------

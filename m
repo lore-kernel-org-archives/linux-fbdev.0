@@ -1,22 +1,28 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Subject: Re: Add three new IOCTLs to FB API
-Date: Tue, 23 Sep 2003 02:27:54 +0200
+From: Holger Schurig <h.schurig@mn-logistik.de>
+Subject: modedb always included?
+Date: Tue, 23 Sep 2003 10:31:51 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1064276874.1419.26.camel@thor.holligenstrasse29.lan>
-References: <20030922202511.53395.qmail@web14915.mail.yahoo.com>
+Message-ID: <200309231031.51724.h.schurig@mn-logistik.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_3TAc/ssnmypiXbz"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1A1b2B-0007pt-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 22 Sep 2003 17:28:04 -0700
-Received: from netline-mail1.netline.ch ([195.141.226.27])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 1A1b2B-0006C8-1d
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 22 Sep 2003 17:28:03 -0700
-In-Reply-To: <20030922202511.53395.qmail@web14915.mail.yahoo.com>
+	id 1A1j4O-0005Sq-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 23 Sep 2003 02:02:52 -0700
+Received: from mail.iok.net ([62.249.129.22] helo=mail05.iok.net)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.22)
+	id 1A1j4N-0005YG-Vm
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 23 Sep 2003 02:02:52 -0700
+Received: from lin01.mn-logistik.de (frdb-d9b9441a.pool.mediaWays.net [217.185.68.26])
+	by mail05.iok.net (8.12.8/8.12.8) with ESMTP id h8N92Cvm031938
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 23 Sep 2003 11:02:14 +0200
+Received: from mnz66.mn-logistik.de (mnz66.mn-logistik.de [192.168.233.66])
+	by lin01.mn-logistik.de (Postfix) with ESMTP id E1AA51FF13
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 23 Sep 2003 10:31:51 +0200 (CEST)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -26,47 +32,104 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Jon Smirl <jonsmirl@yahoo.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
-
-On Mon, 2003-09-22 at 22:25, Jon Smirl wrote:
->=20
-> > > 2) Get 3D driver name. Return the name of the DRM driver that is asso=
-ciated
-> > > with this fb device. For example aty128fb would return r128, radeonfb=
- would
-> > > return radeon. Empty string if there is none. There are eight DRM dri=
-vers
-> > and
-> > > 15 fb ones.
-> >=20
-> > I think this should be done using sysfs, too. I.e. symbolic links betwe=
-en the
-> > fbdev and drm drivers in /sys.
->=20
-> Initially the fb device will need to provide strings for the name of the =
-3D
-> driver. A user app is going to read these strings and load the DRM driver.
-
-So the app will map from 3D driver to DRM?
-
-> After the DRM driver is loaded it can make links.
-
-The framebuffer device could do it just as well, the link target doesn't
-have to exist.
-
-> Another solution would be for the fb driver to reference a symbol in the
-> appropriate DRM driver. This would make modprobe load them both.
-
-This doesn't work because the framebuffer device is needed for console
-on boot and hence built into the kernel. :)
+To: linux-fbdev-devel@lists.sourceforge.net
 
 
---=20
-Earthling Michel D=C3=A4nzer   \  Debian (powerpc), XFree86 and DRI develop=
-er
-Software libre enthusiast  \     http://svcs.affero.net/rm.php?r=3Ddaenzer
+--Boundary-00=_3TAc/ssnmypiXbz
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hi all !
+
+I'm not in this mailing list and hope that I can send to it anyway.
+
+I'm a developer on an embedded device (PDA like). I recognized that that 
+the framebuffer in Linux 2.6 always includes the EDID and modedb. There's 
+no need for this on my target, because I have a digitally controlled LCD 
+panel with a fixed setup (there's actually no monitor, FBAS or video 
+signal anywhere).
+
+The attached patch tries to fix this, please comment.
+
+E.g., currently it's an automatically derived option (I know that no Intel 
+SA1100 and no Intel PXA chip needs EDID and modelines), maybe it should 
+be user-visible?
+
+
+It's against Linus' bitkeeper tree from today.
+
+--Boundary-00=_3TAc/ssnmypiXbz
+Content-Type: text/x-diff;
+  charset="us-ascii";
+  name="small-nomodedb.patch"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment; filename="small-nomodedb.patch"
+
+=46rom Holger Schurig: some embedded devices don't drive a normal CRT, but =
+an
+digitally connected LCD panel. In this case, we don't need the EDID code and
+no mode line database.
+
+#
+# Patch managed by http://www.mn-logistik.de/unsupported/pxa250/patcher
+#
+
+=2D-- linux-2.6/drivers/video/Kconfig~small-nomodedb
++++ linux-2.6/drivers/video/Kconfig
+@@ -38,6 +38,14 @@
+ 	  (e.g. an accelerated X server) and that are not frame buffer
+ 	  device-aware may cause unexpected results. If unsure, say N.
+=20
++config FB_MODES
++	bool
++	default y if FB && (!(FB_PXA || FB_SA1110))
++	---help---
++	  Some embedded devices don't drive a normal CRT, but an digitally
++	  connected LCD panel. In this case, we don't need the EDID code and
++	  no mode line database.
++
+ config FB_CIRRUS
+ 	tristate "Cirrus Logic support"
+ 	depends on FB && (AMIGA || PCI) && BROKEN
+=2D-- linux-2.6/drivers/video/Makefile~small-nomodedb
++++ linux-2.6/drivers/video/Makefile
+@@ -7,7 +7,8 @@
+ obj-$(CONFIG_VT)		  +=3D console/
+ obj-$(CONFIG_LOGO)		  +=3D logo/
+=20
+=2Dobj-$(CONFIG_FB)                  +=3D fbmem.o fbmon.o fbcmap.o modedb.o=
+ softcursor.o
++obj-$(CONFIG_FB)                  +=3D fbmem.o fbcmap.o softcursor.o
++obj-$(CONFIG_FB_MODES)              +=3D fbmon.o modedb.o
+ # Only include macmodes.o if we have FB support and are PPC
+ ifeq ($(CONFIG_FB),y)
+ obj-$(CONFIG_PPC)                 +=3D macmodes.o
+=2D-- linux-2.6/drivers/video/fbmem.c~small-nomodedb
++++ linux-2.6/drivers/video/fbmem.c
+@@ -389,7 +389,9 @@
+ #define NUM_FB_DRIVERS	(sizeof(fb_drivers)/sizeof(*fb_drivers))
+ #define FBPIXMAPSIZE	8192
+=20
++#ifdef CONFIG_FB_MODES
+ extern const char *global_mode_option;
++#endif
+=20
+ static initcall_t pref_init_funcs[FB_MAX];
+ static int num_pref_init_funcs __initdata =3D 0;
+@@ -1370,7 +1372,9 @@
+ 	 * If we get here no fb was specified.
+ 	 * We consider the argument to be a global video mode option.
+ 	 */
++#ifdef CONFIG_FB_MODES
+ 	global_mode_option =3D options;
++#endif
+ 	return 0;
+ }
+=20
+
+--Boundary-00=_3TAc/ssnmypiXbz--
 
 
 

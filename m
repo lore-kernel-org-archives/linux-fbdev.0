@@ -1,24 +1,23 @@
-From: Otto Wyss <otto.wyss@orpatec.ch>
-Subject: Re: framebuffer ioctl (fwd)
-Date: Sat, 04 Sep 2004 23:44:22 +0200
+From: Nigel Cunningham <ncunningham@linuxmail.org>
+Subject: Re: Devices don't get linked to their class.
+Date: Sun, 05 Sep 2004 16:21:32 +1000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <413A3735.9E7D2F11@orpatec.ch>
-References: <Pine.GSO.4.58.0409041304080.3434@waterleaf.sonytel.be>
+Message-ID: <1094365292.6252.3.camel@laptop.cunninghams>
+References: <1094187751.2979.41.camel@laptop.cunninghams>
+	 <200409042041.55199.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C3iKq-0006zi-IU
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 04 Sep 2004 14:44:36 -0700
-Received: from mail.xor.ch ([212.55.210.163])
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.34)
-	id 1C3iKn-0003bB-87
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 04 Sep 2004 14:44:36 -0700
-Received: from orpatec.ch (217.162.130.125)
-          by mail.xor.ch with MERCUR Mailserver (v4.03.03 NjYtMjMxMS00NjIy)
-          for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 4 Sep 2004 23:49:32 +0200
+	id 1C3qSS-0007uL-Ec
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 04 Sep 2004 23:25:00 -0700
+Received: from relay01.kbs.net.au ([203.220.32.149])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
+	id 1C3qSP-0003KM-GZ
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 04 Sep 2004 23:25:00 -0700
+In-Reply-To: <200409042041.55199.adaplas@hotpop.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,26 +28,47 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+To: adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Geert Uytterhoeven wrote:
-> 
-> Would there be any major opposition to my adding
-> some additional functions to the framebuffer ioctl
-> interface? I want to add basic drawing functions,
-> nothing too fancy, but enough to do away with things
-> like SVGAlib.
-> Zack
-> 
-IMO it should only be done if all of the graphic libs like SVGAlib, GGI,
-DirectFB can profit from it. IMO it's very important that the future API
-of the framebuffer in kernel 2.7.x is discussed before such changes are
-done. Maybe a wish list should be started.
+Hi.
 
-O. Wyss
+On Sat, 2004-09-04 at 22:41, Antonino A. Daplas wrote:
+> On Friday 03 September 2004 13:02, Nigel Cunningham wrote:
+> > This morning I began work on addressing the problem. I thought the best
+> > approach would be to use device classes to find the struct dev for the
+> > frame buffer driver, and then use the same code I use for storage
+> > devices to avoid suspending the frame buffer until later. I successfully
+> > wrote a helper to find the 'graphics' class that fbmem.c creates, but
+> > now I've run into a more serious issue. register_framebuffer (in the
+> > same time) calls class_simple_device_add with a NULL for the pointer to
+> > the struct device. Is it possible for this issue to be addressed? I can
+> 
+> I guess it's doable, but will require small changes to all framebuffer 
+> drivers.  All you need is struct device, right?  Maybe I can brew up a test 
+> patch next week.
+
+I'm only just beginning to learn how to use kobjects, so I'm not
+entirely sure. Looking more after posting that message, I began to think
+that struct class_device (going from memory) might act as equivalent to
+a linking table in a many-to-many relationship between classes and
+devices. If that's right, perhaps the right thing to do is leave the dev
+blank in the class registration and then register a class_device to link
+them when the actual driver registers.
+
+Regards,
+
+Nigel
 
 -- 
-See a huge pile of work at "http://wyodesktop.sourceforge.net/"
+Nigel Cunningham
+Pastoral Worker
+Christian Reformed Church of Tuggeranong
+PO Box 1004, Tuggeranong, ACT 2901
+
+Many today claim to be tolerant. True tolerance, however, can cope with others
+being intolerant.
+
 
 
 -------------------------------------------------------

@@ -1,22 +1,21 @@
-From: Thomas Jahns <Thomas.Jahns@epost.de>
-Subject: Re: New fbdev patch.
-Date: Mon, 5 Jul 2004 12:17:35 +0200
+From: Kronos <kronos@people.it>
+Subject: Re: radeon_pm.c locking problem
+Date: Mon, 5 Jul 2004 18:41:04 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040705101735.GA24286@mercury.jahnsnet.de>
-References: <Pine.LNX.4.56.0406231859390.27210@pentafluge.infradead.org> <40DC328C.9010707@bitworks.com> <20040629214850.GC2871@mercury.jahnsnet.de> <40E1ECCD.7080501@bitworks.com> <Pine.LNX.4.56.0406301753470.29465@pentafluge.infradead.org> <20040702110148.GE21418@mercury.jahnsnet.de>
+Message-ID: <20040705164104.GA14968@dreamland.darkstar.lan>
+References: <40E59B82.7000807@undead.cc> <20040702185241.GA25832@dreamland.darkstar.lan> <1089035092.3014.7.camel@gaston>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BhUsL-0007OW-GX
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jul 2004 07:55:21 -0700
-Received: from mail.epost.de ([193.28.100.151])
+	id 1BhWX0-0000RJ-L7
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jul 2004 09:41:26 -0700
+Received: from mail-relay-4.tiscali.it ([212.123.84.94] helo=sparkfist.tiscali.it)
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1BhUsL-00069f-06
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jul 2004 07:55:21 -0700
+	id 1BhWWz-0002yK-VU
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jul 2004 09:41:26 -0700
 Content-Disposition: inline
-In-Reply-To: <20040702110148.GE21418@mercury.jahnsnet.de> (from Thomas.Jahns@epost.de on Fri, Jul 02, 2004 at 13:01:48 +0200)
+In-Reply-To: <1089035092.3014.7.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,35 +25,113 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; format="Flowed"; delsp="Yes"; charset="us-ascii"
-Cc: jsimmons@pentafluge.infradead.org, Richard Smith <rsmith@bitworks.com>, Thomas.Jahns@epost.de, fbdev <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Kronos <kronos@people.it>, John Zielinski <grim@undead.cc>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi,
-
-On 07/02/04 13:01:48, Thomas Jahns wrote:
-> On 06/30/04 18:57:28, jsimmons@pentafluge.infradead.org wrote:
->> The correct patch is here.
->> 
->> http://www.infradead.org/~jsimmons/changes.diff.gz
+Il Mon, Jul 05, 2004 at 08:44:53AM -0500, Benjamin Herrenschmidt ha scritto: 
+> *This message was transferred with a trial version of CommuniGate(tm) Pro*
 > 
-> that does apply cleanly, but won't compile (see below). Is it perhaps
-> possible to access your kernel source tree so I can search for the
-> header in need of patching myself? Should set_palette(vc) have read
-> fbcon_set_palette(vc, color_table)?
+> > is expanded in:
+> > 
+> > do {
+> >         unsigned long flags;
+> >         spin_lock_irqsave(&rinfo->reg_lock, flags);
+> >         __OUTPLL(pllPIXCLKS_CNTL, INPLL(pllPIXCLKS_CNTL) & ~PIXCLKS_CNTL__PIX2CLK_SRC_SEL_MASK);
+> >         spin_unlock_irqrestore(&rinfo->reg_lock, flags);
+> > } while(0)
+> > 
+> > and INPLL will try to reacquire the lock ->reg_lock. We could either use
+> > __INPLL (which does not take the lock) or make OUTPLL an inline function
+> > (in this way INPLL is called before entering the function).
+> 
+> Make it an inline function...
 
-after I copied the defines for SCROLL_ACCEL etc. from 2.6.7-bk17 and  
-replaced set_palette by fbcon_set_palette, the code compiles fine but  
-still won't work. Instead of blanking the screen I now get a continued  
-display of the pre-boot messages until the kernel reboots after the  
-panic time runs out. Also the controlfb does not work. I think I'll try  
-compiling stock 2.6.7 without the ati driver next and see if that works  
-as expected when using controlfb only.
+Here it is:
 
-Thomas Jahns
+--- linux-2.6/drivers/video/aty/radeonfb.h.orig	2004-07-05 18:27:05.000000000 +0200
++++ linux-2.6/drivers/video/aty/radeonfb.h	2004-07-05 18:38:52.000000000 +0200
+@@ -393,37 +393,43 @@
+ 
+ #define INPLL(addr)		_INPLL(rinfo, addr)
+ 
+-#define OUTPLL(addr,val)	\
+-	do {	\
+-		unsigned long flags;\
+-		spin_lock_irqsave(&rinfo->reg_lock, flags); \
+-		__OUTPLL(addr, val); \
+-		spin_unlock_irqrestore(&rinfo->reg_lock, flags); \
+-	} while(0)
+-
+-#define OUTPLLP(addr,val,mask)  					\
+-	do {								\
+-		unsigned long flags;                                    \
+-		unsigned int _tmp;					\
+-		spin_lock_irqsave(&rinfo->reg_lock, flags); 		\
+-		_tmp  = __INPLL(rinfo,addr);				\
+-		_tmp &= (mask);						\
+-		_tmp |= (val);						\
+-		__OUTPLL(addr, _tmp);					\
+-		spin_unlock_irqrestore(&rinfo->reg_lock, flags); 	\
+-	} while (0)
+-
+-#define OUTREGP(addr,val,mask)  					\
+-	do {								\
+-		unsigned long flags;                                    \
+-		unsigned int _tmp;					\
+-		spin_lock_irqsave(&rinfo->reg_lock, flags); 		\
+-		_tmp = INREG(addr);				       	\
+-		_tmp &= (mask);						\
+-		_tmp |= (val);						\
+-		OUTREG(addr, _tmp);					\
+-		spin_unlock_irqrestore(&rinfo->reg_lock, flags); 	\
+-	} while (0)
++static inline void _OUTPLL(struct radeonfb_info *rinfo, unsigned int addr, unsigned int val)
++{
++	unsigned long flags;
++	spin_lock_irqsave(&rinfo->reg_lock, flags);
++	__OUTPLL(addr, val);
++	spin_unlock_irqrestore(&rinfo->reg_lock, flags);
++}
++
++#define OUTPLL(addr,val)	_OUTPLL(rinfo, addr, val)
++
++static inline void _OUTPLLP(struct radeonfb_info *rinfo, unsigned int addr, unsigned int val, unsigned int mask)
++{
++	unsigned long flags;
++	unsigned int tmp;
++	spin_lock_irqsave(&rinfo->reg_lock, flags);
++	tmp = __INPLL(rinfo, addr);
++	tmp &= (mask);
++	tmp |= (val);
++	__OUTPLL(addr, tmp);
++	spin_unlock_irqrestore(&rinfo->reg_lock, flags);
++}
++
++#define OUTPLLP(addr,val,mask)	_OUTPLLP(rinfo,addr,val,mask)
++
++static inline void _OUTREGP(struct radeonfb_info *rinfo, unsigned int addr, unsigned int val, unsigned int mask)
++{
++	unsigned long flags;
++	unsigned int tmp;
++	spin_lock_irqsave(&rinfo->reg_lock, flags);
++	tmp = INREG(addr);
++	tmp &= (mask);
++	tmp |= (val);
++	OUTREG(addr, tmp);
++	spin_unlock_irqrestore(&rinfo->reg_lock, flags);
++}
++
++#define OUTREGP(addr,val,mask)	_OUTREGP(rinfo,addr,val,mask)
+ 
+ #define MS_TO_HZ(ms)       ((ms * HZ + 999) / 1000)
+ 
+
+Luca
 -- 
-"Computers are good at following instructions,
- but not at reading your mind."
-D. E. Knuth, The TeXbook, Addison-Wesley 1984, 1986, 1996, p. 9
+Home: http://kronoz.cjb.net
+Runtime error 6D at f000:a12f : user incompetente
 
 
 -------------------------------------------------------

@@ -1,64 +1,59 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [Linux-fbdev-devel] Generic VESA framebuffer driver and Video card BOOT?
-Date: Sat, 16 Oct 2004 05:51:38 +0800
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <200410160551.40635.adaplas@hotpop.com>
-References: <416E6ADC.3007.294DF20D@localhost> <416FB624.17156.1D23C23@localhost>
-Reply-To: adaplas@pol.net
+Subject: Re: vesafb with special resolution?
+Date: Sat, 16 Oct 2004 05:52:20 +0800
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <200410160552.20443.adaplas@hotpop.com>
+References: <20041015190606.GN30583@charite.de>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S268496AbUJOVxt@vger.kernel.org>
-In-Reply-To: <416FB624.17156.1D23C23@localhost>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1CIZzd-0008Vf-2p
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Oct 2004 14:52:09 -0700
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CIZzc-0001Md-8L
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Oct 2004 14:52:09 -0700
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id 5BE478E9747
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 15 Oct 2004 21:51:54 +0000 (UTC)
+In-Reply-To: <20041015190606.GN30583@charite.de>
 Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Kendall Bennett <KendallB@scitechsoft.com>, linux-kernel@vger.kernel.org
-Cc: linux-fbdev-devel@lists.sourceforge.net, penguinppc-team@lists.penguinppc.org
+To: linux-fbdev-devel@lists.sourceforge.net, Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
 
-On Saturday 16 October 2004 02:36, Kendall Bennett wrote:
-> "Antonino A. Daplas" <adaplas@hotpop.com> wrote:
-> > > So what do you guys think?
-> >
-> > I'm for it, if you can get the code in the kernel.  If not, what
-> > are the arguments against doing this in userspace?
->
-> At least for the 2.4 kernels it is not possible to run code from user
-> space early enough in the boot sequence to bring up the video card when
-> the framebuffer console driver starts. Alan Cox said there is work under
-> way for 2.6 that might allow this, but it would have to be done very
-> early in the boot sequence.
->
+On Saturday 16 October 2004 03:06, Ralf Hildebrandt wrote:
+> I have a 16:10 screen on my laptop (1280x768). vesafb runs OK with a
+> 1024x768 resolution, but is 1280x768 also possible?
 
-For 2.6,  the framebuffer console can activate as early or as late as one
-wants because fbcon will wait until a framebuffer driver becomes active. In
-contrast, in 2.4, at least one fb driver needs to be active for the
-framebuffer console to become active.
- 
-> Remember this project is for non-x86 platforms such as PowerPC and MIPS
-> embedded machines where there is no way to set a graphics mode using the
-> BIOS before the kernel starts loading (well, you can do something using U-
-> Boot but a lot of projects don't always use U-Boot).
->
-> > If you remember about 2 years ago, there was a thread which you
-> > started about vesafbd.  From that, I've worked on vm86d which is a
-> > generic approach to running BIOS code in user space. I stopped
-> > development on this though, but it should be easy to revive.
->
-> Yes, I am aware of this project. It is a great project for x86 platforms,
-> but falls short for non-x86 due to the inability to set a basic display
-> mode prior to user space access becoming available.
->
+With the current vesafb incarnation, no. The vesafb driver currently selects
+the mode from a table of standard vesa modes provided by the BIOS, and  
+1280x768 is not standard.
 
-Yes, that is the downside to a userspace solution. How bad will that be?
-Note that Jon Smirl is proposing a temporary console driver for early
-boot messages until the primary console driver activates. 
-
-> > There is also vesafb-tng. I think it runs BIOS code in kernel
-> > space.
->
-> I am not familiar with that. Can you point me to a URL?
->
+Try vesafb-tng if you need a non-vesa standard mode.
 
 http://dev.gentoo.org/~spock/projects/vesafb-tng/
 
 Tony
+
+PS:  A mode settable vesafb may happen soon enough...
+
+
+
+
+-------------------------------------------------------
+This SF.net email is sponsored by: IT Product Guide on ITManagersJournal
+Use IT products in your business? Tell us what you think of them. Give us
+Your Opinions, Get Free ThinkGeek Gift Certificates! Click to find out more
+http://productguide.itmanagersjournal.com/guidepromo.tmpl

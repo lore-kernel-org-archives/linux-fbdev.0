@@ -1,25 +1,22 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [PATCH] neofb patches
-Date: Wed, 28 Apr 2004 08:54:47 +0800
+From: John Zielinski <grim@undead.cc>
+Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
+ one works ;-)
+Date: Tue, 27 Apr 2004 21:00:21 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200404280854.47596.adaplas@hotpop.com>
-References: <Pine.LNX.4.44.0404280019070.23153-100000@phoenix.infradead.org> <408EF0D9.6000403@undead.cc> <20040428002919.GG22495@guug.org>
+Message-ID: <408F0225.4000408@undead.cc>
+References: <Pine.LNX.4.44.0404280039460.23153-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIdLa-0001ID-HV
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 17:54:46 -0700
-Received: from snickers.hotpop.com ([38.113.3.51])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIdLZ-00038c-2k
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 17:54:45 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by snickers.hotpop.com (Postfix) with SMTP id F0EDF722D9
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 28 Apr 2004 00:09:18 +0000 (UTC)
-In-Reply-To: <20040428002919.GG22495@guug.org>
-Content-Disposition: inline
+	id 1BIdRA-0002UM-60
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 18:00:32 -0700
+Received: from ghoul.undead.cc ([216.126.84.18] helo=mail.undead.cc)
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
+	id 1BIdR9-00022z-Sv
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 18:00:32 -0700
+In-Reply-To: <Pine.LNX.4.44.0404280039460.23153-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,33 +26,64 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Otto Solares <solca@guug.org>, John Zielinski <grim@undead.cc>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: James Simmons <jsimmons@infradead.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wednesday 28 April 2004 08:29, Otto Solares wrote:
-> On Tue, Apr 27, 2004 at 07:46:33PM -0400, John Zielinski wrote:
-> > An added bonus is that if you have multiple video cards or a dual head
-> > configuration with each head on a different fbx device the 5,255 device
-> > would figure out which console you are on when you start the program and
-> > use the appropriate fb device.  Once the radeon dual head code gets
-> > written I'll have to try to start X on fb0 (head 1) and leave the fbcon
-> > running on fb1 (head two).
+James Simmons wrote:
+
+>No. Look the logic should go from the upper VT layer to the lower driver 
+>to accomplish something. Not the reverse.
 >
-> I was wondering if it is possible currently (kernel 2.6.5) to
-> have 2 differents video cards in 2 differents VCs and in 2
-> differents fbdev's.  I have an old trident pci card and one
-> radeon agp card.  I want to run X (Xfbdev) in the trident one
-> and mesa-solo in the radeon one, is that possible? how?
+>struct vc_data -> native console driver structure --> fbdev
+>
+>  
+>
+The problem with that is how would something like fbset work in that 
+situation?   The current way of selecing number of rows/columns through 
+the vt layer and hoping for the best in what mode you actually get is 
+way too limited to be the only mechanism.
+
+Don't misunderstand me here.  I do want to be able to tell the vt to 
+switch to 1024x768@85-32 and have it propagate down and set the right 
+mode.  This shouldn't be a problem once we get a mechanism in place to 
+load a user's mode database into the kernel at run time.  Then the 
+timings will be exactly what I want when I say 1024x768@85-32.
+
+>Not.
+>
+>fbdev --> native console driver --> struct vc_data.
+>
+>  
+>
+But how do I fiddle with this to get things just right in the first 
+place?   Right now that requires the the reversed path starting at the 
+fbdev shown immediately above. 
+
+What we need is a vt call that says I'm switching to 1024 x 768 with 
+this mode data that I wan't to pass down to the fbdev.  That way the vt 
+adjusts it's row/column settings based on the font size and then passes 
+the mode data down.  That's how the fbset (and other) mode tuning 
+utilities should work and should only be used by mode tuning utilities.  
+Once the user is happy they would include their tuned mode in their 
+database for other apps to use.
+
+All other apps should use the generic vt call to ask for 1024x768 at 
+85Hz in 32bpp and the kernel would give them the mode from the users 
+database.
+
+
+>This was the way it uses to be. If this is the case then I suggest we 
+>write our own vt.c and vt_ioctl.c for the fbcon layer. We shouldn't even
+>use struct vc_data then. In fact each fbdev driver should be independent 
+>console drivers. That is how 2.4.X was. Each driver was nearly its own 
+>console driver. We need to go one way or the other. 
 >
 
-Yes, I've tried that in 2.5.x, assuming nothing broke in between.  You need a 
-utility to map which console to which fbdev (con2fbmap?).  However, you can't 
-use them simultaneously (switching to one console inactivates the other), 
-that's for the ruby project.
+I like your way, from vt down to the fbdev.  I just want a mechanism for 
+fbset and other mode tuning utilities to work.
 
-Tony
-
+John
 
 
 

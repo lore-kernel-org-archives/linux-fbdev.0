@@ -1,20 +1,13 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Subject: Re: New kernel API for ROMs
-Date: Sat, 7 Aug 2004 10:40:57 -0700 (PDT)
+Date: Sat, 07 Aug 2004 19:51:51 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040807174057.35529.qmail@web14922.mail.yahoo.com>
-References: <1091894996.18407.122.camel@localhost.localdomain>
+Message-ID: <1091904710.18813.1.camel@localhost.localdomain>
+References: <20040807174057.35529.qmail@web14922.mail.yahoo.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BtVBi-00016Q-77
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 07 Aug 2004 10:40:58 -0700
-Received: from web14922.mail.yahoo.com ([216.136.225.6])
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.34)
-	id 1BtVBh-0004h9-QV
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 07 Aug 2004 10:40:58 -0700
-In-Reply-To: <1091894996.18407.122.camel@localhost.localdomain>
+In-Reply-To: <20040807174057.35529.qmail@web14922.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,38 +18,19 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>, Kronos <kronos@people.it>
-Cc: Jon Smirl <jonsmirl@yahoo.com>, Geert Uytterhoeven <geert@linux-m68k.org>, DRI Devel <dri-devel@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: Kronos <kronos@people.it>, Geert Uytterhoeven <geert@linux-m68k.org>, DRI Devel <dri-devel@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
---- Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+On Sad, 2004-08-07 at 18:40, Jon Smirl wrote:
+> We have to copy the whole thing when the driver tells us to. After we
+> copy the ROM the hardware is going to use the address decoder for
+> something else. There is no safe way to get back to the ROM again other
+> than to unload the device driver.
 
-> On Sad, 2004-08-07 at 17:37, Kronos wrote:
-> > You can check and see if the ROM is really big and use vmalloc, if
-> not
-> > then you use kmalloc (if I remember correctly my radeon has a 4KB
-> ROM -
-> > vmalloc would be overkill).
-> 
-> You can also read it out to userspace in a loop in chunks thus
-> needing
-> only a single 4K page or you could mmap it
+Good point on mmap not working yes. We can still copy it in 4K chunks to
+userspace though not keep it in kernel. The rom boot stuff in the design
+is in user space.
 
-We have to copy the whole thing when the driver tells us to. After we
-copy the ROM the hardware is going to use the address decoder for
-something else. There is no safe way to get back to the ROM again other
-than to unload the device driver.
-
-=====
-Jon Smirl
-jonsmirl@yahoo.com
-
-
-		
-__________________________________
-Do you Yahoo!?
-Y! Messenger - Communicate in real time. Download now. 
-http://messenger.yahoo.com
 
 
 -------------------------------------------------------

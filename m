@@ -1,25 +1,21 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Otto Solares <solca@guug.org>
 Subject: Re: Changing modes with fbset
-Date: Tue, 06 Jan 2004 12:09:44 +1100
+Date: Mon, 5 Jan 2004 19:44:14 -0600
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1073351384.781.202.camel@gaston>
-References: <3FDBB97F.4070207@undead.cc>
-	 <Pine.LNX.4.44.0401060005511.7347-100000@phoenix.infradead.org>
-	 <20040106002822.GB442@guug.org> <1073349349.780.181.camel@gaston>
-	 <20040106010852.GC442@guug.org>
+Message-ID: <20040106014414.GD442@guug.org>
+References: <3FDBB97F.4070207@undead.cc> <Pine.LNX.4.44.0401060005511.7347-100000@phoenix.infradead.org> <20040106002822.GB442@guug.org> <1073349349.780.181.camel@gaston> <20040106010852.GC442@guug.org> <1073351384.781.202.camel@gaston>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AdfkS-0003rJ-4Y
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 17:11:08 -0800
-Received: from pentafluge.infradead.org ([213.86.99.235])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1AdfkR-0001EE-Hp
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 17:11:07 -0800
-In-Reply-To: <20040106010852.GC442@guug.org>
+	id 1AdgHl-0005Hd-73
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 17:45:33 -0800
+Received: from [168.234.203.30] (helo=guug.galileo.edu)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1AdgHk-0006wX-RI
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 17:45:32 -0800
+Content-Disposition: inline
+In-Reply-To: <1073351384.781.202.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,19 +26,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Otto Solares <solca@guug.org>
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-
+On Tue, Jan 06, 2004 at 12:09:44PM +1100, Benjamin Herrenschmidt wrote:
 > 
-> Finding "coupled" cards could be as easy as checking if the fbdev
-> api returns the same busid for both fbdev's.
+> > 
+> > Finding "coupled" cards could be as easy as checking if the fbdev
+> > api returns the same busid for both fbdev's.
+> 
+> That would work as long as you don't have a single PCI chip providing
+> 2 separate independant sets of heads but I agree this is very unlikely :)
 
-That would work as long as you don't have a single PCI chip providing
-2 separate independant sets of heads but I agree this is very unlikely :)
+I have not seen that cards but maybe is just a difference in the function
+number from the busid.
 
-Ben.
+Ben, you that know the internals of fbdev's, it would be difficult to
+implement the busid stuff?  Maybe that info is already known by the
+drivers somewhere... It could even work for sparcs with sbus or others
+archs with differents buses, as the busid nomenclature is very standarized
+i think.
 
+-solca
 
 
 

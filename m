@@ -1,73 +1,63 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [PATCH 1/2]Freescale i.MX framebuffer driver
-Date: Fri, 18 Mar 2005 03:44:58 +0800
-Message-ID: <200503180344.58891.adaplas@hotpop.com>
-References: <20050317173624.GA29286@metis.extern.pengutronix.de>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Subject: Re: [Linux-fbdev-devel] Re: FB model basic issues (WAS: radeon,
+	apertures & memory mapping)
+Date: Thu, 17 Mar 2005 21:54:14 +0200
+Message-ID: <20050317195414.GA29118@sci.fi>
+References: <1110907029.4001.624.camel@localhost>
+	<1110942559.24296.107.camel@gaston> <20050316200808.GB6651@sci.fi>
+	<a728f9f90503161258181977fa@mail.gmail.com>
+	<20050316210812.GA19937@sci.fi> <1111015801.15509.62.camel@gaston>
+	<20050317004713.GB8081@sci.fi> <1111021978.15510.97.camel@gaston>
+	<20050317012503.GA20844@sci.fi>
+	<Pine.LNX.4.62.0503171007200.5611@numbat.sonytel.be>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DC0vX-0007l7-3U
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Mar 2005 11:45:03 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DC0vU-0007Nf-Ai
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Mar 2005 11:45:03 -0800
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id A863CFD3C15
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 17 Mar 2005 19:44:48 +0000 (UTC)
-In-Reply-To: <20050317173624.GA29286@metis.extern.pengutronix.de>
+Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+In-Reply-To: <Pine.LNX.4.62.0503171007200.5611@numbat.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, Sascha Hauer <s.hauer@pengutronix.de>
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
+	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/xorg>
+List-Post: <mailto:xorg@lists.freedesktop.org>
+List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
+	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
+Sender: xorg-bounces@lists.freedesktop.org
+Errors-To: xorg-bounces@lists.freedesktop.org
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>, Jon Smirl <jonsmirl@yahoo.com>, xorg@lists.freedesktop.org, Alex Deucher <alexdeucher@gmail.com>, dri-devel@lists.sourceforge.net
 
-On Friday 18 March 2005 01:36, Sascha Hauer wrote:
-> Hello all,
->
-> This Patch adds support for the framebuffer on the freescale i.MX SOC
-> architecture. The driver has been tested on the mx1ads board, the pimx1
-> board and another custom board with different displays.
+On Thu, Mar 17, 2005 at 10:08:15AM +0100, Geert Uytterhoeven wrote:
+> On Thu, 17 Mar 2005, Ville [iso-8859-1] Syrj??wrote:
+> > On Thu, Mar 17, 2005 at 12:12:58PM +1100, Benjamin Herrenschmidt wrot=
+e:
+> > > > I understand you can't have userspace program the accelerator whi=
+le=20
+> > > > someone else is doing the same thing. Oh and I now understand tha=
+t the=20
+> > > > same really applies to direct framebuffer access due to the swapp=
+er. =20
+> > >=20
+> > > And you can't have someone program the accelerator while somebody d=
+oes
+> > > direct access neither. It's basically all exclusive.
+> >=20
+> > I haven't seen that happen on any hardware I own. Matrox specs explic=
+itly=20
+> > mention that there is no need to synchronize accelerator and direct=20
+> > framebuffer access.
+>=20
+> Really?
 
-Preliminary comments:
+Really.
 
-1. Can you use framebuffer_alloc()?  Meaning you have to change this:
+> I was always given Matrox as an example of a card that would lock up if
+> you access the frame buffer while the accelerator is busy...
 
-struct imxfb_info {
-       struct fb_info          fb;
-	...
-}
+Apparently they didn't know what they were talking about.
 
-Then put all driver private data in info->par.
-
-2. Comment on putting the blank function in the workqueue:  The console
-expects that after calling fbcon_blank/fb_blank, that the hardware is really
-in that state.  For example, after calling unblank(), the console expects
-that it is entirely safe to write to the device because it will do so.
-
-If it is indeed safe to access the  device on all blank states, then yes, a
-workqueue should be fine.
-
-3. Also add a Signed-off-by line and submit the patch inline.
-
-Tony
-
-
-
-
-
--------------------------------------------------------
-SF email is sponsored by - The IT Product Guide
-Read honest & candid reviews on hundreds of IT Products from real users.
-Discover which products truly live up to the hype. Start reading now.
-http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
+--=20
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/

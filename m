@@ -1,39 +1,38 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: fbdev booting fix.
-Date: Mon, 26 Jan 2004 22:42:32 +0000 (GMT)
+From: Thiemo Seufer <ica2_ts@csv.ica.uni-stuttgart.de>
+Subject: Re: [Linux-fbdev-devel] Re: monochrome display fix.
+Date: Tue, 27 Jan 2004 08:40:35 +0100
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.44.0401262238340.5445-100000@phoenix.infradead.org>
+Message-ID: <20040127074035.GF1315@rembrandt.csv.ica.uni-stuttgart.de>
+References: <Pine.LNX.4.44.0401262212140.5445-100000@phoenix.infradead.org> <Pine.LNX.4.58.0401261446560.2313@home.osdl.org>
 Mime-Version: 1.0
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.58.0401261446560.2313@home.osdl.org>
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@transmeta.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Linus Torvalds <torvalds@osdl.org>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+
+Linus Torvalds wrote:
+> 
+> 
+> On Mon, 26 Jan 2004, James Simmons wrote:
+> > 
+> > [CONSOLE] Don't let a monochrome display stomp all over the console color 
+> > values.
+> 
+> Why is this ugly patch required? If something can't do color, why does it 
+> care about "color" in the first place?
+
+Because it stores some text attributes in that place.
+
+> We've never needed this patch 
+> before, it looks like something broke somewhere _else_ that causes this
+> to be relevant.
+
+It was always broken. This went unnoticed, apparently nobody tried to use
+a kernel which supports mono and colour framebuffers at the same time.
 
 
-Hi!
-
-  This is very critical bug fix. This bug was causing the problem with 
-people builing more than one driver with vesa and they where getting blank 
-screens. The reason was befor ethe api change each driver was loaded and 
-set as the default driver. Then you ended up with the last driver being 
-the default driver. Now this is the not the case so this patch makes the
-first driver the default driver.
-
-
-[FBCON] Fixed the order of which driver is used for the console. Before 
-the api change the last driver loaded became the default one. Now this is 
-not the case.
-
---- linus-2.6/drivers/video/console/fbcon.c	2004-01-26 13:38:23.000000000 -0800
-+++ fbdev-2.6/drivers/video/console/fbcon.c	2004-01-26 17:14:00.000000000 -0800
-@@ -545,7 +545,7 @@
- 		return display_desc;
- 	done = 1;
- 
--	info = registered_fb[num_registered_fb-1];	
-+	info = registered_fb[0];	
- 	if (!info)	return NULL;
- 	info->currcon = -1;
- 	
+Thiemo

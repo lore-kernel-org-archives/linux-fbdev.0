@@ -1,18 +1,18 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [Linux-fbdev-devel] Re: Who is stomping PCI config space?
-Date: Sun, 06 Mar 2005 09:42:19 +1100
-Message-ID: <1110062539.13594.74.camel@gaston>
+Date: Sun, 06 Mar 2005 09:43:42 +1100
+Message-ID: <1110062622.13594.77.camel@gaston>
 References: <9e4733910503031103552514b9@mail.gmail.com>
 	<1109891245.5611.246.camel@gaston>
 	<9e473391050303161559c17955@mail.gmail.com>
 	<9e47339105030319037f083f7@mail.gmail.com>
 	<1109918459.5610.273.camel@gaston>
 	<16936.20345.249542.65736@xf14.local>
-	<9e47339105030409352803c7e1@mail.gmail.com>
-	<1109976157.5680.309.camel@gaston> <16938.847.772446.757968@xf14.local>
+	<9e473391050304095812a11208@mail.gmail.com>
+	<1109976305.5611.312.camel@gaston> <16938.865.144516.757019@xf14.local>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-In-Reply-To: <16938.847.772446.757968@xf14.local>
+In-Reply-To: <16938.865.144516.757019@xf14.local>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
 	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
@@ -25,27 +25,17 @@ Sender: xorg-bounces@lists.freedesktop.org
 Errors-To: xorg-bounces@lists.freedesktop.org
 Content-Type: text/plain; charset="us-ascii"
 To: Egbert Eich <eich@suse.de>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Xserver development <xorg@freedesktop.org>, Egbert Eich <eich@pdx.freedesktop.org>
+Cc: Jesse Barnes <jbarnes@sgi.com>, Xserver development <xorg@freedesktop.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+On Sat, 2005-03-05 at 20:07 +0100, Egbert Eich wrote:
 
-> How do we deal with interrupts from VGA cards that we don't have a 
-> driver for? 
+> That's the apporach we took when we implemented this in X. 
+> It was the safest bet.
 
-We don't get any, do we ? If we get an interrupt we don't have a driver
-for, the system dies usually ;) Well, unless it's an edge interrupt, in
-which case we can just drop it on the floor, but PCI interrupts are
-level.
-
-> We don't service interrupts in this case either.
-> Can't we unregister the interrupt handler until everything
-> is set up right? Maybe a dump idea...
-> Also there is a generic VGA register to control interrupts.
-
-We have reached the end of my VGA knowledge, but I seriously doubt a VGA
-card will issue interrupts if not previously programmed to do so... So
-we probably don't have to bother. We only care about interrupts that we
-have a use for, that is interrupts triggered by cards upon request of
-their driver, for things like DMA/AGP command buffer operations, vblank,
-monitor detection, ...
+Yes, whatever mecanism I want to provide at the kernel level will do
+that bet by default, unless it's informed by the card's driver that
+legacy decoding was disabled for the card. That is, we bet the worse,
+and only the guy who "knows" (ie, the card specific driver) can tell us
+that life is actually much brighter ;)
 
 Ben.

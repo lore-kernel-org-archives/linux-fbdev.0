@@ -1,21 +1,16 @@
-From: Louis Garcia <louisg00@bellsouth.net>
-Subject: radeonfb and logo in linux-2.5.66
-Date: 31 Mar 2003 14:40:39 -0500
+From: Jon Smirl <jonsmirl@yahoo.com>
+Subject: Re: [ANNOUNCE]: VM86 Daemon
+Date: Mon, 31 Mar 2003 16:07:46 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1049139639.3029.3.camel@tiger>
+Message-ID: <20030401000746.44732.qmail@web14912.mail.yahoo.com>
+References: <1049104351.1037.53.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail205.mail.bellsouth.net ([205.152.58.145] helo=imf41bis.bellsouth.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19058G-0007PT-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 31 Mar 2003 11:39:48 -0800
-Received: from host4-null.null.bellsouth.net ([68.155.65.35])
-          by imf41bis.bellsouth.net
-          (InterMail vM.5.01.04.25 201-253-122-122-125-20020815) with ESMTP
-          id <20030331193338.WTSF1445.imf41bis.bellsouth.net@host4-null.null.bellsouth.net>
-          for <linux-fbdev-devel@lists.sourceforge.net>;
-          Mon, 31 Mar 2003 14:33:38 -0500
+Received: from web14912.mail.yahoo.com ([216.136.225.248])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 1909Ja-0000tU-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 31 Mar 2003 16:07:46 -0800
+In-Reply-To: <1049104351.1037.53.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -26,14 +21,31 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: Antonino Daplas <adaplas@pol.net>, Kendall Bennett <KendallB@scitechsoft.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, DirectFB-devel <directfb-dev@directfb.org>
 
-I have compiled the radeonfb and logo code into the kernel-2.5.66. I am
-able to boot the kernel into fb mode but I see no tux logo as I do in
-2.4.x. Is their a boot option to view the logo?
+I didn't read through the code yet, is this being
+implemented by adding some new IOCTLs to the fb
+interface? For example an IOCTL to get the legal modes
+or to reset the card.
 
---Thanks 
+Why does it need /dev/vm86, couldn't it just use the
+fb device and add some new IOCTLS?
 
+I would expect to the end user app to only interact
+with the /dev/fb, it would be unaware of the daemon.
+This would allow these functions to be transparently
+added to the driver if the need hardware info becomes available.
+
+=====
+Jon Smirl
+jonsmirl@yahoo.com
+
+__________________________________________________
+Do you Yahoo!?
+Yahoo! Platinum - Watch CBS' NCAA March Madness, live on your desktop!
+http://platinum.yahoo.com
 
 
 -------------------------------------------------------

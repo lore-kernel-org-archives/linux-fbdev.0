@@ -1,23 +1,21 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Re: [forum] Re: Announcement: Modification
-	to the base XFree86(TM) license.
-Date: Sun, 01 Feb 2004 09:24:04 +1100
+From: James Simmons <jsimmons@infradead.org>
+Subject: Cursor patch.
+Date: Thu, 29 Jan 2004 19:53:18 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1075587843.4547.98.camel@gaston>
-References: <Pine.LNX.4.44.0401311258330.4585-100000@ard.bishopscourt>
+Message-ID: <Pine.LNX.4.44.0401291952240.11251-100000@phoenix.infradead.org>
+References: <1075251935.6296.243.camel@gaston>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1An3Zn-0000SL-Qo
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 31 Jan 2004 14:26:55 -0800
-Received: from gate.crashing.org ([63.228.1.57] ident=root)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	id 1Amik2-0005N6-2a
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Jan 2004 16:12:06 -0800
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1An3Zn-0004Tq-BC
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 31 Jan 2004 14:26:55 -0800
-In-Reply-To: <Pine.LNX.4.44.0401311258330.4585-100000@ard.bishopscourt>
+	id 1AmIE8-0008Ga-CV
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 29 Jan 2004 11:53:24 -0800
+In-Reply-To: <1075251935.6296.243.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,25 +25,15 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Andrew C Aitchison <a.c.aitchison@ntlworld.com>
-Cc: devel@xfree86.org, forum@xfree86.org, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@osdl.org>
 
 
-> "The Author" ?
-> This is open source code; there may be 27 authors of the relevant file.
-> In XFree86 code I wouldn't know how to find the author of a file without
-> looking at that file. My {limited ,mis}understanding of clean room coding 
-> makes me wary of reading any source unless I know that its licence will 
-> allow me to do what I wish.
+I really like to create a cursor patch and push it main line. With this 
+patch I coudl sync several drivers afterwards. What do you think?
 
-There is at least a maintainer and usually one person who did the
-main work, and this (or these) name(s) can usually be found in the
-file's head comment. Also, fbdev authors/maintainers usually hang
-around the linux fbdev mailing list. You could have tried to
-contact them at least ;)
-
-Ben.
 
 
 

@@ -1,17 +1,16 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Re: [PATCH]: image.depth fix to accomodate
- monochrome cards
-Date: Wed, 8 Jan 2003 10:52:21 +0100 (MET)
+Subject: Re: clipping
+Date: Wed, 8 Jan 2003 10:54:12 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0301081045090.21171-100000@vervain.sonytel.be>
-References: <1041991742.927.12.camel@localhost.localdomain>
+Message-ID: <Pine.GSO.4.21.0301081053400.21171-100000@vervain.sonytel.be>
+References: <Pine.LNX.4.44.0301072211310.17129-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18WCvk-0003fN-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 08 Jan 2003 01:55:24 -0800
-In-Reply-To: <1041991742.927.12.camel@localhost.localdomain>
+	id 18WCx9-0003q5-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 08 Jan 2003 01:56:51 -0800
+In-Reply-To: <Pine.LNX.4.44.0301072211310.17129-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,53 +22,27 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Antonino Daplas <adaplas@pol.net>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On 8 Jan 2003, Antonino Daplas wrote:
-> On Wed, 2003-01-08 at 05:06, Geert Uytterhoeven wrote: 
-> > On 8 Jan 2003, Antonino Daplas wrote:
-> > > 2.  diff submitted by Geert: cleaner logo data preparation for
-> > > monochrome cards and correct initialization of palette_cmap.transp.
+On Tue, 7 Jan 2003, James Simmons wrote:
+> > > > BTW, do we really need clipping in fb_ops.fb_{fillrect,copyarea,imageblit}()?
+> > > Personally, I don't think we need clipping.  I tried removing it before
+> > > (circa linux-2.5.30+), but the console segfaults whenever I decrease
+> > > var->yres_virtual.  I haven't tried this again with the newest
+> > > framebuffer framework though.
 > > 
-> > I'll have to do some more fixes there, since the monochrome logo is used not
-> > only on monochrome displays, but on all other displays with bits_per_pixel < 4
-> > Since the pixel data in fb_image are colormap indices, they have to reflect the
-> > correct `black' and `white' colors on such displays.
+> > Any definitive answer on this?
 > > 
-> > E.g. on amifb (which supports all bits_per_pixel from 1 through 8) the logo
-> > showed up in black-and-blue with bits_per_pixel == 3, cfr. the first two
-> > entries of {red,green,blue}8[] in fbcmap.c.
-> > 
+> > What happens if you resize the VT to such a large size that columns*fontwidth >
+> > xres_virtual or rows*fontheight > yres_virtual? I guess clipping prevents a
+> > crash there?
 > 
-> Hmm, I see.  I think only linux_logo_bw will be the only one affected,
-> since linux_logo_16 happens to match the console palette and in
-> linux_logo, we either reset the palette and/or the cmap.
+> Correct. Actually fbcon_resize checks to make sure the user doesn't do 
+> something stupid like this. So we might not needed. Hm.
 
-Indeed.
-
-> Would expanding each bit to the full bit depth work?  Ie for bpp=8 using
-> monochrome data, white is 0 and black is 0xff.
-
-For bpp=8 that won't work, since we have 16 console colors only :-)
-
-But for bpp=[1-3] that's OK, cfr. fbcmap.c.
-
-BTW, perhaps it makes sense to just pass the appropriate `black' and `white'
-pixel values to the logo conversion routine? Preferably through a 2-element
-array, so we can index it with the logo data bit value instead of using
-tests/branches. Then we'd have:
-
-  - mono01: black = (1<<bits_per_pixel)-1, white = 0
-  - mono10: black = 0, white = (1<<bits_per_pixel)-1
-  - pseudocolor depth 1: black = 0, white = 1
-  - pseudocolor depth 2: black = 0, white = 3
-  - pseudocolor depth 3: black = 0, white (actually light grey) = 7
-
-And thanks to the `(1<<depth)-1' instead of `1' for the mono* cases, monochrome
-with bits_per_pixel = e.g. 8 will work as well.
-
-What do you think?
+And what if you use fbset to reduce the resolution below what's needed to
+accomodate the current console size?
 
 Gr{oetje,eeting}s,
 

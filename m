@@ -1,73 +1,56 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: XGL/mesa-solo and fbdev
-Date: Tue, 22 Feb 2005 18:22:36 +1100
-Message-ID: <1109056956.5412.107.camel@gaston>
-References: <9e47339105022111483136bd56@mail.gmail.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [Linux-fbdev-devel] Re: Ruby redux
+Date: Tue, 22 Feb 2005 18:28:12 +1100
+Message-ID: <1109057292.5412.113.camel@gaston>
+References: <4218CCF0.5030803@freemail.hu>
+	 <Pine.LNX.4.56.0502212143030.16017@pentafluge.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D3UO3-0004yu-IL
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 23:23:15 -0800
-Received: from gate.crashing.org ([63.228.1.57])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1D3UO3-0002Sv-0F
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Feb 2005 23:23:15 -0800
-In-Reply-To: <9e47339105022111483136bd56@mail.gmail.com>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+In-Reply-To: <Pine.LNX.4.56.0502212143030.16017@pentafluge.infradead.org>
+Sender: linuxconsole-dev-admin@lists.sourceforge.net
+Errors-To: linuxconsole-dev-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linuxconsole-dev>,
+	<mailto:linuxconsole-dev-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linuxconsole-dev@lists.sourceforge.net>
+List-Help: <mailto:linuxconsole-dev-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linuxconsole-dev>,
+	<mailto:linuxconsole-dev-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linuxconsole-dev>
 Content-Type: text/plain; charset="us-ascii"
 To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Jon Smirl <jonsmirl@gmail.com>
+Cc: Zoltan Boszormenyi <zboszor@freemail.hu>, Linux console project <linuxconsole-dev@lists.sourceforge.net>, Aivils <aivils@unibanka.lv>, James Simmons <jsimmons@infradead.org>, Roman Zippel <zippel@linux-m68k.org>
 
-On Mon, 2005-02-21 at 14:48 -0500, Jon Smirl wrote:
-> XGL/mesa-solo is a project that has been going on for about a year and
-> a half now to get X running on top of OpenGL instead of the existing
-> 2D XAA drivers. XGL allows a vastly improved user experience as
-> demonstrated at the recent X developer's conference. Removing the 2D
-> drivers from X means that things like mode setting need to come from
-> someplace else, like fbdev.
-> 
-> To make this project work XGL/mesa-solo needs support for these things
-> at the minimum:
-> 1) resetting of secondary cards
-> 2) mode setting on all heads, not just the primary one
-> 3) hardware cursor control
-> 4) control of mode setting/cursor etc by users, not just root
-> 5) DRM and fbdev need to not conflict
-> 
-> We are try to get everything in the stack working together before OLS
-> this summer. I've posted code to implement some of these features and
-> I'm seeking solutions for making the rest work. Does this look like
-> something that can get finished in the next month or so? We also need
-> time to get all of the layers above fbdev using the new support.
 
-Finishing that in the next month or so is extremely optimist :)
+> The next generation X server will be based totally on top of OpenGL using 
+> drm/fbdev. I'm going to be working with him to make sure that it supported 
+> full multihead support!!!!! We will not have to do anymore X server hacks. 
+> All the X Server hack on the PCI bus will go away. So we have alot of work 
+> ahead. I say by next year this time main stream linux will be 
+> multi-desktop ready. 
 
-I think we should do it the linux way, that is not take deadlines too
-seriously, just do the stuff.
+In fact, DRM handles hardware access arbitration. Wether it's
+3D/GL/whatever depends on what userland client library is used.
 
-The first step is putting fbdev's and DRM driver together. I think it's
-worth doing a stub right now rather than hacking radeonfb and the radeon
-DRM together, because all other PCI card drivers at least will have the
-same issues, and for various reasons, you may wnat to only use "half" of
-it (that is not use the fbdev side or not use the DRM side), at least
-for a while. (radeonfb doesn't always work 100% on all x86's)
+For "legacy" cards, we can perfectly have a 2D driver using DRM to
+submit commands (or beeing allowed to mmap the registers the good old
+way eventually) and a server built on top of this (hint hint:
+kdrive ? :)
 
-The second step is to add video memory management & arbitration.
+The main ideas is to have a common mode setting and hw access
+arbitration (& command submiting, DMA/AGP management etc...)
+infrastructure that isn't in the server.
 
-The third step is to add missing "features" like dual head etc.... and
-the appropriate fbdev API changes to do it properly.
+Wether you then use a 2D userland driver, a 3D userland driver, XGL on
+top of the later, or whatever else is pretty much irrelevant.
+
+I may want to rework a bit of the fbdev mode setting API if I can find
+time to work on this. It needs some better ways to determine "related"
+framebuffers, trigger re-probe of outputs, play with the output mapping,
+and get hotplug events to userland. It also need to properly work with
+the DRM for access arbitration to the HW. There are a lot of issues to
+deal with before we can safely change modes on the fly while a 3D server
+is running, but we'll have to be capable of it ultimately.
 
 Ben.
 

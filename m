@@ -1,18 +1,18 @@
 From: syrjala@sci.fi
-Subject: [PATCH 7/8] atyfb: LT/LG cleanup
-Date: Thu, 17 Mar 2005 05:07:53 +0200 (EET)
-Message-ID: <20050317030753.3EDFB7A@kuori.saunalahti.fi>
+Subject: [PATCH 6/8] atyfb: VT/GT cleanup
+Date: Thu, 17 Mar 2005 05:07:52 +0200 (EET)
+Message-ID: <20050317030752.EAF1D7A@kuori.saunalahti.fi>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DBlMb-00058G-2u
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Mar 2005 19:07:57 -0800
-Received: from gw02.mail.saunalahti.fi ([195.197.172.116])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DBlMY-0005vg-7n
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Mar 2005 19:07:56 -0800
+	id 1DBlMZ-00057q-O1
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Mar 2005 19:07:55 -0800
+Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DBlMX-0003Ij-Ve
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Mar 2005 19:07:55 -0800
 Received: from kuori.saunalahti.fi (kuori.saunalahti.fi [195.197.175.23])
-	by gw02.mail.saunalahti.fi (Postfix) with ESMTP id 661F5BA3D7
+	by gw01.mail.saunalahti.fi (Postfix) with ESMTP id 1B116DC659
 	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 17 Mar 2005 05:07:53 +0200 (EET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -29,55 +29,125 @@ Content-Type: text; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Cc: alex.kern@gmx.de
 
-Clean up LT and LG chip descriptions.
+Clean up VT and GT chip descriptions.
 
-"Mach64 LG" is called 3D Rage LT in the specs and ATI press releases.
+All B revision VT chips are called 264VT3. Verified from pictures of the 
+chips as the specs are a bit unlear in this.
 
-"Mach64 LT" is unclear. XFree86 driver doesn't know this chip at all. 
-Windows display.inf calls it just "mach64 LT" and it uses the same 
-driver as VT-A/GT-A and older chips. VT-B/GT-B and better use another 
-driver and all of those chips have a more descriptive name in the 
-display.inf file. That makes me think this chip is not a 3D Rage chip. 
-Maybe it's a mobile version of ET?
+GT revision B1 is Rage II, B2 is Rage II+. Specs and chip pictures seem 
+to agree.
+
+VT revision A4 is 264VT2. Verified from chip pictures and Windows 
+display.inf. So revision A3 is probably a plain 264VT. I didn't find any 
+proof for that though...
 
 Signed-off-by: Ville Syrjala <syrjala@sci.fi>
 ---
 
- atyfb_base.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+ atyfb_base.c |   61 +++++++++++++++++++++++++++++++++++++++--------------------
+ 1 files changed, 41 insertions(+), 20 deletions(-)
 
 diff -urN linux/drivers/video/aty/atyfb_base.c linux/drivers/video/aty/atyfb_base.c
---- linux/drivers/video/aty/atyfb_base.c	2005-03-16 19:23:19.000000000 +0200
-+++ linux/drivers/video/aty/atyfb_base.c	2005-03-16 19:37:14.000000000 +0200
-@@ -349,6 +349,7 @@
- #define ATI_CHIP_264VT3    (M64F_VT | M64F_INTEGRATED | M64F_VT_BUS | M64F_GTB_DSP | M64F_SDRAM_MAGIC_PLL)
- #define ATI_CHIP_264VT4    (M64F_VT | M64F_INTEGRATED               | M64F_GTB_DSP)
- 
-+/* FIXME what is this chip? */
- #define ATI_CHIP_264LT     (M64F_GT | M64F_INTEGRATED               | M64F_GTB_DSP)
- 
- /* make sets shorter */
-@@ -381,6 +382,9 @@
+--- linux/drivers/video/aty/atyfb_base.c	2005-03-16 19:09:32.000000000 +0200
++++ linux/drivers/video/aty/atyfb_base.c	2005-03-16 19:16:37.000000000 +0200
+@@ -380,11 +380,13 @@
+ #ifdef CONFIG_FB_ATY_CT
  	{ PCI_CHIP_MACH64CT, "ATI264CT (Mach64 CT)", 135, 60, 60, 0, ATI_CHIP_264CT },
  	{ PCI_CHIP_MACH64ET, "ATI264ET (Mach64 ET)", 135, 60, 60, 0, ATI_CHIP_264ET },
- 
-+	/* FIXME what is this chip? */
-+	{ PCI_CHIP_MACH64LT, "ATI264LT (Mach64 LT)", 135, 63, 63, 0, ATI_CHIP_264LT },
+-	{ PCI_CHIP_MACH64VT, "ATI264VT? (Mach64 VT)", 170, 67, 67, 80, ATI_CHIP_264VT },
 +
- 	{ PCI_CHIP_MACH64VT, "ATI264VT (Mach64 VT)", 170, 67, 67, 80, ATI_CHIP_264VT },
++	{ PCI_CHIP_MACH64VT, "ATI264VT (Mach64 VT)", 170, 67, 67, 80, ATI_CHIP_264VT },
  	{ PCI_CHIP_MACH64GT, "3D RAGE (Mach64 GT)", 135, 63, 63, 80, ATI_CHIP_264GT },
- 
-@@ -388,9 +392,7 @@
++
++	{ PCI_CHIP_MACH64VU, "ATI264VT3 (Mach64 VU)", 200, 67, 67, 80, ATI_CHIP_264VT3 },
  	/* FIXME { ...ATI_264GU, maybe ATI_CHIP_264GTDVD }, */
- 	{ PCI_CHIP_MACH64GU, "3D RAGE II+ (Mach64 GU)", 200, 67, 67, 100, ATI_CHIP_264GTB },
+-	{ PCI_CHIP_MACH64GU, "3D RAGE II+ (Mach64 GTB)", 200, 67, 67, 100, ATI_CHIP_264GTB  },
+-	{ PCI_CHIP_MACH64VU, "ATI264VTB (Mach64 VU)", 200, 67, 67, 80, ATI_CHIP_264VT3 },
++	{ PCI_CHIP_MACH64GU, "3D RAGE II+ (Mach64 GU)", 200, 67, 67, 100, ATI_CHIP_264GTB },
  
--	{ PCI_CHIP_MACH64LT, "3D RAGE LT (Mach64 LT)", 135, 63, 63, 0, ATI_CHIP_264LT },
--	 /* FIXME chipset maybe ATI_CHIP_264LTPRO ? */
--	{ PCI_CHIP_MACH64LG, "3D RAGE LT-G (Mach64 LG)", 230, 63, 63, 100, ATI_CHIP_264LTG | M64F_LT_LCD_REGS | M64F_G3_PB_1024x768 },
-+	{ PCI_CHIP_MACH64LG, "3D RAGE LT (Mach64 LG)", 230, 63, 63, 100, ATI_CHIP_264LTG | M64F_LT_LCD_REGS | M64F_G3_PB_1024x768 },
- 
- 	{ PCI_CHIP_MACH64VV, "ATI264VT4 (Mach64 VV)", 230, 83, 83, 100, ATI_CHIP_264VT4 },
- 
+ 	{ PCI_CHIP_MACH64LT, "3D RAGE LT (Mach64 LT)", 135, 63, 63, 0, ATI_CHIP_264LT },
+ 	 /* FIXME chipset maybe ATI_CHIP_264LTPRO ? */
+@@ -460,44 +462,63 @@
+ #endif
+ #ifdef CONFIG_FB_ATY_CT
+ 	case PCI_CHIP_MACH64VT:
+-		rev &= 0xc7;
+-		if(rev == 0x00) {
+-			name = "ATI264VTA3 (Mach64 VT)";
+-			par->pll_limits.pll_max = 170;
+-			par->pll_limits.mclk = 67;
+-			par->pll_limits.xclk = 67;
+-			par->pll_limits.ecp_max = 80;
+-			par->features = ATI_CHIP_264VT;
+-		} else if(rev == 0x40) {
+-			name = "ATI264VTA4 (Mach64 VT)";
++		switch (rev & 0x07) {
++		case 0x00:
++			switch (rev & 0xc0) {
++			case 0x00:
++				name = "ATI264VT (A3) (Mach64 VT)";
++				par->pll_limits.pll_max = 170;
++				par->pll_limits.mclk = 67;
++				par->pll_limits.xclk = 67;
++				par->pll_limits.ecp_max = 80;
++				par->features = ATI_CHIP_264VT;
++				break;
++			case 0x40:
++				name = "ATI264VT2 (A4) (Mach64 VT)";
++				par->pll_limits.pll_max = 200;
++				par->pll_limits.mclk = 67;
++				par->pll_limits.xclk = 67;
++				par->pll_limits.ecp_max = 80;
++				par->features = ATI_CHIP_264VT | M64F_MAGIC_POSTDIV;
++				break;
++			}
++			break;
++		case 0x01:
++			name = "ATI264VT3 (B1) (Mach64 VT)";
+ 			par->pll_limits.pll_max = 200;
+ 			par->pll_limits.mclk = 67;
+ 			par->pll_limits.xclk = 67;
+  			par->pll_limits.ecp_max = 80;
+-			par->features = ATI_CHIP_264VT | M64F_MAGIC_POSTDIV;
+-		} else {
+-			name = "ATI264VTB (Mach64 VT)";
++			par->features = ATI_CHIP_264VTB;
++			break;
++		case 0x02:
++			name = "ATI264VT3 (B2) (Mach64 VT)";
+ 			par->pll_limits.pll_max = 200;
+ 			par->pll_limits.mclk = 67;
+ 			par->pll_limits.xclk = 67;
+  			par->pll_limits.ecp_max = 80;
+-			par->features = ATI_CHIP_264VTB;
++			par->features = ATI_CHIP_264VT3;
++			break;
+ 		}
+ 		break;
+ 	case PCI_CHIP_MACH64GT:
+-		rev &= 0x07;
+-		if(rev == 0x01) {
++		switch (rev & 0x07) {
++		case  0x01:
++			name = "3D RAGE II (Mach64 GT)";
+ 			par->pll_limits.pll_max = 170;
+ 			par->pll_limits.mclk = 67;
+ 			par->pll_limits.xclk = 67;
+  			par->pll_limits.ecp_max = 80;
+ 			par->features = ATI_CHIP_264GTB;
+-		} else if(rev == 0x02) {
++			break;
++		case 0x02:
++			name = "3D RAGE II+ (Mach64 GT)";
+ 			par->pll_limits.pll_max = 200;
+ 			par->pll_limits.mclk = 67;
+ 			par->pll_limits.xclk = 67;
+  			par->pll_limits.ecp_max = 100;
+ 			par->features = ATI_CHIP_264GTB;
++			break;
+ 		}
+ 		break;
+ #endif
 
 
 

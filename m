@@ -1,57 +1,39 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Petr Vandrovec <vandrove@vc.cvut.cz>
 Subject: Re: hi-res fb console with 2.6.0-testX ?
-Date: Mon, 8 Sep 2003 22:57:34 +0200 (MEST)
+Date: Tue, 9 Sep 2003 00:38:14 +0200
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.GSO.4.21.0309082255570.3273-100000@waterleaf.sonytel.be>
-References: <C71CD161531@vcnet.vc.cvut.cz>
+Message-ID: <20030908223814.GA4495@vana.vc.cvut.cz>
+References: <C71CD161531@vcnet.vc.cvut.cz> <Pine.GSO.4.21.0309082255570.3273-100000@waterleaf.sonytel.be>
 Mime-Version: 1.0
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <C71CD161531@vcnet.vc.cvut.cz>
+Content-Disposition: inline
+In-Reply-To: <Pine.GSO.4.21.0309082255570.3273-100000@waterleaf.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Petr Vandrovec <VANDROVE@vc.cvut.cz>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: Dave Jones <davej@redhat.com>, Linux Kernel Development <linux-kernel@vger.kernel.org>, cheapisp@sensewave.com, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Mon, 8 Sep 2003, Petr Vandrovec wrote:
-> On  7 Sep 03 at 22:58, Dave Jones wrote:
-> > On Sun, Sep 07, 2003 at 09:51:51PM +0200, cheapisp@sensewave.com wrote:
-> >  > The kernel command lines which work with vesafb and matroxfb in 2.4 do not 
-> >  > work for me in 2.6.0-testX.                                                
-> >  >                                    
-> >  > kernel (hd0,0)/bz-2.6.0-t4mm3 root=/dev/hdc2 video=matrox:vesa:0x11A       
-> >  > kernel (hd0,0)/bz-2.6.0-t4mm3 root=/dev/hdc2 vga=794                       
-> > vga= seems to have changed semantics. (Which is a polite way of saying
-> > "has regressed" IMO), this has been reported several times before, but
-> > it doesn't seem to be too high on peoples 'must fix' list.
-> > 
-> >  > Doing fbset "vesa11A" causes the monitor to lose the sync.                 
-> > 
-> > last I looked, fbset needed updates for the changes in 2.6
+On Mon, Sep 08, 2003 at 10:57:34PM +0200, Geert Uytterhoeven wrote:
+> On Mon, 8 Sep 2003, Petr Vandrovec wrote:
 > 
-> video= changed sematic too. Now you have to do
-> video=matroxfb:...., not video=matrox:....
+> > And whole fb subsystem changed semantic, so do not build both
+> > vesafb & matroxfb into the kernel - either one or another, or
+> > you'll be definitely surprised what will happen (and I'm almost
+> > sure that blank screen is not what you want).
 > 
-> And /dev/fb* changed semantic too, so forget about using fbset on your
-> box.
+> What's wrong with the resource system that prevents this from working?
 
-I really like to see this fixed. IMHO fbcon should be build on top of fbdev,
-not vice-versa.
+vesafb ignore failures... for framebuffer it just prints warning only, and
+for 0x3C0 region it just completely ignores warning (due to vgacon
+clash). But it should not be serious, user should just get console 
+on matroxfb, and vesafb on /dev/fb1 doing nothing.
 
-> And whole fb subsystem changed semantic, so do not build both
-> vesafb & matroxfb into the kernel - either one or another, or
-> you'll be definitely surprised what will happen (and I'm almost
-> sure that blank screen is not what you want).
-
-What's wrong with the resource system that prevents this from working?
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Main thing which prevents this from working as users expects is that
+modular fbdevs cannot be used by fbcon. So people cannot create
+initrd scripts which load proper fbdev driver anymore, after detecting
+hardware and making sure that hardware & user wishes & driver are
+compatible. They now have to build fbdevs to the kernel, and hope for
+the best...
+					Best regards,
+						Petr Vandrovec

@@ -1,20 +1,20 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Fw: [Bugme-new] [Bug 4394] New: Intel 855 (i810): 1280x768 wide
- screen FB resolution not available
-Date: Wed, 23 Mar 2005 18:37:29 -0800
-Message-ID: <20050323183729.3797ce87.akpm@osdl.org>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: [2.6 patch] edid.h cleanups
+Date: Thu, 24 Mar 2005 04:10:19 +0100
+Message-ID: <20050324031019.GU1948@stusta.de>
+References: <20050320192915.GR4449@stusta.de> <200503210453.43894.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DEIEK-0001Gd-0J
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Mar 2005 18:37:52 -0800
-Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.41)
-	id 1DEIEH-0002PK-W9
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Mar 2005 18:37:51 -0800
+	id 1DEIkc-000301-TY
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Mar 2005 19:11:14 -0800
+Received: from mailout.stusta.mhn.de ([141.84.69.5])
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
+	id 1DEIkc-0000R4-5R
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Mar 2005 19:11:14 -0800
+Content-Disposition: inline
+In-Reply-To: <200503210453.43894.adaplas@hotpop.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,45 +26,102 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: steven@uplinklabs.net
+Content-Transfer-Encoding: 7bit
+To: adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+
+On Mon, Mar 21, 2005 at 04:53:43AM +0800, Antonino A. Daplas wrote:
+
+> Not this one.  Code that grabs the EDID block using the video BIOS is in video.S.
+> Currently, there's no driver that uses this but it's an acceptable backup for drivers
+> that want the EDID block but has no i2c, or i2c probing fails.
+
+OK, below are only the other parts of my patch.
+
+> Tony
+
+cu
+Adrian
 
 
 
-Begin forwarded message:
-
-Date: Wed, 23 Mar 2005 16:45:12 -0800
-From: bugme-daemon@osdl.org
-To: bugme-new@lists.osdl.org
-Subject: [Bugme-new] [Bug 4394] New: Intel 855 (i810): 1280x768 wide screen FB resolution not available
+<--  snip  -->
 
 
-http://bugme.osdl.org/show_bug.cgi?id=4394
+This patch contains the following cleanups:
+- remove unneeded #include <video/edid.h>'s
+- include/video/edid.h: kill two stale function prototypes
 
-           Summary: Intel 855 (i810): 1280x768 wide screen FB resolution not
-                    available
-    Kernel Version: 2.6.11
-            Status: NEW
-          Severity: normal
-             Owner: davej@codemonkey.org.uk
-         Submitter: steven@uplinklabs.net
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
+---
 
-Distribution: Gentoo 2004.3
-Hardware Environment:
-Sony Vaio PCG-TR1AP
-Intel 855GM graphics controller
-1280x768 wide screen LCD flat panel
+ arch/i386/boot/compressed/misc.c |    1 -
+ drivers/video/fbmon.c            |    1 -
+ drivers/video/vesafb.c           |    3 ---
+ include/video/edid.h             |    9 ---------
+ 4 files changed, 14 deletions(-)
 
-Software Environment: N/A
-Problem Description:
-Wide screen resolutions, such as 1280x768 are not supported by the console
-framebuffer. Can this support be added?
+--- linux-2.6.11-mm4-full/drivers/video/fbmon.c.old	2005-03-20 20:03:56.000000000 +0100
++++ linux-2.6.11-mm4-full/drivers/video/fbmon.c	2005-03-20 20:04:27.000000000 +0100
+@@ -34,7 +34,6 @@
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
+ #endif
+-#include <video/edid.h>
+ #include "edid.h"
+ 
+ /* 
+--- linux-2.6.11-mm4-full/drivers/video/vesafb.c.old	2005-03-20 20:04:12.000000000 +0100
++++ linux-2.6.11-mm4-full/drivers/video/vesafb.c	2005-03-20 20:04:18.000000000 +0100
+@@ -19,9 +19,6 @@
+ #include <linux/fb.h>
+ #include <linux/ioport.h>
+ #include <linux/init.h>
+-#ifdef __i386__
+-#include <video/edid.h>
+-#endif
+ #include <asm/io.h>
+ #include <asm/mtrr.h>
+ 
+--- linux-2.6.11-mm4-full/arch/i386/boot/compressed/misc.c.old	2005-03-20 20:05:55.000000000 +0100
++++ linux-2.6.11-mm4-full/arch/i386/boot/compressed/misc.c	2005-03-20 20:05:58.000000000 +0100
+@@ -12,7 +12,6 @@
+ #include <linux/linkage.h>
+ #include <linux/vmalloc.h>
+ #include <linux/tty.h>
+-#include <video/edid.h>
+ #include <asm/io.h>
+ #include <asm/page.h>
+ 
+--- linux-2.6.12-rc1-mm1-full/include/video/edid.h.old	2005-03-24 01:37:07.000000000 +0100
++++ linux-2.6.12-rc1-mm1-full/include/video/edid.h	2005-03-24 01:37:27.000000000 +0100
+@@ -4,9 +4,6 @@
+ #ifdef __KERNEL__
+ 
+ #include <linux/config.h>
+-#ifdef CONFIG_PPC_OF
+-#include <linux/pci.h>
+-#endif
+ 
+ #ifdef CONFIG_X86
+ struct edid_info {
+@@ -14,14 +11,8 @@
+ };
+ 
+ extern struct edid_info edid_info;
+-extern char *get_EDID_from_BIOS(void *);
+-
+ #endif /* CONFIG_X86 */
+ 
+-#ifdef CONFIG_PPC_OF
+-extern char *get_EDID_from_OF(struct pci_dev *pdev);
+-#endif
+-
+ #endif /* __KERNEL__ */
+ 
+ #endif /* __linux_video_edid_h__ */
 
-Steps to reproduce: N/A
-
-------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
 
 
 -------------------------------------------------------

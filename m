@@ -1,87 +1,82 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [BK fbdev updates]
-Date: Thu, 7 Nov 2002 16:01:06 -0800 (PST)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.33.0211071556020.8121-100000@maxwell.earthlink.net>
-References: <1036209978.581.36.camel@daplas>
+From: Carl-Daniel Hailfinger <c-d.hailfinger.kernel.2002-Q4@gmx.net>
+Subject: Re: Linux 2.4.20-rc1
+Date: Fri, 08 Nov 2002 13:22:49 +0100
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <3DCBAC99.7010909@gmx.net>
+References: <Pine.LNX.4.44L.0211061033410.27268-100000@freak.distro.conectiva> <3DCAAF2D.2040202@gmx.net>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from pintail.mail.pas.earthlink.net ([207.217.120.122])
-	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 189vkm-00008A-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 07 Nov 2002 15:08:00 -0800
-In-Reply-To: <1036209978.581.36.camel@daplas>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: multipart/mixed;
+ boundary="------------040407030801040902040307"
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+List-Id: <fbdev-devel.lists.sourceforge.net
+To: Marcelo Tosatti <marcelo@conectiva.com.br>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
+
+This is a multi-part message in MIME format.
+--------------040407030801040902040307
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+Carl-Daniel Hailfinger wrote:
+> [CC: linux-fbdev-devel to find out what was wrong with the patch]
+> Marcelo Tosatti wrote:
+>> On Sat, 2 Nov 2002, Carl-Daniel Hailfinger wrote:
+>>> Marcelo Tosatti wrote:
+>>>
+>>>> Hi,
+>>>>
+>>>> Finally, rc1.
+>>>> [snipped]
+>>>>
+>>>> Please stress test it.
+>>>>
+>>>
+>>> My system comes up with a blank console after hardware suspend and 
+>>> resume.
+>>> The cursor is still visible, but no text is there. Switching to another
+>>> console and back fixes it. Vesafb is enabled with vga=791.
+>>> Hardware is a Toshiba Satellite 4100XCDT notebook with Trident 
+>>> Cyber9525DVD
+>>> graphics chipset, but this also can be reproduced with Dell notebooks.
+>>>
+>>> I just verified the problem exists still with 2.4.20-rc1.
+>>> A binary search turned up 2.4.18-pre7 as the kernel which broke,
+>>> specifically the changes made to apm.c back then.
+>>
+>>
+>>
+>> Have you tried to revert 2.4.18-pre7's changes to apm.c to make sure 
+>> it is
+>> the cause?>
+> 
+> 
+> I tried it and found out that my results were incorrect. The problem was 
+> introduced in 2.4.18-pre1 by the changes to drivers/video/fbcon.c
+> 
+> Reverting the attached patch fixes my problem. However, I am not exactly 
+> sure why a patch intended to fix a PM problem introduced another one.
 
-> > fbcon_switch has to be rewritten. I'm going threw the process of cleaning
-> > up the upper fbcon layer. Its such a mess. Yuck!!!
-> Thank goodness for this :)  I was already thinking of adding an 'Option
-> Usefbdev' for the xfree86 driver.
+I managed to trim down the offending patch further. Reverting the new 
+attached patch is enough to fix my problem. Can someone of the framebuffer 
+experts please comment on this one?
 
-There is already a option like that for XFree86.
+Regards
+Carl-Daniel
 
-> > Yes!!! Of course there is the issue is the framebuffer that actual one
-> > used for vgacon or is it independent, thinking multihead here.
-> >
-> I was trying to confirm if vgacon should restore its own state or not.
->
-> But this one is neat :)  I added VGA save/restore state routines to
-> fb_open() and fb_release().  I was able to boot to a VGA console, fired
-> up XFBDev and DirectFB and exited back again to a VGA console.  DirectFB
-> came back without problems, XFBDev needed a console reset.
+--------------040407030801040902040307
+Content-Type: application/x-java-vm;
+ name="patch-fbdev-5"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="patch-fbdev-5"
 
-WOW!!! That is way to awesome. I have always wanted to see that actually
-work.
-
-> I guess the save/restore state routines will only be needed for graphics
-> card with a VGA core.  I think multiple graphics card or multi-head
-> systems will not be affected since the driver will only be
-> saving/restoring its own hardware anyway.
-
-Correct. One thing I do like is when you insmod a driver it doesn't change
-the mode. For example for the neomagic fbdev driver I compiled as a module
-and then insmod while using vgacon. Its didn't change the graphics mode so
-I was able to find a nasty bug. I could change the video mode once I did a
-set_var via userland.
-
-> config FONT_8x16
-> 	bool "VGA 8x16 font" if FBCON_FONTS
-> 	depends on FB && SGI_NEWPORT_CONSOLE=y
->
-> I changed the '&&' operator to '||' in my case.
-
-Applied.
-
-> > > 5.  The cfb_* drawing functions still behave erratically, especially in
-> > > emacs.  Geert has made some versions that work correctly for me.  This
-> > > was discussed in a thread sometimes ago.
-> >
-> > Where are the patchs. I like to incorporate them into BK.
-> The patch exceeded 40K uncompressed, so here's a link:
->
-> http://i810fb.sourceforge.net/draw_ops.diff.gz
->
-> The diff is against 2.5.45 plus your fbdev.diff.
-
-It didn't work. Can you send me those files direct. I like to apply them.
-
-
-
-
--------------------------------------------------------
-This sf.net email is sponsored by: See the NEW Palm 
-Tungsten T handheld. Power & Color in a compact size!
-http://ads.sourceforge.net/cgi-bin/redirect.pl?palm0001en
+ZGlmZiAtTmF1ciAtWCAvaG9tZS9tYXJjZWxvL2xpYi9kb250ZGlmZiBsaW51eC5vcmlnL2Ry
+aXZlcnMvdmlkZW8vZmJjb24uYyBsaW51eC9kcml2ZXJzL3ZpZGVvL2ZiY29uLmMKLS0tIGxp
+bnV4Lm9yaWcvZHJpdmVycy92aWRlby9mYmNvbi5jCVRodSBKYW4gMTAgMjA6MTc6NDEgMjAw
+MgorKysgbGludXgvZHJpdmVycy92aWRlby9mYmNvbi5jCVdlZCBEZWMgMjYgMTY6NTA6NTIg
+MjAwMQpAQCAtMTU1OCw2ICsxNTcxLDEwIEBACiAKICAgICBpZiAoYmxhbmsgPCAwKQkvKiBF
+bnRlcmluZyBncmFwaGljcyBtb2RlICovCiAJcmV0dXJuIDA7CisjaWZkZWYgQ09ORklHX1BN
+CisgICAgaWYgKGZiY29uX3NsZWVwaW5nKQorICAgIAlyZXR1cm4gMDsKKyNlbmRpZiAvKiBD
+T05GSUdfUE0gKi8KIAogICAgIGZiY29uX2N1cnNvcihwLT5jb25wLCBibGFuayA/IENNX0VS
+QVNFIDogQ01fRFJBVyk7CiAK
+--------------040407030801040902040307--

@@ -1,19 +1,19 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Permedia2 fbdev updates.
-Date: Thu, 19 Feb 2004 00:42:56 +0000 (GMT)
+Subject: Permedia2 framebuffer update.
+Date: Thu, 19 Feb 2004 18:52:24 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0402190032430.10389-100000@phoenix.infradead.org>
+Message-ID: <Pine.LNX.4.44.0402191850370.26734-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AtcMK-00030l-Ok
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 18 Feb 2004 16:48:08 -0800
+	id 1AttN6-0005Ah-5s
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 19 Feb 2004 10:58:04 -0800
 Received: from phoenix.infradead.org ([213.86.99.234])
 	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1AtcHN-0003L6-6t
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 18 Feb 2004 16:43:01 -0800
+	id 1AttHg-00065g-R5
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 19 Feb 2004 10:52:29 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,6 +30,11 @@ Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linu
 
 
 Hi!
+
+  Here is the new permedia2 framebuffer driver ported to the new api. Link 
+to diff for viewing is at
+
+http://phoenix.infradead.org:~/jsimmons/pm2fb.diff
 
 Linus, please do a
 
@@ -50,10 +55,6 @@ through these ChangeSets:
 
 <jsimmons@infradead.org> (04/02/17 1.1562)
    [PERMEDIA2 FBDEV] Updated to the new api.
-
-I also have the patch is anyone wants it. Its big tho.
-
-  
 
 
 

@@ -1,19 +1,23 @@
-From: "Petr Vandrovec" <VANDROVE@vc.cvut.cz>
+From: Jonas Meurer <jonas@freesources.org>
 Subject: Re: [Linux-fbdev-users] matroxfb, 2.6 and 2.4
-Date: Wed, 4 Aug 2004 16:09:42 +0200
+Date: Wed, 4 Aug 2004 16:51:10 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <E1105463BBE@vcnet.vc.cvut.cz>
+Message-ID: <20040804145104.GB3976@resivo.mejo.net>
+References: <E1105463BBE@vcnet.vc.cvut.cz>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BsMT8-00068T-HX
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 04 Aug 2004 07:10:14 -0700
-Received: from mailgw.cvut.cz ([147.32.3.235])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1BsMT8-00066l-1H
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 04 Aug 2004 07:10:14 -0700
+	id 1BsN79-0001aF-EO
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 04 Aug 2004 07:51:35 -0700
+Received: from ns2.kidns.de
+	([62.75.129.11] helo=diana50.kidns.de ident=Debian-exim)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:RC4-SHA:128)
+	(Exim 4.34)
+	id 1BsN78-0000ib-UD
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 04 Aug 2004 07:51:35 -0700
+Content-Disposition: inline
+In-Reply-To: <E1105463BBE@vcnet.vc.cvut.cz>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -24,28 +28,19 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Jonas Meurer <jonas@freesources.org>
+Content-Transfer-Encoding: 7bit
+To: Petr Vandrovec <VANDROVE@vc.cvut.cz>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On  4 Aug 04 at 13:51, Jonas Meurer wrote:
-> 
-> > > And for DRI I do not understand X code well enough to find where
-> > > tests which should prevent X from hitting hardware should be added.
-> 
-> do you mean that usually it shouldn't change anything?
+On 04/08/2004 Petr Vandrovec wrote:
+> Maybe you should try whether crash happens if you boot with 
+> 'video=matroxfb:noaccel', but as you said that it occurs without DRI
+> too, it is not source of problem.
 
-It should not change anything if X are not visible - X released video
-card ownership when they switched back to text console, but they keep
-banging adapter (they switch it to color depth X are using, reprogram
-line length to the value they use, and foreground/background colors to
-values they use) although matroxfb now has ownership.
+exactly, so dri is not the problem.
 
-Maybe you should try whether crash happens if you boot with 
-'video=matroxfb:noaccel', but as you said that it occurs without DRI
-too, it is not source of problem.
-                                                    Petr
-                                                    
-
+bye
+ jonas
 
 
 -------------------------------------------------------

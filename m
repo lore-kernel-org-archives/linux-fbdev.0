@@ -1,68 +1,57 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: fbdev broken in current bk for PPC
-Date: Fri, 10 Sep 2004 16:35:25 +0800
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200409101635.25738.adaplas@hotpop.com>
-References: <1094783022.2667.106.camel@gaston> <1094796002.14398.118.camel@gaston> <Pine.GSO.4.58.0409101004320.93@waterleaf.sonytel.be>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Anton Blanchard <anton@samba.org>
+Subject: Re: [Linux-fbdev-devel] fbdev broken in current bk for PPC
+Date: Fri, 10 Sep 2004 18:48:46 +1000
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <20040910084846.GA24408@krispykreme>
+References: <1094783022.2667.106.camel@gaston> <200409101328.57431.adaplas@hotpop.com> <1094796002.14398.118.camel@gaston> <200409101635.16803.adaplas@hotpop.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C5guI-0006Xo-So
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Sep 2004 01:37:22 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.71])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1C5guG-0004MK-1b
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Sep 2004 01:37:21 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 7B4BB10D8CA8
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Sep 2004 08:34:05 +0000 (UTC)
-In-Reply-To: <Pine.GSO.4.58.0409101004320.93@waterleaf.sonytel.be>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S267313AbUIJIwa@vger.kernel.org>
 Content-Disposition: inline
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+In-Reply-To: <200409101635.16803.adaplas@hotpop.com>
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Antonino Daplas <adaplas@pol.net>, Linux Kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
-
-On Friday 10 September 2004 16:07, Geert Uytterhoeven wrote:
-> On Fri, 10 Sep 2004, Benjamin Herrenschmidt wrote:
-> > I submited a patch moving offb to the bottom of the Makefile to at
-> > least restore normal drivers. For ofonly, a bit more hackish, but
->
-> Just in case they aren't, vesafb and vga16fb should also be at the bottom,
-> cfr. the old order in fbmem.c.
->
-
-They are, with vfb at the very last.
-
-> > what about failing register_framebuffer for anything but offb ?
->
-> Humm, indeed hackerish...
->
-> But the advantage of this is that we can finally exercise the failure path
-> of many frame buffer device drivers in the wild ;-)
->
-
-Assuming, as I've mentioned in another thread, that info->fix.name ==
-to video=xxxfb.
-
-Tony
+Content-Transfer-Encoding: 7bit
+To: adaplas@pol.net
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
 
 
+> Yes, that should solve the ofonly problem, with the offb in the very last of 
+> the Makefile, though as you said, it's a little hackish, but very simple to 
+> implement.  This will work for ofonly though, since 
+> info->fix.name is not necessarily equal to "xxxfb".  For instance, offb set 
+> "OFfb" in info->fix.name, but the boot option is "offb".
 
+FYI Im seeing this on my POWER5 box:
 
--------------------------------------------------------
-This SF.Net email is sponsored by: YOU BE THE JUDGE. Be one of 170
-Project Admins to receive an Apple iPod Mini FREE for your judgement on
-who ports your project to Linux PPC the best. Sponsored by IBM. 
-Deadline: Sept. 13. Go here: http://sf.net/ppc_contest.php
+Using unsupported 640x480 MTRX,G450 at e0000000, depth=8, pitch=640
+cpu 0x1: Vector: 300 (Data Access) at [c000000074f37230]
+    pc: c0000000001e20a4: .cfb_imageblit+0x5c0/0x610
+    lr: c0000000001d358c: .accel_putcs+0x1f0/0x720
+    sp: c000000074f374b0
+   msr: 8000000000009032
+   dar: e000000080000000
+ dsisr: 42000000
+  current = 0xc000000074f310e0
+  paca    = 0xc00000000052fa80
+    pid   = 1, comm = swapper
+enter ? for help
+1:mon> t
+[c000000074f375a0] c0000000001d358c .accel_putcs+0x1f0/0x720
+[c000000074f37740] c000000000218600 .do_update_region+0x238/0x2ac
+[c000000074f37810] c0000000002197c8 .redraw_screen+0x138/0x2b8
+[c000000074f378b0] c0000000001d4724 .fbcon_init+0x5a0/0x73c
+[c000000074f379a0] c000000000219b74 .visual_init+0x22c/0x2dc
+[c000000074f37a50] c00000000021c0c4 .take_over_console+0x43c/0x6dc
+[c000000074f37b20] c0000000001d31b4 .fbcon_takeover+0x88/0xf0
+[c000000074f37bb0] c0000000001d968c .fbcon_event_notify+0x514/0xc00
+[c000000074f37c70] c00000000006284c .notifier_call_chain+0x64/0x98
+[c000000074f37d00] c0000000001dc87c .register_framebuffer+0x144/0x20c
+[c000000074f37df0] c00000000049dcd0 .offb_init+0x528/0x838
+[c000000074f37f00] c00000000000c698 .init+0x23c/0x44c
+[c000000074f37f90] c000000000017f14 .kernel_thread+0x4c/0x68
+
+We took a data miss trying to access an ioremapped area (e000000080000000).
+Offb might have always been buggy but was hidden by the fact that matroxfb 
+used to init first.
+
+Anton

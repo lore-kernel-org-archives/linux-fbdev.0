@@ -1,75 +1,52 @@
-From: Jamey Hicks <jamey.hicks@hp.com>
-Subject: lcd and backlight module class
-Date: Thu, 23 Oct 2003 10:39:38 -0400
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3F97E82A.20001@hp.com>
+From: Linus Torvalds <torvalds@osdl.org>
+Subject: Re: Multiple drivers for same hardware:, was: DRM and pci_driver
+ conversion
+Date: Thu, 23 Oct 2003 21:40:33 -0700 (PDT)
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <Pine.LNX.4.44.0310232132410.4894-100000@home.osdl.org>
+References: <20031024034701.16514.qmail@web14915.mail.yahoo.com>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <20031024034701.16514.qmail@web14915.mail.yahoo.com>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1ACtOZ-000427-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 23 Oct 2003 21:17:52 -0700
-Received: from crl-mail.crl.dec.com ([192.58.206.9])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.22)
-	id 1ACgfk-00029q-Cf
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Oct 2003 07:42:44 -0700
-Received: from quabbin.crl.dec.com (quabbin.crl.dec.com [16.11.0.45])
-	by crl-mail.crl.dec.com (8.12.8/8.12.5) with ESMTP id h9NEe8Go008333
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 23 Oct 2003 10:40:08 -0400
-Received: from hp.com (thorin.crl.dec.com [16.11.100.19])
-	by quabbin.crl.dec.com (8.12.10/8.12.10) with ESMTP id h9NEe8Hq445592
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 23 Oct 2003 10:40:08 -0400 (EDT)
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
-
-A while back I posted a note to arm-linux-kernel about developing some 
-low-level API's to separate out platform-specific code from drivers such 
-as sa1100fb.c.
-  
-http://lists.arm.linux.org.uk/pipermail/linux-arm-kernel/2003-July/016235.html
-
-As a particular example, the sa1100fb driver is cluttered with the 
-platform initialization and control code for the many SA11x0-based 
-platforms supported by the ARM linux kernel.  My thought is that the new 
-device model gives a good framework to decouple the fbdev drivers and 
-the platforms.  I've been busy with other things, so progress on this 
-has been slower than I hoped.  But I have prototyped it.  For usespace 
-access to these controls, I envision sysfs attributes.  I also think 
-that the fb drivers might register an interface with the lcd/backlight 
-classes so that they can be notified if an LCD is hotplugged.  It  would 
-also help loosen the dependence on link/initialization order.
-
-Anyway, please review and comment on this patch:
-
-http://www.arm.linux.org.uk/developer/patches/viewpatch.php?id=1696/1
-
-There are uses of lcd module in subsequent ipaq patches, such as this
-one:
-http://www.arm.linux.org.uk/developer/patches/viewpatch.php?id=1699/1
-
-Thanks,
-Jamey Hicks
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: Jeff Garzik <jgarzik@pobox.com>, Eric Anholt <eta@lclark.edu>, kronos@kronoz.cjb.net, Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net, dri-devel <dri-devel@lists.sourceforge.net>
 
 
+On Thu, 23 Oct 2003, Jon Smirl wrote:
+>
+> What about the fundamental question? We have several pairs of device drivers
+> that want to control the same hardware. One example would be radeon DRM and
+> radeon Framebuffer. How should these drivers coordinate probing and claiming
+> resources?
 
+Since they have to co-operate some way on the resources _anyway_, they'll 
+just need to work it out amongst themselves.
 
+One common case is to have a "arbitration driver" that tends to do the
+actual low-level accesses and is one level of abstraction over the
+hardware (papers over trivial differences in hardware). An example of this
+would be the old-style ISA DMA infrastructure (now happily pretty much
+dead), where the "DMA driver" was just a trivial layer that had some basic
+allocation/deallocation and had somewhat nicer access routines than the
+raw IO accesses, but didn't do much more.
 
+Another case is the PS/2 keyboard driver, where the mouse and the keyboard
+actually share the controller, and they shared a spinlock and some helper
+routines to guarantee some basic serialization (that eventually got 
+replaced with the current i8042 driver, but the old setup was trivial).
 
+> 1) try new probe first and fall back to old scheme. First driver that loads
+> gets the new probe, second gets the old. First driver reserves resources.
+> 2) Require a mini driver that handles probing. Then both drivers attach to the
+> mini driver.
+> 3) Declare it illegal and make the drivers merge.
+> 4) Declare it illegal and only allow first one loaded to run.
 
--------------------------------------------------------
-This SF.net email is sponsored by: The SF.net Donation Program.
-Do you like what SourceForge.net is doing for the Open
-Source Community?  Make a contribution, and help us add new
-features and functionality. Click here: http://sourceforge.net/donate/
+I'd suggest the minidriver case. You _will_ find common issues anyway
+(locking and certain access patterns etc), and the minidriver ends up
+being a place to put the trivial shared code too.
+
+			Linus

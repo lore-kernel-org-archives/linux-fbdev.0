@@ -1,22 +1,21 @@
-From: Andrew Morton <akpm@osdl.org>
+From: James Simmons <jsimmons@infradead.org>
 Subject: Re: Re: [PATCH] Fix get_std_timing
-Date: Thu, 11 Mar 2004 10:13:34 -0800
+Date: Thu, 11 Mar 2004 18:20:01 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040311101334.414624d1.akpm@osdl.org>
-References: <20040311095039.07a5c857.akpm@osdl.org>
-	<Pine.LNX.4.44.0403111804410.5794-100000@phoenix.infradead.org>
+Message-ID: <Pine.LNX.4.44.0403111819060.5794-100000@phoenix.infradead.org>
+References: <20040311101334.414624d1.akpm@osdl.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B1Uye-0001IM-8W
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 11 Mar 2004 10:32:16 -0800
-Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B1Ugt-000897-4U
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 11 Mar 2004 10:13:55 -0800
-In-Reply-To: <Pine.LNX.4.44.0403111804410.5794-100000@phoenix.infradead.org>
+	id 1B1V4i-0002gJ-Rl
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 11 Mar 2004 10:38:32 -0800
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1B1UND-0002YT-12
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 11 Mar 2004 09:53:35 -0800
+In-Reply-To: <20040311101334.414624d1.akpm@osdl.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,19 +25,29 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@osdl.org>
 Cc: benh@kernel.crashing.org, kronos@kronoz.cjb.net, geert@linux-m68k.org, linux-fbdev-devel@lists.sourceforge.net
 
-James Simmons <jsimmons@infradead.org> wrote:
->
-> 
->  Various fixes and enhancements to the monitor hardware detection code.
->  The only driver that uses it is the radeon driver. Give it a try before 
->  you apply it.
 
-None of my test boxes have radeon.   Your comment makes me worry about the
-readiness of this code.   Please say reassuring things to me ;)
+I tested it with a few drivers in my tree. I'm about to test the radeon 
+with the patch. This will be a interesting test since my monitor is a 
+Apple cinerma display. 
+
+On Thu, 11 Mar 2004, Andrew Morton wrote:
+
+> James Simmons <jsimmons@infradead.org> wrote:
+> >
+> > 
+> >  Various fixes and enhancements to the monitor hardware detection code.
+> >  The only driver that uses it is the radeon driver. Give it a try before 
+> >  you apply it.
+> 
+> None of my test boxes have radeon.   Your comment makes me worry about the
+> readiness of this code.   Please say reassuring things to me ;)
+> 
+
 
 
 -------------------------------------------------------

@@ -1,16 +1,16 @@
 From: Jon Smirl <jonsmirl@yahoo.com>
 Subject: Re: Reading the EDID block for x86 machines
-Date: Mon, 17 Mar 2003 14:02:15 -0800 (PST)
+Date: Mon, 17 Mar 2003 15:41:43 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030317220215.49788.qmail@web14902.mail.yahoo.com>
-References: <1047933906.3668.18.camel@localhost.localdomain>
+Message-ID: <20030317234143.79388.qmail@web14914.mail.yahoo.com>
+References: <1047940105.3693.40.camel@localhost.localdomain>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from web14902.mail.yahoo.com ([216.136.225.54])
+Received: from web14914.mail.yahoo.com ([216.136.225.241])
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18v2gS-0002WL-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Mar 2003 14:02:16 -0800
-In-Reply-To: <1047933906.3668.18.camel@localhost.localdomain>
+	id 18v4Ei-0004fN-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Mar 2003 15:41:44 -0800
+In-Reply-To: <1047940105.3693.40.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -25,30 +25,34 @@ Content-Transfer-Encoding: 7bit
 To: Antonino Daplas <adaplas@pol.net>
 Cc: Geert Uytterhoeven <geert@linux-m68k.org>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-The VBIOS should be position independent code and it
-will run at any 64K boundary. The PC bus spec simply
-says the video BIOS defaults to C000, it is not a
-requirement that it be located there. For example if
-you look at the aty128fb driver's find ROM routine
-your will notice that it is searching a broad address
-space for the ROM.
+The C000 must be a PCI restriction, it was not there
+during ISA days.
 
-I'm still not convinced that the memory at C000 is
-really hardware write protected, I think it is just
-RAM with a copy of the ROM in it. For example if I
-turn off BIOS shadowing my system will not boot. When
-debugging this I spent some time tracing into the ATI
-ROM and I was pretty sure that they are dependent on
-begin copied into RAM before begin run. 
+Plan A: how is C000:0 protected; does the chipset
+hardware do it or is it done via the descriptor
+tables? Descriptor tables can be fixed but there is
+probably no general solution to chipset protection. 
 
-Do you have a DOS floppy around? Just boot into DOS,
-start debug and see if you can change C000:0.
+On the other hand, we may be lucky and the PCI spec
+has specified a standard way for enabling write
+protect. Could there be a BIOS INT xx function for
+this?
 
-If C000:0 is hardware write protected, there is
-nothing stopping the ROM from begin copied into 8000:0
-or 9000:0 or whatever where there is guaranteed RAM.
-We would just need to temporarily get the kernel out
-of the way.
+Plan B is to copy the ROM to something like 8000 or
+9000. But the question there is, are VBIOS ROMs still
+written to run position independent give the PCI C000
+requirement?
+
+Plan C is go into VM86 mode during early boot and
+remap the memory.
+
+Plan D would be to get enough info to write the code
+in protected mode.
+
+Are there more ways to do this?
+
+I'll go poke around in google and see what I can come
+up with. Let me know if you come up with anything.
 
 =====
 Jon Smirl

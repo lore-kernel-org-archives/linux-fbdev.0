@@ -1,13 +1,15 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH] Atari Atyfb fixes
-Date: Sun, 13 Apr 2003 15:06:31 +0200
+From: James Simmons <jsimmons@infradead.org>
+Subject: [FBDEV BK] Updates and fixes.
+Date: Mon, 14 Apr 2003 05:47:00 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200304131306.h3DD6V13001313@callisto.of.borg>
+Message-ID: <Pine.LNX.4.44.0304140545010.10446-100000@phoenix.infradead.org>
+Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from amsfep12-int.chello.nl ([213.46.243.18])
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 194hEa-00076Y-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 13 Apr 2003 06:09:24 -0700
+Received: from phoenix.infradead.org ([195.224.96.167])
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 194vsY-0000ux-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 13 Apr 2003 21:47:39 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -17,58 +19,143 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Linus Torvalds <torvalds@transmeta.com>
-Cc: Linux Fbdev <linux-fbdev-devel@lists.sourceforge.net>, Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Atyfb fixes for Atari:
-  - Add missing allocation of default_par
-  - Kill warnings in assignments
 
---- linux-2.5.x/drivers/video/aty/atyfb_base.c	Mon Feb 10 21:59:19 2003
-+++ linux-m68k-2.5.x/drivers/video/aty/atyfb_base.c	Tue Feb 25 18:31:27 2003
-@@ -2319,15 +2319,25 @@
- 			return -ENOMEM;
- 		}
- 		memset(info, 0, sizeof(struct fb_info));
--		info->fix = atyfb_fix;		
-+
-+		default_par = kmalloc(sizeof(struct atyfb_par), GFP_ATOMIC);
-+		if (!default_par) {
-+			printk
-+			    ("atyfb_init: can't alloc atyfb_par\n");
-+			kfree(info);
-+			return -ENXIO;
-+		}
-+		memset(default_par, 0, sizeof(struct atyfb_par));
-+
-+		info->fix = atyfb_fix;
- 
- 		/*
- 		 *  Map the video memory (physical address given) to somewhere in the
- 		 *  kernel address space.
- 		 */
--		info->screen_base = (unsigned long)ioremap(phys_vmembase[m64_num],
-+		info->screen_base = ioremap(phys_vmembase[m64_num],
- 					 		   phys_size[m64_num]);	
--		info->fix.smem_start = info->screen_base;	/* Fake! */
-+		info->fix.smem_start = (unsigned long)info->screen_base;	/* Fake! */
- 		default_par->ati_regbase = (unsigned long)ioremap(phys_guiregbase[m64_num],
- 							  0x10000) + 0xFC00ul;
- 		info->fix.mmio_start = default_par->ati_regbase; /* Fake! */
+As usually I have a standard diff at 
+http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
 
-Gr{oetje,eeting}s,
+It is against the latest BK tree. I haven'tt tried it yet for 2.5.67
 
-						Geert
+Linus, please do a
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+	bk pull http://fbdev.bkbits.net/fbdev-2.5
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+This will update the following files:
+
+ Documentation/devices.txt        |    7 
+ arch/i386/boot/compressed/misc.c |    2 
+ arch/i386/boot/video.S           |   34 +
+ arch/i386/kernel/setup.c         |    4 
+ drivers/video/aty/aty128fb.c     |   16 
+ drivers/video/cfbimgblt.c        |    4 
+ drivers/video/console/fbcon.c    |  585 +++++++++++-------------
+ drivers/video/console/fbcon.h    |    1 
+ drivers/video/controlfb.c        |   18 
+ drivers/video/edid.h             |  138 +++++
+ drivers/video/fbcmap.c           |   33 -
+ drivers/video/fbmem.c            |  211 ++++----
+ drivers/video/fbmon.c            |  922 +++++++++++++++++++++++++++++++--------
+ drivers/video/i810/i810.h        |    7 
+ drivers/video/i810/i810_accel.c  |  140 +++--
+ drivers/video/i810/i810_dvt.c    |    3 
+ drivers/video/i810/i810_gtf.c    |    7 
+ drivers/video/i810/i810_main.c   |  207 +++-----
+ drivers/video/i810/i810_main.h   |    4 
+ drivers/video/imsttfb.c          |    4 
+ drivers/video/logo/logo.c        |   69 +-
+ drivers/video/modedb.c           |  105 ++++
+ drivers/video/platinumfb.c       |   28 -
+ drivers/video/pm2fb.c            |   22 
+ drivers/video/radeonfb.c         |   54 +-
+ drivers/video/retz3fb.c          |   16 
+ drivers/video/riva/fbdev.c       |  380 +++++++---------
+ drivers/video/sis/sis_main.h     |   62 +-
+ drivers/video/softcursor.c       |  243 ++++------
+ drivers/video/tdfxfb.c           |   18 
+ drivers/video/tgafb.c            |    2 
+ drivers/video/tridentfb.c        |    8 
+ drivers/video/vesafb.c           |   23 
+ drivers/video/vga16fb.c          |    6 
+ include/asm-i386/setup.h         |    1 
+ include/linux/fb.h               |   29 -
+ include/linux/linux_logo.h       |    2 
+ include/linux/pci_ids.h          |    1 
+ include/video/edid.h             |   27 +
+ 39 files changed, 2140 insertions(+), 1303 deletions(-)
+
+through these ChangeSets:
+
+<jsimmons@kozmo.(none)> (03/04/12 1.1014)
+   [FBDEV] Improved speed performance. We copy many bytes of data instead of just one at a time.
+   
+   [IMSTT FBDEV] Fixed a bug that caused the hardware to lock up when scrolling.
+
+<jsimmons@maxwell.earthlink.net> (03/04/11 1.1011)
+   [RIVA FBDEV] Cursor fixes. Almost done. At least it looks normal most of the time.
+
+<jsimmons@kozmo.(none)> (03/04/10 1.1009)
+   [RADEON FBDEV] Compile fixes.
+
+<jsimmons@kozmo.(none)> (03/04/10 1.1007)
+   [RADEON FBDEV] Detect 8 Megs of RAM not 8 Kilobytes.
+
+<jsimmons@kozmo.(none)> (03/04/10 1.1006)
+   [FBDEV] EDID support from OpenFirmware on PPC platoforms and from the BIOS on intel platforms.
+
+<jsimmons@maxwell.earthlink.net> (03/04/10 1.1004)
+   [FBDEV] Made the upper layer code always use the cursor mask of struct fb_cursor inside struct fb_info. This moved memory management of the mask and image data to the upper layers.
+
+<jsimmons@maxwell.earthlink.net> (03/04/10 1.1003)
+   [FBDEV] Made the upper layer code always use the cursor mask of struct fb_cursor inside struct fb_info. This moved memory management of the mask and image data to the upper layers.
+   
+   [RADEON FBDEV] Updates for the Radeon 9100.
+
+<jsimmons@kozmo.(none)> (03/04/04 1.998)
+   [FBDEV] Killed off shutting down IRQs. We need them for some types of hardware.
+   
+   [FBDEV] Cleanup with FB_CUR_SETCUR and the enable field. Fix to set the cursor shape when we change the size of the cursor.
+   
+   [I810 FBDEV] Updates to the new cursor code.
+   
+   [FBDEV GENERIC CURSOR] A memcpy optimization. Also only allocate a new mask field when the size of the cursor changes.
+
+<jsimmons@maxwell.earthlink.net> (03/04/02 1.995)
+   [FBDEV] Use C99 style.
+
+<jsimmons@kozmo.(none)> (03/04/02 1.991.1.2)
+   [FBDEV SOFT CURSOR] Test to see if kmalloc failed.
+   
+   [FBCON] Test to see if the user priovides there own work queue.
+
+<jsimmons@kozmo.(none)> (03/04/02 1.991.1.1)
+   [FBDEV] Final cursor code cleanups. Now the burden of handling the cursor code lies on the driver side. The reason for this is that a invalid cursor might come from userland.
+
+<jsimmons@kozmo.(none)> (03/03/31 1.990)
+   [FBDEV] Massive cleanups of the cursor api.
+
+<jsimmons@maxwell.earthlink.net> (03/03/26 1.986)
+   [FBDEV] Documentation on the device numbers of /dev/fb being mulitples of 32 is no longer true. Removed that info.
+   
+   [FBDEV] Logo fixes. Now we can display different color logos on screens of different color depths.
+   
+   [VGA16 FBDEV] Small compile error. Fixed it now.
+
+<jsimmons@maxwell.earthlink.net> (03/03/26 1.984)
+   [I810 FBDEV] Driver updates.
+   
+   [FBCON] Reversed some of my cursor changes.
+
+<jsimmons@kozmo.(none)> (03/03/25 1.983)
+   [FBDEV] The image color depth of zero hack has been killed.
+
+<jsimmons@maxwell.earthlink.net> (03/03/25 1.982)
+   [FBCON] Now we use workqueues so framebuffer code can always work in a process context.
+   
+   [GENERIC CURSOR] Safety check in case kmalloc failes
+
+<jsimmons@maxwell.earthlink.net> (03/03/25 1.981)
+   [FBCON] Could be called outside of a process context. This fixes that.
+
+<jsimmons@maxwell.earthlink.net> (03/03/25 1.979)
+   [RAGE 128/CONTROL/PLATNIUM FBDEV] PPC updates.
+   
+   [RADEON FBDEV] PLL fix for specific type of card.
+
+
 
 
 -------------------------------------------------------

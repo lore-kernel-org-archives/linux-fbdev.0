@@ -1,23 +1,28 @@
-From: Kyrian <kyrian@ore.org>
-Subject: Re: [Q] is framebuffer console code in 2.5.4x functional ?
-Date: Mon, 25 Nov 2002 14:46:26 +0000
+From: Jim Hague <jim.hague@acm.org>
+Subject: Another docs request - Permedia2/TVP4020
+Date: Mon, 25 Nov 2002 18:48:18 -0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200211251447.gAPElPW28792@mailhost.orenet.co.uk>
-References: <E18FK3w-0002YH-00@sc8-sf-list2.sourceforge.net>
+Message-ID: <XFMail.20021125184818.jim.hague@acm.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from lestat.orenet.co.uk ([195.82.99.77] helo=mailhost.orenet.co.uk)
+Received: from mta06-svc.ntlworld.com ([62.253.162.46])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18GKVq-00018I-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 25 Nov 2002 06:47:03 -0800
-Received: (from cyrus@localhost)
-	by mailhost.orenet.co.uk (8.11.6/8.9.3) id gAPElV828837
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 25 Nov 2002 14:47:31 GMT
-Received: from ore.org (marius.orenet.co.uk [81.2.81.117])
-	by mailhost.orenet.co.uk (8.11.6/8.9.3) with SMTP id gAPElPW28792
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 25 Nov 2002 14:47:30 GMT
-In-Reply-To: <E18FK3w-0002YH-00@sc8-sf-list2.sourceforge.net>
+	id 18GOHP-0001iq-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 25 Nov 2002 10:48:23 -0800
+Received: from fluffy.bear-cave.org.uk ([213.107.68.194])
+          by mta06-svc.ntlworld.com
+          (InterMail vM.4.01.03.27 201-229-121-127-20010626) with ESMTP
+          id <20021125184818.ZEDW29094.mta06-svc.ntlworld.com@fluffy.bear-cave.org.uk>
+          for <linux-fbdev-devel@lists.sourceforge.net>;
+          Mon, 25 Nov 2002 18:48:18 +0000
+Received: from hagrid.bear-cave.org.uk ([192.168.1.1])
+	by fluffy.bear-cave.org.uk with esmtp (Exim 3.35 #1 (Debian))
+	id 18GOHK-0002Rk-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 25 Nov 2002 18:48:18 +0000
+Received: from jim by hagrid.bear-cave.org.uk with local (Exim 3.36 #1 (Debian))
+	id 18GOHK-0004qi-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 25 Nov 2002 18:48:18 +0000
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -30,39 +35,14 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-James, et al,
+I'm going to make some time to move the pm2fb driver to 2.5.
 
-Feel free to ignore this if it's irrelevant, stupid, whatever, but...
+It'd be helpful if I could find some Permedia2 programming docs. Google can't
+find any, and requests to 3Dlabs have failed to elicit any response....
 
-
->     I have tried to look for work locallly (can't really affored to move 
-> cross country very few years) relating to the framebuffer layer. In my 
-> search I only found one company that seemed interested in this
-> developement, strangeberry (http://www.strangeberry.com). I sent them my
-> resume but never heard from them. As for funding I serious doubt that
-> would happen since it isn't server related. The reality is for proper
-> maintiance of any subsystem you need people hired to solely work to keep
-> it going. Unfortunely the framebuffer layer is one of those few ones that
-> doesn't have that.
->
-Did you try all of the hardware vendors that are currently supported by the
-fbdev system? They have the most to gain by being able to cite their
-products as Linux compatible, and the most to gain from financially helping,
-because you (as chief fbdev developer for the kernel) can then be quoted on
-that by the vendors.
-
-As regards the API changes, I'd be willing to put time towards helping with
-the Rage 128 bits (and possibly other cards that I have knocking around), at
-least certainly the more trivial coding and documentation areas if not the
-deeply technical stuff, if the current API is documented/published
-somewhere?
-
-K.
-
---
-Kev Green, aka Kyrian. Email: kyrian&#64;ore.org Web: http://kyrian.ore.org/
-  [ Looking for ISP contract work, CV at http://kyrian.ore.org/cv.html ]
-               "Be excellent to each other" -- Bill & Ted.
+-- 
+Jim Hague - jim.hague@insignia.com (Work), jim@bear-cave.org.uk (Play)
+Never trust a computer you can't lift or you don't control.
 
 
 -------------------------------------------------------

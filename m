@@ -1,27 +1,21 @@
-From: "Thomas S. Iversen" <zensonic@zensonic.dk>
-Subject: help with consolupdate on modechange in driver
-Date: Mon, 22 Sep 2003 12:35:46 +0200
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: large framebuffers and mmap
+Date: Mon, 22 Sep 2003 09:16:20 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030922103546.GA6398@zensonic.dk>
+Message-ID: <Pine.GSO.4.21.0309220915370.4957-100000@vervain.sonytel.be>
+References: <20030922030448.2986.qmail@web14908.mail.yahoo.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1A1O40-0000Io-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 22 Sep 2003 03:37:04 -0700
-Received: from 213.237.25.228.adsl.van.worldonline.dk ([213.237.25.228] helo=www.zensonic.dk)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.22)
-	id 1A1O3z-0003zX-Eo
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 22 Sep 2003 03:37:03 -0700
-Received: from www.zensonic.dk (localhost [127.0.0.1])
-	by www.zensonic.dk (8.12.3/8.12.3/Debian-6.4) with ESMTP id h8MAZkkc006585
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 22 Sep 2003 12:35:46 +0200
-Received: (from zensonic@localhost)
-	by www.zensonic.dk (8.12.3/8.12.3/Debian-6.4) id h8MAZkXk006583
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 22 Sep 2003 12:35:46 +0200
-Content-Disposition: inline
+	id 1A1Kvq-0006xT-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 22 Sep 2003 00:16:26 -0700
+Received: from mail2.sonytel.be ([195.0.45.172] helo=witte.sonytel.be)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
+	id 1A1Kvn-00067l-Ai
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 22 Sep 2003 00:16:23 -0700
+In-Reply-To: <20030922030448.2986.qmail@web14908.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -31,19 +25,41 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi
+On Sun, 21 Sep 2003, Jon Smirl wrote:
+> Right now the framebuffer drivers are mapping the framebuffer into the kernel
+> address space. But shouldn't the fbconsole layer be doing the ioremap()? That
+> way there would be a single point of remap for all framebuffer drivers.  It
+> would also let all of the high mem access code be localized into fbconsole if
+> the fb was mapped high.
+> 
+> This would also get around my problem of using framebuffer drivers but not
+> using framebuffer console. In my case I don't have enough kernel address space
+> to do the remap. If fbconsole is doing the map, then the kernel map will never
+> happen on my system since I don't load fbconsole. 
+> 
+> I looked through a couple of drivers and none of them seem to touch the buffer
+> after it has been remapped. They only pass the pointer back to fbconsole.
 
-I have just implemented modechange in my driver and while it
-works, the consol *still* thinks we working in the old mode.
+What about
+  - read from/write to /dev/fb*?
+  - the logo code?
 
-How do I inform the console layer that the driver (through fbset)
-have changed the actual mode on the screen?
+Gr{oetje,eeting}s,
 
-Regards Thomas, Denmark
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 
 -------------------------------------------------------

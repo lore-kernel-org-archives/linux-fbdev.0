@@ -1,24 +1,25 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [PATCH 6/7] [RESEND] neofb: mmio fixes
-Date: Mon, 21 Mar 2005 05:05:36 +0800
-Message-ID: <200503210505.36493.adaplas@hotpop.com>
-References: <200503202109.43080.adaplas@hotpop.com>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: USB mouse hiccups (was RFD: Kernel release numbering)
+Date: Mon, 21 Mar 2005 12:44:26 -0800
+Message-ID: <20050321124426.53d75b3e.akpm@osdl.org>
+References: <pan.2005.03.20.21.53.36.929746@brick.flying-brick.caverock.net.nz>
+	<20050320164129.44d3a065.akpm@osdl.org>
+	<20050321072601.GA31826@flying-brick.caverock.net.nz>
+	<20050320233227.2c7b8013.akpm@osdl.org>
+	<20050321202546.GA7281@flying-brick.caverock.net.nz>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DD7dD-0007GJ-4s
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Mar 2005 13:06:43 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1DD7dB-00039v-HY
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Mar 2005 13:06:43 -0800
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id BE2CAFDDC3E
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 20 Mar 2005 21:06:25 +0000 (UTC)
-In-Reply-To: <200503202109.43080.adaplas@hotpop.com>
-Content-Disposition: inline
+	id 1DDTlX-0005p9-MR
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Mar 2005 12:44:47 -0800
+Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1DDTlW-0004YK-5F
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 21 Mar 2005 12:44:47 -0800
+In-Reply-To: <20050321202546.GA7281@flying-brick.caverock.net.nz>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,56 +31,18 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Marek Marczykowski <marmarek@staszic.waw.pl>
-
-Forgot to sign off.
-
-  Changes in neo_map_mmio to make neofb working on NM2070,
-  NM2090, NM2093.
-
-From: Marek Marczykowski <marmarek@staszic.waw.pl>
-Signed-off-by: Marek Marczykowski <marmarek@staszic.waw.pl>
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
-
- neofb.c |   22 +++++++++++++++++++++-
- 1 files changed, 21 insertions(+), 1 deletion(-)
-
-diff -Nru a/drivers/video/neofb.c b/drivers/video/neofb.c
---- a/drivers/video/neofb.c	2005-03-12 23:23:15 +08:00
-+++ b/drivers/video/neofb.c	2005-03-19 05:33:32 +08:00
-@@ -1691,7 +1691,27 @@
- 
- 	DBG("neo_map_mmio");
- 
--	info->fix.mmio_start = pci_resource_start(dev, 1);
-+	switch (info->fix.accel) {
-+		case FB_ACCEL_NEOMAGIC_NM2070:
-+			info->fix.mmio_start = pci_resource_start(dev, 0)+
-+				0x100000;
-+			break;
-+		case FB_ACCEL_NEOMAGIC_NM2090:
-+		case FB_ACCEL_NEOMAGIC_NM2093:
-+			info->fix.mmio_start = pci_resource_start(dev, 0)+
-+				0x200000;
-+			break;
-+		case FB_ACCEL_NEOMAGIC_NM2160:
-+		case FB_ACCEL_NEOMAGIC_NM2097:
-+		case FB_ACCEL_NEOMAGIC_NM2200:
-+		case FB_ACCEL_NEOMAGIC_NM2230:
-+		case FB_ACCEL_NEOMAGIC_NM2360:
-+		case FB_ACCEL_NEOMAGIC_NM2380:
-+			info->fix.mmio_start = pci_resource_start(dev, 1);
-+			break;
-+		default:
-+			info->fix.mmio_start = pci_resource_start(dev, 0);
-+	}
- 	info->fix.mmio_len = MMIO_SIZE;
- 
- 	if (!request_mem_region
+To: viking <viking@flying-brick.caverock.net.nz>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
 
+Guys, we seem to have a tridentfb regression in 2.6.12-rc1.
+
+viking <viking@flying-brick.caverock.net.nz> wrote:
+>
+> Also (and this is something I've noticed since I tried tridentfb) the video
+>  buffer never seems to get cleared, except when I change virtual terminals,
+>  then change back to the terminal concerned. THEN it's cleared. So for the
+>  moment, I've gone back to using VESAfb.
 
 
 -------------------------------------------------------

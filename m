@@ -1,20 +1,20 @@
 From: Kronos <kronos@kronoz.cjb.net>
-Subject: [PATCH] fm2fb: New framebuffer_alloc API and class_dev changes
-Date: Mon, 15 Sep 2003 21:53:28 +0200
+Subject: [PATCH] hitfb: New framebuffer_alloc API and class_dev changes
+Date: Mon, 15 Sep 2003 22:02:30 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030915195328.GL16370@dreamland.darkstar.lan>
+Message-ID: <20030915200230.GO16370@dreamland.darkstar.lan>
 Reply-To: kronos@kronoz.cjb.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19yzQS-0004p9-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 15 Sep 2003 12:54:20 -0700
-Received: from mail-3.tiscali.it ([195.130.225.149])
+	id 19yzZ5-0005oi-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 15 Sep 2003 13:03:15 -0700
+Received: from mail-5.tiscali.it ([195.130.225.151])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 19yzQS-0005Cg-0g
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 15 Sep 2003 12:54:20 -0700
+	id 19yzZ5-0002EA-2T
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 15 Sep 2003 13:03:15 -0700
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
@@ -27,91 +27,110 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: geert@linux-m68k.org
-Cc: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>
-
+To: James Simmons <jsimmons@infradead.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
 Hi,
-this patch converts driver/video/fm2fb.c to framebuffer_alloc:
+this patch converts driver/video/hitfb.c to framebuffer_alloc. It also
+has some compilation fixes:
 
-======== drivers/video/fm2fb.c 1.25 ========
-D 1.25 03/09/13 23:32:08+02:00 kronos@kronoz.cjb.net 27 26 21/12/285
-P drivers/video/fm2fb.c
-C switch to framebuffer_alloc
+======== drivers/video/hitfb.c 1.22 ========
+D 1.22 03/09/11 23:44:18+02:00 kronos@kronoz.cjb.net 23 22 20/13/187
+P drivers/video/hitfb.c
+C - switch to framebuffer_alloc
+C - compilation fixes
 ------------------------------------------------
 
-===== drivers/video/fm2fb.c 1.24 vs 1.25 =====
---- 1.24/drivers/video/fm2fb.c	Thu Apr 24 12:30:41 2003
-+++ 1.25/drivers/video/fm2fb.c	Sat Sep 13 23:32:08 2003
-@@ -129,7 +129,7 @@
+===== drivers/video/hitfb.c 1.21 vs 1.22 =====
+--- 1.21/drivers/video/hitfb.c	Thu Apr 24 12:30:41 2003
++++ 1.22/drivers/video/hitfb.c	Thu Sep 11 23:44:18 2003
+@@ -40,11 +40,11 @@
+ 	.id =		"Hitachi HD64461",
+ 	.type =		FB_TYPE_PACKED_PIXELS,
+ 	.visual =	FB_VISUAL_TRUECOLOR,
+-	.accel_flags =	FB_ACCEL_NONE,
++	.accel =	FB_ACCEL_NONE,
+ };
  
- #define arraysize(x)	(sizeof(x)/sizeof(*(x)))
+ static u16 pseudo_palette[17];
+-struct fb_info fb_info;
++struct fb_info *fb_info;
  
--static struct fb_info fb_info;
-+static struct fb_info *fb_info;
- static u32 pseudo_palette[17];
- 
- static struct fb_fix_screeninfo fb_fix __initdata = {
-@@ -234,11 +234,17 @@
- 		if (!request_mem_region(z->resource.start, FRAMEMASTER_SIZE, "fm2fb"))
- 			continue;
- 
-+		fb_info = framebuffer_alloc(0, NULL);
-+		if (!fb_info) {
-+			release_mem_region(z->resource.start, FRAMEMASTER_SIZE);
-+			return -ENOMEM;
-+		}
+ static int hitfb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ {
+@@ -132,6 +132,11 @@
+ int __init hitfb_init(void)
+ {
+ 	unsigned short lcdclor, ldr3, ldvntr;
++	int size;
 +
- 		/* assigning memory to kernel space */
- 		fb_fix.smem_start = z->resource.start;
--		fb_info.screen_base = ioremap(fb_fix.smem_start, FRAMEMASTER_SIZE);
-+		fb_info->screen_base = ioremap(fb_fix.smem_start, FRAMEMASTER_SIZE);
- 		fb_fix.mmio_start = fb_fix.smem_start + FRAMEMASTER_REG;
--		fm2fb_reg  = (unsigned char *)(fb_info.screen_base+FRAMEMASTER_REG);
-+		fm2fb_reg  = (unsigned char *)(fb_info->screen_base+FRAMEMASTER_REG);
- 	
- 		strcpy(fb_fix.id, is_fm ? "FrameMaster II" : "Rainbow II");
++	fb_info = framebuffer_alloc(0, NULL);
++	if (!fb_info)
++		return -ENOMEM;
  
-@@ -259,20 +265,23 @@
- 		if (fm2fb_mode == -1)
- 			fm2fb_mode = FM2FB_MODE_PAL;
- 
--		fb_info.fbops = &fm2fb_ops;
--		fb_info.var = fb_var_modes[fm2fb_mode];
--		fb_info.screen_base = (char *)fb_fix.smem_start;
--		fb_info.pseudo_palette = pseudo_palette;
--		fb_info.fix = fb_fix;
--		fb_info.flags = FBINFO_FLAG_DEFAULT;
-+		fb_info->fbops = &fm2fb_ops;
-+		fb_info->var = fb_var_modes[fm2fb_mode];
-+		fb_info->screen_base = (char *)fb_fix.smem_start;
-+		fb_info->pseudo_palette = pseudo_palette;
-+		fb_info->fix = fb_fix;
-+		fb_info->flags = FBINFO_FLAG_DEFAULT;
- 
- 		/* The below fields will go away !!!! */
--		fb_alloc_cmap(&fb_info.cmap, 16, 0);
-+		fb_alloc_cmap(&fb_info->cmap, 16, 0);
- 
--		if (register_framebuffer(&fb_info) < 0)
-+		if (register_framebuffer(fb_info) < 0) {
-+			release_mem_region(z->resource.start, FRAMEMASTER_SIZE);
-+			kfree(fb_info);
- 			return -EINVAL;
-+		}
- 
--		printk("fb%d: %s frame buffer device\n", fb_info.node, fb_fix.id);
-+		printk("fb%d: %s frame buffer device\n", fb_info->node, fb_fix.id);
- 		return 0;
+ 	hitfb_fix.smem_start = CONFIG_HD64461_IOBASE + 0x02000000;
+ 	hitfb_fix.smem_len = (MACH_HP680 || MACH_HP690) ? 1024*1024 : 512*1024;
+@@ -153,22 +158,24 @@
  	}
- 	return -ENXIO;
+ 	hitfb_var.yres = ldvntr+1;
+ 
+-	fb_info.fbops 		= &hitfb_ops;
+-	fb_info.var 		= hitfb_var;
+-	fb_info.fix 		= hitfb_fix;
+-	fb_info.pseudo_palette 	= pseudo_palette;	
+-	fb_info.flags 		= FBINFO_FLAG_DEFAULT;
++	fb_info->fbops 		= &hitfb_ops;
++	fb_info->var 		= hitfb_var;
++	fb_info->fix 		= hitfb_fix;
++	fb_info->pseudo_palette	= pseudo_palette;	
++	fb_info->flags 		= FBINFO_FLAG_DEFAULT;
+     	
+-	fb_info.screen_base = (void *) hitfb_fix.smem_start;
++	fb_info->screen_base = (void *) hitfb_fix.smem_start;
+ 
+-	size = (fb_info.var.bits_per_pixel == 8) ? 256 : 16;
+-	fb_alloc_cmap(&fb_info.cmap, size, 0); 	
++	size = (fb_info->var.bits_per_pixel == 8) ? 256 : 16;
++	fb_alloc_cmap(&fb_info->cmap, size, 0); 	
+ 
+-	if (register_framebuffer(&fb_info) < 0)
++	if (register_framebuffer(fb_info) < 0) {
++		kfree(fb_info);
+ 		return -EINVAL;
++	}
+     
+ 	printk(KERN_INFO "fb%d: %s frame buffer device\n",
+-			fb_info.node, fb_info.fix.id);
++			fb_info->node, fb_info->fix.id);
+ 	return 0;
+ }
+ 
+@@ -189,7 +196,7 @@
+ 
+ void cleanup_module(void)
+ {
+-  hitfb_cleanup(void);
++  hitfb_cleanup(fb_info);
+ }
+ #endif
+ 
+
 
 Luca
 -- 
 Reply-To: kronos@kronoz.cjb.net
 Home: http://kronoz.cjb.net
-Ci sono due cose che l'uomo non puo` nascondere:
-essere ubriaco ed essere innamorato.
+Todo list:
+ 1: Feed Cat.
+ 2: Take over the world.
+ 3: Feed Cat.
+ 4: Get lots of cookies.
+ 5: Eat the cookies.
+ 6: Feed Cat.
+ 7: Escape from jail.
+ 8: Feed Cat.
+ 9: Take over the world again.
+10: goto #6
 
 
 -------------------------------------------------------

@@ -1,21 +1,27 @@
-From: Sven Luther <sven.luther@wanadoo.fr>
-Subject: Re: tdfx & multiple voodoo cards : supposed to work ?
-Date: Wed, 29 Oct 2003 20:56:27 +0100
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: tdfx & multiple voodoo cards : supposed to
+ work ?
+Date: Wed, 29 Oct 2003 20:04:15 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20031029195627.GA13626@iliana>
-References: <20031029093653.GA4626@iliana> <20031029182532.GA1662@dreamland.darkstar.lan>
+Message-ID: <Pine.LNX.4.44.0310292000530.21040-100000@phoenix.infradead.org>
+References: <20031029182532.GA1662@dreamland.darkstar.lan>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1AEwQl-0008QQ-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 29 Oct 2003 11:56:35 -0800
-Received: from smtp6.wanadoo.fr ([193.252.22.25] helo=mwinf0601.wanadoo.fr)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AEwQk-0004Mb-O8
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 29 Oct 2003 11:56:34 -0800
-Content-Disposition: inline
+	id 1AEwYE-0001uf-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 29 Oct 2003 12:04:18 -0800
+Received: from [213.86.99.234] (helo=phoenix.infradead.org)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.24)
+	id 1AEwYE-0000CO-5j
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 29 Oct 2003 12:04:18 -0800
+Received: from localhost.localdomain ([127.0.0.1] helo=localhost)
+	by phoenix.infradead.org with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.22)
+	id 1AEwYC-0005sU-CQ
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 29 Oct 2003 20:04:16 +0000
 In-Reply-To: <20031029182532.GA1662@dreamland.darkstar.lan>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
@@ -26,15 +32,11 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Kronos <kronos@kronoz.cjb.net>
-Cc: Sven Luther <sven.luther@wanadoo.fr>, linux-fbdev-devel@lists.sourceforge.net
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, Oct 29, 2003 at 07:25:32PM +0100, Kronos wrote:
-> Il Wed, Oct 29, 2003 at 10:36:53AM +0100, Sven Luther ha scritto: 
-> > Hello,
-> > 
+
 > > I have had a report of someone trying to use two voodoo cards on a
 > > pegasos/ppc motherboard, and it freezing the kernel (2.4.22 kernel)
 > > 
@@ -42,11 +44,11 @@ On Wed, Oct 29, 2003 at 07:25:32PM +0100, Kronos wrote:
 > 
 > No, the driver has a statically allocated fb_info. It will blow up.
 
-Ok, thought so, i am not sure though.
+Yeap. Also the driver uses the VGA legacy IO ports. It is possible to run 
+the driver without BIOS support. The specs have such info. I just haven't 
+got around to it.
 
-Friendly,
 
-Sven Luther
 
 
 -------------------------------------------------------

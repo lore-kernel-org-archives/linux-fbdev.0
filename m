@@ -1,25 +1,25 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: Re: [RFC] Video Mode Handling
-Date: Mon, 9 Aug 2004 15:59:45 +0800
+Subject: Re: [RFC] Video Mode Handling
+Date: Mon, 9 Aug 2004 15:59:17 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200408091559.45202.adaplas@hotpop.com>
-References: <200408090944.01414.adaplas@hotpop.com> <20040808230412.6dc16bf4.akpm@osdl.org>
+Message-ID: <200408091559.18436.adaplas@hotpop.com>
+References: <20040809035002.65812.qmail@web14924.mail.yahoo.com>
 Reply-To: adaplas@pol.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bu55H-0008Dr-0g
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Aug 2004 01:00:43 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.51])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1Bu55G-0004Lr-Hw
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Aug 2004 01:00:42 -0700
+	id 1Bu549-00080d-OO
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Aug 2004 00:59:33 -0700
+Received: from smtp-out.hotpop.com ([38.113.3.71])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1Bu549-0005Tl-63
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Aug 2004 00:59:33 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 9280775A28
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  9 Aug 2004 06:43:51 +0000 (UTC)
-In-Reply-To: <20040808230412.6dc16bf4.akpm@osdl.org>
+	by smtp-out.hotpop.com (Postfix) with SMTP id 847A5105C910
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  9 Aug 2004 07:32:55 +0000 (UTC)
+In-Reply-To: <20040809035002.65812.qmail@web14924.mail.yahoo.com>
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,55 +31,64 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Morton <akpm@osdl.org>
 
-On Monday 09 August 2004 14:04, Andrew Morton wrote:
-> "Antonino A. Daplas" <adaplas@hotpop.com> wrote:
-> > Most fbdev developers are proposing to bring back the per-display var
-> >  structures to ease the difficulty of video mode handling.  This proposal
-> >  is countered by a few (notably James) in that it severely increases the
-> >  memory footprint of the kernel.
+On Monday 09 August 2004 11:50, Jon Smirl wrote:
+> There was a lot of discussion about mode handling at OLS. Here's some
+> of the lwn coverage...
 >
-> Surprised.
+> http://lwn.net/Articles/94202/
+> http://lwn.net/Articles/94763/
 >
-> By how much does this increase the kernel's memory footprint?
 
-Each var is approx 140 bytes multiplied by the number of consoles, which
-is 64. James is in the embedded systems market, so I can see his point.
 
+> I'll attach a list of points discussed. Mode setting needs to cover
+> multihead cards, and devices that only use the BIOS for mode setting.
+> There also needs to be coordinated memory management when multiple
+> heads are involved. Point 7 talks about a design where most of the mode
+> setting code is moved to user space via hotplug.
 >
-> And how much simpler would the code be if we were to bring back the
-> per-display var structures?
-
-The switching code will be much simpler.  All that needs to be done is
-grab display->var and pass it to fbdev.  However, the stty/resize route still needs
-to be addressed. 
-
+> Can your design be adjusted to work in the framework outlined below?
 >
-> IOW: what's the tradeoff here?
 
-Absence of a per-display var or similar mechanism is simply unacceptable.
-Without it, mode setting is basically a mess.  It's possible that by simply
-switching consoles you can be left with a corrupt display.
+Sure, if I correctly understand the pertinent parts of the discussion,
+they mostly pertain to moving mode handling to userspace.  The patches
+that I submitted are just that, move more of the mode handling away from
+the kernel and let userspace determine the numbers to give to the kernel.
+The job of the driver is to de-normalize the numbers, and write them to the
+registers.
 
-With  the per-display var, console switching is a breeze.  No need for mode
-verification or creation.  The downside is the increased memory footprint.
+Currently, the main problem is "are the values coming from userspace safe to
+use?" The fbdev drivers have a check_var() that does the verification.
+However the function is severely limited because not all details are known
+about the hardware and the display/s.  Drivers take different approaches,
+accept everything as gospel truth, be paranoid and reject everything, or
+check the numbers to varying degrees of effectivity (by using EDID, kernel
+boot options, etc).
 
-The stty/fbcon_resize path is the other problem.  This is a request coming
-from the upper layer (which has no knowledge whatsoever about graphics/
-video) asking fbdev to change the video mode of the hardware.  Drivers can
-'guess', but not all drivers are good at that, or get the mode from a known,
-working modelist (which the 1st and 2nd patch addresses).  A simple solution
-is to just remove stty/fbcon_resize support. But James might disagree.
+I guess most people will agree that writing to the hardware belongs in the
+kernel, while choosing the correct values to write belongs to userspace.  The
+unanswered question is the middle part, who does the verification?
 
-BTW:  The series of patches addresses all of the above.  It can save the
-settings per display, but with only half the memory requirement of a per-display
-var, and makes the stty/fbcon_resize path work correctly.  It also eliminates 
-the need for a static mode database as well.  The downside is increased code
-complexity.
+As for hardware that depends on the BIOS for mode setting, this is basically
+unsupported in the current fbdev framework (vesafb).  Either we allow BIOS
+code to run in the kernel (search for vesafb-tng) or run BIOS code in
+userspace (search for vm86d, vesafbd). 
 
-Tony
+Multi-head cards can be configured as multiple fb_info's sharing a single par
+if each output is independent from the other (in which case each head has
+its own private mode list) or a single fb_info with multiple pars if each
+output are dependent on each other (in which case they share a common
+mode list which are filtered so all entries will work for all heads).
+
+As for memory management, yes, that's needed.  The i810fb for example explicitly
+avoids the framebuffer address that is used by X/DRI.  It's also fortunate that
+the i810 hardware has 2 ringbuffers, one is used by X/DRI, one by i810fb.  Add
+another application that needs the ringbuffers, and the hardware will definitely
+crash.
+
+Tony 
 
 
 

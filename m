@@ -1,22 +1,22 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 3/6] intelfb: Workaround for 830M
-Date: Tue, 18 Jan 2005 05:41:09 +0800
-Message-ID: <200501180541.09971.adaplas@hotpop.com>
+Subject: [PATCH 4/6] fbcon: Save blank state last
+Date: Tue, 18 Jan 2005 05:41:17 +0800
+Message-ID: <200501180541.17021.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Cqecj-00036o-TP
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 17 Jan 2005 13:41:21 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.71])
+	id 1Cqecq-00037B-HP
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 17 Jan 2005 13:41:28 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.61])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1Cqeci-0005SK-BQ
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 17 Jan 2005 13:41:21 -0800
+	id 1Cqecq-0005TI-2A
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 17 Jan 2005 13:41:28 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 101831350401
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Jan 2005 21:41:05 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id 1B7A4CFE032
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Jan 2005 21:41:15 +0000 (UTC)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -30,54 +30,36 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Andrew Pfiffer <andrewx.k.pfiffer@intel.com>, sylvain.meyer@worldonline.fr
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-  This is a work around for the 830M with intelfb.  Relative to 2.6.10.
-  Without this patch, updates to the DSPACNTR register will be ignored.
+Save blank state after do_blank|unblank_screen() since this flag is checked
+in fbcon_blank().
 
-  On the 830M, the display plane needs to be enabled before writing
-  to any of the other bits in the DSPACNTR register.
-  
-  This patch detects the specific case, temporarily enables the plane,
-  updates the register, and then disables the plane.  It also appears
-  to require some settling time, but not an entire frame's time.
-  
-  Without this change, the pixel format fields in DSPACNTR won't get
-  written on the 830M.
-
-Signed-off-by: Andrew Pfiffer <andrewx.k.pfiffer@intel.com>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- intelfbhw.c |   16 ++++++++++++++++
- 1 files changed, 16 insertions(+)
+ fbcon.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff -Nru a/drivers/video/intelfb/intelfbhw.c b/drivers/video/intelfb/intelfbhw.c
---- a/drivers/video/intelfb/intelfbhw.c	2004-11-17 18:29:40 +08:00
-+++ b/drivers/video/intelfb/intelfbhw.c	2005-01-15 08:18:07 +08:00
-@@ -1207,6 +1207,22 @@
- 	OUTREG(ADPA, tmp);
+diff -Nru a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+--- a/drivers/video/console/fbcon.c	2005-01-15 04:25:57 +08:00
++++ b/drivers/video/console/fbcon.c	2005-01-15 08:23:03 +08:00
+@@ -2654,13 +2654,13 @@
+ 		vc = vc_cons[ops->currcon].d;
  
- 	/* setup display plane */
-+	if (dinfo->pdev->device == PCI_DEVICE_ID_INTEL_830M) {
-+		/*
-+		 *      i830M errata: the display plane must be enabled
-+		 *      to allow writes to the other bits in the plane
-+		 *      control register.
-+		 */
-+		tmp = INREG(DSPACNTR);
-+		if ((tmp & DISPPLANE_PLANE_ENABLE) != DISPPLANE_PLANE_ENABLE) {
-+			tmp |= DISPPLANE_PLANE_ENABLE;
-+			OUTREG(DSPACNTR, tmp);
-+			OUTREG(DSPACNTR, 
-+			       hw->disp_a_ctrl|DISPPLANE_PLANE_ENABLE);
-+			mdelay(1);
-+              }
-+	}
-+
- 	OUTREG(DSPACNTR, hw->disp_a_ctrl & ~DISPPLANE_PLANE_ENABLE);
- 	OUTREG(DSPASTRIDE, hw->disp_a_stride);
- 	OUTREG(DSPABASE, hw->disp_a_base);
+ 		if (CON_IS_VISIBLE(vc)) {
+-			ops->blank_state = blank;
+-
+ 			if (blank)
+ 				do_blank_screen(0);
+ 			else
+ 				do_unblank_screen(0);
+ 		}
++		
++		ops->blank_state = blank;
+ 	}
+ }
+ 
 
 
 

@@ -1,16 +1,17 @@
-From: "Gul Junaz" <jonashuman@mail.com>
-Subject: vga bashing et al.
-Date: Mon, 19 Aug 2002 13:40:47 -0500
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: drawings ops structures
+Date: Mon, 19 Aug 2002 21:24:49 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20020819184047.60445.qmail@mail.com>
+Message-ID: <Pine.GSO.4.21.0208192118010.8385-100000@vervain.sonytel.be>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from 205-158-62-49.outblaze.com ([205.158.62.49] helo=ws1-1.us4.outblaze.com)
-	by usw-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17grT8-0002hW-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 19 Aug 2002 11:41:38 -0700
-Content-Disposition: inline
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17gs9A-00028d-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 19 Aug 2002 12:25:04 -0700
+Received: from vervain.sonytel.be (mail.sonytel.be [10.17.0.27])
+	by mail.sonytel.be (8.9.0/8.8.6) with ESMTP id VAA24356
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 19 Aug 2002 21:24:50 +0200 (MET DST)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,27 +21,64 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Hello!!
 
-If anyone has code to set up a display by writing directly
-to the VGA hardware, i would desperately like to see it.
-All the information i found on programming the VGA regs
-would take me quite a little time to elaborate.
-And (this would rather belong on the user mailing list,
-i guess) perhaps i overlooked something, but i haven't
-found any explanation of how to manipulate vesafb's colour
-map in 8bpp modes. ('colormap' section missing in Console
-programming howto :()
+If I look at these definitions in <linux/fb.h>:
 
-Jonas
+| struct fb_copyarea {
+|         __u32 sx;       /* screen-relative */
+|         __u32 sy;
+|         __u32 width;
+|         __u32 height;
+|         __u32 dx;
+|         __u32 dy;
+| };
+| 
+| struct fb_fillrect {
+|         __u32 dx;       /* screen-relative */
+|         __u32 dy;
+|         __u32 width;
+|         __u32 height;
+|         __u32 color;
+|         __u32 rop;
+| };
+| 
+| struct fb_image {
+|         __u32 width;    /* Size of image */
+|         __u32 height;
+|         __u16 dx;       /* Where to place image */
+|         __u16 dy;
+|         __u32 fg_color; /* Only used when a mono bitmap */
+|         __u32 bg_color;
+|         __u8  depth;    /* Dpeth of the image */
+|         char  *data;    /* Pointer to image data */
+| };
 
--- 
-__________________________________________________________
-Sign-up for your own FREE Personalized E-mail at Mail.com
-http://www.mail.com/?sr=signup
+Then I start to wonder ...
+  - why are dx and dy in struct fb_image of type __u16, while they are of type
+   __u32 in struct fb_copyarea and struct fb_fillrect?
+  - why is the order of the fields different for each structure?
+    Wouldn't it be better to always use the same order for the common fields,
+    e.g.
+
+	__u32 dx;
+	__u32 dy;
+	__u32 width;
+	__u32 height;
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

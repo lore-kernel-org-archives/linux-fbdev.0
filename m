@@ -1,24 +1,20 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Fw: [Bugme-new] [Bug 4217] New: radeonfb makes system hang and
- LCD "burn"
-Date: Thu, 17 Feb 2005 09:15:33 +1100
-Message-ID: <1108592133.5533.6.camel@gaston>
-References: <20050215121555.54c63ed2.akpm@osdl.org>
-	 <1108502142.13394.2.camel@gaston> <87fyzxsdo7.fsf@kataplop.net>
-	 <1108504143.13376.14.camel@gaston>  <87r7jggxc7.fsf@kataplop.net>
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: Patch to add mode setting to sysfs
+Date: Wed, 16 Feb 2005 17:30:56 -0500
+Message-ID: <9e4733910502161430ff1dad1@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Content-Transfer-Encoding: 7bit
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D1XTX-0005EK-QQ
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 14:16:51 -0800
-Received: from gate.crashing.org ([63.228.1.57])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1D1XTW-00026W-9P
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 14:16:51 -0800
-In-Reply-To: <87r7jggxc7.fsf@kataplop.net>
+	id 1D1XhN-00060p-4d
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 14:31:09 -0800
+Received: from rproxy.gmail.com ([64.233.170.203])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1D1XhM-0004Ba-FB
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 14:31:09 -0800
+Received: by rproxy.gmail.com with SMTP id z35so89222rne
+        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 16 Feb 2005 14:30:56 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,40 +25,232 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Marc =?ISO-8859-1?Q?Poulhi=E8s?= <marc.poulhies@epfl.ch>
-Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 2005-02-16 at 19:43 +0100, Marc Poulhi=E8s wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
->=20
-> > Try building radeonfb in the kernel and booting with
-> > radeonfb.default_dynclk=3D-1, let me know if that works. fbdev's in
-> > modules have always been sort-of dodgy....
-> >
-> > The "dynclk" thing has issues, the upstream code from ATI has some bu=
-gs
-> > plus there is something weird going on which I suspect might be a
-> > miscompile of a bit of code in there. I'll send a patch working aroun=
-d
-> > that today.
-> >
-> > Ben.
->=20
-> Ok, did that. Same result. The only thing displayed is the system
-> caret. I can see it moving left and right while the system boots and
-> "displays" the messages (X is working nicely).
->=20
-> I did compile debug support, so I'm including the output.
+This is a first pass at adding two new sysfs attributes to
+/sys/class/graphics/fb0 for setting modes. There are two attributes:
+modes which contains a list of valid modes, and mode which is the
+current mode. To switch modes echo one of the entries from the modes
+list to the mode attribute.
+The D,V,S on the modes represents Detailed, Vesa, Standard from the DDC info.
 
-Well... looks like radeonfb is actually working ... You can try booting
-with radeonfb.noaccel=3D1 on your kernel command line and tell me what's
-up ? I looks like your fbcon is having trouble actually. Not sure what's
-up, I haven't had any report of that so far.
+modes is root writable. It can also be used to set the list of modes.
+For example a /etc file could add modes that are not in the monitor's
+DDC.
 
-Ben.
+mode is user writable. PAM would set ownership of mode at user login
+time. This provides a safe way  for a user to set the mode without
+being root. You can only set the mode to one of the modes on the list.
+
+If this code looks good I'll do another pass that adds some more
+features and makes it more robust.
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
 
 
+diff -Nru a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+--- a/drivers/video/fbmem.c	2005-02-16 17:20:32 -05:00
++++ b/drivers/video/fbmem.c	2005-02-16 17:20:32 -05:00
+@@ -1058,7 +1058,6 @@
+ register_framebuffer(struct fb_info *fb_info)
+ {
+ 	int i;
+-	struct class_device *c;
+ 	struct fb_event event;
+ 
+ 	if (num_registered_fb == FB_MAX)
+@@ -1069,13 +1068,15 @@
+ 			break;
+ 	fb_info->node = i;
+ 
+-	c = class_simple_device_add(fb_class, MKDEV(FB_MAJOR, i),
++	fb_info->class_device = class_simple_device_add(fb_class, MKDEV(FB_MAJOR, i),
+ 				    fb_info->device, "fb%d", i);
+-	if (IS_ERR(c)) {
++	if (IS_ERR(fb_info->class_device)) {
+ 		/* Not fatal */
+-		printk(KERN_WARNING "Unable to create class_device for framebuffer
+%d; errno = %ld\n", i, PTR_ERR(c));
+-	}
+-	
++		printk(KERN_WARNING "Unable to create class_device for framebuffer
+%d; errno = %ld\n", i, PTR_ERR(fb_info->class_device));
++		fb_info->class_device = NULL;
++	} else
++		fb_init_class_device(fb_info);
++
+ 	if (fb_info->pixmap.addr == NULL) {
+ 		fb_info->pixmap.addr = kmalloc(FBPIXMAPSIZE, GFP_KERNEL);
+ 		if (fb_info->pixmap.addr) {
+diff -Nru a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
+--- a/drivers/video/fbsysfs.c	2005-02-16 17:20:32 -05:00
++++ b/drivers/video/fbsysfs.c	2005-02-16 17:20:32 -05:00
+@@ -17,6 +17,7 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/fb.h>
++#include <linux/console.h>
+ 
+ /**
+  * framebuffer_alloc - creates a new frame buffer info structure
+@@ -57,6 +58,7 @@
+ #undef PADDING
+ #undef BYTES_PER_LONG
+ }
++EXPORT_SYMBOL(framebuffer_alloc);
+ 
+ /**
+  * framebuffer_release - marks the structure available for freeing
+@@ -71,6 +73,118 @@
+ {
+ 	kfree(info);
+ }
+-
+ EXPORT_SYMBOL(framebuffer_release);
+-EXPORT_SYMBOL(framebuffer_alloc);
++
++static int mode_class(char *buf, int flag)
++{
++	if (flag & FB_MODE_IS_DETAILED)
++		return sprintf(buf, "D:");
++	if (flag & FB_MODE_IS_VESA)
++		return sprintf(buf, "V:");
++	if (flag & FB_MODE_IS_STANDARD)
++		return sprintf(buf, "S:");
++	return sprintf(buf, "U:");
++}
++
++static int mode_string(char *buf, const struct fb_videomode *mode)
++{
++	int i = 0;
++	i += mode_class(buf, mode->flag);
++	return i + sprintf(&buf[i], "%dx%d-%d\n", mode->xres, mode->yres,
+mode->refresh);
++}
++
++static ssize_t store_mode(struct class_device *class_device, const
+char * buf, size_t count)
++{
++	struct fb_info *fb_info = (struct fb_info *)class_get_devdata(class_device);
++	char mstr[100];
++	struct fb_var_screeninfo var;
++	struct fb_modelist *modelist;
++	struct fb_videomode *mode;
++	struct list_head *pos;
++	size_t i;
++	int err;
++
++	memset(&var, 0, sizeof(var));
++	
++	list_for_each(pos, &fb_info->modelist) {
++		modelist = list_entry(pos, struct fb_modelist, list);
++		mode = &modelist->mode;
++		i = mode_string(mstr, mode);
++		if (strncmp(mstr, buf, max(count, i)) == 0) {
++
++			fb_videomode_to_var(&var, mode);
++			var.activate |= FB_ACTIVATE_FORCE;
++			var.bits_per_pixel = 32;
++			acquire_console_sem();
++			fb_info->flags |= FBINFO_MISC_USEREVENT;
++			err = fb_set_var(fb_info, &var);
++			fb_info->flags &= ~FBINFO_MISC_USEREVENT;
++			release_console_sem();
++			if (err)
++				return err;
++			fb_info->mode = mode;
++			return count;
++		}
++	}
++	return -EINVAL;
++}
++
++static ssize_t show_mode(struct class_device *class_device, char *buf)
++{
++	struct fb_info *fb_info = (struct fb_info *)class_get_devdata(class_device);
++
++	if (!fb_info->mode)
++		return 0;
++
++	return mode_string(buf, fb_info->mode);
++}
++
++static ssize_t store_modes(struct class_device *class_device, const
+char * buf, size_t count)
++{
++	struct fb_info *fb_info = (struct fb_info *)class_get_devdata(class_device);
++	int i = count / sizeof(struct fb_videomode);
++	if (i * sizeof(struct fb_videomode) != count)
++		return -EINVAL;
++
++	fb_destroy_modelist(&fb_info->modelist);
++	fb_videomode_to_modelist((struct fb_videomode *)buf, i, &fb_info->modelist);
++
++	return 0;
++}
++
++static ssize_t show_modes(struct class_device *class_device, char *buf)
++{
++	struct fb_info *fb_info = (struct fb_info *)class_get_devdata(class_device);
++	int i;
++	struct list_head *pos;
++	struct fb_modelist *modelist;
++	const struct fb_videomode *mode;
++	
++	i = 0;
++	list_for_each(pos, &fb_info->modelist) {
++		modelist = list_entry(pos, struct fb_modelist, list);
++		mode = &modelist->mode;
++		i += mode_string(&buf[i], mode);
++	}
++	return i;
++}
++
++CLASS_DEVICE_ATTR(mode, S_IRUGO|S_IWUSR, show_mode, store_mode);
++CLASS_DEVICE_ATTR(modes, S_IRUGO|S_IWUSR, show_modes, store_modes);
++
++int fb_init_class_device(struct fb_info *fb_info)
++{
++	//INIT_LIST_HEAD(&modelist);
++	class_set_devdata(fb_info->class_device, fb_info);
++	class_device_create_file(fb_info->class_device, &class_device_attr_modes);
++	class_device_create_file(fb_info->class_device, &class_device_attr_mode);
++	return 0;
++}
++
++void fb_cleanup_class_device(struct fb_info *fb_info)
++{
++	class_device_remove_file(fb_info->class_device, &class_device_attr_modes);
++	class_device_remove_file(fb_info->class_device, &class_device_attr_mode);
++}
++
++
+diff -Nru a/include/linux/fb.h b/include/linux/fb.h
+--- a/include/linux/fb.h	2005-02-16 17:20:32 -05:00
++++ b/include/linux/fb.h	2005-02-16 17:20:32 -05:00
+@@ -712,8 +712,10 @@
+ 	struct fb_pixmap sprite;	/* Cursor hardware mapper */
+ 	struct fb_cmap cmap;		/* Current cmap */
+ 	struct list_head modelist;      /* mode list */
++	struct fb_videomode *mode;	/* current mode */
+ 	struct fb_ops *fbops;
+ 	struct device *device;
++	struct class_device *class_device; /* sysfs per device attrs */
+ #ifdef CONFIG_FB_TILEBLITTING
+ 	struct fb_tile_ops *tileops;    /* Tile Blitting */
+ #endif
+@@ -830,6 +832,8 @@
+ /* drivers/video/fbsysfs.c */
+ extern struct fb_info *framebuffer_alloc(size_t size, struct device *dev);
+ extern void framebuffer_release(struct fb_info *info);
++extern int fb_init_class_device(struct fb_info *fb_info);
++extern void fb_cleanup_class_device(struct fb_info *head);
+ 
+ /* drivers/video/fbmon.c */
+ #define FB_MAXTIMINGS		0
 
 
 -------------------------------------------------------

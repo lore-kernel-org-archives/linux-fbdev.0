@@ -1,14 +1,12 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Dri-devel] Re: DRM and pci_driver
-	conversion
-Date: Wed, 29 Oct 2003 09:26:18 +1100
+From: Linus Torvalds <torvalds@osdl.org>
+Subject: Re: [Dri-devel] Re: DRM and pci_driver conversion
+Date: Tue, 28 Oct 2003 14:54:10 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1067379978.3333.44.camel@gaston>
-References: <20031028220940.65607.qmail@web14913.mail.yahoo.com>
+Message-ID: <Pine.LNX.4.44.0310281441470.1600-100000@home.osdl.org>
+References: <Pine.LNX.4.44.0310281855430.5142-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-In-Reply-To: <20031028220940.65607.qmail@web14913.mail.yahoo.com>
+In-Reply-To: <Pine.LNX.4.44.0310281855430.5142-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -18,63 +16,53 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Jon Smirl <jonsmirl@yahoo.com>
-Cc: James Simmons <jsimmons@infradead.org>, Linus Torvalds <torvalds@osdl.org>, Ian Romanick <idr@us.ibm.com>, David Dawes <dawes@XFree86.Org>, dri-devel <dri-devel@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: James Simmons <jsimmons@infradead.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Ian Romanick <idr@us.ibm.com>, David Dawes <dawes@XFree86.Org>, dri-devel <dri-devel@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 2003-10-29 at 09:09, Jon Smirl wrote:
 
-> Do we really want arbitration between multiple things (FB, X, DRI, etc) all
-> trying to control the video hardware at a register level? This is like writing
-> a multitaking system for device drivers.
+On Tue, 28 Oct 2003, James Simmons wrote:
 > 
-> Or do we want a single device driver with multiple clients?
+>    This is good design for DMA based graphics cards. Unfortunely at present 
+> maybe one fbdev driver actaully uses DMA (i810fb). Almost all fbdev drivers 
+> use IO access :-( Sure we could convert as many as possible to DMA, which I was 
+> planning to do anyways :-)
 
-Here, you are going away from Linus suggestion. While it makes sense
-too, it would be a real pain to keep that single driver in sync between
-the different parties, to keep backward compatibility, etc... re-read
-Linus emails on this topic. I tend to agree with him here, what we want
-is a small low level layer that does the strict minimum to provide
-DMA/irq and arbitration.
+Even if you don't use DMA, you still want the discovery/enumeration and
+serialization parts, which you want in the kernel.
 
-> A major complaint from the framebuffer console people is that we have to do
-> mode setting/EDID in the device driver so that there is a console to look at
-> from the first second the kernel boots. This also means we have to map the
-> framebuffer into kernel space (sucking up to 256MB of kernel address space).
+And if the driver ends up being really small - all the better. If the card 
+literally doesn't even have a command buffer (ie a truly stupid entirely 
+synchronous IO programming model like classic VGA) then the driver won't 
+even need the "wait for command ring empty" kind of thing.
 
-That mode setting / EDID is done in drivers on other platforms as well,
-I don't see the problem here. It's the basic "feature" provided by the
-framebuffer driver, it doesn't only make sense for fbcon but also for
-other framebuffer apps.
+Now, your reaction might be that "oh, but what a wasteful thing to have a
+driver for just a simple serialization and discovery". True. But on the
+other hand, it's not like it would be actually wasting that much, and the
+nice thing is that this kind of truly minimal driver that doesn't have to
+worry about DMA etc can quite likely be shared with pretty much _all_ of
+the stupid cards. So we could have just _one_ driver that covers all of
+the "this card doesn't do DMA or even retrace interrupts".
 
-Mapping the framebuffer into kernel space isn't necessary. It's how
-today's fbcon works, but it's not mandatory. In fact, if fbcon was
-fully accelerated, mapping the fb would be useless.
+So don't worry about the fact that for some hardware the driver might be 
+really simple. Even a simple driver is worth it if it means that we can 
+have a unified model for synchronizing between the different agents that 
+want to touch the video hardware. I think.
 
-> In the 2.7 time frame is it possible to write a low level driver like Linus
-> proposed plus a small DSO for mode setting/EDID. 
+>    Unfortunely most fbdev drivers set the hardware in IO access mode. Plus 
+> some of the devices lack any kind of DMA support.
 
-DSO ? Can you translate ?
+I don't think this is "unfortunately" at all. Quite the reverse. If the
+card doesn't use/need DMA, that just makes for a simple low-level driver.
 
-> Then write fbconsole as a user
-> space app that is loaded much eariler in the boot process than user-mode
-> currently starts? In other words is there a solution to having a boot time
-> console that doesn't involve running it in a device driver?
+The reason I mentioned DMA arbitration as a major thing the driver would
+do is not because I think that every driver _has_ to have DMA. I mentioned
+it specially because DMA is kind of special in that it is done
+asynchronously and thus needs an abitration model that is above-and-beyond
+just a normal "lock this card" thing.
 
-So we lose the ability to get early boot messages and printk at
-interrupt time ? no thanks ! Looks you aren't regulary faced with the
-need to debug kernel code ;)
-
-> Another possible solution to the boot time problem would be to write a
-> disposable device driver. The disposable driver would set the mode/EDID and run
-> the console until user mode started; then self destruct. 
-
-fbcon can still be in the kernel. I see no point in your push to move it
-down to userland, provided that it stays a clearly separate entity from the
-fbdev itself, just another client.
-
-Ben.
-
+			Linus
 
 
 

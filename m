@@ -1,26 +1,51 @@
-From: James Simmons <jsimmons@phoenix.infradead.org>
-Subject: Re: [Linux-fbdev-devel] Re: [BK console] console updates.
-Date: Sat, 9 Nov 2002 01:02:40 +0000 (GMT)
+From: Carl-Daniel Hailfinger <c-d.hailfinger.kernel.2002-Q4@gmx.net>
+Subject: Re: [PATCH] restore framebuffer console after suspend
+Date: Sat, 09 Nov 2002 03:16:09 +0100
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.44.0211090101550.14371-100000@phoenix.infradead.org>
-References: <20021101211153.GA171@elf.ucw.cz>
+Message-ID: <3DCC6FE9.60506@gmx.net>
+References: <3DCC5DA4.2010707@gmx.net>
 Mime-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="------------010906060804020302060701"
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <20021101211153.GA171@elf.ucw.cz>
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+To: Marcelo Tosatti <marcelo@conectiva.com.br>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-fbdev-devel@lists.sourceforge.net
+
+This is a multi-part message in MIME format.
+--------------010906060804020302060701
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux console project <linuxconsole-dev@lists.sourceforge.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+Marcelo,
 
-> >    Along with the new fbdev api I also have rewritten the console layer.
-> > The goals are:
-> 
-> Current 2.5.45 (and previous 2.5's) has funny problems on my vesafb
-> machines [like half of letters appearing during emacs session, to the
-> point you do ^L to repaint]. I hope this fixes it....
+please disregard my previous patch as it is needlessly invasive. I'm 
+currently evaluating a smaller patch (attached) which does not require an 
+audit of the low-level drivers and still fixes my problem.
 
-It will. I'm waiting for the latest patches whcih do fix all those 
-problems. As soon as I get them I will post a updated patch for the fbdev 
-changes. 
+Ben, can you please comment on this?
+
+Thanks
+Carl-Daniel
+
+--------------010906060804020302060701
+Content-Type: text/plain;
+ name="patch-fbdev.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="patch-fbdev.txt"
+
+===== drivers/video/fbcon.c 1.12 vs edited =====
+--- 1.12/drivers/video/fbcon.c	Thu Sep 12 17:22:35 2002
++++ edited/drivers/video/fbcon.c	Sat Nov  9 02:57:00 2002
+@@ -1573,7 +1573,7 @@ static int fbcon_blank(struct vc_data *c
+ 	return 0;
+ #ifdef CONFIG_PM
+     if (fbcon_sleeping)
+-    	return 0;
++    	return blank ? 0 : 1;
+ #endif /* CONFIG_PM */
+ 
+     fbcon_cursor(p->conp, blank ? CM_ERASE : CM_DRAW);
+
+--------------010906060804020302060701--

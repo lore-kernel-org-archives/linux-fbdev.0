@@ -1,16 +1,21 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Justin Ducote <justinduc@yahoo.com>
 Subject: Re: Linux Intel FB Question
-Date: Tue, 15 Apr 2003 10:20:38 +0200 (MEST)
+Date: Tue, 15 Apr 2003 03:13:13 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0304151018030.26578-100000@vervain.sonytel.be>
-References: <20030415042104.88847.qmail@web41603.mail.yahoo.com>
+Message-ID: <20030415101313.98196.qmail@web41613.mail.yahoo.com>
+References: <Pine.GSO.4.21.0304151018030.26578-100000@vervain.sonytel.be>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 195LhP-0003fd-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 15 Apr 2003 01:21:51 -0700
-In-Reply-To: <20030415042104.88847.qmail@web41603.mail.yahoo.com>
+	id 195OHo-0006dn-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 15 Apr 2003 04:07:36 -0700
+Received: from vervain.sonytel.be (mail.sonytel.be [10.17.0.26])
+	by mail.sonytel.be (8.9.0p/8.8.6) with ESMTP id NAA24490
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 15 Apr 2003 13:06:56 +0200 (MET DST)
+In-Reply-To: <Pine.GSO.4.21.0304151018030.26578-100000@vervain.sonytel.be>
+ReSent-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+ReSent-Message-ID: <Pine.GSO.4.21.0304151307070.26578@vervain.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,61 +25,72 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Justin Ducote <justinduc@yahoo.com>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 
-On Mon, 14 Apr 2003, Justin Ducote wrote:
-> I would like to use the RADEON frame buffer, with
-> that said I am restricting this senario to the VESA
-> driver ONLY to try and clear up some of my confusion..
-> 
-> When I boot linux/grub (Redhat 9.0) with the following
-> line:
-> 
-> vga=792
-> 
-> Everything works great, I get 1024x768x16m and it uses
-> the VESA Framebuffer (I think) and everything is
-> great. 
-> 
-> If I try and use this line instead:
-> 
-> video=vesa:mode:1024x768-24@60
-> 
-> NOTHING happens.. 
-> 
-> My understanding was that those two
-> lines should yield the exact same result in theory. I
-> thought they are doing the same thing but the video
-> line does nothing so I am confused and I do not
-> understand whats going on. 
-> 
-> Additionally, 
-> I would like to know what is the relationship
-> between VGA= and VIDEO= 
+Hi Geert! 
 
-`vga=' is a way to tell the early boot code in the kernel (before the actual
-Linux kernel is started) to change the video mode using the BIOS.
+> `vga=' is a way to tell the early boot code in the
+> kernel (before the actual
+> Linux kernel is started) to change the video mode
+> using the BIOS.
+> 
+> `video=' is a way to pass initialization parameters
+> to a frame buffer device
+> driver, or to just specific the default video mode
+> (yes, `video=1024x768-24@60'
+> is OK).
+> 
+> Since vesafb relies on the BIOS setting up the
+> correct video mode, the second
+> method won't work with vesafb.
+> 
+> Gr{oetje,eeting}s,
 
-`video=' is a way to pass initialization parameters to a frame buffer device
-driver, or to just specific the default video mode (yes, `video=1024x768-24@60'
-is OK).
+Ok, I have a few more questions. I think I understand
+a lot better now but:
 
-Since vesafb relies on the BIOS setting up the correct video mode, the second
-method won't work with vesafb.
+1.) what is the syntax of the video line, I have seen
+all kinds of examples on the net like:
 
-Gr{oetje,eeting}s,
+"video=radeonfb:mode:1024x768-60@8"
+"video=radeonfb:mode:1024x768-8@60"
+"video=mode:1024x768-8@60"
+"video=mode:1024x768-60@8"
+"video=mode:1024x768"
 
-						Geert
+sometimes with the drivername, sometimes without,
+someimtes with a hypen and then the refresh rate
+followed by a pound and then an @ symbol then the bpp
+and vice versa. 
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Is there a standardized syntax for the video line ? Do
+you have to include the word "mode" what is the order
+of information you have to provide, etc... 
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+How are these values interpreted and what order does
+it read these values in ? What ist he format for
+specifying pixel depth and refresh rate, etc. 
+
+And is it possible to use vga= and video= together? 
+
+video=radeonfb and then vga=792 
+
+then my question is how does it know what refresh rate
+and what pixed depth to use if you only use "vga=792"
+?
+
+I think I am close to having this figured out
+
+Thanks for all the help
+Justin
+
+
+__________________________________________________
+Do you Yahoo!?
+The New Yahoo! Search - Faster. Easier. Bingo
+http://search.yahoo.com
 
 
 

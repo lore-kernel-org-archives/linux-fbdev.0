@@ -1,20 +1,16 @@
-From: Nicholas Wourms <nwourms@netscape.net>
-Subject: Re: Re: Status of radeonfb in 2.5?
-Date: Fri, 18 Oct 2002 16:54:07 -0400
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: fbdev changes.
+Date: Fri, 18 Oct 2002 14:19:21 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <aopsa6$62b$1@main.gmane.org>
-References: <3DACA222.5030409@netscape.net> <20021016223613.17897@192.168.4.1> <3DADD22F.9030508@netscape.net> <1034808341.1229.282.camel@tibook> <aopfrg$aln$1@main.gmane.org> <1034969321.1126.2251.camel@tibook>
-Reply-To: nwourms@netscape.net
+Message-ID: <Pine.LNX.4.33.0210181400360.3591-100000@maxwell.earthlink.net>
+References: <1034813995.563.32.camel@daplas>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from main.gmane.org ([80.91.224.249])
+Received: from falcon.mail.pas.earthlink.net ([207.217.120.74])
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 182e7V-0007eE-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Oct 2002 13:53:21 -0700
-Received: from list by main.gmane.org with local (Exim 3.35 #1 (Debian))
-	id 182e6a-0001v2-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Oct 2002 22:52:24 +0200
+	id 182edG-00063H-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Oct 2002 14:26:10 -0700
+In-Reply-To: <1034813995.563.32.camel@daplas>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -24,36 +20,34 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Michel D=E4nzer wrote:
 
->> >> B) Does anyone have a painless, yet precise way of
->> >> generating modelines for fb.modes if you are using
->> >> XFree-4.2?  I only ask because the XFree modelines are all
->> >> determined by i2c DDC probing, thus there are none in the
->> >> XF86Config file.
->> >=20
->> > If the X driver supports Option "UseFBDev", you should be able to use
->> > fbset with that.
->> >=20
->>=20
->> Huh?  The problem is that fbset will not work because I need to populate
->> fb.modes with proper mode lines.  So at the moment fbset won't work at
->> all.
->=20
-> I was thinking of running X with Option "UseFBDev" and getting
-> information about the modes with fbset.
->=20
+> Hi James,
+>
+> Since you seem to be very busy, here's an idea for the framebuffer
+> cursor API.
 
-Hmm...  I guess that setting doesn't do what I thought it did.  I'll give i=
-t=20
-a shot and see if it works.  Thanks!
+I looked over your patch and even tested it out. Then I thought about it a
+long time. The question I had to ask myself is what do we want when we
+have fbdev stand alone and fbdev with framebuffer console. Also how to use
+a little code as possible (for embedded systems). So the goals are
 
-Cheers,
-Nicholas
+1) For stand alone fbdev we want the maximum support for a cursor. But
+   what if we don't have a hardware cursor. In this case we should leave
+   it to userland to handle making it own cursor. The userland app might
+   not even want a cursor. So we avoid having extra code in the kernel for
+   a software cursor.
 
+2) For fbcon the only thing we need for a cursor is a little rectangle. We
+   could still use imageblit but is seems really heavy when you consider
+   saving a bitmap of the current text under the cursor. True you have a
+   cost at reading the framebuffer when using fillrect but doesn't it cost
+   also to save the text bitmap under the cursor as well ? The question is
+   which cost more.
 
 
 

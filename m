@@ -1,21 +1,22 @@
-From: Andrew C Aitchison <a.c.aitchison@ntlworld.com>
-Subject: Re: Re: [forum] Re: Announcement: Modification
- to the base XFree86(TM) license.
-Date: Sat, 31 Jan 2004 13:06:23 +0000 (GMT)
+From: Thomas Winischhofer <twini@xfree86.org>
+Subject: Re: [forum] Re: Announcement: Modification to the base XFree86(TM)
+ license.
+Date: Sat, 31 Jan 2004 13:27:00 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0401311258330.4585-100000@ard.bishopscourt>
-References: <20040131113753.GA19133@iliana>
+Message-ID: <401B9F14.9030000@xfree86.org>
+References: <20040129115838.A70069@xfree86.org>	<1075423804.12536.28.camel@gaston>	<16410.33783.236964.200047@xf11.fra.suse.de>	<20040130173238.GA8599@iliana> <16410.44981.237411.858354@xf11.fra.suse.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Amuvc-0002dy-O3
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 31 Jan 2004 05:12:52 -0800
-Received: from mta07-svc.ntlworld.com ([62.253.162.47])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Amuvc-0006wb-22
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 31 Jan 2004 05:12:52 -0800
-In-Reply-To: <20040131113753.GA19133@iliana>
+	id 1AmvuX-0007yH-LF
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 31 Jan 2004 06:15:49 -0800
+Received: from [213.229.38.18] (helo=home.winischhofer.net)
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
+	id 1AmvuW-00040s-P5
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 31 Jan 2004 06:15:49 -0800
+In-Reply-To: <16410.44981.237411.858354@xf11.fra.suse.de>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,50 +26,37 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: devel@xfree86.org
-Cc: forum@xfree86.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: devel@XFree86.Org
+Cc: forum@XFree86.Org, linux-fbdev-devel@lists.sourceforge.net
 
-On Sat, 31 Jan 2004, Sven Luther wrote:
-
-> On Sat, Jan 31, 2004 at 09:10:22AM +0000, Andrew C Aitchison wrote:
-> > For several years the mga fb kernel driver has supported dual head and/or
-> > dvi on cards which aren't supported by the XFree86 driver (unless you
-> > use the mga_hal). I've wanted to use kernel code to add this support to 
-> > XFree86, but been put off by the licence problem.
+Egbert Eich wrote:
+> Sven Luther writes:
+>  > 
+>  > Maybe a decision on both parts on this would be ok ? XFree86 could make
+>  > sure the licence of the driver code would not conflict with the GPL,
+>  > keeping the old one for example, and the fbdev driver authors would
+>  > dual-licence the code, both GPL and the old xfree86 licence would do
+>  > just fine. Benjamin, what do you think about this ?
+>  > 
+>  > BTW, CCing this to the linux-fbdev mailing list.
+>  > 
 > 
-> And, have you asked the mgafb driver author about this ?
-> 
-> You can hardly complain about lack of back traffic if you didn't ask him
-> about it, and if you did, it would be interesting to this discussion to
-> know what the problems where.
+> Yes, a personal agreement between driver developers would also work.
+> However they tend to change and other people will make contributions
+> who all would have to agree also. 
+> I don't know if a general dual license agreement in the kernel 
+> file header would be possible. 
 
-"The Author" ?
-This is open source code; there may be 27 authors of the relevant file.
-In XFree86 code I wouldn't know how to find the author of a file without
-looking at that file. My {limited ,mis}understanding of clean room coding 
-makes me wary of reading any source unless I know that its licence will 
-allow me to do what I wish.
+Yes, it is. See the current SiS driver source files.
 
-OK. So I've probably been paranoid and lazy, but if the fbdev licence 
-had been compatible with the XFree86 one, I would have done the work.
-As it is the bar was raised high enough to stop me.
-
-> > So, for one developer at least, the reason there has been no traffic
-> > from fbdev to XFree86 is *directly* because of the licence issue.
-> 
-> Yeah, but again, was it so because of a definite will on the fbdev
-> authors part, or because you didn't ask him ?
-
-Isn't the aim of open source licences is to allow people to use the code
-without tracking down the author and obtaining permission ?
-I can do that with closed source.
+Thomas
 
 -- 
-Andrew C. Aitchison					Cambridge
-			A.C.Aitchison@ntlworld.com
-
+Thomas Winischhofer
+Vienna/Austria
+thomas AT winischhofer DOT net          http://www.winischhofer.net/
+twini AT xfree86 DOT org
 
 
 -------------------------------------------------------

@@ -1,21 +1,22 @@
 From: Andrew Morton <akpm@osdl.org>
-Subject: Fw: [Bugme-new] [Bug 3624] New: radeon drivers don't handle unclean
- X.org exits properly, screwing up resolution settings
-Date: Sat, 23 Oct 2004 12:34:15 -0700
+Subject: Re: [PATCH 1/2] pm2fb: Blanking fixes
+Date: Sun, 24 Oct 2004 03:04:56 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20041023123415.43f2a136.akpm@osdl.org>
+Message-ID: <20041024030456.710a8e84.akpm@osdl.org>
+References: <20041022105432.06df798a@hagrid.bear-cave.org.uk>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CLRgW-0005K2-77
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 23 Oct 2004 12:36:16 -0700
+	id 1CLfH9-0004Hy-EP
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 24 Oct 2004 03:06:59 -0700
 Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CLRgV-0006mR-Lv
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 23 Oct 2004 12:36:16 -0700
+	id 1CLfH9-0006Oz-15
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 24 Oct 2004 03:06:59 -0700
+In-Reply-To: <20041022105432.06df798a@hagrid.bear-cave.org.uk>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,55 +27,18 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-fbdev-devel@lists.sourceforge.net
+To: Jim Hague <jim.hague@acm.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
+Jim Hague <jim.hague@acm.org> wrote:
+>
 
+Whee, lots of fbdev action at present...
 
-Begin forwarded message:
+>  --- drivers/video/pm2fb.c	23 Sep 2004 01:19:45 -0000	1.24
+>  +++ drivers/video/pm2fb.c	19 Oct 2004 08:51:23 -0000
 
-Date: Sat, 23 Oct 2004 09:32:08 -0700
-From: bugme-daemon@osdl.org
-To: bugme-new@lists.osdl.org
-Subject: [Bugme-new] [Bug 3624] New: radeon drivers don't handle unclean X.org exits properly, screwing up resolution settings
-
-
-http://bugme.osdl.org/show_bug.cgi?id=3624
-
-           Summary: radeon drivers don't handle unclean X.org exits
-                    properly, screwing up resolution settings
-    Kernel Version: 2.6.9
-            Status: NEW
-          Severity: normal
-             Owner: davej@codemonkey.org.uk
-         Submitter: luke-jr+linuxbugs@utopios.org
-
-
-Distribution: Gentoo 
-Hardware Environment: 
-  CPU: Athlon64 3200+ 
-  Motherboard: Asus K8V SE 
-  Video Card: ATi Radeon 9200 SE 
-Software Environment: 
-  Linux 2.6.9 
-  X.org 6.8.1 
-Problem Description: radeon drivers don't handle unclean X.org exits properly, 
-screwing up resolution settings 
- 
-Steps to reproduce (a): 
-  1. Take a working X.org configuration 
-  2. Change the pointer device to some non-existant /dev item 
-  3. Attempt to start X 
-  4. Your display is gone 
- 
-Steps to reproduce (b): 
-  1. Take a working X.org configuration 
-  2. Start X 
-  3. Crash X 
-  4. Your console VTs are the wrong resolution and thus do not display 
-properly
-
-------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
+In future, please generate `patch -p1' form patches, thanks.
 
 
 -------------------------------------------------------

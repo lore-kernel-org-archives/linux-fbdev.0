@@ -1,15 +1,17 @@
-From: "Randy.Dunlap" <randy.dunlap@verizon.net>
-Subject: [PATCH] 2.5.69 drm/radeon_cp.c
-Date: Sun, 4 May 2003 20:49:01 -0700
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [PATCH 2.5.68] Epson 1355 Rewrite for 2.5
+Date: Tue, 6 May 2003 20:03:38 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030504204901.20761942.randy.dunlap@verizon.net>
+Message-ID: <Pine.LNX.4.44.0305061957430.14356-100000@phoenix.infradead.org>
+References: <20030501140415.A4518@heavens.murgatroid.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from out006pub.verizon.net ([206.46.170.106] helo=out006.verizon.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19CWyt-0001gt-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 04 May 2003 20:49:35 -0700
+Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19D7ja-0001t9-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 06 May 2003 12:04:15 -0700
+In-Reply-To: <20030501140415.A4518@heavens.murgatroid.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -19,58 +21,32 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: torvalds@transmeta.com, linux-fbdev-devel@lists.sourceforge.net
-Cc: lkml <linux-kernel@vger.kernel.org>, ajoshi@shell.unixbox.com, gareth.hughes@acm.org, faith@redhat.com, jsimmons@infradead.org
-
-Hi,
-
-This patch to 2.5.69 fixes this warning (gcc 3.2):
-drivers/char/drm/radeon_cp.c: In function `radeon_cp_init_ring_buffer':
-drivers/char/drm/radeon_cp.c:908: warning: unsigned int format, different type arg (arg 3)
-drivers/char/drm/radeon_cp.c:908: warning: unsigned int format, different type arg (arg 3)
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Christopher Hoover <ch@murgatroid.com>
+Cc: geert@linux-m68k.org, linux-fbdev-devel@lists.sourceforge.net
 
 
-Is this obvious enough?  Want it to go thru someone?
+> Here's a patch, close to a complete rewrite, that makes the Epson
+> 1355/SED355/S1D1305 work under 2.5.  I tested it thoroughly in 5/6/5
+> truecolor mode on a Ceiva.
+> 
+> N.B., I hacked cfb* a bit so that I could use that code with my own
+> versions of fb_{read|write}*.  This was necessary as this controller
+> only supports 16-bit accesses (at least on ARM ep7212-based Ceiva
+> platform).
 
---
-~Randy
-
-
-
-patch_name:	drm_radeon_dma.patch
-patch_version:	2003-05-04.20:32:09
-author:		Randy.Dunlap <rddunlap@osdl.org>
-description:	fix printk of dma_addr_t
-product:	Linux
-product_versions: linux-2569
-changelog:	print dma_addr_t as unsigned long
-maintainer:	dunno: Ani Joshi (ajoshi@shell.unixbox.com),
-		James Simmons (jsimmons@infradead.org),
-		Gareth Hughes (gareth.hughes@acm.org),
-		Rik Faith (faith@redhat.com)
-diffstat:	=
- drivers/char/drm/radeon_cp.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Your patched bombed on epson1355fb.c. Could you send me your file you are 
+using for it. Also please don't modify the cfb_* functions. I'm familiar 
+with the epson chipsets and the 16 bit access issue. I recommend you write
+your own acceleration functions. In fact I really recommend you use the 
+hardware acceleration. I know thw epson 1385 chip I worked on had 
+acceleration. 
 
 
-diff -Naur ./drivers/char/drm/radeon_cp.c%VID ./drivers/char/drm/radeon_cp.c
---- ./drivers/char/drm/radeon_cp.c%VID	2003-05-04 16:53:06.000000000 -0700
-+++ ./drivers/char/drm/radeon_cp.c	2003-05-04 20:30:30.000000000 -0700
-@@ -903,8 +903,8 @@
- 
- 		RADEON_WRITE( RADEON_CP_RB_RPTR_ADDR,
- 			     entry->busaddr[page_ofs]);
--		DRM_DEBUG( "ring rptr: offset=0x%08x handle=0x%08lx\n",
--			   entry->busaddr[page_ofs],
-+		DRM_DEBUG( "ring rptr: offset=0x%08lx handle=0x%08lx\n",
-+			   (unsigned long) entry->busaddr[page_ofs],
- 			   entry->handle + tmp_ofs );
- 	}
- 
 
 
 -------------------------------------------------------
-This sf.net email is sponsored by:ThinkGeek
-Welcome to geek heaven.
-http://thinkgeek.com/sf
+Enterprise Linux Forum Conference & Expo, June 4-6, 2003, Santa Clara
+The only event dedicated to issues related to Linux enterprise solutions
+www.enterpriselinuxforum.com

@@ -1,17 +1,17 @@
 From: James Simmons <jsimmons@infradead.org>
 Subject: Re: Some questions
-Date: Wed, 5 Mar 2003 18:57:47 +0000 (GMT)
+Date: Wed, 5 Mar 2003 19:02:28 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0303051857070.27760-100000@phoenix.infradead.org>
-References: <3E65EAFB.7020208@winischhofer.net>
+Message-ID: <Pine.LNX.4.44.0303051858250.27760-100000@phoenix.infradead.org>
+References: <1046870342.1291.86.camel@localhost.localdomain>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
+Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18qe5u-0007DD-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 10:58:23 -0800
-In-Reply-To: <3E65EAFB.7020208@winischhofer.net>
+	id 18qeAV-00088i-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 11:03:08 -0800
+In-Reply-To: <1046870342.1291.86.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,19 +23,56 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Thomas Winischhofer <thomas@winischhofer.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Thomas Winischhofer <thomas@winischhofer.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> I am currently porting the SiS framebuffer driver to the - more or less
-> - new API. Better late than never :)
+> > However, I could not manage to gain a graphical console if sisfb is a
+> > module, but fbcon is in the kernel. Is this combination supposed to
+> > work? If so, how?
 > 
-> Anyway, during this, I noticed some issues: (I am using stock 2.5.63 for
-> development, no fbdev patches)
+> No, fbcon will not load unless there's at least one registered fbdev.
+> So, you must compile sisfb statically too.
 
-Please try your driver with the patch I post and tell me what problems you 
-still have. Most of those shoudl have been fixes now.
+I fixed this in my latest patch. You can use con2fb again!!!!!!
 
+> > b) The call to fb_set_var() inside fbcon_resize() is checked for errors,
+> > but not the call to fbcon_resize() from within fbcon_switch(). This
+> > leads to catastrophic drawing errors if the requested mode is not
+> > supported by the low level driver.
+> 
+> Yes, it's a bug.  I think I submitted a patch to fix that, but I'm not
+> sure if James applied it to his tree.
+
+Applied.
+
+> Another solution is to reimplement resizing by fbset.  The code is not
+> very difficult and can be added if most people want it.
+
+:-( 
+
+> Yes, this is a limitation of stty.  It calls con_resize twice (one for
+> row and another for cols, depending on the order of the options) so it
+> will not work if the driver only supports a fixed set of modes.  Another
+> reason to bring back fbset resizing.
+
+???? stty rows 128 cols 48 works for me. It should'nt calling con_resize 
+twice. 
+
+> > 3) About y panning: In the 2.4 version of sisfb, I simply forced the
+> > console to do y panning (unless positively disabled by the user) by
+> > "patching" yres_virtual to the maximum, depending on the available video
+> > memory. I am allowed to do that with the 2.5 API? (The rivafb code makes
+> > be believe so...)
+> 
+> Scrolling mode is now determined by fbcon.  If var->accel_flag is
+> nonzero, scrolling is ypan, otherwise, it's yredraw.  It's because ypan
+> requres a lot of block copy which is slow when done by software.
+> 
+> I still believe though that scrolling should be determined by the
+> driver, not fbcon.
+
+Scrolling needs alot of work. I plan to fix that.
 
 
 

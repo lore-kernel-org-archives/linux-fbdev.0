@@ -2,21 +2,21 @@ From: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
 Subject: Get console sem on fbdev ioctls
 Date: Mon, 29 Mar 2004 16:45:55 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <043001c415a4$ec16e600$d100000a@sbs2003.local>
+Message-ID: <041b01c415a4$ec018940$d100000a@sbs2003.local>
 Reply-To: <benh@kernel.crashing.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B7zb4-000534-Bi
+	id 1B7zb4-000532-2P
 	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 08:26:46 -0800
 Received: from [194.202.64.57] (helo=smtp.paston.co.uk)
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B7zb2-00079r-Li
+	id 1B7zb2-00079e-Gn
 	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Mar 2004 08:26:44 -0800
 Received: from 2003SERVER.sbs2003.local (host213-123-250-229.in-addr.btopenworld.com [213.123.250.229])
-	by smtp.paston.co.uk (Postfix) with ESMTP id 4479F9B2F0
+	by smtp.paston.co.uk (Postfix) with ESMTP id 124D49B2A1
 	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 29 Mar 2004 17:29:52 +0100 (BST)
 Content-Class: urn:content-classes:message
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -31,7 +31,6 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: text/plain; charset="us-ascii"
 To: Administrator@smtp.paston.co.uk
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
-
 
 
 Along with my VT race fixes I sent earlier, this is a patch (that may

@@ -1,38 +1,51 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [BK FBDEV] A few more updates.
-Date: Tue, 25 Mar 2003 20:14:11 +0000 (GMT)
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.44.0303252011360.6228-100000@phoenix.infradead.org>
-References: <1048623026.10476.17.camel@zion.wanadoo.fr>
+Subject: Re: Framebuffer updates.
+Date: Tue, 25 Mar 2003 20:50:47 +0000 (GMT)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.LNX.4.44.0303252049550.6228-100000@phoenix.infradead.org>
+References: <20030325182746.GA8769@iucha.net>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <1048623026.10476.17.camel@zion.wanadoo.fr>
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18xvOH-00064d-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 25 Mar 2003 12:51:26 -0800
+In-Reply-To: <20030325182746.GA8769@iucha.net>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: Florin Iucha <florin@iucha.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> > > Well, actually, creating a workqueue would be overhead since
-> > > it involves one kernel thread per CPU. After more thinking &
-> > > discussion, I beleive you shall rather use keventd existing
-> > > workqueue (schedule_work() will do that)
-> > 
-> > Done. Can you look over this patch and test it. I tested it and it worked 
-> > fine.
+> Where can I find working "modelines" for Radeon 8500?
 > 
-> I don't have a test config at hand right now. The patch looks better,
-> though you didn't remove the spinlock and replace it with some
-> "softer" sync. primitives.
+> I have a 
+>    radeonfb: ATI Radeon 8500 QL DDR SGRAM 64 MB
+> 
+> I am interested in 1024x768 and 1152x864. I have tried the defaults
+> that come with Debian fbset (2.1-8) but I get garbled screen upon
+> changing the video mode. I can 'clear' the console and work more or
+> less normally but the viewport will be just a part of the whole
+> screen.
 
-I didn't get around to removing the spinlock. That is next on the list.
-I just wanted to fix the big problem.  
+Try using stty. I see most people will continue to use fbset so I guess I 
+need to patch it up to do the right thing.
 
-> Note that if fbcon is ever to be rmmod'ed, you need to properly
-> remove the timer and make sure all pending work queues have completed
-> (and make sure the timer won't be re-scheduled by one).
 
-Note support for rmmod fbcon is incomplete. The function giveup_console is 
-really sad but none one ever imagine that the console system would become 
-powerful enough to switch from one driver to another. 
+
+
+-------------------------------------------------------
+This SF.net email is sponsored by:
+The Definitive IT and Networking Event. Be There!
+NetWorld+Interop Las Vegas 2003 -- Register today!
+http://ads.sourceforge.net/cgi-bin/redirect.pl?keyn0001en

@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 3/5] Video Mode Handling - Delete entries from mode list
-Date: Mon, 9 Aug 2004 09:46:01 +0800
+Subject: [PATCH 4/5] Video Mode Handling - Reduce memory footprint of fbdev
+Date: Mon, 9 Aug 2004 09:46:30 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200408090946.01213.adaplas@hotpop.com>
+Message-ID: <200408090946.30692.adaplas@hotpop.com>
 Reply-To: adaplas@pol.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BtzIG-0001Vd-9l
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Aug 2004 18:49:44 -0700
+	id 1BtzIK-0001Vl-1U
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Aug 2004 18:49:48 -0700
 Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1BtzIF-0003u0-Ny
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Aug 2004 18:49:44 -0700
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1BtzIJ-0005dJ-AT
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Aug 2004 18:49:47 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id AA28C776A3F
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  9 Aug 2004 00:56:18 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id 53612776B17
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  9 Aug 2004 00:56:22 +0000 (UTC)
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,11 +34,13 @@ Cc: Andrew Morton <akpm@osdl.org>
 
 Hi,
 
-This is optional but applying it should enhance fbdev functionality.
+This patch is entirely optional.  Its only advantage is reduction of kernel
+size by ~5-6K.
 
-The patch allows removal of entries to the mode list.  This is done by setting the
-var->activate field to FB_ACTIVATE_INV_MODE.  Only modes that are not in
-use by any of the console or by the current var will be deleted.
+a. Mark modedb as __init.
+b. Add CONFIG_FB_MODE_HELPERS.  Unselecting this will uninclude the code for 
+Generalized Timing Formula and the EDID parser on kernel compilation.  These
+are used only by radeonfb, rivafb and i810fb.
 
 The diff is against 2.6.8-rc3-mm1 but should apply cleanly to 2.6.8-rc3-mm2
 as well.
@@ -48,150 +50,125 @@ Tony
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/console/fbcon.c |   35 ++++++++++++++++++++++++++++++++++-
- drivers/video/fbmem.c         |   28 +++++++++++++++++++++++++---
- include/linux/fb.h            |    9 +++++++++
- 3 files changed, 68 insertions(+), 4 deletions(-)
+ Kconfig  |   11 +++++++++++
+ fbmon.c  |   31 +++++++++++++++++++++++++++++++
+ modedb.c |    8 +++++---
+ 3 files changed, 47 insertions(+), 3 deletions(-)
 
-diff -uprN linux-2.6.8-rc3-mm1-orig/drivers/video/console/fbcon.c linux-2.6.8-rc3-mm1/drivers/video/console/fbcon.c
---- linux-2.6.8-rc3-mm1-orig/drivers/video/console/fbcon.c	2004-08-08 22:32:24.759309552 +0800
-+++ linux-2.6.8-rc3-mm1/drivers/video/console/fbcon.c	2004-08-08 22:33:05.726081656 +0800
-@@ -2671,10 +2671,39 @@ static void fbcon_modechanged(struct fb_
- 	}
- }
+diff -uprN linux-2.6.8-rc3-mm1-orig/drivers/video/fbmon.c linux-2.6.8-rc3-mm1/drivers/video/fbmon.c
+--- linux-2.6.8-rc3-mm1-orig/drivers/video/fbmon.c	2004-08-08 22:56:32.990329720 +0800
++++ linux-2.6.8-rc3-mm1/drivers/video/fbmon.c	2004-08-08 22:55:15.680082664 +0800
+@@ -51,6 +51,7 @@
  
-+static void fbcon_mode_deleted(struct fb_info *info,
-+			       struct fb_videomode *mode)
-+{
-+	struct fb_info *fb_info;
-+	struct display *p;
-+	int i, j, found = 0;
-+
-+	/* before deletion, ensure that mode is not in use */
-+	for (i = first_fb_vc; i <= last_fb_vc; i++) {
-+		j = (int) con2fb_map[i];
-+		if (j == -1)
-+			continue;
-+		fb_info = registered_fb[j];
-+		if (fb_info != info)
-+			continue;
-+		p = &fb_display[i];
-+		if (!p || !p->mode)
-+			continue;
-+		if (fb_mode_is_equal(p->mode, mode)) {
-+			found = 1;
-+			break;
-+		}
-+	}
-+	if (!found)
-+		fb_delete_videomode(mode, &info->monspecs.modelist);
-+}
-+
- static int fbcon_event_notify(struct notifier_block *self, 
- 			      unsigned long action, void *data)
- {
--	struct fb_info *info = (struct fb_info *) data;
-+	struct fb_event *event = (struct fb_event *) data;
-+	struct fb_info *info = event->info;
-+	struct fb_videomode *mode;
+ #define FBMON_FIX_HEADER 1
  
- 	switch(action) {
- 	case FB_EVENT_SUSPEND:
-@@ -2686,6 +2715,10 @@ static int fbcon_event_notify(struct not
- 	case FB_EVENT_MODE_CHANGE:
- 		fbcon_modechanged(info);
- 		break;
-+	case FB_EVENT_MODE_DELETE:
-+		mode = (struct fb_videomode *) event->data;
-+		fbcon_mode_deleted(info, mode);
-+		break;
- 	}
- 
++#ifdef CONFIG_FB_MODE_HELPERS
+ struct broken_edid {
+ 	u8  manufacturer[4];
+ 	u32 model;
+@@ -1156,6 +1157,36 @@ int fb_get_mode(int flags, u32 val, stru
+ 	
  	return 0;
-diff -uprN linux-2.6.8-rc3-mm1-orig/drivers/video/fbmem.c linux-2.6.8-rc3-mm1/drivers/video/fbmem.c
---- linux-2.6.8-rc3-mm1-orig/drivers/video/fbmem.c	2004-08-08 22:32:24.784305752 +0800
-+++ linux-2.6.8-rc3-mm1/drivers/video/fbmem.c	2004-08-08 22:32:57.384349792 +0800
-@@ -1083,6 +1083,22 @@ fb_set_var(struct fb_info *info, struct 
- {
- 	int err;
- 
-+	if (var->activate & FB_ACTIVATE_INV_MODE) {
-+		struct fb_videomode mode1, mode2;
-+		struct fb_event event;
-+
-+		fb_var_to_videomode(&mode1, var);
-+		fb_var_to_videomode(&mode2, &info->var);
-+		/* make sure we don't delete the videomode of current var */
-+		if (fb_mode_is_equal(&mode1, &mode2))
-+			return -EINVAL;
-+		event.info = info;
-+		event.data = &mode1;
-+		notifier_call_chain(&fb_notifier_list, FB_EVENT_MODE_DELETE,
-+				    &event);
-+		return 0;
-+	}
-+
- 	if ((var->activate & FB_ACTIVATE_FORCE) ||
- 	    memcmp(&info->var, var, sizeof(struct fb_var_screeninfo))) {
- 		if (!info->fbops->fb_check_var) {
-@@ -1108,9 +1124,12 @@ fb_set_var(struct fb_info *info, struct 
- 			fb_add_videomode(&mode, &info->monspecs.modelist);
- 
- 			if (info->flags & FBINFO_MISC_MODECHANGEUSER) {
-+				struct fb_event event;
-+
- 				info->flags &= ~FBINFO_MISC_MODECHANGEUSER;
-+				event.info = info;
- 				notifier_call_chain(&fb_notifier_list,
--						    FB_EVENT_MODE_CHANGE, info);
-+						    FB_EVENT_MODE_CHANGE, &event);
- 			}
- 		}
- 	}
-@@ -1520,12 +1539,15 @@ int fb_unregister_client(struct notifier
-  */
- void fb_set_suspend(struct fb_info *info, int state)
- {
-+	struct fb_event event;
-+	
-+	event.info = info;
- 	if (state) {
--		notifier_call_chain(&fb_notifier_list, FB_EVENT_SUSPEND, info);
-+		notifier_call_chain(&fb_notifier_list, FB_EVENT_SUSPEND, &event);
- 		info->state = FBINFO_STATE_SUSPENDED;
- 	} else {
- 		info->state = FBINFO_STATE_RUNNING;
--		notifier_call_chain(&fb_notifier_list, FB_EVENT_RESUME, info);
-+		notifier_call_chain(&fb_notifier_list, FB_EVENT_RESUME, &event);
- 	}
  }
++#else
++int fb_parse_edid(unsigned char *edid, struct fb_var_screeninfo *var)
++{
++	return 1;
++}
++void fb_edid_to_monspecs(unsigned char *edid, struct fb_monspecs *specs)
++{
++	specs = NULL;
++}
++char *get_EDID_from_firmware(struct device *dev)
++{
++	return NULL;
++}
++struct fb_videomode *fb_create_modedb(unsigned char *edid, int *dbsize)
++{
++	return NULL;
++}
++void fb_destroy_modedb(struct fb_videomode *modedb)
++{
++}
++int fb_get_monitor_limits(unsigned char *edid, struct fb_monspecs *specs)
++{
++	return 1;
++}
++int fb_get_mode(int flags, u32 val, struct fb_var_screeninfo *var,
++		struct fb_info *info)
++{
++	return -EINVAL;
++}
++#endif /* CONFIG_FB_MODE_HELPERS */
+ 	
+ /*
+  * fb_validate_mode - validates var against monitor capabilities
+diff -uprN linux-2.6.8-rc3-mm1-orig/drivers/video/Kconfig linux-2.6.8-rc3-mm1/drivers/video/Kconfig
+--- linux-2.6.8-rc3-mm1-orig/drivers/video/Kconfig	2004-08-08 22:55:37.046834424 +0800
++++ linux-2.6.8-rc3-mm1/drivers/video/Kconfig	2004-08-08 22:55:09.143076440 +0800
+@@ -38,6 +38,17 @@ config FB
+ 	  (e.g. an accelerated X server) and that are not frame buffer
+ 	  device-aware may cause unexpected results. If unsure, say N.
  
-diff -uprN linux-2.6.8-rc3-mm1-orig/include/linux/fb.h linux-2.6.8-rc3-mm1/include/linux/fb.h
---- linux-2.6.8-rc3-mm1-orig/include/linux/fb.h	2004-08-08 22:32:24.827299216 +0800
-+++ linux-2.6.8-rc3-mm1/include/linux/fb.h	2004-08-08 22:32:42.715579784 +0800
-@@ -159,6 +159,7 @@ struct fb_bitfield {
- #define FB_CHANGE_CMAP_VBL     32	/* change colormap on vbl	*/
- #define FB_ACTIVATE_ALL	       64	/* change all VCs on this fb	*/
- #define FB_ACTIVATE_FORCE     128	/* force apply even when no change*/
-+#define FB_ACTIVATE_INV_MODE  256       /* invalidate videomode */
++config FB_MODE_HELPERS
++        bool "Enable Video Mode Handling Helpers"
++        depends on FB
++	default y
++	---help---
++	  This enables functions for handling video modes using the
++	  Generalized Timing Formula and the EDID parser. A few drivers rely
++          on this feature such as the radeonfb, rivafb, and the i810fb. If
++	  your driver does not take advantage of this feature, choosing Y will
++	  just increase the kernel size by about 5K.   
++
+ config FB_CIRRUS
+ 	tristate "Cirrus Logic support"
+ 	depends on FB && (ZORRO || PCI)
+diff -uprN linux-2.6.8-rc3-mm1-orig/drivers/video/modedb.c linux-2.6.8-rc3-mm1/drivers/video/modedb.c
+--- linux-2.6.8-rc3-mm1-orig/drivers/video/modedb.c	2004-08-08 22:03:39.000000000 +0800
++++ linux-2.6.8-rc3-mm1/drivers/video/modedb.c	2004-08-08 22:55:20.635329352 +0800
+@@ -39,7 +39,7 @@ const char *global_mode_option = NULL;
  
- #define FB_ACCELF_TEXT		1	/* (OBSOLETE) see fb_info.flags and vc_mode */
+ #define DEFAULT_MODEDB_INDEX	0
  
-@@ -449,6 +450,14 @@ struct fb_cursor_user {
-  *	if you own it
+-static const struct fb_videomode modedb[] = {
++static const __init struct fb_videomode modedb[] = {
+     {
+ 	/* 640x400 @ 70 Hz, 31.5 kHz hsync */
+ 	NULL, 70, 640, 400, 39721, 40, 24, 39, 9, 96, 2,
+@@ -251,6 +251,7 @@ static const struct fb_videomode modedb[
+     },
+ };
+ 
++#ifdef CONFIG_FB_MODE_HELPERS
+ const struct fb_videomode vesa_modes[] = {
+ 	/* 0 640x350-85 VESA */
+ 	{ NULL, 85, 640, 350, 31746,  96, 32, 60, 32, 64, 3,
+@@ -374,6 +375,8 @@ const struct fb_videomode vesa_modes[] =
+ 	{ NULL, 60, 1920, 1440, 3367, 352, 144, 56, 1, 224, 3,
+ 	  FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED, FB_MODE_IS_VESA },
+ };
++EXPORT_SYMBOL(vesa_modes);
++#endif /* CONFIG_FB_MODE_HELPERS */
+ 
+ static int my_atoi(const char *name)
+ {
+@@ -404,7 +407,7 @@ static int my_atoi(const char *name)
   */
- #define FB_EVENT_RESUME			0x03
-+/*      An entry from the modelist was removed */
-+#define FB_EVENT_MODE_DELETE            0x04
-+
-+struct fb_event {
-+	struct fb_info *info;
-+	void *data;
-+};
-+
  
- extern int fb_register_client(struct notifier_block *nb);
- extern int fb_unregister_client(struct notifier_block *nb);
+ int fb_try_mode(struct fb_var_screeninfo *var, struct fb_info *info,
+-		  const struct fb_videomode *mode, unsigned int bpp)
++		const struct fb_videomode *mode, unsigned int bpp)
+ {
+     int err = 0;
+ 
+@@ -826,5 +829,4 @@ EXPORT_SYMBOL(fb_destroy_modelist);
+ EXPORT_SYMBOL(fb_match_mode);
+ EXPORT_SYMBOL(fb_find_best_mode);
+ EXPORT_SYMBOL(fb_videomode_to_modelist);
+-EXPORT_SYMBOL(vesa_modes);
+ EXPORT_SYMBOL(fb_find_mode);
+
 
 
 

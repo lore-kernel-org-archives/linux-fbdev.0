@@ -1,66 +1,108 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: FB model basic issues (WAS: radeon, apertures & memory mapping)
-Date: Tue, 15 Mar 2005 17:59:42 +1100
-Message-ID: <1110869983.29138.88.camel@gaston>
-References: <1110677744.19810.80.camel@gaston>
-	<9e47339105031219223e606a52@mail.gmail.com>
-	<1110696189.5787.100.camel@gaston>
-	<1110774523.4003.511.camel@localhost>
-	<1110784327.5787.288.camel@gaston>
-	<1110817205.4004.527.camel@localhost>
-	<1110837171.5863.16.camel@gaston> <1110838356.4003.548.camel@localhost>
-	<1110839873.5673.41.camel@gaston> <1110862777.4044.592.camel@localhost>
-	<20050315060138.GA13064@sci.fi>
+From: Paul Mundt <lethal@linux-sh.org>
+Subject: Re: Re: [PATCH][RFC] Add support for Epson S1D13806 FB
+Date: Tue, 15 Mar 2005 09:17:35 +0200
+Message-ID: <20050315071735.GA5037@linux-sh.org>
+References: <20050314130014.55A073658E8@mail.esiee.fr> <200503142207.57074.adaplas@hotpop.com> <20050314143509.GD2695@linux-sh.org> <200503142306.00236.adaplas@hotpop.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20050315060138.GA13064@sci.fi>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="OgqxwSJOaUobr8KG"
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1DB6JB-00025T-Sy
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Mar 2005 23:17:41 -0800
+Received: from smtp3.pp.htv.fi ([213.243.153.36])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1DB6JB-0005wq-6A
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Mar 2005 23:17:41 -0800
+Content-Disposition: inline
+In-Reply-To: <200503142306.00236.adaplas@hotpop.com>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/xorg>
-List-Post: <mailto:xorg@lists.freedesktop.org>
-List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
-Sender: xorg-bounces@lists.freedesktop.org
-Errors-To: xorg-bounces@lists.freedesktop.org
-Content-Type: text/plain; charset="iso-8859-1"
-To: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Cc: Jon Smirl <jonsmirl@yahoo.com>, Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>, dri-devel@lists.sourceforge.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, xorg@lists.freedesktop.org
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+To: adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 2005-03-15 at 08:01 +0200, Ville Syrj=E4l=E4 wrote:
 
-> If radeonfb will allocate the buffer for the second head from the top o=
-f=20
-> the memory users would basically have to guess it's location. matroxfb=20
-> simply cuts the memory in two pieces and allocates the buffers from the=
-=20
-> start of each piece. I don't really like that approach. Adding a simple=
-=20
-> byte_offset field to fb_var_screeninfo would solve the problem quite=20
-> nicely but I don't know if such API changes are acceptable at this stag=
-e.
+--OgqxwSJOaUobr8KG
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-And we don't know if all HW would support it anyway.
-
-> > > We are thinking with the "new model" in mind, and so far, a mode se=
-tting=20
-> > > is under control of the framebuffer. Content of video memory (frame=
-buffer,
-> > > textures, overlay, whatever) simply cannot be considered as preserv=
-ed
-> > > accross mode switches.
-> > >=20
-> > > We can't also block all evolutions just because we have to support =
-a
-> > > broken model.=20
-> >=20
-> > I'm not suggesting that, but I do think that tying together mode
-> > switching and memory allocation would be a big mistake.
+On Mon, Mar 14, 2005 at 11:06:00PM +0800, Antonino A. Daplas wrote:
+> In the case of hitfb, fillrect and copyarea are both accelerated.  So the=
+ proper flags would
+> be:
 >=20
-> Indeed.
+> FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN | FBINFO_HWACCEL_COPYAREA |
+> FBINFO_HWACCEL_FILLRECT.
+>=20
+Should this not be implied by having something other then the cfb_
+routines for these? On the other hand, will this affect performance
+negatively if these flags remain and we end up wrapping to the cfb_
+routines in certain cases?
 
-The main issue hwoever, is access arbitration. I'd appreciate your
-DirectFB point of view on these things.
+If we consider the case of FBINFO_HWACCEL_COPYAREA:
 
-Ben.
+        if ((cap & FBINFO_HWACCEL_COPYAREA) &&
+            !(cap & FBINFO_HWACCEL_DISABLED))
+                p->scrollmode =3D SCROLL_MOVE;
+        else /* default to something safe */
+                p->scrollmode =3D SCROLL_REDRAW;
+
+
+This doesn't seem like it will work out well if we end up having
+something like (using neofb as an example):
+
+static void
+neofb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
+{
+        switch (info->fix.accel) {
+                case FB_ACCEL_NEOMAGIC_NM2200:
+                case FB_ACCEL_NEOMAGIC_NM2230:
+                case FB_ACCEL_NEOMAGIC_NM2360:
+                case FB_ACCEL_NEOMAGIC_NM2380:
+                        neo2200_copyarea(info, area);
+                        break;
+                default:
+                        cfb_copyarea(info, area);
+                        break;
+        }
+}
+
+The behaviour in this case will be to use SCROLL_MOVE with regards to
+cfb_copyarea() instead of SCROLL_REDRAW as it would normally. If we trust
+the comment, then this seems unsafe or broken.
+
+In this case it would seem to be more sensible to fix neo_alloc_fb_info()
+to only set these flags for those devices where an optimization exists.
+In the case of where using the optimized method depends on a fixed bit
+depth, this issue becomes a bit more problematic.
+
+--OgqxwSJOaUobr8KG
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.6 (GNU/Linux)
+
+iD8DBQFCNowP1K+teJFxZ9wRAtElAJsFYndFr5ODY+fhsJ8UyZ5Q/rF8NACeOgE9
+x1brXWIocYkaHRwhaNP0rJg=
+=PO6Q
+-----END PGP SIGNATURE-----
+
+--OgqxwSJOaUobr8KG--
+
+
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

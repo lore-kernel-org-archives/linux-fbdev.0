@@ -1,23 +1,23 @@
-From: "Carlo E. Prelz" <fluido@fluido.as>
-Subject: Re: fbdev upstream (was: Changing modes with fbset)
-Date: Wed, 24 Dec 2003 09:26:11 +0100
+From: Sergey Vlasov <vsu@altlinux.ru>
+Subject: Re: Radeonfb hsync fudge factor?
+Date: Wed, 24 Dec 2003 12:18:24 +0300
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20031224082611.GC4207@casa.fluido.as>
-References: <3FD6C52C.7090906@undead.cc> <3FDBB97F.4070207@undead.cc> <1072254049.739.61.camel@gaston>
+Message-ID: <20031224091824.GB11706@master.mivlgu.local>
+References: <3FE8D315.1000904@undead.cc>
 Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="s/l3CgOIzMHHjg/5"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AZ4LL-0002fc-MA
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 24 Dec 2003 00:26:11 -0800
-Received: from a205017.upc-a.chello.nl
-	([62.163.205.17] helo=mail.fluido.as ident=mail)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.24)
-	id 1AZ4LL-0004ed-4t
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 24 Dec 2003 00:26:11 -0800
+	id 1AZ59w-00049z-SQ
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 24 Dec 2003 01:18:28 -0800
+Received: from mivlgu.ru ([81.18.140.87] helo=master.mivlgu.local)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.24)
+	id 1AZ59w-0003eL-Eu
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 24 Dec 2003 01:18:28 -0800
 Content-Disposition: inline
-In-Reply-To: <1072254049.739.61.camel@gaston>
+In-Reply-To: <3FE8D315.1000904@undead.cc>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,32 +27,39 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-	Subject: [Linux-fbdev-devel] fbdev upstream (was: Changing modes with fbset)
-	Date: mer, dic 24, 2003 at 07:20:49 +1100
 
-Quoting Benjamin Herrenschmidt (benh@kernel.crashing.org):
+--s/l3CgOIzMHHjg/5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> Since James vanished, I intend to take the most obvious bug fixes
-> and driver updates from his tree into mine, test them, and then
-> submit them one by one to Andrew Morton for 2.6.x inclusion.
+On Tue, Dec 23, 2003 at 06:43:17PM -0500, John Zielinski wrote:
+> What's the hsync fudge factor used for?
+> 
+> I noticed that the left edged of my screen moved a bit when I was 
+> switching between 32/16/8 bpp modes and tracked it down to this.
 
-I SECOND THAT! I am using your latest radeon driver with great
-happiness, and would be very happy to see it also merged into the
-official 2.6 release.
+The same thing here - both with Radeon VE QY and 8500LE (don't remember
+the exact chip version).  Adding the opposite value to the fbset
+parameters puts the image back into the place - so it looks like the hsync
+fudge is unneeded at least with these chipsets.
 
-Merry xmas and all the rest.
+Probably this fudge factor was needed for some early chips?
 
-Carlo
+--s/l3CgOIzMHHjg/5
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
--- 
-  *         Se la Strada e la sua Virtu' non fossero state messe da parte,
-* K * Carlo E. Prelz - fluido@fluido.as             che bisogno ci sarebbe
-  *               di parlare tanto di amore e di rettitudine? (Chuang-Tzu)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.3 (GNU/Linux)
+
+iD8DBQE/6VngW82GfkQfsqIRAl8LAJoCX8VI75blufJGSktdxbwCVev1+gCfWwGI
+SL6j3JWca02Bw3EVwnVijmQ=
+=kpNV
+-----END PGP SIGNATURE-----
+
+--s/l3CgOIzMHHjg/5--
 
 
 -------------------------------------------------------

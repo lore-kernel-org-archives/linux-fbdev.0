@@ -1,21 +1,21 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [PATCH] Provide control of active VGA device on PCI systems
-Date: Sun, 20 Feb 2005 02:07:10 -0500
-Message-ID: <9e473391050219230764b0dfd2@mail.gmail.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Provide control of active VGA
+	device on PCI systems
+Date: Sun, 20 Feb 2005 19:23:51 +1100
+Message-ID: <1108887831.19402.20.camel@gaston>
 References: <9e47339105021921507545d084@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D2lBR-0008A4-Ll
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 19 Feb 2005 23:07:13 -0800
-Received: from rproxy.gmail.com ([64.233.170.192])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1D2lBQ-0003b8-PZ
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 19 Feb 2005 23:07:13 -0800
-Received: by rproxy.gmail.com with SMTP id z35so221689rne
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 19 Feb 2005 23:07:10 -0800 (PST)
+	id 1D2mO2-0002Sb-FJ
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Feb 2005 00:24:18 -0800
+Received: from gate.crashing.org ([63.228.1.57])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1D2mO1-0000bB-R7
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Feb 2005 00:24:18 -0800
 In-Reply-To: <9e47339105021921507545d084@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -28,438 +28,46 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: fbdev <linux-fbdev-devel@lists.sourceforge.net>, Jesse Barnes <jbarnes@sgi.com>
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Jesse Barnes <jbarnes@sgi.com>, Jon Smirl <jonsmirl@gmail.com>
 
-New version to previous patch. This one adds the hotplug event mentioned before.
+On Sun, 2005-02-20 at 00:50 -0500, Jon Smirl wrote:
+> This patch adds a 'vga' attribute to each framebuffer device on PCI
+> systems. For non-PCI hardware it does nothing.
+> 
+> If you have multiple VGA cards loaded, and you have framebuffer
+> drivers loaded for each, you can then set 0/1 into the VGA attributes
+> to move VGA console around to the different screens.
+> 
+> This is almost everything needed to implement reset of secondary
+> cards. ROM access is already in the kernel. This code is needed to
+> make sure you don't end up with multiple VGA devices enabled. All that
+> is left is to construct the proper hotplug event and fix up my user
+> space reset program.
 
-To achieve secondary card reset:
-  Load a framebuffer driver.
-  Driver causes hotplug add event
-  reset=x environment parm indicates reset, primary cards is false
-  run user space reset program
-  read VBIOS content using existing API
-  turn off all VGA devices, sysfs vga=3
-  reset the card
-  restore original VGA devices. sysfs vga=4
-  set sysfs no_reset=1 to prevent further resets
+HI Jon !
 
-Tomorrow I'll clean up a user space reset app and post it.
+Looks good, but in the grand scheme of thing, it would be nice to extend
+the functionality to more than just userspace reset: that is proper
+arbitration of VGA access between X, vgacon, etc...
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+(The goal is to have X stop messing around with PCI at all, just probe
+things via sysfs or whatever new model we might provide, but not
+actually play with PCI resources directly nor modify bridge VGA enables,
+and have it properly arbitrate with anything else wanting to use the VGA
+IOs, including kernel services like vgacon).
 
-diff -Nru a/arch/i386/pci/fixup.c b/arch/i386/pci/fixup.c
---- a/arch/i386/pci/fixup.c	2005-02-20 02:00:57 -05:00
-+++ b/arch/i386/pci/fixup.c	2005-02-20 02:00:57 -05:00
-@@ -375,6 +375,6 @@
- 		}
- 		bus = bus->parent;
- 	}
--	pdev->resource[PCI_ROM_RESOURCE].flags |= IORESOURCE_ROM_SHADOW;
-+	pdev->resource[PCI_ROM_RESOURCE].flags |= IORESOURCE_ROM_SHADOW |
-IORESOURCE_NO_RESET;
- }
- DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, pci_fixup_video);
-diff -Nru a/drivers/video/Makefile b/drivers/video/Makefile
---- a/drivers/video/Makefile	2005-02-20 02:00:57 -05:00
-+++ b/drivers/video/Makefile	2005-02-20 02:00:57 -05:00
-@@ -13,6 +13,7 @@
- # Only include macmodes.o if we have FB support and are PPC
- ifneq ($(CONFIG_FB),n)
- fb-$(CONFIG_PPC)                  += macmodes.o
-+fb-$(CONFIG_PCI)                  += vga.o
- endif
- fb-objs                           := $(fb-y)
- 
-diff -Nru a/drivers/video/fbmem.c b/drivers/video/fbmem.c
---- a/drivers/video/fbmem.c	2005-02-20 02:00:57 -05:00
-+++ b/drivers/video/fbmem.c	2005-02-20 02:00:57 -05:00
-@@ -1067,6 +1067,7 @@
- 		if (!registered_fb[i])
- 			break;
- 	fb_info->node = i;
-+	fb_vga_add_device(fb_info->device);
- 
- 	fb_info->class_device = class_simple_device_add(fb_class, MKDEV(FB_MAJOR, i),
- 				    fb_info->device, "fb%d", i);
-@@ -1130,6 +1131,7 @@
- 		return -EINVAL;
- 	devfs_remove("fb/%d", i);
- 
-+	fb_vga_remove_device(fb_info->device);
- 	if (fb_info->pixmap.addr && (fb_info->pixmap.flags & FB_PIXMAP_DEFAULT))
- 		kfree(fb_info->pixmap.addr);
- 	fb_destroy_modelist(&fb_info->modelist);
-@@ -1203,7 +1205,9 @@
- 	if (IS_ERR(fb_class)) {
- 		printk(KERN_WARNING "Unable to create fb class; errno = %ld\n",
-PTR_ERR(fb_class));
- 		fb_class = NULL;
--	}
-+	} else
-+		class_simple_set_hotplug(fb_class, fb_hotplug);
-+		
- 	return 0;
- }
- 
-diff -Nru a/drivers/video/vga.c b/drivers/video/vga.c
---- /dev/null	Wed Dec 31 16:00:00 196900
-+++ b/drivers/video/vga.c	2005-02-20 02:00:57 -05:00
-@@ -0,0 +1,301 @@
-+/*
-+ * linux/drivers/pci/vga.c
-+ *
-+ * (C) Copyright 2004 Jon Smirl <jonsmirl@gmail.com>
-+ *
-+ * VGA control logic for ensuring only a single enabled VGA device
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/fs.h>
-+#include <linux/cdev.h>
-+#include <linux/pci.h>
-+#include <linux/major.h>
-+
-+static struct pci_dev *vga_active = NULL;
-+
-+static void bridge_yes(struct pci_dev *pdev)
-+{
-+	struct pci_dev *bridge;
-+	struct pci_bus *bus;
-+	
-+	/* Make sure the bridges route to us */
-+	bus = pdev->bus;
-+	while (bus) {
-+		bridge = bus->self;
-+		if (bridge) {
-+			bus->bridge_ctl |= PCI_BRIDGE_CTL_VGA;
-+			pci_write_config_word(bridge, PCI_BRIDGE_CONTROL, bus->bridge_ctl);
-+		}
-+		bus = bus->parent;
-+	}
-+}
-+
-+static void bridge_no(struct pci_dev *pdev)
-+{
-+	struct pci_dev *bridge;
-+	struct pci_bus *bus;
-+	
-+	/* Make sure the bridges don't route to us */
-+	bus = pdev->bus;
-+	while (bus) {
-+		bridge = bus->self;
-+		if (bridge) {
-+			bus->bridge_ctl &= ~PCI_BRIDGE_CTL_VGA;
-+			pci_write_config_word(bridge, PCI_BRIDGE_CONTROL, bus->bridge_ctl);
-+		}
-+		bus = bus->parent;
-+	}
-+}
-+
-+static void vga_enable(struct pci_dev *pdev, unsigned int enable)
-+{
-+	u16 command;
-+	
-+	bridge_yes(pdev);
-+
-+	if (enable) {
-+		pci_enable_device(pdev);
-+		/* this assumes all other potential VGA devices are disabled */
-+		outb(0x01 | inb(0x3C3),  0x3C3);  /* 0 - enable */
-+		outb(0x08 | inb(0x46e8), 0x46e8);
-+		outb(0x01 | inb(0x102),  0x102);
-+		vga_active = pdev;
-+
-+		/* return and leave the card enabled */
-+		return;
-+	}
-+	
-+	pci_read_config_word(pdev, PCI_COMMAND, &command);
-+	pci_write_config_word(pdev, PCI_COMMAND, command | PCI_COMMAND_IO |
-PCI_COMMAND_MEMORY);
-+	
-+	outb(~0x01 & inb(0x3C3),  0x3C3);
-+	outb(~0x08 & inb(0x46e8), 0x46e8);
-+	outb(~0x01 & inb(0x102),  0x102);
-+	if (pdev == vga_active)
-+		vga_active = NULL;
-+	bridge_no(pdev);
-+
-+	pci_write_config_word(pdev, PCI_COMMAND, command);
-+}
-+
-+/* echo these values to the sysfs vga attribute on a VGA device */
-+enum eEnable {
-+	VGA_DISABLE_THIS = 0,	/* If this VGA is enabled, disable it. */
-+	VGA_ENABLE_THIS = 1,	/* Disable all VGAs then enable this VGA, mark
-as active VGA */
-+	/* Used while resetting a board, board being reset may not be the
-active VGA */
-+	VGA_DISABLE_ALL = 2,	/* Remember active VGA then disable all VGAa
-and devices */
-+	VGA_ENABLE_ACTIVE = 3,	/* Make sure all VGAs are disabled, then
-reenable active VGA */
-+	VGA_RESET = 4, 		/* Trigger a reset manually */
-+	VGA_MAX = 5
-+};
-+
-+static void set_state(struct pci_dev *pdev, enum eEnable enable)
-+{
-+	struct pci_dev *pcidev = NULL;
-+	unsigned int class;
-+
-+	if (enable == VGA_DISABLE_THIS)
-+		if (vga_active != pdev)
-+			return;
-+
-+	if (enable == VGA_RESET) {
-+		kobject_hotplug(&pdev->dev.kobj, KOBJ_ADD);
-+		return;
-+	}
-+	
-+	vga_enable(vga_active, 0);
-+
-+	/* loop over all devices and make sure no multiple routings */
-+	while ((pcidev = pci_get_subsys(PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
-PCI_ANY_ID, pcidev)) != NULL) {
-+		class = pcidev->class >> 8;
-+
-+		if (class == PCI_CLASS_DISPLAY_VGA)
-+			bridge_no(pcidev);
-+	}
-+
-+	/* loop over all devices and make sure everyone is disabled */
-+	while ((pcidev = pci_get_subsys(PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
-PCI_ANY_ID, pcidev)) != NULL) {
-+		class = pcidev->class >> 8;
-+
-+		if (class == PCI_CLASS_DISPLAY_VGA)
-+			vga_enable(pcidev, 0);
-+	}
-+
-+	switch (enable) {
-+		/* Mark us active if requested */
-+		case VGA_ENABLE_THIS:
-+			vga_enable(pdev, 1);
-+			break;
-+
-+		/* Restore active device if requested */
-+		case VGA_ENABLE_ACTIVE:
-+			vga_enable(vga_active, 1);
-+			break;
-+
-+		default:
-+			break;
-+	}
-+}
-+
-+/* sysfs store for VGA device */
-+static ssize_t vga_device_store(struct device *dev, const char *buf,
-size_t count)
-+{
-+	char *last;
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	enum eEnable enable;
-+
-+	/* sysfs strings are terminated by \n */
-+	enable = simple_strtoul(buf, &last, 0);
-+	if (last == buf)
-+		return -EINVAL;
-+
-+	if ((enable < VGA_DISABLE_THIS) || (enable >= VGA_MAX))
-+		return -EINVAL;
-+
-+	set_state(pdev, enable);
-+
-+	return count;
-+}
-+
-+/* sysfs show for VGA device */
-+static ssize_t vga_device_show(struct device *dev, char *buf)
-+{
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	return sprintf(buf, "%d\n", vga_active == pdev);
-+}
-+
-+static struct device_attribute vga_device_attr = __ATTR(vga, S_IRUGO|S_IWUSR,
-+		vga_device_show, vga_device_store);
-+
-+
-+static ssize_t no_reset_device_store(struct device *dev, const char
-*buf, size_t count)
-+{
-+	char *last;
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	
-+
-+	/* sysfs strings are terminated by \n */
-+	if (simple_strtoul(buf, &last, 0))
-+		pdev->resource[PCI_ROM_RESOURCE].flags |= IORESOURCE_NO_RESET;
-+	else 
-+		pdev->resource[PCI_ROM_RESOURCE].flags &= ~IORESOURCE_NO_RESET;
-+
-+	return count;
-+}
-+
-+/* sysfs show for VGA device */
-+static ssize_t no_reset_device_show(struct device *dev, char *buf)
-+{
-+	struct pci_dev *pdev = to_pci_dev(dev);
-+	return sprintf(buf, "%d\n", ((pdev->resource[PCI_ROM_RESOURCE].flags
-& IORESOURCE_NO_RESET) ? 1 : 0));
-+}
-+
-+static struct device_attribute no_reset_device_attr =
-__ATTR(no_reset, S_IRUGO|S_IWUSR,
-+		no_reset_device_show, no_reset_device_store);
-+
-+/* Add a VGA sysfs attribute */
-+void fb_vga_add_device(struct device *device)
-+{
-+	struct pci_dev *pdev = to_pci_dev(device);
-+	if (device) {
-+		device_create_file(&pdev->dev, &vga_device_attr);
-+		device_create_file(&pdev->dev, &no_reset_device_attr);
-+	
-+		/* record the active boot device when located */
-+		if ((!vga_active) && (pdev->resource[PCI_ROM_RESOURCE].flags &
-IORESOURCE_ROM_SHADOW))
-+			vga_active = pdev;
-+	}
-+}
-+
-+/* If the device is a VGA or a bridge, remove the VGA sysfs attribute */
-+void fb_vga_remove_device(struct device *device)
-+{
-+	struct pci_dev *pdev = to_pci_dev(device);
-+	struct pci_dev *pcidev = NULL;
-+	int class = pdev->class >> 8;
-+
-+	if (device) {
-+		device_remove_file(&pdev->dev, &vga_device_attr);
-+		device_remove_file(&pdev->dev, &no_reset_device_attr);
-+	
-+		/* if the active VGA device is being removed, try to move VGA to
-another device */
-+		if (vga_active == pdev) {
-+			while ((pcidev = pci_get_subsys(PCI_ANY_ID, PCI_ANY_ID,
-PCI_ANY_ID, PCI_ANY_ID, pcidev)) != NULL) {
-+				class = pcidev->class >> 8;
-+				if (class != PCI_CLASS_DISPLAY_VGA)
-+					continue;
-+				if (pcidev == pdev)
-+					continue;
-+				set_state(pcidev, VGA_ENABLE_THIS);
-+				break;
-+			}
-+			if (pcidev == NULL)
-+				set_state(NULL, VGA_DISABLE_ALL);
-+			
-+		}
-+	}
-+}
-+
-+int fb_hotplug(struct class_device *dev, char **envp, int num_envp,
-+		 char *buffer, int buffer_size)
-+{
-+	struct pci_dev *pdev;
-+	char *scratch;
-+	int i = 0;
-+	int length = 0;
-+
-+	if (!dev)
-+		return -ENODEV;
-+
-+	pdev = to_pci_dev(dev->dev);
-+	if (!pdev)
-+		return -ENODEV;
-+
-+	scratch = buffer;
-+
-+	/* stuff we want to pass to /sbin/hotplug */
-+	envp[i++] = scratch;
-+	length += scnprintf (scratch, buffer_size - length, "PCI_CLASS=%04X",
-+			     pdev->class);
-+	if ((buffer_size - length <= 0) || (i >= num_envp))
-+		return -ENOMEM;
-+	++length;
-+	scratch += length;
-+
-+	envp[i++] = scratch;
-+	length += scnprintf (scratch, buffer_size - length, "PCI_ID=%04X:%04X",
-+			     pdev->vendor, pdev->device);
-+	if ((buffer_size - length <= 0) || (i >= num_envp))
-+		return -ENOMEM;
-+	++length;
-+	scratch += length;
-+
-+	envp[i++] = scratch;
-+	length += scnprintf (scratch, buffer_size - length,
-+			     "PCI_SUBSYS_ID=%04X:%04X", pdev->subsystem_vendor,
-+			     pdev->subsystem_device);
-+	if ((buffer_size - length <= 0) || (i >= num_envp))
-+		return -ENOMEM;
-+	++length;
-+	scratch += length;
-+
-+	envp[i++] = scratch;
-+	length += scnprintf (scratch, buffer_size - length, "PCI_SLOT_NAME=%s",
-+			     pci_name(pdev));
-+	if ((buffer_size - length <= 0) || (i >= num_envp))
-+		return -ENOMEM;
-+	++length;
-+	scratch += length;
-+
-+	envp[i++] = scratch;
-+	length += scnprintf (scratch, buffer_size - length, "RESET=%d",
-+			     ((pdev->resource[PCI_ROM_RESOURCE].flags &
-IORESOURCE_NO_RESET) ? 0 : 1));
-+	if ((buffer_size - length <= 0) || (i >= num_envp))
-+		return -ENOMEM;
-+
-+
-+	envp[i] = NULL;
-+
-+	return 0;
-+}
-diff -Nru a/include/linux/fb.h b/include/linux/fb.h
---- a/include/linux/fb.h	2005-02-20 02:00:57 -05:00
-+++ b/include/linux/fb.h	2005-02-20 02:00:57 -05:00
-@@ -893,6 +893,19 @@
- extern struct fb_cmap *fb_default_cmap(int len);
- extern void fb_invert_cmaps(void);
- 
-+/* drivers/video/vga.c */
-+#ifdef CONFIG_PCI
-+extern void fb_vga_add_device(struct device *device);
-+extern void fb_vga_remove_device(struct device *device);
-+extern int fb_hotplug(struct class_device *dev, char **envp, int num_envp,
-+		       char *buffer, int buffer_size);
-+#else
-+static inline void fb_vga_add_device(struct device *device){}
-+static inline void fb_vga_remove_device(struct device *device){}
-+static inline int fb_hotplug(struct class_device *dev, char **envp,
-int num_envp,
-+			      char *buffer, int buffer_size){return 0;}
-+#endif
-+
- struct fb_videomode {
- 	const char *name;	/* optional */
- 	u32 refresh;		/* optional */
-diff -Nru a/include/linux/ioport.h b/include/linux/ioport.h
---- a/include/linux/ioport.h	2005-02-20 02:00:57 -05:00
-+++ b/include/linux/ioport.h	2005-02-20 02:00:57 -05:00
-@@ -86,6 +86,7 @@
- #define IORESOURCE_ROM_ENABLE		(1<<0)	/* ROM is enabled, same as
-PCI_ROM_ADDRESS_ENABLE */
- #define IORESOURCE_ROM_SHADOW		(1<<1)	/* ROM is copy at C000:0 */
- #define IORESOURCE_ROM_COPY		(1<<2)	/* ROM is alloc'd copy, resource
-field overlaid */
-+#define IORESOURCE_NO_RESET		(1<<3)	/* Don't reset this device */
- 
- /* PC/ISA/whatever - the normal PC address spaces: IO and memory */
- extern struct resource ioport_resource;
+That would require at least a kernel-side API in addition to the
+userland one you are proposing, plus eventually some arbitration between
+clients...
+
+I have no time at the moment to help you there unfortunately, and I
+don't yet have a clear idea of what kind of API to provide for the
+actual ownership control, maybe something like the DRM lock ?
+
+Ben.
+
+
 
 
 -------------------------------------------------------

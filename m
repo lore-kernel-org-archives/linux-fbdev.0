@@ -1,23 +1,21 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
-	one works ;-)
-Date: Sat, 01 May 2004 09:57:32 +1000
+From: Otto Solares <solca@guug.org>
+Subject: Re: [PATCH] neofb patches
+Date: Fri, 30 Apr 2004 18:40:59 -0600
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1083369451.20473.195.camel@gaston>
-References: <Pine.LNX.4.44.0404301703340.12865-100000@phoenix.infradead.org>
+Message-ID: <20040501004059.GD30285@guug.org>
+References: <20040430150627.GB1543@sci.fi> <Pine.LNX.4.44.0404301707110.12865-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BJhtb-0001W7-Id
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Apr 2004 16:58:19 -0700
-Received: from gate.crashing.org ([63.228.1.57] ident=root)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.30)
-	id 1BJhtb-0008FP-68
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Apr 2004 16:58:19 -0700
-In-Reply-To: <Pine.LNX.4.44.0404301703340.12865-100000@phoenix.infradead.org>
+	id 1BJiYf-0001za-ST
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Apr 2004 17:40:45 -0700
+Received: from guug.galileo.edu ([168.234.203.30] helo=guug.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BJiYf-0005cN-Ja
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Apr 2004 17:40:45 -0700
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44.0404301707110.12865-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,23 +26,25 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: James Simmons <jsimmons@infradead.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, John Zielinski <grim@undead.cc>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-> r mode
-> 
-> What do I need? I like to see this idea work.
+On Fri, Apr 30, 2004 at 05:50:07PM +0100, James Simmons wrote:
+> 2) Several of the above libraries depend on mode changing being avaliable 
+>    in fbdev. Take that away and alot of companies will be very upset. I 
+>    tell you if I owned/worked for a company that wrote embedded software 
+>    that changed the video mode via fbdev (which BTW I do) and that was 
+>    taken away I would be very upset!!!! The only we use the fbdev interface
+>    is because it is easy to port our software from one box to another and 
+>    second it does mode switching for us. We don't need to write the mode 
+>    switching for each box. You take that away and the reality is companies
+>    will have no real reason to use the fbdev api anymore. We will just come 
+>    up with our own thing. Do you really want that to happen?
 
-Well... If you have the full EDID block etc..., then you have all you
-need there . 
+I agree.  Mode switching is a core function for a low-level graphics layer.
 
-> > 2) don't care bout the refresh rate once you have that proper mode set
-> > since you use the HW scaler
-> 
-> Okay. You don't have to pass in a mode string with a refresh rate anyways.
-> If it's not a tft then we can pick one basded on user preference.
--- 
-Benjamin Herrenschmidt <benh@kernel.crashing.org>
+-otto
 
 
 

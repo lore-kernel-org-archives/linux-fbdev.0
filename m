@@ -1,130 +1,151 @@
-From: Paulo Marques <pmarques@grupopie.com>
-Subject: Re: [Linux-fbdev-devel] Re: Generic VESA framebuffer driver and Video
- card BOOT?
-Date: Tue, 26 Oct 2004 12:14:04 +0100
-Sender: linuxconsole-dev-admin@lists.sourceforge.net
-Message-ID: <417E317C.2020703@grupopie.com>
-References: <416FB624.31033.1D23BE5@localhost> <416FE8D9.18954.2984F7A@localhost> <200410160841.08441.adaplas@hotpop.com>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: missing savagefb symbols
+Date: Tue, 26 Oct 2004 22:05:44 +0800
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <200410262205.48026.adaplas@hotpop.com>
+References: <20041026021100.0d984515.akpm@osdl.org>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linuxconsole-dev-admin@lists.sourceforge.net>
-In-Reply-To: <200410160841.08441.adaplas@hotpop.com>
-Errors-To: linuxconsole-dev-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linuxconsole-dev>,
-	<mailto:linuxconsole-dev-request@lists.sourceforge.net?subject=unsubscribe>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1CMRqh-0005gw-4F
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 26 Oct 2004 06:58:55 -0700
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CMRqg-00080v-9A
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 26 Oct 2004 06:58:55 -0700
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id 441CE932853
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 26 Oct 2004 13:58:44 +0000 (UTC)
+In-Reply-To: <20041026021100.0d984515.akpm@osdl.org>
+Content-Disposition: inline
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linuxconsole-dev@lists.sourceforge.net>
-List-Help: <mailto:linuxconsole-dev-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linuxconsole-dev>,
-	<mailto:linuxconsole-dev-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linuxconsole-dev>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, Kendall Bennett <KendallB@scitechsoft.com>, Helge Hafting <helgehaf@aitel.hist.no>, linux-kernel@vger.kernel.org, penguinppc-team@lists.penguinppc.org, linuxconsole-dev@lists.sourceforge.net
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Antonino A. Daplas wrote:
-> On Saturday 16 October 2004 06:12, Kendall Bennett wrote:
-> 
->>Helge Hafting <helgehaf@aitel.hist.no> wrote:
->>
->>>On Fri, Oct 15, 2004 at 11:36:04AM -0700, Kendall Bennett wrote:
->>>
->>>>Helge Hafting <helgehaf@aitel.hist.no> wrote:
->>>
->>>That's fine.  What I meant, was please make it independent of the
->>>VESA framebuffer driver, because one might want to use an
->>>acellerated driver when one is available.
->>
->>Oh, it already is. The VESA driver is not actually done yet so the only
->>drivers using VideoBoot right now are the accelerated ones ;-)
->>
-> 
-> 
-> If these get in (emulator with/without the video boot), I'm willing to
-> modify the vesafb driver.
+On Tuesday 26 October 2004 17:11, Andrew Morton wrote:
+> From `make allmodconfig'
+>
+> *** Warning: "savagefb_delete_i2c_busses"
+> [drivers/video/savage/savagefb.ko] undefined! *** Warning:
+> "savagefb_probe_i2c_connector" [drivers/video/savage/savagefb.ko]
+> undefined! *** Warning: "savagefb_create_i2c_busses"
+> [drivers/video/savage/savagefb.ko] undefined! *** Warning: "savagefb_sync"
+> [drivers/video/savage/savagefb.ko] undefined! *** Warning:
+> "savagefb_imageblit" [drivers/video/savage/savagefb.ko] undefined! ***
+> Warning: "savagefb_copyarea" [drivers/video/savage/savagefb.ko] undefined!
+> *** Warning: "savagefb_fillrect" [drivers/video/savage/savagefb.ko]
+> undefined!
+>
+> Maybe doing an EXPORT_SYMBOL will fix this.  Or we need to link those
+> objects together into a single .ko - your call.
 
-Well, I played with the emulator last night to see if I could reduce the 
-code size, so that it would be easier to make it to the official kernel.
+Grr, that's poor planning on my part.  I don't use modules, so I forgot to test
+the savagefb driver.
 
-I only took ops.c and did some transformations, like using a single 
-function to make several operations based on the opcode, instead of a 
-separate function for each opcode, etc.[1]
+I don't think the second option will work without doing a rename (since
+the object name and the module name has the same name). So I'll do the
+EXPORT_SYMBOL fix.
 
-This is the result. Before:
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
+---
+ Kconfig                 |    4 ++--
+ savage/savagefb-i2c.c   |    5 +++++
+ savage/savagefb_accel.c |    5 +++++
+ 3 files changed, 12 insertions(+), 2 deletions(-)
 
-Size of stripped libx86emu.a: ~74kb
-ops.c source code lines: 11682
-ops.o .text size: 36136
-ops.o .data: 1312
-
-After:
-
-Size of stripped libx86emu.a: ~57kb
-ops.c source code lines: 5908
-ops.o .text size: 19320
-ops.o .data: 1280
-
-If the same treatment is applied to ops2.c and prim_ops.c, I believe it 
-would be possible to have a functional emulator for about 32kb of kernel 
-code size, which seems pretty reasonable to me and could solve a lot of 
-problems.
-
-The decrease in source code size also helps maintenance, since there is 
-not so much repeated code has it was before.
-
-Of course, these changes are optimizing the emulator for code size, and 
-not execution speed. I haven't done any benchmarks to see if there is a 
-noticeable difference in speed.
-
-
-
-
-
-
-[1] The worst offenders were actually constructions like:
-
-FETCH_DECODE_MODRM(mod, rh, rl);
-switch (mod) {
-   case 0:
-       ...<some code>
-       addr = decode_rm00_address(rl);
-       ...<some more code>
-       break;
-   case 1:
-       ...<exactly the same code as above>
-       addr = decode_rm01_address(rl);
-       ...<exactly the same code as above>
-       break;
-   case 2:
-       ...<exactly the same code as above>
-       addr = decode_rm10_address(rl);
-       ...<exactly the same code as above>
-       break;
-    case 3:
-       <diferent code to handle register-register ops>
-       break;
-   }
-
-This could be easily changed to:
-
-FETCH_DECODE_MODRM(mod, rh, rl);
-if (mod < 3) {
-       ...<some code>
-       addr = decode_rmXX_address(mod, rl);
-       ...<some more code>
-   } else {
-       <diferent code to handle register-register ops>
-   }
-
-simply by making a new decode_rmXX_address function that handles the mod 
-parameter. There were more than 20 of these, and some of them were 
-pretty big.
-
--- 
-Paulo Marques - www.grupopie.com
-
-All that is necessary for the triumph of evil is that good men do nothing.
-Edmund Burke (1729 - 1797)
+diff -Nru a/drivers/video/Kconfig b/drivers/video/Kconfig
+--- a/drivers/video/Kconfig	2004-10-22 16:37:37 +08:00
++++ b/drivers/video/Kconfig	2004-10-26 21:53:01 +08:00
+@@ -811,7 +811,7 @@
+ 	  will be called savagefb.
+ 
+ config FB_SAVAGE_I2C
+-       bool "Enable DDC2 Support"
++       tristate "Enable DDC2 Support"
+        depends on FB_SAVAGE
+        help
+ 	  This enables I2C support for S3 Savage Chipsets.  This is used
+@@ -823,7 +823,7 @@
+ 	  here.
+        
+ config FB_SAVAGE_ACCEL
+-       bool "Enable Console Acceleration"
++       tristate "Enable Console Acceleration"
+        depends on FB_SAVAGE
+        default n
+        help
+diff -Nru a/drivers/video/savage/savagefb-i2c.c b/drivers/video/savage/savagefb-i2c.c
+--- a/drivers/video/savage/savagefb-i2c.c	2004-10-22 16:37:37 +08:00
++++ b/drivers/video/savage/savagefb-i2c.c	2004-10-26 21:53:01 +08:00
+@@ -197,6 +197,7 @@
+ 
+ 	savage_setup_i2c_bus(&par->chan, "SAVAGE DDC2");
+ }
++EXPORT_SYMBOL(savagefb_create_i2c_busses);
+ 
+ void savagefb_delete_i2c_busses(struct fb_info *info)
+ {
+@@ -206,6 +207,7 @@
+ 		i2c_bit_del_bus(&par->chan.adapter);
+ 	par->chan.par = NULL;
+ }
++EXPORT_SYMBOL(savagefb_delete_i2c_busses);
+ 
+ static u8 *savage_do_probe_i2c_edid(struct savagefb_i2c_chan *chan)
+ {
+@@ -255,3 +257,6 @@
+ 
+ 	return 0;
+ }
++EXPORT_SYMBOL(savagefb_probe_i2c_connector);
++
++MODULE_LICENSE("GPL");
+diff -Nru a/drivers/video/savage/savagefb_accel.c b/drivers/video/savage/savagefb_accel.c
+--- a/drivers/video/savage/savagefb_accel.c	2004-10-22 16:37:38 +08:00
++++ b/drivers/video/savage/savagefb_accel.c	2004-10-26 21:53:01 +08:00
+@@ -26,6 +26,7 @@
+ 	par->SavageWaitIdle(par);
+ 	return 0;
+ }
++EXPORT_SYMBOL(savagefb_sync);
+ 
+ void savagefb_copyarea(struct fb_info *info, const struct fb_copyarea *region) 
+ {
+@@ -60,6 +61,7 @@
+ 	BCI_SEND(BCI_X_Y(dx, dy));
+ 	BCI_SEND(BCI_W_H(region->width, region->height));
+ }
++EXPORT_SYMBOL(savagefb_copyarea);
+ 
+ void savagefb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
+ {
+@@ -87,6 +89,7 @@
+ 	BCI_SEND( BCI_X_Y(rect->dx, rect->dy) );
+ 	BCI_SEND( BCI_W_H(rect->width, rect->height) );
+ }
++EXPORT_SYMBOL(savagefb_fillrect);
+ 
+ void savagefb_imageblit(struct fb_info *info, const struct fb_image *image)
+ {
+@@ -132,4 +135,6 @@
+ 	for (i = 0; i < size; i++)
+ 		BCI_SEND(src[i]);
+ }
++EXPORT_SYMBOL(savagefb_imageblit);
+ 
++MODULE_LICENSE("GPL");
 
 
 

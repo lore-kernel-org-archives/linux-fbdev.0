@@ -1,18 +1,15 @@
-From: Petr Vandrovec <vandrove@vc.cvut.cz>
-Subject: Re: TV Out control and Product selection.
-Date: Tue, 20 Aug 2002 03:31:28 +0200
+From: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] fixes for atyfb
+Date: 20 Aug 2002 18:31:47 -0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20020820013128.GF6988@ppc.vc.cvut.cz>
-References: <C0D45ABB3F45D5118BBC00508BC292DBA94488@imgserv04>
+Message-ID: <36240.926574874$1029886175@news.gmane.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from p042.as-l031.contactel.cz ([212.65.234.234] helo=ppc.vc.cvut.cz)
-	by usw-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17gxtM-0004HV-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 19 Aug 2002 18:33:09 -0700
-Content-Disposition: inline
-In-Reply-To: <C0D45ABB3F45D5118BBC00508BC292DBA94488@imgserv04>
+Received: from [132.248.33.226] (helo=garaged.homeip.net)
+	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17hIR4-0005hV-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 20 Aug 2002 16:29:20 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,43 +20,206 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Francis Reader <freader@imerge.co.uk>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: James Simmons <jsimmons@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Mon, Aug 19, 2002 at 03:52:49PM +0100, Francis Reader wrote:
-> Is it me, or is it becoming extremley difficult to spec a card that supports
-> one of the many fb drivers, AND allow you to control the "tv out"
-> capabilities on board.
+This patch fixes a number of problems in atyfb.
 
-What you want to control?
+- atyfb_encode_var was zeroing the whole var struct, which meant that
+  var.accel_flags got cleared, which meant that aty_init_engine didn't
+  get called, which meant that atyfb_fillrect and atyfb_copyarea
+  caused the chip to hang.
+
+- par needs to be set inside the loop in aty_sleep_notify, since info
+  is different each time around the loop.
+
+- we weren't calling gen_set_disp to set up info->disp.
+
+Paul.
+
+diff -urN linux-2.5/drivers/video/aty/atyfb_base.c pmac-2.5/drivers/video/aty/atyfb_base.c
+--- linux-2.5/drivers/video/aty/atyfb_base.c	Wed Aug 14 09:15:02 2002
++++ pmac-2.5/drivers/video/aty/atyfb_base.c	Mon Aug 19 12:08:33 2002
+@@ -694,6 +694,13 @@
+ 	    (v_sync_pol ? 0 : FB_SYNC_VERT_HIGH_ACT) |
+ 	    (c_sync ? FB_SYNC_COMP_HIGH_ACT : 0);
  
-> Most of the drivers I've come across allow you to control the TV Dacs
-> through X, but have put very little effort in providing fb support for the
-> same device.
-> 
-> ATI are refusing to talk due to IP issues with Macrovision, NVidia only
-> support this functionality through the XFree driver, the SiS driver
-> currently has no standard way of controlling this.
++	var->red.msb_right = 0;
++	var->green.msb_right = 0;
++	var->blue.offset = 0;
++	var->blue.msb_right = 0;
++	var->transp.offset = 0;
++	var->transp.length = 0;
++	var->transp.msb_right = 0;
+ 	switch (pix_width) {
+ #if 0
+ 	case CRTC_PIX_WIDTH_4BPP:
+@@ -702,10 +709,7 @@
+ 		var->red.length = 8;
+ 		var->green.offset = 0;
+ 		var->green.length = 8;
+-		var->blue.offset = 0;
+ 		var->blue.length = 8;
+-		var->transp.offset = 0;
+-		var->transp.length = 0;
+ 		break;
+ #endif
+ 	case CRTC_PIX_WIDTH_8BPP:
+@@ -714,10 +718,7 @@
+ 		var->red.length = 8;
+ 		var->green.offset = 0;
+ 		var->green.length = 8;
+-		var->blue.offset = 0;
+ 		var->blue.length = 8;
+-		var->transp.offset = 0;
+-		var->transp.length = 0;
+ 		break;
+ 	case CRTC_PIX_WIDTH_15BPP:	/* RGB 555 */
+ 		bpp = 16;
+@@ -725,10 +726,7 @@
+ 		var->red.length = 5;
+ 		var->green.offset = 5;
+ 		var->green.length = 5;
+-		var->blue.offset = 0;
+ 		var->blue.length = 5;
+-		var->transp.offset = 0;
+-		var->transp.length = 0;
+ 		break;
+ #if 0
+ 	case CRTC_PIX_WIDTH_16BPP:	/* RGB 565 */
+@@ -737,10 +735,7 @@
+ 		var->red.length = 5;
+ 		var->green.offset = 5;
+ 		var->green.length = 6;
+-		var->blue.offset = 0;
+ 		var->blue.length = 5;
+-		var->transp.offset = 0;
+-		var->transp.length = 0;
+ 		break;
+ #endif
+ 	case CRTC_PIX_WIDTH_24BPP:	/* RGB 888 */
+@@ -749,10 +744,7 @@
+ 		var->red.length = 8;
+ 		var->green.offset = 8;
+ 		var->green.length = 8;
+-		var->blue.offset = 0;
+ 		var->blue.length = 8;
+-		var->transp.offset = 0;
+-		var->transp.length = 0;
+ 		break;
+ 	case CRTC_PIX_WIDTH_32BPP:	/* ARGB 8888 */
+ 		bpp = 32;
+@@ -760,7 +752,6 @@
+ 		var->red.length = 8;
+ 		var->green.offset = 8;
+ 		var->green.length = 8;
+-		var->blue.offset = 0;
+ 		var->blue.length = 8;
+ 		var->transp.offset = 24;
+ 		var->transp.length = 8;
+@@ -870,8 +861,7 @@
+ 
+ #ifdef CONFIG_BOOTX_TEXT
+ 	btext_update_display(info->fix.smem_start,
+-			     (((par->crtc.h_tot_disp >> 16) & 0xff) +
+-			      1) * 8,
++			     (((par->crtc.h_tot_disp >> 16) & 0xff) + 1) * 8,
+ 			     ((par->crtc.v_tot_disp >> 16) & 0x7ff) + 1,
+ 			     info->var.bits_per_pixel,
+ 			     par->crtc.vxres * info->var.bits_per_pixel / 8);
+@@ -905,14 +895,13 @@
+ {
+ 	int err;
+ 
+-	memset(var, 0, sizeof(struct fb_var_screeninfo));
+-
+ 	if ((err = aty_crtc_to_var(&par->crtc, var)))
+ 		return err;
+ 	var->pixclock = par->pll_ops->pll_to_var(info, &par->pll);
+ 
+ 	var->height = -1;
+ 	var->width = -1;
++	var->nonstd = 0;
+ 	return 0;
+ }
+ 
+@@ -1442,15 +1431,15 @@
+ static int aty_sleep_notify(struct pmu_sleep_notifier *self, int when)
+ {
+ 	struct fb_info *info;
+-	struct atyfb_par *par = (struct atyfb_par *) info->fb.par;
++	struct atyfb_par *par;
+ 	int result;
+ 
+ 	result = PBOOK_SLEEP_OK;
+ 
+ 	for (info = first_display; info != NULL; info = par->next) {
+-		struct fb_fix_screeninfo fix;
+ 		int nb;
+ 
++		par = (struct atyfb_par *) info->par;
+ 		nb = fb_display[fg_console].var.yres * info->fix.line_length;
+ 
+ 		switch (when) {
+@@ -1469,7 +1458,7 @@
+ 			if (par->blitter_may_be_busy)
+ 				wait_for_idle(par);
+ 			/* Stop accel engine (stop bus mastering) */
+-			if (par->accel_flags & FB_ACCELF_TEXT)
++			if (info->var.accel_flags & FB_ACCELF_TEXT)
+ 				aty_reset_engine(par);
+ 
+ 			/* Backup fb content */
+@@ -1848,7 +1837,6 @@
+ 	strcpy(info->modename, info->fix.id);
+ 	info->node = NODEV;
+ 	info->fbops = &atyfb_ops;
+-	info->disp = disp;
+ 	info->pseudo_palette = pseudo_palette;
+ 	info->currcon = -1;
+ 	strcpy(info->fontname, fontname);
+@@ -1978,7 +1966,9 @@
+ 	info->var = var;
+ 
+ 	fb_alloc_cmap(&info->cmap, 256, 0);
++	gen_set_disp(-1, info);
+ 
++	var.activate = FB_ACTIVATE_NOW;
+ 	gen_set_var(&var, -1, info);
+ 
+ 	if (register_framebuffer(info) < 0)
+@@ -2383,7 +2373,6 @@
+ 			if (first_display == NULL)
+ 				pmu_register_sleep_notifier
+ 				    (&aty_sleep_notifier);
+-			/* FIXME info->next = first_display; */
+ 			default_par->next = first_display;
+ #endif
+ 		}
+@@ -2410,7 +2399,7 @@
+ 			return -ENOMEM;
+ 		}
+ 		memset(info, 0, sizeof(struct fb_info));
+-		info->fix = atyfb_fix;		
++		info->fix = atyfb_fix;
+ 
+ 		/*
+ 		 *  Map the video memory (physical address given) to somewhere in the
+@@ -2421,7 +2410,7 @@
+ 		info->fix.smem_start = info->screen_base;	/* Fake! */
+ 		default_par->ati_regbase = (unsigned long)ioremap(phys_guiregbase[m64_num],
+ 							  0x10000) + 0xFC00ul;
+-		info->fix.mmio_start = par->ati_regbase; /* Fake! */
++		info->fix.mmio_start = default_par->ati_regbase; /* Fake! */
+ 
+ 		aty_st_le32(CLOCK_CNTL, 0x12345678, default_par);
+ 		clock_r = aty_ld_le32(CLOCK_CNTL, default_par);
+-
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
 
-Matrox also refuses to document it... but because of Matrox refuses to
-release docs for anything after G400, it is not big surprise. 
-
-matroxfb from 2.5.32, or patches from 
-ftp://platan.vc.cvut.cz/pub/linux/matrox-latest/*-tvo*.gz allow you
-to use TVOut on G450/G550. TVOut on G400 is supported for years.
-
-Patch from platan has an additional feature which allows you to change
-brightness/contrast by using 'v4lctl -c /dev/fb0 bright ...'. matroxfb
-supports only composite/svhs output, rgb scart is not supported without
-changing sources.
-
-Please note that G450/G550 hardware can do TV output only from /dev/fb1,
-so you are limited to 15/16/32bpp, without gamma correction, and with
-matroxfb also unaccelerated.
-						Petr Vandrovec
-						vandrove@vc.cvut.cz
-							
 
 
 -------------------------------------------------------

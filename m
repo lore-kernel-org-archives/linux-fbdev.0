@@ -1,61 +1,77 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: radeon, apertures & memory mapping
-Date: Mon, 14 Mar 2005 10:48:19 +1100
-Message-ID: <1110757699.5787.196.camel@gaston>
-References: <1110677744.19810.80.camel@gaston>
-	<20050313082216.GA7362@sci.fi> <1110705646.14684.126.camel@gaston>
-	<20050313103936.GA11002@sci.fi> <1110715499.14684.132.camel@gaston>
-	<9e473391050313081937cde207@mail.gmail.com>
-	<1110750553.5787.155.camel@gaston>
-	<9e47339105031314101c89e50e@mail.gmail.com>
-	<1110752401.19810.177.camel@gaston>
-	<9e47339105031315002a444f00@mail.gmail.com>
-	<20050313232735.GA19781@sci.fi>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: Re: Fw: [PATCH][2.6.11-mm3] CONFIG_FB_ATY linkage error on PPC32
+Date: Mon, 14 Mar 2005 07:47:22 +0800
+Message-ID: <200503140747.22202.adaplas@hotpop.com>
+References: <20050313132844.7270c817.akpm@osdl.org> <9e4733910503131408cd57b01@mail.gmail.com> <20050313151412.060ad5ea.akpm@osdl.org>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-In-Reply-To: <20050313232735.GA19781@sci.fi>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1DAcoA-00040P-Pp
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Mar 2005 15:47:42 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DAco9-0005Dm-9Q
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Mar 2005 15:47:42 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id 63FC7FB24D6
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 13 Mar 2005 23:47:27 +0000 (UTC)
+In-Reply-To: <20050313151412.060ad5ea.akpm@osdl.org>
+Content-Disposition: inline
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/xorg>
-List-Post: <mailto:xorg@lists.freedesktop.org>
-List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
-Sender: xorg-bounces@lists.freedesktop.org
-Errors-To: xorg-bounces@lists.freedesktop.org
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Cc: Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, dri-devel@lists.sourceforge.net, xorg@lists.freedesktop.org
+To: Andrew Morton <akpm@osdl.org>, Jon Smirl <jonsmirl@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, mikpe@csd.uu.se
+
+On Monday 14 March 2005 07:14, Andrew Morton wrote:
+> Jon Smirl <jonsmirl@gmail.com> wrote:
+> > This should be a more general fix. Mikael can you give it a try on ppc
+> >  since I don't have one?
+> >
+> >  If you have time it would also be helpful if you could try building
+> >  all of the ppc drivers both as modules and built-in just to make sure
+> >  they build.
+> >
+> >  There are 77 framebuffer drivers on eight platforms that need to be
+> >  checked. I tried to get them all right but I don't own all of the
+> >  needed hardware.
+>
+> Confused.  Is Tony's patch OK?
+>
+> >  ===== drivers/video/Makefile 1.120 vs edited =====
+> >  --- 1.120/drivers/video/Makefile	2005-03-10 03:39:10 -05:00
+> >  +++ edited/drivers/video/Makefile	2005-03-13 16:56:53 -05:00
+> >  @@ -10,6 +10,9 @@
+> >
+> >   obj-$(CONFIG_FB)                  += fb.o
+> >   fb-y                              := fbmem.o fbmon.o fbcmap.o
+> >  fbsysfs.o modedb.o
+> >  +ifdef $(CONFIG-PPC)
+> >  +fb-y				  += macmodes.o
+> >  +endif
+
+The problem with generalizing macmodes under CONFIG_PPC is that not all
+PPC-based drivers will use macmodes. While most depend on PPC, some require
+PPC_OF, and others PPC_PMAC. It's more flexible if each driver does the
+selection.
+
+Tony
 
 
-> > That shouldn't matter the page brought in would be for a speculative
-> > read and never accessed. It should just fall out of the cache and not
-> > be written back. There is only one cachable mapping. In this model
-> > writes are always followed by a flush before telling the GPU to access
-> > the memory that has just been written.
-> 
-> What about this scenario?
-> 
-> Speculative read -> AGP master writes new data -> CPU has invalid data in 
-> cache :(
 
-First, we must be very careful with AGP master writes. I don't know if
-we do a lot of them currently, but I know a collection of north bridges
-that do not support them.
 
-(Which is interesting, that means that if we want to copy something out
-of video memory, we can't write it to AGP memory and then read it, we
-need to actually do the blit from the CPU, good to know for our memory
-manager. That also means that we have a problem if the video memory
-isn't entirely accessible by the CPU ...)
-
-That's something we should probably think about doing properly: Have a
-list of AGP "issues" (errata ?) bits that are communicated by the AGP
-host driver to the DRM.
-
-At least all the early Apple AGP bridges don't do writes, and I remember
-we have trouble with a few x86 ones as well. There are also issues when
-a single AGP burst crosses a page boundary, and other things like that.
-
-Ben.
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

@@ -1,24 +1,24 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Subject: Re: [PATCH] neofb patches
-Date: Wed, 28 Apr 2004 12:16:56 +0200
+From: Meelis Roos <mroos@linux.ee>
+Subject: [PATCH] fbcursor warning in 2.6.6-rc3
+Date: Wed, 28 Apr 2004 12:31:40 +0300 (EEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1083147416.18416.24.camel@thor.asgaard.local>
-References: <Pine.LNX.4.44.0404271938330.20536-100000@phoenix.infradead.org>
-	 <408EE34F.8080106@undead.cc> <1083107454.16544.42.camel@gaston>
-	 <20040428002037.GE22495@guug.org> <1083112565.20473.10.camel@gaston>
-	 <20040428070832.GA23411@guug.org>
+Message-ID: <Pine.GSO.4.44.0404281221150.24906-100000@math.ut.ee>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIm7h-0006dF-Om
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 03:17:01 -0700
-Received: from netline-mail1.netline.ch ([195.141.226.27])
+	id 1BImNS-0001Ji-O3
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 03:33:18 -0700
+Received: from math.ut.ee ([193.40.5.125] ident=root)
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIm7h-0003OT-DD
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 03:17:01 -0700
-In-Reply-To: <20040428070832.GA23411@guug.org>
+	id 1BImNS-0006vB-6a
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 03:33:18 -0700
+Received: from math.ut.ee (smmsp@localhost [IPv6:::1])
+	by math.ut.ee (8.12.8+Sun/8.12.8/math-1.2) with ESMTP id i3SAWYRY010183
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 28 Apr 2004 13:32:48 +0300 (EEST)
+Received: from localhost (mroos@localhost)
+	by math.ut.ee (8.12.8+Sun/8.12.2/Submit) with ESMTP id i3S9VfWx011267
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 28 Apr 2004 12:31:41 +0300 (EEST)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,36 +28,43 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Otto Solares <solca@guug.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 2004-04-28 at 09:08, Otto Solares wrote:
->=20
-> I like the fbdev abstraction but it has too many limitations:
+This is 2.6.6-rc3 and I get the following warning on several
+architectures:
 
-[...]
+  CC      drivers/video/fbmem.o
+drivers/video/fbmem.c: In function `fb_cursor':
+drivers/video/fbmem.c:917: warning: passing arg 1 of `copy_from_user' discards qualifiers from pointer target type
 
-> - It dangerously coexists currently with the DRM queues and
->   SAREA areas. =20
+The code is
+if (copy_from_user(cursor.image.data, sprite->image.data, size) ||
 
-How does a DRM SAREA matter to a framebuffer device?
+cursor.image.data is const char *. Since copy_from_user actually changes
+that, we should probably cast it manually:
 
-> Both must merge in fbdev.
+===== drivers/video/fbmem.c 1.96 vs edited =====
+--- 1.96/drivers/video/fbmem.c	Wed Apr 21 22:02:56 2004
++++ edited/drivers/video/fbmem.c	Wed Apr 28 12:25:21 2004
+@@ -914,7 +914,7 @@
+ 			return -ENOMEM;
+ 		}
 
-I agree that they should cooperate properly, but I don't see how it
-follows that they must merge.
+-		if (copy_from_user(cursor.image.data, sprite->image.data, size) ||
++		if (copy_from_user((char *)cursor.image.data, sprite->image.data, size) ||
+ 		    copy_from_user(cursor.mask, sprite->mask, size)) {
+ 			kfree(cursor.image.data);
+ 			kfree(cursor.mask);
 
-
---=20
-Earthling Michel D=C3=A4nzer      |     Debian (powerpc), X and DRI develop=
-er
-Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=3Ddaenzer
+-- 
+Meelis Roos (mroos@linux.ee)
 
 
 
 -------------------------------------------------------
 This SF.Net email is sponsored by: Oracle 10g
-Get certified on the hottest thing ever to hit the market... Oracle 10g.=20
-Take an Oracle 10g class now, and we'll give you the exam FREE.=20
-http://ads.osdn.com/?ad_id=3D3149&alloc_id=3D8166&op=3Dclick
+Get certified on the hottest thing ever to hit the market... Oracle 10g. 
+Take an Oracle 10g class now, and we'll give you the exam FREE. 
+http://ads.osdn.com/?ad_id=3149&alloc_id=8166&op=click

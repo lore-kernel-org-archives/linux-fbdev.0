@@ -1,21 +1,21 @@
 From: John Zielinski <grim@undead.cc>
-Subject: Re: Sane behavior of fbset
-Date: Fri, 18 Jun 2004 09:31:40 -0400
+Subject: Re: 2.6.7 still garbage upon start
+Date: Fri, 18 Jun 2004 09:40:42 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <40D2EEBC.1040507@undead.cc>
-References: <200406180945.12444.adaplas@hotpop.com>
+Message-ID: <40D2F0DA.8050706@undead.cc>
+References: <40D21E31.5070904@winischhofer.net> <200406180945.06335.adaplas@hotpop.com> <40D29FCD.7020602@winischhofer.net> <Pine.GSO.4.58.0406181013340.11779@waterleaf.sonytel.be> <40D2E96A.9000605@undead.cc> <Pine.GSO.4.58.0406181516460.11779@waterleaf.sonytel.be>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BbJTF-0004E1-Rz
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 06:31:53 -0700
-Received: from ns2.undead.cc ([216.126.84.18] helo=mail.undead.cc)
+	id 1BbJbt-0005H6-Mh
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 06:40:49 -0700
+Received: from mail.undead.cc ([216.126.84.18])
 	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1BbJTD-0001dB-W1
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 06:31:52 -0700
-In-Reply-To: <200406180945.12444.adaplas@hotpop.com>
+	id 1BbJbt-0003bm-AI
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Jun 2004 06:40:49 -0700
+In-Reply-To: <Pine.GSO.4.58.0406181516460.11779@waterleaf.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,51 +26,27 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: adaplas@pol.net
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Thomas Winischhofer <thomas@winischhofer.net>, Antonino Daplas <adaplas@pol.net>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Antonino A. Daplas wrote:
+Geert Uytterhoeven wrote:
 
->1.  Revert to 2.4 behavior.  This is easy to add since fbdev already has a notifier 
->support. (I already have working code for this). Of course, stty will still work.
+>Hence vgacon should be replaced by dummycon when it's deinitialized.
 >
 >  
 >
-Definitely #1.   The functionality is very easy to add to the kernel as 
-most of it is already in place.
+I like that.  That way we're not depending on the old console driver to 
+do the right thing when in KD_GRAPHICS.  Vgacon currently does but other 
+console drivers might not.
 
->2.  Make the set_var ioctl return immediately if the vc_mode of the current display is 
->KD_TEXT. Basically, fbset becomes an informational utility only. I don't know the 
->repercussions of this with userland fb applications though.
->
+I'll try that out tonight and see how it goes and then post the patch.
+
+>(According to what I learned from the EFI talk at OLS last year) It's worse:
+>you have to talk to the EFI bytecode to draw text on UGA, no direct access to
+>the frame buffer ;-(
 >  
 >
-Several people have already started doing work adding fb mode changing 
-to sysfs.  Fbset will most likely become a wrapper around the sysfs 
-interface.
-
->3.  Modify fbset (and other similar utilities, if there are any) so it also issues an 
->'stty-like' call after a 'set_var' call.   
->
->  
->
-Ug, please no.  That's just asking for trouble.  Now the app would have 
-to figure out what the font size is so that adds a third call.  If the 
-app gets the calculation between x-y -> row-col wrong then the screen 
-would be messed up at best or we'd get an infinite loop at worse (like 
-one of the earlier patches to the kernel did).
-
->Note: As mentioned by many people before, it's almost impossible to completely 
->preserve per-console mode info because of the lack of a per-display var.  So even 
->if we agree to implement #1,  it cannot completely match 2.4 behavior. Also, the lack
->of per-display var means that drivers must be able to handle mode changes without 
->any help.  James' fb_find_mode support in fbcon_resize does partly alleviate this 
->limitation.
->  
->
-Several people on the list are pushing to have per-console var put back 
-in.   This is a far as it should go for the 2.6.x series.  There are 
-more elaborate solutions proposed for the 2.7 kernel.
+Doh.  Let me guess, the interface was designed by a committee.....
 
 John
 

@@ -1,21 +1,22 @@
-From: James Simmons <jsimmons@infradead.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: Re: Usage of readb() and friends...
-Date: Tue, 2 Mar 2004 23:36:53 +0000 (GMT)
+Date: Wed, 03 Mar 2004 10:49:28 +1100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0403022334560.19874-100000@phoenix.infradead.org>
-References: <1078267813.21578.201.camel@gaston>
+Message-ID: <1078271367.21573.212.camel@gaston>
+References: <Pine.LNX.4.44.0403022334560.19874-100000@phoenix.infradead.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AyJeD-0005Qm-W6
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Mar 2004 15:50:01 -0800
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1AyK1O-0002O9-TL
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Mar 2004 16:13:58 -0800
+Received: from gate.crashing.org ([63.228.1.57] ident=root)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1AyJRd-0006qz-7r
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Mar 2004 15:37:01 -0800
-In-Reply-To: <1078267813.21578.201.camel@gaston>
+	id 1AyJWO-0002Ql-E8
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 02 Mar 2004 15:41:56 -0800
+In-Reply-To: <Pine.LNX.4.44.0403022334560.19874-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,28 +26,19 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@infradead.org>
 Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Kars de Jong <jongk@linux-m68k.org>, Richard Zidlicky <rz@linux-m68k.org>, Russell King <rmk@arm.linux.org.uk>, Linux/m68k kernel mailing list <linux-m68k@lists.linux-m68k.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
+>  the code with imageblit calls. The new fb_write 
+> code for some reson tho scrambles the console screen and then scrolls the 
+> screen below where I'm writing. I haven't figured out way yet.
 
-> > On Tue, 2 Mar 2004, Kars de Jong wrote:
-> > > Which reminds me: drivers/video/fbmem.c at least seems to treat the
-> > > return value of ioremap() as a virtual address, since it calls
-> > > copy_{to,from}_user on it directly...
-> > 
-> > You're right. And the trouble there is that you can't easily find out which
-> > ioremap() variant was used...
-> 
-> And... it's illegal to call copy_to/from_user on the return of
-> ioremap anyway. Not only for semantic reasons, but also for practical
-> reasons, for example, ioremap returns non cacheable space on PPC,
-> and copy_to/from_user uses "cache hints" to speed up the copy.
+BTW. Have had a chance to look into those memory corruption issues
+I told you about ? I've been rather busy lately...
 
-Ug. More reason to replace the code with imageblit calls. The new fb_write 
-code for some reson tho scrambles the console screen and then scrolls the 
-screen below where I'm writing. I haven't figured out way yet.
+Ben.
+
 
 
 

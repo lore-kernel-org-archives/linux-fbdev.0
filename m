@@ -1,21 +1,28 @@
-From: "Richard Purdie" <rpurdie@rpsys.net>
-Subject: Re: w100 fb driver
-Date: Thu, 25 Nov 2004 15:19:42 -0000
-Message-ID: <032501c4d302$3970ddf0$0f01a8c0@max>
-References: <021601c4ce58$1111a730$0f01a8c0@max> <200411200610.08802.adaplas@hotpop.com>
+From: Andrew Walrond <andrew@walrond.org>
+Subject: Re: Rivafb won't work with DVI connector
+Date: Thu, 25 Nov 2004 15:27:15 +0000
+Message-ID: <200411251527.15141.andrew@walrond.org>
+References: <200411250807.32040.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CXLPm-00081V-Va
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Nov 2004 07:20:10 -0800
-Received: from tim.rpsys.net ([194.106.48.114] ident=0)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	id 1CXLXg-0000gA-1y
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Nov 2004 07:28:20 -0800
+Received: from externalmx-1.sourceforge.net ([12.152.184.25])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1CXLPl-0006gq-M4
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Nov 2004 07:20:10 -0800
+	id 1CXLXf-0001oR-DN
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Nov 2004 07:28:19 -0800
+Received: from [62.24.231.113] (helo=cenedra.walrond.org)
+	by externalmx-1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1CXLXE-0008CB-CP
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Nov 2004 07:27:53 -0800
+In-Reply-To: <200411250807.32040.adaplas@hotpop.com>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,41 +33,43 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; format="flowed"; charset="us-ascii"; reply-type="original"
+Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: adaplas@hotpop.com
+Cc: "Antonino A. Daplas" <adaplas@hotpop.com>
 
-Antonino A. Daplas:
-[re: inclusion of the w100 driver in the kernel]
-> Should be okay, just wondering why not use the kernel i2c algo's instead
-> of using your own.
+On Thursday 25 Nov 2004 00:07, Antonino A. Daplas wrote:
+>
+> That's assuming 0x31b is supported by your card.  Why not
+> try:
+>
+> vga=ask
+>
+> Choose 'scan', choose the highest size, and check if the panel
+> size changed again.
 
-The kernel's i2c algo's require two way communication and expect the data to
-be ack'ed. In this case, we have no way to read the data back from the spp
-interface so we can't implement all the functions the kernel interface would
-need.
+vesafb 'scan' can only find 80xwhatever text modes with dvi connnection, and 
+upto 132xwhatever text modes with dsub. It does not display any graphics 
+modes at all, and rejects them if I try. (I also tried with vesafb only, 
+nvidafb removed - same result).
 
-> Submit patch inline to this list and CC me.  Preferrably break the patch
-> down into several, hopefully standalone patches.  Add a changelog, and a
-> signed-off line.
+>
+> Well, checking the latest Xorg again, it seems that the nv driver also
+> depends on the BIOS for the panel size.  And they are the people who does
+> have access to the docs.
 
-That sounds fine. I've taken your comments (and those made by Geert 
-Uytterhoeven) onboard and revised the driver. For various reasons, I've 
-moved the driver over the to new device structure which allows me to pass a 
-structure with some hardware specific details to the driver. This means I 
-need to include the header file elsewhere in the kernel. Should/can I move 
-that file to drivers/video in whole or in part (or do something else)?
+Ok; But remember that I can run this screen with DVI connection at 1600x1200 
+just fine with the proprietary nvidia driver. (Infact I routinely run it dual 
+head with both TFTs at 1600x1200, one on dvim one on dsub) so its not the 
+case that it can't be done. Iff the Xorg guys have docs, perhaps they can 
+work out how to do it.
 
-An updated version of the driver is at:
+>
+> Sure, no harm in asking.  But I would rather ask the Xorg people first.  If
 
-http://www.rpsys.net/openzaurus/arm/w100-r1.patch
+Ok, go ask Xorg. If you don't have any luck, I'll get in touch with Nvidia 
+directly and see if they will help.
 
-(its using two header files until I know which approach is preferred)
-
-Thanks,
-
-Richard 
-
+Andrew
 
 
 -------------------------------------------------------

@@ -1,14 +1,14 @@
 From: Thiemo Seufer <ica2_ts@csv.ica.uni-stuttgart.de>
-Subject: [PATCH, 2.4] Add logo drawing support for 8-bit mono
-Date: Sun, 27 Apr 2003 01:35:57 +0200
+Subject: [PATCH, 2.4] static-ify some variables in drivers/video/hpfb.c
+Date: Sun, 27 Apr 2003 01:48:57 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030426233557.GF31642@rembrandt.csv.ica.uni-stuttgart.de>
+Message-ID: <20030426234857.GG31642@rembrandt.csv.ica.uni-stuttgart.de>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from iris1.csv.ica.uni-stuttgart.de ([129.69.118.2])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 199ZDe-00073F-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 26 Apr 2003 16:36:34 -0700
+	id 199ZQB-00059B-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 26 Apr 2003 16:49:31 -0700
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
@@ -26,56 +26,31 @@ Cc: linux-fbdev-devel@lists.sourceforge.net
 
 Hello Geert,
 
-this patch adds logo drawing support for mono visuals with 8 bits
-per pixel. The DECstation's PMAG-AA is such a card.
-
-2.4 only, the 2.5 logo code is very different.
+this declares some variables as static, they aren't used outside
+of this file.
 
 
 Thiemo
 
 
-diff -BurpNX /bigdisk/src/dontdiff linux-orig/drivers/video/fbcon.c linux/drivers/video/fbcon.c
---- linux-orig/drivers/video/fbcon.c	Sat Jan 11 22:55:05 2003
-+++ linux/drivers/video/fbcon.c	Sat Apr 12 15:44:11 2003
-@@ -2339,6 +2342,37 @@ static int __init fbcon_show_logo( void 
- 	    }
- 	    done = 1;
- 	}
-+	if (depth == 8 && p->type == FB_TYPE_PACKED_PIXELS
-+	    && (p->visual == FB_VISUAL_MONO10
-+		|| p->visual == FB_VISUAL_MONO01)) {
-+	    /* depth 8, but only monochrome */
-+		
-+	    unsigned char inverse = 0xff;
-+
-+	    /* monochrome */
-+	    if (p->inverse)
-+		inverse = ~inverse;
-+	    if (p->visual == FB_VISUAL_MONO01)
-+		inverse = ~inverse;
-+
-+	    for( y1 = 0; y1 < LOGO_H; y1++ ) {
-+		src = linux_logo_bw + y1*LOGO_LINE;
-+		dst = fb + y1*line + x;
-+		for( x1 = 0; x1 < LOGO_LINE; x1++ ) {
-+		    u8 bits = *src++ ^ inverse;
-+
-+		    fb_writeb ((bits >> 7) & 0x01, dst++);
-+		    fb_writeb ((bits >> 6) & 0x01, dst++);
-+		    fb_writeb ((bits >> 5) & 0x01, dst++);
-+		    fb_writeb ((bits >> 4) & 0x01, dst++);
-+		    fb_writeb ((bits >> 3) & 0x01, dst++);
-+		    fb_writeb ((bits >> 2) & 0x01, dst++);
-+		    fb_writeb ((bits >> 1) & 0x01, dst++);
-+		    fb_writeb ((bits >> 0) & 0x01, dst++);
-+		}
-+	    }
-+	    done = 1;
-+	}
- #endif
- #if defined(CONFIG_FBCON_AFB) || defined(CONFIG_FBCON_ILBM) || \
-     defined(CONFIG_FBCON_IPLAN2P2) || defined(CONFIG_FBCON_IPLAN2P4) || \
+diff -BurpNX /bigdisk/src/dontdiff linux-orig/drivers/video/hpfb.c linux/drivers/video/hpfb.c
+--- linux-orig/drivers/video/hpfb.c	Wed Sep 11 14:45:21 2002
++++ linux/drivers/video/hpfb.c	Sat Apr 12 15:44:11 2003
+@@ -31,9 +31,11 @@
+ static struct display disp;
+ static struct fb_info fb_info;
+ 
+-unsigned long fb_start, fb_size = 1024*768, fb_line_length = 1024;
+-unsigned long fb_regs;
+-unsigned char fb_bitmask;
++static unsigned long fb_start;
++static unsigned long fb_size = 1024*768;
++static unsigned long fb_line_length = 1024;
++static unsigned long fb_regs;
++static unsigned char fb_bitmask;
+ 
+ #define TC_WEN		0x4088
+ #define TC_REN		0x408c
 
 
 -------------------------------------------------------

@@ -1,20 +1,16 @@
-From: Nicholas Wourms <nwourms@netscape.net>
-Subject: Re: Status of radeonfb in 2.5?
-Date: Fri, 18 Oct 2002 13:21:29 -0400
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [BK PATCHS] fbdev updates.
+Date: Fri, 18 Oct 2002 10:27:59 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <aopfrg$aln$1@main.gmane.org>
-References: <3DACA222.5030409@netscape.net> <20021016223613.17897@192.168.4.1> <3DADD22F.9030508@netscape.net> <1034808341.1229.282.camel@tibook>
-Reply-To: nwourms@netscape.net
+Message-ID: <Pine.LNX.4.33.0210181018470.10832-100000@maxwell.earthlink.net>
+References: <20021015103833.C9771@flint.arm.linux.org.uk>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from main.gmane.org ([80.91.224.249])
+Received: from snipe.mail.pas.earthlink.net ([207.217.120.62])
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 182axm-0002Ml-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Oct 2002 10:31:06 -0700
-Received: from root by main.gmane.org with local (Exim 3.35 #1 (Debian))
-	id 182awp-0003YL-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Oct 2002 19:30:07 +0200
+	id 182b1G-0004FB-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Oct 2002 10:34:42 -0700
+In-Reply-To: <20021015103833.C9771@flint.arm.linux.org.uk>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -24,55 +20,41 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Russell King <rmk@arm.linux.org.uk>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Michel D=E4nzer wrote:
 
-> On Mit, 2002-10-16 at 22:55, Nicholas Wourms wrote:
->>=20
->> A) Is it (or will it ever be) possible to run dual head
->> using two different cards (like radeon & riva-tnt2)?  I know
->> there is still much work to be done, but I was curious if
->> this was even remotely possible.
->=20
-> I think it should theoretically work, but as always the only way to tell
-> is to try it. :)
+> That's fine for me, but I'd expect other people to find problems with it.
+>
+> Would it not be better to allow drivers to decide which type of blanking
+> they want to use depending on the current parameters set via the set_par
+> callback?  Only the drivers themselves know what their fb_blank method is
+> capable of performing.
 
-Well there isn't much on multiheading in the documentation, so I was hoping=
-=20
-for some hints or key insights into how to set this up.  Is there any=20
-special magic that the matrox people use to thell the kernel to initialize =
+Yes the drivers should always have priority. The other stuff is there
+only if the drivers have no power management of any kind. I leave it up to
+the driver write to implement a fb_blank function that handles different
+cases.
 
-both framebuffers?
+> I think with the above you'll inadvertently encourage drivers to mundge
+> the fb_blank function pointer in their set_par method.
 
->=20
->> B) Does anyone have a painless, yet precise way of
->> generating modelines for fb.modes if you are using
->> XFree-4.2?  I only ask because the XFree modelines are all
->> determined by i2c DDC probing, thus there are none in the
->> XF86Config file.
->=20
-> If the X driver supports Option "UseFBDev", you should be able to use
-> fbset with that.
->=20
+Why would you have to mess around with the function pointer. Couldn't you
+just set a flag or fill in a hardware dependent struct that defines what
+states are possible for hardware power management. Then when fb_blank is
+called it uses the information to decide which action to take. I think
+this approach is much more powerful than using a single can_soft_blank
+flag. I like to get ride of can_soft_blank and allow the driver to decide
+on this stuff itself.
 
-Huh?  The problem is that fbset will not work because I need to populate=20
-fb.modes with proper mode lines.  So at the moment fbset won't work at all.=
- =20
-What I was asking, since the documention was written when XFree 3.x was=20
-still in use,  was how do I get (calculate) the modelines for fb.modes=20
-based on the information the i2c DDC probing XFree-4.2.1 outputs in=20
-XFree.0.log?  Or is there a better way?  What might be cool is if the fb=20
-drivers used the lm-sensors(i2c) capabilities to automagically probe the=20
-information and set up the most optimal settings.  Maybe I'm talking too=20
-much about something I'm not all that familiar with...  Still, it would be =
+> There is also the argument about wanting soft blanking, but hardware power
+> saving.
 
-nice =3D).
-
-Cheers,
-Nicholas
-
+Hm. True unfortunely the fbdev layer lacks handling details like that. The
+console system is even worse. This is why a single flag like
+can_soft_blank can actually be a limitation.
 
 
 

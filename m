@@ -1,22 +1,27 @@
-From: Jim Hague <jim.hague@acm.org>
-Subject: Re: pm2fb fixes
-Date: Wed, 21 Apr 2004 11:14:42 +0100 (BST)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
+	one works ;-)
+Date: Wed, 21 Apr 2004 20:36:22 +1000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <XFMail.20040421111442.jim.hague@acm.org>
-References: <20040421015118.2caa6e99@zerocool>
+Message-ID: <1082543782.2076.66.camel@gaston>
+References: <1082339577.15101.4.camel@gaston>
+	 <Pine.LNX.4.44.0404202032210.29160-100000@phoenix.infradead.org>
+	 <12573.10.250.10.1.1082504618.squirrel@sq01.pol.net>
+	 <1082507437.2077.28.camel@gaston>
+	 <Pine.GSO.4.58.0404211027300.7657@waterleaf.sonytel.be>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BGEkq-0006hP-8j
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 03:14:56 -0700
-Received: from cpc3-oxfd2-6-0-cust100.oxfd.cable.ntl.com ([81.103.193.100] helo=fluffy.bear-cave.org.uk)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1BGF6x-0003yU-MJ
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 03:37:47 -0700
+Received: from gate.crashing.org ([63.228.1.57] ident=root)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1BGEkp-0002oO-Qj
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 03:14:56 -0700
-In-Reply-To: <20040421015118.2caa6e99@zerocool>
+	id 1BGF6x-0007ep-9d
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 03:37:47 -0700
+In-Reply-To: <Pine.GSO.4.58.0404211027300.7657@waterleaf.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,30 +32,25 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Marcelo Ramos <mramos@montevideo.com.uy>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Antonino Daplas <adaplas@pol.net>, James Simmons <jsimmons@infradead.org>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On 21-Apr-2004 Marcelo Ramos wrote:
->> This patch fixes this bug, and a silly problem in pm2fb_blank(). There's
->> also some minor tidying.
+On Wed, 2004-04-21 at 18:28, Geert Uytterhoeven wrote:
+> On Wed, 21 Apr 2004, Benjamin Herrenschmidt wrote:
+> > > I find that a soft copyarea is always expensive than a soft imageblit as a
+> > > copyarea will involve an fb read (10-20x slower than fb write).  Tested
+> > > this before with an old pci nvidia card. Not o sure with newer hardware.
+> >
+> > I confirm, reading from the fb shall be avoided at all cost
 > 
-> I applied the patch and now the kernel oops is gone. How can I change the
-> resolution? If I don't specify the mode then i get 640x480-60 but if i use
-> video=pm2fb:mode:1024x768 (or any other resolution) I get 640x400-70. am I
-> passing the driver the argument with a wrong format?
+> This is true for PCI/AGP, but may not be true for unified memory systems.
 
-The 2.6 version of pm2fb currently only has three possible arguments, 'mode',
-'lowvsync' and 'lowhsync'. I think I'm the only person needing the last two.
+Right, but that confirms my opinion that the choice of the technique used
+shall be under control of the driver
 
-When compiled in to the kernel, the argument syntax imitates other 2.6 drivers.
-Arguments are comma separated, and any argument that isn't 'lowvsync' or
-'lowhsync' is assumed to be a modedb specification,'<hres>x<vres>-<refresh>'.
-You probably want:
+Ben.
 
-video=pm2fb:1024x768-70
 
--- 
-Jim Hague - jim.hague@acm.org          Never trust a computer you can't lift.
 
 
 -------------------------------------------------------

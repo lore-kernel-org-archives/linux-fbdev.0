@@ -1,22 +1,30 @@
-From: Ben Collins <bcollins@debian.org>
-Subject: Re: [FBDEV UPDATE] Newer patch.
-Date: Mon, 17 Nov 2003 13:38:05 -0500
+From: "Fido, Martin" <Martin.Fido@eu.sony.com>
+Subject: Implementing an fb driver on a MIPS32 4Kc processor
+Date: Tue, 18 Nov 2003 11:54:36 -0000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20031117183805.GB476@phunnypharm.org>
-References: <20031023234552.GB554@phunnypharm.org> <Pine.LNX.4.44.0310301833140.4560-100000@phoenix.infradead.org>
+Message-ID: <01738C0043536A4DA982AA8B13A0DDFDAF23D7@ukbpebasmsx06>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1ALotG-0004pM-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Nov 2003 11:18:26 -0800
-Received: from bristol.phunnypharm.org ([65.207.35.130])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.24)
-	id 1ALosL-0006C0-59
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 17 Nov 2003 11:17:29 -0800
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0310301833140.4560-100000@phoenix.infradead.org>
+	id 1AM4SZ-0007Ve-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 18 Nov 2003 03:55:55 -0800
+Received: from smtp1.eu.sony.com ([195.212.15.51] helo=relay1.eu.sony.co.jp)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.24)
+	id 1AM4SY-0007hm-Bg
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Nov 2003 03:55:54 -0800
+Received: from eugw.eu.sony.co.jp (eugw.eu.sony.co.jp [43.194.155.188])
+	by relay1.eu.sony.co.jp (8.11.3/8.11.3) with ESMTP id hAIBsUO245720
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 18 Nov 2003 11:54:31 GMT
+Received: from gbisseweymss04.eu.sony.com ([43.194.30.210])
+	by eugw.eu.sony.co.jp (AIX4.3/8.9.3/8.9.3) with ESMTP id LAA274584
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 18 Nov 2003 11:55:50 GMT
+Received: from gbisseweymsx07.eu.sony.com (unverified) by 
+    gbisseweymss04.eu.sony.com (Content Technologies SMTPRS 4.3.10) with 
+    ESMTP id <T65fb1b0b492bc21ed2820@gbisseweymss04.eu.sony.com> for 
+    <linux-fbdev-devel@lists.sourceforge.net>; Tue, 18 Nov 2003 11:55:50 
+    +0000
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -28,42 +36,65 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+To: "'linux-fbdev-devel@lists.sourceforge.net'" <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, Oct 30, 2003 at 06:38:46PM +0000, James Simmons wrote:
-> 
-> > I noticed one thing, and that is that the mach64 used to use software
-> > cursor it seems (I remember wondering why atyfb_cursor was never used
-> > anywhere). It's now using the hw cursor.
-> 
-> Yeap. I'm in the process of getting several driver to use there hardware 
-> cursors.
->  
-> > Also, I notice with this new code that the random vertical shifting of
-> > the console doesn't occur anymore like it does with current 2.6.0-test8
-> > code. For as long as I can remember 2.6.0-test, and way back into
-> > 2.5.5x, this has been a problem with highly active console programs
-> > (mutt, vim, etc...). Good to see it's going away :)
-> 
-> :-)
-> 
-> I have fixed the problems you have reported. I have a newer patch. Note 
-> this is updated with the LCD support. I like to see if the patch works on 
-> sparc. I has updates from the latest 2.4.X kernels. Please give it a try.
-> 
-> http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
-> 
-> Let me know the results.
+Hi guys & gals,
 
-FYI, this new code is working for me on my Blade100. The cursor is much
-better now.
 
--- 
-Debian     - http://www.debian.org/
-Linux 1394 - http://www.linux1394.org/
-Subversion - http://subversion.tigris.org/
-WatchGuard - http://www.watchguard.com/
+I'm trying to implement a frame buffer driver on a MIPS32 4Kc processor,
+using the MontaVista toolkit (2.4.17 kernel). The product is a set top box,
+so the console is on a serial port and the framebuffer is visible on a TV.
+
+The processor has no video memory, so the driver has to allocate memory for
+the frame buffer in RAM, and one of the CPUs registers is given the
+allocated address.
+I'm currently trying to simply insmod my driver and then open /dev/fb/0 and
+read some bytes from the file handle. When the drivers init function is
+called I fill the framebuffer with a colour for debugging.
+
+I can't allocate the buffer with kmalloc as it's too big. If I declare it
+statically or use vmalloc then the CPU doesn't seem to be able to see the
+buffer (I see garbage on the screen). I've tried using virt_to_phys etc but
+this doesn't help (the CPU register doesn't read the top 6 bits of the
+address anyway).
+If I pass the "mem" option to the kernel at boot to reserve some memory and
+then allocate the buffer with ioremap then the CPU can see the buffer.
+This isn't the best solution, since a static buffer has to be big enough to
+hold the max resolution in 32 bit colour mode, which is quite large. It
+would be much better if I could dynamically create the buffer according to
+the res & colour mode requested, but I'm not sure this is possible (I
+believe the memory must be contiguous in physical address space).
+
+The real problem however is that regardless of how I allocate the buffer,
+when reading from the file handle all I see is zeros. I've filled in
+fix.smem_start & fix.smem_len with the address & size of the buffer. Do I
+need to do any more than this? I've filled in info.screen_base in my init
+function as well (possibly incorrectly - what's the best way to determine
+the virtual address?).
+
+I've also tried implementing my own mmap function and calling it from an
+application, but with no success - I figure I need to sort out basic read &
+write from the filehandle first anyway.
+
+Ok, I think my problems are more to do with memory management (or my lack of
+understanding of mm at least) than framebuffers, so please let me know if
+there's a more suitable list I can post my questions too.
+
+
+Many thanks for any advice,
+
+
+Martin.
+
+
+
+***********************************************************************************************
+The information contained in this message or any of its attachments may be confidential and is intended for the exclusive use of the addressee(s). Any disclosure, reproduction, distribution or other dissemination or use of this communication is strictly prohibited without the express permission of the sender. The views expressed in this email are those of the individual and not necessarily those of Sony or Sony affiliated companies. Sony email is for business use only. 
+
+This email and any response may be monitored by Sony United Kingdom Limited.
+(04)
+***********************************************************************************************
+
 
 
 -------------------------------------------------------

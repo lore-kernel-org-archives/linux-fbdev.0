@@ -1,24 +1,19 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Re: Fw: [Bugme-new] [Bug 4218] New: Radeon
- fb doesn't have correct resolution for lcd screen
-Date: Thu, 17 Feb 2005 10:15:54 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0502171015260.30106@numbat.sonytel.be>
-References: <20050215133933.61769fd0.akpm@osdl.org> <1108504048.13376.11.camel@gaston>
- <200502160948.51781.bart@verwilst.be> <Pine.LNX.4.56.0502161955370.23410@pentafluge.infradead.org>
+From: "Randy.Dunlap" <rddunlap@osdl.org>
+Subject: [PATCH] sis: fix sparse warnings
+Date: Wed, 16 Feb 2005 16:41:42 -0800
+Message-ID: <20050216164142.4f30b90a.rddunlap@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D1hlT-0006aW-TJ
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 01:16:03 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1D1hlS-0000Yz-86
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Feb 2005 01:16:03 -0800
-Received: from numbat.sonytel.be (mail.sonytel.be [43.221.60.197])
-	by witte.sonytel.be (8.12.10/8.12.10) with ESMTP id j1H9FvGU028366
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 17 Feb 2005 10:15:58 +0100 (MET)
-In-Reply-To: <Pine.LNX.4.56.0502161955370.23410@pentafluge.infradead.org>
+	id 1D1Zjo-0004Kb-DF
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 16:41:48 -0800
+Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1D1Zjn-0006mf-TW
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Feb 2005 16:41:48 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,25 +24,51 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: thomas@winischhofer.net, adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 16 Feb 2005, James Simmons wrote:
-> Be careful. Don't run radeonfb and vesa fb at the same time!!!
 
-So vesafb should start checking request_mem_region() again, to avoid this.
+sis_main.c needs linux/smp_lock.h;
+also, fix one function return type.
 
-Gr{oetje,eeting}s,
+drivers/video/sis/sis_main.c:2204:2: warning: undefined identifier 'lock_kernel'
+drivers/video/sis/sis_main.c:2206:2: warning: undefined identifier 'unlock_kernel'
+drivers/video/sis/sis_main.c:2204: warning: implicit declaration of function `lock_kernel'
+drivers/video/sis/sis_main.c:2206: warning: implicit declaration of function `unlock_kernel'
+drivers/video/sis/sis_main.c:2275:21: warning: incorrect type in initializer (different type sizes)
+drivers/video/sis/sis_main.c:2275:21:    expected int [signed] ( *fb_compat_ioctl )( ... )
+drivers/video/sis/sis_main.c:2275:21:    got long [signed] ( static [signed] [toplevel] *<noident> )( ... )
+drivers/video/sis/sis_main.c:2275: warning: initialization from incompatible pointer type
 
-						Geert
+Signed-off-by: Randy Dunlap <rddunlap@osdl.org>
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+diffstat:=
+ drivers/video/sis/sis_main.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletion(-)
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+diff -Naurp ./drivers/video/sis/sis_main.c~video_sis_includes ./drivers/video/sis/sis_main.c
+--- ./drivers/video/sis/sis_main.c~video_sis_includes	2005-02-15 13:48:46.145337888 -0800
++++ ./drivers/video/sis/sis_main.c	2005-02-15 21:25:40.381740480 -0800
+@@ -39,6 +39,7 @@
+ #include <linux/moduleparam.h>
+ #endif
+ #include <linux/kernel.h>
++#include <linux/smp_lock.h>
+ #include <linux/spinlock.h>
+ #include <linux/errno.h>
+ #include <linux/string.h>
+@@ -2198,7 +2199,7 @@ sisfb_ioctl(struct inode *inode, struct 
+ }
+ 
+ #ifdef CONFIG_COMPAT
+-static long sisfb_compat_ioctl(struct file *f, unsigned cmd, unsigned long arg, struct fb_info *info)
++static int sisfb_compat_ioctl(struct file *f, unsigned cmd, unsigned long arg, struct fb_info *info)
+ {
+ 	int ret;
+ 	lock_kernel();
+
+---
 
 
 -------------------------------------------------------

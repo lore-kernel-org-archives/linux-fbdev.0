@@ -1,22 +1,26 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
 Subject: Re: Re: [RFC] Video Mode Handling
-Date: Mon, 9 Aug 2004 10:10:18 +0200 (MEST)
+Date: Mon, 9 Aug 2004 16:26:30 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0408091009010.14159@waterleaf.sonytel.be>
-References: <200408090944.01414.adaplas@hotpop.com> <20040808230412.6dc16bf4.akpm@osdl.org>
- <Pine.GSO.4.58.0408090920511.14159@waterleaf.sonytel.be>
- <20040809010326.305620a7.akpm@osdl.org>
+Message-ID: <200408091626.31353.adaplas@hotpop.com>
+References: <200408090944.01414.adaplas@hotpop.com> <20040808230412.6dc16bf4.akpm@osdl.org> <Pine.GSO.4.58.0408090920511.14159@waterleaf.sonytel.be>
+Reply-To: adaplas@pol.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Bu5Ej-0001wi-FB
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Aug 2004 01:10:29 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
+	id 1Bu5UX-0005Dg-Sl
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Aug 2004 01:26:49 -0700
+Received: from smtp-out.hotpop.com ([38.113.3.61])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1Bu5Eh-0006tY-AJ
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Aug 2004 01:10:27 -0700
-In-Reply-To: <20040809010326.305620a7.akpm@osdl.org>
+	id 1Bu5UX-0000hh-Dd
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Aug 2004 01:26:49 -0700
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id 932A7780415
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  9 Aug 2004 07:33:19 +0000 (UTC)
+In-Reply-To: <Pine.GSO.4.58.0408090920511.14159@waterleaf.sonytel.be>
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,69 +30,73 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@osdl.org>
-Cc: Antonino Daplas <adaplas@pol.net>, adaplas@hotpop.com, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Geert Uytterhoeven <geert@linux-m68k.org>, Andrew Morton <akpm@osdl.org>
+Cc: Antonino Daplas <adaplas@pol.net>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Mon, 9 Aug 2004, Andrew Morton wrote:
-> Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > On Sun, 8 Aug 2004, Andrew Morton wrote:
-> > > "Antonino A. Daplas" <adaplas@hotpop.com> wrote:
-> > > > Most fbdev developers are proposing to bring back the per-display var
-> > > >  structures to ease the difficulty of video mode handling.  This proposal
-> > > >  is countered by a few (notably James) in that it severely increases the
-> > > >  memory footprint of the kernel.
-> > >
-> > > Surprised.
-> > >
-> > > By how much does this increase the kernel's memory footprint?
+On Monday 09 August 2004 15:23, Geert Uytterhoeven wrote:
+> On Sun, 8 Aug 2004, Andrew Morton wrote:
+> > "Antonino A. Daplas" <adaplas@hotpop.com> wrote:
+> > > Most fbdev developers are proposing to bring back the per-display var
+> > >  structures to ease the difficulty of video mode handling.  This
+> > > proposal is countered by a few (notably James) in that it severely
+> > > increases the memory footprint of the kernel.
 > >
-> > Indeed, you need a full mode database per driver.
->
-> Sorry, that's way outside my area of knowledge ;)
-
-Each driver needs a list of supported video modes.
-
-> > > And how much simpler would the code be if we were to bring back the
-> > > per-display var structures?
-> > >
-> > > IOW: what's the tradeoff here?
+> > Surprised.
 > >
-> >   - per-display var:
-> >       - increase memory footprint by
-> >         MAX_NR_CONSOLES.*sizeof(struct var_screen_info)
+> > By how much does this increase the kernel's memory footprint?
 >
-> I see no var_screen_info.  sizeof(struct screen_info) is 56 bytes, and
-> there are 63 of them.  This is a negligible amount of memory!
+> Indeed, you need a full mode database per driver.
 
-Sorry, struct fb_var_screeninfo.
-
-> >       + simpler code
-> >       + 100% compatible with 2.4
+Not necessarily.  For drivers which cannot change the videomode, a single
+entry is tops. 
+ 
+>
+> > And how much simpler would the code be if we were to bring back the
+> > per-display var structures?
 > >
-> >   - private modedb:
-> >       - increase memory footprint by full mode database per driver.
-> >       - more complex (and larger) code
-> >       - subtle differences with 2.4, because not the whole var is saved
-> >         (BTW, which fields do you want to save, and which not, so I can
-> > 	 evaluate the impact on some drivers?)
+> > IOW: what's the tradeoff here?
 >
-> Well gee.  If we're talking about 3k, or even 10k or 30k, let's go with the
-> simplest code?
+>   - per-display var:
+>       - increase memory footprint by
+>         MAX_NR_CONSOLES.*sizeof(struct var_screen_info)
+>       + simpler code
+>       + 100% compatible with 2.4
+>
+>   - private modedb:
+>       - increase memory footprint by full mode database per driver.
 
-I agree!
+Note: the private modedb will start with a single entry.  Entries will be added
+each time the user does an fbset.  A typical user will probably use less than 10
+modelines. I personally use only 3.  In contrast, saving the modeline per display 
+already amounts to approximately 64 modelines. 
 
-Gr{oetje,eeting}s,
+Also, the private modedb is needed for the resize/stty path.  Without the private
+modedb, fbcon will use the default modedb.  And the modedb contain entries
+from a mixed hardware.   
 
-						Geert
+>       - more complex (and larger) code
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Yes, larger code. But we eliminate the the static mode database and instead of
+saving sizeof(struct fb_var_screeninfo) per console, we save only 1/2 of that
+per console.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+>       - subtle differences with 2.4, because not the whole var is saved
+
+With the patch, the whole var is saved except for xoffset, yoffset and activate.
+The timings will be derived from the fb_videomode which  is only a pointer in
+the display structure. There should be no difference between 2.4, unless
+xoffset, yoffset and activate are critical to the driver's functioning. 
+ 
+>         (BTW, which fields do you want to save, and which not, so I can
+> 	 evaluate the impact on some drivers?)
+
+All the fields in var are saved, one way or the other,  except for xoffset, yoffset and
+activate.
+
+Tony
+
+
 
 
 -------------------------------------------------------

@@ -1,43 +1,46 @@
-From: Jesper Juhl <juhl-lkml@dif.dk>
-Subject: Re: [Linux-fbdev-devel] [PATCH][resend] drivers/video/kyro/fbdev.c
- ignoring return value of copy_*_user
-Date: Fri, 4 Mar 2005 21:27:15 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0503042126020.2794@dragon.hygekrogen.localhost>
-References: <Pine.LNX.4.62.0503041514110.2794@dragon.hygekrogen.localhost>
- <200503050132.10895.adaplas@hotpop.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [Linux-fbdev-devel] Re: Who is stomping PCI config space?
+Date: Sat, 05 Mar 2005 09:16:34 +1100
+Message-ID: <1109974594.5611.287.camel@gaston>
+References: <9e4733910503031103552514b9@mail.gmail.com>
+	<1109891245.5611.246.camel@gaston>
+	<16936.17851.290824.371736@xf14.local>
 Mime-Version: 1.0
-In-Reply-To: <200503050132.10895.adaplas@hotpop.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: adaplas@pol.net
-Cc: linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>, Paul Mundt <lethal@chaoticdreams.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <16936.17851.290824.371736@xf14.local>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
+	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
+List-Archive: <http://lists.freedesktop.org/archives/xorg>
+List-Post: <mailto:xorg@lists.freedesktop.org>
+List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
+List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
+	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
+Sender: xorg-bounces@lists.freedesktop.org
+Errors-To: xorg-bounces@lists.freedesktop.org
+Content-Type: text/plain; charset="us-ascii"
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Xserver development <xorg@freedesktop.org>
 
-On Sat, 5 Mar 2005, Antonino A. Daplas wrote:
-
-> On Friday 04 March 2005 22:26, Jesper Juhl wrote:
-> > Hi,
-> >
-> > 2.6.11 still contain these warnings :
-> >
-> > drivers/video/kyro/fbdev.c:597: warning: ignoring return value of
-> > `copy_from_user', declared with attribute warn_unused_result
-> > drivers/video/kyro/fbdev.c:607: warning: ignoring return value of
-> > `copy_from_user', declared with attribute warn_unused_result
-> > drivers/video/kyro/fbdev.c:628: warning: ignoring return value of
-> > `copy_to_user', declared with attribute warn_unused_result
-> > drivers/video/kyro/fbdev.c:631: warning: ignoring return value of
-> > `copy_to_user', declared with attribute warn_unused_result
-> > drivers/video/kyro/fbdev.c:634: warning: ignoring return value of
-> > `copy_to_user', declared with attribute warn_unused_result
-> >
-> > Here's a patch that has been send before but obviously didn't make it in.
-> > re-diff'ed against 2.6.11
+On Fri, 2005-03-04 at 12:25 +0100, Egbert Eich wrote:
+> Benjamin Herrenschmidt writes:
+>  > 
+>  > I had a report of something similar with X and a mach64 ... I haven't
+>  > yet investigated, but basically, X is using "fbdev" (so no specific
+>  > driver) and seem to be disabling memory access to the card, thus blowing
+>  > up the kernel fbdev.
+>  > 
 > 
-> Your patch is already in the mm tree along with the other fbdev patches.
+> Benjamin,
 > 
-Yeah, I'm an idiot, I had forgotten about that. Sorry for the noice.
+> I faintly remember adding code to the Xserver that it wouldn't do this
+> when you only used fbdev drivers. 
+> It may do this for setup (ie. probing) as it has no idea about the drivers
+> it is going to encounter. With the new interface I've added we may actually
+> change this. I'm already doing this to determine if I need to enable PIO.
+> 
+> I need to look at this code again, though.
 
--- 
-Jesper
+Ok. In this case, the fbdev only uses mmio. Anyway, I'll investigate as
+soon as I can install the repro case (FC3 distro) on an mach64 machine,
+probably early next week.

@@ -1,23 +1,25 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [announce 0/7] fbsplash - The Framebuffer Splash
-Date: Wed, 9 Mar 2005 01:02:25 -0500
-Message-ID: <9e473391050308220218cc26a3@mail.gmail.com>
-References: <20050308015731.GA26249@spock.one.pl>
-	 <200503091301.15832.adaplas@hotpop.com>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: Re: [PATCH 8/10] fbdev: Allow core fb to be
+ built as a module
+Date: Tue, 8 Mar 2005 22:50:28 -0800
+Message-ID: <20050308225028.2b1015b4.akpm@osdl.org>
+References: <200503060816.55890.adaplas@hotpop.com>
+	<9e47339105030720507cc34a68@mail.gmail.com>
+	<20050307205808.60301d30.akpm@osdl.org>
+	<200503091348.35322.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D8uH5-0005Wh-Pw
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 08 Mar 2005 22:02:27 -0800
-Received: from rproxy.gmail.com ([64.233.170.198])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1D8uH4-0003JA-Cf
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 08 Mar 2005 22:02:27 -0800
-Received: by rproxy.gmail.com with SMTP id i8so113806rne
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 08 Mar 2005 22:02:25 -0800 (PST)
-In-Reply-To: <200503091301.15832.adaplas@hotpop.com>
+	id 1D8v27-0007Xw-Rq
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 08 Mar 2005 22:51:03 -0800
+Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1D8v22-0003pz-Qf
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 08 Mar 2005 22:51:03 -0800
+In-Reply-To: <200503091348.35322.adaplas@hotpop.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,49 +31,69 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Michal Januszewski <spock@gentoo.org>, linux-kernel@vger.kernel.org, "Antonino A. Daplas" <adaplas@hotpop.com>
+To: adaplas@pol.net
+Cc: adaplas@hotpop.com, linux-fbdev-devel@lists.sourceforge.net, jonsmirl@gmail.com
 
-On Wed, 9 Mar 2005 13:01:15 +0800, Antonino A. Daplas
-<adaplas@hotpop.com> wrote:
-> On Tuesday 08 March 2005 09:57, Michal Januszewski wrote:
-> > Fbsplash - The Framebuffer Splash - is a feature that allows displaying
-> > images in the background of consoles that use fbcon. The project is
-> > partially descended from bootsplash.
+"Antonino A. Daplas" <adaplas@hotpop.com> wrote:
+>
+> On Tuesday 08 March 2005 12:58, Andrew Morton wrote:
+> > Jon Smirl <jonsmirl@gmail.com> wrote:
+> > > Did you fix this or do I need to send another patch?
 > >
-> > Unlike bootsplash, fbsplash has no in-kernel image decoder. Picture
-> > decompression is handled by a userspace helper which provides raw image
-> > data to the kernel. There is also no support for things like the silent
-> > mode and progress bars, as these are best handled by userspace programs.
+> > I fixed it.
+> >
+> >
+> >
+> > We seem to have a few newish fbdev bugs btw:
+> >
+> > From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+> > To: linux-kernel@vger.kernel.org, jim.hague@acm.org,
+> > linux-fbdev-devel@lists.sourceforge.net Subject: [2.6.11 Permedia-2
+> > Framebuffer] driver broken (?).
 > >
 > 
-> If splash support is really, really, really wanted in the kernel, it's probably better
-> to just add minimal Overlay support for the framebuffer.  If overlay is added, it
-> won't be necessary to modify fbcon and the drivers, just core fb.
+> Resolved by Jim Hague in another thread.  If you haven't seen it yet,
+> here's the patch.
 > 
-> We can have 3 levels of support.  In it's most basic form, we have the display
-> layer (what get's shown in your monitor) plus 2 buffers in system ram, the
-> primary layer (where the console output is written) and the overlay, the
-> static image in raw framebuffer format.  Then we replace the basic
-> framebuffer operations (imageblit, fillrect and copyarea) with ones that
-> will read the contents of both buffers, do basic raster ops (colorkey, alpha
-> blend, etc) before writing to the actual display buffer.
-> 
-> The next level is both buffers are in video ram. This will need basic driver
-> support, at least to subdivide the framebuffer memory to display, primary,
-> and overlay.  We can use the drivers accelerated drawing functions to
-> write to the primary layer, then use software to write the processed
-> contents to the display layer.
-> 
-> Finally, we can enable full hardware video overlay.
+> --- drivers/video/pm2fb.c.orig  2005-03-07 15:35:28.000000000 +0000
+> +++ drivers/video/pm2fb.c       2005-03-07 18:34:13.000000000 +0000
+> @@ -747,7 +747,7 @@
+>         }
+>         if ((info->var.vmode & FB_VMODE_MASK)==FB_VMODE_DOUBLE)
+>                 video |= PM2F_LINE_DOUBLE;
+> -       if (info->var.activate==FB_ACTIVATE_NOW)
+> +       if ((info->var.activate & FB_ACTIVATE_MASK)==FB_ACTIVATE_NOW)
+>                 video |= PM2F_VIDEO_ENABLE;
+>         par->video = video;
 
-Another idea would be to build a console is user space. Think of it as
-a full screen xterm. A user space console has access to full hardware
-acceleration using the DRM interface.
+OK, thanks.  I'll wait until your next patch drop for this.
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+> 
+> >
+> > From: Henrik Persson <root@fulhack.info>
+> > To: unlisted-recipients:;;@localhost.localdomain (no To-header on input)
+> > Cc: dtor@mail.ru, linux-kernel@vger.kernel.org
+> > Subject: Re: Touchpad "tapping" changes in 2.6.11?
+> >
+> > 	("Well, -mm1 didn't quite agree with my savage gfx drivers")
+> 
+> Any details on this?
+> 
+
+Yeah, it was just a compile error due to the support-multiple-AGP-bridges
+API change.  No doubt the devleopers will fix that up soon.  
+
+Henrik said he's using drivers from:
+
+ CVS (from mesa, xorg and dri cvs all-in-one) snapshots at 
+ http://dri.freedesktop.org/snapshots/
+
+ I don't really know why it isn't merged. It's under pretty heavy 
+ development right now, but maybe it could get into -mm anyway?
+
+ Felix Khling <fxkuehl@gmx.de> is the driver hacker. He should know more.
+
+A DRI driver, I guess.  Are we planning on merging that in?
 
 
 -------------------------------------------------------

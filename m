@@ -1,17 +1,14 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: RE: [PATCH 2.5.68] Epson 1355 Rewrite for 2.5
-Date: Tue, 13 May 2003 23:32:39 +0100 (BST)
+From: "Cheshire Cat Fish" <cat_fish@hotmail.com>
+Subject: Questions on more than one framebuffer device
+Date: Tue, 13 May 2003 16:23:14 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0305132326190.12672-100000@phoenix.infradead.org>
-References: <Pine.GSO.4.21.0305080731520.12135-100000@vervain.sonytel.be>
+Message-ID: <Law15-F5CBlGkVf370S0001c98e@hotmail.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19FiKk-0001Gz-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 13 May 2003 15:33:18 -0700
-In-Reply-To: <Pine.GSO.4.21.0305080731520.12135-100000@vervain.sonytel.be>
+Received: from f5.law15.hotmail.com ([64.4.23.5] helo=hotmail.com)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19Fj7E-0006zk-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 13 May 2003 16:23:24 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,33 +18,122 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; format=flowed; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Christopher Hoover <ch@murgatroid.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
 
-> > I have put alot of though and even tested some raw code for this. The 
-> > issue with just replacing the FB_WRITE and FB_READ stuff is more than one 
-> > card could be present and each would require a different FB_WRITE. This 
-> > would conflict. So what do we do? Ah the answer is use struct pixmap to 
-> 
-> It would not conflict with multiple cards, since if you set some defines and
-> #include the cfb* sources, you would get routines with slightly different
-> names, cfr. Christopher's approach.
+I asked some questions about this earlier, and didn't see any replies, but 
+maybe I missed them.
 
-  I have some code but I realized it is more of a challege than I thought. 
-I don't see how one can nearly use the same code as in cfb*.c files for 16 
-bit access since the whole idea behind the cfb*.c files is to write 32/64 
-bit data at a time to the framebuffer. It would require a very different 
-logic. There is just to many BITS_PER_LONG and stuff in the code. 
-  At present I moved the code over to using the struct pixmap fields. In 
-theory just changing the scan_align value should work. It doesn't tho :-(
-Chris coudl you send me what you have tho. Just merge in your version of 
-the cfb* functions into your driver for now. 
-  Currently I'm trying to push a bunch to Linus. So I like to push your 
-driver.
- 
+Anyway,  I am writing an framebuffer driver for my client's graphics card.  
+The driver needs to be able to driver multiple adapters, mapping one to 
+/dev/fb0, the next to /dev/fb1, the next to /dev/fb2, etc.
+
+This seems to be working.  I call "register_framebuffer" for each card I 
+find in the system, and the proper devices seem to be created.
+
+The problem comes when I run X with two cards in the system.  I can run X on 
+either card ok.  When I try to run X on both devices at the same time, some 
+things don't get drawn, and the screen doesn't always repaint right.  What 
+does get drawn, is drawn to the correct screen, just some drawing operations 
+seem to be dropped.
+
+My problem is that I am not sure where to start looking for the problem.  
+Since each display works fine by itself, I don't understand why using them 
+together would cause some drawing operations not to happen.
+
+I am wondering if I even have X configured right.  I tried setting up X to 
+run on one of my cards plus an s3, and that also worked fine, so I think I 
+am setting things up right for multiple screens.
+
+Below are the screen and device sections of my XF86Config file:
+
+Section "Device"
+	Identifier  "Videocard1"
+	Driver      "fbdev"
+	Option	    "fbdev" "/dev/fb0"
+	VendorName  "Video Card Vender"
+	BoardName   "Video Card Board"
+	VideoRam    8192
+	BusID	    "PCI:0:10:0"
+EndSection
+
+Section "Device"
+	Identifier  "Videocard2"
+	Driver      "fbdev"
+	Option      "fbdev" "/dev/fb1"
+	VendorName  "Video Card Vendor"
+	BoardName   "Video Card Board"
+	VideoRam    8192
+	BusID	    "PCI:0:11:0"
+EndSection
+
+Section "Screen"
+	Identifier "ScreenCard1"
+	Device     "Videocard1"
+	Monitor    "Monitor0"
+	DefaultDepth     8
+	SubSection "Display"
+		Depth     8
+		Modes    "1200x1600"
+	EndSubSection
+EndSection
+
+Section "Screen"
+	Identifier "ScreenCard2"
+	Device     "Videocard2"
+	Monitor    "Monitor0"
+	DefaultDepth     8
+	SubSection "Display"
+		Depth     8
+		Modes    "1200x1600"
+	EndSubSection
+EndSection
+
+
+
+Section "ServerLayout"
+	Identifier     "Default Layout"
+
+# this works
+#	Screen      0  "ScreenCard1"
+
+# this works too.
+#             Screen      0  "ScreenCard2"
+
+# This doesn't work
+	Option	"Xinerama"  "on"
+	Screen	0  "ScreenCard1"
+	Screen	1  "ScreenCard2" LeftOf "ScreenCard1"
+
+	InputDevice    "Mouse0" "CorePointer"
+	InputDevice    "Keyboard0" "CoreKeyboard"
+	InputDevice    "DevInputMice" "AlwaysCore"
+EndSection
+
+To summarize:
+
+   X on my S3 - works fine.
+   X on my adapter on /dev/fb0 - works fine
+   X on my adapter on /dev/fb1 - works fine
+   X on S3 + /dev/fb0 - works fine
+   X on S3 + /dev/fb1 - works fine
+
+   X on /dev/fb0 + /dev/fb1 - doesn't work
+   X on S3 + /dev/db0 + /dev/db1 - doesn't work
+
+If anyone could point me to some resources, or better yet a sample driver 
+that supports multiple adapters, that would be great.
+
+Thanks,
+Noel.
+--
+A precariously balanced mixture of myopic optimism and rampant paranoia.
+
+_________________________________________________________________
+Protect your PC - get McAfee.com VirusScan Online  
+http://clinic.mcafee.com/clinic/ibuy/campaign.asp?cid=3963
 
 
 

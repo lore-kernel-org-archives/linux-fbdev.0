@@ -1,21 +1,23 @@
-From: James Simmons <jsimmons@infradead.org>
+From: Alex Stewart <alex@foogod.com>
 Subject: Re: [PATCH] neofb patches
-Date: Thu, 22 Apr 2004 21:57:00 +0100 (BST)
+Date: Thu, 22 Apr 2004 21:03:13 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0404222152260.25952-100000@phoenix.infradead.org>
-References: <20040422031855.GA19220@foogod.com>
+Message-ID: <20040423040313.GA4403@foogod.com>
+References: <20040422031855.GA19220@foogod.com> <Pine.LNX.4.44.0404222152260.25952-100000@phoenix.infradead.org>
 Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="yrj/dFKFPuw6o+aM"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BGlFw-0007hx-00
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Apr 2004 13:57:12 -0700
-Received: from phoenix.infradead.org ([213.86.99.234])
+	id 1BGruR-0002bw-D9
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Apr 2004 21:03:27 -0700
+Received: from adsl-209-182-168-213.value.net ([209.182.168.213] helo=firestar.foogod.com)
 	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1BGlFt-0000CO-86
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Apr 2004 13:57:11 -0700
-In-Reply-To: <20040422031855.GA19220@foogod.com>
+	id 1BGruR-00074Y-0d
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Apr 2004 21:03:27 -0700
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44.0404222152260.25952-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,73 +27,46 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Alex Stewart <alex@foogod.com>
+To: James Simmons <jsimmons@infradead.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Geert Uytterhoeven <geert@linux-m68k.org>
 
 
-> On Wed, Apr 21, 2004 at 06:47:16PM +0100, James Simmons wrote:
-> > I have the same chipset. I have the new driver posted at my website. I 
-> > tried your patchs but I had no luck.
-> 
-> I wasn't aware of your patches earlier (or where to get them).. I found the URL
-> you posted in another message and have just downloaded the diff and will look
-> into integrating things..
-> 
-> What is your LCD resolution, BTW?
+--yrj/dFKFPuw6o+aM
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-1024x768. Its a IBM thinkpad 600X.
+Well, I downloaded your diff for the neofb driver and tried it out.  I did
+notice there appears to be a slight bug in it.  Whenever anything (such as
+fbset) closes /dev/fb0, the driver clobbers the device registers (resulting in
+a blank screen).
 
-> 
-> > > neofb.2.imageblit.patch - Fix imageblit for color images
-> > > 
-> > >   It looks like the imageblit routine was written with only mono blits in 
-> > >   mind. This patch adds support for color image transfers (Hi Tux!).
-> > 
-> > I tried this patch. My boot wouldn't boot with this patch. Mind you I 
-> > never got the imageblit to work right.
-> 
-> Could you be a little more specific?
-> 
-> Were you applying this to a stock kernel or to your patched driver?  What
-> exactly happened when you tried it?  You were booting in 8-bit color mode, I
-> assume?
+I'm assuming the attached correction is more what was intended..
 
-Patched driver. I manually applied your patches. I start in 8 bpp mode. 
-Nothing appeared on the screen.
+I'm currently merging our two sets of patches into one driver.  I do note that
+patch gets a little confused when trying to do it itself and places a couple of
+bits of code in really odd places, which might have been part of why it didn't
+work for you.  I think I should have an updated patchset ready to post later
+tonight..
 
-> > This can be handled by struct fb_pixmap. It padded image scan_lines to 
-> > what the hardware can handle or is optimized to.
-> 
-> Ok, I'll take a look at this.. I was planning on going back and investigating
-> this further anyway.  Initially I was just concentrating on getting working
-> functionality.
+-alex
 
-Okay. Cool We can work on a solution for this problem.
+--yrj/dFKFPuw6o+aM
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="neofb-js.1.releasebug.patch"
+
+--- drivers/video/neofb.c.jsimmons	2004-04-22 18:32:19.000000000 -0700
++++ drivers/video/neofb.c	2004-04-22 21:21:02.000000000 -0700
+@@ -562,7 +562,7 @@
+ 	struct neofb_par *par = (struct neofb_par *) info->par;
+ 	int cnt = atomic_read(&par->ref_count);
  
-> > > neofb.5.modedb.patch    - Change to use modedb for video mode selection
-> > > 
-> > >   Allows specifying the video mode on the kernel/insmod command line now too.
-> > 
-> > Also barfed my machine :-( I really like to get i2c support going. Perhaps 
-> > we should ask neomagic for the full specs for this chipset.
-> 
-> Hmm.. again, what does "barfed" mean, exactly?  Did you try specifying
-> different video modes on the command line?
+-	if (cnt) {
++	if (!cnt) {
+ 		memset(&par->state, 0, sizeof(struct vgastate));
+ 		par->state.flags = VGA_SAVE_MODE | VGA_SAVE_FONTS;
+ 		save_vga(&par->state);
 
-Blank screen.
-
-> > > neofb.6.blanking.patch  - Add support for DPMS blanking
-> > 
-> > Ug. The new neofb driver has been moved over to use the new vga core code.
-> > See vgastate.c and vga.h in include/video.
-> 
-> Ah, ok.. I'll make the appropriate adjustmen
-> 
-> -alex
-> 
-
+--yrj/dFKFPuw6o+aM--
 
 
 -------------------------------------------------------

@@ -1,23 +1,24 @@
-From: Dave Jones <davej@redhat.com>
-Subject: Re: [PATCH] Fix possible leak in fbcon code. (fwd)
-Date: Thu, 2 Sep 2004 21:53:27 +0100
+From: Nigel Cunningham <ncunningham@linuxmail.org>
+Subject: Devices don't get linked to their class.
+Date: Fri, 03 Sep 2004 15:02:31 +1000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040902205327.GA26419@redhat.com>
-References: <Pine.GSO.4.58.0409021144550.5627@waterleaf.sonytel.be> <200409030439.36380.adaplas@hotpop.com>
+Message-ID: <1094187751.2979.41.camel@laptop.cunninghams>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C2yaz-0008A9-Jn
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 02 Sep 2004 13:54:13 -0700
-Received: from delerium.kernelslacker.org ([81.187.208.145] helo=delerium.codemonkey.org.uk)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.34)
-	id 1C2yax-0007fV-Q9
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 02 Sep 2004 13:54:13 -0700
-Content-Disposition: inline
-In-Reply-To: <200409030439.36380.adaplas@hotpop.com>
+	id 1C36GN-0000Pf-BZ
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 02 Sep 2004 22:05:27 -0700
+Received: from relay01.kbs.net.au ([203.220.32.149] ident=8)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1C36GM-0006fh-IG
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 02 Sep 2004 22:05:27 -0700
+Received: from [203.220.93.129] (helo=[203.220.93.129])
+	by relay01.kbs.net.au with esmtp (Exim 3.36 #2)
+	id 1C36GK-0000iW-00
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 03 Sep 2004 15:05:24 +1000
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,46 +29,47 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, Geert Uytterhoeven <geert@linux-m68k.org>, Linus Torvalds <torvalds@osdl.org>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, Sep 03, 2004 at 04:39:36AM +0800, Antonino A. Daplas wrote:
- > On Thursday 02 September 2004 17:45, Geert Uytterhoeven wrote:
- > > ---------- Forwarded message ----------
- > > Date: Wed, 1 Sep 2004 16:51:22 +0100
- > > From: Dave Jones <davej@redhat.com>
- > > To: linux-kernel@vger.kernel.org
- > > Subject: [PATCH] Fix possible leak in fbcon code.
- > >
- > > Spotted with the source checker from Coverity.com.
- > 
- > No, I don't think there's a leak in the original code. It always passes
- > through this part:
- > 
- > 	if (save) {
- > 		q = (unsigned short *) (vc->vc_origin +
- > 					vc->vc_size_row *
- > 					rows);
- > 		scr_memcpyw(q, save, logo_lines * new_cols * 2);
- > 		vc->vc_y += logo_lines;
- > 		vc->vc_pos += logo_lines * vc->vc_size_row;
- > 		kfree(save);
- > 	}
- > 
- > Tony
+Hi all.
 
-Ah, indeed you are correct. This code used to be wrapped inside
-a if (!init), which if false, would have been a leak. That code
-has been nuked since the coverity folks last did a run against
-the tree.
+Some of my suspend2 users have reported that their displays go blank as
+soon as suspend starts writing to disk. I understand why. I suspend
+everything else except the storage device and it's parents at the start
+of writing the image.
 
-I'll try and coerce the coverity folks into running against
-something more recent when 2.6.9 comes out.
+Interestingly, though, the issue doesn't occur with all display drivers,
+perhaps (I guess) because they haven't had PM support written yet.
+Having switched from the vesafb driver to the radeon one, I'm now able
+to reproduce the behaviour described above.
 
-Linus, please drop the patch I sent you earlier against drivers/video/console/fbcon.c
+This morning I began work on addressing the problem. I thought the best
+approach would be to use device classes to find the struct dev for the
+frame buffer driver, and then use the same code I use for storage
+devices to avoid suspending the frame buffer until later. I successfully
+wrote a helper to find the 'graphics' class that fbmem.c creates, but
+now I've run into a more serious issue. register_framebuffer (in the
+same time) calls class_simple_device_add with a NULL for the pointer to
+the struct device. Is it possible for this issue to be addressed? I can
+see that (at least in the Radeon case) one could simply call
+register_framebuffer with an additional parameter, but thought I'd email
+you and seek your wisdom.
 
-		Dave
+By the way, am I missing something? It looks like framebuffer_alloc does
+nothing with the dev parameter passed to it.
+
+Regards,
+
+Nigel
+
+-- 
+Nigel Cunningham
+Pastoral Worker
+Christian Reformed Church of Tuggeranong
+PO Box 1004, Tuggeranong, ACT 2901
+
+Many today claim to be tolerant. True tolerance, however, can cope with others
+being intolerant.
 
 
 

@@ -1,17 +1,17 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH] Funny sync calculation correction
-Date: Tue, 28 Jan 2003 19:20:20 +0000 (GMT)
+Subject: Re: Vertical retrace interrupts?
+Date: Tue, 28 Jan 2003 19:21:30 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0301281919540.12076-100000@phoenix.infradead.org>
-References: <1043536727.1281.63.camel@h9n1fls20o980.telia.com>
+Message-ID: <Pine.LNX.4.44.0301281920520.12076-100000@phoenix.infradead.org>
+References: <1043545888.3795.2.camel@h9n1fls20o980.telia.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
+Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18dbHz-0004Ev-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 28 Jan 2003 11:20:56 -0800
-In-Reply-To: <1043536727.1281.63.camel@h9n1fls20o980.telia.com>
+	id 18dbJ6-0004NT-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 28 Jan 2003 11:22:05 -0800
+In-Reply-To: <1043545888.3795.2.camel@h9n1fls20o980.telia.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,13 +27,11 @@ To: Fredrik Noring <noring@nocrew.org>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
 
-> > Works fine. I applied it to the 2.5.X tree.
-> 
-> Has anyone got Riva 128 or TNT cards working with 2.5.59 or
-> later? My cards freeze up completely with the new driver when
-> loading fbcon.
+> Are there any plans on merging DirectFB features? Stuff like vertical
+> retrace interrupts etc.?
 
-The card I have is a Diamond Multimedia Systems Viper V730.
+Thats already supported. Just add a poll function to fb_ops. To date no 
+one has used this feature.
 
 
 

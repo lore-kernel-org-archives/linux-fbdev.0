@@ -1,25 +1,19 @@
-From: tomas carnecky <tom@dbservice.com>
-Subject: opengl for framebuffer
-Date: Mon, 05 Jan 2004 16:36:12 +0100
+From: James Simmons <jsimmons@infradead.org>
+Subject: Framebuffer work is coming back.
+Date: Mon, 5 Jan 2004 17:41:10 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3FF9846C.4080709@dbservice.com>
+Message-ID: <Pine.LNX.4.44.0401051737550.3150-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AdWm8-0003JM-3C
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 07:36:16 -0800
-Received: from [213.133.97.13] (helo=matterhorn.dbservice.com)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AdWm7-0001Wk-Lq
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 07:36:15 -0800
-Received: from localhost (localhost [127.0.0.1])
-	by matterhorn.dbservice.com (Postfix on SuSE Linux 8.0 (i386)) with ESMTP id CDC481BAEA
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  5 Jan 2004 16:36:14 +0100 (CET)
-Received: from dbservice.com (emmen.dbservice.com [62.65.141.13])
-	by matterhorn.dbservice.com (Postfix on SuSE Linux 8.0 (i386)) with ESMTP id A5411191D6
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  5 Jan 2004 16:36:12 +0100 (CET)
+	id 1AdYj6-0001uT-AB
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 09:41:16 -0800
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1AdYj5-0008MF-Pr
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 09:41:16 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,36 +23,19 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-Hi ,
 
-I'm looking for a opengl library for the framebuffer devices.
-I found an project (http://fbdri.sf.net) but they released only one 
-tarball,
-and that was about two years ago. Anyone knows another project?
+Hi folks!!
 
-I think there is a port of the XFree86 xserver to the framebuffer,
-but I don't want to use this large bunch of applications and libraries,
-just to get opengl working on the framebuffer.
-
-Long ago, I had the idea to write a collection of libraries to make 
-opengl 3D
-acceleration avilable without a xserver or framebuffer. It works now 
-(somehow).
-There exists a _really_ small documentation 
-(www.dbservice.com/tom/graphics.html).
-
-I'd like to know what you think about it.
-
-PS: I'm not subscribed to the list, so please send me a copy.
--- 
-
-wereHamster a.k.a. Tom Carnecky   Emmen, Switzerland
-
-(GC 3.1) GIT d+ s+: a--- C++ UL++ P L++ E- W++ N++ !o !K  w ?O ?M
-          ?V PS PE ?Y PGP t ?5 X R- tv b+ ?DI D+ G++ e-- h! !r !y+
+  Sorry I have been quit for the last few weeks. I just finished moving 
+closer to work. I had a two hour commute each way from work for the last 6 
+months. Now I live 30 minutes from work. So now I will have more free time 
+to work on the framebuffer layer. I have alot of email to cover so be 
+patient with me. 
 
 
 

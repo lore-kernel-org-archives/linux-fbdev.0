@@ -1,20 +1,20 @@
 From: Andrew Morton <akpm@osdl.org>
 Subject: Re: [PATCH] kyrofb support
-Date: Tue, 13 Jan 2004 17:49:08 -0800
+Date: Tue, 13 Jan 2004 18:09:26 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040113174908.487893c7.akpm@osdl.org>
+Message-ID: <20040113180926.5fdb0824.akpm@osdl.org>
 References: <20040114013306.GB9515@linux-sh.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Aga9K-0003es-AT
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 13 Jan 2004 17:48:50 -0800
+	id 1AgaSx-0006n6-LA
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 13 Jan 2004 18:09:07 -0800
 Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1Aga9J-0007jG-Tg
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 13 Jan 2004 17:48:50 -0800
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1AgaSx-0002c7-8s
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 13 Jan 2004 18:09:07 -0800
 In-Reply-To: <20040114013306.GB9515@linux-sh.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -36,9 +36,21 @@ Paul Mundt <lethal@linux-sh.org> wrote:
 >  driver that's available in the sh64 tree at linux-sh.bkbits.net. Some of the
 >  overlay code and the STG4000 bits are still a bit ugly, so be forewarned.
 
-OK.  Problem is that the fbdev guys seem to be cooking up an internal API
-change.  I guess we may as well merge this driver up now and modify it if
-and when that API change hits the tree.
+Why is kyro_modedb[] and the code which touches it under #ifdef MODULE?
+
+kyrofb_pci_tbl[] cannot be marked __devinitdata - it is linked into
+system-wide PCI tables and will be walked at various times in the kernel. 
+If it is in a discarded section the kernel oopses.
+
+Shouldn't the module_exit(kyrofb_exit); be inside #ifdef MODULE too?
+
+
+In general, what are the fbdev drivers doing here btw?  It's very strange
+that some core file (fbmem.c) has to "know" about individual card drivers. 
+It should be sufficient for the driver to just register itself with the core
+at the drivers's module_init() time.
+
+Sigh.  Too late to fix that now I guess.
 
 
 

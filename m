@@ -1,17 +1,17 @@
 From: James Simmons <jsimmons@infradead.org>
 Subject: Re: Feature Freeze?
-Date: Wed, 5 Mar 2003 18:29:33 +0000 (GMT)
+Date: Wed, 5 Mar 2003 18:34:45 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0303051820470.27760-100000@phoenix.infradead.org>
-References: <1046852721.1228.13.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44.0303051829450.27760-100000@phoenix.infradead.org>
+References: <Pine.GSO.4.21.0303051055250.23176-100000@vervain.sonytel.be>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
+Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18qdeh-00051j-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 10:30:16 -0800
-In-Reply-To: <1046852721.1228.13.camel@localhost.localdomain>
+	id 18qdjd-0006YG-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 10:35:21 -0800
+In-Reply-To: <Pine.GSO.4.21.0303051055250.23176-100000@vervain.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,53 +23,49 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> 1. Text mode support?
+> > 1. Text mode support?
+> 
+> Required by at least davem and petr
 
-We should remove it. Fbcon is to much bloat for text mode hardware. The 
-only driver that does support a text mode matrox. Sparcs do not support 
-text mode except for promcon. The issue was was a misunderstanding on teh 
-flexiablity of imageblit. The name image blit stirs up this idea of the 
-function has to be a place a image in buffer and send it on it way. This 
-is not the case. Take a look at cg6.c. Fancy tricks are still possible. 
+Just Petr. I'm working to seperate the text code out into a matroxcon.c 
+file. Needs alot more work tho.
+
+> > 2. console resizing using fbset (besides stty)?
+> 
+> Nice, if it's not too much work.
+
+:-( I hope to improve fbcon to handle this.
  
-> 2. console resizing using fbset (besides stty)?
+> 0. Update all drivers
+> 
+> Absolutely required
 
-Fbcon needs alot of work on this. In theory it shoudl be smart enought to 
-handle the small details. 
+Its getting there. Drivers not ported are:
 
-> 3. support for unloading of fbcon if modular?
+68328fb.c
+S3triofb.c
+amifb.c
+atafb.c
+clgenfb.c
+cyber2000fb.c
+cyberfb.c
+imsttfb.c    <- I have a nearly done driver. The old driver doesn't work 
+		on ix86. I tried it. Oh wells.
+leofb.c
+pm2fb.c
+pm3fb.c
+pvr2fb.c
+retz3fb.c
+sun3fb.c
+valkyriefb.c
+virgefb.c
 
-It can be done. I used fbcon modular with MDA text mode. I can test the 
-fbcon driver. The issue is if we have more than one vga card whcih vga to 
-graphics card mapping. 
- 
-> 4. driver specified placement of buffers - for putcs method?
 
-Working on this. I think it is possible to merge the tileblit stuff with 
-the new buffer code.
-
-> 5. flexible logo placement/overlayed logo?
-
-Not so important. More important is fixing fbcon to work with the logo 
-code. You can't compile it right now.
-
-> 6. generic console display rotation?
-
-Not so important right now. I removed the poll stuff. using signals is 
-better.
- 
-> 7. Anything else?
-
-The cursor code needs cleanup and documentation. 
- 
-> 8. feature freeze deadline?
-
-We are very near this. IMO we have two things to work on. The buffer stuff 
-and cleaning up the cursor code.
+Many of these drivers have been in state of code rotte for a long time :-( 
 
 
 

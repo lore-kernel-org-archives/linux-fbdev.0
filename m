@@ -1,22 +1,19 @@
-From: "Luiz Fernando N. Capitulino" <lcapitulino@prefeitura.sp.gov.br>
-Subject: Re: [PATCH] - video/tridentfb.c warning fix.
-Date: Thu, 22 Apr 2004 15:08:42 -0300
+From: James Simmons <jsimmons@infradead.org>
+Subject: Vesafb patch
+Date: Thu, 22 Apr 2004 19:15:28 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040422150842.7c011dd7.lcapitulino@prefeitura.sp.gov.br>
-References: <20040419162807.7ba9c5ec.lcapitulino@prefeitura.sp.gov.br>
-	<Pine.GSO.4.58.0404200955320.21445@waterleaf.sonytel.be>
+Message-ID: <Pine.LNX.4.44.0404221914190.24337-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BGibt-0007mE-On
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Apr 2004 11:07:41 -0700
-Received: from sampa7.prodam.sp.gov.br ([200.230.190.107])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BGibt-0002Xd-C1
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Apr 2004 11:07:41 -0700
-In-Reply-To: <Pine.GSO.4.58.0404200955320.21445@waterleaf.sonytel.be>
+	id 1BGijZ-0001St-5c
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Apr 2004 11:15:37 -0700
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1BGijY-0004Rm-Bs
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Apr 2004 11:15:36 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,42 +23,188 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: akpm@osdl.org, jsimmons@infradead.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@osdl.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
- Hi Geert,
+This patch updates vesafb to use the framebuffer_alloc/framebuffer_release 
+function. It also adds a long ago patch for mtrr handling.
 
-Em Tue, 20 Apr 2004 09:56:17 +0200 (MEST)
-Geert Uytterhoeven <geert@linux-m68k.org> escreveu:
+--- linus-2.6/drivers/video/vesafb.c	2004-04-21 15:39:16.000000000 -0700
++++ fbdev-2.6/drivers/video/vesafb.c	2004-04-21 18:41:44.000000000 -0700
+@@ -47,12 +47,13 @@
+ 	.accel	= FB_ACCEL_NONE,
+ };
+ 
+-static struct fb_info fb_info;
+-static u32 pseudo_palette[17];
+-
+ static int             inverse   = 0;
++#ifdef __x86_64__
+ static int             mtrr      = 1;
+-
++#else
++static int	       mtrr	 = 0;
++#endif
++static int	       vram __initdata = 0; /* Set amount of memory to be used */
+ static int             pmi_setpal = 0;	/* pmi for palette changes ??? */
+ static int             ypan       = 0;  /* 0..nothing, 1..ypan, 2..ywrap */
+ static unsigned short  *pmi_base  = 0;
+@@ -210,15 +211,18 @@
+ 			mtrr=1;
+ 		else if (! strcmp(this_opt, "nomtrr"))
+ 			mtrr=0;
++		else if (! strcmp(this_opt, "vram"))
++			vram = simple_strtoul(this_opt+5, NULL, 0);
+ 	}
+ 	return 0;
+ }
+ 
+-int __init vesafb_init(void)
++static int __init vesafb_probe(struct device *device)
+ {
+-	int video_cmap_len;
+-	int i;
+-
++	struct platform_device *dev = to_platform_device(device);
++	struct fb_info *info;
++	int i, err;
++	
+ 	if (screen_info.orig_video_isVGA != VIDEO_TYPE_VLFB)
+ 		return -ENXIO;
+ 
+@@ -229,7 +233,18 @@
+ 	vesafb_defined.xres = screen_info.lfb_width;
+ 	vesafb_defined.yres = screen_info.lfb_height;
+ 	vesafb_fix.line_length = screen_info.lfb_linelength;
+-	vesafb_fix.smem_len = screen_info.lfb_size * 65536;
++	
++	/* Allocate enough memory for double buffering */
++	vesafb_fix.smem_len = screen_info.lfb_width * screen_info.lfb_height * vesafb_defined.bits_per_pixel >> 2; 
++
++	/* check that we don't remap more memory than old cards have */
++	if (vesafb_fix.smem_len > (screen_info.lfb_size * 65536))
++		vesafb_fix.smem_len = screen_info.lfb_size * 65536;
++
++	/* Set video size according to vram boot option */
++	if (vram && vram * 1024 * 1024 != vesafb_fix.smem_len)
++		vesafb_fix.smem_len = vram * 1024 * 1024;
++	
+ 	vesafb_fix.visual   = (vesafb_defined.bits_per_pixel == 8) ?
+ 		FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
+ 
+@@ -251,17 +266,25 @@
+ 		   spaces our resource handlers simply don't know about */
+ 	}
+ 
+-        fb_info.screen_base = ioremap(vesafb_fix.smem_start, vesafb_fix.smem_len);
+-	if (!fb_info.screen_base) {
++	info = framebuffer_alloc(sizeof(u32) * 256, &dev->dev);
++	if (!info) {
+ 		release_mem_region(vesafb_fix.smem_start, vesafb_fix.smem_len);
++		return -ENOMEM;
++	}
++	info->pseudo_palette = info->par;
++	info->par = NULL;
++	
++        info->screen_base = ioremap(vesafb_fix.smem_start, vesafb_fix.smem_len);
++	if (!info->screen_base) {
+ 		printk(KERN_ERR
+ 		       "vesafb: abort, cannot ioremap video memory 0x%x @ 0x%lx\n",
+ 			vesafb_fix.smem_len, vesafb_fix.smem_start);
+-		return -EIO;
++		err = -EIO;
++		goto err;
+ 	}
+ 
+ 	printk(KERN_INFO "vesafb: framebuffer at 0x%lx, mapped to 0x%p, size %dk\n",
+-	       vesafb_fix.smem_start, fb_info.screen_base, vesafb_fix.smem_len/1024);
++	       vesafb_fix.smem_start, info->screen_base, vesafb_fix.smem_len/1024);
+ 	printk(KERN_INFO "vesafb: mode is %dx%dx%d, linelength=%d, pages=%d\n",
+ 	       vesafb_defined.xres, vesafb_defined.yres, vesafb_defined.bits_per_pixel, vesafb_fix.line_length, screen_info.pages);
+ 
+@@ -331,12 +354,10 @@
+ 		       screen_info.red_pos,
+ 		       screen_info.green_pos,
+ 		       screen_info.blue_pos);
+-		video_cmap_len = 16;
+ 	} else {
+ 		vesafb_defined.red.length   = 6;
+ 		vesafb_defined.green.length = 6;
+ 		vesafb_defined.blue.length  = 6;
+-		video_cmap_len = 256;
+ 	}
+ 
+ 	vesafb_fix.ypanstep  = ypan     ? 1 : 0;
+@@ -358,22 +379,53 @@
+ 		}
+ 	}
+ 	
+-	fb_info.fbops = &vesafb_ops;
+-	fb_info.var = vesafb_defined;
+-	fb_info.fix = vesafb_fix;
+-	fb_info.pseudo_palette = pseudo_palette;
+-	fb_info.flags = FBINFO_FLAG_DEFAULT;
+-
+-	fb_alloc_cmap(&fb_info.cmap, video_cmap_len, 0);
+-
+-	if (register_framebuffer(&fb_info)<0)
+-		return -EINVAL;
+-
++	info->fbops = &vesafb_ops;
++	info->var = vesafb_defined;
++	info->fix = vesafb_fix;
++	info->flags = FBINFO_FLAG_DEFAULT;
++
++	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0) {
++		err = -ENXIO;
++		goto err;
++	}	
++	if (register_framebuffer(info)<0) {
++		err = -EINVAL;
++		fb_dealloc_cmap(&info->cmap);
++		goto err;
++	}
+ 	printk(KERN_INFO "fb%d: %s frame buffer device\n",
+-	       fb_info.node, fb_info.fix.id);
++	       info->node, info->fix.id);
+ 	return 0;
++err:
++	framebuffer_release(info);
++	release_mem_region(vesafb_fix.smem_start, vesafb_fix.smem_len);
++	return err;
+ }
+ 
++static struct device_driver vesafb_driver = {
++	.name	= "vesafb",
++	.bus	= &platform_bus_type,
++	.probe	= vesafb_probe,
++};
++
++static struct platform_device vesafb_device = {
++	.name	= "vesafb",
++};
++
++int __init vesafb_init(void)
++{
++	int ret;
++
++	ret = driver_register(&vesafb_driver);
++
++	if (!ret) {
++		ret = platform_device_register(&vesafb_device);
++		if (ret)
++			driver_unregister(&vesafb_driver);
++	}
++	return ret;
++}
++	
+ /*
+  * Overrides for Emacs so that we follow Linus's tabbing style.
+  * ---------------------------------------------------------------------------
 
-| On Mon, 19 Apr 2004, Luiz Fernando N. Capitulino wrote:
-| > diff -X dontdiff -Nparu a/drivers/video/Kconfig a~/drivers/video/Kconfig
-| > --- a/drivers/video/Kconfig	2004-04-16 20:03:09.000000000 -0300
-| > +++ a~/drivers/video/Kconfig	2004-04-16 20:04:24.000000000 -0300
-| > @@ -772,6 +772,14 @@ config FB_TRIDENT
-| >  	  To compile this driver as a module, choose M here: the
-| >  	  module will be called tridentfb.
-| >
-| > +config FB_TRIDENT_ACCEL
-| > +	bool "Trident Acceleration functions (EXPERIMENTAL)"
-| > +	depends on FB_TRIDENT
-| 
-| Didn't notice this before: if you want it to be experimental, it should depend
-| on FB_TRIDENT && EXPERIMENTAL
-
- oops. :-)
-
- I saw that Andrew merged the patches in -mm tree. I will wait it in linus
-tree to fix that.
-
-PS: Sorry for the delay, I were in another city.
-
--- 
-Luiz Fernando N. Capitulino
-<lcapitulino@prefeitura.sp.gov.br>
-<http://www.telecentros.sp.gov.br>
 
 
 -------------------------------------------------------

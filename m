@@ -1,22 +1,23 @@
-From: Hanno =?ISO-8859-15?Q?B=F6ck?= <hanno@gmx.de>
-Subject: radeonfb not working in 2.6-kernel
-Date: Wed, 15 Oct 2003 11:57:47 +0200
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: ioremap problem on highmem
+Date: Wed, 15 Oct 2003 18:46:44 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20031015115747.3a101cd3.hanno@gmx.de>
+Message-ID: <1066236404.662.60.camel@gaston>
+References: <20031014004651.36307.qmail@web14914.mail.yahoo.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="pgp-sha1";
- boundary="Signature=_Wed__15_Oct_2003_11_57_47_+0200_HgdRFX5BmV.Hb+Ju"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1A9k8R-0007QJ-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 15 Oct 2003 04:48:11 -0700
-Received: from pop.gmx.de ([213.165.64.20] helo=mail.gmx.net)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.22)
-	id 1A9k8Q-00056v-L4
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 15 Oct 2003 04:48:10 -0700
+	id 1A9onm-0001Jt-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 15 Oct 2003 09:47:10 -0700
+Received: from pentafluge.infradead.org ([213.86.99.235])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.22)
+	id 1A9onj-0008Ao-EO
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 15 Oct 2003 09:47:07 -0700
+In-Reply-To: <20031014004651.36307.qmail@web14914.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -26,54 +27,24 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-fbdev-devel@lists.sourceforge.net
-
---Signature=_Wed__15_Oct_2003_11_57_47_+0200_HgdRFX5BmV.Hb+Ju
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi,
-
-I recently started using the 2.6-kernels, however the radeonfb is the
-only thing that doesn't work.
-I tried the main (linus) kernel and the linuxppc-2.5-benh tree.
-Below is the dmesg-output from benh's kernel.
+Content-Type: text/plain; charset="us-ascii"
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: Otto Solares <solca@guug.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-bus pci: add driver radeonfb
-radeonfb_pci_register BEGIN
-radeonfb: probed DDR SGRAM 8192k videoram
-radeonfb: Invalid ROM signature 0 should be 0xaa55
-radeonfb: Used default PLL infos
-radeonfb: Reference=3D27.00 MHz (RefDiv=3D67) Memory=3D166.00 Mhz,
-System=3D166.00 MHz Starting monitor auto detection...
-Non-DDC laptop panel detected
-radeonfb: Monitor 1 type LCD found
-radeonfb: Monitor 2 type no found
-Guessing panel info...
-radeonfb: Asssuming panel size 1024x768
-radeonfb: Power Management enabled for Mobility chipsets
-radeonfb: ATI Radeon LY  DDR SGRAM 8 MB
-radeonfb_pci_register END
-bound device '0000:01:00.0' to driver 'radeonfb'
+> The more I learn about fbconsole the more I think it is a bad idea. This is no
+> comment on the skill of the people writing it, I just think the whole concept
+> of mapping the framebuffer in to kernel space needs to be eliminated. There is
+> only 1GB of kernel space and it make no sense to chew up 128MB or 256MB of it
+> mapping a framebuffer just to get a penguin at boot. I do think penguin is
+> cute, but not cute enough to waste kernel address space on.
+
+Can you think about non-x86 please ? Most of them don't have anything
+remotely like VGA / BIOS
+
+Ben.
 
 
---=20
-Hanno B=F6ck - hanno@gmx.de
-
---Signature=_Wed__15_Oct_2003_11_57_47_+0200_HgdRFX5BmV.Hb+Ju
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.3 (GNU/Linux)
-
-iD8DBQE/jRoer2QksT29OyARAgkKAJ9PaszDoS2+m0PmlBxRghzmAXAQaQCggzEg
-FFauIlSHvqL0AVJ1NMFgE8c=
-=1wPA
------END PGP SIGNATURE-----
-
---Signature=_Wed__15_Oct_2003_11_57_47_+0200_HgdRFX5BmV.Hb+Ju--
 
 
 -------------------------------------------------------

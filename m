@@ -1,23 +1,23 @@
-From: "Alex Stewart" <alex@foogod.com>
-Subject: Re: [PATCH] radeonfb(): memmove() fix -- this one works ;-)
-Date: Wed, 28 Apr 2004 16:35:57 -0700 (PDT)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
+	one works ;-)
+Date: Thu, 29 Apr 2004 09:31:51 +1000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <59301.171.72.5.226.1083195357.squirrel@www.foogod.com>
-References: <20370.159.37.7.254.1083189089.squirrel@www.foogod.com>
-        <Pine.LNX.4.44.0404282252250.3125-100000@phoenix.infradead.org>
+Message-ID: <1083195110.29596.101.camel@gaston>
+References: <Pine.LNX.4.44.0404281746550.1187-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIyb6-0005me-Ro
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 16:36:12 -0700
-Received: from adsl-209-182-168-213.value.net ([209.182.168.213] helo=firestar.foogod.com)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1BIydL-0006Im-9x
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 16:38:31 -0700
+Received: from gate.crashing.org ([63.228.1.57] ident=root)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1BIyb6-0005f8-L9
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 16:36:12 -0700
-In-Reply-To: <Pine.LNX.4.44.0404282252250.3125-100000@phoenix.infradead.org>
+	id 1BIydK-00065E-KD
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 16:38:30 -0700
+In-Reply-To: <Pine.LNX.4.44.0404281746550.1187-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,26 +28,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: jsimmons@infradead.org
-Cc: alex@foogod.com, benh@kernel.crashing.org, grim@undead.cc, eger-dated-1083663529.7e8c27@theboonies.us, geert@linux-m68k.org, adaplas@hotpop.com, eger-dated-1082943669.d79d33@theboonies.us, linux-fbdev-devel@lists.sourceforge.net
+To: James Simmons <jsimmons@infradead.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, John Zielinski <grim@undead.cc>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
->> The tty layer alreasy stores the resolution. See asm/termios.h. What
->> it lacks is depth and frequency. I have to do some digging to see if
->> the VT220 dealt with that data. I bet it did.
->>
->> Well, for what it's worth, I think that's wrong too.
->
-> Well it's the POSIX standard.
+On Thu, 2004-04-29 at 02:48, James Simmons wrote:
+> > > Agreed. We need a per-VT var.
+> > > 
+> > > The way I see it (and have always seen it), fbcon implements a text console _on
+> > > top of_ fbdev, just like vgacon implements a text console on top of the VGA
+> > > hardware. Not the other way around!
+> > 
+> > Then I must say we are in violent agreement :)
+> 
+> How do you feel about using modedb handling in fbcon. Let me create this 
+> patch and test it out. If it works then we can resolve this issue.
 
-Yeah, I know, but that doesn't mean I have to agree with it.  :)
+No, no, no...
 
-Anyway, my point is just that ttys should only care about characters.  In
-the console system, fbcon is what does the translation from a
-character-based display to a pixel-based display.  Thus, nothing above
-fbcon should have any notion (or any need to have a notion) of pixels,
-color depths, frequency timings, or any of that.
+First, we would have to fix all drivers to properly probe monitors or
+provide some valid monitor data for things that cannot be probed. Then,
+I don't think modedb is really an fbcon matter. I completely agree with
+Geert here, I think the current scheme is backward.
 
--alex
+Ben.
 
 
 

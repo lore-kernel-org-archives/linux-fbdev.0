@@ -1,26 +1,59 @@
 From: James Simmons <jsimmons@www.infradead.org>
-Subject: Re: [Linux-fbdev-devel] Re: 2.6.11-rc5
-Date: Fri, 25 Feb 2005 17:59:04 +0000 (GMT)
-Message-ID: <Pine.LNX.4.56.0502251758370.20213@pentafluge.infradead.org>
-References: <Pine.LNX.4.58.0502232014190.18997@ppc970.osdl.org>
- <20050224145049.GA21313@suse.de> <1109287708.15026.25.camel@gaston>
- <20050225070813.GA13735@suse.de> <1109316551.14993.63.camel@gaston>
- <20050225172945.GA31211@suse.de>
+Subject: Re: [PATCH] Allow core fb to be built as a module
+Date: Fri, 25 Feb 2005 17:57:44 +0000 (GMT)
+Message-ID: <Pine.LNX.4.56.0502251755400.20213@pentafluge.infradead.org>
+References: <9e4733910502241239268ca595@mail.gmail.com>
+ <200502250704.56925.adaplas@hotpop.com> <9e47339105022415165ee292e0@mail.gmail.com>
+ <200502250720.33030.adaplas@hotpop.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-In-Reply-To: <20050225172945.GA31211@suse.de>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1D4jjH-0006bi-1t
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 25 Feb 2005 09:58:19 -0800
+Received: from pentafluge.infradead.org ([213.146.154.40])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1D4jio-0001Rf-St
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 25 Feb 2005 09:58:18 -0800
+In-Reply-To: <200502250720.33030.adaplas@hotpop.com>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Jon Smirl <jonsmirl@gmail.com>, adaplas@pol.net
 
 
-> cfb_imageblit(320) dst1 fa51a800 base e0b80000 bitstart 1999a800
-> fast_imageblit(237) s daea4000 dst1 fa51a800
-> fast_imageblit(269) j 1 fa51a800 0
-> Unable to handle kernel paging request at virtual address fa51a800
+> > Can I assume then that it is acceptable and all we are waiting on is
+> > 2.6.11?
 > 
-> is bitstart incorrect or is the thing just not (yet) mapped?
+> You can assume that it will get to the mm tree for a trial run, and if there
+> are no problems, will get pushed to Linus' tree.
+> 
+> Tony
+> 
+> PS: I will also do some testing myself this weekend.
 
-Looks like the screen_base is not mapped to.
+Yeap. The process is first make patch and send to list for testing. People 
+comment and some changes happen. This can happen several times. Once the 
+patch is acceptable then it going into Andrew's tree for wider range 
+testing. Once Andrew determines that the patch is safe he sends it to 
+linus. It is a sure way to make sure the patches are of the highest 
+quality.
+
+
+
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

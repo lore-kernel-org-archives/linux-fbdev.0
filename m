@@ -1,67 +1,45 @@
-From: Vladimir Dergachev <volodya@mindspring.com>
-Subject: Re: waitforVBlank, how does this even work?
-Date: Wed, 2 Mar 2005 12:15:18 -0500 (EST)
-Message-ID: <Pine.LNX.4.62.0503021212550.14716@node2.an-vo.com>
-References: <9e473391050301215019081bce@mail.gmail.com> 
- <Pine.LNX.4.62.0503021128001.14333@node2.an-vo.com> <9e473391050302090926854d95@mail.gmail.com>
-Reply-To: Vladimir Dergachev <volodya@mindspring.com>
+From: James Simmons <jsimmons@www.infradead.org>
+Subject: Re: rotate the screen on ARM board
+Date: Wed, 2 Mar 2005 17:21:22 +0000 (GMT)
+Message-ID: <Pine.LNX.4.56.0503021719550.20488@pentafluge.infradead.org>
+References: <4EE0CBA31942E547B99B3D4BFAB348113A4341@mail.esn.co.in>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-In-Reply-To: <9e473391050302090926854d95@mail.gmail.com>
-Sender: dri-devel-admin@lists.sourceforge.net
-Errors-To: dri-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1D6XXP-0006Xc-DS
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 02 Mar 2005 09:21:31 -0800
+Received: from pentafluge.infradead.org ([213.146.154.40])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1D6XXM-0005OV-Fx
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 02 Mar 2005 09:21:31 -0800
+In-Reply-To: <4EE0CBA31942E547B99B3D4BFAB348113A4341@mail.esn.co.in>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:dri-devel@lists.sourceforge.net>
-List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=dri-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"; format="flowed"
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>, DRI developer's list <dri-devel@lists.sourceforge.net>
+To: "Mukund JB." <mukundjb@esntechnologies.co.in>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
+> I have query about how to rotate the screen on an ARM board i.e EDB9312
+> which I recently brought.
+> 
+> I want rotate it by 90 degree.
 
-On Wed, 2 Mar 2005, Jon Smirl wrote:
-
-> On Wed, 2 Mar 2005 11:32:44 -0500 (EST), Vladimir Dergachev
-> <volodya@mindspring.com> wrote:
->>     What about isolating interrupt-handling code into a small driver ?
->> Something simple to respond to interrupts and call all handlers with a
->> certain mask.
->
-> My current plan is that fbdev is the base driver and I will modify the
-> other drivers to bind to it. It is possible to split about 50K out of
-> the fbdev driver into another module and make a smaller base driver
-> but I'm not working on size isssues. Right now all I want to do is get
-> a combined fbdev/DRM on the radeon with enough features to support
-> mesa-solo. XGL needs most of both DRM and fbdev features. After that I
-> have to spend a bunch of time getting it into Linus' tree.
-
-I see..
-
->
-> I would find it useful if someone came up with a standard kernel space
-> V4L radeon driver instead of the Gatos stuff.
-
-By "standard" you mean "self-contained", right ?
-
-While there have been a number of attempts, I don't think a full-featured 
-v4l module will appear before video memory allocation functions are 
-accessible from kernel space.
-
-                       best
-
-                          Vladimir Dergachev
-
->
->
-> -- 
-> Jon Smirl
-> jonsmirl@gmail.com
->
+It depends. First does the hardware support it? If it does in 2.6.X there 
+is a hook for framebuffer rotation. If it doesn't then life will be harder 
+since no one has write a software rotation. Personally I wouldn't like to 
+have software rotation code in the kernel. 
 
 
 -------------------------------------------------------
@@ -69,4 +47,3 @@ SF email is sponsored by - The IT Product Guide
 Read honest & candid reviews on hundreds of IT Products from real users.
 Discover which products truly live up to the hype. Start reading now.
 http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
---

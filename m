@@ -1,45 +1,81 @@
-From: Chris Larson <kergoth@handhelds.org>
-Subject: Re: backlight/frontlight
-Date: Fri, 20 Dec 2002 12:33:59 -0700
-Sender: linux-arm-kernel-admin@lists.arm.linux.org.uk
-Message-ID: <20021220193359.GB4550@rikers.org>
-References: <20021219193645.B25149@flint.arm.linux.org.uk> <Pine.LNX.4.44.0212201813390.6471-100000@phoenix.infradead.org>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [Linux-fbdev-devel] [PATCH] fix endian problem in color_imageblit
+Date: Fri, 20 Dec 2002 19:54:52 +0000 (GMT)
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <Pine.LNX.4.44.0212201932150.6471-100000@phoenix.infradead.org>
+References: <1039914261.1131.70.camel@localhost.localdomain>
 Mime-Version: 1.0
-Return-path: <linux-arm-kernel-admin@lists.arm.linux.org.uk>
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0212201813390.6471-100000@phoenix.infradead.org>
-Errors-To: linux-arm-kernel-admin@lists.arm.linux.org.uk
-List-Help: <mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=help>
-List-Post: <mailto:linux-arm-kernel@lists.arm.linux.org.uk>
-List-Subscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
-	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel>,
-	<mailto:linux-arm-kernel-request@lists.arm.linux.org.uk?subject=unsubscribe>
-List-Archive: <http://lists.arm.linux.org.uk/pipermail/linux-arm-kernel/>
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <1039914261.1131.70.camel@localhost.localdomain>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>, Nicolas Pitre <nico@cam.org>, Frank Becker <fbecker@intrinsyc.com>, Chris Larson <kergoth@handhelds.org>, linux-arm-kernel@lists.arm.linux.org.uk, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Paul Mackerras <paulus@samba.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-* James Simmons (jsimmons@infradead.org) wrote:
-> 
-> Oh. Could someone list all the approaches people toke to solve this 
-> problem. I like to find a solution that covers as many cases as possible.
 
-James,
+> Nice catch :-)  We also need a similar fix for slow_imageblit(), so
+> James can you apply the attached patch also:
 
-	As far as I know, the two that seem worth looking at, at the moment,
-are Russ Dill's implementation, which was posted to the LAK list in this
-thread, and Nicolas' implementation in the -pxa patches.
-There are obviously others out there, but said other implementations are
-individual hacks for certain machine types, and aren't generally useful.
+Applied.
 
---
-Chris Larson
-kergoth at handhelds dot org
-OpenZaurus Project Maintainer - http://openzaurus.org/
+> Also, I noticed that some drivers load the pseudo_palette with entries
+> whose length matches the length of the pixel.  The cfb_* functions
+> always assume that each pseudo_palette entry is an "unsigned long", so
+> bpp16 will segfault, and so will bpp24/32 for 64-bit machines.
 
--------------------------------------------------------------------
-Subscription options: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-FAQ/Etiquette:       http://www.arm.linux.org.uk/armlinux/mailinglists.php
+I just noticed that as well. Russell King pointed to it too. I fixed
+the unsigned long problem in color_imageblit. All the pseudo_palette
+in cfb_* are assumed u32. Is this safe for 16bpp or 8 bpp modes? I will
+have test to see. The u16 problem might explain why some people have
+trouble with the VESA framebuffer. To all the people having trouble
+booting to certain modes for the VESA fraembuffer can you try this patch.
+Tell me if it fixes your problems.
+
+--- /usr/src/linus-2.5/drivers/video/cfbimgblt.c	Mon Dec  9 22:23:32 2002
++++ cfbimgblt.c	Fri Dec 20 12:35:25 2002
+@@ -102,11 +102,10 @@
+ 				   unsigned long start_index, unsigned long pitch_index)
+ {
+ 	/* Draw the penguin */
+-	int i, n;
+-	unsigned long bitmask = SHIFT_LOW(~0UL, BITS_PER_LONG - p->var.bits_per_pixel);
+-	unsigned long *palette = (unsigned long *) p->pseudo_palette;
+ 	unsigned long *dst, *dst2, color = 0, val, shift;
+-	unsigned long null_bits = BITS_PER_LONG - p->var.bits_per_pixel;
++	int i, n, bpp = p->var.bits_per_pixel;
++	unsigned long null_bits = BITS_PER_LONG - bpp;
++	u32 *palette = (u32 *) p->pseudo_palette;
+ 	u8 *src = image->data;
+
+ 	dst2 = (unsigned long *) dst1;
+@@ -125,9 +124,10 @@
+ 		while (n--) {
+ 			if (p->fix.visual == FB_VISUAL_TRUECOLOR ||
+ 			    p->fix.visual == FB_VISUAL_DIRECTCOLOR )
+-				color = palette[*src] & bitmask;
++				color = palette[*src];
+ 			else
+-				color = *src & bitmask;
++				color = *src;
++			color <<= LEFT_POS(bpp);
+ 			val |= SHIFT_HIGH(color, shift);
+ 			if (shift >= null_bits) {
+ 				FB_WRITEL(val, dst++);
+@@ -136,7 +136,7 @@
+ 				else
+ 					val = SHIFT_LOW(color, BITS_PER_LONG - shift);
+ 			}
+-			shift += p->var.bits_per_pixel;
++			shift += bpp;
+ 			shift &= (BITS_PER_LONG - 1);
+ 			src++;
+ 		}
+@@ -188,6 +188,7 @@
+ 				color = fgcolor;
+ 			else
+ 				color = bgcolor;
++			color <<= LEFT_POS(bpp);
+ 			val |= SHIFT_HIGH(color, shift);
+
+ 			/* Did the bitshift spill bits to the next long? */

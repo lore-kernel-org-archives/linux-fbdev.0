@@ -1,18 +1,18 @@
 From: Antonino Daplas <adaplas@pol.net>
-Subject: problem with gen_update_var
-Date: 11 Jun 2002 00:41:12 +0800
+Subject: i810/i815 2.5 framebuffer driver
+Date: 11 Jun 2002 02:45:48 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1023690850.568.1.camel@daplas>
+Message-ID: <1023734576.553.1.camel@daplas>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-n2UfbWpC+95LBg2bGJmN"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from [203.167.79.9] (helo=willow.compass.com.ph)
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17HSCQ-000061-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 10 Jun 2002 09:39:22 -0700
-Received: from [205.136.61.104] (cwc104.compass.com.ph [205.136.61.104])
-	by willow.compass.com.ph (8.9.3/8.9.3) with ESMTP id AAA22695
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 Jun 2002 00:39:16 +0800 (PHT)
+	id 17HU8x-0003Ug-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 10 Jun 2002 11:43:55 -0700
+Received: from [205.136.61.115] (cwc115.compass.com.ph [205.136.61.115])
+	by willow.compass.com.ph (8.9.3/8.9.3) with ESMTP id CAA25479
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 11 Jun 2002 02:43:50 +0800 (PHT)
 	(envelope-from adaplas@pol.net)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
@@ -23,45 +23,47 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
 To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
-
-
---=-n2UfbWpC+95LBg2bGJmN
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
 
 Hi,
 
-gen_update_var will break panning/wrapping since it passes info->var to
-fb_pan_display.  However, fbcon updates display->var.
+Hi, I have ported the i810fb to the 2.5 API.  I've tried to follow the
+2.5 API as closely as possible and used only the gen_* functions as much
+as possible.
+
+The 2.4 i810 framebuffer driver has been posted in
+http://www.sourceforge.net/projects/i810fb for sometime and has been
+downloaded quite a number of times.  I've also received a number of mail
+from people asking me if I should send the driver to be included to the
+mainstream kernel.  I tell them it's not ready yet.  Because the driver
+is dependent on agpgart, I have to modify the agpgart code just a bit so
+agpgart gets loaded before the framebuffer at boot time.
+
+So, I worked around this "misordered" loading by just having the fb
+create and use its own agpgart services until the kernel agpgart becomes
+available.  Once the kernel agpgart is available, the driver frees its
+own and will start using the kernel's.  
+
+I'm hopefully asking for people who have time to review the code and
+perhaps give some thoughts on the agpgart thing.  And for those who have
+the hardware, to test it as well.    
+
+Thanks in advance.
 
 Tony
 
- 
+PS:  the diff is against linux-2.5.21
+
+http://i810fb.sourceforge.net/linux-2.5.21-i810fb.diff.gz
+
+The actual source is in:
+
+http://i810fb.sourceforge.net/i810fb.tar.gz
 
 
 
 
-
---=-n2UfbWpC+95LBg2bGJmN
-Content-Disposition: attachment; filename=fbgen.c.diff
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=ISO-8859-1
-
---- fbgen.c.orig	Mon Jun 10 06:30:29 2002
-+++ fbgen.c	Mon Jun 10 06:26:44 2002
-@@ -514,6 +514,9 @@
-    =20
- 	if (con =3D=3D info->currcon) {
- 		if (info->fbops->fb_pan_display) {
-+			info->var.xoffset =3D fb_display[con].var.xoffset;
-+			info->var.yoffset =3D fb_display[con].var.yoffset;
-+			info->var.vmode =3D fb_display[con].var.vmode;
- 			if ((err =3D info->fbops->fb_pan_display(&info->var, con, info)))
- 				return err;
- 		}
-
---=-n2UfbWpC+95LBg2bGJmN--
 
 
 _______________________________________________________________

@@ -1,24 +1,28 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: scrollmode, accel_flags, fbcon.c ...
-Date: Fri, 26 Mar 2004 16:03:25 +0100 (MET)
+Date: Sat, 27 Mar 2004 12:24:43 +1100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0403261600580.409@waterleaf.sonytel.be>
+Message-ID: <1080350682.1333.59.camel@gaston>
 References: <Pine.LNX.4.58.0403081323040.32244@rosencrantz.theboonies.us>
- <Pine.GSO.4.58.0403091111540.26626@waterleaf.sonytel.be>
- <Pine.LNX.4.58.0403260040100.7037@rosencrantz.theboonies.us>
- <1080267697.3068.24.camel@gaston> <Pine.GSO.4.58.0403260802590.409@waterleaf.sonytel.be>
- <1080312167.1390.19.camel@gaston>
+	 <Pine.GSO.4.58.0403091111540.26626@waterleaf.sonytel.be>
+	 <Pine.LNX.4.58.0403260040100.7037@rosencrantz.theboonies.us>
+	 <1080267697.3068.24.camel@gaston>
+	 <Pine.GSO.4.58.0403260802590.409@waterleaf.sonytel.be>
+	 <1080312167.1390.19.camel@gaston>
+	 <Pine.GSO.4.58.0403261600580.409@waterleaf.sonytel.be>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B6srp-0002wW-64
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 26 Mar 2004 07:03:29 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1B6sro-0004TW-Df
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 26 Mar 2004 07:03:28 -0800
-In-Reply-To: <1080312167.1390.19.camel@gaston>
+	id 1B72ZR-00054S-1U
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 26 Mar 2004 17:25:09 -0800
+Received: from gate.crashing.org ([63.228.1.57] ident=root)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.30)
+	id 1B72ZP-0000bn-SJ
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 26 Mar 2004 17:25:08 -0800
+In-Reply-To: <Pine.GSO.4.58.0403261600580.409@waterleaf.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,38 +32,29 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: David Eger <eger-dated-1080865620.ef4dea@theboonies.us>, Jakub Jelinek <jj@ultra.linux.cz>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sat, 27 Mar 2004, Benjamin Herrenschmidt wrote:
-> > These are hints for fbcon to use different types of scrolling. Using special
-> > hardware features is usually faster than doing dumb copies.
->
-> Yes, that all make sense, but there isn't a simple way for the fbdev
-> to set that now in 2.6 since it's in struct display which is now local
-> to fbcon. fbcon itself will initialize that to some value picked based
-> on the default var accel flags but I don't like that, espeically since
-> I think those flags should be deprecated.
 
-Ywrap/ypan capabilities are announced in fb_fix_screeninfo, so fbcon knows.
+> W.r.t. redraw vs. copy for scrolling, perhaps some heuristics like PCI/AGP are
+> known to be slow for reading? Fbcon can find out whether a fbdev is on a
+> PCI/AGP bus by checking the device (once new driver model/sysfsication is
+> complete), right?
 
-W.r.t. redraw vs. copy for scrolling, perhaps some heuristics like PCI/AGP are
-known to be slow for reading? Fbcon can find out whether a fbdev is on a
-PCI/AGP bus by checking the device (once new driver model/sysfsication is
-complete), right?
+But an fbdev that implements an accelerated copyarea ?
 
-Gr{oetje,eeting}s,
+I don't want such heuristics in fbcon, they are just asking for trouble,
+I think we should redraw on non-accelerated and copy on accelerated,
+but then, it should be under more direct driver control. Also, fbcon
+keeps "losing" the accel_flags for me.
 
-						Geert
+One thing I don't like in the new fbcon is the way it deals with the
+var structure anyway. I think it should have one var per VC.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Ben.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+
 
 
 -------------------------------------------------------

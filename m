@@ -1,18 +1,27 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: [2.6 patch] video drivers: remove unused functions (fwd)
-Date: Tue, 7 Dec 2004 20:35:13 +0100
-Message-ID: <20041207193513.GZ7250@stusta.de>
+From: Lucas Correia Villa Real <lucasvr@gobolinux.org>
+Subject: [PATCH] GeForce 5200 on rivafb
+Date: Tue, 7 Dec 2004 23:47:23 -0200
+Message-ID: <200412072347.23194.lucasvr@gobolinux.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_r0ltBgy7lZQiMoC"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Cbl87-0007v8-U8
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 07 Dec 2004 11:36:11 -0800
-Received: from mailout.stusta.mhn.de ([141.84.69.5])
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
-	id 1Cbl85-0001WI-CO
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 07 Dec 2004 11:36:11 -0800
+	id 1Cbquv-00053E-A9
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 07 Dec 2004 17:46:57 -0800
+Received: from loncoche.terra.com.br ([200.154.55.229])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1Cbquu-0000MU-DA
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 07 Dec 2004 17:46:57 -0800
+Received: from potosi.terra.com.br (potosi.terra.com.br [200.154.55.131])
+	by loncoche.terra.com.br (Postfix) with ESMTP id 8E6F6E79603
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue,  7 Dec 2004 23:46:52 -0200 (BRST)
+Received: from ummagumma.ozzmosis.net (200-102-085-101.nhoce7002.dsl.brasiltelecom.net.br [200.102.85.101])
+	(authenticated user lucasvr)
+	by potosi.terra.com.br (Postfix) with ESMTP id 00A4437005E
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue,  7 Dec 2004 23:46:51 -0200 (BRST)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -24,280 +33,80 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-
-The patch forwarded below still applies and compiles against 
-2.6.10-rc2-mm4.
-
-Please apply.
-
-
------ Forwarded message from Adrian Bunk <bunk@stusta.de> -----
-
-Date:	Fri, 29 Oct 2004 02:31:40 +0200
-From: Adrian Bunk <bunk@stusta.de>
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] video drivers: remove unused functions
-
-The patch below removes some unused function from drivers/video/
 
 
-diffstat output:
- drivers/video/console/mdacon.c     |   11 -------
- drivers/video/i810/i810_accel.c    |   43 -----------------------------
- drivers/video/neofb.c              |    5 ---
- drivers/video/pm2fb.c              |    7 ----
- drivers/video/radeonfb.c           |   24 ----------------
- drivers/video/tdfxfb.c             |   35 -----------------------
- drivers/video/tridentfb.c          |    7 ----
- 8 files changed, 132 deletions(-)
+--Boundary-00=_r0ltBgy7lZQiMoC
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
+Hi,
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+I was trying to figure out why my GeForce FX 5200 wasn't being recognized by 
+rivafb, when I saw that its ID was not being included by the driver.
 
---- linux-2.6.10-rc1-mm1-full/drivers/video/console/mdacon.c.old	2004-10-28 23:35:23.000000000 +0200
-+++ linux-2.6.10-rc1-mm1-full/drivers/video/console/mdacon.c	2004-10-28 23:57:57.000000000 +0200
-@@ -64,7 +64,6 @@
- 
- /* current hardware state */
- 
--static int	mda_origin_loc=-1;
- static int	mda_cursor_loc=-1;
- static int	mda_cursor_size_from=-1;
- static int	mda_cursor_size_to=-1;
-@@ -148,16 +147,6 @@
- }
- #endif
- 
--static inline void mda_set_origin(unsigned int location)
--{
--	if (mda_origin_loc == location)
--		return;
--
--	write_mda_w(location >> 1, 0x0c);
--
--	mda_origin_loc = location;
--}
--
- static inline void mda_set_cursor(unsigned int location) 
- {
- 	if (mda_cursor_loc == location)
---- linux-2.6.10-rc1-mm1-full/drivers/video/i810/i810_accel.c.old	2004-10-28 23:41:55.000000000 +0200
-+++ linux-2.6.10-rc1-mm1-full/drivers/video/i810/i810_accel.c	2004-10-28 23:42:08.000000000 +0200
-@@ -252,49 +252,6 @@
- 	end_iring(par);
- }
- 
--/**
-- * mono_src_copy_blit - color expand from video memory to framebuffer
-- * @dwidth: width of destination
-- * @dheight: height of destination
-- * @dpitch: pixels per line of the buffer
-- * @qsize: size of bitmap in quad words
-- * @dest: address of first byte of pixel;
-- * @rop: raster operation
-- * @blit_bpp: pixelformat to use which can be different from the 
-- *            framebuffer's pixelformat
-- * @src: address of image data
-- * @bg: backgound color
-- * @fg: forground color
-- * @par: pointer to i810fb_par structure
-- *
-- * DESCRIPTION:
-- * A color expand operation where the  source data is in video memory. 
-- * Useful for drawing text. 
-- *
-- * REQUIREMENT:
-- * The end of a scanline must be padded to the next word.
-- */
--static inline void mono_src_copy_blit(int dwidth, int dheight, int dpitch, 
--				      int qsize, int blit_bpp, int rop, 
--				      int dest, int src, int bg,
--				      int fg, struct fb_info *info)
--{
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
--
--	if (begin_iring(info, 32 + IRING_PAD)) return;
--
--	PUT_RING(BLIT | MONO_SOURCE_COPY_BLIT | 6);
--	PUT_RING(DYN_COLOR_EN | blit_bpp | rop << 16 | dpitch | 1 << 27);
--	PUT_RING(dheight << 16 | dwidth);
--	PUT_RING(dest);
--	PUT_RING(qsize - 1);
--	PUT_RING(src);
--	PUT_RING(bg);
--	PUT_RING(fg);
--
--	end_iring(par);
--}
--
- static inline void load_front(int offset, struct fb_info *info)
- {
- 	struct i810fb_par *par = (struct i810fb_par *) info->par;
---- linux-2.6.10-rc1-mm1-full/drivers/video/neofb.c.old	2004-10-28 23:37:42.000000000 +0200
-+++ linux-2.6.10-rc1-mm1-full/drivers/video/neofb.c	2004-10-28 23:38:32.000000000 +0200
-@@ -152,11 +152,6 @@
- };
- #endif
- 
--static inline u32 read_le32(int regindex, const struct neofb_par *par)
--{
--	return readl(par->neo2200 + par->cursorOff + regindex);
--}
--
- static inline void write_le32(int regindex, u32 val, const struct neofb_par *par)
- {
- 	writel(val, par->neo2200 + par->cursorOff + regindex);
---- linux-2.6.10-rc1-mm1-full/drivers/video/pm2fb.c.old	2004-10-28 23:36:19.000000000 +0200
-+++ linux-2.6.10-rc1-mm1-full/drivers/video/pm2fb.c	2004-10-28 23:36:27.000000000 +0200
-@@ -201,13 +201,6 @@
- 	pm2_WR(p, index, v);
- }
- 
--inline static u32 pm2v_RDAC_RD(struct pm2fb_par* p, s32 idx)
--{
--	pm2_WR(p, PM2VR_RD_INDEX_LOW, idx & 0xff);
--	mb();
--	return pm2_RD(p, PM2VR_RD_INDEXED_DATA);
--}
--
- inline static void pm2v_RDAC_WR(struct pm2fb_par* p, s32 idx, u32 v)
- {
- 	pm2_WR(p, PM2VR_RD_INDEX_LOW, idx & 0xff);
---- linux-2.6.10-rc1-mm1-full/drivers/video/radeonfb.c.old	2004-10-28 23:36:56.000000000 +0200
-+++ linux-2.6.10-rc1-mm1-full/drivers/video/radeonfb.c	2004-10-28 23:37:15.000000000 +0200
-@@ -621,30 +621,6 @@
- #define radeon_engine_reset()		_radeon_engine_reset(rinfo)
- 
- 
--static __inline__ u8 radeon_get_post_div_bitval(int post_div)
--{
--        switch (post_div) {
--                case 1:
--                        return 0x00;
--                case 2: 
--                        return 0x01;
--                case 3: 
--                        return 0x04;
--                case 4:
--                        return 0x02;
--                case 6:
--                        return 0x06;
--                case 8:
--                        return 0x03;
--                case 12:
--                        return 0x07;
--                default:
--                        return 0x02;
--        }
--}
--
--
--
- static __inline__ int round_div(int num, int den)
- {
-         return (num + (den / 2)) / den;
---- linux-2.6.10-rc1-mm1-full/drivers/video/tdfxfb.c.old	2004-10-28 23:38:56.000000000 +0200
-+++ linux-2.6.10-rc1-mm1-full/drivers/video/tdfxfb.c	2004-10-28 23:40:43.000000000 +0200
-@@ -210,41 +210,21 @@
- 
- #ifdef VGA_REG_IO 
- static inline  u8 vga_inb(struct tdfx_par *par, u32 reg) { return inb(reg); }
--static inline u16 vga_inw(struct tdfx_par *par, u32 reg) { return inw(reg); }
--static inline u16 vga_inl(struct tdfx_par *par, u32 reg) { return inl(reg); }
- 
- static inline void vga_outb(struct tdfx_par *par, u32 reg,  u8 val) { outb(val, reg); }
--static inline void vga_outw(struct tdfx_par *par, u32 reg, u16 val) { outw(val, reg); }
--static inline void vga_outl(struct tdfx_par *par, u32 reg, u32 val) { outl(val, reg); }
- #else
- static inline  u8 vga_inb(struct tdfx_par *par, u32 reg) { 
- 	return inb(par->iobase + reg - 0x300); 
- }
--static inline u16 vga_inw(struct tdfx_par *par, u32 reg) { 
--	return inw(par->iobase + reg - 0x300); 
--}
--static inline u16 vga_inl(struct tdfx_par *par, u32 reg) { 
--	return inl(par->iobase + reg - 0x300); 
--}
- static inline void vga_outb(struct tdfx_par *par, u32 reg,  u8 val) { 
- 	outb(val, par->iobase + reg - 0x300); 
- }
--static inline void vga_outw(struct tdfx_par *par, u32 reg, u16 val) { 
--	outw(val, par->iobase + reg - 0x300); 
--}
--static inline void vga_outl(struct tdfx_par *par, u32 reg, u32 val) { 
--	outl(val, par->iobase + reg - 0x300); 
--}
- #endif
- 
- static inline void gra_outb(struct tdfx_par *par, u32 idx, u8 val) {
- 	vga_outb(par, GRA_I, idx); vga_outb(par, GRA_D, val);
- }
- 
--static inline u8 gra_inb(struct tdfx_par *par, u32 idx) {
--	vga_outb(par, GRA_I, idx); return vga_inb(par, GRA_D);
--}
--
- static inline void seq_outb(struct tdfx_par *par, u32 idx, u8 val) {
- 	vga_outb(par, SEQ_I, idx); vga_outb(par, SEQ_D, val);
- }
-@@ -270,15 +250,6 @@
- 	vga_outb(par, ATT_IW, val);
- }
- 
--static inline u8 att_inb(struct tdfx_par *par, u32 idx) 
--{
--	unsigned char tmp;
--
--	tmp = vga_inb(par, IS1_R);
--	vga_outb(par, ATT_IW, idx);
--	return vga_inb(par, ATT_IW);
--}
--
- static inline void vga_disable_video(struct tdfx_par *par)
- {
- 	unsigned char s;
-@@ -299,12 +270,6 @@
- 	seq_outb(par, 0x00, 0x03);
- }
- 
--static inline void vga_disable_palette(struct tdfx_par *par)
--{
--	vga_inb(par, IS1_R);
--	vga_outb(par, ATT_IW, 0x00);
--}
--
- static inline void vga_enable_palette(struct tdfx_par *par)
- {
- 	vga_inb(par, IS1_R);
---- linux-2.6.10-rc1-mm1-full/drivers/video/tridentfb.c.old	2004-10-28 23:41:13.000000000 +0200
-+++ linux-2.6.10-rc1-mm1-full/drivers/video/tridentfb.c	2004-10-28 23:41:26.000000000 +0200
-@@ -523,13 +523,6 @@
- 	t_outb(val, 0x3C0);
- }
- 
--static inline unsigned char readAttr(int reg)
--{
--	readb(((struct tridentfb_par *)fb_info.par)->io_virt + CRT + 0x0A);	//flip-flop to index
--	t_outb(reg, 0x3C0);
--	return t_inb(0x3C1);
--}
--
- static inline void write3CE(int reg, unsigned char val)
- {
- 	t_outb(reg, 0x3CE);
--
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+The following patch (against 2.6.10-rc3) allows it to compile and switch to 
+graphics mode successfully.
 
------ End forwarded message -----
+Just a note: the README file shipped with the NVIDIA driver has a complete 
+list of device ID's. While it's easy to add them all into riva.c and 
+pci_ids.h, I'm not very sure if it's okay to flood them with #defines and by 
+increasing heavily the rivafb_pci_tbl table.
 
+Is it ok to do that, or were you waiting to get a feedback from users from 
+those cards first? I can provide a patch to include all the missing cards if 
+there's no problem on doing that.
+
+Thanks!
+Lucas
+
+--Boundary-00=_r0ltBgy7lZQiMoC
+Content-Type: text/x-diff;
+  charset="us-ascii";
+  name="rivafb-geforcefx.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="rivafb-geforcefx.patch"
+
+diff -X dontdiff-2.6 -Nur 2.6.10-rc3-vanilla/drivers/video/riva/fbdev.c 2.6.10-rc3-lucasvr/drivers/video/riva/fbdev.c
+--- 2.6.10-rc3-vanilla/drivers/video/riva/fbdev.c	2004-12-07 09:58:14.000000000 -0200
++++ 2.6.10-rc3-lucasvr/drivers/video/riva/fbdev.c	2004-12-07 22:45:52.000000000 -0200
+@@ -192,6 +192,10 @@
+ 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
+ 	{ PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_700XGL,
+ 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
++	{ PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5200_ULTRA,
++	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
++	{ PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5200,
++	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
+ 	{ PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_GO_5200,
+ 	  PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0 },
+ 	{ 0, } /* terminate list */
+@@ -1876,6 +1880,8 @@
+ 		case 0x0300:   /* GeForceFX 5800 */
+ 		case 0x0310:   /* GeForceFX 5600 */
+ 		case 0x0320:   /* GeForceFX 5200 */
++		case 0x0321:   /* GeForceFX 5200 Ultra */
++		case 0x0322:   /* GeForceFX 5200 */
+ 		case 0x0330:   /* GeForceFX 5900 */
+ 		case 0x0340:   /* GeForceFX 5700 */
+ 		     arch =  NV_ARCH_30;
+diff -X dontdiff-2.6 -Nur 2.6.10-rc3-vanilla/include/linux/pci_ids.h 2.6.10-rc3-lucasvr/include/linux/pci_ids.h
+--- 2.6.10-rc3-vanilla/include/linux/pci_ids.h	2004-12-07 09:58:25.000000000 -0200
++++ 2.6.10-rc3-lucasvr/include/linux/pci_ids.h	2004-12-07 22:45:29.000000000 -0200
+@@ -1144,6 +1144,8 @@
+ #define PCI_DEVICE_ID_NVIDIA_QUADRO4_900XGL	0x0258
+ #define PCI_DEVICE_ID_NVIDIA_QUADRO4_750XGL	0x0259
+ #define PCI_DEVICE_ID_NVIDIA_QUADRO4_700XGL	0x025B
++#define PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5200_ULTRA 0x0321
++#define PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5200    0x0322
+ #define PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_GO_5200	0x0329
+ 
+ #define PCI_VENDOR_ID_IMS		0x10e0
+
+--Boundary-00=_r0ltBgy7lZQiMoC--
 
 
 -------------------------------------------------------

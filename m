@@ -1,50 +1,28 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Re: 2.6.0-test2 does not boot with matroxfb
-Date: Sat, 16 Aug 2003 00:28:32 +0100 (BST)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0308160028090.21319-100000@phoenix.infradead.org>
-References: <20030815231834.GA9226@rushmore>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: FBDEV updates.
+Date: 16 Aug 2003 01:42:32 +0200
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <1060990952.881.89.camel@gaston>
+References: <Pine.LNX.4.44.0308152319570.30952-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from pub234.cambridge.redhat.com ([213.86.99.234] helo=phoenix.infradead.org)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19no0J-0007d0-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 15 Aug 2003 16:29:07 -0700
-In-Reply-To: <20030815231834.GA9226@rushmore>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: rwhron@earthlink.net
-Cc: vandrove@vc.cvut.cz, linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44.0308152319570.30952-100000@phoenix.infradead.org>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@infradead.org>
+Cc: Otto Solares <solca@guug.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-> >> o graphics in console with "links -g"
+
 > 
-> > Links ??? the web browser. I tried that option and it complained.
-> 
-> There are two versions of links.  
-> v0.99.x	The amazing text browser.
-> 2.1.x	Does graphics, javascript, etc in console mode.
-> 
-> http://atrey.karlin.mff.cuni.cz/~clock/twibright/links/download/links-2.1pre11.tar.bz2
-> 
-> I configured links-2.x with:
-> /configure  --prefix=/usr --enable-graphics --enable-javascript --with-ssl=/usr/lib
+> Will do. I like to also handle Video mode change. Even userland will like 
+> to know when a mode change happened. For userland a signal can be sent. 
+> This would be useful for someone in X that runs fbset in a Xterm. This 
+> hoses the X server. It would be nice if the X server would see the signal 
+> change and adapt to it. Fbset could in theory be used again to change a VC 
+> size. Yuck!!!! But it is what people want.
 
-Now that is awesome.
+And for good reasons as we still have to deal with cases
+where neither the driver nor modedb knows what the monitor supports...
 
-
-
--------------------------------------------------------
-This SF.Net email sponsored by: Free pre-built ASP.NET sites including
-Data Reports, E-commerce, Portals, and Forums are available now.
-Download today and enter to win an XBOX or Visual Studio .NET.
-http://aspnet.click-url.com/go/psa00100003ave/direct;at.aspnet_072303_01/01
+Ben.

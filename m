@@ -1,46 +1,58 @@
-From: "Jurriaan Kalkman" <thunder7@xs4all.nl>
-Subject: will the new edid functionality allow vesafb to set a frequency?
-Date: Thu, 3 Apr 2003 14:02:11 +0200 (CEST)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <24510.212.153.94.193.1049371331.squirrel@webmail.xs4all.nl>
-Reply-To: thunder7@xs4all.nl
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [Linux-fbdev-devel] [PATCH]: EDID parser
+Date: 03 Apr 2003 14:20:24 +0200
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <1049372424.796.21.camel@zion.wanadoo.fr>
+References: <4A83DF6367@vcnet.vc.cvut.cz>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mxzilla3.xs4all.nl ([194.109.6.49])
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1913Q6-0006cY-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 03 Apr 2003 04:02:14 -0800
-Received: from webmail4.xs4all.nl (webmail4.xs4all.nl [194.109.127.38])
-	by mxzilla3.xs4all.nl (8.12.3/8.12.3) with ESMTP id h33C2BRs072723
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 3 Apr 2003 14:02:11 +0200 (CEST)
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-
-As the owner of a NVidia card, whose evil proprietary driver won't work
-with rivafb, but would possibly work with vesafb (I see mixed messages
-on usenet about this), I have the following question:
-
-will the new edid-functionality that is currently in heavy development
-allow linux (somewhere in the future) to set a vertical refresh frequency
-with vesafb? I did notice that this Ti500 card has a VESA/VBE 3.0
-compatible BIOS, so it should be possible.
-
-Kind regards,
-Jurriaan
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <4A83DF6367@vcnet.vc.cvut.cz>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: Petr Vandrovec <VANDROVE@vc.cvut.cz>
+Cc: Sven Luther <luther@dpt-info.u-strasbg.fr>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, linux-kernel@vger.kernel.org, adaplas@pol.net
 
 
--------------------------------------------------------
-This SF.net email is sponsored by: ValueWeb: 
-Dedicated Hosting for just $79/mo with 500 GB of bandwidth! 
-No other company gives more support or power for your dedicated server
-http://click.atdmt.com/AFF/go/sdnxxaff00300020aff/direct/01/
+> No. With matroxfb, you have two framebuffer devices, /dev/fb0 & /dev/fb1,
+> which can be connected to any of three outputs: analog primary, analog
+> secondary and DVI. Analog primary & DVI share same pair of DDC cables,
+> and analog secondary has its own... And user can interconnect fb* with
+> outputs in almost any way he wants, as long as hardware supports it.
+>                                                         Petr Vandrovec
+
+It's +/- similar on radeon's and r128's...
+
+I think at this point, we really need to add a structure defining
+an "output" along with a few calls so the driver can tell us about
+the "default" output/head mapping and can be changed from userland.
+
+That way, the "struct fb_connection" would then be the parameter
+passed to those EDID routines...
+
+The driver would setup a default policy at boot based on what
+have been probed. But userland would be able to
+
+ - Request connection info from all outputs. Note that these contains
+more than just EDID. Some drivers can "probe" for the presence of
+something in the VGA or S-Video connectors by sensing the load on
+the signals, even if that "thing" cannot provide an EDID. So we need
+a bit more than just the EDID, something like
+
+  struct fb_connection_info {
+	int	index;	/* Absolute index of output on this card */
+	int	type;	/* FB_VGA, FB_DVI, FB_ADC, FB_LVDS, ... */
+ 	int	flags;	/* FB_CONN_PRESENCE, FB_VALID_EDID, ... */
+	u8	edid[128];
+  }
+
+ - Ask/Set output<->head mapping. Possibly by an ioctl to the head
+that sets the connection index. Of course, the driver may fail if
+the combo isn't supported. Also, the policy isn't defined on what
+happens to the head's current mode. I beleive the head should try to
+keep it's current mode unless it's not suitable to whatever have been
+detected on that connection.
+
+What do you think ?
+
+Ben.

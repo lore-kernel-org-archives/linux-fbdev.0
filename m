@@ -1,64 +1,143 @@
-From: "Antonino A. Daplas" <adaplas@swissinfo.org>
-Subject: Re: [PATCH] skeletonfb
-Date: Sat, 5 Feb 2005 05:57:46 +0800
-Message-ID: <200502050557.46676.adaplas@swissinfo.org>
-References: <200501301911.17552.lucasvr@gobolinux.org>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Daniel Drake <dsd@cs.man.ac.uk>
+Subject: [-mm PATCH] driver model: PM type checking in drivers/video
+Date: Fri, 04 Feb 2005 22:20:10 +0000
+Message-ID: <4203F51A.10302@cs.man.ac.uk>
 Mime-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="------------060200020402040002070300"
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, linux-pm@osdl.org
+
+This is a multi-part message in MIME format.
+--------------060200020402040002070300
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CxBad-0003gb-V1
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 04 Feb 2005 14:06:11 -0800
-Received: from md1.swissinfo.org ([146.159.4.92])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CxBac-0006GX-8w
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 04 Feb 2005 14:06:11 -0800
-Received: from mail.swissinfo.org ([194.6.181.33])
-	by md1.swissinfo.org (phad1.swissinfo.org [146.159.6.9])
-	(MDaemon.PRO.v7.2.1.R)
-	with ESMTP id 59-md50000279874.msg
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 04 Feb 2005 22:54:19 +0100
-Received: from [203.177.116.119] (203.177.116.119) by mail.swissinfo.org (7.0.020) (authenticated as adaplas)
-        id 4153942001EE30C8 for linux-fbdev-devel@lists.sourceforge.net; Fri, 4 Feb 2005 22:57:52 +0100
-In-Reply-To: <200501301911.17552.lucasvr@gobolinux.org>
-Content-Disposition: inline
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
 
-On Monday 31 January 2005 05:11, Lucas Correia Villa Real wrote:
-> Hi,
->
-> This patch just fixes some typos and adds retval documentation for some
-> functions that were missing it.
->
-> I've also a question here: skeletonfb says that  xxxfb_setcolreg() should
-> return a negative errno on error. However, if the register number being
-> accessed is out of bounds, 1 is returned. Shouldn't it be better to return
-> -EINVAL instead?  By looking at fbcmap.c, the retval isn't being checked
-> against positive/negative values, so it doesn't make sense to return 1.
->
-> Thanks,
+This fixes PM driver model type checking for drivers/video.
+Acked by Pavel Machek.
 
-Please, add a "Signed-off-by:" line next time.
-
-Tony
+Signed-off-by: Daniel Drake <dsd@gentoo.org>
 
 
+--------------060200020402040002070300
+Content-Type: text/x-patch;
+ name="video-pm-type-safety.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="video-pm-type-safety.patch"
 
+diff -urNpX dontdiff linux-2.6.11-rc2-mm2/drivers/video/aty/radeon_pm.c linux-dsd/drivers/video/aty/radeon_pm.c
+--- linux-2.6.11-rc2-mm2/drivers/video/aty/radeon_pm.c	2005-02-02 21:55:28.000000000 +0000
++++ linux-dsd/drivers/video/aty/radeon_pm.c	2005-02-02 21:58:53.000000000 +0000
+@@ -2596,7 +2596,7 @@ int radeonfb_pci_resume(struct pci_dev *
+         struct radeonfb_info *rinfo = info->par;
+ 	int rc = 0;
+ 
+-	if (pdev->dev.power.power_state == 0)
++	if (pdev->dev.power.power_state == PMSG_ON)
+ 		return 0;
+ 
+ 	if (rinfo->no_schedule) {
+diff -urNpX dontdiff linux-2.6.11-rc2-mm2/drivers/video/backlight/corgi_bl.c linux-dsd/drivers/video/backlight/corgi_bl.c
+--- linux-2.6.11-rc2-mm2/drivers/video/backlight/corgi_bl.c	2005-02-02 21:55:28.000000000 +0000
++++ linux-dsd/drivers/video/backlight/corgi_bl.c	2005-02-02 20:08:15.000000000 +0000
+@@ -81,7 +81,7 @@ static void corgibl_blank(int blank)
+ }
+ 
+ #ifdef CONFIG_PM
+-static int corgibl_suspend(struct device *dev, u32 state, u32 level)
++static int corgibl_suspend(struct device *dev, pm_message_t state, u32 level)
+ {
+ 	if (level == SUSPEND_POWER_DOWN)
+ 		corgibl_blank(FB_BLANK_POWERDOWN);
+diff -urNpX dontdiff linux-2.6.11-rc2-mm2/drivers/video/i810/i810_main.c linux-dsd/drivers/video/i810/i810_main.c
+--- linux-2.6.11-rc2-mm2/drivers/video/i810/i810_main.c	2005-02-02 21:55:28.000000000 +0000
++++ linux-dsd/drivers/video/i810/i810_main.c	2005-02-02 20:13:21.000000000 +0000
+@@ -1492,7 +1492,7 @@ static struct fb_ops i810fb_ops __devini
+ /***********************************************************************
+  *                         Power Management                            *
+  ***********************************************************************/
+-static int i810fb_suspend(struct pci_dev *dev, u32 state)
++static int i810fb_suspend(struct pci_dev *dev, pm_message_t state)
+ {
+ 	struct fb_info *info = pci_get_drvdata(dev);
+ 	struct i810fb_par *par = (struct i810fb_par *) info->par;
+@@ -1538,7 +1538,7 @@ static int i810fb_resume(struct pci_dev 
+ 		return 0;
+ 
+ 	pci_restore_state(dev);
+-	pci_set_power_state(dev, 0);
++	pci_set_power_state(dev, PCI_D0);
+ 	pci_enable_device(dev);
+ 	agp_bind_memory(par->i810_gtt.i810_fb_memory,
+ 			par->fb.offset);
+diff -urNpX dontdiff linux-2.6.11-rc2-mm2/drivers/video/pxafb.c linux-dsd/drivers/video/pxafb.c
+--- linux-2.6.11-rc2-mm2/drivers/video/pxafb.c	2005-02-02 21:54:21.000000000 +0000
++++ linux-dsd/drivers/video/pxafb.c	2005-02-02 20:01:56.000000000 +0000
+@@ -942,7 +942,7 @@ pxafb_freq_policy(struct notifier_block 
+  * Power management hooks.  Note that we won't be called from IRQ context,
+  * unlike the blank functions above, so we may sleep.
+  */
+-static int pxafb_suspend(struct device *dev, u32 state, u32 level)
++static int pxafb_suspend(struct device *dev, pm_message_t state, u32 level)
+ {
+ 	struct pxafb_info *fbi = dev_get_drvdata(dev);
+ 
+diff -urNpX dontdiff linux-2.6.11-rc2-mm2/drivers/video/sa1100fb.c linux-dsd/drivers/video/sa1100fb.c
+--- linux-2.6.11-rc2-mm2/drivers/video/sa1100fb.c	2005-02-02 21:54:21.000000000 +0000
++++ linux-dsd/drivers/video/sa1100fb.c	2005-02-02 20:02:48.000000000 +0000
+@@ -1307,7 +1307,7 @@ sa1100fb_freq_policy(struct notifier_blo
+  * Power management hooks.  Note that we won't be called from IRQ context,
+  * unlike the blank functions above, so we may sleep.
+  */
+-static int sa1100fb_suspend(struct device *dev, u32 state, u32 level)
++static int sa1100fb_suspend(struct device *dev, pm_message_t state, u32 level)
+ {
+ 	struct sa1100fb_info *fbi = dev_get_drvdata(dev);
+ 
+diff -urNpX dontdiff linux-2.6.11-rc2-mm2/drivers/video/savage/savagefb.c linux-dsd/drivers/video/savage/savagefb.c
+--- linux-2.6.11-rc2-mm2/drivers/video/savage/savagefb.c	2004-12-24 21:34:45.000000000 +0000
++++ linux-dsd/drivers/video/savage/savagefb.c	2005-02-02 20:14:38.000000000 +0000
+@@ -2100,7 +2100,7 @@ static void __devexit savagefb_remove (s
+ 	}
+ }
+ 
+-static int savagefb_suspend (struct pci_dev* dev, u32 state)
++static int savagefb_suspend (struct pci_dev* dev, pm_message_t state)
+ {
+ 	struct fb_info *info =
+ 		(struct fb_info *)pci_get_drvdata(dev);
+@@ -2115,7 +2115,7 @@ static int savagefb_suspend (struct pci_
+ 	release_console_sem();
+ 
+ 	pci_disable_device(dev);
+-	pci_set_power_state(dev, state);
++	pci_set_power_state(dev, pci_choose_state(dev, state));
+ 
+ 	return 0;
+ }
+@@ -2128,7 +2128,7 @@ static int savagefb_resume (struct pci_d
+ 
+ 	DBG("savage_resume");
+ 
+-	pci_set_power_state(dev, 0);
++	pci_set_power_state(dev, PCI_D0);
+ 	pci_restore_state(dev);
+ 	if(pci_enable_device(dev))
+ 		DBG("err");
+diff -urNpX dontdiff linux-2.6.11-rc2-mm2/drivers/video/w100fb.c linux-dsd/drivers/video/w100fb.c
+--- linux-2.6.11-rc2-mm2/drivers/video/w100fb.c	2005-02-02 21:54:21.000000000 +0000
++++ linux-dsd/drivers/video/w100fb.c	2005-02-02 20:04:16.000000000 +0000
+@@ -535,7 +535,7 @@ static void w100fb_clear_buffer(void)
+ 
+ 
+ #ifdef CONFIG_PM
+-static int w100fb_suspend(struct device *dev, u32 state, u32 level)
++static int w100fb_suspend(struct device *dev, pm_message_t state, u32 level)
+ {
+ 	if (level == SUSPEND_POWER_DOWN) {
+ 		struct fb_info *info = dev_get_drvdata(dev);
 
--------------------------------------------------------
-This SF.Net email is sponsored by: IntelliVIEW -- Interactive Reporting
-Tool for open source databases. Create drag-&-drop reports. Save time
-by over 75%! Publish reports on the web. Export to DOC, XLS, RTF, etc.
-Download a FREE copy at http://www.intelliview.com/go/osdn_nl
+--------------060200020402040002070300--

@@ -1,95 +1,147 @@
-From: Aurelien Jacobs <aurel@gnuage.org>
-Subject: [PATCH] vesafb memory size mismatch
-Date: Fri, 1 Oct 2004 15:36:24 +0200
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20041001153624.267a808b@homer.gnuage.org>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Gerd Knorr <kraxel@bytesex.org>
+Subject: Re: [PATCH] vesafb memory size mismatch
+Date: 01 Oct 2004 17:48:21 +0200
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <87acv6l9ru.fsf@bytesex.org>
+References: <20041001153624.267a808b@homer.gnuage.org>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="Multipart=_Fri__1_Oct_2004_15_36_24_+0200_M.Cy/CiVvFKpPsa2"
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CDOOa-0004nI-Vp
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 01 Oct 2004 07:28:28 -0700
-Received: from postfix3-1.free.fr ([213.228.0.44])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CDOOW-0006ZU-93
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 01 Oct 2004 07:28:28 -0700
-Received: from server.gnuage.org (unknown [62.147.10.254])
-	by postfix3-1.free.fr (Postfix) with ESMTP id 938E117357F
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri,  1 Oct 2004 16:28:22 +0200 (CEST)
-Received: from homer.gnuage.org ([2002:52e3:5eac:1:211:2fff:fe2b:3fc3])
-	by server.gnuage.org with smtp (Exim 4.34)
-	id 1CDOP6-00011f-J2
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 01 Oct 2004 16:29:02 +0200
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
-
-This is a multi-part message in MIME format.
-
---Multipart=_Fri__1_Oct_2004_15_36_24_+0200_M.Cy/CiVvFKpPsa2
-Content-Type: text/plain; charset=US-ASCII
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S263778AbUJAQCF@vger.kernel.org>
+In-Reply-To: <20041001153624.267a808b@homer.gnuage.org>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>
 
-Hi,
+Aurelien Jacobs <aurel@gnuage.org> writes:
 
-I found a bug in the vesafb driver. The video memory size which is
-reserved by vesafb do not correspond to the really needed memory.
-Currently the needed memory is calculated using
-screen_info.lfb_width * vesafb_defined.bits_per_pixel >> 3
-This works with most cards because it's usually equal to
-vesafb_fix.line_length.
-But with some cards (voodoo3 in 24 bits mode) line_length is
-greater than width * bytes_per_pixel (probably for alignment
-purpose, line_length = 4096 on voodoo3 800x600-24).
-Su currently, with such cards, writting in the second buffer
-(as memory is allocated for double buffering) can go past the
-end of reserved memory, overwritting some other memory area
-and leading to a kernel crash.
+> Hi,
+> 
+> I found a bug in the vesafb driver. The video memory size which is
+> reserved by vesafb do not correspond to the really needed memory.
 
-So I wrote this tiny patch wich correct this bug.
-I tested it successfully with different video cards (Matrox,
-Nvidia, Sis, 3dfx) in different modes.
+Oh, while we are at it, I've hacked a patch as well some time ago.
+All the size calculation in vesafb is a bit tricky.  I've tried to
+cleanup that a bit and fix some bugs along the way, but never managed
+to submit it.  I think the boundary check cleanups should also fix the
+bug you've seen.
 
-I don't know if it's the right place to send a patch for vesafb ?
-Could you please direct me to the right place if it's not ?
+Ok, here we go ...
 
-Aurel
+The patch does introduce some variables for the different sizes used
+and add some comments what they are good for, so it's easier to see
+what is actually going on:
 
---Multipart=_Fri__1_Oct_2004_15_36_24_+0200_M.Cy/CiVvFKpPsa2
-Content-Type: text/plain;
- name="vesafb-memory.diff"
-Content-Disposition: attachment;
- filename="vesafb-memory.diff"
-Content-Transfer-Encoding: 7bit
+  - size_vmode: minimum memory required for the video mode.
+  - size_total: the total amount of memory we have.
+  - size_remap: the amount of memory vesafb is going to use
+    (and allocate kernel address space for).  By default this
+    is size_vmode*2, so fbcon has some room to use.
 
-diff -Naur linux-2.6.8.1.orig/drivers/video/vesafb.c linux-2.6.8.1/drivers/video/vesafb.c
---- linux-2.6.8.1.orig/drivers/video/vesafb.c	2004-09-29 17:47:41.997524992 +0200
-+++ linux-2.6.8.1/drivers/video/vesafb.c	2004-09-29 17:48:03.946188288 +0200
-@@ -234,7 +234,7 @@
+For ressource allocation + mtrr entries size_total video memory is
+used through.  The later is important for X11 performance, as the
+X-Server will try to create a mtrr entry for the whole video memory
+and fail in case vesafb creates a small one for size_remap only.
+
+  Gerd
+
+Index: linux-2.6.8/drivers/video/vesafb.c
+===================================================================
+--- linux-2.6.8.orig/drivers/video/vesafb.c	2004-08-18 12:11:41.000000000 +0200
++++ linux-2.6.8/drivers/video/vesafb.c	2004-08-18 18:23:23.554270385 +0200
+@@ -218,6 +218,9 @@ static int __init vesafb_probe(struct de
+ 	struct platform_device *dev = to_platform_device(device);
+ 	struct fb_info *info;
+ 	int i, err;
++	unsigned int size_vmode;
++	unsigned int size_remap;
++	unsigned int size_total;
+ 
+ 	if (screen_info.orig_video_isVGA != VIDEO_TYPE_VLFB)
+ 		return -ENXIO;
+@@ -229,32 +232,37 @@ static int __init vesafb_probe(struct de
+ 	vesafb_defined.xres = screen_info.lfb_width;
+ 	vesafb_defined.yres = screen_info.lfb_height;
  	vesafb_fix.line_length = screen_info.lfb_linelength;
- 
- 	/* Allocate enough memory for double buffering */
+-
+-	/* Allocate enough memory for double buffering */
 -	vesafb_fix.smem_len = screen_info.lfb_width * screen_info.lfb_height * vesafb_defined.bits_per_pixel >> 2;
-+	vesafb_fix.smem_len = 2 * screen_info.lfb_linelength * screen_info.lfb_height;
+-
+-	/* check that we don't remap more memory than old cards have */
+-	if (vesafb_fix.smem_len > (screen_info.lfb_size * 65536))
+-		vesafb_fix.smem_len = screen_info.lfb_size * 65536;
+-
+-	/* Set video size according to vram boot option */
+-	if (vram)
+-		vesafb_fix.smem_len = vram * 1024 * 1024;
+-
+ 	vesafb_fix.visual   = (vesafb_defined.bits_per_pixel == 8) ?
+ 		FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_TRUECOLOR;
  
- 	/* check that we don't remap more memory than old cards have */
- 	if (vesafb_fix.smem_len > (screen_info.lfb_size * 65536))
-
---Multipart=_Fri__1_Oct_2004_15_36_24_+0200_M.Cy/CiVvFKpPsa2--
-
-
--------------------------------------------------------
-This SF.net email is sponsored by: IT Product Guide on ITManagersJournal
-Use IT products in your business? Tell us what you think of them. Give us
-Your Opinions, Get Free ThinkGeek Gift Certificates! Click to find out more
-http://productguide.itmanagersjournal.com/guidepromo.tmpl
+-	/* limit framebuffer size to 16 MB.  Otherwise we'll eat tons of
+-	 * kernel address space for nothing if the gfx card has alot of
+-	 * memory (>= 128 MB isn't uncommon these days ...) */
+-	if (vesafb_fix.smem_len > 16 * 1024 * 1024)
+-		vesafb_fix.smem_len = 16 * 1024 * 1024;
++	/*   size_vmode -- that is the amount of memory needed for the
++	 *                 used video mode, i.e. the minimum amount of
++	 *                 memory we need. */
++	size_vmode = (vesafb_defined.xres * vesafb_defined.yres *
++		vesafb_defined.bits_per_pixel) >> 3;
++
++	/*   size_total -- all video memory we have. Used for mtrr
++	 *                 entries and bounds checking. */
++	size_total = screen_info.lfb_size * 65536;
++	if (size_total < size_vmode)
++		size_total = size_vmode;
++	if (vram)
++		size_total = vram * 1024 * 1024;
++
++	/*   size_remap -- the amount of video memory we are going to
++	 *                 use for vesafb.  With modern cards it is no
++	 *                 option to simply use size_total as that
++	 *                 wastes plenty of kernel address space. */
++	size_remap  = size_vmode * 2;
++	if (size_remap > size_total)
++		size_remap = size_total;
++	vesafb_fix.smem_len = size_remap;
+ 
+ #ifndef __i386__
+ 	screen_info.vesapm_seg = 0;
+ #endif
+ 
+-	if (!request_mem_region(vesafb_fix.smem_start, vesafb_fix.smem_len, "vesafb")) {
++	if (!request_mem_region(vesafb_fix.smem_start, size_total, "vesafb")) {
+ 		printk(KERN_WARNING
+ 		       "vesafb: abort, cannot reserve video memory at 0x%lx\n",
+ 			vesafb_fix.smem_start);
+@@ -279,8 +287,10 @@ static int __init vesafb_probe(struct de
+ 		goto err;
+ 	}
+ 
+-	printk(KERN_INFO "vesafb: framebuffer at 0x%lx, mapped to 0x%p, size %dk\n",
+-	       vesafb_fix.smem_start, info->screen_base, vesafb_fix.smem_len/1024);
++	printk(KERN_INFO "vesafb: framebuffer at 0x%lx, mapped to 0x%p, "
++	       "using %dk, total %dk\n",
++	       vesafb_fix.smem_start, info->screen_base,
++	       size_remap/1024, size_total/1024);
+ 	printk(KERN_INFO "vesafb: mode is %dx%dx%d, linelength=%d, pages=%d\n",
+ 	       vesafb_defined.xres, vesafb_defined.yres, vesafb_defined.bits_per_pixel, vesafb_fix.line_length, screen_info.pages);
+ 
+@@ -364,7 +374,7 @@ static int __init vesafb_probe(struct de
+ 	request_region(0x3c0, 32, "vesafb");
+ 
+ 	if (mtrr) {
+-		int temp_size = vesafb_fix.smem_len;
++		int temp_size = size_total;
+ 		/* Find the largest power-of-two */
+ 		while (temp_size & (temp_size - 1))
+                 	temp_size &= (temp_size - 1);
+@@ -395,7 +405,7 @@ static int __init vesafb_probe(struct de
+ 	return 0;
+ err:
+ 	framebuffer_release(info);
+-	release_mem_region(vesafb_fix.smem_start, vesafb_fix.smem_len);
++	release_mem_region(vesafb_fix.smem_start, size_total);
+ 	return err;
+ }
+ 

@@ -1,14 +1,21 @@
-From: Keith Whitwell <keith@tungstengraphics.com>
-Subject: Re: [Dri-devel] Re: Re: Current discussion about
- the future of free software graphics
-Date: Wed, 12 May 2004 09:48:19 +0100
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] atyfb (2.6): Add RGB565 support
+Date: Wed, 12 May 2004 11:11:21 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <40A1E4D3.40705@tungstengraphics.com>
-References: <Pine.LNX.4.44.0405112050570.17349-100000@phoenix.infradead.org> <40A13BA0.609@us.ibm.com>
+Message-ID: <Pine.GSO.4.58.0405121110360.19967@waterleaf.sonytel.be>
+References: <20040511213607.GB6854@sci.fi>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-In-Reply-To: <40A13BA0.609@us.ibm.com>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BNplu-00024U-OK
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 May 2004 02:11:26 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BNplu-0006g2-7O
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 May 2004 02:11:26 -0700
+In-Reply-To: <20040511213607.GB6854@sci.fi>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -18,46 +25,30 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Ian Romanick <idr@us.ibm.com>
-Cc: James Simmons <jsimmons@infradead.org>, linux-fbdev-devel@lists.sourceforge.net, dri-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="iso-8859-1"
+To: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Ian Romanick wrote:
-> James Simmons wrote:
-> 
->>> 1: Design must provide a mechanism for basic mode setting in a
->>> device independent manner from an application with user level
->>> permissions. ("Basic" to be defined)
->>
->>
->> Ug. I see I'm fighting a losing battle but it doesn't matter. I 
->> couldn't never win this fight. There is MONEY involved here. This is a 
->> sure way
->> to make sure Tungstengraphics has a income coming in. They want a 
->> monoply on the linux graphics arena then fine they can have it. 
-> 
-> 
-> Are you completely without a clue?  Nobody from TG is even participating 
-> in this discussion (except a couple messages from Jens a week or so 
-> ago).  Why would you even say such a thing?
+On Wed, 12 May 2004, Ville [iso-8859-1] Syrj=E4l=E4 wrote:
+> This patch adds RGB565 support to atyfb.
 
-I do feel remiss that I'm not engaged more fully in this, but really much of 
-the ground covered is way outside the areas in which I feel qualified to 
-comment, or perhaps it's just that I don't have an opinion either way about 
-mode-setting, etc, based on long years of just having the X server take care 
-of it for me...
+Nice! Have you tried fbtest on it?
 
-Anyway. I've got a lot of respect for the people involved in the discussion, 
-even when they hold quite conflicting views, so I'm hopeful that some sort of 
-direction can be reached for moving forward.
+I once tried to implement it myself, but it didn't work reliably.
 
-My one worry about the discussion is that because of confusion over where the 
-X developers are hanging out nowadays, they are missing out on having their 
-say on this - and they probably care deeply about modesetting.  Though, given 
-the mad flamewar it's turned into, maybe smaller is better...
+Gr{oetje,eeting}s,
 
-Keith
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m6=
+8k.org
+
+In personal conversations with technical people, I call myself a hacker. =
+But
+when I'm talking to journalists I just say "programmer" or something like=
+ that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

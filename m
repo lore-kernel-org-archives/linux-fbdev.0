@@ -1,49 +1,44 @@
-From: Zachary Smith <plinius@comcast.net>
-Subject: FBUI 0.7c available
-Date: Tue, 19 Oct 2004 17:27:50 -0700
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <4175B106.9060503@comcast.net>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [Linux-fbdev-devel] Generic VESA framebuffer driver and Video card BOOT?
+Date: Tue, 19 Oct 2004 23:48:18 +0200
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <20041019214818.GF1142@elf.ucw.cz>
+References: <9e47339104101814166bf4cfe5@mail.gmail.com> <41740384.5783.12A07B14@localhost>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S269645AbUJSWS5@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <41740384.5783.12A07B14@localhost>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CK4GG-00053d-GG
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 19 Oct 2004 17:23:28 -0700
-Received: from rwcrmhc12.comcast.net ([216.148.227.85])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CK4GG-0002wy-56
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 19 Oct 2004 17:23:28 -0700
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Kendall Bennett <KendallB@scitechsoft.com>
+Cc: Richard Smith <rsmith@bitworks.com>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
+Hi!
 
-FBUI is now up to version 0.7c, and it supports:
-* windows on every VC
-* keyboard input
-* mouse pointer motion
+> > Its a sad fact though that we are (x86 anyway) dependant on some
+> > amazingly fragile, stupid, usually binary only, legacy bloated, and
+> > quite often buggy, 16-bit realmode video init code that should have
+> > been put to pasture many years ago. 
+> 
+> Actually there is nothing wrong with the x86 BIOS from the perspective of 
+> functionality and useability (or bloat for that matter). It contains all 
+> the functionality we need and armed with something like the x86 emulator 
+> we can use it for what we need on any platform.
+> 
+> Open Firmware may be a 'nicer' solution, but I guarantee that if the 
+> vendors started supporting that it would be just a bug ridden as any 16-
+> bit real mode BIOS code. For the Video BIOS the code always works for 
+> what it is tested for. Some vendors spend more time testing the VBE BIOS 
+> side of things fully (if they are smart they have licensed our VBETest 
+> tools for this purpose). Unfortunatley some vendors do not test this 
+> stuff thoroughly and it has problems. But the same testing issues would 
+> exist whether the firmware was written as a 16-bit x86 blob or as an Open 
+> Firmware blob.
 
-It grabs input events off of /dev/input/event0.
-
-Sample programs now include a terminal emulator,
-clock, window manager, image viewer, load monitor etc.
-
-See http://home.comcast.net/~plinius.
-
-
-
--------------------------------------------------------
-This SF.net email is sponsored by: IT Product Guide on ITManagersJournal
-Use IT products in your business? Tell us what you think of them. Give us
-Your Opinions, Get Free ThinkGeek Gift Certificates! Click to find out more
-http://productguide.itmanagersjournal.com/guidepromo.tmpl
+Actually that 16-bit x86 blob can access any PC hardware, and that's
+where the stuff gets hard.
+								Pavel
+-- 
+People were complaining that M$ turns users into beta-testers...
+...jr ghea gurz vagb qrirybcref, naq gurl frrz gb yvxr vg gung jnl!

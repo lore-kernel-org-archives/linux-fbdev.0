@@ -1,20 +1,21 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: Re: [RFC] Video Mode Handling
-Date: Mon, 9 Aug 2004 07:56:49 -0700 (PDT)
+From: Kronos <kronos@people.it>
+Subject: Re: [PATCH 4/5] Video Mode Handling - Reduce memory footprint of fbdev
+Date: Mon, 9 Aug 2004 17:08:33 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040809145649.7829.qmail@web14925.mail.yahoo.com>
-References: <200408091559.18436.adaplas@hotpop.com>
+Message-ID: <20040809150833.GA4244@dreamland.darkstar.lan>
+References: <200408090946.30692.adaplas@hotpop.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BuBZx-0001Lb-Ap
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Aug 2004 07:56:49 -0700
-Received: from web14925.mail.yahoo.com ([216.136.225.11])
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.34)
-	id 1BuBZx-0007Ao-1C
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Aug 2004 07:56:49 -0700
-In-Reply-To: <200408091559.18436.adaplas@hotpop.com>
+	id 1BuBlS-0003YX-Vv
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Aug 2004 08:08:42 -0700
+Received: from mail-relay-3.tiscali.it ([213.205.33.43])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
+	id 1BuBlS-0000PZ-Ay
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Aug 2004 08:08:42 -0700
+Content-Disposition: inline
+In-Reply-To: <200408090946.30692.adaplas@hotpop.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,47 +27,48 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: adaplas@pol.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@osdl.org>
+To: adaplas@pol.net
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
---- "Antonino A. Daplas" <adaplas@hotpop.com> wrote:
-> I guess most people will agree that writing to the hardware belongs
-> in the kernel, while choosing the correct values to write belongs to
-> userspace.  The unanswered question is the middle part, who does the
-> verification?
+Il Mon, Aug 09, 2004 at 09:46:30AM +0800, Antonino A. Daplas ha scritto: 
+> b. Add CONFIG_FB_MODE_HELPERS.  Unselecting this will uninclude the code for 
+> Generalized Timing Formula and the EDID parser on kernel compilation.  These
+> are used only by radeonfb, rivafb and i810fb.
 
-At OLS we talk about a system like this:
-1) user owns graphics devices
-2) user sets mode with string (or similar) format using ioctl common to
-all drivers.
-3) driver is locked to prevent multiple mode sets
-4) common code takes this string and does a hotplug event with it.
-5) hotplug event runs root context in user space 
-6) mode is decoded and verified, this may involve a little process that
-maintains the DDC database and reads a file of legal modes. Other
-schemes are possible.
-7a) mode is set using VBIOS and vm86, signal driver mode is set
-7b) the register values needed to set the mode are passed into a root
-priv ioctl.
-8) driver is unlocked.
+Then make radeonfb, rivafb and i810fb select CONFIG_FB_MODE_HELPERS:
 
-In this model all of the verification happens in user space. If you
-want to set modes other than the ones from DDC you have to add them to
-the config file. There is no need for DDC support and mode verification
-in the kernel.
+--- a/drivers/video/Kconfig	2004-08-09 17:03:58.000000000 +0200
++++ b/drivers/video/Kconfig	2004-08-09 17:04:56.000000000 +0200
+@@ -437,6 +437,7 @@
+ 	depends on FB && PCI
+ 	select I2C_ALGOBIT if FB_RIVA_I2C
+ 	select I2C if FB_RIVA_I2C
++	select FB_MODE_HELPERS
+ 	help
+ 	  This driver supports graphics boards with the nVidia Riva/Geforce
+ 	  chips.
+@@ -469,6 +470,7 @@
+ config FB_I810
+ 	tristate "Intel 810/815 support (EXPERIMENTAL)"
+ 	depends on FB && AGP && AGP_INTEL && EXPERIMENTAL && PCI	
++	select FB_MODE_HELPERS
+ 	help
+ 	  This driver supports the on-board graphics built in to the Intel 810 
+           and 815 chipsets.  Say Y if you have and plan to use such a board.
+@@ -672,6 +674,7 @@
+ 	depends on FB && PCI
+ 	select I2C_ALGOBIT if FB_RADEON_I2C
+ 	select I2C if FB_RADEON_I2C
++	select FB_MODE_HELPERS
+ 	help
+ 	  Choose this option if you want to use an ATI Radeon graphics card as
+ 	  a framebuffer device.  There are both PCI and AGP versions.  You
 
-To give credit this is Alan Cox's design.
 
-=====
-Jon Smirl
-jonsmirl@yahoo.com
-
-
-		
-__________________________________
-Do you Yahoo!?
-New and Improved Yahoo! Mail - Send 10MB messages!
-http://promotions.yahoo.com/new_mail 
+Luca
+-- 
+Home: http://kronoz.cjb.net
+Do, or do not. There is no try.
 
 
 -------------------------------------------------------

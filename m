@@ -1,14 +1,14 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [patch] Correct monochrome selection (fwd)
-Date: Wed, 23 Oct 2002 16:15:08 +0200 (MEST)
+Subject: [patch] Correct colour handling (fwd)
+Date: Wed, 23 Oct 2002 16:14:52 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0210231614570.2882-100000@vervain.sonytel.be>
+Message-ID: <Pine.GSO.4.21.0210231614330.2882-100000@vervain.sonytel.be>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 184MI0-0004fp-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 23 Oct 2002 07:15:16 -0700
+	id 184MHm-0004cb-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 23 Oct 2002 07:15:02 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,64 +23,92 @@ Content-Transfer-Encoding: 7bit
 To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 Cc: Martin Schulze <joey@infodrom.org>
 
+
+Any comments?
+
 ---------- Forwarded message ----------
-Date: Sat, 19 Oct 2002 19:05:34 +0200
+Date: Sat, 19 Oct 2002 18:50:54 +0200
 From: Martin Schulze <joey@infodrom.org>
 To: Ralf Baechle <ralf@linux-mips.org>
 Cc: linux-mips@linux-mips.org
-Subject: [patch] Correct monochrome selection
+Subject: [patch] Correct colour handling
 
-Hi Ralf,
+Moin Ralf,
 
-please apply the patch below which will add proper handling for
-monochrome graphic cards.
+please apply the patch below which will correct colour handling.  The
+outcome of this patch will only be visible with a monochrome graphics
+card since they can see what is written on the screen again.
 
-Both changes are required since there are graphic cards out in the
-voi^Wwild that are monochrome but have bits_per_pixel set to something
-else than 1, e.g. PMAG-AA which uses 8 bits per pixel but ignores 7 of
-it.
+As you can see, not all occasions where the currently used colour is
+changed, isn't protected by the 'if (can_do_color)' check.  Some
+occurrences though use it.
 
-Since currently no such card is supported, this change wasn't
-required.  However, we developed support for the PMAG-AA card and we
-would like to add support for it to the Linux kernel, of course.
+This patch is done basically by Thiemo Seufer during this years'
+Oldenburg meeting.
 
 Regards,
 
 	Joey
 
 
-Index: fbcon.c
+Index: console.c
 ===================================================================
-RCS file: /home/cvs/linux/drivers/video/fbcon.c,v
-retrieving revision 1.28.2.4
-diff -u -r1.28.2.4 fbcon.c
---- fbcon.c	2 Oct 2002 13:28:31 -0000	1.28.2.4
-+++ fbcon.c	19 Oct 2002 16:57:40 -0000
-@@ -711,7 +711,8 @@
-     if ((p->var.yres % fontheight(p)) &&
- 	(p->var.yres_virtual % fontheight(p) < p->var.yres % fontheight(p)))
- 	p->vrows--;
--    conp->vc_can_do_color = p->var.bits_per_pixel != 1;
-+    conp->vc_can_do_color = (p->fb_info->fix.visual != FB_VISUAL_MONO10 &&
-+			     p->fb_info->fix.visual != FB_VISUAL_MONO01);
-     conp->vc_complement_mask = conp->vc_can_do_color ? 0x7700 : 0x0800;
-     if (charcnt == 256) {
-     	conp->vc_hi_font_mask = 0;
-@@ -2177,7 +2178,12 @@
- 					   p->fb_info);
- 	}
- 	
--    if (depth >= 8) {
-+    if (p->visual == FB_VISUAL_MONO10 ||
-+	p->visual == FB_VISUAL_MONO01) {
-+	logo = linux_logo_bw;
-+	logo_depth = 1;
-+    }
-+    else if (depth >= 8) {
- 	logo = linux_logo;
- 	logo_depth = 8;
-     }
-
+RCS file: /home/cvs/linux/drivers/char/console.c,v
+retrieving revision 1.37.2.2
+diff -u -r1.37.2.2 console.c
+--- console.c	26 Jun 2002 22:35:32 -0000	1.37.2.2
++++ console.c	19 Oct 2002 16:47:01 -0000
+@@ -1046,7 +1046,8 @@
+ 	underline = 0;
+ 	reverse = 0;
+ 	blink = 0;
+-	color = def_color;
++	if (can_do_color)
++		color = def_color;
+ }
+ 
+ /* console_sem is held */
+@@ -1119,7 +1120,8 @@
+ 				  * with white underscore (Linux - use
+ 				  * default foreground).
+ 				  */
+-				color = (def_color & 0x0f) | background;
++			        if (can_do_color)
++					color = (def_color & 0x0f) | background;
+ 				underline = 1;
+ 				break;
+ 			case 39: /* ANSI X3.64-1979 (SCO-ish?)
+@@ -1127,11 +1129,13 @@
+ 				  * Reset colour to default? It did this
+ 				  * before...
+ 				  */
+-				color = (def_color & 0x0f) | background;
++			        if (can_do_color)
++					color = (def_color & 0x0f) | background;
+ 				underline = 0;
+ 				break;
+ 			case 49:
+-				color = (def_color & 0xf0) | foreground;
++			  	if (can_do_color)
++					color = (def_color & 0xf0) | foreground;
+ 				break;
+ 			default:
+ 				if (par[i] >= 30 && par[i] <= 37)
+@@ -1274,9 +1278,11 @@
+ 			}
+ 			break;
+ 		case 8:	/* store colors as defaults */
+-			def_color = attr;
+-			if (hi_font_mask == 0x100)
+-				def_color >>= 1;
++			if (can_do_color) {
++				def_color = attr;
++				if (hi_font_mask == 0x100)
++					def_color >>= 1;
++			}
+ 			default_attr(currcons);
+ 			update_attr(currcons);
+ 			break;
 -- 
 Every use of Linux is a proper use of Linux.  -- Jon "Maddog" Hall
 

@@ -1,21 +1,23 @@
-From: Sven Luther <sven.luther@wanadoo.fr>
-Subject: Re: Bug#226973: xserver-xfree86: [glint] second card at wrong resolution
-Date: Tue, 30 Mar 2004 18:57:38 +0200
+From: James Simmons <jsimmons@infradead.org>
+Subject: softcursor updates and stuff.
+Date: Tue, 30 Mar 2004 19:40:48 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040330165738.GC31639@lambda>
-References: <20040109163119.GA10151@scowler.net> <20040112121558.GA24511@iliana> <20040112215543.GB2150@scowler.net> <20040113074158.GF4863@iliana> <20040113154025.GA12817@scowler.net> <20040113160221.GA12752@iliana> <20040114211246.GA31567@scowler.net> <20040114211643.GA6793@iliana> <20040330153247.GB11287@scowler.net>
+Message-ID: <Pine.LNX.4.44.0403301912040.29836-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1B8MYc-0001GB-K2
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 Mar 2004 08:57:46 -0800
-Received: from smtp1.wanadoo.fr ([193.252.22.30] helo=mwinf0102.wanadoo.fr)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1B8MYc-00087C-6T
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 Mar 2004 08:57:46 -0800
-Content-Disposition: inline
-In-Reply-To: <20040330153247.GB11287@scowler.net>
+	id 1B8OAP-0000GO-7n
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 Mar 2004 10:40:53 -0800
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1B8OAO-0001dd-Tg
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 Mar 2004 10:40:53 -0800
+Received: from localhost ([127.0.0.1])
+	by phoenix.infradead.org with esmtp (Exim 4.30 #5 (Red Hat Linux))
+	id 1B8OAK-0007yy-OF
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 Mar 2004 19:40:48 +0100
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,25 +27,30 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Clint Adams <schizo@debian.org>
-Cc: Sven Luther <sven.luther@wanadoo.fr>, 226973@bugs.debian.org, linux-fbdev-devel@lists.sourceforge.net
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tue, Mar 30, 2004 at 10:32:47AM -0500, Clint Adams wrote:
-> This patch helps, though the second head is still a bit fuzzy.
-> One other thing I've noticed is that the clock range is detected
-> by X as 16.25 to 110.00 MHz, though the board specs claim a max of
-> 250MHz.
 
-I believe that the cloack is different for 8bpp and 16 or 24 bpp, don't
-remember exactly. At 8bpp, the max clock range is 230Mhz in the driver i
-think. You looked at it, you have the hardware, you just have become the
-resident expert on this issue :).
+Hi folks!!!
 
-Friendly,
+   I managed to fix most of the bugs in the new softcursor code. I have a 
+cute little test program to try it out. 
 
-Sven Luther
+http://phoenix.infradead.org:~/jsimmons/cursor.c
+
+The only bug left is the the flashing. I'm going to try a experiment today 
+for that. If it fixes the problem then I will submit the new cursor code 
+to Andrew Morton. 
+
+Note. 
+   The softcursor expect the framebuffer layout to be packed pixels. This 
+is not the case for vga16fb and amifb.c. I know amifb is broken because of 
+the monitor detection code changes. As for vga16fb can anyone tell me 
+where I can find docs on how to read the framebuffer for a image?
+ 
+
+
 
 
 -------------------------------------------------------

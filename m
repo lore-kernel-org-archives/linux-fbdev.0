@@ -1,15 +1,17 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: [PATCH 5/5]: fbcon module unloading
-Date: 16 Feb 2003 14:09:00 +0800
+From: Antonino Daplas <adaplas@subdimension.com>
+Subject: Re: [PATCH 5/5]: fbcon module unloading
+Date: 16 Feb 2003 14:23:44 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1045375704.1823.79.camel@localhost.localdomain>
+Message-ID: <1045376614.2755.4.camel@localhost.localdomain>
+References: <1045375704.1823.79.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-c28KoqZgC5mgEBbNeLSy"
+Content-Type: multipart/mixed; boundary="=-3qEHLY2Qm0LYXkT9O4qX"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from pine.compass.com.ph ([202.70.96.37])
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18kI0a-0005o3-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 15 Feb 2003 22:10:36 -0800
+	id 18kIDP-0008Ij-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 15 Feb 2003 22:23:51 -0800
+In-Reply-To: <1045375704.1823.79.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -19,24 +21,24 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: James Simmons <jsimmons@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Antonino Daplas <adaplas@pol.net>
+Cc: James Simmons <jsimmons@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
---=-c28KoqZgC5mgEBbNeLSy
+--=-3qEHLY2Qm0LYXkT9O4qX
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-Attached is a rediff (linux-2.5.61 + James' fbdev.diff) to enable fbcon module unloading.
+On Sun, 2003-02-16 at 14:09, Antonino Daplas wrote:
+> Attached is a rediff (linux-2.5.61 + James' fbdev.diff) to enable fbcon module unloading.
+> 
+
+Oops.  Please disregard the previous patch.  Attached is an updated
+diff.
 
 Tony
 
-
-
-
-
-
---=-c28KoqZgC5mgEBbNeLSy
+--=-3qEHLY2Qm0LYXkT9O4qX
 Content-Disposition: attachment; filename=fbcon_unload.diff
 Content-Transfer-Encoding: quoted-printable
 Content-Type: text/x-patch; name=fbcon_unload.diff; charset=ANSI_X3.4-1968
@@ -45,7 +47,7 @@ diff -Naur linux-2.5.61-fbdev/drivers/char/vt.c linux-2.5.61-ad/drivers/cha=
 r/vt.c
 --- linux-2.5.61-fbdev/drivers/char/vt.c	2003-02-16 00:55:52.000000000 +000=
 0
-+++ linux-2.5.61-ad/drivers/char/vt.c	2003-02-16 04:52:07.000000000 +0000
++++ linux-2.5.61-ad/drivers/char/vt.c	2003-02-16 06:17:36.000000000 +0000
 @@ -109,6 +109,7 @@
 =20
 =20
@@ -156,7 +158,7 @@ diff -Naur linux-2.5.61-fbdev/drivers/video/console/Kconfig linux-2.5.61-ad=
 /drivers/video/console/Kconfig
 --- linux-2.5.61-fbdev/drivers/video/console/Kconfig	2003-02-16 00:49:23.00=
 0000000 +0000
-+++ linux-2.5.61-ad/drivers/video/console/Kconfig	2003-02-16 04:52:07.00000=
++++ linux-2.5.61-ad/drivers/video/console/Kconfig	2003-02-16 06:17:36.00000=
 0000 +0000
 @@ -106,6 +106,19 @@
  	tristate "Framebuffer Console support"
@@ -184,9 +186,17 @@ diff -Naur linux-2.5.61-fbdev/drivers/video/console/fbcon.c linux-2.5.61-ad=
 /drivers/video/console/fbcon.c
 --- linux-2.5.61-fbdev/drivers/video/console/fbcon.c	2003-02-16 00:55:52.00=
 0000000 +0000
-+++ linux-2.5.61-ad/drivers/video/console/fbcon.c	2003-02-16 04:52:07.00000=
++++ linux-2.5.61-ad/drivers/video/console/fbcon.c	2003-02-16 06:18:29.00000=
 0000 +0000
-@@ -199,6 +199,23 @@
+@@ -146,6 +146,7 @@
+ static int vbl_cursor_cnt;
+ static int cursor_on;
+ static int cursor_blink_rate;
++static int irqres =3D 1;
+=20
+ static inline void cursor_undrawn(void)
+ {
+@@ -199,6 +200,23 @@
  static void fbcon_bmove_rec(struct display *p, int sy, int sx, int dy,
  			    int dx, int height, int width, u_int y_break);
 =20
@@ -211,16 +221,16 @@ diff -Naur linux-2.5.61-fbdev/drivers/video/console/fbcon.c linux-2.5.61-ad=
  /*
   * On the Macintoy, there may or may not be a working VBL int. We need to =
 probe
-@@ -580,7 +597,7 @@
+@@ -580,7 +598,7 @@
  	struct fb_info *info;
  	struct vc_data *vc;
  	static int done =3D 0;
 -	int irqres =3D 1;
-+	int irqres =3D 1, i;
++	int i;
 =20
  	/*
  	 *  If num_registered_fb is zero, this is a call for the dummy part.
-@@ -590,8 +607,11 @@
+@@ -590,8 +608,11 @@
  		return display_desc;
  	done =3D 1;
 =20
@@ -234,7 +244,7 @@ probe
  	info->currcon =3D -1;
  =09
  	owner =3D info->fbops->owner;
-@@ -2558,19 +2578,86 @@
+@@ -2558,19 +2579,89 @@
 =20
  int __init fb_console_init(void)
  {
@@ -269,22 +279,25 @@ probe
 +			return -EINVAL;
 +	}
 +
-+	del_timer_sync(&cursor_timer);
++	if (irqres) {
++		del_timer_sync(&cursor_timer);
++	} else {
 +#ifdef CONFIG_AMIGA
-+	if (MACH_IS_AMIGA)=20
-+		free_irq(IRQ_AMIGA_VERTB, fbcon_vbl_handler);
++		if (MACH_IS_AMIGA)=20
++			free_irq(IRQ_AMIGA_VERTB, fbcon_vbl_handler);
 +#endif				/* CONFIG_AMIGA */
 +#ifdef CONFIG_ATARI
-+	if (MACH_IS_ATARI)=20
-+		free_irq(IRQ_AUTO_4, fbcon_vbl_handler);
++		if (MACH_IS_ATARI)=20
++			free_irq(IRQ_AUTO_4, fbcon_vbl_handler);
 +#endif				/* CONFIG_ATARI */
 +#ifdef CONFIG_MAC
-+	if (MACH_IS_MAC && vbl_detected)=20
-+		free_irq(IRQ_MAC_VBL, fbcon_vbl_handler);
++		if (MACH_IS_MAC && vbl_detected)=20
++			free_irq(IRQ_MAC_VBL, fbcon_vbl_handler);
 +#endif				/* CONFIG_MAC */
 +#if defined(__arm__) && defined(IRQ_VSYNCPULSE)
-+	free_irq(IRQ_VSYNCPULSE, fbcon_vbl_handler);
++		free_irq(IRQ_VSYNCPULSE, fbcon_vbl_handler);
 +#endif
++	}
 +	if (softback_buf)=20
 +		kfree((void *) softback_buf);
 +
@@ -323,7 +336,7 @@ probe
  /*
   *  Visible symbols for modules
 
---=-c28KoqZgC5mgEBbNeLSy--
+--=-3qEHLY2Qm0LYXkT9O4qX--
 
 
 

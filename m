@@ -1,83 +1,90 @@
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Subject: [PATCH] radeonfb: If no video memory, exit with error [repost]
-Date: Tue, 26 Oct 2004 16:03:24 -0600
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <200410261603.24434.bjorn.helgaas@hp.com>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Fw: Re: 2.6.9 bug: linux logo not displayed in vga16fb (bug found)
+Date: Tue, 26 Oct 2004 15:24:38 -0700
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <20041026152438.7fcc535f.akpm@osdl.org>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_smsfB+Zm1X4evqP"
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261505AbUJZWDt@vger.kernel.org>
-List-Id: <fbdev-devel.lists.sourceforge.net
-To: Andrew Morton <akpm@osdl.org>, ajoshi@shell.unixbox.com, linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, benh@kernel.crashing.org
-
---Boundary-00=_smsfB+Zm1X4evqP
-Content-Type: text/plain;
-  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1CMZgF-0005Xk-1a
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 26 Oct 2004 15:20:39 -0700
+Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1CMZgE-0006iJ-Cd
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 26 Oct 2004 15:20:38 -0700
+Received: from akpm.pao.digeo.com (build.pdx.osdl.net [172.20.1.2])
+	by mail.osdl.org (8.11.6/8.11.6) with SMTP id i9QMKW901248
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 26 Oct 2004 15:20:32 -0700
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Posted this last week (10/21) but haven't seen any response.
-Would you consider this for the next -mm?  Also attached in
-case kmail mangles the whitespace.
 
 
-[PATCH] radeonfb: If no video memory, exit with error
+Begin forwarded message:
 
-Nothing good will happen if we try to ioremap and use a zero-sized
-frame buffer.  I observed this problem on an ia64 sx1000 box, where
-the BIOS doesn't run the option ROM.  If we try to continue, radeonfb
-just gets hopelessly confused because the card isn't initialized
-correctly.
+Date: Tue, 26 Oct 2004 17:54:36 +0200
+From: Ludovic Drolez <ludovic.drolez@linbox.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.9 bug: linux logo not displayed in vga16fb (bug found)
 
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
 
-===== drivers/video/aty/radeon_base.c 1.32 vs edited =====
---- 1.32/drivers/video/aty/radeon_base.c 2004-10-19 03:40:34 -06:00
-+++ edited/drivers/video/aty/radeon_base.c 2004-10-21 11:50:51 -06:00
-@@ -2186,7 +2186,9 @@
-           rinfo->video_ram = 8192 * 1024;
-           break;
-          default:
--          break;
-+   printk (KERN_ERR "radeonfb: no video RAM reported\n");
-+   ret = -ENXIO;
-+   goto err_unmap_rom;
-   }
-  }
- 
+Ludovic Drolez wrote:
+> Hi !
+> 
+> I used to have a nice vga boot logo with my 2.6.7 kernel, but with the 
+> 2.6.9, my
+> boot logo has disappeared (same .config)...
+> It seems to switch to VGA, and some space is reserved for the logo, but 
+> it is not displayed.
+> The logo appears with vesafb.
 
---Boundary-00=_smsfB+Zm1X4evqP
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="radeonfb-no-vram.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="radeonfb-no-vram.patch"
+I made a few diffs between my old working 2.6.7 kernel and the 2.6.9 and found 
+something interesting in fbmem.c:
 
-[PATCH] radeonfb: If no video memory, exit with error
+---------------
+@@ -723,7 +419,7 @@
+         if (fb_logo.logo == NULL || info->state != FBINFO_STATE_RUNNING)
+                 return 0;
 
-Nothing good will happen if we try to ioremap and use a zero-sized
-frame buffer.  I observed this problem on an ia64 sx1000 box, where
-the BIOS doesn't run the option ROM.  If we try to continue, radeonfb
-just gets hopelessly confused because the card isn't initialized
-correctly.
+-       image.depth = fb_logo.depth;
++       image.depth = 8;
+         image.data = fb_logo.logo->data;
 
-Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+         if (fb_logo.needs_cmapreset)
+---------------
 
-===== drivers/video/aty/radeon_base.c 1.32 vs edited =====
---- 1.32/drivers/video/aty/radeon_base.c	2004-10-19 03:40:34 -06:00
-+++ edited/drivers/video/aty/radeon_base.c	2004-10-21 11:50:51 -06:00
-@@ -2186,7 +2186,9 @@
- 	       		rinfo->video_ram = 8192 * 1024;
- 	       		break;
- 	       	default:
--	       		break;
-+			printk (KERN_ERR "radeonfb: no video RAM reported\n");
-+			ret = -ENXIO;
-+			goto err_unmap_rom;
- 		}
- 	}
- 
+So, on my 2.6.9, I replaced the '8' by 'fb_logo.depth' and now the logo is 
+shown! (but the screen is still not cleared as before when the kernel boots).
 
---Boundary-00=_smsfB+Zm1X4evqP--
+Where's the QA guy ? I want to see him now ! ;-)
+
+Cheers,
+
+-- 
+Ludovic DROLEZ                              Linbox / Free&ALter Soft
+152 rue de Grigy - Technopole Metz 2000                   57070 METZ
+tel : 03 87 50 87 90                            fax : 03 87 75 19 26
+-
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
+
+
+-------------------------------------------------------
+This SF.Net email is sponsored by:
+Sybase ASE Linux Express Edition - download now for FREE
+LinuxWorld Reader's Choice Award Winner for best database on Linux.
+http://ads.osdn.com/?ad_id=5588&alloc_id=12065&op=click

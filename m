@@ -1,122 +1,73 @@
-From: Joshua Kwan <joshk@triplehelix.org>
-Subject: Problem with current fb_get_color_depth function
-Date: Sun, 10 Oct 2004 15:59:03 -0700
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: Problem with current fb_get_color_depth function
+Date: Mon, 11 Oct 2004 08:33:10 +0800
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20041010225903.GA2418@darjeeling.triplehelix.org>
+Message-ID: <200410110832.19978.adaplas@hotpop.com>
+References: <20041010225903.GA2418@darjeeling.triplehelix.org>
+Reply-To: adaplas@pol.net
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="fUYQa+Pmc3FrFX/N"
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S268537AbUJJW72@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S268582AbUJKAdS@vger.kernel.org>
+In-Reply-To: <20041010225903.GA2418@darjeeling.triplehelix.org>
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net
-To: adaplas@pol.net
+Content-Type: text/plain; charset="us-ascii"
+To: Joshua Kwan <joshk@triplehelix.org>
 Cc: linux-kernel mailing list <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
 
+On Monday 11 October 2004 06:59, Joshua Kwan wrote:
+> because on advice from Andrew Suffield and Matthew Garrett the first
+> conditional was a roundabout way to check for grayscale displays, where
+> you can't actually have 24 bits (8 + 8 + 8) of gray. So it is suitable
+> to just return one of the values arbitrarily. But I noticed there was
+> also a grayscale variable, so I substituted that for the conditional
+> and my logo reappeared again :)
+>
+> So is radeonfb or fb_get_color_depth at fault here? Or was the logo
+> never appropriate for my display in the first place? (Unlikely, the
+> CLUT224 linux logo always displayed perfectly for me until now.)
+>
 
---fUYQa+Pmc3FrFX/N
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This is because radeonfb chooses directcolor for its visual.  With RGB565,
+the depth == 16, true.  However, unlike truecolor where color values are
+hardwired to linear values, directcolor looks at the hardware CLUT.
 
-Hi Antonino, lists, etc.,
+So, with directcolor RGB656, these are the CLUT lengths:
 
-I noticed that after 2.6.9-rc1 or so my framebuffer logo stopped
-appearing. Well, I dove into the fb layer code, noticed this change from
-you:
+Red and Blue = 32 (2 ^ 5)
+Green        = 64 (2 ^ 6)
 
-int fb_get_color_depth(struct fb_info *info)
-{
-    struct fb_var_screeninfo *var =3D &info->var;
+(And you can see this in radeonfb_base:radeonfb_setcolreg())
 
-    if (var->green.length =3D=3D var->blue.length &&
-        var->green.length =3D=3D var->red.length &&
-        !var->green.offset && !var->blue.offset &&
-        !var->red.offset)
-        return var->green.length;
-    else
-        return (var->green.length + var->red.length +
-            var->blue.length);
-}
+		if (rinfo->bpp == 16) {
+			pindex = regno * 8;
 
-That was interesting, because here's what radeonfb does:
+			if (rinfo->depth == 16 && regno > 63)
+				return 1;
+			if (rinfo->depth == 15 && regno > 31)
+				return 1;
 
-        switch (var_to_depth(&v)) {
-[...]
-                case 16:
-                        nom =3D 2;
-                        den =3D 1;
-                        v.red.offset =3D 11;
-                        v.green.offset =3D 5;
-                        v.blue.offset =3D 0;
-                        v.red.length =3D 5;
-                        v.green.length =3D 6;
-                        v.blue.length =3D 5;
-                        v.transp.offset =3D v.transp.length =3D 0;
-                        break;
-[...]
+However, linux_logo_224 requires a CLUT with these lengths:
 
-So somehow that first conditional was firing, although I'm not sure how,
-because a printk showed that the depth returned was 6. (fb_get_color_depth
-should have jumped to the return (R + G + B) part right after it noticed
-blue length was not equal to green length. Creepy.)
+Red = Green = Blue = 224;
 
-Well, whatever. The 224-color logo was ignored. This is what I did to
-fix it:
+So, linux_logo_224 cannot be drawn when visual is directcolor at RGB555 or
+RGB565 because the logo clut requirements exceeds the hardware clut
+capability. You need to use a logo image with a lower depth such as the
+16-color logo, linux_logo_16.
 
---- a/drivers/video/fbmem.c	2004/09/23 01:19:45	1.102
-+++ b/drivers/video/fbmem.c	2004/10/10 22:47:14
-@@ -65,10 +65,8 @@
- {
- 	struct fb_var_screeninfo *var =3D &info->var;
-=20
--	if (var->green.length =3D=3D var->blue.length &&
--	    var->green.length =3D=3D var->red.length &&
--	    !var->green.offset && !var->blue.offset &&
--	    !var->red.offset)
-+	/* If grayscale, all values will be equal */
-+	if (var->grayscale)
- 		return var->green.length;
- 	else
- 		return (var->green.length + var->red.length +
+In short, fb_get_color_depth() and radeonfb both do the correct thing, but
+you need a logo with a lower color depth. Or choose RGB888 or higher, or
+set the visual to truecolor.
 
-because on advice from Andrew Suffield and Matthew Garrett the first
-conditional was a roundabout way to check for grayscale displays, where
-you can't actually have 24 bits (8 + 8 + 8) of gray. So it is suitable
-to just return one of the values arbitrarily. But I noticed there was
-also a grayscale variable, so I substituted that for the conditional
-and my logo reappeared again :)
+Tony
 
-So is radeonfb or fb_get_color_depth at fault here? Or was the logo
-never appropriate for my display in the first place? (Unlikely, the
-CLUT224 linux logo always displayed perfectly for me until now.)
+PS: Note that this behavior is the same as 2.4 behavior (224-color logo is
+only chosen if directcolor and bpp >= 24).  It might have worked before, and
+this is probably due to the directcolor clut being ramped to truecolor
+values. However, the correct solution is to use a 16-color logo.
 
-Thanks.
 
---=20
-Joshua Kwan
 
---fUYQa+Pmc3FrFX/N
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.5 (GNU/Linux)
-Comment: http://triplehelix.org/~joshk/pubkey_gpg.asc
-
-iQIVAwUBQWm+t6OILr94RG8mAQJU3RAAiGKuK8prtyltKf/HNqdJpG3GaqW4/OIM
-S5oVIXN3SnFba1YUmD0w3AVZFXW/Gc5zL4w9LlZc3bE9VvL/0Xd/aRTMZRyuYz+L
-tj142GzOfU87ZQnRWAhFzQE80F00CZIh3oTgbT/Fei01unM0Dorb71cbr/vft8Eq
-yOKU9vGi1Ve+815fax/3tIb3vQC17f5AmqCRdlOo2oSDv6cGqKfC6yiYmmuwJNKw
-DpmfscRpMhkKJE3zyMVtwT59UD7NX6bR3a/etQYbe0M3c89hhpJr8M5H+y/YQ49Z
-I8ifEbFfb849m3DlmNiwzsiuTpv4wYLL/ObJpI/3FexH4RS7o0U2+Tq6pE/yOMZ7
-qstQLwvdtsb3ZGpsRO6H/auejXU6bYsWPwDducc7SsbOSUSQQueXJcBNF130qFQ+
-k5w6UuxMSeKZX8fXFbptLnvFN0FV6N6rBafsoTCvEM3oTpraNKP2oHvhGrf19gZ6
-Ul//IthLOeXr830sAmPiGHdl4smR2T6XyXNJAdzMI3bE5IZjr228GXJZ4ZMoVrqJ
-TxOsnipyfYg+S6NtovLZyLHgrqEW/j6QyqNVHk4os7UXPIfEdjzGWGX20QCJb8Y5
-E0CcgViqfPFwtwi669Nkzfo3mLvTHgX+wmhKnCv1ZI1XmEajKJWHebuO5pi/sCgU
-uNjA5SWym2o=
-=b+Tt
------END PGP SIGNATURE-----
-
---fUYQa+Pmc3FrFX/N--
+ 

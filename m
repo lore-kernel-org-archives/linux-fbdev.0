@@ -1,58 +1,68 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [announce 0/7] fbsplash - The Framebuffer Splash
-Date: Thu, 10 Mar 2005 15:54:20 +0100
-Message-ID: <20050310145419.GD632@openzaurus.ucw.cz>
-References: <20050308015731.GA26249@spock.one.pl> <200503091301.15832.adaplas@hotpop.com> <9e473391050308220218cc26a3@mail.gmail.com> <Pine.LNX.4.62.0503091033400.22598@numbat.sonytel.be> <1110392212.3116.215.camel@localhost.localdomain> <Pine.LNX.4.56.0503092043380.7510@pentafluge.infradead.org> <1110408049.9942.275.camel@localhost.localdomain> <Pine.LNX.4.62.0503101009240.9227@numbat.sonytel.be>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: [Linux-fbdev-devel] "remap_page_range" i810 compile time problem ..
+Date: Fri, 11 Mar 2005 11:47:13 +0800
+Message-ID: <200503111147.14726.adaplas@hotpop.com>
+References: <4EE0CBA31942E547B99B3D4BFAB348113A48FA@mail.esn.co.in>
+Reply-To: linux-fbdev-users@lists.sourceforge.net
 Mime-Version: 1.0
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D9V5H-0005Dj-83
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 10 Mar 2005 13:20:43 -0800
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123] ident=postfix)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1D9V5F-0004s7-OX
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 10 Mar 2005 13:20:43 -0800
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.62.0503101009240.9227@numbat.sonytel.be>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, James Simmons <jsimmons@pentafluge.infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Michal Januszewski <spock@gentoo.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>, "Antonino A. Daplas" <adaplas@hotpop.com>
+In-Reply-To: <4EE0CBA31942E547B99B3D4BFAB348113A48FA@mail.esn.co.in>
+Content-Disposition: inline
+Sender: linux-fbdev-users-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-users-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-users>,
+	<mailto:linux-fbdev-users-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-users@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-users-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-users>,
+	<mailto:linux-fbdev-users-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-users>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net, "Mukund JB." <mukundjb@esntechnologies.co.in>, adaplas@pol.net, linux-fbdev-users@lists.sourceforge.net
 
-Hi!
+On Thursday 10 March 2005 13:26, Mukund JB. wrote:
+> Hi adaplas,
+>
+> > > I have problem with compiling the i810fb driver downloaded from
+> > > Sourceforge site.
+> > > I have D/W the i810fb patch "linux-i810fb-0.0.35.tar.bz2".
+> > >
+> > > When I run the make modules I get the following error
+> >
+> > Try the i810fb-lite driver.  If that does not work, let me know what
+> > kernel version you are using.
+>
+> I got it.
+> The " remap_page_range" API the i810fb driver is using is old & when I
+> modifies the API with required parameters , I  compiled well & worked.
+>
+> When I inserted the module using the modprobe i.e
+>
+> Modprobe i810fb vram=2 xres=1024 bpp=16 hsync1=30 hsync2=55 vsync1=50
+> vsync2=85 accel=1 rotate=1
+>
+> the screen rotated. GREAT.
+>
+> But when I try this without accel=1 rotation fails. Can u just narrate
+> me what is accel accentually doing?
 
-> > > Thank you. We need some kind of basic console in the kernel. I'm not the 
-> > > biggest fan of eye candy. So moving the console to userspace for eye candy 
-> > > is a dumb idea.
-> > 
-> > Thats why moving the eye candy console into user space is such a good
-> > idea. You don't have to run it 8) It also means that the console
-> > development is accessible to all the crazy rasterman types.
-> 
-> Yep. The basic console we already have. Everyone who wants eye candy can switch
-> from basic console to user space console in early userspace.
-> 
+Because if accel is on, the driver is using it's own version of drawing
+functions which are flexible enough that additional features can be added,
+such as screen rotation.
 
-Heh, I'm afraid it does not work like that. Anyone who wants eye-candy
-simply applies broken patch to their kernel... unless their distribution applied one
-already.
+If accel is off, the driver will use the generic functions which cannot do
+screen rotation.  Of course, one can write a software version that can do
+screen rotation.
 
-Situation where we have one working eye-candy patch would certainly
-be an improvement.
-				Pavel
--- 
-64 bytes from 195.113.31.123: icmp_seq=28 ttl=51 time=448769.1 ms         
+>
+> Also, the font I am getting looks linear & is not good? I do I modify
+> the font format
+
+Use setfont.
+
+Tony
+
 
 
 

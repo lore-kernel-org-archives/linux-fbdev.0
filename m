@@ -1,17 +1,25 @@
-From: Sven Luther <luther@dpt-info.u-strasbg.fr>
+From: Antonino Daplas <adaplas@pol.net>
 Subject: Re: request_mem_region problem ...
-Date: Fri, 1 Nov 2002 19:43:07 +0100
+Date: 02 Nov 2002 04:40:29 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20021101184307.GA356@iliana>
-References: <1036062270.638.25.camel@daplas> <Pine.LNX.4.33.0211010933210.6296-100000@maxwell.earthlink.net>
+Message-ID: <1036183227.622.13.camel@daplas>
+References: <20021030130016.GA1573@iliana> <1036024416.644.23.camel@daplas>
+	<20021031081007.GB617@iliana> <1036062270.638.25.camel@daplas>
+	<20021101105242.GA702@iliana> <1036179467.572.42.camel@daplas>
+	<20021101195207.GA931@iliana> <1036181217.572.5.camel@daplas> 
+	<20021101202246.GA2026@iliana>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from smtp-out-6.wanadoo.fr ([193.252.19.25] helo=mel-rto6.wanadoo.fr)
+Received: from [203.167.79.9] (helo=willow.compass.com.ph)
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 187glu-0000sK-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 01 Nov 2002 10:43:54 -0800
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.33.0211010933210.6296-100000@maxwell.earthlink.net>
+	id 187icB-0002iD-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 01 Nov 2002 12:41:59 -0800
+Received: from AP-202-70-99-40.compass.com.ph (AP-202-70-99-40.compass.com.ph [202.70.99.40])
+	by willow.compass.com.ph (8.9.3/8.9.3) with ESMTP id EAA76932
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 2 Nov 2002 04:41:56 +0800 (PHT)
+	(envelope-from adaplas@pol.net)
+In-Reply-To: <20021101202246.GA2026@iliana>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,38 +30,37 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Antonino Daplas <adaplas@pol.net>, Sven Luther <luther@dpt-info.u-strasbg.fr>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
+To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-On Fri, Nov 01, 2002 at 09:35:06AM -0800, James Simmons wrote:
+On Sat, 2002-11-02 at 04:22, Sven Luther wrote:
+[...]
 > 
-> > If you did not define fb_set_var at all, then info->disp.dispsw must
-> > point to valid console drawing hooks before you register the
-> > framebuffer.  (Actually, all fields in struct display must be valid
-> > before you register the framebuffer)
+> > > Well, yes, i was going to donwload the BK tree, but james was speaking
+> > > about a 2.5.45 diff, which was finally not the right one.
+> > > 
+> > I downloaded the patch 12 hours ago and actually ported a driver to
+> > that.  So unless James changed it again, it should be the right one.
 > 
-> The next set of change should help reduce these problems of missing
-> pointers as we move to the new api.
+> Mmm, yes, it was my fault.
 > 
-> > > So, does the cfb_xxx generic accel stuff get linked correctly when
-> > > building as modules or am i missing something ?
-> >
-> > You're correct, the neofb line in the Makefile is for static building
-> > only.  The cfb_xxx will not compile as modules, yet.  If your driver has
-> > its own Makefile, just add cfb_xxx.o objects to directly link to them.
+> BTW, is there something with the new kernel configuration process or
+> something ? I get this error when trying to configure the kernel :
 > 
-> In the next set of changes the cfb* files should be able to be built as
-> modules!!!!
+> $ make oldconfig
+> *
+> * Unable to find the QT installation. Please make sure that the
+> * QT development package is correctly installed and the QTDIR
+> * environment variable is set to the correct location.
+> *
+> make[1]: *** [scripts/kconfig/.tmp_qtcheck] Erreur 1
+> make: *** [scripts/kconfig/conf] Erreur 2
+> 
+> Is this something pulled in from james diff, or is it no more possible
+> to configure the kernel with plain text console anymore ?
+> 
+It's an irritating bug in the new kernel configurator.  Try make -k if
+it complains about the QT libs.
 
-The ones in the patches you failed to send or the one thereafter ?
-
-BTW, do you think the latest set of changes will be in 2.4.46 or
-something such ?
-
-Friendly,
-
-Sven Luther
 
 
 -------------------------------------------------------

@@ -1,16 +1,18 @@
-From: Miles Lane <miles.lane@attbi.com>
-Subject: 2.5.51 -- rivafb is whacky (characters flipped on vertical axis,
- 640x480 usable area shown inside a higher-res area, etc).
-Date: Tue, 10 Dec 2002 16:39:42 -0800
+From: "vivens" <vivens@berflo.dhs.org>
+Subject: RE: (no subject)
+Date: Tue, 10 Dec 2002 22:05:59 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3DF6894E.3090802@attbi.com>
+Message-ID: <001301c2a08f$f49d9250$3c01a8c0@berflo.lan>
+References: <Pine.LNX.4.33.0212101031010.2617-100000@maxwell.earthlink.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from rwcrmhc51.attbi.com ([204.127.198.38])
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18Luui-0000mK-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 10 Dec 2002 16:39:48 -0800
+Received: from fia64-72.dsl.hccnet.nl ([62.251.72.64] helo=flatrix.berflo.lan)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18LraH-0006pW-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 10 Dec 2002 13:06:29 -0800
+In-Reply-To: <Pine.LNX.4.33.0212101031010.2617-100000@maxwell.earthlink.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,58 +22,58 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: James Simmons <jsimmons@infradead.org>, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: 'James Simmons' <jsimmons@infradead.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Hi,
+Well, I mend it like this:
+I'm trying to build a framebuffer for an embedded ARM platform (which
+doesn't use any kind of a Lunix distr).
+I want to use a framebuffer, because some apps need it. For example the
+ZEN browser I want to implement on this platform.
+So my question is:
+What basic functions does a framebuffer normally have, what is need to
+initialize for these functions?
+Can I see the framebuffer as the API between the video hardware and any
+application what uses the video hardware?
 
-I have tried getting rivafb to work in 2.5.51.  It is much better
-than before (thanks!).  It compiles and sorta works.
+Whit kind regards,
+Vincent Ivens
 
-Here are the problems:
 
-When I run "fbset -a 640x480", I get display that fills
-the screen and looks okay, but most of the characters are
-flipped along the vertical axis, so they are backwards, so that:
+-----Original Message-----
+From: linux-fbdev-devel-admin@lists.sourceforge.net
+[mailto:linux-fbdev-devel-admin@lists.sourceforge.net] On Behalf Of
+James Simmons
+Sent: dinsdag 10 december 2002 19:32
+To: Vincent Ivens
+Cc: linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [Linux-fbdev-devel] (no subject)
 
-+----		    ----+
-|			|
-+---    becomes	     ---+
-|			|
-|			|
 
-Also, when I boot, the penguin logo looks like it is being rendered
-in about five colors.  In addition, the text is black, except for
-the white underscore cursor, so all I can see is the cursor.
-When the gpm gets loaded, the mouse pointer, instead of showing
-a white rectangle that, when it passes over a character, shows that
-character in reverse-video, shows a colored cursor that always
-contains some character.  The character shown in the mouse cursor 
-changes when it passes over text in the window, but it never shows
-the character it is passing over.
+> New to the list, is this an appropriate place to ask basic question
+about
+> framebuffer divices?
+>
+> for example:
+> what are the basic funtions i can expect in a framebuffer?
 
-Lastly, when I run "fbset -a 1600x1200", a 640x480 area shows
-a usable console window, but it is embedded in the larger high
-resolution display, like this:
+WHat do you mean? Functionality from a userland perspective or from
+inside
+the kernel. Which version of the kernel are you looking at?
 
-	+---------+----------------+
-	|	  |		   |
-	|	  |		   |
-	|	  |		   |
-	+---------+		   |
-	|			   |
-	|			   |
-	|			   |
-	|			   |
-	|			   |
-	+--------------------------+
 
-The area outside of the 640x480 boundary is filled with colored
-junk (no characters).
 
-Any ideas?
 
-	Miles
+-------------------------------------------------------
+This sf.net email is sponsored by:ThinkGeek
+Welcome to geek heaven.
+http://thinkgeek.com/sf
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
 
 
 

@@ -1,19 +1,16 @@
-From: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-Subject: endian problem ?
-Date: Sun, 13 Oct 2002 20:49:21 +0200
+From: James Simmons <jsimmons@infradead.org>
+Subject: RE: 2.5 atyfb on Sparc question
+Date: Sun, 13 Oct 2002 13:08:08 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20021013184921.4571@192.168.4.1>
+Message-ID: <Pine.LNX.4.33.0210131307110.5997-100000@maxwell.earthlink.net>
+References: <61DB42B180EAB34E9D28346C11535A780112FDED@nocmail101.ma.tmpw.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from amarseille-201-1-3-116.abo.wanadoo.fr ([193.253.250.116] helo=zion.wanadoo.fr)
+Received: from albatross.mail.pas.earthlink.net ([207.217.120.120] helo=albatross.prod.itd.earthlink.net)
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 180nnx-0000kS-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 13 Oct 2002 11:49:34 -0700
-Received: from local-mol ([192.168.4.2])
-	by zion.wanadoo.fr with esmtp (Exim 3.35 #1 (Debian))
-	id 180nsK-0000Jv-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 13 Oct 2002 20:54:04 +0200
+	id 180p8F-0007NP-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 13 Oct 2002 13:14:35 -0700
+In-Reply-To: <61DB42B180EAB34E9D28346C11535A780112FDED@nocmail101.ma.tmpw.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,26 +20,61 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchives/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "Holzrichter, Bruce" <bruce.holzrichter@monster.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Ok, I've ported radeonfb, controlfb and platinumfb to the
-new API (which is quite nice since allowed me to remove
-a whole bunch of cruft from these drivers, good job !)
 
-However, I'm having a problem: With controlfb and
-radeonfb (couldn't test platinum yet but it's very similar
-to controlfb), the console is fine in 8 bpp, but text is
-plain blue in any higher bit depth (15, 16 or 32).
+Sorry I have been going threw alot of chabnges recently. Try my lastest
+tree. I just updated it and I'm nearly done change the api.
 
-X with "fbdev" driver works fine, so I think setcolreg
-works properly. All those drivers are set to DIRECTCOLOR
-for these bit depth. Maybe I've missed something about
-the pseudo_palette thing (is it documented somewhere ?)
-or are there known endian bugs in the cfb_* routines ?
+MS: (n) 1. A debilitating and surprisingly widespread affliction that
+renders the sufferer barely able to perform the simplest task. 2. A disease.
 
-Ben.
+James Simmons  [jsimmons@users.sf.net] 	                ____/|
+fbdev/console/gfx developer                             \ o.O|
+http://www.linux-fbdev.org                               =(_)=
+http://linuxgfx.sourceforge.net                            U
+http://linuxconsole.sourceforge.net
 
+On Thu, 3 Oct 2002, Holzrichter, Bruce wrote:
+
+> James,
+>
+> In a blast from the past, not sure if your still interested, but I have not
+> had a whole lot of time to look at these, due to my job/life, etc,etc...
+>
+> If I apply the latest bk to it, I get the following compile error.  As I
+> said, I haven't even had time to grep through the thing to even begin to
+> look, but wanted to report them anyways...
+>
+> fbmem.c: In function `fbmem_read_proc':
+> fbmem.c:380: structure has no member named `modename'
+> make[2]: *** [fbmem.o] Error 1
+> make[2]: Leaving directory `/home/bruce/sparctest/drivers/video'
+> make[1]: *** [video] Error 2
+> make[1]: Leaving directory `/home/bruce/sparctest/drivers'
+> make: *** [drivers] Error 2
+>
+> Bruce H..
+>
+> > -----Original Message-----
+> > From: James Simmons [mailto:jsimmons@infradead.org]
+> > Sent: Thursday, August 22, 2002 3:22 PM
+> > To: Holzrichter, Bruce
+> > Cc: linux-fbdev-devel@lists.sourceforge.net
+> > Subject: RE: [Linux-fbdev-devel] 2.5 atyfb on Sparc question
+> >
+> >
+> >
+> > > > Oops. Fixed now.
+> > > >
+> > > Whoa, that was neat!  ;o)
+> >
+> > Can you try the latest changes in my BK tree.
+> >
+>
 
 
 

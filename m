@@ -1,22 +1,21 @@
 From: David Eger <eger@havoc.gtf.org>
-Subject: Re: [PATCH][RIVAFB]: Updates to rivafb driver
-Date: Wed, 16 Jun 2004 20:16:34 -0400
+Subject: [PATCH] fix radeonfb panning and make it play nice with copyarea()
+Date: Wed, 16 Jun 2004 22:21:00 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040617001634.GA6013@havoc.gtf.org>
-References: <200406160406.07060.adaplas@hotpop.com> <200406161353.51195.adaplas@hotpop.com> <20040616173429.GA8601@havoc.gtf.org> <200406170629.09691.adaplas@hotpop.com>
+Message-ID: <20040617022100.GA11774@havoc.gtf.org>
+References: <20040616182415.GA8286@middle.of.nowhere>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BakaA-0002iZ-SR
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 17:16:42 -0700
+	id 1BamXY-0001gP-Mx
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 19:22:08 -0700
 Received: from havoc.gtf.org ([216.162.42.101])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BakaA-0005dj-IT
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 17:16:42 -0700
+	id 1BamXY-0002to-7j
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 16 Jun 2004 19:22:08 -0700
 Content-Disposition: inline
-In-Reply-To: <200406170629.09691.adaplas@hotpop.com>
+In-Reply-To: <20040616182415.GA8286@middle.of.nowhere>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,44 +25,155 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: adaplas@pol.net, benh@kernel.crashing.org
-Cc: James Simmons <jsimmons@infradead.org>, Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jurriaan <thunder7@xs4all.nl>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, akpm@osdl.org
 
-On Thu, Jun 17, 2004 at 06:29:09AM +0800, Antonino A. Daplas wrote:
-> On Thursday 17 June 2004 01:34, David Eger wrote:
-> > And yes, the capabilities patch makes your driver slow.
-> > But setting the proper flags makes it fast again ;-)
->=20
-> Do you mind submitting a patch yourself?  It's probably a 1 liner patch=
-,=20
-> unless we also modify rivafb to use cfb_* drawing functions depending o=
-n
-> the setting of var->accel_flags.
 
-I'd be happy to.  I'll forward it to Andrew+James tomorrow.
-( I'm currently at the GNU/yak caf=E9 night in Atlanta, away=20
-  from my TNT2 testing box )
+/me looks at vanilla 2.6.7
 
-> > The driver still doesn't play nice with the evil binary nvidia driver=
-s,
-> > but then, that's expected.  (It'd be nice if changing from X to aa
-> > console didn't *crash my machine* though.)
->=20
-> Yeah, even with XOrg/Free86 nv driver, it hangs.  Don't really know the
-> exact solution, probably a complete re-initialization of the hardware
-> when switching from X.  But this will require that fbcon recognizes
-> a switch from X itself which it currently doesn't (unless I'm mistaken)=
-.
+I believe the following patch will fix the bug you describe.
+(part of this patch I sent to benh before, but it never made it to 2.6.7)
 
-Back in February, BenH said he was going to work on a patch for this:
-
-http://www.uwsg.iu.edu/hypermail/linux/kernel/0402.2/0247.html
-
-Hey Ben, what ever became of this?  Are there now hooks for this or=20
-something?
+Please try the following bugfix.  It works for me.
+If it works for you, I'll ask Andrew/James to merge.
 
 -dte
+
+
+radeonfb: fix panning corruption on a large virtual screen,
+  Make panning and copyarea() play nicely with each other.
+
+Signed-off-by: David Eger <eger@havoc.gtf.org>
+
+# drivers/video/aty/radeon_base.c
+#   2004/06/17 03:47:12+02:00 eger@rosencrantz.theboonies.us +13 -0
+#   add some fifo_wait()s to lick this corruption problem
+# 
+# drivers/video/aty/radeon_accel.c
+#   2004/06/17 03:47:12+02:00 eger@rosencrantz.theboonies.us +2 -2
+#   make radeon accel play nice when the user wants to have a large virtual
+#   screen to pan on.  fix previous drain bramage.
+# 
+diff -Nru a/drivers/video/aty/radeon_accel.c b/drivers/video/aty/radeon_accel.c
+--- a/drivers/video/aty/radeon_accel.c	2004-06-17 03:52:48 +02:00
++++ b/drivers/video/aty/radeon_accel.c	2004-06-17 03:52:48 +02:00
+@@ -35,8 +35,8 @@
+ 		return;
+ 	}
+ 
+-	vxres = info->var.xres;
+-	vyres = info->var.yres;
++	vxres = info->var.xres_virtual;
++	vyres = info->var.yres_virtual;
+ 
+ 	memcpy(&modded, region, sizeof(struct fb_fillrect));
+ 
+@@ -101,8 +102,8 @@
+ 		return;
+ 	}
+ 
+-	vxres = info->var.xres;
+-	vyres = info->var.yres;
++	vxres = info->var.xres_virtual;
++	vyres = info->var.yres_virtual;
+ 
+ 	if(!modded.width || !modded.height ||
+ 	   modded.sx >= vxres || modded.sy >= vyres ||
+diff -Nru a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
+--- a/drivers/video/aty/radeon_base.c	2004-06-17 03:52:48 +02:00
++++ b/drivers/video/aty/radeon_base.c	2004-06-17 03:52:48 +02:00
+@@ -855,6 +855,7 @@
+         if (rinfo->asleep)
+         	return 0;
+ 
++	radeon_fifo_wait(2);
+         OUTREG(CRTC_OFFSET, ((var->yoffset * var->xres_virtual + var->xoffset)
+ 			     * var->bits_per_pixel / 8) & ~7);
+         return 0;
+@@ -884,6 +885,7 @@
+ 			if (rc)
+ 				return rc;
+ 
++			radeon_fifo_wait(2);
+ 			if (value & 0x01) {
+ 				tmp = INREG(LVDS_GEN_CNTL);
+ 
+@@ -960,6 +962,7 @@
+                         break;
+         }
+ 
++	radeon_fifo_wait(1);
+ 	switch (rinfo->mon1_type) {
+ 		case MT_LCD:
+ 			OUTREG(LVDS_GEN_CNTL, val2);
+@@ -1018,6 +1021,7 @@
+         if (!rinfo->asleep) {
+         	u32 dac_cntl2, vclk_cntl = 0;
+         	
++		radeon_fifo_wait(9);
+ 		if (rinfo->is_mobility) {
+ 			vclk_cntl = INPLL(VCLK_ECP_CNTL);
+ 			OUTPLL(VCLK_ECP_CNTL, vclk_cntl & ~PIXCLK_DAC_ALWAYS_ONb);
+@@ -1109,6 +1113,8 @@
+ {
+ 	int i;
+ 
++	radeon_fifo_wait(20);
++	
+ 	/* Workaround from XFree */
+ 	if (rinfo->is_mobility) {
+ 	        /* A temporal workaround for the occational blanking on certain laptop panels. 
+@@ -1195,6 +1201,8 @@
+ {
+ 	struct radeonfb_info *rinfo = (struct radeonfb_info *)data;
+ 
++	radeon_fifo_wait(3);
++
+ 	OUTREG(LVDS_GEN_CNTL, rinfo->pending_lvds_gen_cntl);
+ 	if (rinfo->pending_pixclks_cntl) {
+ 		OUTPLL(PIXCLKS_CNTL, rinfo->pending_pixclks_cntl);
+@@ -1219,6 +1227,7 @@
+ 
+ 	radeon_screen_blank(rinfo, VESA_POWERDOWN);
+ 
++	radeon_fifo_wait(31);
+ 	for (i=0; i<10; i++)
+ 		OUTREG(common_regs[i].reg, common_regs[i].val);
+ 
+@@ -1246,6 +1255,7 @@
+ 	radeon_write_pll_regs(rinfo, mode);
+ 
+ 	if ((primary_mon == MT_DFP) || (primary_mon == MT_LCD)) {
++		radeon_fifo_wait(10);
+ 		OUTREG(FP_CRTC_H_TOTAL_DISP, mode->fp_crtc_h_total_disp);
+ 		OUTREG(FP_CRTC_V_TOTAL_DISP, mode->fp_crtc_v_total_disp);
+ 		OUTREG(FP_H_SYNC_STRT_WID, mode->fp_h_sync_strt_wid);
+@@ -1285,6 +1295,7 @@
+ 
+ 	radeon_screen_blank(rinfo, VESA_NO_BLANKING);
+ 
++	radeon_fifo_wait(2);
+ 	OUTPLL(VCLK_ECP_CNTL, mode->vclk_ecp_cntl);
+ 	
+ 	return;
+@@ -1858,6 +1870,7 @@
+ 	del_timer_sync(&rinfo->lvds_timer);
+ 
+ 	lvds_gen_cntl |= (LVDS_BL_MOD_EN | LVDS_BLON);
++	radeon_fifo_wait(3);
+ 	if (on && (level > BACKLIGHT_OFF)) {
+ 		lvds_gen_cntl |= LVDS_DIGON;
+ 		if (!(lvds_gen_cntl & LVDS_ON)) {
+@@ -2130,6 +2143,7 @@
+           u32 tom = INREG(NB_TOM);
+           tmp = ((((tom >> 16) - (tom & 0xffff) + 1) << 6) * 1024);
+  
++ 		radeon_fifo_wait(6);
+           OUTREG(MC_FB_LOCATION, tom);
+           OUTREG(DISPLAY_BASE_ADDR, (tom & 0xffff) << 16);
+           OUTREG(CRTC2_DISPLAY_BASE_ADDR, (tom & 0xffff) << 16);
 
 
 -------------------------------------------------------

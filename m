@@ -1,28 +1,55 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [Linux-fbdev-devel] [BK fbdev updates]
-Date: Thu, 7 Nov 2002 14:18:17 -0800 (PST)
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.33.0211071416290.3204-100000@maxwell.earthlink.net>
-References: <1036312836.615.15.camel@daplas>
+Subject: Re: request_mem_region problem ...
+Date: Thu, 7 Nov 2002 16:04:18 -0800 (PST)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.LNX.4.33.0211071603400.8121-100000@maxwell.earthlink.net>
+References: <1036189404.621.7.camel@daplas>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <1036312836.615.15.camel@daplas>
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from albatross.mail.pas.earthlink.net ([207.217.120.120] helo=albatross.prod.itd.earthlink.net)
+	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 189vnu-0000fD-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 07 Nov 2002 15:11:14 -0800
+In-Reply-To: <1036189404.621.7.camel@daplas>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Antonino Daplas <adaplas@pol.net>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Sven Luther <luther@dpt-info.u-strasbg.fr>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> Adding update_var to fbcon_switch fixes #1 and #2 for me.  Attached is a
-> diff.
+> Yes, you can stuff all your driver private data in info->par. (fb_info
+> can be stuffed in pci_device during pci_probe, I think).
 
-Patch applied :-)
+Yeap!!
 
-> Also, using fbset to change video modes corrupts the console.  Looking
-> at the code, the flow of control is from the console to fbdev only?  Is
-> this correct?  I agree with this, it's saner.
+> > Mmm, it does not compile :((((
+> >
+> > drivers/video/console/vgacon.c: In function `vgacon_adjust_height':
+> > drivers/video/console/vgacon.c:890: `i' undeclared (first use in this function)
+> > drivers/video/console/vgacon.c:890: (Each undeclared identifier is reported only once
+> > drivers/video/console/vgacon.c:890: for each function it appears in.)
+> > make[3]: *** [drivers/video/console/vgacon.o] Erreur 1
+> >
+> > O, well, i think i will wait another week or so that the new stuff has
+> > stabilized a bit more before continuing working on this.
+> >
+> Just declare 'int i' and it should work.
 
-Yes this is correct. In the next set of changes you will be able to set
-the VC size via stty. You can change the resolution of the display via
-/dev/fb but ideally after a close it will reset the VC original mode.
+Fixed in the latest BK tree.
+
+
+
+
+-------------------------------------------------------
+This sf.net email is sponsored by: See the NEW Palm 
+Tungsten T handheld. Power & Color in a compact size!
+http://ads.sourceforge.net/cgi-bin/redirect.pl?palm0001en

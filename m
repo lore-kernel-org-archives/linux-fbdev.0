@@ -1,20 +1,19 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] - video/tridentfb.c warning fix.
-Date: Tue, 20 Apr 2004 09:56:17 +0200 (MEST)
+From: James Simmons <jsimmons@infradead.org>
+Subject: Micro patch 1
+Date: Tue, 20 Apr 2004 17:36:48 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0404200955320.21445@waterleaf.sonytel.be>
-References: <20040419162807.7ba9c5ec.lcapitulino@prefeitura.sp.gov.br>
+Message-ID: <Pine.LNX.4.44.0404201734050.27498-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BFq7G-0003n3-Q6
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Apr 2004 00:56:26 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BFq7G-0003yw-GV
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Apr 2004 00:56:26 -0700
-In-Reply-To: <20040419162807.7ba9c5ec.lcapitulino@prefeitura.sp.gov.br>
+	id 1BFyEy-0007Or-P7
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Apr 2004 09:36:56 -0700
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1BFyEy-0007kY-9U
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Apr 2004 09:36:56 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,34 +25,56 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Luiz Fernando N. Capitulino" <lcapitulino@prefeitura.sp.gov.br>
-Cc: Andrew Morton <akpm@osdl.org>, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Mon, 19 Apr 2004, Luiz Fernando N. Capitulino wrote:
-> diff -X dontdiff -Nparu a/drivers/video/Kconfig a~/drivers/video/Kconfig
-> --- a/drivers/video/Kconfig	2004-04-16 20:03:09.000000000 -0300
-> +++ a~/drivers/video/Kconfig	2004-04-16 20:04:24.000000000 -0300
-> @@ -772,6 +772,14 @@ config FB_TRIDENT
->  	  To compile this driver as a module, choose M here: the
->  	  module will be called tridentfb.
->
-> +config FB_TRIDENT_ACCEL
-> +	bool "Trident Acceleration functions (EXPERIMENTAL)"
-> +	depends on FB_TRIDENT
 
-Didn't notice this before: if you want it to be experimental, it should depend
-on FB_TRIDENT && EXPERIMENTAL
+This patch removes the redundent calculation of p->vrows. This is done in 
+fbcon_resize.
 
-Gr{oetje,eeting}s,
+--- linus-2.6/drivers/video/console/fbcon.c	2004-04-19 16:32:29.000000000 -0700
++++ fbdev-2.6/drivers/video/console/fbcon.c	2004-04-19 17:39:09.000000000 -0700
+@@ -749,14 +749,6 @@
+ 		vc->vc_cols = nr_cols;
+ 		vc->vc_rows = nr_rows;
+ 	}
+-	p->vrows = info->var.yres_virtual / vc->vc_font.height;
+-	if(info->var.yres > (vc->vc_font.height * (vc->vc_rows + 1))) {
+-		p->vrows -= (info->var.yres - (vc->vc_font.height * vc->vc_rows)) / vc->vc_font.height;
+-	}
+-	if ((info->var.yres % vc->vc_font.height) &&
+-	    (info->var.yres_virtual % vc->vc_font.height <
+-	     info->var.yres % vc->vc_font.height))
+-		p->vrows--;
+ 	vc->vc_can_do_color = info->var.bits_per_pixel != 1;
+ 	vc->vc_complement_mask = vc->vc_can_do_color ? 0x7700 : 0x0800;
+ 	if (charcnt == 256) {
+@@ -1570,6 +1562,8 @@
+ 	p->vrows = var.yres_virtual/fh;
+ 	if (var.yres > (fh * (height + 1)))
+ 		p->vrows -= (var.yres - (fh * height)) / fh;
++	if ((var.yres % fh) && (var.yres_virtual % fh < var.yres % fh))
++		p->vrows--;
+ 	return 0;
+ }
+ 
+@@ -1839,15 +1833,6 @@
+ 	if (resize) {
+ 		/* reset wrap/pan */
+ 		info->var.xoffset = info->var.yoffset = p->yscroll = 0;
+-		p->vrows = info->var.yres_virtual / h;
+-
+-#if 0          /* INCOMPLETE - let the console gurus handle this */
+-		if(info->var.yres > (h * (vc->vc_rows + 1))
+-			p->vrows -= (info->var.yres - (h * vc->vc_rows)) / h;
+-#endif
+-		if ((info->var.yres % h)
+-		    && (info->var.yres_virtual % h < info->var.yres % h))
+-			p->vrows--;
+ 		updatescrollmode(p, vc);
+ 		vc_resize(vc->vc_num, info->var.xres / w, info->var.yres / h);
+ 		if (CON_IS_VISIBLE(vc) && softback_buf) {
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 
 -------------------------------------------------------

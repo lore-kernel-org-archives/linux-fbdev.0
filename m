@@ -1,16 +1,15 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: gen_set_var() fix?
-Date: Wed, 28 Aug 2002 11:14:03 -0700 (PDT)
+From: Richard Zidlicky <rz@linux-m68k.org>
+Subject: Oops in fbcon_setup
+Date: Sat, 31 Aug 2002 22:20:01 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.33.0208281111210.1459-100000@maxwell.earthlink.net>
-References: <20020828100048.2dde942e.jani@iv.ro>
+Message-ID: <20020831222000.A205@linux-m68k.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from hawk.mail.pas.earthlink.net ([207.217.120.22])
+Received: from faui02.informatik.uni-erlangen.de ([131.188.30.102])
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17k7QE-0006Ol-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 28 Aug 2002 11:20:06 -0700
-In-Reply-To: <20020828100048.2dde942e.jani@iv.ro>
+	id 17lF73-0001Bb-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 31 Aug 2002 13:44:58 -0700
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,50 +19,44 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jani Monoses <jani@iv.ro>
+To: James Simmons <jsimmons@infradead.org>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
+Hi,
 
-> James
-> Should't gen_set_var set the var in info here as well? (when no check_var present)
+I came around testing q40fb.c, fbcon_setup oopses because
+apparently dispsw isn't set anywhere.
 
-No. The first test is to see if the passed in var is equal to the current
-var in info. Note info->var is always set before we call gen_set_var. The
-next set is check if xxfb_check_var is there. If this function is lacking
-then we know the hardware supports a static mode. Then it just returns the
-defualt var which is set before we call gen_set_var.
+This patch seems to fix it although I had very little opportunity 
+to test much further (it was good enough to display the next Oops
+though ;)
 
-> BTW is gen_set_var going to stay in the new API or go away ?
+--- linux-m68k-2.5.x/drivers/video/q40fb.c      Tue Aug 13 21:30:36 2002
++++ build-2.5/drivers/video/q40fb.c     Sat Aug 31 14:33:11 2002
+@@ -29,6 +29,7 @@
+ #include <asm/pgtable.h>
+ 
+ #include <video/fbcon.h>
++#include <video/fbcon-cfb16.h>
+ 
+ #define Q40_PHYS_SCREEN_ADDR 0xFE800000
+ 
+@@ -125,6 +126,8 @@
+        fb_info.switch_con      = gen_switch;
+        fb_info.updatevar       = gen_update_var;
+        fb_alloc_cmap(&fb_info.cmap, 16, 0);
++
++       display.dispsw = &fbcon_cfb16;
+ 
+         gen_set_disp(-1, &fb_info);
+ 
 
-It is to stay. It will be intergrated into fbmem.c once we are done.
-
-> --- fbgen.c.orig       Wed Aug 28 09:49:45 2002
-> +++ fbgen.c     Wed Aug 28 09:57:32 2002
-> @@ -36,7 +36,7 @@
->
->         if (con < 0 || (memcmp(&info->var, var, sizeof(struct fb_var_screeninfo)))) {
->                 if (!info->fbops->fb_check_var) {
-> -                       *var = info->var;
-> +                       info->var = *var;
->                         return 0;
->                 }
-
-
-
-MS: (n) 1. A debilitating and surprisingly widespread affliction that
-renders the sufferer barely able to perform the simplest task. 2. A disease.
-
-James Simmons  [jsimmons@users.sf.net] 	                ____/|
-fbdev/console/gfx developer                             \ o.O|
-http://www.linux-fbdev.org                               =(_)=
-http://linuxgfx.sourceforge.net                            U
-http://linuxconsole.sourceforge.net
-
+Richard
 
 
 -------------------------------------------------------
-This sf.net email is sponsored by: Jabber - The world's fastest growing 
-real-time communications platform! Don't just IM. Build it in! 
-http://www.jabber.com/osdn/xim
+This sf.net email is sponsored by: OSDN - Tired of that same old
+cell phone?  Get a new here for FREE!
+https://www.inphonic.com/r.asp?r=sourceforge1&refcode1=vs3390

@@ -1,21 +1,22 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Q40 fbdev updates.
-Date: Tue, 27 Apr 2004 01:15:53 +0100 (BST)
+Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
+ one works ;-)
+Date: Tue, 27 Apr 2004 01:19:15 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0404270115470.9732-100000@phoenix.infradead.org>
-References: <Pine.GSO.4.58.0404251320190.11039@waterleaf.sonytel.be>
+Message-ID: <Pine.LNX.4.44.0404240035400.5826-100000@phoenix.infradead.org>
+References: <Pine.GSO.4.58.0404221010080.23920@waterleaf.sonytel.be>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIGGT-0003Qv-NJ
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 26 Apr 2004 17:15:57 -0700
+	id 1BIGJp-00044I-Hh
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 26 Apr 2004 17:19:25 -0700
 Received: from phoenix.infradead.org ([213.86.99.234])
 	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1BIGGS-0006v1-Ro
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 26 Apr 2004 17:15:57 -0700
-In-Reply-To: <Pine.GSO.4.58.0404251320190.11039@waterleaf.sonytel.be>
+	id 1BIGJo-0007sc-DV
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 26 Apr 2004 17:19:25 -0700
+In-Reply-To: <Pine.GSO.4.58.0404221010080.23920@waterleaf.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,131 +29,259 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Richard.Zidlicky@stud.informatik.uni-erlangen.de
+Cc: "Antonino A. Daplas" <adaplas@hotpop.com>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-Applied your changes.
+Okay. This is my first attempt to address this problem. There is not test 
+for accelerated copyarea or image drawing as we lack the flag. I haven't 
+figured where to put it yet. We have 3 choices.
 
 
+fb_var_screeninfo
+fb_fix_screeninfo
+fb_info
 
-On Sun, 25 Apr 2004, Geert Uytterhoeven wrote:
 
-> On Sat, 24 Apr 2004, James Simmons wrote:
-> > Could you examine and test my code for the Q40 fbdev driver. Thanks.
-> 
-> I gave it a run through my cross-compiler...
-> 
-> A few fixes for q40fb_probe():
->   - Add missing variable `info'
->   - Add missing variable 'dev' and its initialization
->   - Add missing opening curly brace
-> 
-> I also removed all c_space_errors according to vim.
-> 
-> --- linux-m68k-2.6.6-rc2/drivers/video/q40fb.c.orig	2004-04-25 12:23:15.000000000 +0200
-> +++ linux-m68k-2.6.6-rc2/drivers/video/q40fb.c	2004-04-25 13:17:52.000000000 +0200
-> @@ -1,7 +1,7 @@
-> -/*
-> +/*
->   * linux/drivers/video/q40fb.c -- Q40 frame buffer device
->   *
-> - * Copyright (C) 2001
-> + * Copyright (C) 2001
->   *
->   *      Richard Zidlicky <Richard.Zidlicky@stud.informatik.uni-erlangen.de>
->   *
-> @@ -45,7 +45,7 @@
->  	.xres_virtual	= 1024,
->  	.yres_virtual	= 512,
->  	.bits_per_pixel	= 16,
-> -    	.red		= {6, 5, 0},
-> +	.red		= {6, 5, 0},
->  	.green		= {11, 5, 0},
->  	.blue		= {0, 6, 0},
->  	.activate	= FB_ACTIVATE_NOW,
-> @@ -55,7 +55,7 @@
->  };
-> 
->  static int q40fb_setcolreg(unsigned regno, unsigned red, unsigned green,
-> -		  	   unsigned blue, unsigned transp,
-> +			   unsigned blue, unsigned transp,
->  			   struct fb_info *info)
->  {
->      /*
-> @@ -63,7 +63,7 @@
->       *  magnitude.
->       *  Return != 0 for invalid regno.
->       */
-> -
-> +
->      if (regno > 255)
->  	    return 1;
->      red>>=11;
-> @@ -89,8 +89,11 @@
-> 
->  static int __init q40fb_probe(struct device *device)
->  {
-> -        if ( !MACH_IS_Q40)
-> -	  return -ENXIO;
-> +	struct platform_device *dev = to_platform_device(device);
-> +	struct fb_info *info;
-> +
-> +        if (!MACH_IS_Q40)
-> +		return -ENXIO;
-> 
->  	/* mapped in q40/config.c */
->  	q40fb_fix.smem_start = Q40_PHYS_SCREEN_ADDR;
-> @@ -98,19 +101,19 @@
->  	info = framebuffer_alloc(sizeof(u32) * 256, &dev->dev);
->  	if (!info)
->  		return -ENOMEM;
-> -
-> +
->  	info->var = q40fb_var;
->  	info->fix = q40fb_fix;
->  	info->fbops = &q40fb_ops;
->  	info->flags = FBINFO_FLAG_DEFAULT;  /* not as module for now */
->  	info->pseudo_palette = info->par;
->  	info->par = NULL;
-> -   	info->screen_base = (char *) q40fb_fix.smem_start;
-> +	info->screen_base = (char *) q40fb_fix.smem_start;
-> 
-> -	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0)
-> +	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0) {
->  		framebuffer_release(info);
->  		return -ENOMEM;
-> -	}
-> +	}
-> 
->  	master_outb(3, DISPLAY_CONTROL_REG);
-> 
-> @@ -139,7 +142,7 @@
->  int __init q40fb_init(void)
->  {
->  	int ret = 0;
-> -
-> +
->  	ret = driver_register(&q40fb_driver);
-> 
->  	if (!ret) {
-> @@ -150,4 +153,4 @@
->  	return ret;
->  }
-> 
-> -MODULE_LICENSE("GPL");
-> +MODULE_LICENSE("GPL");
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
-> 							    -- Linus Torvalds
-> 
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/console/fbcon.c fbdev-2.6/drivers/video/console/fbcon.c
+--- linus-2.6/drivers/video/console/fbcon.c	2004-04-26 14:49:24.000000000 -0700
++++ fbdev-2.6/drivers/video/console/fbcon.c	2004-04-25 13:44:51.000000000 -0700
+@@ -605,10 +605,6 @@
+ 	/* on which frame buffer will we open this console? */
+ 	info = registered_fb[(int) con2fb_map[unit]];
+ 	
+-	if (info->var.accel_flags)
+-		fb_display[unit].scrollmode = SCROLL_YNOMOVE;
+-	else
+-		fb_display[unit].scrollmode = SCROLL_YREDRAW;
+ 	fbcon_set_display(vc, init, !init);
+ }
+ 
+@@ -622,21 +618,19 @@
+ static __inline__ void updatescrollmode(struct display *p, struct vc_data *vc)
+ {
+ 	struct fb_info *info = registered_fb[(int) con2fb_map[vc->vc_num]];
+-
+ 	int m;
+-	if (p->scrollmode & __SCROLL_YFIXED)
+-		return;
++	
+ 	if (divides(info->fix.ywrapstep, vc->vc_font.height) &&
+ 	    divides(vc->vc_font.height, info->var.yres_virtual))
+-		m = __SCROLL_YWRAP;
++		m = SCROLL_YWRAP;
+ 	else if (divides(info->fix.ypanstep, vc->vc_font.height) &&
+ 		 info->var.yres_virtual >= info->var.yres + vc->vc_font.height)
+-		m = __SCROLL_YPAN;
+-	else if (p->scrollmode & __SCROLL_YNOMOVE)
+-		m = __SCROLL_YREDRAW;
++		m = SCROLL_YPAN;
++	if (info->fix.accel == FB_ACCEL_NONE)
++		m = SCROLL_YREDRAW;
+ 	else
+-		m = __SCROLL_YMOVE;
+-	p->scrollmode = (p->scrollmode & ~__SCROLL_YMASK) | m;
++		m = SCROLL_YMOVE;
++	p->scrollmode = (p->scrollmode & ~SCROLL_YMASK) | m;
+ }
+ 
+ static void fbcon_set_display(struct vc_data *vc, int init, int logo)
+@@ -1322,7 +1316,7 @@
+ {
+ 	struct fb_info *info = registered_fb[(int) con2fb_map[vc->vc_num]];
+ 	struct display *p = &fb_display[vc->vc_num];
+-	int scroll_partial = !(p->scrollmode & __SCROLL_YNOPARTIAL);
++	int scroll_partial = !(p->scrollmode & SCROLL_YNOPARTIAL);
+ 
+ 	if (!info->fbops->fb_blank && console_blanked)
+ 		return 0;
+@@ -1346,15 +1340,15 @@
+ 			fbcon_softback_note(vc, t, count);
+ 		if (logo_shown >= 0)
+ 			goto redraw_up;
+-		switch (p->scrollmode & __SCROLL_YMASK) {
+-		case __SCROLL_YMOVE:
++		switch (p->scrollmode & SCROLL_YMASK) {
++		case SCROLL_YMOVE:
+ 			accel_bmove(vc, info, t + count, 0, t, 0,
+ 					 b - t - count, vc->vc_cols);
+ 			accel_clear(vc, info, b - count, 0, count,
+ 					 vc->vc_cols);
+ 			break;
+ 
+-		case __SCROLL_YWRAP:
++		case SCROLL_YWRAP:
+ 			if (b - t - count > 3 * vc->vc_rows >> 2) {
+ 				if (t > 0)
+ 					fbcon_bmove(vc, 0, 0, count, 0, t,
+@@ -1364,7 +1358,7 @@
+ 					fbcon_bmove(vc, b - count, 0, b, 0,
+ 						    vc->vc_rows - b,
+ 						    vc->vc_cols);
+-			} else if (p->scrollmode & __SCROLL_YPANREDRAW)
++			} else if (p->scrollmode & SCROLL_YREDRAW)
+ 				goto redraw_up;
+ 			else
+ 				fbcon_bmove(vc, t + count, 0, t, 0,
+@@ -1372,7 +1366,7 @@
+ 			fbcon_clear(vc, b - count, 0, count, vc->vc_cols);
+ 			break;
+ 
+-		case __SCROLL_YPAN:
++		case SCROLL_YPAN:
+ 			if ((p->yscroll + count <=
+ 			     2 * (p->vrows - vc->vc_rows))
+ 			    && ((!scroll_partial && (b - t == vc->vc_rows))
+@@ -1387,7 +1381,7 @@
+ 					fbcon_bmove(vc, b - count, 0, b, 0,
+ 						    vc->vc_rows - b,
+ 						    vc->vc_cols);
+-			} else if (p->scrollmode & __SCROLL_YPANREDRAW)
++			} else if (p->scrollmode & SCROLL_YREDRAW)
+ 				goto redraw_up;
+ 			else
+ 				fbcon_bmove(vc, t + count, 0, t, 0,
+@@ -1395,7 +1389,7 @@
+ 			fbcon_clear(vc, b - count, 0, count, vc->vc_cols);
+ 			break;
+ 
+-		case __SCROLL_YREDRAW:
++		case SCROLL_YREDRAW:
+ 		      redraw_up:
+ 			fbcon_redraw(vc, p, t, b - t - count,
+ 				     count * vc->vc_cols);
+@@ -1413,14 +1407,14 @@
+ 	case SM_DOWN:
+ 		if (count > vc->vc_rows)	/* Maximum realistic size */
+ 			count = vc->vc_rows;
+-		switch (p->scrollmode & __SCROLL_YMASK) {
+-		case __SCROLL_YMOVE:
++		switch (p->scrollmode & SCROLL_YMASK) {
++		case SCROLL_YMOVE:
+ 			accel_bmove(vc, info, t, 0, t + count, 0,
+ 					 b - t - count, vc->vc_cols);
+ 			accel_clear(vc, info, t, 0, count, vc->vc_cols);
+ 			break;
+ 
+-		case __SCROLL_YWRAP:
++		case SCROLL_YWRAP:
+ 			if (b - t - count > 3 * vc->vc_rows >> 2) {
+ 				if (vc->vc_rows - b > 0)
+ 					fbcon_bmove(vc, b, 0, b - count, 0,
+@@ -1430,7 +1424,7 @@
+ 				if (t > 0)
+ 					fbcon_bmove(vc, count, 0, 0, 0, t,
+ 						    vc->vc_cols);
+-			} else if (p->scrollmode & __SCROLL_YPANREDRAW)
++			} else if (p->scrollmode & SCROLL_YREDRAW)
+ 				goto redraw_down;
+ 			else
+ 				fbcon_bmove(vc, t, 0, t + count, 0,
+@@ -1438,7 +1432,7 @@
+ 			fbcon_clear(vc, t, 0, count, vc->vc_cols);
+ 			break;
+ 
+-		case __SCROLL_YPAN:
++		case SCROLL_YPAN:
+ 			if ((count - p->yscroll <= p->vrows - vc->vc_rows)
+ 			    && ((!scroll_partial && (b - t == vc->vc_rows))
+ 				|| (scroll_partial
+@@ -1452,7 +1446,7 @@
+ 				if (t > 0)
+ 					fbcon_bmove(vc, count, 0, 0, 0, t,
+ 						    vc->vc_cols);
+-			} else if (p->scrollmode & __SCROLL_YPANREDRAW)
++			} else if (p->scrollmode & SCROLL_YREDRAW)
+ 				goto redraw_down;
+ 			else
+ 				fbcon_bmove(vc, t, 0, t + count, 0,
+@@ -1460,7 +1454,7 @@
+ 			fbcon_clear(vc, t, 0, count, vc->vc_cols);
+ 			break;
+ 
+-		case __SCROLL_YREDRAW:
++		case SCROLL_YREDRAW:
+ 		      redraw_down:
+ 			fbcon_redraw(vc, p, b - 1, b - t - count,
+ 				     -count * vc->vc_cols);
+@@ -1604,11 +1598,11 @@
+ 	if (info)
+ 		info->var.yoffset = p->yscroll = 0;
+         fbcon_resize(vc, vc->vc_cols, vc->vc_rows);
+-	switch (p->scrollmode & __SCROLL_YMASK) {
+-	case __SCROLL_YWRAP:
++	switch (p->scrollmode & SCROLL_YMASK) {
++	case SCROLL_YWRAP:
+ 		scrollback_phys_max = p->vrows - vc->vc_rows;
+ 		break;
+-	case __SCROLL_YPAN:
++	case SCROLL_YPAN:
+ 		scrollback_phys_max = p->vrows - 2 * vc->vc_rows;
+ 		if (scrollback_phys_max < 0)
+ 			scrollback_phys_max = 0;
+@@ -2191,11 +2185,11 @@
+ 
+ 	offset = p->yscroll - scrollback_current;
+ 	limit = p->vrows;
+-	switch (p->scrollmode && __SCROLL_YMASK) {
+-	case __SCROLL_YWRAP:
++	switch (p->scrollmode && SCROLL_YMASK) {
++	case SCROLL_YWRAP:
+ 		info->var.vmode |= FB_VMODE_YWRAP;
+ 		break;
+-	case __SCROLL_YPAN:
++	case SCROLL_YPAN:
+ 		limit -= vc->vc_rows;
+ 		info->var.vmode &= ~FB_VMODE_YWRAP;
+ 		break;
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/console/fbcon.h fbdev-2.6/drivers/video/console/fbcon.h
+--- linus-2.6/drivers/video/console/fbcon.h	2004-04-26 14:49:24.000000000 -0700
++++ fbdev-2.6/drivers/video/console/fbcon.h	2004-04-25 13:45:51.000000000 -0700
+@@ -69,39 +69,12 @@
+      */
+      
+ /* Internal flags */
+-#define __SCROLL_YPAN		0x001
+-#define __SCROLL_YWRAP		0x002
+-#define __SCROLL_YMOVE		0x003
+-#define __SCROLL_YREDRAW	0x004
+-#define __SCROLL_YMASK		0x00f
+-#define __SCROLL_YFIXED		0x010
+-#define __SCROLL_YNOMOVE	0x020
+-#define __SCROLL_YPANREDRAW	0x040
+-#define __SCROLL_YNOPARTIAL	0x080
+-
+-/* Only these should be used by the drivers */
+-/* Which one should you use? If you have a fast card and slow bus,
+-   then probably just 0 to indicate fbcon should choose between
+-   YWRAP/YPAN+MOVE/YMOVE. On the other side, if you have a fast bus
+-   and even better if your card can do fonting (1->8/32bit painting),
+-   you should consider either SCROLL_YREDRAW (if your card is
+-   able to do neither YPAN/YWRAP), or SCROLL_YNOMOVE.
+-   The best is to test it with some real life scrolling (usually, not
+-   all lines on the screen are filled completely with non-space characters,
+-   and REDRAW performs much better on such lines, so don't cat a file
+-   with every line covering all screen columns, it would not be the right
+-   benchmark).
+- */
+-#define SCROLL_YREDRAW		(__SCROLL_YFIXED|__SCROLL_YREDRAW)
+-#define SCROLL_YNOMOVE		(__SCROLL_YNOMOVE|__SCROLL_YPANREDRAW)
+-
+-/* SCROLL_YNOPARTIAL, used in combination with the above, is for video
+-   cards which can not handle using panning to scroll a portion of the
+-   screen without excessive flicker.  Panning will only be used for
+-   whole screens.
+- */
+-/* Namespace consistency */
+-#define SCROLL_YNOPARTIAL	__SCROLL_YNOPARTIAL
++#define SCROLL_YPAN		0x001
++#define SCROLL_YWRAP		0x002
++#define SCROLL_YMOVE		0x003
++#define SCROLL_YREDRAW		0x004
++#define SCROLL_YNOPARTIAL	0x005
++#define SCROLL_YMASK		0x00f
+ 
+ extern int fb_console_init(void);
+ 
 
 
 

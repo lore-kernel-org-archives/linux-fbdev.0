@@ -1,40 +1,45 @@
 From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: Re: Re: FBDEV updates.
-Date: Thu, 14 Aug 2003 14:57:46 -0700 (PDT)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030814215746.64028.qmail@web14908.mail.yahoo.com>
-References: <Pine.LNX.4.44.0308142150390.15200-100000@phoenix.infradead.org>
+Subject: Re: Re: dri fb drivers [was: Re: [Linux-fbdev-devel] Rage128 and Radeon patches]
+Date: Thu, 14 Aug 2003 14:45:48 -0700 (PDT)
+Sender: dri-devel-admin@lists.sourceforge.net
+Message-ID: <20030814214548.54199.qmail@web14903.mail.yahoo.com>
+References: <20030814201854.GD7862@guug.org>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from web14908.mail.yahoo.com ([216.136.225.60])
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19nQ6N-0005e6-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 14 Aug 2003 14:57:47 -0700
-In-Reply-To: <Pine.LNX.4.44.0308142150390.15200-100000@phoenix.infradead.org>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Return-path: <dri-devel-admin@lists.sourceforge.net>
+In-Reply-To: <20030814201854.GD7862@guug.org>
+Errors-To: dri-devel-admin@lists.sourceforge.net
+List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:dri-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
+	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
+	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=dri-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>, Otto Solares <solca@guug.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Otto Solares <solca@guug.org>
+Cc: dri-devel <dri-devel@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-When I was working on Rage128/Radeon drivers and
-fixing them up for the 2.6 modules parameters, I
-noticed that they allow an fb mode as a parameter. How
-is this supose to work? I tried setting a mode and it
-gets copied into the internal structures but the
-display doesn't change. If I modify the driver to
-change the display mode fbconsole gets all confused.
+--- Otto Solares <solca@guug.org> wrote:
+> good! IMO this is the future for linux!
+> i would like to see this work merged with the
+> dri.sf.net folks and a unified set of drivers for 
+> both fb and Xfree. Is this possible, is this your
+> objective? or embedded mesa will always be an 
+> standalone project...
 
-I just left the drviers the way I found them. Mode
-fills in the internal vars but doesn't actually set it.
+The long term plan is for a single OpenGL shared
+object that runs standalone, with DirectFB or under
+XFree/DRI. There is nothing technical stopping this,
+it just a matter of adjusting bunches of code. 
+
+3D drivers from DRI work in the embedded version with
+minor changes mostly having to do with removing GLX
+code from the drivers. 2D is a different story.
+Significant code needs to be adjusted for each driver.
+I am working on the Rage128 driver currently. Radeon
+and MGA are done. Nothing else has been started yet.
 
 =====
 Jon Smirl

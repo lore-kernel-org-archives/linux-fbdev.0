@@ -1,86 +1,44 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: vesafb and *fb
-Date: Sat, 24 Apr 2004 00:31:45 +0100 (BST)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0404240031030.5826-100000@phoenix.infradead.org>
-References: <Pine.GSO.4.58.0404210949590.7657@waterleaf.sonytel.be>
+From: "Randy.Dunlap" <rddunlap@osdl.org>
+Subject: Re: [Linux-fbdev-devel] [PATCH] neofb patches
+Date: Fri, 23 Apr 2004 20:15:36 -0700
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <20040423201536.6aefe7ad.rddunlap@osdl.org>
+References: <56202.64.139.3.221.1082702638.squirrel@www.foogod.com>
+	<Pine.LNX.4.44.0404232241260.5826-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BHA96-0003Ep-Jg
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 16:31:48 -0700
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.30)
-	id 1BHA96-0005qy-26
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Apr 2004 16:31:48 -0700
-In-Reply-To: <Pine.GSO.4.58.0404210949590.7657@waterleaf.sonytel.be>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org-S261862AbUDXDQa@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.44.0404232241260.5826-100000@phoenix.infradead.org>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@infradead.org>
+Cc: alex@foogod.com, linux-fbdev-devel@lists.sourceforge.net, geert@linux-m68k.org, linux-kernel@vger.kernel.org
 
+On Sat, 24 Apr 2004 00:00:23 +0100 (BST) James Simmons <jsimmons@infradead.org> wrote:
 
-I don't know why it is that way. I would think it should fail at this 
-point. Anyone know why this is?
+| 
+| > Ok, I've got everything except the blanking patch (which isn't finished
+| > anyway) converted to apply cleanly to James' patched driver source. 
+| > Everything works fine on my laptop as far as I can tell.  Additional
+| > feedback is welcome.
+| > 
+| > I've put up a web page for the patches.  They can be found at
+| > http://www.foogod.com/~alex/neofb/
+| 
+| Got it. I merged your patches. I also did a few fixes. The code had issues 
+| with non byte align images, i.e sparc 12x22 fonts. Now it works. I posted 
+| at
+| 
+| http://phoenix.infradead.org:~/jsimmons/neofb.diff.gz
+| 
+| This is against the latest kernel.
 
+Hi James,
 
-> Yesterday I noticed on a box at work that if you compile in both vesafb and
-> atyfb (the box has an ATI 3D RAGE PRO), you get both fb0 (atyfb) and fb1
-> (vesafb). That's not supposed to happen.
-> 
-> Vesafb did print that the frame buffer was already in use, but it just
-> continued, cfr. this code:
-> 
->     if (!request_mem_region(vesafb_fix.smem_start, vesafb_fix.smem_len, "vesafb")) {
-> 	    printk(KERN_WARNING
-> 		   "vesafb: abort, cannot reserve video memory at 0x%lx\n",
-> 		    vesafb_fix.smem_start);
-> 	    /* We cannot make this fatal. Sometimes this comes from magic
-> 	       spaces our resource handlers simply don't know about */
->     }
-> 
-> That was on plain 2.6.5. But to my surprise the latest 2.4 behaves the same.
-> This seems to have been changed in 2.4.15.
-> Does anyone know why this was changed?
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
-> 							    -- Linus Torvalds
-> 
-> 
-> -------------------------------------------------------
-> This SF.Net email is sponsored by: IBM Linux Tutorials
-> Free Linux tutorial presented by Daniel Robbins, President and CEO of
-> GenToo technologies. Learn everything from fundamentals to system
-> administration.http://ads.osdn.com/?ad_id=1470&alloc_id=3638&op=click
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-> 
+I think it would help a bit if someone could load
+http://phoenix.infradead.org/~jsimmons/ in a web browser
+and be able to see a list of files/patches/etc there
+instead of having to know an exact file name to grab.
 
-
-
--------------------------------------------------------
-This SF.net email is sponsored by: The Robotic Monkeys at ThinkGeek
-For a limited time only, get FREE Ground shipping on all orders of $35
-or more. Hurry up and shop folks, this offer expires April 30th!
-http://www.thinkgeek.com/freeshipping/?cpg=12297
+--
+~Randy

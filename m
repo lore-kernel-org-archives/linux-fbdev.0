@@ -1,19 +1,19 @@
 From: "Luiz Fernando N. Capitulino" <lcapitulino@prefeitura.sp.gov.br>
 Subject: Re: CONFIG_FB_3DFX_ACCEL is unusable (in 2.6.7)
-Date: Thu, 17 Jun 2004 12:02:38 -0300
+Date: Thu, 17 Jun 2004 10:42:48 -0300
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040617150238.GF1297@tirion.prodam>
+Message-ID: <20040617134248.GA1297@tirion.prodam>
 References: <20040616192433.GA5874@satan.blackhosts>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BayXw-0003QB-56
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Jun 2004 08:11:20 -0700
-Received: from sampa7.prodam.sp.gov.br ([200.230.190.107])
+	id 1BazEX-0008EK-9M
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Jun 2004 08:55:21 -0700
+Received: from sampa1.prodam.sp.gov.br ([200.230.190.2] helo=netlab96.prodam.sp.gov.br)
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BayXv-0000NS-AE
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Jun 2004 08:11:19 -0700
+	id 1BazEW-0001aD-FM
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 17 Jun 2004 08:55:20 -0700
 Content-Disposition: inline
 In-Reply-To: <20040616192433.GA5874@satan.blackhosts>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net

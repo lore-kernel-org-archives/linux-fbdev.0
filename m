@@ -1,10 +1,20 @@
-From: James Simmons <jsimmons@transvirtual.com>
-Subject: [PATCH] fbdev updates.
-Date: Wed, 22 May 2002 09:54:04 -0700 (PDT)
+From: Louis Garcia <louisg00@bellsouth.net>
+Subject: radeonfb and radeon8500
+Date: 23 May 2002 16:15:19 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.10.10205220936580.4611-100000@www.transvirtual.com>
+Message-ID: <1022184921.1688.10.camel@tiger>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from mail207.mail.bellsouth.net ([205.152.58.147] helo=imf07bis.bellsouth.net)
+	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17AyyO-0000iw-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 23 May 2002 13:14:08 -0700
+Received: from tiger ([208.63.199.154]) by imf07bis.bellsouth.net
+          (InterMail vM.5.01.04.05 201-253-122-122-105-20011231) with ESMTP
+          id <20020523201529.LBYD1171.imf07bis.bellsouth.net@tiger>
+          for <linux-fbdev-devel@lists.sourceforge.net>;
+          Thu, 23 May 2002 16:15:29 -0400
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -14,40 +24,13 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux console project <linuxconsole-dev@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
 
+Does the radeonfb (kernel-2.4.18) support the 7500 or 8500 chip?
 
-Hi!
+Thanks, --Lou
 
-   I just ported over a few driver to the new api. I also included a few
-bug fixes as well as a few new drivers. Please try it out and send me any
-patches. Once the testing is done I will ask Linus to included into his
-tree. If you look at skeletonfb.c you will see actual info on the new api
-to help you port it over to the new api.
-
-BK:
-
-   http://fbdev.bkbits.net:8080/fbdev-2.5
-
-Diff:
-
-   http://www.transvirtual.com/~jsimmons/fbdev.diff
-
-P.S
-   Yes with with new api I haven't finished the drawing penguin code so
-you don't see a penguin yet. I will but I figured the new api is more
-important.
-
-   . ---
-   |o_o |
-   |:_/ |   Give Micro$oft the Bird!!!!
-  //   \ \  Use Linux!!!!
- (|     | )
- /'_   _/`\
- ___)=(___/
 
 
 _______________________________________________________________

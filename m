@@ -1,27 +1,30 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+From: Jon Smirl <jonsmirl@gmail.com>
 Subject: Re: framebuffer ioctl
-Date: Tue, 07 Sep 2004 11:52:00 -0400
+Date: Wed, 8 Sep 2004 01:43:42 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1094572321.6095.10.camel@admin.tel.thor.asgaard.local>
+Message-ID: <9e47339104090722437b81b373@mail.gmail.com>
 References: <Pine.GSO.4.58.0409041304080.3434@waterleaf.sonytel.be>
 	 <413A3735.9E7D2F11@orpatec.ch> <413B4925.5000706@comcast.net>
 	 <200409060926.07163.adaplas@hotpop.com> <413CC0EA.8070709@comcast.net>
 	 <9e4733910409061402372095b1@mail.gmail.com>
 	 <1094505860.31465.211.camel@admin.tel.thor.asgaard.local>
 	 <9e47339104090707172cdc258d@mail.gmail.com>
+	 <1094572321.6095.10.camel@admin.tel.thor.asgaard.local>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C4uTB-00045V-Nd
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 07 Sep 2004 21:54:09 -0700
-Received: from [63.144.52.41] (helo=080relay.CIS.CIS.com)
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1C4uTB-0002rx-0R
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 07 Sep 2004 21:54:09 -0700
-In-Reply-To: <9e47339104090707172cdc258d@mail.gmail.com>
+	id 1C4vFA-0003Lp-4a
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 07 Sep 2004 22:43:44 -0700
+Received: from rproxy.gmail.com ([64.233.170.194] helo=mproxy.gmail.com)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
+	id 1C4vF9-00007h-DX
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 07 Sep 2004 22:43:44 -0700
+Received: by mproxy.gmail.com with SMTP id 77so243341rnl
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 07 Sep 2004 22:43:42 -0700 (PDT)
+In-Reply-To: <1094572321.6095.10.camel@admin.tel.thor.asgaard.local>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,35 +37,29 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: text/plain; charset="iso-8859-1"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 2004-09-07 at 10:17 -0400, Jon Smirl wrote:
-> The numbers compare two peices of software that exist.  Sure you could
-> probably write a super optimized library for CPU based drawing in 2D
-> mode that would be faster, but this library doesn't exist. No matter
-> what you do using the GPU to draw is always going to beat using the
-> CPU by a wide margin because of the memory bandwidth difference.
->=20
-> Would Cairo on hardware OpenGL vs Cairo on software only OpenGL be a
-> better comparison? Those ratios are even worse.
+On Tue, 07 Sep 2004 11:52:00 -0400, Michel D=E4nzer <michel@daenzer.net> wr=
+ote:
+> All I'm saying is that it reflects badly on you if you need to resort to
+> skewed numbers.
 
-Examples of fair comparisons would be:
+I don't think they are skewed. Most desktops today have hardware
+OpenGL and software Render. The ratios are an accurate reflection of
+what a normal user would see when comparing Cairo on X vs Cairo on
+OpenGL. You may try to change the platform in the future but hardware
+Render is not deployed anywhere currently.
 
-Software rendered OpenGL vs. software rendered Render extension
-Hardware-accelerated OpenGL vs. hardware-accelerated Render extension
-...
-
-> Why does everyone want to write another accelerated drawing library
-> when we already have a really good one that follows standards and has
-> excellent documentaition? Why not help integrate DRM and fbdev
-> instead.
-
-All I'm saying is that it reflects badly on you if you need to resort to
-skewed numbers.
-
+Even KeithP says he would rather be on OpenGL than to continue
+accelerating Render functions and he designed Render. The argument is
+not about the technical merits of Render vs OpenGL, it's about the
+fact that OpenGL is a widely available standard that is well
+documented. Thousands of people can program to the OpenGL APL while
+only very few know about Render. Let's stand on the shoulders of other
+programmers (you're one of them since you helped with mesa) rather
+than build everything again.
 
 --=20
-Earthling Michel D=C3=A4nzer      |     Debian (powerpc), X and DRI develop=
-er
-Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=3Ddaenzer
+Jon Smirl
+jonsmirl@gmail.com
 
 
 -------------------------------------------------------

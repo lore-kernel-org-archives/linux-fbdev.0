@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 11/15] fbdev: Add __iomem annotations to hgafb
-Date: Fri, 29 Oct 2004 09:58:49 +0800
+Subject: [PATCH 15/15] fbdev: Maintainership
+Date: Fri, 29 Oct 2004 09:59:00 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200410290958.49211.adaplas@hotpop.com>
+Message-ID: <200410290959.00049.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CNM5T-0006ha-Hk
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Oct 2004 19:01:55 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.51])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CNM5T-0000aN-0d
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Oct 2004 19:01:55 -0700
+	id 1CNM3f-0006Gi-HQ
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Oct 2004 19:00:03 -0700
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1CNM3d-0001gf-CP
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Oct 2004 19:00:03 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 61EC672A2E
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 29 Oct 2004 01:59:17 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id 652AC8F1B75
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 29 Oct 2004 01:59:53 +0000 (UTC)
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,86 +30,33 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Ferenc Bakonyi <fero@drama.obuda.kando.hu>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Add __iomem annotations to hgafb
+Accepted Geert's offer to maintain the framebuffer layer.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
- hgafb.c |   18 ++++++++++--------
- 1 files changed, 10 insertions(+), 8 deletions(-)
+ MAINTAINERS |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff -Nru a/drivers/video/hgafb.c b/drivers/video/hgafb.c
---- a/drivers/video/hgafb.c	2004-10-27 14:58:07 +08:00
-+++ b/drivers/video/hgafb.c	2004-10-28 23:24:53 +08:00
-@@ -66,9 +66,9 @@
- #define HGA_TXT			0
- #define HGA_GFX			1
+diff -Nru a/MAINTAINERS b/MAINTAINERS
+--- a/MAINTAINERS	2004-10-27 14:58:19 +08:00
++++ b/MAINTAINERS	2004-10-24 18:34:47 +08:00
+@@ -818,11 +818,11 @@
+ S:	Supported
  
--static inline u8* rowaddr(struct fb_info *info, u_int row)
-+static inline u8 __iomem * rowaddr(struct fb_info *info, u_int row)
- {
--        return info->screen_base + HGA_ROWADDR(row);
-+	return (u8 __iomem *) (fb_readl(info->screen_base + HGA_ROWADDR(row)));
- }
+ FRAMEBUFFER LAYER
+-P:	James Simmons, Geert Uytterhoeven	
+-M:	jsimmons@infradead.org, geert@linux-m68k.org	
++P:	Antonino Daplas
++M:	adaplas@pol.net
+ L:	linux-fbdev-devel@lists.sourceforge.net	
+ W:	http://linux-fbdev.sourceforge.net/
+-S:	Supported
++S:	Maintained
  
- static int hga_mode = -1;			/* 0 = txt, 1 = gfx mode */
-@@ -455,7 +455,7 @@
- static void hgafb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
- {
- 	u_int rows, y;
--	u8 *dest;
-+	u8 __iomem *dest;
- 
- 	y = rect->dy;
- 
-@@ -466,7 +466,7 @@
- 			//fb_memset(dest, rect->color, (rect->width >> 3));
- 			break;
- 		case ROP_XOR:
--			*dest = ~*dest;
-+			fb_writeb(~(fb_readb(dest)), dest);
- 			break;
- 		}
- 	}
-@@ -475,7 +475,8 @@
- static void hgafb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
- {
- 	u_int rows, y1, y2;
--	u8 *src, *dest;
-+	u8 __iomem *src;
-+	u8 __iomem *dest;
- 
- 	if (area->dy <= area->sy) {
- 		y1 = area->sy;
-@@ -504,14 +505,15 @@
- 
- static void hgafb_imageblit(struct fb_info *info, const struct fb_image *image)
- {
--	u8 *dest, *cdat = (u8 *) image->data;
-+	u8 __iomem *dest;
-+	u8 *cdat = (u8 *) image->data;
- 	u_int rows, y = image->dy;
- 	u8 d;
- 
- 	for (rows = image->height; rows--; y++) {
- 		d = *cdat++;
- 		dest = rowaddr(info, y) + (image->dx >> 3);
--		*dest = d;
-+		fb_writeb(d, dest);
- 	}
- }
- #else /* !CONFIG_FB_HGA_ACCEL */
-@@ -570,7 +572,7 @@
- 	fb_info.monspecs.vfmax = 10000;
- 	fb_info.monspecs.dpms = 0;
- 	fb_info.fbops = &hgafb_ops;
--	fb_info.screen_base = (char *)hga_fix.smem_start;
-+	fb_info.screen_base = (char __iomem *)hga_fix.smem_start;
- 
-         if (register_framebuffer(&fb_info) < 0)
-                 return -EINVAL;
-
+ FILE LOCKING (flock() and fcntl()/lockf())
+ P:	Matthew Wilcox
 
 
 

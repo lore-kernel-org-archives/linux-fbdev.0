@@ -1,97 +1,95 @@
-From: Adrian Bunk <bunk@fs.tum.de>
-Subject: [patch] 2.6.9-rc1-mm4: atyfb_base.c gcc 2.95 compile error
-Date: Tue, 7 Sep 2004 21:26:16 +0200
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20040907192616.GC2454@fs.tum.de>
-References: <20040907020831.62390588.akpm@osdl.org>
+From: Kronos <kronos@people.it>
+Subject: Re: [PATCH] Re: Devices don't get linked to their class.
+Date: Tue, 7 Sep 2004 21:50:55 +0200
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <20040907195055.GB6021@dreamland.darkstar.lan>
+References: <1094187751.2979.41.camel@laptop.cunninghams> <200409042041.55199.adaplas@hotpop.com> <1094365292.6252.3.camel@laptop.cunninghams> <200409051840.27452.adaplas@hotpop.com> <1094441896.19674.24.camel@laptop.cunninghams>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S268490AbUIGTbu@vger.kernel.org>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1C4lzd-0003YU-9c
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 07 Sep 2004 12:51:05 -0700
+Received: from mail-relay-3.tiscali.it ([213.205.33.43])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1C4lzY-0002bR-Vn
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 07 Sep 2004 12:51:04 -0700
 Content-Disposition: inline
-In-Reply-To: <20040907020831.62390588.akpm@osdl.org>
-List-Id: <fbdev-devel.lists.sourceforge.net
+In-Reply-To: <1094441896.19674.24.camel@laptop.cunninghams>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@osdl.org>, "Antonino A. Daplas" <adaplas@hotpop.com>
-Cc: linux-kernel@vger.kernel.org, jsimmons@infradead.org, geert@linux-m68k.org, linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: adaplas@pol.net
 
-On Tue, Sep 07, 2004 at 02:08:31AM -0700, Andrew Morton wrote:
->...
-> +fbdev-add-module_init-and-fb_get_options-per-driver.patch
+Il Mon, Sep 06, 2004 at 01:38:16PM +1000, Nigel Cunningham ha scritto: 
+> On Sun, 2004-09-05 at 20:40, Antonino A. Daplas wrote:
+> > Frankly, I don't know a thing about this stuff.  Just let me know what you
+> > need and where you need them, and I'll see what I can do.
 > 
->  fbdev update
->...
+> It did turn out to just need the dev parameter to be non null. I've gone
+> through all the frame buffer drivers and done what I believe to be the
+> right thing; if they're PCI based, they get the struct device pointer
+> passed through, otherwise NULL is sent.
+> 
+> The attached patch is against 2.6.9-rc1, and (combined with other code)
+> allows the driver to remain active while we're suspending to disk.
 
-gcc 2.95 doesn't support code mixed with variable declarations:
-
-<--  snip  -->
-
-...
-  CC      drivers/video/aty/atyfb_base.o
-drivers/video/aty/atyfb_base.c: In function `atyfb_init':
-drivers/video/aty/atyfb_base.c:1912: parse error before `unsigned'
-...
-make[3]: *** [drivers/video/aty/atyfb_base.o] Error 1
-
-<--  snip  -->
+There's framebuffer_alloc for that. I forgot to re-add a struct device *
+to fb_info after I added the class_simple stuff:
 
 
-A possible fix is below.
-
-BTW (not related to this patch):
-Why are #ifdef __sparc__ in the #else branch of an #ifdef __sparc__
-(e.g. line 2225)???
-
-
-Signed-off-by: Adrian Bunk <bunk@fs.tum.de>
-
---- linux-2.6.9-rc1-mm4-full/drivers/video/aty/atyfb_base.c.old	2004-09-07 21:11:52.000000000 +0200
-+++ linux-2.6.9-rc1-mm4-full/drivers/video/aty/atyfb_base.c	2004-09-07 21:18:01.000000000 +0200
-@@ -1900,37 +1900,42 @@
- 	printk("fb%d: %s frame buffer device on %s\n",
- 	       info->node, info->fix.id, name);
- 	return 1;
- }
+--- a/drivers/video/fbsysfs.c	2004-02-15 15:51:52.000000000 +0100
++++ b/drivers/video/fbsysfs.c	2004-09-07 21:47:07.000000000 +0200
+@@ -47,6 +47,7 @@
+ 		return NULL;
+ 	memset(p, 0, fb_info_size + size);
+ 	info = (struct fb_info *) p;
++	info->device = dev;
  
- int __init atyfb_init(void)
- {
--#ifndef MODULE
--	atyfb_setup(fb_get_options("atyfb"));
--#endif
--
- #if defined(CONFIG_PCI)
- 	unsigned long addr, res_start, res_size;
- 	struct atyfb_par *default_par;
- 	struct pci_dev *pdev = NULL;
- 	struct fb_info *info;
- 	int i;
- #ifdef __sparc__
- 	extern void (*prom_palette) (int);
- 	extern int con_is_present(void);
- 	struct pcidev_cookie *pcp;
- 	char prop[128];
- 	int node, len, j;
- 	u32 mem, chip_id;
-+#else
-+	u16 tmp;
-+#endif
-+#endif
+ 	if (size)
+ 		info->par = p + fb_info_size;
+--- a/drivers/video/fbmem.c	2004-08-14 20:46:08.000000000 +0200
++++ b/drivers/video/fbmem.c	2004-09-07 21:48:00.000000000 +0200
+@@ -1380,7 +1380,7 @@
+ 			break;
+ 	fb_info->node = i;
  
-+#ifndef MODULE
-+	atyfb_setup(fb_get_options("atyfb"));
-+#endif
-+
-+#if defined(CONFIG_PCI)
-+
-+#ifdef __sparc__
- 	/* Do not attach when we have a serial console. */
- 	if (!con_is_present())
- 		return -ENXIO;
--#else
--	u16 tmp;
- #endif
+-	c = class_simple_device_add(fb_class, MKDEV(FB_MAJOR, i), NULL, "fb%d", i);
++	c = class_simple_device_add(fb_class, MKDEV(FB_MAJOR, i), fb_info->device, "fb%d", i);
+ 	if (IS_ERR(c)) {
+ 		/* Not fatal */
+ 		printk(KERN_WARNING "Unable to create class_device for framebuffer %d; errno = %ld\n", i, PTR_ERR(c));
+--- a/include/linux/fb.h	2004-08-14 20:46:19.000000000 +0200
++++ b/include/linux/fb.h	2004-09-07 21:48:53.000000000 +0200
+@@ -588,6 +588,7 @@
+ #define FBINFO_STATE_RUNNING	0
+ #define FBINFO_STATE_SUSPENDED	1
+ 	u32 state;			/* Hardware state i.e suspend */
++	struct device *device;
  
- 	while ((pdev =
- 		pci_find_device(PCI_VENDOR_ID_ATI, PCI_ANY_ID, pdev))) {
- 		if ((pdev->class >> 16) == PCI_BASE_CLASS_DISPLAY) {
- 			struct resource *rp;
- 
+ 	/* From here on everything is device dependent */
+ 	void *par;	
+
+
+Luca
+-- 
+Home: http://kronoz.cjb.net
+Recursion n.:
+	See Recursion.
+
+
+-------------------------------------------------------
+This SF.Net email is sponsored by BEA Weblogic Workshop
+FREE Java Enterprise J2EE developer tools!
+Get your free copy of BEA WebLogic Workshop 8.1 today.
+http://ads.osdn.com/?ad_id=5047&alloc_id=10808&op=click

@@ -1,14 +1,16 @@
-From: "Cheshire Cat Fish" <cat_fish@hotmail.com>
-Subject: Multiple instances of my adapter.
-Date: Wed, 07 May 2003 11:14:18 -0700
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: Linux 2.5.69
+Date: Wed, 7 May 2003 21:44:08 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Law15-F36rcR4ZDgC81000043f5@hotmail.com>
+Message-ID: <Pine.GSO.4.21.0305072138510.12013-100000@vervain.sonytel.be>
+References: <Pine.LNX.4.44.0305041739020.1737-100000@home.transmeta.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from f36.law15.hotmail.com ([64.4.23.36] helo=hotmail.com)
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19DTQx-0003PF-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 07 May 2003 11:14:27 -0700
+	id 19DUsF-0005xU-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 07 May 2003 12:46:43 -0700
+In-Reply-To: <Pine.LNX.4.44.0305041739020.1737-100000@home.transmeta.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -18,31 +20,32 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; format=flowed; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Ben Collins <bcollins@debian.org>
+Cc: Linus Torvalds <torvalds@transmeta.com>, James Simmons <jsimmons@infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
+On Sun, 4 May 2003, Linus Torvalds wrote:
+> Summary of changes from v2.5.68 to v2.5.69
+> ============================================
+> 
+> Ben Collins:
+>   o [VIDEO]: Revert cfbimgblt.c back to a working state on 64-bit
+>   o [VIDEO]: Revert atyfb back to known working clean base
 
+For future changes, could you please run these `reversals' through 
+linux-fbdev-devel, instead of silently passing them behind our backs? Thanks!
 
-how should my driver behave when I put two of my cards in the system.  I 
-want one card to become/dev/fb0 and one to become /dev/fb1 (I think).
+Gr{oetje,eeting}s,
 
-Do I need to call register_framebuffer multiple times?  insmod wouldn't let 
-me load my driver twice, so it seems i must handle all cards in the system 
-in a single pass through the driver?
+						Geert
 
-Also, once I get both cards working, one on fb0 and one on fb1, can I run X 
-on both simultaneously (dual display) using the X fbdev driver?
-
-
-Thanks,
-Noel.
 --
-A precariously balanced mixture of myopic optimism and rampant paranoia.
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-_________________________________________________________________
-The new MSN 8: smart spam protection and 2 months FREE*  
-http://join.msn.com/?page=features/junkmail
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

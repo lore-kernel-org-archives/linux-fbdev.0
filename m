@@ -1,54 +1,52 @@
 From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: radeon, apertures & memory mapping
-Date: Sun, 13 Mar 2005 19:25:15 -0500
-Message-ID: <9e47339105031316254524f72@mail.gmail.com>
-References: <1110677744.19810.80.camel@gaston> <20050313103936.GA11002@sci.fi>
-	 <1110715499.14684.132.camel@gaston>
-	 <9e473391050313081937cde207@mail.gmail.com>
-	 <1110750553.5787.155.camel@gaston>
-	 <9e47339105031314101c89e50e@mail.gmail.com>
-	 <1110752401.19810.177.camel@gaston>
-	 <9e47339105031315002a444f00@mail.gmail.com>
-	 <20050313232735.GA19781@sci.fi> <1110757699.5787.196.camel@gaston>
-Reply-To: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: Fw: [PATCH][2.6.11-mm3] CONFIG_FB_ATY linkage error on PPC32
+Date: Sun, 13 Mar 2005 19:33:27 -0500
+Message-ID: <9e47339105031316337d4d1958@mail.gmail.com>
+References: <20050313132844.7270c817.akpm@osdl.org>
+	 <9e47339105031313553994f15a@mail.gmail.com>
+	 <9e4733910503131408cd57b01@mail.gmail.com>
+	 <20050313151412.060ad5ea.akpm@osdl.org>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-In-Reply-To: <1110757699.5787.196.camel@gaston>
-Sender: dri-devel-admin@lists.sourceforge.net
-Errors-To: dri-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1DAdXT-0005ql-E8
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Mar 2005 16:34:31 -0800
+Received: from externalmx-1.sourceforge.net ([12.152.184.25])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1DAdXR-0004wP-T4
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Mar 2005 16:34:31 -0800
+Received: from rproxy.gmail.com ([64.233.170.203])
+	by externalmx-1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DAdXQ-0004lu-Bd
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Mar 2005 16:34:29 -0800
+Received: by rproxy.gmail.com with SMTP id z35so2831008rne
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 13 Mar 2005 16:33:27 -0800 (PST)
+In-Reply-To: <20050313151412.060ad5ea.akpm@osdl.org>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:dri-devel@lists.sourceforge.net>
-List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
-	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=dri-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: =?ISO-8859-1?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>, Jon Smirl <jonsmirl@yahoo.com>, dri-devel@lists.sourceforge.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, xorg@lists.freedesktop.org
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, mikpe@csd.uu.se
 
-On Mon, 14 Mar 2005 10:48:19 +1100, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> 
-> > > That shouldn't matter the page brought in would be for a speculative
-> > > read and never accessed. It should just fall out of the cache and not
-> > > be written back. There is only one cachable mapping. In this model
-> > > writes are always followed by a flush before telling the GPU to access
-> > > the memory that has just been written.
-> >
-> > What about this scenario?
-> >
-> > Speculative read -> AGP master writes new data -> CPU has invalid data in
-> > cache :(
-> 
+On Sun, 13 Mar 2005 15:14:12 -0800, Andrew Morton <akpm@osdl.org> wrote:
+> Confused.  Is Tony's patch OK?
 
-You need to reverse the cache flush process if you are going to read
-data written by the GPU.
+Tony's patch is fine. I was worried that it would show the macmodes
+option in xconfig on the x86 but now I see that it doesn't.
 
-1) Make sure GPU is finished writing
-2) flush your cache
-3) read AGP memory like normal RAM.
+We took two differerent approaches for doing the same thing. His is
+probably the better one.
 
 -- 
 Jon Smirl
@@ -60,4 +58,3 @@ SF email is sponsored by - The IT Product Guide
 Read honest & candid reviews on hundreds of IT Products from real users.
 Discover which products truly live up to the hype. Start reading now.
 http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
---

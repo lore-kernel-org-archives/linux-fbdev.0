@@ -1,22 +1,16 @@
-From: "Kendall Bennett" <KendallB@scitechsoft.com>
-Subject: Re: Finding Aki M Laukkanen's VESAFBD project?
-Date: Mon, 17 Mar 2003 10:22:35 -0800
+From: Jon Smirl <jonsmirl@yahoo.com>
+Subject: Re: Reading the EDID block for x86 machines
+Date: Mon, 17 Mar 2003 11:33:38 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3E75A1EB.15428.1424F3E1@localhost>
-References: <3E71B0FE.1534.4BFD86E@localhost>
+Message-ID: <20030317193338.94491.qmail@web14908.mail.yahoo.com>
+References: <1047883995.1234.7.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from adsl-63-195-13-70.dsl.chic01.pacbell.net ([63.195.13.70] helo=mail.scitechsoft.com)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18uzFt-0003RE-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Mar 2003 10:22:37 -0800
-Received: from KENDALLB (adsl-63-195-13-78.dsl.chic01.pacbell.net [63.195.13.78])
-	by mail.scitechsoft.com (8.12.8/8.12.5) with ESMTP id h2HIMpPF029001
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Mar 2003 10:22:52 -0800
-In-reply-to: <Pine.GSO.4.21.0303151050480.16951-100000@vervain.sonytel.be>
-Content-description: Mail message body
+Received: from web14908.mail.yahoo.com ([216.136.225.60])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18v0Mc-0000eZ-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Mar 2003 11:33:38 -0800
+In-Reply-To: <1047883995.1234.7.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,32 +21,72 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+--- Antonino Daplas <adaplas@pol.net> wrote:
+> You're talking about other device's expansion ROM's.
+>  VGA ROM's,
+> especially for the x86, are an exception and has to
+> be always mapped at
+> c000:0000.
 
-> > Download from:
-> > http://www.cs.helsinki.fi/u/amlaukka/vesafb/
-> 
-> Since the code used to be at a university webserver, you may want
-> to ask the sysadmin team of cs.helsinki.fi whether they have a
-> backup. 
+Reboot and add pci=rom (case sensitive) to your kernel
+parameters. That will show you where the video ROMs
+are really located.
 
-Good point. Do you have an email contact there or should I just email 
-them at postmaster or something? I will go dig around and see if I can 
-find a contact.
+My x86 PC's boot video ROM is located at dd000000 not
+C00000. C00000 is only a copy of the ROM in RAM.
 
-Regards,
+01:00.0 VGA compatible controller: ATI Technologies
+Inc Radeon R250 If [Radeon 9
+000] (rev 01) (prog-if 00 [VGA])
+        Subsystem: C.P. Technology Co. Ltd: Unknown
+device 2039
+        Flags: stepping, 66Mhz, medium devsel, IRQ 5
+        Memory at d0000000 (32-bit, prefetchable)
+[disabled] [size=64M]
+        I/O ports at c000 [disabled] [size=256]
+        Memory at de000000 (32-bit, non-prefetchable)
+[disabled] [size=64K]
+        Expansion ROM at dd000000 [size=128K]
+        Capabilities: [58] AGP version 2.0
+        Capabilities: [50] Power Management version 2
 
----
-Kendall Bennett
-Chief Executive Officer
-SciTech Software, Inc.
-Phone: (530) 894 8400
-http://www.scitechsoft.com
+The ROM on my other video card is located here:
 
-~ SciTech SNAP - The future of device driver technology! ~
+00:0b.0 VGA compatible controller: ATI Technologies
+Inc Rage 128 PD/PRO TMDS (pr
+og-if 00 [VGA])
+        Subsystem: ATI Technologies Inc Rage 128 AIW
+        Flags: bus master, stepping, medium devsel,
+latency 32, IRQ 10
+        Memory at d8000000 (32-bit, prefetchable)
+[size=64M]
+        I/O ports at e400 [size=256]
+        Memory at df000000 (32-bit, non-prefetchable)
+[size=16K]
+        Expansion ROM at 20060000 [size=128K]
+        Capabilities: [5c] Power Management version 2
 
+> Remember, ROM's are supposed to be read-only, so
+> even if they are
+> shadowed, the BIOS write protects it.
+
+How is this write protection being achieved? Is it
+done via manipulation of the processor descriptor
+tables; if so just undo it.
+
+
+=====
+Jon Smirl
+jonsmirl@yahoo.com
+
+__________________________________________________
+Do you Yahoo!?
+Yahoo! Platinum - Watch CBS' NCAA March Madness, live on your desktop!
+http://platinum.yahoo.com
 
 
 -------------------------------------------------------

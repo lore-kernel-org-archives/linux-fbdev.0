@@ -1,21 +1,21 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH] - video/hgafb.c warning fix.
-Date: Wed, 14 Apr 2004 19:00:51 +0100 (BST)
+Subject: Re: [PATCH] - video/imsttfb.c warning fix.
+Date: Wed, 14 Apr 2004 19:05:42 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0404141900240.13481-100000@phoenix.infradead.org>
-References: <20040414143053.2210fbe9.lcapitulino@prefeitura.sp.gov.br>
+Message-ID: <Pine.LNX.4.44.0404141905080.13481-100000@phoenix.infradead.org>
+References: <20040413164731.70e30fc6.lcapitulino@prefeitura.sp.gov.br>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BDohO-0000TN-FT
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Apr 2004 11:01:22 -0700
+	id 1BDolg-0001TK-DT
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Apr 2004 11:05:48 -0700
 Received: from phoenix.infradead.org ([213.86.99.234])
 	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1BDohN-0002eu-Ug
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Apr 2004 11:01:22 -0700
-In-Reply-To: <20040414143053.2210fbe9.lcapitulino@prefeitura.sp.gov.br>
+	id 1BDolf-0004Kv-AE
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Apr 2004 11:05:48 -0700
+In-Reply-To: <20040413164731.70e30fc6.lcapitulino@prefeitura.sp.gov.br>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,34 +28,208 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "Luiz Fernando N. Capitulino" <lcapitulino@prefeitura.sp.gov.br>
-Cc: kronos@kronoz.cjb.net, benh@kernel.crashing.org, linux-fbdev-devel@lists.sourceforge.net
+Cc: benh@kernel.crashing.org, linux-fbdev-devel@lists.sf.net
 
 
-> Kronos <kronos@kronoz.cjb.net> escreveu:
-> 
-> | Il Tue, Apr 13, 2004 at 04:45:34PM -0300, Luiz Fernando N. Capitulino ha scritto: 
-> | > 
-> | > Hi,
-> | > 
-> | >  I'm getting the fallowing warnings:
-> | > 
-> | > drivers/video/hgafb.c:452: warning: `hgafb_fillrect' defined but not used
-> | > drivers/video/hgafb.c:472: warning: `hgafb_copyarea' defined but not used
-> | > drivers/video/hgafb.c:502: warning: `hgafb_imageblit' defined but not used
-> | > 
-> | >  They are caused by dead code, this patch remove then:
-> | 
-> | Please don't do that. The functions that you are removing are
-> | accelerated helpers. Don't know why they are not in use ATM (lack of
-> | testing?) If you want to remove the warning wrap the code with #if 0 /
-> | #endif
-> 
->  Ok, my first version to Andrew used #if 0 / #end, but as he said to send to
-> the mantainers, so I thought it could be removed.
-> 
->  Will rediff.
+Ug. It would be nice to see that reworked :-) I guess we can remove it 
+until the fbdev layer is fixed up.
 
-Its a matter of not testings. I haven't got around to it. 
+
+On Tue, 13 Apr 2004, Luiz Fernando N. Capitulino wrote:
+
+> 
+> Hi,
+> 
+>  I'm getting the fallowing warnings:
+> 
+> drivers/video/imsttfb.c:1089: warning: `imsttfb_load_cursor_image' defined but not used
+> drivers/video/imsttfb.c:1159: warning: `imstt_set_cursor' defined but not used
+> 
+>  They are caused by dead code, this patch remove then:
+> 
+> diff -X dontdiff -Nparu a/drivers/video/imsttfb.c a~/drivers/video/imsttfb.c
+> --- a/drivers/video/imsttfb.c	2003-10-20 08:11:34.000000000 -0200
+> +++ a~/drivers/video/imsttfb.c	2004-04-13 16:02:51.000000000 -0300
+> @@ -1084,177 +1084,6 @@ imsttfb_copyarea(struct fb_info *info, c
+>  	while(read_reg_le32(par->dc_regs, SSTATUS) & 0x40);
+>  }
+>  
+> -static int
+> -imsttfb_load_cursor_image(struct imstt_par *par, int width, int height, __u8 fgc)
+> -{
+> -	u_int x, y;
+> -
+> -	if (width > 32 || height > 32)
+> -		return -EINVAL;
+> -
+> -	if (par->ramdac == IBM) {
+> -		par->cmap_regs[PIDXHI] = 1;	eieio();
+> -		for (x = 0; x < 0x100; x++) {
+> -			par->cmap_regs[PIDXLO] = x;		eieio();
+> -			par->cmap_regs[PIDXDATA] = 0x00;	eieio();
+> -		}
+> -		par->cmap_regs[PIDXHI] = 1;	eieio();
+> -		for (y = 0; y < height; y++)
+> -			for (x = 0; x < width >> 2; x++) {
+> -				par->cmap_regs[PIDXLO] = x + y * 8;	eieio();
+> -				par->cmap_regs[PIDXDATA] = 0xff;	eieio();
+> -			}
+> -		par->cmap_regs[PIDXHI] = 0;		eieio();
+> -		par->cmap_regs[PIDXLO] = CURS1R;	eieio();
+> -		par->cmap_regs[PIDXDATA] = fgc;		eieio();
+> -		par->cmap_regs[PIDXLO] = CURS1G;	eieio();
+> -		par->cmap_regs[PIDXDATA] = fgc;		eieio();
+> -		par->cmap_regs[PIDXLO] = CURS1B;	eieio();
+> -		par->cmap_regs[PIDXDATA] = fgc;		eieio();
+> -		par->cmap_regs[PIDXLO] = CURS2R;	eieio();
+> -		par->cmap_regs[PIDXDATA] = fgc;		eieio();
+> -		par->cmap_regs[PIDXLO] = CURS2G;	eieio();
+> -		par->cmap_regs[PIDXDATA] = fgc;		eieio();
+> -		par->cmap_regs[PIDXLO] = CURS2B;	eieio();
+> -		par->cmap_regs[PIDXDATA] = fgc;		eieio();
+> -		par->cmap_regs[PIDXLO] = CURS3R;	eieio();
+> -		par->cmap_regs[PIDXDATA] = fgc;		eieio();
+> -		par->cmap_regs[PIDXLO] = CURS3G;	eieio();
+> -		par->cmap_regs[PIDXDATA] = fgc;		eieio();
+> -		par->cmap_regs[PIDXLO] = CURS3B;	eieio();
+> -		par->cmap_regs[PIDXDATA] = fgc;		eieio();
+> -	} else {
+> -		par->cmap_regs[TVPADDRW] = TVPIRICC;	eieio();
+> -		par->cmap_regs[TVPIDATA] &= 0x03;	eieio();
+> -		par->cmap_regs[TVPADDRW] = 0;		eieio();
+> -		for (x = 0; x < 0x200; x++) {
+> -			par->cmap_regs[TVPCRDAT] = 0x00;	eieio();
+> -		}
+> -		for (x = 0; x < 0x200; x++) {
+> -			par->cmap_regs[TVPCRDAT] = 0xff;	eieio();
+> -		}
+> -		par->cmap_regs[TVPADDRW] = TVPIRICC;	eieio();
+> -		par->cmap_regs[TVPIDATA] &= 0x03;	eieio();
+> -		for (y = 0; y < height; y++)
+> -			for (x = 0; x < width >> 3; x++) {
+> -				par->cmap_regs[TVPADDRW] = x + y * 8;	eieio();
+> -				par->cmap_regs[TVPCRDAT] = 0xff;		eieio();
+> -			}
+> -		par->cmap_regs[TVPADDRW] = TVPIRICC;	eieio();
+> -		par->cmap_regs[TVPIDATA] |= 0x08;	eieio();
+> -		for (y = 0; y < height; y++)
+> -			for (x = 0; x < width >> 3; x++) {
+> -				par->cmap_regs[TVPADDRW] = x + y * 8;	eieio();
+> -				par->cmap_regs[TVPCRDAT] = 0xff;		eieio();
+> -			}
+> -		par->cmap_regs[TVPCADRW] = 0x00;	eieio();
+> -		for (x = 0; x < 12; x++)
+> -			par->cmap_regs[TVPCDATA] = fgc;	eieio();
+> -	}
+> -	return 1;
+> -}
+> -
+> -static void
+> -imstt_set_cursor(struct imstt_par *par, struct fb_image *d, int on)
+> -{
+> -	if (par->ramdac == IBM) {
+> -		par->cmap_regs[PIDXHI] = 0;	eieio();
+> -		if (!on) {
+> -			par->cmap_regs[PIDXLO] = CURSCTL;	eieio();
+> -			par->cmap_regs[PIDXDATA] = 0x00;	eieio();
+> -		} else {
+> -			par->cmap_regs[PIDXLO] = CURSXHI;	eieio();
+> -			par->cmap_regs[PIDXDATA] = d->dx >> 8;	eieio();
+> -			par->cmap_regs[PIDXLO] = CURSXLO;	eieio();
+> -			par->cmap_regs[PIDXDATA] = d->dx & 0xff;eieio();
+> -			par->cmap_regs[PIDXLO] = CURSYHI;	eieio();
+> -			par->cmap_regs[PIDXDATA] = d->dy >> 8;	eieio();
+> -			par->cmap_regs[PIDXLO] = CURSYLO;	eieio();
+> -			par->cmap_regs[PIDXDATA] = d->dy & 0xff;eieio();
+> -			par->cmap_regs[PIDXLO] = CURSCTL;	eieio();
+> -			par->cmap_regs[PIDXDATA] = 0x02;	eieio();
+> -		}
+> -	} else {
+> -		if (!on) {
+> -			par->cmap_regs[TVPADDRW] = TVPIRICC;	eieio();
+> -			par->cmap_regs[TVPIDATA] = 0x00;	eieio();
+> -		} else {
+> -			__u16 x = d->dx + 0x40, y = d->dy + 0x40;
+> -
+> -			par->cmap_regs[TVPCXPOH] = x >> 8;	eieio();
+> -			par->cmap_regs[TVPCXPOL] = x & 0xff;	eieio();
+> -			par->cmap_regs[TVPCYPOH] = y >> 8;	eieio();
+> -			par->cmap_regs[TVPCYPOL] = y & 0xff;	eieio();
+> -			par->cmap_regs[TVPADDRW] = TVPIRICC;	eieio();
+> -			par->cmap_regs[TVPIDATA] = 0x02;	eieio();
+> -		}
+> -	}
+> -}
+> -
+> -#if 0
+> -static int 
+> -imsttfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+> -{
+> -	struct imstt_par *par = (struct imstt_par *) info->par;
+> -        u32 flags = cursor->set, fg, bg, xx, yy;
+> -
+> -	if (cursor->dest == NULL && cursor->rop == ROP_XOR)
+> -		return 1;
+> -	
+> -	imstt_set_cursor(info, cursor, 0);
+> -
+> -	if (flags & FB_CUR_SETPOS) {
+> -		xx = cursor->image.dx - info->var.xoffset;
+> -		yy = cursor->image.dy - info->var.yoffset;
+> -	}
+> -
+> -	if (flags & FB_CUR_SETSIZE) {
+> -        }
+> -
+> -        if (flags & (FB_CUR_SETSHAPE | FB_CUR_SETCMAP)) {
+> -                int fg_idx = cursor->image.fg_color;
+> -                int width = (cursor->image.width+7)/8;
+> -                u8 *dat = (u8 *) cursor->image.data;
+> -                u8 *dst = (u8 *) cursor->dest;
+> -                u8 *msk = (u8 *) cursor->mask;
+> -
+> -                switch (cursor->rop) {
+> -                case ROP_XOR:
+> -                        for (i = 0; i < cursor->image.height; i++) {
+> -                                for (j = 0; j < width; j++) {
+> -                                        d_idx = i * MAX_CURS/8  + j;
+> -                                        data[d_idx] =  byte_rev[dat[s_idx] ^
+> -                                                                dst[s_idx]];
+> -                                        mask[d_idx] = byte_rev[msk[s_idx]];
+> -                                        s_idx++;
+> -                                }
+> -                        }
+> -                        break;
+> -                case ROP_COPY:
+> -                default:
+> -                        for (i = 0; i < cursor->image.height; i++) {
+> -                                for (j = 0; j < width; j++) {
+> -                                        d_idx = i * MAX_CURS/8 + j;
+> -                                        data[d_idx] = byte_rev[dat[s_idx]];
+> -                                        mask[d_idx] = byte_rev[msk[s_idx]];
+> -                                        s_idx++;
+> -                                }
+> -			}
+> -			break;
+> -		}
+> -
+> -		fg = ((info->cmap.red[fg_idx] & 0xf8) << 7) |
+> -                     ((info->cmap.green[fg_idx] & 0xf8) << 2) |
+> -                     ((info->cmap.blue[fg_idx] & 0xf8) >> 3) | 1 << 15;
+> -
+> -		imsttfb_load_cursor_image(par, xx, yy, fgc);
+> -	}
+> -	if (cursor->enable)
+> -		imstt_set_cursor(info, cursor, 1);
+> -	return 0;
+> -}
+> -#endif
+> -
+>  #define FBIMSTT_SETREG		0x545401
+>  #define FBIMSTT_GETREG		0x545402
+>  #define FBIMSTT_SETCMAPREG	0x545403
+> 
+> 
 
 
 

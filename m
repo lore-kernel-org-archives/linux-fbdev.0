@@ -1,16 +1,16 @@
-From: Thomas Winischhofer <thomas@winischhofer.net>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: Some questions
-Date: Wed, 05 Mar 2003 16:37:09 +0100
+Date: Wed, 5 Mar 2003 16:40:58 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <3E6619A5.7020502@winischhofer.net>
-References: <3E65EAFB.7020208@winischhofer.net>	<1046870342.1291.86.camel@localhost.localdomain> 	<3E66044D.5030007@winischhofer.net> <1046877920.1228.190.camel@localhost.localdomain>
+Message-ID: <Pine.GSO.4.21.0303051638000.23176-100000@vervain.sonytel.be>
+References: <1046877920.1228.190.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [213.229.38.66] (helo=mail.falke.at)
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18qazx-00020i-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 07:40:01 -0800
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18qb1p-0002Mp-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 07:41:58 -0800
+In-Reply-To: <1046877920.1228.190.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,65 +20,48 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Antonino Daplas <adaplas@pol.net>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Thomas Winischhofer <thomas@winischhofer.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Antonino Daplas wrote:
->>Ack. Is 16 fuzzy enough, what do you think?
-> 
+On 5 Mar 2003, Antonino Daplas wrote:
+> On Wed, 2003-03-05 at 22:06, Thomas Winischhofer wrote:
+> > > Yes, that's the Real Thing :-)  fbcon_resize has a "fuzzy mode" too --
+> > > it won't do an fb_set_var() if the change in dimensions is only a
+> > > fraction of a character's dimension.
+> > 
+> > Ack. Is 16 fuzzy enough, what do you think?
 > 
 > I think you should only accept modes where the difference is a fraction
 > of a character width or height.  A difference more than that and
 > clear_margins() will not work correctly.  
 
-How do I - from a low level fb driver - determine the character size?
+Indeed, accel_clear_margins() calculates the margins as
 
->>>I still believe though that scrolling should be determined by the
->>>driver, not fbcon.
->>
->>Well, what should I do now?
->>
->>The rivafb only forces y panning (ie sets yres_virtual to maximum) if 
->>yres_virtual is -1. This is never the case, as default var is constantly 
->>reused and I nowhere saw that any of the res_virtuals was set to -1.
->>
-> 
-> 
-> For now, maximize yres_virtual, then set info->var.accel_flag to 1.
+    unsigned int cw = vc->vc_font.width;
+    unsigned int ch = vc->vc_font.height;
+    unsigned int rw = info->var.xres % cw;
+    unsigned int bh = info->var.yres % ch;
 
-That's what I do.
+However, if it would use
 
-(shifted boot screen)
- >>I am almost sure that this has to do with the fact that I adapt var in
- >>my check_var from 800x592 to 800x600. Console (or whoever) seems to
- >>attempt to change the mode to its initially desired dimension on many
- >>occasions.
- >
- > Strange.  If you boot at 800x600, the console will compute that as
- > 100x37.  On fbcon_resize, it will request 800x592 but because the
- > difference is only 8, fb_set_var should be skipped, so no mode change
- > should happen throughout.
+    unsigned int rw = info->var.xres - (vc->vc_cols*cw);
+    unsigned int bh = info->var.yres - (vc->vc_rows*ch);
 
-But it definitely does. I can see this on my LCD (which goes dark during 
-mode changes) and, of course, the log.
+it would work with higher differences, too. And it would be a bit faster
+(multiply and subtract vs. modulo).
 
- > I have no idea.  I booted with other drivers at 800x600 and get no ill
- > effects.  I get a margin at the bottom of 8 pixels.
- >
- > How about checking what the offsets are during fb_pan_display()?
+Gr{oetje,eeting}s,
 
-Done that. Nothing special; The penguin is where it should be, but the 
-text below starts 8 lines too low.
+						Geert
 
-Thomas
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
--- 
-Thomas Winischhofer
-Vienna/Austria
-mailto:thomas@winischhofer.net            http://www.winischhofer.net/
-
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

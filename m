@@ -1,23 +1,22 @@
-From: Kronos <kronos@kronoz.cjb.net>
-Subject: Re: [PATCH] cg*: New framebuffer_alloc API and class_dev changes
-Date: Wed, 17 Sep 2003 18:37:34 +0200
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: framebuffer_{alloc,release}
+Date: Wed, 17 Sep 2003 20:11:54 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030917163734.GA8032@dreamland.darkstar.lan>
-References: <20030915194259.GG16370@dreamland.darkstar.lan> <20030915162705.24913719.davem@redhat.com> <20030916134603.GA1209@dreamland.darkstar.lan> <20030916182146.6c848c59.davem@redhat.com>
-Reply-To: kronos@kronoz.cjb.net
+Message-ID: <Pine.LNX.4.44.0309172000040.1730-100000@phoenix.infradead.org>
+References: <20030916192753.GB14731@dreamland.darkstar.lan>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19zfLn-0007gZ-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 17 Sep 2003 09:40:19 -0700
-Received: from mail-3.tiscali.it ([195.130.225.149])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 19zfLn-0006tT-2J
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Sep 2003 09:40:19 -0700
-Content-Disposition: inline
-In-Reply-To: <20030916182146.6c848c59.davem@redhat.com>
+	id 19zhj6-00034Q-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 17 Sep 2003 12:12:32 -0700
+Received: from [213.86.99.234] (helo=phoenix.infradead.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.22)
+	id 19zhj5-0004y9-9g
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Sep 2003 12:12:31 -0700
+In-Reply-To: <20030916192753.GB14731@dreamland.darkstar.lan>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,43 +26,69 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "David S. Miller" <davem@redhat.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, jsimmons@infradead.org
+To: Kronos <kronos@kronoz.cjb.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Russell King <rmk@arm.linux.org.uk>
 
-Il Tue, Sep 16, 2003 at 06:21:46PM -0700, David S. Miller ha scritto: 
-> On Tue, 16 Sep 2003 15:46:03 +0200
-> Kronos <kronos@kronoz.cjb.net> wrote:
-> 
-> > Btw, how do the patches look?
-> 
-> They look fine, just push them into James tree.
 
-As Russell King pointed out there was a flaw in that API. I reworked it
-a bit. I've patched sparc drivers:
+The patch looks nice except for one thing. framebuffer_alloc is incorrect 
+in assuming there is one struct xxx_par per strut fb_info. Struct xxx_par
+represents the physically hardware in a way independent of the 
+framebuffer. The reason for this was to handle cards with more than one 
+physical framebuffer. For example take a dual headed radeon card. You 
+would have a design like this.
+		   |-----------------	
+ ____________	   |	 | /dev/fb0 |
+| radeon_par | ----|	 ------------
+|____________|	   |
+		   |
+		   |-----------------
+		   	 | /dev/fb1 |
+		   	 ------------
 
-drivers/video/bw2.c
-drivers/video/cg14.c
-drivers/video/cg3.c
-drivers/video/cg6.c
-drivers/video/ffb.c
-drivers/video/leo.c
-drivers/video/p9100.c
-drivers/video/tcx.c
+the reason for this design is simple. If fb0 video resolution changes it 
+affects par. Now par's state affect fb1. We need to see if changes to 
+either fb0 or fb1 affects the other display as well. 
 
-Patches are almost  identical to the ones  I sent to you,  but I removed
-the release_* callback. If you want to  take a look I've just pushed the
-changeset:
+> +/**
+> + * framebuffer_alloc - creates a new frame buffer info structure
+> + *
+> + * @size: size of driver private data, can be zero
+> + * @dev: pointer to the device for this fb, can be NULL
+> + *
+> + * Creates a new frame buffer info structure. Also reserves @size bytes
+> + * for driver private data (fb_info->par). fb_info->par (if any) will be
+> + * aligned to sizeof(long).
+> + * 
+> + * Returns the new structure, or NULL if an error occurred.
+> + *
+> + */
+> +struct fb_info *framebuffer_alloc(size_t size, struct device *dev) {
+> +#define BYTES_PER_LONG (BITS_PER_LONG/8)
+> +#define PADDING (BYTES_PER_LONG - (sizeof(struct fb_info) % BYTES_PER_LONG))
+> +	struct fb_info *fb_info;
+> +	char *p;
+> +	int fb_info_size = sizeof(struct fb_info);
+> +
+> +	if (size)
+> +		fb_info_size += PADDING;
+> +
+> +	p = kmalloc(fb_info_size + size, GFP_KERNEL);
+> +	if (!p)
+> +		return NULL;
+> +	memset(p, 0, fb_info_size + size);
+> +	fb_info = (struct fb_info *)p;
+> +	fb_info->class_dev.dev = dev;
+> +
+> +	if (size)
+> +		fb_info->par = p + fb_info_size;
+> +
+> +	return fb_info;
+> +#undef PADDING
+> +#undef BYTES_PER_LONG
+> +}
 
-bk://mesa3d@bkbits.net/fbdev-2.5
-
-Luca
--- 
-Reply-To: kronos@kronoz.cjb.net
-Home: http://kronoz.cjb.net
-"Fare l'amore con dieci donne e` fantastico, soprattutto perche` ti
- presentano un sacco di amiche." -- Fabio Di Iorio
 
 
 -------------------------------------------------------

@@ -1,17 +1,16 @@
-From: Stefan Reinauer <stepan@suse.de>
+From: Jon Smirl <jonsmirl@yahoo.com>
 Subject: Re: Rage128 as secondary adapter
-Date: Thu, 9 Jan 2003 19:39:21 +0100
+Date: Thu, 9 Jan 2003 10:56:42 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030109183921.GB21501@suse.de>
-References: <20030109174706.1471.qmail@web14907.mail.yahoo.com>
+Message-ID: <20030109185642.33243.qmail@web14914.mail.yahoo.com>
+References: <20030109183921.GB21501@suse.de>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from ns.suse.de ([213.95.15.193] helo=Cantor.suse.de)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18WhaO-0007Kk-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 09 Jan 2003 10:39:24 -0800
-Content-Disposition: inline
-In-Reply-To: <20030109174706.1471.qmail@web14907.mail.yahoo.com>
+Received: from web14914.mail.yahoo.com ([216.136.225.241])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18Whr8-0001Bq-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 09 Jan 2003 10:56:42 -0800
+In-Reply-To: <20030109183921.GB21501@suse.de>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,33 +22,29 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jon Smirl <jonsmirl@yahoo.com>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
+To: Stefan Reinauer <stepan@suse.de>, fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-* Jon Smirl <jonsmirl@yahoo.com> [030109 18:47]:
-> Can someone with access to the Rage128 documentation
-> tell me how to do this from protected mode? I have the
-> ROM mapped so the code can get to constants stored in
-> the ROM. What I need is a piece of C code equal to
-> what the ROM initialization does minus the part about
-> Int10 vector setup.
- 
-I'm almost certain that the information you need is only
-available when signing an NDA and thus could not be used
-in open source drivers. Also a big problem for open source
-firmware implementations such as openbios
+ATI has already released the much more sensitive data
+of how to drive their Rage128 3D engine. It's all been
+incorporated into X and is open source. 
 
-> The programmers at ATI probably have a piece of code
-> available to do this since ATI's Windows driver can do
-> it.  I've tried emailing and signing up as a developer
-> without response.
- 
-This is a pretty common experience.
+I doubt if the procedure for resetting the board is
+considered a trade secret. The problem is in getting
+ATIs attention long enough to tell how to do it. It
+may be as simple as poking an output port with a
+special value. Hopefully someone with a manual can
+tell me.
 
-Stefan.
 
--- 
-The use of COBOL cripples the mind; its teaching should, therefore, be
-regarded as a criminal offense.                      -- E. W. Dijkstra
+
+=====
+Jon Smirl
+jonsmirl@yahoo.com
+
+__________________________________________________
+Do you Yahoo!?
+Yahoo! Mail Plus - Powerful. Affordable. Sign up now.
+http://mailplus.yahoo.com
 
 
 -------------------------------------------------------

@@ -1,20 +1,21 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [2.6.11 Permedia-2 Framebuffer] driver broken (?).
-Date: Sun, 6 Mar 2005 14:30:47 +0100 (CET)
-Message-ID: <Pine.LNX.4.60.0503061427250.2997__43391.3556895733$1110138950$gmane$org@poirot.grange>
-References: <Pine.LNX.4.60.0503052355320.12643@poirot.grange>
- <Pine.LNX.4.60.0503061047590.3733@poirot.grange>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 8/10] fbdev: Allow core fb to be built as a module
+Date: Mon, 7 Mar 2005 00:36:20 -0800
+Message-ID: <20050307003620.2d844158.akpm@osdl.org>
+References: <200503060816.55890.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Content-Transfer-Encoding: 7bit
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D7vrM-0006lQ-B2
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 06 Mar 2005 05:31:52 -0800
-Received: from imap.gmx.net ([213.165.64.20] helo=mail.gmx.net)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
-	id 1D7vrK-00042k-Ba
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 06 Mar 2005 05:31:51 -0800
-In-Reply-To: <Pine.LNX.4.60.0503061047590.3733@poirot.grange>
+	id 1D8DjT-0002E1-6B
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Mar 2005 00:36:55 -0800
+Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1D8DjR-0002Wq-FM
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Mar 2005 00:36:55 -0800
+In-Reply-To: <200503060816.55890.adaplas@hotpop.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -25,25 +26,21 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: jim.hague@acm.org
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: adaplas@pol.net
+Cc: adaplas@hotpop.com, linux-fbdev-devel@lists.sourceforge.net, jonsmirl@gmail.com
 
-On Sun, 6 Mar 2005, Guennadi Liakhovetski wrote:
+"Antonino A. Daplas" <adaplas@hotpop.com> wrote:
+>
+>    Allow the framebuffer core to be built as a module to
+>    ease debugging.
 
-> I wasn't quite correct in my report yesterday. Replacing pm2fb.c from 
-> 2.6.11 with 2.6.10 fixes only one problem - the font becomes white again 
-> and penguin images get fixed. But switching from X to vt still doesn't 
-> work. It works under 2.6.10-rc2.
+It breaks `make allmodconfig':
 
-Ok. Reverting also fbcon.[hc] to 2.6.10 fixes the X-switching problem too.
+/tmp/distcc_1108/drivers/video/console/tileblit.c:70: undefined reference to `fb_get_buffer_offset'
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
 
+Seem somewhat nasty...
 
 
 -------------------------------------------------------

@@ -1,26 +1,26 @@
-From: jsimmons@pentafluge.infradead.org
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: Sane behavior of fbset
-Date: Wed, 23 Jun 2004 20:21:49 +0100 (BST)
+Date: Wed, 23 Jun 2004 14:38:45 -0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.56.0406232021110.27210@pentafluge.infradead.org>
+Message-ID: <1088019524.1855.159.camel@gaston>
 References: <200406180945.12444.adaplas@hotpop.com>
- <Pine.GSO.4.58.0406181024180.11779@waterleaf.sonytel.be>
- <Pine.LNX.4.56.0406231945150.27210@pentafluge.infradead.org>
- <Pine.GSO.4.58.0406232057230.21847@waterleaf.sonytel.be>
- <Pine.LNX.4.56.0406232001200.27210@pentafluge.infradead.org>
- <Pine.GSO.4.58.0406232116390.21847@waterleaf.sonytel.be>
+	 <200406190240.26228.adaplas@hotpop.com>
+	 <20040619031650.GC14319@havoc.gtf.org>
+	 <200406191413.28339.adaplas@hotpop.com> <1088006149.1832.145.camel@gaston>
+	 <Pine.LNX.4.56.0406231958340.27210@pentafluge.infradead.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BdDJg-0007WC-O9
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 12:21:52 -0700
-Received: from [213.146.154.40] (helo=pentafluge.infradead.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	id 1BdDhF-0001nk-JL
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 12:46:13 -0700
+Received: from gate.crashing.org ([63.228.1.57])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1BdDJg-00025U-4v
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 12:21:52 -0700
-In-Reply-To: <Pine.GSO.4.58.0406232116390.21847@waterleaf.sonytel.be>
+	id 1BdDhE-0005yC-Qp
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 12:46:12 -0700
+In-Reply-To: <Pine.LNX.4.56.0406231958340.27210@pentafluge.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,19 +30,35 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: jsimmons@pentafluge.infradead.org
+Cc: adaplas@pol.net, David Eger <eger@havoc.gtf.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-
-> > identical vars. That is heavy. Having that mode stored in modedb is one
-> > copy for both VCs.
+On Wed, 2004-06-23 at 14:00, jsimmons@pentafluge.infradead.org wrote:
+> > I still think (didn't I repeat it often enough) that the whole idea
+> > of stty "inventing" modes based on console size is broken. We simply
+> > can't rely on good enough monitor detection & mode list building to
+> > be able to pick proper modes. Not only our code is far from ready for
+> > that, but it will also call all sort of problems to users (remember
+> > you monitors that need different subtle geometry settings for each
+> > different mode you use ?)
+> > 
+> > It may have looked like a nice idea, but I think it's just wrong.
 > 
-> And how much space does modedb (which used to be __initdata) need?
+> Its a POSIX standard. You need to yell at them. 
 
-I couldn't agree with you more. Currently modedb is way to heavy. It needs 
-to be cleaned up.
+I don't remember seeing anything in POSIX regarding tweaking monitor
+video modes ;)
+
+> > fbset sends an ioctl straight to the fbdev, and doesn't update fbcon
+> > at the moment. The callback mecanism I added for power management
+> > should allow to restore 2.4 functionality there, but this has not
+> > been implemented yet afaik.
+> 
+> It will be added back. I didn't merge the one from before because it had 
+> problems. 
+-- 
+Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 
 

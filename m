@@ -1,16 +1,15 @@
-From: Sven Luther <luther@dpt-info.u-strasbg.fr>
+From: Jon Smirl <jonsmirl@yahoo.com>
 Subject: Re: Re: [wx-dev] Linux GUI considerations
-Date: Wed, 5 Feb 2003 21:13:19 +0100
+Date: Wed, 5 Feb 2003 14:03:33 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030205201318.GA1146@iliana>
-References: <3E403C75.2DBCC9F8@bluewin.ch> <3E416980.2B2F85@bluewin.ch>
+Message-ID: <20030205220333.34483.qmail@web14914.mail.yahoo.com>
+References: <3E416980.2B2F85@bluewin.ch>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from smtp-out-2.wanadoo.fr ([193.252.19.254] helo=mel-rto2.wanadoo.fr)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18gVvL-0006DV-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Feb 2003 12:13:35 -0800
-Content-Disposition: inline
+Received: from web14914.mail.yahoo.com ([216.136.225.241])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18gXdl-0000kr-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Feb 2003 14:03:33 -0800
 In-Reply-To: <3E416980.2B2F85@bluewin.ch>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
@@ -23,32 +22,32 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Otto Wyss <otto.wyss@bluewin.ch>
-Cc: wx-dev@lists.wxwindows.org, linux-fbdev-devel@lists.sourceforge.net
+To: otto.wyss@bluewin.ch
+Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, Feb 05, 2003 at 08:44:00PM +0100, Otto Wyss wrote:
-> > From: Julian Smart
-> > I would certainly be keen to encourage better uptake of Linux through
-> > use of wxWindows, but I have to take issue with the argument that
-> > a framebuffer-based approach is going to help this. XFree86 has had years
-> > of development and tweaking. Are you really saying that we could
-> > write a better X11 replacement? Even if we did and managed to write
-> > a 3rd super-duper desktop environment with all the required little apps,
-> > we'd face a huge struggle in persuading people to use our particular
-> > environment instead of X11.
-> > 
-> XFree86 has done a tremendous amount of effort. Still large part of this
-> is simply spent in the wrong places. Instead of keeping writing directly
-> to the hardware they should concentrate in building kernel drivers,
-> maybe separate maybe together with the framebuffer people. Currently it
+--- Otto Wyss <otto.wyss@bluewin.ch> wrote:
+> What alternatives are there?
 
-Well, remember that X don't run on just Linux, so i guess they are
-afraid of duplicating the work, having to rewrite the driver for each OS
-they run on. And as a X driver writer, i understand that concern.
+Use OpenGL as your base API.  
+http://fbdri.sourceforge.net/
 
-Friendly,
+Framebuffer would be used to initialize the hardware
+and handle VT switches. DRM would coordinate with FB
+on the VT swtiches so that X could also be run if you
+want it.
 
-Sven Luther
+OpenGL contains a fine 2D API in addition to the 3D
+one everyone knows about. 
+
+
+=====
+Jon Smirl
+jonsmirl@yahoo.com
+
+__________________________________________________
+Do you Yahoo!?
+Yahoo! Mail Plus - Powerful. Affordable. Sign up now.
+http://mailplus.yahoo.com
 
 
 -------------------------------------------------------

@@ -1,17 +1,17 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+From: "Jochen Roth" <jochen@panix.com>
 Subject: Re: X endianess problem
-Date: 13 Jun 2003 11:27:38 +0200
+Date: Fri, 13 Jun 2003 06:05:26 -0400 (EDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1055496457.1853.88.camel@thor.holligenstrasse29.lan>
-References: <200306101104.h5AB40k12305@panix3.panix.com>
+Message-ID: <200306131005.h5DA5Qp00126@panix3.panix.com>
+References: <1055496457.1853.88.camel@thor.holligenstrasse29.lan>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [195.141.226.27] (helo=netline-mail1.netline.ch)
+Received: from mail3.panix.com ([166.84.1.74])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19QkqU-0004ya-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 13 Jun 2003 02:27:42 -0700
-In-Reply-To: <200306101104.h5AB40k12305@panix3.panix.com>
+	id 19QlR2-0002c4-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 13 Jun 2003 03:05:28 -0700
+In-Reply-To: <1055496457.1853.88.camel@thor.holligenstrasse29.lan> from "Michel =?ISO-8859-1?Q?D=E4nzer?=" at Jun 13, 2003 11:27:38 AM
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,49 +21,45 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Jochen Roth <jochen@panix.com>
+Content-Type: text/plain; charset="us-ascii"
+To: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 2003-06-10 at 13:04, Jochen Roth wrote:=20
-> I just finished reading through the radeonfb/endianness thread. I am
-> working on an old IBM PReP thin client with an S3 Trio64V2/DX.
->=20
-> I started out with 2.4.19 from kernel.org and added startup code and
-> some patches for prep_pci.c etc. I am testing this under XFree86
-> 4.1.0.1 with the fbdev module, current stable ppc off of debian.org.
->=20
-> I got the 16bit console stuff working by byte-swapping the packed
-> rgb words in the _setcolreg handler. Same code basically as in the
-> clgenfb.c, for instance.
->=20
-> Neither X nor fbi get the byte order right, though.
+> > Neither X nor fbi get the byte order right, though.
+> 
+> I think they just assume native byte order.
 
-I think they just assume native byte order.
+Yes -- Gerd Knorr set me straight on that one after I emailed him a
+patch for fbi...
 
+> > BTW, based on my debug output X never turns off the accelerator. Is
+> > that OK?
+> 
+> fbdevHWMapMMIO() in 4.3.0 seems to disable it.
 
-> BTW, based on my debug output X never turns off the accelerator. Is
-> that OK?
+I will give that a try. I have not seen any negative side effects of
+the accelerator being enabled, but it seems weird.
 
-fbdevHWMapMMIO() in 4.3.0 seems to disable it.
+I also would have expected for the X server to just go and talk to
+the fbdev kernel driver, instead of still mucking with the hardware
+directly. At least the X server on exit at times seems to want to
+reset my chip into 80x25 or 640x400 on occasion. Can't tell for sure,
+my monitor does not digest the timing very well. I am fairly certain
+that my driver does not do that, based on set_var() printks.
 
+> > The hardware documentation for my chip says that there is supposed to
+> > be an endian-swapped mapping for the frame buffer, essentially the
+> > second 32MB of the 64MB total bar0. As far as I can tell this second
+> > mapping does not byte-swap the video buffer.
+> 
+> Well, there's no single byte swapping working for all cases, maybe you
+> need to configure it by writing to some register(s)?
 
-> The hardware documentation for my chip says that there is supposed to
-> be an endian-swapped mapping for the frame buffer, essentially the
-> second 32MB of the 64MB total bar0. As far as I can tell this second
-> mapping does not byte-swap the video buffer.
+Yes. I found the 2 bits 36 hours ago. X looks much nicer with BE pixels.
 
-Well, there's no single byte swapping working for all cases, maybe you
-need to configure it by writing to some register(s)?
+Thanks for your suggestions.
 
-If there's indeed no way to have the hardware handle the byte order,
-you'd probably have to fix each app. Should be relatively easy in the X
-fbdev driver by using a special shadowUpdate function.
-
-
---=20
-Earthling Michel D=E4nzer   \  Debian (powerpc), XFree86 and DRI developer
-Software libre enthusiast  \     http://svcs.affero.net/rm.php?r=3Ddaenzer
+Jochen
 
 
 

@@ -1,17 +1,17 @@
-From: Louis Garcia <louisg00@bellsouth.net>
-Subject: Re: radeonfb and 2.5.66
-Date: 27 Mar 2003 14:04:18 -0500
+From: Antonino Daplas <adaplas@pol.net>
+Subject: Re: Framebuffer fixes.
+Date: 28 Mar 2003 03:15:30 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1048791858.2474.3.camel@tiger>
-References: <Pine.GSO.4.21.0303251607490.22126-100000@vervain.sonytel.be>
+Message-ID: <1048792155.1109.29.camel@localhost.localdomain>
+References: <Pine.GSO.4.21.0303271008190.26358-100000@vervain.sonytel.be>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail210.mail.bellsouth.net ([205.152.58.150] helo=imf47bis.bellsouth.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18ycfH-00074D-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 27 Mar 2003 11:03:51 -0800
-In-Reply-To: <Pine.GSO.4.21.0303251607490.22126-100000@vervain.sonytel.be>
+Received: from pine.compass.com.ph ([202.70.96.37])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18yd8d-0007l8-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 27 Mar 2003 11:34:12 -0800
+In-Reply-To: <Pine.GSO.4.21.0303271008190.26358-100000@vervain.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,39 +23,40 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: James Simmons <jsimmons@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-I have connected my monitor to the vga port (it supports both) and the
-radeonfb works. So it has to do with the dvi port not being activated.
-This problem also affects the 2.4 kernel. I really would like to get
-this going.
+On Thu, 2003-03-27 at 17:09, Geert Uytterhoeven wrote:
+> On 27 Mar 2003, Antonino Daplas wrote:
+> >        - image->depth should be representative of the data depth
+> > (currently, either 8 or 1).  If image->depth == 1, color expansion can
+> > now be used to draw the logo, thus there's no need to differentiate
+> > between mono logo drawing and monochrome expansion.
+> 
+> > +	/*
+> > +	 * Monochrome expansion and logo drawing functions are the same if
+> > +	 * fb_logo.needs_logo == 1.
+> > +	 */
+> > +	switch (info->fix.visual) {
+> > +	case FB_VISUAL_MONO10:
+> > +		image.fg_color = (u32) (~(~0UL << fb_logo.depth));
+>                                                   ^^^^^^^^^^^^^
+> > +		image.bg_color = 0;
+> > +		image.depth = 1;
+> > +		break;
+> > +	case FB_VISUAL_MONO01:
+> > +		image.bg_color = (u32) (~(~0UL << fb_logo.depth));
+>                                                   ^^^^^^^^^^^^^
+> > +		image.fg_color = 0;
+> > +		image.depth = 1;
+> > +		break;
+> 
+> Shouldn't these be info->var.bits_per_pixel instead of fb_logo.depth?
+> 
 
---Lou
 
-On Tue, 2003-03-25 at 10:08, Geert Uytterhoeven wrote:
-> On 25 Mar 2003, Benjamin Herrenschmidt wrote:
-> > On Tue, 2003-03-25 at 05:39, Louis Garcia wrote:
-> > > Does anyone know if the radeonfb in 2.5.66 supports the dvi port on my
-> > > radeon 7500 QW? I've compiled the driver in and appended video=radeon to
-> > > grub and I still get vga.
-> > 
-> > Tried video=radeon:dfp ?
-> 
-> video=radeonfb:dfp
-> 
-> (in 2.5.66, all video= driver names got the `fb' at the end).
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
-> 							    -- Linus Torvalds
-> 
+Yes, fb_logo.depth == info->var.bits_per_pixel.
+
+Tony
 
 
 

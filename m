@@ -1,21 +1,25 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH] neofb: blanking patch done
-Date: Sun, 25 Apr 2004 04:58:05 +0100 (BST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Virtual fbdev updates.
+Date: Sun, 25 Apr 2004 10:06:15 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0404250445200.24252-100000@phoenix.infradead.org>
-References: <20040424073934.GA23738@foogod.com>
+Message-ID: <Pine.GSO.4.58.0404251005590.11039@waterleaf.sonytel.be>
+References: <Pine.LNX.4.44.0404250327170.15965-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BHamO-00075K-JR
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 24 Apr 2004 20:58:08 -0700
-Received: from phoenix.infradead.org ([213.86.99.234])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1BHemB-0003al-St
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 25 Apr 2004 01:14:11 -0700
+Received: from externalmx-1.sourceforge.net ([12.152.184.25])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1BHamO-0004s2-80
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 24 Apr 2004 20:58:08 -0700
-In-Reply-To: <20040424073934.GA23738@foogod.com>
+	id 1BHefD-0000oN-PI
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 25 Apr 2004 01:06:59 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by externalmx-1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BHlHO-0004m2-5P
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 25 Apr 2004 08:10:50 -0700
+In-Reply-To: <Pine.LNX.4.44.0404250327170.15965-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,29 +31,26 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Alex Stewart <alex@foogod.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: James Simmons <jsimmons@infradead.org>
+Cc: Andrew Morton <akpm@osdl.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+On Sun, 25 Apr 2004, James Simmons wrote:
+>  This is attempt 2 at the virtual framebuffer patch. It migrates the
+> driver to the framebuffer_release/framebuffer_alloc api. It doesn't enable
+> the driver by default. With your approval Geert please apply this patch.
 
-I merged your changes. The latest patch is here:
+Looks OK.
 
-http://phoenix.infradead.org:~/jsimmons/neofb-4.1.diff.gz
+Gr{oetje,eeting}s,
 
+						Geert
 
-On Sat, 24 Apr 2004, Alex Stewart wrote:
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-> Ok, I sorted out the issues with the blanking patch, fixed it up to use the new
-> vga core routines, and did a little bit of miscellaneous cleanup.  It works for
-> me; feedback is welcome.
-> 
-> Patch is attached, and also available at http://www.foogod.com/~alex/neofb
-> 
-> (this patch is against James' latest driver patch)
-> 
-> -alex
-> 
-
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

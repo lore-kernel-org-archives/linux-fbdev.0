@@ -1,26 +1,25 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
 Subject: Re: [PATCH] atyfb: vblank irq support
-Date: Sun, 25 Jul 2004 08:03:12 +0800
+Date: Sun, 25 Jul 2004 13:16:01 +0300
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200407250803.14308.adaplas@hotpop.com>
+Message-ID: <20040725101601.GA15233@sci.fi>
 References: <20040722184937.GA11361@sci.fi> <200407250112.18689.alex.kern@gmx.de>
-Reply-To: adaplas@pol.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BoWU9-0002ZA-8w
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 24 Jul 2004 17:03:25 -0700
-Received: from snickers.hotpop.com ([38.113.3.51])
+	id 1Bog33-00041B-6y
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 25 Jul 2004 03:16:05 -0700
+Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1BoWU8-00049B-TI
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 24 Jul 2004 17:03:25 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by snickers.hotpop.com (Postfix) with SMTP id 85F717158C
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 24 Jul 2004 22:51:42 +0000 (UTC)
-In-Reply-To: <200407250112.18689.alex.kern@gmx.de>
+	id 1Bog32-0000no-OI
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 25 Jul 2004 03:16:05 -0700
+Received: from kuori.saunalahti.fi (kuori.saunalahti.fi [195.197.175.23])
+	by gw01.mail.saunalahti.fi (Postfix) with ESMTP id 5798745D95
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 25 Jul 2004 13:16:01 +0300 (EEST)
 Content-Disposition: inline
+In-Reply-To: <200407250112.18689.alex.kern@gmx.de>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,49 +29,61 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Alexander Kern <alex.kern@gmx.de>, linux-fbdev-devel@lists.sourceforge.net
-Cc: Ville =?iso-8859-15?q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Sunday 25 July 2004 07:12, Alexander Kern wrote:
->
+On Sun, Jul 25, 2004 at 01:12:18AM +0200, Alexander Kern wrote:
+> Am Donnerstag, 22. Juli 2004 20:49 schrieb Ville Syrj=E4l=E4:
+> > This patch adds vblank interrupt support to atyfb. The added features=
+ are
+> > FB_ACTIVATE_VBL flag for panning and FBIO_WAITFORVSYNC ioctl.
+> >
+> > The code is basically copied from matroxfb. I've tested it on two lap=
+tops
+> > (Mobility and LT Pro) using DirectFB.
+> Thanks Ville,
+>=20
+> I had added last three patches to my tree.
+> atyfb: Rage LT LCD register access.
+> atyfb: Blank LCD by turning off backlight voltage
+> atyfb: vblank irq support
+>=20
+> atyfb: Add option to disable hardware cursor. <----This one I add in an=
+other=20
+> way. Option noaccel deactivate hwcursor too.
+> The reason is, that I redone hwcursor part and it works now for me, ple=
+ase=20
+> test it.
+
+Great. I'll test it later today.
+
+> Here is a patch again vanilla 2.6.7 + latest known JSimmons patch
+>=20
 > P.S. Now the last consumer from fb_load_cursor_image is neo driver.
 > Should we drop this function, it's buggy!
-
-We should.  fb_load_cursor_image() cannot be generic.
-
->
+>=20
 > Steel on my TODO list:
->
+>=20
 > Issue with 16bpp mode, brocken boot logo, fbi has problems too.
+> Issue with 24bpp mode and fbtest, yellow parts of pinguin image are blu=
+e!!!=20
 
-1. aty128fb_setcolreg has this lines:
+I've never tried 24bpp because of limited acceleration support. I haven't=
+=20
+even bothered implenenting 24bpp acceleration in the DirectFB driver.
 
-		case 16:
-			pal[regno] = (regno << 11) | (regno << 6) | regno;
-			break;
+My only todo item is mtrr support. I have a patch which simply tries to=20
+add fix.smem_len sized wrcomb mtrr. But that will only work with=20
+power-of-two memory size. Also it won't work with a 8MB card when the=20
+auxiliary aperture isn't used. Maybe an 8MB wrcomb mtrr + an overlapping=20
+uncachable mtrr covering the register page might be better. Will that sor=
+t=20
+of thing work on all systems?
 
-Shouldn't it be?
-
-		pal[regno] = (regno << 11) | (regno << 5) | regno;
-
-2. In RGB555, isn't it better to fill up all the 8 slots per index per channel (256/32),
-instead of just (regno * 8)? For RGB565, that will be 8 slots per red and blue,
-4 slots per green (256/64).
-
-So something like this for RGB555, ie:
-
-	for  (i = 0; i < 8; i++) {
-		aty128_st_pal((regno * 8) + i, red, green, blue, par);
-
-RGB565 is a bit more complicated because green is deeper, but is doable.
-
-Tony
-
-DISCLAIMER: I know nothing about this hardware, I'm probably shooting
-blanks :-)
-
-
+--=20
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
 
 
 -------------------------------------------------------

@@ -1,23 +1,21 @@
-From: Andrew Zabolotny <zap@homelink.ru>
-Subject: Re: [Bugme-new] [Bug 4047] New: kerenl failt to
- kompile
-Date: Tue, 18 Jan 2005 22:17:25 +0300
-Message-ID: <20050118221725.4a68dbff.zap@homelink.ru>
-References: <20050117004141.2dcb1e0f.zap@homelink.ru>
-	<200501180504.07500.adaplas@hotpop.com>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 4/6] fbcon: Save blank state last
+Date: Tue, 18 Jan 2005 15:07:16 -0800
+Message-ID: <20050118150716.04b87537.akpm@osdl.org>
+References: <200501180541.17021.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Cqyr8-0006u4-Lq
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Jan 2005 11:17:34 -0800
-Received: from mail.homelink.ru ([81.9.33.123] helo=eltel.net)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1Cqyr6-0003H0-PF
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Jan 2005 11:17:34 -0800
-In-Reply-To: <200501180504.07500.adaplas@hotpop.com>
+	id 1Cr2My-0001N5-ID
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Jan 2005 15:02:40 -0800
+Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1Cr2My-0008DB-3r
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Jan 2005 15:02:40 -0800
+In-Reply-To: <200501180541.17021.adaplas@hotpop.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,22 +30,34 @@ Content-Type: text/plain; charset="us-ascii"
 To: adaplas@pol.net
 Cc: adaplas@hotpop.com, linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 18 Jan 2005 05:04:04 +0800
 "Antonino A. Daplas" <adaplas@hotpop.com> wrote:
+>
+> Save blank state after do_blank|unblank_screen() since this flag is checked
+> in fbcon_blank().
 
-> > Here's an obvious fix plus a minor enhancement.
-> Would it be better if backlight/lcd support is not fully dependent on
-> the framebuffer? 
-> It's your call, so I'm still submitting this patch to akpm.
-I thought about it, but I don't see a lot of reasons for having
-backlight without the framebuffer. Theoretically the FB-related stuff
-could be enclosed within #if FB's but it would clutter the code. If
-somebody will have a real reason for it, I think he'll quickly find out
-how this can be achieved.
+The code in this area has changed a bit in my tree, probably due to Roman's
+cleanups.  I ended up with:
 
--- 
-Greetings,
-   Andrew
+static void fbcon_fb_blanked(struct fb_info *info, int blank)
+{
+	struct fbcon_ops *ops = info->fbcon_par;
+	struct vc_data *vc;
+
+	if (!ops || ops->currcon < 0)
+		return;
+	vc = vc_cons[ops->currcon].d;
+	if (vc->vc_mode == KD_TEXT &&
+	    registered_fb[con2fb_map[ops->currcon]] == info &&
+	    CON_IS_VISIBLE(vc)) {
+		if (blank)
+			do_blank_screen(0);
+		else
+			do_unblank_screen(0);
+	}
+	ops->blank_state = blank;
+}
+
+Please double-check next -mm. make sure that it all landed OK, thanks.
 
 
 -------------------------------------------------------

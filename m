@@ -1,64 +1,38 @@
-From: Francois Romieu <romieu@fr.zoreil.com>
-Subject: [patch] Re: GeForce 4 MX have no working frame buffer at all..
-Date: Sat, 21 Aug 2004 13:14:14 +0200
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040821111414.GA6818@electric-eye.fr.zoreil.com>
-References: <412729BC.5000102@mitose.net>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [Linux-fbdev-devel] Framebuffer drivers maintainers
+Date: Sat, 21 Aug 2004 15:20:37 +0200 (MEST)
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <Pine.GSO.4.58.0408211519310.58@waterleaf.sonytel.be>
+References: <41270AD0.FE6C7970@orpatec.ch>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1ByTsc-00078q-7O
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 21 Aug 2004 04:17:50 -0700
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224] helo=fr.zoreil.com)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.34)
-	id 1ByTsZ-0004qk-8W
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 21 Aug 2004 04:17:49 -0700
-Content-Disposition: inline
-In-Reply-To: <412729BC.5000102@mitose.net>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S265093AbUHUNUq@vger.kernel.org>
+In-Reply-To: <41270AD0.FE6C7970@orpatec.ch>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: ploum@mitose.net
+To: 'linux-fbdev-devel' <linux-fbdev-devel@lists.sourceforge.net>
+Cc: 'linux-kernel' <linux-kernel@vger.kernel.org>
 
-Ploum Ploum <ploum@mitose.net> :
-[...]
-> Here's the lspci -vvvv output for the card :
-> 
-> 0000:02:00.0 VGA compatible controller: nVidia Corporation NV18 
-> [GeForce4 MX 440 AGP 8x] (rev a2) (prog-if 00 [VGA])
+On Sat, 21 Aug 2004, Otto Wyss wrote:
+> I've now updated the framebuffer driver list and hopefully listed each
+> current driver. It may not show the correct name so please suggest corrections.
+>
+> For each driver its maintainer should be listed possibly with its
+> sourceforge.net user account in brackets. I'd like if only current
+> maintainers, who really take care of their drivers, are listed and none
+> who has done so in the past. Please any maintainer post a message to
+> linux-fbdev-devel or tell me where I can retrieve reliable information.
 
-Try patch below. If it does not work, please send a complete dmesg and
-lspci -vx.
+I maintain amifb. This driver is not in linux-fbdev.sf.net CVS, but in
+Linux/m68k CVS. It works fine in 2.4 and 2.6.
 
-diff -puN drivers/video/riva/fbdev.c~rivafb-missing-id drivers/video/riva/fbdev.c
---- linux-2.6.8.1/drivers/video/riva/fbdev.c~rivafb-missing-id	2004-08-21 13:05:41.000000000 +0200
-+++ linux-2.6.8.1-romieu/drivers/video/riva/fbdev.c	2004-08-21 13:07:31.000000000 +0200
-@@ -1836,6 +1836,7 @@ static u32 riva_get_arch(struct pci_dev 
- 		case 0x0110:   /* GeForce2 MX */
- 		case 0x0150:   /* GeForce2 */
- 		case 0x0170:   /* GeForce4 MX */
-+		case 0x0171:   /* GeForce4 MX */
- 		case 0x0180:   /* GeForce4 MX (8x AGP) */
- 		case 0x01A0:   /* nForce */
- 		case 0x01F0:   /* nForce2 */
+Gr{oetje,eeting}s,
 
-_
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
--------------------------------------------------------
-SF.Net email is sponsored by Shop4tech.com-Lowest price on Blank Media
-100pk Sonic DVD-R 4x for only $29 -100pk Sonic DVD+R for only $33
-Save 50% off Retail on Ink & Toner - Free Shipping and Free Gift.
-http://www.shop4tech.com/z/Inkjet_Cartridges/9_108_r285
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds

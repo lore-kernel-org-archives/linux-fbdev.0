@@ -1,17 +1,24 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: FB model basic issues (WAS: radeon, apertures & memory mapping)
-Date: Wed, 16 Mar 2005 10:34:40 +1100
-Message-ID: <1110929680.649.36.camel__12265.2176920839$1110929919$gmane$org@gaston>
-References: <1110696189.5787.100.camel@gaston>
-	 <1110774523.4003.511.camel@localhost> <1110784327.5787.288.camel@gaston>
-	 <1110817205.4004.527.camel@localhost> <1110837171.5863.16.camel@gaston>
-	 <1110838356.4003.548.camel@localhost> <1110839873.5673.41.camel@gaston>
-	 <1110862777.4044.592.camel@localhost> <20050315060138.GA13064@sci.fi>
-	 <1110869983.29138.88.camel@gaston>  <20050315140005.GB16051@sci.fi>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: Re: [Fwd: AtyFB in 2.6.10, still not perfect]
+Date: Wed, 16 Mar 2005 07:49:18 +0800
+Message-ID: <200503160749.19151.adaplas@hotpop.com>
+References: <200503151826.46073.adaplas@hotpop.com> <200503160439.05644.adaplas@hotpop.com> <1110928841.6491.0.camel@willis>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20050315140005.GB16051@sci.fi>
+Content-Transfer-Encoding: 7bit
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1DBLmx-0005Ag-9j
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Mar 2005 15:49:27 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.71])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DBLmv-0002TG-NS
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 15 Mar 2005 15:49:27 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id 8BDE114A5A34
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 15 Mar 2005 23:49:08 +0000 (UTC)
+In-Reply-To: <1110928841.6491.0.camel@willis>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -22,32 +29,37 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Cc: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>, dri-devel@lists.sourceforge.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, xorg@lists.freedesktop.org, Jon Smirl <jonsmirl@yahoo.com>
+Content-Type: text/plain; charset="us-ascii"
+To: Luigi Gangitano <luigi@debian.org>, adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net, Alexander Kern <alex.kern@gmx.de>
 
-On Tue, 2005-03-15 at 16:00 +0200, Ville Syrj=E4l=E4 wrote:
+On Wednesday 16 March 2005 07:20, Luigi Gangitano wrote:
+> Il giorno mer, 16-03-2005 alle 04:39 +0800, Antonino A. Daplas ha
+>
+> scritto:
+> > working:
+> > atyfb: 3D RAGE (XL) [0x4752 rev 0x27] 8M SDRAM, 29.498928 MHz XTAL, 230
+> > MHz PLL, 100 Mhz MCLK
+> >
+> > not working:
+> > atyfb: 3D RAGE XL (Mach64 GR, PCI-33MHz) [0x4752 rev 0x27]
+> > atyfb: 8M SDRAM (1:1), 29.498928 MHz XTAL, 230 MHz PLL, 83 Mhz MCLK, 63
+> > MHz XCLK
+> >
+> > The MCLK value is different.  Can you try booting with
+> >
+> > video=atyfb:mclk:100
+> >
+> > You can also experiment with xclk:
+> >
+> > video=atyfb:mclk:100,xclk:63
+>
+> No luck, with neither option.
 
-> DirectFB has it's own asbitration mechanism. It doesn't support using=20
-> multiple framebuffer devices at the same time. For that to work DirectF=
-B=20
-> would just have to know if some of the framebuffer devices are actually=
-=20
-> different outputs of the same card so that it could associate both with=
-=20
-> the same lock and accelerator state.
->=20
-> With the current system I don't see much chance of using accelerated fb=
-con=20
-> on one head and accelerated DirectFB (or something else) on the other.
+Hmmn, let's just wait for the other developers to respond.
 
-Oh, I think that won't happen unless directFB maps it's arbitration
-mecanism on top of the DRM lock and fbcon does that too.
+Tony
 
-BTW. Can you quickly explain me the DirectFB arbitration mecanism ?
-We'll need to map it on top of the VGA arbiter _at_least_ ...
-
-Ben.
 
 
 

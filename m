@@ -1,60 +1,59 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH 4/5][RFC] fbdev: Clean up framebuffer initialization
-Date: Sun, 5 Sep 2004 18:40:10 +0800
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <200409051840.10202.adaplas@hotpop.com>
-References: <200409041108.40276.adaplas@hotpop.com> <200409051750.47987.adaplas@hotpop.com> <Pine.GSO.4.58.0409051206180.28961@waterleaf.sonytel.be>
-Reply-To: adaplas@pol.net
+Subject: Re: Devices don't get linked to their class.
+Date: Sun, 5 Sep 2004 18:40:27 +0800
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <200409051840.27452.adaplas@hotpop.com>
+References: <1094187751.2979.41.camel@laptop.cunninghams> <200409042041.55199.adaplas@hotpop.com> <1094365292.6252.3.camel@laptop.cunninghams>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S266289AbUIEKkA@vger.kernel.org>
-In-Reply-To: <Pine.GSO.4.58.0409051206180.28961@waterleaf.sonytel.be>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1C3uRX-0000wm-C4
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 05 Sep 2004 03:40:19 -0700
+Received: from smtp-out.hotpop.com ([38.113.3.71])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
+	id 1C3uRW-0004W5-Gk
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 05 Sep 2004 03:40:19 -0700
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id EDE5E10C5D73
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun,  5 Sep 2004 10:40:01 +0000 (UTC)
+In-Reply-To: <1094365292.6252.3.camel@laptop.cunninghams>
 Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@osdl.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Thomas Winischhofer <thomas@winischhofer.net>
+To: ncunningham@linuxmail.org, adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Sunday 05 September 2004 18:13, Geert Uytterhoeven wrote:
-> On Sun, 5 Sep 2004, Antonino A. Daplas wrote:
-> > On Sunday 05 September 2004 17:16, Geert Uytterhoeven wrote:
-> > > On Sat, 4 Sep 2004, Antonino A. Daplas wrote:
-> > > > Currently, the framebuffer system is initialized in a roundabout
-> > > > manner. First, drivers/char/mem.c calls fbmem_init().  fbmem_init()
-> > > > will then iterate over an array of individual drivers' xxxfb_init(),
-> > > > then each driver registers its presence back to fbmem.  During
-> > > > console_init(), drivers/char/vt.c will call fb_console_init(). fbcon
-> > > > will check for registered drivers, and if any are present, will call
-> > > > take_over_console() in drivers/char/vt.c.
-> > > >
-> > > > This patch changes the initialization sequence so it proceeds in this
-> > > > manner: Each driver has its own module_init(). Each driver calls
-> > > > register_framebuffer() in fbmem.c. fbmem.c will then notify fbcon of
-> > > > the driver registration.  Upon notification, fbcon calls
-> > > > take_over_console() in vt.c.
-> > >
-> > > My main concern with this change is that it will be no longer possible
-> > > to change initialization order (and hence choose the primary display
-> > > for systems with multiple graphics adapters) by specifying
-> > > `video=xxxfb' on the kernel command line.
-> >
-> > I see your point.  But, can we use "fbcon=" setup options to choose which
-> > fb gets mapped to what console? We already have fbcon=map:<option> so we
-> > can choose which becomes the primary display. Granted the "fbcon=" setup
-> > is currently broken, but if fixed, will that be a fair compromise?
+On Sunday 05 September 2004 14:21, Nigel Cunningham wrote:
+> I'm only just beginning to learn how to use kobjects, so I'm not
+> entirely sure. Looking more after posting that message, I began to think
+> that struct class_device (going from memory) might act as equivalent to
+> a linking table in a many-to-many relationship between classes and
+> devices. If that's right, perhaps the right thing to do is leave the dev
+> blank in the class registration and then register a class_device to link
+> them when the actual driver registers.
 >
-> Yes, sounds fine.
 
-Thanks.
+Frankly, I don't know a thing about this stuff.  Just let me know what you
+need and where you need them, and I'll see what I can do.
 
->
-> Just thinking of something else: right now it's possible to disable a fbdev
-> by saying `video=xxxfb:off'. This can be useful if the fbdev driver doesn't
-> work with your hardware. After you change, individual fbdev drivers will
-> have to reimplement this theirselves in their __setup() functions.
+Tony
 
-Yes.  I hope this doesn't bite too deep.  If it does, I think we can let
-fb_get_options() return an error  when the "off" option is present.  But I'm
-not going to implement it unless we get a lot of complaints.
 
-Tony 
+
+
+-------------------------------------------------------
+This SF.Net email is sponsored by BEA Weblogic Workshop
+FREE Java Enterprise J2EE developer tools!
+Get your free copy of BEA WebLogic Workshop 8.1 today.
+http://ads.osdn.com/?ad_id=5047&alloc_id=10808&op=click

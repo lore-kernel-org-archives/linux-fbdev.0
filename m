@@ -1,13 +1,14 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Possible bug: nasty interaction between
- framebuffer and DRI/DRM
-Date: Fri, 31 May 2002 14:08:21 +0200 (MEST)
+From: e.fuste@focal.fr
+Subject: RE:Whats the scoop for the apollo framebuffers?
+Date: Fri, 31 May 2002 18:14:14 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0205311407530.1147-100000@vervain.sonytel.be>
-References: <200205311254.50400.chrish@gmx.co.uk>
+Message-ID: <OF23FD3867.7218A6AF-ONC1256BCA.0057E5DF-C1256BCA.0059138E@antall.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-In-Reply-To: <200205311254.50400.chrish@gmx.co.uk>
+Received: from mailhost.antall.com ([194.51.175.3] helo=stella.antall.com)
+	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17Dp2g-0007dz-00
+	for <Linux-fbdev-devel@lists.sourceforge.net>; Fri, 31 May 2002 09:14:18 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -17,39 +18,31 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Chris Howells <chrish@gmx.co.uk>
-Cc: ajoshi@shell.unixbox.com, faith@valinux.com, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, dri-devel@lists.sourceforge.net
+To: James Simmons <jsimmons@transvirtual.com>
+Cc: Linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, 31 May 2002, Chris Howells wrote:
-> I seem to have discovered a nasty interaction between framebuffer and DRI/DRM 
-> in OpenGL applications. I can reproduce this problem in at least Return to 
-> Castle Wolfenstein (version 1.1b) and Tux Racer.
-> 
-> I am using a 32 MB ATI Rage Pro 128 on Debian woody (XFree86 4.1). If I run 
-> Tuxracer or RTCW, and wait for the game to load, everything is alright. 
-> However if I switch to a spare virtual terminal, and switch back to X, the 
-> fonts become illegible -- they just appear as coloured boxes with no 
-> outlines, making things unplayable.
-> 
-> The problem does not occur when using software based OpenGL rendering which is 
-> why I believe DRI/DRM is involved. This problem only occurs when framebuffer 
-> is enabled in the kernel, if framebuffer is disabled the problem disappears, 
-> so I believe framebuffer is also at fault.
+>I noticed dnfb.c and dn_cfb4.c and dn_cfb8.c. They look the same except
+>for different modes. Anyone have a clue here?
 
-Do you use `option UseFBDev' in your XF86Config?
+Yes, the only functionnal one was dnfb.c, the others were for testing
+purpose:
+Developpers Peter (and me for a less big part) had only the mono frame
+buffer board.
+There is color boards for Apollo DN workstation for which I have docs, but
+I no longuer
+have access to the hardware, color fb or Apollo. Basic color fb management
+is similar to
+the mono one.
+Apollo hardware is ISA based, perhaps someone still have some working one.
+I stoped working on Linux Apollo port because of lack of hardware.
 
-Gr{oetje,eeting}s,
+Bye.
 
-						Geert
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Emmanuel.
+(Sory for my froggy english ;-))
 
 
 _______________________________________________________________

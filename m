@@ -1,17 +1,12 @@
-From: Alex Pavloff <apavloff@eason.com>
-Subject: National Geode Framebuffer Drivers
-Date: Thu, 30 May 2002 10:42:36 -0700
+From: James Simmons <jsimmons@transvirtual.com>
+Subject: Re: 3dfx framebuffer driver borked in 2.5.19 kernel
+Date: Thu, 30 May 2002 11:40:14 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <D3AF5F134D627243993F2F2FC32EE4D20CE08C@mailman.eason.com>
+Message-ID: <Pine.LNX.4.10.10205301139260.9282-100000@www.transvirtual.com>
+References: <20020530165031.GA18544@kira.glasswings.com.au>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from b.smtp-out.sonic.net ([208.201.224.39])
-	by usw-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17DTwe-00046S-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 30 May 2002 10:42:40 -0700
-Received: from mailman.eason.com (adsl-209-204-139-80.sonic.net [209.204.139.80])
-	by prop.sonic.net (8.11.6/8.8.5) with ESMTP id g4UHgdD14072
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 30 May 2002 10:42:39 -0700
+In-Reply-To: <20020530165031.GA18544@kira.glasswings.com.au>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,19 +16,19 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "'linux-fbdev-devel@lists.sourceforge.net'" <linux-fbdev-devel@lists.sourceforge.net>
+To: Andrew Pam <xanni@glasswings.com.au>
+Cc: Hannu Mallat <hmallat@cc.hut.fi>, James Simmons <jsimmons@users.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-I have posted National's Framebuffer drivers for the Geode processor's
-onboard video at www.eason.com/linux, along with my commentary.  Some of you
-folks may be interested, and I'd love to see this in the kernel once all the
-cruft has been stripped out.
+> With the port to the new fbdev interface in kernel
+> 2.5.19 the system now only displays a few unchanging coloured pixels
+> on the first line of the screen.  The rest of the screen remains black
+> until X11 starts.  I am using append="video=tdfx:1024x768" in LILO.
 
-Alex Pavloff
-Software Engineer
-Eason Technology  
+I'm tracking down the bug you are experiencing. Almost done. 
+
 
 _______________________________________________________________
 

@@ -1,58 +1,92 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: also frustrated with the framebuffer and your matrox-card in
- 2.5.53? hack/patch available!
-Date: Thu, 26 Dec 2002 19:47:52 +0000 (GMT)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0212261942290.5748-100000@phoenix.infradead.org>
-References: <20021226142032.GA7852@middle.of.nowhere>
+From: Richard Henderson <rth@twiddle.net>
+Subject: [FB PATCH] fix up readq/writeq usage
+Date: Thu, 26 Dec 2002 15:45:42 -0800
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <20021226154542.A21454@twiddle.net>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from phoenix.infradead.org ([195.224.96.167])
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18RdzY-00061S-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 26 Dec 2002 11:48:29 -0800
-In-Reply-To: <20021226142032.GA7852@middle.of.nowhere>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jurriaan <thunder7@xs4all.nl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Cc: torvalds@transmeta.com
+
+I'm in the process of getting tgafb to compile again on Alpha.
+I ran into these little buglets in the process.  Please apply.
 
 
-> It's rather annoying that in a feature-freeze period a change goes in
-> that cripples the one framebuffer with the best speed and features -
-> the matrox framebuffer. 
-
-Because a driver has over 10,000 lines of code does not mean it is a 
-quality driver.
-
-> The author mentioned it could be weeks or months
-> before he would be able to get his matrox framebuffer working with the
-> new framework, since its simple API doesn't fit the possibilities of the
-> matrox framebuffer. Read more about it on the fbdev-users or
-> fbdev-developers mailinglist on sourceforge.
-
-Petr is expressing his political view. It has nothing to do with technical 
-arguments. In fact I place a bet. I will port the matrox driver and it 
-will have the same functionality as the previous driver except for text 
-mode support. If I can't do it I will not only revert the changes but I 
-will give Petr his wetdream. I will start inetergrating vt.c and 
-vt_ioctl.c into each fbdev driver. Each fbdev driver will be its own 
-console system. We will not longer need vt.c and vt_ioctl.c as each driver 
-will have its own version intergated into the driver. Sound fair?
+r~
 
 
 
--------------------------------------------------------
-This sf.net email is sponsored by:ThinkGeek
-Welcome to geek heaven.
-http://thinkgeek.com/sf
+You can import this changeset into BK by piping this whole message to:
+'| bk receive [path to repository]' or apply the patch as usual.
+
+===================================================================
+
+
+ChangeSet@1.955, 2002-12-26 15:27:03-08:00, rth@are.twiddle.net
+  [FB] Fix minor typos wrt readq/writeq support on 64-bit targets.
+
+
+ drivers/video/cfbcopyarea.c |    2 +-
+ include/linux/fb.h          |    2 ++
+ 2 files changed, 3 insertions, 1 deletion
+
+
+diff -Nru a/drivers/video/cfbcopyarea.c b/drivers/video/cfbcopyarea.c
+--- a/drivers/video/cfbcopyarea.c	Thu Dec 26 15:31:03 2002
++++ b/drivers/video/cfbcopyarea.c	Thu Dec 26 15:31:03 2002
+@@ -38,7 +38,7 @@
+ #define BYTES_PER_LONG 4
+ #else
+ #define FB_WRITEL fb_writeq
+-#define FB_READL  fb_readq(x)
++#define FB_READL  fb_readq
+ #define SHIFT_PER_LONG 6
+ #define BYTES_PER_LONG 8
+ #endif
+diff -Nru a/include/linux/fb.h b/include/linux/fb.h
+--- a/include/linux/fb.h	Thu Dec 26 15:31:03 2002
++++ b/include/linux/fb.h	Thu Dec 26 15:31:03 2002
+@@ -424,9 +424,11 @@
+ #define fb_readb __raw_readb
+ #define fb_readw __raw_readw
+ #define fb_readl __raw_readl
++#define fb_readq __raw_readq
+ #define fb_writeb __raw_writeb
+ #define fb_writew __raw_writew
+ #define fb_writel __raw_writel
++#define fb_writeq __raw_writeq
+ #define fb_memset memset_io
+ 
+ #else
+
+===================================================================
+
+
+This BitKeeper patch contains the following changesets:
++
+## Wrapped with gzip_uu ##
+
+
+begin 664 bkpatch21401
+M'XL(`#>1"SX``[U5R6[;,!`]FU]!()<6A21N6@$'CK.T00(T<)%341B42%MJ
+M+-&A:#LI]/&EY,#.UK@)FFH#-!H.W\R;-]J#E[7424^;'.S!+ZHV28]KZ9I5
+M(<1,NI4TUCY2RMJ]7)72LY[>\,PS4^X0UP?VZP4W60Z74M=)#[MT8S&W<YGT
+M1L>?+\\/1@#T^_`PY]54?I,&]OO`*+WD,U$/N,EGJG*-YE5=2L/=3)7-QK4A
+M"!%[^CBDR`\:'"`6-AD6&'.&I4"$10$#95%-U4#.C'3SQ:/5F!!F0U!"&AKZ
+ME($CB-W8]R$B'B8>"2#V$Q(FB#HH2A""-L?!HRK`3P0Z"`SAOX5]"#+X_63X
+M`YX4-]#FH'1;-E7#E3902RZNO94NC+R&]6(^5]:H*A@P)RT,-%Q/I:E=<`9I
+M2$@$+K8%!LXK#P`01V!_1WI%E<T60GJSHEK<>)/4S>_G&3/<H""FI`D0B5,A
+M4IF&4C+.GJOHGX)9M@++%;7E0@A%+:B?=5&6JJH'N2QJ6:523]?`EH4V"S[K
+ML`E=M#WH+0LAE9=-TDS-;^V>%OD:I(\9CDCLDX;@(`B:<()$2L.,3&3$)'T6
+MXZZ@]\!2&J&H:_,7%K6-_U^RV>YRI7Z5ROU0J4I^_(M\[.W3`,<-90C%G50P
+M>:@4FK#P):5@Z.!W44HKDI/A>'1\<'0.G7TX2<>=1CK-=#KH./@*';WJ+MO7
+M%R_1\0:9'#$,,3CMGGM"3HI*;C%M$'5]\+3!=\^]MRH,"+Z4Y:!:V(%0%=45
+MWR$QW$9DM/'CV%\/1!*]CN5WFX<'0FSJ:#&/[P;@NM8UG-@9:9O9J>=<9RWI
+M=D0\8OQIVF\@^I2UA=APO.FU\5CSU1W+UB=^Z','=NVT?MG^([-<9E?UHNRS
+/B8A)QD+P&R+@>RV`!P``
+`
+end

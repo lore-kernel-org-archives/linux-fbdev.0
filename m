@@ -1,23 +1,23 @@
-From: Kronos <kronos@kronoz.cjb.net>
-Subject: Re: [PATCH] cg*: New framebuffer_alloc API and class_dev changes
-Date: Tue, 16 Sep 2003 15:46:03 +0200
+From: Russell King <rmk@arm.linux.org.uk>
+Subject: Re: [PATCH] cyber2000fb: New framebuffer_alloc API and class_dev changes
+Date: Tue, 16 Sep 2003 14:44:59 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030916134603.GA1209@dreamland.darkstar.lan>
-References: <20030915194259.GG16370@dreamland.darkstar.lan> <20030915162705.24913719.davem@redhat.com>
-Reply-To: kronos@kronoz.cjb.net
+Message-ID: <20030916144459.A20141@flint.arm.linux.org.uk>
+References: <20030915194329.GI16370@dreamland.darkstar.lan> <20030915224042.I10328@flint.arm.linux.org.uk> <20030915221742.GC27662@dreamland.darkstar.lan> <20030915235832.M10328@flint.arm.linux.org.uk> <20030916134009.GA1011@dreamland.darkstar.lan>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19zGAJ-0005xM-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 16 Sep 2003 06:46:47 -0700
-Received: from mail-2.tiscali.it ([195.130.225.148])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 19zGAI-0007LY-Gq
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 16 Sep 2003 06:46:46 -0700
+	id 19zG8g-0005lv-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 16 Sep 2003 06:45:07 -0700
+Received: from caramon.arm.linux.org.uk ([212.18.232.186])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.22)
+	id 19zG8f-0006kC-US
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 16 Sep 2003 06:45:06 -0700
 Content-Disposition: inline
-In-Reply-To: <20030915162705.24913719.davem@redhat.com>
+In-Reply-To: <20030916134009.GA1011@dreamland.darkstar.lan>; from kronos@kronoz.cjb.net on Tue, Sep 16, 2003 at 03:40:09PM +0200
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -29,35 +29,66 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "David S. Miller" <davem@redhat.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, jsimmons@infradead.org
+To: Kronos <kronos@kronoz.cjb.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>
 
-Il Mon, Sep 15, 2003 at 04:27:05PM -0700, David S. Miller ha scritto: 
-> > this patch converts driver/video/cg*.c to framebuffer_alloc:
+On Tue, Sep 16, 2003 at 03:40:09PM +0200, Kronos wrote:
+> Il Mon, Sep 15, 2003 at 11:58:32PM +0100, Russell King ha scritto: 
+> > On Tue, Sep 16, 2003 at 12:17:42AM +0200, Kronos wrote:
+> > > Il Mon, Sep 15, 2003 at 10:40:42PM +0100, Russell King ha scritto: 
+> > > > There is another reason why the above is fundamentally flawed - who says
+> > > > that "release_cfb_info" will still be in module space by the time you
+> > > > need to call it?
+> > > > 
+> > > > Eg, you unload your framebuffer driver module immediately after the device
+> > > > has gone away, but someone is keeping the sysfs files associated with
+> > > > the fb_info open.
+> > > 
+> > > I'm quite sure that this can't happen. If someone is keeping a sysfs
+> > > file open module use count won't be zero. Right?
+> > 
+> > Where are you handling the module use count of the framebuffer driver?
 > 
-> This patch also does not apply cleanly to current 2.6.x sources.
+> Every   attribute   (ie.  sysfs   file)   has   a  .owner   field   (see
+> include/linux/sysfs.h), the module  use count is handled  by sysfs. If a
+> sysfs file is open the module can't be unloaded.
+
+The .owner field is set to the module which defined the sysfs attribute.
+This wouldn't be the driver, but would be some other part of the framebuffer
+layer.
+
+The first instance I see in the patch at the URL below (fbmem.c):
+
+ static CLASS_DEVICE_ATTR(dev, S_IRUGO, show_dev, NULL);
+
+The owner field would be the module containing fbmem.o, which is separate
+from the driver - this doesn't protect the driver code from being unloaded,
+and its the driver code which is called via fb_info->release() when this
+file is eventually closed.
+
+> > I'm also confused why you want to keep the device IO regions around
+> > until all sysfs files have been closed.  I hope you're not thinking
+> > of touching the hardware after you've returned from the drivers
+> > ->remove method?
 > 
-> Are these patches against some special set of framebuffer changes
-> that are not in 2.6.x yet?
+> I tought  that some  sysfs file  may use those  things. I was  sure that
+> class_dev hold a  reference to pci_dev.dev, but that's  not the case. So
+> yes, that's a bad idea. I'll move pci stuff in the unregister function.
+> 
+> > Is there somewhere I can view the core changes?
+> 
+> They are on fbdev for review, I put a copy here:
+> http://web.tiscali.it/kronoz/linux/fbdev-class_dev-fbmem.c.diff
 
-They are against James Simmons bk tree. You can find core changes on
-fbdev or here:
+When I tried to get at the fbdev site, it seemed to be down.  Maybe
+some of the kernel documentation needs to be updated?
 
-http://web.tiscali.it/kronoz/linux/fbdev-class_dev-fbmem.c.diff
-
-> If so, could you _PLEASE_ indicate this when you send patches
-> directly to me?  
-
-Yes sorry. Mails were created by a script, I've been too vague.
-
-Btw, how do the patches look?
-
-Luca
 -- 
-Reply-To: kronos@kronoz.cjb.net
-Home: http://kronoz.cjb.net
-Ci sono due cose che l'uomo non puo` nascondere:
-essere ubriaco ed essere innamorato.
+Russell King (rmk@arm.linux.org.uk)	http://www.arm.linux.org.uk/personal/
+Linux kernel maintainer of:
+  2.6 ARM Linux   - http://www.arm.linux.org.uk/
+  2.6 PCMCIA      - http://pcmcia.arm.linux.org.uk/
+  2.6 Serial core
 
 
 -------------------------------------------------------

@@ -1,19 +1,17 @@
 From: Antonino Daplas <adaplas@pol.net>
-Subject: Console Rotation
-Date: 09 Sep 2002 22:20:58 +0800
+Subject: Re: bits_per_pixel query
+Date: 09 Sep 2002 22:23:57 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1031580513.632.3.camel@daplas>
+Message-ID: <1031580939.632.17.camel@daplas>
+References: <20020908163936.31266.qmail@webmail30.rediffmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from [203.167.79.9] (helo=willow.compass.com.ph)
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17oPOb-0002GB-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 09 Sep 2002 07:20:10 -0700
-Received: from AP-202-70-99-9.compass.com.ph (AP-202-70-99-9.compass.com.ph [202.70.99.9])
-	by willow.compass.com.ph (8.9.3/8.9.3) with ESMTP id WAA90301
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 9 Sep 2002 22:20:06 +0800 (PHT)
-	(envelope-from adaplas@pol.net)
+	id 17oPRa-0003sh-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 09 Sep 2002 07:23:14 -0700
+In-Reply-To: <20020908163936.31266.qmail@webmail30.rediffmail.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -24,56 +22,33 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+To: Linux PPC <linuxppc@rediffmail.com>
+Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi, 
+On Mon, 2002-09-09 at 00:39, Linux PPC wrote: 
 
-Since Xfbdev is able to rotate the display, I guess it's also reasonable
-for the console to have the ability to rotate the display too. 
-
-I have added 3 new flags to var->vmode: 
-
-FB_VMODE_ROTATE_CW  0x010000 /*  90 degree rotation */ 
-FB_VMODE_ROTATE_CCW 0x020000 /* 270 degree rotation */ 
-FB_VMODE_ROTATE_UD  0x040000 /* 180 degree rotation */ 
-FB_ROTATE_MASK      0xFF0000 
-
-Rotating the display is done using console wrappers similar to
-fbcon-accel.  Depending on the rotation flag, dispsw is pointed to the
-appropriate wrapper in gen_set_disp. 
-
-As for driver support, the minimum requirement is for the driver to
-recognize these flags, and set the var->xres, var->yres,
-var->xres_virtual, and var->yres_virtual fields to the appropriate
-logical values.  Ie, if display is rotated CW or CCW, then logical xres
-is physical yres, etc. 
-
-For drivers that support panning, the viewport and direction of the
-panning must be appropriate for the orientation.  Ie, if display is
-rotated 180 degrees, the viewport must be flushed to the 'right' and
-'bottom' edge of the framebuffer when xoffset and yoffset are zero. Then
-logical pan_down is physical pan_up, etc. 
-
-The option is configurable under 'Advanced Low Level Driver Options',
-and is dependent on CONFIG_FB_ACCEL being set since the wrapper depends
-on xxximageblit, xxxfillrect and xxxcopyarea. 
-
-As a testbed, I modified vesafb to support console rotation. 
-
-The following patches will follow (against linux-2.5.33): 
-
-a. fb_rotate.diff 
-b. fb_drawing.diff 
-c. vesafb_rotate.diff 
-d. fbset_rotate.diff 
-
-If the patches are mangled, please get them at: 
-
-http://i810fb.sourceforge.net/fb_rotate.tar.gz
+> 
+> If the display is 8 bit, then it would require only
+> a byte to represent the value of the pixel. If it were 24 bit, 
+> then it would require 3 bytes, and so
+> on. Is that right? What would happen, to the size required for the 
+> buffer, if the display
+> requires, say 12 bits per pixel, or 18 bits?
+Just pad the pitch/line_length/stride of the buffer to the next byte
+alignment your hardware is capable of.  It is acceptable to have excess
+bits/bytes which theoretically your hardware will ignore. Then the
+framebuffer size is line_length*yres_virtual. 
+> 
+> So, if I were to set all the bytes after screen_base
+> uptil screen_base + (hres*vres*bits_per_pixel/8) to
+> zeros, then I would get a black screen. Is that right?
+> 
+For static pseudocolor and truecolor, that is true, since 0 is hardwired
+to black.  For pseudocolor and directcolor, that depends on how the
+DAC/palette is loaded. In most cases, it will produce a black screen. 
 
 Tony 
 
-   
 
 
 

@@ -1,19 +1,19 @@
-From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: cfbimgblt.c
-Date: 25 Aug 2002 06:59:02 +0800
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: cfb_copyarea()
+Date: Sun, 25 Aug 2002 17:19:07 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1030229885.548.18.camel@daplas>
-References: <1029972099.551.3.camel@daplas>
-	<Pine.LNX.4.33.0208221123140.9077-200000@maxwell.earthlink.net> 
-	<15719.32025.236298.592156@argo.ozlabs.ibm.com>
+Message-ID: <Pine.GSO.4.21.0208251716120.17500-100000@vervain.sonytel.be>
+References: <Pine.GSO.4.21.0208191109290.12594-100000@vervain.sonytel.be>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-CLU+kFUsQcLDGKw0RoLL"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [203.167.79.9] (helo=willow.compass.com.ph)
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17ijs7-0001d3-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 24 Aug 2002 15:59:11 -0700
-In-Reply-To: <15719.32025.236298.592156@argo.ozlabs.ibm.com>
+	id 17izAc-0004st-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 25 Aug 2002 08:19:19 -0700
+Received: from vervain.sonytel.be (mail.sonytel.be [10.17.0.26])
+	by mail.sonytel.be (8.9.0/8.8.6) with ESMTP id RAA09234
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 25 Aug 2002 17:19:07 +0200 (MET DST)
+In-Reply-To: <Pine.GSO.4.21.0208191109290.12594-100000@vervain.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,243 +23,49 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-To: Paul Mackerras <paulus@samba.org>
-Cc: James Simmons <jsimmons@infradead.org>, fbdev <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-
-
---=-CLU+kFUsQcLDGKw0RoLL
-Content-Type: text/plain
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sat, 2002-08-24 at 20:33, Paul Mackerras wrote: 
+On Mon, 19 Aug 2002, Geert Uytterhoeven wrote:
+> On Mon, 19 Aug 2002, Geert Uytterhoeven wrote:
+> > In cfb_copyarea(), `tmp' must be unsigned long because it is used to store
+> > unsigned long values (see patch at the end).
+> > 
+> > cfb_copyarea() also doesn't clear the bits to modify in the first and last
+> > words of a line, e.g. it does
+> > 
+> > |	last = (FB_READ(src) & start_mask);
+> > |
+> > |	if (shift > 0) 
+> > |		FB_WRITE(FB_READ(dst) | (last >> shift_right), dst);
+> >                          ^^^^^^^^^^^^
+> > After this read, the bits to modify must be cleared first, before the OR!
+> > 
+> > I'm working on a version of cfb_copyarea() that fixes this and handles _all_
+> > possible values of var.bits_per_pixel (the current code assumes
+> > var.bits_per_pixel is a multiple of 8). Stay tuned!
+>                         ^^^^^^^^^^^^^^^
+> Oops, actually 8, 16, or 32 only (and 24 after Antonino Daplas' patch). I also
+> plan on relaxing the current limitation that line_size must be a multiple of
+> sizeof(unsigned long).
 
-Hi Paul, 
+A very first version is available in fbtest (module `fbtest' in linux-fbdev's
+CVS at sourceforge.net).
 
-> James Simmons writes:
-> 
-> > Paul please test the code.
-> 
-> (The new cfbimgblt.c, that is.)
-> 
-Thanks for testing the code :)   
+More optimizations (e.g. cached first/last masks) to be released later...
 
-> It mostly seems to be fine, except there are some problems with the
-> cursor.  I have only tested it with the standard 8x16 font so far
-> though.  I had to add a #include <video/fbcon.h> near the top to get
-> the definitions of fb_readl and fb_writel.
-> 
-Can you test it with a bit depth not a multiple of 32/64?  Or just force
-the code to always call slow_imageblit?  I'm concerned about
-slow_imageblit not correct with big endian machines. 
+Gr{oetje,eeting}s,
 
-> It seems to be not erasing the cursor image when it should.  So, if I
-> am logged in on the console and I type a few characters and then press
-> backspace a few times, it leaves those character positions entirely
-> white.  Also, when I press return it leaves the cursor image on that
-> line as well as drawing the cursor after the shell prompt on the next
-> line.
-> 
-It looks like a fillrect problem. 
+						Geert
 
-> I just tried with the old cfbimgblt.c and it also does the same
-> thing.  So it's not the new cfbimgblt.c that is doing this, it's
-> something else in your fbcon changes (or just possibly mine :).  This
-> is with atyfb with my patches.
-> Paul.
-I'm also attaching cfbfillrect.c which hopefully addresses some of the
-problems which Geert mentioned before (access/pitch alignment, support
-for all bit depths, etc). 
+P.S. Yes, I work in userspace right know ;-)
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Tony 
-
-PS. Sorry about the attachment, my mailer mangles inline text.
-
---=-CLU+kFUsQcLDGKw0RoLL
-Content-Disposition: attachment; filename=cfbfillrect.c
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/x-c; name=cfbfillrect.c; charset=ISO-8859-1
-
-/*
- *  Generic fillrect for frame buffers with packed pixels of any depth.=20
- *
- *      Copyright (C)  2000 James Simmons (jsimmons@linux-fbdev.org)=20
- *
- *  This file is subject to the terms and conditions of the GNU General Pub=
-lic
- *  License.  See the file COPYING in the main directory of this archive fo=
-r
- *  more details.
- *
- * NOTES:
- *
- *  The code for depths like 24 that don't have integer number of pixels pe=
-r=20
- *  long is broken and needs to be fixed. For now I turned these types of=20
- *  mode off.
- *
- *  Also need to add code to deal with cards endians that are different tha=
-n
- *  the native cpu endians. I also need to deal with MSB position in the wo=
-rd.
- *
- */
-#include <linux/string.h>
-#include <linux/fb.h>
-#include <asm/types.h>
-#include <video/fbcon.h>
-
-#if BITS_PER_LONG =3D=3D 32
-#define FB_WRITEL(x,y) fb_writel(x,y)
-#define FB_READL(x)    fb_readl(x)
-#else
-#define FB_WRITEL(x,y) fb_writeq(x,y)
-#define FB_READL(x)    fb_readq(x)
-#endif
-
-#if defined (__BIG_ENDIAN)
-#define SHIFT_HIGH(val, bits)  ((val) >> (bits))
-#define SHIFT_LOW(val, bits)   ((val) << (bits))
-#else
-#define SHIFT_HIGH(val, bits)  ((val) << (bits))
-#define SHIFT_LOW(val, bits)   ((val) >> (bits))
-#endif
-
-void cfb_fillrect(struct fb_info *p, struct fb_fillrect *rect)
-{
-	unsigned long start_index, pitch_index;
-	unsigned long height, fg, bitstart, shift, color;
-	unsigned long bpp =3D p->var.bits_per_pixel;
-	unsigned long null_bits =3D BITS_PER_LONG - bpp;
-	unsigned long n, x2, y2, linesize =3D p->fix.line_length;
-	unsigned long bpl =3D sizeof(unsigned long);
-	unsigned long *dst =3D NULL;
-	char *dst1, *dst2;
-
-	if (!rect->width || !rect->height)
-		return;
-
-	/* We could use hardware clipping but on many cards you get around
-	 * hardware clipping by writing to framebuffer directly. */
-	x2 =3D rect->dx + rect->width;
-	y2 =3D rect->dy + rect->height;
-	x2 =3D x2 < p->var.xres_virtual ? x2 : p->var.xres_virtual;
-	y2 =3D y2 < p->var.yres_virtual ? y2 : p->var.yres_virtual;
-	rect->width =3D x2 - rect->dx;
-	height =3D y2 - rect->dy;
-
-	if (p->fix.visual =3D=3D FB_VISUAL_TRUECOLOR ||
-	    p->fix.visual =3D=3D FB_VISUAL_DIRECTCOLOR )
-		fg =3D ((u32 *) (p->pseudo_palette))[rect->color];
-	else
-		fg =3D rect->color;
-
-	bitstart =3D (((rect->dy * linesize) * 8) +=20
-		    rect->dx * bpp);
-=09
-	start_index =3D bitstart & (BITS_PER_LONG - 1);
-
-	/* line_length not a multiple of an unsigned long? */
-	pitch_index =3D (linesize & (bpl - 1)) * 8;
-
-	bitstart /=3D 8;
-	bitstart &=3D ~(bpl - 1);
-	dst1 =3D dst2 =3D p->screen_base + bitstart;
-
-	switch (rect->rop) {
-	case ROP_COPY:
-		do {
-			dst =3D (unsigned long *) dst1;
-			shift =3D 0;
-			color =3D 0;
-			n =3D rect->width;
-
-			/*=20
-			 * read leading bits
-			 */
-			if (start_index) {
-				unsigned long start_mask =3D ~(SHIFT_HIGH(~0UL, start_index));
-			=09
-				color =3D FB_READL(dst) & start_mask;
-				shift =3D start_index;
-			}
-
-			while (n--) {
-				color |=3D SHIFT_HIGH(fg, shift);
-				if (shift >=3D null_bits) {
-					FB_WRITEL(color, dst++);
-					if (shift =3D=3D null_bits)
-						color =3D 0;
-					else
-						color =3D SHIFT_LOW(color, BITS_PER_LONG - shift);
-				}
-				shift +=3D bpp;
-				shift &=3D (BITS_PER_LONG - 1);
-			}
-		=09
-			/*=20
-			 * write trailing bits
-			 */
-			if (shift) {
-				unsigned long end_mask =3D SHIFT_HIGH(~0UL, shift);
-
-				FB_WRITEL((FB_READL(dst) & end_mask) | color, dst);
-			}
-		=09
-			if (!pitch_index) {
-				dst1 +=3D linesize;
-			}
-			else {
-				dst2 +=3D linesize;
-				dst1 =3D dst2;
-				(unsigned long) dst1 &=3D ~(bpl - 1);
-				start_index +=3D pitch_index;
-				start_index &=3D BITS_PER_LONG - 1;
-			}
-
-		} while (--height);
-		break;
-	case ROP_XOR:
-		do {
-			dst =3D (unsigned long *) dst1;
-			shift =3D start_index;
-			color =3D 0;
-			n =3D rect->width;
-
-			while (n--) {
-				color |=3D SHIFT_HIGH(fg, shift);
-				if (shift >=3D null_bits) {
-					FB_WRITEL(FB_READL(dst) ^ color, dst);
-					dst++;
-					if (shift =3D=3D null_bits)
-						color =3D 0;
-					else
-						color =3D SHIFT_LOW(color, BITS_PER_LONG - shift);
-				}
-				shift +=3D bpp;
-				shift &=3D (BITS_PER_LONG - 1);
-			}
-			if (shift)=20
-				FB_WRITEL(FB_READL(dst) ^ color, dst);
-
-			if (!pitch_index) {
-				dst1 +=3D linesize;
-			}
-			else {
-				dst2 +=3D linesize;
-				dst1 =3D dst2;
-				(unsigned long) dst1 &=3D ~(bpl - 1);
-				start_index +=3D pitch_index;
-				start_index &=3D BITS_PER_LONG - 1;
-			}
-		} while (--height);
-		break;
-	}
-=09
-	return;
-}
-
---=-CLU+kFUsQcLDGKw0RoLL--
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

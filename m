@@ -1,18 +1,19 @@
-From: Fredrik Noring <noring@nocrew.org>
-Subject: Vertical retrace interrupts?
-Date: 26 Jan 2003 02:51:28 +0100
+From: Luismi <luismimoya@eresmas.net>
+Subject: aty radeon specs
+Date: Sun, 26 Jan 2003 12:18:56 +0000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1043545888.3795.2.camel@h9n1fls20o980.telia.com>
+Message-ID: <3E33D230.30502@eresmas.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from maila.telia.com ([194.22.194.231])
+Received: from 38-99-adsl.red.retevision.es ([80.224.99.38] helo=localhost)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18cbwZ-0004DW-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 25 Jan 2003 17:50:43 -0800
-Received: from h9n1fls20o980.telia.com (h9n1fls20o980.telia.com [213.65.208.9])
-	by maila.telia.com (8.12.5/8.12.5) with ESMTP id h0Q1o9di003509
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 26 Jan 2003 02:50:10 +0100 (CET)
+	id 18ckoa-0005Og-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 26 Jan 2003 03:19:04 -0800
+Received: from localhost ([127.0.0.1] helo=eresmas.net)
+	by localhost with esmtp (Exim 3.36 #1 (Debian))
+	id 18clkW-00005x-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 26 Jan 2003 12:18:56 +0000
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,16 +23,21 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Hi,
+	Hi, I've tried several radeonfb versions on a laptop with an 'ati 
+radeon mobility M6 LY', and all of them have the same problem, sometimes 
+appear several horizontal lines when changing the resolution.
 
-Are there any plans on merging DirectFB features? Stuff like vertical
-retrace interrupts etc.?
+	I've been reading the 'linux framebuffer driver writing howto' and I 
+want to learn about driver programming.
 
-	Fredrik
+	I'm thinking about doing it myself for this videocard, and help to 
+radeonfb developing if it is possible, but I need
+the ati specs. Somebody has them or where can I find them?
 
+Thanks.
 
 
 

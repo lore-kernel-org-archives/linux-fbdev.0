@@ -1,26 +1,29 @@
-From: Paul Mundt <lethal@linux-sh.org>
+From: Clemens Koller <clemens.koller@anagramm.de>
 Subject: Re: Voyager GX color mapping
-Date: Tue, 14 Dec 2004 18:57:32 +0200
-Message-ID: <20041214165732.GA10585@linux-sh.org>
-References: <41BF177E.7010205@anagramm.de>
+Date: Tue, 14 Dec 2004 18:14:52 +0100
+Message-ID: <41BF1F8C.6030501@anagramm.de>
+References: <41BF177E.7010205@anagramm.de> <Pine.GSO.4.61.0412141744200.10558@waterleaf.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="dDRMvlgZJXvWKvBx"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CeFzV-000463-0z
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 14 Dec 2004 08:57:37 -0800
-Received: from smtp2.pp.htv.fi ([213.243.153.35])
+	id 1CeGEp-0004xS-W5
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 14 Dec 2004 09:13:27 -0800
+Received: from moutng.kundenserver.de ([212.227.126.189])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CeFzU-0004rV-C1
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 14 Dec 2004 08:57:36 -0800
-Received: from Unusual.Internal.Linux-SH.ORG (cs181082089.pp.htv.fi [82.181.82.89])
-	by smtp2.pp.htv.fi (Postfix) with ESMTP id 8D080296C7A
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 14 Dec 2004 18:57:33 +0200 (EET)
-Content-Disposition: inline
-In-Reply-To: <41BF177E.7010205@anagramm.de>
+	id 1CeGEl-00007e-LP
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 14 Dec 2004 09:13:27 -0800
+Received: from [212.227.126.160] (helo=mrelayng.kundenserver.de)
+	by moutng.kundenserver.de with esmtp (Exim 3.35 #1)
+	id 1CeGEj-0005B3-00
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 14 Dec 2004 18:13:21 +0100
+Received: from [217.235.127.66] (helo=[192.168.1.10])
+	by mrelayng.kundenserver.de with asmtp (Exim 3.35 #1)
+	id 1CeGEj-0007tV-00
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 14 Dec 2004 18:13:21 +0100
+In-Reply-To: <Pine.GSO.4.61.0412141744200.10558@waterleaf.sonytel.be>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,36 +34,60 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: linux-fbdev-devel@lists.sourceforge.net
 
+Hello, Geert!
 
---dDRMvlgZJXvWKvBx
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+>>well, my version of the Silicon Motion SM501 driver works now
+>>quite well on the PowerMac (after some data integrity problems
+>>with the card having in a dusty PCI slot. :-(( )
+>>
+>>Only one thing is missing: The color mapping in the
+>>32bit mode doesn't fit with X. The fb memory map has a BGRA
+>>color mapping but X11 writes it in RGBA.
+>>
+>>I have tried to change the fb_var_screeninfo.fb_bitfield
+> 
+> You should indeed make sure the fb_var_screeninfo.fb_bitfield values are
+> correct.  BTW, have you tried fbtest to verify the correctness of your driver?
+> You can check it out from CVS on SourceForge.
 
-On Tue, Dec 14, 2004 at 05:40:30PM +0100, Clemens Koller wrote:
-> well, my version of the Silicon Motion SM501 driver works now
-> quite well on the PowerMac (after some data integrity problems
-> with the card having in a dusty PCI slot. :-(( )
->=20
-Do you have this driver in a tree somewhere? We have a version now in
-the sh tree that needs to be tossed out and rewritten, and it would be
-good not to duplicate effort..
+I got fbset already... thanks.
 
---dDRMvlgZJXvWKvBx
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+Well, whenever I change the (yet hardcoded) structs in the driver,
+fbset -fb /dev/fb2 shows me the correct (changed) values.
+But there is no change in X at all if I play around with the values.
+Is it possible that X doesn't get my fb_var_screeninfo? Maybe I need
+to check xorg.cfg again...
+The same things happen in all 32bit (RGBA8888) as well as in
+16bit (RGB565) modes (i haven't tried 8bit, as I don't need it).
+Is this an PPC-endian related problem?
+Is the SM501's BGRA mapping usual?
+Hmm...
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.6 (GNU/Linux)
+>>Where do I need to tweak to get it working?
+> X should obey the fb_var_screeninfo.fb_bitfield values. If it doesn't, it's a
+> bug in X.
 
-iD8DBQFBvxt81K+teJFxZ9wRAq3cAJ0e8FhLjp9oFMRRAKLyYrx7NYRAbQCeMsti
-HCc1FYjZZdYmFfCTK72vxKI=
-=HsnH
------END PGP SIGNATURE-----
+Unlikely, I think?
 
---dDRMvlgZJXvWKvBx--
+I use a primary "ATI Radeon If" (fb0, fb1) on Depth 16 successfuly.
+The SMI501 is the secondary graphics board (fb2) on Depth 16, 24, 32.
+Does X listen only to the mapping of the primary card? I guess I will
+get offtopic with the X questions.
+
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
+
+http://www.anagramm.de
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
 
 
 -------------------------------------------------------

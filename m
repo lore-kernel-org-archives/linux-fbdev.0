@@ -1,20 +1,16 @@
-From: Meelis Roos <mroos@linux.ee>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: atyfb and radeonfb
-Date: Mon, 11 Nov 2002 11:16:40 +0200
+Date: Thu, 14 Nov 2002 12:09:58 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <E18BAgS-00009G-00@roos.tartu-labor>
-References: <3DCBD804.8050109@ntlworld.com>
+Message-ID: <Pine.GSO.4.21.0211141209250.8876-100000@vervain.sonytel.be>
+References: <1037142584.2774.230.camel@zion>
+Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from tartu.cyber.ee ([193.40.6.68])
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18BAe9-0000dJ-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 11 Nov 2002 01:14:17 -0800
-Received: Message by Barricade tartu.cyber.ee  with ESMTP id gAB97M414889
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 11 Nov 2002 11:07:22 +0200
-Received: from mroos by roos.tartu-labor with local (Exim 3.36 #1 (Debian))
-	id 18BAgS-00009G-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 11 Nov 2002 11:16:40 +0200
-In-Reply-To: <3DCBD804.8050109@ntlworld.com>
+	id 18CHtT-0001lX-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 14 Nov 2002 03:10:43 -0800
+In-Reply-To: <1037142584.2774.230.camel@zion>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -24,22 +20,38 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Steven Newbury <steven.newbury1@ntlworld.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-SN> Is atyfb in 2.4 known to work with recent Mach64 chips like Rage XL? 
+On 13 Nov 2002, Benjamin Herrenschmidt wrote:
+> On Fri, 2002-11-08 at 16:28, Steven Newbury wrote:
+> > Is atyfb in 2.4 known to work with recent Mach64 chips like Rage XL? 
+> > When I install the driver it detects the chip but results in just a 
+> > black screen.  I also noticed that it detects WRAM, whereas I am certain 
+> > it should be SGRAM.  The XFree86 driver detects everything ok and just 
+> > works.
+> 
+> Well, I don't know if Geert still have much time to maintain
+> this driver, any help implementing the missing features would
+> be nice ;)
 
-I did run a sparc64 with builtin Rage XL for about a year (2.4.18 time),
-it worked fine. Don't remember the type of the RAM but it had 8M. At
-first I had a problem with pixel clock frequency - the kernel new a
-higer value for XL than the sparc64 implemented and so the description
-of XL in kernel driver got changed for lower clock. But I doubt this
-helps you :(
+Erhm, not really...
 
--- 
-Meelis Roos (mroos@linux.ee)
+For RAGE XL support, you want to contact Steve Longerbeam <stevel@mvista.com>.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 
 -------------------------------------------------------

@@ -1,20 +1,20 @@
 From: Kronos <kronos@kronoz.cjb.net>
-Subject: [PATCH] sgivwfb: New framebuffer_alloc API and class_dev changes
-Date: Mon, 15 Sep 2003 22:46:55 +0200
+Subject: [PATCH] sisfb: New framebuffer_alloc API and class_dev changes
+Date: Mon, 15 Sep 2003 22:47:03 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030915204655.GA23294@dreamland.darkstar.lan>
+Message-ID: <20030915204703.GB23294@dreamland.darkstar.lan>
 Reply-To: kronos@kronoz.cjb.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19z0GG-0000nx-00
+	id 19z0GF-0000nr-00
 	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 15 Sep 2003 13:47:52 -0700
 Received: from mail-6.tiscali.it ([195.130.225.152])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 19z0GF-0000ij-La
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 15 Sep 2003 13:47:51 -0700
+	id 19z0GE-0000hc-Nt
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 15 Sep 2003 13:47:50 -0700
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
@@ -27,171 +27,403 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: newquist@engr.sgi.som
+To: thomas@winischhofer.net
 Cc: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>
 
 Hi,
-this patch converts driver/video/sgivwfb.c to framebuffer_alloc:
+this patch converts driver/video/sis to framebuffer_alloc:
 
-======== drivers/video/sgivwfb.c 1.30 ========
-D 1.30 03/09/14 00:15:56+02:00 kronos@kronoz.cjb.net 34 33 38/24/814
-P drivers/video/sgivwfb.c
-C switch to framebuffer_alloc
+======== drivers/video/sis/sis_main.c 1.29 ========
+D 1.29 03/09/14 00:55:04+02:00 kronos@kronoz.cjb.net 35 34 87/56/5315
+P drivers/video/sis/sis_main.c
+C bugfix: sis_fb_info.fontname was set in sisfb_setup, but sis_fb_info was reset (with a memset) in sisfb_init. Add a static sisfb_fontname.
+C sis_fb_info is now dynamically allocated using framebuffer_alloc for kernel >= 2.6.0 and with kmalloc for older kernels.
+C add release_sisfb: this is manually called after framebuffer_unregister for older (< 2.6.0) kernels and automagically called for newer kernels.
 ------------------------------------------------
 
-===== drivers/video/sgivwfb.c 1.29 vs 1.30 =====
---- 1.29/drivers/video/sgivwfb.c	Thu Apr 24 12:30:41 2003
-+++ 1.30/drivers/video/sgivwfb.c	Sun Sep 14 00:15:56 2003
-@@ -22,7 +22,7 @@
- #include <asm/mtrr.h>
+===== drivers/video/sis/sis_main.c 1.28 vs 1.29 =====
+--- 1.28/drivers/video/sis/sis_main.c	Fri Aug 22 08:27:09 2003
++++ 1.29/drivers/video/sis/sis_main.c	Sun Sep 14 00:55:04 2003
+@@ -2382,7 +2382,7 @@
+ 	memset(fix, 0, sizeof(struct fb_fix_screeninfo));
  
- #define INCLUDE_TIMING_TABLE_DATA
--#define DBE_REG_BASE default_par.regs
-+#define DBE_REG_BASE default_par->regs
- #include <video/sgivw.h>
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0)	
+-	strcpy(fix->id, sis_fb_info.modename);
++	strcpy(fix->id, sis_fb_info->modename);
+ #else
+ 	strcpy(fix->id, myid);
+ #endif	
+@@ -4077,7 +4077,7 @@
+ 	char *this_opt;
+ 	
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0)
+-	sis_fb_info.fontname[0] = '\0';
++	sisfb_fontname[0] = '\0';
+ #endif	
  
- struct sgivw_par {
-@@ -44,9 +44,9 @@
- extern unsigned long sgivwfb_mem_phys;
- extern unsigned long sgivwfb_mem_size;
+ 	ivideo.refresh_rate = 0;
+@@ -4102,7 +4102,8 @@
+ 			sisfb_inverse = 1;
+ 			/* fb_invert_cmaps(); */
+ 		} else if (!strnicmp(this_opt, "font:", 5)) {
+-			strcpy(sis_fb_info.fontname, this_opt + 5);
++			strncpy(sisfb_fontname, this_opt + 5, sizeof(sisfb_fontname) - 1);
++			sisfb_fontname[sizeof(sisfb_fontname) - 1] = '\0';
+ #endif
+ 		} else if (!strnicmp(this_opt, "vrate:", 6)) {
+ 			ivideo.refresh_rate = simple_strtoul(this_opt + 6, NULL, 0);
+@@ -4273,8 +4274,6 @@
+ 	sisfb_registered = 0;
+ 	sisfb_thismonitor.datavalid = FALSE;
  
--static struct sgivw_par default_par;
-+static struct sgivw_par *default_par;
- static u32 pseudo_palette[17];
--static struct fb_info fb_info;
-+static struct fb_info *fb_info;
- static int ypan = 0;
- static int ywrap = 0;
- 
-@@ -118,6 +118,7 @@
- 			     struct fb_info *info);
- static int sgivwfb_mmap(struct fb_info *info, struct file *file,
- 			struct vm_area_struct *vma);
-+static void release_sgivwfb(struct fb_info *info);
- 
- static struct fb_ops sgivwfb_ops = {
- 	.owner		= THIS_MODULE,
-@@ -756,12 +757,21 @@
- {
- 	char *monitor;
- 
-+	fb_info = framebuffer_alloc(sizeof(*default_par), NULL);
-+	if (!fb_info) {
-+		printk(KERN_ERR "sgivwfb: cannot allocate memory\n");
-+		return -ENOMEM;
-+	}
-+	fb_info->release = &release_sgivwfb;
-+	default_par = fb_info->par;
+-	memset(&sis_fb_info, 0, sizeof(sis_fb_info));
+-
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0)
+         memset(&sisfb_lastrates[0], 0, 128);
+ #endif
+@@ -4292,8 +4291,19 @@
+ 			if ((b->vendor == pdev->vendor)
+ 			    && (b->device == pdev->device)) {
+ 				pdev_valid = 1;
 +
- 	if (!request_mem_region(DBE_REG_PHYS, DBE_REG_SIZE, "sgivwfb")) {
- 		printk(KERN_ERR "sgivwfb: couldn't reserve mmio region\n");
-+		goto fail_framebuffer_alloc;
- 		return -EBUSY;
++#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
++				sis_fb_info = framebuffer_alloc(0, &pdev->dev);
++#else
++				sis_fb_info = kmalloc(sizeof(*sis_fb_info));
++				memset(sis_fb_info, 0, sizeof(*sis_fb_info));
++#endif
++				if (!sis_fb_info)
++					return -ENOMEM;
++				
+ #if LINUX_VERSION_CODE <= KERNEL_VERSION(2,5,0)				
+-				strcpy(sis_fb_info.modename, b->name);
++				strcpy(sis_fb_info->modename, b->name);
++				memcpy(sis_fb_info->fontname, sisfb_fontname, sizeof(sisfb_fontname));
+ #else				
+ 				strcpy(myid, b->name);
+ #endif				
+@@ -4335,7 +4345,7 @@
+ 			if(reg32 == 0x07301039) {
+ 				ivideo.chip = SIS_730;
+ #if LINUX_VERSION_CODE <= KERNEL_VERSION(2,5,0)
+-				strcpy(sis_fb_info.modename, "SIS 730");
++				strcpy(sis_fb_info->modename, "SIS 730");
+ #else
+ 				strcpy(myid, "SIS 730");
+ #endif
+@@ -4385,7 +4395,7 @@
+ 			if(reg32 == 0x07401039) {
+ 				ivideo.chip = SIS_740;
+ #if LINUX_VERSION_CODE <= KERNEL_VERSION(2,5,0)
+-				strcpy(sis_fb_info.modename, "SIS 740");
++				strcpy(sis_fb_info->modename, "SIS 740");
+ #else
+ 				strcpy(myid, "SIS 740");
+ #endif
+@@ -4409,7 +4419,7 @@
+ 			if(reg32 == 0x07601039) {
+ 				ivideo.chip = SIS_760;
+ #if LINUX_VERSION_CODE <= KERNEL_VERSION(2,5,0)
+-				strcpy(sis_fb_info.modename, "SIS 760");
++				strcpy(sis_fb_info->modename, "SIS 760");
+ #else
+ 				strcpy(myid, "SIS 760");
+ #endif
+@@ -4421,6 +4431,7 @@
+ 		}
+ #endif
+            default:
++		kfree(sis_fb_info);
+ 	        return -ENODEV;
  	}
--	default_par.regs = (struct asregs *) ioremap_nocache(DBE_REG_PHYS, DBE_REG_SIZE);
--	if (!default_par.regs) {
-+	default_par->regs = (struct asregs *) ioremap_nocache(DBE_REG_PHYS, DBE_REG_SIZE);
-+	if (!default_par->regs) {
- 		printk(KERN_ERR "sgivwfb: couldn't ioremap registers\n");
- 		goto fail_ioremap_regs;
- 	}
-@@ -773,51 +783,59 @@
- 	sgivwfb_fix.ywrapstep = ywrap;
- 	sgivwfb_fix.ypanstep = ypan;
+ 	sishw_ext.jChipType = ivideo.chip;
+@@ -4438,7 +4449,10 @@
+ 	sisfb_mmio_size =  pci_resource_len(pdev, 1);
  
--	fb_info.fix = sgivwfb_fix;
-+	fb_info->fix = sgivwfb_fix;
- 
- 	switch (flatpanel_id) {
- 		case FLATPANEL_SGI_1600SW:
--			fb_info.var = sgivwfb_var1600sw;
-+			fb_info->var = sgivwfb_var1600sw;
- 			monitor = "SGI 1600SW flatpanel";
- 			break;
- 		default:
--			fb_info.var = sgivwfb_var;
-+			fb_info->var = sgivwfb_var;
- 			monitor = "CRT";
+ 	if(!sisvga_enabled) {
+-		if (pci_enable_device(pdev))   return -EIO;
++		if (pci_enable_device(pdev)) {
++			kfree(sis_fb_info);
++			return -EIO;
++		}
  	}
  
- 	printk(KERN_INFO "sgivwfb: %s monitor selected\n", monitor);
- 
--	fb_info.fbops = &sgivwfb_ops;
--	fb_info.pseudo_palette = pseudo_palette;
--	fb_info.par = &default_par;
--	fb_info.flags = FBINFO_FLAG_DEFAULT;
-+	fb_info->fbops = &sgivwfb_ops;
-+	fb_info->pseudo_palette = pseudo_palette;
-+	fb_info->flags = FBINFO_FLAG_DEFAULT;
- 
--	fb_info.screen_base = ioremap_nocache((unsigned long) sgivwfb_mem_phys, sgivwfb_mem_size);
--	if (!fb_info.screen_base) {
-+	fb_info->screen_base = ioremap_nocache((unsigned long) sgivwfb_mem_phys, sgivwfb_mem_size);
-+	if (!fb_info->screen_base) {
- 		printk(KERN_ERR "sgivwfb: couldn't ioremap screen_base\n");
- 		goto fail_ioremap_fbmem;
+ 	SiS_Pr.SiS_Backup70xx = 0xff;
+@@ -4472,6 +4486,7 @@
+ 	if((reg & 0x80) && (reg != 0xff)) {
+ 	   if((sisbios_mode[sisfb_mode_idx].mode_no) != 0xFF) {
+ 	      printk(KERN_INFO "sisfb: Cannot initialize display mode, X server is active\n");
++	      kfree(sis_fb_info);
+ 	      return -EBUSY;
+ 	   }
+ 	}
+@@ -4608,6 +4623,7 @@
+ 	sishw_ext.pSR = vmalloc(sizeof(SIS_DSReg) * SR_BUFFER_SIZE);
+ 	if (sishw_ext.pSR == NULL) {
+ 		printk(KERN_ERR "sisfb: Fatal error: Allocating SRReg space failed.\n");
++		kfree(sis_fb_info);
+ 		return -ENODEV;
+ 	}
+ 	sishw_ext.pSR[0].jIdx = sishw_ext.pSR[0].jVal = 0xFF;
+@@ -4616,6 +4632,7 @@
+ 	if (sishw_ext.pCR == NULL) {
+ 	        vfree(sishw_ext.pSR);
+ 		printk(KERN_ERR "sisfb: Fatal error: Allocating CRReg space failed.\n");
++		kfree(sis_fb_info);
+ 		return -ENODEV;
+ 	}
+ 	sishw_ext.pCR[0].jIdx = sishw_ext.pCR[0].jVal = 0xFF;
+@@ -4650,6 +4667,7 @@
+ 		        vfree(sishw_ext.pSR);
+ 			vfree(sishw_ext.pCR);
+ 			printk(KERN_ERR "sisfb: Fatal error: Unable to determine RAM size\n");
++			kfree(sis_fb_info);
+ 			return -ENODEV;
+ 		}
+ 	}
+@@ -4702,6 +4720,7 @@
+ 			vfree(sishw_ext.pSR);
+ 			vfree(sishw_ext.pCR);
+ 			printk(KERN_INFO "sisfb: Fatal error: Unable to determine RAM size.\n");
++			kfree(sis_fb_info);
+ 			return -ENODEV;
+ 		}
+ 	}
+@@ -4730,6 +4749,7 @@
+ 		printk(KERN_ERR "sisfb: Is there another framebuffer driver active?\n");
+ 		vfree(sishw_ext.pSR);
+ 		vfree(sishw_ext.pCR);
++		kfree(sis_fb_info);
+ 		return -ENODEV;
  	}
  
--	fb_alloc_cmap(&fb_info.cmap, 256, 0);
-+	fb_alloc_cmap(&fb_info->cmap, 256, 0);
- 
--	if (register_framebuffer(&fb_info) < 0) {
-+	if (register_framebuffer(fb_info) < 0) {
- 		printk(KERN_ERR "sgivwfb: couldn't register framebuffer\n");
- 		goto fail_register_framebuffer;
+@@ -4738,6 +4758,7 @@
+ 		release_mem_region(ivideo.video_base, ivideo.video_size);
+ 		vfree(sishw_ext.pSR);
+ 		vfree(sishw_ext.pCR);
++		kfree(sis_fb_info);
+ 		return -ENODEV;
  	}
  
- 	printk(KERN_INFO "fb%d: SGI DBE frame buffer device, using %ldK of video memory at %#lx\n",      
--		fb_info.node, sgivwfb_mem_size >> 10, sgivwfb_mem_phys);
-+		fb_info->node, sgivwfb_mem_size >> 10, sgivwfb_mem_phys);
+@@ -4943,6 +4964,7 @@
+ 			vfree(sishw_ext.pCR);
+ 			release_mem_region(ivideo.video_base, ivideo.video_size);
+ 			release_mem_region(ivideo.mmio_base, sisfb_mmio_size);
++			kfree(sis_fb_info);
+ 			return -EINVAL;
+ 		}
+ 
+@@ -4959,16 +4981,16 @@
+ 
+ 		sisfb_crtc_to_var(&default_var);
+ 		
+-		sis_fb_info.node = -1;
+-		sis_fb_info.flags = FBINFO_FLAG_DEFAULT;
+-		sis_fb_info.blank = &sisfb_blank;
+-		sis_fb_info.fbops = &sisfb_ops;
+-		sis_fb_info.switch_con = &sisfb_switch;
+-		sis_fb_info.updatevar = &sisfb_update_var;
+-		sis_fb_info.changevar = NULL;
+-		sis_fb_info.disp = &sis_disp;
++		sis_fb_info->node = -1;
++		sis_fb_info->flags = FBINFO_FLAG_DEFAULT;
++		sis_fb_info->blank = &sisfb_blank;
++		sis_fb_info->fbops = &sisfb_ops;
++		sis_fb_info->switch_con = &sisfb_switch;
++		sis_fb_info->updatevar = &sisfb_update_var;
++		sis_fb_info->changevar = NULL;
++		sis_fb_info->disp = &sis_disp;
+ 			
+-		sisfb_set_disp(-1, &default_var, &sis_fb_info);
++		sisfb_set_disp(-1, &default_var, sis_fb_info);
+ 		
+ #else		/* --------- For 2.5: Setup a somewhat sane default var ------------ */
+ 
+@@ -5012,17 +5034,17 @@
+ 	    		}
+ 		}
+ 
+-		sis_fb_info.flags = FBINFO_FLAG_DEFAULT;
+-		sis_fb_info.var = default_var;
+-		sis_fb_info.fix = sisfb_fix;
+-		sis_fb_info.par = &ivideo;
+-		sis_fb_info.screen_base = ivideo.video_vbase;
+-		sis_fb_info.fbops = &sisfb_ops;
+-		sis_fb_info.dev = &pdev->dev;
+-		sisfb_get_fix(&sis_fb_info.fix, -1, &sis_fb_info);
+-		sis_fb_info.pseudo_palette = pseudo_palette;
++		sis_fb_info->flags = FBINFO_FLAG_DEFAULT;
++		sis_fb_info->var = default_var;
++		sis_fb_info->fix = sisfb_fix;
++		sis_fb_info->par = &ivideo;
++		sis_fb_info->screen_base = ivideo.video_vbase;
++		sis_fb_info->fbops = &sisfb_ops;
++		sis_fb_info->release = &release_sisfb;
++		sisfb_get_fix(&sis_fb_info->fix, -1, sis_fb_info);
++		sis_fb_info->pseudo_palette = pseudo_palette;
+ 		
+-		fb_alloc_cmap(&sis_fb_info.cmap, 256 , 0);
++		fb_alloc_cmap(&sis_fb_info->cmap, 256 , 0);
+ #endif
+ 
+ 		printk(KERN_INFO "sisfb: Initial vbflags 0x%lx\n", ivideo.vbflags);
+@@ -5041,7 +5063,7 @@
+ 		vc_resize_con(1, 1, 0);
+ #endif
+ 
+-		if(register_framebuffer(&sis_fb_info) < 0) {
++		if(register_framebuffer(sis_fb_info) < 0) {
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0)
+ 			vfree(sishw_ext.pSR);
+ 			vfree(sishw_ext.pCR);
+@@ -5049,6 +5071,7 @@
+ 			release_mem_region(ivideo.mmio_base, sisfb_mmio_size);
+ #endif
+ 			printk(KERN_ERR "sisfb: Fatal error: Failed to register framebuffer\n");
++			kfree(sis_fb_info);
+ 			return -EINVAL;
+ 		}
+ 
+@@ -5063,13 +5086,13 @@
+ 
+ #if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0)
+ 		printk(KERN_INFO "fb%d: %s frame buffer device, Version %d.%d.%02d\n",
+-	       		GET_FB_IDX(sis_fb_info.node), sis_fb_info.modename, VER_MAJOR, VER_MINOR,
++	       		GET_FB_IDX(sis_fb_info->node), sis_fb_info->modename, VER_MAJOR, VER_MINOR,
+ 	       		VER_LEVEL);		     
+ #endif
+ 
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0)
+ 		printk(KERN_INFO "fb%d: %s frame buffer device, Version %d.%d.%02d\n",
+-	       		sis_fb_info.node, myid, VER_MAJOR, VER_MINOR, VER_LEVEL);
++	       		sis_fb_info->node, myid, VER_MAJOR, VER_MINOR, VER_LEVEL);
+ #endif
+ 
+ 		printk(KERN_INFO "sisfb: (C) 2001-2003 Thomas Winischhofer. All rights reserved.\n");
+@@ -5078,6 +5101,33 @@
  	return 0;
- 
- fail_register_framebuffer:
--	iounmap((char *) fb_info.screen_base);
-+	iounmap((char *) fb_info->screen_base);
- fail_ioremap_fbmem:
--	iounmap(default_par.regs);
-+	iounmap(default_par->regs);
- fail_ioremap_regs:
- 	release_mem_region(DBE_REG_PHYS, DBE_REG_SIZE);
-+fail_framebuffer_alloc:
-+	kfree(fb_info);
- 	return -ENXIO;
  }
  
-+static void release_sgivwfb(struct fb_info *info) {
-+	dbe_TurnOffDma();
-+	iounmap(default_par->regs);
-+	iounmap(info->screen_base);
-+	release_mem_region(DBE_REG_PHYS, DBE_REG_SIZE);
-+}
++#if defined(MODULE) || LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
++static void release_sisfb(struct fb_info *info) {
++	/* TW: Release mem regions */
++	release_mem_region(ivideo.video_base, ivideo.video_size);
++	release_mem_region(ivideo.mmio_base, sisfb_mmio_size);
 +
- #ifdef MODULE
- MODULE_LICENSE("GPL");
++#ifdef CONFIG_MTRR
++	/* TW: Release MTRR region */
++	if(ivideo.mtrr) {
++		mtrr_del(ivideo.mtrr,
++		      (unsigned int)ivideo.video_base,
++	              (unsigned int)ivideo.video_size);
++	}
++#endif
++
++	if(sishw_ext.pSR) vfree(sishw_ext.pSR);
++	if(sishw_ext.pCR) vfree(sishw_ext.pCR);
++	
++	/* TODO: Restore the initial mode 
++	 * This sounds easy but is as good as impossible
++	 * on many machines with SiS chip and video bridge
++	 * since text modes are always set up differently
++	 * from machine to machine. Depends on the type
++	 * of integration between chipset and bridge.
++	 */
++}
++#endif
  
-@@ -828,11 +846,7 @@
+ #ifdef MODULE
+ 
+@@ -5329,34 +5379,15 @@
  
  void cleanup_module(void)
  {
--	unregister_framebuffer(&fb_info);
--	dbe_TurnOffDma();
--	iounmap(regs);
--	iounmap(&fb_info.screen_base);
--	release_mem_region(DBE_REG_PHYS, DBE_REG_SIZE);
-+	unregister_framebuffer(fb_info);
- }
+-	/* TW: Release mem regions */
+-	release_mem_region(ivideo.video_base, ivideo.video_size);
+-	release_mem_region(ivideo.mmio_base, sisfb_mmio_size);
+-
+-#ifdef CONFIG_MTRR
+-	/* TW: Release MTRR region */
+-	if(ivideo.mtrr) {
+-		mtrr_del(ivideo.mtrr,
+-		      (unsigned int)ivideo.video_base,
+-	              (unsigned int)ivideo.video_size);
+-	}
+-#endif
+-
+ 	/* Unregister the framebuffer */
+ 	if(sisfb_registered) {
+-		unregister_framebuffer(&sis_fb_info);
++		unregister_framebuffer(sis_fb_info);
+ 	}
  
- #endif				/* MODULE */
+-	if(sishw_ext.pSR) vfree(sishw_ext.pSR);
+-	if(sishw_ext.pCR) vfree(sishw_ext.pCR);
+-	
+-	/* TODO: Restore the initial mode 
+-	 * This sounds easy but is as good as impossible
+-	 * on many machines with SiS chip and video bridge
+-	 * since text modes are always set up differently
+-	 * from machine to machine. Depends on the type
+-	 * of integration between chipset and bridge.
+-	 */
++#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,0)
++	release_sisfb(sis_fb_info);
++	kfree(sis_fb_info);
++#endif
+ 	
+ 	printk(KERN_INFO "sisfb: Module unloaded\n");
+ }
+
+
+======== drivers/video/sis/sis_main.h 1.14 ========
+D 1.14 03/09/14 00:54:38+02:00 kronos@kronoz.cjb.net 15 14 6/1/1166
+P drivers/video/sis/sis_main.h
+C make sis_fb_info a pointer
+C add sisfb_fontname (used by sisfb_setup)
+C add prototype of release_sisfb
+------------------------------------------------
+
+===== drivers/video/sis/sis_main.h 1.13 vs 1.14 =====
+--- 1.13/drivers/video/sis/sis_main.h	Tue Jul  8 23:11:14 2003
++++ 1.14/drivers/video/sis/sis_main.h	Sun Sep 14 00:54:38 2003
+@@ -287,7 +287,7 @@
+ /* ------------------- Global Variables ----------------------------- */
+ 
+ /* Fbcon variables */
+-static struct fb_info sis_fb_info;
++static struct fb_info *sis_fb_info;
+ 
+ static struct fb_var_screeninfo default_var = {
+ 	.xres            = 0,
+@@ -352,6 +352,7 @@
+ 
+ static int sisfb_inverse = 0;
+ static int currcon = 0;
++static char sisfb_fontname[40];
+ #endif
+ 
+ /* global flags */
+@@ -995,6 +996,10 @@
+ /* Interface used by the world */
+ #ifndef MODULE
+ int             sisfb_setup(char *options);
++#endif
++
++#if defined(MODULE) || LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
++static void release_sisfb(struct fb_info *info);
+ #endif
+ 
+ /* Interface to the low level console driver */
+
 
 
 Luca
 -- 
 Reply-To: kronos@kronoz.cjb.net
 Home: http://kronoz.cjb.net
-"L'abilita` politica e` l'abilita` di prevedere quello che
- accadra` domani, la prossima settimana, il prossimo mese e
- l'anno prossimo. E di essere cosi` abili, piu` tardi,
- da spiegare  perche' non e` accaduto."
+"L'ottimista pensa che questo sia il migliore dei mondi possibili. 
+ Il pessimista sa che e` vero" -- J. Robert Oppenheimer
 
 
 -------------------------------------------------------

@@ -1,21 +1,22 @@
 From: John Zielinski <grim@undead.cc>
-Subject: Re: [PATCH] neofb patches
-Date: Wed, 28 Apr 2004 18:46:48 -0400
+Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
+ one works ;-)
+Date: Wed, 28 Apr 2004 19:00:58 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <40903458.4070406@undead.cc>
-References: <Pine.LNX.4.44.0404281829410.1187-100000@phoenix.infradead.org>
+Message-ID: <409037AA.5@undead.cc>
+References: <Pine.LNX.4.44.0404281709260.1187-100000@phoenix.infradead.org> <Pine.GSO.4.58.0404281948260.11982@waterleaf.sonytel.be>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIxpP-0003I2-9c
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 15:46:55 -0700
-Received: from ns2.undead.cc ([216.126.84.18] helo=mail.undead.cc)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1BIxpP-0003dF-0a
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 15:46:55 -0700
-In-Reply-To: <Pine.LNX.4.44.0404281829410.1187-100000@phoenix.infradead.org>
+	id 1BIy38-0006Oq-Tl
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 16:01:06 -0700
+Received: from ghoul.undead.cc ([216.126.84.18] helo=mail.undead.cc)
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
+	id 1BIy38-0007B8-FH
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Apr 2004 16:01:06 -0700
+In-Reply-To: <Pine.GSO.4.58.0404281948260.11982@waterleaf.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,50 +27,33 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: James Simmons <jsimmons@infradead.org>
-Cc: Otto Solares <solca@guug.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: James Simmons <jsimmons@infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-James Simmons wrote:
+Geert Uytterhoeven wrote:
 
->This has always been. In the old days when X crashed you lost your 
->display. That was life. The X drivers are better but its up to X to 
->restore the console.
+>So I cannot have a mode that's not in modedb, since it won't survive switching
+>VTs.
 >
 >  
 >
-By that logic we'd still be using kernel 1.0.  ;)   I still don't see a 
-problem with fbcon resetting the video card to what it thinks it should 
-be when it regains control of the framebuffer.   But like everything 
-else in the kernel, we'll prove it works first before suggesting it be 
-included in the official release.
+It would be possible.  Let's say that the future fbset can modify the 
+kernels modedb and that the vt driver can also swtich to a mode by an 
+alias string.  All fbset would have to do is create a new modedb entry 
+called "vt02_temp_mode" and then tell the vt to switch VT 2 to 
+"vt02_temp_mode".  The vt driver remembers that VT 2 is now set to 
+"vt02_temp_mode" (via a pointer or a numeric modedb index or something) 
+so when you switch to back to VT 2 you get your custom mode again.
 
->Plus with the software cursor we do use fb_imageblit. Also I'm 
->beginning to realize we need to clear out the framebuffer memory.
->People complain about left over junk on there screen when the console 
->takes over. 
->
->  
->
-No, no, no!  :)   I want to see my boot up messages before the console 
-takes over, especially if the kernel dies during bootup.  I've already 
-posted a fix for this a while back for just the radeon driver but it's 
-very easy to modify the other drivers.  It's just one line of code per 
-driver and one line to fb.h . 
+The VT's vc_data struct would have an extra pointer/index variable.  If 
+it's non zero it uses that to reference the proper modedb entry.  If 
+it's zero then it uses it's x,y,Hz,bpp variables to reference the proper 
+modedb.  This way you could also have multiple modes with the same 
+x,y,Hz,bpp but different timing and sync options.
 
-What happens is that the vga console tries to copy screen memory to it's 
-save buffer when it's being shut down but the fb driver has already 
-reconfigured the memory aperature layout.  A call to do_blank_screen(1) 
-right before the mode switch will cause the vga console to save screen 
-memory at that point.  This needs to be done in the drivers.  If it were 
-done in fbcon then any prink's in the drivers would "unblank" the vga 
-console and mess things up again.
-
->routines. Look at the debate about how to handle setting the resolution.
->Yipes it been fierce.
->
->  
->
-Sorry!  I seem to have a nack at starting these things....  :)
+This approach would also get rid of the need for a special mode set api 
+for fbset to tweak the current mode timing.  It would just use the 
+standard kernel modedb editing API.
 
 John
 

@@ -1,21 +1,22 @@
-From: <Stuart_Hayes@Dell.com>
-Subject: vesafb probe question
-Date: Fri, 7 Jan 2005 15:03:29 -0600
-Message-ID: <7A8F92187EF7A249BF847F1BF4903C040AFC32@ausx2kmpc103.aus.amer.dell.com>
+From: "Randy.Dunlap" <rddunlap@osdl.org>
+Subject: Re: [PATCH] radeonfb: fix init/exit section usage
+Date: Fri, 07 Jan 2005 13:24:44 -0800
+Message-ID: <41DEFE1C.7010108@osdl.org>
+References: <41DEE2C7.4030200@osdl.org> <20050107215451.GA16507@dreamland.darkstar.lan>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C4F4FC.56C05E22"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Cn1Gk-00004t-Ij
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 07 Jan 2005 13:03:38 -0800
-Received: from ausc60pc101.us.dell.com ([143.166.85.206])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1Cn1Gj-0003s4-0O
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 07 Jan 2005 13:03:38 -0800
-content-class: urn:content-classes:message
+	id 1Cn2JG-0003hK-H6
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 07 Jan 2005 14:10:18 -0800
+Received: from fire.osdl.org ([65.172.181.4] helo=fire-1.osdl.org)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1Cn2JD-0003GV-HN
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 07 Jan 2005 14:10:17 -0800
+In-Reply-To: <20050107215451.GA16507@dreamland.darkstar.lan>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,184 +27,60 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Stuart_Hayes@Dell.com
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Kronos <kronos@people.it>
+Cc: linux-fbdev-devel@lists.sourceforge.net, benh@dreamland.darkstar.lan, benh@kernel.crashing.org
 
-This is a multi-part message in MIME format.
+Kronos wrote:
+> Il Fri, Jan 07, 2005 at 11:28:07AM -0800, Randy.Dunlap ha scritto: 
+> 
+>>Fix 3 instances of calling exit section function from text or init:
+>>Error: ./drivers/video/aty/radeon_base.o .text refers to 000029e5 
+>>R_386_PC32        .exit.text
+>>Error: ./drivers/video/aty/radeon_base.o .text refers to 00002a60 
+>>R_386_PC32        .exit.text
+>>Error: ./drivers/video/aty/radeon_base.o .init.text refers to 00000192 
+>>R_386_PC32        .exit.text
+>>
+>>Signed-off-by: Randy Dunlap <rddunlap@osdl.org>
+>>
+>>diffstat:=
+>> drivers/video/aty/radeon_base.c |    2 +-
+>> 1 files changed, 1 insertion(+), 1 deletion(-)
+>>
+>>---
+> 
+> 
+>>diff -Naurp ./drivers/video/aty/radeon_base.c~radeonfb_initexit ./drivers/video/aty/radeon_base.c
+>>--- ./drivers/video/aty/radeon_base.c~radeonfb_initexit	2005-01-06 21:18:20.920585008 -0800
+>>+++ ./drivers/video/aty/radeon_base.c	2005-01-07 10:30:16.661094480 -0800
+>>@@ -261,7 +261,7 @@ static struct backlight_controller radeo
+>> 
+>> #endif /* CONFIG_PPC_OF */
+>> 
+>>-static void __devexit radeon_unmap_ROM(struct radeonfb_info *rinfo, struct pci_dev *dev)
+>>+static void radeon_unmap_ROM(struct radeonfb_info *rinfo, struct pci_dev *dev)
+>> {
+>> 	if (!rinfo->bios_seg)
+>> 		return;
+> 
+> 
+> I see that radeon_unmap_ROM is called in radeonfb_pci_register (error
+> path). Is this the problem?
 
-------_=_NextPart_001_01C4F4FC.56C05E22
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: quoted-printable
+Yes.  It was called from radeon_map_ROM() [which is __init]
+and from radeonfb_pci_register().
 
+> Oh btw, the maintainer of the new radeonfb is Ben Herrenschmidt, not Ani
+> Joshi.
 
-I'm getting a message in dmesg:  "localhost kernel: vesafb: probe of
-vesafb0 failed with error -6"
+OK, thanks for the info.  Be nice if someone would update
+MAINTAINERS with that info...
 
-I searched the web, and found that a lot of people are getting this, but
-I couldn't find an answer, so I looked into it.
+> Luca
 
-This appears to be because "vesafb" returns -ENXIO ("No such device or
-address") when its probe function fails.  However, driverse/base/bus.c
-spews an error message during device_attach() if a matching driver's
-probe function returns anything but -ENODEV ("No such device").
-
-Would a patch (like the one below) to change vesafb to return ENODEV
-instead of ENXIO be appropriate, or am I missing something?
-
-Thanks!
-Stuart
-stuart_hayes@dell.com
-
-
-
-diff -purN linux-2.6.9-1.906_ELorig/drivers/video/vesafb.c
-linux-2.6.9-1.906_EL/drivers/video/vesafb.c
---- linux-2.6.9-1.906_ELorig/drivers/video/vesafb.c	2004-10-18
-17:53:11.000000000 -0400
-+++ linux-2.6.9-1.906_EL/drivers/video/vesafb.c	2005-01-06
-14:45:18.000000000 -0500
-@@ -222,7 +222,7 @@ static int __init vesafb_probe(struct de
- 	int i, err;
-=20
- 	if (screen_info.orig_video_isVGA !=3D VIDEO_TYPE_VLFB)
--		return -ENXIO;
-+		return -ENODEV;
-=20
- 	vesafb_fix.smem_start =3D screen_info.lfb_base;
- 	vesafb_defined.bits_per_pixel =3D screen_info.lfb_depth;
-@@ -380,7 +380,7 @@ static int __init vesafb_probe(struct de
- 		(ypan) ? FBINFO_HWACCEL_YPAN : 0;
-=20
- 	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0) {
--		err =3D -ENXIO;
-+		err =3D -ENODEV;
- 		goto err;
- 	}
- 	if (register_framebuffer(info)<0) {
-
-------_=_NextPart_001_01C4F4FC.56C05E22
-Content-Type: text/html;
-	charset="US-ASCII"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.0.6527.0">
-<TITLE>vesafb probe question</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/rtf format -->
-<BR>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">I'm getting a message in dmesg:&nbsp; =
-&quot;localhost kernel: vesafb: probe of vesafb0 failed with error =
--6&quot;</FONT>
-</P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">I searched the web, and found that a =
-lot of people are getting this, but I couldn't find an answer, so I =
-looked into it.</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">This appears to be because =
-&quot;vesafb&quot; returns -ENXIO (&quot;No such device or =
-address&quot;) when its probe function fails.&nbsp; However, =
-driverse/base/bus.c spews an error message during device_attach() if a =
-matching driver's probe function returns anything but -ENODEV (&quot;No =
-such device&quot;).</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Would a patch (like the one below) to =
-change vesafb to return ENODEV instead of ENXIO be appropriate, or am I =
-missing something?</FONT></P>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">Thanks!<BR>
-Stuart</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">stuart_hayes@dell.com</FONT>
-</P>
-<BR>
-<BR>
-
-<P><FONT SIZE=3D2 FACE=3D"Arial">diff -purN =
-linux-2.6.9-1.906_ELorig/drivers/video/vesafb.c =
-linux-2.6.9-1.906_EL/drivers/video/vesafb.c</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">--- =
-linux-2.6.9-1.906_ELorig/drivers/video/vesafb.c&nbsp;&nbsp;&nbsp;&nbsp; =
-2004-10-18 17:53:11.000000000 -0400</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">+++ =
-linux-2.6.9-1.906_EL/drivers/video/vesafb.c 2005-01-06 =
-14:45:18.000000000 -0500</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">@@ -222,7 +222,7 @@ static int __init =
-vesafb_probe(struct de</FONT>
-
-<BR><FONT SIZE=3D2 =
-FACE=3D"Arial">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int i, =
-err;</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;</FONT>
-
-<BR><FONT SIZE=3D2 =
-FACE=3D"Arial">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if =
-(screen_info.orig_video_isVGA !=3D VIDEO_TYPE_VLFB)</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return -ENXIO;</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return -ENODEV;</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;</FONT>
-
-<BR><FONT SIZE=3D2 =
-FACE=3D"Arial">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-vesafb_fix.smem_start =3D screen_info.lfb_base;</FONT>
-
-<BR><FONT SIZE=3D2 =
-FACE=3D"Arial">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-vesafb_defined.bits_per_pixel =3D screen_info.lfb_depth;</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">@@ -380,7 +380,7 @@ static int __init =
-vesafb_probe(struct de</FONT>
-
-<BR><FONT SIZE=3D2 =
-FACE=3D"Arial">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (ypan) ? FBINFO_HWACCEL_YPAN =
-: 0;</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">&nbsp;</FONT>
-
-<BR><FONT SIZE=3D2 =
-FACE=3D"Arial">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if =
-(fb_alloc_cmap(&amp;info-&gt;cmap, 256, 0) &lt; 0) {</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; err =3D -ENXIO;</FONT>
-
-<BR><FONT SIZE=3D2 FACE=3D"Arial">+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; err =3D -ENODEV;</FONT>
-
-<BR><FONT SIZE=3D2 =
-FACE=3D"Arial">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; goto err;</FONT>
-
-<BR><FONT SIZE=3D2 =
-FACE=3D"Arial">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }</FONT>
-
-<BR><FONT SIZE=3D2 =
-FACE=3D"Arial">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if =
-(register_framebuffer(info)&lt;0) {</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01C4F4FC.56C05E22--
+-- 
+~Randy
 
 
 -------------------------------------------------------

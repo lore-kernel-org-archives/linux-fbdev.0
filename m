@@ -1,23 +1,23 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
-	one works ;-)
-Date: Wed, 28 Apr 2004 09:02:47 +1000
+Subject: Re: [PATCH] neofb patches
+Date: Wed, 28 Apr 2004 09:10:55 +1000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1083106967.16473.33.camel@gaston>
-References: <Pine.LNX.4.44.0404272330480.23153-100000@phoenix.infradead.org>
+Message-ID: <1083107454.16544.42.camel@gaston>
+References: <Pine.LNX.4.44.0404271938330.20536-100000@phoenix.infradead.org>
+	 <408EE34F.8080106@undead.cc>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIbgq-000645-Jc
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:08:36 -0700
+	id 1BIboh-0007sP-Cw
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:16:43 -0700
 Received: from gate.crashing.org ([63.228.1.57] ident=root)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1BIbgq-0006Yz-7s
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:08:36 -0700
-In-Reply-To: <Pine.LNX.4.44.0404272330480.23153-100000@phoenix.infradead.org>
+	id 1BIbog-0001MV-Uf
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 16:16:43 -0700
+In-Reply-To: <408EE34F.8080106@undead.cc>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,40 +28,40 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: John Zielinski <grim@undead.cc>, David Eger <eger-dated-1083663529.7e8c27@theboonies.us>, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: John Zielinski <grim@undead.cc>
+Cc: James Simmons <jsimmons@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Alex Stewart <alex@foogod.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 2004-04-28 at 08:33, James Simmons wrote:
-> > >The whole var thing is too messy right now. Especially, the lack of a
-> > >per-VT var right now makes things even more difficult
-> > >  
-> > >
-> > I'm currently in the middle of adding a per-VT var to my kernel.  
-> > They'll be in addition to the fb's current var so that when a fb using 
-> > program releases the frame buffer I can restore the VT's var instead of 
-> > depending on the app to do it right.  I'll post some patches when I get 
-> > things working properly. 
+On Wed, 2004-04-28 at 08:48, John Zielinski wrote:
+> James Simmons wrote:
 > 
-> This breaks the way linux works. It is up to the program to restore the 
-> console. The same case for vgacon. The X server is the one that restores 
-> the graphics hardware back to the VGA text mode. This patch would not ne 
-> accepted for a stable release. 
+> >I wouldn't bank on that. I seen this solution fall short. Consider a system 
+> >where we have a serial console, vgacon, and fbcon (say hgafb). Well I 
+> >leave it to the imagination what can go wrong. 
+> >  
+> >
+> I can see how vgacon and fbcon would walk all over each other but how 
+> would a serial console
+> mess things up?
 
-I don't agree. While it's true that we shouldn't bother saving/restoring
-the var for a KD_GRAPHICS VT which is under app control, we should do it
-for fbcon controlled consoles.
+Same question... Where is the problem ?
 
-Right now, it just doesn't work properly and you know it. It's actually
-a regression from 2.4 and I don't think his patch will be more invasive
-than the rest of the changes you have been doing lately ;)
+> >I agree we need arbitration. Eventually fbdev and dri have to merge. Mode 
+> >setting is still best handled kernel side. That is just a reality.
+> >
+> >  
+> >
+> Arbitration would be best.  How would it be done generally?  Some 
+> mechanism that arbitrates based on mem/io ranges or something else?
 
-Face it, the current fbcon resize mecanism is just broken. It cannot
-work properly without full mode management in all drivers. A per-VT var
-along with fbcon properly adapting it's size to the VT's var would bring
-us back to 2.4 level of functionality at least, which is a good thing.
+We need several level of arbitration, I'm not sure hwo to do that at
+this point and I don't have time to dive into the DRI side of things.
 
-Ben.
+Jon Smirl has been working on embedded mesa & moving DRI outside of
+X. Unfortunately, last I heard, he was still on his trip of re-inventing
+everything including replacing the fbdev's with his own stuff instead
+of moving from what we have ...
 
+Ben,
 
 
 

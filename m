@@ -1,17 +1,15 @@
-From: Sven Luther <sven.luther@wanadoo.fr>
-Subject: Re: dual seat ...
-Date: Mon, 12 May 2003 13:45:17 +0200
+From: James Simmons <jsimmons@infradead.org>
+Subject: Vesa fix
+Date: Mon, 12 May 2003 22:44:29 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030512114517.GA5119@iliana>
-References: <20030409180409.GA2551@iliana> <1052737784.4391.8.camel@laptop-STIAN.kontor.itsopen.no>
+Message-ID: <Pine.LNX.4.44.0305122237300.14641-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from smtp8.wanadoo.fr ([193.252.22.30] helo=mwinf0103.wanadoo.fr)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19FBkG-0000st-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 12 May 2003 04:45:28 -0700
-Content-Disposition: inline
-In-Reply-To: <1052737784.4391.8.camel@laptop-STIAN.kontor.itsopen.no>
+Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 19FL79-0001ZS-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 12 May 2003 14:45:47 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,37 +19,20 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Stian Hartviksen <stian.hartviksen@itsopen.no>
-Cc: Sven Luther <luther@dpt-info.u-strasbg.fr>, linux-fbdev-devel@lists.sourceforge.net
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Mon, May 12, 2003 at 01:09:44PM +0200, Stian Hartviksen wrote:
-> Hi, Mr. Luther.
-> 
-> I'm sorry about the delay in the answer, but I've been away for some
-> time.
 
-No problem, i solved the problem in another wise (using an older
-borrowed laptop as serial console with minicom).
+Hi!
+  
+   The results of the EDID info from the BIOS has been varied. For some it 
+worked. Others it gave the wrong data. Then for other even the headers 
+where corrupted :-( So this patch pulls out the EDID code from Vesa. The 
+EDID code works for PPC tho :-)
 
-> We have modified the solution from Freitas to work with FrameBuffers on
-> the 2.4 kernel. This solution can be found at:
-> 
-> http://www.itsopen.net/projects/x-hack/
-> 
-> This is a very nasty hack, but it works for us.
 
-Ok, i will have a look, altough i am lacking time right now.
-
-> If you need any input or want to give us a hint on how to make the hack
-> somewhat prettier - please give us a note !
-
-Ok.
-
-Friendly,
-
-Sven Luther
 
 
 -------------------------------------------------------

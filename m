@@ -1,16 +1,17 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 1/5]: logo fix
-Date: Mon, 17 Feb 2003 23:02:04 +0100 (MET)
+From: Antonino Daplas <adaplas@pol.net>
+Subject: Re: Re: New logo code [CONFIG OPTIONS]
+Date: 19 Feb 2003 05:58:04 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0302172301420.25406-100000@vervain.sonytel.be>
-References: <1045393909.1214.2.camel@localhost.localdomain>
+Message-ID: <1045605436.1233.14.camel@localhost.localdomain>
+References: <200302171932.h1HJWuiY011149@darkstar.example.net>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18ktOr-0003xo-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 17 Feb 2003 14:06:09 -0800
-In-Reply-To: <1045393909.1214.2.camel@localhost.localdomain>
+Received: from pine.compass.com.ph ([202.70.96.37])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18lFk4-0007P8-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 18 Feb 2003 13:57:32 -0800
+In-Reply-To: <200302171932.h1HJWuiY011149@darkstar.example.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -20,40 +21,33 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: John Bradford <john@grabjohn.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, schottelius@wdt.de, thoffman@arnor.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel List <linux-kernel@vger.kernel.org>
 
-On 16 Feb 2003, Antonino Daplas wrote:
-> On Sun, 2003-02-16 at 14:08, Antonino Daplas wrote:
-> > The attached patch (linux-2.5.61 + James' fbdev.diff) fixes the following:
-> > 
-> > 1. compile error because of missing scripts/pmntologo.  
-> > 
-> > 2. Break up of fb_show_logo() to fb_prepare_logo()/fb_show_logo() to fix
-> > weird "double drawing" or the "single draw, erase in a flash" of the
-> > logo.
-> > 
-> > 3. Fixed all drivers affected by the (image.depth == 0) is color
-> > expansion.
-> > 
+On Tue, 2003-02-18 at 03:32, John Bradford wrote:
+> > So how about making the logo "float" above/obscure the text (ie,
+> > overlay)?  It's not difficult to implement since fbcon.c has "redraw"
+> > versions of fbcon_bmove() and fbcon_clear().  All that needs to be done
+> > is do a "scissors" test before an fb_imageblit().  
 > 
-> Here's an incremental diff to protect logo drawing code with an
-> #ifdef CONFIG_FB_LOGO
+> On the subject of the new logo code, would it be worth making it do
+> something, (change colour, move, or animate), during a console bell?
+> 
 
-Note that it's called CONFIG_LOGO now.
+Possibly, it depends on the console/input developers if they want to add
+something like fb_flash_logo() besides doing a kd_mksound(). Also, if
+you don't mind compiling in a bunch of logo images to your kernel.
 
-Gr{oetje,eeting}s,
+On a more practical note, the "scissors test" (I should have named this
+"exclusive clipping test") can perhaps be enabled arbitrarily by
+userland clients.  You'll be left with a rectangular screen space that
+will not be touched by the console.  Then a distributor can do whatever
+it wants with that screen estate, say an animating splash or a pop-up
+window, which in theory can be triggered any time.
 
-						Geert
+Tony
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 
 

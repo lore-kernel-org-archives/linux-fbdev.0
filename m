@@ -1,83 +1,92 @@
-From: Matt Nanney <matt@ifox.com>
-Subject: vesafb and too much RAM?
-Date: Sat, 11 Jan 2003 12:57:02 -0700 (MST)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0301111150160.10295-100000@ie>
+From: James Simmons <jsimmons@infradead.org>
+Subject: [BK fbdev updates]
+Date: Sat, 11 Jan 2003 16:24:07 -0800 (PST)
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <Pine.LNX.4.33.0301111623070.8368-100000@maxwell.earthlink.net>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from interneteffects.com ([63.226.86.4] helo=ie)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18XRlO-0003VZ-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 11 Jan 2003 11:57:50 -0800
-Received: from matt (helo=localhost)
-	by ie with local-esmtp (Exim 3.36 #1 (Debian))
-	id 18XRkc-0003nE-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 11 Jan 2003 12:57:02 -0700
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-
-I was running debian with a 2.4.20(-3 I believe) with vesafb with no
-problems with 512MB ram. I upgraded to 1GB and immediately I could not
-boot. I get as far as the LILO prompt, but as soon as I hit enter the
-screen goes black, the caps lock and scroll lock keyboard LEDs flash, and
-nothing save hitting the reset switch has any affect.
-
-I can append 'mem=768M' to the kernel command line and everything boots
-like normal except of course that then it think I have only 768MB RAM. If
-I tell the kernel not to use vesafb by removing the 'vga=' line in my
-lilo.conf then everything boot fine and my RAM is recognized.
-
-I also have a second install of debian with kernel 2.4.19 on the same
-machine. With this kernel it actually boots, however the screen stays
-black. I can log in blindly and issue commands and dmesg reported the
-following:
-
-"vesafb: abort, cannot ioremap video memory 0x8000000 @ 0xd8000000"
-
-This kernel also behaves normally if I specify 'mem=768M' on the kernel
-command line or if I specify vga=normal (overriding my normal vga=792 from
-lilo.conf). With 'mem=768M' set dmesg shows:
-
- vesafb: framebuffer at 0xd8000000, mapped to 0xf080e000, size 131072k
- vesafb: mode is 1024x768x32, linelength=4096, pages=1
- vesafb: protected mode interface info at c000:e350
- vesafb: scrolling: redraw
- vesafb: directcolor: size=8:8:8:8, shift=24:16:8:0
- Console: switching to colour frame buffer device 128x48
- fb0: VESA VGA frame buffer device
-
-with 2.4.20 and 'mem=768M'
-
- vesafb: framebuffer at 0xd8000000, mapped to 0xf0800000, size 131072k
- vesafb: mode is 1024x768x32, linelength=4096, pages=1
- vesafb: protected mode interface info at c000:e350
- vesafb: scrolling: redraw
- vesafb: directcolor: size=8:8:8:8, shift=24:16:8:0
- Console: switching to colour frame buffer device 128x48
- fb0: VESA VGA frame buffer device
-
-In testing I have found that I can go as high as 'mem=880M' with no
-problem but 'mem=881M' ends in the same results as described above.
-
-I don't know if this is a bug or something I may have overlooked or failed
-to do. Hope someone can understand whats happening.
-
-Thanks and regards,
-Matt N.
+To: Linus Torvalds <torvalds@transmeta.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
 
+Linus, please do a
 
--------------------------------------------------------
-This SF.NET email is sponsored by:
-SourceForge Enterprise Edition + IBM + LinuxWorld = Something 2 See!
-http://www.vasoftware.com
+	bk pull http://fbdev.bkbits.net:8080/fbdev-2.5
+
+This will update the following files:
+
+ drivers/video/tridentfb.h        |  169 ----
+ include/video/font.h             |   24
+ arch/m68k/kernel/m68k_defs.c     |    2
+ drivers/video/Kconfig            |    2
+ drivers/video/Makefile           |    7
+ drivers/video/aty/atyfb.h        |    1
+ drivers/video/aty/atyfb_base.c   |   93 --
+ drivers/video/aty/mach64_accel.c |   12
+ drivers/video/console/Kconfig    |   14
+ drivers/video/console/fbcon.c    |   90 +-
+ drivers/video/console/sticon.c   |  101 +-
+ drivers/video/console/sticore.c  |  159 ++--
+ drivers/video/fbmem.c            |   13
+ drivers/video/fbmon.c            |  411 ++++++++++
+ drivers/video/i810/i810.h        |    2
+ drivers/video/i810/i810_accel.c  |   11
+ drivers/video/i810/i810_dvt.c    |    2
+ drivers/video/i810/i810_main.c   |   51 -
+ drivers/video/i810/i810_main.h   |   79 --
+ drivers/video/riva/Makefile      |    2
+ drivers/video/riva/fbdev.c       | 1468 ++++++++++++++++++---------------------
+ drivers/video/riva/nv_driver.c   |  212 +++++
+ drivers/video/riva/riva_hw.c     |  350 +++++++--
+ drivers/video/riva/rivafb.h      |   15
+ drivers/video/sstfb.c            |  711 +++++++++---------
+ drivers/video/sstfb.h            |   31
+ drivers/video/sticore.h          |   58 -
+ drivers/video/stifb.c            |  103 ++
+ drivers/video/tridentfb.c        | 1213 +++++++++++++++-----------------
+ include/linux/fb.h               |   13
+ include/linux/font.h             |   30
+ include/video/trident.h          |  175 ++++
+ 32 files changed, 3195 insertions(+), 2429 deletions(-)
+
+through these ChangeSets:
+
+<jsimmons@maxwell.earthlink.net> (03/01/11 1.891)
+   [TRIDENT FBDEV] Driver ported to the new api.
+
+<jsimmons@maxwell.earthlink.net> (03/01/10 1.887.1.4)
+   Final updtes to the GTF code. Now the code can gnerate GTF timings regardless of the validity of info->monospecs.
+
+   [ATYFB] Updates to the aty driver.
+
+<jsimmons@maxwell.earthlink.net> (03/01/08 1.887.1.1)
+   Remove fb_set_var. Some how it was missed in a merge conflict.
+
+<jsimmons@kozmo.(none)> (03/01/08 1.889)
+   [ATY] Somehow a merge mistake happened. We removed fb_set_var.
+
+<jsimmons@maxwell.earthlink.net> (03/01/08 1.887)
+   [MONITOR support] GTF support for VESA complaint monitors. Here we calculate the general timings needed so we don't over step the bounds for a monitor.
+
+   [fbmem.c cleanup] Name change to make teh code easier to read.
+
+<jsimmons@maxwell.earthlink.net> (03/01/07 1.879.2.95)
+   Updates from Helge Deller for the console/fbdev drivers for the PARISC platform. Small fix for clearing the screen and a string typo for the Voodoo 1/2 driver.
+
+<jsimmons@maxwell.earthlink.net> (03/01/06 1.879.2.93)
+   [RIVA FBDEV] Driver now uses its own fb_open and fb_release function again. It has no ill effects. The drivers uses strickly hardware acceleration so we don't need cfb_fillrect and cfb_copyarea.
+   Cleaned up font.h. Geerts orignal pacth broke them up into a font.h in video and one in  linux. Now I put them back together again in include/linux. The m68k platform has been updated for this change.
+
+
+<jsimmons@maxwell.earthlink.net> (03/01/06 1.879.2.92)
+   Added resize support for the framebuffer console. Now you can change the console size via stty. Also support for color palette changing on VC switch is supported.
+
+<jsimmons@maxwell.earthlink.net> (03/01/06 1.879.2.91)
+   I810 fbdev updates. Cursor fix for ati mach 64 cards on big endian machines. Buffer over flow fix for fbcon putcs function. C99 initializers for the STI console drivers.Voodoo 1/2 and NVIDIA driver updates.
+
+Standard diff is at
+
+http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz

@@ -1,20 +1,19 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: vertical stripes under OpenFirmware and
-	offb
-Date: 07 Apr 2003 02:15:47 +0200
+From: Alan Grimes <alangrimes@starpower.net>
+Subject: Why am I shocked?
+Date: Mon, 07 Apr 2003 14:56:52 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1049674547.579.59.camel@zion.wanadoo.fr>
-References: <20030328110528.GA2403@gajba.net>
-	 <Pine.LNX.4.44.0304022311440.3919-100000@phoenix.infradead.org>
-	 <20030406183433.GA929@gajba.net>
+Message-ID: <3E91C9F4.9060504@starpower.net>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from amarseille-201-1-5-206.abo.wanadoo.fr ([217.128.250.206] helo=zion.wanadoo.fr)
+Received: from smtp02.mrf.mail.rcn.net ([207.172.4.61])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 192KFB-0005Y4-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 06 Apr 2003 17:12:13 -0700
-In-Reply-To: <20030406183433.GA929@gajba.net>
+	id 192ckE-0004WB-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 07 Apr 2003 12:57:30 -0700
+Received: from 66-44-59-111.s365.tnt3.lnhva.md.dialup.rcn.com ([66.44.59.111] helo=starpower.net)
+	by smtp02.mrf.mail.rcn.net with esmtp (Exim 3.35 #4)
+	id 192ckC-0004HH-00
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Apr 2003 15:57:29 -0400
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -24,17 +23,40 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Boris Bezlaj <boris@gajba.net>
-Cc: James Simmons <jsimmons@infradead.org>, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Sun, 2003-04-06 at 20:34, Boris Bezlaj wrote:
+I must be insane.
 
-> And thanks for looking after the driver..the meintainer seems to be on a
-> very looong vacations :(
+I thought that /dev/fb0 was something that just worked... That simply 
+gave an interface to the VESA 2 buffer or, if that fails, the standard 
+VGA area. I was so smug in this assumption that I never bothered to 
+question this and left the machine alone for months and months while I 
+worked to port squeak ( www.squeak.org ) to it.
 
-I don't think there's any maintainer for this driver. Any patch
-fixing this appreciated :)
+I felt uncomfortable letting such an amazingly powerful dual athlon go 
+to waste so I went looking for a GUI for it....
+
+After considerable effort I managed to get picogui compiled...
+
+I try to do a test-run of the thing and quickly discover that my lowly 
+old ATI Rage PRO Turbo based card was not supported at all! -- 
+*incredible*. I had always known that leenooks was a piece of crap but 
+this is astonishing!!!!
+
+DOS games recognise the damn thing automaticly - No configuration of any 
+kind required.
+
+DOS programs have had the equivalent of framebuffer compatibility for 
+twenty years now!! and _LEENOOKS_, An OS that is supposed to be superior 
+in every way, simply does not support it!
+
+I'll cut the kernel devels some slack because ATI is tight-lipped about 
+the specs of its products but not supporting VESA 2 modes is flat-out 
+_UNFORGIVABLE_.
+
+What am I going to have to do, install windows XP pro on the thing??? =(
+
 
 
 -------------------------------------------------------

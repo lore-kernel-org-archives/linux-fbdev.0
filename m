@@ -1,26 +1,23 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [RFC] Does fbdev need a cursor API for userland?
-Date: Mon, 18 Oct 2004 15:06:09 +0800
+From: Gerd Knorr <kraxel@bytesex.org>
+Subject: Re: Generic VESA framebuffer driver and Video card BOOT?
+Date: Mon, 18 Oct 2004 10:36:32 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200410181506.09713.adaplas@hotpop.com>
-References: <200410172347.15516.adaplas@hotpop.com> <200410180920.39170.adaplas@hotpop.com> <9e47339104101719462ea5b2dd@mail.gmail.com>
+Message-ID: <20041018083632.GE3065@bytesex>
+References: <416E6ADC.3007.294DF20D@localhost> <87d5zkqj8h.fsf@bytesex.org> <Pine.GSO.4.61.0410151437050.10040@waterleaf.sonytel.be> <87y8i8p1jq.fsf@bytesex.org> <20041017120728.GC10532@admingilde.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CJRV8-0006ft-4i
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 00:00:14 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CJRV5-0001MR-DM
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 00:00:14 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 2C30790C60D
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 18 Oct 2004 07:00:01 +0000 (UTC)
-In-Reply-To: <9e47339104101719462ea5b2dd@mail.gmail.com>
+	id 1CJTNA-0007Me-Kp
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 02:00:08 -0700
+Received: from hirsch.in-berlin.de ([192.109.42.6] ident=root)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1CJTN9-0000jp-TA
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Oct 2004 02:00:08 -0700
 Content-Disposition: inline
+In-Reply-To: <20041017120728.GC10532@admingilde.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,25 +28,36 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net, Linux Kernel Development <linux-kernel@vger.kernel.org>, penguinppc-team@lists.penguinppc.org
 
-On Monday 18 October 2004 10:46, Jon Smirl wrote:
-> On Mon, 18 Oct 2004 09:20:39 +0800, Antonino A. Daplas
->
-> <adaplas@hotpop.com> wrote:
-> head in this environment has exposed some design problems in the
-> fb_info structures. The structure doesn't sort out things that there
-> are only one of vs multiple ones.
+On Sun, Oct 17, 2004 at 02:07:28PM +0200, Martin Waitz wrote:
+> hi :)
+> 
+> On Fri, Oct 15, 2004 at 03:13:13PM +0200, Gerd Knorr wrote:
+> > You have a application running which uses the framebuffer device, then
+> > suspend with that app running.  You'll have to restore the state of
+> > the device _before_ restarting all the userspace proccesses, otherwise
+> > the app will not be very happy.
+> 
+> As long as the app only interfaces with the framebuffer device and not
+> directly with the hardware it won't notice.
 
-I don't think you can expect a single fb_info structure to represent more
-than 1 display. If the card happens to support multihead, then the driver must
-be able to register the driver more than once so it creates /dev/fb0,
-/dev/fb1, etc, one for each head.
+Well, mmap("/dev/fb") will just map the gfx cards memory into
+the applications address space, so they _will_ interface with
+the hardware.
 
-Tony
+> The apps data will simply not show up on the screen until the
+> usermode helper finishes.
 
+Whenever writing to the gfx memory before finishing the initialization
+is harmless or not probably depends on the hardware, I'd better not
+count on it ...
 
+  Gerd
+
+-- 
+return -ENOSIG;
 
 
 -------------------------------------------------------

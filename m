@@ -1,20 +1,23 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: Re: Re: mode setting and console locking, nvidia failure
-Date: Mon, 17 May 2004 20:38:11 -0700 (PDT)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Re: mode setting and console locking,
+	nvidia failure
+Date: Tue, 18 May 2004 13:37:14 +1000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040518033811.3221.qmail@web14930.mail.yahoo.com>
-References: <20040518030008.43467.qmail@web14925.mail.yahoo.com>
+Message-ID: <1084851433.15183.20.camel@gaston>
+References: <20040518033811.3221.qmail@web14930.mail.yahoo.com>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BPvQi-0001Ka-3s
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 17 May 2004 20:38:12 -0700
-Received: from web14930.mail.yahoo.com ([216.136.225.159])
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1BPvQh-0001LU-Mx
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 17 May 2004 20:38:11 -0700
-In-Reply-To: <20040518030008.43467.qmail@web14925.mail.yahoo.com>
+	id 1BPvVQ-0002Fw-Er
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 17 May 2004 20:43:04 -0700
+Received: from gate.crashing.org ([63.228.1.57] ident=root)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.30)
+	id 1BPvVP-00029e-VJ
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 17 May 2004 20:43:04 -0700
+In-Reply-To: <20040518033811.3221.qmail@web14930.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,56 +28,33 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jon Smirl <jonsmirl@yahoo.com>, James Simmons <jsimmons@infradead.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
-
-I have a new clue.
-
-From console:
-modprobe radeonfb
-rmmod radeonfb
-works, there is a one line printk on rmmod displayed on console
-
-From X:
-modprobe radeonfb
-rmmod radeonfb
-works, there is a one line printk on rmmod logged
-
-From X:
-modprobe radeonfb
-VT switch to console
-rmmod radeonfb
-system hangs, but is a little active Ctrl-Alt-Del prints a line.
-
-Now remove the code that does the printk on exit
-From X:
-modprobe radeonfb
-VT switch to console
-rmmod radeonfb
-works, line from printk is displayed.
-
-One part of this has got to be a problem with the console semaphore.  That
-semaphore should not be accessed from an fbdev driver. If you need to access if
-from an fbdev driver then the fbdev design is broken. Think about the case with
-multiple fbdev's loaded. Since we only have one console all of the fbdev can't
-play with the semaphore. That semaphore needs to be controlled from fb/vgacon
-and lock only the fbdev that is displaying the console, not the others.
-
-Next experiment is to remove all reference to the console semaphore from my
-fbdev driver.
-
-=====
-Jon Smirl
-jonsmirl@yahoo.com
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: James Simmons <jsimmons@infradead.org>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
 
-	
-		
-__________________________________
-Do you Yahoo!?
-SBC Yahoo! - Internet access at a great low price.
-http://promo.yahoo.com/sbc/
+> One part of this has got to be a problem with the console semaphore.  That
+> semaphore should not be accessed from an fbdev driver. If you need to access if
+> from an fbdev driver then the fbdev design is broken. Think about the case with
+> multiple fbdev's loaded. Since we only have one console all of the fbdev can't
+> play with the semaphore. That semaphore needs to be controlled from fb/vgacon
+> and lock only the fbdev that is displaying the console, not the others.
+> 
+> Next experiment is to remove all reference to the console semaphore from my
+> fbdev driver.
+
+You should try to understand things rather...
+
+You should _not_ touch the console semaphore from your driver except in
+special known circumstances like the PM code path. It will make sure you
+don't get called by fbcon, but it's perfectly safe to take it even when
+you aren't beeing called by fbcon. However, you should not take it on
+normal fbdev operations since you will be called with it already held by
+the common fbmem code. The only case where you may want to bother is the
+PM callback.
+
+Ben.
+
+
 
 
 -------------------------------------------------------

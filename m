@@ -1,26 +1,24 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: patch fixing background next to penguin logo in monochrome
-Date: Mon, 16 Aug 2004 03:11:51 +0000 (UTC)
+From: Mail Delivery Subsystem <MAILER-DAEMON@darmstadt.de>
+Subject: Returned mail: see transcript for details
+Date: Mon, 16 Aug 2004 08:51:35 +0200 (CEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200409161110.12046.adaplas@hotpop.com>
-References: <1092254183.4209.16.camel@joy.home> <200409130625.07250.adaplas@hotpop.com> <Pine.GSO.4.58.0408151425000.3409@waterleaf.sonytel.be>
-Reply-To: adaplas@pol.net
+Message-ID: <200408160651.i7G6pZh10961@gg.darmstadt.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/report; report-type=delivery-status;
+	boundary="i7G6pZh10961.1092639095/gg.darmstadt.de"
+Content-Transfer-Encoding: 8bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BwXth-0002MU-VX
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 15 Aug 2004 20:10:57 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.71])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1BwXth-0003ND-Fi
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 15 Aug 2004 20:10:57 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 14D0210792DE
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 16 Aug 2004 02:41:48 +0000 (UTC)
-In-Reply-To: <Pine.GSO.4.58.0408151425000.3409@waterleaf.sonytel.be>
-Content-Disposition: inline
+	id 1BwbLO-0002Vt-Pw
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 15 Aug 2004 23:51:46 -0700
+Received: from outbound.darmstadt.de ([194.127.205.2])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
+	id 1BwbLN-0004OV-Bj
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 15 Aug 2004 23:51:45 -0700
+Received: from gg.darmstadt.de (localhost.localdomain [127.0.0.1])
+	by outbound.darmstadt.de (Postfix) with ESMTP id 158FCB808E
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 16 Aug 2004 08:45:41 +0200 (CEST)
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,86 +28,62 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Date: Thu, 16 Sep 2004 11:10:11 +0800
-Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Petr Stehlik <pstehlik@sophics.cz>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, "Christian T. Steigies" <cts@debian.org>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Sunday 15 August 2004 20:25, Geert Uytterhoeven wrote:
-> > This one is a little difficult since there is currently no method to
-> > convert monochrome attributes to color and vice versa.  The best one can
-> > do is to clear all attributes when switching from mono<->color.
-> >
-> > When switching, one will get plain text only.  This is  probably better
-> > than having text with incorrect attributes.
-> >
-> > Attached patch is completely untested, but it's the same one in 2.6.
->
-> Doesn't help, still the same behavior :-(
->
+This is a MIME-encapsulated message
 
-I looked at the code, and the flow seems to be like this:
+--i7G6pZh10961.1092639095/gg.darmstadt.de
 
-fbcon_switch->fb_set_var->changevar->fbcon_setup->update_screen/redraw_screen
+The original message was received at Mon, 16 Aug 2004 08:51:10 +0200 (CEST)
+from root@localhost
 
-However, fbcon_setup() updates conp->vc_can_do_color, so by the time
-the redraw_screen function in console.c checks for the vc_can_do_color field,
-it always returns equal.
+   ----- The following addresses had permanent fatal errors -----
+municipality@darmstadt.de
+    (reason: 550 No such recipient)
 
-So instead of clearing the buffer attributes in redraw_screen(), we do it 
-instead in fbcon_setup().
+   ----- Transcript of session follows -----
+... while talking to gwmail.darmstadt.de.:
+>>> RCPT To:<municipality@darmstadt.de>
+<<< 550 No such recipient
+550 5.1.1 municipality@darmstadt.de... User unknown
 
-Try the patch below.  You might have to apply them manually as I'm using
-Suse-9.0 linux kernel, which has the bootsplash code.  Also, all the previous
-patches need to be reversed.
+--i7G6pZh10961.1092639095/gg.darmstadt.de
+Content-Type: message/delivery-status
 
-Tony
+Reporting-MTA: dns; gg.darmstadt.de
+Arrival-Date: Mon, 16 Aug 2004 08:51:10 +0200 (CEST)
 
-PS:  If we can change the clear_buffer_attribute to rebuild attributes from
-the old buffer instead of just clearing the attributes, that would be perfect.
-Is there an easy way to do that?
----
+Final-Recipient: RFC822; municipality@darmstadt.de
+Action: failed
+Status: 5.1.1
+Remote-MTA: DNS; gwmail.darmstadt.de
+Diagnostic-Code: SMTP; 550 No such recipient
+Last-Attempt-Date: Mon, 16 Aug 2004 08:51:35 +0200 (CEST)
 
-diff -uprN linux-2.4-orig/drivers/video/fbcon.c linux-2.4/drivers/video/fbcon.c
---- linux-2.4-orig/drivers/video/fbcon.c	2004-09-16 10:50:58.093218288 +0800
-+++ linux-2.4/drivers/video/fbcon.c	2004-09-16 10:53:12.826735680 +0800
-@@ -618,12 +618,25 @@ static void fbcon_font_widths(struct dis
- 
- #define fontwidthvalid(p,w) ((p)->dispsw->fontwidthmask & FONTWIDTH(w))
- 
-+static void clear_buffer_attributes(struct vc_data *conp)
-+{
-+	unsigned short *p = (unsigned short *) conp->vc_origin;
-+	int count = conp->vc_screenbuf_size/2;
-+	int mask = conp->vc_hi_font_mask | 0xff;
-+	int erase_char = conp->vc_video_erase_char;
-+
-+	for (; count > 0; count--, p++) {
-+		scr_writew((scr_readw(p)&mask) | (erase_char&~mask), p);
-+	}
-+}
-+
- static void fbcon_setup(int con, int init, int logo)
- {
-     struct display *p = &fb_display[con];
-     struct vc_data *conp = p->conp;
-     int nr_rows, nr_cols;
-     int old_rows, old_cols;
-+    int old_was_color = conp->vc_can_do_color;
-     unsigned short *save = NULL, *r, *q;
-     int i, charcnt = 256;
-     struct fbcon_font_desc *font;
-@@ -803,6 +816,8 @@ static void fbcon_setup(int con, int ini
-     p->bgcol = 0;
- 
-     if (!init) {
-+	if (old_was_color != conp->vc_can_do_color)
-+	    clear_buffer_attributes(conp);
- 	if (conp->vc_cols != nr_cols || conp->vc_rows != nr_rows)
- 	    vc_resize_con(nr_rows, nr_cols, con);
- 	else if (CON_IS_VISIBLE(conp) &&
- 
+--i7G6pZh10961.1092639095/gg.darmstadt.de
+Content-Type: text/rfc822-headers
+Content-Transfer-Encoding: 8bit
 
+Return-Path: <linux-fbdev-devel@lists.sourceforge.net>
+Received: (from root@localhost)
+	by gg.darmstadt.de (8.11.6p2G/8.11.6) id i7G6pAi10956
+	for municipality@darmstadt.de; Mon, 16 Aug 2004 08:51:10 +0200 (CEST)
+Received: from inbound.darmstadt.de (10.100.10.33) by extern-gg.darmstadt.de (smtprelay) with ESMTP Mon Aug 16 08:50:54 2004.
+Received: from darmstadt.de (inbound.darmstadt.de [127.0.0.1])
+	by inbound.darmstadt.de (Postfix) with ESMTP id BECE3FC06B
+	for <municipality@darmstadt.de>; Mon, 16 Aug 2004 08:43:21 +0200 (CEST)
+From: linux-fbdev-devel@lists.sourceforge.net
+To: municipality@darmstadt.de
+Subject: Failed (municipality@darmstadt.de)
+Date: Mon, 16 Aug 2004 15:38:34 +0900
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_0016----=_NextPart_000_0016"
+X-Priority: 1
+X-MSMail-Priority: High
+Message-Id: <20040816064321.BECE3FC06B@inbound.darmstadt.de>
+
+--i7G6pZh10961.1092639095/gg.darmstadt.de--
 
 
 

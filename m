@@ -1,74 +1,69 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Linux-fbdev-devel] Re: Who is stomping PCI config space?
-Date: Sat, 05 Mar 2005 09:27:19 +1100
-Message-ID: <1109975240.5610.297.camel@gaston>
-References: <9e4733910503031103552514b9@mail.gmail.com>
-	<1109891245.5611.246.camel@gaston>
-	<9e473391050303161559c17955@mail.gmail.com>
-	<9e47339105030319037f083f7@mail.gmail.com>
-	<1109918459.5610.273.camel@gaston>
-	<16936.20345.249542.65736@xf14.local>
+Subject: Re: Re: waitforVBlank, how does this even work?
+Date: Sat, 05 Mar 2005 09:35:00 +1100
+Message-ID: <1109975700.5679.301.camel@gaston>
+References: <9e473391050301215019081bce@mail.gmail.com>
+	 <Pine.LNX.4.62.0503021128001.14333@node2.an-vo.com>
+	 <1109806955.5610.129.camel@gaston>
+	 <Pine.LNX.4.62.0503022003090.17679@node2.an-vo.com>
+	 <1109816602.5610.153.camel@gaston>
+	 <Pine.LNX.4.62.0503022159440.17679@node2.an-vo.com>
+	 <20050303075559.GA7469@sci.fi> <1109887707.5679.214.camel@gaston>
+	 <20050304131858.GA18821@sci.fi>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-In-Reply-To: <16936.20345.249542.65736@xf14.local>
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20050304131858.GA18821@sci.fi>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/xorg>
-List-Post: <mailto:xorg@lists.freedesktop.org>
-List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
-Sender: xorg-bounces@lists.freedesktop.org
-Errors-To: xorg-bounces@lists.freedesktop.org
-Content-Type: text/plain; charset="us-ascii"
-To: Egbert Eich <eich@suse.de>
-Cc: Xserver development <xorg@freedesktop.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Egbert Eich <eich@pdx.freedesktop.org>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Vladimir Dergachev <volodya@mindspring.com>, Jon Smirl <jonsmirl@gmail.com>, DRI developer's list <dri-devel@lists.sourceforge.net>
 
+On Fri, 2005-03-04 at 15:18 +0200, Ville Syrj=E4l=E4 wrote:
+> On Fri, Mar 04, 2005 at 09:08:27AM +1100, Benjamin Herrenschmidt wrote:
+> >=20
+> > > > Oh, but I was not suggesting that. I just meant that interrupt ha=
+ndling=20
+> > > > code is self-contained and can easily serve several consumers.
+> > >=20
+> > > I'm with you here. And the same should IMHO hold for DMA handling. =
+And for=20
+> > > memory management of course.
+> >=20
+> > DMA handling is the main piece of what the DRM does,
+>=20
+> The actual bits that feed DMA buffers to the hardware are very small. A=
+nd=20
+> I just meant that like the IRQ code those need to be easily accessible=20
+> from other components (fbdev, video capture module etc.)
 
-> It needs to have it in some central place which doesn't necessarily
-> have to be the kernel. 
+"Feeding DMA buffers" in what sense ? The buffers are matches with
+various functions. For AGP buffers, you have to get into the whole
+allocation mecanism, pure PCI DMA isn't always possible on some hosts.
 
-I think it has to be the kernel so we can include kernel services, like
-kernel fbdev's or vgacon in the loop.
+Also, those buffers are what ? Data for blits ? textures ? they always
+belong to some sort of command, which we want to eventually validate in
+a way by the kernel unless you want your client to be root...
 
-> The point is: if Jon needs these registers in an interrupt handler
-> he may have to tweak PCI config space form there anyway since another 
-> card may currently have VGA routed.
-
-The problem is that a card that has VGA support _and_ MMIO registers.
-Even if nobody uses VGA on it, if a different VGA card on the same bus
-is active, X will disable IO decoding on the first one (to disable VGA
-too).
-
-There isn't a simple way to solve that that I know, except if the card
-can be configured to totally ignore VGA accesses, in which case it
-doesn't need to be disabled, but X doesn't know it...  (though if we
-have a central "arbibrer", the driver for the card can tell it to remove
-that card from the arbitration).
-
-In the normal case tho, I don't really see how to deal with that other
-than, indeed, switching the enables at interrupt time, when the IRQ gets
-in, which will obviously conflict with a concurrent server working on
-the "other" card at the same time....
-
-So even with a kernel based arbitrer, the irq scenario isn't possible to
-deal with properly, unless VGA decoding can be completely disabled on a
-given card, or nobody uses VGA memory accesses on any card. (Most modern
-drivers only use non-VGA memory/IO, or even IO are remapped to some
-different addresses with some cards).
-
-As soon as two cards are in the system on the same bus segment, with one
-of the them needing legacy VGA accesses to the low PCI memory/IO ports,
-and the other one potentially decoding that space, there is simply no
-solution that I can see with interrupts. 
->  > 
->  > X disables any other VGA card IO/MEM in the system so that at one given
->  > point in time, only one of them will decode VGA cycles. Wether it has
->  > those cards to drive in it's config or not doesn't matter, the problem
->  > at the bus level is the same.
-> 
-> Right. It however should only do so if one of the cards it is driving 
-> itself requires VGA registers for its mode of operation.
+No, honestly, I don't see the point in breaking up our current DRM/fbdev
+thing.
 
 Ben.
+
+
+
+
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

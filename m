@@ -1,107 +1,71 @@
-From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+From: "Kendall Bennett" <KendallB@scitechsoft.com>
 Subject: Re: [Linux-fbdev-devel] Generic VESA framebuffer driver and Video card BOOT?
-Date: Fri, 15 Oct 2004 11:29:02 -0700
+Date: Fri, 15 Oct 2004 11:36:04 -0700
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <20041015112902.A12631@unix-os.sc.intel.com>
-References: <416E6ADC.3007.294DF20D@localhost> <87d5zkqj8h.fsf@bytesex.org> <Pine.GSO.4.61.0410151437050.10040@waterleaf.sonytel.be>
+Message-ID: <416FB624.17156.1D23C23@localhost>
+References: <416E6ADC.3007.294DF20D@localhost>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S268293AbUJOSb4@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <Pine.GSO.4.61.0410151437050.10040@waterleaf.sonytel.be>; from geert@linux-m68k.org on Fri, Oct 15, 2004 at 02:38:01PM +0200
+Content-Transfer-Encoding: 7BIT
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S268295AbUJOShL@vger.kernel.org>
+In-reply-to: <200410150827.38943.adaplas@hotpop.com>
+Content-description: Mail message body
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>, penguinppc-team@lists.penguinppc.org
+To: "Antonino A. Daplas" <adaplas@hotpop.com>, linux-kernel@vger.kernel.org
+Cc: linux-fbdev-devel@lists.sourceforge.net, penguinppc-team@lists.penguinppc.org
 
-On Fri, Oct 15, 2004 at 02:38:01PM +0200, Geert Uytterhoeven wrote:
-> On Fri, 15 Oct 2004, Gerd Knorr wrote:
-> > Have you talked to the powermanagement guys btw.?  One of the major
-> > issues with suspend-to-ram is to get the graphics card back online,
-> > and SNAPBoot might help to fix this too.  I'm not sure a userspace
-> > solution would work for *that* through.
+"Antonino A. Daplas" <adaplas@hotpop.com> wrote:
+
+> On Friday 15 October 2004 03:02, Kendall Bennett wrote:
+> > So what we would like to find out is how much interest there might be in
+> > both an updated VESA framebuffer console driver as well as the code for
+> > the Video card BOOT process being contributed to the maintstream kernel.
+> > If there is interest, we would start out by first contributing the core
+> > emulator and Video BOOT code, and then work on building a better VESA
+> > framebuffer console driver.
+> >
+> > So what do you guys think?
 > 
-> Why not? Of course you won't get any output before the graphics card has been
-> re-initialized to a sane and usable state...
-> 
+> I'm for it, if you can get the code in the kernel.  If not, what
+> are the arguments against doing this in userspace? 
 
-True. I do it on my Dell 600m (Radeon 9000M) using usermodehelper and it works just fine. It works both with VGA and X. I need to split up the thaw_processes into two stages though. It may not work with fb as fb driver resumes earlier. I use the patch below for the kernel and a userlevel x86 emulator.
+At least for the 2.4 kernels it is not possible to run code from user 
+space early enough in the boot sequence to bring up the video card when 
+the framebuffer console driver starts. Alan Cox said there is work under 
+way for 2.6 that might allow this, but it would have to be done very 
+early in the boot sequence.
 
-I have to say though, it will help if we have a such an emulator in the kernel.
+Remember this project is for non-x86 platforms such as PowerPC and MIPS 
+embedded machines where there is no way to set a graphics mode using the 
+BIOS before the kernel starts loading (well, you can do something using U-
+Boot but a lot of projects don't always use U-Boot).
 
-Thanks,
-Venki
+> If you remember about 2 years ago, there was a thread which you
+> started about vesafbd.  From that, I've worked on vm86d which is a
+> generic approach to running BIOS code in user space. I stopped
+> development on this though, but it should be easy to revive. 
 
+Yes, I am aware of this project. It is a great project for x86 platforms, 
+but falls short for non-x86 due to the inability to set a basic display 
+mode prior to user space access becoming available.
 
---- linux-2.6.9-rc2/kernel/power/main.c.org	2004-09-12 18:23:00.671546520 -0700
-+++ linux-2.6.9-rc2/kernel/power/main.c	2004-09-12 18:22:27.548581976 -0700
-@@ -106,12 +106,28 @@ static int suspend_enter(u32 state)
-  *	console that we've allocated.
-  */
- 
-+int vgapost_usermode(void)
-+{
-+	char	*argv[3] = {NULL, NULL, NULL};
-+	char	*envp[3] = {NULL, NULL, NULL};
-+
-+	argv[0] = "/root/emu/video_post";
-+
-+	/* minimal command environment */
-+	envp[0] = "HOME=/";
-+	envp[1] = "PATH=/sbin:/bin:/usr/sbin:/usr/bin";
-+        
-+	return call_usermodehelper(argv[0], argv, envp, 1);
-+}
-+
- static void suspend_finish(u32 state)
- {
- 	int retval;
- 	device_resume();
- 	if (pm_ops && pm_ops->finish)
- 		pm_ops->finish(state);
-+	thaw_processes_kernel();
-+	retval = vgapost_usermode();
- 	thaw_processes();
- 
- 	pm_restore_console();
---- linux-2.6.9-rc2/kernel/power/process.c.org	2004-09-12 18:21:48.266553752 -0700
-+++ linux-2.6.9-rc2/kernel/power/process.c	2004-09-12 18:22:06.851728376 -0700
-@@ -97,6 +97,29 @@ int freeze_processes(void)
- 	return 0;
- }
- 
-+void thaw_processes_kernel(void)
-+{
-+	struct task_struct *g, *p;
-+
-+	printk( "Restarting kernel tasks..." );
-+	read_lock(&tasklist_lock);
-+	do_each_thread(g, p) {
-+		if (!freezeable(p))
-+			continue;
-+		if (p->parent->pid != 1)
-+			continue;
-+		if (p->flags & PF_FROZEN) {
-+			p->flags &= ~PF_FROZEN;
-+			wake_up_process(p);
-+		} else
-+			printk(KERN_INFO " Strange, %s not stopped\n", p->comm );
-+	} while_each_thread(g, p);
-+
-+	read_unlock(&tasklist_lock);
-+	schedule();
-+	printk( " done\n" );
-+}
-+
- void thaw_processes(void)
- {
- 	struct task_struct *g, *p;
-@@ -106,6 +129,8 @@ void thaw_processes(void)
- 	do_each_thread(g, p) {
- 		if (!freezeable(p))
- 			continue;
-+		if (p->parent->pid == 1)
-+			continue;
- 		if (p->flags & PF_FROZEN) {
- 			p->flags &= ~PF_FROZEN;
- 			wake_up_process(p);
+> There is also vesafb-tng. I think it runs BIOS code in kernel
+> space. 
+
+I am not familiar with that. Can you point me to a URL?
+
+> The video BOOT code is also nice, especially for non-primary
+> graphics cards. 
+
+Yep.
+
+Regards,
+
+---
+Kendall Bennett
+Chief Executive Officer
+SciTech Software, Inc.
+Phone: (530) 894 8400
+http://www.scitechsoft.com
+
+~ SciTech SNAP - The future of device driver technology! ~

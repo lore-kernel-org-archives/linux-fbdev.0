@@ -1,17 +1,17 @@
 From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: clipping
-Date: 11 Jan 2003 13:12:45 +0800
+Subject: Re: fb_imageblit()
+Date: 11 Jan 2003 13:11:35 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1042261610.932.143.camel@localhost.localdomain>
-References: <Pine.LNX.4.44.0301102030310.30522-100000@phoenix.infradead.org>
+Message-ID: <1042259624.932.115.camel@localhost.localdomain>
+References: <Pine.LNX.4.44.0301101857310.18287-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from willow.compass.com.ph ([202.70.96.38])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18XE6u-0004Xg-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Jan 2003 21:23:08 -0800
-In-Reply-To: <Pine.LNX.4.44.0301102030310.30522-100000@phoenix.infradead.org>
+	id 18XE5l-0004Ri-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Jan 2003 21:21:57 -0800
+In-Reply-To: <Pine.LNX.4.44.0301101857310.18287-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -23,148 +23,149 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@infradead.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sat, 2003-01-11 at 04:31, James Simmons wrote:
+On Sat, 2003-01-11 at 03:23, James Simmons wrote:
 > 
-> > > > Except for the geek value, why would it be cleaner to draw half of a character
-> > > > near the border?
-> > > 
-> > > This is one of the reasons why I moved from fbset to setting the console 
-> > > resolution via the console layer. You can't end up with half characters. 
-> > > Via fbset you could but fbcon had extra code to prevent such foolishness. 
-> > > But it still looked silly to have half line on the bottom of the screen 
-> > > that nothing ever drawed in.
+> > I've thought of that also, packing the data according to the pixel depth.  
+> 
+> Actually I was think more along the image depth. The largest the penguin 
+> logo gets is 224 colors. Meaning the largest image.depth is 8 bits per 
+> pixel. I do agree it is messy to pack the logo data. So for say the 16 
+> color logo (4 bpp) putting two pixels worth of data into each byte and 
+> then seperating it out would be time consuming. The only reason I was 
+> thinking this way is because of userland using the cursor means imageblit 
+> is visible to userland. 
+
+That's why we don't need to support software cursor routines, which
+implies that imageblit will not be exposed to user space.  It's
+impractical to do that in kernel space anyway because you need lot's of
+additional code:
+
+1.You have to constantly save and restore the screen underneath the
+cursor. In the console we can cheat because we know the current
+character underneath the cursor and movement of the cursor is granulated
+anyway, per character instead of per pixel.
+
+2.  Imageblit has to support more ROP's.  Otherwise, the user will be
+stuck with a rectangular cursor.  In fbcon, again, we can cheat, because
+we always know that any given character is just made up of 2 colors, the
+background and the foreground. So it's easy to do bit operations using
+the cursor image, the cursor mask, and the font bitmap of the character
+underneath the cursor. In user space, expect the image beneath the
+cursor to be composed of > 2 colors.
+ 
+3. Optionally, imageblit has to support color expansion other than
+mono->framebuffer format  in case the cursor image depth != framebuffer
+depth.  Note, imageblit is limited by length of info->pseudo_palette, so
+the app cannot pass a cursor image whose depth is equal to the
+framebuffer depth (unless bpp <= 4bpp).
+
+4. Imageblit will not be able to practically support more than 256
+colors at a time and still do it efficiently. Either we change the
+formatting of the data to match the native framebuffer format, which is
+the most efficient but requires intimate knowledge of the hardware, or
+change it into directcolor format.  Changing it to directcolor format
+means we have to reconstruct each pixel from the cmap. This is just too
+slow.
+  
+So only drivers with hardware cursor support need to expose it to
+userspace.  And we keep imageblit private to fbcon.
+
+> 
+> > a. Prepare logo data so each pixel of data is in directcolor format (if
+> > we will use the cmap), so depth corresponds to framebuffer depth, and
+> > data is packed. 
+> 
+> The depth doesn't have to be the same as the framebuffer depth. The logo 
+> data is in terms of color map indices. I did think in terms of packed data 
+> tho.
+> 
+
+So how will the driver know how the logo data is packed if it's not
+based on the framebuffer depth? Unless you have conditionals like:
+
+if (!(8 % var->bits_per_pixel) && var-bits_per_pixel <= 8)
+	pixels_per_byte = 8/var->bits_per_pixel; /* 1, 2, 4, 8 bpp*/
+else
+	pixels_per_byte = 1; 
+
+Or:
+
+	pixels_per_byte = 1 /* always */
+
+The latter is so much simpler.  
+
+Or if you want to pack 1-8 bpp entirely, then be willing to add code for
+packing 3, 5, 6, 7 bpp.
+ 
+> > d. Get each color component from the cmap data. 
 > > 
-> > What else can you do? My notebook has a fixed LCD of 1024x768. With the 12x22
-> > font, I have a text console of 85x34, using only 1020x748 pixels. Shrinking the
-> > resolution to 1020x748 is not an option.
+> > e. Recreate pixel data based on var.[color].offset and
+> > var.[color].length. 
 > 
-> Ug. I guess we handle it the best way we can. Also we can try BenH 
-> suggesting of incorpating scaling. 
+> Yuck no. Doing a fb_set_cmap should handle that before we call 
+> xxxfb_imageblit. Then xxxfb_imageblit only has to take the data in 
+> the logo data as indices of the color map. Of 
+>  
+
+Which is what the current code is already doing, building a temporary
+pseudo_palette, albeit without the driver's notice. By extending the
+pseudo_palette to 256 entries, we can let the driver build it on its
+own.
+
+> > f. Write the pixel data in packed form to the framebuffer. 
+> 
+> > Whereas, with the current approach: 
+> > 
+> > a. Prepare logo data such that each pixel corresponds to one byte. 
+> > 
+> > b. Pass the structure to cfb_imageblit. 
+> > 
+> > c. Read color information from pseudopalette if directcolor/truecolor. 
+> > 
+> > d. Write the pixel data in packed form to the framebuffer. 
+> 
+> I was think the same way except for the idea of more than one color 
+> indices per byte for less than 8 bpp modes.
+>  
+
+Same argument as the above. Too much complexity, too little gain.
+
+> > Secondly, indexing the cmap instead of the pseudo_palette means that
+> > cfb_imageblit has to know the native framebuffer format.  
+> 
+> No indexing the cmap. Instead call fb_set_cmap before we call 
+> xxxfb_imageblit. Personally I think we should call fb_set_cmap always.
 > 
 
-Or we can modify fbcon_resize() so it just checks if the resulting
-resolution is enough to accomodate the console window size...
+Only if the pseudo_palette is extended to > 16 entries, or some exotic
+hardware requires it.  Otherwise, it's useless besides setting the color
+register.
 
-static int fbcon_resize(struct vc_data *vc, unsigned int width, 
-			unsigned int height)
-{
-	struct display *p = &fb_display[vc->vc_num];
-	struct fb_info *info = p->fb_info;
-	struct fb_var_screeninfo var = info->var;
-	int err, x, y;
+In any case, it's an easy fix.
 
-	var.xres = x = width * vc->vc_font.width;
-	var.yres = y = height * vc->vc_font.height;
-	var.activate = FB_ACTIVATE_TEST;
-	err = fb_set_var(&var, info);
-	if (err || var.xres < x || var.yres < y)
-		return -EINVAL;
+> > I would rather have everything refer to
+> > the pseudopalette, regardless of the visual format.  This will be better
+> > especially for some of the corner cases, like monochrome cards with
+> > bits_per_pixel = 8. 
+> 
+> It works pretty good for for any pack pixel type modes. Now for planar 
+> cards this isn't the case. Ideally struct fb_cmap should have contained 
+> a 
 
-	var.activate = FB_ACTIVATE_NOW;
-	err = fb_set_var(&var, info);
-	p->vrows = info->var.yres_virtual/vc->vc_font.height;
-	return err; 
-}
+I don't see a problem here.  vga16fb is planar, and logo drawing works
+just fine.
 
-...which implies that we also have to modify accel_clear_margins() so it
-clears more than just a fraction of a character's width and height...
+> 
+> unsigned long pixel;
+> 
+> field. Like X does. It does not and changing that would break things :-(
+>  
 
-void accel_clear_margins(struct vc_data *vc, struct display *p,
-				int bottom_only)
-{
-	struct fb_info *info = p->fb_info;
-	unsigned int cw = vc->vc_font.width;
-	unsigned int ch = vc->vc_font.height;
-	unsigned int rw = info->var.xres - vc->vc_cols * cw;
-	unsigned int bh = info->var.yres - vc->vc_rows * ch;
-	unsigned int rs = info->var.xres - rw;
-	unsigned int bs = info->var.yres - bh;
-	struct fb_fillrect region;
-
-	region.color = attr_bgcol_ec(p, vc);
-	region.rop = ROP_COPY;
-
-	if (rw & !bottom_only) {
-		region.dx = info->var.xoffset + rs;
-		region.dy = 0;
-		region.width = rw;
-		region.height = info->var.yres_virtual;
-		info->fbops->fb_fillrect(info, &region);
-	}
-
-	if (bh) {
-		region.dx = info->var.xoffset;
-		region.dy = info->var.yoffset + bs;
-		region.width = rs;
-		region.height = bh;
-		info->fbops->fb_fillrect(info, &region);
-	}	
-}	
-
-... which exposed a bug in vc_resize() in vt.c.  In vc_resize(), the
-global variables:
-
-	video_num_lines;
-	video_num_columns;
-	video_size_row;
-	screenbuf_size;
-
-are modified before calling consw->con_resize() which, if it returns
-with an error, are left with invalid numbers. So attached is a patch.
-
-It behaves correctly now.  When the resulting resolution is bigger than
-the console window size, it's left with a small window at the upper left
-corner.  So stty must be called so rows and cols are enough but no
-bigger than the supported resolution.
-
-This works pretty well if panning is disabled.  With panning, I get a
-cursor "dissynchronous" with the display and where the virtual screen is
-randomly placed anywhere within the display window.
-
-We might need to fix for scrolling + panning here.
+Isn't that what info->pseudo_palette is used for?
 
 Tony
-
-diff -Naur linux-2.5.54/drivers/char/vt.c linux/drivers/char/vt.c
---- linux-2.5.54/drivers/char/vt.c	2003-01-11 04:47:02.000000000 +0000
-+++ linux/drivers/char/vt.c	2003-01-11 04:47:49.000000000 +0000
-@@ -732,24 +732,24 @@
- 	if (new_cols == video_num_columns && new_rows == video_num_lines)
- 		return 0;
- 
--	newscreen = (unsigned short *) kmalloc(new_screen_size, GFP_USER);
--	if (!newscreen)
--		return -ENOMEM;
--
- 	old_rows = video_num_lines;
- 	old_cols = video_num_columns;
- 	old_row_size = video_size_row;
- 	old_screen_size = screenbuf_size;
- 
-+	err = resize_screen(currcons, new_cols, new_rows);
-+	if (err) 
-+		return err;
-+
-+	newscreen = (unsigned short *) kmalloc(new_screen_size, GFP_USER);
-+	if (!newscreen)
-+		return -ENOMEM;
-+
- 	video_num_lines = new_rows;
- 	video_num_columns = new_cols;
- 	video_size_row = new_row_size;
- 	screenbuf_size = new_screen_size;
- 
--	err = resize_screen(currcons, new_cols, new_rows);
--	if (err)
--		return err;
--
- 	rlth = min(old_row_size, new_row_size);
- 	rrem = new_row_size - rlth;
- 	old_origin = origin;
-
-
 
 
 

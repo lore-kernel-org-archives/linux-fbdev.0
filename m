@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 3/10] fbcon: Cursor fixes
-Date: Sun, 6 Mar 2005 08:16:36 +0800
-Message-ID: <200503060816.36158.adaplas@hotpop.com>
+Subject: [PATCH 7/10] fbdev: Generic drawing function cleanups 2
+Date: Sun, 6 Mar 2005 08:16:52 +0800
+Message-ID: <200503060816.52085.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D7jTy-00072M-PU
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 05 Mar 2005 16:18:54 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.71])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1D7jTx-0002Vg-EG
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 05 Mar 2005 16:18:54 -0800
+	id 1D7jUC-00073Z-Tm
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 05 Mar 2005 16:19:08 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.51])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1D7jUB-0000Ba-DZ
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 05 Mar 2005 16:19:08 -0800
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 0A3E1149326E
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun,  6 Mar 2005 00:18:43 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id B50EE736CB
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun,  6 Mar 2005 00:18:59 +0000 (UTC)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -29,131 +29,630 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Jiri Benc <jbenc@suse.cz>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@www.infradead.org>, ":"@smtp-3.hotpop.com
 
-  From Jiri Benc:
+  From James Simmons <jsimmons@www.infradead.org>:
 
-  we found several bugs in framebuffer console code in recent kernels.
-
-  1. The escape sequence '\033[?25l' does not work (should disable cursor).
-
-  2. When scrolling console using Shift-PgUp with cursor in the upper half
-     part of the screen, cursor position is not updated.
-
-  3. If cursor is placed at some character and console is scrolled using
-     Shift-PgUp, that character remains on the screen.
+  Replaced LONG_MASK, SHIFT_PER_LONG, BYTES_PER_LONG with dynamic
+  variables. This will allow drivers in the future to control how much
+  data to read/write from the framebuffer.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- bitblit.c  |   11 ++++++++++-
- fbcon.c    |   24 ++++++++++--------------
- fbcon.h    |    2 +-
- tileblit.c |    3 ++-
- 4 files changed, 23 insertions(+), 17 deletions(-)
+ cfbcopyarea.c |  185 ++++++++++++++++------------------------------------------
+ cfbfillrect.c |   90 ++++++++++++----------------
+ 2 files changed, 94 insertions(+), 181 deletions(-)
 
-diff -Nru a/drivers/video/console/bitblit.c b/drivers/video/console/bitblit.c
---- a/drivers/video/console/bitblit.c	2005-02-21 20:43:09 +08:00
-+++ b/drivers/video/console/bitblit.c	2005-02-23 17:50:11 +08:00
-@@ -236,7 +236,7 @@
- }
+diff -Nru a/drivers/video/cfbcopyarea.c b/drivers/video/cfbcopyarea.c
+--- a/drivers/video/cfbcopyarea.c	2005-03-05 00:18:24 +08:00
++++ b/drivers/video/cfbcopyarea.c	2005-03-05 07:46:05 +08:00
+@@ -1,7 +1,7 @@
+ /*
+  *  Generic function for frame buffer with packed pixels of any depth.
+  *
+- *      Copyright (C)  June 1999 James Simmons
++ *      Copyright (C)  1999-2005 James Simmons <jsimmons@www.infradead.org>
+  *
+  *  This file is subject to the terms and conditions of the GNU General Public
+  *  License.  See the file COPYING in the main directory of this archive for
+@@ -33,18 +33,12 @@
+ #include <asm/types.h>
+ #include <asm/io.h>
  
- static void bit_cursor(struct vc_data *vc, struct fb_info *info,
--		       struct display *p, int mode, int fg, int bg)
-+		       struct display *p, int mode, int softback_lines, int fg, int bg)
+-#define LONG_MASK  (BITS_PER_LONG - 1)
+-
+ #if BITS_PER_LONG == 32
+ #  define FB_WRITEL fb_writel
+ #  define FB_READL  fb_readl
+-#  define SHIFT_PER_LONG 5
+-#  define BYTES_PER_LONG 4
+ #else
+ #  define FB_WRITEL fb_writeq
+ #  define FB_READL  fb_readq
+-#  define SHIFT_PER_LONG 6
+-#  define BYTES_PER_LONG 8
+ #endif
+ 
+     /*
+@@ -63,21 +57,20 @@
+      */
+ 
+ static void
+-bitcpy(unsigned long __iomem *dst, int dst_idx,
+-       const unsigned long __iomem *src, int src_idx,
+-       unsigned n)
++bitcpy(unsigned long __iomem *dst, int dst_idx, const unsigned long __iomem *src,
++	int src_idx, int bits, unsigned n)
  {
- 	struct fb_cursor cursor;
- 	struct fbcon_ops *ops = (struct fbcon_ops *) info->fbcon_par;
-@@ -247,6 +247,15 @@
- 	char *src;
+ 	unsigned long first, last;
+ 	int const shift = dst_idx-src_idx;
+ 	int left, right;
  
- 	cursor.set = 0;
-+
-+	if (softback_lines) {
-+		if (y + softback_lines >= vc->vc_rows) {
-+			mode = CM_ERASE;
-+			ops->cursor_flash = 0;
-+			return;
-+		} else
-+			y += softback_lines;
-+	}
+ 	first = ~0UL >> dst_idx;
+-	last = ~(~0UL >> ((dst_idx+n) % BITS_PER_LONG));
++	last = ~(~0UL >> ((dst_idx+n) % bits));
  
-  	c = scr_readw((u16 *) vc->vc_pos);
- 	attribute = get_attribute(info, c);
-diff -Nru a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
---- a/drivers/video/console/fbcon.c	2005-02-21 20:43:09 +08:00
-+++ b/drivers/video/console/fbcon.c	2005-02-23 17:50:11 +08:00
-@@ -279,7 +279,7 @@
- 	c = scr_readw((u16 *) vc->vc_pos);
- 	mode = (!ops->cursor_flash || ops->cursor_state.enable) ?
- 		CM_ERASE : CM_DRAW;
--	ops->cursor(vc, info, p, mode, get_color(vc, info, c, 1),
-+	ops->cursor(vc, info, p, mode, softback_lines, get_color(vc, info, c, 1),
- 		    get_color(vc, info, c, 0));
- 	release_console_sem();
- }
-@@ -1086,27 +1086,23 @@
- 	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
- 	struct fbcon_ops *ops = info->fbcon_par;
- 	struct display *p = &fb_display[vc->vc_num];
--	int y = real_y(p, vc->vc_y);
-+	int y;
-  	int c = scr_readw((u16 *) vc->vc_pos);
+ 	if (!shift) {
+ 		// Same alignment for source and dest
  
- 	if (fbcon_is_inactive(vc, info))
+-		if (dst_idx+n <= BITS_PER_LONG) {
++		if (dst_idx+n <= bits) {
+ 			// Single word
+ 			if (last)
+ 				first &= last;
+@@ -90,11 +83,11 @@
+ 				FB_WRITEL( comp( FB_READL(src), FB_READL(dst), first), dst);
+ 				dst++;
+ 				src++;
+-				n -= BITS_PER_LONG-dst_idx;
++				n -= bits - dst_idx;
+ 			}
+ 
+ 			// Main chunk
+-			n /= BITS_PER_LONG;
++			n /= bits;
+ 			while (n >= 8) {
+ 				FB_WRITEL(FB_READL(src++), dst++);
+ 				FB_WRITEL(FB_READL(src++), dst++);
+@@ -118,17 +111,17 @@
+ 		int m;
+ 		// Different alignment for source and dest
+ 
+-		right = shift & (BITS_PER_LONG-1);
+-		left = -shift & (BITS_PER_LONG-1);
++		right = shift & (bits - 1);
++		left = -shift & (bits - 1);
+ 
+-		if (dst_idx+n <= BITS_PER_LONG) {
++		if (dst_idx+n <= bits) {
+ 			// Single destination word
+ 			if (last)
+ 				first &= last;
+ 			if (shift > 0) {
+ 				// Single source word
+ 				FB_WRITEL( comp( FB_READL(src) >> right, FB_READL(dst), first), dst);
+-			} else if (src_idx+n <= BITS_PER_LONG) {
++			} else if (src_idx+n <= bits) {
+ 				// Single source word
+ 				FB_WRITEL( comp(FB_READL(src) << left, FB_READL(dst), first), dst);
+ 			} else {
+@@ -150,19 +143,19 @@
+ 				// Single source word
+ 				FB_WRITEL( comp(d0 >> right, FB_READL(dst), first), dst);
+ 				dst++;
+-				n -= BITS_PER_LONG-dst_idx;
++				n -= bits - dst_idx;
+ 			} else {
+ 				// 2 source words
+ 				d1 = FB_READL(src++);
+ 				FB_WRITEL( comp(d0<<left | d1>>right, FB_READL(dst), first), dst);
+ 				d0 = d1;
+ 				dst++;
+-				n -= BITS_PER_LONG-dst_idx;
++				n -= bits - dst_idx;
+ 			}
+ 
+ 			// Main chunk
+-			m = n % BITS_PER_LONG;
+-			n /= BITS_PER_LONG;
++			m = n % bits;
++			n /= bits;
+ 			while (n >= 4) {
+ 				d1 = FB_READL(src++);
+ 				FB_WRITEL(d0 << left | d1 >> right, dst++);
+@@ -204,28 +197,27 @@
+      */
+ 
+ static void
+-bitcpy_rev(unsigned long __iomem *dst, int dst_idx,
+-           const unsigned long __iomem *src, int src_idx,
+-           unsigned n)
++bitcpy_rev(unsigned long __iomem *dst, int dst_idx, const unsigned long __iomem *src,
++		int src_idx, int bits, unsigned n)
+ {
+ 	unsigned long first, last;
+ 	int shift;
+ 
+-	dst += (n-1)/BITS_PER_LONG;
+-	src += (n-1)/BITS_PER_LONG;
+-	if ((n-1) % BITS_PER_LONG) {
+-		dst_idx += (n-1) % BITS_PER_LONG;
+-		dst += dst_idx >> SHIFT_PER_LONG;
+-		dst_idx &= BITS_PER_LONG-1;
+-		src_idx += (n-1) % BITS_PER_LONG;
+-		src += src_idx >> SHIFT_PER_LONG;
+-		src_idx &= BITS_PER_LONG-1;
++	dst += (n-1)/bits;
++	src += (n-1)/bits;
++	if ((n-1) % bits) {
++		dst_idx += (n-1) % bits;
++		dst += dst_idx >> (ffs(bits) - 1);
++		dst_idx &= bits - 1;
++		src_idx += (n-1) % bits;
++		src += src_idx >> (ffs(bits) - 1);
++		src_idx &= bits - 1;
+ 	}
+ 
+ 	shift = dst_idx-src_idx;
+ 
+-	first = ~0UL << (BITS_PER_LONG-1-dst_idx);
+-	last = ~(~0UL << (BITS_PER_LONG-1-((dst_idx-n) % BITS_PER_LONG)));
++	first = ~0UL << (bits - 1 - dst_idx);
++	last = ~(~0UL << (bits - 1 - ((dst_idx-n) % bits)));
+ 
+ 	if (!shift) {
+ 		// Same alignment for source and dest
+@@ -247,7 +239,7 @@
+ 			}
+ 
+ 			// Main chunk
+-			n /= BITS_PER_LONG;
++			n /= bits;
+ 			while (n >= 8) {
+ 				FB_WRITEL(FB_READL(src--), dst--);
+ 				FB_WRITEL(FB_READL(src--), dst--);
+@@ -269,8 +261,8 @@
+ 	} else {
+ 		// Different alignment for source and dest
+ 
+-		int const left = -shift & (BITS_PER_LONG-1);
+-		int const right = shift & (BITS_PER_LONG-1);
++		int const left = -shift & (bits-1);
++		int const right = shift & (bits-1);
+ 
+ 		if ((unsigned long)dst_idx+1 >= n) {
+ 			// Single destination word
+@@ -311,8 +303,8 @@
+ 			n -= dst_idx+1;
+ 
+ 			// Main chunk
+-			m = n % BITS_PER_LONG;
+-			n /= BITS_PER_LONG;
++			m = n % bits;
++			n /= bits;
+ 			while (n >= 4) {
+ 				d1 = FB_READL(src--);
+ 				FB_WRITEL(d0 >> right | d1 << left, dst--);
+@@ -353,10 +345,11 @@
+ {
+ 	u32 dx = area->dx, dy = area->dy, sx = area->sx, sy = area->sy;
+ 	u32 height = area->height, width = area->width;
+-	int x2, y2, vxres, vyres;
+ 	unsigned long const bits_per_line = p->fix.line_length*8u;
+-	int dst_idx = 0, src_idx = 0, rev_copy = 0;
+ 	unsigned long __iomem *dst = NULL, *src = NULL;
++	int bits = BITS_PER_LONG, bytes = bits >> 3;
++	int dst_idx = 0, src_idx = 0, rev_copy = 0;
++	int x2, y2, vxres, vyres;
+ 
+ 	if (p->state != FBINFO_STATE_RUNNING)
+ 		return;
+@@ -385,8 +378,7 @@
+ 	width = x2 - dx;
+ 	height = y2 - dy;
+ 
+-	if ((width==0)
+-	  ||(height==0))
++	if ((width==0) ||(height==0))
  		return;
  
--	ops->cursor_flash = 1;
-+	ops->cursor_flash = (mode == CM_ERASE) ? 0 : 1;
- 	if (mode & CM_SOFTBACK) {
- 		mode &= ~CM_SOFTBACK;
--		if (softback_lines) {
--			if (y + softback_lines >= vc->vc_rows) {
--				mode = CM_ERASE;
--				ops->cursor_flash = 0;
--			}
--			else
--				y += softback_lines;
--		}
--	} else if (softback_lines)
--		fbcon_set_origin(vc);
-+		y = softback_lines;
-+	} else {
-+		if (softback_lines)
-+			fbcon_set_origin(vc);
-+		y = 0;
-+	}
+ 	/* update sx1,sy1 */
+@@ -394,15 +386,12 @@
+ 	sy += (dy - area->dy);
  
--	ops->cursor(vc, info, p, mode, get_color(vc, info, c, 1),
-+	ops->cursor(vc, info, p, mode, y, get_color(vc, info, c, 1),
- 		    get_color(vc, info, c, 0));
- 	vbl_cursor_cnt = CURSOR_DRAW_DELAY;
+ 	/* the source must be completely inside the virtual screen */
+-	if (sx < 0 || sy < 0 ||
+-	    (sx + width) > vxres ||
+-	    (sy + height) > vyres)
++	if (sx < 0 || sy < 0 || (sx + width) > vxres || (sy + height) > vyres)
+ 		return;
+ 
+ 	/* if the beginning of the target area might overlap with the end of
+ 	the source area, be have to copy the area reverse. */
+-	if ((dy == sy && dx > sx) ||
+-	    (dy > sy)) {
++	if ((dy == sy && dx > sx) || (dy > sy)) {
+ 		dy += height;
+ 		sy += height;
+ 		rev_copy = 1;
+@@ -410,9 +399,8 @@
+ 
+ 	// split the base of the framebuffer into a long-aligned address and the
+ 	// index of the first bit
+-	dst = src = (unsigned long __iomem *)((unsigned long)p->screen_base &
+-				      ~(BYTES_PER_LONG-1));
+-	dst_idx = src_idx = 8*((unsigned long)p->screen_base & (BYTES_PER_LONG-1));
++	dst = src = (unsigned long __iomem *)((unsigned long)p->screen_base & ~(bytes-1));
++	dst_idx = src_idx = 8*((unsigned long)p->screen_base & (bytes-1));
+ 	// add offset of source and target area
+ 	dst_idx += dy*bits_per_line + dx*p->var.bits_per_pixel;
+ 	src_idx += sy*bits_per_line + sx*p->var.bits_per_pixel;
+@@ -424,93 +412,26 @@
+ 		while (height--) {
+ 			dst_idx -= bits_per_line;
+ 			src_idx -= bits_per_line;
+-			dst += dst_idx >> SHIFT_PER_LONG;
+-			dst_idx &= LONG_MASK;
+-			src += src_idx >> SHIFT_PER_LONG;
+-			src_idx &= LONG_MASK;
+-			bitcpy_rev(dst, dst_idx, src, src_idx,
+-				   width*p->var.bits_per_pixel);
++			dst += dst_idx >> (ffs(bits) - 1);
++			dst_idx &= (bytes - 1);
++			src += src_idx >> (ffs(bits) - 1);
++			src_idx &= (bytes - 1);
++			bitcpy_rev(dst, dst_idx, src, src_idx, bits,
++				width*p->var.bits_per_pixel);
+ 		}
+ 	} else {
+ 		while (height--) {
+-			dst += dst_idx >> SHIFT_PER_LONG;
+-			dst_idx &= LONG_MASK;
+-			src += src_idx >> SHIFT_PER_LONG;
+-			src_idx &= LONG_MASK;
+-			bitcpy(dst, dst_idx, src, src_idx,
+-			       width*p->var.bits_per_pixel);
++			dst += dst_idx >> (ffs(bits) - 1);
++			dst_idx &= (bytes - 1);
++			src += src_idx >> (ffs(bits) - 1);
++			src_idx &= (bytes - 1);
++			bitcpy(dst, dst_idx, src, src_idx, bits,
++				width*p->var.bits_per_pixel);
+ 			dst_idx += bits_per_line;
+ 			src_idx += bits_per_line;
+ 		}
+ 	}
  }
-diff -Nru a/drivers/video/console/fbcon.h b/drivers/video/console/fbcon.h
---- a/drivers/video/console/fbcon.h	2005-01-15 04:01:47 +08:00
-+++ b/drivers/video/console/fbcon.h	2005-02-23 17:50:11 +08:00
-@@ -59,7 +59,7 @@
- 	void (*clear_margins)(struct vc_data *vc, struct fb_info *info,
- 			      int bottom_only);
- 	void (*cursor)(struct vc_data *vc, struct fb_info *info,
--		       struct display *p, int mode, int fg, int bg);
-+		       struct display *p, int mode, int softback_lines, int fg, int bg);
+-#undef CFB_DEBUG
+-#ifdef CFB_DEBUG
+-/** all this init-function does is to perform a few unittests.
+-The idea it always to invoke the function to test on a predefined bitmap and
+-compare the results to the expected output.
+-TODO:
+- - this currently only tests bitcpy_rev, as that was the only one giving me trouble
+- - this assumes 32 bit longs
+- - not sure about endianess, I only tested this on a 32 bit MIPS little endian system
+- - could reuse testcases to test forward copying, too, just reverse the operation
+-*/
+-int __init cfb_copyarea_init(void)
+-{
+-	char const* comment = 0;
+-	printk( KERN_INFO "cfb_copyarea_init()\n");
+-	{
+-		comment = "copy a single u32, source and target u32-aligned";
+-		u32 tmp[] =          { 0xaaaaaaaau, 0x55555555u, 0xffffffffu, 0x00000000u };
+-		u32 const expect[] = { 0xaaaaaaaau, 0xaaaaaaaau, 0xffffffffu, 0x00000000u };
+-
+-		bitcpy_rev( tmp, 0, tmp+1, 0, 32);
+-
+-		if( 0!=memcmp( expect, tmp, sizeof tmp))
+-			goto error;
+-	}
+-
+-	{
+-		comment = "copy a single u32, source u32-aligned";
+-		u32 tmp[] =          { 0x11112222u, 0x33334444u, 0x55556666u, 0x77778888u };
+-		u32 const expect[] = { 0x11112222u, 0x22224444u, 0x55551111u, 0x77778888u };
+-
+-		bitcpy_rev( tmp, 0, tmp+1, 16, 32);
+-
+-		if( 0!=memcmp( expect, tmp, sizeof tmp))
+-			goto error;
+-	}
+-
+-	{
+-		comment = "copy a single u32, target u32-aligned";
+-		u32 tmp[] =          { 0x11112222u, 0x33334444u, 0x55556666u, 0x77778888u };
+-		u32 const expect[] = { 0x11112222u, 0x33334444u, 0x44441111u, 0x77778888u };
+-
+-		bitcpy_rev( tmp, 16, tmp+2, 0, 32);
+-
+-		if( 0!=memcmp( expect, tmp, sizeof tmp))
+-			goto error;
+-	}
+-
+-	{
+-		comment = "copy two u32, source and target u32-aligned";
+-		u32 tmp[] =          { 0xaaaaaaaau, 0x55555555u, 0xffffffffu, 0x00000000u };
+-		u32 const expect[] = { 0xaaaaaaaau, 0xaaaaaaaau, 0x55555555u, 0x00000000u };
+-
+-		bitcpy_rev( tmp, 0, tmp+1, 0, 64);
+-
+-		if( 0!=memcmp( expect, tmp, sizeof tmp))
+-			goto error;
+-	}
+-
+-	return 0;
+-
+-error:
+-	printk( KERN_ERR " framebuffer self-test(%s) failed\n", comment);
+-	return -1;
+-}
+-module_init(cfb_copyarea_init);
+-#endif
  
- 	struct timer_list cursor_timer; /* Cursor timer */
- 	struct fb_cursor cursor_state;
-diff -Nru a/drivers/video/console/tileblit.c b/drivers/video/console/tileblit.c
---- a/drivers/video/console/tileblit.c	2004-11-17 18:15:18 +08:00
-+++ b/drivers/video/console/tileblit.c	2005-02-28 08:16:45 +08:00
-@@ -81,7 +81,8 @@
- }
+ EXPORT_SYMBOL(cfb_copyarea);
  
- static void tile_cursor(struct vc_data *vc, struct fb_info *info,
--			struct display *p, int mode, int fg, int bg)
-+			struct display *p, int mode, int softback_lines,
-+			int fg, int bg)
+diff -Nru a/drivers/video/cfbfillrect.c b/drivers/video/cfbfillrect.c
+--- a/drivers/video/cfbfillrect.c	2005-03-05 00:18:24 +08:00
++++ b/drivers/video/cfbfillrect.c	2005-03-06 07:11:25 +08:00
+@@ -26,13 +26,9 @@
+ #if BITS_PER_LONG == 32
+ #  define FB_WRITEL fb_writel
+ #  define FB_READL  fb_readl
+-#  define SHIFT_PER_LONG 5
+-#  define BYTES_PER_LONG 4
+ #else
+ #  define FB_WRITEL fb_writeq
+ #  define FB_READL  fb_readq
+-#  define SHIFT_PER_LONG 6
+-#  define BYTES_PER_LONG 8
+ #endif
+ 
+     /*
+@@ -107,7 +103,7 @@
+      */
+ 
+ static void
+-bitfill32(unsigned long __iomem *dst, int dst_idx, unsigned long pat, unsigned n)
++bitfill_aligned(unsigned long __iomem *dst, int dst_idx, unsigned long pat, unsigned n, int bits)
  {
- 	struct fb_tilecursor cursor;
- 	int use_sw = (vc->vc_cursor_type & 0x01);
+ 	unsigned long first, last;
+ 
+@@ -115,10 +111,9 @@
+ 		return;
+ 
+ 	first = ~0UL >> dst_idx;
+-	last = ~(~0UL >> ((dst_idx+n) % BITS_PER_LONG));
++	last = ~(~0UL >> ((dst_idx+n) % bits));
+ 
+-
+-	if (dst_idx+n <= BITS_PER_LONG) {
++	if (dst_idx+n <= bits) {
+ 		// Single word
+ 		if (last)
+ 			first &= last;
+@@ -130,11 +125,11 @@
+ 		if (first!= ~0UL) {
+ 			FB_WRITEL(comp(pat, FB_READL(dst), first), dst);
+ 			dst++;
+-			n -= BITS_PER_LONG-dst_idx;
++			n -= bits - dst_idx;
+ 		}
+ 
+ 		// Main chunk
+-		n /= BITS_PER_LONG;
++		n /= bits;
+ 		while (n >= 8) {
+ 			FB_WRITEL(pat, dst++);
+ 			FB_WRITEL(pat, dst++);
+@@ -164,8 +159,8 @@
+      */
+ 
+ static void
+-bitfill(unsigned long __iomem *dst, int dst_idx, unsigned long pat, int left,
+-        int right, unsigned n)
++bitfill_unaligned(unsigned long __iomem *dst, int dst_idx, unsigned long pat,
++			int left, int right, unsigned n, int bits)
+ {
+ 	unsigned long first, last;
+ 
+@@ -173,9 +168,9 @@
+ 		return;
+ 
+ 	first = ~0UL >> dst_idx;
+-	last = ~(~0UL >> ((dst_idx+n) % BITS_PER_LONG));
++	last = ~(~0UL >> ((dst_idx+n) % bits));
+ 
+-	if (dst_idx+n <= BITS_PER_LONG) {
++	if (dst_idx+n <= bits) {
+ 		// Single word
+ 		if (last)
+ 			first &= last;
+@@ -187,11 +182,11 @@
+ 			FB_WRITEL(comp(pat, FB_READL(dst), first), dst);
+ 			dst++;
+ 			pat = pat << left | pat >> right;
+-			n -= BITS_PER_LONG-dst_idx;
++			n -= bits - dst_idx;
+ 		}
+ 
+ 		// Main chunk
+-		n /= BITS_PER_LONG;
++		n /= bits;
+ 		while (n >= 4) {
+ 			FB_WRITEL(pat, dst++);
+ 			pat = pat << left | pat >> right;
+@@ -218,7 +213,7 @@
+      *  Aligned pattern invert using 32/64-bit memory accesses
+      */
+ static void
+-bitfill32_rev(unsigned long __iomem *dst, int dst_idx, unsigned long pat, unsigned n)
++bitfill_aligned_rev(unsigned long __iomem *dst, int dst_idx, unsigned long pat, unsigned n, int bits)
+ {
+ 	unsigned long val = pat, dat;
+ 	unsigned long first, last;
+@@ -227,9 +222,9 @@
+ 		return;
+ 
+ 	first = ~0UL >> dst_idx;
+-	last = ~(~0UL >> ((dst_idx+n) % BITS_PER_LONG));
++	last = ~(~0UL >> ((dst_idx+n) % bits));
+ 
+-	if (dst_idx+n <= BITS_PER_LONG) {
++	if (dst_idx+n <= bits) {
+ 		// Single word
+ 		if (last)
+ 			first &= last;
+@@ -242,11 +237,11 @@
+ 			dat = FB_READL(dst);
+ 			FB_WRITEL(comp(dat ^ val, dat, first), dst);
+ 			dst++;
+-			n -= BITS_PER_LONG-dst_idx;
++			n -= bits - dst_idx;
+ 		}
+ 
+ 		// Main chunk
+-		n /= BITS_PER_LONG;
++		n /= bits;
+ 		while (n >= 8) {
+ 			FB_WRITEL(FB_READL(dst) ^ val, dst);
+ 			dst++;
+@@ -287,8 +282,8 @@
+      */
+ 
+ static void
+-bitfill_rev(unsigned long __iomem *dst, int dst_idx, unsigned long pat, int left,
+-            int right, unsigned n)
++bitfill_unaligned_rev(unsigned long __iomem *dst, int dst_idx, unsigned long pat,
++			int left, int right, unsigned n, int bits)
+ {
+ 	unsigned long first, last, dat;
+ 
+@@ -296,9 +291,9 @@
+ 		return;
+ 
+ 	first = ~0UL >> dst_idx;
+-	last = ~(~0UL >> ((dst_idx+n) % BITS_PER_LONG));
++	last = ~(~0UL >> ((dst_idx+n) % bits));
+ 
+-	if (dst_idx+n <= BITS_PER_LONG) {
++	if (dst_idx+n <= bits) {
+ 		// Single word
+ 		if (last)
+ 			first &= last;
+@@ -313,11 +308,11 @@
+ 			FB_WRITEL(comp(dat ^ pat, dat, first), dst);
+ 			dst++;
+ 			pat = pat << left | pat >> right;
+-			n -= BITS_PER_LONG-dst_idx;
++			n -= bits - dst_idx;
+ 		}
+ 
+ 		// Main chunk
+-		n /= BITS_PER_LONG;
++		n /= bits;
+ 		while (n >= 4) {
+ 			FB_WRITEL(FB_READL(dst) ^ pat, dst);
+ 			dst++;
+@@ -349,11 +344,10 @@
+ 
+ void cfb_fillrect(struct fb_info *p, const struct fb_fillrect *rect)
+ {
++	unsigned long x2, y2, vxres, vyres, height, width, pat, fg;
++	int bits = BITS_PER_LONG, bytes = bits >> 3;
+ 	u32 bpp = p->var.bits_per_pixel;
+-	unsigned long x2, y2, vxres, vyres;
+-	unsigned long height, width, fg;
+ 	unsigned long __iomem *dst;
+-	unsigned long pat;
+ 	int dst_idx, left;
+ 
+ 	if (p->state != FBINFO_STATE_RUNNING)
+@@ -388,34 +382,33 @@
+ 
+ 	pat = pixel_to_pat( bpp, fg);
+ 
+-	dst = (unsigned long __iomem *)((unsigned long)p->screen_base &
+-				~(BYTES_PER_LONG-1));
+-	dst_idx = ((unsigned long)p->screen_base & (BYTES_PER_LONG-1))*8;
++	dst = (unsigned long __iomem *)((unsigned long)p->screen_base & ~(bytes-1));
++	dst_idx = ((unsigned long)p->screen_base & (bytes - 1))*8;
+ 	dst_idx += rect->dy*p->fix.line_length*8+rect->dx*bpp;
+ 	/* FIXME For now we support 1-32 bpp only */
+-	left = BITS_PER_LONG % bpp;
++	left = bits % bpp;
+ 	if (p->fbops->fb_sync)
+ 		p->fbops->fb_sync(p);
+ 	if (!left) {
+ 		void (*fill_op32)(unsigned long __iomem *dst, int dst_idx,
+-		                  unsigned long pat, unsigned n) = NULL;
++		                  unsigned long pat, unsigned n, int bits) = NULL;
+ 
+ 		switch (rect->rop) {
+ 		case ROP_XOR:
+-			fill_op32 = bitfill32_rev;
++			fill_op32 = bitfill_aligned_rev;
+ 			break;
+ 		case ROP_COPY:
+-			fill_op32 = bitfill32;
++			fill_op32 = bitfill_aligned;
+ 			break;
+ 		default:
+ 			printk( KERN_ERR "cfb_fillrect(): unknown rop, defaulting to ROP_COPY\n");
+-			fill_op32 = bitfill32;
++			fill_op32 = bitfill_aligned;
+ 			break;
+ 		}
+ 		while (height--) {
+-			dst += dst_idx >> SHIFT_PER_LONG;
+-			dst_idx &= (BITS_PER_LONG-1);
+-			fill_op32(dst, dst_idx, pat, width*bpp);
++			dst += dst_idx >> (ffs(bits) - 1);
++			dst_idx &= (bits - 1);
++			fill_op32(dst, dst_idx, pat, width*bpp, bits);
+ 			dst_idx += p->fix.line_length*8;
+ 		}
+ 	} else {
+@@ -424,8 +417,7 @@
+ 		int rot = (left-dst_idx) % bpp;
+ 		void (*fill_op)(unsigned long __iomem *dst, int dst_idx,
+ 		                unsigned long pat, int left, int right,
+-		                unsigned n) = NULL;
+-
++		                unsigned n, int bits) = NULL;
+ 
+ 		/* rotate pattern to correct start position */
+ 		pat = pat << rot | pat >> (bpp-rot);
+@@ -433,21 +425,21 @@
+ 		right = bpp-left;
+ 		switch (rect->rop) {
+ 		case ROP_XOR:
+-			fill_op = bitfill_rev;
++			fill_op = bitfill_unaligned_rev;
+ 			break;
+ 		case ROP_COPY:
+-			fill_op = bitfill;
++			fill_op = bitfill_unaligned;
+ 			break;
+ 		default:
+ 			printk( KERN_ERR "cfb_fillrect(): unknown rop, defaulting to ROP_COPY\n");
+-			fill_op = bitfill;
++			fill_op = bitfill_unaligned;
+ 			break;
+ 		}
+ 		while (height--) {
+-			dst += dst_idx >> SHIFT_PER_LONG;
+-			dst_idx &= (BITS_PER_LONG-1);
++			dst += dst_idx >> (ffs(bits) - 1);
++			dst_idx &= (bits - 1);
+ 			fill_op(dst, dst_idx, pat, left, right,
+-				width*bpp);
++				width*bpp, bits);
+ 			r = (p->fix.line_length*8) % bpp;
+ 			pat = pat << (bpp-r) | pat >> r;
+ 			dst_idx += p->fix.line_length*8;
 
 
 

@@ -1,22 +1,30 @@
-From: Guido Guenther <agx@sigxcpu.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: Re: [PATCH] fbdev: Fix IO access in rivafb
-Date: Sun, 14 Nov 2004 00:22:55 +0100
-Message-ID: <20041113232255.GA25845@bogon.ms20.nix>
-References: <200411080521.iA85LbG6025914@hera.kernel.org> <1099893447.10262.154.camel@gaston> <200411081706.55261.adaplas@hotpop.com> <1099950722.10262.166.camel@gaston> <MPG.1bfa1abaf653d37c98970a@news.gmane.org>
+Date: Sun, 14 Nov 2004 10:49:32 +1100
+Message-ID: <1100389772.20592.131.camel@gaston>
+References: <200411080521.iA85LbG6025914@hera.kernel.org>
+	 <200411090402.22696.adaplas@hotpop.com>
+	 <Pine.LNX.4.58.0411081211270.2301@ppc970.osdl.org>
+	 <200411090608.02759.adaplas@hotpop.com>
+	 <Pine.LNX.4.58.0411081422560.2301@ppc970.osdl.org>
+	 <20041112125125.GA3613@bogon.ms20.nix>
+	 <Pine.LNX.4.58.0411120755570.2301@ppc970.osdl.org>
+	 <20041112191852.GA4536@bogon.ms20.nix> <1100309972.20511.103.camel@gaston>
+	 <20041113112234.GA5523@bogon.ms20.nix>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CT7JN-0003QT-Fl
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 13 Nov 2004 15:28:05 -0800
-Received: from honk1.physik.uni-konstanz.de ([134.34.140.224])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1CT7ex-0005B4-7R
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 13 Nov 2004 15:50:23 -0800
+Received: from gate.crashing.org ([63.228.1.57])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1CT7JM-0000U7-OO
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 13 Nov 2004 15:28:05 -0800
-Content-Disposition: inline
-In-Reply-To: <MPG.1bfa1abaf653d37c98970a@news.gmane.org>
+	id 1CT7eu-0006bh-Hk
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 13 Nov 2004 15:50:23 -0800
+In-Reply-To: <20041113112234.GA5523@bogon.ms20.nix>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,29 +36,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Giuseppe Bilotta <bilotta78@hotpop.com>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+To: Guido Guenther <agx@sigxcpu.org>
+Cc: Linus Torvalds <torvalds@osdl.org>, adaplas@pol.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
 
-On Tue, Nov 09, 2004 at 12:07:58AM +0100, Giuseppe Bilotta wrote:
-> Benjamin Herrenschmidt wrote:
-> > On Mon, 2004-11-08 at 17:06 +0800, Antonino A. Daplas wrote:
-> > 
-> > > 
-> > > How about this patch?  This is almost the original macro in riva_hw.h,
-> > > with the __force annotation.
-> > 
-> > I don't like it neither. It lacks barriers. the rivafb driver
-> > notoriously lacks barriers, except in a few places where it was so bad
-> > that it actually broke all the time, where we added some. This
-> > originates from the X "nv" driver written by Mark Vojkovich who didn't
-> > want to hear about barriers for perfs reasons I think.
-> 
-> Could this be the reason why in 2.6.7 I get solid lockups when 
-> switching to nv-driven X and rivafb-driven console? Is there 
-> something I could test to see if this is the reason?
-Please try 2.6.10-rc1-mm5. It should work there.
- -- Guido
+On Sat, 2004-11-13 at 12:22 +0100, Guido Guenther wrote:
+
+> > {in,out}_8 are ppc-specific things that are identical to readb/writeb
+> > indeed, with barriers.
+
+> In 2.6.10-rc1-mm5 {in,out}_8 and read/writeb are exactly identical, only
+> __raw_{read,write}b is different. So you mean __raw_{read,write}b in the
+> above? (no nitpicking, just want to be sure I understand this
+> correctly).
+
+I just meant they are identical and they have both barriers, sorry.
+
+Ben.
+
+
 
 
 -------------------------------------------------------

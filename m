@@ -1,57 +1,45 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: waitforVBlank, how does this even work?
-Date: Wed, 02 Mar 2005 18:53:32 +1100
-Message-ID: <1109750012.5611.98.camel@gaston>
-References: <9e473391050301215019081bce@mail.gmail.com>
-	 <1109747415.5611.92.camel@gaston>  <20050302073027.GA17607@sci.fi>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: David Vrabel <dvrabel@arcom.com>
+Subject: Re: [Linux-fbdev-devel] RFC: disallow modular framebuffers
+Date: Wed, 02 Mar 2005 11:32:54 +0000
+Message-ID: <4225A466.7030301@arcom.com>
+References: <20050301024118.GF4021@stusta.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <20050302073027.GA17607@sci.fi>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, DRI developer's list <dri-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+In-Reply-To: <20050301024118.GF4021@stusta.de>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: adaplas@pol.net, linux-kernel@vger.kernel.org
 
-On Wed, 2005-03-02 at 09:30 +0200, Ville Syrj=E4l=E4 wrote:
-> On Wed, Mar 02, 2005 at 06:10:14PM +1100, Benjamin Herrenschmidt wrote:
-> > On Wed, 2005-03-02 at 00:50 -0500, Jon Smirl wrote:
-> > > For the r128 driver both the fbdev and drm drivers have implemented
-> > > waitforVBlank and they both play with the interrupt registers. I ca=
-n
-> > > only assume that no one has ever tried to use them at the same time.
-> > > In the radeon case the DRM driver has implemented waitforVBlank and
-> > > the fbdev driver has not.
-> > >=20
-> > > This is a mess and it is yet another reason for merging DRM and fbd=
-ev
-> > > into a sane, combined driver.
-> >=20
-> > I'd say nobody ever used both :)
->=20
-> I (and others) have with mga. The easiest solution was to disable the i=
-rq=20
-> code in the drm. That was for running OpenGL on DirectFB btw.
+Adrian Bunk wrote:
+> 
+> Do modular framebuffers really make sense?
 
-I'd rather have disabled the IRQ code in the fbdev and added a
-waitForVBlank in the DRM ...
+Yes.  e.g., on embedded systems you may not use the display hardware
+(and would therefore like to save a bit of memory) but it's convenient
+to have only one build of the kernel/modules.
 
-Ben.
+> OK, distributions like to make everything modular, but all the 
+> framebuffer drivers I've looked at parse driver specific options in 
+> their *_setup function only in the non-modular case.
 
+Not the (new) Geode framebuffer driver -- it uses regular module
+parameters for this very reason.
 
+> And most framebuffer drivers contain a module_exit function.
+> Is there really any case where this is both reasonable and working?
 
+It's useful for testing if nothing else.  True, the Geode framebuffer
+driver won't restore the mode on unload but since the software VGA
+emulation on a Geode is less than perfect[*] I would expect people to
+not use vgacon and thus there's nothing really to restore.
 
--------------------------------------------------------
-SF email is sponsored by - The IT Product Guide
-Read honest & candid reviews on hundreds of IT Products from real users.
-Discover which products truly live up to the hype. Start reading now.
-http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
+David Vrabel
+
+[*] I never did work out what happened to the cursor...
+-- 
+David Vrabel, Design Engineer
+
+Arcom, Clifton Road           Tel: +44 (0)1223 411200 ext. 3233
+Cambridge CB1 7EA, UK         Web: http://www.arcom.com/

@@ -1,87 +1,152 @@
 From: Adrian Bunk <bunk@stusta.de>
-Subject: [2.6 patch] neofb.c: make some code static
-Date: Sun, 21 Nov 2004 16:36:24 +0100
-Message-ID: <20041121153624.GU2829@stusta.de>
+Subject: [2.6 patch] cyber2000fb.c: misc cleanups
+Date: Sun, 21 Nov 2004 16:36:14 +0100
+Message-ID: <20041121153614.GR2829@stusta.de>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261647AbUKUQQm@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261333AbUKUPku@vger.kernel.org>
 Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Denis Oliver Kropp <dok@directfb.org>
+To: rmk@arm.linux.org.uk
 Cc: Antonino Daplas <adaplas@pol.net>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-The patch below makes some needlessly global code static.
+The patch below ncludes the following cleanups for 
+drivers/video/cyber2000fb.c:
+- remove five EXPORT_SYMBOL'ed but completely unused functions
+- make some needlessly global code static
 
 
 diffstat output:
- drivers/video/neofb.c |   14 +++++++-------
- 1 files changed, 7 insertions(+), 7 deletions(-)
+ drivers/video/cyber2000fb.c |   79 +-----------------------------------
+ drivers/video/cyber2000fb.h |    9 ----
+ 2 files changed, 4 insertions(+), 84 deletions(-)
 
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
---- linux-2.6.10-rc2-mm2-full/drivers/video/neofb.c.old	2004-11-21 14:54:11.000000000 +0100
-+++ linux-2.6.10-rc2-mm2-full/drivers/video/neofb.c	2004-11-21 14:55:53.000000000 +0100
-@@ -405,21 +405,21 @@
-  */
- static int paletteEnabled = 0;
+--- linux-2.6.10-rc2-mm2-full/drivers/video/cyber2000fb.h.old	2004-11-21 15:04:35.000000000 +0100
++++ linux-2.6.10-rc2-mm2-full/drivers/video/cyber2000fb.h	2004-11-21 15:04:59.000000000 +0100
+@@ -497,12 +497,3 @@
  
--inline void VGAenablePalette(void)
-+static inline void VGAenablePalette(void)
- {
- 	vga_r(NULL, VGA_IS1_RC);
- 	vga_w(NULL, VGA_ATT_W, 0x00);
- 	paletteEnabled = 1;
- }
+ struct fb_var_screeninfo;
  
--inline void VGAdisablePalette(void)
-+static inline void VGAdisablePalette(void)
- {
- 	vga_r(NULL, VGA_IS1_RC);
- 	vga_w(NULL, VGA_ATT_W, 0x20);
- 	paletteEnabled = 0;
- }
+-/*
+- * Note! Writing to the Cyber20x0 registers from an interrupt
+- * routine is definitely a bad idea atm.
+- */
+-int cyber2000fb_attach(struct cyberpro_info *info, int idx);
+-void cyber2000fb_detach(int idx);
+-void cyber2000fb_enable_extregs(struct cfb_info *cfb);
+-void cyber2000fb_disable_extregs(struct cfb_info *cfb);
+-void cyber2000fb_get_fb_var(struct cfb_info *cfb, struct fb_var_screeninfo *var);
+--- linux-2.6.10-rc2-mm2-full/drivers/video/cyber2000fb.c.old	2004-11-21 15:05:10.000000000 +0100
++++ linux-2.6.10-rc2-mm2-full/drivers/video/cyber2000fb.c	2004-11-21 15:10:01.000000000 +0100
+@@ -1075,79 +1075,6 @@
+ static struct cfb_info		*int_cfb_info;
  
--inline void VGAwATTR(u8 index, u8 value)
-+static inline void VGAwATTR(u8 index, u8 value)
- {
- 	if (paletteEnabled)
- 		index &= ~0x20;
-@@ -430,7 +430,7 @@
- 	vga_wattr(NULL, index, value);
- }
- 
--void vgaHWProtect(int on)
-+static void vgaHWProtect(int on)
- {
- 	unsigned char tmp;
- 
-@@ -1320,7 +1320,7 @@
  /*
-  *    (Un)Blank the display.
+- * Enable access to the extended registers
+- */
+-void cyber2000fb_enable_extregs(struct cfb_info *cfb)
+-{
+-	cfb->func_use_count += 1;
+-
+-	if (cfb->func_use_count == 1) {
+-		int old;
+-
+-		old = cyber2000_grphr(EXT_FUNC_CTL, cfb);
+-		old |= EXT_FUNC_CTL_EXTREGENBL;
+-		cyber2000_grphw(EXT_FUNC_CTL, old, cfb);
+-	}
+-}
+-
+-/*
+- * Disable access to the extended registers
+- */
+-void cyber2000fb_disable_extregs(struct cfb_info *cfb)
+-{
+-	if (cfb->func_use_count == 1) {
+-		int old;
+-
+-		old = cyber2000_grphr(EXT_FUNC_CTL, cfb);
+-		old &= ~EXT_FUNC_CTL_EXTREGENBL;
+-		cyber2000_grphw(EXT_FUNC_CTL, old, cfb);
+-	}
+-
+-	if (cfb->func_use_count == 0)
+-		printk(KERN_ERR "disable_extregs: count = 0\n");
+-	else
+-		cfb->func_use_count -= 1;
+-}
+-
+-void cyber2000fb_get_fb_var(struct cfb_info *cfb, struct fb_var_screeninfo *var)
+-{
+-	memcpy(var, &cfb->fb.var, sizeof(struct fb_var_screeninfo));
+-}
+-
+-/*
+- * Attach a capture/tv driver to the core CyberX0X0 driver.
+- */
+-int cyber2000fb_attach(struct cyberpro_info *info, int idx)
+-{
+-	if (int_cfb_info != NULL) {
+-		info->dev	      = int_cfb_info->dev;
+-		info->regs	      = int_cfb_info->regs;
+-		info->fb	      = int_cfb_info->fb.screen_base;
+-		info->fb_size	      = int_cfb_info->fb.fix.smem_len;
+-		info->enable_extregs  = cyber2000fb_enable_extregs;
+-		info->disable_extregs = cyber2000fb_disable_extregs;
+-		info->info            = int_cfb_info;
+-
+-		strlcpy(info->dev_name, int_cfb_info->fb.fix.id, sizeof(info->dev_name));
+-	}
+-
+-	return int_cfb_info != NULL;
+-}
+-
+-/*
+- * Detach a capture/tv driver from the core CyberX0X0 driver.
+- */
+-void cyber2000fb_detach(int idx)
+-{
+-}
+-
+-EXPORT_SYMBOL(cyber2000fb_attach);
+-EXPORT_SYMBOL(cyber2000fb_detach);
+-EXPORT_SYMBOL(cyber2000fb_enable_extregs);
+-EXPORT_SYMBOL(cyber2000fb_disable_extregs);
+-EXPORT_SYMBOL(cyber2000fb_get_fb_var);
+-
+-/*
+  * These parameters give
+  * 640x480, hsync 31.5kHz, vsync 60Hz
   */
--int neofb_blank(int blank_mode, struct fb_info *info)
-+static int neofb_blank(int blank_mode, struct fb_info *info)
+@@ -1306,7 +1233,8 @@
+  * Parse Cyber2000fb options.  Usage:
+  *  video=cyber2000:font:fontname
+  */
+-int
++#ifndef MODULE
++static int
+ cyber2000fb_setup(char *options)
  {
- 	/*
- 	 *  Blank the screen if blank_mode != 0, else unblank.
-@@ -2236,7 +2236,7 @@
- 
- /* ************************* init in-kernel code ************************** */
- 
--int __init neofb_setup(char *options)
-+static int __init neofb_setup(char *options)
- {
- 	char *this_opt;
- 
-@@ -2265,7 +2265,7 @@
+ 	char *opt;
+@@ -1328,6 +1256,7 @@
+ 	}
  	return 0;
  }
++#endif
  
--int __init neofb_init(void)
-+static int __init neofb_init(void)
+ /*
+  * The CyberPro chips can be placed on many different bus types.
+@@ -1717,7 +1646,7 @@
+  *
+  * Tony: "module_init" is now required
+  */
+-int __init cyber2000fb_init(void)
++static int __init cyber2000fb_init(void)
  {
- #ifndef MODULE
- 	char *option = NULL;
+ 	int ret = -1, err;
+ 

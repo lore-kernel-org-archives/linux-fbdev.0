@@ -1,20 +1,22 @@
 From: Jon Smirl <jonsmirl@gmail.com>
-Subject: [PATCH] Provide control of active VGA device on PCI systems
-Date: Sun, 20 Feb 2005 00:50:42 -0500
-Message-ID: <9e47339105021921507545d084@mail.gmail.com>
+Subject: Re: [PATCH] Provide control of active VGA device on PCI systems
+Date: Sun, 20 Feb 2005 02:07:10 -0500
+Message-ID: <9e473391050219230764b0dfd2@mail.gmail.com>
+References: <9e47339105021921507545d084@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D2jzU-0005K6-S8
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 19 Feb 2005 21:50:48 -0800
-Received: from rproxy.gmail.com ([64.233.170.205])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1D2jzU-0006ZR-6t
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 19 Feb 2005 21:50:48 -0800
-Received: by rproxy.gmail.com with SMTP id z35so215008rne
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 19 Feb 2005 21:50:42 -0800 (PST)
+	id 1D2lBR-0008A4-Ll
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 19 Feb 2005 23:07:13 -0800
+Received: from rproxy.gmail.com ([64.233.170.192])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1D2lBQ-0003b8-PZ
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 19 Feb 2005 23:07:13 -0800
+Received: by rproxy.gmail.com with SMTP id z35so221689rne
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 19 Feb 2005 23:07:10 -0800 (PST)
+In-Reply-To: <9e47339105021921507545d084@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,26 +30,28 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: text/plain; charset="us-ascii"
 To: fbdev <linux-fbdev-devel@lists.sourceforge.net>, Jesse Barnes <jbarnes@sgi.com>
 
-This patch adds a 'vga' attribute to each framebuffer device on PCI
-systems. For non-PCI hardware it does nothing.
+New version to previous patch. This one adds the hotplug event mentioned before.
 
-If you have multiple VGA cards loaded, and you have framebuffer
-drivers loaded for each, you can then set 0/1 into the VGA attributes
-to move VGA console around to the different screens.
+To achieve secondary card reset:
+  Load a framebuffer driver.
+  Driver causes hotplug add event
+  reset=x environment parm indicates reset, primary cards is false
+  run user space reset program
+  read VBIOS content using existing API
+  turn off all VGA devices, sysfs vga=3
+  reset the card
+  restore original VGA devices. sysfs vga=4
+  set sysfs no_reset=1 to prevent further resets
 
-This is almost everything needed to implement reset of secondary
-cards. ROM access is already in the kernel. This code is needed to
-make sure you don't end up with multiple VGA devices enabled. All that
-is left is to construct the proper hotplug event and fix up my user
-space reset program.
+Tomorrow I'll clean up a user space reset app and post it.
 
 -- 
 Jon Smirl
 jonsmirl@gmail.com
 
 diff -Nru a/arch/i386/pci/fixup.c b/arch/i386/pci/fixup.c
---- a/arch/i386/pci/fixup.c	2005-02-20 00:44:56 -05:00
-+++ b/arch/i386/pci/fixup.c	2005-02-20 00:44:56 -05:00
+--- a/arch/i386/pci/fixup.c	2005-02-20 02:00:57 -05:00
++++ b/arch/i386/pci/fixup.c	2005-02-20 02:00:57 -05:00
 @@ -375,6 +375,6 @@
  		}
  		bus = bus->parent;
@@ -58,8 +62,8 @@ IORESOURCE_NO_RESET;
  }
  DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, pci_fixup_video);
 diff -Nru a/drivers/video/Makefile b/drivers/video/Makefile
---- a/drivers/video/Makefile	2005-02-20 00:44:56 -05:00
-+++ b/drivers/video/Makefile	2005-02-20 00:44:56 -05:00
+--- a/drivers/video/Makefile	2005-02-20 02:00:57 -05:00
++++ b/drivers/video/Makefile	2005-02-20 02:00:57 -05:00
 @@ -13,6 +13,7 @@
  # Only include macmodes.o if we have FB support and are PPC
  ifneq ($(CONFIG_FB),n)
@@ -69,8 +73,8 @@ diff -Nru a/drivers/video/Makefile b/drivers/video/Makefile
  fb-objs                           := $(fb-y)
  
 diff -Nru a/drivers/video/fbmem.c b/drivers/video/fbmem.c
---- a/drivers/video/fbmem.c	2005-02-20 00:44:56 -05:00
-+++ b/drivers/video/fbmem.c	2005-02-20 00:44:56 -05:00
+--- a/drivers/video/fbmem.c	2005-02-20 02:00:57 -05:00
++++ b/drivers/video/fbmem.c	2005-02-20 02:00:57 -05:00
 @@ -1067,6 +1067,7 @@
  		if (!registered_fb[i])
  			break;
@@ -87,10 +91,22 @@ diff -Nru a/drivers/video/fbmem.c b/drivers/video/fbmem.c
  	if (fb_info->pixmap.addr && (fb_info->pixmap.flags & FB_PIXMAP_DEFAULT))
  		kfree(fb_info->pixmap.addr);
  	fb_destroy_modelist(&fb_info->modelist);
+@@ -1203,7 +1205,9 @@
+ 	if (IS_ERR(fb_class)) {
+ 		printk(KERN_WARNING "Unable to create fb class; errno = %ld\n",
+PTR_ERR(fb_class));
+ 		fb_class = NULL;
+-	}
++	} else
++		class_simple_set_hotplug(fb_class, fb_hotplug);
++		
+ 	return 0;
+ }
+ 
 diff -Nru a/drivers/video/vga.c b/drivers/video/vga.c
 --- /dev/null	Wed Dec 31 16:00:00 196900
-+++ b/drivers/video/vga.c	2005-02-20 00:44:56 -05:00
-@@ -0,0 +1,210 @@
++++ b/drivers/video/vga.c	2005-02-20 02:00:57 -05:00
+@@ -0,0 +1,301 @@
 +/*
 + * linux/drivers/pci/vga.c
 + *
@@ -266,8 +282,37 @@ size_t count)
 +	return sprintf(buf, "%d\n", vga_active == pdev);
 +}
 +
-+static struct device_attribute vga_device_attr = __ATTR(vga,
-S_IRUGO|S_IWUSR, vga_device_show, vga_device_store);
++static struct device_attribute vga_device_attr = __ATTR(vga, S_IRUGO|S_IWUSR,
++		vga_device_show, vga_device_store);
++
++
++static ssize_t no_reset_device_store(struct device *dev, const char
+*buf, size_t count)
++{
++	char *last;
++	struct pci_dev *pdev = to_pci_dev(dev);
++	
++
++	/* sysfs strings are terminated by \n */
++	if (simple_strtoul(buf, &last, 0))
++		pdev->resource[PCI_ROM_RESOURCE].flags |= IORESOURCE_NO_RESET;
++	else 
++		pdev->resource[PCI_ROM_RESOURCE].flags &= ~IORESOURCE_NO_RESET;
++
++	return count;
++}
++
++/* sysfs show for VGA device */
++static ssize_t no_reset_device_show(struct device *dev, char *buf)
++{
++	struct pci_dev *pdev = to_pci_dev(dev);
++	return sprintf(buf, "%d\n", ((pdev->resource[PCI_ROM_RESOURCE].flags
+& IORESOURCE_NO_RESET) ? 1 : 0));
++}
++
++static struct device_attribute no_reset_device_attr =
+__ATTR(no_reset, S_IRUGO|S_IWUSR,
++		no_reset_device_show, no_reset_device_store);
 +
 +/* Add a VGA sysfs attribute */
 +void fb_vga_add_device(struct device *device)
@@ -275,6 +320,7 @@ S_IRUGO|S_IWUSR, vga_device_show, vga_device_store);
 +	struct pci_dev *pdev = to_pci_dev(device);
 +	if (device) {
 +		device_create_file(&pdev->dev, &vga_device_attr);
++		device_create_file(&pdev->dev, &no_reset_device_attr);
 +	
 +		/* record the active boot device when located */
 +		if ((!vga_active) && (pdev->resource[PCI_ROM_RESOURCE].flags &
@@ -292,6 +338,7 @@ IORESOURCE_ROM_SHADOW))
 +
 +	if (device) {
 +		device_remove_file(&pdev->dev, &vga_device_attr);
++		device_remove_file(&pdev->dev, &no_reset_device_attr);
 +	
 +		/* if the active VGA device is being removed, try to move VGA to
 another device */
@@ -313,10 +360,73 @@ PCI_ANY_ID, PCI_ANY_ID, pcidev)) != NULL) {
 +	}
 +}
 +
++int fb_hotplug(struct class_device *dev, char **envp, int num_envp,
++		 char *buffer, int buffer_size)
++{
++	struct pci_dev *pdev;
++	char *scratch;
++	int i = 0;
++	int length = 0;
++
++	if (!dev)
++		return -ENODEV;
++
++	pdev = to_pci_dev(dev->dev);
++	if (!pdev)
++		return -ENODEV;
++
++	scratch = buffer;
++
++	/* stuff we want to pass to /sbin/hotplug */
++	envp[i++] = scratch;
++	length += scnprintf (scratch, buffer_size - length, "PCI_CLASS=%04X",
++			     pdev->class);
++	if ((buffer_size - length <= 0) || (i >= num_envp))
++		return -ENOMEM;
++	++length;
++	scratch += length;
++
++	envp[i++] = scratch;
++	length += scnprintf (scratch, buffer_size - length, "PCI_ID=%04X:%04X",
++			     pdev->vendor, pdev->device);
++	if ((buffer_size - length <= 0) || (i >= num_envp))
++		return -ENOMEM;
++	++length;
++	scratch += length;
++
++	envp[i++] = scratch;
++	length += scnprintf (scratch, buffer_size - length,
++			     "PCI_SUBSYS_ID=%04X:%04X", pdev->subsystem_vendor,
++			     pdev->subsystem_device);
++	if ((buffer_size - length <= 0) || (i >= num_envp))
++		return -ENOMEM;
++	++length;
++	scratch += length;
++
++	envp[i++] = scratch;
++	length += scnprintf (scratch, buffer_size - length, "PCI_SLOT_NAME=%s",
++			     pci_name(pdev));
++	if ((buffer_size - length <= 0) || (i >= num_envp))
++		return -ENOMEM;
++	++length;
++	scratch += length;
++
++	envp[i++] = scratch;
++	length += scnprintf (scratch, buffer_size - length, "RESET=%d",
++			     ((pdev->resource[PCI_ROM_RESOURCE].flags &
+IORESOURCE_NO_RESET) ? 0 : 1));
++	if ((buffer_size - length <= 0) || (i >= num_envp))
++		return -ENOMEM;
++
++
++	envp[i] = NULL;
++
++	return 0;
++}
 diff -Nru a/include/linux/fb.h b/include/linux/fb.h
---- a/include/linux/fb.h	2005-02-20 00:44:56 -05:00
-+++ b/include/linux/fb.h	2005-02-20 00:44:56 -05:00
-@@ -893,6 +893,15 @@
+--- a/include/linux/fb.h	2005-02-20 02:00:57 -05:00
++++ b/include/linux/fb.h	2005-02-20 02:00:57 -05:00
+@@ -893,6 +893,19 @@
  extern struct fb_cmap *fb_default_cmap(int len);
  extern void fb_invert_cmaps(void);
  
@@ -324,17 +434,22 @@ diff -Nru a/include/linux/fb.h b/include/linux/fb.h
 +#ifdef CONFIG_PCI
 +extern void fb_vga_add_device(struct device *device);
 +extern void fb_vga_remove_device(struct device *device);
++extern int fb_hotplug(struct class_device *dev, char **envp, int num_envp,
++		       char *buffer, int buffer_size);
 +#else
 +static inline void fb_vga_add_device(struct device *device){}
 +static inline void fb_vga_remove_device(struct device *device){}
++static inline int fb_hotplug(struct class_device *dev, char **envp,
+int num_envp,
++			      char *buffer, int buffer_size){return 0;}
 +#endif
 +
  struct fb_videomode {
  	const char *name;	/* optional */
  	u32 refresh;		/* optional */
 diff -Nru a/include/linux/ioport.h b/include/linux/ioport.h
---- a/include/linux/ioport.h	2005-02-20 00:44:56 -05:00
-+++ b/include/linux/ioport.h	2005-02-20 00:44:56 -05:00
+--- a/include/linux/ioport.h	2005-02-20 02:00:57 -05:00
++++ b/include/linux/ioport.h	2005-02-20 02:00:57 -05:00
 @@ -86,6 +86,7 @@
  #define IORESOURCE_ROM_ENABLE		(1<<0)	/* ROM is enabled, same as
 PCI_ROM_ADDRESS_ENABLE */

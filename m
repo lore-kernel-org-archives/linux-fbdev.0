@@ -1,17 +1,17 @@
 From: James Simmons <jsimmons@infradead.org>
 Subject: Re: Some questions
-Date: Wed, 5 Mar 2003 19:02:28 +0000 (GMT)
+Date: Wed, 5 Mar 2003 19:16:11 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0303051858250.27760-100000@phoenix.infradead.org>
-References: <1046870342.1291.86.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.44.0303051905490.27760-100000@phoenix.infradead.org>
+References: <1046877920.1228.190.camel@localhost.localdomain>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
+Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18qeAV-00088i-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 11:03:08 -0800
-In-Reply-To: <1046870342.1291.86.camel@localhost.localdomain>
+	id 18qeNl-0002mj-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 11:16:50 -0800
+In-Reply-To: <1046877920.1228.190.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -27,52 +27,28 @@ To: Antonino Daplas <adaplas@pol.net>
 Cc: Thomas Winischhofer <thomas@winischhofer.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> > However, I could not manage to gain a graphical console if sisfb is a
-> > module, but fbcon is in the kernel. Is this combination supposed to
-> > work? If so, how?
+> > Well, this assumes that the user always want the best refresh rate, 
+> > which is not desired in all cases.
+> > 
 > 
-> No, fbcon will not load unless there's at least one registered fbdev.
-> So, you must compile sisfb statically too.
+> fb_get_mode() accepts 4 flags.  Maximum refresh rate, hscan-driven,
+> vrefresh-driven and dotclock-driven calculations.  It's flexible enough,
+> but of course not as flexible as specifying your own modeline.
 
-I fixed this in my latest patch. You can use con2fb again!!!!!!
+Things like pixclock rates can be changes by fbset and fbcon still 
+sees these changes. stty is for the basic changes and fbset for advance 
+changes. 
 
-> > b) The call to fb_set_var() inside fbcon_resize() is checked for errors,
-> > but not the call to fbcon_resize() from within fbcon_switch(). This
-> > leads to catastrophic drawing errors if the requested mode is not
-> > supported by the low level driver.
-> 
-> Yes, it's a bug.  I think I submitted a patch to fix that, but I'm not
-> sure if James applied it to his tree.
+On a personal note. Many fbdev drivers in 2.4.X where also broken in that 
+only the boot mode worked. This is where the fbset mode database in 
+userland hack came in (/etc/fb.modes). This is horriable. Even with that 
+userland database I often couldn't change video modes after booting. 
 
-Applied.
-
-> Another solution is to reimplement resizing by fbset.  The code is not
-> very difficult and can be added if most people want it.
-
-:-( 
-
-> Yes, this is a limitation of stty.  It calls con_resize twice (one for
-> row and another for cols, depending on the order of the options) so it
-> will not work if the driver only supports a fixed set of modes.  Another
-> reason to bring back fbset resizing.
-
-???? stty rows 128 cols 48 works for me. It should'nt calling con_resize 
-twice. 
-
-> > 3) About y panning: In the 2.4 version of sisfb, I simply forced the
-> > console to do y panning (unless positively disabled by the user) by
-> > "patching" yres_virtual to the maximum, depending on the available video
-> > memory. I am allowed to do that with the 2.5 API? (The rivafb code makes
-> > be believe so...)
-> 
-> Scrolling mode is now determined by fbcon.  If var->accel_flag is
-> nonzero, scrolling is ypan, otherwise, it's yredraw.  It's because ypan
-> requres a lot of block copy which is slow when done by software.
-> 
-> I still believe though that scrolling should be determined by the
-> driver, not fbcon.
-
-Scrolling needs alot of work. I plan to fix that.
+We should split the monitor programing stuff out from stuff like bpp etc.
+Now if you think about it we can do things like change the bpp without 
+having to redo the monitor programming. This is the flaw with the old and 
+even the new api. 
+ 
 
 
 

@@ -1,51 +1,71 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Mobility M1 refresh code problem 2.4.26?
-Date: Thu, 6 May 2004 22:42:41 +0200 (MEST)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0405062241550.20729@waterleaf.sonytel.be>
-References: <20040430150627.GB1543@sci.fi> <Pine.LNX.4.44.0404301707110.12865-100000@phoenix.infradead.org>
- <20040501004059.GD30285@guug.org> <409A91D6.4000508@bitworks.com>
- <409A98A5.2040809@telia.com> <409AA194.8090609@bitworks.com>
+From: Otto Solares <solca@guug.org>
+Subject: Re: [Linux-fbdev-devel] Redesign of kernel graphics interface
+Date: Thu, 6 May 2004 14:57:35 -0600
+Sender: mesa3d-dev-admin@lists.sourceforge.net
+Message-ID: <20040506205735.GA5194@guug.org>
+References: <20040506181639.61975.qmail@web14929.mail.yahoo.com>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BLphe-0002OT-M1
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 06 May 2004 13:42:46 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BLphe-00066z-5d
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 06 May 2004 13:42:46 -0700
-In-Reply-To: <409AA194.8090609@bitworks.com>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+Return-path: <mesa3d-dev-admin@lists.sourceforge.net>
+Content-Disposition: inline
+In-Reply-To: <20040506181639.61975.qmail@web14929.mail.yahoo.com>
+Errors-To: mesa3d-dev-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
+	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+List-Post: <mailto:mesa3d-dev@lists.sourceforge.net>
+List-Help: <mailto:mesa3d-dev-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
+	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=mesa3d-dev>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Richard Smith <rsmith@bitworks.com>
-Cc: miffe-miffe@telia.com, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: dri-devel <dri-devel@lists.sourceforge.net>, mesa3d-dev <mesa3d-dev@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, 6 May 2004, Richard Smith wrote:
-> Hmmm... I had GX set.  Unsetting and rebuilding did change things.  the
+On Thu, May 06, 2004 at 11:16:39AM -0700, Jon Smirl wrote:
+> At the X Developers Conference there was a discussion of the issues around
+> framebuffer and DRI. Theodore Ts'o suggested that I write it up and post it for
+> discussion. I'm going to try and list all of the issues I've heard from all
+> sides so some of the proposed solutions are in conflict. The goal of this list
+> is to provide direction for a topic discussion at the Ottawa Kernel Summit.
 
-Strange, {en,dis}abling GX should matter for Mach64 GX chips only.
+I see as common sense that fbdev should become the low-level and unified
+interface for graphics in Linux, it has too many advantages for us:
 
-Gr{oetje,eeting}s,
+- Exists now.
+- Multi-architecture.
+- Very popular in embedded solutions.
+- Interface to change video modes.
+- Supports low-end hardware.
+- It has an interface to control the hw from userspace.
+- Can be enhanced or fixed.
 
-						Geert
+Missing in fbdev:
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+- Memory management.
+- Hardware lock to synch or flag changes in hardware.
+  (Maybe with the DRM/FB merge we could reuse the lock.)
+- sysfs (being fixed by Luca).
+- Video-out port API.
+- Video capture API (gatos).
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+I imply too that fbcon should not be considered as part of this low-level
+layer, but a client of it, because it implements acceleration and other
+stuff not related nor pertinent to a graphics layer per se.
+
+I am not saying that everything should be in the kernel, just the necesary
+API to properly have a Linux graphics state machine.  Anything else should
+be in userspace, specially acceleration that could be provided by DRI,
+directfb, fbcon, etc. which all will be clients of the low-level fbdev layer.
+
+This path makes it feasible to implement graphics servers (like Xserver)
+without implementing or duplicating the graphics layer details.  This
+would lead to a sane and (with time) a stable graphics layer for linux in
+the same way we have first-class networking, input and sound layers in Linux
+now.
+
+-otto
+
 
 
 -------------------------------------------------------

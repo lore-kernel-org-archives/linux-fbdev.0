@@ -1,74 +1,172 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: fbdraw 0.1 available
-Date: Mon, 13 Sep 2004 13:18:49 +0200 (MEST)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0409131318030.21429@waterleaf.sonytel.be>
-References: <41426651.2010201@comcast.net> <200409120340.04133.adaplas@hotpop.com>
- <4144EA58.4080900@comcast.net>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: [PATCH 2/3] fbdev: Arrange driver order in Makefile
+Date: Mon, 13 Sep 2004 23:18:37 +0800
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <200409132209.15788.adaplas@hotpop.com>
+Reply-To: adaplas@pol.net
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1C6orF-0000OT-Ee
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 13 Sep 2004 04:18:53 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1C6orE-0003xq-KR
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 13 Sep 2004 04:18:53 -0700
-Received: from waterleaf.sonytel.be (mail.sonytel.be [43.221.60.197])
-	by witte.sonytel.be (8.12.10/8.12.10) with ESMTP id i8DBInMp019770
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 13 Sep 2004 13:18:49 +0200 (MEST)
-In-Reply-To: <4144EA58.4080900@comcast.net>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S268070AbUIMPWB@vger.kernel.org>
+Content-Disposition: inline
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, linux-kernel@vger.kernel.org
 
-On Sun, 12 Sep 2004, Zack wrote:
-> > 2. Do not directly access framebuffer memory, use:
-> > 3. Do not use copy_{to|from}_user when the destination/source is the
-> > framebuffer.
-> > 4. Do not memset the framebuffer.  You can probably create an equivalent
-> > function using fb_read/write.  (Once, we have fb_memset and fb_memcpy, but
-> > they're gone in 2.6).
->
-> Fixed.
->
-> Incidentally I am wondering, with cross-platform compatibility
-> in mind I have been coding assuming that fb_{read|write}[wl] must be
-> short/long aligned. Is that assumption correct?
+This patch arranges driver order in 'driver/video/Makefile' so it closely,
+but not exactly, follows the previous order in 'drivers/video/fbmem.c'.
 
-Yes, that's the safest.
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
+---
 
-> I've also added my copyarea routine. At first I tried to make use
-> of cfb_copyarea but it proved very buggy in 24bpp.
+ Makefile |  117 ++++++++++++++++++++++++++++++++-------------------------------
+ 1 files changed, 61 insertions(+), 56 deletions(-)
 
-What about fixing the bugs in the existing code, instead of adding a new
-routine that does the same? ;-)
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
-
-
--------------------------------------------------------
-This SF.Net email is sponsored by: YOU BE THE JUDGE. Be one of 170
-Project Admins to receive an Apple iPod Mini FREE for your judgement on
-who ports your project to Linux PPC the best. Sponsored by IBM. 
-Deadline: Sept. 13. Go here: http://sf.net/ppc_contest.php
+diff -uprN linux-2.6.9-rc1-mm5-orig/drivers/video/Makefile linux-2.6.9-rc1-mm5/drivers/video/Makefile
+--- linux-2.6.9-rc1-mm5-orig/drivers/video/Makefile	2004-09-13 19:50:17.000000000 +0800
++++ linux-2.6.9-rc1-mm5/drivers/video/Makefile	2004-09-13 20:11:10.661372528 +0800
+@@ -13,83 +13,88 @@ ifeq ($(CONFIG_FB),y)
+ obj-$(CONFIG_PPC)                 += macmodes.o
+ endif
+ 
+-obj-$(CONFIG_FB_ARMCLCD)	  += amba-clcd.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_ACORN)            += acornfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
++# Hardware specific drivers go first
++obj-$(CONFIG_FB_RETINAZ3)         += retz3fb.o
+ obj-$(CONFIG_FB_AMIGA)            += amifb.o c2p.o
++obj-$(CONFIG_FB_CLPS711X)         += clps711xfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_CYBER)            += cyberfb.o
++obj-$(CONFIG_FB_CYBER2000)        += cyber2000fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+ obj-$(CONFIG_FB_PM2)              += pm2fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+ obj-$(CONFIG_FB_PM3)		  += pm3fb.o
+-obj-$(CONFIG_FB_APOLLO)           += dnfb.o cfbfillrect.o cfbimgblt.o
+-obj-$(CONFIG_FB_Q40)              += q40fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_ATARI)            += atafb.o
+-obj-$(CONFIG_FB_68328)            += 68328fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
++
++obj-$(CONFIG_FB_MATROX)		  += matrox/ cfbfillrect.o cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_RIVA)		  += riva/ cfbimgblt.o vgastate.o
++obj-$(CONFIG_FB_ATY)		  += aty/ cfbcopyarea.o cfbfillrect.o cfbimgblt.o
++obj-$(CONFIG_FB_ATY128)		  += aty/ cfbcopyarea.o cfbfillrect.o cfbimgblt.o
++obj-$(CONFIG_FB_RADEON)		  += aty/ cfbcopyarea.o cfbfillrect.o cfbimgblt.o
++obj-$(CONFIG_FB_SIS)		  += sis/ cfbcopyarea.o cfbfillrect.o cfbimgblt.o
++obj-$(CONFIG_FB_KYRO)             += kyro/ cfbfillrect.o cfbcopyarea.o cfbimgblt.o
++
++obj-$(CONFIG_FB_I810)             += cfbcopyarea.o cfbfillrect.o cfbimgblt.o \
++				     vgastate.o
+ obj-$(CONFIG_FB_RADEON_OLD)	  += radeonfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+ obj-$(CONFIG_FB_NEOMAGIC)         += neofb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o vgastate.o
+-obj-$(CONFIG_FB_IGA)              += igafb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_CONTROL)          += controlfb.o macmodes.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_PLATINUM)         += platinumfb.o macmodes.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_VALKYRIE)         += valkyriefb.o macmodes.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_CT65550)          += chipsfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_CLPS711X)         += clps711xfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_CYBER)            += cyberfb.o
+-obj-$(CONFIG_FB_CYBER2000)        += cyber2000fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_GBE)              += gbefb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_SGIVW)            += sgivwfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_VIRGE)            += virgefb.o
+ obj-$(CONFIG_FB_3DFX)             += tdfxfb.o cfbimgblt.o
+ ifneq ($(CONFIG_FB_3DFX_ACCEL),y)
+ obj-$(CONFIG_FB_3DFX)             += cfbfillrect.o cfbcopyarea.o
+ endif
+-obj-$(CONFIG_FB_MAC)              += macfb.o macmodes.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o 
+-obj-$(CONFIG_FB_HP300)            += hpfb.o cfbfillrect.o cfbimgblt.o
++obj-$(CONFIG_FB_CONTROL)          += controlfb.o macmodes.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_PLATINUM)         += platinumfb.o macmodes.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_VALKYRIE)         += valkyriefb.o macmodes.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_CT65550)          += chipsfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+ obj-$(CONFIG_FB_IMSTT)            += imsttfb.o cfbimgblt.o
+-obj-$(CONFIG_FB_RETINAZ3)         += retz3fb.o
+-obj-$(CONFIG_FB_CIRRUS)		  += cirrusfb.o cfbfillrect.o cfbimgblt.o cfbcopyarea.o
+-obj-$(CONFIG_FB_TRIDENT)	  += tridentfb.o cfbfillrect.o cfbimgblt.o cfbcopyarea.o
+ obj-$(CONFIG_FB_S3TRIO)           += S3triofb.o
+-obj-$(CONFIG_FB_TGA)              += tgafb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o 
+-obj-$(CONFIG_FB_VIRGE)            += virgefb.o
+-obj-$(CONFIG_FB_G364)             += g364fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+ obj-$(CONFIG_FB_FM2)              += fm2fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_TRIDENT)	  += tridentfb.o cfbfillrect.o cfbimgblt.o cfbcopyarea.o
+ obj-$(CONFIG_FB_STI)              += stifb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_PMAG_BA)          += pmag-ba-fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_PMAGB_B)          += pmagb-b-fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_MAXINE)           += maxinefb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_TX3912)           += tx3912fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+-
+-obj-$(CONFIG_FB_MATROX)		  += matrox/ cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_RIVA)		  += riva/ cfbimgblt.o vgastate.o 
+-obj-$(CONFIG_FB_SIS)		  += sis/ cfbcopyarea.o cfbfillrect.o cfbimgblt.o
+-obj-$(CONFIG_FB_ATY)		  += aty/ cfbcopyarea.o cfbfillrect.o cfbimgblt.o
+-obj-$(CONFIG_FB_ATY128)		  += aty/ cfbcopyarea.o cfbfillrect.o cfbimgblt.o
+-obj-$(CONFIG_FB_RADEON)		  += aty/ cfbcopyarea.o cfbfillrect.o cfbimgblt.o
+-obj-$(CONFIG_FB_I810)             += cfbcopyarea.o cfbfillrect.o cfbimgblt.o \
+-				     vgastate.o
+-obj-$(CONFIG_FB_SUN3)             += sun3fb.o
++obj-$(CONFIG_FB_FFB)              += ffb.o sbuslib.o cfbimgblt.o cfbcopyarea.o
++obj-$(CONFIG_FB_CG6)              += cg6.o sbuslib.o cfbimgblt.o cfbcopyarea.o
++obj-$(CONFIG_FB_CG3)              += cg3.o sbuslib.o cfbimgblt.o cfbcopyarea.o \
++				     cfbfillrect.o
++obj-$(CONFIG_FB_BW2)              += bw2.o sbuslib.o cfbimgblt.o cfbcopyarea.o \
++				     cfbfillrect.o
++obj-$(CONFIG_FB_CG14)             += cg14.o sbuslib.o cfbimgblt.o cfbcopyarea.o \
++				     cfbfillrect.o
++obj-$(CONFIG_FB_P9100)            += p9100.o sbuslib.o cfbimgblt.o cfbcopyarea.o \
++				     cfbfillrect.o
++obj-$(CONFIG_FB_TCX)              += tcx.o sbuslib.o cfbimgblt.o cfbcopyarea.o \
++				     cfbfillrect.o
++obj-$(CONFIG_FB_LEO)              += leo.o sbuslib.o cfbimgblt.o cfbcopyarea.o \
++				     cfbfillrect.o
++obj-$(CONFIG_FB_SGIVW)            += sgivwfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_ACORN)            += acornfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_ATARI)            += atafb.o
++obj-$(CONFIG_FB_MAC)              += macfb.o macmodes.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+ obj-$(CONFIG_FB_HGA)              += hgafb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o 
++obj-$(CONFIG_FB_IGA)              += igafb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_APOLLO)           += dnfb.o cfbfillrect.o cfbimgblt.o
++obj-$(CONFIG_FB_Q40)              += q40fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_TGA)              += tgafb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_HP300)            += hpfb.o cfbfillrect.o cfbimgblt.o
++obj-$(CONFIG_FB_G364)             += g364fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+ obj-$(CONFIG_FB_SA1100)           += sa1100fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_SUN3)             += sun3fb.o
+ obj-$(CONFIG_FB_HIT)              += hitfb.o cfbfillrect.o cfbimgblt.o
++obj-$(CONFIG_FB_TX3912)           += tx3912fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+ obj-$(CONFIG_FB_EPSON1355)	  += epson1355fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+ obj-$(CONFIG_FB_PVR2)             += pvr2fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_KYRO)             += kyro/ cfbfillrect.o cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_PMAG_BA)          += pmag-ba-fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_PMAGB_B)          += pmagb-b-fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_MAXINE)           += maxinefb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+ obj-$(CONFIG_FB_VOODOO1)          += sstfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_ARMCLCD)	  += amba-clcd.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_68328)            += 68328fb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_GBE)              += gbefb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_CIRRUS)		  += cirrusfb.o cfbfillrect.o cfbimgblt.o cfbcopyarea.o
+ obj-$(CONFIG_FB_ASILIANT)	  += asiliantfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
++obj-$(CONFIG_FB_PXA)		  += pxafb.o cfbimgblt.o cfbcopyarea.o cfbfillrect0.o
+ 
+-obj-$(CONFIG_FB_FFB)               += ffb.o sbuslib.o cfbimgblt.o cfbcopyarea.o
+-obj-$(CONFIG_FB_CG6)               += cg6.o sbuslib.o cfbimgblt.o cfbcopyarea.o
+-obj-$(CONFIG_FB_CG3)               += cg3.o sbuslib.o cfbimgblt.o cfbcopyarea.o \
+-				      cfbfillrect.o
+-obj-$(CONFIG_FB_BW2)               += bw2.o sbuslib.o cfbimgblt.o cfbcopyarea.o \
+-				      cfbfillrect.o
+-obj-$(CONFIG_FB_CG14)              += cg14.o sbuslib.o cfbimgblt.o cfbcopyarea.o \
+-				      cfbfillrect.o
+-obj-$(CONFIG_FB_P9100)             += p9100.o sbuslib.o cfbimgblt.o cfbcopyarea.o \
+-				      cfbfillrect.o
+-obj-$(CONFIG_FB_TCX)               += tcx.o sbuslib.o cfbimgblt.o cfbcopyarea.o \
+-				      cfbfillrect.o
+-obj-$(CONFIG_FB_LEO)               += leo.o sbuslib.o cfbimgblt.o cfbcopyarea.o \
+-				      cfbfillrect.o
+-obj-$(CONFIG_FB_PXA)		   += pxafb.o cfbimgblt.o cfbcopyarea.o cfbfillrect.o
++# Platform or fallback drivers go here
++obj-$(CONFIG_FB_VESA)             += vesafb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+ obj-$(CONFIG_FB_VGA16)            += vga16fb.o cfbfillrect.o cfbcopyarea.o \
+ 	                             cfbimgblt.o vgastate.o
+-obj-$(CONFIG_FB_VESA)             += vesafb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+-obj-$(CONFIG_FB_VIRTUAL)          += vfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o
+ obj-$(CONFIG_FB_OF)               += offb.o cfbfillrect.o cfbimgblt.o cfbcopyarea.o
++
++# the test framebuffer is last
++obj-$(CONFIG_FB_VIRTUAL)          += vfb.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o

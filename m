@@ -1,22 +1,22 @@
 From: "Antonino A. Daplas" <adaplas@softhome.net>
 Subject: Re: [PATCH] DDC2/I2C Support
-Date: Tue, 6 Jan 2004 08:31:53 +0800
+Date: Tue, 6 Jan 2004 08:31:45 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200401060831.53054.adaplas@softhome.net>
-References: <1068.203.177.116.211.1073313062.squirrel@webmail.po.com> <1073339963.780.93.camel@gaston>
+Message-ID: <200401060831.46018.adaplas@softhome.net>
+References: <1068.203.177.116.211.1073313062.squirrel@webmail.po.com> <20040105171639.GA7048@dreamland.darkstar.lan>
 Reply-To: adaplas@pol.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1Adf8f-0006jx-PU
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 16:32:05 -0800
+	id 1Adf8d-0006js-8f
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 16:32:03 -0800
 Received: from jive.softhome.net ([66.54.152.27])
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
-	id 1Adf8f-0006YP-Az
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 16:32:05 -0800
-In-Reply-To: <1073339963.780.93.camel@gaston>
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
+	id 1Adf8c-0006Nx-Qq
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 16:32:02 -0800
+In-Reply-To: <20040105171639.GA7048@dreamland.darkstar.lan>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,19 +27,39 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: benh@kernel.crashing.org, adaplas@pol.net
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: kronos@kronoz.cjb.net, adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Tuesday 06 January 2004 05:59, Benjamin Herrenschmidt wrote:
-
+On Tuesday 06 January 2004 01:16, Kronos wrote:
+> Il Mon, Jan 05, 2004 at 09:31:02AM -0500, adaplas@pol.net ha scritto:
+> > 1. [fbi2c.c]:  Added preliminary generic DDC2/i2c support (derived fr=
+om
+> > xf86DDC.c and xf86i2.c)
+> >
+> > =09This is a configurable option (CONFIG_FB_I2C). =09For now, I only =
+used
+> > "default" timeout values which may not work for all devices.
+> >
+> > =09Most drivers need to implement only two functions --
+> >
+> > =09=09void xxxfb_i2c_getbits(struct fb_info *info, signed long *clock=
+, signed
+> > long *data)
+> > =09=09void xxxfb_i2c_putbits(struct fb_info *info, signed long clock,=
+ signed
+> > long data)
 >
-> So you choose to get away from the linux i2c infrastructure ?
+> In fbi2c.c you are duplicating the i2c layer that's already there in th=
+e
+> kernel. Each driver should  have its set of function to  control SDA an=
+d
+> SCL and then it's only a matter of calling i2c_transfer.
+>
+> I wrote the i2c stuff for the new radeon driver, look here:
+> bk://ppc.bkbits.net/linuxppc-2.5-benh
+> (drivers/video/aty/radeon_i2c.c)
 
-I already looked at your tree.  After some thought, I agree with both of =
-you=20
-(Kronos) that i2c/ddc2 should be driver specific.  I'll remove the generi=
-c=20
-fbi2c interface.
+Ok.  See my reply to Ben H.
 
 >
 > > 2. [fbmon.c]: Consolidated different ways of getting EDID with the
@@ -51,131 +71,22 @@ dev,
 > >
 > > =09=09the parameter "what" can be:
 > > =09=09=09EDID_DDC2 - get EDID via DDC2/I2C fb_get_edid_from_ddc2()
-> >=09=09=09EDID_ARCH - get=09EDID via BIOS or OF get_EDID_from_{OF|BIOS}=
-()
+> > =09=09=09EDID_ARCH - get=09EDID via BIOS or OF get_EDID_from_{OF|BIOS=
+}()
 >
-> The later is very card-specific... I don't think it can be abstracted.
-> Also, if you look at the new radeonfb, you'll notice that the BIOS
-> search has actually more than one way of getting to the EDID and
-> may gather more than just the EDID (panel power delay, panel fixed
-> dividers, etc...) Also, the OF parsing code cannot easily be abstracted
-> as the OF driver for different type of cards do things differently.
+> Hum, I don't like this kind of "multiplexing". I think that EDID
+> reading (if possibile) should be done inside the driver which knows how
+> to do it.
 >
-> Hrm... reading your actual patch, I see that you are actually doing
-> this BIOS call to get it, not parsing the BIOS image. Ok, that may
-> be interesting...
->
+> Also, why did you remove all the printk's? Ok, show_edid is a bit too
+> verbose but it's usefull for debugging.
 
-There was the patch I submitted some 8 months ago and has been in the ker=
-nel=20
-since linux-2.5.x.  For X86, it will get the EDID block via VBE calls bef=
-ore=20
-the kernel goes to protected mode.  This is used by get_EDID_from_BIOS() =
-in=20
-fbmon.c. Actual code is in boot/arch/i386/boot/video.S[store_edid]
-
-Currently, it's always compiled in and some people reported problems with=
- it=20
-(like taking 5 minutes to boot - probably BIOS using DDC1). I just added =
-a=20
-kernel config for it so people can choose to compile it out.  However, wi=
-th=20
-most drivers still not having DDC/I2C support, it's an easy way of gettin=
-g=20
-the EDID block.
-
-> Also, the former need a way to tell on which port we want the EDID,
-> and the EDID code may need a bit more than juts that "get EDID" (look
-> the other bit banging done to the i2c registers in radeonfb).
->
-> I'd actually keep all that in the driver...
->
-> > =092.a getting EDID from the BIOS is now configurable (CONFIG_EDID_BI=
-OS)
-> > since some people reported problems during booting or it takes a long
-> > time for the process to finish.
->
-> This is about using the VESA BIOS at boot or scanning the ROM image ?
-
-This is about getting the EDID using VBE calls while in real mode.=20
-
->
-> > 4. [fbmon.c]: Extended struct fb_monspecs to include display informat=
-ion
-> > specified in EDID.
-> >
-> > =09Use function
-> > =09=09void fb_get_monspecs(unsigned char *edid, struct fb_monspecs *s=
-pecs)
->
->  .../...
->
-> Can we define a "parsed_EDID" structure or whatever we call it that
-> contains the list of modes, the monspecs, and other informations
-> obtained from the EDID all at once ? I also need the display model
-> name and vendor for example (to deal with some "fixups"). it would
-> be convenient to have one single parsing pass extracting all the
-> informations to one structure...
->
-
-Ok, this should not be hard.
-
-> > --------------------------------------------------------
-> >
-> > 5. [fbcon.c]: Minor fixes on the cursor and scrolling.
->
-> That pops up something else in my mind... Shouldn't we take the console
-> sempahore when doing cursor ops in the workqueue ?
-
-I believe so.  I'm not sure where to start though. info->fb_cursor is cal=
-led=20
-by at least two functons (fbcon_cursor, fb_flash_cursor), and I don't see=
- any=20
-form of locking, especially for the data in info->cursor which is constan=
-tly=20
-being modified by one and read by another.
-
->
-> In my tree, I have moved the VT blanking code out of the timer to a
-> workqueue as well and fixed other VT stuffs to make sure we always
-> have the console semaphore when getting to fbdev's. The current
-> "lock-less" state of the whole thing is scary...
->
-
-Yes :-(.
-
-> > 6. [RIVAFB]:
-> >
-> > =09a. Implemented I2C/DDC2 support.  Changing video modes should be m=
-ore
-> > robust even when using stty.
->
-> I strongly suggest that you look at what I've done for radeonfb and stt=
-y
-> in my tree with FB_ACTIVATE_FIND and my mode search algorithm....
-
-Ok.=20
-
->
-> > =09b. fixed various hardware cursor corruption
-> > =09c. fixed maximum yres_virtual.  Hardware accel engine will crash i=
-f blit
-> > rectangle dimensions/origin exceeds 0x7fff.
-> > =09d. added new boot parameter, "strictmode", to force driver to use =
-only
-> > modes specified in the EDID block.
->
-> Boot parameters are evil... we should default to the "right" way whenev=
-er
-> possible. Let's make sure we properly deal with either complete modes
-
-Evil, yes, but for now, necessary. Until the stty fix (and the=20
-FB_ACTIVATE_FIND) is accepted by James, I will need this new boot paramet=
-er.=20
-=20
-I'll submit a new patch (without the fbi2c code) by next week.  Still too=
- busy=20
-to work full time with fbdev.
+The first time I wrote the edid parser, show_edid() was never meant to ha=
+ve=20
+all that printk's :-).  It's only preliminary code in preparation for=20
+extending struct fb_monspecs.  But I'll bring it back, possibly when DEBU=
+G is=20
+defined.
 
 Tony
 

@@ -1,23 +1,21 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: James Simmons <jsimmons@infradead.org>
 Subject: Re: fbdv/fbcon pending problems
-Date: Wed, 25 Feb 2004 15:08:59 +0100 (MET)
+Date: Wed, 25 Feb 2004 21:24:16 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0402251507380.28718@waterleaf.sonytel.be>
-References: <20040224214106.GA17390@guug.org>
- <Pine.LNX.4.44.0402250118210.24952-100000@phoenix.infradead.org>
- <20040225031553.GC17390@guug.org> <Pine.GSO.4.58.0402251240140.24169@waterleaf.sonytel.be>
- <20040225140121.GA13029@lambda>
+Message-ID: <Pine.LNX.4.44.0402252109030.24952-100000@phoenix.infradead.org>
+References: <1077672403.1084.45.camel@gaston>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Avzrd-0002ZD-Iz
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 Feb 2004 06:18:17 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Avzim-00068e-IG
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 Feb 2004 06:09:08 -0800
-In-Reply-To: <20040225140121.GA13029@lambda>
+	id 1Aw6ey-0002Dc-Tj
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 Feb 2004 13:33:40 -0800
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1Aw6Vy-00012H-ER
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 Feb 2004 13:24:22 -0800
+In-Reply-To: <1077672403.1084.45.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,50 +27,59 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Sven Luther <sven.luther@wanadoo.fr>
-Cc: Otto Solares <solca@guug.org>, James Simmons <jsimmons@infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Otto Solares <solca@guug.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
 
-On Wed, 25 Feb 2004, Sven Luther wrote:
-> On Wed, Feb 25, 2004 at 12:41:25PM +0100, Geert Uytterhoeven wrote:
-> > On Tue, 24 Feb 2004, Otto Solares wrote:
-> > > On Wed, Feb 25, 2004 at 01:21:39AM +0000, James Simmons wrote:
-> > > > > On the other side i see a lot of effort in the fbdev acceleration,
-> > > > > it is nice but that effort should be better spent on fixing the layer,
-> > > > > imo, the only user for acceleration is fbcon, any userland app that
-> > > > > use fbdev disables that acceleration so it can map the vmem and ioregs,
-> > > > > and do it's own voodoo if it wants acceleration.  That acceleration
-> > > > > is not "exported" to user space.  I am working in a open source project
-> > > > > that uses mesa-solo with fbdev and many limitations from the layer
-> > > > > itself have been seen.
-> > > >
-> > > > That is true so far for fillrect and copyarea functions. Imageblit will be
-> > > > used for read and writes on /dev/fbX. Also it is used for software
-> > > > cursors.
-> > >
-> > > But if acceleration is not disabled you can't map the vmem and io regions.
-> >
-> > I don't expect an app that mmap()s mmio to read/write from /dev/fb* at the same
-> > time. So I see no problem disabling accelerated read/write while mmio is
-> > mapped.
->
-> I wonder about X though. It uses mmio for accels (in the non fbdev case
-> though) and needs to map the memory area for fallback case, like the non
-> supported bressenham lines on permedia 2/3 for example. Altough it is
-> possible that the fact that X does its own mapping, and anyway, has very
-> little interaction with fbcon and fbdev anyway.
 
-That's mmap(2) of the frame buffer, not read(2)/write(2).
+> It is. What we really need right now is a proper way to get the mode
+> lists. but more than that. We need to expose per-output detection data,
+> mapping of CRTCs to outputs, and a way to change that mapping & trigger
+> a re-probe. All of that can probably not be done in a completely card
+> neutral way.  
 
-Gr{oetje,eeting}s,
+Agree.
+ 
+> I've started working on a userland library taking care of managing
+> the "environment", that is the various screens & heads, their modes,
+> the geometry (relative screen positions), and such. I haven't gone
+> very far yet, but the idea is ultimately to have the entire mode
+> setting go through this library. 
 
-						Geert
+   I think this is a bad idea. This has been tried before. In the 
+opensource community there is no such a thing as a standard library. 
+We can see that with directfb and X windows, sdl, gtk/qt embedded, etc. 
+Understand that I have no problem with having lots of libraries. Its 
+just the reality is your library will be just one amoung many. 
+   The time will come when someone will send you a patch and you will 
+reject it and then the person will go off and make his/her own library.
+Or someone will look at your work and say I can do better. Then we end
+up with a bunch of libraries doing basically similiar things. Which one 
+does the developer use then? We can't force them to use the "standard"
+one. 
+    The kernel really needs to be the only state machine for the hardware. 
+Library developers will usually use the kernel standard interfaces. 
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> This library will also be responsible to broadcast, possibly via
+> D-BUS, events like screen hotplug and mode changes. We are thinking
+> about interfacing the fd.o xserver on this among others. It will
+> not do anything about rendering though.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+I like to see the D-BUS pick up these events :-) It would come in handy 
+for the JVMs I work on.
+ 
+> That leads to another issue which is arbitration at the low level
+> driver between rendering & mode switching. That should be done by
+> the kernel driver at some point, we need to merge the mode setting
+> driver (fbdev) and the command queue diver (DRI). 
+
+I agree they have to be merged.
+
+> Probably moving 
+> some of the higher level mode management out of the kernel driver
+> down to this userland library.
+
+Bad idea.
+
 
 
 -------------------------------------------------------

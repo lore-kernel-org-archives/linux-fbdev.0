@@ -1,20 +1,17 @@
-From: Voser Peter <peter.voser@siemens.com>
-Subject: Writing a driver for a 128*64 dots LCD (black/white only)
-Date: Mon, 20 Jan 2003 17:27:45 +0100
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: rivafb "Badness" using fbdev.diff.gz and
+ 2.5.5[45]
+Date: Tue, 21 Jan 2003 11:29:05 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <BF282B4C857BD111BA9700600868A28606BF34F9@ZRHA131A.zrh.siemens.ch>
+Message-ID: <Pine.GSO.4.21.0301211126490.24563-100000@vervain.sonytel.be>
+References: <1043102561.1064.36.camel@localhost.localdomain>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from zrha220a.siemens-sbs.ch ([194.204.64.135])
+Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18anv6-0001vq-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 20 Jan 2003 18:13:44 -0800
-Received: from fw3ext.siemens.ch (fw3ext.siemens-sbs.ch [194.204.64.99])
-	by zrha220a.siemens-sbs.ch (Build 101 8.9.3/NT-8.9.3) with ESMTP id DAA19112
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 21 Jan 2003 03:14:31 +0100
-Received: from zrha131a.zrh.siemens.ch (ZRHA131A.zrh.siemens.ch [139.16.10.12])
-	by zrha221a.zrh.siemens.ch (Build 101 8.9.3/NT-8.9.3) with ESMTP id RAA10488
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 20 Jan 2003 17:29:44 +0100
+	id 18avg6-0007ST-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 21 Jan 2003 02:30:46 -0800
+In-Reply-To: <1043102561.1064.36.camel@localhost.localdomain>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -24,23 +21,33 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "'linux-fbdev-devel@lists.sourceforge.net'" <linux-fbdev-devel@lists.sourceforge.net>
+To: Antonino Daplas <adaplas@pol.net>
+Cc: Jak <rfjak@eircom.net>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Hello, 
-I have the pleasure to write a driver for a 128*64 dots LCD. 
-It's just a black and white display (without grey scale). 
-The display is connected to a KS0713 controler circuit. 
+On 21 Jan 2003, Antonino Daplas wrote:
+> The only problem right now is how do you pass the monitor info to the
+> driver?  The best way is to parse the EDID block and use I2C/DDC. 
+> Personally, I think passing the monitor info as a boot/module option is
+> the simplest and safest method.
 
-Questions: 
-- What window messenger do I have to use in order to write 
-  texts and draw bitmaps?
-- Can anyone recommend a driver I can use as an example?
-- How can I edit bitmaps?
+Through sysfs? echo MY_MONITOR_LIMITS > /proc/...?
 
-Regards, 
-Peter
+Since ioctls are considered evil these days, changing the resolution etc. could
+work in a similar way as well.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+
 
 
 -------------------------------------------------------

@@ -1,19 +1,21 @@
-From: "Luiz Fernando N. Capitulino" <lcapitulino@prefeitura.sp.gov.br>
-Subject: video/tdfxfb.c warning fix.
-Date: Tue, 27 Apr 2004 17:18:33 -0300
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [PATCH] neofb patches
+Date: Tue, 27 Apr 2004 21:25:33 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040427171833.4af6c4cd.lcapitulino@prefeitura.sp.gov.br>
+Message-ID: <Pine.LNX.4.44.0404271938330.20536-100000@phoenix.infradead.org>
+References: <1083060721.16473.7.camel@gaston>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIZ1r-0002G2-9o
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 13:18:07 -0700
-Received: from sampa7.prodam.sp.gov.br ([200.230.190.107])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIZ1q-0007mF-UD
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 13:18:07 -0700
+	id 1BIZ9B-00043C-3V
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 13:25:41 -0700
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1BIZ9A-0001lm-KC
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 13:25:40 -0700
+In-Reply-To: <1083060721.16473.7.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -23,27 +25,38 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: jsimmons@infradead.org
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Alex Stewart <alex@foogod.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
 
- Hi,
+> > It's used to indicate that the frame buffer device uses hardware acceleration
+> > for rectangle fill/copy and imageblit.
+> > 
+> > It must be explicitly disabled before a user space application can mmap the
+> > MMIO registers to do its own hardware acceleration, to avoid accelerator access
+> > conflicts.
+> 
+> I think we should stick to KD_TEXT/KD_GRAPHICS for who owns the engine.
 
-drivers/video/tdfxfb.c:1005: warning: `tdfxfb_cursor' defined but not used
+I wouldn't bank on that. I seen this solution fall short. Consider a system 
+where we have a serial console, vgacon, and fbcon (say hgafb). Well I 
+leave it to the imagination what can go wrong. 
+ 
+> I don't think fbdev should expose any "acclerated" API to userland, that
+> is a hopeless goal and will lead to nothing. We need some arbitration
+> layer at one point between whatever accel stuff we use (DRI, userland
+> accel library) and somebody changing mode though. Lots of stuffs I've
+> tried to figure out and didn't end up with anything reasonable yet, lack
+> of time doesn't help...
 
- seems to me that tdfxfb_cursor(), is the one of accelerate functions, which
-is not well tested. I'm wrong ?
+I agree we need arbitration. Eventually fbdev and dri have to merge. Mode 
+setting is still best handled kernel side. That is just a reality.
 
- If not, can I made it avaliable in Kconfig as I did before for the other
-drivers ?
 
-thanks,
 
--- 
-Luiz Fernando N. Capitulino
-<lcapitulino@prefeitura.sp.gov.br>
-<http://www.telecentros.sp.gov.br>
+
 
 
 -------------------------------------------------------

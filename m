@@ -1,18 +1,17 @@
-From: Petr Vandrovec <vandrove@vc.cvut.cz>
+From: James Simmons <jsimmons@infradead.org>
 Subject: Re: FBdev updates.
-Date: Thu, 20 Feb 2003 10:29:41 -0800
+Date: Thu, 20 Feb 2003 19:58:31 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030220182941.GK14445@vana.vc.cvut.cz>
-References: <Pine.LNX.4.44.0302200108090.20350-100000@phoenix.infradead.org> <20030220150201.GD13507@codemonkey.org.uk>
+Message-ID: <Pine.LNX.4.44.0302201951270.20350-100000@phoenix.infradead.org>
+References: <20030220182941.GK14445@vana.vc.cvut.cz>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from vana.vc.cvut.cz ([147.32.240.58] ident=root)
+Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18lvSB-0002Gx-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 20 Feb 2003 10:29:52 -0800
-Content-Disposition: inline
-In-Reply-To: <20030220150201.GD13507@codemonkey.org.uk>
+	id 18lwqa-0000dV-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 20 Feb 2003 11:59:09 -0800
+In-Reply-To: <20030220182941.GK14445@vana.vc.cvut.cz>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,62 +21,47 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Dave Jones <davej@codemonkey.org.uk>, James Simmons <jsimmons@infradead.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Petr Vandrovec <vandrove@vc.cvut.cz>
+Cc: Dave Jones <davej@codemonkey.org.uk>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, Feb 20, 2003 at 03:02:01PM +0000, Dave Jones wrote:
-> On Thu, Feb 20, 2003 at 01:09:33AM +0000, James Simmons wrote:
-> 
->  > New updates to the fbdev layer. You can grab the diff from 
->  > http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
-> 
-> James,
->  Whats the current status with matroxfb ? Its been broken
-> for months now, and hasn't seen any progress wrt getting it
-> back on its feet.
-> 
-> I understand Petr had some concerns with the new API, but
-> *something* needs to be done to get this back up and running.
-> 
-> I'd understand if this was a neglected hardly-used-by-anyone
-> driver, but there's an awful lot of matrox cards out there.
-> 
-> This was first reported broken way back in 2.5.53, but I believe
-> was broken even longer before that.
 
-Since 2.5.51, when rewrite came in... 
+> I was for five weeks in U.S., so I did not do anything with
+> matroxfb during that time. I plan to use fillrect and copyrect
+> from generic code 
 
-You can get patch which reverts most of James's work at
-ftp://platan.vc.cvut.cz/pub/linux/matrox-latest/matroxfb-2.5.59.gz.
+I have ported the accelerated functions to the new api. What is left is to 
+deal with the loadfont and putcs issue which I'm working on the code right 
+now.
 
-I was for five weeks in U.S., so I did not do anything with
-matroxfb during that time. I plan to use fillrect and copyrect
-from generic code (although it means unnecessary multiply on
-generic side, and division in matroxfb, but well, if we gave
-up on reasonable speed for fbdev long ago...). But I simply
-want loadfont and putcs hooks for character painting. And if 
-fbdev maintainer does not want to give me them, well, then 
-matroxfb and fbdev are not compatible.
+> (although it means unnecessary multiply on
+> generic side, and division in matroxfb, 
 
-I refuse to remove features from matroxfb driver, and textmode
-support is one of current features (needed and required to be
-able to run VMware on fullscreen - and as main part of my
-job happens in VMware...). So there is couple of choices:
-(1) new maintainer, or
-(2) remove matroxfb from kernel, or
-(3) persuade me that I want to write matroxcon and forget about fbcon at all, or
-(4) something else I do not know about.
+????
 
-Besides that with that strange additional copy in accel_putcs
-I get much slower output than with 2.4.x... and although I
-understand that for 2.6.x we'll all have faster computers than
-we had for 2.4.x, I still think that speed should be primary
-concern, and code extensibility and readability secondary.
-But well, I told it dozens of time, so why I bother. I do
-not want to end up as Larry.
-					Petr Vandrovec
-					vandrove@vc.cvut.cz
+> but well, if we gave
+> up on reasonable speed for fbdev long ago...). 
+
+This is not true. Several benchmarks have shown a large performance 
+improvement in 2.5.X.
+
+> But I simply
+> want loadfont and putcs hooks for character painting. And if 
+> fbdev maintainer does not want to give me them, well, then 
+> matroxfb and fbdev are not compatible.
+
+Working on it. I starting with Tony's tileblit patch but I plan to expand 
+it even more i.e texture maps to draw fonts.
+ 
+> (3) persuade me that I want to write matroxcon and forget about fbcon at all, or
+
+This is the best solution. 
+
+> Besides that with that strange additional copy in accel_putcs
+> I get much slower output than with 2.4.x... and although I
+
+Again not true.
 
 
 

@@ -1,21 +1,21 @@
 From: Junio C Hamano <junkio@cox.net>
 Subject: Re: [PATCH] GeForce 5200 on rivafb
-Date: Sat, 11 Dec 2004 18:25:49 -0800
-Message-ID: <7vd5xgmevm.fsf@assigned-by-dhcp.cox.net>
-References: <200412120511.31725.adaplas@hotpop.com>
+Date: Sat, 11 Dec 2004 10:21:52 -0800
+Message-ID: <7voeh0n1a7.fsf@assigned-by-dhcp.cox.net>
+References: <200412112322.05601.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Cdens-0006zv-0j
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 12 Dec 2004 17:15:08 -0800
-Received: from fed1rmmtao09.cox.net ([68.230.241.30])
+	id 1Cdgr4-0002h7-AW
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 12 Dec 2004 19:26:34 -0800
+Received: from fed1rmmtai01.cox.net ([68.230.241.58])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1Cdenr-0000CO-CT
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 12 Dec 2004 17:15:07 -0800
-In-Reply-To: <200412120511.31725.adaplas@hotpop.com> (Antonino A. Daplas's
- message of "Sun, 12 Dec 2004 05:11:30 +0800")
+	id 1Cdgr3-0003Xm-F8
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 12 Dec 2004 19:26:34 -0800
+In-Reply-To: <200412112322.05601.adaplas@hotpop.com> (Antonino A. Daplas's
+ message of "Sat, 11 Dec 2004 23:22:04 +0800")
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,43 +28,68 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+To: "Antonino A. Daplas" <adaplas@hotpop.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
+
+Thanks for a quick response.
 
 >>>>> "AAD" == Antonino A Daplas <adaplas@hotpop.com> writes:
 
+AAD> Dec 10 19:04:40 siamese kernel:       Display is GTF capable
+AAD> Dec 10 19:04:40 siamese kernel: nvidiafb: Unable to detect which 
+AAD> CRTCNumber...
+AAD> Dec 10 19:04:40 siamese kernel: ...Defaulting to CRTCNumber 1
+AAD> Dec 10 19:04:40 siamese kernel: nvidiafb: Using DFP on CRTC 1
+AAD> Dec 10 19:04:40 siamese kernel: Panel size is 1 x 1
+
+AAD> Panel size of 1x1 is a bad sign.  (Panel size is set by video BIOS).
+
+What should it say normally?  The monitor is a CRT (ViewSonic
+PF775a) connected via a DSub connector.  I have rebuilt the
+kernel without I2C support and the boot log says "Defaulting to
+CRTCNumber 0".  With this, I get a working framebuffer console
+and fbdev X works on it.
+
+Dec 10 23:10:22 siamese kernel: nvidiafb: nVidia device/chipset 10DE0110
+Dec 10 23:10:22 siamese kernel: nvidiafb: nVidia Corporation NV11 [GeForce2 MX/MX 400]
+Dec 10 23:10:22 siamese kernel: nvidiafb: Unable to detect display type...
+Dec 10 23:10:22 siamese kernel: ...Using default of CRT
+Dec 10 23:10:22 siamese kernel: nvidiafb: Unable to detect which CRTCNumber...
+Dec 10 23:10:22 siamese kernel: ...Defaulting to CRTCNumber 0
+Dec 10 23:10:22 siamese kernel: nvidiafb: Using CRT on CRTC 0
+Dec 10 23:10:22 siamese kernel: nvidiafb: MTRR set to ON
+Dec 10 23:10:22 siamese kernel: Console: switching to colour frame buffer device 200x75
+Dec 10 23:10:22 siamese kernel: nvidiafb: PCI nVidia NV11 framebuffer (64MB @ 0xD8000000)
+
+AAD> Can you try the following:
 AAD> 1. Change this line in drivers/video/fbmon.c
->> 
+
 AAD> #undef DEBUG
 AAD> to 
 AAD> #define DEBUG
->> 
->> Will do, but I have one question.  The last time I
->> tried
->> turning debugging on on rivafb-i2c it was very
->> unpleasant;
 
-AAD> No :-), this is not for nvidiafb but for the EDID parser, and it will give
-AAD> you a very descriptive parsing of the EDID block.
+Will do, but I have one question.  The last time I tried
+turning debugging on on rivafb-i2c it was very unpleasant;
+eventually the driver ended up reporting scrolling events on the
+console which caused further scrolling which is reported on the
+console which caused further scrolling ... ;-).  I could not get
+the control back even with SysRQ.  Is there a trick to avoid
+this kind of trouble and still have debugging enabled?
 
-Will try.  Thanks.
+AAD> 2. Experiment with the following boot options:
 
-AAD> So, with a broken EDID block, I guess your best workaround is to disable
-AAD> i2c in your kernel config.
+AAD> So you can try this, for a start:
+AAD> video=nvidiafb:forceCRTC:1
 
-Again, thanks.
+I presume I should use forceCRTC:0 to match the working "sans
+i2c" case.
 
-AAD> BTW:  Why can't you use the 'nv' driver with X? And does rivafb work with
-AAD> your card?
+Is it possible that EDID is not being read correctly in my
+configuration?  Could it be a hardware problem (either the card,
+the monitor, or the connecting cable)?  If so, how would I
+determine if it indeed is a hardware problem?
 
-The rivafb driver up to 2.6.7 or so used to give me framebuffer
-console, and let me run X on fbdev, but more recent ones does
-not seem to work.  I just get blank screen (even without EDID
-detection via riva-i2c).  Around the timeframe when 2.6.3 or so
-was current, XFree86 'nv' used to work without any kernel side
-framebuffer device, but the more recent one from Debian
-'testing' does not work anymore; I am suspecting this is a
-problem with XFree86 not rivafb or nvidiafb framebuffer problem
-so it may not be of interest to this list.
+Thanks.
 
 
 

@@ -1,61 +1,71 @@
-From: Richard Zidlicky <rz@linux-m68k.org>
-Subject: Re: Q40 fbdev updates.
-Date: Wed, 5 May 2004 22:51:33 +0200
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040505205133.GA23557@linux-m68k.org>
-References: <Pine.GSO.4.58.0404251320190.11039@waterleaf.sonytel.be> <Pine.LNX.4.44.0404270115470.9732-100000@phoenix.infradead.org>
+From: Jon Smirl <jonsmirl@yahoo.com>
+Subject: Redesign of kernel graphics interface
+Date: Thu, 6 May 2004 11:16:39 -0700 (PDT)
+Sender: mesa3d-dev-admin@lists.sourceforge.net
+Message-ID: <20040506181639.61975.qmail@web14929.mail.yahoo.com>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BLjDJ-0002fb-Je
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 06 May 2004 06:47:01 -0700
-Received: from mail-in-04.arcor-online.net ([151.189.21.44])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.30)
-	id 1BLjDJ-0003xL-Du
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 06 May 2004 06:47:01 -0700
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0404270115470.9732-100000@phoenix.infradead.org>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+Return-path: <mesa3d-dev-admin@lists.sourceforge.net>
+Errors-To: mesa3d-dev-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
+	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:mesa3d-dev@lists.sourceforge.net>
+List-Help: <mailto:mesa3d-dev-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
+	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=mesa3d-dev>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Richard.Zidlicky@stud.informatik.uni-erlangen.de
+To: dri-devel <dri-devel@lists.sourceforge.net>, mesa3d-dev <mesa3d-dev@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tue, Apr 27, 2004 at 01:15:53AM +0100, James Simmons wrote:
-> 
-> Applied your changes.
-> 
+At the X Developers Conference there was a discussion of the issues around
+framebuffer and DRI. Theodore Ts'o suggested that I write it up and post it for
+discussion. I'm going to try and list all of the issues I've heard from all
+sides so some of the proposed solutions are in conflict. The goal of this list
+is to provide direction for a topic discussion at the Ottawa Kernel Summit.
 
-Thanks guys, works perfectly, especially the odd colormap
-problem is now gone :)
+The top item is that accessing the video hardware is a free for all. There are
+two device drivers, FB and DRI, plus numerous user space apps, like X and
+SVGlib, all trying to control the hardware. The result of this is that it is
+easy to lock up your machine when switching between the different usages. X does
+particularly nasty things to the hardware from user space without informing the
+kernel.
 
-- fix email addr
+First is a little background that should have been in my original post:
+http://thunker.thunk.org/pipermail/ksummit-2004-discuss/2004-May/000399.html
 
---- q40fb.c.orig        2004-05-05 22:01:08.000000000 +0200
-+++ q40fb.c     2004-05-05 22:25:02.000000000 +0200
-@@ -3,7 +3,7 @@
-  *
-  * Copyright (C) 2001 
-  *
-- *      Richard Zidlicky <Richard.Zidlicky@stud.informatik.uni-erlangen.de>
-+ *      Richard Zidlicky <rz@linux-m68k.org>
-  *
-  *  This file is subject to the terms and conditions of the GNU General Public
-  *  License. See the file COPYING in the main directory of this archive for
+Next is the orginal post:
+http://thunker.thunk.org/pipermail/ksummit-2004-discuss/2004-May/000379.html
+
+The reply thread on the kernel summit list is here:
+http://thunker.thunk.org/pipermail/ksummit-2004-discuss/2004-May/thread.html
+
+Some talk about doing a better video memory manager and kgi is here:
+http://marc.theaimsgroup.com/?l=dri-devel&r=1&b=200405&w=2
+
+A major topic that I missed in the original list was how to handle BSD. DRM is
+under the BSD license and FB is GPL. If these two code bases are merged, what
+are we going to do about BSD? I don't know the appropriate BSD lists to post
+this to so please forward as necessary.
+
+Another topic that I missed was, why did kgi fail and what can we do to avoid
+repeating the same path this time around.
+
+After the flames from this settle down I'll try to write a document summarizing
+the conclusions reached, if any. The best possible outcome would be a design
+document for review at Kernel Summit.
+
+=====
+Jon Smirl
+jonsmirl@yahoo.com
 
 
-Richard
-
+	
+		
+__________________________________
+Do you Yahoo!?
+Win a $20,000 Career Makeover at Yahoo! HotJobs  
+http://hotjobs.sweepstakes.yahoo.com/careermakeover 
 
 
 -------------------------------------------------------

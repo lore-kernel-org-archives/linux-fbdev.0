@@ -1,24 +1,20 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: still ..Confused about atyfb and M1
-Date: Fri, 6 Feb 2004 10:17:53 +0100 (MET)
+From: Andreas Steinmetz <ast@domdv.de>
+Subject: [PATCH] add device id to radeonfb for 2.6.2
+Date: Fri, 06 Feb 2004 12:40:20 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0402061017120.398@waterleaf.sonytel.be>
-References: <Pine.LNX.4.44.0401302147390.22830-100000@phoenix.infradead.org>
- <401FF39B.7090406@bitworks.com> <Pine.GSO.4.58.0402041003560.20790@waterleaf.sonytel.be>
- <40210CEA.5080102@bitworks.com> <Pine.GSO.4.58.0402041634100.22483@waterleaf.sonytel.be>
- <4022838A.8010502@bitworks.com> <Pine.GSO.4.58.0402052114480.20594@waterleaf.sonytel.be>
- <4022B783.8070002@bitworks.com>
+Message-ID: <40237D24.9020806@domdv.de>
 Mime-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="------------080106070502040607060208"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Ap27j-00069o-Ee
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 06 Feb 2004 01:18:07 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Ap27i-0001pO-LT
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 06 Feb 2004 01:18:07 -0800
-In-Reply-To: <4022B783.8070002@bitworks.com>
+	id 1Ap4LW-0000Ms-SI
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 06 Feb 2004 03:40:30 -0800
+Received: from hermes.domdv.de ([193.102.202.1] helo=zeus.domdv.de)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1Ap4LW-00013a-9x
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 06 Feb 2004 03:40:30 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,56 +24,72 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+To: ajoshi@shell.unixbox.com
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+
+This is a multi-part message in MIME format.
+--------------080106070502040607060208
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-To: Richard Smith <rsmith@bitworks.com>
-Cc: James Simmons <jsimmons@infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Alexander Kern <alex.kern@gmx.de>, Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, 5 Feb 2004, Richard Smith wrote:
-> Geert Uytterhoeven wrote:
-> >>>1002:4c4d
-> >>
-> >>Wonder why your device ID is differnet than mine.  Can you send me a
-> >
-> > Because mine is AGP and yours is PCI?
->
-> Should not matter.  Chip has both interfaces on it and AGP is just PCI
-> with some additional signals.
->
-> >>'lspci -vv' of your M1?
-> > I can, but not right now. If the answer above doesn't satisfy you, just ask
-> > again.
->
-> No rush. Im messing with a different project right now anyway.  But yes
-> I'd still like a -vv of your chip when you can.
+The attached patch adds the pci id 5961 to radeonfb. Without the patch 
+my 9200 displays only a blank screen. lspci output below. The patch is 
+against 2.6.2.
 
-01:00.0 VGA compatible controller: ATI Technologies Inc Rage Mobility P/M AGP 2x (rev 64) (prog-if 00 [VGA])
-        Subsystem: Sony Corporation: Unknown device 80c7
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping+ SERR- FastB2B-
-        Status: Cap+ 66Mhz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-        Latency: 66 (2000ns min), Cache Line Size: 0x08 (32 bytes)
-        Interrupt: pin A routed to IRQ 9
-        Region 0: Memory at fd000000 (32-bit, non-prefetchable) [size=16M]
-        Region 1: I/O ports at e800 [size=256]
-        Region 2: Memory at febff000 (32-bit, non-prefetchable) [size=4K]
-        Expansion ROM at <unassigned> [disabled] [size=128K]
-        Capabilities: [50] AGP version 1.0
-                Status: RQ=256 Iso- ArqSz=0 Cal=0 SBA+ ITACoh- GART64- HTrans- 64bit- FW- AGP3- Rate=x1,x2
-                Command: RQ=1 ArqSz=0 Cal=0 SBA- AGP- GART64- 64bit- FW- Rate=<none>
-        Capabilities: [5c] Power Management version 1
-                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+05:00.0 VGA compatible controller: ATI Technologies Inc Radeon RV280 
+[Radeon 9200] (rev 01) (prog-if 00 [VGA])
+         Subsystem: Giga-byte Technology: Unknown device 4018
+         Flags: bus master, 66Mhz, medium devsel, latency 64, IRQ 16
+         Memory at e0000000 (32-bit, prefetchable) [size=128M]
+         I/O ports at b800 [size=256]
+         Memory at feaf0000 (32-bit, non-prefetchable) [size=64K]
+         Expansion ROM at feac0000 [disabled] [size=128K]
+         Capabilities: [58] AGP version 3.0
+         Capabilities: [50] Power Management version 2
 
-Gr{oetje,eeting}s,
+-- 
+Andreas Steinmetz
 
-						Geert
+--------------080106070502040607060208
+Content-Type: text/plain;
+ name="radeon.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="radeon.patch"
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+diff -rNu linux-2.6.2-orig/drivers/video/radeonfb.c linux-2.6.2/drivers/video/radeonfb.c
+--- linux-2.6.2-orig/drivers/video/radeonfb.c	2004-02-04 04:44:55.000000000 +0100
++++ linux-2.6.2/drivers/video/radeonfb.c	2004-02-06 11:55:18.000000000 +0100
+@@ -114,6 +114,7 @@
+ 	RADEON_Ie,
+ 	RADEON_If,
+ 	RADEON_Ig,
++	RADEON_Ya,
+ 	RADEON_Yd,
+ 	RADEON_Ld,
+ 	RADEON_Le,
+@@ -208,6 +209,7 @@
+ 	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RADEON_Ie, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RADEON_Ie},
+ 	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RADEON_If, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RADEON_If},
+ 	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RADEON_Ig, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RADEON_Ig},
++	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RADEON_Ya, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RADEON_Ya},
+ 	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RADEON_Yd, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RADEON_Yd},
+ 	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RADEON_Ld, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RADEON_Ld},
+ 	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_RADEON_Le, PCI_ANY_ID, PCI_ANY_ID, 0, 0, RADEON_Le},
+diff -rNu linux-2.6.2-orig/include/linux/pci_ids.h linux-2.6.2/include/linux/pci_ids.h
+--- linux-2.6.2-orig/include/linux/pci_ids.h	2004-02-04 04:43:43.000000000 +0100
++++ linux-2.6.2/include/linux/pci_ids.h	2004-02-06 11:45:51.000000000 +0100
+@@ -291,6 +291,7 @@
+ #define PCI_DEVICE_ID_ATI_RADEON_Ig	0x4967
+ /* Radeon RV280 (9200) */
+ #define PCI_DEVICE_ID_ATI_RADEON_Y_	0x5960
++#define PCI_DEVICE_ID_ATI_RADEON_Ya	0x5961
+ #define PCI_DEVICE_ID_ATI_RADEON_Yd	0x5964
+ /* Radeon R300 (9500) */
+ #define PCI_DEVICE_ID_ATI_RADEON_AD	0x4144
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+--------------080106070502040607060208--
+
 
 
 -------------------------------------------------------

@@ -1,369 +1,265 @@
 From: Antonino Daplas <adaplas@pol.net>
-Subject: [PATCH] FBDev: fix for fbcon Oops
-Date: 28 Nov 2002 12:24:46 +0500
+Subject: [PATCH] FBDev: vga16fb port
+Date: 28 Nov 2002 12:24:12 +0500
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1038468191.1092.48.camel@localhost.localdomain>
+Message-ID: <1038468176.1091.46.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-wEFP2w/Sle0UpRo1BkcO"
+Content-Type: multipart/mixed; boundary="=-todKmU3+dFjGCg4ykc38"
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
 List-Id: <fbdev-devel.lists.sourceforge.net
 To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
 
---=-wEFP2w/Sle0UpRo1BkcO
+--=-todKmU3+dFjGCg4ykc38
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-Hi,
-
 Attached is a patch against 2.5.49 + James Simmons' latest fbdev.diff.
 
-This fixes fbcon oopsing at load time which is due to the fb_cursor's
-palette index entries being improperly updated.
-
-A new kind of 'emacs glitch'  appeared, though. This can be described as
-a block of text that is incompletely  copied, ie when "tabbing" a line
-of text.  This is present with all hardware I tested, soft accel and
-hardware accel, which indicates a problem in the higher layers (probably
-fbcon). vgacon works okay.  
-
-Other changes:
-
-1. optimization of fbcon_accel_putcs()
-2. enabling logo displays at all packed pixel formats (as long as
-fb_imageblit is supported)
-3. Various fbcon_accel_cursor() fixes which would have resulted in
-wrong cursor colors or an invisible cursor.
-
-
+Added support for logo drawing.
+Fixed vga16fb_imageblit() limitation of 8-pixel wide bitmap blitting
+only.
 
 Tony
 
 
 
---=-wEFP2w/Sle0UpRo1BkcO
-Content-Disposition: attachment; filename=fbcon.c.diff
+--=-todKmU3+dFjGCg4ykc38
+Content-Disposition: attachment; filename=vga16fb.diff
 Content-Transfer-Encoding: quoted-printable
-Content-Type: text/x-patch; name=fbcon.c.diff; charset=UTF-8
+Content-Type: text/x-patch; name=vga16fb.diff; charset=UTF-8
 
-diff -Naur linux-2.5.49/drivers/video/Makefile linux/drivers/video/Makefile
---- linux-2.5.49/drivers/video/Makefile	2002-11-28 06:29:45.000000000 +0000
-+++ linux/drivers/video/Makefile	2002-11-28 06:30:35.000000000 +0000
-@@ -69,7 +69,7 @@
- obj-$(CONFIG_FB_TX3912)           +=3D tx3912fb.o cfbfillrect.o cfbcopyare=
-a.o cfbimgblt.o
-=20
- obj-$(CONFIG_FB_MATROX)		  +=3D matrox/
--obj-$(CONFIG_FB_RIVA)		  +=3D riva/
-+obj-$(CONFIG_FB_RIVA)		  +=3D riva/ cfbfillrect.o cfbimgblt.o cfbcopyarea.=
-o
- obj-$(CONFIG_FB_SIS)		  +=3D sis/
- obj-$(CONFIG_FB_ATY)		  +=3D aty/ cfbimgblt.o
-=20
-diff -Naur linux-2.5.49/drivers/video/console/fbcon.c linux/drivers/video/c=
-onsole/fbcon.c
---- linux-2.5.49/drivers/video/console/fbcon.c	2002-11-28 06:30:09.00000000=
-0 +0000
-+++ linux/drivers/video/console/fbcon.c	2002-11-28 06:33:39.000000000 +0000
-@@ -153,6 +153,8 @@
- static int cursor_on;
- static int cursor_blink_rate;
-=20
-+static u8 fbcon_pixmap[8192];
-+
- static inline void cursor_undrawn(void)
- {
- 	vbl_cursor_cnt =3D 0;
-@@ -353,7 +355,8 @@
- {
- 	struct fb_info *info =3D p->fb_info;
- 	unsigned short charmask =3D p->charmask;
--	unsigned int width =3D ((vc->vc_font.width + 7) >> 3);
-+	unsigned int width =3D ((vc->vc_font.width + 7)/8);
-+	unsigned int cellsize =3D vc->vc_font.height * width;
- 	struct fb_image image;
- 	u16 c =3D scr_readw(s);
-=20
-@@ -361,16 +364,37 @@
- 	image.bg_color =3D attr_bgcol(p, c);
- 	image.dx =3D xx * vc->vc_font.width;
- 	image.dy =3D yy * vc->vc_font.height;
--	image.width =3D vc->vc_font.width;
- 	image.height =3D vc->vc_font.height;
- 	image.depth =3D 1;
-=20
--	while (count--) {
--		image.data =3D p->fontdata +=20
--			(scr_readw(s++) & charmask) * vc->vc_font.height * width;
-+	if (!(vc->vc_font.width & 7) && fbcon_pixmap !=3D NULL) {
-+		unsigned int pitch =3D width * count, i, j;
-+		char *src, *dst, *dst0;
-+
-+		dst0 =3D fbcon_pixmap;
-+		image.width =3D vc->vc_font.width * count;
-+		image.data =3D fbcon_pixmap;
-+		while (count--) {
-+			src =3D p->fontdata + (scr_readw(s++) & charmask) * cellsize;
-+			dst =3D dst0;
-+			for (i =3D image.height; i--; ) {
-+				for (j =3D 0; j < width; j++)=20
-+					dst[j] =3D *src++;
-+				dst +=3D pitch;
-+			}
-+			dst0 +=3D width;
-+		}
- 		info->fbops->fb_imageblit(info, &image);
--		image.dx +=3D vc->vc_font.width;
--	}=09
-+	}
-+	else {
-+		image.width =3D vc->vc_font.width;
-+		while (count--) {
-+			image.data =3D p->fontdata +=20
-+				(scr_readw(s++) & charmask) * vc->vc_font.height * width;
-+			info->fbops->fb_imageblit(info, &image);
-+			image.dx +=3D vc->vc_font.width;
-+		}=09
-+	}
+diff -Naur linux-2.5.49/drivers/video/vga16fb.c linux/drivers/video/vga16fb=
+.c
+--- linux-2.5.49/drivers/video/vga16fb.c	2002-11-28 06:44:07.000000000 +000=
+0
++++ linux/drivers/video/vga16fb.c	2002-11-28 06:47:06.000000000 +0000
+@@ -1062,8 +1062,10 @@
+                 }
+         } else {
+                 line_ofs =3D info->fix.line_length - area->width;
+-                dest =3D info->screen_base + area->dx + area->width + (are=
+a->dy + height - 1) * info->fix.line_length;
+-                src =3D info->screen_base + area->sx + area->width + (area=
+->sy + height - 1) * info->fix.line_length;
++                dest =3D info->screen_base + area->dx + area->width +
++			(area->dy + height - 1) * info->fix.line_length;
++                src =3D info->screen_base + area->sx + area->width +
++			(area->sy + height - 1) * info->fix.line_length;
+                 while (height--) {
+                         for (x =3D 0; x < area->width; x++) {
+                                 --src;
+@@ -1147,8 +1149,10 @@
+ 					dst +=3D line_ofs;
+ 				}
+ 			} else {
+-				dst =3D info->screen_base + (area->dx/8) + width + (area->dy + height =
+- 1) * info->fix.line_length;
+-				src =3D info->screen_base + (area->sx/8) + width + (area->sy + height =
+ - 1) * info->fix.line_length;
++				dst =3D info->screen_base + (area->dx/8) + width +=20
++					(area->dy + height - 1) * info->fix.line_length;
++				src =3D info->screen_base + (area->sx/8) + width +=20
++					(area->sy + height  - 1) * info->fix.line_length;
+ 				while (height--) {
+ 					for (x =3D 0; x < width; x++) {
+ 						dst--;
+@@ -1222,65 +1226,123 @@
+         setindex(oldindex);
  }
 =20
- void fbcon_accel_clear_margins(struct vc_data *vc, struct display *p,
-@@ -425,7 +449,7 @@
+-void vga16fb_imageblit(struct fb_info *info, struct fb_image *image)
++void vga_imageblit_expand(struct fb_info *info, struct fb_image *image)
+ {
+-	char *where =3D info->screen_base + (image->dx/image->width) + image->dy =
+* info->fix.line_length;
++	char *where =3D info->screen_base + (image->dx/8) +=20
++		image->dy * info->fix.line_length;
+ 	struct vga16fb_par *par =3D (struct vga16fb_par *) info->par;
+-	u8 *cdat =3D image->data;
+-	int y;
++	u8 *cdat =3D image->data, *dst;
++	int x, y;
 =20
- 	if ((vc->vc_cursor_type & 0x0f) !=3D shape) {
- 		shape =3D vc->vc_cursor_type & 0x0f;
--		cursor.set |=3D FB_CUR_SETSIZE;
-+		cursor.set |=3D FB_CUR_SETSHAPE;
- 	}
-=20
- 	c =3D scr_readw((u16 *) vc->vc_pos);
-@@ -435,10 +459,7 @@
- 		fgcolor =3D (int) attr_fgcol(p, c);
- 		bgcolor =3D (int) attr_bgcol(p, c);
- 		cursor.set |=3D FB_CUR_SETCMAP;
--		cursor.image.bg_color =3D bgcolor;
--		cursor.image.fg_color =3D fgcolor;
- 	}
--
- 	c &=3D p->charmask;
- 	font =3D p->fontdata + (c * ((width + 7) / 8) * height);
- 	if (font !=3D dest) {
-@@ -453,7 +474,7 @@
-=20
- 	if (cursor.set & FB_CUR_SETSIZE) {
- 		memset(image, 0xff, 64);
--		cursor.set |=3D FB_CUR_SETSIZE;
-+		cursor.set |=3D FB_CUR_SETSHAPE;
- 	}	=09
-=20
- 	if (cursor.set & FB_CUR_SETSHAPE) {
-@@ -497,6 +518,8 @@
- 	cursor.image.dy =3D yy * height;
- 	cursor.image.depth =3D 1;
- 	cursor.image.data =3D image;
-+	cursor.image.bg_color =3D bgcolor;
-+	cursor.image.fg_color =3D fgcolor;
- 	cursor.mask =3D mask;
- 	cursor.dest =3D dest;
- 	cursor.rop =3D ROP_XOR;
-@@ -2487,20 +2510,16 @@
- 	struct display *p =3D &fb_display[fg_console];	/* draw to vt in foregroun=
-d */
- 	struct fb_info *info =3D p->fb_info;
- 	struct vc_data *vc =3D info->display_fg;
--#ifdef CONFIG_FBCON_ACCEL
- 	struct fb_image image;
- 	u32 *palette =3D NULL, *saved_palette =3D NULL;
--#endif
- 	int depth =3D info->var.bits_per_pixel;
--	int line =3D info->fix.line_length;
- 	unsigned char *fb =3D info->screen_base;
--	unsigned char *logo;
--	unsigned char *dst, *src;
--	int i, j, n, x1, y1, x;
-+	unsigned char *logo, *logo_new =3D NULL;
-+	int i, j, n, x;
- 	int logo_depth, done =3D 0;
-=20
- 	/* Return if the frame buffer is not mapped */
--	if (!fb)
-+	if (!fb || !info->fbops->fb_imageblit)
- 		return 0;
-=20
- 	/*
-@@ -2543,65 +2562,114 @@
- 		logo_depth =3D 1;
- 	}
-=20
--#if defined(CONFIG_FBCON_ACCEL)
--	if (info->fix.visual =3D=3D FB_VISUAL_TRUECOLOR) {
--		unsigned char mask[9] =3D
--		    { 0, 0x80, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe, 0xff };
-+    {
-+	    int needs_truepalette =3D 0;
-+	    int needs_directpalette =3D 0;
-+	    int needs_logo =3D 0;
-+
-+	    switch (info->fix.visual) {
-+	    case FB_VISUAL_TRUECOLOR:
-+		    needs_truepalette =3D 1;
-+		    break;
-+	    case FB_VISUAL_DIRECTCOLOR:
-+		    if (depth >=3D 24)=20
-+			    needs_directpalette =3D 1;
-+		    /* 16 colors */
-+		    else if (depth >=3D 16)
-+			    needs_logo =3D 4;
-+		    /* 2 colors */
-+		    else
-+			    needs_logo =3D 1;
-+		    break;
-+	    case FB_VISUAL_PSEUDOCOLOR:
-+	    default:
-+		    /* 16 colors */
-+		    if (depth >=3D 4 && depth < 8)
-+			    needs_logo =3D 4;
-+		    /* 4 colors */
-+		    else if (depth < 4)
-+			    needs_logo =3D 1;
-+		    break;
-+	    }		   =20
-+	if (needs_truepalette || needs_directpalette) {
-+		unsigned char mask[9] =3D { 0,0x80,0xc0,0xe0,0xf0,0xf8,0xfc,0xfe,0xff };
- 		unsigned char redmask, greenmask, bluemask;
- 		int redshift, greenshift, blueshift;
-=20
--		/* Bug: Doesn't obey msb_right ... (who needs that?) */
--		redmask =3D
--		    mask[info->var.red.length <
--			 8 ? info->var.red.length : 8];
--		greenmask =3D
--		    mask[info->var.green.length <
--			 8 ? info->var.green.length : 8];
--		bluemask =3D
--		    mask[info->var.blue.length <
--			 8 ? info->var.blue.length : 8];
--		redshift =3D
--		    info->var.red.offset - (8 - info->var.red.length);
--		greenshift =3D
--		    info->var.green.offset - (8 - info->var.green.length);
--		blueshift =3D
--		    info->var.blue.offset - (8 - info->var.blue.length);
--
- 		/*
--		 * We have to create a temporary palette since console palette is only
-+	 	 * We have to create a temporary palette since console palette is only
- 		 * 16 colors long.
--		 */
-+	 	 */
- 		palette =3D kmalloc(256 * 4, GFP_KERNEL);
- 		if (palette =3D=3D NULL)
--			return (LOGO_H + vc->vc_font.height - 1)/vc->vc_font.height;
-+			return 1;
-+
-+		if (needs_truepalette) {
-+			/* Bug: Doesn't obey msb_right ... (who needs that?) */
-+			redmask   =3D mask[info->var.red.length   < 8 ? info->var.red.length   =
-: 8];
-+			greenmask =3D mask[info->var.green.length < 8 ? info->var.green.length =
-: 8];
-+			bluemask  =3D mask[info->var.blue.length  < 8 ? info->var.blue.length  =
-: 8];
-+			redshift   =3D info->var.red.offset   - (8 - info->var.red.length);
-+			greenshift =3D info->var.green.offset - (8 - info->var.green.length);
-+			blueshift  =3D info->var.blue.offset  - (8 - info->var.blue.length);
-+
-=20
--		for (i =3D 0; i < LINUX_LOGO_COLORS; i++) {
--			palette[i + 32] =3D
--			    (safe_shift
--			     ((linux_logo_red[i] & redmask),
--			      redshift) | safe_shift((linux_logo_green[i] &
--						      greenmask),
--						     greenshift) |
--			     safe_shift((linux_logo_blue[i] & bluemask),
--					blueshift));
-+			for ( i =3D 0; i < LINUX_LOGO_COLORS; i++) {
-+				palette[i+32] =3D (safe_shift((linux_logo_red[i]   & redmask), redshif=
-t) |
-+						 safe_shift((linux_logo_green[i] & greenmask), greenshift) |
-+						 safe_shift((linux_logo_blue[i]  & bluemask), blueshift));
+ 	switch (info->fix.type) {
+-		case FB_TYPE_VGA_PLANES:
+-			if (info->fix.type_aux =3D=3D FB_AUX_VGA_PLANES_VGA4) {
+-				if (par->isVGA) {
+-					setmode(2);
+-					setop(0);
+-					setsr(0xf);
+-					setcolor(image->fg_color);
+-					selectmask();
++	case FB_TYPE_VGA_PLANES:
++		if (info->fix.type_aux =3D=3D FB_AUX_VGA_PLANES_VGA4) {
++			if (par->isVGA) {
++				setmode(2);
++				setop(0);
++				setsr(0xf);
++				setcolor(image->fg_color);
++				selectmask();
++			=09
++				setmask(0xff);
++				writeb(image->bg_color, where);
++				rmb();
++				readb(where); /* fill latches */
++				setmode(3);
++				wmb();
++				for (y =3D 0; y < image->height; y++) {
++					dst =3D where;
++					for (x =3D image->width/8; x--;)=20
++						writeb(*cdat++, dst++);
++					where +=3D info->fix.line_length;
++				}
++				wmb();
++			} else {
++				setmode(0);
++				setop(0);
++				setsr(0xf);
++				setcolor(image->bg_color);
++				selectmask();
++			=09
++				setmask(0xff);
++				for (y =3D 0; y < image->height; y++) {
++					dst =3D where;
++					for (x=3Dimage->width/8; x--;){
++						rmw(dst);
++						setcolor(image->fg_color);
++						selectmask();
++						if (*cdat) {
++							setmask(*cdat++);
++							rmw(dst++);
++						}
++					}
++					where +=3D info->fix.line_length;
++				}
 +			}
-+		}
-+		else {
-+			redshift =3D info->var.red.offset;
-+			greenshift =3D info->var.green.offset;
-+			blueshift =3D info->var.blue.offset;
-+
-+			for (i =3D 32; i < LINUX_LOGO_COLORS; i++)=20
-+				palette[i] =3D i << redshift | i << greenshift | i << blueshift;
- 		}
- 		saved_palette =3D info->pseudo_palette;
- 		info->pseudo_palette =3D palette;
- 	}
-+	if (needs_logo) {
-+		logo_new =3D kmalloc(LOGO_W * LOGO_H, GFP_KERNEL);
-+		if (logo_new =3D=3D NULL)
-+			return 1;
-+
-+		logo =3D logo_new;
-+		switch (needs_logo) {
-+		case 4:
-+		{
-+			for (i =3D 0; i < (LOGO_W * LOGO_H)/2; i++) {
-+				logo_new[i*2] =3D linux_logo16[i] >> 4;
-+				logo_new[(i*2)+1] =3D linux_logo16[i] & 0xf;
-+			}
-+		}
++		} else=20
++			vga_8planes_imageblit(info, image);
 +		break;
-+		case 1:
-+		default:
-+		{
-+			int j;
-+			for (i =3D 0; i < (LOGO_W * LOGO_H)/8; i++)=20
-+				for (j =3D 0; j < 8; j++)=20
-+					logo_new[i*2] =3D linux_logo_bw[i] &  (7 - j);
-+		}
++#ifdef FBCON_HAS_VGA
++	case FB_TYPE_TEXT:
 +		break;
-+		}=20
++#endif
++	case FB_TYPE_PACKED_PIXELS:
++	default:
++		cfb_imageblit(info, image);
++		break;
 +	}
- 	image.width =3D LOGO_W;
- 	image.height =3D LOGO_H;
- 	image.depth =3D depth;
- 	image.data =3D logo;
- 	image.dy =3D 0;
--#endif
-+    }
++}
 =20
- 	for (x =3D 0; x < num_online_cpus() * (LOGO_W + 8) &&
- 	     x < info->var.xres - (LOGO_W + 8); x +=3D (LOGO_W + 8)) {
--#if defined (CONFIG_FBCON_ACCEL)
- 		image.dx =3D x;
- 		info->fbops->fb_imageblit(info, &image);
- 		done =3D 1;
+-					setmask(0xff);
+-					writeb(image->bg_color, where);
+-					rmb();
+-					readb(where); /* fill latches */
+-					setmode(3);
+-					wmb();
+-					for (y =3D 0; y < image->height; y++, where +=3D info->fix.line_lengt=
+h)
+-						writeb(cdat[y], where);
+-						wmb();
+-				} else {
+-					setmode(0);
+-					setop(0);
+-					setsr(0xf);
+-					setcolor(image->bg_color);
+-					selectmask();
++void vga_imageblit_color(struct fb_info *info, struct fb_image *image)=20
++{
++	/*
++	 * Draw logo=20
++	 */
++	struct vga16fb_par *par =3D (struct vga16fb_par *) info->par;
++	char *where =3D info->screen_base + image->dy * info->fix.line_length +=20
++		image->dx/8;
++	char *cdat =3D image->data, *dst;
++	int x, y;
+=20
+-					setmask(0xff);
+-					for (y =3D 0; y < image->height; y++, where +=3D info->fix.line_lengt=
+h)
+-						rmw(where);
++	switch (info->fix.type) {
++	case FB_TYPE_VGA_PLANES:
++		if (info->fix.type_aux =3D=3D FB_AUX_VGA_PLANES_VGA4 &&
++		    par->isVGA) {
++			setsr(0xf);
++			setop(0);
++			setmode(0);
++		=09
++			for (y =3D 0; y < image->height; y++) {
++				for (x =3D 0; x < image->width; x++) {
++					dst =3D where + x/8;
+=20
+-					where -=3D info->fix.line_length * y;
+-					setcolor(image->fg_color);
++					setcolor(*cdat);
+ 					selectmask();
+-					for (y =3D 0; y < image->height; y++, where +=3D info->fix.line_lengt=
+h)
+-					if (cdat[y]) {
+-						setmask(cdat[y]);
+-						rmw(where);
+-					}
++					setmask(1 << (7 - (x % 8)));
++					fb_readb(dst);
++					fb_writeb(0, dst);
++
++					cdat++;
+ 				}
+-			} else=20
+-				vga_8planes_imageblit(info, image);
+-			break;
+-#ifdef FBCON_HAS_VGA
+-		case FB_TYPE_TEXT:
+-			break;
 -#endif
-+#if 0 /* Turn off, should be removed soon enough... */
- #if defined(CONFIG_FBCON_AFB) || defined(CONFIG_FBCON_ILBM) || \
-     defined(CONFIG_FBCON_IPLAN2P2) || defined(CONFIG_FBCON_IPLAN2P4) || \
-     defined(CONFIG_FBCON_IPLAN2P8)
-@@ -2733,14 +2801,14 @@
- 			done =3D 1;
- 		}
- #endif
-+#endif /* Turn off for now... */
+-		case FB_TYPE_PACKED_PIXELS:
+-		default:
+-			cfb_imageblit(info, image);
+-			break;
++				where +=3D info->fix.line_length;
++			}
++		}
++		break;
++	case FB_TYPE_PACKED_PIXELS:
++		cfb_imageblit(info, image);
++		break;
++	default:
++		break;
  	}
--
--#if defined (CONFIG_FBCON_ACCEL)
- 	if (palette !=3D NULL)
- 		kfree(palette);
- 	if (saved_palette !=3D NULL)
- 		info->pseudo_palette =3D saved_palette;
--#endif
-+	if (logo_new !=3D NULL)
-+		kfree(logo_new);
- 	/* Modes not yet supported: packed pixels with depth !=3D 8 (does such a
- 	 * thing exist in reality?) */
+ }
++			=09
++void vga16fb_imageblit(struct fb_info *info, struct fb_image *image)
++{
++	if (image->depth =3D=3D 1)
++		vga_imageblit_expand(info, image);
++	else if (image->depth =3D=3D info->var.bits_per_pixel)
++		vga_imageblit_color(info, image);
++}
 =20
+ static struct fb_ops vga16fb_ops =3D {
+ 	.owner		=3D THIS_MODULE,
+@@ -1292,6 +1354,7 @@
+ 	.fb_fillrect	=3D vga16fb_fillrect,
+ 	.fb_copyarea	=3D vga16fb_copyarea,
+ 	.fb_imageblit	=3D vga16fb_imageblit,
++	.fb_cursor      =3D soft_cursor,
+ };
+=20
+ int vga16fb_setup(char *options)
+@@ -1343,6 +1406,11 @@
+ 	i =3D (vga16fb_defined.bits_per_pixel =3D=3D 8) ? 256 : 16;
+ 	fb_alloc_cmap(&vga16fb.cmap, i, 0);
+=20
++	if (vga16fb_check_var(&vga16fb.var, &vga16fb))
++		return -EINVAL;
++
++	vga16fb_update_fix(&vga16fb);
++
+ 	if (register_framebuffer(&vga16fb) < 0) {
+ 		iounmap(vga16fb.screen_base);
+ 		return -EINVAL;
 
---=-wEFP2w/Sle0UpRo1BkcO--
+--=-todKmU3+dFjGCg4ykc38--

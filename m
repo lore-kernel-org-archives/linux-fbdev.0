@@ -1,22 +1,20 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Re: fbdev cursor part 1.
-Date: Mon, 23 Feb 2004 11:35:51 +1100
+Subject: fbdv/fbcon pending problems
+Date: Mon, 23 Feb 2004 11:53:14 +1100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1077496550.5960.9.camel@gaston>
-References: <Pine.LNX.4.44.0402222234120.2390-100000@phoenix.infradead.org>
+Message-ID: <1077497593.5960.28.camel@gaston>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Av4Iq-0001Np-58
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 22 Feb 2004 16:50:32 -0800
+	id 1Av4Za-0004mp-7M
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 22 Feb 2004 17:07:50 -0800
 Received: from gate.crashing.org ([63.228.1.57] ident=root)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1Av40h-0003Pr-2h
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 22 Feb 2004 16:31:47 -0800
-In-Reply-To: <Pine.LNX.4.44.0402222234120.2390-100000@phoenix.infradead.org>
+	id 1Av4SG-0001AS-7d
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 22 Feb 2004 17:00:16 -0800
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,33 +26,64 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@infradead.org>
-Cc: Alexander Kern <alex.kern@gmx.de>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
 
-> ment ;-)
-> 
-> I plan to submit the latets mach64 driver from BK to linus as soon as the 
-> first part of the cursor patch goes in. It gives enough of the new 
-> cursor api to do a dump of all the drivers in the 2.5 fbdev tree. Could you
-> make your patch against the fbdev-2.5 bk tree? Try my patch 
-> 
-> http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
-> 
-> If it doesn't work I will put a new one you there.
+Hi !
 
-Note that I'm having some troubles with James current mach64 bk on a
-wallstreet PowerBook (mach64 LT-G). There is an endian bug in the
-imageblt implementation, I don't know if the chip can be instructed
-to do the endian flip, so I modified the function storing to the
-fifo, that appear to work, at least with 8 bits mode ;)
+Here's a list of pending issues with fbdev (either upstream or in the
+fbdev bk treee), I figured posting it here may help getting more people
+on those issues as my time is sparse and I suppose James too.
 
-But I'm having lockups, very regular. I haven't been able to figure
-out why though. Adding a wait_for_idle() at the end of both fillrect
-and copyarea() seem to make them disappear (well, almost, I had _one_
-still once). It's weird as those shouldn't be necessary.
+ - First one, I will deal with, just writing it for completeness: When
+switching from KD_GRAPHICS to KD_TEXT (either same console changing mode
+or switching to a different console), we need a callback so the fbdev
+has a chance to restore the accel engine setting (or even the whole
+mode, to be safe).
 
-Maybe we should add a timeout on the wait_* functions with an engine
-reset, that would be sub-optimal, but at least we wouldn't lockup the
-box (if that is possible of course).
+ - Memory corruption problems. There is still at least one identified
+when using stty. Just use crazy values, like flipping rows & cols (like
+stty rows 132 cols 30) and usually, you'll see the box blow up very soon
+with heavy memory corruption.
+
+ - mach64 lockups on LT-G (I'll try on an LT-Pro soon) plus other
+mach64 bugs in the new version in the bk fbdev, I'll have a patch for
+some of the problems, but I didn't find a good explanation for the
+accel lockups yet
+
+ - Logo problems. When booting with a logo, then going to getty, the
+logo doesn't get erased until we actually switch to another console (or
+reset the console). At this point, using things like vi & scrolling up
+doesn't work properly. Actually, last time I tried, I had to switch
+back & forth twice before my console that had the logo got fully working
+with vi.
+
+ - Back buffer problem: maybe related to the logo ? After boot, doing
+shift-pageup to go back to the boot message, usually you get crap
+displayed at various places.
+
+ - On x86, various junk displayed when the fbdev takes over. Reported
+by radeonfb users, I couldn't test myself, I don't have an x86 with
+radeon at hand for the moment. Apparently, the takeover from vgacon
+doesn't properly "convert" the previous VGA text buffer content
+
+ - stty & mode picking. Currently, fbcon_resize() (called when stty is
+used to resize the console) will hack a "var" strcture by just putting
+new width/height in it and pass that to set_var. The way the various
+drivers react to that mostly broken "var" structure is rather random.
+We need to explicitely differenciate between a mode that is "complete"
+(like what fbset or X passes down the fbdev) or a mode that is just
+width/height and eventually a hint of frequency, like what fbcon passes
+in this case. I added FB_ACTIVATE_FIND for that purpose, but that needs
+better driver support to "pick" up a proper mode. The algorithm for
+that isn't trivial. Could be moved to common code.
+
+ - fbset doesn't resize the console. I consider that a regression from
+2.4. I have some code based on the notification mecanism to address
+that, but it tends to trigger the same memory corruption problem as
+reported with stty & bogus coordinates. There is something hairy going
+on with console resizes. That code is a bit foreign to me though.
+
+Ok, that's all that comes to my mind right now, help is welcome :)
 
 Ben.
 

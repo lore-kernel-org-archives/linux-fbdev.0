@@ -1,15 +1,18 @@
-From: "Petr Vandrovec" <VANDROVE@vc.cvut.cz>
-Subject: Re: [PATCH] broken cfb* support in the
-Date: Thu, 15 Aug 2002 12:30:11 +0200
+From: Paul Mackerras <paulus@au1.ibm.com>
+Subject: Re: [PATCH] broken cfb* support in the 2.5.31-bk
+Date: Fri, 16 Aug 2002 09:19:14 +1000 (EST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <212B36E116D@vcnet.vc.cvut.cz>
+Message-ID: <15708.14066.32752.365661@argo.ozlabs.ibm.com>
+References: <20020814192327.GD37217@ppc.vc.cvut.cz>
+	<Pine.LNX.4.33.0208142128260.7482-100000@maxwell.earthlink.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7BIT
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from zikova.cvut.cz ([147.32.235.100])
+Received: from dp.samba.org ([66.70.73.150] helo=lists.samba.org)
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17fHu9-0000lZ-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 15 Aug 2002 03:31:01 -0700
+	id 17fTwV-0000bj-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 15 Aug 2002 16:22:16 -0700
+In-Reply-To: <Pine.LNX.4.33.0208142128260.7482-100000@maxwell.earthlink.net>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,26 +24,31 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@infradead.org>
-Cc: torvalds@transmeta.com, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On 14 Aug 02 at 21:30, James Simmons wrote:
-> > Hi Linus, hello others,
-> >   please apply this.
-> >
-> > line_length, type and visual moved from display struct to the fb_info's fix
-> > structure during last fbdev updates. Unfortunately generic code was not updated
-> > together, so now every fbdev driver is broken.
-> 
-> That was done to push people to port there drivers to the new api. I
-> applied the patch to the Bk repository but expect more breakage.
+James Simmons writes:
 
-Which new API? If you are going to remove logo and unaccelerated fbcon-cfb*,
-then remove them completely. If you are not going to remove unaccelerated
-fbcon-cfb*, then there is no reason for breaking them.
+> That was done to push people to port there drivers to the new api.
 
-I'm not going to remove unaccelerated code from the matroxfb. Never.
-                                                     Petr Vandrovec
-                                                     vandrove@vc.cvut.cz
+Well, what _is_ the new API?
+
+Anyway, you could apply this patch, for a start.  I wish you would be
+a bit more careful about details.
+
+Paul.
+
+diff -urN linux-2.5/drivers/video/Makefile pmac-2.5/drivers/video/Makefile
+--- linux-2.5/drivers/video/Makefile	Wed Aug 14 09:15:02 2002
++++ pmac-2.5/drivers/video/Makefile	Fri Aug 16 09:08:34 2002
+@@ -60,7 +60,7 @@
+ obj-$(CONFIG_FB_3DFX)             += tdfxfb.o
+ obj-$(CONFIG_FB_MAC)              += macfb.o macmodes.o cfbfillrect.o cfbcopyarea.o cfbimgblt.o 
+ obj-$(CONFIG_FB_HP300)            += hpfb.o cfbfillrect.o cfbimgblt.o
+-obj-$(CONFIG_FB_OF)               += offb.o cfbfillrect.o cfbimgblit.o cfbcopyarea.o
++obj-$(CONFIG_FB_OF)               += offb.o cfbfillrect.o cfbimgblt.o cfbcopyarea.o
+ obj-$(CONFIG_FB_IMSTT)            += imsttfb.o
+ obj-$(CONFIG_FB_RETINAZ3)         += retz3fb.o
+ obj-$(CONFIG_FB_CLGEN)            += clgenfb.o
 
 
 -------------------------------------------------------

@@ -1,83 +1,67 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Sun Blade 100 with 2 pgx64 (ATi Mach64 ?) framebuffers (fwd)
-Date: Tue, 11 May 2004 16:20:37 +0200 (MEST)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0405111620100.27719@waterleaf.sonytel.be>
+From: Egbert Eich <eich@pdx.freedesktop.org>
+Subject: Re: RE: [Dri-devel] Memory management of AGP and VRAM
+Date: Tue, 11 May 2004 18:50:05 +0200
+Sender: mesa3d-dev-admin@lists.sourceforge.net
+Message-ID: <16545.1085.173860.37370@xf11.fra.suse.de>
+References: <409BFE5B.5020308@us.ibm.com>
+	<20040509164514.17651.qmail@web14922.mail.yahoo.com>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BNY7e-0004np-6O
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 11 May 2004 07:20:42 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BNY7d-0003bo-MC
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 11 May 2004 07:20:41 -0700
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Admar Schoonen <admar@luon.net>
+Return-path: <mesa3d-dev-admin@lists.sourceforge.net>
+In-Reply-To: jonsmirl@yahoo.com wrote on Sunday, 9 May 2004 at 09:45:14 -0700 
+Errors-To: mesa3d-dev-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
+	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:mesa3d-dev@lists.sourceforge.net>
+List-Help: <mailto:mesa3d-dev-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
+	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=mesa3d-dev>
+Content-Type: text/plain; charset="us-ascii"
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: Ian Romanick <idr@us.ibm.com>, Egbert Eich <eich@pdx.freedesktop.org>, dri-devel <dri-devel@lists.sourceforge.net>, mesa3d-dev <mesa3d-dev@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
----------- Forwarded message ----------
-Date: Tue, 11 May 2004 16:11:30 +0200
-From: Admar Schoonen <admar@luon.net>
-To: geert@linux-m68k.org
-Subject: Sun Blade 100 with 2 pgx64 (ATi Mach64 ?) framebuffers
+Jon Smirl writes:
+ > Can you run grub or lilo on these machines?
+ > 
+ > Also, these is no rule saying a device driver can't have several tables of _init
+ > register values that can be used to set the mode on a primary monitor at boot. I
+ > would just like to see all of the code that does DDC decoding and modeline
+ > computations moved to user space. When you add up that code there is about 40K
+ > of it in the fbdriver and about 50K in the radeon driver. When the fbdev drivers
+ > start probing for multiple heads, TV support, etc that code is going to get even
+ > larger. Since the code is used only rarely (in kernel terms) this code should be
+ > in user space instead of the driver.
+ > 
+ > I've also proposed that if you really, really want to you could do the DDC
+ > probing the in driver at boot and mark all of the code _init. Then the user
+ > space code would take over after that. Note that I'm talking about early
+ > userspace (initrd) timeframe, not normal user space.
 
-Dear Geert Uytterhoeven,
+Wouldn't it be the job of the kernel bootstrap process to do this initial setup?
+This bootstrap code would be wiped once the kernel starts up.
 
-I have a Sun Blade 100 ultra sparc with 2 pgx64 framebuffers, one on
-board and one pci. The machine is running an up to date Debian GNU/Linux
-unstable. With linux 2.4.24, both cards work fine (I can move consoles
-around with con2fbmap and XFree86 sees 2 cards and starts an X server on
-both screens (I haven't tried xinerama though)).
+ > 
+ > > 
+ > > Allow me to speak up for users of IBM pSeries hardware or Sun SPARC 
+ > > hardware.  Users of those systems face exactly the same issues as Mac 
+ > > users.  I imagine most embedded systems will be in the same boat.  Being 
+ > > forced to use a serial console for early boot messages is so 1980's. ;)
+ > > 
+ > > The kernel doesn't need to have support for everything, but I think it's 
+ > > important to have at least minimal support.
+ > > 
 
-With 2.6.6, this doesn't work anymore. dmesg output seems good:
-$ dmesg |grep -i aty
-atyfb: 3D RAGE (XL) [0x4752 rev 0x27] 8M SDRAM, 29.498928 MHz XTAL, 230
-MHz PLL, 100 Mhz MCLK
-fb0: ATY Mach64 frame buffer device on PCI
-atyfb: 3D RAGE (XL) [0x4752 rev 0x27] 8M SGRAM, 29.498928 MHz XTAL, 230
-MHz PLL, 100 Mhz MCLK
+I'm not speaking about a text mode. 
+I would think on most systems the firmware would provide some reasonable
+initial mode that the kernel can use. If there is no such firmware one 
+would expect there is some preboot software that is used to bootstrap the
+kernel that could do such a setup - using a number of fixed modes hard
+coded in tables. (It is a pain to debug, though).
 
-but the second head stays black if I try to move consoles. Also, XFree86
-only sees my onboard card.
-
-I don't know how I should debug this issue, but I hope you can give me
-some clues.
-
-Best regards
-
-Admar Schoonen
----------- Forwarded message ----------
-Date: Tue, 11 May 2004 16:18:51 +0200
-From: Admar Schoonen <admar@luon.net>
-To: geert@linux-m68k.org
-Subject: Sun Blade 100 with 2 pgx64 (ATi Mach64 ?) framebuffers
-
-Hi Geert Uytterhoeven,
-
-Sorry, but I forgot to add that I had to apply a small patch to 2.6 to
-make it recognize the on board pgx64 in first place. The patch is a one
-liner to get around the fact that XFree86 not knowing the new 2.6 pci
-device naming scheme, and I don't think it is causing the problem I have
-with 2 pgx64 framebuffers.
-
-The patch is at
-http://lists.debian.org/debian-sparc/2004/02/msg00013.html
-
-Best regards
-
-Admar
+Cheers,
+	Egbert.
 
 
 -------------------------------------------------------

@@ -1,14 +1,16 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH] typo in linux-2.5.63/drivers/video/console/fbcon.c (fwd)
-Date: Sun, 2 Mar 2003 13:10:24 +0100 (MET)
+Subject: Re: [PATCH] Tile Blitting
+Date: Sun, 2 Mar 2003 13:14:59 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0303021310090.9181-100000@vervain.sonytel.be>
+Message-ID: <Pine.GSO.4.21.0303021312400.9181-100000@vervain.sonytel.be>
+References: <Pine.LNX.4.44.0302271946340.8243-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from mail2.sonytel.be ([195.0.45.172] helo=mail.sonytel.be)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18pSKB-00047N-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 02 Mar 2003 04:12:12 -0800
+	id 18pSP6-0005fe-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 02 Mar 2003 04:17:17 -0800
+In-Reply-To: <Pine.LNX.4.44.0302271946340.8243-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,31 +23,59 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>, Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
----------- Forwarded message ----------
-Date: Sun, 2 Mar 2003 04:02:41 -0800
-From: Norbert Kiesel <nkiesel@tbdnetworks.com>
-To: geert@linux-m68k.org
-Subject: [PATCH] typo in linux-2.5.63/drivers/video/console/fbcon.c
+On Thu, 27 Feb 2003, James Simmons wrote:
+> > On Don, 2003-02-27 at 15:15, Antonino Daplas wrote: 
+> > > On Thu, 2003-02-27 at 09:18, James Simmons wrote:
+> > >  
+> > > > > Thus, the restriction that the buffer must be completely copied by the
+> > > > > driver before returning.  And because of this restriction, an extra copy
+> > > > > which might be unnecessary cannot be avoided (this was noted by Petr).
+> > > > > 
+> > > > > Treating the buffer as a ringbuffer, we eliminate these restrictions.
+> > > > 
+> > > > I didn't realize that the below was a ringbuffer implementation. The name
+> > > > threw me off. 
+> > > 
+> > > Well, it's not strictly a ringbuffer implementation.  This would require
+> > > a head and tail pointer where fbcon will adjust the tail and the
+> > > driver/hardware will adjust the head.  This will be very difficult to
+> > > implement in a device independent manner.  So we just cheat by issuing
+> > > an fb_sync() per loop to flush all pending commands.
+> > 
+> > That still seems suboptimal though. What the DRM often does is have the
+> > chip write an age value to a scratch register when it's done processing
+> > something. Maybe something like that could be used to avoid waiting for
+> > the chip to go idle at all?
+> 
+> Don't waste your time. I'm removing all the changes that have been done 
+> since 2.5.51. After that I will no longer be co-maintainter of the 
+> framebuffer layer. 
 
-Hi,
-found a small typo in this driver.
+Are you sure about that?!?!?
 
-so long
-	Norbert
+What about adding a pointer to a
 
---- linux-2.5.63/drivers/video/console/fbcon.c~	2003-02-24 11:05:37.000000000 -0800
-+++ linux-2.5.63/drivers/video/console/fbcon.c	2003-03-02 03:03:34.000000000 -0800
-@@ -456,7 +456,7 @@
- 	region.color = attr_bgcol_ec(p, vc);
- 	region.rop = ROP_COPY;
- 
--	if (rw & !bottom_only) {
-+	if (rw && !bottom_only) {
- 		region.dx = info->var.xoffset + rs;
- 		region.dy = 0;
- 		region.width = rw;
+    struct con_ops {
+      set_font();
+      putc();
+      putcs();
+    } 
+    
+to struct fb_info as an interim solution, until tile blitting has matured? That
+would make Petr (matroxfb) and Davem (sbusfb) happy?
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 

@@ -1,19 +1,19 @@
-From: Ge Wang <GeWang@siliconmotion.com>
-Subject: RE: RE: Submit Silicon Motion SM501 (VoyagerG
-	X) display driver for li nux  kernel 2.6.4
-Date: Mon, 19 Apr 2004 10:24:14 -0700
+From: "Luiz Fernando N. Capitulino" <lcapitulino@prefeitura.sp.gov.br>
+Subject: [PATCH] - video/tridentfb.c warning fix.
+Date: Mon, 19 Apr 2004 16:28:07 -0300
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <9AD3B169567B1346BE6004E2F97C72390135E426@MARS>
+Message-ID: <20040419162807.7ba9c5ec.lcapitulino@prefeitura.sp.gov.br>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BFcTX-0007vf-R5
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 19 Apr 2004 10:22:31 -0700
-Received: from [207.168.75.223] (helo=mars.siliconmotion.com)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BFcTV-000508-Sn
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 19 Apr 2004 10:22:30 -0700
+	id 1BFej4-0002ii-Ir
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 19 Apr 2004 12:46:42 -0700
+Received: from sampa7.prodam.sp.gov.br ([200.230.190.107])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BFej4-0005KY-2y
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 19 Apr 2004 12:46:42 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -24,95 +24,94 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Paul Mundt <lethal@linux-sh.org>, Ge Wang <GeWang@siliconmotion.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net
-
-Paul,
-
-Thanks for your follow up information. Framebuffer base address
-(pFramebufferPhysical) and register base address (pRegPhysical) need to be
-configured somewhere for the non-PCI situations.
-
-Thank you for your efforts.
-
-Best regards,
-
-Ge
-
------Original Message-----
-From: Paul Mundt [mailto:lethal@linux-sh.org] 
-Sent: Sunday, April 18, 2004 7:18 AM
-To: Ge Wang
-Cc: Benjamin Herrenschmidt; Andrew Morton;
-linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: [Linux-fbdev-devel] RE: Submit Silicon Motion SM501 (VoyagerGX)
-display driver for li nux kernel 2.6.4
+To: akpm@osdl.org
+Cc: jsimmons@infradead.org, linux-fbdev-devel@lists.sf.net
 
 
-To follow up on this (as no one else seems to have), this current driver has
-a number of issues. A big part of necessary cleanup could be done just with
-doing away with the hungarian notation nonsense, using standard types, and
-using a struct fb_videomode modedb instead if wrapping everything to use the
-non-standard modedb that exists in the driver currently.
+ Andrew,
 
-Additionally, I have a board I'm working on presently that has an SM501 on
-it
-(non-PCI) which this driver presently won't work on. Furthermore, I have
-another set of SM501 fb drivers from Renesas that break things out somewhat
-further (which includes i2c, once I finish hacking on the voyager i2c
-stuff). This actually breaks it out into 7 different framebuffers:
+ Speaking with frame buffer people, we agree with this
+patch to fix the warning:
 
-#ifdef CONFIG_FB_VOYAGER_GX
-        { "voyager_panel_fb", voyafb_init, NULL },
-        { "voyager_video_fb", voyafb_init2, NULL },
-        { "voyager_valpha_fb", voyafb_init3, NULL },
-        { "voyager_alpha_fb", voyafb_init4, NULL },
-        { "voyager_panel_csr_fb", voyafb_init5, NULL },
-        { "voyager_crt_fb", voyafb_init6, NULL },
-        { "voyager_crt_csr_fb", voyafb_init7, NULL },
-#endif
+drivers/video/tridentfb.c:455: warning: `tridentfb_fillrect' defined but not used
+drivers/video/tridentfb.c:473: warning: `tridentfb_copyarea' defined but not used
 
-As such, this needs some rework as well. The default voyager_panel_fb should
-be pretty close to what Ge's driver does, though presently doesn't address
-PCI. I plan on merging in Ge's driver at the same time I do the rework on
-the Renesas one (though Ge and others will have to do testing on PCI).
+ the patch is here:
 
-I'd appreciate it if no one merged any SM501 related fb patches until I'm
-finished consolidating the various implementations and we have something in
-place that will work for everyone.
+ drivers/video/Kconfig     |    8 ++++++++
+ drivers/video/tridentfb.c |   13 ++++++++-----
+ 2 files changed, 16 insertions(+), 5 deletions(-)
 
-On Wed, Mar 24, 2004 at 04:10:11PM -0800, Ge Wang wrote:
-> Sure, I'll CC it to linux-fbdev-devel@lists.sourceforge.net. Thanks 
-> for your suggestion.
-> 
-> Ge
-> 
-> -----Original Message-----
-> From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]
-> Sent: Wednesday, March 24, 2004 3:51 PM
-> To: Ge Wang
-> Subject: Re: Submit Silicon Motion SM501 (VoyagerGX) display driver for
-> linux kernel 2.6.4
-> 
-> 
-> On Thu, 2004-03-25 at 10:20, Ge Wang wrote:
-> > Hi Ben,
-> > 
-> > We'd like to submit Silicon Motion SM501 (VoyagerGX) display driver
-> > source code for linux kernel 2.6.4. I attach it with this email. It 
-> > will be put on our web site soon. It's at(www.siliconmotion.com) 
-> > Support\Drivers\Voyager
-> > (SM501) Software Update\voyager-0.01-linux-2.6.4.tgz. If you have any
-> > questions or concerns, just let me know. Your help is very appreciated.
-> 
-> Hi !
-> 
-> Can you post this to the linux-fbdev mailing list (Sorry for 
-> ping-ponging you like this, but this is the best way to get some good 
-> review of the
-> driver)
-> 
+
+diff -X dontdiff -Nparu a/drivers/video/Kconfig a~/drivers/video/Kconfig
+--- a/drivers/video/Kconfig	2004-04-16 20:03:09.000000000 -0300
++++ a~/drivers/video/Kconfig	2004-04-16 20:04:24.000000000 -0300
+@@ -772,6 +772,14 @@ config FB_TRIDENT
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called tridentfb.
+ 
++config FB_TRIDENT_ACCEL
++	bool "Trident Acceleration functions (EXPERIMENTAL)"
++	depends on FB_TRIDENT
++	---help---
++	This will compile the Trident frame buffer device with
++	acceleration functions.
++
++
+ config FB_PM3
+ 	tristate "Permedia3 support"
+ 	depends on FB && PCI && BROKEN
+diff -X dontdiff -Nparu a/drivers/video/tridentfb.c a~/drivers/video/tridentfb.c
+--- a/drivers/video/tridentfb.c	2004-04-16 20:03:29.000000000 -0300
++++ a~/drivers/video/tridentfb.c	2004-04-16 20:42:26.000000000 -0300
+@@ -450,7 +450,7 @@ static struct accel_switch accel_image =
+ /*
+  * Accel functions called by the upper layers
+  */
+-
++#ifdef CONFIG_FB_TRIDENT_ACCEL
+ static void tridentfb_fillrect(struct fb_info * info, const struct fb_fillrect *fr)
+ {
+ 	int bpp = info->var.bits_per_pixel;
+@@ -474,6 +474,11 @@ static void tridentfb_copyarea(struct fb
+ 	acc->copy_rect(ca->sx,ca->sy,ca->dx,ca->dy,ca->width,ca->height);
+ 	acc->wait_engine();
+ }
++#else /* !CONFIG_FB_TRIDENT_ACCEL */
++#define tridentfb_fillrect cfb_fillrect
++#define tridentfb_copyarea cfb_copyarea
++#endif /* CONFIG_FB_TRIDENT_ACCEL */
++
+ 
+ /*
+  * Hardware access functions
+@@ -1265,10 +1270,8 @@ static struct fb_ops tridentfb_ops = {
+ 	.fb_blank = tridentfb_blank,
+ 	.fb_check_var = tridentfb_check_var,
+ 	.fb_set_par = tridentfb_set_par,
+-//	.fb_fillrect = tridentfb_fillrect,
+-//	.fb_copyarea= tridentfb_copyarea,
+-	.fb_fillrect = cfb_fillrect,
+-	.fb_copyarea= cfb_copyarea,
++	.fb_fillrect = tridentfb_fillrect,
++	.fb_copyarea= tridentfb_copyarea,
+ 	.fb_imageblit = cfb_imageblit,
+ 	.fb_cursor = soft_cursor,
+ };
+
+ The functions: tridentfb_copyarea() and tridentfb_fillrect() can be
+used to acceleration, but it is not tested.
+
+ I don't like the idea to comment it because they will be forgoten.
+
+ James agreed to this patch.
+
+PS: I'll send the video/hga.c, it is the some case.
+
+-- 
+Luiz Fernando N. Capitulino
+<lcapitulino@prefeitura.sp.gov.br>
+<http://www.telecentros.sp.gov.br>
 
 
 -------------------------------------------------------

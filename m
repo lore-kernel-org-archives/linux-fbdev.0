@@ -1,22 +1,23 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Provide control of active VGA
-	device on PCI systems
-Date: Sun, 20 Feb 2005 19:23:51 +1100
-Message-ID: <1108887831.19402.20.camel@gaston>
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [PATCH] Provide control of active VGA device on PCI systems
+Date: Sun, 20 Feb 2005 11:35:11 -0500
+Message-ID: <9e4733910502200835130012d6@mail.gmail.com>
 References: <9e47339105021921507545d084@mail.gmail.com>
+	 <1108887831.19402.20.camel@gaston>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D2mO2-0002Sb-FJ
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Feb 2005 00:24:18 -0800
-Received: from gate.crashing.org ([63.228.1.57])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1D2mO1-0000bB-R7
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Feb 2005 00:24:18 -0800
-In-Reply-To: <9e47339105021921507545d084@mail.gmail.com>
+	id 1D2u37-0002VG-Vt
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Feb 2005 08:35:13 -0800
+Received: from rproxy.gmail.com ([64.233.170.196])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1D2u36-0006vm-ID
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Feb 2005 08:35:13 -0800
+Received: by rproxy.gmail.com with SMTP id z35so276367rne
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 20 Feb 2005 08:35:11 -0800 (PST)
+In-Reply-To: <1108887831.19402.20.camel@gaston>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,46 +29,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Jesse Barnes <jbarnes@sgi.com>, Jon Smirl <jonsmirl@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Jesse Barnes <jbarnes@sgi.com>
 
-On Sun, 2005-02-20 at 00:50 -0500, Jon Smirl wrote:
-> This patch adds a 'vga' attribute to each framebuffer device on PCI
-> systems. For non-PCI hardware it does nothing.
-> 
-> If you have multiple VGA cards loaded, and you have framebuffer
-> drivers loaded for each, you can then set 0/1 into the VGA attributes
-> to move VGA console around to the different screens.
-> 
-> This is almost everything needed to implement reset of secondary
-> cards. ROM access is already in the kernel. This code is needed to
-> make sure you don't end up with multiple VGA devices enabled. All that
-> is left is to construct the proper hotplug event and fix up my user
-> space reset program.
+On Sun, 20 Feb 2005 19:23:51 +1100, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> (The goal is to have X stop messing around with PCI at all, just probe
+> things via sysfs or whatever new model we might provide, but not
+> actually play with PCI resources directly nor modify bridge VGA enables,
+> and have it properly arbitrate with anything else wanting to use the VGA
+> IOs, including kernel services like vgacon).
 
-HI Jon !
+That's the goal. Make X behave so that it will play nice with hotplug.
+I also want to get it to run without needing root priv.
 
-Looks good, but in the grand scheme of thing, it would be nice to extend
-the functionality to more than just userspace reset: that is proper
-arbitration of VGA access between X, vgacon, etc...
+My goal is to provide a foundation for XGL/mesa-solo. That needs
+support from fbdev for mode setting, cursors, reset, multiple heads.
+Long term this provides a unified video driver model.
 
-(The goal is to have X stop messing around with PCI at all, just probe
-things via sysfs or whatever new model we might provide, but not
-actually play with PCI resources directly nor modify bridge VGA enables,
-and have it properly arbitrate with anything else wanting to use the VGA
-IOs, including kernel services like vgacon).
-
-That would require at least a kernel-side API in addition to the
-userland one you are proposing, plus eventually some arbitration between
-clients...
-
-I have no time at the moment to help you there unfortunately, and I
-don't yet have a clear idea of what kind of API to provide for the
-actual ownership control, maybe something like the DRM lock ?
-
-Ben.
+Check out the other thread about sysfs support for fbdev and let me
+know what you think.
 
 
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
 
 
 -------------------------------------------------------

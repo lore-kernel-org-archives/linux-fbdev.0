@@ -1,20 +1,15 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Subject: Re: [Xpert]PPC -- XFree86 (ati) support for 1280x854-16 with Radeon
- Mobility M7 LW (new Apple Titanium)?
-Date: 06 Aug 2002 12:02:21 +0200
+From: "Holzrichter, Bruce" <bruce.holzrichter@monster.com>
+Subject: 2.5 atyfb on Sparc question
+Date: Tue, 6 Aug 2002 10:31:04 -0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1028628142.1097.569.camel@tibook>
-References: <20020806063014.91902.qmail@web13001.mail.yahoo.com>
-	<1028617305.3298.55.camel@turbulence.megapathdsl.net> 
-	<1028618001.3298.68.camel@turbulence.megapathdsl.net>
+Message-ID: <61DB42B180EAB34E9D28346C11535A780112F965@nocmail101.ma.tmpw.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from netline-be1.netline.ch ([195.141.226.32])
-	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17c1AZ-0004qF-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 06 Aug 2002 03:02:27 -0700
-In-Reply-To: <1028618001.3298.68.camel@turbulence.megapathdsl.net>
+Received: from mailsorter.ma.tmpw.net ([63.112.169.25])
+	by usw-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 17c6Io-0007OK-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 06 Aug 2002 08:31:18 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -24,81 +19,85 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: xpert@xfree86.org
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: "'linux-fbdev-devel@lists.sourceforge.net'" <linux-fbdev-devel@lists.sourceforge.net>
 
+Quick question..  I was wondering if there is still a bk tree for fbdev
+work, or are you pushing direct to Linus?
 
-[ CC: to linux-fbdev-devel as this should also cover some of your
-questions there ]
+I am getting the following errors when compiling on a sparc64 machine from
+the latest BK 2.5 tree, and was wondering if a fix may already be around.  I
+am not subscribed to this list, but a quick search didn't turn up anything.
+Thanks in advance..
 
-On Tue, 2002-08-06 at 09:13, Miles Lane wrote:
->=20
-> What's the status with XFree86 support for the new
-> 800MHz Titanium PowerBook?  Every time I have tried
-> to start the XFree86 HEAD ati driver, it locks up
-> my machine.
->=20
-> I have tried starting the server at 8bpp, disabling
-> accelleration and forcing PCIMode. =20
->=20
-> XFree86 -configure gave me the following (commented out
-> lines removed):
->=20
-> Section "Device"
-> 	Identifier  "Card0"
-> 	Driver      "ati"
-> 	VendorName  "ATI Technologies Inc"
-> 	BoardName   "Radeon Mobility M7 LW"
-> 	BusID       "PCI:0:16:0"
-> EndSection
->=20
-> dmesg (SuSE 2.4.16-npmac kernel):
->=20
-> radeonfb: ref_clk=3D2700, ref_div=3D12, xclk=3D36675 from OF
-> radeonfb: Failed to detect DFP panel size
-> Using unsupported 1280x854 ATY,Crown_A at bc008000, depth=3D8, pitch=3D12=
-80
-> Console: switching to colour frame buffer device 160x53
-> fb0: Open Firmware frame buffer device on
-> /pci@f0000000/ATY,CrownParent@10/ATY,Crown_A
-> no framebuffer address found for
-> /pci@f0000000/ATY,CrownParent@10/ATY,Crown_B
+Thanks,
+Bruce H. 
 
-You need a newer kernel.
-
-> fbset:
->=20
-> mode "1280x854-85"
->     # D: 100.000 MHz, H: 75.758 kHz, V: 84.740 Hz
->     geometry 1280 854 1280 854 8
->     timings 10000 16 16 16 16 8 8
->     rgba 8/0,8/0,8/0,0/0
-> endmode
-
-This is from OFfb and thus bogus.
-
-
-> Should the radeonfb driver enable the XFree86 fbdev driver=20
-> to operate at 16 bpp?  Where can I get the latest/best=20
-> radeonfb code?
-
-Recent benh kernel or at least 2.4.18.
-
-> What are the pros and cons of using fbdev verses the XFree86 ati driver?
-
-All cons, no pros really.
-
-The 4.2.0 or later ati/radeon driver should work with Option "UseFBDev"
-if you're running radeonfb. You'll have to provide a 1280x854 mode
-definition (fbset -x). If you want DRI, you need to get the current DRI
-CVS.
-
-
---=20
-Earthling Michel D=E4nzer (MrCooper)/ Debian GNU/Linux (powerpc) developer
-XFree86 and DRI project member   /  CS student, Free Software enthusiast
-
+atyfb_base.c: In function `atyfb_set_dispsw':
+atyfb_base.c:1098: warning: assignment discards `const' from pointer target
+type
+atyfb_base.c:1101: warning: assignment discards `const' from pointer target
+type
+atyfb_base.c:1105: warning: assignment discards `const' from pointer target
+type
+atyfb_base.c:1109: warning: assignment discards `const' from pointer target
+type
+atyfb_base.c: In function `atyfb_set_var':
+atyfb_base.c:1191: warning: implicit declaration of function
+`do_install_cmap'
+atyfb_base.c: In function `atyfb_ioctl':
+atyfb_base.c:1258: `info2' undeclared (first use in this function)
+atyfb_base.c:1258: (Each undeclared identifier is reported only once
+atyfb_base.c:1258: for each function it appears in.)
+atyfb_base.c:1253: warning: `disp' might be used uninitialized in this
+function
+atyfb_base.c: In function `atyfb_save_palette':
+atyfb_base.c:1447: warning: passing arg 2 of `aty_ld_8' from incompatible
+pointer type
+atyfb_base.c:1448: `par' undeclared (first use in this function)
+atyfb_base.c:1450: warning: passing arg 3 of `aty_st_8' from incompatible
+pointer type
+atyfb_base.c:1451: warning: passing arg 3 of `aty_st_8' from incompatible
+pointer type
+atyfb_base.c: In function `atyfb_init':
+atyfb_base.c:2204: parse error before `struct'
+atyfb_base.c:2231: `default_par' undeclared (first use in this function)
+atyfb_base.c:2261: `par' undeclared (first use in this function)
+atyfb_base.c:2268: warning: assignment makes pointer from integer without a
+cast
+atyfb_base.c:2364: warning: passing arg 2 of `aty_ld_le32' from incompatible
+pointer type
+atyfb_base.c:2366: warning: passing arg 2 of `aty_ld_le32' from incompatible
+pointer type
+atyfb_base.c:2388: warning: passing arg 2 of `aty_ld_le32' from incompatible
+pointer type
+atyfb_base.c:2392: warning: passing arg 3 of `aty_st_le32' from incompatible
+pointer type
+atyfb_base.c:2434: warning: passing arg 2 of `aty_ld_le32' from incompatible
+pointer type
+atyfb_base.c:2437: warning: passing arg 2 of `aty_ld_le32' from incompatible
+pointer type
+atyfb_base.c:2439: warning: passing arg 2 of `aty_ld_le32' from incompatible
+pointer type
+atyfb_base.c:2442: warning: passing arg 2 of `aty_ld_le32' from incompatible
+pointer type
+atyfb_base.c:2444: warning: passing arg 2 of `aty_ld_le32' from incompatible
+pointer type
+atyfb_base.c:2455: warning: passing arg 2 of `aty_ld_8' from incompatible
+pointer type
+atyfb_base.c:2458: warning: passing arg 2 of `aty_ld_pll' from incompatible
+pointer type
+atyfb_base.c:2560: invalid operands to binary &
+atyfb_base.c: At top level:
+atyfb_base.c:136: warning: `atyfb_fix' defined but not used
+make[3]: *** [atyfb_base.o] Error 1
+make[3]: Leaving directory `/home/bruce/sparctest/drivers/video/aty'
+make[2]: *** [aty] Error 2
+make[2]: Leaving directory `/home/bruce/sparctest/drivers/video'
+make[1]: *** [video] Error 2
+make[1]: Leaving directory `/home/bruce/sparctest/drivers'
+make: *** [drivers] Error 2
 
 
 -------------------------------------------------------

@@ -1,17 +1,25 @@
-From: Magnus Damm <damm@opensource.se>
-Subject: [PATCH] aty128fb: fix module parameter descriptions
-Date: Sat,  8 Jan 2005 18:34:01 +0100 (CET)
-Message-ID: <20050108173242.14332.32460.26428@kubu>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: Fw: [2.6.10-bk6] oops in load of atyfb
+Date: Mon, 10 Jan 2005 05:16:20 +0800
+Message-ID: <200501100516.20841.adaplas@hotpop.com>
+References: <20050105165615.1f3bfd94.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CnKTb-0000vm-OQ
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 08 Jan 2005 09:34:11 -0800
-Received: from ns3.dataphone.se ([212.37.0.170] helo=mail-slave.dataphone.se)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CnKTa-0002b8-1Y
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 08 Jan 2005 09:34:11 -0800
+	id 1CnkQX-0006we-LC
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 09 Jan 2005 13:16:45 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.71])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CnkQW-0000fF-5b
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 09 Jan 2005 13:16:45 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id A9B8313370B9
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun,  9 Jan 2005 21:16:29 +0000 (UTC)
+In-Reply-To: <20050105165615.1f3bfd94.akpm@osdl.org>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -22,33 +30,31 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Magnus Damm <damm@opensource.se>
+To: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>
+Cc: Bill Davidsen <davidsen@tmr.com>
 
-This patch syncs up the module parameter descriptions in aty128fb for module 
-parameters "mode_option" and "nomtrr". Without the patch bad parameter names 
-are used with MODULE_PARM_DESC().
+On Thursday 06 January 2005 08:56, Andrew Morton wrote:
+> Begin forwarded message:
+>
+> Date: Wed, 5 Jan 2005 16:24:02 -0500 (EST)
+> From: Bill Davidsen <davidsen@tmr.com>
+> To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+> Subject: [2.6.10-bk6] oops in load of atyfb
+>
+>
+> After some hours of trying to get video to the atyfb instead of vga16, I
+> got this. The video= boot option didn't seem to work, loading the module
+> caused an oops.
+>
+> Something borked, out of time to fight with it.
 
-Signed-off-by: Magnus Damm <damm@opensource.se>
+Have you accidentally enabled CONFIG_FB_ATY_XL_INIT?  If you did, recompile
+with this option off.
 
---- linux-2.6.10/drivers/video/aty/aty128fb.c	2004-12-24 22:34:45.000000000 +0100
-+++ linux-2.6.10-aty128fb_module_parm_desc/drivers/video/aty/aty128fb.c	2005-01-08 18:11:50.000000000 +0100
-@@ -2462,10 +2462,10 @@
- MODULE_DESCRIPTION("FBDev driver for ATI Rage128 / Pro cards");
- MODULE_LICENSE("GPL");
- module_param(mode_option, charp, 0);
--MODULE_PARM_DESC(mode, "Specify resolution as \"<xres>x<yres>[-<bpp>][@<refresh>]\" ");
-+MODULE_PARM_DESC(mode_option, "Specify resolution as \"<xres>x<yres>[-<bpp>][@<refresh>]\" ");
- #ifdef CONFIG_MTRR
- module_param_named(nomtrr, mtrr, invbool, 0);
--MODULE_PARM_DESC(mtrr, "bool: Disable MTRR support (0 or 1=disabled) (default=0)");
-+MODULE_PARM_DESC(nomtrr, "bool: Disable MTRR support (0 or 1=disabled) (default=0)");
- #endif
- #endif
- 
+Tony
+
+
 
 
 -------------------------------------------------------

@@ -1,25 +1,23 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Extending vesafb for modes switching ?
-Date: Tue, 3 Feb 2004 17:54:30 +0000 (GMT)
+From: Richard Smith <rsmith@bitworks.com>
+Subject: Re: still ..Confused about atyfb and M1
+Date: Wed, 04 Feb 2004 09:16:58 -0600
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0402031751510.7693-100000@phoenix.infradead.org>
-References: <401D4B63.1080203@free.fr>
+Message-ID: <40210CEA.5080102@bitworks.com>
+References: <Pine.LNX.4.44.0401302147390.22830-100000@phoenix.infradead.org> <401FF39B.7090406@bitworks.com> <Pine.GSO.4.58.0402041003560.20790@waterleaf.sonytel.be>
+Reply-To: RSmith@bitworks.com
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AoM3W-0004pe-4f
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 04 Feb 2004 04:22:58 -0800
-Received: from externalmx.valinux.com ([198.186.202.147] helo=externalmx.vasoftware.com)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AoM3V-0006na-Bj
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 04 Feb 2004 04:22:57 -0800
-Received: from phoenix.infradead.org ([213.86.99.234]:3216)
-	by externalmx.vasoftware.com with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 4.24 #1 (Debian))
-	id 1Ao58K-0007H6-0o
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 03 Feb 2004 10:18:48 -0800
-In-Reply-To: <401D4B63.1080203@free.fr>
+	id 1AoOmt-0007jy-DM
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 04 Feb 2004 07:17:59 -0800
+Received: from b44.xdsl.pgtc.com ([198.70.248.44] helo=bitworks.com)
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
+	id 1AoOms-0000Jo-UE
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 04 Feb 2004 07:17:59 -0800
+Received: from bitworks.com [192.168.1.22] by bitworks.com [127.0.0.1] with SMTP (MDaemon.v2.7.SP4.R) for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 04 Feb 2004 09:16:17 -0600
+In-Reply-To: <Pine.GSO.4.58.0402041003560.20790@waterleaf.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,33 +27,47 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: =?ISO-8859-1?Q?Ga=EBl_Deest?= <GUtopiste@free.fr>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+To: geert@linux-m68k.org
+Cc: James Simmons <jsimmons@infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Alexander Kern <alex.kern@gmx.de>, Jon Smirl <jonsmirl@yahoo.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-> Ok, this may be a silly question. I am not a kernel/fbdev hacker, so I 
-> may ignore some relevant issues. But after many researches, I can't see 
-> why it would be impossible for the vesafb driver to handle modes switching.
+> On Tue, 3 Feb 2004, Richard Smith wrote:
+>=20
+>>new untested hardware booting a half-ass videobios running an unknown
+>>driver.  Gee... wonder why it dosen't work? *grin*
 
-The vesafb driver only supports VESA 2.0 standard so we can cover as many 
-cards as possible. My experience with vesa 3.0 is alot of cards lack 
-support for it.
- 
-> According to my understanding of this stuff, vesafb mode setting is 
-> possible only during real mode, via a boot argument,  set by bios 
-> interrupts, which prevent from changing it later (if I said something 
-> wrong, please correct me.) But what about the xfree86 driver ? It seems 
-> to do its job via the VBE bios of the card. What would prevent vesafb 
-> from doing the same ? I know vesafb only supports VBE 2.0, not 3.0. I 
-> couldn't find the VBE 2.0 documentation, but in VBE 3.0 one, protected 
-> mode is supported.
+ >Geert Uytterhoeven wrote:
 
-This has been discussed before. That would require writing code that would 
-execute the BIOS on the card. This would be really nasty and has always 
-been rejected.
+> Indeed, atyfb needs BIOS (or OpenFirmware) initialization. It has
+>=20
+How much?  Are things like the ammount and type of RAM autodetected or=20
+just read from registers that the BIOS is supposed to set?
 
+>=20
+ > initialization code for RAGE XL, though.
+
+Any idea how different the RAGE XL is from the M1? I know they are both=20
+Mach64 but how consistent are the registers across all of the Mach64 chips?
+
+> My Vaio Z600TEK (Z505 in US/JP) has a M1. It works with atyfb in recent 2=
+.4,
+> but it took Dani=EBl Mantione quite a bit of work to make it work on this
+> particular machine...
+
+What device ID is your M1?
+
+Any idea what he had to do?  Most of DM's code seems to deal with=20
+makeing it work properly with a LCD.  Right now I just have a CRT hooked=20
+up.  LCD will comes later.
+
+> Let's say atyfb in 2.4 works on most M1s these days.
+
+So which one should I work with? 2.4 or 2.6 with fbdiff?
+
+--=20
+Richard A. Smith
+rsmith@bitworks.com
 
 
 

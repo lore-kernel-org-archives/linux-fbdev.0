@@ -1,27 +1,24 @@
-From: Andrew Walrond <andrew@walrond.org>
-Subject: Re: Rivafb won't work with DVI connector
-Date: Sat, 27 Nov 2004 22:35:15 +0000
-Message-ID: <200411272235.15601.andrew@walrond.org>
-References: <200411250807.32040.adaplas@hotpop.com> <200411271240.13475.andrew@walrond.org> <1101580142.4725.177.camel@admin.tel.thor.asgaard.local>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: FB_EVENT (blank and unblank?)
+Date: Sun, 28 Nov 2004 06:43:14 +0800
+Message-ID: <200411280643.14171.adaplas@hotpop.com>
+References: <41A36DA5.8090200@fujitsu-siemens.com> <Pine.GSO.4.61.0411261010460.26681@waterleaf.sonytel.be> <010501c4d490$e9edee40$0f01a8c0@max>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CYCGV-0004MA-V4
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 Nov 2004 15:46:07 -0800
-Received: from externalmx-1.sourceforge.net ([12.152.184.25])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1CYCGU-0004ns-Bl
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 Nov 2004 15:46:07 -0800
-Received: from [62.24.231.113] (helo=cenedra.walrond.org)
-	by externalmx-1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1CYBAo-0003yN-QL
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 Nov 2004 14:36:11 -0800
-In-Reply-To: <1101580142.4725.177.camel@admin.tel.thor.asgaard.local>
+	id 1CYDP1-0001eJ-DV
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 Nov 2004 16:58:59 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CYBHp-0003Cc-VO
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 Nov 2004 14:43:29 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id E9176A7B0AC
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 27 Nov 2004 22:43:12 +0000 (UTC)
+In-Reply-To: <010501c4d490$e9edee40$0f01a8c0@max>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -33,18 +30,25 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Michel =?utf-8?q?D=C3=A4nzer?= <michel@daenzer.net>, "Antonino A. Daplas" <adaplas@hotpop.com>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net, Richard Purdie <rpurdie@rpsys.net>
 
-On Saturday 27 Nov 2004 18:29, Michel D=C3=A4nzer wrote:
-> On Sat, 2004-11-27 at 12:40 +0000, Andrew Walrond wrote:
-> > So, not only is this not going to work, but the vesa driver also seems
-> > broken when used with dvi.
+On Saturday 27 November 2004 22:53, Richard Purdie wrote:
+> I've been looking at ways to solve a couple of code interdepencies I don't
+> like with w100fb and its backlight  and touch screen drivers.
 >
-> s/vesa driver/on-card video BIOS/
+> I have two places where they need to talk. The first is for the touch
+> screen to query the x resolution (and to know if the screen is blanked)[1].
+> The second is to turn the backlight off when the console is blanked.
 
-Quite probably :)
+Can you adopt the backlight support infrastructure in powermacs?  See
+arch/ppc/platforms/pmac_backlight.c  Currently, it's PPC-specific, but it
+can be extended to other platforms.  A few drivers use this, rivafb is one of
+them (drivers/video/fbdev.c), and aty.
+
+Tony
+
+
 
 
 -------------------------------------------------------

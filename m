@@ -1,26 +1,69 @@
-From: Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: Problem: how to sequence reset of PCI hardware
-Date: Mon, 21 Feb 2005 03:37:45 -0500
-Message-ID: <42199DD9.10807@pobox.com>
-References: <9e47339105022023242e2fd9ce@mail.gmail.com>
+From: =?iso-8859-1?q?Marc_Poulhi=E8s?= <marc.poulhies@epfl.ch>
+Subject: Re: Fw: [Bugme-new] [Bug 4217] New: radeonfb makes system hang and
+ LCD "burn"
+Date: Sun, 20 Feb 2005 21:13:56 +0100
+Message-ID: <87k6p3ng57.fsf@kataplop.net>
+References: <20050215121555.54c63ed2.akpm@osdl.org>
+	<1108502142.13394.2.camel@gaston> <87fyzxsdo7.fsf@kataplop.net>
+	<1108504143.13376.14.camel@gaston> <87r7jggxc7.fsf@kataplop.net>
+	<1108592133.5533.6.camel@gaston> <87brajlim7.fsf@kataplop.net>
+	<1108629697.5425.75.camel@gaston>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1D2xSr-0003dy-66
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Feb 2005 12:14:01 -0800
+Received: from postfix4-2.free.fr ([213.228.0.176])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1D2xSp-00082Z-MD
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Feb 2005 12:14:01 -0800
+In-Reply-To: <1108629697.5425.75.camel@gaston> (Benjamin Herrenschmidt's
+ message of "Thu, 17 Feb 2005 19:41:37 +1100")
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-In-Reply-To: <9e47339105022023242e2fd9ce@mail.gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, fbdev <linux-fbdev-devel@lists.sourceforge.net>, Greg KH <greg@kroah.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Jon Smirl wrote:
-> I haven't been able to come up with a reliable way to call a user
-> space reset program from a driver's probe function except with an
-> in-kernel emu86. Is there another way? I'd also like to try an find a
-> solution that doesn't need to modify the 73 existing framebuffer
-> drivers.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+
+>> >> > Try building radeonfb in the kernel and booting with
+>> >> > radeonfb.default_dynclk=-1, let me know if that works. fbdev's in
+>> >> > modules have always been sort-of dodgy....
+>> >> 
+>> >> Ok, did that. Same result. The only thing displayed is the system
+>> >> caret. I can see it moving left and right while the system boots and
+>> >> "displays" the messages (X is working nicely).
+>> >
+>> > Well... looks like radeonfb is actually working ... You can try booting
+>> > with radeonfb.noaccel=1 on your kernel command line and tell me what's
+>> > up ? I looks like your fbcon is having trouble actually. Not sure what's
+>> > up, I haven't had any report of that so far.
+>> 
+>> Same result as without (screen "burns").
+>
+> Well, I sent a patch that might fix the "burning" effect, if you could
+> get the latest bk, and try again...
+
+I tried with rc4-bk4 (hope this is correct. I checked changelog and saw
+a change on radeonfb concerning some prob with laptop), but still the
+same burning effect...
+
+Marc
 
 
-You either need to execute the video BIOS to initialize the hardware 
-registers, or initialize the hardware registers themselves.
-
-	Jeff
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

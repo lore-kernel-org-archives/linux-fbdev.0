@@ -1,21 +1,21 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: fbdev upstream
-Date: Thu, 8 Jan 2004 20:37:10 +0000 (GMT)
+Subject: Re: Changing modes with fbset
+Date: Thu, 8 Jan 2004 20:38:00 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0401082036560.12797-100000@phoenix.infradead.org>
-References: <3FFCBDD6.40802@undead.cc>
+Message-ID: <Pine.LNX.4.44.0401082037270.12797-100000@phoenix.infradead.org>
+References: <3FFCBB12.9000107@undead.cc>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AeguJ-0004LD-7b
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Jan 2004 12:37:31 -0800
+	id 1Aegux-0004Pp-2f
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Jan 2004 12:38:11 -0800
 Received: from phoenix.infradead.org ([213.86.99.234])
 	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.30)
-	id 1AeguH-0004Iy-4s
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Jan 2004 12:37:30 -0800
-In-Reply-To: <3FFCBDD6.40802@undead.cc>
+	id 1Aeguu-0004Sw-Pm
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Jan 2004 12:38:10 -0800
+In-Reply-To: <3FFCBB12.9000107@undead.cc>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -28,10 +28,11 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: John Zielinski <grim@undead.cc>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
 
-I will work on teh riva driver thsi weekend.
+No CVS but we do have a BK tree. I send out patches for those you don't 
+like Bitkeep.
 
 
 
@@ -39,13 +40,12 @@ On Wed, 7 Jan 2004, John Zielinski wrote:
 
 > James Simmons wrote:
 > 
-> >Endian issue for the nvidia card. I have been tracking that bug down. I 
-> >should have a fix very soon.
+> >Applied. Thanks for finding that.
 > >  
 > >
-> Cool!  Can't wait to switch those machines to fbcon.  Regular text mode 
-> drives me nuts as the y res is too low and the gaps between the scan 
-> lines give me eye strain.
+> 
+> No problem.  BTW, do you have a CVS repository?  I'm just grabbing that 
+> fbdev.diff.gz at the location that was posted in this list a while back.
 > 
 > John
 > 

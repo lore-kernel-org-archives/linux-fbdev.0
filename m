@@ -1,25 +1,27 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: Re: [PATCH] GeForce 5200 on rivafb
-Date: Tue, 14 Dec 2004 20:02:54 +0800
-Message-ID: <200412142002.56081.adaplas@hotpop.com>
-References: <200412120511.31725.adaplas@hotpop.com> <200412140452.19873.adaplas@hotpop.com> <7vllc1tzdn.fsf@assigned-by-dhcp.cox.net>
+From: Clemens Koller <clemens.koller@anagramm.de>
+Subject: Voyager GX color mapping
+Date: Tue, 14 Dec 2004 17:40:30 +0100
+Message-ID: <41BF177E.7010205@anagramm.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CeBOm-0008Du-Vx
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 14 Dec 2004 04:03:24 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CeBOm-0002Gg-8r
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 14 Dec 2004 04:03:24 -0800
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 9D23FB81AE7
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 14 Dec 2004 12:03:18 +0000 (UTC)
-In-Reply-To: <7vllc1tzdn.fsf@assigned-by-dhcp.cox.net>
-Content-Disposition: inline
+	id 1CeFha-0002ex-SQ
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 14 Dec 2004 08:39:06 -0800
+Received: from moutng.kundenserver.de ([212.227.126.176])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CeFhZ-0001eA-1j
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 14 Dec 2004 08:39:05 -0800
+Received: from [212.227.126.161] (helo=mrelayng.kundenserver.de)
+	by moutng.kundenserver.de with esmtp (Exim 3.35 #1)
+	id 1CeFhW-0007Bb-00
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 14 Dec 2004 17:39:02 +0100
+Received: from [217.235.127.66] (helo=[192.168.1.10])
+	by mrelayng.kundenserver.de with asmtp (Exim 3.35 #1)
+	id 1CeFhW-0000rg-00
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 14 Dec 2004 17:39:02 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,49 +32,40 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Junio C Hamano <junkio@cox.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Tuesday 14 December 2004 09:57, Junio C Hamano wrote:
-> >>>>> "AAD" == Antonino A Daplas <adaplas@hotpop.com> writes:
->
-> AAD> Can you try this patch and enable nvidiafb-i2c. It adds
-> AAD> your monitor model to the database of displays with broken
-> AAD> edid's and attempts a fix. It checks first if the monitor
-> AAD> is GTF capable, and if it is, sets the input type from
-> AAD> digital to analog. (I don't think digital inputs can be GTF
-> AAD> capable).
->
-> Sorry, but I do not know what GTF is.  I'll trust you with that
-> detection logic ;-).
+Hello, again,
 
-Generalized Timing Formula.  It's a VESA standard that allows mode setting
-given just the horizontal and vertical resolutions, and any of the following:
+well, my version of the Silicon Motion SM501 driver works now
+quite well on the PowerMac (after some data integrity problems
+with the card having in a dusty PCI slot. :-(( )
 
-vertical refresh,
-horizontal frequency, or
-dotclock.
+Only one thing is missing: The color mapping in the
+32bit mode doesn't fit with X. The fb memory map has a BGRA
+color mapping but X11 writes it in RGBA.
 
-Meaning, no need for mode tables, and it can support practically any combination
-of xres, yres and refresh rates.
+I have tried to change the fb_var_screeninfo.fb_bitfield
+values in the driver and via fbset -rgba ... but it seems as
+X doesn't care at all.
 
->
-> AAD> However, do you know if your monitor model does support digital input?
->
-> I looked at the back of the monitor last night.  There is a hole
-> about 1cm in diameter, which is covered.  Presumably their
-> slightly different model that shares the same enclosure uses the
-> hole for digital input cable?  But not the one I have.  The
-> datasheet I have on PF775 also says it is an anolog monitor with
-> D-sub connector and nothing else.
+Where do I need to tweak to get it working?
+Is there a performance penalty to remap the pixels in software?
+Which is the optimum way to get correct color mapping?
 
-Ok.  I would presume that the model that does support digital input will also
-have a different model id in its EDID block.
+Thank you in advance,
 
-Tony
+Clemens Koller
+_______________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Str. 45/1
+81379 Muenchen
+Germany
 
-
+http://www.anagramm.de
+Phone: +49-89-741518-50
+Fax: +49-89-741518-19
 
 
 -------------------------------------------------------

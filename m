@@ -1,18 +1,18 @@
 From: "Luiz Fernando N. Capitulino" <lcapitulino@prefeitura.sp.gov.br>
-Subject: [PATCH] - tridentfbc-warning-fix v2.
-Date: Fri, 30 Apr 2004 14:54:21 -0300
+Subject: [PATCH] - video/tdfxfb.c warning fix.
+Date: Fri, 30 Apr 2004 15:04:51 -0300
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040430175421.GB575@lorien.prodam>
+Message-ID: <20040430180451.GA3119@lorien.prodam>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BJcEc-0003z0-V2
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Apr 2004 10:55:38 -0700
+	id 1BJcPk-0006Tt-7v
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Apr 2004 11:07:08 -0700
 Received: from sampa7.prodam.sp.gov.br ([200.230.190.107])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BJcEc-00085G-KR
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Apr 2004 10:55:38 -0700
+	id 1BJcPj-0002Fl-P9
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Apr 2004 11:07:07 -0700
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,74 +26,84 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Andrew Morton <akpm@osdl.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Cc: James Simmons <jsimmons@infraded.org>, linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
 
- Andrew,
+ Hi Andrew,
 
- This is the tridentfbc-warning-fix.patch version 2, I added the
-missing EXPERIMENTAL in drivers/video/Kconfig.
+ This patch fixes this warning:
 
- drivers/video/Kconfig     |    8 ++++++++
- drivers/video/tridentfb.c |   13 ++++++++-----
- 2 files changed, 16 insertions(+), 5 deletions(-)
+ drivers/video/tdfxfb.c:1005: warning: `tdfxfb_cursor' defined but not
+ used
+
+ and make the acceleration function selectable (like hgafb
+and tridentfb):
+
+
+ drivers/video/Kconfig  |    8 ++++++++
+ drivers/video/tdfxfb.c |    8 +++++++-
+ 2 files changed, 15 insertions(+), 1 deletion(-)
 
 
 diff -X dontdiff -Nparu a/drivers/video/Kconfig a~/drivers/video/Kconfig
---- a/drivers/video/Kconfig	2004-04-30 14:33:59.000000000 -0300
-+++ a~/drivers/video/Kconfig	2004-04-30 14:34:59.000000000 -0300
-@@ -799,6 +799,14 @@ config FB_TRIDENT
+--- a/drivers/video/Kconfig	2004-04-26 15:25:52.000000000 -0300
++++ a~/drivers/video/Kconfig	2004-04-27 18:15:23.000000000 -0300
+@@ -751,6 +751,14 @@ config FB_3DFX
  	  To compile this driver as a module, choose M here: the
- 	  module will be called tridentfb.
+ 	  module will be called tdfxfb.
  
-+config FB_TRIDENT_ACCEL
-+	bool "Trident Acceleration functions (EXPERIMENTAL)"
-+	depends on FB_TRIDENT && EXPERIMENTAL
++config FB_3DFX_ACCEL
++	bool "3Dfx Banshee/Voodoo3 Acceleration functions (EXPERIMENTAL)"
++	depends on FB_3DFX && EXPERIMENTAL
 +	---help---
-+	This will compile the Trident frame buffer device with
-+	acceleration functions.
++	This will compile the 3Dfx Banshee/Voodoo3 frame buffer device
++	with acceleration functions.
 +
 +
- config FB_PM3
- 	tristate "Permedia3 support"
- 	depends on FB && PCI && BROKEN
-diff -X dontdiff -Nparu a/drivers/video/tridentfb.c a~/drivers/video/tridentfb.c
---- a/drivers/video/tridentfb.c	2004-04-30 14:33:59.000000000 -0300
-+++ a~/drivers/video/tridentfb.c	2004-04-30 12:54:25.000000000 -0300
-@@ -450,7 +450,7 @@ static struct accel_switch accel_image =
- /*
-  * Accel functions called by the upper layers
-  */
--
-+#ifdef CONFIG_FB_TRIDENT_ACCEL
- static void tridentfb_fillrect(struct fb_info * info, const struct fb_fillrect *fr)
- {
- 	int bpp = info->var.bits_per_pixel;
-@@ -474,6 +474,11 @@ static void tridentfb_copyarea(struct fb
- 	acc->copy_rect(ca->sx,ca->sy,ca->dx,ca->dy,ca->width,ca->height);
- 	acc->wait_engine();
- }
-+#else /* !CONFIG_FB_TRIDENT_ACCEL */
-+#define tridentfb_fillrect cfb_fillrect
-+#define tridentfb_copyarea cfb_copyarea
-+#endif /* CONFIG_FB_TRIDENT_ACCEL */
-+
+ config FB_VOODOO1
+ 	tristate "3Dfx Voodoo Graphics (sst1) support"
+ 	depends on FB && PCI
+diff -X dontdiff -Nparu a/drivers/video/tdfxfb.c a~/drivers/video/tdfxfb.c
+--- a/drivers/video/tdfxfb.c	2004-03-11 14:20:50.000000000 -0300
++++ a~/drivers/video/tdfxfb.c	2004-04-27 19:35:22.000000000 -0300
+@@ -166,7 +166,11 @@ static int tdfxfb_pan_display(struct fb_
+ static void tdfxfb_fillrect(struct fb_info *info, const struct fb_fillrect *rect);
+ static void tdfxfb_copyarea(struct fb_info *info, const struct fb_copyarea *area);  
+ static void tdfxfb_imageblit(struct fb_info *info, const struct fb_image *image); 
++#ifdef CONFIG_FB_3DFX_ACCEL
+ static int tdfxfb_cursor(struct fb_info *info, struct fb_cursor *cursor);
++#else /* !CONFIG_FB_3DFX_ACCEL */
++#define tdfxfb_cursor soft_cursor
++#endif /* CONFIG_FB_3DFX_ACCEL */
+ static int banshee_wait_idle(struct fb_info *info);
+ 
+ static struct fb_ops tdfxfb_ops = {
+@@ -180,7 +184,7 @@ static struct fb_ops tdfxfb_ops = {
+ 	.fb_copyarea	= tdfxfb_copyarea,
+ 	.fb_imageblit	= tdfxfb_imageblit,
+ 	.fb_sync	= banshee_wait_idle,
+-	.fb_cursor	= soft_cursor,
++	.fb_cursor	= tdfxfb_cursor,
+ };
  
  /*
-  * Hardware access functions
-@@ -1265,10 +1270,8 @@ static struct fb_ops tridentfb_ops = {
- 	.fb_blank = tridentfb_blank,
- 	.fb_check_var = tridentfb_check_var,
- 	.fb_set_par = tridentfb_set_par,
--//	.fb_fillrect = tridentfb_fillrect,
--//	.fb_copyarea= tridentfb_copyarea,
--	.fb_fillrect = cfb_fillrect,
--	.fb_copyarea= cfb_copyarea,
-+	.fb_fillrect = tridentfb_fillrect,
-+	.fb_copyarea= tridentfb_copyarea,
- 	.fb_imageblit = cfb_imageblit,
- 	.fb_cursor = soft_cursor,
- };
+@@ -1001,6 +1005,7 @@ static void tdfxfb_imageblit(struct fb_i
+ 	banshee_wait_idle(info);
+ }
+ 
++#ifdef CONFIG_FB_3DFX_ACCEL
+ static int tdfxfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ {
+ 	struct tdfx_par *par = (struct tdfx_par *) info->par;
+@@ -1137,6 +1142,7 @@ static int tdfxfb_cursor(struct fb_info 
+ 	spin_unlock_irqrestore(&par->DAClock, flags);
+ 	return 0;
+ }
++#endif /* CONFIG_FB_3DFX_ACCEL */
+ 
+ /**
+  *      tdfxfb_probe - Device Initializiation
+
 -- 
 Luiz Fernando N. Capitulino
 <http://www.telecentros.sp.gov.br>

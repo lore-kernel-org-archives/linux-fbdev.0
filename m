@@ -1,21 +1,21 @@
-From: Otto Solares <solca@guug.org>
-Subject: Re: Changing modes with fbset
-Date: Mon, 5 Jan 2004 20:24:21 -0600
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: fbdev upstream
+Date: Tue, 6 Jan 2004 11:08:02 +0100 (MET)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040106022421.GA3689@guug.org>
-References: <3FDBB97F.4070207@undead.cc> <Pine.LNX.4.44.0401060005511.7347-100000@phoenix.infradead.org> <20040106002822.GB442@guug.org> <1073349349.780.181.camel@gaston> <20040106010852.GC442@guug.org> <1073351384.781.202.camel@gaston> <20040106014414.GD442@guug.org> <1073353478.9499.204.camel@gaston> <20040106020653.GE442@guug.org> <1073354986.761.208.camel@gaston>
+Message-ID: <Pine.GSO.4.58.0401061107350.5485@waterleaf.sonytel.be>
+References: <Pine.LNX.4.44.0401060049180.7347-100000@phoenix.infradead.org>
+ <1073351006.780.200.camel@gaston>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AdguZ-0006xY-Sa
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 18:25:39 -0800
-Received: from [168.234.203.30] (helo=guug.galileo.edu)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1AdguZ-0007JS-Gx
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 18:25:39 -0800
-Content-Disposition: inline
-In-Reply-To: <1073354986.761.208.camel@gaston>
+	id 1Ado89-0007FH-5C
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 02:08:09 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1Ado88-0003E3-LN
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Jan 2004 02:08:08 -0800
+In-Reply-To: <1073351006.780.200.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,28 +25,38 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: James Simmons <jsimmons@infradead.org>, John Zielinski <grim@undead.cc>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Tue, Jan 06, 2004 at 01:09:47PM +1100, Benjamin Herrenschmidt wrote:
-> 
-> > Agree.  Problem is that sysfs stuff is very invasive i think and it
-> > will be hard to push even on development trees like -mm ones.  An
-> > ioctl could be something simple as passing a pointer to a buffer
-> > of fixed length, the best imho would be extend fb_fix_screeninfo
-> > struct to accomodate a 'char busid[16];' but that could break
-> > binary compatibility.  If 2.6 break from 2.4 we could put it
-> > there as anyway apps need to recompile.  Shame that there are
-> > not sufficient 'reserved' bits.
-> 
-> We can just add it to fb_info and return if from an ioctl...
+On Tue, 6 Jan 2004, Benjamin Herrenschmidt wrote:
+> On Tue, 2004-01-06 at 11:51, James Simmons wrote:
+> > > Of course, that means we'll have to update more drivers, and platforms
+> > > with fixed display, like embedded etc... will need some way to deal
+> > > with that properly in their drivers.
+> >
+> > Fixed screen size drivers should provide there own modedb.
+>
+> Or just single mode... currently drivers don't export a modedb, they
+> keep one internally and do the validation... though it would make sense
+> to expose a modedb to userland, so we can have some nice GUI tools
+> showing you the available modes :) It would make sense for MacOnLinux
+> too which currently rely on the user to setup the list of modes
+> available to MacOS.
 
-Great! hopefully James will agree!.. :)
+And how to export it? Sysfs again, I guess...
 
--solca
+Gr{oetje,eeting}s,
 
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

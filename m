@@ -1,12 +1,25 @@
-From: James Simmons <jsimmons@www.infradead.org>
-Subject: Re: Re: waitforVBlank, how does this even work?
-Date: Wed, 2 Mar 2005 17:29:50 +0000 (GMT)
-Message-ID: <Pine.LNX.4.56.0503021727320.20488@pentafluge.infradead.org>
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: waitforVBlank, how does this even work?
+Date: Wed, 2 Mar 2005 12:30:59 -0500
+Message-ID: <9e47339105030209302701e9b5@mail.gmail.com>
 References: <9e473391050301215019081bce@mail.gmail.com>
- <Pine.LNX.4.62.0503021128001.14333@node2.an-vo.com>
+	 <Pine.LNX.4.62.0503021128001.14333@node2.an-vo.com>
+	 <9e473391050302090926854d95@mail.gmail.com>
+	 <Pine.LNX.4.62.0503021212550.14716@node2.an-vo.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-In-Reply-To: <Pine.LNX.4.62.0503021128001.14333@node2.an-vo.com>
+Content-Transfer-Encoding: 7bit
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1D6Xgf-0007Ff-WB
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 02 Mar 2005 09:31:05 -0800
+Received: from rproxy.gmail.com ([64.233.170.198])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1D6Xgb-0003rU-HS
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 02 Mar 2005 09:31:05 -0800
+Received: by rproxy.gmail.com with SMTP id z35so318539rne
+        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 02 Mar 2005 09:31:00 -0800 (PST)
+In-Reply-To: <Pine.LNX.4.62.0503021212550.14716@node2.an-vo.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -17,27 +30,24 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Jon Smirl <jonsmirl@gmail.com>, DRI developer's list <dri-devel@lists.sourceforge.net>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Vladimir Dergachev <volodya@mindspring.com>
+Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>, DRI developer's list <dri-devel@lists.sourceforge.net>
 
-
-> Hi Jon,
+On Wed, 2 Mar 2005 12:15:18 -0500 (EST), Vladimir Dergachev
+<volodya@mindspring.com> wrote:
+> > I would find it useful if someone came up with a standard kernel space
+> > V4L radeon driver instead of the Gatos stuff.
 > 
->     What about isolating interrupt-handling code into a small driver ?
-> Something simple to respond to interrupts and call all handlers with a 
-> certain mask.
-> 
->     This would be useful not only for drm and fbdev but also for km 
-> (v4l capture module) and stereo-glasses code.
+> By "standard" you mean "self-contained", right ?
 
-Ultimatly this is the goal. That is what the struct xxx_par is for in 
-struct fb_info. It is the core driver private data that can be shared by 
-everyone. Ben would you mind if I reworked your code to have this "core".
-It will take me some time but I can have it working. I need to do some 
-fixes for multiple monitor handling anyways.
+One that doesn't depend on X being there.
 
+Can one be build now that just ignores the memory management hooks?
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com
 
 
 -------------------------------------------------------

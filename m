@@ -1,17 +1,17 @@
 From: Stephane Wirtel <stephane.wirtel@belgacom.net>
-Subject: where can i find documentation on the source code ?
-Date: Sat, 17 Aug 2002 11:45:10 +0200
+Subject: why not put LOGO_W and LOGO_H in linux_logo.h ?
+Date: Sat, 17 Aug 2002 19:58:35 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20020817094510.GA3952@debian>
+Message-ID: <20020817175835.GB7078@debian>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from 212.68.254.82.brutele.be ([212.68.254.82] helo=debian)
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17g08v-0000bl-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 17 Aug 2002 02:45:13 -0700
+	id 17g7qS-00073i-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 17 Aug 2002 10:58:40 -0700
 Received: from root by debian with local (Exim 3.35 #1 (Debian))
-	id 17g08s-00011u-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 17 Aug 2002 11:45:10 +0200
+	id 17g7qN-0001r9-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 17 Aug 2002 19:58:35 +0200
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>

@@ -1,21 +1,21 @@
 From: Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] - video/tdfxfb.c warning fix.
-Date: Fri, 30 Apr 2004 21:35:13 -0700
+Subject: Re: [PATCH] - fix video/fbmem.c warning.
+Date: Fri, 30 Apr 2004 21:37:56 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040430213513.7bafde36.akpm@osdl.org>
-References: <20040430180451.GA3119@lorien.prodam>
+Message-ID: <20040430213756.188bbfe6.akpm@osdl.org>
+References: <20040430181015.GB3119@lorien.prodam>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BJmE1-0007G1-LH
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Apr 2004 21:35:41 -0700
+	id 1BJmGZ-0007Vp-9N
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Apr 2004 21:38:19 -0700
 Received: from fw.osdl.org ([65.172.181.6] helo=mail.osdl.org)
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BJmDz-0003on-Og
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Apr 2004 21:35:39 -0700
-In-Reply-To: <20040430180451.GA3119@lorien.prodam>
+	id 1BJmGY-0004GC-Ss
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Apr 2004 21:38:18 -0700
+In-Reply-To: <20040430181015.GB3119@lorien.prodam>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,21 +31,38 @@ Cc: jsimmons@infraded.org, linux-fbdev-devel@lists.sourceforge.net
 
 "Luiz Fernando N. Capitulino" <lcapitulino@prefeitura.sp.gov.br> wrote:
 >
->  This patch fixes this warning:
 > 
->   drivers/video/tdfxfb.c:1005: warning: `tdfxfb_cursor' defined but not
->   used
+>  Hi,
 > 
->   and make the acceleration function selectable (like hgafb
->  and tridentfb):
+>  The patch bellow fix this warning:
+> 
+>  drivers/video/fbmem.c: In function `fb_cursor':
+>  drivers/video/fbmem.c:922: warning: passing arg 1 of `copy_from_user' discards qualifiers from pointer target type
+> 
+>  It is only a cast (several other calls for copy_from_user() need that).
+> 
+>  drivers/video/fbmem.c |    2 +-
+>  1 files changed, 1 insertion(+), 1 deletion(-)
+> 
+> 
+> diff -X dontdiff -Nparu a/drivers/video/fbmem.c a~/drivers/video/fbmem.c
+> --- a/drivers/video/fbmem.c	2004-04-26 15:25:52.000000000 -0300
+> +++ a~/drivers/video/fbmem.c	2004-04-27 16:48:15.000000000 -0300
+> @@ -914,7 +914,7 @@ fb_cursor(struct fb_info *info, struct f
+>  			return -ENOMEM;
+>  		}
+>  		
+> -		if (copy_from_user(cursor.image.data, sprite->image.data, size) ||
+> +		if (copy_from_user((void *) cursor.image.data, sprite->image.data, size) ||
+>  		    copy_from_user(cursor.mask, sprite->mask, size)) { 
+>  			kfree(cursor.image.data);
+>  			kfree(cursor.mask);
 > 
 
-You've taken a bunch of previously-working 3d acceleration functions and
-made them configurable, dependent upon CONFIG_EXPERIMENTAL.
+Why is fb_image.data declared to be a pointer to `const' data?  This
+function proves that this assertion is false.
 
-What on earth for?  Will this not gratuitously break people's
-previously-working 3d setups?
-
+Would it not be better to remove the `const' qualifier?
 
 
 -------------------------------------------------------

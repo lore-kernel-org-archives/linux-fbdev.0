@@ -1,22 +1,24 @@
-From: Andrew Walrond <andrew@walrond.org>
-Subject: Re: Re: Linux 2.6.10-rc2
-Date: Wed, 17 Nov 2004 23:37:04 +0000
-Message-ID: <200411172337.04192.andrew@walrond.org>
-References: <Pine.LNX.4.58.0411141835150.2222@ppc970.osdl.org> <200411172233.28606.andrew@walrond.org> <Pine.LNX.4.58.0411171504220.2222@ppc970.osdl.org>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
+Subject: Re: x86_64 64bit kernel rivafb broke between 2.6.8.1 and linus bk as of today
+Date: Thu, 18 Nov 2004 08:02:09 +0800
+Message-ID: <200411180802.09994.adaplas@hotpop.com>
+References: <200411162244.37709.andrew@walrond.org> <200411180628.14510.adaplas@hotpop.com> <200411172250.20063.andrew@walrond.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CUZMZ-0006YA-KP
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Nov 2004 15:37:23 -0800
-Received: from [62.24.231.113] (helo=cenedra.walrond.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1CUZMQ-0000RB-Ly
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Nov 2004 15:37:23 -0800
-In-Reply-To: <Pine.LNX.4.58.0411171504220.2222@ppc970.osdl.org>
+	id 1CUZkl-0008Ju-Bz
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Nov 2004 16:02:23 -0800
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CUZkk-0007wb-KD
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Nov 2004 16:02:23 -0800
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id A72A69F712C
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 18 Nov 2004 00:02:15 +0000 (UTC)
+In-Reply-To: <200411172250.20063.andrew@walrond.org>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -29,26 +31,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Linus Torvalds <torvalds@osdl.org>, "Antonino A. Daplas" <adaplas@hotpop.com>
+To: linux-fbdev-devel@lists.sourceforge.net, Andrew Walrond <andrew@walrond.org>
+Cc: adaplas@pol.net
 
-On Wednesday 17 Nov 2004 23:12, Linus Torvalds wrote:
-> On Wed, 17 Nov 2004, Andrew Walrond wrote:
-> > And I can confirm that the problem exists in both 32bit and 64bit
-> > kernels.
+On Thursday 18 November 2004 06:50, Andrew Walrond wrote:
+> On Wednesday 17 Nov 2004 22:28, Antonino A. Daplas wrote:
+> > Umm, forget about the first patch, just apply the second patch.
 >
-> Ok. None of the code should actually have changed at all, but I notice one
-> bug:
+> Absolutely no change I'm afraid.
 >
+> You want me to try reverting the functions you mentioned?
 >
-> please undo those parts (by hand, I've messed up white-space), since they
-> make "burst" be one too big. Looks like the reason for doing that in the
-> first place was an old sparse warning that no longer exists.
->
-Ok reverted and tested, but made no difference to corruption.
-(I only tried 64bit kernel; I assume 32bit would behave similarly)
 
-Andrew
+Try the patch that reverts the "burst" code, and if that does not work,
+then yes, you might have to revert.
+
+Tony
+
+
 
 
 -------------------------------------------------------

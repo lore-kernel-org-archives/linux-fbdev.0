@@ -1,23 +1,23 @@
-From: Kronos <kronos@kronoz.cjb.net>
+From: Russell King <rmk@arm.linux.org.uk>
 Subject: Re: [PATCH] cyber2000fb: New framebuffer_alloc API and class_dev changes
-Date: Tue, 16 Sep 2003 16:17:13 +0200
+Date: Tue, 16 Sep 2003 15:52:30 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030916141713.GA1694@dreamland.darkstar.lan>
-References: <20030915194329.GI16370@dreamland.darkstar.lan> <20030915224042.I10328@flint.arm.linux.org.uk> <20030915221742.GC27662@dreamland.darkstar.lan> <20030915235832.M10328@flint.arm.linux.org.uk> <20030916134009.GA1011@dreamland.darkstar.lan> <20030916144459.A20141@flint.arm.linux.org.uk>
-Reply-To: kronos@kronoz.cjb.net
+Message-ID: <20030916155230.B20141@flint.arm.linux.org.uk>
+References: <20030915194329.GI16370@dreamland.darkstar.lan> <20030915224042.I10328@flint.arm.linux.org.uk> <20030915221742.GC27662@dreamland.darkstar.lan> <20030915235832.M10328@flint.arm.linux.org.uk> <20030916134009.GA1011@dreamland.darkstar.lan> <20030916144459.A20141@flint.arm.linux.org.uk> <20030916141713.GA1694@dreamland.darkstar.lan>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19zGef-0000WD-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 16 Sep 2003 07:18:09 -0700
-Received: from mail-7.tiscali.it ([195.130.225.153])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 19zGed-0003BF-VV
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 16 Sep 2003 07:18:08 -0700
+	id 19zHC0-0003xC-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 16 Sep 2003 07:52:36 -0700
+Received: from caramon.arm.linux.org.uk ([212.18.232.186])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.22)
+	id 19zHBz-00074N-Mz
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 16 Sep 2003 07:52:36 -0700
 Content-Disposition: inline
-In-Reply-To: <20030916144459.A20141@flint.arm.linux.org.uk>
+In-Reply-To: <20030916141713.GA1694@dreamland.darkstar.lan>; from kronos@kronoz.cjb.net on Tue, Sep 16, 2003 at 04:17:13PM +0200
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -29,56 +29,59 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Russell King <rmk@arm.linux.org.uk>
+To: Kronos <kronos@kronoz.cjb.net>
 Cc: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>
 
-Il Tue, Sep 16, 2003 at 02:44:59PM +0100, Russell King ha scritto: 
-> On Tue, Sep 16, 2003 at 03:40:09PM +0200, Kronos wrote:
-> > Il Mon, Sep 15, 2003 at 11:58:32PM +0100, Russell King ha scritto: 
-> > > On Tue, Sep 16, 2003 at 12:17:42AM +0200, Kronos wrote:
-> > > > Il Mon, Sep 15, 2003 at 10:40:42PM +0100, Russell King ha scritto: 
-> > > > > There is another reason why the above is fundamentally flawed - who says
-> > > > > that "release_cfb_info" will still be in module space by the time you
-> > > > > need to call it?
-> > > > > 
-> > > > > Eg, you unload your framebuffer driver module immediately after the device
-> > > > > has gone away, but someone is keeping the sysfs files associated with
-> > > > > the fb_info open.
-> > > > 
-> > > > I'm quite sure that this can't happen. If someone is keeping a sysfs
-> > > > file open module use count won't be zero. Right?
-> > > 
-> > > Where are you handling the module use count of the framebuffer driver?
-> > 
-> > Every   attribute   (ie.  sysfs   file)   has   a  .owner   field   (see
-> > include/linux/sysfs.h), the module  use count is handled  by sysfs. If a
-> > sysfs file is open the module can't be unloaded.
-> 
-> The .owner field is set to the module which defined the sysfs attribute.
-> This wouldn't be the driver, but would be some other part of the framebuffer
-> layer.
+On Tue, Sep 16, 2003 at 04:17:13PM +0200, Kronos wrote:
+> Good point. I  was thinking  at files  created by  the driver  itself, I
+> forgot about  dev attribute. I  can overwrite  .owner of  dev attribute,
+> fbmem can't be built as module. Sounds good?
 
-Good point. I  was thinking  at files  created by  the driver  itself, I
-forgot about  dev attribute. I  can overwrite  .owner of  dev attribute,
-fbmem can't be built as module. Sounds good?
+How about we do the job properly first time around?
 
-> > > Is there somewhere I can view the core changes?
-> > 
-> > They are on fbdev for review, I put a copy here:
-> > http://web.tiscali.it/kronoz/linux/fbdev-class_dev-fbmem.c.diff
-> 
-> When I tried to get at the fbdev site, it seemed to be down.  Maybe
-> some of the kernel documentation needs to be updated?
+- fbmem.c is responsible for managing the lifetime of the fb_info structure,
+  and the lifetime of the driver-private data is equal to the lifetime
+  of the fb_info structure.
 
-Try here: http://linux-fbdev.sf.net
-Mailing lists are here: http://linux-fbdev.sourceforge.net/mlist.html
+- framebuffer_alloc() creates the fb_info and the driver-private data
+  in one object, as per your patch.
+- fb_add_class_device creates the class device, as per your patch
+  (don't you think it'd be a good idea to return the error to the
+  driver if class_device_register() fails?)
+- fb_remove_class_device unregisters the class device, as per your
+  patch.  This should not cause the fb_info structures to be released.
+- framebuffer_free() marks the structure available for freeing.
+- at some point later, once all references have done, release_fb_info()
+  is called.  This releases the memory space allocated by
+  framebuffer_alloc().  This callback should _not_ call the driver
+  code.
 
-Luca
+So far, this fits fairly nicely.  Now on to the driver.
+
+- bus-specific ->probe function
+  driver calls framebuffer_alloc(), initialises whatever it needs to.
+  Driver then calls register_fb() which in turn eventually calls
+  fb_add_class_device().
+
+- bus-specific ->remove function
+  driver calls unregister_framebuffer() which eventually calls
+  fb_remove_class_device().  driver releases its resources, shuts down
+  hardware, and generally cleans up.  The very last step that it does
+  is call framebuffer_free().
+
+I believe there was an issue concerning EDID stuff with the above method.
+If this requires data from the fb_info or another structure whose lifetime
+is directly connected to fb_info, then there isn't a problem.  If it
+requires something from the driver module, things get a little more
+complicated, and there is a solution to this.  I don't see any instances
+of this from looking at your fbdev-class_dev-all patch though.
+
 -- 
-Reply-To: kronos@kronoz.cjb.net
-Home: http://kronoz.cjb.net
-"It is more complicated than you think"
-                -- The Eighth Networking Truth from RFC 1925
+Russell King (rmk@arm.linux.org.uk)	http://www.arm.linux.org.uk/personal/
+Linux kernel maintainer of:
+  2.6 ARM Linux   - http://www.arm.linux.org.uk/
+  2.6 PCMCIA      - http://pcmcia.arm.linux.org.uk/
+  2.6 Serial core
 
 
 -------------------------------------------------------

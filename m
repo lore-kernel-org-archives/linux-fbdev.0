@@ -1,20 +1,19 @@
-From: System Administrator <postmaster@fuentez.com>
-Subject: Undeliverable: unknown
-Date: Sat, 7 Aug 2004 00:05:22 -0400
+From: MAILER-DAEMON@whois1.trueweb.co.kr
+Subject: failure notice
+Date: 7 Aug 2004 17:56:41 +0900(KST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <A7050BF08CDDD811AF620002A5EF96A31CDBC9@scmail.fuentez.com>
+Message-ID: <E1BtN0g-0001Sd-7H@sc8-sf-mx1.sourceforge.net>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----_=_NextPart_000_01C47C33.C2FBFECC"
+Content-Type: multipart/mixed; boundary="1091869001whois1.trueweb.co.kr7651483"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BtIR7-0002Qe-A0
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 06 Aug 2004 21:04:01 -0700
-Received: from mail.fuentez.com ([68.208.64.162] helo=fw-extern.fuentez.com)
+	id 1BtN0g-0002V3-Vq
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 07 Aug 2004 01:57:02 -0700
+Received: from [211.215.19.210] (helo=whois1.trueweb.co.kr)
 	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.34)
-	id 1BtIR6-0003DI-Qj
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 06 Aug 2004 21:04:01 -0700
+	id 1BtN0g-0001Sd-7H
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 07 Aug 2004 01:57:02 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,67 +25,40 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 To: linux-fbdev-devel@lists.sourceforge.net
 
-This message is in MIME format. Since your mail reader does not understand
-this format, some or all of this message may not be legible.
+--1091869001whois1.trueweb.co.kr7651483
 
-------_=_NextPart_000_01C47C33.C2FBFECC
-Content-Type: text/plain;
-	charset="iso-8859-1"
+Hi. This is the qmail-send program at whois1.trueweb.co.kr.
+I'm afraid I wasn't able to deliver your message to the following addresses.
+This is a permanent error; I've given up. Sorry it didn't work out.
 
-Your message
+<pro@koreabrain.com>:
+Sorry, no mailbox here by that name. (#5.1.1)
 
-  To:      hildjj@fuentez.com
-  Subject: unknown
-  Sent:    Sat, 7 Aug 2004 00:01:42 -0400
+--- Enclosed are the original headers of the message.
 
-did not reach the following recipient(s):
-
-hildjj@fuentez.com on Sat, 7 Aug 2004 00:05:19 -0400
-    The recipient name is not recognized
-	The MTS-ID of the original message is: c=us;a=
-;p=fuentez;l=SCMAIL0408070405QKARRSPP
-    MSEXCH:IMS:FUENTEZ:SC:SCMAIL 0 (000C05A6) Unknown Recipient
-
-
-
-------_=_NextPart_000_01C47C33.C2FBFECC
+--1091869001whois1.trueweb.co.kr7651483
 Content-Type: message/rfc822
 
+Return-Path: <linux-fbdev-devel@lists.sourceforge.net>
+Received: (qmail 23761 invoked from network); 7 Aug 2004 17:56:41 +0900(KST)
+Received: from unknown (HELO koreabrain.com) (220.120.156.5)
+  by 0 with SMTP; 7 Aug 2004 17:56:41 +0900(KST)
 From: linux-fbdev-devel@lists.sourceforge.net
-To: hildjj@fuentez.com
-Subject: unknown
-Date: Sat, 7 Aug 2004 00:01:42 -0400 
+To: pro@koreabrain.com
+Subject: Mail Delivery (failure pro@koreabrain.com)
+Date: Sat, 7 Aug 2004 17:56:27 +0900
 MIME-Version: 1.0
-X-Mailer: Internet Mail Service (5.5.2653.19)
-X-MS-Embedded-Report: 
-Content-Type: multipart/mixed;
-	boundary="----_=_NextPart_002_01C47C33.C2FBFECC"
+Content-Type: multipart/related;
+	type="multipart/alternative";
+	boundary="----=_NextPart_000_001B_01C0CA80.6B015D10"
+X-Priority: 3
+X-MSMail-Priority: Normal
+
+(Body supressed)
 
 
-------_=_NextPart_002_01C47C33.C2FBFECC
-Content-Type: text/plain;
-	charset="iso-8859-1"
 
-I have your password!
-
-
-------_=_NextPart_002_01C47C33.C2FBFECC
-Content-Type: application/x-zip-compressed;
-	name="alert_OA3023_1091851519_SCMAIL_3#story.zip.txt"
-Content-Disposition: attachment;
-	filename="alert_OA3023_1091851519_SCMAIL_3#story.zip.txt"
-
-********   McAfee GroupShield for Microsoft Exchange    **********
-**********************************************************************
-
-Alert generated on: Saturday, August 07, 2004 12:05:19 AM Eastern Daylight Time
-
-
-The file story.zip has been replaced. Reason: The file met the blocking options set in the anti-virus system.
-Please consult your administrator for further help quoting your ticket number: OA3023_1091851519_SCMAIL_3
-------_=_NextPart_002_01C47C33.C2FBFECC--
-
-------_=_NextPart_000_01C47C33.C2FBFECC--
+--1091869001whois1.trueweb.co.kr7651483--
 
 
 -------------------------------------------------------

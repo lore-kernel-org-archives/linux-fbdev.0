@@ -1,18 +1,18 @@
-From: Miles Lane <miles@megapathdsl.net>
-Subject: PPC -- radeonfb / XFree86 (ati) support for 1280x854-16 with
- Radeon Mobility M7 LW (new Apple Titanium)?
-Date: 06 Aug 2002 00:01:46 -0700
+From: Romain Dolbeau <dolbeau@irisa.fr>
+Subject: Re: pm3fb driver is ok in 2.5.24
+Date: Tue, 06 Aug 2002 10:57:09 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1028617305.3298.55.camel@turbulence.megapathdsl.net>
-References: <20020806063014.91902.qmail@web13001.mail.yahoo.com>
+Message-ID: <3D4F8F65.11D3AA09@irisa.fr>
+References: <Pine.LNX.4.44.0207041939510.1718-100000@www.transvirtual.com> 
+		<3D2559A3.F13D413F@irisa.fr> <1028466027.6487.3613.camel@tibook> 
+		<3D4E5EA2.4290840F@irisa.fr> <1028546549.1112.842.camel@tibook>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from front1.mail.megapathdsl.net ([66.80.60.31])
+Received: from sky.irisa.fr ([131.254.60.147])
 	by usw-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 17bySq-0003VK-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 06 Aug 2002 00:09:08 -0700
-In-Reply-To: <20020806063014.91902.qmail@web13001.mail.yahoo.com>
+	id 17c0A4-0004b3-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 06 Aug 2002 01:57:52 -0700
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,29 +22,29 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://www.geocrawler.com/redir-sf.php3?list=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <captain_delete@yahoo.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Ani Joshi <ajoshi@unixbox.com>
+Content-Type: text/plain; charset="iso-8859-1"
+To: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-A few questions:
+Michel D=E4nzer wrote:
 
-1)  What is the current state of syncing between benh's kernel
-    tree with 2.4 (latest vanilla and ac) and with 2.5 (
-    latest vanilla and dj)?  Should the 2.5 kernels have any
-    chance of working with the newest Apple Titanium (88MHz)?
+> It's at 2.5.30 now at least.
 
-2)  Ani, what's the status with XFree86 support?  Should the
-    radeonfb driver enable the XFree86 fbdev driver to operate
-    at 16 bpp?  Where can I get the latest/best radeonfb code?
+Thanks, but this doesn't help: beside the not really
+needed serial ports and floppy drive, the SCSI
+drivers also don't compile. And this box has no
+IDE channel.
 
-3)  What are the pros and cons of using fbdev verses the 
-    XFree86 ati driver?
+It's better than it once was, but it still 2.4.x
+only for me :-(
 
-If anyone has new code they'd like me to test, please let me know.
+Thanks for the help,
 
-Thanks,
-	Miles
-
+--=20
+DOLBEAU Romain               | I tell you to enjoy life,               =20
+ENS Cachan / Ker Lann        |  I wish I could                         =20
+Thesard IRISA / CAPS         |        but it's too late.               =20
+dolbeaur@club-internet.fr    |  -- Black Sabbath, 'Paranoid'
 
 
 -------------------------------------------------------

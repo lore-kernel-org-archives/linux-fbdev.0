@@ -1,40 +1,41 @@
-From: Ian Campbell <icampbell@arcom.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: [PATCH] PXA255 LCD Driver
-Date: Wed, 17 Mar 2004 11:07:14 +0000
+Date: Wed, 17 Mar 2004 12:15:37 +0100 (MET)
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1079521633.13370.39.camel@icampbell-debian>
+Message-ID: <Pine.GSO.4.58.0403171215050.21104@waterleaf.sonytel.be>
 References: <1079518182.13373.27.camel@icampbell-debian>
-	 <Pine.GSO.4.58.0403171137410.21104@waterleaf.sonytel.be>
+ <Pine.GSO.4.58.0403171137410.21104@waterleaf.sonytel.be>
+ <1079521633.13370.39.camel@icampbell-debian>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <Pine.GSO.4.58.0403171137410.21104@waterleaf.sonytel.be>
+In-Reply-To: <1079521633.13370.39.camel@icampbell-debian>
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Ian Campbell <icampbell@arcom.com>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@infradead.org>
 
+	Hi Ian,
 
-> > +For example:
-> > +	modprobe pxafb options=xres:640,yres:480,bpp:8,passive
-> 
-> Not much comments, except: why don't you use the standard modedb mode parameter
-> style?
+On Wed, 17 Mar 2004, Ian Campbell wrote:
+> > > +For example:
+> > > +	modprobe pxafb options=xres:640,yres:480,bpp:8,passive
+> >
+> > Not much comments, except: why don't you use the standard modedb mode parameter
+> > style?
+>
+> I was trying too (I mostly copied the i810 driver). How wrong did I get
+> it? I'm willing to rework it to make it the same as the standard.
 
-I was trying too (I mostly copied the i810 driver). How wrong did I get
-it? I'm willing to rework it to make it the same as the standard.
+Take a look at drivers/video/modedb.c and fb_find_mode().
 
-> > I posted it to the fbdev list @ sf.net (from MAINTAINERS) but that list
-> > seems to be pretty quiet and www.linux-fbdev.org (also from MAINTAINERS)
-> 
-> It's not quiet, though.
+Gr{oetje,eeting}s,
 
-OK, I just hadn't seen many messages since I subscribed...
+						Geert
 
-Ian.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
--- 
-Ian Campbell, Senior Design Engineer
-                                        Web: http://www.arcom.com
-Arcom, Clifton Road, 			Direct: +44 (0)1223 403 465
-Cambridge CB1 7EA, United Kingdom	Phone:  +44 (0)1223 411 200
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds

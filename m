@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 5/5] Video Mode Handling - Patch for fbset
-Date: Mon, 9 Aug 2004 09:47:11 +0800
+Subject: [RFC] Video Mode Handling
+Date: Mon, 9 Aug 2004 09:43:58 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200408090947.11731.adaplas@hotpop.com>
+Message-ID: <200408090944.01414.adaplas@hotpop.com>
 Reply-To: adaplas@pol.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BtzIN-0001Vt-Ho
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Aug 2004 18:49:51 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.71])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1BtzIN-0005dc-0q
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Aug 2004 18:49:51 -0700
+	id 1BtzI2-0001V1-05
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Aug 2004 18:49:30 -0700
+Received: from smtp-out.hotpop.com ([38.113.3.61])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
+	id 1BtzI1-0003s1-ET
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Aug 2004 18:49:29 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 8F0D21054D6D
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  9 Aug 2004 01:23:19 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id E0A68776723
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  9 Aug 2004 00:56:03 +0000 (UTC)
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,144 +34,101 @@ Cc: Andrew Morton <akpm@osdl.org>
 
 Hi,
 
-The patch is against fbset-2.1.  It adds the following:
+Video mode handling in fbdev-2.6 is becoming better, but is still not in
+the same league as with fbdev-2.4.  The reason is that the upper vt layer
+does not have any information about the video mode itself which leaves
+the lower fbdev layer to fill in or replace the fields in a
+partial/incorrect fb_var_sreeninfo structure (var).  This limitation is
+partly alleviated by using fb_find_mode() to pass a complete var. 
 
-1. Ask for user confirmation before applying the new mode. If 
-rejected by the user, fbset will set the previous mode and
-invalidate the last timings.
+fb_find_mode() will look for entries in a database in which most entries
+are not compatible with the graphics/display combination.  The driver will
+still need to "massage" the contents of var to make it work with the
+particular combination.  Secondly, the current system does not preserve
+the entire graphics per-console settings (such as bpp, virtual resolution,
+etc). Thirdly, fb_find_mode() requires that the mode database need to stay
+in the memory for the entire lifetime of fbdev/fbcon, increasing the kernel's
+memory footprint. Finally, this requires that all drivers are capable of
+guaranteeing a working display without any user intervention.
 
-2. Add support for invalidating modelines.  Usage:
+Most fbdev developers are proposing to bring back the per-display var
+structures to ease the difficulty of video mode handling.  This proposal
+is countered by a few (notably James) in that it severely increases the 
+memory footprint of the kernel.  
 
-fbset -r pixclock xres yres left right upper lower hslen vslen <-hsync bool> <-vsync bool> <-laced bool> <-double bool>
+How about a compromise then?
 
-Options in "<>" are optional.
+The fb_var_screeninfo structure contains the following:
 
-First 3 patches must be applied. The patch is for
-demonstration only, no attempts to beautify the code were done.
+	a. settings of the graphics card
+	b. settings of the attached display
+	c. fields used internally by core fbdev/fbcon which has no
+	   relevance in video mode setting (ie, xoffset, yoffset)
+
+Instead of saving the entire var, we just save the settings of the
+graphics card.  Settings of the attached display will be replaced by
+pointers to entries in a mode database.  Internally used fields will not be
+saved, as these are typically handled by fbcon for each mode switch.
+
+One requirement is the creation of a mode database that is valid and private
+to the driver. This database must also be capable of adding new entries to its
+list (such as when a user does an fbset), and optionally deleting entries which
+might be entered by accident (such as when a var passes the driver's check_var()
+function but the resulting mode is not acceptable).  
+
+So when using 'stty', all fbcon needs to do is search the drivers private
+mode database, and build a var using a combination of the previous graphics 
+settings and the best fitting videomode.
+
+When switching consoles, fbcon will rebuild the var using the settings in 
+struct display and the saved pointer to a videomode structure.
+
+Implementation:
+
+The current modedb array is not sufficient for the task, as it's quite difficult
+to manipulate array entries.  A more flexible format isneed. The mode database
+can be made in the form of a double-linked list
+((struct list_head) info->monspecs.modelist) to make the task easier.
+
+Drivers can choose to add their own entries to the modelist. We have functions
+that can convert a modedb array to a mode list. Or the driver can choose to
+leave the modelist uninitialized/empty. In this case, fbdev will add a single
+mode entry to the list, the values of which are gathered from the current var
+(info->var).
+
+Whatever approach is taken, the driver now has a private modelist with a minimum
+of 1 entry where all entries are supposed to be guaranteed to work for the attached
+display/s. The upper layer (fbcon) can then use this private modelist during
+resizing or it can save an entry pointer in struct display, to be used when
+switching consoles.
+
+The modelist is required to grow in size since we cannot avoid users using their
+own timings.  For each fb_set_var(), a struct fb_videomode is created from the var,
+and if the mode is unique, it will be added to the modelist.
+
+If a non-working mode entry is accidentally or unaccidentally added to the modelist,
+we give the user the option to remove this from the list.  To make it simple, all
+the user needs to do is an fb_set_var ioctl where the var contains the invalid
+timings and var->activate = FB_ACTIVATE_INV_MODE.
+
+The end-effect of all of the above is a behavior that approaches that of fbdev-2.4. 
+Graphics/display settings are preserved per console. The 'stty' path, in theory,
+should always work as it will only use entries in the driver's private mode list.
+Although it has additional code size and complexity, this is more than compensated
+for by the possibility that static data can be marked __init.  Instead of saving
+the entire var structure per console, approximatedly half of the var's size is saved.
+Another advantage is that the requirement for foolproof mode handling by drivers is
+de-emphasized.
+
+I'm going to follow-up with patches for the kernel and a patch for fbset to demonstrate
+the proposal. The patch should not require any changes to low-level drivers nor break
+compatibility with userland apps.
+
+Let me know of comments or bugs.
+
+Thanks.
 
 Tony
-
-diff -uprN fbset-2.1-orig/fb.h fbset-2.1/fb.h
---- fbset-2.1-orig/fb.h	1999-06-23 22:09:48.000000000 +0800
-+++ fbset-2.1/fb.h	2004-08-09 09:13:32.470502928 +0800
-@@ -120,6 +120,7 @@ struct fb_bitfield {
- #define FB_ACTIVATE_VBL	       16	/* activate values on next vbl  */
- #define FB_CHANGE_CMAP_VBL     32	/* change colormap on vbl	*/
- #define FB_ACTIVATE_ALL	       64	/* change all VCs on this fb	*/
-+#define FB_ACTIVATE_INV_MODE   256      /* remove videomode from list   */
- 
- #define FB_ACCELF_TEXT		1	/* text mode acceleration */
- 
-diff -uprN fbset-2.1-orig/fbset.c fbset-2.1/fbset.c
---- fbset-2.1-orig/fbset.c	1999-06-23 22:11:46.000000000 +0800
-+++ fbset-2.1/fbset.c	2004-08-09 09:16:49.747512264 +0800
-@@ -65,6 +65,7 @@ static int Opt_verbose = 0;
- static int Opt_xfree86 = 0;
- static int Opt_change = 0;
- static int Opt_all = 0;
-+static int Opt_remove = 0;
- 
- static const char *Opt_fb = NULL;
- const char *Opt_modedb = DEFAULT_MODEDBFILE;
-@@ -324,10 +325,12 @@ static void ConvertFromVideoMode(const s
-     var->nonstd = vmode->nonstd;
-     if (Opt_test)
- 	var->activate = FB_ACTIVATE_TEST;
--    else
-+    else 
- 	var->activate = FB_ACTIVATE_NOW;
-     if (Opt_all)
- 	var->activate = FB_ACTIVATE_ALL;
-+    if (Opt_remove)
-+	var->activate = FB_ACTIVATE_INV_MODE;
-     var->accel_flags = vmode->accel_flags;
-     var->pixclock = vmode->pixclock;
-     var->left_margin = vmode->left;
-@@ -868,6 +871,10 @@ static void Usage(void)
- 	"    -hslen <value>     : horizontal sync length (in pixels)\n"
- 	"    -vslen <value>     : vertical sync length (in pixel lines)\n"
- 	"    -t, --timings ...  : set all timing parameters at once\n"
-+	"    -r, --remove ...   : invalidate mode timings\n"
-+	"                         pixclock xres yres left right\n"
-+	"                         upper lower hslen vslen\n"
-+	"                         <-laced> <-double> <-hsync> <-vsync>\n" 
- 	"  Display flags:\n"
- 	"    -accel <value>     : hardware text acceleration enable (false or "
- 				 "true)\n"
-@@ -926,7 +933,24 @@ int main(int argc, char *argv[])
- 	    Opt_xfree86 = 1;
- 	else if (!strcmp(argv[0], "-a") || !strcmp(argv[0], "--all"))
- 	    Opt_all = 1;
--	else if (!strcmp(argv[0], "-g") || !strcmp(argv[0], "--geometry")) {
-+	else if (!strcmp(argv[0], "-r") || !strcmp(argv[0], "-remove")) {
-+	    if (argc > 9) {
-+		Opt_pixclock = argv[1];
-+		Opt_xres = argv[2];
-+		Opt_yres = argv[3];
-+		Opt_left = argv[4];
-+		Opt_right = argv[5];
-+		Opt_upper = argv[6];
-+		Opt_lower = argv[7];
-+		Opt_hslen = argv[8];
-+		Opt_vslen = argv[9];
-+		Opt_change = 1;
-+		Opt_remove = 1;
-+		argc -= 9;
-+		argv += 9;
-+	    } else
-+		Usage();
-+	} else if (!strcmp(argv[0], "-g") || !strcmp(argv[0], "--geometry")) {
- 	    if (argc > 5) {
- 		Opt_xres = argv[1];
- 		Opt_yres = argv[2];
-@@ -1012,8 +1036,14 @@ int main(int argc, char *argv[])
-     }
- 
-     if (Opt_change) {
-+	struct fb_var_screeninfo cur;
-+	int done = 0, c;
- 
- 	/*
-+	 * Get Current Var
-+	 */
-+	GetVarScreenInfo(fh, &cur);
-+	/*
- 	 *  Optionally Modify the Video Mode
- 	 */
- 
-@@ -1024,12 +1054,29 @@ int main(int argc, char *argv[])
- 	 */
- 
- 	ConvertFromVideoMode(&Current, &var);
--	if (Opt_verbose)
--	    printf("Setting video mode to `%s'\n", Opt_fb);
-+	if (Opt_verbose) {
-+	    if (Opt_remove) 
-+		printf("Removing video mode to '%s'\n", Opt_fb);
-+	    else
-+		printf("Setting video mode to `%s'\n", Opt_fb);
-+	}
- 	SetVarScreenInfo(fh, &var);
- 	ConvertToVideoMode(&var, &Current);
-+	if (!Opt_remove) {
-+	    while (!done) {
-+		printf("Accept Video Mode Settings? (Y/N) ");
-+		c = getchar();
-+		if (c == 'Y' || c == 'y') 
-+		    done = 1;
-+		else if (c == 'N' || c == 'n') {
-+		    SetVarScreenInfo(fh, &cur);
-+		    var.activate = FB_ACTIVATE_INV_MODE;
-+		    SetVarScreenInfo(fh, &var);
-+		    done = 1;
-+		}
-+	    }
-+	}
-     }
--
-     /*
-      *  Display some Video Mode Information
-      */
 
 
 

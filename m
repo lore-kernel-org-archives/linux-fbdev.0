@@ -1,53 +1,25 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: fb and multiple adapters
-Date: Fri, 27 Dec 2002 16:39:19 -0800 (PST)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20021228003919.27894.qmail@web14910.mail.yahoo.com>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: [Linux-fbdev-devel] [FB PATCH]
+Date: Sat, 28 Dec 2002 17:44:49 +0000 (GMT)
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <Pine.LNX.4.44.0212281743430.31728-100000@phoenix.infradead.org>
+References: <20021227150934.A3005@twiddle.net>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from web14910.mail.yahoo.com ([216.136.225.62])
-	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18S50Z-0003wG-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 27 Dec 2002 16:39:19 -0800
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <20021227150934.A3005@twiddle.net>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
-
-I'm looking into running framebuffers on multiple
-video adapters. My current setup has an ATI AGP Radeon
-9000 as the primary adapter and a ATI PCI Rage128 as
-the secondary. 
-
-The Rage128 driver won't load in this config. So the
-first thing I did was to add my board's id to it, PD.
-Now I'm at the point where the expansion ROM isn't
-enabled and the adapter isn't initialized.
-
-Should I add code to aty128fb to enable the ROM and
-execute the initialization code (like X does)? What
-the overall policy towards framebuffers initializing
-secondary adapters? 
-
-=====
-Jon Smirl
-jonsmirl@yahoo.com
-
-__________________________________________________
-Do you Yahoo!?
-Yahoo! Mail Plus - Powerful. Affordable. Sign up now.
-http://mailplus.yahoo.com
+To: Richard Henderson <rth@twiddle.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, torvalds@transmeta.com
 
 
--------------------------------------------------------
-This sf.net email is sponsored by:ThinkGeek
-Welcome to geek heaven.
-http://thinkgeek.com/sf
+> I got link errors due to a missing fb_blank function.  The best
+> I can figure is that you were intending to call the fb_blank 
+> fbops hook.  Certainly that seems to work.
+> 
+> I'm not sure how no one else ran into this. 
+
+Okay that is weird. Yes it was suppose to call fb_blank the function.This 
+function exist in fbmem.c and it is even exported for modular fbdev 
+drivers. 

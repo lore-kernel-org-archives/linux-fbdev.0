@@ -1,20 +1,21 @@
-From: Matan Ziv-Av <matan@svgalib.org>
-Subject: Re: VGA routing
-Date: Wed, 10 Dec 2003 18:05:33 +0200 (IST)
+From: John Zielinski <grim@undead.cc>
+Subject: Re: Changing modes with fbset
+Date: Sat, 13 Dec 2003 20:14:39 -0500
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.58.0312101709300.3578@matan.home>
-References: <20031207073448.83488.qmail@web14911.mail.yahoo.com>
+Message-ID: <3FDBB97F.4070207@undead.cc>
+References: <3FD6C52C.7090906@undead.cc>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1AU6qL-0006hB-Fs
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Dec 2003 08:05:41 -0800
-Received: from [212.29.226.3] (helo=arava.co.il)
+	id 1AVKqV-0001uR-2F
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 13 Dec 2003 17:14:55 -0800
+Received: from gw-undead3.tht.net ([216.126.84.18] helo=mail.undead.cc)
 	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.24)
-	id 1AU6qK-0007FR-Jy
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Dec 2003 08:05:40 -0800
-In-Reply-To: <20031207073448.83488.qmail@web14911.mail.yahoo.com>
+	id 1AVKqU-00014O-Iv
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 13 Dec 2003 17:14:54 -0800
+In-Reply-To: <3FD6C52C.7090906@undead.cc>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -24,37 +25,34 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jon Smirl <jonsmirl@yahoo.com>
-Cc: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Sat, 6 Dec 2003, Jon Smirl wrote:
-
-> My machine has three busses.
-> 1) on chip
-> 2) AGP
-> 3) PCI
-> 
-> My primary display is on a PCI card.
-> When I boot the VGA ports are routed through the PCI bridge.
-> I'm running X on the PCI card.
-
-There is VGA bit of Bridge Control register in PCI-PCI bridges (bit 19, 
-at 3c). But when there are a few cards on the same bus, I guess the 
-behaviour is undefined, since I did not see anything relevant in the 
-standards. 
-
-> Thanks for the help. I'm trying to figure out the right way to initialize a
-> secondary card by jumping to C000:0003 in it's BIOS. Does Xfree jump to
-> C000:0003? I can't find where it does that in the source.
-
-x86emu package does this by disabling all cards except for the one that 
-is being initialized.
+Found it.  It's a bug in fbcon.c where the rows and cols were mixed up 
+so fbcon_resize tries to set the mode again with xres and yres 
+reversed.  Didn't happen during boot as fbcon_state_manager is 
+registered after the console is taken over.
 
 
--- 
-Matan Ziv-Av.                         matan@svgalib.org
+diff -urNX dontdiff linux.old/drivers/video/console/fbcon.c linux/drivers/video/console/fbcon.c
+--- linux.old/drivers/video/console/fbcon.c	2003-12-13 19:32:14.000000000 -0500
++++ linux/drivers/video/console/fbcon.c	2003-12-13 19:34:48.000000000 -0500
+@@ -2261,8 +2261,8 @@
+ 			// Switch resolution size
+ 			int rows, cols;
+ 			
+-			rows = info->var.xres / vc->vc_font.height;
+-			cols = info->var.yres / vc->vc_font.width;
++			rows = info->var.yres / vc->vc_font.height;
++			cols = info->var.xres / vc->vc_font.width;
+         		fbcon_resize(vc, cols, rows);
+ 			info->state |= flag;
+ 			}
+
+
+
+John
+
 
 
 

@@ -1,24 +1,26 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: jsimmons@pentafluge.infradead.org
 Subject: Re: Sane behavior of fbset
-Date: Wed, 23 Jun 2004 21:17:09 +0200 (MEST)
+Date: Wed, 23 Jun 2004 20:21:49 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.58.0406232116390.21847@waterleaf.sonytel.be>
+Message-ID: <Pine.LNX.4.56.0406232021110.27210@pentafluge.infradead.org>
 References: <200406180945.12444.adaplas@hotpop.com>
  <Pine.GSO.4.58.0406181024180.11779@waterleaf.sonytel.be>
  <Pine.LNX.4.56.0406231945150.27210@pentafluge.infradead.org>
  <Pine.GSO.4.58.0406232057230.21847@waterleaf.sonytel.be>
  <Pine.LNX.4.56.0406232001200.27210@pentafluge.infradead.org>
+ <Pine.GSO.4.58.0406232116390.21847@waterleaf.sonytel.be>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BdDFA-0007Bo-Fx
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 12:17:12 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BdDF9-0000QR-Q8
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 12:17:11 -0700
-In-Reply-To: <Pine.LNX.4.56.0406232001200.27210@pentafluge.infradead.org>
+	id 1BdDJg-0007WC-O9
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 12:21:52 -0700
+Received: from [213.146.154.40] (helo=pentafluge.infradead.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.30)
+	id 1BdDJg-00025U-4v
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Jun 2004 12:21:52 -0700
+In-Reply-To: <Pine.GSO.4.58.0406232116390.21847@waterleaf.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,40 +32,18 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: jsimmons@pentafluge.infradead.org
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 23 Jun 2004 jsimmons@pentafluge.infradead.org wrote:
-> > > I have no problem adding in a notifier for fbset. I don't agree with
-> > > adding in per VC vars. The reason is that every VC, all 64, will have a
-> > > copy of struct fb_var_screeninfo. That is really heavy for embedded
-> > > devices. Instead with a modedb we have one copy of different kinds of
-> > > modes. What we need to do is add valid modes that are not present in
-> > > modedb.
-> >
-> > If size matters, embedded devices can always disable virtual consoles
-> > completely, so only one var is needed.
-> >
-> > Furthermore, what about making the maximum number of virtual consoles
-> > configurable, and/or handling them dynamically (most systems have only a few of
-> > them in active use)?
->
-> That is a 2.7.X issue. Even still having 2 VCs meanings having two
-> identical vars. That is heavy. Having that mode stored in modedb is one
-> copy for both VCs.
 
-And how much space does modedb (which used to be __initdata) need?
+> > identical vars. That is heavy. Having that mode stored in modedb is one
+> > copy for both VCs.
+> 
+> And how much space does modedb (which used to be __initdata) need?
 
-Gr{oetje,eeting}s,
+I couldn't agree with you more. Currently modedb is way to heavy. It needs 
+to be cleaned up.
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 
 -------------------------------------------------------

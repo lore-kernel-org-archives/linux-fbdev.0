@@ -1,13 +1,13 @@
-From: Otto Solares <solca@guug.org>
-Subject: Re: Re: [Dri-devel] Re: [Linux-fbdev-devel] Redesign of kernel graphics interface
-Date: Mon, 10 May 2004 14:47:42 -0600
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: Re: [Dri-devel] Re: [Linux-fbdev-devel] Redesign
+ of kernel graphics interface
+Date: Mon, 10 May 2004 22:05:57 +0100 (BST)
 Sender: mesa3d-dev-admin@lists.sourceforge.net
-Message-ID: <20040510204742.GA12863@guug.org>
-References: <Pine.LNX.4.44.0405101708310.4338-100000@phoenix.infradead.org> <20040510182940.14049.qmail@web14924.mail.yahoo.com> <20040510223950.B2268@armor.freesurf.fr>
+Message-ID: <Pine.LNX.4.44.0405102202230.6312-100000@phoenix.infradead.org>
+References: <20040510182940.14049.qmail@web14924.mail.yahoo.com>
 Mime-Version: 1.0
 Return-path: <mesa3d-dev-admin@lists.sourceforge.net>
-Content-Disposition: inline
-In-Reply-To: <20040510223950.B2268@armor.freesurf.fr>
+In-Reply-To: <20040510182940.14049.qmail@web14924.mail.yahoo.com>
 Errors-To: mesa3d-dev-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
 	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=unsubscribe>
@@ -17,26 +17,29 @@ List-Help: <mailto:mesa3d-dev-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
 	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=mesa3d-dev>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Nicolas Souchu <nsouch@free.fr>
-Cc: Jon Smirl <jonsmirl@yahoo.com>, James Simmons <jsimmons@infradead.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, dri-devel <dri-devel@lists.sourceforge.net>, mesa3d-dev <mesa3d-dev@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Nicolas Souchu <nsouch@free.fr>, dri-devel <dri-devel@lists.sourceforge.net>, mesa3d-dev <mesa3d-dev@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Mon, May 10, 2004 at 10:39:50PM +0000, Nicolas Souchu wrote:
-> Do apps manage their swap? No. I think the OS should be responsible for
-> placing the data (vertices, textures, commands) at the right/best place
-> for the HW 3D engine and the client should only fill virtual memory.
 
-> http://www.freebsd.org/~nsouch/kgi4BSD
+> It's not just bloat, the network code is used millions of times per second. 
+> Mode setting happens occaisonally. 
+ 
+Using that logic then Sound cards shouldn't be in the kernel at all. I 
+never use my sound card continuely. I use it as a module. Would it be 
+acceptable if the mode setting was modular?  
 
-Browsing through kgi.sf.net I found that they have proper multihead
-and DDC2 support.  They just lack DRI integrated into KGI and it will
-rock from my user perspective.
+> The other problem is memory management. What is going to happen when fbdev
+> starts setting the mode for both heads? Who is going to mananage the VRAM when
+> the buffers get resized? OpenGL has a very complex memory management scheme
+> where things can migrate from VRAM to AGP to system memory.
 
-Is true that the BSDs are adopting KGI as their unified kernel
-graphics layer?
+I know problems like this are going to exist. So I guess the idea of the 
+kernel supporting multi-desktops is out then. The ruby (linuxconsole) 
+project has two independent workstations running on the G400 dual head 
+cards. I guess that has to go :-( 
 
--otto
 
 
 

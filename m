@@ -1,18 +1,25 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: mode setting and console locking
-Date: Sun, 16 May 2004 08:57:57 -0700 (PDT)
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Subject: Re: [PATCH] mach64
+Date: Sun, 16 May 2004 19:03:32 +0300
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040516155757.26612.qmail@web14927.mail.yahoo.com>
+Message-ID: <20040516160332.GB18523@sci.fi>
+References: <200405161513.15979.alex.kern@gmx.de>
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BPO1V-0002Ev-Oq
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 16 May 2004 08:57:57 -0700
-Received: from web14927.mail.yahoo.com ([216.136.225.85])
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
-	id 1BPO1V-00014a-Gc
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 16 May 2004 08:57:57 -0700
+	id 1BPO6x-0004xK-Me
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 16 May 2004 09:03:35 -0700
+Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BPO6x-00068X-Dt
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 16 May 2004 09:03:35 -0700
+Received: from kuori.saunalahti.fi (kuori.saunalahti.fi [195.197.175.23])
+	by gw01.mail.saunalahti.fi (Postfix) with ESMTP id AA4571148A53
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 16 May 2004 19:03:32 +0300 (EEST)
+Content-Disposition: inline
+In-Reply-To: <200405161513.15979.alex.kern@gmx.de>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -22,38 +29,26 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: fb-devel <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset="iso-8859-1"
+To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-I have two video cards installed. I run X on the primary and fbdev on the
-secondary.  I'm having a problem setting the mode to the fbdev device from an
-xterm window. This was working six months ago in 2.6 but it is broken currently.
+On Sun, May 16, 2004 at 03:13:15PM +0200, Alexander Kern wrote:
+> Hello, this is an addition to js + ak2,
+>=20
+> includes three patches from Ville Syrj=E4l=E4 and my "remove assert". T=
+ested with=20
+> 2.6.6, no regression, but proposed fix for 16 bit don't fixes "no pingu=
+in=20
+> logo by booting" issue. Ville, have you an another idea?
 
-If I load fbdev on my primary card, then run X on it, fbset will work on the
-primary card fron the xterm window.
+I haven't used the boot logo in 2.6 before so I didn't even know it had=20
+problems. I just tried it and it's broken for both 555 and 565 16bpp=20
+modes. What is this fix you mention?
 
-if I load fbdev on my secondary card (it is reset and fbdev loads without
-problem) then fbset from an xterm window will lock my box. fbset from a console
-window works fine. I have tried this both ways, swapping the primary and
-secondary cards, so it doesn't seem to be the card drivers.
-
-Is there some locking going on in fbdev mode setting that is interacting with X?
-My X server does not have the fbdev driver loaded. The only thing I can think of
-is that the console is marked at being in KD_GRAPHICs. Any ideas?
-
-=====
-Jon Smirl
-jonsmirl@yahoo.com
-
-
-	
-		
-__________________________________
-Do you Yahoo!?
-SBC Yahoo! - Internet access at a great low price.
-http://promo.yahoo.com/sbc/
+--=20
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
 
 
 -------------------------------------------------------

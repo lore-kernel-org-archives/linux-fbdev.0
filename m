@@ -1,21 +1,22 @@
-From: Stian Hartviksen <stian.hartviksen@kitrus.com>
-Subject: Some small problems...
-Date: 22 Jan 2003 22:23:27 +0100
+From: Sven Luther <luther@dpt-info.u-strasbg.fr>
+Subject: Radeon 9000 on a linux 2.4.18 kernel.
+Date: Fri, 24 Jan 2003 10:04:23 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1043270608.1879.53.camel@laptop-STIAN>
+Message-ID: <20030124090423.GA1690@iliana>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from ns2.kitrus.no ([212.4.54.162] helo=is1.itr.no)
+Received: from smtp-out-3.wanadoo.fr ([193.252.19.233] helo=mel-rto3.wanadoo.fr)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18bSLu-0002gd-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 22 Jan 2003 13:24:07 -0800
-Received: from is1.itr.no (localhost [127.0.0.1])
-	by is1.itr.no (8.11.6/8.11.6) with ESMTP id h0MLO0S03643
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 22 Jan 2003 22:24:00 +0100
-Received: from laptop-STIAN.kontor.itsopen.no (fou-fw.sts.no [212.4.54.130] (may be forged))
-	by is1.itr.no (8.11.6/8.11.6) with ESMTP id h0MLO0T03637
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 22 Jan 2003 22:24:00 +0100
+	id 18bzlH-0003BU-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 24 Jan 2003 01:04:32 -0800
+Received: from mel-rta7.wanadoo.fr (193.252.19.61) by mel-rto3.wanadoo.fr (6.7.015)
+        id 3E0C33B501121B39 for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Jan 2003 10:04:24 +0100
+Received: from iliana (81.48.237.20) by mel-rta7.wanadoo.fr (6.7.015)
+        id 3E26CE54004F1F42 for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Jan 2003 10:04:24 +0100
+Received: from luther by iliana with local (Exim 3.36 #1 (Debian))
+	id 18bzl9-0000Rd-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 24 Jan 2003 10:04:23 +0100
+Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -26,69 +27,39 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Hi, all !
+Hello, ...
 
-I'm having a slight trouble with getting my hardware to work together
-with the new 2.5.59 development kernel. The problems is as follows :
+I am trying to use a Radeon 9000 on my pegasos board, and had the same
+success with it as with the matrox millenium II i used previously. Well,
+it is even worse, since radeonfb doesn't even output a bit in the boot
+log.
 
-1. When compiling, the following framebuffer devices does not compile :
-	- Cirrus Logic
-	- Matrox
-	- Riva (had some warnings)
-	- Ati (Had to do some small hack in aty_base.c to get this compiling)
+After a bit of thinking, i realize that this is quite normal, sine i
+have to use a 2.4.18 kernel, which knows nothing of the Radeon 9000,
+since it did not exist at that time.
 
-2. When I'm doing make modules_install everything stops. This I got
-around by installing module-init-tools-0.9.8 - This is not a good
-solutions (Or at least there should be some notes that you have to
-install some external software packages to get the kernel compiled.)
+So, my questions are :
 
-3. When the compiling sequence is finished, and it is time for reboot,
-there is no output on the screen after the grub startup manager.
-(Sometimes I get the following : Uncompressing Linux... Ok, booting the
-kernel.)The disk is working, and services are starting - But no output
-on the monitor. I've tried different parameter to the vga= command, but
-all have the same result.
+  1) is it ok to just add the Radeon 9000 pci ids and whatever to the
+  2.4.28 kernel and hope it works. (Maybe not, but then the Radeon 9000
+  and the Radeon 8500 are supposed to be really similar).
 
-4. Are there a list of framebuffer drivers that are verified on the
-2.5.59 kernel ?
+  2) Does anyone know how to check the pci ids of such a card from OF ?
 
+  3) Are the 2.5.x kernel working on powerpc, and if yes, is the
+  radeonfb driver ported ?
 
-WBR Stian Hartviksen
+Friendly,
 
+Sven Luther
 
-
-My test equipment is as follows :
-
-Machine #1:
-- Pentium II, 266MHz, 128Mb
-- ATI Rage Pro 3D (AGP)
-- Nvidia Geforce 2 (PCI)
-- Nvidia TNT 2 (PCI)
-- Matrox Millenium II (PCI)
-- Herkules S3virge (PCI)
-- Cirrus Logic GD5434-8 (PCI)
-
-
-Machine #2:
-- Pentium 4, 2,4GHz, 512Mb
-- Nvidia Geforce 4 MX420 (AGP)
-- Nvidia Geforce 2 (PCI)
-- Nvidia TNT 2 (PCI)
-- Matrox Millenium II (PCI)
-- Herkules S3virge (PCI)
-- Cirrus Logic GD5434-8 (PCI)
-
-
-Machine #3:
-- Pentium 4, 2,4GHz, 256Mb
-- ATI Radeon Mobility M6
 
 
 
 -------------------------------------------------------
-This SF.net email is sponsored by: Scholarships for Techies!
-Can't afford IT training? All 2003 ictp students receive scholarships.
-Get hands-on training in Microsoft, Cisco, Sun, Linux/UNIX, and more.
-www.ictp.com/training/sourceforge.asp
+This SF.NET email is sponsored by:
+SourceForge Enterprise Edition + IBM + LinuxWorld = Something 2 See!
+http://www.vasoftware.com

@@ -1,23 +1,23 @@
 From: "Kendall Bennett" <KendallB@scitechsoft.com>
-Subject: Re: Re: Generic VESA framebuffer driver and Video card BOOT?
+Subject: Re: Generic VESA framebuffer driver and Video card BOOT?
 Date: Thu, 21 Oct 2004 12:36:59 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <4177AD6B.23151.20F0292D@localhost>
-References: <41764FB3.29782.1B9A13F4@localhost>
+Message-ID: <4177AD6B.8391.20F028B0@localhost>
+References: <41763777.26324.1B3B684C@localhost>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7BIT
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CKikL-0008DL-Ar
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 21 Oct 2004 12:37:13 -0700
+	id 1CKikJ-0008D2-HI
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 21 Oct 2004 12:37:11 -0700
 Received: from mail.scitechsoft.com ([63.195.13.67])
 	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.41)
-	id 1CKikJ-00007w-3n
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 21 Oct 2004 12:37:12 -0700
-In-reply-to: <20041020191044.GB21315@elf.ucw.cz>
+	id 1CKikJ-00007j-3m
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 21 Oct 2004 12:37:11 -0700
+In-reply-to: <20041020190846.GA21315@elf.ucw.cz>
 Content-description: Mail message body
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,15 +34,18 @@ Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
 Pavel Machek <pavel@ucw.cz> wrote:
 
-> One more question: Does 0xc0000 POST method work even on
-> notebooks? On regular machines, PCI card must have normal bios and
-> stuff is easy. On notebooks there was talk about "integrated bios"
-> where it really has no video bios at all and system bios POSTs the
-> card. Have you seen that? 
+> > Yes, but there is only a very small set of PC hardware features you need 
+> > to implement, and most BIOS'es only look at those things for timing 
+> > purposes. Unfortunately there is no standard for how BIOS'es do internal 
+> > timing and delay loops, so we emulate them all (8253 timers, speaker 
+> > ports and CMOS time/date support ;-).
+> 
+> Hmm, that does not seem that bad. Did you need to emulate interrupt
+> controller, too? That one seemed most scary to me.
 
-We have never had a need to POST a notebook Video BIOS so I don't know 
-what would happen. It is an interesting question, and if this is to be 
-used for resume operations something that should be investigated.
+No. Only software interrupts. The BIOS never deals with hardware 
+interrupts since there is no standard, reliable way to hook them from 
+real mode so it never uses them ;-)
 
 Regards,
 

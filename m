@@ -1,22 +1,22 @@
-From: Jim Hague <jim.hague@acm.org>
-Subject: Re: pm2fb fixes
-Date: Thu, 22 Apr 2004 16:36:05 +0100 (BST)
+From: "Luiz Fernando N. Capitulino" <lcapitulino@prefeitura.sp.gov.br>
+Subject: Re: [PATCH] - video/tridentfb.c warning fix.
+Date: Thu, 22 Apr 2004 15:08:42 -0300
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <XFMail.20040422163605.jim.hague@acm.org>
-References: <20040422104344.0e798a7a@zerocool>
+Message-ID: <20040422150842.7c011dd7.lcapitulino@prefeitura.sp.gov.br>
+References: <20040419162807.7ba9c5ec.lcapitulino@prefeitura.sp.gov.br>
+	<Pine.GSO.4.58.0404200955320.21445@waterleaf.sonytel.be>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BGgFQ-00028M-Ba
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Apr 2004 08:36:20 -0700
-Received: from cpc3-oxfd2-6-0-cust100.oxfd.cable.ntl.com ([81.103.193.100] helo=fluffy.bear-cave.org.uk)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.30)
-	id 1BGgFQ-0005x4-0G
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Apr 2004 08:36:20 -0700
-In-Reply-To: <20040422104344.0e798a7a@zerocool>
+	id 1BGibt-0007mE-On
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Apr 2004 11:07:41 -0700
+Received: from sampa7.prodam.sp.gov.br ([200.230.190.107])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BGibt-0002Xd-C1
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Apr 2004 11:07:41 -0700
+In-Reply-To: <Pine.GSO.4.58.0404200955320.21445@waterleaf.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,45 +26,46 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Marcelo Ramos <mramos@montevideo.com.uy>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: akpm@osdl.org, jsimmons@infradead.org, linux-fbdev-devel@lists.sourceforge.net
 
-On 22-Apr-2004 Marcelo Ramos wrote:
-> El (On) Wed, 21 Apr 2004 19:21:34 +0100 (BST)
-> Jim Hague <jim.hague@acm.org> escribi=F3 (wrote):
->> BTW, I'd be interested in hearing if you see any unusual behaviour.
->=20
-> Sorry, i didn't read well the first time :/
-> I see a thin white line like you describe *only* when booting and it
-> disappears
-> when the boot messages make the screen to scroll up.
->=20
-> I don't see any problem when switching from X to the console.
-> =20
->> Also when shutting down from gdm with the full screen display, my console
->> background goes a bluey sort of shade.
->=20
-> I don't see that here.
 
-Thanks for the feedback. It sounds like it's working OK for you.
+ Hi Geert,
 
-The problem I'm having with gdm is, I think, mode related. My consoles are =
-at 8
-bit colour depth, but X runs at 16 bit. If I boot and login via gdm, when I
-hotkey to consoles the mode is correctly switched back to 8 bit. If I hotkey
-back to X and then log out back to gdm and then hotkey to consoles, the mode
-isn't switched back to 8 bit but is switched to (i.e. remains at) 16 bit de=
-pth.
-In case anyone else is interested, this is on freshly updated Debian Sid.
+Em Tue, 20 Apr 2004 09:56:17 +0200 (MEST)
+Geert Uytterhoeven <geert@linux-m68k.org> escreveu:
 
---=20
-Jim Hague - jim.hague@acm.org          Never trust a computer you can't lif=
-t.
+| On Mon, 19 Apr 2004, Luiz Fernando N. Capitulino wrote:
+| > diff -X dontdiff -Nparu a/drivers/video/Kconfig a~/drivers/video/Kconfig
+| > --- a/drivers/video/Kconfig	2004-04-16 20:03:09.000000000 -0300
+| > +++ a~/drivers/video/Kconfig	2004-04-16 20:04:24.000000000 -0300
+| > @@ -772,6 +772,14 @@ config FB_TRIDENT
+| >  	  To compile this driver as a module, choose M here: the
+| >  	  module will be called tridentfb.
+| >
+| > +config FB_TRIDENT_ACCEL
+| > +	bool "Trident Acceleration functions (EXPERIMENTAL)"
+| > +	depends on FB_TRIDENT
+| 
+| Didn't notice this before: if you want it to be experimental, it should depend
+| on FB_TRIDENT && EXPERIMENTAL
+
+ oops. :-)
+
+ I saw that Andrew merged the patches in -mm tree. I will wait it in linus
+tree to fix that.
+
+PS: Sorry for the delay, I were in another city.
+
+-- 
+Luiz Fernando N. Capitulino
+<lcapitulino@prefeitura.sp.gov.br>
+<http://www.telecentros.sp.gov.br>
 
 
 -------------------------------------------------------
-This SF.Net email is sponsored by: IBM Linux Tutorials
-Free Linux tutorial presented by Daniel Robbins, President and CEO of
-GenToo technologies. Learn everything from fundamentals to system
-administration.http://ads.osdn.com/?ad_id=3D1470&alloc_id=3D3638&op=3Dclick
+This SF.net email is sponsored by: The Robotic Monkeys at ThinkGeek
+For a limited time only, get FREE Ground shipping on all orders of $35
+or more. Hurry up and shop folks, this offer expires April 30th!
+http://www.thinkgeek.com/freeshipping/?cpg=12297

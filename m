@@ -1,22 +1,21 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: Re: [PATCH][RFC] Add support for Epson S1D13806 FB
-Date: Mon, 14 Mar 2005 15:18:39 +0200
-Message-ID: <20050314131839.GB2695@linux-sh.org>
-References: <qkX0zxQn.1110795218.6236360.varenet@localhost> <200503142015.14749.adaplas@hotpop.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Re: [PATCH][RFC] Add support for Epson
+ S1D13806 FB
+Date: Mon, 14 Mar 2005 14:25:48 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0503141425000.4784@numbat.sonytel.be>
+References: <qkX0zxQn.1110795218.6236360.varenet@localhost>
+ <200503142015.14749.adaplas@hotpop.com> <20050314131839.GB2695@linux-sh.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="ZoaI/ZTpAVc4A5k6"
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DApT1-00008r-OO
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Mar 2005 05:18:43 -0800
-Received: from smtp2.pp.htv.fi ([213.243.153.35])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1DApSz-0006n0-GR
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Mar 2005 05:18:42 -0800
-Content-Disposition: inline
-In-Reply-To: <200503142015.14749.adaplas@hotpop.com>
+	id 1DApaA-0000VQ-1C
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Mar 2005 05:26:06 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1DApa8-0005MC-CC
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Mar 2005 05:26:05 -0800
+In-Reply-To: <20050314131839.GB2695@linux-sh.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,42 +26,44 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 Cc: Thibaut VARENE <T-Bone@parisc-linux.org>, Antonino Daplas <adaplas@pol.net>, Ben Dooks <ben-linux-arm@fluff.org>
 
+On Mon, 14 Mar 2005, Paul Mundt wrote:
+> On Mon, Mar 14, 2005 at 08:15:13PM +0800, Antonino A. Daplas wrote:
+> > 3. You can use pci_resource_len()/pci_resource_start() instead of
+> > 
+> > +	info->fix.mmio_start = pdev->resource[1].start;
+> > +	info->fix.mmio_len = pdev->resource[1].end - pdev->resource[1].start;
 
---ZoaI/ZTpAVc4A5k6
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
++1?
 
-On Mon, Mar 14, 2005 at 08:15:13PM +0800, Antonino A. Daplas wrote:
-> 3. You can use pci_resource_len()/pci_resource_start() instead of
->=20
-> +	info->fix.mmio_start =3D pdev->resource[1].start;
-> +	info->fix.mmio_len =3D pdev->resource[1].end - pdev->resource[1].start;
-> +	info->fix.smem_start =3D pdev->resource[0].start;
-> +	info->fix.smem_len =3D pdev->resource[0].end - pdev->resource[0].start;
-> +
->=20
-No, the pdev here refers to a platform device, not a pci device.
+> > +	info->fix.smem_start = pdev->resource[0].start;
+> > +	info->fix.smem_len = pdev->resource[0].end - pdev->resource[0].start;
 
-While the pci_resource_xxx() routines would still technically do the
-right thing, this is purely coincidental.
++1?
 
---ZoaI/ZTpAVc4A5k6
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+> > +
+> > 
+> No, the pdev here refers to a platform device, not a pci device.
+> 
+> While the pci_resource_xxx() routines would still technically do the
+> right thing, this is purely coincidental.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.6 (GNU/Linux)
+Nah, they would work better here, since they do include the +1 ;-)
 
-iD8DBQFCNY8v1K+teJFxZ9wRAsSWAJ9XVlQx8t8585+AxQeI4FcXrXjaDwCZAe8P
-6FNb7oERROKPmdhlPtMFkUM=
-=i40d
------END PGP SIGNATURE-----
+Gr{oetje,eeting}s,
 
---ZoaI/ZTpAVc4A5k6--
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

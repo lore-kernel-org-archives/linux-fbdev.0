@@ -1,25 +1,23 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: Is framebufer driver a replacement for video driver?
-Date: Fri, 5 Nov 2004 04:49:12 +0800
-Message-ID: <200411050449.14468.adaplas@hotpop.com>
-References: <4EE0CBA31942E547B99B3D4BFAB348111ECB1B@mail.esn.co.in>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] fbdev: workaround for broken X
+	servers
+Date: Fri, 05 Nov 2004 16:49:36 +1100
+Message-ID: <1099633776.9260.160.camel@gaston>
+References: <1099448020.900.25.camel@gaston>  <20041103032613.GA3677@sci.fi>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CPoY3-0006K6-1j
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 Nov 2004 12:49:35 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CPoY0-0004LL-8z
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 Nov 2004 12:49:34 -0800
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 9DF479A8688
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu,  4 Nov 2004 20:49:19 +0000 (UTC)
-In-Reply-To: <4EE0CBA31942E547B99B3D4BFAB348111ECB1B@mail.esn.co.in>
-Content-Disposition: inline
+	id 1CPx7U-0002XW-4L
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 Nov 2004 21:58:44 -0800
+Received: from gate.crashing.org ([63.228.1.57])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1CPx7T-0001Nz-Ig
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 Nov 2004 21:58:44 -0800
+In-Reply-To: <20041103032613.GA3677@sci.fi>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,58 +29,41 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, "Mukund JB." <mukundjb@esntechnologies.co.in>
-Cc: tonnerre@thundrix.ch
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: "Antonino A. Daplas" <adaplas@hotpop.com>, Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
 
-On Friday 05 November 2004 00:29, Mukund JB. wrote:
-> Hi all,
->
-> I have a small query. I may be silly, but please help by make it clear.
->
-> Framebuffer definition :-
->
-> The frame buffer device provides an abstraction for the graphics
-> hardware. It represents the frame buffer of some video hardware and
-> allows application software to access the graphics hardware through a
-> well-defined interface, so the software doesn't need to know anything
-> about the low-level (hardware register) stuff.
->
-> Does a framebuffer driver directly interact with the hardware registers
-> of the video card?
 
-Yes.
+> > Index: linux-work/drivers/video/fbmem.c
+> > ===================================================================
+> > --- linux-work.orig/drivers/video/fbmem.c	2004-10-26 13:15:55.000000000 +1000
+> > +++ linux-work/drivers/video/fbmem.c	2004-11-03 13:10:41.324932256 +1100
+> > @@ -748,6 +748,10 @@
+> >  	u16 *black = NULL;
+> >  	int err = 0;
+> >  	
+> > +	/* Workaround for broken X servers */
+> > +	if (blank > VESA_POWERDOWN)
+> > +		blank = VESA_POWERDOWN;
+> > +
+> >  	if (info->fbops->fb_blank && !info->fbops->fb_blank(blank, info))
+> >  		return 0;
+> >  
+> 
+> This goes against documented behaviour (see fb.h). Also drivers/char/vt.c 
+> seems to agree with fb.h, as do at least atyfb and matroxfb. I also used 
+> the vesa level+1 convention in DirectFB. So AFAICS this patch would 
+> confuse console power management, XFree86/X.Org, DirectFB and some fb 
+> drivers.
 
-> 					or
->
-> Is there a generic low level driver that will interact with the
-> hardware?
+Ok, can we agree here on what has to be done ? X is hard-coding numbers
+that don't seem to be make any sense vs. our constants. In radeonfb, I
+used switch case on constants, not +1, so there is something I'm not
+getting. Besides, radeon always try to power down TFT panels when
+blank != 0, maybe I should improve that ... What is this +1 thing, where
+does it comes from ?
 
-Yes and No. Yes, because there are platform drivers that may work with
-many cards (VESA, VGA16, OF).  You can consider them as generic.
+Ben.
 
-However, the hardware specific specific driver will work only with a
-particular chipset.
-
->
-> What happens when I say startx at command prompt with XF86Config-4 file
-> configured for framebuffer driver?
->
-> Is it like, When I say startx with XF86Config-4 file configured for
-> framebuffer driver, the video we get is a result of X server using the
-> framebuffer driver directly? Right?
->
-
-Yes.
-
-> In this case, Is there a video driver involved in getting the video
-> apart from the framebuffer driver?
->
-
-The framebuffer driver itself touches the hardware, and usually it's one
-driver per chipset.  However, the interface that is used by the application
-is standard.
-
-Tony
 
 
 

@@ -1,21 +1,21 @@
 From: John Zielinski <grim@undead.cc>
 Subject: Re: [PATCH] neofb patches
-Date: Tue, 27 Apr 2004 21:21:43 -0400
+Date: Tue, 27 Apr 2004 21:39:45 -0400
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <408F0727.9030906@undead.cc>
-References: <Pine.LNX.4.44.0404280019070.23153-100000@phoenix.infradead.org> <408EF0D9.6000403@undead.cc> <20040428002919.GG22495@guug.org>
+Message-ID: <408F0B61.5090806@undead.cc>
+References: <Pine.LNX.4.44.0404280019070.23153-100000@phoenix.infradead.org>	 <408EF0D9.6000403@undead.cc> <1083109849.20091.1.camel@gaston>	 <408EFD18.7070702@undead.cc> <1083112862.20474.14.camel@gaston>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BIdlm-0005iB-8r
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 18:21:50 -0700
-Received: from mail.undead.cc ([216.126.84.18])
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1BIdll-0005iY-SU
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 18:21:49 -0700
-In-Reply-To: <20040428002919.GG22495@guug.org>
+	id 1BIe3H-0000Jm-B4
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 18:39:55 -0700
+Received: from ns2.undead.cc ([216.126.84.18] helo=mail.undead.cc)
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
+	id 1BIe3G-0002In-Rc
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 27 Apr 2004 18:39:54 -0700
+In-Reply-To: <1083112862.20474.14.camel@gaston>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,28 +26,43 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Otto Solares <solca@guug.org>
-Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: James Simmons <jsimmons@infradead.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Alex Stewart <alex@foogod.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Otto Solares wrote:
+Benjamin Herrenschmidt wrote:
 
->I was wondering if it is possible currently (kernel 2.6.5) to
->have 2 differents video cards in 2 differents VCs and in 2
->differents fbdev's.  I have an old trident pci card and one
->radeon agp card.  I want to run X (Xfbdev) in the trident one
->and mesa-solo in the radeon one, is that possible? how?
+>You don't need a /dev/fb for that do you ? You need to map the current
+>vt to it's fb via the existing fbdev ioctls, isn't that possible ? (just
+>asking , I've never actually done that).
+>
 >  
 >
+But how does the app find this out?  It would have to figure out if it's 
+running on a real console then figure out which console is mapped to 
+which fb and then try to find out which /dev/fbx device points to that 
+fb.  Programmer's are lazy, they'll just make it a command line switch 
+to specify what device to use which is not very user friendly.
 
-That's what I'm currently working on and is partially what's behind my 
-messages about multiple vars and whatnot.  It looks like most of the 
-stuff is already in the kernel.  I'm just going through the various 
-subsystems trying to figure out what still needs to be changed.  One 
-things is the the vt driver's notion of which vt is visible.  Currently 
-that's fg_console == visible but with multiple monitors that doesn't 
-hold true.
+What I'm proposing is that you open /dev/fb.  If it fails you're running 
+on a serial line or shh or whatever.  If it succedes you issue 
+KD_GRAPHICS ioctl on the /dev/fb device and that's it.  Very simple for 
+the programmer.
 
-I'll post when I succeed.  :)
+The kernel does all the work.  It figures out what vt you're on and 
+prevents access from serial or a pty.  It also would figure out which 
+framebuffer device to connect to based on the con2fb map specified by 
+the fbdev ioctls.  It would pass the KD_TEXT/KD_GRAPHICS calls to the 
+appropriate vt.
+
+This makes it very user friendly.  The user just switches to the vt 
+that's on the moitor they want and starts the app.  The kernel figures 
+out how to route this to the appropriate fb driver according to the 
+con2fb map.
+
+I might also be possible to use /dev/tty as the starting point if you 
+want to make everything start at the vt layer and work down.   The fb 
+ioctls would just have to be passed down.  Once a KD_GRAPHICS was issued 
+on /dev/tty then read/write/mmap would pass down to the fb layer as well. 
 
 John
 

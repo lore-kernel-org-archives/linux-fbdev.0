@@ -1,23 +1,21 @@
-From: Richard Smith <rsmith@bitworks.com>
+From: James Simmons <jsimmons@infradead.org>
 Subject: Re: Re: Usage of readb() and friends...
-Date: Wed, 03 Mar 2004 17:22:54 -0600
+Date: Wed, 3 Mar 2004 23:33:32 +0000 (GMT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <404668CE.1020504@bitworks.com>
-References: <Pine.LNX.4.44.0403032254230.30666-100000@phoenix.infradead.org>
-Reply-To: rsmith@bitworks.com
+Message-ID: <Pine.LNX.4.44.0403032331140.30666-100000@phoenix.infradead.org>
+References: <404668CE.1020504@bitworks.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Ayfux-0004M5-S2
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Mar 2004 15:36:47 -0800
-Received: from b44.xdsl.pgtc.com ([198.70.248.44] helo=bitworks.com)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1Ayfhm-0003Sb-VL
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Mar 2004 15:23:11 -0800
-Received: from bitworks.com [192.168.1.22] by bitworks.com [127.0.0.1] with SMTP (MDaemon.v2.7.SP4.R) for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 03 Mar 2004 17:22:30 -0600
-In-Reply-To: <Pine.LNX.4.44.0403032254230.30666-100000@phoenix.infradead.org>
+	id 1Ayg53-00074T-6t
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Mar 2004 15:47:13 -0800
+Received: from phoenix.infradead.org ([213.86.99.234])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.30)
+	id 1Ayfrs-0005Tz-46
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Mar 2004 15:33:36 -0800
+In-Reply-To: <404668CE.1020504@bitworks.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,34 +25,34 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Richard Smith <rsmith@bitworks.com>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-James Simmons wrote:
 
->>
->>1) How big of a drive to you have to have?  I've got some 4 gigers I can 
->>donate.
+> > The driver that died was 9 Gigs. 
 > 
-> The driver that died was 9 Gigs. 
+> Ok. But do you _have_ to have that much.  Will 4 get you going? Or if 
+> you can do multiple drives I have a few you could raid them or lvm them 
+> into a big drive.
 
-Ok. But do you _have_ to have that much.  Will 4 get you going? Or if 
-you can do multiple drives I have a few you could raid them or lvm them 
-into a big drive.
+No problem. Th reason for such a big drive before was it was a SuSE 
+distro. like most distors they throw everything including the kitchen sink 
+at you. I was use a debian system which I would strip down. I have no 
+problem doing mulitple drives. LVM is really cool :-)
 
->>2) Do you have any way to use SCA drives?
+
+> >>2) Do you have any way to use SCA drives?
+> > 
+> > Its a older (4 years old) machine with built in Ultra Wide 2 scsi support. 
+> > Its 68 pin. I believe my mother board supports 80 pin as well. I have to 
+> > look.
 > 
-> Its a older (4 years old) machine with built in Ultra Wide 2 scsi support. 
-> Its 68 pin. I believe my mother board supports 80 pin as well. I have to 
-> look.
+> Unless you have a RAID backplane in your setup I doubt you motherboard 
+> does SCA (80-pin) devices.  Nice if so then nice motherboard.
 
-Unless you have a RAID backplane in your setup I doubt you motherboard 
-does SCA (80-pin) devices.  Nice if so then nice motherboard.
-
--- 
-Richard A. Smith
-rsmith@bitworks.com
-
+I don't think so then.
 
 
 

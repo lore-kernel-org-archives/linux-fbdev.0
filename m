@@ -1,25 +1,20 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [PATCH] Cleanup of intelfb code
-Date: Thu, 4 Nov 2004 17:08:54 +0800
-Message-ID: <200411041708.55104.adaplas@hotpop.com>
-References: <200411041647.41604.adaplas@hotpop.com> <20041104005747.427811ee.akpm@osdl.org>
+From: "Mukund JB." <mukundjb@esntechnologies.co.in>
+Subject: Is framebufer driver a replacement for video driver?
+Date: Thu, 4 Nov 2004 21:59:29 +0530
+Message-ID: <4EE0CBA31942E547B99B3D4BFAB348111ECB1B@mail.esn.co.in>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CPdcI-0004Pz-L1
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 Nov 2004 01:09:14 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1CPdcD-0006Wc-Ga
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 Nov 2004 01:09:14 -0800
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 254019AB5E0
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu,  4 Nov 2004 09:08:56 +0000 (UTC)
-In-Reply-To: <20041104005747.427811ee.akpm@osdl.org>
-Content-Disposition: inline
+	id 1CPkSr-0002RE-Hd
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 Nov 2004 08:27:57 -0800
+Received: from [202.125.86.130] (helo=ns2.astrainfonets.net)
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1CPkSp-0001lD-Lq
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 Nov 2004 08:27:57 -0800
+Content-class: urn:content-classes:message
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,34 +26,43 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>, adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, sylvain.meyer@worldonline.fr
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: adaplas@hotpop.com, tonnerre@thundrix.ch
 
-On Thursday 04 November 2004 16:57, Andrew Morton wrote:
-> "Antonino A. Daplas" <adaplas@hotpop.com> wrote:
-> > +	if (ACCEL(dinfo, info)) {
-> >  +		info->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN |
-> >  +		FBINFO_HWACCEL_COPYAREA | FBINFO_HWACCEL_FILLRECT |
-> >  +		FBINFO_HWACCEL_IMAGEBLIT;
-> >  +	} else {
-> >  +		info->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
-> >  +	}5 files changed, 113 insertions(+), 474 deletions(-)
-> >
-> >   	return 0;
-> >   }
->
-> erk, what happened there?
->
 
-Wrong cursor position, sorry.
+Hi all,
 
-> I have Sylvain's priginal patch - is this in any way different?
+I have a small query. I may be silly, but please help by make it clear.
 
-Not much, Sylvain's original patch should be okay.  I just added
-a more comprehensive changelog.
+Framebuffer definition :-
 
-Tony
+The frame buffer device provides an abstraction for the graphics
+hardware. It represents the frame buffer of some video hardware and
+allows application software to access the graphics hardware through a
+well-defined interface, so the software doesn't need to know anything
+about the low-level (hardware register) stuff.
 
+Does a framebuffer driver directly interact with the hardware registers
+of the video card?=20
+					or=20
+
+Is there a generic low level driver that will interact with the
+hardware?
+
+What happens when I say startx at command prompt with XF86Config-4 file
+configured for framebuffer driver?
+
+Is it like, When I say startx with XF86Config-4 file configured for
+framebuffer driver, the video we get is a result of X server using the
+framebuffer driver directly? Right?
+
+In this case, Is there a video driver involved in getting the video
+apart from the framebuffer driver?
+
+Thanks for the linux society for the continues support.
+
+Regards,
+Mukund jampala
 
 
 

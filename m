@@ -1,17 +1,18 @@
 From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: rotation.
-Date: 09 Jan 2003 00:56:11 +0800
+Subject: Re: [PATCH][FBDEV]: fb_putcs() and fb_setfont()
+	methods
+Date: 09 Jan 2003 02:19:51 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1042044916.1003.144.camel@localhost.localdomain>
-References: <Pine.LNX.4.44.0301072240530.17129-100000@phoenix.infradead.org>
+Message-ID: <1042050026.982.172.camel@localhost.localdomain>
+References: <Pine.GSO.4.21.0301081142190.21171-100000@vervain.sonytel.be>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from willow.compass.com.ph ([202.70.96.38])
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18WJgG-0008Gf-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 08 Jan 2003 09:07:52 -0800
-In-Reply-To: <Pine.LNX.4.44.0301072240530.17129-100000@phoenix.infradead.org>
+	id 18WKzF-0005xQ-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 08 Jan 2003 10:31:33 -0800
+In-Reply-To: <Pine.GSO.4.21.0301081142190.21171-100000@vervain.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,49 +23,63 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: James Simmons <jsimmons@infradead.org>, Petr Vandrovec <vandrove@vc.cvut.cz>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel List <linux-kernel@vger.kernel.org>
 
-On Wed, 2003-01-08 at 06:44, James Simmons wrote:
+On Wed, 2003-01-08 at 18:47, Geert Uytterhoeven wrote:
+> On Tue, 7 Jan 2003, James Simmons wrote:
+> > > Why? (a) only those which will use putcs, and (b) I see no 512 chars limit
+> > > anywhere in new code. And in old code it is there only because of passed
+> > > data are only 16bit, not 32bit wide... With simple search&replace you can
+> > > extend it to any size you want, as long as you'll not use sparse font
+> > > bitmap.
+> > 
+> > The current "core" console code screen_buf layout is designed after VGA 
+> > text mode. 16 bits which only 8 bits are used to represent a character, 9 
+> > if you have high_fonts flag set. The other 8,7 bits are for attributes. 
+> > This is very limiting and it does effect fbcon.c :-( I like to the console
+> > system remove these awful limitation in the future. This why I like to see 
+> > fbdev drivers avoid touching strings from the console layer.
 > 
-> I'm about to implement rotation which is needed for devices like the ipaq. 
-> The question is do we flip the xres and yres values depending on the 
-> rotation or do we just alter the data that will be drawn to make the 
-> screen appear to rotate. How does hardware rotate view the x and y axis?
-> Are they rotated or does just the data get rotated? 
+> Please note that Tony's new accel_putcs() code uses __u32 to pass the character
+> indices.  So it's not limited to 256/512 characters per font. Fonts can be as
+> large as you want. Sparse fonts can be handled as well, if accel_putcs() takes
+> care of the conversion from sparse character indices to dense character
+> indices.
 > 
+> His code can be viewed as a way to do multiple monochrome to color expansions
+> with one single call, using a predefined table of patterns. Quite generic,
+> unless you want to have multi-color fonts later :-)
+> 
+:-) I did not want prolong the discussion, but...
 
-If the graphics card has hardware support for rotation, then there is
-nothing to be done.  It's the job of the driver if it wants to rotate
-the display or not.  This is similar to video overlay mirroring.  What
-the user app sees is the framebuffer in "normal" orientation, but what
-gets displayed is mirrored.
+Geert is correct that the functions are generic. The fb_putcs() and
+fb_setfont() can be compared to Tile blitting.  Tile blitting is a
+common operation in some games such as Warcraft, Starcraft, and most
+RPG's. I'm think there is Tile Blitting support in DirectFB.
 
-However, as Geert mentioned, if you want to support rotation
-generically, then you have to do it in the fbcon level.  The driver need
-not know if the display is rotated or not.  All it needs to do is fill a
-region with color, color expand a bitmap and move blocks of data, and
-optionally 'pan' the window.  Fbcon will pass the correct (ie, oriented)
-information for the driver.
+In a tile-based game, the basic unit is a Tile which is just a bitmap
+with a predefined width and height. The game has several tiles stored in
+memory each with it's own unique id.  To draw the background/layer, a
+TileMap is constructed which is basically another array.  Its format is
+something like this -  TileMap[x] = y which means draw Tile y at screen
+position x.
 
-This will not be too processor intensive as long as some data is
-prepared beforehand, like a rotated fontdata.
+In the fbcon perspective, we can think of each character as a Tile, and
+fontdata as the collection of tiles. fb_char.data is basically a
+TileMap.  Of course, tile blitting in games is more complicated than
+this, since games have multiple layers for the background, so layer
+position, transparency, etc has to be considered.
 
-The main difficulty with this approach is how do you tell the console to
-rotate the display?  We cannot use fbset because the changes will not be
-visible to fbcon. 
+So maybe if we can rename fb_putcs() to fb_tileblit(), fb_setfont() to
+fb_loadtiles(), struct fb_chars to struct fb_tilemap and struct
+fb_fontdata to struct fb_tiledata, maybe it will be more acceptable?
 
-I submitted a patch before (see fbdev archives for "Console Rotation"
-thread) that rotates the console this way.  I had vga16fb, vesafb, and
-i810fb rotate the display without any driver code change. Display
-panning was also supported.
-
-However, because we use mmap to expose the framebuffer memory, we will
-not be able to completely support rotation for user applications.  They
-have to do it on their own.
-
+It can be even be expanded by including fb_tiledata.depth
+fb_tiledata.cmap so we can support multi-colored tiled blitting.
 
 Tony
+
 
 
 

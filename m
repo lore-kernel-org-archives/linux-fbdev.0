@@ -1,35 +1,60 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH]: EDID parser
-Date: 03 Apr 2003 00:20:54 +0200
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <1049322054.578.3.camel@zion.wanadoo.fr>
-References: <Pine.LNX.4.44.0304022245520.2488-100000@phoenix.infradead.org>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: Kernel oops with current fbdev code
+Date: Wed, 2 Apr 2003 23:32:18 +0100 (BST)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.LNX.4.44.0304022331470.3919-100000@phoenix.infradead.org>
+References: <3E705C13.7000103@winischhofer.net>
 Mime-Version: 1.0
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from phoenix.mvhi.com ([195.224.96.167] helo=phoenix.infradead.org)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 190qms-0000RT-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 02 Apr 2003 14:32:55 -0800
+In-Reply-To: <3E705C13.7000103@winischhofer.net>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.44.0304022245520.2488-100000@phoenix.infradead.org>
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Petr <vandrove@vc.cvut.cz>
+To: Thomas Winischhofer <thomas@winischhofer.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net
 
 
-> Let really good. I applied it to my local tree but haven't passed it to BK 
-> fbdev yet. The only thing I like to see changed is get_EDID. At present it 
-> accepts a struct pci_dev. Now for generic support for the intel platform 
-> we can get this from the BIOS. You already have a patch that does this. 
-> It doesn't need a struct pci_dev in this case. It is possible to get this 
-> info from the i2c bus but I never seen any drivers do this. What data would
-> we have to pass in get the EDID inforamtion? So the question is how 
-> generic will get_EDID end up being or will we have to have driver specfic 
-> hooks since I don't pitcure i2c approaches being the same for each video 
-> card. Petr didn't you attempt this with the matrox driver at one time?
+> James, Tony, list,
+> 
+> the SiS X driver tries to communicate with sisfb during server startup. 
+> This is done by fopen()-ing "/dev/fb0" through "/dev/fb7". If the open 
+> succeeds, a SiS-specific ioctl is done, which is checked to originate 
+> from sisfb and eventually processed. (This is by the way the same way 
+> the fbdev X driver probes for available framebuffer devices.)
+> 
+> If no framebuffer is available, the fopen()-calls usually fail. If 
+> another framebuffer (other than sisfb) is answering, the ioctl either 
+> fails or does not identify correctly. So far so good.
+> 
+> Under 2.5.63 and 2.5.64 (haven't tried older 2.5 kernels), no matter 
+> whether using James' latest patch or not, the fopen()-call causes an 
+> Oops as soon as "/dev/fb3" is probed.
+> 
+> Without having looked at the relevant code, I suspect it something to do 
+> with the strange fact, that /dev/fbX is not "translated" to fbX as in 
+> 2.4, but fb0, fb32, fb64 - and at fb128 (which is logically the 
+> "translation" of /dev/fb3) it goes boom.
 
-get_EDID() has to be a driver specific hook
+I have a fix in the fbdev BK tree. It will be pushed to linus soon.
 
-EDID via BIOS is a way to get it, BIOS emulation in userland is another,
-on PPC, I can retreive it from the firmware device-tree in a different
-way with some cards, and finally, I plan to implement i2c sooner or
-later with some drivers...
 
-Ben.
+
+
+-------------------------------------------------------
+This SF.net email is sponsored by: ValueWeb: 
+Dedicated Hosting for just $79/mo with 500 GB of bandwidth! 
+No other company gives more support or power for your dedicated server
+http://click.atdmt.com/AFF/go/sdnxxaff00300020aff/direct/01/

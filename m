@@ -1,25 +1,25 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
 Subject: Re: Re: [Question] Colour management
-Date: Sun, 1 Aug 2004 07:47:43 +0800
+Date: Sun, 1 Aug 2004 09:03:43 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200408010747.43233.adaplas@hotpop.com>
-References: <20040722184937.GA11361@sci.fi> <200407311826.27332.adaplas@hotpop.com> <20040731221858.GA17721@sci.fi>
+Message-ID: <200408010903.43998.adaplas@hotpop.com>
+References: <20040722184937.GA11361@sci.fi> <200407302012.36325.alex.kern@gmx.de> <20040731221014.GA17669@sci.fi>
 Reply-To: adaplas@pol.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Br3b5-0005iw-J5
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 31 Jul 2004 16:49:03 -0700
-Received: from smtp-out3.hotpop.com ([38.113.3.71] helo=twix.hotpop.com)
+	id 1Br4mF-00077m-EA
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 31 Jul 2004 18:04:39 -0700
+Received: from babyruth.hotpop.com ([38.113.3.61])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
-	id 1Br3b5-0001Je-2V
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 31 Jul 2004 16:49:03 -0700
+	id 1Br4mF-0007LG-3N
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 31 Jul 2004 18:04:39 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by twix.hotpop.com (Postfix) with SMTP id 514F41039429
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 31 Jul 2004 23:25:27 +0000 (UTC)
-In-Reply-To: <20040731221858.GA17721@sci.fi>
+	by babyruth.hotpop.com (Postfix) with SMTP id AECD1748FE6
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun,  1 Aug 2004 00:13:28 +0000 (UTC)
+In-Reply-To: <20040731221014.GA17669@sci.fi>
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -33,40 +33,41 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: text/plain; charset="iso-8859-1"
 To: Ville =?iso-8859-1?q?Syrj=E4l=E4?= <syrjala@sci.fi>, linux-fbdev-devel@lists.sourceforge.net
 
-On Sunday 01 August 2004 06:18, Ville Syrj=E4l=E4 wrote:
-> On Sat, Jul 31, 2004 at 06:26:27PM +0800, Antonino A. Daplas wrote:
-> > On Saturday 31 July 2004 02:12, Alexander Kern wrote:
-> > > Hallo Tony,
-> > >
-> > > can you explain the deep mining of fb_setcolreg. Background, I observe
-> > > wrong palette using in 15 and 16 bpp modes, but can not understand,
-> > > what is the right approach. In both cases from penguin logo I can see
-> > > only contour in honey yellow and blue vertical string jsimmons, pretty
-> > > scury ;-) The rest is black! The simple text or ncurses applications
-> > > have always right colours. Additionally and only by 16bpp fbi shows
-> > > blurry images. In 15bpp fbi works fine. fbtest works fine and his
-> > > penguins look good in all resolutions ?!
+On Sunday 01 August 2004 06:10, Ville Syrj=E4l=E4 wrote:
+> On Fri, Jul 30, 2004 at 08:12:36PM +0200, Alexander Kern wrote:
+> > Hallo Tony,
 > >
-> > This will need a long answer. (For mistakes or ommisions, please let me
-> > know)
-> >
-> > fb_setcolreg has 2 functions, initialize info->pseudopalette (if needed)
-> > and initialize the hardware CLUT (if needed).
+> > can you explain the deep mining of fb_setcolreg. Background, I observe
+> > wrong palette using in 15 and 16 bpp modes, but can not understand, what
+> > is the right approach. In both cases from penguin logo I can see only
+> > contour in honey yellow and blue vertical string jsimmons, pretty scury
+> > ;-) The rest is black! The simple text or ncurses applications have
+> > always right colours. Additionally and only by 16bpp fbi shows blurry
+> > images.
 >
-> BTW fb_setcolreg ends up writing half of the registers twice (more if you
-> have to fill all slots). It might be better to have two functions. The
-> first one would be the current fb_setcolreg except it wouldn't actually
-> write anything. It would only fill in the correct register values. And the
-> second one would write the clut to hardware. That would avoid the multiple
-> writes.
+> I just had a look at the fbi code and it's wrong. It was initializing the
+> clut to 555. The attached patch fixes the problem.
 
-Yes, we also need to separate the imageblit into a mono_src_color_expand
-(for text drawing) and an 8_bit_src_color_expand (for the logo).  Both prop=
-osals
-will affect all drivers so let's leave it as is for now (unless you want to=
- risk
-the ire again of the fbdev driver maintainers, they're a bit touchy from the
-numerous breakages of the API :-)
+I know that this is just a test patch but instead of hardwiring the paramet=
+ers=20
+of linear_palette, why not do:
+
+linear_palette(var.red.length, var.green.length, var.blue.length)
+
+This way you can catch unusual RGB combinations (ie, RGB484, if there is su=
+ch=20
+a thing) and still get correct colors.  You can also eliminate the switch()=
+=20
+statement, and makes it easier to catch fbdev bugs.
+
+>
+> I think the boot logo code is broken. No, I haven't actually looked at it
+> but everything else works... Or does it work on some other directcolor hw?
+
+Yes, the logo code is broken, not the drawing code itself, but the logo=20
+choosing code. As I've mentioned in another thread, 16-bit directcolor cann=
+ot=20
+draw 224-color logos.
 
 Tony
 

@@ -1,20 +1,13 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
+From: Kronos <kronos@people.it>
 Subject: Re: New kernel API for ROMs
-Date: Sat, 7 Aug 2004 07:59:29 -0700 (PDT)
+Date: Sat, 7 Aug 2004 18:37:33 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040807145929.77135.qmail@web14923.mail.yahoo.com>
-References: <Pine.GSO.4.58.0408071515350.3475@waterleaf.sonytel.be>
+Message-ID: <20040807163733.GD3714@dreamland.darkstar.lan>
+References: <Pine.GSO.4.58.0408071515350.3475@waterleaf.sonytel.be> <20040807145929.77135.qmail@web14923.mail.yahoo.com>
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BtSfS-0005Tq-Ak
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 07 Aug 2004 07:59:30 -0700
-Received: from web14923.mail.yahoo.com ([216.136.225.7])
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.34)
-	id 1BtSfR-0006Vj-SB
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 07 Aug 2004 07:59:30 -0700
-In-Reply-To: <Pine.GSO.4.58.0408071515350.3475@waterleaf.sonytel.be>
+Content-Disposition: inline
+In-Reply-To: <20040807145929.77135.qmail@web14923.mail.yahoo.com>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,108 +19,42 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: dri-devel <dri-devel@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Jon Smirl <jonsmirl@yahoo.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, dri-devel <dri-devel@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-Maximum size of a standard PCI ROM is 128KB.  On non-x86 platforms the
-code will pick the length up from the size of the PCI window. That
-window has no limit.
+Il Sat, Aug 07, 2004 at 07:59:29AM -0700, Jon Smirl ha scritto: 
+> *This message was transferred with a trial version of CommuniGate(tm) Pro*
+> Maximum size of a standard PCI ROM is 128KB.
 
-On the other hand, map_rom_copy is only called by the device driver for
-a board that has minimal PCI decoding. The PCI spec allows the address
-decoding for something like the ROM and framebuffer to be shared. A few
-vendors have implemented this and the result is that you can't read the
-ROM and framebuffer at the same time. This is why you need to make the
-copy.  We only know of a couple PCI boards that have implemented this.
+This is the maximun that kmalloc can allocate.
 
-This memory is not performance critical and can be swapped, is there a
-better way to allocate it?
+> On non-x86 platforms the code will pick the length up from the size of
+> the PCI window. That window has no limit.
 
---- Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+Hum, this is bad... what's the tipical size of video ROMs?
 
-> On Fri, 6 Aug 2004, Jon Smirl wrote:
+> On the other hand, map_rom_copy is only called by the device driver for
+> a board that has minimal PCI decoding. The PCI spec allows the address
+> decoding for something like the ROM and framebuffer to be shared. A few
+> vendors have implemented this and the result is that you can't read the
+> ROM and framebuffer at the same time. This is why you need to make the
+> copy.  We only know of a couple PCI boards that have implemented this.
 > 
-> > This patch provides a new kernel API for access ROMs from device
-> > drivers. If you're working on a driver that uses the ROM (most
-> video
-> > drivers) please give this patch a try and send some feedback/bugs.
-> >
-> > pci_map_rom() - map the rom and provide virtual address,
-> transparently
-> > return shadow/copy if needed. Normal drivers call this
-> >
-> > pci_map_rom_copy() - same as pci_map_rom except the ROM will
-> copied,
-> > future reads of ROM will use copy. Hardware with minimal decoding
-> calls
-> > use this
-> >
-> > pci_unmap_rom() - release the ioremap if there is one
-> >
-> > The ROMs also appear in sysfs and you can use hexdump to see them.
-> >
-> > If the Radeon ROM is all FFFF. Load a radeon device driver and it
-> will
-> > appear. Radeon cards have a bug that loading the driver will fix.
-> 
-> > +unsigned char *
-> > +pci_map_rom_copy(struct pci_dev *dev, size_t *size) {
-> > +	struct resource *res = &dev->resource[PCI_ROM_RESOURCE];
-> > +	unsigned char *rom;
-> > +
-> > +	rom = pci_map_rom(dev, size);
-> > +	if (!rom)
-> > +		return NULL;
-> > +
-> > +	if (res->flags & (PCI_ROM_COPY | PCI_ROM_SHADOW))
-> > +		return rom;
-> > +
-> > +	res->start = (unsigned long)kmalloc(*size, GFP_KERNEL);
-> 
-> What's the maximum size of a PCI ROM? Larger than kmalloc() can
-> handle?
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 --
-> geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a
-> hacker. But
-> when I'm talking to journalists I just say "programmer" or something
-> like that.
-> 							    -- Linus Torvalds
-> 
-> 
-> -------------------------------------------------------
-> This SF.Net email is sponsored by OSTG. Have you noticed the changes
-> on
-> Linux.com, ITManagersJournal and NewsForge in the past few weeks?
-> Now,
-> one more big change to announce. We are now OSTG- Open Source
-> Technology
-> Group. Come see the changes on the new OSTG site. www.ostg.com
-> --
-> _______________________________________________
-> Dri-devel mailing list
-> Dri-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/dri-devel
-> 
+> This memory is not performance critical and can be swapped, is there a
+> better way to allocate it?
 
-=====
-Jon Smirl
-jonsmirl@yahoo.com
+Problem is that kmalloc may be unable to find many contiguous memory
+pages.
 
+You can check and see if the ROM is really big and use vmalloc, if not
+then you use kmalloc (if I remember correctly my radeon has a 4KB ROM -
+vmalloc would be overkill).
 
-	
-		
-__________________________________
-Do you Yahoo!?
-New and Improved Yahoo! Mail - 100MB free storage!
-http://promotions.yahoo.com/new_mail 
+Luca
+-- 
+Home: http://kronoz.cjb.net
+Ci sono due cose che l'uomo non puo` nascondere:
+essere ubriaco ed essere innamorato.
 
 
 -------------------------------------------------------

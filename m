@@ -1,21 +1,22 @@
-From: Otto Solares <solca@guug.org>
-Subject: Re: fbdv/fbcon pending problems
-Date: Tue, 24 Feb 2004 21:15:53 -0600
+From: Stuart Young <sgy-lkml@amc.com.au>
+Subject: Re: Re: fbdv/fbcon pending problems
+Date: Wed, 25 Feb 2004 18:14:50 +1100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040225031553.GC17390@guug.org>
-References: <20040224214106.GA17390@guug.org> <Pine.LNX.4.44.0402250118210.24952-100000@phoenix.infradead.org>
+Message-ID: <200402251812.26624.sgy-lkml@amc.com.au>
+References: <1077497593.5960.28.camel@gaston> <200402241657.37382.sgy-lkml@amc.com.au> <Pine.GSO.4.58.0402240935390.3187@waterleaf.sonytel.be>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Avpem-0001y0-FM
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 19:24:20 -0800
-Received: from guug.galileo.edu ([168.234.203.30])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1AvpJc-0004YF-G6
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 19:02:28 -0800
+	id 1AvtOo-00042L-Gx
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 23:24:06 -0800
+Received: from mail1.amc.com.au ([203.15.175.2])
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.30)
+	id 1Avt3O-00066q-2d
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Feb 2004 23:01:58 -0800
+In-Reply-To: <Pine.GSO.4.58.0402240935390.3187@waterleaf.sonytel.be>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44.0402250118210.24952-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -26,98 +27,65 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
 
-On Wed, Feb 25, 2004 at 01:21:39AM +0000, James Simmons wrote:
-> > On the other side i see a lot of effort in the fbdev acceleration,
-> > it is nice but that effort should be better spent on fixing the layer,
-> > imo, the only user for acceleration is fbcon, any userland app that
-> > use fbdev disables that acceleration so it can map the vmem and ioregs,
-> > and do it's own voodoo if it wants acceleration.  That acceleration
-> > is not "exported" to user space.  I am working in a open source project
-> > that uses mesa-solo with fbdev and many limitations from the layer
-> > itself have been seen.
-> 
-> That is true so far for fillrect and copyarea functions. Imageblit will be 
-> used for read and writes on /dev/fbX. Also it is used for software 
-> cursors. 
+On Tue, 24 Feb 2004 07:36 pm, Geert Uytterhoeven wrote:
+> On Tue, 24 Feb 2004, Stuart Young wrote:
+> > On Mon, 23 Feb 2004 11:53 am, Benjamin Herrenschmidt wrote:
+> > >  - Logo problems. When booting with a logo, then going to getty, the
+> > > logo doesn't get erased until we actually switch to another console (or
+> > > reset the console). At this point, using things like vi & scrolling up
+> > > doesn't work properly. Actually, last time I tried, I had to switch
+> > > back & forth twice before my console that had the logo got fully
+> > > working with vi.
+> >
+> > If it's possible to unlock this region so that it scrolls again from
+> > userspace (ie: not resetting/clearing it, just unlocking it), then it's
+> > just a simple matter of checking wether the current console is an fb
+> > device, and if it is, making it unlock the scrolling region. In Debian,
+> > this could be done in /etc/init.d/rmnologin, or even in /etc/profile if
+> > someone would rather it done after login.
+>
+> There should be an ANSI escape sequence for resetting the scroll region.
+> Just send that to the console.
 
-But if acceleration is not disabled you can't map the vmem and io regions.
+Yup there is. It's Esc [r , however this also returns the cursor to the top of 
+the screen. You can use Esc [s & Esc [u to save and restore the current 
+cursor position, so it's just a matter of putting them around it thus:
+ Esc [s Esc [r Esc [u
 
-> > By 'fixing the layer' i mean some simple things that could make fbdev
-> > a real graphics solution for linux in the long term:
-> > 
-> > - fbdev_core (will handle the fbdev/sysfs registration, shared by all
-> >               drivers, most important is the modes handling interface).
-> 
-> Pretty much done.
-> 
-> > - fbdev_xxx  (driver for specific hw, it will only export the interesting
-> >               bits like vmem, ioregs, will handle mmap stuff and ioctl's,
-> >               video modes, no accel of any kind).
-> 
-> Have it.
-> 
-> > - fbdev_xxx_accel (acceleration hooks if any for xxx driver, optional module)
-> 
-> We need it for the above reasons.
-> 
-> > - fbdev_con  (handle console -- already modular in 2.6, will use accel hooks
-> >               if not NULL, optional).
-> 
-> We always need the accel hooks. Some how we have to draw the fonts.
+Or with echo (in a bash script - \\'s to escape it from the shell):
+ echo -ne \\033[s\\033[r\\033[u
 
-Ok, i get your point about accel.  My point is that accel for userland is
-already there in Mesa-solo with the DRI accelerated drivers or with directfb,
-we just need the basic linux graphics infrastructure with the following
-functionality so specialized libraries (like the above) integrate nicely with
-the fbdev.
+Now there is a problem with this solution: This leaves the logo (and any 
+boot-time drawn graphics in the unscrollable region) on the screen. When text 
+scrolls up the screen, these graphics do not scroll, and are only removed 
+when a character overwrites the graphics position on the screen. If you have 
+a number of graphics on the screen (or a machine with a number of processors, 
+and therefore a number of tux logos), you'll find that you end up with 
+spurious graphical artifacts left on the display where the text hasn't 
+directly overwritten the image.
 
-In summary:
+Now you'd think that you could easily just wipe (n) lines off the screen, 
+probably using ansi escape sequences. Well it sort of works, but then you 
+need to know how big the logo is, how big the font is (as you're working with 
+an ascii to graphical representation), and just how much of the screen to 
+wipe, to get it right for all the various fbcon display arrangements. While 
+the info might be available to userspace to figure this out, it stops being 
+simple.
 
-1. Card identification.
-	A simple bus_id will do this hopefully on any platform.
-2. Port identification.
-	I don't think exists a form to determine this with the current
-	functionality, MacOSx excells in this area.
-3. Modes list supported by the card per graphics port.
-	As BenH noted, filtered by constraints like mem bandwitdh, etc.
-	hopefully using EDID or any other monitor info present.
-4. Memory mappings.
-	We can currently map the vmem and io regions in userspace.  It
-	current exists problems with highmem but in short it simply works
-	for dumb chips or programable chips so specialized libs (like
-	mesa-solo) can do a decent job.
-5. sysfs interface.
-	So we can control the behavior with libsysfs to change video modes, get
-	card/monitor info, etc.
-6. DRM or card's command queue.
-	For use in the mentioned DRI drivers or any other project based on that.
-7) read/write/other_fs_ops/ioctl.
-	So current fbdev software works without problems.
-8) Graphics console.
+Probably could just talk to the fb driver directly (from the shell) and wipe 
+that section of screen. Fun fun fun... Hrm.. Time to look into it.
 
-1) is trivial.
-2) 3) 5) and 6) is what needs work or is lacking currently.
-4) and 7) 8) are already done and was a major step for graphics on linux in
-   its time.
+Of course, you could just clear the screen.....
 
-I am by no means a graphics expert like you or BenH but i think the mentioned
-above should express general userland needs.
+Note: Fixing this in a binary is pretty much a no-no. How many dists will want 
+to add another binary to their systems, or patch something like getty simply 
+to fix a display artifact? I'm guessing pretty close to the 0 mark.
 
-> > We have now with 2.6 a good input and sound layers.  Just by fixing
-> > the graphics layer many interesting userland projects could be born.
-> 
-> I agree. The graphics layer is the last frontier.
-
-Yes, it will bring Linux on the Desktop an unavoidable reality, being part
-this basic functionality of the kernel is what one expects from a modern system
-but many could argument that is job for userland libs, probably true, anyway
-we need a (preferably graphics) console early in the boot process.
-
--otto
+--
+ Stuart Young - sgy-lkml@amc.com.au is specifically for LKML and related email
 
 
 

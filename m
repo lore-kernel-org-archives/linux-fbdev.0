@@ -1,20 +1,20 @@
 From: Kronos <kronos@kronoz.cjb.net>
-Subject: [PATCH] core: New framebuffer_alloc API and class_dev changes
-Date: Mon, 15 Sep 2003 21:34:30 +0200
+Subject: [PATCH] acornfb: New framebuffer_alloc API and class_dev changes
+Date: Mon, 15 Sep 2003 21:34:50 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20030915193430.GB16370@dreamland.darkstar.lan>
+Message-ID: <20030915193450.GC16370@dreamland.darkstar.lan>
 Reply-To: kronos@kronoz.cjb.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19yz82-00035R-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 15 Sep 2003 12:35:18 -0700
+	id 19yz8B-00036U-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 15 Sep 2003 12:35:27 -0700
 Received: from mail-1.tiscali.it ([195.130.225.147])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.22)
-	id 19yz81-0001Ey-7w
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 15 Sep 2003 12:35:17 -0700
+	id 19yz89-0001GN-K5
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 15 Sep 2003 12:35:25 -0700
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
@@ -27,226 +27,590 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: James Simmons <jsimmons@infradead.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: rmk@arm.linux.org.uk
+Cc: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@infradead.org>
 
+Hi,
+this patch convert driver/video/acorn.c to framebuffer_alloc:
 
-Core changes. We don't need fb_dev anymore. Adds framebuffer_alloc,
-updates struct fb_info.
-
-======== include/linux/fb.h 1.59 ========
-D 1.59 03/09/15 18:57:47+02:00 kronos@kronoz.cjb.net 73 71 0/0/597
-P include/linux/fb.h
-C Auto merged
+======== drivers/video/acornfb.c 1.25 ========
+D 1.25 03/09/13 00:30:16+02:00 kronos@kronoz.cjb.net 29 28 136/125/1302
+P drivers/video/acornfb.c
+C - switch to framebuffer_alloc
 ------------------------------------------------
 
-===== include/linux/fb.h 1.58 vs 1.59 =====
---- 1.58/include/linux/fb.h	Sun Sep 14 16:50:50 2003
-+++ 1.59/include/linux/fb.h	Mon Sep 15 18:57:47 2003
-@@ -2,6 +2,7 @@
- #define _LINUX_FB_H
- 
- #include <linux/tty.h>
-+#include <linux/device.h>
- #include <asm/types.h>
- #include <asm/io.h>
- 
-@@ -421,8 +422,10 @@
- 	char *screen_base;		/* Virtual address */
- 	struct vc_data *display_fg;	/* Console visible on this display */
- 	void *pseudo_palette;		/* Fake palette of 16 colors */ 
--	struct device *dev;		/* Pointer to the device for this fb */
- 	int currcon;			/* Current VC. */	
-+	struct class_device class_dev;
-+	void (*release)(struct fb_info *);  /* Do driver specific clean up */
-+	
- 	/* From here on everything is device dependent */
- 	void *par;	
+===== drivers/video/acornfb.c 1.24 vs 1.25 =====
+--- 1.24/drivers/video/acornfb.c	Fri Aug 22 08:34:52 2003
++++ 1.25/drivers/video/acornfb.c	Sat Sep 13 00:30:16 2003
+@@ -76,8 +76,8 @@
+ 	{ 30000, 70000, 60, 60, 0 }
  };
-@@ -489,6 +492,7 @@
  
- /* drivers/video/fbmem.c */
- extern int register_framebuffer(struct fb_info *fb_info);
-+extern struct fb_info *framebuffer_alloc(size_t size, struct device *dev);
- extern int unregister_framebuffer(struct fb_info *fb_info);
- extern int fb_prepare_logo(struct fb_info *fb_info);
- extern int fb_show_logo(struct fb_info *fb_info);
-
-
-======== drivers/video/fbmem.c 1.94 ========
-D 1.94 03/09/15 19:02:33+02:00 kronos@kronoz.cjb.net 120 118 0/0/1509
-P drivers/video/fbmem.c
-C SCCS merged
-------------------------------------------------
-
-===== drivers/video/fbmem.c 1.93 vs 1.94 =====
---- 1.93/drivers/video/fbmem.c	Sun Sep 14 16:50:50 2003
-+++ 1.94/drivers/video/fbmem.c	Mon Sep 15 19:02:33 2003
-@@ -1215,81 +1215,84 @@
+-static struct fb_info fb_info;
+-static struct acornfb_par current_par;
++static struct fb_info *fb_info;
++static struct acornfb_par *current_par;
+ static struct vidc_timing current_vidc;
+ 
+ extern unsigned int vram_size;	/* set by setup.c */
+@@ -313,7 +313,7 @@
+ {
+ 	union palette pal;
+ 
+-	if (regno >= current_par.palette_size)
++	if (regno >= current_par->palette_size)
+ 		return 1;
+ 
+ 	pal.p = 0;
+@@ -322,7 +322,7 @@
+ 	pal.vidc.green = green >> 12;
+ 	pal.vidc.blue  = blue >> 12;
+ 
+-	current_par.palette[regno] = pal;
++	current_par->palette[regno] = pal;
+ 
+ 	vidc_writel(pal.p);
+ 
+@@ -436,7 +436,7 @@
+ 
+ 	words_per_line = var->xres * var->bits_per_pixel / 32;
+ 
+-	if (current_par.using_vram && info->fix.smem_len == 2048*1024)
++	if (current_par->using_vram && info->fix.smem_len == 2048*1024)
+ 		words_per_line /= 2;
+ 
+ 	/* RiscPC doesn't use the VIDC's VRAM control. */
+@@ -448,7 +448,7 @@
+ 	 * 1MB VRAM	32bit
+ 	 * 2MB VRAM	64bit
+ 	 */
+-	if (current_par.using_vram && current_par.vram_half_sam == 2048) {
++	if (current_par->using_vram && current_par.vram_half_sam == 2048) {
+ 		dat_ctl |= VIDC20_DCTL_BUS_D63_0;
+ 	} else 
+ 		dat_ctl |= VIDC20_DCTL_BUS_D31_0;
+@@ -504,7 +504,7 @@
+ 	union palette pal;
+ 	int bpp = info->var.bits_per_pixel;
+ 
+-	if (regno >= current_par.palette_size)
++	if (regno >= current_par->palette_size)
+ 		return 1;
+ 
+ 	pal.p = 0;
+@@ -512,16 +512,16 @@
+ 	pal.vidc20.green = green >> 8;
+ 	pal.vidc20.blue  = blue >> 8;
+ 
+-	current_par.palette[regno] = pal;
++	current_par->palette[regno] = pal;
+ 
+ 	if (bpp == 32 && regno < 16) {
+-		current_par.cmap.cfb32[regno] =
++		current_par->cmap.cfb32[regno] =
+ 				regno | regno << 8 | regno << 16;
+ 	}
+ 	if (bpp == 16 && regno < 16) {
+ 		int i;
+ 
+-		current_par.cmap.cfb16[regno] =
++		current_par->cmap.cfb16[regno] =
+ 				regno | regno << 5 | regno << 10;
+ 
+ 		pal.p = 0;
+@@ -560,8 +560,8 @@
+ 	var->xres_virtual = var->xres;
+ 	var->xoffset = 0;
+ 
+-	if (current_par.using_vram)
+-		sam_size = current_par.vram_half_sam * 2;
++	if (current_par->using_vram)
++		sam_size = current_par->vram_half_sam * 2;
+ 	else
+ 		sam_size = 16;
+ 
+@@ -605,7 +605,7 @@
+ 	} else if (var->yres_virtual > nr_y)
+ 		var->yres_virtual = nr_y;
+ 
+-	current_par.screen_end = info->fix.smem_start + size;
++	current_par->screen_end = info->fix.smem_start + size;
+ 
+ 	/*
+ 	 * Fix yres & yoffset if needed.
+@@ -760,19 +760,19 @@
+ {
+ 	switch (info->var.bits_per_pixel) {
+ 	case 1:
+-		current_par.palette_size = 2;
++		current_par->palette_size = 2;
+ 		info->fix.visual = FB_VISUAL_MONO10;
+ 		break;
+ 	case 2:
+-		current_par.palette_size = 4;
++		current_par->palette_size = 4;
+ 		info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
+ 		break;
+ 	case 4:
+-		current_par.palette_size = 16;
++		current_par->palette_size = 16;
+ 		info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
+ 		break;
+ 	case 8:
+-		current_par.palette_size = VIDC_PALETTE_SIZE;
++		current_par->palette_size = VIDC_PALETTE_SIZE;
+ #ifdef HAS_VIDC
+ 		info->fix.visual = FB_VISUAL_STATIC_PSEUDOCOLOR;
+ #else
+@@ -781,13 +781,13 @@
+ 		break;
+ #ifdef HAS_VIDC20
+ 	case 16:
+-		current_par.palette_size = 32;
+-		info->pseudo_palette = current_par.cmap.cfb16;
++		current_par->palette_size = 32;
++		info->pseudo_palette = current_par->cmap.cfb16;
+ 		info->fix.visual = FB_VISUAL_DIRECTCOLOR;
+ 		break;
+ 	case 32:
+-		current_par.palette_size = VIDC_PALETTE_SIZE;
+-		info->pseudo_palette = current_par.cmap.cfb32;
++		current_par->palette_size = VIDC_PALETTE_SIZE;
++		info->pseudo_palette = current_par->cmap.cfb32;
+ 		info->fix.visual = FB_VISUAL_TRUECOLOR;
+ 		break;
  #endif
+@@ -810,11 +810,11 @@
+ 		u_int control;
+ 
+ 		start = info->fix.smem_start;
+-		size  = current_par.screen_end;
++		size  = current_par->screen_end;
+ 
+ 		if (current_par.using_vram) {
+-			size -= current_par.vram_half_sam;
+-			control = DMA_CR_E | (current_par.vram_half_sam / 256);
++			size -= current_par->vram_half_sam;
++			control = DMA_CR_E | (current_par->vram_half_sam / 256);
+ 		} else {
+ 			size -= 16;
+ 			control = DMA_CR_E | DMA_CR_D | 16;
+@@ -971,50 +971,55 @@
+ 	.vmode =	FB_VMODE_NONINTERLACED
  };
  
--struct fb_dev {
--	struct list_head node;
--	dev_t dev;
--	struct class_device class_dev;
--};
--#define to_fb_dev(d) container_of(d, struct fb_dev, class_dev)
-+#define to_fb_info(d) container_of(d, struct fb_info, class_dev)
- 
--static void release_fb_dev(struct class_device *class_dev)
-+static void release_fb_info(struct class_device *class_dev)
+-static void __init acornfb_init_fbinfo(void)
++static int __init acornfb_init_fbinfo(void)
  {
--	struct fb_dev *fb_dev = to_fb_dev(class_dev);
--	kfree(fb_dev);
-+	struct fb_info *fb_info = to_fb_info(class_dev);
+ 	static int first = 1;
+ 
+ 	if (!first)
+-		return;
++		return 0;
+ 	first = 0;
+ 
+-	fb_info.fbops		= &acornfb_ops;
+-	fb_info.flags		= FBINFO_FLAG_DEFAULT;
+-
+-	strcpy(fb_info.fix.id, "Acorn");
+-	fb_info.fix.type	= FB_TYPE_PACKED_PIXELS;
+-	fb_info.fix.type_aux	= 0;
+-	fb_info.fix.xpanstep	= 0;
+-	fb_info.fix.ypanstep	= 1;
+-	fb_info.fix.ywrapstep	= 1;
+-	fb_info.fix.line_length	= 0;
+-	fb_info.fix.accel	= FB_ACCEL_NONE;
++	fb_info = framebuffer_alloc(sizeof(struct acornfb_par), NULL);
++	if (!fb_info)
++		return -ENOMEM;
++	current_par		= fb_info->par;
 +
-+	if (fb_info->release)
-+		fb_info->release(fb_info);
-+	kfree(fb_info);
++	fb_info->fbops		= &acornfb_ops;
++	fb_info->flags		= FBINFO_FLAG_DEFAULT;
++
++	strcpy(fb_info->fix.id, "Acorn");
++	fb_info->fix.type	= FB_TYPE_PACKED_PIXELS;
++	fb_info->fix.type_aux	= 0;
++	fb_info->fix.xpanstep	= 0;
++	fb_info->fix.ypanstep	= 1;
++	fb_info->fix.ywrapstep	= 1;
++	fb_info->fix.line_length	= 0;
++	fb_info->fix.accel	= FB_ACCEL_NONE;
+ 
+ 	/*
+ 	 * setup initial parameters
+ 	 */
+-	memset(&fb_info.var, 0, sizeof(fb_info.var));
+-
+ #if defined(HAS_VIDC20)
+-	fb_info.var.red.length	   = 8;
+-	fb_info.var.transp.length  = 4;
++	fb_info->var.red.length	   = 8;
++	fb_info->var.transp.length  = 4;
+ #elif defined(HAS_VIDC)
+-	fb_info.var.red.length	   = 4;
+-	fb_info.var.transp.length  = 1;
++	fb_info->var.red.length	   = 4;
++	fb_info->var.transp.length  = 1;
+ #endif
+-	fb_info.var.green	   = fb_info.var.red;
+-	fb_info.var.blue	   = fb_info.var.red;
+-	fb_info.var.nonstd	   = 0;
+-	fb_info.var.activate	   = FB_ACTIVATE_NOW;
+-	fb_info.var.height	   = -1;
+-	fb_info.var.width	   = -1;
+-	fb_info.var.vmode	   = FB_VMODE_NONINTERLACED;
+-	fb_info.var.accel_flags	   = FB_ACCELF_TEXT;
+-
+-	current_par.dram_size	   = 0;
+-	current_par.montype	   = -1;
+-	current_par.dpms	   = 0;
++	fb_info->var.green	   = fb_info->var.red;
++	fb_info->var.blue	   = fb_info->var.red;
++	fb_info->var.nonstd	   = 0;
++	fb_info->var.activate	   = FB_ACTIVATE_NOW;
++	fb_info->var.height	   = -1;
++	fb_info->var.width	   = -1;
++	fb_info->var.vmode	   = FB_VMODE_NONINTERLACED;
++	fb_info->var.accel_flags   = FB_ACCELF_TEXT;
++
++	current_par->dram_size	   = 0;
++	current_par->montype	   = -1;
++	current_par->dpms	   = 0;
++
++	return 0;
  }
  
- static struct class fb_class = {
- 	.name		= "graphics",
--	.release	= &release_fb_dev,
-+	.release	= &release_fb_info,
- };
- 
- static LIST_HEAD(fb_dev_list);
--static spinlock_t fb_dev_list_lock = SPIN_LOCK_UNLOCKED;
- 
- static ssize_t show_dev(struct class_device *class_dev, char *buf)
+ /*
+@@ -1051,84 +1056,84 @@
  {
--	struct fb_dev *fb_dev = to_fb_dev(class_dev);
--	return print_dev_t(buf, fb_dev->dev);
-+	struct fb_info *fb_info = to_fb_info(class_dev);
-+	return sprintf(buf, "%u:%u\n", FB_MAJOR, fb_info->node);
- }
- static CLASS_DEVICE_ATTR(dev, S_IRUGO, show_dev, NULL);
+ 	char *p = opt;
  
--static void fb_add_class_device(int minor, struct device *device)
-+static void fb_add_class_device(struct fb_info *fb_info)
- {
--	struct fb_dev *fb_dev = NULL;
- 	int retval;
--
--	fb_dev = kmalloc(sizeof(*fb_dev), GFP_KERNEL);
--	if (!fb_dev)
-+	
-+	fb_info->class_dev.class = &fb_class;
-+	snprintf(fb_info->class_dev.class_id, BUS_ID_SIZE, "fb%d", fb_info->node);
-+	retval = class_device_register(&fb_info->class_dev);
-+	if (retval)
- 		return;
--	memset(fb_dev, 0x00, sizeof(*fb_dev));
-+	class_device_create_file(&fb_info->class_dev, &class_device_attr_dev);
-+}
+-	current_par.montype = -2;
++	current_par->montype = -2;
  
--	fb_dev->dev = MKDEV(FB_MAJOR, minor);
--	fb_dev->class_dev.dev = device;
--	fb_dev->class_dev.class = &fb_class;
--	snprintf(fb_dev->class_dev.class_id, BUS_ID_SIZE, "fb%d", minor);
--	retval = class_device_register(&fb_dev->class_dev);
--	if (retval)
--		goto error;
--	class_device_create_file(&fb_dev->class_dev, &class_device_attr_dev);
--	spin_lock(&fb_dev_list_lock);
--	list_add(&fb_dev->node, &fb_dev_list);
--	spin_unlock(&fb_dev_list_lock);
--	return;
--error:
--	kfree(fb_dev);
--}
--
--void fb_remove_class_device(int minor)
--{
--	struct fb_dev *fb_dev = NULL;
--	struct list_head *tmp;
--	int found = 0;
--
--	spin_lock(&fb_dev_list_lock);
--	list_for_each(tmp, &fb_dev_list) {
--		fb_dev = list_entry(tmp, struct fb_dev, node);
--		if ((MINOR(fb_dev->dev) == minor)) {
--			found = 1;
--			break;
--		}
--	}
--	if (found) {
--		list_del(&fb_dev->node);
--		spin_unlock(&fb_dev_list_lock);
--		class_device_unregister(&fb_dev->class_dev);
--	} else {
--		spin_unlock(&fb_dev_list_lock);
--	}
-+static void fb_remove_class_device(struct fb_info *fb_info)
-+{
-+	class_device_unregister(&fb_info->class_dev);
-+}
-+
-+/**
-+ * framebuffer_alloc - creates a new frame buffer info structure
-+ *
-+ * @size size of driver private data, can be zero
-+ * @dev pointer to the device for this fb, can be NULL
-+ *
-+ * Creates a new frame buffer info structure. Also reserves @size bytes
-+ * for driver private data (fb_info->par). fb_info->par (if any) will be
-+ * aligned to sizeof(long).
-+ * 
-+ * Returns the new structure, or NULL if an error occurred.
-+ *
-+ */
-+struct fb_info *framebuffer_alloc(size_t size, struct device *dev) {
-+#define BYTES_PER_LONG (BITS_PER_LONG/8)
-+#define PADDING (BYTES_PER_LONG - (sizeof(struct fb_info) % BYTES_PER_LONG))
-+	struct fb_info *fb_info;
-+	char *p;
-+	int fb_info_size = sizeof(struct fb_info);
-+
-+	if (size)
-+		fb_info_size += PADDING;
-+
-+	p = kmalloc(fb_info_size + size, GFP_KERNEL);
-+	if (!p)
-+		return NULL;
-+	memset(p, 0, fb_info_size + size);
-+	fb_info = (struct fb_info *)p;
-+	fb_info->class_dev.dev = dev;
-+
-+	if (size)
-+		fb_info->par = p + fb_info_size;
-+
-+	return fb_info;
-+#undef PADDING
-+#undef BYTES_PER_LONG
+-	fb_info.monspecs.hfmin = simple_strtoul(p, &p, 0);
++	fb_info->monspecs.hfmin = simple_strtoul(p, &p, 0);
+ 	if (*p == '-')
+-		fb_info.monspecs.hfmax = simple_strtoul(p + 1, &p, 0);
++		fb_info->monspecs.hfmax = simple_strtoul(p + 1, &p, 0);
+ 	else
+-		fb_info.monspecs.hfmax = fb_info.monspecs.hfmin;
++		fb_info->monspecs.hfmax = fb_info->monspecs.hfmin;
+ 
+ 	if (*p != ':')
+ 		goto bad;
+ 
+-	fb_info.monspecs.vfmin = simple_strtoul(p + 1, &p, 0);
++	fb_info->monspecs.vfmin = simple_strtoul(p + 1, &p, 0);
+ 	if (*p == '-')
+-		fb_info.monspecs.vfmax = simple_strtoul(p + 1, &p, 0);
++		fb_info->monspecs.vfmax = simple_strtoul(p + 1, &p, 0);
+ 	else
+-		fb_info.monspecs.vfmax = fb_info.monspecs.vfmin;
++		fb_info->monspecs.vfmax = fb_info->monspecs.vfmin;
+ 
+ 	if (*p != ':')
+ 		goto check_values;
+ 
+-	fb_info.monspecs.dpms = simple_strtoul(p + 1, &p, 0);
++	fb_info->monspecs.dpms = simple_strtoul(p + 1, &p, 0);
+ 
+ 	if (*p != ':')
+ 		goto check_values;
+ 
+-	fb_info.var.width = simple_strtoul(p + 1, &p, 0);
++	fb_info->var.width = simple_strtoul(p + 1, &p, 0);
+ 
+ 	if (*p != ':')
+ 		goto check_values;
+ 
+-	fb_info.var.height = simple_strtoul(p + 1, NULL, 0);
++	fb_info->var.height = simple_strtoul(p + 1, NULL, 0);
+ 
+ check_values:
+-	if (fb_info.monspecs.hfmax < fb_info.monspecs.hfmin ||
+-	    fb_info.monspecs.vfmax < fb_info.monspecs.vfmin)
++	if (fb_info->monspecs.hfmax < fb_info->monspecs.hfmin ||
++	    fb_info->monspecs.vfmax < fb_info->monspecs.vfmin)
+ 		goto bad;
+ 	return;
+ 
+ bad:
+ 	printk(KERN_ERR "Acornfb: bad monitor settings: %s\n", opt);
+-	current_par.montype = -1;
++	current_par->montype = -1;
  }
  
- /**
-@@ -1352,7 +1355,7 @@
- 	devfs_mk_cdev(MKDEV(FB_MAJOR, i),
- 			S_IFCHR | S_IRUGO | S_IWUGO, "fb/%d", i);
+ static void __init
+ acornfb_parse_montype(char *opt)
+ {
+-	current_par.montype = -2;
++	current_par->montype = -2;
  
--	fb_add_class_device(i, fb_info->dev);
-+	fb_add_class_device(fb_info);
+ 	if (strncmp(opt, "tv", 2) == 0) {
+ 		opt += 2;
+-		current_par.montype = 0;
++		current_par->montype = 0;
+ 	} else if (strncmp(opt, "multi", 5) == 0) {
+ 		opt += 5;
+-		current_par.montype = 1;
++		current_par->montype = 1;
+ 	} else if (strncmp(opt, "hires", 5) == 0) {
+ 		opt += 5;
+-		current_par.montype = 2;
++		current_par->montype = 2;
+ 	} else if (strncmp(opt, "vga", 3) == 0) {
+ 		opt += 3;
+-		current_par.montype = 3;
++		current_par->montype = 3;
+ 	} else if (strncmp(opt, "svga", 4) == 0) {
+ 		opt += 4;
+-		current_par.montype = 4;
++		current_par->montype = 4;
+ 	} else if (strncmp(opt, "auto", 4) == 0) {
+ 		opt += 4;
+-		current_par.montype = -1;
++		current_par->montype = -1;
+ 	} else if (isdigit(*opt))
+-		current_par.montype = simple_strtoul(opt, &opt, 0);
++		current_par->montype = simple_strtoul(opt, &opt, 0);
+ 
+-	if (current_par.montype == -2 ||
+-	    current_par.montype > NR_MONTYPES) {
++	if (current_par->montype == -2 ||
++	    current_par->montype > NR_MONTYPES) {
+ 		printk(KERN_ERR "acornfb: unknown monitor type: %s\n",
+ 			opt);
+-		current_par.montype = -1;
++		current_par->montype = -1;
+ 	} else
+ 	if (opt && *opt) {
+ 		if (strcmp(opt, ",dpms") == 0)
+-			current_par.dpms = 1;
++			current_par->dpms = 1;
+ 		else
+ 			printk(KERN_ERR
+ 			       "acornfb: unknown monitor option: %s\n",
+@@ -1156,7 +1161,7 @@
+ 		}
+ 	}
+ 
+-	current_par.dram_size = size;
++	current_par->dram_size = size;
+ }
+ 
+ static struct options {
+@@ -1178,7 +1183,8 @@
+ 	if (!options || !*options)
+ 		return 0;
+ 
+-	acornfb_init_fbinfo();
++	if (acornfb_init_fbinfo())
++		return 0;
+ 
+ 	while ((opt = strsep(&options, ",")) != NULL) {
+ 		if (!*opt)
+@@ -1254,17 +1260,18 @@
+ 	u_int h_sync, v_sync;
+ 	int rc, i;
+ 
+-	acornfb_init_fbinfo();
++	if (acornfb_init_fbinfo())
++		return -ENOMEM;
+ 
+-	if (current_par.montype == -1)
+-		current_par.montype = acornfb_detect_monitortype();
++	if (current_par->montype == -1)
++		current_par->montype = acornfb_detect_monitortype();
+ 
+-	if (current_par.montype == -1 || current_par.montype > NR_MONTYPES)
+-		current_par.montype = 4;
++	if (current_par->montype == -1 || current_par->montype > NR_MONTYPES)
++		current_par->montype = 4;
+ 
+-	if (current_par.montype >= 0) {
+-		fb_info.monspecs = monspecs[current_par.montype];
+-		fb_info.monspecs.dpms = current_par.dpms;
++	if (current_par->montype >= 0) {
++		fb_info->monspecs = monspecs[current_par->montype];
++		fb_info->monspecs.dpms = current_par->dpms;
+ 	}
+ 
+ 	/*
+@@ -1278,30 +1285,30 @@
+ 		      modedb[i].lower_margin + modedb[i].vsync_len);
+ 		if (modedb[i].xres == DEFAULT_XRES &&
+ 		    modedb[i].yres == DEFAULT_YRES &&
+-		    modedb[i].refresh >= fb_info.monspecs.vfmin &&
+-		    modedb[i].refresh <= fb_info.monspecs.vfmax &&
+-		    hs                >= fb_info.monspecs.hfmin &&
+-		    hs                <= fb_info.monspecs.hfmax) {
++		    modedb[i].refresh >= fb_info->monspecs.vfmin &&
++		    modedb[i].refresh <= fb_info->monspecs.vfmax &&
++		    hs                >= fb_info->monspecs.hfmin &&
++		    hs                <= fb_info->monspecs.hfmax) {
+ 			acornfb_default_mode = modedb[i];
+ 			break;
+ 		}
+ 	}
+ 
+-	fb_info.screen_base    = (char *)SCREEN_BASE;
+-	fb_info.fix.smem_start = SCREEN_START;
+-	current_par.using_vram = 0;
++	fb_info->screen_base    = (char *)SCREEN_BASE;
++	fb_info->fix.smem_start = SCREEN_START;
++	current_par->using_vram = 0;
+ 
+ 	/*
+ 	 * If vram_size is set, we are using VRAM in
+ 	 * a Risc PC.  However, if the user has specified
+ 	 * an amount of DRAM then use that instead.
+ 	 */
+-	if (vram_size && !current_par.dram_size) {
++	if (vram_size && !current_par->dram_size) {
+ 		size = vram_size;
+-		current_par.vram_half_sam = vram_size / 1024;
+-		current_par.using_vram = 1;
+-	} else if (current_par.dram_size)
+-		size = current_par.dram_size;
++		current_par->vram_half_sam = vram_size / 1024;
++		current_par->using_vram = 1;
++	} else if (current_par->dram_size)
++		size = current_par->dram_size;
+ 	else
+ 		size = MAX_SIZE;
+ 
+@@ -1314,7 +1321,7 @@
+ 	size = PAGE_ALIGN(size);
+ 
+ #if defined(HAS_VIDC20)
+-	if (!current_par.using_vram) {
++	if (!current_par->using_vram) {
+ 		/*
+ 		 * RiscPC needs to allocate the DRAM memory
+ 		 * for the framebuffer if we are not using
+@@ -1328,6 +1335,7 @@
+ 		if (base == 0) {
+ 			printk(KERN_ERR "acornfb: unable to allocate screen "
+ 			       "memory\n");
++			kfree(fb_info);
+ 			return -ENOMEM;
+ 		}
+ 		top = base + (PAGE_SIZE << order);
+@@ -1339,8 +1347,8 @@
+ 		for (page = base + size; page < top; page += PAGE_SIZE)
+ 			free_page(page);
+ 
+-		fb_info.screen_base = (char *)base;
+-		fb_info.fix.smem_start = virt_to_phys(fb_info.screen_base);
++		fb_info->screen_base = (char *)base;
++		fb_info->fix.smem_start = virt_to_phys(fb_info->screen_base);
+ 	}
+ #endif
+ #if defined(HAS_VIDC)
+@@ -1350,8 +1358,8 @@
+ 	free_unused_pages(PAGE_OFFSET + size, PAGE_OFFSET + MAX_SIZE);
+ #endif
+ 	
+-	fb_info.fix.smem_len = size;
+-	current_par.palette_size   = VIDC_PALETTE_SIZE;
++	fb_info->fix.smem_len = size;
++	current_par->palette_size   = VIDC_PALETTE_SIZE;
+ 
+ 	/*
+ 	 * Lookup the timing for this resolution.  If we can't
+@@ -1359,7 +1367,7 @@
+ 	 * the resolution, so we disable this feature.
+ 	 */
+ 	do {
+-		rc = fb_find_mode(&fb_info.var, &fb_info, NULL, modedb,
++		rc = fb_find_mode(&fb_info->var, fb_info, NULL, modedb,
+ 				 sizeof(modedb) / sizeof(*modedb),
+ 				 &acornfb_default_mode, DEFAULT_BPP);
+ 		/*
+@@ -1368,7 +1376,7 @@
+ 		if (rc == 1)
+ 			break;
+ 
+-		rc = fb_find_mode(&fb_info.var, &fb_info, NULL, NULL, 0,
++		rc = fb_find_mode(&fb_info->var, fb_info, NULL, NULL, 0,
+ 				  &acornfb_default_mode, DEFAULT_BPP);
+ 		/*
+ 		 * If we found an exact match, all ok.
+@@ -1376,13 +1384,13 @@
+ 		if (rc == 1)
+ 			break;
+ 
+-		rc = fb_find_mode(&fb_info.var, &fb_info, NULL, modedb,
++		rc = fb_find_mode(&fb_info->var, fb_info, NULL, modedb,
+ 				 sizeof(modedb) / sizeof(*modedb),
+ 				 &acornfb_default_mode, DEFAULT_BPP);
+ 		if (rc)
+ 			break;
+ 
+-		rc = fb_find_mode(&fb_info.var, &fb_info, NULL, NULL, 0,
++		rc = fb_find_mode(&fb_info->var, fb_info, NULL, NULL, 0,
+ 				  &acornfb_default_mode, DEFAULT_BPP);
+ 	} while (0);
+ 
+@@ -1392,33 +1400,36 @@
+ 	 */
+ 	if (rc == 0) {
+ 		printk("Acornfb: no valid mode found\n");
++		kfree(fb_info);
+ 		return -EINVAL;
+ 	}
+ 
+-	h_sync = 1953125000 / fb_info.var.pixclock;
+-	h_sync = h_sync * 512 / (fb_info.var.xres + fb_info.var.left_margin +
+-		 fb_info.var.right_margin + fb_info.var.hsync_len);
+-	v_sync = h_sync / (fb_info.var.yres + fb_info.var.upper_margin +
+-		 fb_info.var.lower_margin + fb_info.var.vsync_len);
++	h_sync = 1953125000 / fb_info->var.pixclock;
++	h_sync = h_sync * 512 / (fb_info->var.xres + fb_info->var.left_margin +
++		 fb_info->var.right_margin + fb_info->var.hsync_len);
++	v_sync = h_sync / (fb_info->var.yres + fb_info->var.upper_margin +
++		 fb_info->var.lower_margin + fb_info->var.vsync_len);
+ 
+ 	printk(KERN_INFO "Acornfb: %dkB %cRAM, %s, using %dx%d, "
+ 		"%d.%03dkHz, %dHz\n",
+-		fb_info.fix.smem_len / 1024,
+-		current_par.using_vram ? 'V' : 'D',
+-		VIDC_NAME, fb_info.var.xres, fb_info.var.yres,
++		fb_info->fix.smem_len / 1024,
++		current_par->using_vram ? 'V' : 'D',
++		VIDC_NAME, fb_info->var.xres, fb_info->var.yres,
+ 		h_sync / 1000, h_sync % 1000, v_sync);
+ 
+ 	printk(KERN_INFO "Acornfb: Monitor: %d.%03d-%d.%03dkHz, %d-%dHz%s\n",
+-		fb_info.monspecs.hfmin / 1000, fb_info.monspecs.hfmin % 1000,
+-		fb_info.monspecs.hfmax / 1000, fb_info.monspecs.hfmax % 1000,
+-		fb_info.monspecs.vfmin, fb_info.monspecs.vfmax,
+-		fb_info.monspecs.dpms ? ", DPMS" : "");
++		fb_info->monspecs.hfmin / 1000, fb_info->monspecs.hfmin % 1000,
++		fb_info->monspecs.hfmax / 1000, fb_info->monspecs.hfmax % 1000,
++		fb_info->monspecs.vfmin, fb_info->monspecs.vfmax,
++		fb_info->monspecs.dpms ? ", DPMS" : "");
+ 
+-	if (fb_set_var(&fb_info.var, &fb_info))
++	if (fb_set_var(fb_info, &fb_info->var))
+ 		printk(KERN_ERR "Acornfb: unable to set display parameters\n");
+ 
+-	if (register_framebuffer(&fb_info) < 0)
++	if (register_framebuffer(fb_info) < 0) {
++		kfree(fb_info);
+ 		return -EINVAL;
++	}
  	return 0;
  }
- 
-@@ -1381,7 +1384,7 @@
- 		kfree(fb_info->pixmap.addr);
- 	registered_fb[i]=NULL;
- 	num_registered_fb--;
--	fb_remove_class_device(i);
-+	fb_remove_class_device(fb_info);
- 	return 0;
- }
+
 
 Luca
 -- 
 Reply-To: kronos@kronoz.cjb.net
 Home: http://kronoz.cjb.net
-Mi piace avere amici rispettabili;
-Mi piace essere il peggiore della compagnia.
+This message will self distruct in 5 seconds.
 
 
 -------------------------------------------------------

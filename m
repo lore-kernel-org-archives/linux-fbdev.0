@@ -1,50 +1,38 @@
-From: Helge Hafting <helgehaf@aitel.hist.no>
+From: James Simmons <jsimmons@infradead.org>
 Subject: Re: Fbdev 2.5.49 BK fixes.
-Date: Wed, 27 Nov 2002 19:08:29 +0100
+Date: Wed, 27 Nov 2002 23:18:22 +0000 (GMT)
 Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <3DE50A1D.856A8706@aitel.hist.no>
-References: <Pine.LNX.4.44.0211271747510.30951-100000@phoenix.infradead.org>
+Message-ID: <Pine.LNX.4.44.0211272254440.30951-100000@phoenix.infradead.org>
+References: <3DE50A1D.856A8706@aitel.hist.no>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+In-Reply-To: <3DE50A1D.856A8706@aitel.hist.no>
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Helge Hafting <helgehaf@aitel.hist.no>
 Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-James Simmons wrote:
-> 
-> > I tried this patch, but it crashed during boot.
-> 
-> Any oops info?
-No.  The machine froze solid. No oops, no sysrq.
-The reset button worked.
-> 
-> > I have a
-> > 01:00.0 VGA compatible controller: ATI Technologies Inc 3D Rage Pro AGP
-> > 1X/2X (rev 5c)
-> >
-> > and use this in lilo.conf:
-> > image=/boot/2.5.49fb
-> >         label=2.5.49fb
-> >         append="video=atyfb:1280x1024-16@85"
-> 
-> Hm. Are you using a PPC or ix86 box? I will test this tonight.
-i386.  Specifically, a pentium II, compiled for pentium II.
 
-> > This got me a 160x64 framebuffer with yellow text on
-> > blue background.  Nice, but only got about 10 lines before
-> > the kernel hung. The disk light got stuck on and there were
-> > no response to things like sysrq.
-> > The few lines displayed was about the fb, drm, and finally
-> > the 3com network adapter.  Then nothing more.
-> 
-> Sounds like panning flipped put.
-> 
-Perhaps. It didn't look like it ended at the bottom of the
-screen, but then it might have been panning at the wrong moment.
+> No.  The machine froze solid. No oops, no sysrq.
+> The reset button worked.
 
-> > 2.5.49 without this patch works.  I use devfs & preempt,
-> > the machine is UP and I use gcc-2.95.4 for compiling.
+VESA fbdev did this to me. I have no trouble with neofb. Strange???
+I will track it down tonight.
 
-Helge Hafting
+> > Hm. Are you using a PPC or ix86 box? I will test this tonight.
+> i386.  Specifically, a pentium II, compiled for pentium II.
+
+Hm. I have that same card and a similar machine.
+ 
+> Perhaps. It didn't look like it ended at the bottom of the
+> screen, but then it might have been panning at the wrong moment.
+
+I have a MDA monitor and card. So I can setup mdacon and turn on 
+debugging in fbcon and trace threw it. 
+ 
+> > > 2.5.49 without this patch works.  I use devfs & preempt,
+> > > the machine is UP and I use gcc-2.95.4 for compiling.
+> 
+> Helge Hafting
+> 

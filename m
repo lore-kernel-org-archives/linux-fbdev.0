@@ -1,25 +1,24 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [PATCH] radeonfb(): memmove() fix -- this
-	one works ;-)
-Date: 22 Apr 2004 03:35:53 +0800
+Subject: Re: [PATCH] neofb patches
+Date: 22 Apr 2004 03:10:56 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1082576159.2343.24.camel@localhost.localdomain>
-References: <Pine.LNX.4.44.0404211903440.9207-100000@phoenix.infradead.org>
+Message-ID: <1082574664.2344.3.camel@localhost.localdomain>
+References: <Pine.LNX.4.44.0404211840040.9207-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BGWDy-00063L-Bd
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 21:54:10 -0700
-Received: from snickers.hotpop.com ([38.113.3.51])
+	id 1BGX1T-0002P9-Qk
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 22:45:19 -0700
+Received: from babyruth.hotpop.com ([38.113.3.61])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BGW97-0008OC-4H
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 21:49:09 -0700
+	id 1BGWyM-0001Kf-J6
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Apr 2004 22:42:06 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by snickers.hotpop.com (Postfix) with SMTP id 811D97295E
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 21 Apr 2004 18:52:30 +0000 (UTC)
-In-Reply-To: <Pine.LNX.4.44.0404211903440.9207-100000@phoenix.infradead.org>
+	by babyruth.hotpop.com (Postfix) with SMTP id 145FE32B5F9
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 21 Apr 2004 18:49:43 +0000 (UTC)
+In-Reply-To: <Pine.LNX.4.44.0404211840040.9207-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,54 +30,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@infradead.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>, eger-dated-1082943669.d79d33@theboonies.us, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Alex Stewart <alex@foogod.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-On Thu, 2004-04-22 at 02:13, James Simmons wrote:
+On Thu, 2004-04-22 at 01:47, James Simmons wrote:
+
+> > neofb.3.16bit.patch     - Misc fixes for 16-bit mode
+> >
+> >   Changed the visual reported for 16-bit mode from DirectColor to TrueColor,
+> >   since we don't support changing the colormap, which means we don't really
+> >   support DirectColor.  Also changed the palette entries for to be 32 bits 
+> >   wide even for 16-bit mode because this is what the logo code expects, 
+> >   and appears to be the correct way of doing things.
 > 
-> > > > This is true for PCI/AGP, but may not be true for unified memory systems.
-> > >
-> > > Right, but that confirms my opinion that the choice of the technique used
-> > > shall be under control of the driver
-> > 
-> > Agreed. So a hint would be the most appropriate.
-> 
-> Hi Antonino. Haven't heard from you in a while.
+> I haven't tried this one yet. Geert is this right?
 
-Yeah, been busy.
-
-> 
-> I agree. What if we add to vmode in struct fb_screeninfo.
-> We have 
-> 
-> FB_VMODE_YWRAP		256
-> FB_VMODE_SMOOTH_XPAN	512
-> 
-> We can add more fields. Of course we have to figure out what the common 
-> case would be.
-> 
-
-We can add:
-
-FB_VMODE_YPAN
-FB_VMODE_REDRAW /* will use imageblit */
-FB_VMODE_MOVE   /* will use copyarea */
-
-Personally, I think FB_VMODE_REDRAW should be the default as it is 
-faster than FB_VMODE_MOVE for most PCI cards.
-
-Just to be clear.
-
-1.  If without a ypan or ywrap, fbcon can either do a redraw or a move
-
-2.  If with ypan or ywrap, then fbcon can only do a move.
-
-Ypan + redraw (FB_VMODE_MOVE | FB_VMODE_REDRAW) is not supported, and I
-consider this combination to give the fastest and smoothest scrolling
-action if driver does not have any hardware acceleration in most cards.
-Perhaps this can be added?
+Yes, _all_ of the generic drawing functions expect the pseudopalette to
+be always u32.
 
 Tony
- 
 
 
 

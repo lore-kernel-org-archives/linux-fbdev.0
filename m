@@ -1,23 +1,16 @@
-From: postmaster@lnxw.com
-Subject: VIRUS IN YOUR MAIL
-Date: Wed, 12 May 2004 19:09:42 -0700
+From: Keith Packard <keithp@keithp.com>
+Subject: Re: [Dri-devel] Re: Re: Current discussion about the future of free software graphics
+Date: Wed, 12 May 2004 20:32:51 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200405130209.i4D29g7K002425@newbast.lynuxworks.com>
+Message-ID: <E1BO6xn-0006x5-00@evo.keithp.com>
+References: <40A1E4D3.40705@tungstengraphics.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_38340921P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BO5g4-0002ii-Q6
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 May 2004 19:10:28 -0700
-Received: from smtp.lynuxworks.com ([207.21.185.24])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
-	id 1BO5g4-0001kV-Hy
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 May 2004 19:10:28 -0700
-Received: from newbast.lynuxworks.com (newbast.lynxworks.com [207.21.185.6])
-	by smtp.lynuxworks.com (8.12.9/8.12.9) with ESMTP id i4D29gBl018674
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 12 May 2004 19:09:42 -0700
-Received: from newbast.lynuxworks.com (localhost [127.0.0.1])
-	by newbast.lynuxworks.com (8.12.7/8.12.7) with ESMTP id i4D29g4U002426
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 12 May 2004 19:09:42 -0700
+In-Reply-To: Your message of "Wed, 12 May 2004 09:48:19 BST."
+             <40A1E4D3.40705@tungstengraphics.com> 
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -27,50 +20,40 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+To: dri-devel@lists.sourceforge.net
+Cc: Ian Romanick <idr@us.ibm.com>, James Simmons <jsimmons@infradead.org>, linux-fbdev-devel@lists.sourceforge.net, Keith Packard <keithp@keithp.com>
 
-                           V I R U S  A L E R T
-
-Our viruschecker found the
-
-	Worm/NetSky.B.1
-
-virus in your email to the following recipient:
-
--> <mooring@lnxw.com>
-
-Delivery of the email was stopped!
-
-Please check your system for viruses,
-or ask your system administrator to do so.
+--==_Exmh_38340921P
+Content-Type: text/plain; charset=us-ascii
 
 
-For your reference, here are the SMTP envelope originator
-and headers from your email:
+Around 9 o'clock on May 12, Keith Whitwell wrote:
 
-From <linux-fbdev-devel@lists.sourceforge.net>
-------------------------- BEGIN HEADERS -----------------------------
-Received: from lynx.com ([61.186.109.113])
-	by hermes.lnxw.com (8.12.7/8.12.7) with SMTP id i4D29Zv6019108
-	for <mooring@lynx.com>; Wed, 12 May 2004 19:09:36 -0700
-Message-Id: <200405130209.i4D29Zv6019108@hermes.lnxw.com>
-From: linux-fbdev-devel@lists.sourceforge.net
-To: mooring@lynx.com
-Subject: *****SPAM***** hello
-Date: Thu, 13 May 2004 10:09:33 +0800
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="----------=_40A2D8EE.A3BB35B4"
-X-Spam-Flag: YES
-X-Spam-Status: Yes, hits=6.2 required=5.0 tests=BAYES_60,NO_REAL_NAME,
-	SUB_HELLO,VIRUS_CLEANED_MYDOOM,VIRUS_WARNING_NETSKY2 autolearn=no 
-	version=2.63
-X-Spam-Level: ******
-X-Spam-Checker-Version: SpamAssassin 2.63 (2004-01-11) on farscape.lynx.com
--------------------------- END HEADERS ------------------------------
+> My one worry about the discussion is that because of confusion over where the 
+> X developers are hanging out nowadays, they are missing out on having their 
+> say on this - and they probably care deeply about modesetting.
 
+Egbert and I are here; I'm not sure who else wants to be involved at this 
+point.  I know I'm hoping that a great deal of the mode setting logic 
+disappears from my piece of the system soon.
+
+-keith
+
+
+
+--==_Exmh_38340921P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.4 (GNU/Linux)
+Comment: Exmh version 2.3.1 11/28/2001
+
+iD8DBQFAouxiQp8BWwlsTdMRAln+AKDNaWrtaeyKsQykC8BOMt3ReYNVtwCgiwaE
+xriP7cFTn+TRc+yXktxXhWg=
+=NYZd
+-----END PGP SIGNATURE-----
+
+--==_Exmh_38340921P--
 
 
 -------------------------------------------------------

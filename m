@@ -1,21 +1,25 @@
-From: MAILER-DAEMON@ssh.com
-Subject: failure notice
-Date: 13 May 2004 16:48:36 -0000
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Subject: Re: [PATCH] atyfb (2.6): Add RGB565 support
+Date: Thu, 13 May 2004 22:19:48 +0300
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200405131648.i4DGmbQs028872@fw.hel.fi.ssh.com>
+Message-ID: <20040513191948.GA25590@sci.fi>
+References: <20040511213607.GB6854@sci.fi> <Pine.GSO.4.58.0405121110360.19967@waterleaf.sonytel.be> <20040512185724.GA825@sci.fi> <Pine.GSO.4.58.0405131121210.9790@waterleaf.sonytel.be>
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BOJNw-0004tk-Hz
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 09:48:40 -0700
-Received: from fw.hel.fi.ssh.com ([195.20.116.97])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.30)
-	id 1BOJNv-0005M1-7Z
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 09:48:39 -0700
-Received: from viikuna.hel.fi.ssh.com (viikuna.hel.fi.ssh.com [10.1.0.46])
-	by fw.hel.fi.ssh.com (SSH-1.16) with SMTP id i4DGmbQs028872
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 13 May 2004 19:48:37 +0300 (EEST)
+	id 1BOLkG-0003QV-AL
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 12:19:52 -0700
+Received: from gw02.mail.saunalahti.fi ([195.197.172.116])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.30)
+	id 1BOLkF-00018W-TT
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 13 May 2004 12:19:52 -0700
+Received: from kuori.saunalahti.fi (kuori.saunalahti.fi [195.197.175.23])
+	by gw02.mail.saunalahti.fi (Postfix) with ESMTP id A728B4E4F
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 13 May 2004 22:19:48 +0300 (EEST)
+Content-Disposition: inline
+In-Reply-To: <Pine.GSO.4.58.0405131121210.9790@waterleaf.sonytel.be>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -25,81 +29,40 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi. This is the qmail-send program at ssh.com.
-I'm afraid I wasn't able to deliver your message to the following addresses.
-This is a permanent error; I've given up. Sorry it didn't work out.
+On Thu, May 13, 2004 at 11:22:01AM +0200, Geert Uytterhoeven wrote:
+> 	Hi Ville,
+>=20
+> On Wed, 12 May 2004, Ville [iso-8859-1] Syrj=E4l=E4 wrote:
+> > On Wed, May 12, 2004 at 11:11:21AM +0200, Geert Uytterhoeven wrote:
+> > > On Wed, 12 May 2004, Ville [iso-8859-1] Syrj=E4l=E4 wrote:
+> > > > This patch adds RGB565 support to atyfb.
+> > >
+> > > Nice! Have you tried fbtest on it?
+> > >
+> > > I once tried to implement it myself, but it didn't work reliably.
+> >
+> > I just tried fbtest and most tests look ok. The penguin images are wr=
+ong
+> > (green instead of white stuff aroung the penguin) and the test009 loo=
+ks
+> > wrong too. Are you sure fbtest is doing the right thing with rgb565
+> > directcolor visuals? DirectFB or mplayer don't have any problems.
+>=20
+> It's always possible there's a bug in fbtest w.r.t. 565 handling, but I=
+ didn't
+> see it.
 
+It has the same problems on aty128fb so either that driver is broken too=20
+or the fault lies with fbtest. On matroxfb RGB565 is fine but matroxfb=20
+uses a truecolor visual.
 
-
-<esp@ssh.com>:
-Sorry, no mailbox here by that name. (#5.1.1)
-
---- Below this line is a copy of the message.
-
-Return-Path: <linux-fbdev-devel@lists.sourceforge.net>
-Received: (qmail 10446 invoked by alias); 13 May 2004 16:48:32 -0000
-Delivered-To: ipsec-esp@ssh.com
-Received: (qmail 10416 invoked by alias); 13 May 2004 16:48:29 -0000
-Delivered-To: alias-sshfi-ipsec-esp@ssh.fi
-Received: (qmail 10402 invoked from network); 13 May 2004 16:48:27 -0000
-Received: from unknown (HELO fw.hel.fi.ssh.com) ([10.1.0.48]) (envelope-sender <linux-fbdev-devel@lists.sourceforge.net>)
-          by viikuna.hel.fi.ssh.com (qmail-ldap-1.03) with SMTP
-          for <ipsec-esp@ssh.fi>; 13 May 2004 16:48:27 -0000
-Received: from manage.24online (comtech-10-158-16-del.qtelcomtech.com [61.16.158.10] (may be forged))
-	by fw.hel.fi.ssh.com (SSH-1.16) with ESMTP id i4DGmMQs028808
-	for <ipsec-esp@ssh.fi>; Thu, 13 May 2004 19:48:23 +0300 (EEST)
-Received: from ssh.fi ([172.16.4.34])
-	by manage.24online (8.9.3p2/8.9.3) with ESMTP id WAA13863
-	for <ipsec-esp@ssh.fi>; Thu, 13 May 2004 22:15:08 +0530
-From: linux-fbdev-devel@lists.sourceforge.net
-Message-Id: <200405131645.WAA13863@manage.24online>
-To: ipsec-esp@ssh.com
-Subject: Re: Here
-Date: Fri, 13 May 2005 22:14:27 +0530
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0000_00000E4B.00003CC4"
-X-Priority: 3
-X-MSMail-Priority: Normal
-
-This is a multi-part message in MIME format.
-
-------=_NextPart_000_0000_00000E4B.00003CC4
-Content-Type: text/plain;
-	charset="Windows-1252"
-Content-Transfer-Encoding: 7bit
-
-Please read the attached file.
-
-------=_NextPart_000_0000_00000E4B.00003CC4
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-
-
----  Virus Warning Message
-
-yours.pif is removed from here because it contains a virus.
-
----
-------=_NextPart_000_0000_00000E4B.00003CC4
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-
----  Virus Warning Message
-
-Found virus WORM_NETSKY.D in file yours.pif
-The file yours.pif is moved to /etc/iscan/virus/virGGCgdb4cP.
-
----
-
-------=_NextPart_000_0000_00000E4B.00003CC4--
-
-
+--=20
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
 
 
 -------------------------------------------------------

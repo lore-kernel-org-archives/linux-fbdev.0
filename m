@@ -1,18 +1,18 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Re: [PATCH] New radeonfb fork
-Date: 11 Apr 2003 14:57:10 +0200
+From: Matthew Hodgson <matthew@arasphere.net>
+Subject: vfb performance problems.
+Date: Fri, 11 Apr 2003 17:28:47 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1050065830.559.25.camel@zion.wanadoo.fr>
-References: <56639.80.180.244.42.1049891938.squirrel@squirrel.autistici.org>
-	 <1050048156.573.14.camel@zion.wanadoo.fr>  <3E96B979.8030007@autistici.org>
+Message-ID: <Pine.LNX.4.53L0.0304111723510.21591@phoenix.siarch.net>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from griffon.mipsys.com ([217.167.51.129] helo=zion.wanadoo.fr)
+Received: from pc1-oxfd1-3-cust164.oxfd.cable.ntl.com ([62.254.132.164] helo=mail.arasphere.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 193y60-0003x9-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 11 Apr 2003 05:57:33 -0700
-In-Reply-To: <3E96B979.8030007@autistici.org>
+	id 1941HZ-0000E6-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 11 Apr 2003 09:21:41 -0700
+Received: from localhost ([127.0.0.1] ident=matthew)
+	by mail.arasphere.net with esmtp (Exim 4.12)
+	id 1941OR-00072T-00
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 11 Apr 2003 17:28:47 +0100
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -22,44 +22,87 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: paride <torn@autistici.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, 2003-04-11 at 14:47, paride wrote:
-> Benjamin Herrenschmidt wrote:
-> > Looks like the PLL isn't locking properly. The latest driver I'll
-> > release (today hopefully) includes a workaround that _might_ help
-> 
-> I hope so, fixing this issue will make many toshiba and hp users very 
-> happy. There are two more thing I think it's better to tell you:
-> 
-> 1) This happened also with the standard radeonfb. When the driver is 
-> loaded, the whole screen image is moded up of about 3 or 4 mm. So the 
-> upper part of the screen is cut, and at the bottom there is a black 
-> strip. "fbset -vsync high" fixes this perfectly, so this isn't a real 
-> problem, maybe is just a characteristic of my hardware, telling you 
-> shouldn't hurt.
+Hi,
 
-Just to make sure I understood you, this also happens with my
-driver or not ? It's possible that your monitor EDID information
-as provided by the BIOS is slightly incorrect, I'll look if there
-is no parsing error on my side. Can you send me a dmesg output ?
+On compiling the vfb module, and writing a very simple user-mode program
+to mmap the vfb and then repeatedly memcpy to the framebuffer, I am
+getting spectacularly slow write performance.  To be precise, under 2.4.20
+and 2.4.21-pre7 the figures are:
 
-> 2) when switching from x to console, happens that when the text scrolls 
-> outside the screen, it reappears in the bottom part of the screen, very 
-> bigger, and everything gets messed up. I don't know if this could be 
-> related to the flicker problem, but it never happened with the old 
-> radeonfb. Playing a bit with fbset solves the problem. I didn't 
-> understand exactly what causes this, I'm investigating.
+architecture        | memcpy to mmaped vfb | fastmemcpy to malloced
+--------------------|----------------------|-----------------------
+Athlon 1800+XP      | 12.25MB/s            | 400MB/s
+Dual Athlon 2400+MP |  1.07MB/s            | 690MB/s
+Pentium 4 2.4GHz    | 15.81MB/s            | 640MB/s
 
-Isn't fixed by my latest version (URL below) ? 
-http://www.penguinppc.org/~benh/radeonfb-041103-2.4.20.diff
-http://www.penguinppc.org/~benh/radeonfb-041103-2.4.21-pre7.diff
+Where the second column is the same program, but memcpying (using a
+fastmemcpy pinched from the MPlayer source) straight to a user-mode
+malloc()ed 'framebuffer'.  The MPlayer code results in double the
+performance on Athlons beyond the normal libc memcpy.
 
+The skeletal form of the program (with error checking, timing code etc.
+removed) is:
 
-Ben.
+  fd = open("/dev/fb0", O_RDWR);
+  src1 = (unsigned char *) malloc(width * height * bytesperpixel);
+  src2 = (unsigned char *) malloc(width * height * bytesperpixel);
+  memset(src1, 0, width*height*bytesperpixel);
+  memset(src2, ~0, width*height*bytesperpixel);
+  data = (unsigned char*) mmap(0, width * height * bytesperpixel,
+                               PROT_WRITE, MAP_SHARED, fd, 0);
+//data = (unsigned char *) malloc(width * height * bytesperpixel);
+  while(1) {
+      memcpy(data, src1, width*height*bytesperpixel);
+      memcpy(data, src2, width*height*bytesperpixel);
+  }
 
+A readily compilable version of this can be found at
+http://www.arasphere.net/code/vfb_perftest.c
+
+I cannot understand why copying memory from user-space to kernel-space
+would be so much slower than from plain user-space to user-space.  I've
+tried a very stripped down version of the core vfb idea:
+
+static int mjhtest_init(void)
+{
+    ...
+    if (!(videomemory = (u_long)vmalloc(videomemorysize)))
+        return -ENOMEM;
+    ...
+}
+
+int mjhtest_remap_mmap(struct file *filp, struct vm_area_struct *vma) {
+    unsigned long offset = VMA_OFFSET(vma);
+
+    if (offset >= __pa(high_memory) || (filp->f_flags & O_SYNC))
+        vma->vm_flags |= VM_IO;
+    vma->vm_flags |= VM_RESERVED;
+
+    if (remap_page_range(vma->vm_start, offset, vma->vm_end-vma->vm_start,
+                         vma->vm_page_prot))
+        return -EAGAIN;
+
+    vma->vm_ops = &simple_remap_vm_ops;
+    simple_vma_open(vma);
+    return 0;
+}
+
+But this performs identically when writing to the offset in the total
+memory space exported where the vmalloc() has allocated.  Moreover, a
+nopage based implementation behaves identically too.
+
+any help would be hugely appreciated;
+
+thanks
+
+Matthew.
+
+_______________________________________
+Matthew Hodgson   matthew@arasphere.net
 
 
 -------------------------------------------------------

@@ -1,21 +1,17 @@
 From: Antonino Daplas <adaplas@pol.net>
-Subject: Re: Some questions
-Date: 08 Mar 2003 08:58:41 +0800
+Subject: Re: [BK updates]
+Date: 08 Mar 2003 09:46:39 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <1047084988.2388.4.camel@localhost.localdomain>
-References: <Pine.LNX.4.44.0303061526500.4540-100000@phoenix.infradead.org>	<3E688BDA.80
-	 80506@winischhofer.net> <1047045694.1310.6.camel@localhost.localdomain>
-	<3E68B895.2080500@winischhofer.net>
-	<1047067923.1226.26.camel@localhost.localdomain> 
-	<3E69065D.3090706@winischhofer.net>
+Message-ID: <1047087608.2389.31.camel@localhost.localdomain>
+References: <Pine.LNX.4.44.0303080024130.20304-100000@phoenix.infradead.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from pine.compass.com.ph ([202.70.96.37])
 	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18rSes-00087A-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 07 Mar 2003 16:57:50 -0800
-In-Reply-To: <3E69065D.3090706@winischhofer.net>
+	id 18rTPF-0002b7-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 07 Mar 2003 17:45:45 -0800
+In-Reply-To: <Pine.LNX.4.44.0303080024130.20304-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -26,48 +22,92 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Thomas Winischhofer <thomas@winischhofer.net>
-Cc: James Simmons <jsimmons@infradead.org>, Sven Luther <luther@dpt-info.u-strasbg.fr>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-On Sat, 2003-03-08 at 04:51, Thomas Winischhofer wrote:
-> I don't see why this is simpler, but I do see it wastes a lot of screen 
-> space :)
+On Sat, 2003-03-08 at 08:26, James Simmons wrote:
+> 
+> Hi folks!!!
+> 
+>   More updates. Lots of fixes in drivers and in the upper layers. Its 
+> starting to really shape up. You can get the standard diff at
 > 
 
-yep, it'a a typo.
+James, 
+
+The ff. code is not totally correct:
+
+static int fbcon_resize(struct vc_data *vc, unsigned int width, 
+			unsigned int height)
+{
+	struct display *p = &fb_display[vc->vc_num];
+	struct fb_info *info = p->fb_info;
+	struct fb_var_screeninfo var = info->var;
+	int err; int x_diff, y_diff;
+	int fw = vc->vc_font.width;
+	int fh = vc->vc_font.height;
+
+	var.xres = width * fw;
+	var.yres = height * fh;
+	x_diff = info->var.xres - var.xres;
+	y_diff = info->var.yres - var.yres;
+	if (x_diff < 0 || x_diff > fw ||
+	   (y_diff < 0 || y_diff > fh)) {
+		var.activate = FB_ACTIVATE_TEST;
+		err = fb_set_var(&var, info);
+		if (err || width > var.xres/fw ||
+		    height > var.yres/fh)
+			return -EINVAL;
+		DPRINTK("resize now %ix%i\n", var.xres, var.yres);
+		var.activate = FB_ACTIVATE_NOW;
+		fb_set_var(&var, info);
+	}
+	p->vrows = var.yres_virtual/fh;
+	if(var.yres > (fh * (height + 1)))
+		p->vrows -= (var.yres - (fh * height)) / fh;
+	return 0;
+}
+
+I'm getting tired of explaining this repeatedly, so I'll give 2
+hypothetical cases:
+
+Case 1:
+
+1. display is at 800x600, fonts are 8x16.
+2. console requests width of 100, row of 37, which are computed as
+800x592
+3. the requested resolution is tested against the actual, and since the
+difference between the actual yres (600) and requested yres (592) is
+less than a character height, doing an fb_set_var() is skipped.
+4. in the last 3 lines, p->vrows is adjusted, but it uses the requested
+yres (592) instead of the actual (600).  This part is wrong.
+
+Case 2:
+
+1. again, display is at 800x600, fonts are 8x16
+2. console requests width of 128, row of 48, which are computed as
+1024x768. 
+3. the requested resolution is tested against the actual, and determines
+that it needs to do an fb_set_var() because the difference between the
+requested and actual dimensions are greater than a character's
+dimensions.
+4. it first does a check if the resolution is acceptable
+(FB_ACTIVATE_TEST).  The hardware supports it, so it passes the test.
+5. it then proceeds changing the video mode (FB_ACTIVATE_NOW).  Look at
+fb_set_var() in fbmem.c.  Note that the var returned from
+xxfb_check_var() is placed in info->var before doing an
+xxxfb_set_par().  So upon return, the requested var is the same as the
+one in info->var
+6. in the last two lines, it does not matter if it uses the requested
+yres or the actual yres.  In this case, it will be the same.
+
+So using info->var.yres, instead of var.yres is preferable because
+info->var will always be right.  In this specific code, the effect is
+probably insignificant, but I hate code that does not do what's
+expected.  It might appear as a hard-to-catch bug later on.
 
 Tony
 
-diff -Naur linux-2.5.64-fbdev/drivers/video/console/fbcon.c linux-2.5.64/drivers/video/console/fbcon.c
---- linux-2.5.64-fbdev/drivers/video/console/fbcon.c	2003-03-07 15:03:06.000000000 +0000
-+++ linux-2.5.64/drivers/video/console/fbcon.c	2003-03-08 00:49:09.000000000 +0000
-@@ -1044,6 +1044,7 @@
- 		vc->vc_rows = nr_rows;
- 	}
- 	p->vrows = info->var.yres_virtual / vc->vc_font.height;
-+	p->vrows -= info->var.yres/h - vc->vc_rows;
- 	if ((info->var.yres % vc->vc_font.height) &&
- 	    (info->var.yres_virtual % vc->vc_font.height <
- 	     info->var.yres % vc->vc_font.height))
-@@ -1821,8 +1822,9 @@
- 		DPRINTK("resize now %ix%i\n", var.xres, var.yres);
- 		var.activate = FB_ACTIVATE_NOW;
- 		fb_set_var(&var, info);
--		p->vrows = info->var.yres_virtual/fh;
- 	}
-+	p->vrows = info->var.yres_virtual/fh;
-+	p->vrows -= (info->var.yres + (fh - 1))/fh - vc->vc_rows;
- 	return 0;
- }
- 
-@@ -2094,6 +2096,7 @@
- 		/* reset wrap/pan */
- 		info->var.xoffset = info->var.yoffset = p->yscroll = 0;
- 		p->vrows = info->var.yres_virtual / h;
-+		p->vrows -= info->var.yres/h - vc->vc_rows;
- 		if ((info->var.yres % h)
- 		    && (info->var.yres_virtual % h < info->var.yres % h))
- 			p->vrows--;
 
 
 

@@ -1,25 +1,37 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [patch] radeonfb: FB_WAITFORVSYNC implementation
-Date: Sat, 12 Mar 2005 12:56:33 -0500
-Message-ID: <9e47339105031209566791e3b9@mail.gmail.com>
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
+Subject: Re: [patch] radeonfb: FB_WAITFORVSYNC
+	implementation
+Date: Sat, 12 Mar 2005 14:20:24 -0500
+Message-ID: <1110655224.4010.469.camel@localhost>
 References: <1110636406.5997.86.camel@atlantis.netenviron.com>
-	 <9e473391050312073314dcb39f@mail.gmail.com>
-	 <1110646984.5997.96.camel@atlantis.netenviron.com>
-	 <1110648119.5997.100.camel@atlantis.netenviron.com>
+	 <20050312151318.GA27200@sci.fi>  <1110647422.4004.456.camel@localhost>
+	 <1110647557.5997.98.camel@atlantis.netenviron.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DAAqq-0001Qw-L6
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 12 Mar 2005 09:56:36 -0800
-Received: from rproxy.gmail.com ([64.233.170.204])
+	id 1DACA8-0005fH-S7
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 12 Mar 2005 11:20:36 -0800
+Received: from darkcity.gna.ch ([195.226.6.9])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DAAqp-0005vw-75
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 12 Mar 2005 09:56:36 -0800
-Received: by rproxy.gmail.com with SMTP id z35so1906636rne
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 12 Mar 2005 09:56:33 -0800 (PST)
-In-Reply-To: <1110648119.5997.100.camel@atlantis.netenviron.com>
+	id 1DACA7-0003VN-2b
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 12 Mar 2005 11:20:36 -0800
+Received: from localhost (localhost [127.0.0.1])
+	by darkcity.gna.ch (Postfix) with ESMTP id 0D2FE18B5E8
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 12 Mar 2005 20:20:33 +0100 (CET)
+Received: from unknown by localhost (amavisd-new, unix socket)
+ id client-XX3qVLHi for <linux-fbdev-devel@lists.sourceforge.net>;
+ Sat, 12 Mar 2005 20:20:31 +0100 (CET)
+Received: from localhost (CPE001124084852-CM014500006147.cpe.net.cable.rogers.com [65.48.154.37])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by darkcity.gna.ch (Postfix) with ESMTP id AC41918B5E3
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 12 Mar 2005 20:20:29 +0100 (CET)
+Received: from daenzer by localhost with local (Exim 4.50)
+	id 1DAC9x-00050I-DQ
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 12 Mar 2005 14:20:25 -0500
+In-Reply-To: <1110647557.5997.98.camel@atlantis.netenviron.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,62 +42,41 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="euc-kr"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-On Sat, 12 Mar 2005 17:21:58 +0000, Torgeir Veimo <torgeir@pobox.com> wrote:
-> On Sat, 2005-03-12 at 17:03 +0000, Torgeir Veimo wrote:
-> > On Sat, 2005-03-12 at 10:33 -0500, Jon Smirl wrote:
-> > > You can't do this without coordination from X and DRM.
-> >
-> > > Because of these issues WAITFORVSYNC in radeondb has to wait for
-> > > merged DRM/fbdev to be implemented.
-> >
-> > It's a bit hard to track the merge-dri-and-db work,
-> 
-> ^^ merge-dri-and-fb
+On Sat, 2005-03-12 at 17:12 +0000, Torgeir Veimo wrote:
+> On Sat, 2005-03-12 at 12:10 -0500, Michel D=C3=A4nzer wrote:
+> > On Sat, 2005-03-12 at 17:13 +0200, Ville Syrj=C3=A4l=C3=A4 wrote:
+> > >=20
+> > > Also adding support for FB_ACTIVATE_VBL should be quite simple now.
+> >=20
+> > You don't need an interrupt for that. You can choose via the
+> > CRTC_OFFSET_CNTL:CRTC_OFFSET_FLIP_CNTL bit whether the update of the
+> > CRTC offset should take effect immediately or on the next vertical
+> > blank.
+> >=20
+> > Personally, I'm not sure why something that needs this functionality
+> > can't use the DRM...
+>=20
+> My interest for adding this is video playback. It's kind of hard to do
+> through the DRM.
 
-Merging DRM and fbdev is happening in bits and pieces in both DRM and
-fbdev. I've already tried once at building it as a separate project
-and the political hassles of getting it merged made me stop. The new
-approach is to add the various bits to both drivers until they will
-merge with each other. A big piece of getting fbdev ready for DRM was
-getting the extended sysfs and module support that just went in.
+You don't have to use the DRM for anything but the wait for vsync; I can
+see the effort of initializing the DRM to the point where this is
+possible being prohibitive though.
 
-BenH is working on a new version of radeonfb with support for both
-heads. I've stopped working on radeonfb until this lands since it
-changes 90% of the code.
+The real point is that the usage of the interrupt needs to be
+coordinated between the framebuffer device and the DRM. Something like
+the first one to request the IRQ setting up a callback mechanism where
+the other can hook into might be a possibility? Or the shared
+mini-driver that has been proposed for years, but isn't liked by some...
 
-Once the foundation is in place I'll modify DRM to attach to fbdev
-instead of loading as a standalone driver. At that point we can work
-on shared interrupt and buffer management code.
 
-There are still some major unsettled issues:
-
-1) where is the list of valid modes computed? in-kernel or user space.
-Technically either will work but each has plus and minuses. Right now
-radeonfb can do both.
-
-1a) #1 is computing the mode list, not setting the mode. The mode is
-always set in the kernel.
-
-2) multiheads implies buffer management, this needs to be coordinated with DRM
-
-3) fbdev needs to implement hardware cursors
-
-4) The fb_info struct doesn't work too well for multiple heads. It
-really should be split up into fb_device/fb_head.
-
-5) driver initiated secondary card reset needs to be implement via a
-user space helper.
-
-6) fbcon is tied way too closely to fb_info. There should be an
-interface instead of just letting it muck around in fbdev data
-structures.
-
--- 
-Jon Smirl
-jonsmirl@gmail.com
+--=20
+Earthling Michel D=C3=A4nzer      |     Debian (powerpc), X and DRI develop=
+er
+Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=3Ddaenzer
 
 
 -------------------------------------------------------

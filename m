@@ -1,26 +1,22 @@
-From: Alex Stewart <alex@foogod.com>
-Subject: neofb patches
-Date: Thu, 15 Apr 2004 19:58:44 -0700
+From: Unknown <unknown@unknown.invalid>
+Subject: Undeliverable message returned to sender
+Date: Fri, 16 Apr 2004 03:56:20 +0000 (UCT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20040416025844.GB4605@foogod.com>
-Mime-Version: 1.0
+Message-ID: <20040416035620.521192DF4EA@mail24-haw-R.bigfish.com>
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BEJYz-0003le-G0
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 15 Apr 2004 19:58:45 -0700
-Received: from adsl-209-182-168-213.value.net ([209.182.168.213] helo=firestar.foogod.com)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1BEKSn-0005nE-OF
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 15 Apr 2004 20:56:25 -0700
+Received: from mail-haw.bigfish.com ([12.129.199.61] helo=mail24-haw-R.bigfish.com)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.30)
-	id 1BEJYz-0001Uq-6C
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 15 Apr 2004 19:58:45 -0700
-Received: from firestar.foogod.com (firestar [127.0.0.1])
-	by firestar.foogod.com (8.12.8/8.12.5) with ESMTP id i3G2wilu005455
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 15 Apr 2004 19:58:44 -0700
-Received: (from alex@localhost)
-	by firestar.foogod.com (8.12.8/8.12.8/Submit) id i3G2wi9n005453
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 15 Apr 2004 19:58:44 -0700
-Content-Disposition: inline
+	id 1BEKSn-0000gy-GC
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 15 Apr 2004 20:56:25 -0700
+Received: from localhost.localdomain (localhost.localdomain [127.0.0.1])
+	by mail24-haw-R.bigfish.com (Postfix) with ESMTP id 521192DF4EA
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 16 Apr 2004 03:56:20 +0000 (UCT)
+From: Content Filter <>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,21 +26,41 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Greetings all,
+This message was created automatically by mail delivery software.
 
-I recently tried using the Neomagic framebuffer driver (from kernel 2.6.5) with
-my laptop, and noticed it seemed to have a few ...issues. :)
+Delivery failed for the following recipients(s):
+ 	pcaudio@crystal.cirrus.com
 
-So over the past few days I decided to go through and fix a bunch of the
-problems I found, and have put together quite a few patches for submission.  Is
-this list the right place to send patches for this driver, or is there
-somewhere else which would be more appropriate?
+The message you sent contained an attachment which the recipient has chosen to block.
+Usually these sort of attachments are blocked to prevent malicious software from
+being sent to the recipient in question.
 
--alex
+The name(s) of the blocked file(s) follow:
+	message.scr
+
+To send this file, please place it in a compressed archive using WinZip (http://www.winzip.com) or the archive software of your choice.
+
+----- Original Message Header -----
+Received: by mail24-haw (MessageSwitch) id 1082087780100195_23753; Fri, 16 Apr 2004 03:56:20 +0000 (UCT)
+Received: from crystal.cirrus.com (unknown [211.104.119.245])
+	by mail24-haw.bigfish.com (Postfix) with ESMTP id 137702DF42E
+	for <pcaudio@crystal.cirrus.com>; Fri, 16 Apr 2004 03:56:18 +0000 (UCT)
+From: linux-fbdev-devel@lists.sourceforge.net
+To: pcaudio@crystal.cirrus.com
+Subject: Mail Delivery (failure pcaudio@crystal.cirrus.com)
+Date: Fri, 16 Apr 2004 12:56:22 +0900
+MIME-Version: 1.0
+Content-Type: multipart/related;
+	type="multipart/alternative";
+	boundary="----=_NextPart_000_001B_01C0CA80.6B015D10"
+X-Priority: 3
+X-MSMail-Priority: Normal
+Message-Id: <20040416035618.137702DF42E@mail24-haw.bigfish.com>
 
 
 -------------------------------------------------------

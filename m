@@ -1,81 +1,51 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH] fix endian problem in color_imageblit
-Date: Fri, 20 Dec 2002 19:54:52 +0000 (GMT)
-Sender: linux-kernel-owner@vger.kernel.org
-Message-ID: <Pine.LNX.4.44.0212201932150.6471-100000@phoenix.infradead.org>
-References: <1039914261.1131.70.camel@localhost.localdomain>
+Subject: Re: Mirrored Display?
+Date: Fri, 20 Dec 2002 19:49:00 +0000 (GMT)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <Pine.LNX.4.44.0212201947290.6471-100000@phoenix.infradead.org>
+References: <200212131733.42340.kaufmann@sohard.de>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
-In-Reply-To: <1039914261.1131.70.camel@localhost.localdomain>
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
+	by sc8-sf-list1.sourceforge.net with esmtp 
+	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18PT9M-0001tR-00
+	for <Linux-fbdev-devel@lists.sourceforge.net>; Fri, 20 Dec 2002 11:49:37 -0800
+In-Reply-To: <200212131733.42340.kaufmann@sohard.de>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Antonino Daplas <adaplas@pol.net>
-Cc: Paul Mackerras <paulus@samba.org>, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Michael Kaufmann <kaufmann@sohard.de>
+Cc: Linux-fbdev-devel@lists.sourceforge.net
 
 
-> Nice catch :-)  We also need a similar fix for slow_imageblit(), so
-> James can you apply the attached patch also:
+> I've modified existing drivers, and after a lot of work i now have a clear
+> picture on my display. Unfortunately, the complete picture is mirrored.
+> The Bootlogo is top/right instead of top/left and the ascii output starts from 
+> right to left. 
 
-Applied.
+Some hardware supports mirroring. Sounds like you turned it on by mistake.
 
-> Also, I noticed that some drivers load the pseudo_palette with entries
-> whose length matches the length of the pixel.  The cfb_* functions
-> always assume that each pseudo_palette entry is an "unsigned long", so
-> bpp16 will segfault, and so will bpp24/32 for 64-bit machines.
+> Where is the right place to modify this behaviour? 
+> I'm also looking for a possibility to rotate the picture.
+> Because my videocontroller can emulate 15 grayscales, i'm useing 4bpp.
 
-I just noticed that as well. Russell King pointed to it too. I fixed
-the unsigned long problem in color_imageblit. All the pseudo_palette
-in cfb_* are assumed u32. Is this safe for 16bpp or 8 bpp modes? I will
-have test to see. The u16 problem might explain why some people have
-trouble with the VESA framebuffer. To all the people having trouble
-booting to certain modes for the VESA fraembuffer can you try this patch.
-Tell me if it fixes your problems.
+The latest 2.5.X kernels have hardware hooks for rotation. I haven't added 
+it yet to the software accel functions. I plan to a soon as I get time.
+Thank you.
 
---- /usr/src/linus-2.5/drivers/video/cfbimgblt.c	Mon Dec  9 22:23:32 2002
-+++ cfbimgblt.c	Fri Dec 20 12:35:25 2002
-@@ -102,11 +102,10 @@
- 				   unsigned long start_index, unsigned long pitch_index)
- {
- 	/* Draw the penguin */
--	int i, n;
--	unsigned long bitmask = SHIFT_LOW(~0UL, BITS_PER_LONG - p->var.bits_per_pixel);
--	unsigned long *palette = (unsigned long *) p->pseudo_palette;
- 	unsigned long *dst, *dst2, color = 0, val, shift;
--	unsigned long null_bits = BITS_PER_LONG - p->var.bits_per_pixel;
-+	int i, n, bpp = p->var.bits_per_pixel;
-+	unsigned long null_bits = BITS_PER_LONG - bpp;
-+	u32 *palette = (u32 *) p->pseudo_palette;
- 	u8 *src = image->data;
 
- 	dst2 = (unsigned long *) dst1;
-@@ -125,9 +124,10 @@
- 		while (n--) {
- 			if (p->fix.visual == FB_VISUAL_TRUECOLOR ||
- 			    p->fix.visual == FB_VISUAL_DIRECTCOLOR )
--				color = palette[*src] & bitmask;
-+				color = palette[*src];
- 			else
--				color = *src & bitmask;
-+				color = *src;
-+			color <<= LEFT_POS(bpp);
- 			val |= SHIFT_HIGH(color, shift);
- 			if (shift >= null_bits) {
- 				FB_WRITEL(val, dst++);
-@@ -136,7 +136,7 @@
- 				else
- 					val = SHIFT_LOW(color, BITS_PER_LONG - shift);
- 			}
--			shift += p->var.bits_per_pixel;
-+			shift += bpp;
- 			shift &= (BITS_PER_LONG - 1);
- 			src++;
- 		}
-@@ -188,6 +188,7 @@
- 				color = fgcolor;
- 			else
- 				color = bgcolor;
-+			color <<= LEFT_POS(bpp);
- 			val |= SHIFT_HIGH(color, shift);
 
- 			/* Did the bitshift spill bits to the next long? */
+-------------------------------------------------------
+This SF.NET email is sponsored by:  The Best Geek Holiday Gifts!
+Time is running out!  Thinkgeek.com has the coolest gifts for
+your favorite geek.   Let your fingers do the typing.   Visit Now.
+T H I N K G E E K . C O M        http://www.thinkgeek.com/sf/

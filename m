@@ -1,21 +1,26 @@
-From: Jon Smirl <jonsmirl@yahoo.com>
-Subject: Re: [Dri-devel] Re: DRM and pci_driver conversion
-Date: Sat, 25 Oct 2003 14:02:04 -0700 (PDT)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: VesaFB/OFFb power management.
+Date: Sat, 25 Oct 2003 23:54:38 +0200
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <20031025210204.30378.qmail@web14913.mail.yahoo.com>
-References: <Pine.LNX.4.44.0310251116140.4083-100000@home.osdl.org>
+Message-ID: <1067118878.3570.17.camel@gaston>
+References: <Pine.LNX.4.44.0310222359470.25125-100000@phoenix.infradead.org>
+Reply-To: benh@kernel.crashing.org
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp 
 	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 1ADVbr-0003gL-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 25 Oct 2003 14:06:07 -0700
-Received: from web14913.mail.yahoo.com ([216.136.225.240])
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.24)
-	id 1ADVXx-0004sC-BF
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 25 Oct 2003 14:02:05 -0700
-In-Reply-To: <Pine.LNX.4.44.0310251116140.4083-100000@home.osdl.org>
+	id 1ADWN3-0003Fm-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 25 Oct 2003 14:54:53 -0700
+Received: from griffin-can-au.getin2net.com ([203.43.225.34])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.24)
+	id 1ADWN0-0002oX-QQ
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 25 Oct 2003 14:54:51 -0700
+Received: from gaston ([10.100.1.33])
+	by griffin-can-au.getin2net.com (8.11.6/8.11.6) with ESMTP id h9PIrUs23272
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 26 Oct 2003 07:53:30 +1300
+In-Reply-To: <Pine.LNX.4.44.0310222359470.25125-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -26,53 +31,19 @@ List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-deve
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: Jon Smirl <jonsmirl@yahoo.com>, Eric Anholt <eta@lclark.edu>, kronos@kronoz.cjb.net, Kernel Mailing List <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net, dri-devel <dri-devel@lists.sourceforge.net>, Jeff Garzik <jgarzik@pobox.com>, Egbert Eich <eich@xfree86.org>
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
---- Linus Torvalds <torvalds@osdl.org> wrote:
-> Quite frankly, I'd much rather see a low-level graphics driver that does
-> _two_ things, and those things only:
-> 
->  - basic hardware enumeration and setup (and no, "basic setup" does not
->    mean "mode switching": it literally means things like doing the 
->    pci_enable_device() stuff.
-> 
->  - serialization and arbitrary command queuing from a _trusted_ party (ie
->    it could take command lists from the X server, but not from untrusted
->    clients). This part basically boils down to "DMA and interrupts". This 
->    is the part that allows others to wait for command completion, "enough 
->    space in the ring buffers" etc. But it does _not_ know or care what the 
->    commands are.
-> 
-> Then, fbcon and DRI and X could all three use these basics - and they'd be
-> _so_ basic that the hardware layer could be really stable (unlike the DRI
-> code that tends to have to upgrade for each new type of command that DRI
-> adds - since it has to take care of untrusted clients. So DRI would
-> basically use the low-level driver as a separate module, the way it
-> already uses AGP).
-> 
+On Thu, 2003-10-23 at 01:09, James Simmons wrote:
+> I like to be able to suspend and resume these drivers. I noticed the 
+> SA1100 driver does this using struct device_driver. Is it possible to do 
+> this for VesaFB/OFFb ? What would be the bus field then?There isn't much you can do with offb. This is a completely static
+driver that inherits from the HW as it was set by the firmware and
+can't change anything later on... except the palette with some hacks
+on some known cards...
 
-Linus, why don't you refuse updates from these projects until this is sorted
-out? Your proposal is exactly what it needed. For a year now I have been poking
-at these issues and making very little progress. I do know that all of the
-pieces needed already exist; but without some incentive there is very little
-reason to rearchitect the existing code. 
+Ben.
 
-Personally I'm working on a standalone version of Mesa (OpenGL). This would
-allow us to write a 3D hardware based windowing system in response to the ones
-on the Mac and MS Longhorn. But instead of working on a windowing system I've
-spent all of my time trying to help sort out the video device drivers.
-
-
-=====
-Jon Smirl
-jonsmirl@yahoo.com
-
-__________________________________
-Do you Yahoo!?
-Exclusive Video Premiere - Britney Spears
-http://launch.yahoo.com/promos/britneyspears/
 
 
 -------------------------------------------------------

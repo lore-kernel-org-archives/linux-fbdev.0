@@ -1,60 +1,53 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: Where is a current fbdev tree
-Date: Sat, 9 Oct 2004 05:35:34 +0800
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200410090535.34742.adaplas@hotpop.com>
-References: <200410061934.35004.alex.kern@gmx.de> <200410070351.23449.adaplas@hotpop.com> <41645988.104D80DD@orpatec.ch>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Adrian Bunk <bunk@stusta.de>
+Subject: Re: drivers/built-in.o(.text+0x1411f): In function `neo_scan_monitor
+Date: Sun, 10 Oct 2004 01:36:42 +0200
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <20041009233641.GB3727@stusta.de>
+References: <415B2974.2020208@michel.eti.br>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CG2QJ-0004Ub-Bo
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 08 Oct 2004 14:37:11 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1CG2QI-0004rY-AJ
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 08 Oct 2004 14:37:11 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 635F38CA884
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri,  8 Oct 2004 21:36:57 +0000 (UTC)
-In-Reply-To: <41645988.104D80DD@orpatec.ch>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S267556AbUJIXkd@vger.kernel.org>
 Content-Disposition: inline
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+In-Reply-To: <415B2974.2020208@michel.eti.br>
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, Otto Wyss <otto.wyss@orpatec.ch>
+Content-Transfer-Encoding: 7bit
+To: Michel Angelo da Silva Pereira <michel@michel.eti.br>
+Cc: linux-kernel@vger.kernel.org, Denis Oliver Kropp <dok@directfb.org>, jsimmons@infradead.org, geert@linux-m68k.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Thursday 07 October 2004 04:45, Otto Wyss wrote:
-> "Antonino A. Daplas" wrote:
-> > On Thursday 07 October 2004 01:34, Alexander Kern wrote:
-> > > Hello, I search for current location of fbdev tree. Preferably diff
-> > > patch against vanilla or mm tree.
-> >
-> > Consider Andrew's mm tree as containing the latest fbdev changes.
->
-> I would be much better to have the latest fbdev changes here on this
-> site and use kbuild. So any kernel sources could be used.
->
+On Wed, Sep 29, 2004 at 06:30:28PM -0300, Michel Angelo da Silva Pereira wrote:
 
-Ok, how do we do that?  Note that I don't have any write access to
-the linux-fbdev site.
-
-Tony
-
-
+> 	I'm getting this error on compiling 2.6.9-rc2 with FrameBuffer 
+> 	support for my ThinkPad.
+> 	01:00.0 VGA compatible controller: Neomagic Corporation NM2200 
+> 	[MagicGraph 256AV] (rev 20)
+> 
+>   LD      .tmp_vmlinux1
+> drivers/built-in.o(.text+0x1411f): In function `neo_scan_monitor':
+> : undefined reference to `vesa_modes'
+> drivers/built-in.o(.text+0x141bf): In function `neo_scan_monitor':
+> : undefined reference to `vesa_modes'
+> drivers/built-in.o(.text+0x1420b): In function `neo_scan_monitor':
+> : undefined reference to `vesa_modes'
+> make: ** [.tmp_vmlinux1] Erro 1
+> root@nerdbook:/usr/src/linux#
 
 
--------------------------------------------------------
-This SF.net email is sponsored by: IT Product Guide on ITManagersJournal
-Use IT products in your business? Tell us what you think of them. Give us
-Your Opinions, Get Free ThinkGeek Gift Certificates! Click to find out more
-http://productguide.itmanagersjournal.com/guidepromo.tmpl
+Thanks for this report!
+
+This is a bug still present in both 2.6.9-rc3 and 2.6.9-rc3-mm3.
+
+The following patch should fix it:
+
+
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+
+--- linux-2.6.9-rc3-mm3/drivers/video/Kconfig.old	2004-10-10 01:31:52.000000000 +0200
++++ linux-2.6.9-rc3-mm3/drivers/video/Kconfig	2004-10-10 01:32:26.000000000 +0200
+@@ -793,6 +793,7 @@
+ config FB_NEOMAGIC
+ 	tristate "NeoMagic display support"
+ 	depends on FB && PCI
++	select FB_MODE_HELPERS
+ 	help
+ 	  This driver supports notebooks with NeoMagic PCI chips.
+ 	  Say Y if you have such a graphics card. 

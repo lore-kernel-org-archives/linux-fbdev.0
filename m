@@ -1,83 +1,110 @@
-From: Egbert Eich <eich@pdx.freedesktop.org>
-Subject: Re: [Dri-devel] Redesign of kernel graphics interface
-Date: Mon, 10 May 2004 14:07:48 +0200
-Sender: mesa3d-dev-admin@lists.sourceforge.net
-Message-ID: <16543.28820.68493.459151@xf11.fra.suse.de>
-References: <20040506181639.61975.qmail@web14929.mail.yahoo.com>
+From: amavisd-new <postmaster@si-ems03.si.edu>
+Subject: BANNED FILENAME (abuselist.zip) IN MAIL FROM YOU
+Date: Mon, 10 May 2004 11:18:21 -0400 (EDT)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Message-ID: <VS12412-06@si-ems03>
+References: <20040510151817.C8EB31758@si-ems03.si.edu>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <mesa3d-dev-admin@lists.sourceforge.net>
-In-Reply-To: jonsmirl@yahoo.com wrote on Thursday, 6 May 2004 at 11:16:39 -0700 
-Errors-To: mesa3d-dev-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
-	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=unsubscribe>
+Content-Type: multipart/report; report-type=delivery-status;
+    boundary="----------=_1084202301-12412-5"
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BNCXz-00005L-Uo
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 10 May 2004 08:18:27 -0700
+Received: from si-ems03.si.edu ([160.111.252.30])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.30)
+	id 1BNCXz-0007Wy-Lj
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 10 May 2004 08:18:27 -0700
+Received: from localhost (localhost [127.0.0.1])
+	by si-ems03.si.edu (SI-Mailer) with ESMTP id C37381ABF
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 10 May 2004 11:18:21 -0400 (EDT)
+In-Reply-To: <20040510151817.C8EB31758@si-ems03.si.edu>
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:mesa3d-dev@lists.sourceforge.net>
-List-Help: <mailto:mesa3d-dev-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/mesa3d-dev>,
-	<mailto:mesa3d-dev-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=mesa3d-dev>
-Content-Type: text/plain; charset="us-ascii"
-To: Jon Smirl <jonsmirl@yahoo.com>
-Cc: dri-devel <dri-devel@lists.sourceforge.net>, mesa3d-dev <mesa3d-dev@lists.sourceforge.net>, fb-devel <linux-fbdev-devel@lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Jon Smirl writes:
- > At the X Developers Conference there was a discussion of the issues around
- > framebuffer and DRI. Theodore Ts'o suggested that I write it up and post it for
- > discussion. I'm going to try and list all of the issues I've heard from all
- > sides so some of the proposed solutions are in conflict. The goal of this list
- > is to provide direction for a topic discussion at the Ottawa Kernel Summit.
- > 
- > The top item is that accessing the video hardware is a free for all. There are
- > two device drivers, FB and DRI, plus numerous user space apps, like X and
- > SVGlib, all trying to control the hardware. The result of this is that it is
- > easy to lock up your machine when switching between the different usages. X does
- > particularly nasty things to the hardware from user space without informing the
- > kernel.
+This is a multi-part message in MIME format...
 
-Here it should be looked at why this is the case.
+------------=_1084202301-12412-5
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
- > 
- > First is a little background that should have been in my original post:
- > http://thunker.thunk.org/pipermail/ksummit-2004-discuss/2004-May/000399.html
- > 
- > Next is the orginal post:
- > http://thunker.thunk.org/pipermail/ksummit-2004-discuss/2004-May/000379.html
- > 
- > The reply thread on the kernel summit list is here:
- > http://thunker.thunk.org/pipermail/ksummit-2004-discuss/2004-May/thread.html
- > 
- > Some talk about doing a better video memory manager and kgi is here:
- > http://marc.theaimsgroup.com/?l=dri-devel&r=1&b=200405&w=2
- > 
- > A major topic that I missed in the original list was how to handle BSD. DRM is
- > under the BSD license and FB is GPL. If these two code bases are merged, what
- > are we going to do about BSD? I don't know the appropriate BSD lists to post
- > this to so please forward as necessary.
+BANNED FILENAME ALERT
 
-The problem is bigger than that. There are other OSes that take advantage of
-the mode initialization code in X. Those people don't have their own mailing
-lists but exchange informations on those of the X projects. Most of them
-should be active on the XFree86 lists.
+Our content checker found
+    banned name: abuselist.zip
+in your email to the following recipient:
+-> megonigal@serc.si.edu
 
- > 
- > Another topic that I missed was, why did kgi fail and what can we do to avoid
- > repeating the same path this time around.
- > 
- > After the flames from this settle down I'll try to write a document summarizing
- > the conclusions reached, if any. The best possible outcome would be a design
- > document for review at Kernel Summit.
- > 
+Please check your system,
+or ask your system administrator to do so.
 
-There are many considerations from the XFree86/X.Org Xserver side that people
-here may only be marginally aware of. After all, these people were those who
-were involved with some of the issues the most in the past.
-It would be useful to give those people a chance to state their views, too.
-
-Egbert.
+Delivery of the email was stopped!
 
 
+For your reference, here are headers from your email:
+------------------------- BEGIN HEADERS -----------------------------
+Received: from serc.si.edu (ANice-107-1-10-60.w83-112.abo.wanadoo.fr [83.112.153.60])
+	by si-ems03.si.edu (SI-Mailer) with SMTP id C8EB31758
+	for <megonigal@serc.si.edu>; Mon, 10 May 2004 11:18:17 -0400 (EDT)
+From: linux-fbdev-devel@lists.sourceforge.net
+To: megonigal@serc.si.edu
+Subject: Fwd: Warning again
+Date: Mon, 10 May 2004 17:18:22 +0200
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_0016----=_NextPart_000_0016"
+X-Priority: 3
+X-MSMail-Priority: Normal
+Message-Id: <20040510151817.C8EB31758@si-ems03.si.edu>
+-------------------------- END HEADERS ------------------------------
 
+------------=_1084202301-12412-5
+Content-Type: message/delivery-status
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Content-Description: Delivery error report
+
+Reporting-MTA: dns; si-ems03
+Received-From-MTA: smtp; si-ems03.si.edu ([127.0.0.1])
+Arrival-Date: Mon, 10 May 2004 11:18:21 -0400 (EDT)
+
+Final-Recipient: rfc822; megonigal@serc.si.edu
+Action: failed
+Status: 5.7.1
+Diagnostic-Code: smtp; 550 5.7.1 Message content rejected, id=12412-06 - BANNED: abuselist.zip
+Last-Attempt-Date: Mon, 10 May 2004 11:18:21 -0400 (EDT)
+
+------------=_1084202301-12412-5
+Content-Type: text/rfc822-headers
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Content-Description: Undelivered-message headers
+
+Received: from serc.si.edu (ANice-107-1-10-60.w83-112.abo.wanadoo.fr [83.112.153.60])
+	by si-ems03.si.edu (SI-Mailer) with SMTP id C8EB31758
+	for <megonigal@serc.si.edu>; Mon, 10 May 2004 11:18:17 -0400 (EDT)
+From: linux-fbdev-devel@lists.sourceforge.net
+To: megonigal@serc.si.edu
+Subject: Fwd: Warning again
+Date: Mon, 10 May 2004 17:18:22 +0200
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_0016----=_NextPart_000_0016"
+X-Priority: 3
+X-MSMail-Priority: Normal
+Message-Id: <20040510151817.C8EB31758@si-ems03.si.edu>
+
+------------=_1084202301-12412-5--
 
 
 -------------------------------------------------------

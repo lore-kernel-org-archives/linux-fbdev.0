@@ -1,17 +1,17 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: "Maciej W. Rozycki" <macro@ds2.pg.gda.pl>
 Subject: Re: Re: [macro@ds2.pg.gda.pl: Re: PMAG-A support?]
-Date: Tue, 12 Aug 2003 16:04:16 +0200 (MEST)
+Date: Tue, 12 Aug 2003 17:14:30 +0200 (MET DST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.GSO.4.21.0308121602420.20533-100000@vervain.sonytel.be>
-References: <20030812135957.GC10792@rembrandt.csv.ica.uni-stuttgart.de>
+Message-ID: <Pine.GSO.3.96.1030812170254.7029H-100000@delta.ds2.pg.gda.pl>
+References: <20030812063707.GC23104@rembrandt.csv.ica.uni-stuttgart.de>
+Reply-To: "Maciej W. Rozycki" <macro@ds2.pg.gda.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from mail2.sonytel.be ([195.0.45.172] helo=witte.sonytel.be)
+Received: from delta.ds2.pg.gda.pl ([213.192.72.1] ident=macro)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 3.31-VA-mm2 #1 (Debian))
-	id 19mZmJ-00037r-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 12 Aug 2003 07:05:35 -0700
-In-Reply-To: <20030812135957.GC10792@rembrandt.csv.ica.uni-stuttgart.de>
+	id 19marG-0003mc-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 12 Aug 2003 08:14:46 -0700
+In-Reply-To: <20030812063707.GC23104@rembrandt.csv.ica.uni-stuttgart.de>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,53 +21,32 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="iso-8859-1"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: Thiemo Seufer <ica2_ts@csv.ica.uni-stuttgart.de>
-Cc: Michel =?iso-8859-1?Q?D=E4nzer?= <michel@daenzer.net>, Karsten Merker <karsten@excalibur.cologne.de>, Martin Schulze <joey@infodrom.org>, "Maciej W. Rozycki" <macro@ds2.pg.gda.pl>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Karsten Merker <karsten@excalibur.cologne.de>, Martin Schulze <joey@infodrom.org>, linux-fbdev-devel@lists.sourceforge.net
 
 On Tue, 12 Aug 2003, Thiemo Seufer wrote:
-> Michel D=E4nzer wrote:
-> [snip]
-> > > > > The PMAG-AA basically works for me, but it is not too useful wi=
-thout
-> > > > > working keyboard support. XFree86 preprocesses the xkbd input i=
-n order
-> > > > > to handle PC keyboard's key sequences, this breaks the LK keybo=
-ard
-> > > > > support.
-> > > >=20
-> > > > Ugh, so it sill uses RAW instead of MEDIUM_RAW?
-> > >=20
-> > > AFAIK all XFree86/Linux flavours want RAW.
-> >=20
-> > AFAIK the X server uses MEDIUM_RAW with Option "CustomKeycodes", but
-> > that might require new keymaps.
->=20
-> Ah, I haven't heard about this option yet. Well, the LK keymaps as
 
-It was added in 1995 to support various m68k boxes :-)
+> Anyway, the AA driver is appended as a diff against current linux-mips
+> CVS. I hope it doesn't deviate too much from whatever fbdev uses.
 
-> distributed with X seem to want RAW, I'll just try what happens with
-> CustomKeycodes enabled.
+ Hmm, I can only see PMAG-A-specific changes here -- does it mean the
+driver now works as is with no changes to the generic fb code?  If that is
+the case, I'll apply the patch to the MIPS CVS right now.
 
-So far everyone who tried MEDIUM_RAW mode on PC said it worked fine, and =
-that
-he wanted to make it the default mode, but apparently that never happened=
- ;-(
+ One point to note -- iob() is a heavyweight barrier implying immediate
+draining of buffers.  I don't think it's really needed here as the driver
+only needs to enforce ordering.  Hence I'd change iob() to wmb() or mb()
+as appropriate and add a few missing rmb() calls.  I can do that when
+applying the patch or please prepare an update.
 
-Gr{oetje,eeting}s,
+  Maciej
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m6=
-8k.org
-
-In personal conversations with technical people, I call myself a hacker. =
-But
-when I'm talking to journalists I just say "programmer" or something like=
- that.
-							    -- Linus Torvalds
+-- 
++  Maciej W. Rozycki, Technical University of Gdansk, Poland   +
++--------------------------------------------------------------+
++        e-mail: macro@ds2.pg.gda.pl, PGP key available        +
 
 
 

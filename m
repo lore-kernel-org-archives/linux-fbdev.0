@@ -1,24 +1,23 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
+From: Andrew Morton <akpm@osdl.org>
 Subject: Re: Fw: [PATCH][2.6.11-mm3] CONFIG_FB_ATY linkage error on PPC32
-Date: Mon, 14 Mar 2005 07:09:52 +0800
-Message-ID: <200503140709.52961.adaplas@hotpop.com>
-References: <20050313132844.7270c817.akpm@osdl.org> <200503140657.45864.adaplas@hotpop.com> <9e473391050313150644027e09@mail.gmail.com>
+Date: Sun, 13 Mar 2005 15:14:12 -0800
+Message-ID: <20050313151412.060ad5ea.akpm@osdl.org>
+References: <20050313132844.7270c817.akpm@osdl.org>
+	<9e47339105031313553994f15a@mail.gmail.com>
+	<9e4733910503131408cd57b01@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DAcDp-00028M-S5
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Mar 2005 15:10:09 -0800
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1DAcDo-0002TV-AF
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Mar 2005 15:10:09 -0800
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 9D55CFB0FF7
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 13 Mar 2005 23:09:54 +0000 (UTC)
-In-Reply-To: <9e473391050313150644027e09@mail.gmail.com>
-Content-Disposition: inline
+	id 1DAcIA-0002QZ-Eo
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Mar 2005 15:14:38 -0800
+Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1DAcI8-0002rT-Vw
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 13 Mar 2005 15:14:38 -0800
+In-Reply-To: <9e4733910503131408cd57b01@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,22 +29,39 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Jon Smirl <jonsmirl@gmail.com>, adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>, Mikael Pettersson <mikpe@csd.uu.se>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, mikpe@csd.uu.se
 
-On Monday 14 March 2005 07:06, Jon Smirl wrote:
-> On Mon, 14 Mar 2005 06:57:43 +0800, Antonino A. Daplas
-> <adaplas@hotpop.com> wrote:
+Jon Smirl <jonsmirl@gmail.com> wrote:
 >
-> That will work too. FB_MACMODES should depend on PPC so that it
-> doesn't appear on x86.
->
+> This should be a more general fix. Mikael can you give it a try on ppc
+>  since I don't have one?
+> 
+>  If you have time it would also be helpful if you could try building
+>  all of the ppc drivers both as modules and built-in just to make sure
+>  they build.
+> 
+>  There are 77 framebuffer drivers on eight platforms that need to be
+>  checked. I tried to get them all right but I don't own all of the
+>  needed hardware.
+> 
 
-That's why some has a 'select FB_MACMODES if <arch>' for multi-arch devices.
+Confused.  Is Tony's patch OK?
 
-Tony
+>  ===== drivers/video/Makefile 1.120 vs edited =====
+>  --- 1.120/drivers/video/Makefile	2005-03-10 03:39:10 -05:00
+>  +++ edited/drivers/video/Makefile	2005-03-13 16:56:53 -05:00
+>  @@ -10,6 +10,9 @@
+>   
+>   obj-$(CONFIG_FB)                  += fb.o
+>   fb-y                              := fbmem.o fbmon.o fbcmap.o
+>  fbsysfs.o modedb.o
+>  +ifdef $(CONFIG-PPC)
+>  +fb-y				  += macmodes.o
+>  +endif
+>   fb-objs                           := $(fb-y)
 
-
+Your email client is mangling whitespace.  This won't apply.
 
 
 -------------------------------------------------------

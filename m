@@ -1,18 +1,22 @@
-From: Henk Vergonet <rememberme@god.dyndns.org>
-Subject: RFC: Modeline configuration strategies.
-Date: Mon, 7 Mar 2005 18:37:53 +0100
-Message-ID: <20050307173753.GA7774@god.dyndns.org>
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: RFC: Modeline configuration strategies.
+Date: Mon, 7 Mar 2005 13:03:13 -0500
+Message-ID: <9e4733910503071003128a7487@mail.gmail.com>
+References: <20050307173753.GA7774@god.dyndns.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Content-Transfer-Encoding: 7bit
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1D8MB8-0005XX-4q
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Mar 2005 09:38:02 -0800
-Received: from god.demon.nl ([83.160.164.11] helo=god.dyndns.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1D8MB6-0005aP-In
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Mar 2005 09:38:02 -0800
-Content-Disposition: inline
+	id 1D8MZb-0006wn-0n
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Mar 2005 10:03:19 -0800
+Received: from rproxy.gmail.com ([64.233.170.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1D8MZa-0004tq-Fh
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Mar 2005 10:03:18 -0800
+Received: by rproxy.gmail.com with SMTP id z35so2008215rne
+        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 07 Mar 2005 10:03:14 -0800 (PST)
+In-Reply-To: <20050307173753.GA7774@god.dyndns.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -24,36 +28,18 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Greetings,
+This is a case where the userspace hotplug modedb is needed. The funny
+mode would be added to /etc/fb.modes. The hotplug app would find it
+and set it back into the driver.
 
-I currently have a savage that's directly connected via the VGA interface to the SCART plug of the TV. This gives magnitudes better picture quality and I don't have to hassle with TVout suppor;)
+Meanwhile the fbset command can set an arbitrary mode into the driver
+after user space starts.
 
-One of the things I always do is to adjust the static variable savagefb_var800x600x8 with the settings suitable for the TV (PAL mode) in order to boot linux (console) with the TV attached.
-
-
-This made me wonder, can we make this configurable at kernel config time?
-
-The idea would be that you could do the video mode initialization at kernel configuration time.
-
-For example something like this:
-    Videomode intialization strategy:
-    [ ] Use EDID Monitor probing
-    [ ] Use Laptop mode probing ? (Im not an expert on DVI)
-    [ ] Select a videomode:
-	[ ] Pre-defined (Vesa modes, PAL, PAL interlaced, NTSC, NTCS interlaced ...)
-	[ ] User defined video mode
-		parameter1 ... parameterN
-
-
-As an added bonus this could further modularize the framebuffer code and further enhance modedb...
-
-
-What do you think?
-
-
+-- 
+Jon Smirl
+jonsmirl@gmail.com
 
 
 -------------------------------------------------------

@@ -1,98 +1,86 @@
-From: "Antonino A. Daplas" <adaplas@softhome.net>
-Subject: Re: [PATCH] DDC2/I2C Support
-Date: Tue, 6 Jan 2004 08:31:45 +0800
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200401060831.46018.adaplas@softhome.net>
-References: <1068.203.177.116.211.1073313062.squirrel@webmail.po.com> <20040105171639.GA7048@dreamland.darkstar.lan>
-Reply-To: adaplas@pol.net
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Get console sem on fbdev ioctls
+Date: Tue, 06 Jan 2004 11:25:12 +1100
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <1073348711.761.165.camel@gaston>
+Reply-To: benh@kernel.crashing.org
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.24)
-	id 1Adf8d-0006js-8f
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 16:32:03 -0800
-Received: from jive.softhome.net ([66.54.152.27])
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.30)
-	id 1Adf8c-0006Nx-Qq
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 05 Jan 2004 16:32:02 -0800
-In-Reply-To: <20040105171639.GA7048@dreamland.darkstar.lan>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: kronos@kronoz.cjb.net, adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net
-
-On Tuesday 06 January 2004 01:16, Kronos wrote:
-> Il Mon, Jan 05, 2004 at 09:31:02AM -0500, adaplas@pol.net ha scritto:
-> > 1. [fbi2c.c]:  Added preliminary generic DDC2/i2c support (derived fr=
-om
-> > xf86DDC.c and xf86i2.c)
-> >
-> > =09This is a configurable option (CONFIG_FB_I2C). =09For now, I only =
-used
-> > "default" timeout values which may not work for all devices.
-> >
-> > =09Most drivers need to implement only two functions --
-> >
-> > =09=09void xxxfb_i2c_getbits(struct fb_info *info, signed long *clock=
-, signed
-> > long *data)
-> > =09=09void xxxfb_i2c_putbits(struct fb_info *info, signed long clock,=
- signed
-> > long data)
->
-> In fbi2c.c you are duplicating the i2c layer that's already there in th=
-e
-> kernel. Each driver should  have its set of function to  control SDA an=
-d
-> SCL and then it's only a matter of calling i2c_transfer.
->
-> I wrote the i2c stuff for the new radeon driver, look here:
-> bk://ppc.bkbits.net/linuxppc-2.5-benh
-> (drivers/video/aty/radeon_i2c.c)
-
-Ok.  See my reply to Ben H.
-
->
-> > 2. [fbmon.c]: Consolidated different ways of getting EDID with the
-> > following function:
-> >
-> > =09unsigned char *fb_get_edid(struct fb_info *info, struct pci_dev *p=
-dev,
-> > int what)
-> >
-> > =09=09the parameter "what" can be:
-> > =09=09=09EDID_DDC2 - get EDID via DDC2/I2C fb_get_edid_from_ddc2()
-> > =09=09=09EDID_ARCH - get=09EDID via BIOS or OF get_EDID_from_{OF|BIOS=
-}()
->
-> Hum, I don't like this kind of "multiplexing". I think that EDID
-> reading (if possibile) should be done inside the driver which knows how
-> to do it.
->
-> Also, why did you remove all the printk's? Ok, show_edid is a bit too
-> verbose but it's usefull for debugging.
-
-The first time I wrote the edid parser, show_edid() was never meant to ha=
-ve=20
-all that printk's :-).  It's only preliminary code in preparation for=20
-extending struct fb_monspecs.  But I'll bring it back, possibly when DEBU=
-G is=20
-defined.
-
-Tony
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
 
 
--------------------------------------------------------
-This SF.net email is sponsored by: IBM Linux Tutorials.
-Become an expert in LINUX or just sharpen your skills.  Sign up for IBM's
-Free Linux Tutorials.  Learn everything from the bash shell to sys admin.
-Click now! http://ads.osdn.com/?ad_id=1278&alloc_id=3371&op=click
+
+Along with my VT race fixes I sent earlier, this is a patch (that may
+need to be applied manually, I hacked the patch file a bit since my
+tree is so different from yours at this point). It takes the console
+semaphore on userland initiated mode change, pan display, ... ioctls.
+
+Maybe more are required... This is the basics for at least fbset operations
+to be "safe" (vs. printk/blanking and vs. the console resize code).
+
+Note that with that and the VT fixes, I can properly now call vc_resize
+instead of fbcon_resize in fbcon when getting a mode changed callback,
+and that works really better.
+
+I basically do that if cols and rows are seen to have changed:
+
+	vc_resize(vc->vc_num, cols, rows);
+	if (CON_IS_VISIBLE(vc)) {
+		accel_clear_margins(vc, info, 0);
+		update_screen(vc->vc_num);
+	}
+
+Though for stty to work fine, I also had to do proper mode selection/validation
+for which I added this FB_ACTIVATE_FIND option (see my other email on the subject)
+along with proper support in radeonfb.
+
+
+diff -urN linux-2.5/drivers/video/fbmem.c linuxppc-2.5-benh/drivers/video/fbmem.c
+--- linux-2.5/drivers/video/fbmem.c	2004-01-06 10:05:18.708660576 +1100
++++ linuxppc-2.5-benh/drivers/video/fbmem.c	2003-12-31 12:38:25.000000000 +1100
+@@ -27,6 +27,7 @@
+ #include <linux/init.h>
+ #include <linux/linux_logo.h>
+ #include <linux/proc_fs.h>
++#include <linux/console.h>
+ #ifdef CONFIG_KMOD
+ #include <linux/kmod.h>
+ #endif
+@@ -984,7 +995,9 @@
+ 	case FBIOPUT_VSCREENINFO:
+ 		if (copy_from_user(&var, (void *) arg, sizeof(var)))
+ 			return -EFAULT;
++		acquire_console_sem();
+ 		i = fb_set_var(info, &var);
++		release_console_sem();
+ 		if (i) return i;
+ 		if (copy_to_user((void *) arg, &var, sizeof(var)))
+ 			return -EFAULT;
+@@ -1003,7 +1016,10 @@
+ 	case FBIOPAN_DISPLAY:
+ 		if (copy_from_user(&var, (void *) arg, sizeof(var)))
+ 			return -EFAULT;
+-		if ((i = fb_pan_display(info, &var)))
++		acquire_console_sem();
++		i = fb_pan_display(info, &var);
++		release_console_sem();
++		if (i)
+ 			return i;
+ 		if (copy_to_user((void *) arg, &var, sizeof(var)))
+ 			return -EFAULT;
+@@ -1039,7 +1055,10 @@
+ 		return 0;
+ #endif	/* CONFIG_FRAMEBUFFER_CONSOLE */
+ 	case FBIOBLANK:
+-		return fb_blank(info, arg);
++		acquire_console_sem();
++		i = fb_blank(info, arg);
++		release_console_sem();
++		return i;
+ 	default:
+ 		if (fb->fb_ioctl == NULL)
+ 			return -EINVAL;

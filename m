@@ -1,17 +1,17 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Some questions
-Date: Thu, 6 Mar 2003 00:18:48 +0000 (GMT)
+From: Antonino Daplas <adaplas@pol.net>
+Subject: Re: Feature Freeze?
+Date: 06 Mar 2003 09:18:11 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.LNX.4.44.0303060006030.394-100000@phoenix.infradead.org>
-References: <3E66785D.1070202@winischhofer.net>
+Message-ID: <1046913402.1206.177.camel@localhost.localdomain>
+References: <Pine.LNX.4.44.0303051820470.27760-100000@phoenix.infradead.org>
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from carisma.slowglass.com ([195.224.96.167] helo=phoenix.infradead.org)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18qj6a-0003Rw-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 16:19:24 -0800
-In-Reply-To: <3E66785D.1070202@winischhofer.net>
+Received: from pine.compass.com.ph ([202.70.96.37])
+	by sc8-sf-list1.sourceforge.net with smtp (Exim 3.31-VA-mm2 #1 (Debian))
+	id 18qk0A-00077i-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 05 Mar 2003 17:16:50 -0800
+In-Reply-To: <Pine.LNX.4.44.0303051820470.27760-100000@phoenix.infradead.org>
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
@@ -21,49 +21,78 @@ List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Thomas Winischhofer <thomas@winischhofer.net>
-Cc: Antonino Daplas <adaplas@pol.net>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@infradead.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+On Thu, 2003-03-06 at 02:29, James Simmons wrote:
+> 
+> > 1. Text mode support?
+> 
+> We should remove it. Fbcon is to much bloat for text mode hardware. The 
+> only driver that does support a text mode matrox. Sparcs do not support 
+> text mode except for promcon. The issue was was a misunderstanding on teh 
+> flexiablity of imageblit. The name image blit stirs up this idea of the 
+> function has to be a place a image in buffer and send it on it way. This 
+> is not the case. Take a look at cg6.c. Fancy tricks are still possible. 
 
-> Excuse me that I dare to comment on this as a total fbdev-rookie:
+If you are to add tileblitting, text mode will be inherently supported.
 
-No problem. Its rare I take things personally. So I don't mind people 
-critizing my work. You have to have a thick skin for this line of work.
- 
-> Please think about usability, too. Forcing people to fiddle with rows 
-> and cols, requiring knowledge about font sizes and stuff is at least 
-> inappropriate. Folks are used to think in resolutions, that's what they 
-> understand, and that's what is most obvious. I can't imagine anyone 
-> caring about the amount of rows or columns on a text screen.
+>  
+> > 2. console resizing using fbset (besides stty)?
+> 
+> Fbcon needs alot of work on this. In theory it shoudl be smart enought to 
+> handle the small details. 
+> 
 
-Actually it is normal. Changing a console via stty has been around 
-forever. When you ask what size is your VGA console you say 80x25. Now why 
-is that. The main thing is people think of it as a text mode and second
-you really can't change it or boot to to many different size resolutions.
-Does this mean VGA console should be limited? NO!!! I plan to make vgacon 
-some day changable in window size. So the final answer is:
+Any ideas on how to do this?  I have one in my other mail.
 
-Portablity. 
+> > 3. support for unloading of fbcon if modular?
+> 
+> It can be done. I used fbcon modular with MDA text mode. I can test the 
+> fbcon driver. The issue is if we have more than one vga card whcih vga to 
+> graphics card mapping. 
+>  
 
-You could use stty or some other program using the tty layer to change the 
-resolution on any type of hardware running any type of console driver. The 
-next best thing is some day we can get ride of con_switch in the upper 
-console layers. We can just use set_font and vc_resize on VT switching 
-since that is all you are doing on vc_switching. 
+See my other mail for a proposal on this.
 
-P.S
-   If you look at struct winsize you have a ws_xpixel and a ws_ypixel 
-field. The question is now do we place the exact size of the screen in 
-pixels or vc->font.width[height]*width[height]. So it is stty program 
-that is limiting and not the tty layer. In theory you could write fbset to 
-use the proper tty ioctl to do this.
- 
-> BTW: What happens currently if I instruct console to replace the current 
-> font with a bigger one (if that's possible at run-time at all) ?
+> > 4. driver specified placement of buffers - for putcs method?
+> 
+> Working on this. I think it is possible to merge the tileblit stuff with 
+> the new buffer code.
 
-It should work.
+I have to check your newest patch.
+
+> 
+> > 5. flexible logo placement/overlayed logo?
+> 
+> Not so important. More important is fixing fbcon to work with the logo 
+> code. You can't compile it right now.
+> 
+> > 6. generic console display rotation?
+> 
+> Not so important right now. I removed the poll stuff. using signals is 
+> better.
+
+Yes, I think so too.
+
+>  
+> > 7. Anything else?
+> 
+> The cursor code needs cleanup and documentation. 
+
+I already have stuff in my tree where fbcon allocates cursor resources
+per device.  So there's no more static declarations in accel_cursor (and
+accel_putcs).  I can submit that if you want.
+
+I also added some locking code for accel_cursor, as well as accel_putcs,
+just in case thread-safety is indeed an issue.
+
+I'm also starting to clean up fbcon_cursor and the vbl_handler. 
+Ideally, they should also be allocated per device so multi-seat can be
+made possible.  It's low-priority right now.
+
+Tony
 
 
 

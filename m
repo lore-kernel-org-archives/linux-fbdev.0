@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH][FBCON]: Another batch of fbcon fixes
-Date: Wed, 30 Jun 2004 10:49:05 +0800
+Subject: [PATCH][RIVAFB]: Rivafb fixes
+Date: Wed, 30 Jun 2004 10:47:52 +0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <200406301048.01700.adaplas@hotpop.com>
+Message-ID: <200406301047.52653.adaplas@hotpop.com>
 Reply-To: adaplas@pol.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1BfVAF-0005Ff-0t
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Jun 2004 19:49:35 -0700
-Received: from babyruth.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.34)
-	id 1BfVAE-0001l3-Ds
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Jun 2004 19:49:34 -0700
+	id 1BfVCh-0005K7-2o
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Jun 2004 19:52:07 -0700
+Received: from snickers.hotpop.com ([38.113.3.51])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.34)
+	id 1BfVCg-0002Dy-Az
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Jun 2004 19:52:07 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by babyruth.hotpop.com (Postfix) with SMTP id A1DC468D5B4
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 30 Jun 2004 02:07:23 +0000 (UTC)
+	by snickers.hotpop.com (Postfix) with SMTP id AEF337889F
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 30 Jun 2004 01:44:53 +0000 (UTC)
 Content-Disposition: inline
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,195 +34,251 @@ Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 Hi James, Andrew
 
-Tested various code paths in fbcon that are not commonly taken, as well
-as various fbdev applications and I found a few problems.  Hopefully, the
-patch below should clean them up.
+The patch below fixes the following to rivafb:
 
-Diff is against linux-2.6.7-mm4:
+1. Seems that nVidia hardware has a limit on clipping coordinates
+that is also dependent on the color depth of the framebuffer.
+
+2. From Pawel Goleniowski <pawelg@dabrowa.pl>:
+Fix for wrong colors at 16bpp (RGB565).  The fix has been submitted
+several times in lkml and this list but was never applied.
+
+3. Search all I2C/DDC busses for the EDID block instead of
+just the first bus.
+
+4. Updated request_mem_region/release_mem_region to
+pci_request_regions/pci_release_regions.
 
 Tony
 
-==
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 
-1.  Update display->vrows when fbset changes certain fields in var (such
-as color depth) but without changing the display resolution.  This might
-produce concommitant changes in other fields such as and especially
-var->yres_virtual.
-
-2.  Clear the FBINFO_MISC_MODECHANGEUSER flag _before_
-issuing a notifier_call_chain(). Clearing it after the notifier_call_chain() will
-cause fbcon to go into an infinite loop.
-
-3.  Sanitized failure path of set_con2fb_map().
-
-diff -Naur linux-2.6.7-mm4-orig/drivers/video/console/fbcon.c linux-2.6.7-mm4/drivers/video/console/fbcon.c
---- linux-2.6.7-mm4-orig/drivers/video/console/fbcon.c	2004-06-30 01:50:29.964339496 +0000
-+++ linux-2.6.7-mm4/drivers/video/console/fbcon.c	2004-06-30 01:50:08.229643672 +0000
-@@ -326,30 +326,37 @@
- 	struct vc_data *vc = vc_cons[unit].d;
- 	int oldidx = con2fb_map[unit];
- 	struct fb_info *info = registered_fb[newidx];
--	struct fb_info *oldinfo = registered_fb[oldidx];
-+	struct fb_info *oldinfo = NULL;
- 	int found;
- 
-+	if (oldidx == newidx)
-+		return 0;
-+
-+	if (!vc)
-+	    return -ENODEV;
-+
- 	if (!search_for_mapped_con()) {
- 		info_idx = newidx;
- 		fb_console_init();
- 		return 0;
+diff -Naur linux-2.6.7-mm4-orig/drivers/video/riva/fbdev.c linux-2.6.7-mm4/drivers/video/riva/fbdev.c
+--- linux-2.6.7-mm4-orig/drivers/video/riva/fbdev.c	2004-06-30 01:55:19.263987464 +0000
++++ linux-2.6.7-mm4/drivers/video/riva/fbdev.c	2004-06-30 01:57:49.191195064 +0000
+@@ -882,13 +882,13 @@
+ 		       var->xres_virtual, var->yres_virtual);
+ 	} else if (var->xres_virtual == -1) {
+ 		var->xres_virtual = (info->fix.smem_len * den /
+-			(nom * var->yres_virtual * 2)) & ~15;
++			(nom * var->yres_virtual)) & ~15;
+ 		printk(KERN_WARNING PFX
+ 		       "setting virtual X resolution to %d\n", var->xres_virtual);
+ 	} else if (var->yres_virtual == -1) {
+ 		var->xres_virtual = (var->xres_virtual + 15) & ~15;
+ 		var->yres_virtual = info->fix.smem_len * den /
+-			(nom * var->xres_virtual * 2);
++			(nom * var->xres_virtual);
+ 		printk(KERN_WARNING PFX
+ 		       "setting virtual Y resolution to %d\n", var->yres_virtual);
+ 	} else {
+@@ -920,10 +920,11 @@
+ 		       "virtual Y resolution (%d) is smaller than real\n", var->yres_virtual);
+ 		return -EINVAL;
  	}
- 
--	if (oldidx == newidx)
--		return 0;
--	if (!vc)
--	    return -ENODEV;
-+	if (oldidx != -1)
-+		oldinfo = registered_fb[oldidx];
+-	if (var->xres_virtual > 0x7fff)
+-	    var->xres_virtual = 0x7fff;
+-	if (var->yres_virtual > 0x7fff)
+-	    var->yres_virtual = 0x7fff;
++	if (var->yres_virtual > 0x7fff/nom)
++		var->yres_virtual = 0x7fff/nom;
++	if (var->xres_virtual > 0x7fff/nom)
++		var->xres_virtual = 0x7fff/nom;
 +
- 	found = search_fb_in_map(newidx);
- 
- 	acquire_console_sem();
- 	con2fb_map[unit] = newidx;
- 	if (!found) {
- 		if (!try_module_get(info->fbops->owner)) {
-+			con2fb_map[unit] = oldidx;
- 			release_console_sem();
- 			return -ENODEV;
- 		}
- 		if (info->fbops->fb_open && info->fbops->fb_open(info, 0)) {
- 			module_put(info->fbops->owner);
-+			con2fb_map[unit] = oldidx;
- 			release_console_sem();
- 			return -ENODEV;
- 		}
-@@ -360,18 +367,18 @@
- 	 * fbcon should release it.
- 	 */
- 	if (oldinfo && !search_fb_in_map(oldidx)) {
--		int err;
--
--		if (info->queue.func == fb_flashcursor)
--			del_timer_sync(&oldinfo->cursor_timer);
--		if (oldinfo->fbops->fb_release) {
--			err = oldinfo->fbops->fb_release(oldinfo, 0);
--			if (err) {
--				con2fb_map[unit] = oldidx;
--				release_console_sem();
--				return err;
--			}
-+		if (oldinfo->fbops->fb_release && 
-+		    oldinfo->fbops->fb_release(oldinfo, 0)) {
-+			con2fb_map[unit] = oldidx;
-+			if (!found && info->fbops->fb_release)
-+				info->fbops->fb_release(info, 0);
-+			if (!found)
-+				module_put(info->fbops->owner);
-+			release_console_sem();
-+			return -ENODEV;
- 		}
-+		if (oldinfo->queue.func == fb_flashcursor)
-+			del_timer_sync(&oldinfo->cursor_timer);
- 		module_put(oldinfo->fbops->owner);
- 	}
- 	info->currcon = -1;
-@@ -1624,8 +1631,10 @@
- 			height, width);
- }
- 
--static __inline__ void updatescrollmode(struct display *p, struct fb_info *info, struct vc_data *vc)
-+static __inline__ void updatescrollmode(struct display *p, struct fb_info *info, 
-+					struct vc_data *vc)
- {
-+	int fh = vc->vc_font.height;
- 	int cap = info->flags;
- 	int good_pan = (cap & FBINFO_HWACCEL_YPAN)
- 		 && divides(info->fix.ypanstep, vc->vc_font.height)
-@@ -1636,6 +1645,13 @@
- 	int reading_fast = cap & FBINFO_READS_FAST;
- 	int fast_copyarea = (cap & FBINFO_HWACCEL_COPYAREA) && !(cap & FBINFO_HWACCEL_DISABLED);
- 
-+	p->vrows = info->var.yres_virtual/fh;
-+	if (info->var.yres > (fh * (vc->vc_rows + 1)))
-+		p->vrows -= (info->var.yres - (fh * vc->vc_rows)) / fh;
-+	if ((info->var.yres % fh) && (info->var.yres_virtual % fh < 
-+				      info->var.yres % fh))
-+		p->vrows--;
-+
- 	if (good_wrap || good_pan) {
- 		if (reading_fast || fast_copyarea)
- 			p->scrollmode = good_wrap ? SCROLL_WRAP : SCROLL_PAN;
-@@ -1682,11 +1698,6 @@
- 			fb_set_var(info, &var);
- 		}
- 	}
--	p->vrows = var.yres_virtual/fh;
--	if (var.yres > (fh * (height + 1)))
--		p->vrows -= (var.yres - (fh * height)) / fh;
--	if ((var.yres % fh) && (var.yres_virtual % fh < var.yres % fh))
--		p->vrows--;
- 	updatescrollmode(p, info, vc);
  	return 0;
  }
-@@ -1762,7 +1773,6 @@
- 		struct fb_fillrect rect;
- 		int bgshift = (vc->vc_hi_font_mask) ? 13 : 12;
  
--		logo_shown = fg_console;
- 		rect.color = attr_bgcol_ec(bgshift, vc);
- 		rect.rop = ROP_COPY;
- 		rect.dx = rect.dy = 0;
-@@ -2388,19 +2398,7 @@
- 		cols = info->var.xres / vc->vc_font.width;
- 		rows = info->var.yres / vc->vc_font.height;
- 		vc_resize(vc->vc_num, cols, rows);
--		switch (p->scrollmode) {
--		case SCROLL_WRAP:
--			scrollback_phys_max = p->vrows - vc->vc_rows;
--			break;
--		case SCROLL_PAN:
--			scrollback_phys_max = p->vrows - 2 * vc->vc_rows;
--			if (scrollback_phys_max < 0)
--				scrollback_phys_max = 0;
--			break;
--		default:
--			scrollback_phys_max = 0;
--			break;
--		}
-+		updatescrollmode(p, info, vc);
- 		scrollback_max = 0;
- 		scrollback_current = 0;
- 		update_var(vc->vc_num, info);
-@@ -2471,7 +2469,8 @@
- };
- static int fbcon_event_notifier_registered;
+@@ -955,11 +956,14 @@
  
--int __init fb_console_init(void)
-+/* can't be __init as it can be called by set_con2fb_map() later */
-+int fb_console_init(void)
+ }
+ 
+-void riva_setup_accel(struct riva_par *par)
++void riva_setup_accel(struct fb_info *info)
  {
- 	int err, i;
++	struct riva_par *par = (struct riva_par *) info->par;
++
+ 	RIVA_FIFO_FREE(par->riva, Clip, 2);
+ 	par->riva.Clip->TopLeft     = 0x0;
+-	par->riva.Clip->WidthHeight = 0x7fff7fff;
++	par->riva.Clip->WidthHeight = (info->var.xres_virtual & 0xffff) | 
++		(info->var.yres_virtual << 16);
+ 	riva_set_rop_solid(par, 0xcc);
+ 	wait_for_idle(par);
+ }
+@@ -1194,9 +1198,16 @@
+ {
+ 	struct riva_par *par = (struct riva_par *) info->par;
  
-diff -Naur linux-2.6.7-mm4-orig/drivers/video/fbmem.c linux-2.6.7-mm4/drivers/video/fbmem.c
---- linux-2.6.7-mm4-orig/drivers/video/fbmem.c	2004-06-30 01:50:29.968338888 +0000
-+++ linux-2.6.7-mm4/drivers/video/fbmem.c	2004-06-30 01:04:13.000000000 +0000
-@@ -999,9 +999,9 @@
- 			fb_set_cmap(&info->cmap, 1, info);
++	riva_common_setup(par);
++	RivaGetConfig(&par->riva, par->Chipset);
++	/* vgaHWunlock() + riva unlock (0x7F) */
++	CRTCout(par, 0x11, 0xFF);
++	par->riva.LockUnlock(&par->riva, 0);
++			
+ 	riva_load_video_mode(info);
+-	riva_setup_accel(par);
++	riva_setup_accel(info);
+ 	
++	memset_io(par->riva.CURSOR, 0, MAX_CURS * MAX_CURS * 2);
+ 	info->fix.line_length = (info->var.xres_virtual * (info->var.bits_per_pixel >> 3));
+ 	info->fix.visual = (info->var.bits_per_pixel == 8) ?
+ 				FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_DIRECTCOLOR;
+@@ -1444,8 +1455,8 @@
  
- 			if (info->flags & FBINFO_MISC_MODECHANGEUSER) {
-+				info->flags &= ~FBINFO_MISC_MODECHANGEUSER;
- 				notifier_call_chain(&fb_notifier_list,
- 						    FB_EVENT_MODE_CHANGE, info);
--				info->flags &= ~FBINFO_MISC_MODECHANGEUSER;
- 			}
+ static inline void convert_bgcolor_16(u32 *col)
+ {
+-	*col = ((*col & 0x00007C00) << 9)
+-		| ((*col & 0x000003E0) << 6)
++	*col = ((*col & 0x0000F800) << 8)
++		| ((*col & 0x00007E0) << 5)
+ 		| ((*col & 0x0000001F) << 3)
+ 		|	   0xFF000000;
+ 	mb();
+@@ -1759,9 +1770,16 @@
+ 	/* XXX use other methods later */
+ #ifdef CONFIG_FB_RIVA_I2C
+ 	struct riva_par *par = (struct riva_par *) info->par;
++	int i;
+ 
+ 	riva_create_i2c_busses(par);
+-	riva_probe_i2c_connector(par, 1, &par->EDID);
++	for (i = par->bus; i >= 1; i--) {
++		riva_probe_i2c_connector(par, i, &par->EDID);
++		if (par->EDID) {
++			printk("rivafb: Found EDID Block from BUS %i\n", i);
++			break;
++		}
++	}
+ 	riva_delete_i2c_busses(par);
+ #endif
+ #endif
+@@ -1814,6 +1832,16 @@
+ 		goto err_out_kfree1;
+ 	memset(info->pixmap.addr, 0, 64 * 1024);
+ 
++	if (pci_enable_device(pd)) {
++		printk(KERN_ERR PFX "cannot enable PCI device\n");
++		goto err_out_enable;
++	}
++
++	if (pci_request_regions(pd, "rivafb")) {
++		printk(KERN_ERR PFX "cannot request PCI regions\n");
++		goto err_out_request;
++	}
++
+ 	strcat(rivafb_fix.id, rci->name);
+ 	default_par->riva.Architecture = rci->arch_rev;
+ 
+@@ -1840,12 +1868,6 @@
+ 	rivafb_fix.mmio_start = pci_resource_start(pd, 0);
+ 	rivafb_fix.smem_start = pci_resource_start(pd, 1);
+ 
+-	if (!request_mem_region(rivafb_fix.mmio_start,
+-				rivafb_fix.mmio_len, "rivafb")) {
+-		printk(KERN_ERR PFX "cannot reserve MMIO region\n");
+-		goto err_out_kfree2;
+-	}
+-
+ 	default_par->ctrl_base = ioremap(rivafb_fix.mmio_start,
+ 					 rivafb_fix.mmio_len);
+ 	if (!default_par->ctrl_base) {
+@@ -1861,17 +1883,13 @@
+ 		 * Since these cards were never made with more than 8 megabytes
+ 		 * we can safely allocate this separately.
+ 		 */
+-		if (!request_mem_region(rivafb_fix.smem_start + 0x00C00000,
+-					 0x00008000, "rivafb")) {
+-			printk(KERN_ERR PFX "cannot reserve PRAMIN region\n");
+-			goto err_out_iounmap_ctrl;
+-		}
+ 		default_par->riva.PRAMIN = ioremap(rivafb_fix.smem_start + 0x00C00000, 0x00008000);
+ 		if (!default_par->riva.PRAMIN) {
+ 			printk(KERN_ERR PFX "cannot ioremap PRAMIN region\n");
+ 			goto err_out_free_nv3_pramin;
  		}
+ 		rivafb_fix.accel = FB_ACCEL_NV3;
++		default_par->bus = 1;
+ 		break;
+ 	case NV_ARCH_04:
+ 	case NV_ARCH_10:
+@@ -1879,6 +1897,7 @@
+ 		default_par->riva.PCRTC0 = (unsigned *)(default_par->ctrl_base + 0x00600000);
+ 		default_par->riva.PRAMIN = (unsigned *)(default_par->ctrl_base + 0x00710000);
+ 		rivafb_fix.accel = FB_ACCEL_NV4;
++		default_par->bus = 2;
+ 		break;
  	}
+ 
+@@ -1891,12 +1910,6 @@
+ 	rivafb_fix.smem_len = riva_get_memlen(default_par) * 1024;
+ 	default_par->dclk_max = riva_get_maxdclk(default_par) * 1000;
+ 
+-	if (!request_mem_region(rivafb_fix.smem_start,
+-				rivafb_fix.smem_len, "rivafb")) {
+-		printk(KERN_ERR PFX "cannot reserve FB region\n");
+-		goto err_out_iounmap_nv3_pramin;
+-	}
+-	
+ 	info->screen_base = ioremap(rivafb_fix.smem_start,
+ 				    rivafb_fix.smem_len);
+ 	if (!info->screen_base) {
+@@ -1949,18 +1962,15 @@
+ err_out_iounmap_fb:
+ 	iounmap(info->screen_base);
+ err_out_free_base1:
+-	release_mem_region(rivafb_fix.smem_start, rivafb_fix.smem_len);
+-err_out_iounmap_nv3_pramin:
+ 	if (default_par->riva.Architecture == NV_ARCH_03) 
+ 		iounmap((caddr_t)default_par->riva.PRAMIN);
+ err_out_free_nv3_pramin:
+-	if (default_par->riva.Architecture == NV_ARCH_03)
+-		release_mem_region(rivafb_fix.smem_start + 0x00C00000, 0x00008000);
+-err_out_iounmap_ctrl:
+ 	iounmap(default_par->ctrl_base);
+ err_out_free_base0:
+-	release_mem_region(rivafb_fix.mmio_start, rivafb_fix.mmio_len);
+-err_out_kfree2:
++	pci_release_regions(pd);
++err_out_request:
++	pci_disable_device(pd);
++err_out_enable:
+ 	kfree(info->pixmap.addr);
+ err_out_kfree1:
+ 	kfree(default_par);
+@@ -1987,16 +1997,11 @@
+ 
+ 	iounmap(par->ctrl_base);
+ 	iounmap(info->screen_base);
+-
+-	release_mem_region(info->fix.mmio_start,
+-			   info->fix.mmio_len);
+-	release_mem_region(info->fix.smem_start,
+-			   info->fix.smem_len);
+-
+-	if (par->riva.Architecture == NV_ARCH_03) {
++	if (par->riva.Architecture == NV_ARCH_03)
+ 		iounmap((caddr_t)par->riva.PRAMIN);
+-		release_mem_region(info->fix.smem_start + 0x00C00000, 0x00008000);
+-	}
++	pci_release_regions(pd);
++	pci_disable_device(pd);
++	fb_destroy_modedb(info->monspecs.modedb);
+ 	kfree(info->pixmap.addr);
+ 	kfree(par);
+ 	kfree(info);
+diff -Naur linux-2.6.7-mm4-orig/drivers/video/riva/rivafb.h linux-2.6.7-mm4/drivers/video/riva/rivafb.h
+--- linux-2.6.7-mm4-orig/drivers/video/riva/rivafb.h	2004-06-30 01:55:16.915344512 +0000
++++ linux-2.6.7-mm4/drivers/video/riva/rivafb.h	2004-06-30 01:54:34.916729272 +0000
+@@ -60,6 +60,7 @@
+ 	Bool SecondCRTC;
+ 	int FlatPanel;
+ 	struct pci_dev *pdev;
++	int bus;
+ #ifdef CONFIG_MTRR
+ 	struct { int vram; int vram_valid; } mtrr;
+ #endif
+
+
 
 
 

@@ -1,81 +1,70 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: 2.6.11-rc5
-Date: Sat, 26 Feb 2005 11:54:13 +1100
-Message-ID: <1109379254.14992.96.camel@gaston>
+Subject: Re: Re: 2.6.11-rc5
+Date: Sat, 26 Feb 2005 11:58:28 +1100
+Message-ID: <1109379509.14993.104.camel@gaston>
 References: <Pine.LNX.4.58.0502232014190.18997@ppc970.osdl.org>
 	 <20050224145049.GA21313@suse.de> <1109287708.15026.25.camel@gaston>
 	 <20050225070813.GA13735@suse.de> <1109316551.14993.63.camel@gaston>
 	 <20050225172945.GA31211@suse.de>
+	 <Pine.LNX.4.56.0502251758370.20213@pentafluge.infradead.org>
+	 <20050225202423.GA24282@suse.de>  <20050225212157.GA31227@suse.de>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-In-Reply-To: <20050225172945.GA31211@suse.de>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1D4qIm-0007U9-Jz
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 25 Feb 2005 16:59:24 -0800
+Received: from gate.crashing.org ([63.228.1.57])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1D4qIm-0007nr-2S
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 25 Feb 2005 16:59:24 -0800
+In-Reply-To: <20050225212157.GA31227@suse.de>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Olaf Hering <olh@suse.de>
-Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Kernel Mailing List <linux-kernel@vger.kernel.org>
 
-
-> > It seem to detect the flat panel incorrectly, or the EDID data is bogus,
-> > maybe that's wrecking something in the new modelist management in
-> > fbdev ? It might be causing us to use a bogus mode that itself casues
-> > atyfb to crash. Tried forcing a mode ?
+On Fri, 2005-02-25 at 22:21 +0100, Olaf Hering wrote:
+>  On Fri, Feb 25, Olaf Hering wrote:
 > 
-> cfb_imageblit(320) dst1 fa51a800 base e0b80000 bitstart 1999a800
-> fast_imageblit(237) s daea4000 dst1 fa51a800
-> fast_imageblit(269) j 1 fa51a800 0
-> Unable to handle kernel paging request at virtual address fa51a800
+> >  On Fri, Feb 25, James Simmons wrote:
+> > 
+> > > 
+> > > > cfb_imageblit(320) dst1 fa51a800 base e0b80000 bitstart 1999a800
+> > > > fast_imageblit(237) s daea4000 dst1 fa51a800
+> > > > fast_imageblit(269) j 1 fa51a800 0
+> > > > Unable to handle kernel paging request at virtual address fa51a800
+> > > > 
+> > > > is bitstart incorrect or is the thing just not (yet) mapped?
+> > > 
+> > > Looks like the screen_base is not mapped to.
+> > 
+> > rc3 worked ok, rc4 does not. testing the -bk snapshots now.
 > 
-> is bitstart incorrect or is the thing just not (yet) mapped?
+> bk8 works, bk9 breaks, it contains the radeonfb update.
+> it works ok if the driver is compiled into the kernel.
 
-It should be all mapped, i suspect the mode set is totally bogus. To
-check it, can you enable radeonfb verbose debug ?
+Ah, that's a good point. Can you send me the dmesg outputs of in kernel
+vs. in module with radeonfb verbose debug enabled ?
+
+Ben.
 
 
-> radeonfb: Found Intel x86 BIOS ROM Image
-> radeonfb: Retreived PLL infos from BIOS
-> radeonfb: Reference=27.00 MHz (RefDiv=60) Memory=133.00 Mhz, System=133.00 MHz
-> radeonfb: PLL min 12000 max 35000
-> radeonfb: Monitor 1 type DFP found
-> radeonfb: EDID probed
-> radeonfb: Monitor 2 type no found
-> radeonfb: Assuming panel size 8x1
-> radeonfb: Can't find mode for panel size, going back to CRT
-> cfb_imageblit(320) dst1 fa51a800 base e0b80000 bitstart 1999a800
-> fast_imageblit(237) s daea4000 dst1 fa51a800
-> fast_imageblit(269) j 1 fa51a800 0
-> Unable to handle kernel paging request at virtual address fa51a800
->  printing eip:
-> c020f17e
-> *pde = 00000000
-> Oops: 0002 [#1]
-> Modules linked in: ohci1394 ieee1394 radeonfb i2c_algo_bit i2c_core ehci_hcd uhci_hcd capability usbcore
-> CPU:    0
-> EIP:    0060:[<c020f17e>]    Tainted: G     U VLI
-> EFLAGS: 00010282   (2.6.11-rc5-20050225-default)
-> EIP is at cfb_imageblit+0x57e/0x67c
-> eax: 00000000   ebx: 00000001   ecx: 00000000   edx: fa51a800
-> esi: fa51a804   edi: daea4000   ebp: 00000004   esp: dcae9c14
-> ds: 007b   es: 007b   ss: 0068
-> Process modprobe (pid: 2080, threadinfo=dcae8000 task=dc4a7550)
-> Stack: c01110ac 00000001 c0321d60 dcae9c20 dcae9c20 c01303a2 00000001 c03c87a8
->        0000000a dae23ca8 c011c783 00000046 00000000 dc202000 00000046 dcae9c64
->        c010513d 0000384d dc202290 00000007 c032db20 daea4000 00000000 0000000f
-> Call Trace:
->  [<c01110ac>] smp_local_timer_interrupt+0xc/0x50
->  [<c01303a2>] handle_IRQ_event+0x32/0x70
->  [<c011c783>] __do_softirq+0x43/0xa0
->  [<c010513d>] do_IRQ+0x3d/0x60
->  [<c020d790>] soft_cursor+0x190/0x200
->  [<c02043cc>] bit_cursor+0x48c/0x4f0
->  [<e0b26c01>] radeonfb_prim_fillrect+0xf1/0x120 [radeonfb]
->  [<c012043f>] msleep+0x2f/0x40
->  [<c01fff28>] fbcon_cursor+0x1a8/0x280
->  [<c023ad08>] hide_cursor+0x18/0x30
->  [<c023b014>] redraw_screen+0x174/0x200
->  [<c01fed4a>] fbcon_prepare_logo+0x39a/0x3a0
->  [<c01ff8a0>] fbcon_init+0x2b0/0x370
->  [<c023b1a9>] visual_init+0xe9/0x170
-> 
--- 
-Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

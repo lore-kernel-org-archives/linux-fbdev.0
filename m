@@ -1,55 +1,59 @@
-From: James Simmons <jsimmons@www.infradead.org>
-Subject: Re: Optimized cfbimgblt.c
-Date: Fri, 21 Jan 2005 00:29:03 +0000 (GMT)
-Message-ID: <Pine.LNX.4.56.0501210025170.14061@pentafluge.infradead.org>
-References: <Pine.LNX.4.56.0501201808120.6978@pentafluge.infradead.org>
- <200501210600.06363.adaplas@hotpop.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Matt Mackall <mpm@selenic.com>
+Subject: Re: Radeon framebuffer weirdness in -mm2
+Date: Thu, 20 Jan 2005 19:57:58 -0800
+Message-ID: <20050121035758.GH12076@waste.org>
+References: <20050120232122.GF3867@waste.org> <20050120153921.11d7c4fa.akpm@osdl.org> <20050120234844.GF12076@waste.org> <20050120160123.14f13ca6.akpm@osdl.org>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Crmfj-0000pG-Pq
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 20 Jan 2005 16:29:07 -0800
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1Crmfj-0002Vu-AS
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 20 Jan 2005 16:29:07 -0800
-In-Reply-To: <200501210600.06363.adaplas@hotpop.com>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S262261AbVAUD6N@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20050120160123.14f13ca6.akpm@osdl.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@pentafluge.infradead.org>, "adaplas@hotpop.com" <adaplas@hotpop.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, benh@kernel.crashing.org
 
+On Thu, Jan 20, 2005 at 04:01:23PM -0800, Andrew Morton wrote:
+> Matt Mackall <mpm@selenic.com> wrote:
+> >
+> > > Which radeon driver? CONFIG_FB_RADEON_OLD or CONFIG_FB_RADEON?
+> > 
+> > FB_RADEON.
+> 
+> Ah, OK.  Likely culprits are
+> 
+> radeonfb-massive-update-of-pm-code.patch
+> radeonfb-build-fix.patch
 
-> Hi James, how are you doing :-) ?
+Ok, learned a few things.
 
-Bette :-)
- 
-> The patch looks good, I'll do a few tests.
+Here are the symptoms:
 
-Great. It needs to be tested on a real big endian machine.
+mm2: corruption of Tux logo at boot, corruption of display at
+powerdown, lockup and LCD blooming on next warm boot when radeonfb
+starts. Ben suggested I try some radeonfb options, but none seemed to
+have any effect.
 
-> P.S: Any chance you want to maintain the fb layer again, let me know...
+mm1: no observed problems
 
-I rather work with you maintaining the fbdev layer. Its alot of work for 
-one person.
+mm2 - above patches: corruption still occurs but no lockup on next
+warm boot.
 
+I think I have a lead on the logo and shutdown corruption:
 
+If I do a reboot(8) from inside X, I get switched to vt 0, but the
+shutdown messages come out on vt 7, where X was running. As I'm
+sitting on vt 0 during shutdown, I see character cells changed to
+something like "_" (last two scanlines filled) slowly marching down
+the screen corresponding to the shutdown messages.
 
--------------------------------------------------------
-This SF.Net email is sponsored by: IntelliVIEW -- Interactive Reporting
-Tool for open source databases. Create drag-&-drop reports. Save time
-by over 75%! Publish reports on the web. Export to DOC, XLS, RTF, etc.
-Download a FREE copy at http://www.intelliview.com/go/osdn_nl
+So the logo corruption is probably getty popping up on the
+other vts at the end of init. The timing and the screen placement seem
+to agree.
+
+Photos for the curious (be sure to see "executioner Tux" glitch):
+http://selenic.com/radeon
+
+-- 
+Mathematics is the supreme nostalgia of our time.

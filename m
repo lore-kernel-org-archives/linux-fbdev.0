@@ -1,24 +1,26 @@
 From: Andrew Walrond <andrew@walrond.org>
-Subject: ATI Rage XL on x86_64
-Date: Wed, 26 Jan 2005 09:10:14 +0000
-Message-ID: <200501260910.14102.andrew@walrond.org>
+Subject: Re: ATI Rage XL on x86_64
+Date: Wed, 26 Jan 2005 09:39:48 +0000
+Message-ID: <200501260939.48156.andrew@walrond.org>
+References: <200501260910.14102.andrew@walrond.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1CtjC4-0005Lf-0k
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 26 Jan 2005 01:10:32 -0800
+	id 1CtjeV-0007GH-VO
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 26 Jan 2005 01:39:55 -0800
 Received: from [62.24.231.113] (helo=cenedra.walrond.org)
 	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1CtjC2-0007K8-81
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 26 Jan 2005 01:10:31 -0800
+	id 1CtjeU-00021e-A9
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 26 Jan 2005 01:39:55 -0800
 Received: from [62.24.231.115] (helo=host62-24-231-115.dsl.vispa.com)
 	by cenedra.walrond.org with esmtp (Exim 4.34)
-	id 1CtjBm-0007C7-5k
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 26 Jan 2005 09:10:18 +0000
+	id 1CtjeO-0007EW-9f
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 26 Jan 2005 09:39:52 +0000
+In-Reply-To: <200501260910.14102.andrew@walrond.org>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -33,48 +35,12 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-I have lots of server boards with Rage XL onboard, and have just spent a few 
-hours trying to get a working framebuffer using the atyfb driver (built-in)
+On Wednesday 26 January 2005 09:10, Andrew Walrond wrote:
 
-However I have failed miserably so far. Before I start wading through the 
-code, perhaps someone  can confirm that I am using the right kernel 
-parameters?
+Sorry the second parameter line should have been
+ video=atyfb:mode:1024x768
 
-This
- video=atyfb:vmode:14,cmode:8
-gives
- atyfb: using auxiliary register aperture
- atyfb: 3D RAGE XL (Mach64 GR, PCI-33MHz) [0x4752 rev 0x27]
- atyfb: 8M SDRAM (2:1) (32-bit) 29.498928 MHz XTAL, 230MHz PLL, 83 MHz MCLK  
-63MHz XCLK
- atyfb: MACH64 chips are designed for max 1600x1200
- select anoter resolution
- atyfb: MACH64 chips are designed for max 1600x1200
- select anoter resolution
- atyfb: vclk out of range
- atyfb: vclk out of range
- atyfb: fb0: ATY Mach64 frame buffer device on PCI
-
-and this
- video=atyfb:vmode:14,cmode:8
-gives
- atyfb: using auxiliary register aperture
- atyfb: 3D RAGE XL (Mach64 GR, PCI-33MHz) [0x4752 rev 0x27]
- atyfb: 8M SDRAM (2:1) (32-bit) 29.498928 MHz XTAL, 230MHz PLL, 83 MHz MCLK  
-63MHz XCLK
- atyfb: MACH64 chips are designed for max 1600x1200
- select anoter resolution
- atyfb: MACH64 chips are designed for max 1600x1200
- select anoter resolution
- atyfb: fb0: ATY Mach64 frame buffer device on PCI
-
-
-(The speliing mistake is real BTW)
-
-Any clues?
-
-Andrew Walrond
-
+A 1280x1024 TFT screen is attached BTW
 
 
 -------------------------------------------------------

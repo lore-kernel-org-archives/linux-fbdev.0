@@ -1,97 +1,162 @@
-From: Ani Joshi <ajoshi@unixbox.com>
-Subject: Re: Situation on radeonfb
-Date: Wed, 19 Feb 2003 11:04:41 -0800 (PST)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Message-ID: <Pine.BSF.4.50.0302191104200.44401-100000@shell.unixbox.com>
-References: <20030219130026.4770b401.hanno@gmx.de>
+From: James Simmons <jsimmons@infradead.org>
+Subject: FBdev updates.
+Date: Thu, 20 Feb 2003 01:09:33 +0000 (GMT)
+Sender: linux-kernel-owner@vger.kernel.org
+Message-ID: <Pine.LNX.4.44.0302200108090.20350-100000@phoenix.infradead.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from shell.unixbox.com ([207.211.45.65] ident=root)
-	by sc8-sf-list1.sourceforge.net with esmtp 
-	(Cipher TLSv1:DES-CBC3-SHA:168) (Exim 3.31-VA-mm2 #1 (Debian))
-	id 18lZYG-0004js-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 19 Feb 2003 11:06:40 -0800
-In-Reply-To: <20030219130026.4770b401.hanno@gmx.de>
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="iso-8859-1"
-To: Hanno =?ISO-8859-15?Q?B=F6ck?= <hanno@gmx.de>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-kernel-owner+linux-kernel=40quimby.gnus.org@vger.kernel.org>
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
-Marcello and Linus will recieve an update in the next week or so.
+New updates to the fbdev layer. You can grab the diff from 
 
+http://phoenix.infradead.org/~jsimmons/fbdev.diff.gz
 
-ani
+or do a pull
 
+	bk pull http://gkernel.bkbits.net/fbdev-2.5
 
-On Wed, 19 Feb 2003, Hanno [ISO-8859-15] B=F6ck wrote:
+This will update the following files:
 
-> Hi,
->
-> I own a Sony Vaio with a Radeon Mobility M6 LY.
->
-> The Situation with radeonfb at the moment is not very good for me.
-> 1. I need a fix that has been around for ages, but not added to the main
-> kernel (see patch below).
-> 2. There seem to be two updates for the radeonfb in kernel 2.4 floating
-> arount. One from Ani Joshi which was part of the ac-kernel, but has
-> recently been dropped. So it's not likely that it will become part of
-> the main kernel. This Update works for me.
-> Another one from the mplayer-team, which doesn't work for me at all,
-> even if I add the fix below.
->
-> By the way, the 2.5-version of the radeonfb also doesn't work at all for
-> me, even if I add the fix below and change the constant-names to the
-> ones used in 2.5.
->
-> I would really like to have a working radeonfb. Is there currently any
-> work done on this? Can we at least send the fix below to marcello and
-> ask him to integrate this soon?
->
->
->
-> --- radeonfb.c.orig=09Thu May  9 16:51:26 2002
-> +++ radeonfb.c=09Thu May  9 16:48:46 2002
-> @@ -877,6 +877,14 @@
->  =09/* mem size is bits [28:0], mask off the rest */
->  =09rinfo->video_ram =3D tmp & CONFIG_MEMSIZE_MASK;
->
-> +=09/* According to XFree86 4.2.0, some production M6's return 0
-> +=09   for 8MB. */
-> +=09if (rinfo->video_ram =3D=3D 0 &&
-> +=09    (pdev->device =3D=3D PCI_DEVICE_ID_RADEON_LY ||
-> +=09     pdev->device =3D=3D PCI_DEVICE_ID_RADEON_LZ)) {
-> +=09    rinfo->video_ram =3D 8192 * 1024;
-> +=09  }
-> +
->  =09/* ram type */
->  =09tmp =3D INREG(MEM_SDRAM_MODE_REG);
->  =09switch ((MEM_CFG_TYPE & tmp) >> 30) {
->
->
-> -------------------------------------------------------
-> This SF.net email is sponsored by: SlickEdit Inc. Develop an edge.
-> The most comprehensive and flexible code editor you can use.
-> Code faster. C/C++, C#, Java, HTML, XML, many more. FREE 30-Day Trial.
-> www.slickedit.com/sourceforge
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
->
+ drivers/video/maxinefb.h                   |   37 
+ drivers/video/pm2fb.h                      |  218 ---
+ drivers/video/pm3fb.h                      | 1284 --------------------
+ drivers/video/pmag-ba-fb.h                 |   24 
+ drivers/video/pmagb-b-fb.h                 |   32 
+ drivers/video/sstfb.h                      |  355 -----
+ arch/mips64/Kconfig                        |    4 
+ arch/ppc/syslib/prom.c                     |    3 
+ arch/ppc/syslib/prom_init.c                |   28 
+ arch/ppc64/kernel/prom.c                   |   27 
+ drivers/char/vt.c                          |    8 
+ drivers/video/Kconfig                      |   17 
+ drivers/video/Makefile                     |    3 
+ drivers/video/aty/atyfb.h                  |   86 -
+ drivers/video/aty/atyfb_base.c             | 1804 ++++++++++++++---------------
+ drivers/video/aty/mach64_accel.c           |   51 
+ drivers/video/aty/mach64_ct.c              |  356 +++--
+ drivers/video/aty/mach64_cursor.c          |    4 
+ drivers/video/aty/mach64_gx.c              |   18 
+ drivers/video/aty128fb.c                   |  162 +-
+ drivers/video/cfbcopyarea.c                |   42 
+ drivers/video/cfbfillrect.c                |   12 
+ drivers/video/cfbimgblt.c                  |  100 -
+ drivers/video/console/fbcon.c              |  333 -----
+ drivers/video/console/fbcon.h              |    3 
+ drivers/video/console/newport_con.c        |   69 -
+ drivers/video/console/vgacon.c             |  673 +++++-----
+ drivers/video/fbmem.c                      |  306 ++--
+ drivers/video/fbmon.c                      |    3 
+ drivers/video/hgafb.c                      |    9 
+ drivers/video/i810/i810.h                  |    9 
+ drivers/video/i810/i810_accel.c            |  150 +-
+ drivers/video/i810/i810_main.c             |  486 ++-----
+ drivers/video/i810/i810_main.h             |   14 
+ drivers/video/logo/Kconfig                 |   67 +
+ drivers/video/logo/Makefile                |   27 
+ drivers/video/logo/logo.c                  |  100 +
+ drivers/video/logo/logo_dec_clut224.ppm    | 1603 +++++++++++++++++++++++++
+ drivers/video/logo/logo_linux_clut224.ppm  | 1603 +++++++++++++++++++++++++
+ drivers/video/logo/logo_linux_mono.pbm     |  202 +++
+ drivers/video/logo/logo_linux_vga16.ppm    | 1603 +++++++++++++++++++++++++
+ drivers/video/logo/logo_mac_clut224.ppm    | 1603 +++++++++++++++++++++++++
+ drivers/video/logo/logo_parisc_clut224.ppm | 1603 +++++++++++++++++++++++++
+ drivers/video/logo/logo_sgi_clut224.ppm    | 1603 +++++++++++++++++++++++++
+ drivers/video/logo/logo_sun_clut224.ppm    | 1603 +++++++++++++++++++++++++
+ drivers/video/logo/logo_superh_clut224.ppm | 1603 +++++++++++++++++++++++++
+ drivers/video/logo/logo_superh_mono.pbm    |  202 +++
+ drivers/video/logo/logo_superh_vga16.ppm   | 1603 +++++++++++++++++++++++++
+ drivers/video/maxinefb.c                   |    2 
+ drivers/video/modedb.c                     |    8 
+ drivers/video/neofb.c                      |   81 -
+ drivers/video/pm2fb.c                      |    2 
+ drivers/video/pm3fb.c                      |    3 
+ drivers/video/pmag-ba-fb.c                 |    2 
+ drivers/video/pmagb-b-fb.c                 |    2 
+ drivers/video/radeonfb.c                   |    1 
+ drivers/video/riva/fbdev.c                 |  323 ++---
+ drivers/video/riva/nv_driver.c             |  156 ++
+ drivers/video/riva/rivafb.h                |    2 
+ drivers/video/sgivwfb.c                    |  192 ++-
+ drivers/video/skeletonfb.c                 |    6 
+ drivers/video/sstfb.c                      |   14 
+ drivers/video/tdfxfb.c                     |    6 
+ drivers/video/tgafb.c                      |    2 
+ drivers/video/tridentfb.c                  |    2 
+ drivers/video/vga16fb.c                    |  127 +-
+ include/linux/fb.h                         |   19 
+ include/linux/linux_logo.h                 | 1435 -----------------------
+ include/video/mach64.h                     |   61 
+ include/video/maxinefb.h                   |   37 
+ include/video/pm3fb.h                      | 1284 ++++++++++++++++++++
+ include/video/pmag-ba-fb.h                 |   24 
+ include/video/pmagb-b-fb.h                 |   32 
+ include/video/sgivw.h                      |   40 
+ include/video/sstfb.h                      |  355 +++++
+ include/video/vga.h                        |   16 
+ scripts/Makefile                           |    4 
+ scripts/pnmtologo                          |binary
+ scripts/pnmtologo.c                        |  498 ++++++++
+ 79 files changed, 20264 insertions(+), 6227 deletions(-)
 
+through these ChangeSets:
 
--------------------------------------------------------
-This SF.net email is sponsored by: SlickEdit Inc. Develop an edge.
-The most comprehensive and flexible code editor you can use.
-Code faster. C/C++, C#, Java, HTML, XML, many more. FREE 30-Day Trial.
-www.slickedit.com/sourceforge
+<jsimmons@maxwell.earthlink.net> (03/02/19 1.913.1.3)
+   [FBDEEV] Need to add support to build pnmtologo.
+
+<jsimmons@maxwell.earthlink.net> (03/02/19 1.913.1.1)
+   Removed obsolete functions in fbcon.c and re-enabled mapping console(s) to a framebuffer device. A few compile fixes for rivafb and using standard macros for vgacon.c.
+
+<jsimmons@maxwell.earthlink.net> (03/02/16 1.913)
+   [FBDEV] Data in struct fb_image is now const.
+   
+   [FBDEV] Updates to the logo code. We seperated it into two functions.
+   
+   [I810 FBDEV] Updates to the driver. PCI hooks for PCI supsend and resume to save the AGP GART mapping during power saving.
+   
+   [ATY 128] Add proper support for two graphics cards. Also added support for two more models of the Rage 128.
+   
+   [SGIVW FBDEV] Updates for the SGI Visual Workstation framebuffer.
+   
+
+<jsimmons@maxwell.earthlink.net> (03/02/13 1.910)
+   [LOGO] New better logo code. 
+   
+   [FBDEV] Moved a few more header files.
+
+<jsimmons@maxwell.earthlink.net> (03/02/11 1.909)
+   [FBCON] Removal of useless code.
+
+<jsimmons@maxwell.earthlink.net> (03/02/11 1.906)
+   [ATY FBDEV] Reversed mobilty patches. They busted every other card.  
+
+<jsimmons@maxwell.earthlink.net> (03/02/09 1.900)
+   [ATY FBDEV] Updates to support Rage Mobility Chipstes.
+
+<jsimmons@maxwell.earthlink.net> (03/01/30 1.899)
+   [RIVA FBDEV] SUpprot Directcolor mode. Needed for some cards.
+
+<jsimmons@kozmo.(none)> (03/01/28 1.897)
+   [NEOMAGIC FBDEV] Fix to work with no 21xx versions of the chip.
+
+<jsimmons@maxwell.earthlink.net> (03/01/28 1.889.52.3)
+   [RADEON FBDEV] Add cursor support. Now the cursor is back.
+   [RIVA FBDEV] Added support for interlace mode and are now using TRUECOLOR instead of DIRECTCOLOR. Setting the graphics card in DIRECTCOLOR confusses the X server.
+
+<jsimmons@maxwell.earthlink.net> (03/01/26 1.889.52.2)
+   Accel rountines pass in constant data into each function. The reason being was some of the code in the upper layers depended on the data being passed to the low level function not be altered because the upper layers was altering the data themselves.
+   
+   Pan display fix for fbcon.c. p->vrow needed to be updated.
+   
+   PPC build fix for fbmon.c
+   
+   I810 fbdev updates. 
+
+<jsimmons@maxwell.earthlink.net> (03/01/17 1.889.52.1)
+   [GENERIC ACCELERATION] Fixed the generic image drawing function tfor 64 bit machines.
+   
+   [RIVA FBDEV] The cursor and imageblit functions have been fixed.

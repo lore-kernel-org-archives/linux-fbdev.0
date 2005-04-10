@@ -1,21 +1,24 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: small radeon frame buffer issues
-Date: Mon, 11 Apr 2005 09:17:02 +1000
-Message-ID: <1113175022.9518.512.camel@gaston>
+Date: Mon, 11 Apr 2005 09:17:51 +1000
+Message-ID: <1113175071.9517.514.camel@gaston>
 References: <200504101159.36819.post@hendrik-sattler.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DKlhx-00080U-5F
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 10 Apr 2005 16:19:13 -0700
+	id 1DKlif-00081Y-2O
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 10 Apr 2005 16:19:57 -0700
 Received: from gate.crashing.org ([63.228.1.57])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1DKlhs-00050m-Ii
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 10 Apr 2005 16:19:13 -0700
+	id 1DKlie-0006zi-IH
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 10 Apr 2005 16:19:56 -0700
+Received: from gaston (localhost [127.0.0.1])
+	by gate.crashing.org (8.12.8/8.12.8) with ESMTP id j3ANFegJ028470
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 10 Apr 2005 18:15:41 -0500
 In-Reply-To: <200504101159.36819.post@hendrik-sattler.de>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -28,54 +31,31 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@osdl.org>
-Cc: Paul Mackerras <paulus@samba.org>
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Sun, 2005-04-10 at 11:59 +0200, Hendrik Sattler wrote:
-> Hi,
+
+> I tried with
+> video=radeonfb:1024x768-24@60
+> and this resulted in no framebuffer console at all. 24bpp is a common setting 
+> for X and in my opinion, the driver should just do the right thing with the 
+> request (e.g. map it 32bpp if necessary).
+> Or at least you could print a kernel message in the default case that the 
+> selected bpp value is not supported.
+
+Hrm... Is this the "old" or "new" radeonfb ? Also does it actually work
+if you just replace 24 with 32 on the kernel command line ?
+
+> 3.
+> radeonfb is mentioned in no file in Documentation/fb/. This lets one guess on
+> how to use it. Please add radeonfb to the supported list in 
+> Documentation/fb/modedb.txt
 > 
-> I write this to you because you are also in the MAINTAINERS file for 
-> linux-2.6.11.
-> I have some issues with the radeonfb, rather minor but I want to tell you 
-> anyways. I am not subscribed to the list, so please CC me when answering.
+> Thanks.
 > 
-> 1.
-> RADEON FRAMEBUFFER DISPLAY DRIVER
-> P:      Ani Joshi
-> M:      ajoshi@shell.unixbox.com
-> is unreachable. The file should be updated.
-
-Indeed, Andrew, please put that in -mm:
-
-This patch does the long overdue updates to MAINTAINERS file for
-aty128fb and radeonfb.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-Index: linux-work/MAINTAINERS
-===================================================================
---- linux-work.orig/MAINTAINERS	2005-04-05 14:22:32.000000000 +1000
-+++ linux-work/MAINTAINERS	2005-04-11 09:14:58.000000000 +1000
-@@ -1860,14 +1860,14 @@
- S:	Maintained
- 
- RADEON FRAMEBUFFER DISPLAY DRIVER
--P:	Ani Joshi
--M:	ajoshi@shell.unixbox.com
-+P:	Benjamin Herrenschmidt
-+M:	benh@kernel.crashing.org
- L:	linux-fbdev-devel@lists.sourceforge.net
- S:	Maintained
- 
- RAGE128 FRAMEBUFFER DISPLAY DRIVER
--P:	Ani Joshi
--M:	ajoshi@shell.unixbox.com
-+P:	Paul Mackerras
-+M:	paulus@samba.org
- L:	linux-fbdev-devel@lists.sourceforge.net
- S:	Maintained
- 
-
+> Hendrik Sattler
+> 
+-- 
+Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 
 

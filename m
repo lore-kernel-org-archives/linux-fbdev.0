@@ -1,27 +1,24 @@
-From: Miles Lane <miles.lane@gmail.com>
-Subject: Re: Re: 2.6.12-rc1-mm2 -- nvidiafb driver gives black screen
-Date: Thu, 14 Apr 2005 11:19:45 -0700
-Message-ID: <a44ae5cd05041411194c3914b1@mail.gmail.com>
+From: Jean Delvare <khali@linux-fr.org>
+Subject: Re: Re: 2.6.12-rc1-mm2 -- nvidiafb driver gives
+ black screen
+Date: Thu, 14 Apr 2005 19:06:23 +0200
+Message-ID: <20050414190623.07e18577.khali@linux-fr.org>
 References: <a44ae5cd0503242023233dc23f@mail.gmail.com>
-	 <20050324203118.345c6004.akpm@osdl.org>
-	 <200504141351.42971.adaplas@hotpop.com>
-	 <20050414191323.10d7d435.khali@linux-fr.org>
+	<20050324203118.345c6004.akpm@osdl.org>
+	<200504141351.11605.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DM8wX-0003yV-RY
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 14 Apr 2005 11:19:57 -0700
-Received: from wproxy.gmail.com ([64.233.184.206])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DM8wW-0005dg-2m
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 14 Apr 2005 11:19:57 -0700
-Received: by wproxy.gmail.com with SMTP id 69so502056wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 14 Apr 2005 11:19:46 -0700 (PDT)
-In-Reply-To: <20050414191323.10d7d435.khali@linux-fr.org>
-Content-Disposition: inline
+	id 1DM7nU-0007la-9D
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 14 Apr 2005 10:06:32 -0700
+Received: from smtp-104-thursday.noc.nerim.net ([62.4.17.104] helo=mallaury.noc.nerim.net)
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DM7nS-0005BI-R8
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 14 Apr 2005 10:06:32 -0700
+In-Reply-To: <200504141351.11605.adaplas@hotpop.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -33,22 +30,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Jean Delvare <khali@linux-fr.org>
-Cc: "Antonino A. Daplas" <adaplas@pol.net>, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>
+To: "Antonino A. Daplas" <adaplas@pol.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>, Miles Lane <miles.lane@gmail.com>
 
-Perhaps I am mistaken, but I thought Andrew wanted to see the nvidiafb
-driver work with a default X86 kernel configuration (which allows for
-up to 128M to be allocated).  Is the driver attempting to allocate
-exactly 128M because that is how much video ram is present in my video
-card?
+Hi Tony,
 
-If lots of video cards exist that have more than 128M of video ram,
-won't we be seeing many boot problems with the default kernel
-configuration?  Does this point to a problem in the kernel design?  Is
-this limitation in the kernel's default configuration advantageous?
+> As for the i2c problem, this is probably due to a misplaced label in
+> the failure path, and the reason why I had a difficult time
+> reproducing this bug. When nvidiafb failed with the ioremap, it
+> skipped deletion of the i2c busses causing the crash whenever the bus
+> created by nvidiafb is read.  The fix is also included in this patch.
 
-Thanks,
-       Miles
+Exactly what I suspected from the very beginning, but I did not
+investigate the error path back then - in fact I can't remember Miles
+telling me that the the driver was actually not working for him. Thanks
+a lot for confirming and fixing the problem.
+
+> So, can you test this patch and see if it helps?
+
+I can't - I have no compatible hardware - but hopefully Miles will be
+able to test.
+
+-- 
+Jean Delvare
 
 
 -------------------------------------------------------

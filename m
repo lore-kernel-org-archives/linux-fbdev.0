@@ -1,24 +1,24 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: Fw: [Bugme-new] [Bug 4468] New: Upgrade to 2.6.11.6 results in no longer being able to turn the lcd backlight off.
-Date: Thu, 14 Apr 2005 13:51:25 +0800
-Message-ID: <200504141351.25084.adaplas@hotpop.com>
-References: <20050410172843.6366ef8a.akpm@osdl.org>
+Subject: Re: [CONFIG_FB_NVIDIA] Mirrored characters on the console on a G5
+Date: Thu, 14 Apr 2005 13:51:19 +0800
+Message-ID: <200504141351.19243.adaplas@hotpop.com>
+References: <1113298311.5465.159.camel@mac-francois>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DLxH0-0000wa-JP
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 13 Apr 2005 22:52:18 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.71])
+	id 1DLxGy-0000wV-PT
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 13 Apr 2005 22:52:16 -0700
+Received: from smtp-out.hotpop.com ([38.113.3.61])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1DLxGz-0005RJ-5G
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 13 Apr 2005 22:52:18 -0700
+	id 1DLxGx-0005R1-D2
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 13 Apr 2005 22:52:16 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 67D14152A737
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 14 Apr 2005 05:52:06 +0000 (UTC)
-In-Reply-To: <20050410172843.6366ef8a.akpm@osdl.org>
+	by smtp-out.hotpop.com (Postfix) with SMTP id 3C4A1106DECA
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 14 Apr 2005 05:52:05 +0000 (UTC)
+In-Reply-To: <1113298311.5465.159.camel@mac-francois>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -31,25 +31,39 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>
-Cc: klug@blarg.org
+To: linux-fbdev-devel@lists.sourceforge.net, Francois <f.taiani@computer.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-On Monday 11 April 2005 08:28, Andrew Morton wrote:
+On Tuesday 12 April 2005 17:31, Francois wrote:
+> Dear linux-fbdev team,
+>
+> I've just compiled a new 2.6.12-rc2 kernel for my PowerMac G5. I've got
+> the following problem: I get "reversed" characters on the console if I
+> use CONFIG_FB_NVIDIA in the kernel. For instance, instead of an E, I get
+> a
+>
+> xxx
+>   x
+>  xx
+>   x
+> xxx
+>
 
-> Previous to my 2.6.11.6 upgrade I was running 2.6.9. With all unpatched 2.6
-> kernel versions up to and including 2.6.9, I could turn the lcd backlight
-> off by running "echo lcd_out:0 > /proc/acpi/toshiba/video" as root. I
-> upgraded directly from 2.6.9 to 2.6.11.6. With the upgrade I am no longer
-> able to turn the lcd backlight off. There is no effect after running "echo
-> lcd_out:0 >
-> /proc/acpi/toshiba/video" and the /proc/acpi/toshiba/video lcd_out option
+Only characters are mirrored, and not the entire row (ie, row starts at the left
+side, and not at the right)?
 
-Looks more like an acpi problem than fbdev/backlight.
+Can you try fbset -accel false and see if it helps?
 
-> remains unchanged as 1. I recompiled the 2.6.11.6 kernel with the new
-> option CONFIG_BACKLIGHT_LCD_SUPPORT=y. Enabling this option did not allow
+If it does, this is a problem with nvidia's imageblit function which converts
+big-endian bitmaps to little endian?  Perhaps the help reverse_order() is not
+needed for your arch.  Can you comment out calls to reverse_order() in
+drivers/video/nvidia/nv_accel.c?
 
-Does not matter as intelfb does not use the backlight/lcd architecture yet.
+
+> Switching CONFIG_FB_NVIDIA off eliminates the problem. My G5 contains a
+> GeForce FX 5200 Nvidia Card.
+
+I think rivafb supports this particular chipset, but without acceleration.
 
 Tony
 

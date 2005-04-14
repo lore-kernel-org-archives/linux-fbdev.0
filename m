@@ -1,24 +1,24 @@
 From: Jean Delvare <khali@linux-fr.org>
 Subject: Re: Re: 2.6.12-rc1-mm2 -- nvidiafb driver gives
  black screen
-Date: Thu, 14 Apr 2005 19:06:23 +0200
-Message-ID: <20050414190623.07e18577.khali@linux-fr.org>
+Date: Thu, 14 Apr 2005 19:13:23 +0200
+Message-ID: <20050414191323.10d7d435.khali@linux-fr.org>
 References: <a44ae5cd0503242023233dc23f@mail.gmail.com>
 	<20050324203118.345c6004.akpm@osdl.org>
-	<200504141351.11605.adaplas@hotpop.com>
+	<200504141351.42971.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DM7nU-0007la-9D
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 14 Apr 2005 10:06:32 -0700
+	id 1DM7u3-0008Gl-QG
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 14 Apr 2005 10:13:19 -0700
 Received: from smtp-104-thursday.noc.nerim.net ([62.4.17.104] helo=mallaury.noc.nerim.net)
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1DM7nS-0005BI-R8
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 14 Apr 2005 10:06:32 -0700
-In-Reply-To: <200504141351.11605.adaplas@hotpop.com>
+	id 1DM7u3-00063m-BC
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 14 Apr 2005 10:13:19 -0700
+In-Reply-To: <200504141351.42971.adaplas@hotpop.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -35,22 +35,29 @@ Cc: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>, Mile
 
 Hi Tony,
 
-> As for the i2c problem, this is probably due to a misplaced label in
-> the failure path, and the reason why I had a difficult time
-> reproducing this bug. When nvidiafb failed with the ioremap, it
-> skipped deletion of the i2c busses causing the crash whenever the bus
-> created by nvidiafb is read.  The fix is also included in this patch.
+> This patch will always limit the amount of video RAM to remap at
+> 128 MiB.
 
-Exactly what I suspected from the very beginning, but I did not
-investigate the error path back then - in fact I can't remember Miles
-telling me that the the driver was actually not working for him. Thanks
-a lot for confirming and fixing the problem.
+I don't much get the idea. What are you trying to prevent?
 
-> So, can you test this patch and see if it helps?
+128 MiB seems a rather low limit. Graphics adapters with 256 MiB, 512
+MiB or even 640 MiB exist, and I see little reason why it would stop
+increasing.
 
-I can't - I have no compatible hardware - but hopefully Miles will be
-able to test.
+> diff -Nru a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
+> --- a/drivers/video/nvidia/nvidia.c	2005-04-14 13:33:38 +08:00
+> +++ b/drivers/video/nvidia/nvidia.c	2005-04-14 13:44:15 +08:00
+> @@ -1510,7 +1510,11 @@
+>  	par->FbMapSize = par->RamAmountKBytes * 1024;
+>  
+>  	if (vram && vram * 1024 * 1024 < par->FbMapSize)
+> -	    par->FbMapSize = vram * 1024 * 1024;
+> +		par->FbMapSize = vram * 1024 * 1024;
 
+You're fixing an indentation error you just introduced in the previous
+patch. Maybe you could fix the first patch instead?
+
+Thanks,
 -- 
 Jean Delvare
 

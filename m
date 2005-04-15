@@ -1,24 +1,24 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: Re: 2.6.12-rc1-mm2 -- nvidiafb driver gives black screen
-Date: Fri, 15 Apr 2005 11:07:54 +0800
-Message-ID: <200504151107.54579.adaplas@hotpop.com>
-References: <a44ae5cd0503242023233dc23f@mail.gmail.com> <200504141351.11605.adaplas@hotpop.com> <20050414190623.07e18577.khali@linux-fr.org>
+Subject: Re: [CONFIG_FB_NVIDIA] Mirrored characters on the console on a G5
+Date: Fri, 15 Apr 2005 11:07:58 +0800
+Message-ID: <200504151107.58081.adaplas@hotpop.com>
+References: <1113298311.5465.159.camel@mac-francois> <200504141351.19243.adaplas@hotpop.com> <1113497550.9779.13.camel@mac-francois>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DMHCE-0001EW-PN
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 14 Apr 2005 20:08:42 -0700
+	id 1DMHCc-0001FX-Lm
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 14 Apr 2005 20:09:06 -0700
 Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1DMHC4-0004zK-Rv
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 14 Apr 2005 20:08:42 -0700
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1DMHCc-0007Rs-3v
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 14 Apr 2005 20:09:06 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id BC4B810657C0
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 15 Apr 2005 03:08:24 +0000 (UTC)
-In-Reply-To: <20050414190623.07e18577.khali@linux-fr.org>
+	by smtp-out.hotpop.com (Postfix) with SMTP id 04236101DBDE
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 15 Apr 2005 03:08:56 +0000 (UTC)
+In-Reply-To: <1113497550.9779.13.camel@mac-francois>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -31,28 +31,46 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Jean Delvare <khali@linux-fr.org>, "Antonino A. Daplas" <adaplas@pol.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>, Miles Lane <miles.lane@gmail.com>
+To: Francois <f.taiani@computer.org>, adaplas@pol.net
+Cc: linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
 
-On Friday 15 April 2005 01:06, Jean Delvare wrote:
+On Friday 15 April 2005 00:52, Francois wrote:
 > Hi Tony,
 >
-> > As for the i2c problem, this is probably due to a misplaced label in
-> > the failure path, and the reason why I had a difficult time
-> > reproducing this bug. When nvidiafb failed with the ioremap, it
-> > skipped deletion of the i2c busses causing the crash whenever the bus
-> > created by nvidiafb is read.  The fix is also included in this patch.
+> > Only characters are mirrored, and not the entire row (ie, row starts at
+> > the left side, and not at the right)?
 >
-> Exactly what I suspected from the very beginning, but I did not
-> investigate the error path back then - in fact I can't remember Miles
-> telling me that the the driver was actually not working for him. Thanks
+> Only the characters (so I can't look in a mirror and have a "normal" screen
+> :-).
+>
+> > Can you try fbset -accel false and see if it helps?
+>
+> Right on the spot! I can now switch between mirrored and not mirrored.
 
-He didn't.  I just assumed that it did because he also reported that nvidiafb
-failed to load due to an ioremap problem (too much video RAM).
+You can also append this when you boot:
 
-> a lot for confirming and fixing the problem.
+video=nvidiafb:noaccel
 
-Well, not yet confirmed, I'll wait for Miles to do so.
+so you don't have to do an fbset -accel false each time.
+
+>
+> > I think rivafb supports this particular chipset, but without
+> > acceleration.
+>
+> Actually my X display is garbled with rivafb (with which console
+> characters are fine). With fb_nvidia, X seems to work fine independently
+> of whether the acceleration is switched on or off (some screen size and
+> frequency issues needs tuning though).
+>
+> > If it does, this is a problem with nvidia's imageblit function which
+> > converts big-endian bitmaps to little endian?  Perhaps the help
+> > reverse_order() is not needed for your arch.  Can you comment out calls
+> > to reverse_order() in drivers/video/nvidia/nv_accel.c?
+>
+> I'll try this and I'll get back to you this the results.
+>
+
+I'll wait, thanks.
 
 Tony
 

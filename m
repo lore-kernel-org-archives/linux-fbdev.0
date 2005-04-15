@@ -1,24 +1,24 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: [CONFIG_FB_NVIDIA] Mirrored characters on the console on a G5
-Date: Fri, 15 Apr 2005 11:07:58 +0800
-Message-ID: <200504151107.58081.adaplas@hotpop.com>
-References: <1113298311.5465.159.camel@mac-francois> <200504141351.19243.adaplas@hotpop.com> <1113497550.9779.13.camel@mac-francois>
+Subject: Re: Re: 2.6.12-rc1-mm2 -- nvidiafb driver gives black screen
+Date: Fri, 15 Apr 2005 11:07:41 +0800
+Message-ID: <200504151107.45594.adaplas@hotpop.com>
+References: <a44ae5cd0503242023233dc23f@mail.gmail.com> <20050414191323.10d7d435.khali@linux-fr.org> <a44ae5cd05041411194c3914b1@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DMHCc-0001FX-Lm
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 14 Apr 2005 20:09:06 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.61])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DMHCc-0007Rs-3v
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 14 Apr 2005 20:09:06 -0700
+	id 1DMHCB-0001EN-6O
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 14 Apr 2005 20:08:39 -0700
+Received: from smtp-out.hotpop.com ([38.113.3.71])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DMHBu-0004y8-5Y
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 14 Apr 2005 20:08:39 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 04236101DBDE
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 15 Apr 2005 03:08:56 +0000 (UTC)
-In-Reply-To: <1113497550.9779.13.camel@mac-francois>
+	by smtp-out.hotpop.com (Postfix) with SMTP id 5CE8C152E70F
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 15 Apr 2005 03:08:10 +0000 (UTC)
+In-Reply-To: <a44ae5cd05041411194c3914b1@mail.gmail.com>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -31,46 +31,35 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Francois <f.taiani@computer.org>, adaplas@pol.net
-Cc: linux-fbdev-devel <linux-fbdev-devel@lists.sourceforge.net>
+To: Miles Lane <miles.lane@gmail.com>, Jean Delvare <khali@linux-fr.org>
+Cc: "Antonino A. Daplas" <adaplas@pol.net>, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>
 
-On Friday 15 April 2005 00:52, Francois wrote:
-> Hi Tony,
->
-> > Only characters are mirrored, and not the entire row (ie, row starts at
-> > the left side, and not at the right)?
->
-> Only the characters (so I can't look in a mirror and have a "normal" screen
-> :-).
->
-> > Can you try fbset -accel false and see if it helps?
->
-> Right on the spot! I can now switch between mirrored and not mirrored.
-
-You can also append this when you boot:
-
-video=nvidiafb:noaccel
-
-so you don't have to do an fbset -accel false each time.
-
->
-> > I think rivafb supports this particular chipset, but without
-> > acceleration.
->
-> Actually my X display is garbled with rivafb (with which console
-> characters are fine). With fb_nvidia, X seems to work fine independently
-> of whether the acceleration is switched on or off (some screen size and
-> frequency issues needs tuning though).
->
-> > If it does, this is a problem with nvidia's imageblit function which
-> > converts big-endian bitmaps to little endian?  Perhaps the help
-> > reverse_order() is not needed for your arch.  Can you comment out calls
-> > to reverse_order() in drivers/video/nvidia/nv_accel.c?
->
-> I'll try this and I'll get back to you this the results.
+On Friday 15 April 2005 02:19, Miles Lane wrote:
+> Perhaps I am mistaken, but I thought Andrew wanted to see the nvidiafb
+> driver work with a default X86 kernel configuration (which allows for
+> up to 128M to be allocated).  Is the driver attempting to allocate
+> exactly 128M because that is how much video ram is present in my video
+> card?
 >
 
-I'll wait, thanks.
+Not allocation, as standalone cards have already a fixed amount of RAM. The
+patch will limit the amount of video RAM that the kernel can access to a
+maximum of 128 MiB.
+
+> If lots of video cards exist that have more than 128M of video ram,
+> won't we be seeing many boot problems with the default kernel
+> configuration?  Does this point to a problem in the kernel design?  Is
+> this limitation in the kernel's default configuration advantageous?
+>
+
+The patch is a short-term workaround where cards with large amounts
+of video RAM eat a large amount of the kernel's address space.
+
+What I intend to do is to mimic what radeonfb is doing. Ie, info->screen_size
+points to the actual vram, while fix->smem_len points to ioremapped area only.
+I'll do some testing first since nvidiafb uses the last chunk of the ioremapped
+vram for the DMA buffer, and I don't know the consequence if this buffer is
+unintentionally exported to user space, from the security point of view.
 
 Tony
 

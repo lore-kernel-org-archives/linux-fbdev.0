@@ -1,22 +1,22 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 1/6] nvidiafb: ioremap and i2c fixes
-Date: Sat, 16 Apr 2005 13:13:20 +0800
-Message-ID: <200504161313.25574.adaplas@hotpop.com>
+Subject: [PATCH 2/6] fbdev: edid.h cleanups
+Date: Sat, 16 Apr 2005 13:16:01 +0800
+Message-ID: <200504161316.01130.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DMfr8-0002Aq-Bp
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Apr 2005 22:28:34 -0700
+	id 1DMfr9-0002Aw-Or
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Apr 2005 22:28:35 -0700
 Received: from smtp-out.hotpop.com ([38.113.3.61])
 	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1DMfr6-0008B7-L5
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Apr 2005 22:28:34 -0700
+	id 1DMfr8-0008BA-6q
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Apr 2005 22:28:35 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 9C589105BD6B
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 16 Apr 2005 05:28:19 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id DC3511065895
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 16 Apr 2005 05:28:23 +0000 (UTC)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -30,112 +30,83 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Adrian Bunk <bunk@stusta.de>
 
-- Add 'vram' option to specify amount of video RAM to remap
-- Limit remap size to 128 MIB
-- Use info->screen_size for remapped RAM
-- Fix misplaced label in failure path
+  This patch removes some completely unused code.
 
-From: Antonino Daplas <adaplas@pol.net>
+From: Adrian Bunk <bunk@stusta.de>
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- nvidia.c |   26 +++++++++++++++++++++-----
- 1 files changed, 21 insertions(+), 5 deletions(-)
+ arch/i386/boot/compressed/misc.c |    1 -
+ drivers/video/fbmon.c            |    1 -
+ drivers/video/vesafb.c           |    3 ---
+ include/video/edid.h             |    9 ---------
+ 4 files changed, 14 deletions(-)
 
-diff -Nru a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
---- a/drivers/video/nvidia/nvidia.c	2005-04-14 12:06:02 +08:00
-+++ b/drivers/video/nvidia/nvidia.c	2005-04-16 11:54:44 +08:00
-@@ -408,6 +408,7 @@
- static int noaccel __devinitdata = 0;
- static int noscale __devinitdata = 0;
- static int paneltweak __devinitdata = 0;
-+static int vram __devinitdata = 0;
- #ifdef CONFIG_MTRR
- static int nomtrr __devinitdata = 0;
+diff -Nru a/arch/i386/boot/compressed/misc.c b/arch/i386/boot/compressed/misc.c
+--- a/arch/i386/boot/compressed/misc.c	2005-04-14 12:06:31 +08:00
++++ b/arch/i386/boot/compressed/misc.c	2005-03-21 03:05:58 +08:00
+@@ -12,7 +12,6 @@
+ #include <linux/linkage.h>
+ #include <linux/vmalloc.h>
+ #include <linux/tty.h>
+-#include <video/edid.h>
+ #include <asm/io.h>
+ #include <asm/page.h>
+ 
+diff -Nru a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+--- a/drivers/video/fbmon.c	2005-03-22 05:48:51 +08:00
++++ b/drivers/video/fbmon.c	2005-03-21 03:04:27 +08:00
+@@ -34,7 +34,6 @@
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
  #endif
-@@ -1180,7 +1181,7 @@
+-#include <video/edid.h>
+ #include "edid.h"
  
- 	var->xres_virtual = (var->xres_virtual + 63) & ~63;
+ /* 
+diff -Nru a/drivers/video/vesafb.c b/drivers/video/vesafb.c
+--- a/drivers/video/vesafb.c	2005-03-12 23:23:40 +08:00
++++ b/drivers/video/vesafb.c	2005-03-21 03:04:18 +08:00
+@@ -19,9 +19,6 @@
+ #include <linux/fb.h>
+ #include <linux/ioport.h>
+ #include <linux/init.h>
+-#ifdef __i386__
+-#include <video/edid.h>
+-#endif
+ #include <asm/io.h>
+ #include <asm/mtrr.h>
  
--	vramlen = info->fix.smem_len;
-+	vramlen = info->screen_size;
- 	pitch = ((var->xres_virtual * var->bits_per_pixel) + 7) / 8;
- 	memlen = pitch * var->yres_virtual;
+diff -Nru a/include/video/edid.h b/include/video/edid.h
+--- a/include/video/edid.h	2005-03-13 00:57:14 +08:00
++++ b/include/video/edid.h	2005-03-24 08:37:27 +08:00
+@@ -4,9 +4,6 @@
+ #ifdef __KERNEL__
  
-@@ -1343,7 +1344,7 @@
- 	/* maximize virtual vertical length */
- 	lpitch = info->var.xres_virtual *
- 		((info->var.bits_per_pixel + 7) >> 3);
--	info->var.yres_virtual = info->fix.smem_len / lpitch;
-+	info->var.yres_virtual = info->screen_size / lpitch;
+ #include <linux/config.h>
+-#ifdef CONFIG_PPC_OF
+-#include <linux/pci.h>
+-#endif
  
- 	info->pixmap.scan_align = 4;
- 	info->pixmap.buf_align = 4;
-@@ -1507,12 +1508,20 @@
+ #ifdef CONFIG_X86
+ struct edid_info {
+@@ -14,13 +11,7 @@
+ };
  
- 	par->FbAddress = nvidiafb_fix.smem_start;
- 	par->FbMapSize = par->RamAmountKBytes * 1024;
-+	if (vram && vram * 1024 * 1024 < par->FbMapSize)
-+		par->FbMapSize = vram * 1024 * 1024;
-+
-+	/* Limit amount of vram to 128 MB */
-+	if (par->FbMapSize > 128 * 1024 * 1024)
-+		par->FbMapSize = 128 * 1024 * 1024;
-+
- 	par->FbUsableSize = par->FbMapSize - (128 * 1024);
- 	par->ScratchBufferSize = (par->Architecture < NV_ARCH_10) ? 8 * 1024 :
- 	    16 * 1024;
- 	par->ScratchBufferStart = par->FbUsableSize - par->ScratchBufferSize;
- 	info->screen_base = ioremap(nvidiafb_fix.smem_start, par->FbMapSize);
--	nvidiafb_fix.smem_len = par->FbUsableSize;
-+	info->screen_size = par->FbUsableSize;
-+	nvidiafb_fix.smem_len = par->RamAmountKBytes * 1024;
+ extern struct edid_info edid_info;
+-extern char *get_EDID_from_BIOS(void *);
+-
+ #endif /* CONFIG_X86 */
+-
+-#ifdef CONFIG_PPC_OF
+-extern char *get_EDID_from_OF(struct pci_dev *pdev);
+-#endif
  
- 	if (!info->screen_base) {
- 		printk(KERN_ERR PFX "cannot ioremap FB base\n");
-@@ -1524,7 +1533,8 @@
- #ifdef CONFIG_MTRR
- 	if (!nomtrr) {
- 		par->mtrr.vram = mtrr_add(nvidiafb_fix.smem_start,
--					  par->FbMapSize, MTRR_TYPE_WRCOMB, 1);
-+					  par->RamAmountKBytes * 1024,
-+					  MTRR_TYPE_WRCOMB, 1);
- 		if (par->mtrr.vram < 0) {
- 			printk(KERN_ERR PFX "unable to setup MTRR\n");
- 		} else {
-@@ -1566,9 +1576,9 @@
+ #endif /* __KERNEL__ */
  
-       err_out_iounmap_fb:
- 	iounmap(info->screen_base);
-+      err_out_free_base1:
- 	fb_destroy_modedb(info->monspecs.modedb);
- 	nvidia_delete_i2c_busses(par);
--      err_out_free_base1:
- 	iounmap(par->REGS);
-       err_out_free_base0:
- 	pci_release_regions(pd);
-@@ -1645,6 +1655,8 @@
- 			noscale = 1;
- 		} else if (!strncmp(this_opt, "paneltweak:", 11)) {
- 			paneltweak = simple_strtoul(this_opt+11, NULL, 0);
-+		} else if (!strncmp(this_opt, "vram:", 5)) {
-+			vram = simple_strtoul(this_opt+5, NULL, 0);
- #ifdef CONFIG_MTRR
- 		} else if (!strncmp(this_opt, "nomtrr", 6)) {
- 			nomtrr = 1;
-@@ -1716,6 +1728,10 @@
- MODULE_PARM_DESC(forceCRTC,
- 		 "Forces usage of a particular CRTC in case autodetection "
- 		 "fails. (0 or 1) (default=autodetect)");
-+module_param(vram, int, 0);
-+MODULE_PARM_DESC(vram,
-+		 "amount of framebuffer memory to remap in MiB"
-+		 "(default=0 - remap entire memory)");
- #ifdef CONFIG_MTRR
- module_param(nomtrr, bool, 0);
- MODULE_PARM_DESC(nomtrr, "Disables MTRR support (0 or 1=disabled) "
 
 
 

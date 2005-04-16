@@ -1,22 +1,22 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: [PATCH 4/6] intelfb: Remove intelfbdrv.h
-Date: Sat, 16 Apr 2005 13:20:33 +0800
-Message-ID: <200504161320.34027.adaplas@hotpop.com>
+Subject: [PATCH 5/6] i810fb: Fix default monitor sync timings
+Date: Sat, 16 Apr 2005 13:22:38 +0800
+Message-ID: <200504161322.38603.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DMfrI-0002B7-Qw
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Apr 2005 22:28:44 -0700
+	id 1DMfrN-0002BC-Qf
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Apr 2005 22:28:49 -0700
 Received: from smtp-out.hotpop.com ([38.113.3.71])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DMfrI-0004G8-6E
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Apr 2005 22:28:44 -0700
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DMfrL-0008C3-Bp
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Apr 2005 22:28:49 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 77B87152F13A
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 16 Apr 2005 05:28:30 +0000 (UTC)
+	by smtp-out.hotpop.com (Postfix) with SMTP id 278B315321E9
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 16 Apr 2005 05:28:33 +0000 (UTC)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -28,155 +28,54 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Andrew Morton <akpm@osdl.org>
-Cc: Adrian Bunk <bunk@stusta.de>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: Andrew Morton <akpm@osdl.org>, Denis Vlasenko <vda@ilport.com.ua>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-  Ingo Oeser noticed that all that intelfbdrv.h contains are prototypes
-  for static functions - and such prototypes don't belong into header
-  files.
+  - Increase error message verbosity with respect
+    to monitor timings.
 
-  This patch therefore removes drivers/video/intelfb/intelfbdrv.h and
-  moves the prototypes to intelfbdrv.c .
+  - Fix default sync timings
 
-=46rom: Adrian Bunk <bunk@stusta.de>
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+From: Denis Vlasenko <vda@ilport.com.ua>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
-=2D--
+---
 
- b/drivers/video/intelfb/intelfbdrv.c |   38 +++++++++++++++++++
- drivers/video/intelfb/intelfbdrv.h   |   68 ------------------------------=
-=2D----
- 2 files changed, 37 insertions(+), 69 deletions(-)
+ i810_main.c |   12 +++++++++---
+ 1 files changed, 9 insertions(+), 3 deletions(-)
 
-diff -Nru a/drivers/video/intelfb/intelfbdrv.c b/drivers/video/intelfb/inte=
-lfbdrv.c
-=2D-- a/drivers/video/intelfb/intelfbdrv.c	2005-03-20 20:09:13 +08:00
-+++ b/drivers/video/intelfb/intelfbdrv.c	2005-04-16 11:51:14 +08:00
-@@ -135,8 +135,44 @@
- #endif
-=20
- #include "intelfb.h"
-=2D#include "intelfbdrv.h"
- #include "intelfbhw.h"
-+
-+static void __devinit get_initial_mode(struct intelfb_info *dinfo);
-+static void update_dinfo(struct intelfb_info *dinfo,
-+			 struct fb_var_screeninfo *var);
-+static int intelfb_get_fix(struct fb_fix_screeninfo *fix,
-+			   struct fb_info *info);
-+
-+static int intelfb_check_var(struct fb_var_screeninfo *var,
-+			     struct fb_info *info);
-+static int intelfb_set_par(struct fb_info *info);
-+static int intelfb_setcolreg(unsigned regno, unsigned red, unsigned green,
-+			     unsigned blue, unsigned transp,
-+			     struct fb_info *info);
-+
-+static int intelfb_blank(int blank, struct fb_info *info);
-+static int intelfb_pan_display(struct fb_var_screeninfo *var,
-+			       struct fb_info *info);
-+
-+static void intelfb_fillrect(struct fb_info *info,
-+			     const struct fb_fillrect *rect);
-+static void intelfb_copyarea(struct fb_info *info,
-+			     const struct fb_copyarea *region);
-+static void intelfb_imageblit(struct fb_info *info,
-+			      const struct fb_image *image);
-+static int intelfb_cursor(struct fb_info *info,
-+			   struct fb_cursor *cursor);
-+
-+static int intelfb_sync(struct fb_info *info);
-+
-+static int intelfb_ioctl(struct inode *inode, struct file *file,
-+			 unsigned int cmd, unsigned long arg,
-+			 struct fb_info *info);
-+
-+static int __devinit intelfb_pci_register(struct pci_dev *pdev,
-+					  const struct pci_device_id *ent);
-+static void __devexit intelfb_pci_unregister(struct pci_dev *pdev);
-+static int __devinit intelfb_set_fbinfo(struct intelfb_info *dinfo);
-=20
- /*
-  * Limiting the class to PCI_CLASS_DISPLAY_VGA prevents function 1 of the
-diff -Nru a/drivers/video/intelfb/intelfbdrv.h b/drivers/video/intelfb/inte=
-lfbdrv.h
-=2D-- a/drivers/video/intelfb/intelfbdrv.h	2005-03-20 20:09:13 +08:00
-+++ /dev/null	Wed Dec 31 16:00:00 196900
-@@ -1,68 +0,0 @@
-=2D#ifndef _INTELFBDRV_H
-=2D#define _INTELFBDRV_H
-=2D
-=2D/*
-=2D ***********************************************************************=
-*******
-=2D * intelfb
-=2D *
-=2D * Linux framebuffer driver for Intel(R) 830M/845G/852GM/855GM/865G/915G
-=2D * integrated graphics chips.
-=2D *
-=2D * Copyright =A9 2004 Sylvain Meyer
-=2D *
-=2D * Author: Sylvain Meyer
-=2D *
-=2D ***********************************************************************=
-*******
-=2D *    This program is free software; you can redistribute it and/or modi=
-fy
-=2D *    it under the terms of the GNU General Public License as published =
-by
-=2D *    the Free Software Foundation; either version 2 of the License, or
-=2D *    (at your option) any later version.
-=2D *
-=2D *    This program is distributed in the hope that it will be useful,
-=2D *    but WITHOUT ANY WARRANTY; without even the implied warranty of
-=2D *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-=2D *    GNU General Public License for more details.
-=2D *
-=2D *    You should have received a copy of the GNU General Public License
-=2D *    along with this program; if not, write to the Free Software
-=2D *    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-=2D*/
-=2D
-=2Dstatic void __devinit get_initial_mode(struct intelfb_info *dinfo);
-=2Dstatic void update_dinfo(struct intelfb_info *dinfo,
-=2D			 struct fb_var_screeninfo *var);
-=2Dstatic int intelfb_get_fix(struct fb_fix_screeninfo *fix,
-=2D			   struct fb_info *info);
-=2D
-=2Dstatic int intelfb_check_var(struct fb_var_screeninfo *var,
-=2D			     struct fb_info *info);
-=2Dstatic int intelfb_set_par(struct fb_info *info);
-=2Dstatic int intelfb_setcolreg(unsigned regno, unsigned red, unsigned gree=
-n,
-=2D			     unsigned blue, unsigned transp,
-=2D			     struct fb_info *info);
-=2D
-=2Dstatic int intelfb_blank(int blank, struct fb_info *info);
-=2Dstatic int intelfb_pan_display(struct fb_var_screeninfo *var,
-=2D			       struct fb_info *info);
-=2D
-=2Dstatic void intelfb_fillrect(struct fb_info *info,
-=2D			     const struct fb_fillrect *rect);
-=2Dstatic void intelfb_copyarea(struct fb_info *info,
-=2D			     const struct fb_copyarea *region);
-=2Dstatic void intelfb_imageblit(struct fb_info *info,
-=2D			      const struct fb_image *image);
-=2Dstatic int intelfb_cursor(struct fb_info *info,
-=2D			   struct fb_cursor *cursor);
-=2D
-=2Dstatic int intelfb_sync(struct fb_info *info);
-=2D
-=2Dstatic int intelfb_ioctl(struct inode *inode, struct file *file,
-=2D			 unsigned int cmd, unsigned long arg,
-=2D			 struct fb_info *info);
-=2D
-=2Dstatic int __devinit intelfb_pci_register(struct pci_dev *pdev,
-=2D					  const struct pci_device_id *ent);
-=2Dstatic void __devexit intelfb_pci_unregister(struct pci_dev *pdev);
-=2Dstatic int __devinit intelfb_set_fbinfo(struct intelfb_info *dinfo);
-=2D
-=2D#endif
+diff -Nru a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_main.c
+--- a/drivers/video/i810/i810_main.c	2005-04-14 12:06:02 +08:00
++++ b/drivers/video/i810/i810_main.c	2005-03-28 23:04:58 +08:00
+@@ -999,8 +999,14 @@
+ 	info->monspecs.dclkmin = 15000000;
+ 
+ 	if (fb_validate_mode(var, info)) {
+-		if (fb_get_mode(FB_MAXTIMINGS, 0, var, info))
++		if (fb_get_mode(FB_MAXTIMINGS, 0, var, info)) {
++			int default_sync = (hsync1-HFMIN)|(hsync2-HFMAX)
++					    |(vsync1-VFMIN)|(vsync2-VFMAX);
++			printk("i810fb: invalid video mode%s\n",
++			    default_sync ? "" :
++			    ". Specifying vsyncN/hsyncN parameters may help");
+ 			return -EINVAL;
++		}
+ 	}
+ 	
+ 	var->xres = xres;
+@@ -2023,10 +2029,10 @@
+ 		 " (default = 480)");
+ module_param(hsync1, int, 0);
+ MODULE_PARM_DESC(hsync1, "Minimum horizontal frequency of monitor in KHz"
+-		 " (default = 31)");
++		 " (default = 29)");
+ module_param(hsync2, int, 0);
+ MODULE_PARM_DESC(hsync2, "Maximum horizontal frequency of monitor in KHz"
+-		 " (default = 31)");
++		 " (default = 30)");
+ module_param(vsync1, int, 0);
+ MODULE_PARM_DESC(vsync1, "Minimum vertical frequency of monitor in Hz"
+ 		 " (default = 50)");
 
 
 

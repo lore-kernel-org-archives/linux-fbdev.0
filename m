@@ -1,26 +1,18 @@
-From: Miles Lane <miles.lane@gmail.com>
-Subject: Re: Re: 2.6.12-rc1-mm2 -- nvidiafb driver gives black screen
-Date: Sat, 16 Apr 2005 04:21:25 -0400
-Message-ID: <a44ae5cd05041601211c292316@mail.gmail.com>
-References: <a44ae5cd0503242023233dc23f@mail.gmail.com>
-	 <200504141351.42971.adaplas@hotpop.com>
-	 <20050414191323.10d7d435.khali@linux-fr.org>
-	 <200504151107.49810.adaplas@hotpop.com>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: [2.6 patch] drivers/video/fbmem.c: make a function static
+Date: Mon, 18 Apr 2005 01:24:19 +0200
+Message-ID: <20050417232419.GU3625@stusta.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DMiYd-0000OC-Pu
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 16 Apr 2005 01:21:39 -0700
-Received: from wproxy.gmail.com ([64.233.184.199])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DMiYW-0001Ug-8v
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 16 Apr 2005 01:21:39 -0700
-Received: by wproxy.gmail.com with SMTP id 69so867379wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 16 Apr 2005 01:21:26 -0700 (PDT)
-In-Reply-To: <200504151107.49810.adaplas@hotpop.com>
+	id 1DNJ7u-00067Z-Sc
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 17 Apr 2005 16:24:30 -0700
+Received: from emailhub.stusta.mhn.de ([141.84.69.5] helo=mailout.stusta.mhn.de)
+	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
+	id 1DNJ7t-0007dA-6b
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 17 Apr 2005 16:24:30 -0700
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -33,19 +25,26 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, Jean Delvare <khali@linux-fr.org>, Andrew Morton <akpm@osdl.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-Hello Tony,
+This patch makes a needlessly global function static.
 
-So far no Oops messages while testing your patches to nvidiafb.
-I have tried compiling all the I2C drivers into the kernel and then
-booting with vesafb as the console graphics driver.  So far it looks
-good.  I need to do more careful testing of the case where no
-vmalloc=3D is specified.  I'll try to get to this tomorrow.  So far, so goo=
-d.
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-                Miles
+--- linux-2.6.12-rc2-mm3-full/drivers/video/fbmem.c.old	2005-04-18 00:39:21.000000000 +0200
++++ linux-2.6.12-rc2-mm3-full/drivers/video/fbmem.c	2005-04-18 00:39:34.000000000 +0200
+@@ -1312,7 +1312,7 @@
+  *	Returns zero.
+  *
+  */
+-int __init video_setup(char *options)
++static int __init video_setup(char *options)
+ {
+ 	int i, global = 0;
+ 
+
 
 
 -------------------------------------------------------

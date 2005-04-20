@@ -1,22 +1,25 @@
-From: Gary Thomas <gary@mlbassoc.com>
-Subject: Re: Framebuffer console performance
-Date: Mon, 18 Apr 2005 05:07:38 -0600
-Message-ID: <1113822458.1030.16.camel@hermes>
-References: <1111702489.29791.216.camel@hermes>
-	 <200504151257.05950.adaplas@hotpop.com>  <1113650790.10535.42.camel@hermes>
+From: Francois <f.taiani@computer.org>
+Subject: Re: [CONFIG_FB_NVIDIA] Mirrored characters on
+	the console on a G5
+Date: Wed, 20 Apr 2005 18:21:30 +0100
+Message-ID: <1114017690.24964.27.camel@mac-francois>
+References: <1113298311.5465.159.camel@mac-francois>
+	 <200504141351.19243.adaplas@hotpop.com>
+	 <1113497550.9779.13.camel@mac-francois>
+	 <200504151107.58081.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DNU6W-00065a-Qy
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Apr 2005 04:07:48 -0700
-Received: from sta-206-168-96-204.rockynet.com ([206.168.96.204] helo=hermes.chez-thomas.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1DNU6V-00049y-Cf
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 18 Apr 2005 04:07:48 -0700
-In-Reply-To: <1113650790.10535.42.camel@hermes>
+	id 1DOItY-0000v6-Vo
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 20 Apr 2005 10:21:48 -0700
+Received: from mail.comp.lancs.ac.uk ([148.88.3.45])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1DOItW-0003h9-8n
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 20 Apr 2005 10:21:48 -0700
+In-Reply-To: <200504151107.58081.adaplas@hotpop.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,42 +34,92 @@ Content-Type: text/plain; charset="us-ascii"
 To: adaplas@pol.net
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Sat, 2005-04-16 at 05:26 -0600, Gary Thomas wrote:
-> On Fri, 2005-04-15 at 12:57 +0800, Antonino A. Daplas wrote: 
-> > On Friday 25 March 2005 06:14, Gary Thomas wrote:
-> > > I have a non-standard framebuffer (i.e. I wrote the driver,
-> > > based on the au1000 driver) running on 2.4.27.  When I run
-> > > virtual consoles on it, I see sluggish scroll performance.
-> > > I get quite acceptable performance when the system first
-> > > comes up, e.g. during the system initialization messages,
-> > > but not long afterwards the scrolling slows down.  It can
-> > > get continually worse, eventually ending up at a crawl.
-> > 
-> > When the system starts up, the scroll mode is 'redraw'.  This mode is
-> > acceptable, not too slow and not too fast either, whatever the hardware is.
-> > 
-> > After starting up, the scroll mode changes depending on the driver.  Most
-> > probably, it is using ypan which is not too great on systems without
-> > accelerated rectangle moves and framebuffer reads are slow.
-> > 
-> > Try setting vyres == yres using fbset and see if that helps.
+Hi Tony,
 
-Thanks for getting back to me on this.
+> On Fri, 2005-04-15 at 11:07 +0800, Antonino A. Daplas wrote:
 
-This does seem to have been the problem.  I made a few tweaks to
-my driver's setup and now it does not switch into slow mode (I actually
-think it was going into __SCROLL_YMOVE mode instead of __SCROLL_YREDRAW)
+> > > If it does, this is a problem with nvidia's imageblit function which
+> > > converts big-endian bitmaps to little endian?  Perhaps the help
+> > > reverse_order() is not needed for your arch.  Can you comment out calls
+> > > to reverse_order() in drivers/video/nvidia/nv_accel.c?
+> >
+> > I'll try this and I'll get back to you this the results.
+> >
+> 
+> I'll wait, thanks.
 
+I've compiled a new kernel with those lines commented out, and this
+solves the console issue: no more mirrored characters. However the X
+display is now garbled in the same way as with the ribafb driver: it
+looks like some pixel columns are not used (fine vertical black lines
+repeated in a regular pattern (every 4 screen pixel ?)), and the whole
+screen is stretched horizontally as if an "X pixel" was represented as a
+3x1 rectangle. If I move my mouse to the right border is re-appears on
+the left border and as I move it it overwrites the previous pixels there
+with what should be beyond the right border (as if multiple 'X pixels'
+were mapped to the same location on the screen in a kind of modulo
+operation). I can go through three and half whole horizontal screens
+like that.
+
+I guess this is quite fuzzy, but I don't know how to explain it better.
+It looks like reverse_order is not needed for in console mode but is
+needed in graphic mode. Could it make sense?
+
+Cheers
+
+Francois
+
+> On Fri, 2005-04-15 at 11:07 +0800, Antonino A. Daplas wrote:
+> On Friday 15 April 2005 00:52, Francois wrote:
+> > Hi Tony,
+> >
+> > > Only characters are mirrored, and not the entire row (ie, row starts at
+> > > the left side, and not at the right)?
+> >
+> > Only the characters (so I can't look in a mirror and have a "normal" screen
+> > :-).
+> >
+> > > Can you try fbset -accel false and see if it helps?
+> >
+> > Right on the spot! I can now switch between mirrored and not mirrored.
+> 
+> You can also append this when you boot:
+> 
+> video=nvidiafb:noaccel
+> 
+> so you don't have to do an fbset -accel false each time.
+> 
+> >
+> > > I think rivafb supports this particular chipset, but without
+> > > acceleration.
+> >
+> > Actually my X display is garbled with rivafb (with which console
+> > characters are fine). With fb_nvidia, X seems to work fine independently
+> > of whether the acceleration is switched on or off (some screen size and
+> > frequency issues needs tuning though).
+> >
+> > > If it does, this is a problem with nvidia's imageblit function which
+> > > converts big-endian bitmaps to little endian?  Perhaps the help
+> > > reverse_order() is not needed for your arch.  Can you comment out calls
+> > > to reverse_order() in drivers/video/nvidia/nv_accel.c?
+> >
+> > I'll try this and I'll get back to you this the results.
+> >
+> 
+> I'll wait, thanks.
+> 
+> Tony
+> 
 -- 
-------------------------------------------------------------
-Gary Thomas                 |  Consulting for the
-MLB Associates              |    Embedded world
-------------------------------------------------------------
+Dr Francois Taiani           http://www.comp.lancs.ac.uk/
+Computing Department         http://ftaiani.ouvaton.org/
+Lancaster University         phone: +44 (0) 1524 51 03 38
+                             fax  : +44 (0) 1524 51 04 92 
 
 
 
 -------------------------------------------------------
-SF email is sponsored by - The IT Product Guide
-Read honest & candid reviews on hundreds of IT Products from real users.
-Discover which products truly live up to the hype. Start reading now.
-http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
+This SF.Net email is sponsored by: New Crystal Reports XI.
+Version 11 adds new functionality designed to reduce time involved in
+creating, integrating, and deploying reporting solutions. Free runtime info,
+new features, or free trial, at: http://www.businessobjects.com/devxi/728

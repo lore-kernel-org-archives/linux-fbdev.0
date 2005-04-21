@@ -1,25 +1,28 @@
-From: Francois <f.taiani@computer.org>
-Subject: Re: [CONFIG_FB_NVIDIA] Mirrored characters on
-	the console on a G5
-Date: Wed, 20 Apr 2005 18:21:30 +0100
-Message-ID: <1114017690.24964.27.camel@mac-francois>
-References: <1113298311.5465.159.camel@mac-francois>
-	 <200504141351.19243.adaplas@hotpop.com>
-	 <1113497550.9779.13.camel@mac-francois>
-	 <200504151107.58081.adaplas@hotpop.com>
+From: Miles Lane <miles.lane@gmail.com>
+Subject: Re: Re: 2.6.12-rc1-mm2 -- nvidiafb driver gives black screen
+Date: Thu, 21 Apr 2005 01:51:12 -0400
+Message-ID: <a44ae5cd05042022512e840cfa@mail.gmail.com>
+References: <a44ae5cd0503242023233dc23f@mail.gmail.com>
+	 <200504141351.42971.adaplas@hotpop.com>
+	 <20050414191323.10d7d435.khali@linux-fr.org>
+	 <200504151107.49810.adaplas@hotpop.com>
+	 <a44ae5cd05041601211c292316@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DOItY-0000v6-Vo
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 20 Apr 2005 10:21:48 -0700
-Received: from mail.comp.lancs.ac.uk ([148.88.3.45])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DOItW-0003h9-8n
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 20 Apr 2005 10:21:48 -0700
-In-Reply-To: <200504151107.58081.adaplas@hotpop.com>
+	id 1DOUbv-0000kW-UI
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 20 Apr 2005 22:52:23 -0700
+Received: from wproxy.gmail.com ([64.233.184.207])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DOUbv-0007X5-Ia
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 20 Apr 2005 22:52:23 -0700
+Received: by wproxy.gmail.com with SMTP id 57so537545wri
+        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 20 Apr 2005 22:52:17 -0700 (PDT)
+In-Reply-To: <a44ae5cd05041601211c292316@mail.gmail.com>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,90 +35,44 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-fbdev-devel@lists.sourceforge.net, Jean Delvare <khali@linux-fr.org>, Andrew Morton <akpm@osdl.org>
 
-Hi Tony,
+Your patches seem to have fixed the Oops with I2C, but=20
+nvidiafb is not working unless I specify more than vmalloc=3D128M
+in the append options.  That is, the default kernel options
+do not provide for a working nvidiafb display.
 
-> On Fri, 2005-04-15 at 11:07 +0800, Antonino A. Daplas wrote:
+Here's what I get when testing 2.6.12-rc2-mm3
+(I verified that your two patches have been applied in my
+tree):
 
-> > > If it does, this is a problem with nvidia's imageblit function which
-> > > converts big-endian bitmaps to little endian?  Perhaps the help
-> > > reverse_order() is not needed for your arch.  Can you comment out calls
-> > > to reverse_order() in drivers/video/nvidia/nv_accel.c?
-> >
-> > I'll try this and I'll get back to you this the results.
-> >
-> 
-> I'll wait, thanks.
+Kernel command line: BOOT_IMAGE=3DLinux ro root=3D306
+video=3Dnvidiafb:1280x1024-16@85 vmalloc=3D
+128M init=3D/etc/init lang=3Dus apm=3Dpower-off nomce
 
-I've compiled a new kernel with those lines commented out, and this
-solves the console issue: no more mirrored characters. However the X
-display is now garbled in the same way as with the ribafb driver: it
-looks like some pixel columns are not used (fine vertical black lines
-repeated in a regular pattern (every 4 screen pixel ?)), and the whole
-screen is stretched horizontally as if an "X pixel" was represented as a
-3x1 rectangle. If I move my mouse to the right border is re-appears on
-the left border and as I move it it overwrites the previous pixels there
-with what should be beyond the right border (as if multiple 'X pixels'
-were mapped to the same location on the screen in a kind of modulo
-operation). I can go through three and half whole horizontal screens
-like that.
+nvidiafb: nVidia device/chipset 10DE0312
+nvidiafb: nVidia Corporation NV31 [GeForce FX 5600]
+i2c_adapter i2c-0: registered as adapter #0
+i2c_adapter i2c-1: registered as adapter #1
+i2c_adapter i2c-2: registered as adapter #2
+nvidiafb: CRTC0 found
+nvidiafb: CRTC1 not found
+i2c_adapter i2c-0: master_xfer[0] W, addr=3D0x50, len=3D1
+i2c_adapter i2c-0: master_xfer[1] R, addr=3D0x50, len=3D128
+nvidiafb: EDID found from BUS1
+i2c_adapter i2c-1: master_xfer[0] W, addr=3D0x50, len=3D1
+i2c_adapter i2c-1: master_xfer[1] R, addr=3D0x50, len=3D128
+i2c_adapter i2c-1: master_xfer[0] W, addr=3D0x50, len=3D1
+i2c_adapter i2c-1: master_xfer[1] R, addr=3D0x50, len=3D128
+i2c_adapter i2c-1: master_xfer[0] W, addr=3D0x50, len=3D1
+i2c_adapter i2c-1: master_xfer[1] R, addr=3D0x50, len=3D128
+nvidiafb: CRTC 0 appears to have a CRT attached
+nvidiafb: Using CRT on CRTC 0
+allocation failed: out of vmalloc space - use vmalloc=3D<size> to increase =
+size.
+nvidiafb: cannot ioremap FB base
 
-I guess this is quite fuzzy, but I don't know how to explain it better.
-It looks like reverse_order is not needed for in console mode but is
-needed in graphic mode. Could it make sense?
-
-Cheers
-
-Francois
-
-> On Fri, 2005-04-15 at 11:07 +0800, Antonino A. Daplas wrote:
-> On Friday 15 April 2005 00:52, Francois wrote:
-> > Hi Tony,
-> >
-> > > Only characters are mirrored, and not the entire row (ie, row starts at
-> > > the left side, and not at the right)?
-> >
-> > Only the characters (so I can't look in a mirror and have a "normal" screen
-> > :-).
-> >
-> > > Can you try fbset -accel false and see if it helps?
-> >
-> > Right on the spot! I can now switch between mirrored and not mirrored.
-> 
-> You can also append this when you boot:
-> 
-> video=nvidiafb:noaccel
-> 
-> so you don't have to do an fbset -accel false each time.
-> 
-> >
-> > > I think rivafb supports this particular chipset, but without
-> > > acceleration.
-> >
-> > Actually my X display is garbled with rivafb (with which console
-> > characters are fine). With fb_nvidia, X seems to work fine independently
-> > of whether the acceleration is switched on or off (some screen size and
-> > frequency issues needs tuning though).
-> >
-> > > If it does, this is a problem with nvidia's imageblit function which
-> > > converts big-endian bitmaps to little endian?  Perhaps the help
-> > > reverse_order() is not needed for your arch.  Can you comment out calls
-> > > to reverse_order() in drivers/video/nvidia/nv_accel.c?
-> >
-> > I'll try this and I'll get back to you this the results.
-> >
-> 
-> I'll wait, thanks.
-> 
-> Tony
-> 
--- 
-Dr Francois Taiani           http://www.comp.lancs.ac.uk/
-Computing Department         http://ftaiani.ouvaton.org/
-Lancaster University         phone: +44 (0) 1524 51 03 38
-                             fax  : +44 (0) 1524 51 04 92 
-
+When I boot, the screen stays black until XFree86 starts up.
 
 
 -------------------------------------------------------

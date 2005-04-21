@@ -1,29 +1,21 @@
-From: "Randy.Dunlap" <rddunlap@osdl.org>
-Subject: Re: Re: 2.6.12-rc1-mm2 -- nvidiafb driver gives
- black screen
-Date: Thu, 21 Apr 2005 11:36:45 -0700
-Message-ID: <20050421113645.4768967d.rddunlap@osdl.org>
-References: <a44ae5cd0503242023233dc23f@mail.gmail.com>
-	<200504141351.42971.adaplas@hotpop.com>
-	<20050414191323.10d7d435.khali@linux-fr.org>
-	<200504151107.49810.adaplas@hotpop.com>
-	<a44ae5cd05041601211c292316@mail.gmail.com>
-	<a44ae5cd05042022512e840cfa@mail.gmail.com>
-	<20050421092215.3e6d8be4.rddunlap@osdl.org>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: Re: 2.6.12-rc3 compile failure in tgafb.c
+Date: Thu, 21 Apr 2005 22:43:54 +0200
+Message-ID: <20050421204354.GF3828@stusta.de>
+References: <20050421185034.GS607@vega.lnet.lut.fi>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DOgY3-0001Kl-DL
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 21 Apr 2005 11:37:11 -0700
-Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.41)
-	id 1DOgXz-0001bP-5n
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 21 Apr 2005 11:37:10 -0700
-In-Reply-To: <20050421092215.3e6d8be4.rddunlap@osdl.org>
+	id 1DOiWt-0008Lz-Ox
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 21 Apr 2005 13:44:07 -0700
+Received: from emailhub.stusta.mhn.de ([141.84.69.5] helo=mailout.stusta.mhn.de)
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.41)
+	id 1DOiWq-0006U6-2W
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 21 Apr 2005 13:44:07 -0700
+Content-Disposition: inline
+In-Reply-To: <20050421185034.GS607@vega.lnet.lut.fi>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -35,95 +27,74 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: miles.lane@gmail.com, adaplas@pol.net, khali@linux-fr.org, akpm@osdl.org
+Content-Transfer-Encoding: 7bit
+To: Tomi Lapinlampi <lapinlam@vega.lnet.lut.fi>
+Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org, rth@twiddle.net, adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, 21 Apr 2005 09:22:15 -0700 Randy.Dunlap wrote:
+On Thu, Apr 21, 2005 at 09:50:34PM +0300, Tomi Lapinlampi wrote:
+> 
+> Hi,
+> 
+> 2.6.12-rc3 compile fails in drivers/video/tgafb.c
+> 
+> The system is an Alphastation 600 5/266, system variant Alcor,
+> running Debian Sarge, gcc version 3.3.5 (Debian 1:3.3.5-8)
+> 
+> Btw, the tgafb hasn't really worked on this hardware since 2.6.8.1.
+> I'll be able to run more tests after this one compiles :)
+> 
+> Regards,
+> 
+> Tomi
+> 
+> % make
+>   CHK     include/linux/version.h
+> make[1]: `arch/alpha/kernel/asm-offsets.s' is up to date.
+>   CHK     include/asm-alpha/asm_offsets.h
+>   CHK     include/linux/compile.h
+>   CHK     usr/initramfs_list
+>   CC      drivers/video/tgafb.o
+> drivers/video/tgafb.c:85: error: `tgafb_pci_unregister' undeclared here (not in a function)
+> drivers/video/tgafb.c:85: error: initializer element is not constant
+> drivers/video/tgafb.c:85: error: (near initialization for `tgafb_driver.remove')
+> make[2]: *** [drivers/video/tgafb.o] Error 1
+> make[1]: *** [drivers/video] Error 2
+> make: *** [drivers] Error 2
+>...
 
-| On Thu, 21 Apr 2005 01:51:12 -0400 Miles Lane wrote:
-| 
-| | Here's what I get when testing 2.6.12-rc2-mm3
-| | (I verified that your two patches have been applied in my
-| | tree):
-| | 
-| | Kernel command line: BOOT_IMAGE=Linux ro root=306
-| | video=nvidiafb:1280x1024-16@85 vmalloc=
-| | 128M init=/etc/init lang=us apm=power-off nomce
-| | 
-| ...
-| | allocation failed: out of vmalloc space - use vmalloc=<size> to increase size.
-| | nvidiafb: cannot ioremap FB base
-| | 
-| | When I boot, the screen stays black until XFree86 starts up.
-| 
-| Tony,
-| 
-| As I wrote to Miles a few weeks ago:
-| "I started looking at vmalloc() and what it calls (which is
-| __get_vm_area).  _get_vm_area() always allocates one extra
-| page (called a "guard page") between all vmalloc allocations,
-| so even though 128 MB is the default amount and the amount
-| that nvidiafb wants to use, the kernel wants to allocate
-| 128 MB + PAGE_SIZE (4 KB on x86; are you on x86?), so even
-| if nvidiafb is the only caller, the vmalloc() call will
-| fail."
-| 
-| This means that the default kernel vmalloc size of 128MB
-| cannot be totally (fully) allocated due to this code:
-| 	/*
-| 	 * We always allocate a guard page.
-| 	 */
-| 	size += PAGE_SIZE;
-| 
-| IMO we (somebody) should add the guard page into the default
-| vmalloc size so that the full 128MB can be allocated.
-| I'll take a look at doing that... no promises.
+The untested patch below should fix this compile error.
 
-Miles,
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-Can you test this patch, please?
-(against 2.6.12-rc3 if it matters)
-
-Don't use "vmalloc=size" on the kernel boot line.
-The driver should still be able to allocate 128 MB
-without using that.
-
-
-
-From: Randy Dunlap <rddunlap@osdl.org>
-
-Include a guard page in the default vmalloc reserved size so that
-a vmalloc() of 128 MB will succeed.  Useful for framebuffer drivers
-that vmalloc() 128 MB but that currently fails.
-Specifying "vmalloc=size" on the kernel command line still allocates
-exactly that requested size, with no extra for a guard page.
-
-Signed-off-by: Randy Dunlap <rddunlap@osdl.org>
----
-
- arch/i386/mm/init.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletion(-)
-
-diff -Naurp ./arch/i386/mm/init.c~vmalloc_guard ./arch/i386/mm/init.c
---- ./arch/i386/mm/init.c~vmalloc_guard	2005-04-21 08:15:35.000000000 -0700
-+++ ./arch/i386/mm/init.c	2005-04-21 10:50:55.000000000 -0700
-@@ -31,6 +31,7 @@
- #include <asm/processor.h>
- #include <asm/system.h>
- #include <asm/uaccess.h>
-+#include <asm/page.h>
- #include <asm/pgtable.h>
- #include <asm/dma.h>
- #include <asm/fixmap.h>
-@@ -40,7 +41,7 @@
- #include <asm/tlbflush.h>
- #include <asm/sections.h>
+--- linux-2.6.12-rc2-mm3-full/drivers/video/tgafb.c.old	2005-04-21 22:38:42.000000000 +0200
++++ linux-2.6.12-rc2-mm3-full/drivers/video/tgafb.c	2005-04-21 22:39:36.000000000 +0200
+@@ -45,9 +45,7 @@
+ static void tgafb_copyarea(struct fb_info *, const struct fb_copyarea *);
  
--unsigned int __VMALLOC_RESERVE = 128 << 20;
-+unsigned int __VMALLOC_RESERVE = (128 << 20) + PAGE_SIZE;
+ static int tgafb_pci_register(struct pci_dev *, const struct pci_device_id *);
+-#ifdef MODULE
+ static void tgafb_pci_unregister(struct pci_dev *);
+-#endif
  
- DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
- unsigned long highstart_pfn, highend_pfn;
+ static const char *mode_option = "640x480@60";
+ 
+@@ -1484,7 +1482,6 @@
+ 	return ret;
+ }
+ 
+-#ifdef MODULE
+ static void __exit
+ tgafb_pci_unregister(struct pci_dev *pdev)
+ {
+@@ -1500,6 +1497,7 @@
+ 	kfree(info);
+ }
+ 
++#ifdef MODULE
+ static void __exit
+ tgafb_exit(void)
+ {
+
 
 
 -------------------------------------------------------

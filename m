@@ -1,28 +1,28 @@
-From: Miles Lane <miles.lane@gmail.com>
-Subject: Re: Re: 2.6.12-rc1-mm2 -- nvidiafb driver gives black screen
-Date: Thu, 21 Apr 2005 01:51:12 -0400
-Message-ID: <a44ae5cd05042022512e840cfa@mail.gmail.com>
+From: "Randy.Dunlap" <rddunlap@osdl.org>
+Subject: Re: Re: 2.6.12-rc1-mm2 -- nvidiafb driver gives
+ black screen
+Date: Thu, 21 Apr 2005 09:22:15 -0700
+Message-ID: <20050421092215.3e6d8be4.rddunlap@osdl.org>
 References: <a44ae5cd0503242023233dc23f@mail.gmail.com>
-	 <200504141351.42971.adaplas@hotpop.com>
-	 <20050414191323.10d7d435.khali@linux-fr.org>
-	 <200504151107.49810.adaplas@hotpop.com>
-	 <a44ae5cd05041601211c292316@mail.gmail.com>
+	<200504141351.42971.adaplas@hotpop.com>
+	<20050414191323.10d7d435.khali@linux-fr.org>
+	<200504151107.49810.adaplas@hotpop.com>
+	<a44ae5cd05041601211c292316@mail.gmail.com>
+	<a44ae5cd05042022512e840cfa@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DOUbv-0000kW-UI
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 20 Apr 2005 22:52:23 -0700
-Received: from wproxy.gmail.com ([64.233.184.207])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1DOUbv-0007X5-Ia
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 20 Apr 2005 22:52:23 -0700
-Received: by wproxy.gmail.com with SMTP id 57so537545wri
-        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 20 Apr 2005 22:52:17 -0700 (PDT)
-In-Reply-To: <a44ae5cd05041601211c292316@mail.gmail.com>
-Content-Disposition: inline
+	id 1DOeSO-0001xb-M9
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 21 Apr 2005 09:23:12 -0700
+Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1DOeRu-0007up-OC
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 21 Apr 2005 09:23:12 -0700
+In-Reply-To: <a44ae5cd05042022512e840cfa@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,45 +34,55 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, Jean Delvare <khali@linux-fr.org>, Andrew Morton <akpm@osdl.org>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: miles.lane@gmail.com, adaplas@pol.net, khali@linux-fr.org, akpm@osdl.org
 
-Your patches seem to have fixed the Oops with I2C, but=20
-nvidiafb is not working unless I specify more than vmalloc=3D128M
-in the append options.  That is, the default kernel options
-do not provide for a working nvidiafb display.
+On Thu, 21 Apr 2005 01:51:12 -0400 Miles Lane wrote:
 
-Here's what I get when testing 2.6.12-rc2-mm3
-(I verified that your two patches have been applied in my
-tree):
+| Your patches seem to have fixed the Oops with I2C, but 
+| nvidiafb is not working unless I specify more than vmalloc=128M
+| in the append options.  That is, the default kernel options
+| do not provide for a working nvidiafb display.
+| 
+| Here's what I get when testing 2.6.12-rc2-mm3
+| (I verified that your two patches have been applied in my
+| tree):
+| 
+| Kernel command line: BOOT_IMAGE=Linux ro root=306
+| video=nvidiafb:1280x1024-16@85 vmalloc=
+| 128M init=/etc/init lang=us apm=power-off nomce
+| 
+...
+| allocation failed: out of vmalloc space - use vmalloc=<size> to increase size.
+| nvidiafb: cannot ioremap FB base
+| 
+| When I boot, the screen stays black until XFree86 starts up.
 
-Kernel command line: BOOT_IMAGE=3DLinux ro root=3D306
-video=3Dnvidiafb:1280x1024-16@85 vmalloc=3D
-128M init=3D/etc/init lang=3Dus apm=3Dpower-off nomce
+Tony,
 
-nvidiafb: nVidia device/chipset 10DE0312
-nvidiafb: nVidia Corporation NV31 [GeForce FX 5600]
-i2c_adapter i2c-0: registered as adapter #0
-i2c_adapter i2c-1: registered as adapter #1
-i2c_adapter i2c-2: registered as adapter #2
-nvidiafb: CRTC0 found
-nvidiafb: CRTC1 not found
-i2c_adapter i2c-0: master_xfer[0] W, addr=3D0x50, len=3D1
-i2c_adapter i2c-0: master_xfer[1] R, addr=3D0x50, len=3D128
-nvidiafb: EDID found from BUS1
-i2c_adapter i2c-1: master_xfer[0] W, addr=3D0x50, len=3D1
-i2c_adapter i2c-1: master_xfer[1] R, addr=3D0x50, len=3D128
-i2c_adapter i2c-1: master_xfer[0] W, addr=3D0x50, len=3D1
-i2c_adapter i2c-1: master_xfer[1] R, addr=3D0x50, len=3D128
-i2c_adapter i2c-1: master_xfer[0] W, addr=3D0x50, len=3D1
-i2c_adapter i2c-1: master_xfer[1] R, addr=3D0x50, len=3D128
-nvidiafb: CRTC 0 appears to have a CRT attached
-nvidiafb: Using CRT on CRTC 0
-allocation failed: out of vmalloc space - use vmalloc=3D<size> to increase =
-size.
-nvidiafb: cannot ioremap FB base
+As I wrote to Miles a few weeks ago:
+"I started looking at vmalloc() and what it calls (which is
+__get_vm_area).  _get_vm_area() always allocates one extra
+page (called a "guard page") between all vmalloc allocations,
+so even though 128 MB is the default amount and the amount
+that nvidiafb wants to use, the kernel wants to allocate
+128 MB + PAGE_SIZE (4 KB on x86; are you on x86?), so even
+if nvidiafb is the only caller, the vmalloc() call will
+fail."
 
-When I boot, the screen stays black until XFree86 starts up.
+This means that the default kernel vmalloc size of 128MB
+cannot be totally (fully) allocated due to this code:
+	/*
+	 * We always allocate a guard page.
+	 */
+	size += PAGE_SIZE;
+
+IMO we (somebody) should add the guard page into the default
+vmalloc size so that the full 128MB can be allocated.
+I'll take a look at doing that... no promises.
+
+---
+~Randy
 
 
 -------------------------------------------------------

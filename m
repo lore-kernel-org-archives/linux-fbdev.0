@@ -1,86 +1,50 @@
-From: lapinlam@vega.lnet.lut.fi (Tomi Lapinlampi)
-Subject: Re: 2.6.12-rc3 compile failure in tgafb.c
-Date: Fri, 22 Apr 2005 14:20:30 +0300
-Message-ID: <20050422112030.GW607@vega.lnet.lut.fi>
-References: <20050421185034.GS607@vega.lnet.lut.fi> <20050421204354.GF3828@stusta.de> <20050422072858.GU607@vega.lnet.lut.fi>
+From: <evt@texelsoft.com>
+Subject: need help - oddness loading asiliantfb as a module
+Date: Fri, 22 Apr 2005 10:33:39 -0400
+Message-ID: <200504221433.DCJ42236@ms3.netsolmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261984AbVDVLVG@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20050422072858.GU607@vega.lnet.lut.fi>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Adrian Bunk <bunk@stusta.de>
-Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org, rth@twiddle.net, adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1DOzE8-0005JI-NA
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Apr 2005 07:33:52 -0700
+Received: from omr3.netsolmail.com ([216.168.230.164])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1DOzE8-0006UL-1t
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Apr 2005 07:33:52 -0700
+Received: from ms3.netsolmail.com (IDENT:mirapoint@[216.168.230.176])
+	by omr3.netsolmail.com (8.12.10/8.12.10) with ESMTP id j3MEXemo013588
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 22 Apr 2005 10:33:49 -0400 (EDT)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, Apr 22, 2005 at 10:28:58AM +0300, Tomi Lapinlampi wrote:
+I'm loading asiliantfb as a module 
+from /etc/init.d/boot.local by: 
+ 
+insmod 
+con2fb /dev/fb0 /dev/tty1 
+fbset -g 640 480 640 480 8 
+ 
+and sometimes everything works just fine but other times the 
+left margin moves about 6 inches to the right. clues? tia. 
+ 
+-evt(Eric van Tassell) 
 
-> Hi,
-> 
-> This patch worked, tgafb.c now compiles. However, the compile
-> fails later:
-> 
-> ...
->   CC      init/version.o
->   LD      init/built-in.o
->   LD      .tmp_vmlinux1
-> local symbol 0: discarded in section `.exit.text' from drivers/built-in.o
-> make: *** [.tmp_vmlinux1] Error 1
-> 
-> This does not happen if I disable CONFIG_FB_TGA.
 
-Actually, I was able to get a clean compile with the patch from
-http://marc.theaimsgroup.com/?l=linux-alpha&m=111392038121433&w=2
-
-Which one is better, this or the one that Adrian sent?
-
-Tomi
-
-> > Signed-off-by: Adrian Bunk <bunk@stusta.de>
-> > 
-> > --- linux-2.6.12-rc2-mm3-full/drivers/video/tgafb.c.old	2005-04-21 22:38:42.000000000 +0200
-> > +++ linux-2.6.12-rc2-mm3-full/drivers/video/tgafb.c	2005-04-21 22:39:36.000000000 +0200
-> > @@ -45,9 +45,7 @@
-> >  static void tgafb_copyarea(struct fb_info *, const struct fb_copyarea *);
-> >  
-> >  static int tgafb_pci_register(struct pci_dev *, const struct pci_device_id *);
-> > -#ifdef MODULE
-> >  static void tgafb_pci_unregister(struct pci_dev *);
-> > -#endif
-> >  
-> >  static const char *mode_option = "640x480@60";
-> >  
-> > @@ -1484,7 +1482,6 @@
-> >  	return ret;
-> >  }
-> >  
-> > -#ifdef MODULE
-> >  static void __exit
-> >  tgafb_pci_unregister(struct pci_dev *pdev)
-> >  {
-> > @@ -1500,6 +1497,7 @@
-> >  	kfree(info);
-> >  }
-> >  
-> > +#ifdef MODULE
-> >  static void __exit
-> >  tgafb_exit(void)
-> >  {
-> > 
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> -- 
-> You can decide: live with free software or with only one evil company left?
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
--- 
-You can decide: live with free software or with only one evil company left?
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

@@ -1,21 +1,20 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: Re: 2.6.12-rc3 compile failure in tgafb.c
-Date: Thu, 21 Apr 2005 22:43:54 +0200
-Message-ID: <20050421204354.GF3828@stusta.de>
-References: <20050421185034.GS607@vega.lnet.lut.fi>
+From: Richard Drummond <evilrich@rcdrummond.net>
+Subject: [PATCH] Better PLL frequency matching for tdfxfb driver
+Date: Thu, 21 Apr 2005 22:58:00 -0500
+Message-ID: <200504212258.00570.evilrich@rcdrummond.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_IZHaCqkOpSzY1nK"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DOiWt-0008Lz-Ox
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 21 Apr 2005 13:44:07 -0700
-Received: from emailhub.stusta.mhn.de ([141.84.69.5] helo=mailout.stusta.mhn.de)
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.41)
-	id 1DOiWq-0006U6-2W
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 21 Apr 2005 13:44:07 -0700
-Content-Disposition: inline
-In-Reply-To: <20050421185034.GS607@vega.lnet.lut.fi>
+	id 1DOpU3-0006uG-8q
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 21 Apr 2005 21:09:39 -0700
+Received: from mail03.powweb.com ([66.152.97.36])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DOpU1-0003kA-TW
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 21 Apr 2005 21:09:39 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,74 +25,88 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
+
+--Boundary-00=_IZHaCqkOpSzY1nK
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Tomi Lapinlampi <lapinlam@vega.lnet.lut.fi>
-Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org, rth@twiddle.net, adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net
+Content-Disposition: inline
 
-On Thu, Apr 21, 2005 at 09:50:34PM +0300, Tomi Lapinlampi wrote:
-> 
-> Hi,
-> 
-> 2.6.12-rc3 compile fails in drivers/video/tgafb.c
-> 
-> The system is an Alphastation 600 5/266, system variant Alcor,
-> running Debian Sarge, gcc version 3.3.5 (Debian 1:3.3.5-8)
-> 
-> Btw, the tgafb hasn't really worked on this hardware since 2.6.8.1.
-> I'll be able to run more tests after this one compiles :)
-> 
-> Regards,
-> 
-> Tomi
-> 
-> % make
->   CHK     include/linux/version.h
-> make[1]: `arch/alpha/kernel/asm-offsets.s' is up to date.
->   CHK     include/asm-alpha/asm_offsets.h
->   CHK     include/linux/compile.h
->   CHK     usr/initramfs_list
->   CC      drivers/video/tgafb.o
-> drivers/video/tgafb.c:85: error: `tgafb_pci_unregister' undeclared here (not in a function)
-> drivers/video/tgafb.c:85: error: initializer element is not constant
-> drivers/video/tgafb.c:85: error: (near initialization for `tgafb_driver.remove')
-> make[2]: *** [drivers/video/tgafb.o] Error 1
-> make[1]: *** [drivers/video] Error 2
-> make: *** [drivers] Error 2
->...
+Attached is a patch against 2.6.11.7 which improves the PLL frequency matching 
+in the tdfxfb driver. Instead of requiring 64260 iterations to obtain the 
+closest supported PLL frequency, this code does it with the same degree of 
+accuracy in at most 768 iterations.
 
-The untested patch below should fix this compile error.
+Signed-off-by: Richard Drummond <evilrich@rcdrummond.net>
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+--Boundary-00=_IZHaCqkOpSzY1nK
+Content-Type: text/x-diff;
+  charset="us-ascii";
+  name="tdfxfb_pll_fix.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+	filename="tdfxfb_pll_fix.diff"
 
---- linux-2.6.12-rc2-mm3-full/drivers/video/tgafb.c.old	2005-04-21 22:38:42.000000000 +0200
-+++ linux-2.6.12-rc2-mm3-full/drivers/video/tgafb.c	2005-04-21 22:39:36.000000000 +0200
-@@ -45,9 +45,7 @@
- static void tgafb_copyarea(struct fb_info *, const struct fb_copyarea *);
+--- drivers/video/tdfxfb.c_orig	2005-04-20 15:04:23.000000000 -0500
++++ drivers/video/tdfxfb.c	2005-04-21 09:26:18.000000000 -0500
+@@ -320,30 +320,40 @@
  
- static int tgafb_pci_register(struct pci_dev *, const struct pci_device_id *);
--#ifdef MODULE
- static void tgafb_pci_unregister(struct pci_dev *);
--#endif
- 
- static const char *mode_option = "640x480@60";
- 
-@@ -1484,7 +1482,6 @@
- 	return ret;
+ static u32 do_calc_pll(int freq, int* freq_out) 
+ {
+-	int m, n, k, best_m, best_n, best_k, f_cur, best_error;
++	int m, n, k, best_m, best_n, best_k, best_error;
+ 	int fref = 14318;
+   
+-	/* this really could be done with more intelligence --
+-	   255*63*4 = 64260 iterations is silly */
+ 	best_error = freq;
+ 	best_n = best_m = best_k = 0;
+-	for (n = 1; n < 256; n++) {
+-		for (m = 1; m < 64; m++) {
+-			for (k = 0; k < 4; k++) {
+-				f_cur = fref*(n + 2)/(m + 2)/(1 << k);
+-				if (abs(f_cur - freq) < best_error) {
+-					best_error = abs(f_cur-freq);
+-					best_n = n;
+-					best_m = m;
+-					best_k = k;
+-				}
++   
++	for (k = 3; k >= 0; k--) {	
++		for (m = 63; m >= 0; m--) {
++			/* Estimate value of n that produces target frequency with current m and k */
++			int n_estimated = (freq * (m + 2) * (1 << k) / fref) - 2;
++	     
++			/* Search neighborhood of estimated n */
++			for (n = max(0, n_estimated - 1); n <= min(255, n_estimated + 1); n++) {
++				/* Calculate PLL freqency with current m, k and estimated n */
++				int f     = fref * (n + 2) / (m + 2) / (1 << k);
++				int error = abs (f - freq);
++		  
++				/* If this is the closest we've come to the target frequency
++				 * then remember n, m and k */
++				if (error  < best_error) {
++					best_error = error;
++					best_n     = n;
++					best_m     = m;
++					best_k     = k;
++				}  
+ 			}
+ 		}
+ 	}
++   
+ 	n = best_n;
+ 	m = best_m;
+ 	k = best_k;
+ 	*freq_out = fref*(n + 2)/(m + 2)/(1 << k);
++   
+ 	return (n << 8) | (m << 2) | k;
  }
  
--#ifdef MODULE
- static void __exit
- tgafb_pci_unregister(struct pci_dev *pdev)
- {
-@@ -1500,6 +1497,7 @@
- 	kfree(info);
- }
- 
-+#ifdef MODULE
- static void __exit
- tgafb_exit(void)
- {
+
+--Boundary-00=_IZHaCqkOpSzY1nK--
 
 
 

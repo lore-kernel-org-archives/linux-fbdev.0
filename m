@@ -1,24 +1,22 @@
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: Re: 2.6.12-rc3 compile failure in tgafb.c, tgafb not working anymore
-Date: Fri, 22 Apr 2005 19:07:50 +0100 (BST)
-Message-ID: <Pine.LNX.4.61L.0504221903320.27531@blysk.ds.pg.gda.pl>
-References: <20050421185034.GS607@vega.lnet.lut.fi> <20050421204354.GF3828@stusta.de>
- <20050422072858.GU607@vega.lnet.lut.fi> <20050422112030.GW607@vega.lnet.lut.fi>
- <20050422144047.GY607@vega.lnet.lut.fi> <Pine.LNX.4.58.0504221024470.2344@ppc970.osdl.org>
- <Pine.LNX.4.61L.0504221840180.27531@blysk.ds.pg.gda.pl>
- <Pine.LNX.4.58.0504221051240.2344@ppc970.osdl.org>
+From: Richard Drummond <evilrich@rcdrummond.net>
+Subject: Re: [PATCH] Clean-up and bug fix for tdfxfb framebuffer size detection
+Date: Fri, 22 Apr 2005 13:17:36 -0500
+Message-ID: <200504221317.36902.evilrich@rcdrummond.net>
+References: <200504212309.12407.evilrich@rcdrummond.net> <4268BA5B.5020507@tebibyte.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DP2Z4-0000lX-VK
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Apr 2005 11:07:42 -0700
-Received: from pollux.ds.pg.gda.pl ([153.19.208.7] ident=postfix)
+	id 1DP2ih-0001Gj-Ne
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Apr 2005 11:17:39 -0700
+Received: from mail03.powweb.com ([66.152.97.36])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DP2Z3-0006w5-FT
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Apr 2005 11:07:42 -0700
-In-Reply-To: <Pine.LNX.4.58.0504221051240.2344@ppc970.osdl.org>
+	id 1DP2ig-00085c-Db
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Apr 2005 11:17:39 -0700
+In-Reply-To: <4268BA5B.5020507@tebibyte.org>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,25 +27,28 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: Tomi Lapinlampi <lapinlam@vega.lnet.lut.fi>, Adrian Bunk <bunk@stusta.de>, linux-kernel@vger.kernel.org, rth@twiddle.net, adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Chris Ross <chris@tebibyte.org>, linux-kernel@vger.kernel.org
 
-On Fri, 22 Apr 2005, Linus Torvalds wrote:
+Hi Chris
 
-> >  JFTR, a few of the TURBOchannel variations of the TGA are supported for 
-> > MIPS, but regrettably the necessary code hasn't been ported from 2.4 to 
-> > 2.6 yet.
-> 
-> Ok, so that would have increased the testing base by, what? One person or 
-> two? I think we're still in single digits ;)
+On Friday 22 April 2005 03:48 am, Chris Ross wrote:
+> I /do/ have the hardware, so I am very glad to see someone working on
+> support for the Voodoo 5.
 
- Except that once I get them running with 2.6 I'll try keeping an eye on 
-the driver so that nothing gets broken at least for the more useful 
-configurations. 8-)
+I am glad somebody is interested. ;-)
 
-  Maciej
+> Are there any specific tests you would like me 
+> to perform and send you the results from?
+
+It's quite simple really. With this patch, does tdfxfb report the right amount 
+of framebuffer memory for your card? The method it used to determine the 
+amount of memory for the Voodoo4/5 before was wrong. If it gave the right 
+value before, then it was probably just a coincidence.
+
+Cheers,
+Rich
 
 
 -------------------------------------------------------

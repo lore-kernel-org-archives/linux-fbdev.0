@@ -1,24 +1,24 @@
 From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: Re: 2.6.12-rc1-mm2 -- nvidiafb driver gives black screen
-Date: Mon, 25 Apr 2005 11:21:24 +0800
-Message-ID: <200504251121.24725.adaplas@hotpop.com>
-References: <a44ae5cd0503242023233dc23f@mail.gmail.com> <a44ae5cd05042217122613bac4@mail.gmail.com> <a44ae5cd05042410092055e3c4@mail.gmail.com>
+Subject: Re: [CONFIG_FB_NVIDIA] Mirrored characters on the console on a G5
+Date: Fri, 22 Apr 2005 10:50:14 +0800
+Message-ID: <200504221050.19922.adaplas@hotpop.com>
+References: <1113298311.5465.159.camel@mac-francois> <200504151107.58081.adaplas@hotpop.com> <1114017690.24964.27.camel@mac-francois>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DPuD3-0005Dz-Ar
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 24 Apr 2005 20:24:33 -0700
+	id 1DPuCy-0005Ds-VO
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 24 Apr 2005 20:24:28 -0700
 Received: from smtp-out.hotpop.com ([38.113.3.71])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DPuD1-0003ng-Nb
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 24 Apr 2005 20:24:33 -0700
+	id 1DPuCx-0003mQ-8C
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 24 Apr 2005 20:24:28 -0700
 Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id 5B24F15797D7
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 25 Apr 2005 03:24:22 +0000 (UTC)
-In-Reply-To: <a44ae5cd05042410092055e3c4@mail.gmail.com>
+	by smtp-out.hotpop.com (Postfix) with SMTP id A8E00154CAA4
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 25 Apr 2005 03:24:08 +0000 (UTC)
+In-Reply-To: <1114017690.24964.27.camel@mac-francois>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -31,42 +31,92 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Miles Lane <miles.lane@gmail.com>, "Randy.Dunlap" <rddunlap@osdl.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net, khali@linux-fr.org, akpm@osdl.org
+To: Francois <f.taiani@computer.org>, adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Monday 25 April 2005 01:09, Miles Lane wrote:
-> On 4/22/05, Miles Lane <miles.lane@gmail.com> wrote:
-> > Okay, it also fails with Antonio's patches applied in addition to yours.
+On Thursday 21 April 2005 01:21, Francois wrote:
+> Hi Tony,
 >
-> I know I implied this in my previous message, but I want to make it
-> explicit. This combination of patches also fails to give a working
-> framebuffer console when I specify vmalloc=128M.  I only get a working
-> framebuffer console by specifying vmalloc=256M.
+> > On Fri, 2005-04-15 at 11:07 +0800, Antonino A. Daplas wrote:
+> > > > If it does, this is a problem with nvidia's imageblit function which
+> > > > converts big-endian bitmaps to little endian?  Perhaps the help
+> > > > reverse_order() is not needed for your arch.  Can you comment out
+> > > > calls to reverse_order() in drivers/video/nvidia/nv_accel.c?
+> > >
+> > > I'll try this and I'll get back to you this the results.
+> >
+> > I'll wait, thanks.
 >
->            Miles
+> I've compiled a new kernel with those lines commented out, and this
+> solves the console issue: no more mirrored characters. However the X
+> display is now garbled in the same way as with the ribafb driver: it
+> looks like some pixel columns are not used (fine vertical black lines
+> repeated in a regular pattern (every 4 screen pixel ?)), and the whole
+> screen is stretched horizontally as if an "X pixel" was represented as a
+> 3x1 rectangle. If I move my mouse to the right border is re-appears on
+> the left border and as I move it it overwrites the previous pixels there
+> with what should be beyond the right border (as if multiple 'X pixels'
+> were mapped to the same location on the screen in a kind of modulo
+> operation). I can go through three and half whole horizontal screens
+> like that.
+>
+> I guess this is quite fuzzy, but I don't know how to explain it better.
+> It looks like reverse_order is not needed for in console mode but is
+> needed in graphic mode. Could it make sense?
 
-Can you try this patch?  This limits the amount of RAM that nvidiafb
-will remap to 64 MiB.  This is on top of another patch I sent to Andrew:
-"[Linux-fbdev-devel] [PATCH 1/6] nvidiafb: ioremap and i2c fixes"
+No, it does not make sense to me how reverse_order() can affect the output
+of X.
+
+Can you verify that it is really reverse_order() that affects X's output and not
+if accel is on or off?
 
 Tony
-
-diff -Nru a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
---- a/drivers/video/nvidia/nvidia.c	2005-04-16 11:54:44 +08:00
-+++ b/drivers/video/nvidia/nvidia.c	2005-04-25 10:39:45 +08:00
-@@ -1511,9 +1511,9 @@
- 	if (vram && vram * 1024 * 1024 < par->FbMapSize)
- 		par->FbMapSize = vram * 1024 * 1024;
- 
--	/* Limit amount of vram to 128 MB */
--	if (par->FbMapSize > 128 * 1024 * 1024)
--		par->FbMapSize = 128 * 1024 * 1024;
-+	/* Limit amount of vram to 64 MB */
-+	if (par->FbMapSize > 64 * 1024 * 1024)
-+		par->FbMapSize = 64 * 1024 * 1024;
- 
- 	par->FbUsableSize = par->FbMapSize - (128 * 1024);
- 	par->ScratchBufferSize = (par->Architecture < NV_ARCH_10) ? 8 * 1024 :
+>
+> Cheers
+>
+> Francois
+>
+> > On Fri, 2005-04-15 at 11:07 +0800, Antonino A. Daplas wrote:
+> >
+> > On Friday 15 April 2005 00:52, Francois wrote:
+> > > Hi Tony,
+> > >
+> > > > Only characters are mirrored, and not the entire row (ie, row starts
+> > > > at the left side, and not at the right)?
+> > >
+> > > Only the characters (so I can't look in a mirror and have a "normal"
+> > > screen
+> > >
+> > > :-).
+> > > :
+> > > > Can you try fbset -accel false and see if it helps?
+> > >
+> > > Right on the spot! I can now switch between mirrored and not mirrored.
+> >
+> > You can also append this when you boot:
+> >
+> > video=nvidiafb:noaccel
+> >
+> > so you don't have to do an fbset -accel false each time.
+> >
+> > > > I think rivafb supports this particular chipset, but without
+> > > > acceleration.
+> > >
+> > > Actually my X display is garbled with rivafb (with which console
+> > > characters are fine). With fb_nvidia, X seems to work fine
+> > > independently of whether the acceleration is switched on or off (some
+> > > screen size and frequency issues needs tuning though).
+> > >
+> > > > If it does, this is a problem with nvidia's imageblit function which
+> > > > converts big-endian bitmaps to little endian?  Perhaps the help
+> > > > reverse_order() is not needed for your arch.  Can you comment out
+> > > > calls to reverse_order() in drivers/video/nvidia/nv_accel.c?
+> > >
+> > > I'll try this and I'll get back to you this the results.
+> >
+> > I'll wait, thanks.
+> >
+> > Tony
 
 
 

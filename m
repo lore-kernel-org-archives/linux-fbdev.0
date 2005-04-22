@@ -1,106 +1,61 @@
-From: lapinlam@vega.lnet.lut.fi (Tomi Lapinlampi)
+From: Linus Torvalds <torvalds@osdl.org>
 Subject: Re: 2.6.12-rc3 compile failure in tgafb.c, tgafb not working anymore
-Date: Fri, 22 Apr 2005 17:40:47 +0300
-Message-ID: <20050422144047.GY607@vega.lnet.lut.fi>
-References: <20050421185034.GS607@vega.lnet.lut.fi> <20050421204354.GF3828@stusta.de> <20050422072858.GU607@vega.lnet.lut.fi> <20050422112030.GW607@vega.lnet.lut.fi>
+Date: Fri, 22 Apr 2005 10:26:50 -0700 (PDT)
+Message-ID: <Pine.LNX.4.58.0504221024470.2344@ppc970.osdl.org>
+References: <20050421185034.GS607@vega.lnet.lut.fi> <20050421204354.GF3828@stusta.de>
+ <20050422072858.GU607@vega.lnet.lut.fi> <20050422112030.GW607@vega.lnet.lut.fi>
+ <20050422144047.GY607@vega.lnet.lut.fi>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261948AbVDVOlH@vger.kernel.org>
-Content-Disposition: inline
-In-Reply-To: <20050422112030.GW607@vega.lnet.lut.fi>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1DP1tk-0006v8-Cb
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Apr 2005 10:25:00 -0700
+Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1DP1ti-00020i-TV
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Apr 2005 10:25:00 -0700
+In-Reply-To: <20050422144047.GY607@vega.lnet.lut.fi>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Adrian Bunk <bunk@stusta.de>
-Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org, rth@twiddle.net, adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net
+To: Tomi Lapinlampi <lapinlam@vega.lnet.lut.fi>
+Cc: Adrian Bunk <bunk@stusta.de>, linux-kernel@vger.kernel.org, rth@twiddle.net, adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, Apr 22, 2005 at 02:20:30PM +0300, Tomi Lapinlampi wrote:
+
+
+On Fri, 22 Apr 2005, Tomi Lapinlampi wrote:
 > 
-> Actually, I was able to get a clean compile with the patch from
-> http://marc.theaimsgroup.com/?l=linux-alpha&m=111392038121433&w=2
+> Although the tgafb driver compiles with the above patch, it shows
+> similar behaviour as before: The kernel loads, the monitor comes alive
+> but the screen stays completely blank.
+> The last kernel that worked was 2.6.8.1. I've tested with 2.6.{9,10,11}
 
-Hi again,
+Can you try to figure out where in between 2.6.8->2.6.9 things broke? Even 
+just a fairly simple binary search on the nightly snapshots should get you 
+pretty easily down to within one day or so..
 
-Although the tgafb driver compiles with the above patch, it shows
-similar behaviour as before: The kernel loads, the monitor comes alive
-but the screen stays completely blank.
-The last kernel that worked was 2.6.8.1. I've tested with 2.6.{9,10,11}
+Most people don't have tga hardware. I don't think even most alpha users 
+have it, and I think it's unheard of outside of alpha. So I'm afraid that 
+there's not a lot of people around who can debug it without having a very 
+clear starting point..
 
-Here's more info on the system... The dmesg entry (booting with serial console)
+		Linus
 
-Linux version 2.6.12-rc3 (lapinlam@raato) (gcc version 3.3.5 (Debian 1:3.35
-Booting on Alcor variation Alcor using machine vector Alcor from MILO
-Major Options: LEGACY_START VERBOSE_MCHECK MAGIC_SYSRQ
-Command line: ro root=/dev/sdb1 console=ttyS0,38400n8
-memcluster 0, usage 1, start        0, end      161
-memcluster 1, usage 0, start      161, end    32651
-memcluster 2, usage 1, start    32651, end    32768
-freeing pages 161:384
-freeing pages 838:32651
-reserving pages 838:839
-2048K Bcache detected; load hit latency 24 cycles, load miss latency 88 cycles
-pci: cia revision 1
-Built 1 zonelists
-Kernel command line: ro root=/dev/sdb1 console=ttyS0,38400n8
-PID hash table entries: 1024 (order: 10, 32768 bytes)
-Using epoch = 2000
-Console: colour dummy device 80x25
-Dentry cache hash table entries: 65536 (order: 6, 524288 bytes)
-Inode-cache hash table entries: 32768 (order: 5, 262144 bytes)
-Memory: 253320k/261208k available (2077k kernel code, 6264k reserved, 683k data)
-Mount-cache hash table entries: 512
-NET: Registered protocol family 16
-EISA bus registered
-pci: passed tb register update test
-pci: passed sg loopback i/o read test
-pci: passed tbia test
-pci: passed pte write cache snoop test
-pci: failed valid tag invalid pte reload test (mcheck; workaround available)
-pci: passed pci machine check test
-PCI: Bridge: 0000:00:08.0
-  IO window: 9000-9fff
-  MEM window: 02200000-022fffff
-  PREFETCH window: disabled.
-PCI: Bridge: 0000:00:09.0
-  IO window: disabled.
-  MEM window: 02400000-027fffff
-  PREFETCH window: disabled.
-Linux Plug and Play Support v0.97 (c) Adam Belay
-SCSI subsystem initialized
-TC classifier action (bugs to netdev@oss.sgi.com cc hadi@cyberus.ca)
-Initializing Cryptographic API
-Console: switching to colour frame buffer device 80x30
-tgafb: DC21030 [TGA] detected, rev=0x03
-tgafb: at PCI bus 0, device 7, function 0
-fb0: Digital ZLXp-E1 frame buffer device at 0x8000000
-isapnp: Scanning for PnP cards...
-isapnp: No Plug & Play device found
-rtc: SRM (post-2000) epoch (2000) detected
-Real Time Clock Driver v1.12
-Serial: 8250/16550 driver $Revision: 1.90 $ 8 ports, IRQ sharing disabled
-ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
-io scheduler noop registered
-io scheduler anticipatory registered
-io scheduler deadline registered
-io scheduler cfq registered
 
-.....
-
-lspci -v -v for the display adapter:
-
-0000:00:07.0 Display controller: Digital Equipment Corporation DECchip 21030 [TGA] (rev 03)
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping+ SERR- FastB2B-
-        Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-        Latency: 255
-        Interrupt: pin A routed to IRQ 24
-        Region 0: Memory at 0000000008000000 (32-bit, prefetchable) [size=128M]
-        Expansion ROM at 0000000002300000 [disabled] [size=256K]
-
-Any clues? It would be nice to get this working again. I'm willing to
-test any patches you might have :)
-
-Tomi
-
--- 
-You can decide: live with free software or with only one evil company left?
+-------------------------------------------------------
+SF email is sponsored by - The IT Product Guide
+Read honest & candid reviews on hundreds of IT Products from real users.
+Discover which products truly live up to the hype. Start reading now.
+http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click

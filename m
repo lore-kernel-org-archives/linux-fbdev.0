@@ -1,131 +1,106 @@
-From: Richard Drummond <evilrich@rcdrummond.net>
-Subject: [PATCH] Clean-up and bug fix for tdfxfb framebuffer size detection
-Date: Thu, 21 Apr 2005 23:09:12 -0500
-Message-ID: <200504212309.12407.evilrich@rcdrummond.net>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: lapinlam@vega.lnet.lut.fi (Tomi Lapinlampi)
+Subject: Re: 2.6.12-rc3 compile failure in tgafb.c
+Date: Fri, 22 Apr 2005 10:28:58 +0300
+Message-ID: <20050422072858.GU607@vega.lnet.lut.fi>
+References: <20050421185034.GS607@vega.lnet.lut.fi> <20050421204354.GF3828@stusta.de>
 Mime-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_ojHaCRt0WEIEsxf"
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DOpU3-0006uN-T3
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 21 Apr 2005 21:09:39 -0700
-Received: from mail03.powweb.com ([66.152.97.36])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DOpU2-0006ki-Ha
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 21 Apr 2005 21:09:39 -0700
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org
-
---Boundary-00=_ojHaCRt0WEIEsxf
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S262005AbVDVHcw@vger.kernel.org>
 Content-Disposition: inline
-
-Attached is a patch against 2.6.11.7 which tidies up the tdfxfb framebuffer 
-size detection code a little and fixes the broken support for Voodoo4/5 cards. 
-(I haven't tested this on a Voodoo5, however, because I don't have the 
-hardware).
-
-Signed-off-by: Richard Drummond <evilrich@rcdrummond.net>
-
---Boundary-00=_ojHaCRt0WEIEsxf
-Content-Type: text/x-diff;
-  charset="us-ascii";
-  name="tdfxfb_mem_fix.diff"
+In-Reply-To: <20050421204354.GF3828@stusta.de>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
-	filename="tdfxfb_mem_fix.diff"
+To: Adrian Bunk <bunk@stusta.de>
+Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org, rth@twiddle.net, adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net
 
---- drivers/video/tdfxfb.c_orig	2005-04-20 15:04:23.000000000 -0500
-+++ drivers/video/tdfxfb.c	2005-04-21 22:20:32.000000000 -0500
-@@ -414,36 +414,35 @@
- 
- static unsigned long do_lfb_size(struct tdfx_par *par, unsigned short dev_id) 
- {
--	u32 draminit0 = 0;
--	u32 draminit1 = 0;
--	u32 miscinit1 = 0;
--	u32 lfbsize   = 0;
--	int sgram_p   = 0;
-+	u32 draminit0;
-+	u32 draminit1;
-+	u32 miscinit1;
-+
-+	int num_chips;
-+	int chip_size; /* in MB */
-+	u32 lfbsize;
-+	int has_sgram;
- 
- 	draminit0 = tdfx_inl(par, DRAMINIT0);  
- 	draminit1 = tdfx_inl(par, DRAMINIT1);
-+   
-+	num_chips = (draminit0 & DRAMINIT0_SGRAM_NUM) ? 8 : 4;        
-  
--	if ((dev_id == PCI_DEVICE_ID_3DFX_BANSHEE) ||
--	    (dev_id == PCI_DEVICE_ID_3DFX_VOODOO3)) {             	 
--		sgram_p = (draminit1 & DRAMINIT1_MEM_SDRAM) ? 0 : 1;
--  
--	lfbsize = sgram_p ?
--		(((draminit0 & DRAMINIT0_SGRAM_NUM)  ? 2 : 1) * 
--		((draminit0 & DRAMINIT0_SGRAM_TYPE) ? 8 : 4) * 1024 * 1024) :
--		16 * 1024 * 1024;
-+	if (dev_id < PCI_DEVICE_ID_3DFX_VOODOO5) {
-+		/* Banshee/Voodoo3 */
-+		has_sgram = draminit1 & DRAMINIT1_MEM_SDRAM;	   
-+		chip_size = has_sgram ? ((draminit0 & DRAMINIT0_SGRAM_TYPE) ? 2 : 1)
-+				      : 2;
- 	} else {
- 		/* Voodoo4/5 */
--		u32 chips, psize, banks;
-+		has_sgram = 0;
-+		chip_size = 1 << ((draminit0 & DRAMINIT0_SGRAM_TYPE_MASK) >> DRAMINIT0_SGRAM_TYPE_SHIFT);
-+	}
-+	lfbsize = num_chips * chip_size * 1024 * 1024;
- 
--		chips = ((draminit0 & (1 << 26)) == 0) ? 4 : 8;
--		psize = 1 << ((draminit0 & 0x38000000) >> 28);
--		banks = ((draminit0 & (1 << 30)) == 0) ? 2 : 4;
--		lfbsize = chips * psize * banks;
--		lfbsize <<= 20;
--	}                 
--	/* disable block writes for SDRAM (why?) */
-+	/* disable block writes for SDRAM */
- 	miscinit1 = tdfx_inl(par, MISCINIT1);
--	miscinit1 |= sgram_p ? 0 : MISCINIT1_2DBLOCK_DIS;
-+	miscinit1 |= has_sgram ? 0 : MISCINIT1_2DBLOCK_DIS;
- 	miscinit1 |= MISCINIT1_CLUT_INV;
- 
- 	banshee_make_room(par, 1); 
---- include/video/tdfx.h_orig	2005-04-21 21:16:56.000000000 -0500
-+++ include/video/tdfx.h	2005-04-21 09:39:42.000000000 -0500
-@@ -99,6 +99,8 @@
- #define MISCINIT1_2DBLOCK_DIS           BIT(15)
- #define DRAMINIT0_SGRAM_NUM             BIT(26)
- #define DRAMINIT0_SGRAM_TYPE            BIT(27)
-+#define DRAMINIT0_SGRAM_TYPE_MASK       (BIT(27)|BIT(28)|BIT(29))
-+#define DRAMINIT0_SGRAM_TYPE_SHIFT      27
- #define DRAMINIT1_MEM_SDRAM             BIT(30)
- #define VGAINIT0_VGA_DISABLE            BIT(0)
- #define VGAINIT0_EXT_TIMING             BIT(1)
+On Thu, Apr 21, 2005 at 10:43:54PM +0200, Adrian Bunk wrote:
+> On Thu, Apr 21, 2005 at 09:50:34PM +0300, Tomi Lapinlampi wrote:
+> > 
+> > Hi,
+> > 
+> > 2.6.12-rc3 compile fails in drivers/video/tgafb.c
+> > 
+> > The system is an Alphastation 600 5/266, system variant Alcor,
+> > running Debian Sarge, gcc version 3.3.5 (Debian 1:3.3.5-8)
+> > 
+> > Btw, the tgafb hasn't really worked on this hardware since 2.6.8.1.
+> > I'll be able to run more tests after this one compiles :)
+> > 
+> > Regards,
+> > 
+> > Tomi
+> > 
+> > % make
+> >   CHK     include/linux/version.h
+> > make[1]: `arch/alpha/kernel/asm-offsets.s' is up to date.
+> >   CHK     include/asm-alpha/asm_offsets.h
+> >   CHK     include/linux/compile.h
+> >   CHK     usr/initramfs_list
+> >   CC      drivers/video/tgafb.o
+> > drivers/video/tgafb.c:85: error: `tgafb_pci_unregister' undeclared here (not in a function)
+> > drivers/video/tgafb.c:85: error: initializer element is not constant
+> > drivers/video/tgafb.c:85: error: (near initialization for `tgafb_driver.remove')
+> > make[2]: *** [drivers/video/tgafb.o] Error 1
+> > make[1]: *** [drivers/video] Error 2
+> > make: *** [drivers] Error 2
+> >...
+> 
+> The untested patch below should fix this compile error.
 
---Boundary-00=_ojHaCRt0WEIEsxf--
+Hi,
+
+This patch worked, tgafb.c now compiles. However, the compile
+fails later:
+
+...
+  CC      init/version.o
+  LD      init/built-in.o
+  LD      .tmp_vmlinux1
+local symbol 0: discarded in section `.exit.text' from drivers/built-in.o
+make: *** [.tmp_vmlinux1] Error 1
+
+This does not happen if I disable CONFIG_FB_TGA.
+
+Tomi
 
 
--------------------------------------------------------
-SF email is sponsored by - The IT Product Guide
-Read honest & candid reviews on hundreds of IT Products from real users.
-Discover which products truly live up to the hype. Start reading now.
-http://ads.osdn.com/?ad_id=6595&alloc_id=14396&op=click
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> 
+> --- linux-2.6.12-rc2-mm3-full/drivers/video/tgafb.c.old	2005-04-21 22:38:42.000000000 +0200
+> +++ linux-2.6.12-rc2-mm3-full/drivers/video/tgafb.c	2005-04-21 22:39:36.000000000 +0200
+> @@ -45,9 +45,7 @@
+>  static void tgafb_copyarea(struct fb_info *, const struct fb_copyarea *);
+>  
+>  static int tgafb_pci_register(struct pci_dev *, const struct pci_device_id *);
+> -#ifdef MODULE
+>  static void tgafb_pci_unregister(struct pci_dev *);
+> -#endif
+>  
+>  static const char *mode_option = "640x480@60";
+>  
+> @@ -1484,7 +1482,6 @@
+>  	return ret;
+>  }
+>  
+> -#ifdef MODULE
+>  static void __exit
+>  tgafb_pci_unregister(struct pci_dev *pdev)
+>  {
+> @@ -1500,6 +1497,7 @@
+>  	kfree(info);
+>  }
+>  
+> +#ifdef MODULE
+>  static void __exit
+>  tgafb_exit(void)
+>  {
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+-- 
+You can decide: live with free software or with only one evil company left?

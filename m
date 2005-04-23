@@ -1,7 +1,7 @@
 From: Miles Lane <miles.lane@gmail.com>
 Subject: Re: Re: 2.6.12-rc1-mm2 -- nvidiafb driver gives black screen
-Date: Fri, 22 Apr 2005 20:03:09 -0400
-Message-ID: <a44ae5cd05042217031c6fbbf5@mail.gmail.com>
+Date: Fri, 22 Apr 2005 20:12:17 -0400
+Message-ID: <a44ae5cd05042217122613bac4@mail.gmail.com>
 References: <a44ae5cd0503242023233dc23f@mail.gmail.com>
 	 <200504141351.42971.adaplas@hotpop.com>
 	 <20050414191323.10d7d435.khali@linux-fr.org>
@@ -10,21 +10,22 @@ References: <a44ae5cd0503242023233dc23f@mail.gmail.com>
 	 <a44ae5cd05042022512e840cfa@mail.gmail.com>
 	 <20050421092215.3e6d8be4.rddunlap@osdl.org>
 	 <20050421113645.4768967d.rddunlap@osdl.org>
+	 <a44ae5cd05042217031c6fbbf5@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DP87E-0001y3-Dw
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Apr 2005 17:03:20 -0700
-Received: from wproxy.gmail.com ([64.233.184.194])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DP87C-0007An-23
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Apr 2005 17:03:20 -0700
-Received: by wproxy.gmail.com with SMTP id 69so866975wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 22 Apr 2005 17:03:09 -0700 (PDT)
-In-Reply-To: <20050421113645.4768967d.rddunlap@osdl.org>
+	id 1DP8G2-0002RC-R3
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Apr 2005 17:12:26 -0700
+Received: from wproxy.gmail.com ([64.233.184.200])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DP8G1-00058E-FY
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Apr 2005 17:12:26 -0700
+Received: by wproxy.gmail.com with SMTP id 69so867862wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 22 Apr 2005 17:12:17 -0700 (PDT)
+In-Reply-To: <a44ae5cd05042217031c6fbbf5@mail.gmail.com>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -40,19 +41,25 @@ Content-Type: text/plain; charset="us-ascii"
 To: "Randy.Dunlap" <rddunlap@osdl.org>
 Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net, khali@linux-fr.org, akpm@osdl.org
 
-Hi Randy,
+Okay, it also fails with Antonio's patches applied in addition to yours.
 
-I tried your patch to a clean 2.6.12-rc2-mm3 tree (I backed out
-Antonio's patches).  The result of not having a vmalloc=3D in the boot
-arguments is that the screen is still black:
+Thanks,
+           Miles
 
-allocation failed: out of vmalloc space - use vmalloc=3D<size> to increase =
-size.
-nvidiafb: cannot ioremap FB base
-
-I will try again with Antonio's patches added.
-
-       Miles
+On 4/22/05, Miles Lane <miles.lane@gmail.com> wrote:
+> Hi Randy,
+>=20
+> I tried your patch to a clean 2.6.12-rc2-mm3 tree (I backed out
+> Antonio's patches).  The result of not having a vmalloc=3D in the boot
+> arguments is that the screen is still black:
+>=20
+> allocation failed: out of vmalloc space - use vmalloc=3D<size> to increas=
+e size.
+> nvidiafb: cannot ioremap FB base
+>=20
+> I will try again with Antonio's patches added.
+>=20
+>        Miles
 
 
 -------------------------------------------------------

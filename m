@@ -1,22 +1,33 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH 1/6] nvidiafb: ioremap and i2c fixes
-Date: Sat, 23 Apr 2005 17:40:13 -0700
-Message-ID: <20050423174013.3006852f.akpm@osdl.org>
-References: <200504161313.25574.adaplas@hotpop.com>
+From: Miles Lane <miles.lane@gmail.com>
+Subject: Re: Re: 2.6.12-rc1-mm2 -- nvidiafb driver gives black screen
+Date: Sun, 24 Apr 2005 13:09:42 -0400
+Message-ID: <a44ae5cd05042410092055e3c4@mail.gmail.com>
+References: <a44ae5cd0503242023233dc23f@mail.gmail.com>
+	 <200504141351.42971.adaplas@hotpop.com>
+	 <20050414191323.10d7d435.khali@linux-fr.org>
+	 <200504151107.49810.adaplas@hotpop.com>
+	 <a44ae5cd05041601211c292316@mail.gmail.com>
+	 <a44ae5cd05042022512e840cfa@mail.gmail.com>
+	 <20050421092215.3e6d8be4.rddunlap@osdl.org>
+	 <20050421113645.4768967d.rddunlap@osdl.org>
+	 <a44ae5cd05042217031c6fbbf5@mail.gmail.com>
+	 <a44ae5cd05042217122613bac4@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DPVAq-0004Hx-7N
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 23 Apr 2005 17:40:36 -0700
-Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.41)
-	id 1DPVAo-0001gJ-Oa
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 23 Apr 2005 17:40:36 -0700
-In-Reply-To: <200504161313.25574.adaplas@hotpop.com>
+	id 1DPkcD-0001wB-Ez
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 24 Apr 2005 10:09:53 -0700
+Received: from wproxy.gmail.com ([64.233.184.194])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DPkcD-0005QD-0t
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 24 Apr 2005 10:09:53 -0700
+Received: by wproxy.gmail.com with SMTP id 69so1070141wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 24 Apr 2005 10:09:42 -0700 (PDT)
+In-Reply-To: <a44ae5cd05042217122613bac4@mail.gmail.com>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,21 +39,19 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: adaplas@pol.net
-Cc: adaplas@hotpop.com, linux-fbdev-devel@lists.sourceforge.net
+To: "Randy.Dunlap" <rddunlap@osdl.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net, khali@linux-fr.org, akpm@osdl.org
 
-"Antonino A. Daplas" <adaplas@hotpop.com> wrote:
->
-> - Add 'vram' option to specify amount of video RAM to remap
->  - Limit remap size to 128 MIB
+On 4/22/05, Miles Lane <miles.lane@gmail.com> wrote:
+> Okay, it also fails with Antonio's patches applied in addition to yours.
 
-Am I right in believing that if someone has a 256MB card and doesn't know
-about the `vram' option, their card will fail to work, because the 128MB
-vmalloc() will fail?
+I know I implied this in my previous message, but I want to make it explici=
+t.
+This combination of patches also fails to give a working framebuffer
+console when I specify vmalloc=3D128M.  I only get a working framebuffer
+console by specifying vmalloc=3D256M.
 
-If so, that seems a bit user-hostile to me.  Perhaps we should make it
-64MB?
-
+           Miles
 
 
 -------------------------------------------------------

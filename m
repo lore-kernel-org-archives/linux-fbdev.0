@@ -1,21 +1,26 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: fbmem.c is missing unregister_chrdev()
-Date: Mon, 25 Apr 2005 01:36:08 -0400
-Message-ID: <9e4733910504242236391fb099@mail.gmail.com>
+From: Miles Lane <miles.lane@gmail.com>
+Subject: Re: Re: [PATCH 1/6] nvidiafb: ioremap and i2c fixes
+Date: Sun, 24 Apr 2005 22:36:42 -0700
+Message-ID: <a44ae5cd0504242236365088ba@mail.gmail.com>
+References: <200504161313.25574.adaplas@hotpop.com>
+	 <20050423174013.3006852f.akpm@osdl.org>
+	 <200504251121.20530.adaplas@hotpop.com>
+	 <20050424220309.77617eed.rddunlap@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DPwGX-00032z-Kj
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 24 Apr 2005 22:36:17 -0700
-Received: from wproxy.gmail.com ([64.233.184.204])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1DPwGV-0008MJ-42
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 24 Apr 2005 22:36:17 -0700
-Received: by wproxy.gmail.com with SMTP id 69so1156575wri
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 24 Apr 2005 22:36:08 -0700 (PDT)
+	id 1DPwH9-00035W-HD
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 24 Apr 2005 22:36:55 -0700
+Received: from wproxy.gmail.com ([64.233.184.192])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1DPwH7-0000MH-BG
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 24 Apr 2005 22:36:55 -0700
+Received: by wproxy.gmail.com with SMTP id 69so1160299wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 24 Apr 2005 22:36:42 -0700 (PDT)
+In-Reply-To: <20050424220309.77617eed.rddunlap@osdl.org>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -28,23 +33,44 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: adaplas@hotpop.com, akpm@osdl.org, adaplas@pol.net
 
-=3D=3D=3D=3D=3D fbmem.c 1.160 vs edited =3D=3D=3D=3D=3D
---- 1.160/drivers/video/fbmem.c 2005-03-31 06:06:52 -05:00
-+++ edited/fbmem.c      2005-04-25 01:33:57 -04:00
-@@ -1211,6 +1211,7 @@
- fbmem_exit(void)
- {
-        class_simple_destroy(fb_class);
-+       unregister_chrdev(FB_MAJOR, "fb");
- }
+On 4/24/05, Randy.Dunlap <rddunlap@osdl.org> wrote:
+> On Mon, 25 Apr 2005 11:21:20 +0800 Antonino A. Daplas wrote:
+>=20
+> | On Sunday 24 April 2005 08:40, Andrew Morton wrote:
+> | > "Antonino A. Daplas" <adaplas@hotpop.com> wrote:
+> | > > - Add 'vram' option to specify amount of video RAM to remap
+> | > >  - Limit remap size to 128 MIB
+> | >
+> | > Am I right in believing that if someone has a 256MB card and doesn't =
+know
+> | > about the `vram' option, their card will fail to work, because the 12=
+8MB
+> | > vmalloc() will fail?
+> | >
+> |
+> | I thought that a 128MiB vmalloc will work.
+>=20
+> The default vmalloc total size is 128 MB, but the kernel always
+> requires a "guard page", which cannot be allocated, so the
+> total allocation fails.
+>=20
+> I tried to make a patch that sets the default vmalloc total size
+> to 128 MB + PAGE_SIZE, but Miles reported that the driver's
+> vmalloc() call still failed...
 
- module_exit(fbmem_exit);
+Which seems to beg a couple of questions:
+How much memory is _really_ trying to get allocated when I boot
+with no vmalloc argument.  Does this point to some problem in=20
+the nvidiafb code?  Does the fact that specifying vmalloc=3D128M
+does not fix the problem indicate that something about my video
+card won't work with less than 256Mb vmalloced, or is this a
+driver issue?
 
---=20
-Jon Smirl
-jonsmirl@gmail.com
+Thanks,
+        Miles
 
 
 -------------------------------------------------------

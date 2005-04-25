@@ -1,27 +1,20 @@
-From: Miles Lane <miles.lane@gmail.com>
-Subject: Re: Re: 2.6.12-rc1-mm2 -- nvidiafb driver gives black screen
-Date: Mon, 25 Apr 2005 16:33:31 -0400
-Message-ID: <a44ae5cd050425133365e9bbab@mail.gmail.com>
-References: <a44ae5cd0503242023233dc23f@mail.gmail.com>
-	 <a44ae5cd05042217122613bac4@mail.gmail.com>
-	 <a44ae5cd05042410092055e3c4@mail.gmail.com>
-	 <200504251121.24725.adaplas@hotpop.com>
+From: Travos Xavier <xavier_travos@yahoo.fr>
+Subject: modifing lcd size for omap5912 fb
+Date: Mon, 25 Apr 2005 13:43:36 +0200 (CEST)
+Message-ID: <20050425114336.52036.qmail@web26408.mail.ukl.yahoo.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/alternative; boundary="0-609631677-1114429416=:50429"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DQAHE-0005KX-1T
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 25 Apr 2005 13:33:56 -0700
-Received: from wproxy.gmail.com ([64.233.184.207])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DQAGv-0006cz-EB
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 25 Apr 2005 13:33:55 -0700
-Received: by wproxy.gmail.com with SMTP id 69so1366032wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 25 Apr 2005 13:33:32 -0700 (PDT)
-In-Reply-To: <200504251121.24725.adaplas@hotpop.com>
-Content-Disposition: inline
+	id 1DQ20b-00040f-UU
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 25 Apr 2005 04:44:13 -0700
+Received: from web26408.mail.ukl.yahoo.com ([217.146.176.32])
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.41)
+	id 1DQ206-0005Wj-H6
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 25 Apr 2005 04:44:13 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,54 +25,57 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: "Randy.Dunlap" <rddunlap@osdl.org>, adaplas@pol.net, khali@linux-fr.org, akpm@osdl.org
 
-Oops.  Sorry some of you will get this twice.
+--0-609631677-1114429416=:50429
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Yes, that patch fixed the problem.  I was able to get a usable
-framebuffer console without specifying the vmalloc boot parameter.
+I work on the omap5912 and I want to plug a 640x480 lcd but the configura=
+tion is done for a 320x240 screen for this arch (see drivers/viseo/omap/o=
+map1610.h) I modified the init_registers function that writes the timing =
+in the lcd controler on the omap5912. By the way I have problems with the=
+ external timings and the VSYNC signal control that doesn't work as it sh=
+ould.
+=20
+Have you solutions for my problem ?
+=20
+regards
+=20
+Xavier
 
-Thanks!
-          Miles
 
-On 4/24/05, Antonino A. Daplas <adaplas@hotpop.com> wrote:
->=20
-> Can you try this patch?  This limits the amount of RAM that nvidiafb
-> will remap to 64 MiB.  This is on top of another patch I sent to Andrew:
-> "[Linux-fbdev-devel] [PATCH 1/6] nvidiafb: ioremap and i2c fixes"
->=20
-> Tony
->=20
-> diff -Nru a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
-> --- a/drivers/video/nvidia/nvidia.c     2005-04-16 11:54:44 +08:00
-> +++ b/drivers/video/nvidia/nvidia.c     2005-04-25 10:39:45 +08:00
-> @@ -1511,9 +1511,9 @@
->         if (vram && vram * 1024 * 1024 < par->FbMapSize)
->                 par->FbMapSize =3D vram * 1024 * 1024;
->=20
-> -       /* Limit amount of vram to 128 MB */
-> -       if (par->FbMapSize > 128 * 1024 * 1024)
-> -               par->FbMapSize =3D 128 * 1024 * 1024;
-> +       /* Limit amount of vram to 64 MB */
-> +       if (par->FbMapSize > 64 * 1024 * 1024)
-> +               par->FbMapSize =3D 64 * 1024 * 1024;
->=20
->         par->FbUsableSize =3D par->FbMapSize - (128 * 1024);
->         par->ScratchBufferSize =3D (par->Architecture < NV_ARCH_10) ? 8 *=
- 1024 :
->=20
-> -------------------------------------------------------
-> SF email is sponsored by - The IT Product Guide
-> Read honest & candid reviews on hundreds of IT Products from real users.
-> Discover which products truly live up to the hype. Start reading now.
-> http://ads.osdn.com/?ad_id=3D6595&alloc_id=3D14396&op=3Dclick
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
->
+	=09
+---------------------------------
+ D=E9couvrez le nouveau Yahoo! Mail : 250 Mo d'espace de stockage pour vo=
+s mails !
+Cr=E9ez votre Yahoo! Mail
+--0-609631677-1114429416=:50429
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+<DIV>
+<DIV>I work on the omap5912 and I want to plug a 640x480 lcd but the conf=
+iguration is done for a 320x240 screen for this arch (see drivers/viseo/o=
+map/omap1610.h) I modified the init_registers function that writes the ti=
+ming in the lcd controler on the omap5912. By the way I have problems wit=
+h the external timings and the VSYNC signal control that doesn't work as =
+it should.</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>Have you solutions for my problem ?</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>regards</DIV>
+<DIV>&nbsp;</DIV>
+<DIV>Xavier</DIV></DIV><p>
+		<hr size=3D1>=20
+D=E9couvrez le nouveau Yahoo! Mail : <font color=3D"red">250 Mo d'espace<=
+/font> de stockage pour vos mails !<br><a href=3D"http://fr.rd.yahoo.com/=
+mail/taglines/*http://us.rd.yahoo.com/evt=3D25917/*http://us.rd.yahoo.com=
+/mail_fr/mail_campaigns/splash/taglines_250/default/*http://fr.promotions=
+.yahoo.com/mail/creer28.html">Cr=E9ez votre Yahoo! Mail</a>
+
+
+--0-609631677-1114429416=:50429--
 
 
 -------------------------------------------------------

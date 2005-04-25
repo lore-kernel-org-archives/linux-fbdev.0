@@ -1,25 +1,25 @@
-From: "Antonino A. Daplas" <adaplas@hotpop.com>
-Subject: Re: 2.6.12-rc3 compile failure in tgafb.c, tgafb not working anymore
-Date: Mon, 25 Apr 2005 11:21:14 +0800
-Message-ID: <200504251121.16609.adaplas@hotpop.com>
-References: <20050421185034.GS607@vega.lnet.lut.fi> <20050422112030.GW607@vega.lnet.lut.fi> <20050422144047.GY607@vega.lnet.lut.fi>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: Re: [PATCH 1/6] nvidiafb: ioremap and i2c
+ fixes
+Date: Sun, 24 Apr 2005 22:00:58 -0700
+Message-ID: <20050424220058.0f95b392.akpm@osdl.org>
+References: <200504161313.25574.adaplas@hotpop.com>
+	<20050423174013.3006852f.akpm@osdl.org>
+	<200504251121.20530.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DPuDn-0005Fb-J6
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 24 Apr 2005 20:25:19 -0700
-Received: from smtp-out.hotpop.com ([38.113.3.51])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1DPuDm-0004vC-43
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 24 Apr 2005 20:25:19 -0700
-Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
-	by smtp-out.hotpop.com (Postfix) with SMTP id AB1E970C49
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 25 Apr 2005 03:24:08 +0000 (UTC)
-In-Reply-To: <20050422144047.GY607@vega.lnet.lut.fi>
-Content-Disposition: inline
+	id 1DPviu-0001bB-Ci
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 24 Apr 2005 22:01:32 -0700
+Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1DPvis-0005mK-Ux
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 24 Apr 2005 22:01:32 -0700
+In-Reply-To: <200504251121.20530.adaplas@hotpop.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,51 +31,30 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Tomi Lapinlampi <lapinlam@vega.lnet.lut.fi>, Adrian Bunk <bunk@stusta.de>
-Cc: linux-kernel@vger.kernel.org, torvalds@osdl.org, rth@twiddle.net, adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net
+To: adaplas@pol.net
+Cc: adaplas@hotpop.com, linux-fbdev-devel@lists.sourceforge.net
 
-On Friday 22 April 2005 22:40, Tomi Lapinlampi wrote:
-> On Fri, Apr 22, 2005 at 02:20:30PM +0300, Tomi Lapinlampi wrote:
-> > Actually, I was able to get a clean compile with the patch from
-> > http://marc.theaimsgroup.com/?l=linux-alpha&m=111392038121433&w=2
+"Antonino A. Daplas" <adaplas@hotpop.com> wrote:
 >
-> Hi again,
->
-> Although the tgafb driver compiles with the above patch, it shows
-> similar behaviour as before: The kernel loads, the monitor comes alive
-> but the screen stays completely blank.
-> The last kernel that worked was 2.6.8.1. I've tested with 2.6.{9,10,11}
+>  > Am I right in believing that if someone has a 256MB card and doesn't know
+>  > about the `vram' option, their card will fail to work, because the 128MB
+>  > vmalloc() will fail?
+>  >
+> 
+>  I thought that a 128MiB vmalloc will work.
 
-What does fbset show?  If the line rgba shows all zero, then you will get a
-blank screen. The driver must properly set info->var.green|red|blue|transp,
-which in turn depends on the hardware configuration.
+Well only if there are zero other current vmallocations and if we didn't
+have the guard page.
 
-You can try to insert these in tgafb_pci_register() after fb_find_mode().
+	unsigned int __VMALLOC_RESERVE = 128 << 20;
 
-If at 8bpp pseudocolor:
+>  > If so, that seems a bit user-hostile to me.  Perhaps we should make it
+>  > 64MB?
+> 
+>  Okay, dropping maximum to 64 MiB.
 
-all->info.var.green.length = 8;
-all->info.var.red.length = 8;
-all->info.var.blue.length = 8;
-all->info.var.green.offset = 0;
-all->info.var.red.offset = 0;
-all->info.var.blue.offset = 0;
-
-If at 32-bit truecolor:
-
-all->info.var.green.length = 8;
-all->info.var.red.length = 8;
-all->info.var.blue.length = 8;
-all->info.var.green.offset = 8;
-all->info.var.red.offset = 16;
-all->info.var.blue.offset = 0;
-
-If the above changes work, a definitive fix is still needed, one that will
-also set the above for each visual the hardware supports on each
-fb_check_var().
-
-Tony
-
+Fair enough.  I guess we should check the vmalloc max on all other
+supported 32-bit architectures.
 
 
 

@@ -1,22 +1,27 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Three fbdev bug fixes
-Date: Thu, 28 Apr 2005 13:02:55 -0400
-Message-ID: <9e47339105042810025d35a2ad@mail.gmail.com>
+From: Thomas Jahns <Thomas.Jahns@gmx.net>
+Subject: Re: Re: [patch 1/1] delete unused file
+Date: Thu, 28 Apr 2005 19:15:50 +0000
+Message-ID: <1114715755l.8158l.0l@mercury>
+References: <20041226151328.47F751ECC0@trashy.coderock.org>
+	<200501100515.52513.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_9374_24204439.1114707775735"
+Content-Type: multipart/signed; micalg=PGP-SHA1;
+	protocol="application/pgp-signature"; boundary="=-yhNN5YOpP+M41NR5PhkQ"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DRCPo-0005xS-5d
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Apr 2005 10:03:04 -0700
-Received: from wproxy.gmail.com ([64.233.184.198])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1DRCPm-0004D4-OQ
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Apr 2005 10:03:04 -0700
-Received: by wproxy.gmail.com with SMTP id 69so640632wri
-        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 28 Apr 2005 10:02:55 -0700 (PDT)
+	id 1DRFsd-00028I-Nq
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Apr 2005 13:45:03 -0700
+Received: from mail.gmx.de ([213.165.64.20] helo=mail.gmx.net)
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.41)
+	id 1DRFsa-00052g-O4
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Apr 2005 13:45:03 -0700
+Received: from mercury (tjahns@localhost [127.0.0.1])
+	by mercury.jahnsnet.de (8.13.4/8.13.4/Debian-1) with ESMTP id j3SJFtba015805
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 28 Apr 2005 21:15:55 +0200
+In-Reply-To: <200501100515.52513.adaplas@hotpop.com> (from
+	adaplas@hotpop.com on Sun Jan  9 22:15:50 2005)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,52 +32,81 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: fbdev <linux-fbdev-devel@lists.sourceforge.net>, "Antonino A. Daplas" <adaplas@hotpop.com>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-------=_Part_9374_24204439.1114707775735
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+--=-yhNN5YOpP+M41NR5PhkQ
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-#1) fbdev is missing unregister_chrdev(FB_MAJOR, "fb");
-#2) rounding issues can make an acceptable mode fail
-added  hfreq =3D (hfreq + 500) / 1000 * 1000;
-#3) Benh has picked this up. radeonfb is not deleting it's sysfs attributes
-  sysfs_remove_bin_file(&rinfo->pdev->dev.kobj, &edid1_attr);
-  sysfs_remove_bin_file(&rinfo->pdev->dev.kobj, &edid2_attr);
+Hi,
 
-All three are in the attachment
+On 01/09/05 22:15:50, Antonino A. Daplas wrote:
+> On Sunday 26 December 2004 23:13, domen@coderock.org wrote:
+> > Remove nowhere referenced file. (egrep "filename\." didn't find
+> > anything)
+>=20
+> This file is now being used for BIOS-less booting of Rage XL cards in
+> 2.6.10-mm1.
 
+I had this file accidentally selected when building a 2.6.11.6 kernel=20
+from debians kernel-source-2.6.11, 2.6.11-3 version package for my=20
+PowerMac G3, all of:
+
+FB_ATY
+FB_ATY_CT
+FB_ATY_XL_INIT
+FB_ATY_GX
+
+but not
+
+FB_ATY_GENERIC_LCD
+
+where selected, accordingly the build failed because of a missing=20
+symbol: aty_st_lcd
+aty_st_lcd is called in line 256 of xlinit.c but perhaps should be=20
+surrounded by an ifdef like its declaration in atyfb.h and definition=20
+in atyfb_base.c:
+
+#if defined(CONFIG_PM) || defined(CONFIG_PMAC_BACKLIGHT) || defined
+(CONFIG_FB_ATY_GENERIC_LCD)
+extern void aty_st_lcd(int index, u32 val, const struct atyfb_par *par);
+extern u32 aty_ld_lcd(int index, const struct atyfb_par *par);
+#endif
+
+This is just a report of a problem I faced because I had FB_ATY_XL_INIT
+activated, although I don't really need it. Therefore I'm currently
+using a kernel built without FB_ATY_XL_INIT defined (the kernel thus
+produced does work on my system, I guess therefore, that the problem
+described by Mikael Pettersson does only affect the first generation
+beige PowerMac G3 (my system is of 2nd revision).
+
+OTOH: This kernel does, with the exact same arguments to the kernel,
+boot with another video timing than the 2.6.9 kernel I used until now.
+This is an improvement because the old kernel selected the mode
+1024x768-24@60 while 1024x768-24@75 was requested. The 2.6.11 kernel
+doesn't select a perfect match either (it's using 1024x768-24@76).
+
+Thomas Jahns
 --=20
-Jon Smirl
-jonsmirl@gmail.com
+"Computers are good at following instructions,
+ but not at reading your mind."
+D. E. Knuth, The TeXbook, Addison-Wesley 1984, 1986, 1996, p. 9
 
-------=_Part_9374_24204439.1114707775735
-Content-Type: application/octet-stream; name="patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="patch"
 
-PT09PT0gZHJpdmVycy92aWRlby9mYm1lbS5jIDEuMTYwIHZzIGVkaXRlZCA9PT09PQotLS0gMS4x
-NjAvZHJpdmVycy92aWRlby9mYm1lbS5jCTIwMDUtMDMtMzEgMDY6MDY6NTIgLTA1OjAwCisrKyBl
-ZGl0ZWQvZHJpdmVycy92aWRlby9mYm1lbS5jCTIwMDUtMDQtMjUgMDE6MzM6NTcgLTA0OjAwCkBA
-IC0xMjExLDYgKzEyMTEsNyBAQAogZmJtZW1fZXhpdCh2b2lkKQogewogCWNsYXNzX3NpbXBsZV9k
-ZXN0cm95KGZiX2NsYXNzKTsKKwl1bnJlZ2lzdGVyX2NocmRldihGQl9NQUpPUiwgImZiIik7CiB9
-CiAKIG1vZHVsZV9leGl0KGZibWVtX2V4aXQpOwo9PT09PSBkcml2ZXJzL3ZpZGVvL2ZibW9uLmMg
-MS4yMiB2cyBlZGl0ZWQgPT09PT0KLS0tIDEuMjIvZHJpdmVycy92aWRlby9mYm1vbi5jCTIwMDUt
-MDMtMzEgMDY6MDY6NTIgLTA1OjAwCisrKyBlZGl0ZWQvZHJpdmVycy92aWRlby9mYm1vbi5jCTIw
-MDUtMDQtMjUgMTM6NTg6MTMgLTA0OjAwCkBAIC0xMjQyLDYgKzEyNDIsOCBAQAogCQl2dG90YWwg
-Kj0gMjsKIAogCWhmcmVxID0gcGl4Y2xvY2svaHRvdGFsOworCWhmcmVxID0gKGhmcmVxICsgNTAw
-KSAvIDEwMDAgKiAxMDAwOworCQogCXZmcmVxID0gaGZyZXEvdnRvdGFsOwogCiAJcmV0dXJuICh2
-ZnJlcSA8IHZmbWluIHx8IHZmcmVxID4gdmZtYXggfHwgCj09PT09IGRyaXZlcnMvdmlkZW8vYXR5
-L3JhZGVvbl9iYXNlLmMgMS40OCB2cyBlZGl0ZWQgPT09PT0KLS0tIDEuNDgvZHJpdmVycy92aWRl
-by9hdHkvcmFkZW9uX2Jhc2UuYwkyMDA1LTAzLTMxIDA2OjA2OjUyIC0wNTowMAorKysgZWRpdGVk
-L2RyaXZlcnMvdmlkZW8vYXR5L3JhZGVvbl9iYXNlLmMJMjAwNS0wNC0yOCAxMjo1Njo1NSAtMDQ6
-MDAKQEAgLTI0NTIsNiArMjQ1MiwxMSBAQAogIAogCXJhZGVvbmZiX3BtX2V4aXQocmluZm8pOwog
-CisJaWYgKHJpbmZvLT5tb24xX0VESUQpCisJCXN5c2ZzX3JlbW92ZV9iaW5fZmlsZSgmcmluZm8t
-PnBkZXYtPmRldi5rb2JqLCAmZWRpZDFfYXR0cik7CisJaWYgKHJpbmZvLT5tb24yX0VESUQpCisJ
-CXN5c2ZzX3JlbW92ZV9iaW5fZmlsZSgmcmluZm8tPnBkZXYtPmRldi5rb2JqLCAmZWRpZDJfYXR0
-cik7CisKICNpZiAwCiAJLyogcmVzdG9yZSBvcmlnaW5hbCBzdGF0ZQogCSAqIAo=
-------=_Part_9374_24204439.1114707775735--
+--=-yhNN5YOpP+M41NR5PhkQ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.0 (GNU/Linux)
+
+iD8DBQBCcTZroKHaAfEZMbkRAqU3AJ9CH4ikU3T+S29l4r0qw9rtyjKI4gCfcqU+
+7gwpHI8Tvds6cM+H5uYv6Es=
+=1ULh
+-----END PGP SIGNATURE-----
+
+--=-yhNN5YOpP+M41NR5PhkQ--
+
 
 
 -------------------------------------------------------

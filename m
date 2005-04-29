@@ -1,22 +1,20 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Mapping the framebuffer into kernel space
-Date: Thu, 28 Apr 2005 23:55:28 -0400
-Message-ID: <9e473391050428205517f3c8c0@mail.gmail.com>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Fw: Hang when using a Matrox G550 with DVI
+Date: Fri, 29 Apr 2005 03:50:39 -0700
+Message-ID: <20050429035039.2b511dcd.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DRMbH-0003Zh-DU
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Apr 2005 20:55:35 -0700
-Received: from wproxy.gmail.com ([64.233.184.198])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DRMbH-00013A-1c
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Apr 2005 20:55:35 -0700
-Received: by wproxy.gmail.com with SMTP id 69so814826wri
-        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 28 Apr 2005 20:55:28 -0700 (PDT)
-Content-Disposition: inline
+	id 1DRT5d-0000iT-QO
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Apr 2005 03:51:21 -0700
+Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1DRT5d-0003MQ-6v
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Apr 2005 03:51:21 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,36 +26,37 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: fbdev <linux-fbdev-devel@lists.sourceforge.net>, "Antonino A. Daplas" <adaplas@hotpop.com>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Shaun Jackman <sjackman@gmail.com>
 
-I looked at a few fbdev drivers and they are mapping the framebuffer
-into kernel space.
 
-Example from radeonfb:
-  rinfo->mapped_vram =3D min_t(unsigned long, MAX_MAPPED_VRAM, rinfo->video=
-_ram);
- do {
-     rinfo->fb_base =3D ioremap (rinfo->fb_base_phys,
-                                       rinfo->mapped_vram);
 
-Isn't the only consumer of this kernel mapping fbconsole? If so
-shouldn't fbconsole be doing the mapping instead of doing it in the
-drivers? Doing it in fbconsole would let us map exactly the amount of
-VRAM needed for the console. Right now the driver has to guess the
-maximum consumption.  This would minimize the amount of kernel address
-space consumed by fbdev. It could also remove a bunch of redundant
-code.
+Begin forwarded message:
 
-Then in my case where I'm running radeonfb but not fbconsole there
-would be no kernel address space consumed at all.
+Date: Thu, 21 Apr 2005 11:31:32 -0700
+From: Shaun Jackman <sjackman@gmail.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: Hang when using a Matrox G550 with DVI
 
-Minimizing kernel address space consumption is important for x86
-systems with more than 1GB of memory. Address space going to fbdev
-pushes system pages from low into high memory and slows them down.
 
---=20
-Jon Smirl
-jonsmirl@gmail.com
+When I have a DVI display plugged into my Matrox G550 video card the
+Linux kernel 2.6.11 hangs while booting. This can be worked around by
+"disabling CONFIG_VIDEO_SELECT and/or comment out call to store_edid
+in arch/i386/boot/video.S" [1], or by unplugging the DVI display
+before the kernel boots and plugging it back in before X starts. This
+is the same bug listed here [2], and it has been around since the
+2.5.67-bk6 days.
+
+Please cc me in your reply. Cheers,
+Shaun
+
+[1] http://www.ussg.iu.edu/hypermail/linux/kernel/0408.2/0434.html
+[2] http://bugme.osdl.org/show_bug.cgi?id=1458
+-
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
 
 
 -------------------------------------------------------

@@ -1,21 +1,21 @@
 From: jayakumar lkml <jayakumar.lkml@gmail.com>
-Subject: LCD controller with vertical packing
-Date: Fri, 29 Apr 2005 20:40:24 +0800
-Message-ID: <45a44e48050429054069f50fc3@mail.gmail.com>
+Subject: LCD Controller with vertical packing
+Date: Fri, 29 Apr 2005 18:42:15 +0800
+Message-ID: <45a44e4805042903424060ca30@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DRUnJ-0006oT-Nh
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Apr 2005 05:40:33 -0700
-Received: from zproxy.gmail.com ([64.233.162.202])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1DRUnI-00081A-As
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Apr 2005 05:40:33 -0700
-Received: by zproxy.gmail.com with SMTP id 9so1556465nzo
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 29 Apr 2005 05:40:24 -0700 (PDT)
+	id 1DRSwy-0000HE-Di
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Apr 2005 03:42:24 -0700
+Received: from zproxy.gmail.com ([64.233.162.195])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1DRSwy-00036H-2U
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Apr 2005 03:42:24 -0700
+Received: by zproxy.gmail.com with SMTP id 9so1511591nzo
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 29 Apr 2005 03:42:15 -0700 (PDT)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -63,7 +63,7 @@ jaya
 
 
 -------------------------------------------------------
-SF.Net email is sponsored by: Tell us your software development plans!
-Take this survey and enter to win a one-year sub to SourceForge.net
-Plus IDC's 2005 look-ahead and a copy of this survey
-Click here to start!  http://www.idcswdc.com/cgi-bin/survey?id=105hix
+This SF.Net email is sponsored by: NEC IT Guy Games.
+Get your fingers limbered up and give it your best shot. 4 great events, 4
+opportunities to win big! Highest score wins.NEC IT Guy Games. Play to
+win an NEC 61 plasma display. Visit http://www.necitguy.com/?r=20

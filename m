@@ -1,18 +1,18 @@
 From: akpm@osdl.org
-Subject: patch better-pll-frequency-matching-for-tdfxfb-driver.patch added to -mm tree
-Date: Fri, 29 Apr 2005 16:18:45 -0700
-Message-ID: <200504292318.j3TNIEE4011552@shell0.pdx.osdl.net>
+Subject: patch clean-up-and-bug-fix-for-tdfxfb-framebuffer-size-detection.patch added to -mm tree
+Date: Fri, 29 Apr 2005 16:20:27 -0700
+Message-ID: <200504292319.j3TNJupI011596@shell0.pdx.osdl.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DRekU-0000uL-LX
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Apr 2005 16:18:18 -0700
+	id 1DRem9-0000wk-0G
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Apr 2005 16:20:01 -0700
 Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.41)
-	id 1DRekT-0005v1-3O
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Apr 2005 16:18:18 -0700
+	id 1DRem6-0007t6-Db
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Apr 2005 16:20:00 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,98 +31,108 @@ To: evilrich@rcdrummond.net, linux-fbdev-devel@lists.sourceforge.net
 
 This is a note to let you know that I've just added the patch titled
 
-     Better PLL frequency matching for tdfxfb driver
+     Clean-up and bug fix for tdfxfb framebuffer size detection
 
 to the -mm tree.  Its filename is
 
-     better-pll-frequency-matching-for-tdfxfb-driver.patch
+     clean-up-and-bug-fix-for-tdfxfb-framebuffer-size-detection.patch
 
 Patches currently in -mm which might be from evilrich@rcdrummond.net are
 
 better-pll-frequency-matching-for-tdfxfb-driver.patch
+clean-up-and-bug-fix-for-tdfxfb-framebuffer-size-detection.patch
 
 
 
 From: Richard Drummond <evilrich@rcdrummond.net>
 
-Improve the PLL frequency matching in the tdfxfb driver.  Instead of
-requiring 64260 iterations to obtain the closest supported PLL frequency,
-this code does it with the same degree of accuracy in at most 768
-iterations.
+Attached is a patch against 2.6.11.7 which tidies up the tdfxfb framebuffer
+size detection code a little and fixes the broken support for Voodoo4/5
+cards.  (I haven't tested this on a Voodoo5, however, because I don't have
+the hardware).
 
 Signed-off-by: Richard Drummond <evilrich@rcdrummond.net>
 Cc: <linux-fbdev-devel@lists.sourceforge.net>
 Signed-off-by: Andrew Morton <akpm@osdl.org>
 ---
 
- drivers/video/tdfxfb.c |   43 +++++++++++++++++++++++++++++++------------
- 1 files changed, 31 insertions(+), 12 deletions(-)
+ drivers/video/tdfxfb.c |   43 +++++++++++++++++++++----------------------
+ include/video/tdfx.h   |    2 ++
+ 2 files changed, 23 insertions(+), 22 deletions(-)
 
-diff -puN drivers/video/tdfxfb.c~better-pll-frequency-matching-for-tdfxfb-driver drivers/video/tdfxfb.c
---- 25/drivers/video/tdfxfb.c~better-pll-frequency-matching-for-tdfxfb-driver	Fri Apr 29 16:17:28 2005
-+++ 25-akpm/drivers/video/tdfxfb.c	Fri Apr 29 16:18:27 2005
-@@ -317,30 +317,49 @@ static inline void do_setpalentry(struct
+diff -puN drivers/video/tdfxfb.c~clean-up-and-bug-fix-for-tdfxfb-framebuffer-size-detection drivers/video/tdfxfb.c
+--- 25/drivers/video/tdfxfb.c~clean-up-and-bug-fix-for-tdfxfb-framebuffer-size-detection	Fri Apr 29 16:19:43 2005
++++ 25-akpm/drivers/video/tdfxfb.c	Fri Apr 29 16:19:43 2005
+@@ -430,36 +430,35 @@ static void do_write_regs(struct fb_info
  
- static u32 do_calc_pll(int freq, int* freq_out) 
+ static unsigned long do_lfb_size(struct tdfx_par *par, unsigned short dev_id) 
  {
--	int m, n, k, best_m, best_n, best_k, f_cur, best_error;
-+	int m, n, k, best_m, best_n, best_k, best_error;
- 	int fref = 14318;
-   
--	/* this really could be done with more intelligence --
--	   255*63*4 = 64260 iterations is silly */
- 	best_error = freq;
- 	best_n = best_m = best_k = 0;
--	for (n = 1; n < 256; n++) {
--		for (m = 1; m < 64; m++) {
--			for (k = 0; k < 4; k++) {
--				f_cur = fref*(n + 2)/(m + 2)/(1 << k);
--				if (abs(f_cur - freq) < best_error) {
--					best_error = abs(f_cur-freq);
--					best_n = n;
--					best_m = m;
--					best_k = k;
+-	u32 draminit0 = 0;
+-	u32 draminit1 = 0;
+-	u32 miscinit1 = 0;
+-	u32 lfbsize   = 0;
+-	int sgram_p   = 0;
++	u32 draminit0;
++	u32 draminit1;
++	u32 miscinit1;
 +
-+	for (k = 3; k >= 0; k--) {
-+		for (m = 63; m >= 0; m--) {
-+			/*
-+			 * Estimate value of n that produces target frequency
-+			 * with current m and k
-+			 */
-+			int n_estimated = (freq * (m + 2) * (1 << k) / fref) - 2;
-+
-+			/* Search neighborhood of estimated n */
-+			for (n = max(0, n_estimated - 1);
-+					n <= min(255, n_estimated + 1); n++) {
-+				/*
-+				 * Calculate PLL freqency with current m, k and
-+				 * estimated n
-+				 */
-+				int f = fref * (n + 2) / (m + 2) / (1 << k);
-+				int error = abs (f - freq);
-+
-+				/*
-+				 *  If this is the closest we've come to the
-+				 * target frequency then remember n, m and k
-+				 */
-+				if (error  < best_error) {
-+					best_error = error;
-+					best_n     = n;
-+					best_m     = m;
-+					best_k     = k;
- 				}
- 			}
- 		}
- 	}
-+
- 	n = best_n;
- 	m = best_m;
- 	k = best_k;
- 	*freq_out = fref*(n + 2)/(m + 2)/(1 << k);
-+
- 	return (n << 8) | (m << 2) | k;
- }
++	int num_chips;
++	int chip_size; /* in MB */
++	u32 lfbsize;
++	int has_sgram;
  
+ 	draminit0 = tdfx_inl(par, DRAMINIT0);  
+ 	draminit1 = tdfx_inl(par, DRAMINIT1);
++
++	num_chips = (draminit0 & DRAMINIT0_SGRAM_NUM) ? 8 : 4;
+  
+-	if ((dev_id == PCI_DEVICE_ID_3DFX_BANSHEE) ||
+-	    (dev_id == PCI_DEVICE_ID_3DFX_VOODOO3)) {             	 
+-		sgram_p = (draminit1 & DRAMINIT1_MEM_SDRAM) ? 0 : 1;
+-  
+-	lfbsize = sgram_p ?
+-		(((draminit0 & DRAMINIT0_SGRAM_NUM)  ? 2 : 1) * 
+-		((draminit0 & DRAMINIT0_SGRAM_TYPE) ? 8 : 4) * 1024 * 1024) :
+-		16 * 1024 * 1024;
++	if (dev_id < PCI_DEVICE_ID_3DFX_VOODOO5) {
++		/* Banshee/Voodoo3 */
++		has_sgram = draminit1 & DRAMINIT1_MEM_SDRAM;
++		chip_size = has_sgram ? ((draminit0 & DRAMINIT0_SGRAM_TYPE) ? 2 : 1)
++				      : 2;
+ 	} else {
+ 		/* Voodoo4/5 */
+-		u32 chips, psize, banks;
++		has_sgram = 0;
++		chip_size = 1 << ((draminit0 & DRAMINIT0_SGRAM_TYPE_MASK) >> DRAMINIT0_SGRAM_TYPE_SHIFT);
++	}
++	lfbsize = num_chips * chip_size * 1024 * 1024;
+ 
+-		chips = ((draminit0 & (1 << 26)) == 0) ? 4 : 8;
+-		psize = 1 << ((draminit0 & 0x38000000) >> 28);
+-		banks = ((draminit0 & (1 << 30)) == 0) ? 2 : 4;
+-		lfbsize = chips * psize * banks;
+-		lfbsize <<= 20;
+-	}                 
+-	/* disable block writes for SDRAM (why?) */
++	/* disable block writes for SDRAM */
+ 	miscinit1 = tdfx_inl(par, MISCINIT1);
+-	miscinit1 |= sgram_p ? 0 : MISCINIT1_2DBLOCK_DIS;
++	miscinit1 |= has_sgram ? 0 : MISCINIT1_2DBLOCK_DIS;
+ 	miscinit1 |= MISCINIT1_CLUT_INV;
+ 
+ 	banshee_make_room(par, 1); 
+diff -puN include/video/tdfx.h~clean-up-and-bug-fix-for-tdfxfb-framebuffer-size-detection include/video/tdfx.h
+--- 25/include/video/tdfx.h~clean-up-and-bug-fix-for-tdfxfb-framebuffer-size-detection	Fri Apr 29 16:19:43 2005
++++ 25-akpm/include/video/tdfx.h	Fri Apr 29 16:19:43 2005
+@@ -99,6 +99,8 @@
+ #define MISCINIT1_2DBLOCK_DIS           BIT(15)
+ #define DRAMINIT0_SGRAM_NUM             BIT(26)
+ #define DRAMINIT0_SGRAM_TYPE            BIT(27)
++#define DRAMINIT0_SGRAM_TYPE_MASK       (BIT(27)|BIT(28)|BIT(29))
++#define DRAMINIT0_SGRAM_TYPE_SHIFT      27
+ #define DRAMINIT1_MEM_SDRAM             BIT(30)
+ #define VGAINIT0_VGA_DISABLE            BIT(0)
+ #define VGAINIT0_EXT_TIMING             BIT(1)
 _
 
 

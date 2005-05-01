@@ -1,18 +1,18 @@
 From: akpm@osdl.org
-Subject: patch clean-up-and-bug-fix-for-tdfxfb-framebuffer-size-detection.patch added to -mm tree
-Date: Fri, 29 Apr 2005 16:20:27 -0700
-Message-ID: <200504292319.j3TNJupI011596@shell0.pdx.osdl.net>
+Subject: [patch 158/174] Clean-up and bug fix for tdfxfb framebuffer size detection
+Date: Sun, 01 May 2005 01:50:26 -0700
+Message-ID: <200505010850.j418ooWS007113@shell0.pdx.osdl.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DRem9-0000wk-0G
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Apr 2005 16:20:01 -0700
+	id 1DSAAB-0002Et-9Y
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 01 May 2005 01:50:55 -0700
 Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.41)
-	id 1DRem6-0007t6-Db
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Apr 2005 16:20:00 -0700
+	id 1DSAA8-0003Gn-N4
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 01 May 2005 01:50:55 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,22 +26,8 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: evilrich@rcdrummond.net, linux-fbdev-devel@lists.sourceforge.net
-
-
-This is a note to let you know that I've just added the patch titled
-
-     Clean-up and bug fix for tdfxfb framebuffer size detection
-
-to the -mm tree.  Its filename is
-
-     clean-up-and-bug-fix-for-tdfxfb-framebuffer-size-detection.patch
-
-Patches currently in -mm which might be from evilrich@rcdrummond.net are
-
-better-pll-frequency-matching-for-tdfxfb-driver.patch
-clean-up-and-bug-fix-for-tdfxfb-framebuffer-size-detection.patch
-
+To: torvalds@osdl.org
+Cc: akpm@osdl.org, evilrich@rcdrummond.net, linux-fbdev-devel@lists.sourceforge.net
 
 
 From: Richard Drummond <evilrich@rcdrummond.net>
@@ -61,8 +47,8 @@ Signed-off-by: Andrew Morton <akpm@osdl.org>
  2 files changed, 23 insertions(+), 22 deletions(-)
 
 diff -puN drivers/video/tdfxfb.c~clean-up-and-bug-fix-for-tdfxfb-framebuffer-size-detection drivers/video/tdfxfb.c
---- 25/drivers/video/tdfxfb.c~clean-up-and-bug-fix-for-tdfxfb-framebuffer-size-detection	Fri Apr 29 16:19:43 2005
-+++ 25-akpm/drivers/video/tdfxfb.c	Fri Apr 29 16:19:43 2005
+--- 25/drivers/video/tdfxfb.c~clean-up-and-bug-fix-for-tdfxfb-framebuffer-size-detection	2005-05-01 01:17:54.004646544 -0700
++++ 25-akpm/drivers/video/tdfxfb.c	2005-05-01 01:17:54.011645480 -0700
 @@ -430,36 +430,35 @@ static void do_write_regs(struct fb_info
  
  static unsigned long do_lfb_size(struct tdfx_par *par, unsigned short dev_id) 
@@ -122,8 +108,8 @@ diff -puN drivers/video/tdfxfb.c~clean-up-and-bug-fix-for-tdfxfb-framebuffer-siz
  
  	banshee_make_room(par, 1); 
 diff -puN include/video/tdfx.h~clean-up-and-bug-fix-for-tdfxfb-framebuffer-size-detection include/video/tdfx.h
---- 25/include/video/tdfx.h~clean-up-and-bug-fix-for-tdfxfb-framebuffer-size-detection	Fri Apr 29 16:19:43 2005
-+++ 25-akpm/include/video/tdfx.h	Fri Apr 29 16:19:43 2005
+--- 25/include/video/tdfx.h~clean-up-and-bug-fix-for-tdfxfb-framebuffer-size-detection	2005-05-01 01:17:54.006646240 -0700
++++ 25-akpm/include/video/tdfx.h	2005-05-01 01:17:54.012645328 -0700
 @@ -99,6 +99,8 @@
  #define MISCINIT1_2DBLOCK_DIS           BIT(15)
  #define DRAMINIT0_SGRAM_NUM             BIT(26)

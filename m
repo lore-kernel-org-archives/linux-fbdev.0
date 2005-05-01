@@ -1,18 +1,19 @@
-From: akpm@osdl.org
-Subject: [patch 157/174] Better PLL frequency matching for tdfxfb driver
-Date: Sun, 01 May 2005 01:50:25 -0700
-Message-ID: <200505010850.j418on6v007109@shell0.pdx.osdl.net>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: [2.6 patch] drivers/video/fbmem.c: make a function static
+Date: Sun, 1 May 2005 17:43:05 +0200
+Message-ID: <20050501154305.GR3592@stusta.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
+Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DSAA9-0002Es-VR
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 01 May 2005 01:50:53 -0700
-Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.41)
-	id 1DSAA8-0003Gj-D5
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 01 May 2005 01:50:53 -0700
+	id 1DSGbC-0000Gu-Gk
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 01 May 2005 08:43:14 -0700
+Received: from emailhub.stusta.mhn.de ([141.84.69.5] helo=mailout.stusta.mhn.de)
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.41)
+	id 1DSGbA-0000lO-JQ
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 01 May 2005 08:43:14 -0700
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -23,94 +24,32 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: torvalds@osdl.org
-Cc: akpm@osdl.org, evilrich@rcdrummond.net, linux-fbdev-devel@lists.sourceforge.net
+To: Andrew Morton <akpm@osdl.org>
+Cc: adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
+This patch makes a needlessly global function static.
 
-From: Richard Drummond <evilrich@rcdrummond.net>
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-Improve the PLL frequency matching in the tdfxfb driver.  Instead of
-requiring 64260 iterations to obtain the closest supported PLL frequency,
-this code does it with the same degree of accuracy in at most 768
-iterations.
-
-Signed-off-by: Richard Drummond <evilrich@rcdrummond.net>
-Cc: <linux-fbdev-devel@lists.sourceforge.net>
-Signed-off-by: Andrew Morton <akpm@osdl.org>
 ---
 
- drivers/video/tdfxfb.c |   43 +++++++++++++++++++++++++++++++------------
- 1 files changed, 31 insertions(+), 12 deletions(-)
+This patch was already sent on:
+- 18 Apr 2005
 
-diff -puN drivers/video/tdfxfb.c~better-pll-frequency-matching-for-tdfxfb-driver drivers/video/tdfxfb.c
---- 25/drivers/video/tdfxfb.c~better-pll-frequency-matching-for-tdfxfb-driver	2005-05-01 01:17:53.930657792 -0700
-+++ 25-akpm/drivers/video/tdfxfb.c	2005-05-01 01:28:15.429175656 -0700
-@@ -317,30 +317,49 @@ static inline void do_setpalentry(struct
- 
- static u32 do_calc_pll(int freq, int* freq_out) 
+--- linux-2.6.12-rc2-mm3-full/drivers/video/fbmem.c.old	2005-04-18 00:39:21.000000000 +0200
++++ linux-2.6.12-rc2-mm3-full/drivers/video/fbmem.c	2005-04-18 00:39:34.000000000 +0200
+@@ -1312,7 +1312,7 @@
+  *	Returns zero.
+  *
+  */
+-int __init video_setup(char *options)
++static int __init video_setup(char *options)
  {
--	int m, n, k, best_m, best_n, best_k, f_cur, best_error;
-+	int m, n, k, best_m, best_n, best_k, best_error;
- 	int fref = 14318;
-   
--	/* this really could be done with more intelligence --
--	   255*63*4 = 64260 iterations is silly */
- 	best_error = freq;
- 	best_n = best_m = best_k = 0;
--	for (n = 1; n < 256; n++) {
--		for (m = 1; m < 64; m++) {
--			for (k = 0; k < 4; k++) {
--				f_cur = fref*(n + 2)/(m + 2)/(1 << k);
--				if (abs(f_cur - freq) < best_error) {
--					best_error = abs(f_cur-freq);
--					best_n = n;
--					best_m = m;
--					best_k = k;
-+
-+	for (k = 3; k >= 0; k--) {
-+		for (m = 63; m >= 0; m--) {
-+			/*
-+			 * Estimate value of n that produces target frequency
-+			 * with current m and k
-+			 */
-+			int n_estimated = (freq * (m + 2) * (1 << k) / fref) - 2;
-+
-+			/* Search neighborhood of estimated n */
-+			for (n = max(0, n_estimated - 1);
-+					n <= min(255, n_estimated + 1); n++) {
-+				/*
-+				 * Calculate PLL freqency with current m, k and
-+				 * estimated n
-+				 */
-+				int f = fref * (n + 2) / (m + 2) / (1 << k);
-+				int error = abs (f - freq);
-+
-+				/*
-+				 *  If this is the closest we've come to the
-+				 * target frequency then remember n, m and k
-+				 */
-+				if (error  < best_error) {
-+					best_error = error;
-+					best_n     = n;
-+					best_m     = m;
-+					best_k     = k;
- 				}
- 			}
- 		}
- 	}
-+
- 	n = best_n;
- 	m = best_m;
- 	k = best_k;
- 	*freq_out = fref*(n + 2)/(m + 2)/(1 << k);
-+
- 	return (n << 8) | (m << 2) | k;
- }
+ 	int i, global = 0;
  
-_
+
 
 
 -------------------------------------------------------

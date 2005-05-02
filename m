@@ -1,23 +1,22 @@
-From: James Simmons <jsimmons@www.infradead.org>
-Subject: Using GIT?
-Date: Mon, 2 May 2005 18:47:07 +0100 (BST)
-Message-ID: <Pine.LNX.4.56.0505021846230.24395@pentafluge.infradead.org>
+From: "Randy.Dunlap" <rddunlap@osdl.org>
+Subject: Re: Using GIT?
+Date: Mon, 2 May 2005 11:04:00 -0700
+Message-ID: <20050502110400.3d4846ec.rddunlap@osdl.org>
+References: <Pine.LNX.4.56.0505021846230.24395@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DSf0j-0004lj-7N
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 02 May 2005 10:47:13 -0700
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	id 1DSfHA-0006gp-GF
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 02 May 2005 11:04:12 -0700
+Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.41)
-	id 1DSf0h-000349-Jk
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 02 May 2005 10:47:13 -0700
-Received: from jsimmons (helo=localhost)
-	by pentafluge.infradead.org with local-esmtp (Exim 4.43 #1 (Red Hat Linux))
-	id 1DSf0e-0006P1-1a
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 02 May 2005 18:47:08 +0100
+	id 1DSfH4-00028B-VW
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 02 May 2005 11:04:12 -0700
+In-Reply-To: <Pine.LNX.4.56.0505021846230.24395@pentafluge.infradead.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,14 +27,28 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: jsimmons@pentafluge.infradead.org
 
+On Mon, 2 May 2005 18:47:07 +0100 (BST) James Simmons wrote:
 
-Is there instructions somewhere on how to use GIT with the kernel 
-repostory?
+| 
+| Is there instructions somewhere on how to use GIT with the kernel 
+| repostory?
 
+There are several versions of such around, but all are
+rather newish since git is that also.
+Have you checked the git mailing list archives?
+
+You can use gmane.org or
+marc.theaimsgroup.com/?l=git
+
+or Git Traffic #1 was just announced:
+http://kerneltraffic.org/git/gt20050502_1.html
+
+---
+~Randy
 
 
 -------------------------------------------------------

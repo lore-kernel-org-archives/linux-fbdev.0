@@ -1,21 +1,19 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Fw: [Bugme-new] [Bug 4570] New: vesafb, Console goes black after
- some time of inactivity, but does not put monitor in standby
-Date: Sun, 1 May 2005 14:21:20 -0700
-Message-ID: <20050501142120.0978d2f9.akpm@osdl.org>
+From: Adrian Bunk <bunk@stusta.de>
+Subject: [2.6 patch] drivers/video/matrox/matroxfb_misc.c: remove dead code
+Date: Mon, 2 May 2005 03:47:04 +0200
+Message-ID: <20050502014704.GX3592@stusta.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DSLst-00058u-ED
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 01 May 2005 14:21:51 -0700
-Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.41)
-	id 1DSLsr-0003l5-SC
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 01 May 2005 14:21:51 -0700
+	id 1DSQ2P-0000H6-F9
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 01 May 2005 18:47:57 -0700
+Received: from mailout.stusta.mhn.de ([141.84.69.5])
+	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.41)
+	id 1DSQ2O-0005dl-Mk
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 01 May 2005 18:47:57 -0700
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,47 +25,41 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: bonbons67@internet.lu
+Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@osdl.org>
+Cc: vandrove@vc.cvut.cz, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
+This patch removes some obviously dead code found by the Coverity 
+checker.
 
+This patch was already ACK'ed by Petr Vandrovec.
 
-Begin forwarded message:
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-Date: Sun, 1 May 2005 13:16:17 -0700
-From: bugme-daemon@osdl.org
-To: bugme-new@lists.osdl.org
-Subject: [Bugme-new] [Bug 4570] New: vesafb, Console goes black after some time of inactivity, but does not put monitor in standby
+---
 
+This patch was already sent on:
+- 10 Apr 2005
 
-http://bugme.osdl.org/show_bug.cgi?id=4570
-
-           Summary: vesafb, Console goes black after some time of
-                    inactivity, but does not put monitor in standby
-    Kernel Version: 2.6.*
-            Status: NEW
-          Severity: normal
-             Owner: jsimmons@infradead.org
-         Submitter: bonbons67@internet.lu
-
-
-Distribution: Gentoo 
-Hardware Environment: 
-    Does not matter, all my computers have same problem 
-Software Environment: 
-Problem Description: 
-After some time of inactivity the console goes black, but does not put monitor   
-into standby mode (this works in X with driver for the card, have not tried  
-with vesa driver in X) 
-What I would expect is that the monitor is put in stand-by when the console  
-goes blank. (Tweaking with fbset does not help) 
+--- linux-2.6.12-rc2-mm2-full/drivers/video/matrox/matroxfb_misc.c.old	2005-04-09 21:40:17.000000000 +0200
++++ linux-2.6.12-rc2-mm2-full/drivers/video/matrox/matroxfb_misc.c	2005-04-09 21:40:47.000000000 +0200
+@@ -195,14 +195,11 @@ int matroxfb_vgaHWinit(WPMINFO struct my
+ 	fwidth = 8;
  
-Steps to reproduce: 
-Work on linux console (not under X ;-)), then keep away from keyboard/mouse 
-for some time.
+ 	DBG(__FUNCTION__)
+ 
+ 	hw->SEQ[0] = 0x00;
+-	if (fwidth == 9)
+-		hw->SEQ[1] = 0x00;
+-	else
+-		hw->SEQ[1] = 0x01;	/* or 0x09 */
++	hw->SEQ[1] = 0x01;	/* or 0x09 */
+ 	hw->SEQ[2] = 0x0F;	/* bitplanes */
+ 	hw->SEQ[3] = 0x00;
+ 	hw->SEQ[4] = 0x0E;
+ 	/* CRTC 0..7, 9, 16..19, 21, 22 are reprogrammed by Matrox Millennium code... Hope that by MGA1064 too */
+ 	if (m->dblscan) {
 
-------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
 
 
 -------------------------------------------------------

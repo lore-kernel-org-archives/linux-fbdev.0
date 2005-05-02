@@ -1,22 +1,22 @@
-From: "Randy.Dunlap" <rddunlap@osdl.org>
-Subject: Re: Using GIT?
-Date: Mon, 2 May 2005 11:04:00 -0700
-Message-ID: <20050502110400.3d4846ec.rddunlap@osdl.org>
-References: <Pine.LNX.4.56.0505021846230.24395@pentafluge.infradead.org>
+From: James Simmons <jsimmons@www.infradead.org>
+Subject: Re: [PATCH] Resource management for fbdev.
+Date: Mon, 2 May 2005 20:28:40 +0100 (BST)
+Message-ID: <Pine.LNX.4.56.0505022013360.25864@pentafluge.infradead.org>
+References: <Pine.LNX.4.56.0503260019020.20306@pentafluge.infradead.org>
+ <1112925171.9517.358.camel@gaston>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DSfHA-0006gp-GF
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 02 May 2005 11:04:12 -0700
-Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1DSgay-0004L9-RP
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 02 May 2005 12:28:44 -0700
+Received: from pentafluge.infradead.org ([213.146.154.40])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1DSfH4-00028B-VW
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 02 May 2005 11:04:12 -0700
-In-Reply-To: <Pine.LNX.4.56.0505021846230.24395@pentafluge.infradead.org>
+	id 1DSgax-0004pN-7M
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 02 May 2005 12:28:44 -0700
+In-Reply-To: <1112925171.9517.358.camel@gaston>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,28 +27,39 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: jsimmons@pentafluge.infradead.org
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: "Antonino A. Daplas" <adaplas@hotpop.com>, Andrew Morton <akpm@osdl.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-On Mon, 2 May 2005 18:47:07 +0100 (BST) James Simmons wrote:
 
-| 
-| Is there instructions somewhere on how to use GIT with the kernel 
-| repostory?
+> I had a quick look, and I'm fairly confused. That patch introduces a lot
+> of changes all over the place without any comment or explanation, in
+> code that has proven in the past to be fragile and prone to side
+> effects. Also, I see no explanation of the rationale for the resource
+> manager and it's API. At a minimum, the patch should be split into
+> 
+>  - implementation of the resource manager with appropriate explanations
+> and documentation
+>  - driver updates
 
-There are several versions of such around, but all are
-rather newish since git is that also.
-Have you checked the git mailing list archives?
+I have no problem splitting the patch up into several parts. It was 
+addressing several problems. Plus I was doing some cleanups. Currently 
+we have sprite and pixmap for drawing images and the cursor. We also need
+one for merging the font images for framebuffer console. I really didn't 
+want to add another fb_pixmap to struct fb_info. I will send some stuff 
+later. 
 
-You can use gmane.org or
-marc.theaimsgroup.com/?l=git
+ 
+> Have you worked at all with the DRM folks ? We have a bad need to merge
+> DRM and fbdev as soon as possible and we need while doing so to impement
+> some kind of efficient memory manager for the card video RAM. I'm not
+> sure your proposal fits into this picture.
 
-or Git Traffic #1 was just announced:
-http://kerneltraffic.org/git/gt20050502_1.html
+No. I haven't heard anything on this mailing list. Also I'm preparing for 
+a plug fest for work. So I will be gone for May 16-18. We have been 
+working like mad getting ready for it.
 
----
-~Randy
 
 
 -------------------------------------------------------

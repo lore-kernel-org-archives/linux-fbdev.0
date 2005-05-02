@@ -1,19 +1,22 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: [2.6 patch] drivers/video/matrox/matroxfb_misc.c: remove dead code
-Date: Mon, 2 May 2005 03:47:04 +0200
-Message-ID: <20050502014704.GX3592@stusta.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Fw: [Bugme-new] [Bug 4570] New: vesafb,
+ Console goes black after some time of inactivity, but does not put monitor
+ in standby
+Date: Mon, 2 May 2005 11:24:44 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0505021123180.28949@numbat.sonytel.be>
+References: <20050501142120.0978d2f9.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DSQ2P-0000H6-F9
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 01 May 2005 18:47:57 -0700
-Received: from mailout.stusta.mhn.de ([141.84.69.5])
-	by sc8-sf-mx2.sourceforge.net with smtp (Exim 4.41)
-	id 1DSQ2O-0005dl-Mk
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 01 May 2005 18:47:57 -0700
-Content-Disposition: inline
+	id 1DSXAi-0000ZP-4S
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 02 May 2005 02:25:00 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DSXAf-0003tM-FI
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 02 May 2005 02:24:59 -0700
+In-Reply-To: <20050501142120.0978d2f9.akpm@osdl.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -24,42 +27,60 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@osdl.org>
-Cc: vandrove@vc.cvut.cz, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: Andrew Morton <akpm@osdl.org>, bonbons67@internet.lu
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-This patch removes some obviously dead code found by the Coverity 
-checker.
+On Sun, 1 May 2005, Andrew Morton wrote:
+> Begin forwarded message:
+> 
+> Date: Sun, 1 May 2005 13:16:17 -0700
+> From: bugme-daemon@osdl.org
+> To: bugme-new@lists.osdl.org
+> Subject: [Bugme-new] [Bug 4570] New: vesafb, Console goes black after some time of inactivity, but does not put monitor in standby
+> 
+> 
+> http://bugme.osdl.org/show_bug.cgi?id=4570
+> 
+>            Summary: vesafb, Console goes black after some time of
+>                     inactivity, but does not put monitor in standby
+>     Kernel Version: 2.6.*
+>             Status: NEW
+>           Severity: normal
+>              Owner: jsimmons@infradead.org
+>          Submitter: bonbons67@internet.lu
+> 
+> 
+> Distribution: Gentoo 
+> Hardware Environment: 
+>     Does not matter, all my computers have same problem 
+> Software Environment: 
+> Problem Description: 
+> After some time of inactivity the console goes black, but does not put monitor   
+> into standby mode (this works in X with driver for the card, have not tried  
+> with vesa driver in X) 
+> What I would expect is that the monitor is put in stand-by when the console  
+> goes blank. (Tweaking with fbset does not help) 
+>  
+> Steps to reproduce: 
+> Work on linux console (not under X ;-)), then keep away from keyboard/mouse 
+> for some time.
 
-This patch was already ACK'ed by Petr Vandrovec.
+man setterm(1).
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Does it work if you don't use vesafb, but the plain VGA text console?
 
----
+Gr{oetje,eeting}s,
 
-This patch was already sent on:
-- 10 Apr 2005
+						Geert
 
---- linux-2.6.12-rc2-mm2-full/drivers/video/matrox/matroxfb_misc.c.old	2005-04-09 21:40:17.000000000 +0200
-+++ linux-2.6.12-rc2-mm2-full/drivers/video/matrox/matroxfb_misc.c	2005-04-09 21:40:47.000000000 +0200
-@@ -195,14 +195,11 @@ int matroxfb_vgaHWinit(WPMINFO struct my
- 	fwidth = 8;
- 
- 	DBG(__FUNCTION__)
- 
- 	hw->SEQ[0] = 0x00;
--	if (fwidth == 9)
--		hw->SEQ[1] = 0x00;
--	else
--		hw->SEQ[1] = 0x01;	/* or 0x09 */
-+	hw->SEQ[1] = 0x01;	/* or 0x09 */
- 	hw->SEQ[2] = 0x0F;	/* bitplanes */
- 	hw->SEQ[3] = 0x00;
- 	hw->SEQ[4] = 0x0E;
- 	/* CRTC 0..7, 9, 16..19, 21, 22 are reprogrammed by Matrox Millennium code... Hope that by MGA1064 too */
- 	if (m->dblscan) {
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

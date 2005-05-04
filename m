@@ -1,91 +1,53 @@
-From: maximilian attems <debian@sternwelten.at>
-Subject: Bug#307459: kernel-image-2.6.11-1-686: tridentfb fails to set correct resolution at boot
-Date: Tue, 3 May 2005 12:28:42 +0200
-Message-ID: <20050503102842.GB19770@sputnik.stro.at>
-References: <20050503094246.7370854DD9@localhost.localdomain>
-Reply-To: maximilian attems <debian@sternwelten.at>,
-	307459@bugs.debian.org
+From: James Simmons <jsimmons@www.infradead.org>
+Subject: Re: Mapping the framebuffer into kernel space
+Date: Wed, 4 May 2005 19:08:45 +0100 (BST)
+Message-ID: <Pine.LNX.4.56.0505041902470.27026@pentafluge.infradead.org>
+References: <9e473391050428205517f3c8c0@mail.gmail.com> 
+ <Pine.LNX.4.56.0505021843060.24395@pentafluge.infradead.org>
+ <9e473391050504104529f1f080@mail.gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <bounce-debian-kernel=glddk-debian-kernel=m.gmane.org@lists.debian.org>
-Resent-To: debian-bugs-dist@lists.debian.org
-Resent-Message-ID: <handler.307459.B307459.1115116168708@bugs.debian.org>
-Content-Disposition: inline
-In-Reply-To: <20050503094246.7370854DD9@localhost.localdomain>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1DTOIl-0005Jc-Oi
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 04 May 2005 11:08:51 -0700
+Received: from pentafluge.infradead.org ([213.146.154.40])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1DTOIk-0003UN-AE
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 04 May 2005 11:08:51 -0700
+In-Reply-To: <9e473391050504104529f1f080@mail.gmail.com>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:debian-kernel@lists.debian.org>
-List-Help: <mailto:debian-kernel-request@lists.debian.org?subject=help>
-List-Subscribe: <mailto:debian-kernel-request@lists.debian.org?subject=subscribe>
-List-Unsubscribe: <mailto:debian-kernel-request@lists.debian.org?subject=unsubscribe>
-List-Archive: <http://lists.debian.org/debian-kernel/>
-Content-Type: text/plain; charset="us-ascii"
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: "Marco Presi (Zufus)" <zufus@debian.org>, 307459@bugs.debian.org
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@pentafluge.infradead.org>, "Antonino A. Daplas" <adaplas@hotpop.com>
 
-could you take a look please at belows bug report,
-regarding tridentfb.
 
-from a quick look at the bk-commit-list i didn't
-see a patch that could have fixed that inbetween since 2.6.11,
-bu of course i may be wrong.  thanks for your feedback.
+> I don't see a good solution here for implementing fb_read/write for
+> the framebuffer. I would still vote for removing all kernel
+> framebuffer mapping from the fbdev driver. Then fbconsole would kernel
+> map just the piece it needs to implement the console.
 
-On Tue, 03 May 2005, Marco Presi (Zufus) wrote:
+I like to see the mappings go away as well. The solution is for fb_read 
+and fb_write to use fb_imageblit. We don't need to touch the framebuffer 
+memory in that case. The logic is a little tricky. You could have 1 to 3 
+images blitted to the display.
 
-> Package: kernel-image-2.6.11-1-686
-> Version: 2.6.11-3
-> Severity: normal
-> 
-> Hi, 
-> 
->     according to documentation shipped with kernel sources
->     (kernel-sources-.../Documentation/fb/tridentfb.txt), it should be
->     possible to set virtual consoles resolution using tridentfb driver.
-> 
->     I used this (and many other) parameters:
-> 
->     video=tridentfb:1024x768,bpp=16
-> 
->     The tridentfb is loaded, during the boot, but the resolution is
->     always set to 640x480 and the screen is broken.
-> 
->     Launching 
-> 
->     "fbset 1024x768-60"
-> 
->     after login, solves the problem. However, the switch "-a" of fbset
->     seems not to work.
-> 
->     I tried this on a laptop with a Trident CyberBlade XPA1i.
-> 
->     dmesg related output is:
-> 
->     tridentfb: framebuffer size = 16384 Kb
->     tridentfb: 0000:01:00.0 board found
->     tridentfb: 1024x768 flat panel found
->     tridentfb: fb0: Trident frame buffer device 640x480-8bpp
->     Console: switching to colour frame buffer device 80x30
-> 
-> 
->     Ciao Ciao
-> 
->     Marco
-> 
-> 
-> -- System Information:
-> Debian Release: 3.1
->   APT prefers testing
->   APT policy: (990, 'testing'), (500, 'unstable')
-> Architecture: i386 (i686)
-> Kernel: Linux 2.6.11-1-686
-> Locale: LANG=it_IT@euro, LC_CTYPE=it_IT@euro (charmap=ISO-8859-15) (ignored: LC_ALL set to it_IT@euro)
-> 
-> Versions of packages kernel-image-2.6.11-1-686 depends on:
-> ii  coreutils [fileutils]         5.2.1-2    The GNU core utilities
-> ii  initrd-tools                  0.1.78     tools to create initrd image for p
-> ii  module-init-tools             3.2-pre1-2 tools for managing Linux kernel mo
-> 
-> -- no debconf information
-> 
-> 
---
-maks
+
+
+-------------------------------------------------------
+This SF.Net email is sponsored by: NEC IT Guy Games.
+Get your fingers limbered up and give it your best shot. 4 great events, 4
+opportunities to win big! Highest score wins.NEC IT Guy Games. Play to
+win an NEC 61 plasma display. Visit http://www.necitguy.com/?r=20

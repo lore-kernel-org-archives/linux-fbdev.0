@@ -1,23 +1,25 @@
 From: James Simmons <jsimmons@www.infradead.org>
 Subject: Re: Mapping the framebuffer into kernel space
-Date: Wed, 4 May 2005 19:08:45 +0100 (BST)
-Message-ID: <Pine.LNX.4.56.0505041902470.27026@pentafluge.infradead.org>
+Date: Thu, 5 May 2005 17:43:43 +0100 (BST)
+Message-ID: <Pine.LNX.4.56.0505051737280.15586@pentafluge.infradead.org>
 References: <9e473391050428205517f3c8c0@mail.gmail.com> 
- <Pine.LNX.4.56.0505021843060.24395@pentafluge.infradead.org>
- <9e473391050504104529f1f080@mail.gmail.com>
+ <Pine.LNX.4.56.0505021843060.24395@pentafluge.infradead.org> 
+ <9e473391050504104529f1f080@mail.gmail.com> 
+ <Pine.LNX.4.56.0505041902470.27026@pentafluge.infradead.org>
+ <9e47339105050416415f4dfb1f@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DTOIl-0005Jc-Oi
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 04 May 2005 11:08:51 -0700
+	id 1DTjS3-0007tF-Iv
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 05 May 2005 09:43:51 -0700
 Received: from pentafluge.infradead.org ([213.146.154.40])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1DTOIk-0003UN-AE
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 04 May 2005 11:08:51 -0700
-In-Reply-To: <9e473391050504104529f1f080@mail.gmail.com>
+	id 1DTjS2-0004qe-4o
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 05 May 2005 09:43:51 -0700
+In-Reply-To: <9e47339105050416415f4dfb1f@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,15 +36,22 @@ To: Jon Smirl <jonsmirl@gmail.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@pentafluge.infradead.org>, "Antonino A. Daplas" <adaplas@hotpop.com>
 
 
-> I don't see a good solution here for implementing fb_read/write for
-> the framebuffer. I would still vote for removing all kernel
-> framebuffer mapping from the fbdev driver. Then fbconsole would kernel
-> map just the piece it needs to implement the console.
+> What if we just got rid of fb_read/write and converted fbconsole to
+> use fb_imageblt?
 
-I like to see the mappings go away as well. The solution is for fb_read 
-and fb_write to use fb_imageblit. We don't need to touch the framebuffer 
-memory in that case. The logic is a little tricky. You could have 1 to 3 
-images blitted to the display.
+   fbconsole does use only fb_imageblit. The only place where screen_base 
+is used is fb_write and fb_read in fbmem.c. If that could be converted to use 
+the accelerated image blitting functions then we could replace it. To do 
+that requires one thing and that is to add image blitting from screen 
+memory to system memory. Currently no driver including the software 
+blitting supports that. Plus we have no standard api to handle that. 
+   So first we have to come up with a standard way to handling image 
+blitting from card memory to system memory without breaking badly the 
+current api. Second we have to add bi directional blitting to every 
+driver. Then once we are done we can convert the fb_read and fb_write 
+functions to using the fb_imageblit functon. Have have plans to do this 
+but have not yet done it.
+
 
 
 

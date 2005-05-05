@@ -1,22 +1,27 @@
 From: James Simmons <jsimmons@www.infradead.org>
-Subject: Re: Using GIT?
-Date: Thu, 5 May 2005 17:56:17 +0100 (BST)
-Message-ID: <Pine.LNX.4.56.0505051755490.15586@pentafluge.infradead.org>
-References: <Pine.LNX.4.56.0505021846230.24395@pentafluge.infradead.org>
- <20050502110400.3d4846ec.rddunlap@osdl.org>
+Subject: Re: Mapping the framebuffer into kernel space
+Date: Thu, 5 May 2005 19:59:47 +0100 (BST)
+Message-ID: <Pine.LNX.4.56.0505051959350.15586@pentafluge.infradead.org>
+References: <9e473391050428205517f3c8c0@mail.gmail.com> 
+ <Pine.LNX.4.56.0505021843060.24395@pentafluge.infradead.org> 
+ <9e473391050504104529f1f080@mail.gmail.com> 
+ <Pine.LNX.4.56.0505041902470.27026@pentafluge.infradead.org> 
+ <9e47339105050416415f4dfb1f@mail.gmail.com> 
+ <Pine.LNX.4.56.0505051737280.15586@pentafluge.infradead.org>
+ <9e47339105050511522f6eff30@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DTjeB-0000R9-CH
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 05 May 2005 09:56:23 -0700
+	id 1DTlZi-0005cO-7J
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 05 May 2005 11:59:54 -0700
 Received: from pentafluge.infradead.org ([213.146.154.40])
 	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1DTje9-00012S-HH
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 05 May 2005 09:56:23 -0700
-In-Reply-To: <20050502110400.3d4846ec.rddunlap@osdl.org>
+	id 1DTlZg-00075x-6i
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 05 May 2005 11:59:53 -0700
+In-Reply-To: <9e47339105050511522f6eff30@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,35 +34,18 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Randy.Dunlap" <rddunlap@osdl.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, jsimmons@pentafluge.infradead.org
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, James Simmons <jsimmons@pentafluge.infradead.org>, "Antonino A. Daplas" <adaplas@hotpop.com>
 
 
-Thank you. I got a git tree going and now I can start working off it. 
-Its pretty easy and really fast to use :-)
+> >    fbconsole does use only fb_imageblit. The only place where screen_base
+> > is used is fb_write and fb_read in fbmem.c. If that could be converted to use
+> > the accelerated image blitting functions then we could replace it. To do
+> 
+> So if fbconsole doesn't use fb_read/write then who does?
 
+/dev/fb
 
-On Mon, 2 May 2005, Randy.Dunlap wrote:
-
-> On Mon, 2 May 2005 18:47:07 +0100 (BST) James Simmons wrote:
-> 
-> | 
-> | Is there instructions somewhere on how to use GIT with the kernel 
-> | repostory?
-> 
-> There are several versions of such around, but all are
-> rather newish since git is that also.
-> Have you checked the git mailing list archives?
-> 
-> You can use gmane.org or
-> marc.theaimsgroup.com/?l=git
-> 
-> or Git Traffic #1 was just announced:
-> http://kerneltraffic.org/git/gt20050502_1.html
-> 
-> ---
-> ~Randy
-> 
 
 
 -------------------------------------------------------

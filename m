@@ -1,24 +1,29 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: James Simmons <jsimmons@www.infradead.org>
 Subject: Re: Mapping the framebuffer into kernel space
-Date: Fri, 6 May 2005 11:30:23 +0200 (CEST)
-Message-ID: <Pine.LNX.4.62.0505061129480.5272@numbat.sonytel.be>
+Date: Fri, 6 May 2005 20:08:50 +0100 (BST)
+Message-ID: <Pine.LNX.4.56.0505062008090.6914@pentafluge.infradead.org>
 References: <9e473391050428205517f3c8c0@mail.gmail.com> 
- <Pine.LNX.4.56.0505021843060.24395@pentafluge.infradead.org> 
- <9e473391050504104529f1f080@mail.gmail.com> 
- <Pine.LNX.4.56.0505041902470.27026@pentafluge.infradead.org>
- <9e47339105050416415f4dfb1f@mail.gmail.com> <Pine.LNX.4.56.0505051737280.15586@pentafluge.infradead.org>
+ <9e47339105050416415f4dfb1f@mail.gmail.com> 
+ <Pine.LNX.4.56.0505051737280.15586@pentafluge.infradead.org> 
+ <9e47339105050511522f6eff30@mail.gmail.com> 
+ <Pine.LNX.4.56.0505051959350.15586@pentafluge.infradead.org> 
+ <9e473391050505122635f1cf@mail.gmail.com>  <Pine.LNX.4.56.0505052141360.15586@pentafluge.infradead.org>
+  <9e4733910505051402789440db@mail.gmail.com> 
+ <Pine.LNX.4.56.0505060046490.15586@pentafluge.infradead.org> 
+ <9e473391050505170161b0a38d@mail.gmail.com> <9e47339105050517083fadaee0@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DTzAM-0002gr-Ky
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 06 May 2005 02:30:38 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DTzAJ-0005Sn-L7
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 06 May 2005 02:30:38 -0700
-In-Reply-To: <Pine.LNX.4.56.0505051737280.15586@pentafluge.infradead.org>
+	id 1DU8C0-0004wB-SS
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 06 May 2005 12:08:56 -0700
+Received: from pentafluge.infradead.org ([213.146.154.40])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1DU8By-0005Um-UO
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 06 May 2005 12:08:56 -0700
+In-Reply-To: <9e47339105050517083fadaee0@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,39 +36,19 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Jon Smirl <jonsmirl@gmail.com>, James Simmons <jsimmons@pentafluge.infradead.org>, "Antonino A. Daplas" <adaplas@hotpop.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: James Simmons <jsimmons@pentafluge.infradead.org>, linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@hotpop.com>
 
-On Thu, 5 May 2005, James Simmons wrote:
-> > What if we just got rid of fb_read/write and converted fbconsole to
-> > use fb_imageblt?
-> 
->    fbconsole does use only fb_imageblit. The only place where screen_base 
-> is used is fb_write and fb_read in fbmem.c. If that could be converted to use 
-> the accelerated image blitting functions then we could replace it. To do 
-> that requires one thing and that is to add image blitting from screen 
-> memory to system memory. Currently no driver including the software 
-> blitting supports that. Plus we have no standard api to handle that. 
->    So first we have to come up with a standard way to handling image 
-> blitting from card memory to system memory without breaking badly the 
-> current api. Second we have to add bi directional blitting to every 
-> driver. Then once we are done we can convert the fb_read and fb_write 
-> functions to using the fb_imageblit functon. Have have plans to do this 
-> but have not yet done it.
 
-What if the graphics memory format is not chunked pixels? In that case
-fb_{read,write}() will behave differently than mmap().
+> This does imply that we could switch read/write to kernel map VRAM a
+> page or two at a time on demand. But this is significant work and I
+> don't think there are any apps using read/write. If we find one it
+> would just be easier to convert it to mmap than to support read/write
+> in the kernel.
 
-Gr{oetje,eeting}s,
+Yuck. Why not just us the image blitter for reading and writing the 
+framebuffer?
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 
 -------------------------------------------------------

@@ -1,22 +1,27 @@
-From: James Simmons <jsimmons@www.infradead.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: Mapping the framebuffer into kernel space
-Date: Thu, 12 May 2005 01:38:20 +0100 (BST)
-Message-ID: <Pine.LNX.4.56.0505120101210.6290@pentafluge.infradead.org>
+Date: Thu, 12 May 2005 11:14:49 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0505121112320.15959@numbat.sonytel.be>
 References: <9e473391050428205517f3c8c0@mail.gmail.com> 
- <200505071108.36733.adaplas@hotpop.com> <9e47339105050620312618d2b7@mail.gmail.com>
+ <9e47339105050511522f6eff30@mail.gmail.com> 
+ <Pine.LNX.4.56.0505051959350.15586@pentafluge.infradead.org> 
+ <Pine.LNX.4.56.0505052141360.15586@pentafluge.infradead.org>
+ <9e4733910505051402789440db@mail.gmail.com> 
+ <Pine.LNX.4.56.0505060046490.15586@pentafluge.infradead.org> 
+ <9e47339105050517083fadaee0@mail.gmail.com> <Pine.LNX.4.56.0505062008090.6914@pentafluge.infradead.org>
+ <9e47339105050615097bdfcdcb@mail.gmail.com> <Pine.LNX.4.56.0505112345230.4268@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DW1ii-000887-Dn
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 11 May 2005 17:38:32 -0700
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1DW1ig-00057c-3K
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 11 May 2005 17:38:32 -0700
-In-Reply-To: <9e47339105050620312618d2b7@mail.gmail.com>
+	id 1DW9mh-00086c-JJ
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 12 May 2005 02:15:11 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1DW9me-0007tN-Ui
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 12 May 2005 02:15:11 -0700
+In-Reply-To: <Pine.LNX.4.56.0505112345230.4268@pentafluge.infradead.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,54 +34,37 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: adaplas@pol.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Jon Smirl <jonsmirl@gmail.com>, James Simmons <jsimmons@pentafluge.infradead.org>, "Antonino A. Daplas" <adaplas@hotpop.com>
 
-
-> > It can be done but not without difficulty.  A few drivers use sections of
-> > the framebuffer space for the cursor, DMA buffer and whatever.  So
-> > when fbcon starts mapping the framebuffer space, it must make sure
-> > that it does not overlap with the driver's, or the space left to the driver
-> > is of the correct size and alignment.
+On Wed, 11 May 2005, James Simmons wrote:
+> > > Yuck. Why not just us the image blitter for reading and writing the
+> > > framebuffer?
+> > 
+> > Could you generically rewrite fb_read/write to just use the image blitter? 
 > 
-> We have to start transitioning to a new model. 512MB cards are
-> shipping today. There is only 1GB of x86 kernel address space and the
-> kernel has to fit into it too. Blindly mapping the entire VRAM into
-> kernel space has to be replaced with a scheme that only maps what is
-> required.
+> Yes.
 
-This can be done. I was moving that way using fb_pixmap. See my 
-resource.diff patch I posted some time ago. Using request_region we should
-be able to lock down a area so no one else can use it.
+No.
 
-> Space for the cursor, DMA buffer, etc doesn't have to stay mapped. The
-> driver can map it in, write the cursor and then map it out. DMA
-> buffers don't need to be mapped in.
+The imageblit routines convert between chunked pixels and the actual frame
+buffer representation.
+fb_{read,write}() access the raw frame buffer.
 
-The cursor is really small memory. Mapping and unmapping it would be 
-expensive with fbconsole because it flashs the cursor. As for DMA that
-can be mapped and unmapped. 
- 
-> Another issue is multihead cards. For two heads it makes sense to put
-> the two scanout buffers at either end of VRAM. But these buffers can
-> change size. A better model might be:
-> 
-> cursor
-> head 1 scanout
-> free VRAM
-> head 2 scanout
-> cursor
-> 
-> The location of these items would be pointed to by a field in fb_info.
+Probably the best solution is to set up a small ioremap()'ed window that can be
+moved in fb_{read,write}() (assumed moving such a window is much cheaper than
+ioremap() + iounmap()).
 
-Each struct fb_info represent each displayable surface with a cursor[s].
-It has the data the fbcon needs to function. The function check_var
-needs to valided if changing one head can safely affect the other.
-The function set_par would handle doing the moving around of resources.
+Gr{oetje,eeting}s,
 
-> What's the least painful way to start a transition?
+						Geert
 
-Design a clean buffer implementation that dri and fb would use.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

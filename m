@@ -1,21 +1,30 @@
-From: Luca <kronos@people.it>
-Subject: Re: unpriv'd 2.6.12-rc4 oops reading /sys/module/intelfb/parameters/*
-Date: Fri, 13 May 2005 21:14:20 +0200
-Message-ID: <20050513191420.GB7891@dreamland.darkstar.lan>
-References: <1115995414.5648.64.camel@mcmanus.datapower.com>
+From: James Simmons <jsimmons@www.infradead.org>
+Subject: Re: Mapping the framebuffer into kernel space
+Date: Fri, 13 May 2005 21:35:51 +0100 (BST)
+Message-ID: <Pine.LNX.4.56.0505132134320.10736@pentafluge.infradead.org>
+References: <9e473391050428205517f3c8c0@mail.gmail.com> 
+ <Pine.LNX.4.56.0505060046490.15586@pentafluge.infradead.org> 
+ <9e47339105050517083fadaee0@mail.gmail.com> 
+ <Pine.LNX.4.56.0505062008090.6914@pentafluge.infradead.org> 
+ <9e47339105050615097bdfcdcb@mail.gmail.com> 
+ <Pine.LNX.4.56.0505112345230.4268@pentafluge.infradead.org> 
+ <Pine.LNX.4.62.0505121112320.15959@numbat.sonytel.be> 
+ <Pine.LNX.4.56.0505121648020.19137@pentafluge.infradead.org> 
+ <9e47339105051210385a41e54e@mail.gmail.com>  <Pine.LNX.4.62.0505122151530.16269@numbat.sonytel.be>
+ <9e473391050512131268248c3f@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DWfc9-0005RG-Q7
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 13 May 2005 12:14:25 -0700
-Received: from mail-relay-2.tiscali.it ([213.205.33.42])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1DWfc6-0005Zc-KZ
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 13 May 2005 12:14:25 -0700
-Content-Disposition: inline
-In-Reply-To: <1115995414.5648.64.camel@mcmanus.datapower.com>
+	id 1DWgt4-0000p6-U5
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 13 May 2005 13:35:58 -0700
+Received: from pentafluge.infradead.org ([213.146.154.40])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1DWgt3-0005jB-Dw
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 13 May 2005 13:35:58 -0700
+In-Reply-To: <9e473391050512131268248c3f@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,53 +35,28 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Patrick McManus <mcmanus@ducksong.com>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, James Simmons <jsimmons@pentafluge.infradead.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, "Antonino A. Daplas" <adaplas@hotpop.com>
 
-Il Fri, May 13, 2005 at 10:43:34AM -0400, patrick mcmanus ha scritto: 
-> Signed-off-by: Patrick McManus <mcmanus@ducksong.com>
+
+> > > Before we get too far into this, has anyone determined if any user
+> > > space app exists that does read/write from fbdev? I can't see a real
+> > > need to keep this feature if no one is using it. If no one is using
+> > > it, it would be much simpler just to remove the functions.
+> > 
+> > I think the only programs really using this are some screenshot programs, like
+> > cfb8toppm (which I wrote as a frame buffer sample program many years ago),
+> > fbshot, and fbgrap (in Debian).
+> > 
+> > Of course these can be converted to use mmap().
 > 
-> Index: drivers/video/intelfb/intelfbdrv.c
-> ===================================================================
-> --- b44e6db42c986f858d2487a6a41ee0cbdd2cf670/drivers/video/intelfb/intelfbdrv.c  (mode:100644 sha1:549e229392604359f46ed629d916b4ea89674226)
-> +++ uncommitted/drivers/video/intelfb/intelfbdrv.c  (mode:100644)
-> @@ -228,17 +228,17 @@
->  MODULE_LICENSE("Dual BSD/GPL");
->  MODULE_DEVICE_TABLE(pci, intelfb_pci_table);
->  
-> -static int accel        __initdata = 1;
-> -static int vram         __initdata = 4;
-> -static int hwcursor     __initdata = 1;
-> -static int mtrr         __initdata = 1;
-> -static int fixed        __initdata = 0;
-> -static int noinit       __initdata = 0;
-> -static int noregister   __initdata = 0;
-> -static int probeonly    __initdata = 0;
-> -static int idonly       __initdata = 0;
-> -static int bailearly    __initdata = 0;
-> -static char *mode       __initdata = NULL;
-> +static int accel        = 1;
-> +static int vram         = 4;
-> +static int hwcursor     = 1;
-> +static int mtrr         = 1;
-> +static int fixed        = 0;
-> +static int noinit       = 0;
-> +static int noregister   = 0;
-> +static int probeonly    = 0;
-> +static int idonly       = 0;
-> +static int bailearly    = 0;
-> +static char *mode       = NULL;
+> Seems to me that it would be easier to drop the feature and update the apps.
 
-Hi,
-while you are at it, initializing static vars to 0 (or NULL) is
-superfluous and take them out of BSS.
+Since you are in a hurry why not just create a write and a read function 
+for radeon that just returns EINVAL. There are hooks in fb_info for this.
 
-Luca
--- 
-Home: http://kronoz.cjb.net
-"L'amore consiste nell'essere cretini insieme." -- P. Valery
 
 
 -------------------------------------------------------

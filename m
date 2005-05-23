@@ -1,24 +1,18 @@
-From: James Simmons <jsimmons@www.infradead.org>
-Subject: Re: Re: [Linux-fbdev-users] PATCH: vga console
- tweak
-Date: Thu, 19 May 2005 22:23:22 +0100 (BST)
-Message-ID: <Pine.LNX.4.56.0505192222530.21367@pentafluge.infradead.org>
-References: <20050513214055.GA3107@cosmic.amd.com>
- <Pine.LNX.4.56.0505140118560.16057@pentafluge.infradead.org>
- <20050516103121.779851ba@cosmic.amd.com>
+From: akpm@osdl.org
+Subject: pm_message_t-fix-for-radeon_pmc.patch added to -mm tree
+Date: Mon, 23 May 2005 16:19:14 -0700
+Message-ID: <200505232318.j4NNIPE7025943@shell0.pdx.osdl.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DYsUJ-0004wF-61
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 19 May 2005 14:23:27 -0700
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	id 1DaMBw-0006YP-64
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 23 May 2005 16:18:36 -0700
+Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.41)
-	id 1DYsUG-0002YS-Ic
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 19 May 2005 14:23:27 -0700
-In-Reply-To: <20050516103121.779851ba@cosmic.amd.com>
+	id 1DaMBs-0003QJ-8b
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 23 May 2005 16:18:36 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,43 +23,57 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: James Simmons <jsimmons@pentafluge.infradead.org>
+To: brix@gentoo.org, benh@kernel.crashing.org, linux-fbdev-devel@lists.sourceforge.net, mm-commits@vger.kernel.org
 
 
-Submited to andrew. Soon it will go main stream. :-)
+The patch titled
+
+     pm_message_t fix for radeon_pm.c
+
+has been added to the -mm tree.  Its filename is
+
+     pm_message_t-fix-for-radeon_pmc.patch
+
+Patches currently in -mm which might be from brix@gentoo.org are
+
+pm_message_t-fix-for-radeon_pmc.patch
 
 
-On Mon, 16 May 2005, Jordan Crouse wrote:
 
-> > I made the patch a little more flexiable for video size. It is
-> > possible to  use 64K or even 128K of video memory. So we ask. Could
-> > you give my patch a  run. Its against Linus latest tree.
-> 
-> Works fine.  Thanks.
-> 
-> Jordan
-> 
-> -- 
-> Jordan Crouse
-> Senior Linux Engineer
-> AMD - Personal Connectivity Solutions Group
-> <www.amd.com/embeddedprocessors>
-> 
-> 
-> 
-> -------------------------------------------------------
-> This SF.Net email is sponsored by Oracle Space Sweepstakes
-> Want to be the first software developer in space?
-> Enter now for the Oracle Space Sweepstakes!
-> http://ads.osdn.com/?ad_id=7412&alloc_id=16344&op=click
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-> 
+From: Henrik Brix Andersen <brix@gentoo.org>
+
+This patch adds a missing .event to pm_message_t handling in
+drivers/video/aty/radeon_pm.c
+
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: <linux-fbdev-devel@lists.sourceforge.net>
+Signed-off-by: Andrew Morton <akpm@osdl.org>
+---
+
+ drivers/video/aty/radeon_pm.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff -puN drivers/video/aty/radeon_pm.c~pm_message_t-fix-for-radeon_pmc drivers/video/aty/radeon_pm.c
+--- 25/drivers/video/aty/radeon_pm.c~pm_message_t-fix-for-radeon_pmc	Mon May 23 16:18:46 2005
++++ 25-akpm/drivers/video/aty/radeon_pm.c	Mon May 23 16:18:46 2005
+@@ -2526,11 +2526,11 @@ int radeonfb_pci_suspend(struct pci_dev 
+         struct radeonfb_info *rinfo = info->par;
+ 	int i;
+ 
+-	if (state == pdev->dev.power.power_state)
++	if (state.event == pdev->dev.power.power_state.event)
+ 		return 0;
+ 
+ 	printk(KERN_DEBUG "radeonfb (%s): suspending to state: %d...\n",
+-	       pci_name(pdev), state);
++	       pci_name(pdev), state.event);
+ 
+ 	/* For suspend-to-disk, we cheat here. We don't suspend anything and
+ 	 * let fbcon continue drawing until we are all set. That shouldn't
+_
 
 
 -------------------------------------------------------

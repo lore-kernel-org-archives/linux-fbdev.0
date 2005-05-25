@@ -1,18 +1,22 @@
-From: akpm@osdl.org
-Subject: pm_message_t-fix-for-radeon_pmc.patch added to -mm tree
-Date: Mon, 23 May 2005 16:19:14 -0700
-Message-ID: <200505232318.j4NNIPE7025943@shell0.pdx.osdl.net>
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: fbdev hardware cursor support
+Date: Wed, 25 May 2005 01:40:57 -0400
+Message-ID: <9e473391050524224063df2372@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
+Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DaMBw-0006YP-64
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 23 May 2005 16:18:36 -0700
-Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.41)
-	id 1DaMBs-0003QJ-8b
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 23 May 2005 16:18:36 -0700
+	id 1Daoda-0006IX-B3
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 May 2005 22:41:02 -0700
+Received: from wproxy.gmail.com ([64.233.184.194])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1DaodX-0007OH-U6
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 May 2005 22:41:02 -0700
+Received: by wproxy.gmail.com with SMTP id 69so498222wri
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 24 May 2005 22:40:58 -0700 (PDT)
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -23,61 +27,25 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: brix@gentoo.org, benh@kernel.crashing.org, linux-fbdev-devel@lists.sourceforge.net, mm-commits@vger.kernel.org
+To: fbdev <linux-fbdev-devel@lists.sourceforge.net>, "Antonino A. Daplas" <adaplas@hotpop.com>
 
+What is the status of fbdev hardware cursor support? I see the ioctl
+is disabled in the driver.
 
-The patch titled
+If a driver is using the softcursor support would the ioctl control that cu=
+rsor?
+Does softcursor work in a bitmap graphics mode?
 
-     pm_message_t fix for radeon_pm.c
+The EGL based X server is going to need fbdev hardware cursors working.
 
-has been added to the -mm tree.  Its filename is
-
-     pm_message_t-fix-for-radeon_pmc.patch
-
-Patches currently in -mm which might be from brix@gentoo.org are
-
-pm_message_t-fix-for-radeon_pmc.patch
-
-
-
-From: Henrik Brix Andersen <brix@gentoo.org>
-
-This patch adds a missing .event to pm_message_t handling in
-drivers/video/aty/radeon_pm.c
-
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: <linux-fbdev-devel@lists.sourceforge.net>
-Signed-off-by: Andrew Morton <akpm@osdl.org>
----
-
- drivers/video/aty/radeon_pm.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff -puN drivers/video/aty/radeon_pm.c~pm_message_t-fix-for-radeon_pmc drivers/video/aty/radeon_pm.c
---- 25/drivers/video/aty/radeon_pm.c~pm_message_t-fix-for-radeon_pmc	Mon May 23 16:18:46 2005
-+++ 25-akpm/drivers/video/aty/radeon_pm.c	Mon May 23 16:18:46 2005
-@@ -2526,11 +2526,11 @@ int radeonfb_pci_suspend(struct pci_dev 
-         struct radeonfb_info *rinfo = info->par;
- 	int i;
- 
--	if (state == pdev->dev.power.power_state)
-+	if (state.event == pdev->dev.power.power_state.event)
- 		return 0;
- 
- 	printk(KERN_DEBUG "radeonfb (%s): suspending to state: %d...\n",
--	       pci_name(pdev), state);
-+	       pci_name(pdev), state.event);
- 
- 	/* For suspend-to-disk, we cheat here. We don't suspend anything and
- 	 * let fbcon continue drawing until we are all set. That shouldn't
-_
+--=20
+Jon Smirl
+jonsmirl@gmail.com
 
 
 -------------------------------------------------------
-This SF.Net email is sponsored by Oracle Space Sweepstakes
-Want to be the first software developer in space?
-Enter now for the Oracle Space Sweepstakes!
-http://ads.osdn.com/?ad_id=7412&alloc_id=16344&op=click
+This SF.Net email is sponsored by Yahoo.
+Introducing Yahoo! Search Developer Network - Create apps using Yahoo!
+Search APIs Find out how you can build Yahoo! directly into your own
+Applications - visit http://developer.yahoo.net/?fr=offad-ysdn-ostg-q22005

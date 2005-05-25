@@ -1,22 +1,22 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: fbdev hardware cursor support
-Date: Wed, 25 May 2005 01:40:57 -0400
-Message-ID: <9e473391050524224063df2372@mail.gmail.com>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Subject: Re: fbdev hardware cursor support
+Date: Wed, 25 May 2005 09:16:28 +0300
+Message-ID: <20050525061628.GA5396@sci.fi>
+References: <9e473391050524224063df2372@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Daoda-0006IX-B3
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 May 2005 22:41:02 -0700
-Received: from wproxy.gmail.com ([64.233.184.194])
+	id 1DapBz-0007gv-BD
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 May 2005 23:16:35 -0700
+Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DaodX-0007OH-U6
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 May 2005 22:41:02 -0700
-Received: by wproxy.gmail.com with SMTP id 69so498222wri
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 24 May 2005 22:40:58 -0700 (PDT)
+	id 1DapBx-0003aC-Rq
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 May 2005 23:16:35 -0700
 Content-Disposition: inline
+In-Reply-To: <9e473391050524224063df2372@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,21 +27,27 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: fbdev <linux-fbdev-devel@lists.sourceforge.net>, "Antonino A. Daplas" <adaplas@hotpop.com>
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: "Antonino A. Daplas" <adaplas@hotpop.com>
 
-What is the status of fbdev hardware cursor support? I see the ioctl
-is disabled in the driver.
+On Wed, May 25, 2005 at 01:40:57AM -0400, Jon Smirl wrote:
+> What is the status of fbdev hardware cursor support? I see the ioctl
+> is disabled in the driver.
+>=20
+> If a driver is using the softcursor support would the ioctl control tha=
+t cursor?
+> Does softcursor work in a bitmap graphics mode?
+>=20
+> The EGL based X server is going to need fbdev hardware cursors working.
 
-If a driver is using the softcursor support would the ioctl control that cu=
-rsor?
-Does softcursor work in a bitmap graphics mode?
-
-The EGL based X server is going to need fbdev hardware cursors working.
+Why doesn't it draw the cursor using OpenGL? On many cards the hardware=20
+cursor is too limited to allow nice looking cursors.
 
 --=20
-Jon Smirl
-jonsmirl@gmail.com
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
 
 
 -------------------------------------------------------

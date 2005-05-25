@@ -1,26 +1,23 @@
 From: Andrew Morton <akpm@osdl.org>
-Subject: Re: Re: USB mouse hiccups (was RFD: Kernel
- release numbering)
-Date: Wed, 25 May 2005 16:51:22 -0700
-Message-ID: <20050525165122.1a62e232.akpm@osdl.org>
-References: <pan.2005.03.20.21.53.36.929746@brick.flying-brick.caverock.net.nz>
-	<20050321202546.GA7281@flying-brick.caverock.net.nz>
-	<20050321124426.53d75b3e.akpm@osdl.org>
-	<200503220645.08821.adaplas@hotpop.com>
+Subject: Re: [2.6.11 Permedia-2 Framebuffer] driver broken (?).
+Date: Wed, 25 May 2005 16:53:05 -0700
+Message-ID: <20050525165305.213eea85.akpm@osdl.org>
+References: <Pine.LNX.4.60.0503220030230.12537@poirot.grange>
+	<XFMail.20050322094106.jim.hague@acm.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Db5e5-0005wU-09
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 May 2005 16:50:41 -0700
+	id 1Db5fk-00061A-B3
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 May 2005 16:52:24 -0700
 Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.41)
-	id 1Db5e3-0006LW-AH
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 May 2005 16:50:40 -0700
-In-Reply-To: <200503220645.08821.adaplas@hotpop.com>
+	id 1Db5fi-0005Qx-ON
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 May 2005 16:52:24 -0700
+In-Reply-To: <XFMail.20050322094106.jim.hague@acm.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,52 +29,39 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: adaplas@pol.net
-Cc: adaplas@hotpop.com, linux-fbdev-devel@lists.sourceforge.net, viking@flying-brick.caverock.net.nz
+To: Jim Hague <jim.hague@acm.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, g.liakhovetski@gmx.de
 
-"Antonino A. Daplas" <adaplas@hotpop.com> wrote:
+Jim Hague <jim.hague@acm.org> wrote:
 >
-> On Tuesday 22 March 2005 04:44, Andrew Morton wrote:
-> > Guys, we seem to have a tridentfb regression in 2.6.12-rc1.
-> >
-> > viking <viking@flying-brick.caverock.net.nz> wrote:
-> > > Also (and this is something I've noticed since I tried tridentfb) the
-> > > video buffer never seems to get cleared, except when I change virtual
-> > > terminals, then change back to the terminal concerned. THEN it's cleared.
-> > > So for the moment, I've gone back to using VESAfb.
-> >
+> On 21-Mar-2005 Guennadi Liakhovetski wrote:
+> > On Mon, 21 Mar 2005, Andrew Morton wrote:
+> >> Guennadi, could you please confirm that
+> >> 
+> >> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.12-rc1/2.6.
+> >> 12-rc1-mm1/broken-out/pm2fb-x-and-vt-switching-crash-fix.patch
+> >> 
+> >> fixes this one?
+> > 
+> > As discussed with Jim on linux-fbdev-devel this patch fixes the vt / X 
+> > switching problem. We still don't know why starting with 2.4.11 I have to 
+> > switch CONFIG_FB_PM2_FIFO_DISCONNECT off to restore colours / images.
+> > [...]
+> > I traced this breakage down to the patch to 
+> > pm2fb.c after 2.6.10-rc2. Jim wanted to try to reproduce this problem with 
+> > my fb-geometry / colour settings, but I haven't heard from him since then, 
 > 
-> Smells like a fillrect problem.
+> FIrst off, so we're all clear, the problem with vt/X switching was definitely a
+> pm2fb bug exposed by chages in fbcon, and is definitely fixed by the above
+> patch. Please apply.
 > 
-> 1. First, can you do an fbset and make sure that yres_virtual and yres are
-> the same? If you run fbset -i, in the line that starts with 'geometry', the
-> 2nd and 4th number should be the same (or have a difference not more than
-> 7). This disables ypan.
+> As to Guennadi's problem with colours and images, I've been trying to
+> reproduce locally without success, hence silence. My pm2fb-on-Sparc
+> correspondent hasn't seen this either, and I've had no other reports.
 > 
-> mode "800x600-85"
->     # D: 56.252 MHz, H: 53.676 kHz, V: 85.065 Hz
->     geometry 800 600 832 32767 8
->                  ^^^      ^^^    <- same number
-> 
-> If not the same, do:
-> 
-> fbset -vyres n
-> 
-> where n: is equal to the vertical resolution
-> 
-> 2. If you still get a non-clearing display, then check if
-> CONFIG_FB_TRIDENT_ACCEL is set to y.  If it is, set it to n. Recompile and
-> reboot.
-> 
-> 3. Please send your .config, dmesg, lspci -vvv, and fbset -i.
-> 
-> 4. What is the last kernel version where tridentfb worked for you?
-> 
-> BTW, there are no major changes in tridentfb for months, so I'm surprised
-> about this regression.
-> 
+> I have one possible clue, which I'll pursue with Guennadi off-list.
 
-Guys, is this problem still present in 2.6.12-rc5?
+Guys, did all these things get fixed up in 2.6.12-rc5?
 
 Thanks.
 

@@ -1,31 +1,26 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: fbdev hardware cursor support
-Date: Wed, 25 May 2005 11:52:32 -0400
-Message-ID: <9e4733910505250852597a5cd5@mail.gmail.com>
-References: <9e473391050524224063df2372@mail.gmail.com>
-	 <20050525061628.GA5396@sci.fi>
-	 <9e4733910505250710643f8788@mail.gmail.com>
-	 <1117032624.5645.368.camel@localhost>
-	 <9e47339105052508084ee66dd2@mail.gmail.com>
-	 <1117034547.5506.376.camel@localhost>
-	 <9e47339105052508301f9aaaa6@mail.gmail.com>
-	 <1117035165.5677.386.camel@localhost>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: Re: USB mouse hiccups (was RFD: Kernel
+ release numbering)
+Date: Wed, 25 May 2005 16:51:22 -0700
+Message-ID: <20050525165122.1a62e232.akpm@osdl.org>
+References: <pan.2005.03.20.21.53.36.929746@brick.flying-brick.caverock.net.nz>
+	<20050321202546.GA7281@flying-brick.caverock.net.nz>
+	<20050321124426.53d75b3e.akpm@osdl.org>
+	<200503220645.08821.adaplas@hotpop.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DayBQ-0000r6-78
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 May 2005 08:52:36 -0700
-Received: from wproxy.gmail.com ([64.233.184.198])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DayBP-0005vd-HU
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 May 2005 08:52:35 -0700
-Received: by wproxy.gmail.com with SMTP id 69so738603wri
-        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 25 May 2005 08:52:34 -0700 (PDT)
-In-Reply-To: <1117035165.5677.386.camel@localhost>
-Content-Disposition: inline
+	id 1Db5e5-0005wU-09
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 May 2005 16:50:41 -0700
+Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1Db5e3-0006LW-AH
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 May 2005 16:50:40 -0700
+In-Reply-To: <200503220645.08821.adaplas@hotpop.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -36,51 +31,55 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: =?ISO-8859-1?Q?Michel_D=E4nzer?= <michel@daenzer.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: adaplas@pol.net
+Cc: adaplas@hotpop.com, linux-fbdev-devel@lists.sourceforge.net, viking@flying-brick.caverock.net.nz
 
-On 5/25/05, Michel D=E4nzer <michel@daenzer.net> wrote:
-> On Wed, 2005-05-25 at 11:30 -0400, Jon Smirl wrote:
-> > On 5/25/05, Michel D=E4nzer <michel@daenzer.net> wrote:
-> > > On Wed, 2005-05-25 at 11:08 -0400, Jon Smirl wrote:
-> > > > On 5/25/05, Michel D=E4nzer <michel@daenzer.net> wrote:
-> > > > > > Software generated will be supported sooner or later but the co=
-de is
-> > > > > > not written yet.
-> > > > >
-> > > > > These claims of yours have been refuted on the dri-egl list. Why =
-are you
-> > > > > repeating them here?
-> > > >
-> > > > I'm writing the Xegl server and I can tell you for sure that I have=
-n't
-> > > > written the software cursor support yet. How can you know the statu=
-s
-> > > > of the Xgl code when I haven't checked it into CVS yet?
-> > >
-> > > David Reveman pointed out that Xglx has working software cursor code.=
- I
-> > > can't see that caring about whether glitz uses a GLX or EGL backend.
+"Antonino A. Daplas" <adaplas@hotpop.com> wrote:
+>
+> On Tuesday 22 March 2005 04:44, Andrew Morton wrote:
+> > Guys, we seem to have a tridentfb regression in 2.6.12-rc1.
 > >
-> > Xglx gets it software cursor support from the nested X server it runs
-> > inside of.
->=20
-> You didn't even read David's correction of this. Great.
+> > viking <viking@flying-brick.caverock.net.nz> wrote:
+> > > Also (and this is something I've noticed since I tried tridentfb) the
+> > > video buffer never seems to get cleared, except when I change virtual
+> > > terminals, then change back to the terminal concerned. THEN it's cleared.
+> > > So for the moment, I've gone back to using VESAfb.
+> >
+> 
+> Smells like a fillrect problem.
+> 
+> 1. First, can you do an fbset and make sure that yres_virtual and yres are
+> the same? If you run fbset -i, in the line that starts with 'geometry', the
+> 2nd and 4th number should be the same (or have a difference not more than
+> 7). This disables ypan.
+> 
+> mode "800x600-85"
+>     # D: 56.252 MHz, H: 53.676 kHz, V: 85.065 Hz
+>     geometry 800 600 832 32767 8
+>                  ^^^      ^^^    <- same number
+> 
+> If not the same, do:
+> 
+> fbset -vyres n
+> 
+> where n: is equal to the vertical resolution
+> 
+> 2. If you still get a non-clearing display, then check if
+> CONFIG_FB_TRIDENT_ACCEL is set to y.  If it is, set it to n. Recompile and
+> reboot.
+> 
+> 3. Please send your .config, dmesg, lspci -vvv, and fbset -i.
+> 
+> 4. What is the last kernel version where tridentfb worked for you?
+> 
+> BTW, there are no major changes in tridentfb for months, so I'm surprised
+> about this regression.
+> 
 
-If there is a working software cursor implementation in Xgl I'm yet to
-find it. Of course I am looking at 5,000+ lines of code without a
-single comment other than the copyright notice. On the other hand I
-can definitely see how the xnest cursor implementation is working.
+Guys, is this problem still present in 2.6.12-rc5?
 
-Feel free to help with Xegl. I have stated several times that I know
-nothing about the X input system. I've identified exactly where to
-hook up hardware cursor support and that would let me proceed from
-where I am at.
-
---=20
-Jon Smirl
-jonsmirl@gmail.com
+Thanks.
 
 
 -------------------------------------------------------

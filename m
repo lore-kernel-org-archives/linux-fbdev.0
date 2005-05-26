@@ -1,25 +1,22 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: Fw: [Bugme-new] [Bug 4570] New: vesafb,
- Console goes black after some time of inactivity, but does not put monitor
- in standby
-Date: Thu, 26 May 2005 00:12:20 -0700
-Message-ID: <20050526001220.150b1835.akpm@osdl.org>
-References: <20050501142120.0978d2f9.akpm@osdl.org>
-	<Pine.LNX.4.62.0505021123180.28949@numbat.sonytel.be>
+From: Moritz Muehlenhoff <jmm@inutil.org>
+Subject: Re: Linux 2.6.12-rc2
+Date: Thu, 26 May 2005 12:45:50 +0200
+Message-ID: <20050526104550.GA5580@informatik.uni-bremen.de>
+References: <Pine.LNX.4.58.0504040945100.32180@ppc970.osdl.org> <Pine.LNX.4.58.0504041430070.2215@ppc970.osdl.org> <E1DJE6t-0001T5-UD@localhost.localdomain> <20050525215637.252cbaba.akpm@osdl.org> <1117084498.9076.57.camel@gaston>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DbCYP-0001wK-Oe
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 26 May 2005 00:13:17 -0700
-Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1DbFsa-0003C6-VJ
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 26 May 2005 03:46:20 -0700
+Received: from inutil.org ([193.22.164.111] helo=vserver151.vserver151.serverflex.de)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1DbCYO-0006Iy-7w
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 26 May 2005 00:13:17 -0700
-In-Reply-To: <Pine.LNX.4.62.0505021123180.28949@numbat.sonytel.be>
+	id 1DbFsY-00077e-4V
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 26 May 2005 03:46:20 -0700
+Content-Disposition: inline
+In-Reply-To: <1117084498.9076.57.camel@gaston>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,52 +28,69 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: bonbons67@internet.lu, linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Andrew Morton <akpm@osdl.org>, Moritz Muehlenhoff <jmm@inutil.org>, linux-fbdev-devel@lists.sourceforge.net
 
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->
-> On Sun, 1 May 2005, Andrew Morton wrote:
-> > Begin forwarded message:
+Benjamin Herrenschmidt wrote:
+> On Wed, 2005-05-25 at 21:56 -0700, Andrew Morton wrote:
+> > Moritz Muehlenhoff <jmm@inutil.org> wrote:
+> > >
+> > > Linus Torvalds wrote:
+> > > > Benjamin Herrenschmidt:
+> > > >   o radeonfb: Implement proper workarounds for PLL accesses
+> > > >   o radeonfb: DDC i2c fix
+> > > >   o radeonfb: Fix mode setting on CRT monitors
+> > > >   o radeonfb: Preserve TMDS setting
+> > > 
+> > > One of these patches introduced two regressions on my Thinkpad X31 with
+> > > "ATI Technologies Inc Radeon Mobility M6 LY (prog-if 00 [VGA])":
+> > > 
+> > > 1. When resuming from S3 suspend and having switched off the backlight
+> > > with radeontool the backlight isn't switched back on any more.
+> > > 
+> > > 2. I'm using fbcon as my primary work environment, but tty switching has
+> > > become _very_ sloppy, it's at least a second now, while with 2.6.11 it
+> > > was as fast as a few ms. Is this caused by the "proper PLL accesses"?
 > > 
-> > Date: Sun, 1 May 2005 13:16:17 -0700
-> > From: bugme-daemon@osdl.org
-> > To: bugme-new@lists.osdl.org
-> > Subject: [Bugme-new] [Bug 4570] New: vesafb, Console goes black after some time of inactivity, but does not put monitor in standby
-> > 
-> > 
-> > http://bugme.osdl.org/show_bug.cgi?id=4570
-> > 
-> >            Summary: vesafb, Console goes black after some time of
-> >                     inactivity, but does not put monitor in standby
-> >     Kernel Version: 2.6.*
-> >             Status: NEW
-> >           Severity: normal
-> >              Owner: jsimmons@infradead.org
-> >          Submitter: bonbons67@internet.lu
-> > 
-> > 
-> > Distribution: Gentoo 
-> > Hardware Environment: 
-> >     Does not matter, all my computers have same problem 
-> > Software Environment: 
-> > Problem Description: 
-> > After some time of inactivity the console goes black, but does not put monitor   
-> > into standby mode (this works in X with driver for the card, have not tried  
-> > with vesa driver in X) 
-> > What I would expect is that the monitor is put in stand-by when the console  
-> > goes blank. (Tweaking with fbset does not help) 
-> >  
-> > Steps to reproduce: 
-> > Work on linux console (not under X ;-)), then keep away from keyboard/mouse 
-> > for some time.
+> > Moritz, can you tell us whether either of these problems remain in 2.6.12-rc5?
 > 
-> man setterm(1).
-> 
-> Does it work if you don't use vesafb, but the plain VGA text console?
-> 
+> The later will not be fixed. It's a side effect of some workarounds ATI
+> had me put in for the M6 which has a theorical hardware bug... unless we
+> decide the bug never happens and comment out the fix =P
 
-Did we hear back on any of this?  Is the bug still present in 2.6.12-rc5?
+It's "fixed" now. I think you've made a second change as well that reduced the
+excessive delays in some function, which was called some hundred times. With
+stock 2.6.12-rc5 it's usable again, as it's down to a tenth of a second or so.
+Thanks a lot.
+
+> The former, I'm not sure. x86 BIOSes are doing all sort of funny things,
+> I'm not sure what's going on specifically in this case. Also, the
+> backlight control code has known issues that I haven't find a way to fix
+> completely for everybody yet, it seems that different "races" of panels
+> need different solutions here, and by fixing one sort, I break another.
+> I'm still trying to get ATI to give me more infos about that, but
+> without luck so far.
+
+Anyway, with stock 2.6.12-rc5 it's fixed as well. Suspend resumes properly
+again.
+
+> However, why would you need to switch the backlight off with radeontool
+> when going to S3 ? You should let the firmware do it, or radeonfb do it,
+> but not manually. What if you just leave it "alone", what happens when
+> you go to/from S3 ? And if stays off, can you bring it back with
+> radeontool ?
+
+Well, maybe they should, but they don't do it. This may very well be a firmware
+issue as it's documented on all the X31 on Linux websites.
+
+If I do a simple echo mem > /sys/power/state my X31 Thinkpad goes into S3, but
+the backlight remains one which consumes a lot of power and renders suspend
+more or less useless. radeontool switches it off, and it's automatically turned
+through the lid ACPI event. 
+
+Cheers,
+        Moritz
 
 
 -------------------------------------------------------

@@ -1,22 +1,25 @@
 From: Andrew Morton <akpm@osdl.org>
-Subject: Re: Hang when using a Matrox G550 with DVI
-Date: Wed, 25 May 2005 23:39:58 -0700
-Message-ID: <20050525233958.05ceaa58.akpm@osdl.org>
-References: <7f45d93905042111313ae10b39@mail.gmail.com>
+Subject: Re: Fw: [Bugme-new] [Bug 4570] New: vesafb,
+ Console goes black after some time of inactivity, but does not put monitor
+ in standby
+Date: Thu, 26 May 2005 00:12:20 -0700
+Message-ID: <20050526001220.150b1835.akpm@osdl.org>
+References: <20050501142120.0978d2f9.akpm@osdl.org>
+	<Pine.LNX.4.62.0505021123180.28949@numbat.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DbC32-0000ck-JI
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 May 2005 23:40:52 -0700
+	id 1DbCYP-0001wK-Oe
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 26 May 2005 00:13:17 -0700
 Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.41)
-	id 1DbC30-0006rY-N4
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 May 2005 23:40:52 -0700
-In-Reply-To: <7f45d93905042111313ae10b39@mail.gmail.com>
+	id 1DbCYO-0006Iy-7w
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 26 May 2005 00:13:17 -0700
+In-Reply-To: <Pine.LNX.4.62.0505021123180.28949@numbat.sonytel.be>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,28 +31,52 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Shaun Jackman <sjackman@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: bonbons67@internet.lu, linux-fbdev-devel@lists.sourceforge.net
 
-Shaun Jackman <sjackman@gmail.com> wrote:
+Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 >
-> When I have a DVI display plugged into my Matrox G550 video card the
-> Linux kernel 2.6.11 hangs while booting. This can be worked around by
-> "disabling CONFIG_VIDEO_SELECT and/or comment out call to store_edid
-> in arch/i386/boot/video.S" [1], or by unplugging the DVI display
-> before the kernel boots and plugging it back in before X starts. This
-> is the same bug listed here [2], and it has been around since the
-> 2.5.67-bk6 days.
+> On Sun, 1 May 2005, Andrew Morton wrote:
+> > Begin forwarded message:
+> > 
+> > Date: Sun, 1 May 2005 13:16:17 -0700
+> > From: bugme-daemon@osdl.org
+> > To: bugme-new@lists.osdl.org
+> > Subject: [Bugme-new] [Bug 4570] New: vesafb, Console goes black after some time of inactivity, but does not put monitor in standby
+> > 
+> > 
+> > http://bugme.osdl.org/show_bug.cgi?id=4570
+> > 
+> >            Summary: vesafb, Console goes black after some time of
+> >                     inactivity, but does not put monitor in standby
+> >     Kernel Version: 2.6.*
+> >             Status: NEW
+> >           Severity: normal
+> >              Owner: jsimmons@infradead.org
+> >          Submitter: bonbons67@internet.lu
+> > 
+> > 
+> > Distribution: Gentoo 
+> > Hardware Environment: 
+> >     Does not matter, all my computers have same problem 
+> > Software Environment: 
+> > Problem Description: 
+> > After some time of inactivity the console goes black, but does not put monitor   
+> > into standby mode (this works in X with driver for the card, have not tried  
+> > with vesa driver in X) 
+> > What I would expect is that the monitor is put in stand-by when the console  
+> > goes blank. (Tweaking with fbset does not help) 
+> >  
+> > Steps to reproduce: 
+> > Work on linux console (not under X ;-)), then keep away from keyboard/mouse 
+> > for some time.
 > 
-> Please cc me in your reply. Cheers,
-> Shaun
+> man setterm(1).
 > 
-> [1] http://www.ussg.iu.edu/hypermail/linux/kernel/0408.2/0434.html
-> [2] http://bugme.osdl.org/show_bug.cgi?id=1458
+> Does it work if you don't use vesafb, but the plain VGA text console?
+> 
 
-Do the fbdev guys know about this?
-
-Does 2.6.12-rc5 still have the bug?
+Did we hear back on any of this?  Is the bug still present in 2.6.12-rc5?
 
 
 -------------------------------------------------------

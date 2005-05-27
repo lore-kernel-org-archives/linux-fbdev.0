@@ -1,21 +1,20 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: [2.6.11 Permedia-2 Framebuffer] driver broken (?).
-Date: Fri, 27 May 2005 00:38:16 +0200 (CEST)
-Message-ID: <Pine.LNX.4.60.0505270035250.13774@poirot.grange>
-References: <Pine.LNX.4.60.0503220030230.12537@poirot.grange>
- <XFMail.20050322094106.jim.hague@acm.org> <20050525165305.213eea85.akpm@osdl.org>
+From: sylvain.meyer@worldonline.fr
+Subject: [patch 1/1] intelfb-voffset
+Date: Sat, 28 May 2005 00:09:31 +0200
+Message-ID: <20050527220932.865B91C00449@mwinf0201.wanadoo.fr>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DbR0P-0005U5-If
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 26 May 2005 15:39:09 -0700
-Received: from imap.gmx.net ([213.165.64.20] helo=mail.gmx.net)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
-	id 1DbR0N-0003o0-3I
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 26 May 2005 15:39:09 -0700
-In-Reply-To: <20050525165305.213eea85.akpm@osdl.org>
+	id 1Dbn1S-0003oH-Bt
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 27 May 2005 15:09:42 -0700
+Received: from smtp2.wanadoo.fr ([193.252.22.29])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1Dbn1Q-0006nG-FR
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 27 May 2005 15:09:42 -0700
+Received: from me-wanadoo.net (localhost [127.0.0.1])
+	by mwinf0201.wanadoo.fr (SMTP Server) with ESMTP id C755E1C0044A
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 28 May 2005 00:09:33 +0200 (CEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,55 +25,99 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@osdl.org>
-Cc: Jim Hague <jim.hague@acm.org>, linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: akpm@osdl.org, adaplas@pol.net, sylvain.meyer@worldonline.fr
 
-On Wed, 25 May 2005, Andrew Morton wrote:
 
-> Jim Hague <jim.hague@acm.org> wrote:
-> >
-> > On 21-Mar-2005 Guennadi Liakhovetski wrote:
-> > > On Mon, 21 Mar 2005, Andrew Morton wrote:
-> > >> Guennadi, could you please confirm that
-> > >> 
-> > >> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.12-rc1/2.6.
-> > >> 12-rc1-mm1/broken-out/pm2fb-x-and-vt-switching-crash-fix.patch
-> > >> 
-> > >> fixes this one?
-> > > 
-> > > As discussed with Jim on linux-fbdev-devel this patch fixes the vt / X 
-> > > switching problem. We still don't know why starting with 2.4.11 I have to 
-> > > switch CONFIG_FB_PM2_FIFO_DISCONNECT off to restore colours / images.
-> > > [...]
-> > > I traced this breakage down to the patch to 
-> > > pm2fb.c after 2.6.10-rc2. Jim wanted to try to reproduce this problem with 
-> > > my fb-geometry / colour settings, but I haven't heard from him since then, 
-> > 
-> > FIrst off, so we're all clear, the problem with vt/X switching was definitely a
-> > pm2fb bug exposed by chages in fbcon, and is definitely fixed by the above
-> > patch. Please apply.
-> > 
-> > As to Guennadi's problem with colours and images, I've been trying to
-> > reproduce locally without success, hence silence. My pm2fb-on-Sparc
-> > correspondent hasn't seen this either, and I've had no other reports.
-> > 
-> > I have one possible clue, which I'll pursue with Guennadi off-list.
-> 
-> Guys, did all these things get fixed up in 2.6.12-rc5?
+From: Sylvain Meyer <sylvain.meyer@worldonline.fr>
 
-At least I don't see the fix we discussed with Jim included. I'll 
-test-boot tomorrow. Anyway, I seem to be the only one affected, and 
-switching CONFIG_FB_PM2_FIFO_DISCONNECT fixes the problem, so, maybe we 
-could just mark this option "dangerous".
+- Add voffset option to avoid conficts with Xorg i810 driver
+- Remove __initdata from module param variables
 
-Will (try to) add tomorrow.
-
-Thanks
-Guennadi
+Signed-off-by: Sylvain Meyer <sylvain.meyer@worldonline.fr>
 ---
-Guennadi Liakhovetski
+
+ linux-2.6.12-rc4-root/drivers/video/intelfb/intelfbdrv.c |   38 +++++++++------
+ 1 files changed, 23 insertions(+), 15 deletions(-)
+
+diff -puN drivers/video/intelfb/intelfbdrv.c~intelfb-voffset drivers/video/intelfb/intelfbdrv.c
+--- linux-2.6.12-rc4/drivers/video/intelfb/intelfbdrv.c~intelfb-voffset	2005-05-27 23:55:33.000000000 +0200
++++ linux-2.6.12-rc4-root/drivers/video/intelfb/intelfbdrv.c	2005-05-28 00:01:20.000000000 +0200
+@@ -228,22 +228,25 @@ MODULE_DESCRIPTION(
+ MODULE_LICENSE("Dual BSD/GPL");
+ MODULE_DEVICE_TABLE(pci, intelfb_pci_table);
+ 
+-static int accel        __initdata = 1;
+-static int vram         __initdata = 4;
+-static int hwcursor     __initdata = 1;
+-static int mtrr         __initdata = 1;
+-static int fixed        __initdata = 0;
+-static int noinit       __initdata = 0;
+-static int noregister   __initdata = 0;
+-static int probeonly    __initdata = 0;
+-static int idonly       __initdata = 0;
+-static int bailearly    __initdata = 0;
+-static char *mode       __initdata = NULL;
++static int accel        = 1;
++static int vram         = 4;
++static int voffset      = 48;
++static int hwcursor     = 1;
++static int mtrr         = 1;
++static int fixed        = 0;
++static int noinit       = 0;
++static int noregister   = 0;
++static int probeonly    = 0;
++static int idonly       = 0;
++static int bailearly    = 0;
++static char *mode       = NULL;
+ 
+ module_param(accel, bool, S_IRUGO);
+ MODULE_PARM_DESC(accel, "Enable console acceleration");
+ module_param(vram, int, S_IRUGO);
+ MODULE_PARM_DESC(vram, "System RAM to allocate to framebuffer in MiB");
++module_param(voffset, int, S_IRUGO);
++MODULE_PARM_DESC(voffset, "Offset of framebuffer in MiB");
+ module_param(hwcursor, bool, S_IRUGO);
+ MODULE_PARM_DESC(hwcursor, "Enable HW cursor");
+ module_param(mtrr, bool, S_IRUGO);
+@@ -503,6 +506,7 @@ intelfb_pci_register(struct pci_dev *pde
+ 	struct agp_bridge_data *bridge;
+  	int aperture_bar = 0;
+  	int mmio_bar = 1;
++	int offset;
+ 
+ 	DBG_MSG("intelfb_pci_register\n");
+ 
+@@ -659,17 +663,21 @@ intelfb_pci_register(struct pci_dev *pde
+ 		return -ENODEV;
+ 	}
+ 
++	if (MB(voffset) < stolen_size)
++		offset = (stolen_size >> 12);
++	else
++		offset = ROUND_UP_TO_PAGE(MB(voffset))/GTT_PAGE_SIZE;
++
+ 	/* set the mem offsets - set them after the already used pages */
+ 	if (dinfo->accel) {
+-		dinfo->ring.offset = (stolen_size >> 12)
+-			+ gtt_info.current_memory;
++		dinfo->ring.offset = offset + gtt_info.current_memory;
+ 	}
+ 	if (dinfo->hwcursor) {
+-		dinfo->cursor.offset = (stolen_size >> 12) +
++		dinfo->cursor.offset = offset +
+ 			+ gtt_info.current_memory + (dinfo->ring.size >> 12);
+ 	}
+ 	if (dinfo->fbmem_gart) {
+-		dinfo->fb.offset = (stolen_size >> 12) +
++		dinfo->fb.offset = offset +
+ 			+ gtt_info.current_memory + (dinfo->ring.size >> 12)
+ 			+ (dinfo->cursor.size >> 12);
+ 	}
+_
 
 
 

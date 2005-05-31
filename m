@@ -1,20 +1,20 @@
-From: sylvain.meyer@worldonline.fr
-Subject: [patch 1/2] intelfb fix accel detection when changing video modes
-Date: Tue, 31 May 2005 19:34:05 +0200
-Message-ID: <20050531173405.4CC4D10000AA@mwinf0703.wanadoo.fr>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [patch 2/2] intelfb documentation
+Date: Tue, 31 May 2005 20:30:52 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0505312028480.28899@numbat.sonytel.be>
+References: <20050531173408.AF22B1C000B1@mwinf1104.wanadoo.fr>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
+Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DdAd7-0004N8-1e
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 31 May 2005 10:34:17 -0700
-Received: from smtp7.wanadoo.fr ([193.252.22.24])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DdAd5-0000Ub-Dm
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 31 May 2005 10:34:16 -0700
-Received: from me-wanadoo.net (localhost [127.0.0.1])
-	by mwinf0703.wanadoo.fr (SMTP Server) with ESMTP id 022401000047
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 31 May 2005 19:34:06 +0200 (CEST)
+	id 1DdBWO-0007OJ-2b
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 31 May 2005 11:31:24 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DdBWM-0007qw-AK
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 31 May 2005 11:31:23 -0700
+In-Reply-To: <20050531173408.AF22B1C000B1@mwinf1104.wanadoo.fr>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -25,47 +25,36 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: akpm@osdl.org, adaplas@pol.net, sylvain.meyer@worldonline.fr
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Morton <akpm@osdl.org>, adaplas@pol.net, sylvain.meyer@worldonline.fr
 
+On Tue, 31 May 2005 sylvain.meyer@worldonline.fr wrote:
+> +	if no enough RAM was already allocated by the BIOS.
+           ^^^
+	   not
 
-From: Sylvain Meyer <sylvain.meyer@worldonline.fr>
+> +Separate each option/option-pair by commas (,) and the option from its value
+> +with an equal (=) as in the following:
+           ^^^^^
+	   equal sign
 
-Changed the tests in intelfb_set_par to check also the parameter var.accel_flags. If null, do nothing about ring buffers.
-Now, the DirectFB i830 driver could nicely work even if intelfb is hw accelerated. Just change the /etc/fb.modes file to disable console hw acceleration when starting a DirectFB app.
+> +	1.  Geert Uytterhoeven - his excellent howto and the virtual
+> +                                 framebuffer driver code made this possible.
 
-Signed-off-by: Sylvain Meyer <sylvain.meyer@worldonline.fr>
----
+Thanks! ;-)
 
- linux-2.6.12-rc4-root/drivers/video/intelfb/intelfbdrv.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Gr{oetje,eeting}s,
 
-diff -puN drivers/video/intelfb/intelfbdrv.c~intelfb-accel-fix drivers/video/intelfb/intelfbdrv.c
---- linux-2.6.12-rc4/drivers/video/intelfb/intelfbdrv.c~intelfb-accel-fix	2005-05-31 18:57:12.000000000 +0200
-+++ linux-2.6.12-rc4-root/drivers/video/intelfb/intelfbdrv.c	2005-05-31 18:57:12.000000000 +0200
-@@ -1301,7 +1301,7 @@ intelfb_set_par(struct fb_info *info)
- 
- 	intelfb_blank(FB_BLANK_POWERDOWN, info);
- 
--	if (dinfo->accel)
-+	if (ACCEL(dinfo, info))
- 		intelfbhw_2d_stop(dinfo);
- 
-  	memcpy(hw, &dinfo->save_state, sizeof(*hw));
-@@ -1317,7 +1317,7 @@ intelfb_set_par(struct fb_info *info)
- 
- 	update_dinfo(dinfo, &info->var);
- 
--	if (dinfo->accel)
-+	if (ACCEL(dinfo, info))
- 		intelfbhw_2d_start(dinfo);
- 
- 	intelfb_pan_display(&info->var, info);
-_
+						Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

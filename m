@@ -1,19 +1,34 @@
-From: James Simmons <jsimmons@www.infradead.org>
-Subject: New pci id for chipsfb
-Date: Mon, 6 Jun 2005 20:39:06 +0100 (BST)
-Message-ID: <Pine.LNX.4.56.0506062037270.18266@pentafluge.infradead.org>
+From: =?iso-8859-1?q?Lars_Tobias_B=F8rsting?= <larstobi@stud.ntnu.no>
+Subject: Re: Re: USB mouse hiccups (was RFD: Kernel
+ release numbering)
+Date: Mon, 06 Jun 2005 23:32:26 +0200
+Message-ID: <8jfy89n189h.fsf@alpakka.stud.ntnu.no>
+References: <pan.2005.03.20.21.53.36.929746@brick.flying-brick.caverock.net.nz>
+	<20050321202546.GA7281@flying-brick.caverock.net.nz>
+	<20050321124426.53d75b3e.akpm@osdl.org>
+	<200503220645.08821.adaplas@hotpop.com>
+	<20050525165122.1a62e232.akpm@osdl.org>
+	<Pine.LNX.4.56.0506062000510.16950@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DfNRI-0004pa-OO
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Jun 2005 12:39:12 -0700
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1DfNRG-0007vf-14
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Jun 2005 12:39:12 -0700
+	id 1DfPCw-0002zo-M2
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Jun 2005 14:32:30 -0700
+Received: from royk.itea.ntnu.no ([129.241.190.230])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1DfPCv-00008i-06
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Jun 2005 14:32:30 -0700
+Received: from localhost (localhost [127.0.0.1])
+	by royk.itea.ntnu.no (Postfix) with ESMTP id 2853466D84
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  6 Jun 2005 23:32:27 +0200 (CEST)
+Received: from alpakka.stud.ntnu.no (alpakka [129.241.56.34])
+	by royk.itea.ntnu.no (Postfix) with ESMTP
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon,  6 Jun 2005 23:32:26 +0200 (CEST)
+In-Reply-To: <Pine.LNX.4.56.0506062000510.16950@pentafluge.infradead.org> (James
+ Simmons's message of "Mon, 6 Jun 2005 20:01:12 +0100 (BST)")
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -24,26 +39,22 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@osdl.org>
-Cc: "Antonino A. Daplas" <adaplas@hotpop.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-fbdev-devel@lists.sourceforge.net
 
+James Simmons <jsimmons@www.infradead.org> writes:
 
-Signed-off-by: James Simmons <jsimmons@www.infradead.org>
+> Anyone with a trident card out there?
 
-Patch adds pci ID for CT 69000 chipset.
+I have an old laptop with a Trident CyberBlade Ai1 integrated on an
+ALI-chipset lying around. Happy to help. Just joined this list, though,
+so I don't have the rest of this thread.
 
---- linus-2.6/include/linux/pci_ids.h	2005-06-04 10:33:42.000000000 -0700
-+++ fbdev-2.6/include/linux/pci_ids.h	2005-06-06 12:15:12.000000000 -0700
-@@ -575,6 +575,7 @@
- #define PCI_DEVICE_ID_CT_65550		0x00e0
- #define PCI_DEVICE_ID_CT_65554		0x00e4
- #define PCI_DEVICE_ID_CT_65555		0x00e5
-+#define PCI_DEVICE_ID_CT_69000		0x00c0
- 
- #define PCI_VENDOR_ID_MIRO		0x1031
- #define PCI_DEVICE_ID_MIRO_36050	0x5601
+--=20
+Regards,
+
+Lars Tobias B=F8rsting
+
 
 
 -------------------------------------------------------

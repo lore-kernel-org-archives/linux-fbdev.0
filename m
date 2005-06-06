@@ -1,44 +1,70 @@
-From: jayalk@intworks.biz
-Subject: [RFC 2.6.12-rc5 1/1] Framebuffer driver for Arc LCD board
-Date: Thu, 2 Jun 2005 07:06:13 -0700
-Message-ID: <200506021406.j52E6C4G024304@intworks.biz>
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261290AbVFBOIj@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
+From: akpm@osdl.org
+Subject: framebuffer-driver-for-arc-lcd-board.patch added to -mm tree
+Date: Sun, 05 Jun 2005 22:16:29 -0700
+Message-ID: <200506060516.j565GWrr008241@shell0.pdx.osdl.net>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1Df9yn-0001iO-Il
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 05 Jun 2005 22:16:53 -0700
+Received: from fire.osdl.org ([65.172.181.4] helo=smtp.osdl.org)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1Df9yl-0005t7-90
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 05 Jun 2005 22:16:53 -0700
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: jsimmons@infradead.org
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net, geert@linux-m68k.org
+To: jayalk@intworks.biz, adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net, mm-commits@vger.kernel.org
 
-Hi James, Geert, Antonino, FBdev folk,
 
-Appended is my patch adding support for the Arc monochrome LCD board.
-The board uses KS108 controllers to drive individual 64x64 LCD
-matrices. The board can be paneled in a variety of setups such as
-2x1=128x64, 4x4=256x256 and so on. The board/host interface is through
-GPIO. I've done this patch against .12-rc5. The difference between rc5
-and 11.7 are the changes in Kconfig and Makefile related to the handling
-of the cfb* support functions. Otherwise, this patch will also apply
-cleanly against 11.7.
+The patch titled
 
-Please let me know if it is okay and if you have any feedback or
-suggestions. Thanks.
+     Framebuffer driver for Arc LCD board
 
-Best regards,
-Jaya Kumar
+has been added to the -mm tree.  Its filename is
 
+     framebuffer-driver-for-arc-lcd-board.patch
+
+Patches currently in -mm which might be from jayalk@intworks.biz are
+
+framebuffer-driver-for-arc-lcd-board.patch
+
+
+
+From: Jaya Kumar <jayalk@intworks.biz>
+
+Add support for the Arc monochrome LCD board.
+
+The board uses KS108 controllers to drive individual 64x64 LCD matrices. 
+The board can be paneled in a variety of setups such as 2x1=128x64,
+4x4=256x256 and so on.  The board/host interface is through GPIO.
 
 Signed-off-by: Jaya Kumar <jayalk@intworks.biz>
-
+Cc: "Antonino A. Daplas" <adaplas@pol.net>
+Cc: <linux-fbdev-devel@lists.sourceforge.net>
+Signed-off-by: Andrew Morton <akpm@osdl.org>
 ---
- Kconfig  |   16 +
- Makefile |    1 
- arcfb.c  |  628 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+ drivers/video/Kconfig  |   16 +
+ drivers/video/Makefile |    1 
+ drivers/video/arcfb.c  |  628 +++++++++++++++++++++++++++++++++++++++++++++++++
  3 files changed, 645 insertions(+)
-diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-2.6.12-rc5/drivers/video/arcfb.c
---- linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c	1970-01-01 07:30:00.000000000 +0730
-+++ linux-2.6.12-rc5/drivers/video/arcfb.c	2005-06-02 20:38:46.000000000 +0800
+
+diff -puN /dev/null drivers/video/arcfb.c
+--- /dev/null	2003-09-15 06:40:47.000000000 -0700
++++ 25-akpm/drivers/video/arcfb.c	2005-06-05 22:15:58.000000000 -0700
 @@ -0,0 +1,628 @@
 +/*
 + * linux/drivers/video/arcfb.c -- FB driver for Arc monochrome LCD board
@@ -49,31 +75,31 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 + * This file is subject to the terms and conditions of the GNU General Public
 + * License. See the file COPYING in the main directory of this archive for
 + * more details.
-+ * 
++ *
 + * Layout is based on skeletonfb.c by James Simmons and Geert Uytterhoeven.
-+ * 
++ *
 + * This driver was written to be used with the Arc LCD board. Arc uses a
 + * set of KS108 chips that control individual 64x64 LCD matrices. The board
 + * can be paneled in a variety of setups such as 2x1=128x64, 4x4=256x256 and
 + * so on. The interface between the board and the host is TTL based GPIO. The
 + * GPIO requirements are 8 writable data lines and 4+n lines for control. On a
 + * GPIO-less system, the board can be tested by connecting the respective sigs
-+ * up to a parallel port connector. The driver requires the IO addresses for 
-+ * data and control GPIO at load time. It is unable to probe for the 
++ * up to a parallel port connector. The driver requires the IO addresses for
++ * data and control GPIO at load time. It is unable to probe for the
 + * existence of the LCD so it must be told at load time whether it should
 + * be enabled or not.
 + *
 + * Todo:
-+ * - support for wakeup on irq for button input 
++ * - support for wakeup on irq for button input
 + * - testing with 4x4
-+ * 
++ *
 + * General notes:
-+ * - User must set tuhold. It's in microseconds. According to the 108 spec, 
++ * - User must set tuhold. It's in microseconds. According to the 108 spec,
 + *   the hold time is supposed to be at least 1 microsecond.
 + * - User must set arcfb_num_cols=x arcfb_num_rows=y, eg: x=2 means 128
-+ * - User must set arcfb_enable=1 to enable it 
++ * - User must set arcfb_enable=1 to enable it
 + * - User must set data_io_addr=0xIOADDR ctl_io_addr=0xIOADDR
-+ * 
++ *
 + */
 +
 +#include <linux/module.h>
@@ -105,12 +131,12 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 +};
 +
 +static struct fb_fix_screeninfo arcfb_fix __initdata = {
-+	.id =		"arcfb", 
++	.id =		"arcfb",
 +	.type =		FB_TYPE_PACKED_PIXELS,
 +	.visual =	FB_VISUAL_MONO01,
 +	.xpanstep =	0,
 +	.ypanstep =	1,
-+	.ywrapstep =	0, 
++	.ywrapstep =	0,
 +	.accel =	FB_ACCEL_NONE,
 +};
 +
@@ -147,7 +173,7 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 +#define KS_DPY_ON 0x3F
 +#define KS_DPY_OFF 0x3E
 +
-+static void ks108_writeb_ctl(struct arcfb_par *par, 
++static void ks108_writeb_ctl(struct arcfb_par *par,
 +				unsigned int chipindex, unsigned char value)
 +{
 +	unsigned char chipselval = par->cslut[chipindex];
@@ -158,7 +184,7 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 +	outb(chipselval|KS_CELO|KS_SEL_CMD, par->ctl_io_addr);
 +}
 +
-+static void ks108_writeb_data(struct arcfb_par *par, 
++static void ks108_writeb_data(struct arcfb_par *par,
 +				unsigned int chipindex, unsigned char value)
 +{
 +	unsigned char chipselval = par->cslut[chipindex];
@@ -169,19 +195,19 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 +	outb(chipselval|KS_CELO|KS_SEL_DATA, par->ctl_io_addr);
 +}
 +
-+static void ks108_set_start_line(struct arcfb_par *par, 
++static void ks108_set_start_line(struct arcfb_par *par,
 +				unsigned int chipindex, unsigned char y)
 +{
 +	ks108_writeb_ctl(par, chipindex, KS_SET_DPY_START_LINE|y);
 +}
 +
-+static void ks108_set_yaddr(struct arcfb_par *par, 
++static void ks108_set_yaddr(struct arcfb_par *par,
 +				unsigned int chipindex, unsigned char y)
 +{
 +	ks108_writeb_ctl(par, chipindex, KS_SET_PAGE_NUM|y);
 +}
 +
-+static void ks108_set_xaddr(struct arcfb_par *par, 
++static void ks108_set_xaddr(struct arcfb_par *par,
 +				unsigned int chipindex, unsigned char x)
 +{
 +	ks108_writeb_ctl(par, chipindex, KS_SET_X|x);
@@ -195,7 +221,7 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 +		ks108_set_yaddr(par, chipindex, i);
 +		ks108_set_xaddr(par, chipindex, 0);
 +		for (j=0; j < 64; j++) {
-+			ks108_writeb_data(par, chipindex, 
++			ks108_writeb_data(par, chipindex,
 +				(unsigned char) splashvalue);
 +		}
 +	}
@@ -205,14 +231,14 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 +
 +static int arcfb_open(struct fb_info *info, int user)
 +{
-+	struct arcfb_par *par = (struct arcfb_par *) info->par;	
++	struct arcfb_par *par = (struct arcfb_par *) info->par;
 +	atomic_inc(&par->ref_count);
 +	return 0;
 +}
 +
 +static int arcfb_release(struct fb_info *info, int user)
 +{
-+	struct arcfb_par *par = (struct arcfb_par *) info->par;	
++	struct arcfb_par *par = (struct arcfb_par *) info->par;
 +	int count = atomic_read(&par->ref_count);
 +	if (!count)
 +		return -EINVAL;
@@ -220,11 +246,11 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 +	return 0;
 +}
 +
-+static int arcfb_pan_display(struct fb_var_screeninfo *var, 
++static int arcfb_pan_display(struct fb_var_screeninfo *var,
 +				struct fb_info *info)
 +{
 +	int i;
-+	struct arcfb_par *par = (struct arcfb_par *) info->par;	
++	struct arcfb_par *par = (struct arcfb_par *) info->par;
 +
 +	if ((var->vmode & FB_VMODE_YWRAP) && (var->yoffset < 64)
 +		&& (info->var.yres <= 64)) {
@@ -244,7 +270,7 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 + * each write of 8 vertical pixels. then we shift out as we move along
 + * X. That's what rightshift does. bitmask selects the desired input bit.
 + */
-+static void arcfb_lcd_update_page(struct arcfb_par *par, unsigned int upper, 
++static void arcfb_lcd_update_page(struct arcfb_par *par, unsigned int upper,
 +		unsigned int left, unsigned int right, unsigned int distance)
 +{
 +	unsigned char *src;
@@ -256,7 +282,7 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 +	xindex = left >> 6;
 +	yindex = upper >> 6;
 +	chipindex = (xindex + (yindex*arcfb_num_cols));
-+		
++
 +	ks108_set_yaddr(par, chipindex, upper/8);
 +
 +	linesize = par->info->var.xres/8;
@@ -269,12 +295,12 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 +		val = 0; i=0;
 +		for (i=0; i < 8; i++) {
 +			if ( i > rightshift) {
-+				val |= (*(src + (i*linesize)) & bitmask) 
++				val |= (*(src + (i*linesize)) & bitmask)
 +						<< (i - rightshift);
 +			} else {
 +				val |= (*(src + (i*linesize)) & bitmask)
 +						 >> (rightshift - i);
-+			} 
++			}
 +		}
 +		ks108_writeb_data(par, chipindex, val);
 +		left++;
@@ -292,11 +318,11 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 +
 +/*
 + * here we handle the entire vertical page of the update. we write across
-+ * lcd chips. update_page uses the upper/left values to decide which 
++ * lcd chips. update_page uses the upper/left values to decide which
 + * chip to select for the right. upper is needed for setting the page
 + * desired for the write.
 + */
-+static void arcfb_lcd_update_vert(struct arcfb_par *par, unsigned int top, 
++static void arcfb_lcd_update_vert(struct arcfb_par *par, unsigned int top,
 +		unsigned int bottom, unsigned int left, unsigned int right)
 +{
 +	unsigned int distance, upper, lower;
@@ -318,7 +344,7 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 + * handle spaning multiple pages. we break out each horizontal
 + * block in to individual blocks no taller than 64 pixels.
 + */
-+static void arcfb_lcd_update_horiz(struct arcfb_par *par, unsigned int left, 
++static void arcfb_lcd_update_horiz(struct arcfb_par *par, unsigned int left,
 +			unsigned int right, unsigned int top, unsigned int h)
 +{
 +	unsigned int distance, upper, lower;
@@ -329,31 +355,31 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 +
 +	while (distance > 0) {
 +		distance -= ( (lower - upper) + 1 );
-+		arcfb_lcd_update_vert(par, upper, lower, left, right); 
++		arcfb_lcd_update_vert(par, upper, lower, left, right);
 +		upper = lower + 1;
 +		lower = min( (upper + distance - 1), ceil64(upper) );
 +	}
 +}
 +
 +/*
-+ * here we start the process of spliting out the fb update into 
++ * here we start the process of spliting out the fb update into
 + * individual blocks of pixels. we end up spliting into 64x64 blocks
 + * and finally down to 64x8 pages.
 + */
-+static void arcfb_lcd_update(struct arcfb_par *par, unsigned int dx, 
++static void arcfb_lcd_update(struct arcfb_par *par, unsigned int dx,
 +			unsigned int dy, unsigned int w, unsigned int h)
 +{
 +	unsigned int left, right, distance;
 +	distance = w;
 +	left = dx;
 +	right = min( (left + w - 1), ceil64(left) );
-+	
++
 +	while (distance > 0) {
 +		arcfb_lcd_update_horiz(par,left,right,dy,h);
 +		distance -= ((right - left) + 1);
 +		left = right + 1;
 +		right = min((left + distance - 1), ceil64(left));
-+	}	
++	}
 +}
 +
 +void arcfb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
@@ -371,7 +397,7 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 +	arcfb_lcd_update(par, rect->dx, y, rect->width, h);
 +}
 +
-+void arcfb_copyarea(struct fb_info *info, const struct fb_copyarea *area) 
++void arcfb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
 +{
 +	unsigned int y, h;
 +	struct arcfb_par *par = (struct arcfb_par *) info->par;
@@ -386,7 +412,7 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 +	arcfb_lcd_update(par, area->dx, y, area->width, h);
 +}
 +
-+void arcfb_imageblit(struct fb_info *info, const struct fb_image *image) 
++void arcfb_imageblit(struct fb_info *info, const struct fb_image *image)
 +{
 +	unsigned int y, h;
 +	struct arcfb_par *par = (struct arcfb_par *) info->par;
@@ -402,11 +428,11 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 +}
 +
 +/*
-+ * this is the access path from userspace. they can seek and write to 
-+ * the fb. it's inefficient for them to do anything less than 64*8 
++ * this is the access path from userspace. they can seek and write to
++ * the fb. it's inefficient for them to do anything less than 64*8
 + * writes since we update the lcd in each write() anyway.
-+ */ 
-+static ssize_t arcfb_write(struct file *file, const char *buf, size_t count, 
++ */
++static ssize_t arcfb_write(struct file *file, const char *buf, size_t count,
 +				loff_t *ppos)
 +{
 +	/* modded from epson 1355 */
@@ -417,7 +443,7 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 +	unsigned long p;
 +	int err=-EINVAL;
 +	unsigned int fbmemlength,x,y,w,h, bitppos, startpos, endpos, bitcount;
-+	struct arcfb_par *par; 
++	struct arcfb_par *par;
 +	unsigned int xres;
 +
 +
@@ -425,7 +451,7 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 +	inode = file->f_dentry->d_inode;
 +	fbidx = iminor(inode);
 +	info = registered_fb[fbidx];
-+	par = (struct arcfb_par *) info->par;	
++	par = (struct arcfb_par *) info->par;
 +
 +
 +	if (!info || !info->screen_base)
@@ -451,13 +477,13 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 +		*ppos += count;
 +		err = -EFAULT;
 +	}
-+	
++
 +
 +	bitppos = p*8;
 +	startpos = floorXres(bitppos, xres);
-+	endpos = ceilXres((bitppos + (count*8)), xres); 
++	endpos = ceilXres((bitppos + (count*8)), xres);
 +	bitcount = endpos - startpos;
-+	
++
 +	x = startpos % xres;
 +	y = startpos / xres;
 +	w = xres;
@@ -474,32 +500,32 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 +{
 +	char *this_opt;
 +
-+	if (!options || !*options) 
++	if (!options || !*options)
 +		return 0;
 +
 +	while ((this_opt = strsep(&options, ",")) != NULL) {
 +		if (!*this_opt)
 +			continue;
-+		if (!strncmp(this_opt, "nosplash", 8)) 
++		if (!strncmp(this_opt, "nosplash", 8))
 +			nosplash = 1;
-+		else if (!strncmp(this_opt, "arcfb_enable", 8)) 
++		else if (!strncmp(this_opt, "arcfb_enable", 8))
 +			arcfb_enable = 1;
-+		else if (!strncmp(this_opt, "arcfb_num_cols", 14)) 
-+			arcfb_num_cols = simple_strtoul((this_opt + 14), 
++		else if (!strncmp(this_opt, "arcfb_num_cols", 14))
++			arcfb_num_cols = simple_strtoul((this_opt + 14),
 +								NULL, 0);
-+		else if (!strncmp(this_opt, "arcfb_num_rows", 14)) 
-+			arcfb_num_rows = simple_strtoul((this_opt + 14), 
++		else if (!strncmp(this_opt, "arcfb_num_rows", 14))
++			arcfb_num_rows = simple_strtoul((this_opt + 14),
 +								NULL, 0);
-+		else if (!strncmp(this_opt, "data_io_addr", 12)) 
-+			data_io_addr = simple_strtoul((this_opt + 12), 
++		else if (!strncmp(this_opt, "data_io_addr", 12))
++			data_io_addr = simple_strtoul((this_opt + 12),
 +								NULL, 0);
-+		else if (!strncmp(this_opt, "ctl_io_addr", 11)) 
-+			ctl_io_addr = simple_strtoul((this_opt + 11), 
++		else if (!strncmp(this_opt, "ctl_io_addr", 11))
++			ctl_io_addr = simple_strtoul((this_opt + 11),
 +								NULL, 0);
-+		else if (!strncmp(this_opt, "splashvalue", 11)) 
-+			splashvalue = simple_strtoul((this_opt + 11), 
++		else if (!strncmp(this_opt, "splashvalue", 11))
++			splashvalue = simple_strtoul((this_opt + 11),
 +								NULL, 0);
-+		else if (!strncmp(this_opt, "tuhold", 6)) 
++		else if (!strncmp(this_opt, "tuhold", 6))
 +			tuhold = simple_strtoul((this_opt + 6), NULL, 0);
 +	}
 +	return 0;
@@ -514,11 +540,11 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 +	.fb_open	= arcfb_open,
 +	.fb_write	= arcfb_write,
 +	.fb_release	= arcfb_release,
-+	.fb_pan_display	= arcfb_pan_display,	
-+	.fb_fillrect	= arcfb_fillrect, 	
++	.fb_pan_display	= arcfb_pan_display,
++	.fb_fillrect	= arcfb_fillrect,
 +	.fb_copyarea	= arcfb_copyarea,
-+	.fb_imageblit	= arcfb_imageblit,	
-+	.fb_cursor	= soft_cursor,	
++	.fb_imageblit	= arcfb_imageblit,
++	.fb_cursor	= soft_cursor,
 +};
 +
 +static int __init arcfb_probe(struct device *device)
@@ -566,7 +592,7 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 +	       "fb%d: Arc frame buffer device, using %dK of video memory\n",
 +	       info->node, videomemorysize >> 10);
 +
-+	/* this inits the lcd but doesn't clear dirty pixels */	
++	/* this inits the lcd but doesn't clear dirty pixels */
 +	for (i=0; i < (arcfb_num_cols*arcfb_num_rows); i++) {
 +		ks108_writeb_ctl(par, i, KS_DPY_OFF);
 +		ks108_set_start_line(par, i, 0);
@@ -574,12 +600,12 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 +		ks108_set_xaddr(par, i, 0);
 +		ks108_writeb_ctl(par, i, KS_DPY_ON);
 +	}
-+	
++
 +	/* if we were told to splash the screen, we just clear it */
 +	if (!nosplash) {
 +		for (i=0; i < (arcfb_num_cols*arcfb_num_rows); i++) {
 +			printk(KERN_INFO "fb%d: splashing lcd %d\n",
-+				info->node, i);	
++				info->node, i);
 +			ks108_set_start_line(par, i, 0);
 +			ks108_clear_lcd(par, i);
 +		}
@@ -629,7 +655,7 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 +
 +	if (fb_get_options("arcfb", &option))
 +		return -ENODEV;
-+	
++
 +	arcfb_setup(option);
 +#endif
 +
@@ -668,9 +694,9 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/arcfb.c linux-
 +MODULE_AUTHOR("Jaya Kumar");
 +MODULE_LICENSE("GPL");
 +
-diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/Kconfig linux-2.6.12-rc5/drivers/video/Kconfig
---- linux-2.6.12-rc5-vanilla/drivers/video/Kconfig	2005-06-01 14:41:32.000000000 +0800
-+++ linux-2.6.12-rc5/drivers/video/Kconfig	2005-06-02 20:42:37.000000000 +0800
+diff -puN drivers/video/Kconfig~framebuffer-driver-for-arc-lcd-board drivers/video/Kconfig
+--- 25/drivers/video/Kconfig~framebuffer-driver-for-arc-lcd-board	2005-06-05 22:15:58.000000000 -0700
++++ 25-akpm/drivers/video/Kconfig	2005-06-05 22:15:58.000000000 -0700
 @@ -322,6 +322,22 @@ config FB_FM2
  	  This is the frame buffer device driver for the Amiga FrameMaster
  	  card from BSC (exhibited 1992 but not shipped as a CBM product).
@@ -689,19 +715,27 @@ diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/Kconfig linux-
 +	  driver supports it for use with x86 SBCs through a 16 bit GPIO
 +	  interface (8 bit data, 8 bit control). If you anticpate using
 +	  this driver, say Y or M; otherwise say N. You must specify the
-+	  GPIO IO address to be used for setting control and data. 
++	  GPIO IO address to be used for setting control and data.
 +
  config FB_ATARI
  	bool "Atari native chipset support"
  	depends on (FB = y) && ATARI && BROKEN
-diff -uprN -X dontdiff.rc5 linux-2.6.12-rc5-vanilla/drivers/video/Makefile linux-2.6.12-rc5/drivers/video/Makefile
---- linux-2.6.12-rc5-vanilla/drivers/video/Makefile	2005-06-01 14:41:32.000000000 +0800
-+++ linux-2.6.12-rc5/drivers/video/Makefile	2005-06-02 21:37:58.000000000 +0800
+diff -puN drivers/video/Makefile~framebuffer-driver-for-arc-lcd-board drivers/video/Makefile
+--- 25/drivers/video/Makefile~framebuffer-driver-for-arc-lcd-board	2005-06-05 22:15:58.000000000 -0700
++++ 25-akpm/drivers/video/Makefile	2005-06-05 22:15:58.000000000 -0700
 @@ -21,6 +21,7 @@ obj-$(CONFIG_FB_MACMODES)      += macmod
  # Hardware specific drivers go first
  obj-$(CONFIG_FB_RETINAZ3)         += retz3fb.o
  obj-$(CONFIG_FB_AMIGA)            += amifb.o c2p.o
-+obj-$(CONFIG_FB_ARC)              += arcfb.o 
++obj-$(CONFIG_FB_ARC)              += arcfb.o
  obj-$(CONFIG_FB_CLPS711X)         += clps711xfb.o
  obj-$(CONFIG_FB_CYBER)            += cyberfb.o
  obj-$(CONFIG_FB_CYBER2000)        += cyber2000fb.o
+_
+
+
+-------------------------------------------------------
+This SF.Net email is sponsored by: NEC IT Guy Games.  How far can you shotput
+a projector? How fast can you ride your desk chair down the office luge track?
+If you want to score the big prize, get to know the little guy.  
+Play to win an NEC 61" plasma display: http://www.necitguy.com/?r=20

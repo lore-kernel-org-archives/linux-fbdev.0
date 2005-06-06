@@ -1,24 +1,21 @@
 From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: fbdev hardware cursor support
-Date: Mon, 6 Jun 2005 15:33:34 -0400
-Message-ID: <9e47339105060612333ed8b98c@mail.gmail.com>
-References: <9e473391050524224063df2372@mail.gmail.com>
-	 <Pine.LNX.4.56.0506061940550.16950@pentafluge.infradead.org>
+Subject: Three new features for fbdev
+Date: Mon, 6 Jun 2005 15:35:15 -0400
+Message-ID: <9e47339105060612352d15c20b@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DfNMW-0004Pv-PD
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Jun 2005 12:34:16 -0700
-Received: from wproxy.gmail.com ([64.233.184.200])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DfNMU-0007FN-8E
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Jun 2005 12:34:16 -0700
-Received: by wproxy.gmail.com with SMTP id 69so1990800wri
-        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 06 Jun 2005 12:34:08 -0700 (PDT)
-In-Reply-To: <Pine.LNX.4.56.0506061940550.16950@pentafluge.infradead.org>
+	id 1DfNOD-0004WH-1m
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Jun 2005 12:36:01 -0700
+Received: from wproxy.gmail.com ([64.233.184.206])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1DfNOC-00027Y-4z
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Jun 2005 12:36:00 -0700
+Received: by wproxy.gmail.com with SMTP id 69so1991620wri
+        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 06 Jun 2005 12:35:54 -0700 (PDT)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -31,18 +28,22 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: "Antonino A. Daplas" <adaplas@hotpop.com>, James Simmons <jsimmons@www.infradead.org>
+To: fbdev <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@www.infradead.org>
 
-On 6/6/05, James Simmons <jsimmons@www.infradead.org> wrote:
-> Some time ago we had userland cursor support but it was removed :-( Now
-> that we have sysfs it could make a come back. The software cursor code
-> doesn't behave proprely from userland. It was design to work with the
-> console system only.
+If anyone is interested in working on these topics I can use some help.
+Three main features I still need from fbdev:
 
-I have software cursors going in Xegl now so I am ok for the moment.
-At some point we need to resurrect the hardware cursor support in
-fbdev.
+1) Trigger a user space app to reset a secondary card on boot. I have
+this working but not in a shippable state. It needs kernel fixes in
+hotplug to trigger the app properly. The app needs debugging to work
+right with emu86.
+
+2) User space mode list generation. I have code for this too. It needs
+fixes in hotplug to allow subdir creation in /sys/class/xxx. The user
+space mode app can read files from /etc to name the modes, adjust for
+broken EDID, supply mode list for non-EDID monitor, etc.
+
+3) Hardware cursor support.
 
 --=20
 Jon Smirl

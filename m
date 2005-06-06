@@ -1,24 +1,26 @@
 From: James Simmons <jsimmons@www.infradead.org>
-Subject: Re: Re: USB mouse hiccups (was RFD: Kernel
- release numbering)
-Date: Mon, 6 Jun 2005 20:01:12 +0100 (BST)
-Message-ID: <Pine.LNX.4.56.0506062000510.16950@pentafluge.infradead.org>
-References: <pan.2005.03.20.21.53.36.929746@brick.flying-brick.caverock.net.nz>
- <20050321202546.GA7281@flying-brick.caverock.net.nz> <20050321124426.53d75b3e.akpm@osdl.org>
- <200503220645.08821.adaplas@hotpop.com> <20050525165122.1a62e232.akpm@osdl.org>
+Subject: Re: Fw: [Bugme-new] [Bug 4394] New: Intel 855
+ (i810): 1280x768 wide screen FB resolution not available
+Date: Mon, 6 Jun 2005 20:05:51 +0100 (BST)
+Message-ID: <Pine.LNX.4.56.0506062002470.16950@pentafluge.infradead.org>
+References: <20050525172229.0ccfbf9a.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DfMqb-0002KP-80
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Jun 2005 12:01:17 -0700
+	id 1DfMv6-0002VD-OZ
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Jun 2005 12:05:56 -0700
 Received: from pentafluge.infradead.org ([213.146.154.40])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1DfMqZ-0005xX-Bu
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Jun 2005 12:01:17 -0700
-In-Reply-To: <20050525165122.1a62e232.akpm@osdl.org>
+	id 1DfMv4-0002pw-2B
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Jun 2005 12:05:56 -0700
+Received: from jsimmons (helo=localhost)
+	by pentafluge.infradead.org with local-esmtp (Exim 4.43 #1 (Red Hat Linux))
+	id 1DfMv1-0004Yr-VC
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Jun 2005 20:05:52 +0100
+In-Reply-To: <20050525172229.0ccfbf9a.akpm@osdl.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,31 +34,34 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: adaplas@pol.net, adaplas@hotpop.com, viking@flying-brick.caverock.net.nz
 
 
-> > If not the same, do:
-> > 
-> > fbset -vyres n
-> > 
-> > where n: is equal to the vertical resolution
-> > 
-> > 2. If you still get a non-clearing display, then check if
-> > CONFIG_FB_TRIDENT_ACCEL is set to y.  If it is, set it to n. Recompile and
-> > reboot.
-> > 
-> > 3. Please send your .config, dmesg, lspci -vvv, and fbset -i.
-> > 
-> > 4. What is the last kernel version where tridentfb worked for you?
-> > 
-> > BTW, there are no major changes in tridentfb for months, so I'm surprised
-> > about this regression.
-> > 
+> Who owns fbdev bugzilla records?  They seem to be going to James?
+
+I have been getting them. I know its a mess because I don't have all the 
+hardware alot of people complain about. We need a way to distrube the 
+errors to the proper people. I'm wondering if it possible to have this 
+mailing list receive the bugzilla reports?
+
+> Date: Wed, 23 Mar 2005 16:45:12 -0800
+> From: bugme-daemon@osdl.org
+> To: bugme-new@lists.osdl.org
+> Subject: [Bugme-new] [Bug 4394] New: Intel 855 (i810): 1280x768 wide screen FB resolution not available
 > 
-> Guys, is this problem still present in 2.6.12-rc5?
-
-Anyone with a trident card out there?
-
+> 
+> http://bugme.osdl.org/show_bug.cgi?id=4394
+> 
+> 
+> -------------------------------------------------------
+> SF.Net email is sponsored by: GoToMeeting - the easiest way to collaborate
+> online with coworkers and clients while avoiding the high cost of travel and
+> communications. There is no equipment to buy and you can meet as often as
+> you want. Try it free.http://ads.osdn.com/?ad_id=7402&alloc_id=16135&op=click
+> _______________________________________________
+> Linux-fbdev-devel mailing list
+> Linux-fbdev-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+> 
 
 
 -------------------------------------------------------

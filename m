@@ -1,21 +1,22 @@
 From: James Simmons <jsimmons@www.infradead.org>
-Subject: Re: fbdev hardware cursor support
-Date: Mon, 6 Jun 2005 19:42:26 +0100 (BST)
-Message-ID: <Pine.LNX.4.56.0506061940550.16950@pentafluge.infradead.org>
-References: <9e473391050524224063df2372@mail.gmail.com>
+Subject: Re: [RFC/PATCH 2.6.12-rc5 1/1] Framebuffer driver
+ for Arc LCD board
+Date: Mon, 6 Jun 2005 20:00:12 +0100 (BST)
+Message-ID: <Pine.LNX.4.56.0506061958450.16950@pentafluge.infradead.org>
+References: <200506061416.j56EG18b017582@intworks.biz>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DfMYY-00015R-NB
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Jun 2005 11:42:38 -0700
+	id 1DfMpg-0002Ft-BT
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Jun 2005 12:00:20 -0700
 Received: from pentafluge.infradead.org ([213.146.154.40])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1DfMYX-0007Y0-8O
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Jun 2005 11:42:38 -0700
-In-Reply-To: <9e473391050524224063df2372@mail.gmail.com>
+	id 1DfMpe-0005nH-Aj
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Jun 2005 12:00:19 -0700
+In-Reply-To: <200506061416.j56EG18b017582@intworks.biz>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,25 +29,27 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
-Cc: "Antonino A. Daplas" <adaplas@hotpop.com>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: adaplas@pol.net, linux-kernel@vger.kernel.org, akpm@osdl.org
 
 
-
-On Wed, 25 May 2005, Jon Smirl wrote:
-
-> What is the status of fbdev hardware cursor support? I see the ioctl
-> is disabled in the driver.
+> Hi Antonino, Andrew, FBdev folk,
 > 
-> If a driver is using the softcursor support would the ioctl control that cursor?
-> Does softcursor work in a bitmap graphics mode?
+> I added akpm's fixes below, then further cleanup and irq support: 
+> - coding style fixes
+> - removing unneeded typecasts
+> - namespace fixes
 > 
-> The EGL based 
+> I had used skeletonfb.c to start with and that had fb_get_options.
+> I've removed that and the redundant param retrieval from arcfb as 
+> per akpm's mention of the redundancy of fb_get_options/*_setup. 
+> I also cleaned up some other duplicate code. I've listed the 
+> driver as maintained and added myself. I did this diff against
+> rc5. Should I be doing it against -mm instead?
+> 
+> Please let me know if you have any feedback or suggestions.
 
-Some time ago we had userland cursor support but it was removed :-( Now 
-that we have sysfs it could make a come back. The software cursor code 
-doesn't behave proprely from userlane. It was design to work with the 
-console system only. 
+It looks really good :-) Please apply.
 
 
 

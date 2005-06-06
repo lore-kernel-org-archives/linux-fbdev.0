@@ -1,22 +1,19 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Three new features for fbdev
-Date: Mon, 6 Jun 2005 15:35:15 -0400
-Message-ID: <9e47339105060612352d15c20b@mail.gmail.com>
+From: James Simmons <jsimmons@www.infradead.org>
+Subject: New pci id for chipsfb
+Date: Mon, 6 Jun 2005 20:39:06 +0100 (BST)
+Message-ID: <Pine.LNX.4.56.0506062037270.18266@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DfNOD-0004WH-1m
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Jun 2005 12:36:01 -0700
-Received: from wproxy.gmail.com ([64.233.184.206])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1DfNOC-00027Y-4z
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Jun 2005 12:36:00 -0700
-Received: by wproxy.gmail.com with SMTP id 69so1991620wri
-        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 06 Jun 2005 12:35:54 -0700 (PDT)
-Content-Disposition: inline
+	id 1DfNRI-0004pa-OO
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Jun 2005 12:39:12 -0700
+Received: from pentafluge.infradead.org ([213.146.154.40])
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1DfNRG-0007vf-14
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Jun 2005 12:39:12 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,27 +24,26 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: fbdev <linux-fbdev-devel@lists.sourceforge.net>, James Simmons <jsimmons@www.infradead.org>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@osdl.org>
+Cc: "Antonino A. Daplas" <adaplas@hotpop.com>, Geert Uytterhoeven <geert@linux-m68k.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-If anyone is interested in working on these topics I can use some help.
-Three main features I still need from fbdev:
 
-1) Trigger a user space app to reset a secondary card on boot. I have
-this working but not in a shippable state. It needs kernel fixes in
-hotplug to trigger the app properly. The app needs debugging to work
-right with emu86.
+Signed-off-by: James Simmons <jsimmons@www.infradead.org>
 
-2) User space mode list generation. I have code for this too. It needs
-fixes in hotplug to allow subdir creation in /sys/class/xxx. The user
-space mode app can read files from /etc to name the modes, adjust for
-broken EDID, supply mode list for non-EDID monitor, etc.
+Patch adds pci ID for CT 69000 chipset.
 
-3) Hardware cursor support.
-
---=20
-Jon Smirl
-jonsmirl@gmail.com
+--- linus-2.6/include/linux/pci_ids.h	2005-06-04 10:33:42.000000000 -0700
++++ fbdev-2.6/include/linux/pci_ids.h	2005-06-06 12:15:12.000000000 -0700
+@@ -575,6 +575,7 @@
+ #define PCI_DEVICE_ID_CT_65550		0x00e0
+ #define PCI_DEVICE_ID_CT_65554		0x00e4
+ #define PCI_DEVICE_ID_CT_65555		0x00e5
++#define PCI_DEVICE_ID_CT_69000		0x00c0
+ 
+ #define PCI_VENDOR_ID_MIRO		0x1031
+ #define PCI_DEVICE_ID_MIRO_36050	0x5601
 
 
 -------------------------------------------------------

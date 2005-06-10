@@ -1,21 +1,23 @@
 From: Jon Smirl <jonsmirl@gmail.com>
-Subject: lost console font setting
-Date: Fri, 10 Jun 2005 10:01:09 -0400
-Message-ID: <9e47339105061007013f1984de@mail.gmail.com>
+Subject: Re: lost console font setting
+Date: Fri, 10 Jun 2005 10:32:21 -0400
+Message-ID: <9e47339105061007323956ab83@mail.gmail.com>
+References: <9e47339105061007013f1984de@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Dgk4T-00046H-Gg
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Jun 2005 07:01:17 -0700
-Received: from wproxy.gmail.com ([64.233.184.196])
+	id 1DgkYf-0005mT-9O
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Jun 2005 07:32:29 -0700
+Received: from wproxy.gmail.com ([64.233.184.199])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1Dgk4R-00072L-N9
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Jun 2005 07:01:17 -0700
-Received: by wproxy.gmail.com with SMTP id 69so465794wri
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Jun 2005 07:01:10 -0700 (PDT)
+	id 1DgkYd-0003y5-Rt
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Jun 2005 07:32:29 -0700
+Received: by wproxy.gmail.com with SMTP id 55so1043830wri
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Jun 2005 07:32:21 -0700 (PDT)
+In-Reply-To: <9e47339105061007013f1984de@mail.gmail.com>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -30,11 +32,16 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: text/plain; charset="us-ascii"
 To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-On the x86 if I load radeonfb the VGA console loses it font.  Runing
-setfont or switching to X and back restores the font. How is the VGA
-font controlled, what needs to be change in radeonfb to stop it from
-stomping the VGA font? This is all in text mode, fbconsole is not
-running.
+On 6/10/05, Jon Smirl <jonsmirl@gmail.com> wrote:
+> On the x86 if I load radeonfb the VGA console loses it font.  Runing
+> setfont or switching to X and back restores the font. How is the VGA
+> font controlled, what needs to be change in radeonfb to stop it from
+> stomping the VGA font? This is all in text mode, fbconsole is not
+> running.
+
+I found the source of this. radeonfb memsets VRAM to zero at load.
+That sets all the chars in the VGA font table to zero which makes the
+console disappear.
 
 --=20
 Jon Smirl

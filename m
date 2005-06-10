@@ -1,24 +1,22 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: Virtual Terminal switching problem with a 2.6.10 kernel with a ruby patch
-Date: Thu, 9 Jun 2005 13:51:20 -0400
-Message-ID: <9e4733910506091051311d2d47@mail.gmail.com>
-References: <396a6e00050608091524b97479@mail.gmail.com>
-	 <396a6e000506090749265a5066@mail.gmail.com>
+From: Jurriaan <thunder7@xs4all.nl>
+Subject: new framebuffer fonts + updated 12x22 font available
+Date: Fri, 10 Jun 2005 15:23:31 +0200
+Message-ID: <20050610132331.GA8643@middle.of.nowhere>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DgRBi-0006lT-LF
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 09 Jun 2005 10:51:30 -0700
-Received: from wproxy.gmail.com ([64.233.184.207])
+	id 1DgjU5-00028c-25
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Jun 2005 06:23:41 -0700
+Received: from smtp-vbr7.xs4all.nl ([194.109.24.27])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DgRBe-0004rF-Ud
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 09 Jun 2005 10:51:30 -0700
-Received: by wproxy.gmail.com with SMTP id 69so192626wri
-        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 09 Jun 2005 10:51:20 -0700 (PDT)
-In-Reply-To: <396a6e000506090749265a5066@mail.gmail.com>
+	id 1DgjU2-0000ev-D3
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Jun 2005 06:23:40 -0700
+Received: from zeeotter.xs4all.nl (zeeotter.xs4all.nl [80.126.31.149])
+	by smtp-vbr7.xs4all.nl (8.13.3/8.13.3) with ESMTP id j5ADNXXB083137
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Jun 2005 15:23:33 +0200 (CEST)
+	(envelope-from jurriaan@rivierenland.xs4all.nl)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -31,65 +29,41 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: kenoti maembe <kenotimaembe@gmail.com>, James Simmons <jsimmons@www.infradead.org>
-Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: linux-kernel@vger.kernel.org
+Cc: adaplas@pol.net, benh@kernel.crashing.org, linux-fbdev-devel@lists.sourceforge.net
 
-On 6/9/05, kenoti maembe <kenotimaembe@gmail.com> wrote:
-> Am working on a dual head project for my final year project at the
-> university of nairobi in kenya and come across a discussion where it
-> was stated that the linux kernel (by then 2.4) does not allow for two
-> or more virtual terminals to exist concurrently..I have a few
-> questions I would like to ask
-> 1.  Is this still the case with the 2.6 kernel? Thought of working
-> through these by creating a new XFree86 and using the XFree86
-> prefbusid patch from.from http://www.ltn.lv/~aivils/ bt still only one
-> vt works at a time.
-> 2. Have tried to assign devices to the different vts but cant seemt to
-> get a way to assign the usb keyboard.All input device modules and usb
-> modules are load in the kernel so dont understand what the issue is.
+I've spent my offline-vacation on improving the fonts for use with the
+framebuffer.
 
-You need the ruby kernel patch set to support multiple VTs.
-http://linuxconsole.sourceforge.net/
-http://linuxconsole.bkbits.net/
+I've added all the characters marked 'FIXME' in the sun12x22 font and
+created a 10x18 font (based on the sun12x22 font) and a 7x14 font (based
+on the vga8x16 font).
 
-There are also patches for supporting multiple video cards/users from
-X but I don't know where they are. Ask on the x.org list or James will
-know.
+The total patch is about 300 KiB, so I won't attach it here. 
 
-I'm not sure how multiple keyboards are handled in ruby. For Xegl I am
-using the new evdev interface.
-http://www.frogmouth.net/hid-doco/c537.html for examples.
+As maintainership of the fonts is unknown to me, I'm posting this to
+lkml, fb-devel, Andrew and some choice fb developers.
 
-Dealing with multiple video cards is very challenging especially
-without the hardware documentation.
+This patch is non-intrusive, no options are enabled by default so most
+users won't notice a thing.
 
-For a different project you might want to try implementing the EGL
-interface on a 3D card. Documentation for ATI Rage128 and Mach64 (no
-one is working on these) is available so if you could get your hands
-on a PCI version (about $30) of one of those you'd be set. You want a
-PCI version for target debug, then you run X and your debugger on the
-Nvidia AGP card.
+I am placing my changes under the GPL, however, I've not seen any
+copyright notices on the sun12x22 font and the vga8x16 font which I
+derived my new fonts from so I don't know what the copyright status is.
 
-http://mesa3d.sf.net
-http://lists.freedesktop.org/mailman/listinfo/dri-egl
+The patch is available at
 
-Implementing EGL is more narrow in scope and should be easier to do.
-EGL forms the basis of Xegl which is the new 3D accelerated X server.
+http://www.xs4all.nl/~thunder7/fonts_7x14_10x18_12x22.diff
 
-> CPU: Athlon 1200+
-> RAM: 384Mb
-> Videocards: NVIDIA GeForce4 MX 440 (AGP), S3 Tio (PCI)
-> Motherboard: Via
-> Keyboards: one PS/2 keyboards, one USB keyboard
-> Mice: one serial, one USB
-> Monitors: 17'', 15''
-> on a mandrake 10.0
->=20
-> Thank you all.
+I would appreciate inclusion, of course, or constructive comments.
 
---=20
-Jon Smirl
-jonsmirl@gmail.com
+Thanks,
+Jurriaan
+-- 
+It was not a compliment, but there was praise in it, if one knew how to look.
+	Michelle West - Sea of Sorrows
+Debian (Unstable) GNU/Linux 2.6.12-rc4-mm2 2x6017 bogomips load 0.02
 
 
 -------------------------------------------------------

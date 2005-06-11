@@ -1,7 +1,7 @@
 From: Jon Smirl <jonsmirl@gmail.com>
 Subject: Re: PATCH: move soft_cursor into fbconsole
-Date: Sat, 11 Jun 2005 09:10:17 -0400
-Message-ID: <9e47339105061106103ce6327e@mail.gmail.com>
+Date: Sat, 11 Jun 2005 09:23:17 -0400
+Message-ID: <9e473391050611062323284c4e@mail.gmail.com>
 References: <9e47339105061021571f479b10@mail.gmail.com>
 	 <Pine.LNX.4.56.0506110711100.24250@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
@@ -10,14 +10,14 @@ Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Dh5km-0005Su-K2
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 11 Jun 2005 06:10:24 -0700
-Received: from wproxy.gmail.com ([64.233.184.201])
+	id 1Dh5xM-0005tb-3n
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 11 Jun 2005 06:23:24 -0700
+Received: from wproxy.gmail.com ([64.233.184.195])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1Dh5kl-0002OQ-6e
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 11 Jun 2005 06:10:24 -0700
-Received: by wproxy.gmail.com with SMTP id 69so716140wri
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 11 Jun 2005 06:10:17 -0700 (PDT)
+	id 1Dh5xL-00042I-N3
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 11 Jun 2005 06:23:24 -0700
+Received: by wproxy.gmail.com with SMTP id 69so717808wri
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 11 Jun 2005 06:23:17 -0700 (PDT)
 In-Reply-To: <Pine.LNX.4.56.0506110711100.24250@pentafluge.infradead.org>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -45,15 +45,15 @@ y
 > support hardware cursors. Even crappy cards have hardware cursors most of
 > the time.
 
-The way things are now I can't use the hardware cursors without
-triggering the software one.  The way I changed it user space (when
-the interface is finished) will get hardware or nothing. fbconsole
-will get the same hardware or nothing, but if nothing it implements a
-software cursor.
+Also, I didn't delete the fb_cursor field. I just removed all of the
+assignments of .fb_cursor =3D soft_cursor. The field is still there and
+defaulting to null, except in the three drivers with hardware cursors
+where it is set.
 
-The question here is who is responsible for generating a software
-cursor, is it the hardware driver's responsibility or the app using
-the system? fbconsole would be considered an app using the system.
+For a driver to implement software cursors it has to know the location
+of the scanout buffer, scanbuffer format, etc. I not sure if all of
+this is always know for user space apps. The hardware cursor doesn't
+need as much info about the framebuffer.
 
 --=20
 Jon Smirl

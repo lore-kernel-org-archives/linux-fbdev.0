@@ -1,21 +1,25 @@
-From: James Simmons <jsimmons@www.infradead.org>
+From: Jon Smirl <jonsmirl@gmail.com>
 Subject: Re: PATCH: move soft_cursor into fbconsole
-Date: Sat, 11 Jun 2005 07:15:32 +0100 (BST)
-Message-ID: <Pine.LNX.4.56.0506110711100.24250@pentafluge.infradead.org>
+Date: Sat, 11 Jun 2005 09:10:17 -0400
+Message-ID: <9e47339105061106103ce6327e@mail.gmail.com>
 References: <9e47339105061021571f479b10@mail.gmail.com>
+	 <Pine.LNX.4.56.0506110711100.24250@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DgzHR-0007NM-4y
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Jun 2005 23:15:41 -0700
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1DgzHP-00058r-Jf
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Jun 2005 23:15:41 -0700
-In-Reply-To: <9e47339105061021571f479b10@mail.gmail.com>
+	id 1Dh5km-0005Su-K2
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 11 Jun 2005 06:10:24 -0700
+Received: from wproxy.gmail.com ([64.233.184.201])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1Dh5kl-0002OQ-6e
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 11 Jun 2005 06:10:24 -0700
+Received: by wproxy.gmail.com with SMTP id 69so716140wri
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 11 Jun 2005 06:10:17 -0700 (PDT)
+In-Reply-To: <Pine.LNX.4.56.0506110711100.24250@pentafluge.infradead.org>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,52 +30,34 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jon Smirl <jonsmirl@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@www.infradead.org>
 Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>, "Antonino A. Daplas" <adaplas@hotpop.com>, James Simmons <jsimmons@pentafluge.infradead.org>
 
+On 6/11/05, James Simmons <jsimmons@www.infradead.org> wrote:
+>=20
+> Ug no. I see in the future more drivers using hardware cursors instead.
+> We would be carry around extra software cursor code in the the framebuffe=
+r
+> console all the time. We need to properly fix the cursor code. Unfortunel=
+y
+> that will take more work. In the mean time please encourage people to
+> support hardware cursors. Even crappy cards have hardware cursors most of
+> the time.
 
-Ug no. I see in the future more drivers using hardware cursors instead.
-We would be carry around extra software cursor code in the the framebuffer 
-console all the time. We need to properly fix the cursor code. Unfortunely 
-that will take more work. In the mean time please encourage people to 
-support hardware cursors. Even crappy cards have hardware cursors most of 
-the time.
+The way things are now I can't use the hardware cursors without
+triggering the software one.  The way I changed it user space (when
+the interface is finished) will get hardware or nothing. fbconsole
+will get the same hardware or nothing, but if nothing it implements a
+software cursor.
 
-On Sat, 11 Jun 2005, Jon Smirl wrote:
+The question here is who is responsible for generating a software
+cursor, is it the hardware driver's responsibility or the app using
+the system? fbconsole would be considered an app using the system.
 
-> James has indicated that the soft_cursor only works with fbconsole and
-> it won't work from user space. This means that soft_cursor is in the
-> way of using a hardware cursor from user space. This patch removes
-> soft_cursor from all of the drivers. So if the driver doesn't support
-> a hardware cursor fb_cursor is NULL.
-> 
-> I also fixed the three drivers with hardware implementation. These
-> drivers had cases where the hardware cursor had an error and then
-> returned the software one instead. Now they return -ENODEV when they
-> can't use the hardware one.
-> 
-> In console/bitlbt.c I made this change:
-> 	/* First try the hardware cursor */
-> 	if (info->fbops->fb_cursor)
-> 		err = info->fbops->fb_cursor(info, &cursor);
-> 	/* if that doesn't exist or didn't work, use the software one */
-> 	if (err)
-> 		soft_cursor(info, &cursor);
-> 
-> The effect of all of this is the make a clear path for getting to
-> hardware cursors without triggering the soft_cursor fallback.
-> Triggering of the fallback was moved into fb_console. This also lets
-> me remove the softcursor module from memory when fb_console is not
-> loaded.
-> 
-> Give this a try and let me know what you think. 
-> 
-> -- 
-> Jon Smirl
-> jonsmirl@gmail.com
-> 
+--=20
+Jon Smirl
+jonsmirl@gmail.com
 
 
 -------------------------------------------------------

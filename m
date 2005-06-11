@@ -1,21 +1,20 @@
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: Re: [2.6.11 Permedia-2 Framebuffer] driver
- broken (?).
-Date: Fri, 10 Jun 2005 07:30:11 +0200 (CEST)
-Message-ID: <Pine.LNX.4.60.0506100729380.4903@poirot.grange>
-References: <XFMail.20050609153553.jim.hague@acm.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: PATCH: move soft_cursor into fbconsole
+Date: Sat, 11 Jun 2005 22:35:20 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0506112234430.22598@numbat.sonytel.be>
+References: <9e47339105061021571f479b10@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DgnV1-00074x-Ij
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Jun 2005 10:40:55 -0700
-Received: from pop.gmx.net ([213.165.64.20] helo=mail.gmx.net)
-	by sc8-sf-mx1.sourceforge.net with smtp (Exim 4.41)
-	id 1DgnUz-0006eW-9q
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Jun 2005 10:40:55 -0700
-In-Reply-To: <XFMail.20050609153553.jim.hague@acm.org>
+	id 1DhChb-00078C-Sh
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 11 Jun 2005 13:35:35 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1DhCha-0005KW-3o
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 11 Jun 2005 13:35:35 -0700
+In-Reply-To: <9e47339105061021571f479b10@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,30 +27,49 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jim Hague <jim.hague@acm.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+Cc: "Antonino A. Daplas" <adaplas@hotpop.com>, James Simmons <jsimmons@pentafluge.infradead.org>
 
-On Thu, 9 Jun 2005, Jim Hague wrote:
-
-> > Confirmed - with CONFIG_FB_PM2_FIFO_DISCONNECT fb is still orange, without 
-> > - no problem.
+On Sat, 11 Jun 2005, Jon Smirl wrote:
+> James has indicated that the soft_cursor only works with fbconsole and
+> it won't work from user space. This means that soft_cursor is in the
+> way of using a hardware cursor from user space. This patch removes
+> soft_cursor from all of the drivers. So if the driver doesn't support
+> a hardware cursor fb_cursor is NULL.
 > 
-> I've just acquired a GLoria Synergy+ off EBay, and you'll be glad to hear it is
-> showing the same symptoms that you're seeing. Booting with FIFO_DISCONNECT gies
-> orange text on black background, 640x480, ignoring the requested video mode.
-> Depending on the phase of the moon, the 3c905 can't read it's MAC address or
-> the sound card driver fails to start.
+> I also fixed the three drivers with hardware implementation. These
+> drivers had cases where the hardware cursor had an error and then
+> returned the software one instead. Now they return -ENODEV when they
+> can't use the hardware one.
 > 
-> Switching off FIFO_DISCONNECT turns the text white, *but* the other problems
-> persist for me. There's definitely something quite horrible going on. I will be
-> investigating when I get the time.
+> In console/bitlbt.c I made this change:
+> 	/* First try the hardware cursor */
+> 	if (info->fbops->fb_cursor)
+> 		err = info->fbops->fb_cursor(info, &cursor);
+> 	/* if that doesn't exist or didn't work, use the software one */
+> 	if (err)
+> 		soft_cursor(info, &cursor);
+> 
+> The effect of all of this is the make a clear path for getting to
+> hardware cursors without triggering the soft_cursor fallback.
+> Triggering of the fallback was moved into fb_console. This also lets
+> me remove the softcursor module from memory when fb_console is not
+> loaded.
+> 
+> Give this a try and let me know what you think. 
 
-Cool! Good luck!
+This patch corrupts some comments in drivers/video/amifb.c.
 
-Guennadi
----
-Guennadi Liakhovetski
+Gr{oetje,eeting}s,
 
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

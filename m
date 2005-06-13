@@ -1,22 +1,19 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: PATCH: Make sysfs color_map attribute work
-Date: Sun, 12 Jun 2005 11:30:36 -0400
-Message-ID: <9e47339105061208305d0cf3cc@mail.gmail.com>
+From: James Simmons <jsimmons@www.infradead.org>
+Subject: Shrink fbdev stack
+Date: Mon, 13 Jun 2005 17:44:55 +0100 (BST)
+Message-ID: <Pine.LNX.4.56.0506131741290.899@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_6499_17903773.1118590236450"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DhUQ6-0002ky-P5
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 12 Jun 2005 08:30:42 -0700
-Received: from wproxy.gmail.com ([64.233.184.203])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1DhUQ5-0006jK-VO
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 12 Jun 2005 08:30:42 -0700
-Received: by wproxy.gmail.com with SMTP id 69so919563wri
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 12 Jun 2005 08:30:36 -0700 (PDT)
+	id 1Dhs3c-0002hr-VE
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 13 Jun 2005 09:45:04 -0700
+Received: from pentafluge.infradead.org ([213.146.154.40])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	(Exim 4.41)
+	id 1Dhs3a-0002Up-Qq
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 13 Jun 2005 09:45:04 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,119 +24,220 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@osdl.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-------=_Part_6499_17903773.1118590236450
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-These two patches make the sysfs color_map attribute work. There is a
-minor bug in sysfs fixed by sysfs_offbyone.patch. I sent the sysfs fix
-separately to GregKH.
+I posted this patch last week. No one complained :-) This patch shrinks 
+the stack when calling the drawing alignment functions. It can be applied 
+against the latest -mm tree. Thank you.
 
-Sysfs usually works in text instead of binary. That lets scripts set
-the attributes. You can set an attribute from a program with normal
-file writes. The values have to be less than PAGE_SIZE in size.
+Signed-off-by: James Simmons <jsimmons@www.infradead.org>
 
-Color maps have up to 256 entries. 4096/256 allows for 16 characters per li=
-ne.
 
-The format for a cmap entry is "%02x%c%4x%4x%4x\n"
-%02x entry %c transp %4x red %4x blue %4x green
-
-You don't have to start at zero, you can change one or more entries
-this way. Build up a line per entry and set the whole block into the
-attribute.
-
-You can read the color_map with cat fb0/color_map.
-
-My assumption from looking at the code that transparent is a boolean
-flag. If the "%c" column is not a space transparent will be set for
-that entry.
-
---=20
-Jon Smirl
-jonsmirl@gmail.com
-
-------=_Part_6499_17903773.1118590236450
-Content-Type: text/x-diff; name="sysfs_offbyone.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="sysfs_offbyone.patch"
-
-ZGlmZiAtLWdpdCBhL2ZzL3N5c2ZzL2ZpbGUuYyBiL2ZzL3N5c2ZzL2ZpbGUuYwotLS0gYS9mcy9z
-eXNmcy9maWxlLmMKKysrIGIvZnMvc3lzZnMvZmlsZS5jCkBAIC0xODIsNyArMTgyLDcgQEAgZmls
-bF93cml0ZV9idWZmZXIoc3RydWN0IHN5c2ZzX2J1ZmZlciAqIAogCQlyZXR1cm4gLUVOT01FTTsK
-IAogCWlmIChjb3VudCA+PSBQQUdFX1NJWkUpCi0JCWNvdW50ID0gUEFHRV9TSVpFIC0gMTsKKwkJ
-Y291bnQgPSBQQUdFX1NJWkU7CiAJZXJyb3IgPSBjb3B5X2Zyb21fdXNlcihidWZmZXItPnBhZ2Us
-YnVmLGNvdW50KTsKIAlidWZmZXItPm5lZWRzX3JlYWRfZmlsbCA9IDE7CiAJcmV0dXJuIGVycm9y
-ID8gLUVGQVVMVCA6IGNvdW50Owo=
-------=_Part_6499_17903773.1118590236450
-Content-Type: text/x-diff; name="cmap_sysfs.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="cmap_sysfs.patch"
-
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vZmJzeXNmcy5jIGIvZHJpdmVycy92aWRlby9mYnN5
-c2ZzLmMKLS0tIGEvZHJpdmVycy92aWRlby9mYnN5c2ZzLmMKKysrIGIvZHJpdmVycy92aWRlby9m
-YnN5c2ZzLmMKQEAgLTI0NCwxMCArMjQyLDY4IEBAIHN0YXRpYyBzc2l6ZV90IHNob3dfdmlydHVh
-bChzdHJ1Y3QgY2xhc3MKIAkJCWZiX2luZm8tPnZhci54cmVzX3ZpcnR1YWwpOwogfQogCi1zdGF0
-aWMgc3NpemVfdCBzdG9yZV9jbWFwKHN0cnVjdCBjbGFzc19kZXZpY2UgKmNsYXNzX2RldmljZSwg
-Y29uc3QgY2hhciAqIGJ1ZiwKKy8qIEZvcm1hdCBmb3IgY21hcCBpcyAiJTAyeCVjJTR4JTR4JTR4
-XG4iICovCisvKiAlMDJ4IGVudHJ5ICVjIHRyYW5zcCAlNHggcmVkICU0eCBibHVlICU0eCBncmVl
-biBcbiAqLworLyogMjU1IHJvd3MgYXQgMTYgY2hhcnMgZXF1YWxzIDQwOTYgKi8KKy8qIFBBR0Vf
-U0laRSBjYW4gYmUgNDA5NiBvciBsYXJnZXIgKi8KK3N0YXRpYyBzc2l6ZV90IHN0b3JlX2NtYXAo
-c3RydWN0IGNsYXNzX2RldmljZSAqY2xhc3NfZGV2aWNlLCBjb25zdCBjaGFyICpidWYsCiAJCQkg
-IHNpemVfdCBjb3VudCkKIHsKLS8vCXN0cnVjdCBmYl9pbmZvICpmYl9pbmZvID0gKHN0cnVjdCBm
-Yl9pbmZvICopY2xhc3NfZ2V0X2RldmRhdGEoY2xhc3NfZGV2aWNlKTsKKwlzdHJ1Y3QgZmJfaW5m
-byAqZmJfaW5mbyA9IChzdHJ1Y3QgZmJfaW5mbyAqKWNsYXNzX2dldF9kZXZkYXRhKGNsYXNzX2Rl
-dmljZSk7CisJaW50IHJjLCBpLCBzdGFydCwgbGVuZ3RoLCB0cmFuc3AgPSAwOworCisJaWYgKChj
-b3VudCA+IDQwOTYpIHx8ICgoY291bnQgJSAxNikgIT0gMCkgfHwgKFBBR0VfU0laRSA8IDQwOTYp
-KQorCQlyZXR1cm4gLUVJTlZBTDsKKworCWlmICghZmJfaW5mby0+ZmJvcHMtPmZiX3NldGNvbHJl
-ZyAmJiAhZmJfaW5mby0+ZmJvcHMtPmZiX3NldGNtYXApCisJCXJldHVybiAtRUlOVkFMOworCisJ
-c3NjYW5mKGJ1ZiwgIiUwMngiLCAmc3RhcnQpOworCWxlbmd0aCA9IGNvdW50IC8gMTY7CisKKwlm
-b3IgKGkgPSAwOyBpIDwgbGVuZ3RoOyBpKyspCisJCWlmIChidWZbaSAqIDE2ICsgMl0gIT0gJyAn
-KQorCQkJdHJhbnNwID0gMTsKKworCS8qIElmIHdlIGNhbiBiYXRjaCwgZG8gaXQgKi8KKwlpZiAo
-ZmJfaW5mby0+ZmJvcHMtPmZiX3NldGNtYXAgJiYgbGVuZ3RoID4gMSkgeworCQlzdHJ1Y3QgZmJf
-Y21hcCB1bWFwOworCisJCW1lbXNldCgmdW1hcCwgMCwgc2l6ZW9mKHVtYXApKTsKKwkJaWYgKChy
-YyA9IGZiX2FsbG9jX2NtYXAoJnVtYXAsIGxlbmd0aCwgdHJhbnNwKSkpCisJCQlyZXR1cm4gcmM7
-CisKKwkJdW1hcC5zdGFydCA9IHN0YXJ0OworCQlmb3IgKGkgPSAwOyBpIDwgbGVuZ3RoOyBpKysp
-IHsKKwkJCXNzY2FuZigmYnVmW2kgKiAxNiArICAzXSwgIiU0aHgiLCAmdW1hcC5yZWRbaV0pOwor
-CQkJc3NjYW5mKCZidWZbaSAqIDE2ICsgIDddLCAiJTRoeCIsICZ1bWFwLmJsdWVbaV0pOworCQkJ
-c3NjYW5mKCZidWZbaSAqIDE2ICsgMTFdLCAiJTRoeCIsICZ1bWFwLmdyZWVuW2ldKTsKKwkJCWlm
-ICh0cmFuc3ApCisJCQkJdW1hcC50cmFuc3BbaV0gPSAoYnVmW2kgKiAxNiArICAyXSAhPSAnICcp
-OworCQl9CisJCXJjID0gZmJfaW5mby0+ZmJvcHMtPmZiX3NldGNtYXAoJnVtYXAsIGZiX2luZm8p
-OworCQlmYl9jb3B5X2NtYXAoJnVtYXAsICZmYl9pbmZvLT5jbWFwKTsKKwkJZmJfZGVhbGxvY19j
-bWFwKCZ1bWFwKTsKKworCQlyZXR1cm4gcmM7CisJfQorCWZvciAoaSA9IDA7IGkgPCBsZW5ndGg7
-IGkrKykgeworCQl1MTYgcmVkLCBibHVlLCBncmVlbiwgdHNwOworCisJCXNzY2FuZigmYnVmW2kg
-KiAxNiArICAzXSwgIiU0aHgiLCAmcmVkKTsKKwkJc3NjYW5mKCZidWZbaSAqIDE2ICsgIDddLCAi
-JTRoeCIsICZibHVlKTsKKwkJc3NjYW5mKCZidWZbaSAqIDE2ICsgMTFdLCAiJTRoeCIsICZncmVl
-bik7CisJCXRzcCA9IChidWZbaSAqIDE2ICsgIDJdICE9ICcgJyk7CisJCWlmICgocmMgPSBmYl9p
-bmZvLT5mYm9wcy0+ZmJfc2V0Y29scmVnKHN0YXJ0KyssCisJCQkJICAgICAgcmVkLCBncmVlbiwg
-Ymx1ZSwgdHNwLCBmYl9pbmZvKSkpCisJCQlyZXR1cm4gcmM7CisKKwkJZmJfaW5mby0+Y21hcC5y
-ZWRbaV0gPSByZWQ7CisJCWZiX2luZm8tPmNtYXAuYmx1ZVtpXSA9IGJsdWU7CisJCWZiX2luZm8t
-PmNtYXAuZ3JlZW5baV0gPSBncmVlbjsKKwkJaWYgKHRyYW5zcCkKKwkJCWZiX2luZm8tPmNtYXAu
-dHJhbnNwW2ldID0gdHNwOworCX0KIAlyZXR1cm4gMDsKIH0KIApAQCAtMjU1LDIwICszMTEsMjQg
-QEAgc3RhdGljIHNzaXplX3Qgc2hvd19jbWFwKHN0cnVjdCBjbGFzc19kZQogewogCXN0cnVjdCBm
-Yl9pbmZvICpmYl9pbmZvID0KIAkJKHN0cnVjdCBmYl9pbmZvICopY2xhc3NfZ2V0X2RldmRhdGEo
-Y2xhc3NfZGV2aWNlKTsKLQl1bnNpZ25lZCBpbnQgb2Zmc2V0ID0gMCwgaTsKKwl1bnNpZ25lZCBp
-bnQgaTsKIAogCWlmICghZmJfaW5mby0+Y21hcC5yZWQgfHwgIWZiX2luZm8tPmNtYXAuYmx1ZSB8
-fAotCSAgICBmYl9pbmZvLT5jbWFwLmdyZWVuIHx8IGZiX2luZm8tPmNtYXAudHJhbnNwKQorCSAg
-ICAhZmJfaW5mby0+Y21hcC5ncmVlbikKKwkJcmV0dXJuIC1FSU5WQUw7CisKKwlpZiAoUEFHRV9T
-SVpFIDwgNDA5NikKIAkJcmV0dXJuIC1FSU5WQUw7CiAKKwkvKiBkb24ndCBtZXNzIHdpdGggdGhl
-IGZvcm1hdCwgdGhlIGJ1ZmZlciBpcyBQQUdFX1NJWkUgKi8KKwkvKiAyNTUgZW50cmllcyBhdCAx
-NiBjaGFycyBwZXIgbGluZSBlcXVhbHMgNDA5NiA9IFBBR0VfU0laRSAqLwogCWZvciAoaSA9IDA7
-IGkgPCBmYl9pbmZvLT5jbWFwLmxlbjsgaSsrKSB7Ci0JCW9mZnNldCArPSBzbnByaW50ZihidWYs
-IFBBR0VfU0laRSAtIG9mZnNldCwKLQkJCQkgICAiJWQsJWQsJWQsJWQsJWRcbiIsIGkgKyBmYl9p
-bmZvLT5jbWFwLnN0YXJ0LAotCQkJCSAgIGZiX2luZm8tPmNtYXAucmVkW2ldLCBmYl9pbmZvLT5j
-bWFwLmJsdWVbaV0sCi0JCQkJICAgZmJfaW5mby0+Y21hcC5ncmVlbltpXSwKLQkJCQkgICBmYl9p
-bmZvLT5jbWFwLnRyYW5zcFtpXSk7CisJCXNwcmludGYoJmJ1ZlsgaSAqIDE2XSwgIiUwMnglYyU0
-eCU0eCU0eFxuIiwgaSArIGZiX2luZm8tPmNtYXAuc3RhcnQsCisJCQkoKGZiX2luZm8tPmNtYXAu
-dHJhbnNwICYmIGZiX2luZm8tPmNtYXAudHJhbnNwW2ldKSA/ICcqJyA6ICcgJyksCisJCQlmYl9p
-bmZvLT5jbWFwLnJlZFtpXSwgZmJfaW5mby0+Y21hcC5ibHVlW2ldLAorCQkJZmJfaW5mby0+Y21h
-cC5ncmVlbltpXSk7CiAJfQotCXJldHVybiBvZmZzZXQ7CisJcmV0dXJuIDQwOTY7CiB9CiAKIHN0
-YXRpYyBzc2l6ZV90IHN0b3JlX2JsYW5rKHN0cnVjdCBjbGFzc19kZXZpY2UgKmNsYXNzX2Rldmlj
-ZSwgY29uc3QgY2hhciAqIGJ1ZiwK
-------=_Part_6499_17903773.1118590236450--
+diff -urN -X /home/jsimmons/dontdiff linux-2.6.12-rc5-mm2-new/drivers/video/console/bitblit.c fbdev-2.6/drivers/video/console/bitblit.c
+--- linux-2.6.12-rc5-mm2-new/drivers/video/console/bitblit.c	2005-06-04 14:33:14.000000000 -0700
++++ fbdev-2.6/drivers/video/console/bitblit.c	2005-06-04 10:37:38.000000000 -0700
+@@ -157,9 +157,9 @@
+ 					src = buf;
+ 				}
+ 
+-				fb_sysmove_buf_unaligned(info, &info->pixmap, dst, pitch,
+-					       src, idx, image.height,
+-					       shift_high, shift_low, mod);
++				fb_pad_unaligned_buffer(dst, pitch, src, idx,
++						image.height, shift_high,
++						shift_low, mod);
+ 				shift_low += mod;
+ 				dst += (shift_low >= 8) ? width : width - 1;
+ 				shift_low &= 7;
+@@ -175,8 +175,7 @@
+ 					src = buf;
+ 				}
+ 
+-				fb_sysmove_buf_aligned(info, &info->pixmap, dst, pitch,
+-					     src, idx, image.height);
++				fb_pad_aligned_buffer(dst, pitch, src, idx, image.height);
+ 				dst += width;
+ 			}
+ 		}
+diff -urN -X /home/jsimmons/dontdiff linux-2.6.12-rc5-mm2-new/drivers/video/fbmem.c fbdev-2.6/drivers/video/fbmem.c
+--- linux-2.6.12-rc5-mm2-new/drivers/video/fbmem.c	2005-06-04 14:33:14.000000000 -0700
++++ fbdev-2.6/drivers/video/fbmem.c	2005-06-04 10:37:38.000000000 -0700
+@@ -78,9 +78,7 @@
+ /*
+  * Data padding functions.
+  */
+-void fb_sysmove_buf_aligned(struct fb_info *info, struct fb_pixmap *buf,
+-			    u8 *dst, u32 d_pitch, u8 *src, u32 s_pitch,
+-			    u32 height)
++void fb_pad_aligned_buffer(u8 *dst, u32 d_pitch, u8 *src, u32 s_pitch, u32 height)
+ {
+ 	int i;
+ 
+@@ -90,12 +88,10 @@
+ 		dst += d_pitch;
+ 	}
+ }
+-EXPORT_SYMBOL(fb_sysmove_buf_aligned);
++EXPORT_SYMBOL(fb_pad_aligned_buffer);
+ 
+-void fb_sysmove_buf_unaligned(struct fb_info *info, struct fb_pixmap *buf,
+-			      u8 *dst, u32 d_pitch, u8 *src, u32 idx,
+-			      u32 height, u32 shift_high, u32 shift_low,
+-			      u32 mod)
++void fb_pad_unaligned_buffer(u8 *dst, u32 d_pitch, u8 *src, u32 idx, u32 height,
++				u32 shift_high, u32 shift_low, u32 mod)
+ {
+ 	u8 mask = (u8) (0xfff << shift_high), tmp;
+ 	int i, j;
+@@ -122,7 +118,7 @@
+ 		dst += d_pitch;
+ 	}
+ }
+-EXPORT_SYMBOL(fb_sysmove_buf_unaligned);
++EXPORT_SYMBOL(fb_pad_unaligned_buffer);
+ 
+ /*
+  * we need to lock this section since fb_cursor
+diff -urN -X /home/jsimmons/dontdiff linux-2.6.12-rc5-mm2-new/drivers/video/nvidia/nvidia.c fbdev-2.6/drivers/video/nvidia/nvidia.c
+--- linux-2.6.12-rc5-mm2-new/drivers/video/nvidia/nvidia.c	2005-06-04 14:32:07.000000000 -0700
++++ fbdev-2.6/drivers/video/nvidia/nvidia.c	2005-06-04 10:37:38.000000000 -0700
+@@ -516,9 +516,9 @@
+ static void nvidiafb_load_cursor_image(struct nvidia_par *par, u8 * data8,
+ 				       u16 bg, u16 fg, u32 w, u32 h)
+ {
++	u32 *data = (u32 *) data8;
+ 	int i, j, k = 0;
+ 	u32 b, tmp;
+-	u32 *data = (u32 *) data8;
+ 
+ 	w = (w + 1) & ~1;
+ 
+@@ -890,11 +890,11 @@
+ {
+ 	struct nvidia_par *par = info->par;
+ 	u8 data[MAX_CURS * MAX_CURS / 8];
+-	u16 fg, bg;
+ 	int i, set = cursor->set;
+-
++	u16 fg, bg;
++	
+ 	if (cursor->image.width > MAX_CURS || cursor->image.height > MAX_CURS)
+-		return soft_cursor(info, cursor);
++		return -ENXIO;
+ 
+ 	NVShowHideCursor(par, 0);
+ 
+@@ -931,21 +931,18 @@
+ 		if (src) {
+ 			switch (cursor->rop) {
+ 			case ROP_XOR:
+-				for (i = 0; i < s_pitch * cursor->image.height;
+-				     i++)
++				for (i = 0; i < s_pitch * cursor->image.height; i++)
+ 					src[i] = dat[i] ^ msk[i];
+ 				break;
+ 			case ROP_COPY:
+ 			default:
+-				for (i = 0; i < s_pitch * cursor->image.height;
+-				     i++)
++				for (i = 0; i < s_pitch * cursor->image.height; i++)
+ 					src[i] = dat[i] & msk[i];
+ 				break;
+ 			}
+ 
+-			fb_sysmove_buf_aligned(info, &info->pixmap, data,
+-					       d_pitch, src, s_pitch,
+-					       cursor->image.height);
++			fb_pad_aligned_buffer(data, d_pitch, src, s_pitch,
++						cursor->image.height);
+ 
+ 			bg = ((info->cmap.red[bg_idx] & 0xf8) << 7) |
+ 			    ((info->cmap.green[bg_idx] & 0xf8) << 2) |
+diff -urN -X /home/jsimmons/dontdiff linux-2.6.12-rc5-mm2-new/drivers/video/riva/fbdev.c fbdev-2.6/drivers/video/riva/fbdev.c
+--- linux-2.6.12-rc5-mm2-new/drivers/video/riva/fbdev.c	2005-06-04 14:32:07.000000000 -0700
++++ fbdev-2.6/drivers/video/riva/fbdev.c	2005-06-04 10:37:38.000000000 -0700
+@@ -1582,12 +1582,11 @@
+ {
+ 	struct riva_par *par = (struct riva_par *) info->par;
+ 	u8 data[MAX_CURS * MAX_CURS/8];
+-	u16 fg, bg;
+ 	int i, set = cursor->set;
+-
+-	if (cursor->image.width > MAX_CURS ||
+-	    cursor->image.height > MAX_CURS)
+-		return soft_cursor(info, cursor);
++	u16 fg, bg;
++	
++	if (cursor->image.width > MAX_CURS || cursor->image.height > MAX_CURS)
++		return -ENXIO;
+ 
+ 	par->riva.ShowHideCursor(&par->riva, 0);
+ 
+@@ -1625,21 +1624,18 @@
+ 		if (src) {
+ 			switch (cursor->rop) {
+ 			case ROP_XOR:
+-				for (i = 0; i < s_pitch * cursor->image.height;
+-				     i++)
++				for (i = 0; i < s_pitch * cursor->image.height; i++)
+ 					src[i] = dat[i] ^ msk[i];
+ 				break;
+ 			case ROP_COPY:
+ 			default:
+-				for (i = 0; i < s_pitch * cursor->image.height;
+-				     i++)
++				for (i = 0; i < s_pitch * cursor->image.height; i++)
+ 					src[i] = dat[i] & msk[i];
+ 				break;
+ 			}
+ 
+-			fb_sysmove_buf_aligned(info, &info->pixmap, data,
+-					       d_pitch, src, s_pitch,
+-					       cursor->image.height);
++			fb_pad_aligned_buffer(data, d_pitch, src, s_pitch,
++						cursor->image.height);
+ 
+ 			bg = ((info->cmap.red[bg_idx] & 0xf8) << 7) |
+ 				((info->cmap.green[bg_idx] & 0xf8) << 2) |
+diff -urN -X /home/jsimmons/dontdiff linux-2.6.12-rc5-mm2-new/drivers/video/softcursor.c fbdev-2.6/drivers/video/softcursor.c
+--- linux-2.6.12-rc5-mm2-new/drivers/video/softcursor.c	2005-06-04 14:33:14.000000000 -0700
++++ fbdev-2.6/drivers/video/softcursor.c	2005-06-04 10:37:38.000000000 -0700
+@@ -58,13 +58,10 @@
+ 	} else 
+ 		memcpy(src, image->data, dsize);
+ 	
+-	fb_sysmove_buf_aligned(info, &info->pixmap, dst, d_pitch, src,
+-				s_pitch, image->height);
+-
++	fb_pad_aligned_buffer(dst, d_pitch, src, s_pitch, image->height);
+ 	image->data = dst;
+ 	info->fbops->fb_imageblit(info, image);
+ 	kfree(src);
+-
+ 	return 0;
+ }
+ 
+--- linux-2.6.12-rc5-mm2-new/include/linux/fb.h	2005-06-04 14:33:19.000000000 -0700
++++ fbdev-2.6/include/linux/fb.h	2005-06-04 10:37:38.000000000 -0700
+@@ -816,12 +816,9 @@
+ extern int fb_prepare_logo(struct fb_info *fb_info);
+ extern int fb_show_logo(struct fb_info *fb_info);
+ extern char* fb_get_buffer_offset(struct fb_info *info, struct fb_pixmap *buf, u32 size);
+-extern void fb_sysmove_buf_unaligned(struct fb_info *info, struct fb_pixmap *buf,
+-				u8 *dst, u32 d_pitch, u8 *src, u32 idx,
++extern void fb_pad_unaligned_buffer(u8 *dst, u32 d_pitch, u8 *src, u32 idx,
+ 				u32 height, u32 shift_high, u32 shift_low, u32 mod);
+-extern void fb_sysmove_buf_aligned(struct fb_info *info, struct fb_pixmap *buf,
+-				u8 *dst, u32 d_pitch, u8 *src, u32 s_pitch,
+-				u32 height);
++extern void fb_pad_aligned_buffer(u8 *dst, u32 d_pitch, u8 *src, u32 s_pitch, u32 height);
+ extern void fb_set_suspend(struct fb_info *info, int state);
+ extern int fb_get_color_depth(struct fb_var_screeninfo *var);
+ extern int fb_get_options(char *name, char **option);
 
 
 -------------------------------------------------------

@@ -1,26 +1,24 @@
-From: Jon Smirl <jonsmirl@gmail.com>
+From: "Antonino A. Daplas" <adaplas@hotpop.com>
 Subject: Re: PATCH: move soft_cursor into fbconsole
-Date: Wed, 15 Jun 2005 21:34:03 -0400
-Message-ID: <9e47339105061518346d1df105@mail.gmail.com>
-References: <9e47339105061021571f479b10@mail.gmail.com>
-	 <Pine.LNX.4.62.0506112234430.22598@numbat.sonytel.be>
-	 <9e4733910506111501199d172f@mail.gmail.com>
-	 <Pine.LNX.4.62.0506120942100.11197@numbat.sonytel.be>
+Date: Thu, 16 Jun 2005 11:11:21 +0800
+Message-ID: <200506161111.27115.adaplas@hotpop.com>
+References: <9e47339105061021571f479b10@mail.gmail.com> <Pine.LNX.4.62.0506120942100.11197@numbat.sonytel.be> <9e47339105061518346d1df105@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DijGg-0000Q9-Sn
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 15 Jun 2005 18:34:06 -0700
-Received: from wproxy.gmail.com ([64.233.184.198])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DijGf-00087i-AQ
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 15 Jun 2005 18:34:06 -0700
-Received: by wproxy.gmail.com with SMTP id 68so132563wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 15 Jun 2005 18:34:04 -0700 (PDT)
-In-Reply-To: <Pine.LNX.4.62.0506120942100.11197@numbat.sonytel.be>
+	id 1Dil1g-00064h-IO
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 15 Jun 2005 20:26:44 -0700
+Received: from smtp-out.hotpop.com ([38.113.3.71])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1Dil1e-0006bA-GT
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 15 Jun 2005 20:26:44 -0700
+Received: from hotpop.com (kubrick.hotpop.com [38.113.3.103])
+	by smtp-out.hotpop.com (Postfix) with SMTP id 6C0871662FB5
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 16 Jun 2005 03:26:30 +0000 (UTC)
+In-Reply-To: <9e47339105061518346d1df105@mail.gmail.com>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -33,14 +31,22 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: "Antonino A. Daplas" <adaplas@hotpop.com>, James Simmons <jsimmons@pentafluge.infradead.org>
+To: linux-fbdev-devel@lists.sourceforge.net, Jon Smirl <jonsmirl@gmail.com>
+Cc: James Simmons <jsimmons@pentafluge.infradead.org>
 
-Are there still issues with this patch?
+On Thursday 16 June 2005 09:34, Jon Smirl wrote:
+> Are there still issues with this patch?
 
---=20
-Jon Smirl
-jonsmirl@gmail.com
+Maybe.  A few drivers will set the fb_cursor field to either
+soft_cursor or the driver-specific cursor function, depending
+on the kernel boot options or setting of the var.accel flag.
+
+The changes required are probably minor.
+
+Tony
+
+
+
 
 
 -------------------------------------------------------

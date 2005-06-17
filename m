@@ -1,24 +1,27 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: PATCH: Make sysfs color_map attribute work
-Date: Wed, 15 Jun 2005 23:39:48 -0400
-Message-ID: <9e47339105061520396d47dd87@mail.gmail.com>
-References: <9e47339105061208305d0cf3cc@mail.gmail.com>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Fw: [Bugme-new] [Bug 4738] New: intel865: Cannot remap FB region.
+Date: Fri, 17 Jun 2005 00:56:06 -0700
+Message-ID: <20050617005606.61078fa8.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DilEM-0006t3-SF
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 15 Jun 2005 20:39:50 -0700
-Received: from wproxy.gmail.com ([64.233.184.196])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DilEL-0001LF-Gz
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 15 Jun 2005 20:39:50 -0700
-Received: by wproxy.gmail.com with SMTP id 69so109281wri
-        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 15 Jun 2005 20:39:48 -0700 (PDT)
-In-Reply-To: <9e47339105061208305d0cf3cc@mail.gmail.com>
-Content-Disposition: inline
+	id 1DjBiD-0006Xh-G4
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 17 Jun 2005 00:56:25 -0700
+Received: from smtp.osdl.org ([65.172.181.4])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.41)
+	id 1DjBiA-0003BY-Vb
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 17 Jun 2005 00:56:25 -0700
+Received: from shell0.pdx.osdl.net (fw.osdl.org [65.172.181.6])
+	by smtp.osdl.org (8.12.8/8.12.8) with ESMTP id j5H7uLjA024408
+	(version=TLSv1/SSLv3 cipher=EDH-RSA-DES-CBC3-SHA bits=168 verify=NO)
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 17 Jun 2005 00:56:21 -0700
+Received: from bix (shell0.pdx.osdl.net [10.9.0.31])
+	by shell0.pdx.osdl.net (8.13.1/8.11.6) with SMTP id j5H7uLfH023657
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 17 Jun 2005 00:56:21 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,14 +33,41 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-The patch for sysfs off by one is in GregKH's queue now. This patch
-has to land after that one is in.
 
---=20
-Jon Smirl
-jonsmirl@gmail.com
+
+Begin forwarded message:
+
+Date: Sun, 12 Jun 2005 05:27:13 -0700
+From: bugme-daemon@kernel-bugs.osdl.org
+To: bugme-new@lists.osdl.org
+Subject: [Bugme-new] [Bug 4738] New: intel865: Cannot remap FB region.
+
+
+http://bugzilla.kernel.org/show_bug.cgi?id=4738
+
+           Summary: intel865: Cannot remap FB region.
+    Kernel Version: 2.6.12-rc6
+            Status: NEW
+          Severity: normal
+             Owner: jsimmons@infradead.org
+         Submitter: goldenfish@bsys.cz
+
+
+Distribution: Debian Sarge
+Hardware Environment: P4,1GB RAM,Intel D865GBF Desktop Board, only integrated
+graphics card
+Software Environment: X-server4.3.0
+Problem Description: 
+i can't load intelfb module
+Steps to reproduce:
+rmmod intelfb - if module loaded
+modprobe intelfb
+// module i830 is loaded
+
+------- You are receiving this mail because: -------
+You are on the CC list for the bug, or are watching someone who is.
 
 
 -------------------------------------------------------

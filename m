@@ -1,28 +1,23 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Fw: [Bugme-new] [Bug 4767] New: RFE: console_blank_hook that can
- call userspace program
-Date: Mon, 20 Jun 2005 12:15:21 -0700
-Message-ID: <20050620121521.6144b88f.akpm@osdl.org>
+From: James Simmons <jsimmons@www.infradead.org>
+Subject: Re: Re: PATCH: Make sysfs color_map attribute
+ work
+Date: Tue, 21 Jun 2005 01:02:40 +0100 (BST)
+Message-ID: <Pine.LNX.4.56.0506210102120.18685@pentafluge.infradead.org>
+References: <9e47339105061208305d0cf3cc@mail.gmail.com>
+ <9e47339105061520396d47dd87@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DkRkF-00031b-V3
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 20 Jun 2005 12:15:43 -0700
-Received: from smtp.osdl.org ([65.172.181.4])
-	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:DES-CBC3-SHA:168)
+	id 1DkWE3-0002ri-Vn
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 20 Jun 2005 17:02:47 -0700
+Received: from pentafluge.infradead.org ([213.146.154.40])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1DkRkE-0002gW-Du
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 20 Jun 2005 12:15:43 -0700
-Received: from shell0.pdx.osdl.net (fw.osdl.org [65.172.181.6])
-	by smtp.osdl.org (8.12.8/8.12.8) with ESMTP id j5KJFdjA029279
-	(version=TLSv1/SSLv3 cipher=EDH-RSA-DES-CBC3-SHA bits=168 verify=NO)
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 20 Jun 2005 12:15:39 -0700
-Received: from bix (shell0.pdx.osdl.net [10.9.0.31])
-	by shell0.pdx.osdl.net (8.13.1/8.11.6) with SMTP id j5KJFctk014086
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 20 Jun 2005 12:15:39 -0700
+	id 1DkWE0-0007TB-TW
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 20 Jun 2005 17:02:47 -0700
+In-Reply-To: <9e47339105061520396d47dd87@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -33,43 +28,15 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
 
+I will send this patch as soon as the sysfs fix goes in. In fact is that 
+fix in Andrews tree?
 
-Begin forwarded message:
-
-Date: Mon, 20 Jun 2005 03:37:22 -0700
-From: bugme-daemon@kernel-bugs.osdl.org
-To: bugme-new@lists.osdl.org
-Subject: [Bugme-new] [Bug 4767] New: RFE: console_blank_hook that can call userspace program
-
-
-http://bugzilla.kernel.org/show_bug.cgi?id=4767
-
-           Summary: RFE: console_blank_hook that can call userspace program
-    Kernel Version: 2.6.12
-            Status: NEW
-          Severity: normal
-             Owner: jsimmons@infradead.org
-         Submitter: heilong@bluebottle.com
-
-
-I think it'd be very good to have a console_blank_hook handler that would call a
-userspace program/script/generate hotplug event whatever. Currently, the console
-can only be blanked using APM, so no options exist for people using ACPI. I've
-got a Radeon graphics chip on my laptop, and the LCD backlight can be controlled
-(on/off) using radeontool. If there was a userspace callback interface to
-console blanking, I would just make a callback script that calls "radeontool
-light off" on blank and "radeontool light on" on unblank - really easy. I think
-this userspace console_blank_hook handler is very simple to put into kernel, but
-I'm not a kernel developer myself, so wouldn't risk sending any patches (that
-call system("some_script")), because I probably won't make things as they should
-be in the kernel.
-
-------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
 
 
 -------------------------------------------------------

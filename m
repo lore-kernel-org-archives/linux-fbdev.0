@@ -1,20 +1,28 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] New framebuffer fonts + updated 12x22 font available
-Date: Wed, 22 Jun 2005 11:57:58 +0200 (CEST)
-Message-ID: <Pine.LNX.4.62.0506221156540.16901@numbat.sonytel.be>
-References: <200506220308.j5M380Ru002576@hera.kernel.org>
+From: Raphael Assenat <raph@raphnet.net>
+Subject: atyfb h/vsync polarity
+Date: Wed, 22 Jun 2005 10:08:42 -0400
+Message-ID: <20050622140842.GV20191@midgar.lan.raphnet.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Dl1zy-0006KY-7j
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 22 Jun 2005 02:58:22 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1Dl1zw-0000PP-Hd
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 22 Jun 2005 02:58:22 -0700
-In-Reply-To: <200506220308.j5M380Ru002576@hera.kernel.org>
+	id 1Dl5uQ-0005yx-GM
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 22 Jun 2005 07:08:54 -0700
+Received: from roc.holo.8d.com ([64.254.227.115])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:RC4-SHA:128)
+	(Exim 4.41)
+	id 1Dl5uQ-0002Ch-39
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 22 Jun 2005 07:08:54 -0700
+Received: from gate1.raphnet.net ([66.11.176.18] helo=midgar.lan.raphnet.net)
+	by roc.holo.8d.com with asmtp (TLS-1.0:DHE_RSA_3DES_EDE_CBC_SHA:24)
+	(Exim 4.34)
+	id 1Dl5uH-0000S3-Gi
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 22 Jun 2005 10:08:50 -0400
+Received: from raph by midgar.lan.raphnet.net with local (Exim 3.35 #1 (Debian))
+	id 1Dl5uE-0001fx-00
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 22 Jun 2005 10:08:42 -0400
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -25,50 +33,58 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jurriaan <thunder7@xs4all.nl>
-Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 21 Jun 2005, Linux Kernel Mailing List wrote:
-> [PATCH] New framebuffer fonts + updated 12x22 font available
-> 
-> Improve the fonts for use with the framebuffer.
-> 
-> I've added all the characters marked 'FIXME' in the sun12x22 font and
-> created a 10x18 font (based on the sun12x22 font) and a 7x14 font (based
-> on the vga8x16 font).
-> 
-> This patch is non-intrusive, no options are enabled by default so most
-                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> users won't notice a thing.
+Hi,
+I am a Linux Sparc64 user, and recently I decided to switch from 2.4
+kernel series to 2.6 series. Everything worked well, but I had trouble
+getting the framebuffer console to work.
 
-But ...
+In openboot, my monitor worked perfectly. But as soon as Linux
+configured the framebuffer, my monitor would loose sync. I compared the
+output given by fbset on the working configuration (2.4 kernel) and the
+non-working configuration (2.6.12 kernel). Every setting was identical,
+except that the output on 2.4 had 'hsync high'. I tried 'fbset -hsync
+high', but the screen still did not sync, and fbset still did not report
+'hsync high', as if the setting was ignored.
 
-> --- a/drivers/video/console/Kconfig
-> +++ b/drivers/video/console/Kconfig
-> @@ -153,6 +153,15 @@ config FONT_6x11
->  	  Small console font with Macintosh-style high-half glyphs.  Some Mac
->  	  framebuffer drivers don't support this one at all.
->  
-> +config FONT_7x14
-> +	bool "console 7x14 font (not supported by all drivers)" if FONTS
-> +	depends on FRAMEBUFFER_CONSOLE
-> +	default y if !SPARC32 && !SPARC64 && !FONTS
-        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+After digging a little bit, I found this in
+drivers/video/aty/atyfb_base.c:
 
-Sorry I didn't nocice during the original review...
+if(vdisplay < 400) {
+		h_sync_pol = 1;
+		v_sync_pol = 0;
+} else if(vdisplay < 480) {
+		h_sync_pol = 0;
+		v_sync_pol = 1;
+} else if(vdisplay < 768) {
+		h_sync_pol = 0;
+		v_sync_pol = 0;
+} else {
+		h_sync_pol = 1;
+		v_sync_pol = 1;
+}
 
-Gr{oetje,eeting}s,
+So no mater what sync polarity we ask for, the driver overrides them. I commented
+the code above in my build, and the framebuffer console finally works.
 
-						Geert
+It seems strange to me that the driver ignores the sync polarity we request,
+but I'm sure the above code exists for a good reason so I would not suggest to
+simply remove it as a fix. Can anyone explain why this code is
+necessary?
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+The fact that this cause problems for me is probably due to my particular video setup:
+Ultra10 vga -> passive VGA csync on hsync pin to sync on green adapter -> 
+passive VGA to 13W3 adapter -> GDM-17E11 SGI monitor (requires sync-on-green).
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+IMHO, the driver should preserve the settings from openboot, not only the 
+resoltion and sync frequencies, but also the sync polarities. 
+
+Regards,
+Raphael Assenat
+
 
 
 -------------------------------------------------------

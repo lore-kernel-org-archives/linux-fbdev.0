@@ -1,22 +1,22 @@
-From: Raphael Assenat <raph@raphnet.net>
-Subject: Re: atyfb h/vsync polarity
-Date: Thu, 23 Jun 2005 14:11:16 -0400
-Message-ID: <20050623181116.GG21451@midgar.vault.raphnet.net>
-References: <20050622140842.GV20191@midgar.lan.raphnet.net> <200506231125.10848.alex.kern@gmx.de>
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: REPOST PATCH: freq_rounding.patch
+Date: Thu, 23 Jun 2005 15:22:40 -0400
+Message-ID: <9e473391050623122258f26080@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DlWAh-000703-Qz
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Jun 2005 11:11:27 -0700
-Received: from roc.holo.8d.com ([64.254.227.115])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:RC4-SHA:128)
-	(Exim 4.41)
-	id 1DlWAg-0006mq-Bq
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Jun 2005 11:11:27 -0700
+	id 1DlXHf-0003mM-88
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Jun 2005 12:22:43 -0700
+Received: from wproxy.gmail.com ([64.233.184.193])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1DlXHd-0007v5-Sr
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Jun 2005 12:22:43 -0700
+Received: by wproxy.gmail.com with SMTP id 69so199886wri
+        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 23 Jun 2005 12:22:40 -0700 (PDT)
 Content-Disposition: inline
-In-Reply-To: <200506231125.10848.alex.kern@gmx.de>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,40 +28,28 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Alexander Kern <alex.kern@gmx.de>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
 
-On Thu, Jun 23, 2005 at 11:25:10AM +0200, Alexander Kern wrote:
-> Am Mittwoch, 22. Juni 2005 16:08 schrieb Raphael Assenat:
-> > It seems strange to me that the driver ignores the sync polarity we
-> > request, but I'm sure the above code exists for a good reason so I would
-> > not suggest to simply remove it as a fix. Can anyone explain why this code
-> > is
-> > necessary?
-> this behaviour is from XFree code and more VGA like.
-But I dont like the idea that the driver thinking it knows better than me
-what sync polarities I should use. I have a setup where I absolutely need hsync to
-be high, but the driver prevents me from doing it!
+What is the status of this patch? It hasn't made it into linus' tree yet.
 
-> >
-> > The fact that this cause problems for me is probably due to my particular
-> > video setup: Ultra10 vga -> passive VGA csync on hsync pin to sync on green
-> > adapter -> passive VGA to 13W3 adapter -> GDM-17E11 SGI monitor (requires
-> > sync-on-green).
-> >
-> Anyway, SPARC has own rules, This error was always disputed on the list, 
-> Here is a patch.
-[patch removed]
+--=20
+Jon Smirl
+jonsmirl@gmail.com
 
-This patch seem to be already in 2.6.12n and it does not fix my problem.
-The problem on my machine is not with Csync being inactive (it is
-active). I need Csync *and* high hsync polarity. H and V sync polarity  still matters, 
-even if V and H sync are combined to form csync.
-
-Regards,
-Raphael Assenat
-
+#Fix rounding error when mode frequency is very close to monitor limit
+#Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -1241,6 +1241,8 @@ int fb_validate_mode(const struct fb_var
+ =09=09vtotal *=3D 2;
+=20
+ =09hfreq =3D pixclock/htotal;
++=09hfreq =3D (hfreq + 500) / 1000 * 1000;
++=09
+ =09vfreq =3D hfreq/vtotal;
+=20
+ =09return (vfreq < vfmin || vfreq > vfmax ||
 
 
 -------------------------------------------------------

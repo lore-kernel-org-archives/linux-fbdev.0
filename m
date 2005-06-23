@@ -1,22 +1,22 @@
-From: <evt@texelsoft.com>
-Subject: Re: Fw: [Bugme-new] [Bug 4768] New: Screen appears at mid-right section
-Date: Thu, 23 Jun 2005 10:57:12 -0400
-Message-ID: <200506231457.DPG00170@ms3.netsolmail.com>
+From: Raphael Assenat <raph@raphnet.net>
+Subject: Re: atyfb h/vsync polarity
+Date: Thu, 23 Jun 2005 14:11:16 -0400
+Message-ID: <20050623181116.GG21451@midgar.vault.raphnet.net>
+References: <20050622140842.GV20191@midgar.lan.raphnet.net> <200506231125.10848.alex.kern@gmx.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DlT8n-0000xk-Ph
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Jun 2005 07:57:17 -0700
-Received: from omr1.netsolmail.com ([216.168.230.162])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1DlT8l-00073g-Hj
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Jun 2005 07:57:18 -0700
-Received: from ms3.netsolmail.com (IDENT:mirapoint@[216.168.230.176])
-	by omr1.netsolmail.com (8.12.10/8.12.10) with ESMTP id j5NEvCTj015137
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 23 Jun 2005 10:57:13 -0400 (EDT)
+	id 1DlWAh-000703-Qz
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Jun 2005 11:11:27 -0700
+Received: from roc.holo.8d.com ([64.254.227.115])
+	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:RC4-SHA:128)
+	(Exim 4.41)
+	id 1DlWAg-0006mq-Bq
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Jun 2005 11:11:27 -0700
+Content-Disposition: inline
+In-Reply-To: <200506231125.10848.alex.kern@gmx.de>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,50 +28,40 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+To: Alexander Kern <alex.kern@gmx.de>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-I saw this same effect using the chips 69000 framebuffer. The
-issue, in my case, was that the asiliantfb driver did not set
-the start address registers in the ct69K. HTH.
+On Thu, Jun 23, 2005 at 11:25:10AM +0200, Alexander Kern wrote:
+> Am Mittwoch, 22. Juni 2005 16:08 schrieb Raphael Assenat:
+> > It seems strange to me that the driver ignores the sync polarity we
+> > request, but I'm sure the above code exists for a good reason so I would
+> > not suggest to simply remove it as a fix. Can anyone explain why this code
+> > is
+> > necessary?
+> this behaviour is from XFree code and more VGA like.
+But I dont like the idea that the driver thinking it knows better than me
+what sync polarities I should use. I have a setup where I absolutely need hsync to
+be high, but the driver prevents me from doing it!
 
-- Eric van Tassell
+> >
+> > The fact that this cause problems for me is probably due to my particular
+> > video setup: Ultra10 vga -> passive VGA csync on hsync pin to sync on green
+> > adapter -> passive VGA to 13W3 adapter -> GDM-17E11 SGI monitor (requires
+> > sync-on-green).
+> >
+> Anyway, SPARC has own rules, This error was always disputed on the list, 
+> Here is a patch.
+[patch removed]
 
----- Original message ----
->Date: Mon, 20 Jun 2005 19:14:25 -0700
->From: Andrew Morton <akpm@osdl.org>  
->Subject: [Linux-fbdev-devel] Fw: [Bugme-new] [Bug 4768] New:
-Screen appears at mid-right section  
->To: linux-fbdev-devel@lists.sourceforge.net
->
->
->
->Begin forwarded message:
->
->Date: Mon, 20 Jun 2005 18:49:06 -0700
->From: bugme-daemon@kernel-bugs.osdl.org
->To: bugme-new@lists.osdl.org
->Subject: [Bugme-new] [Bug 4768] New: Screen appears at
-mid-right section
->
->
->http://bugzilla.kernel.org/show_bug.cgi?id=4768
->
->            Summary: Screen appears at mid-right section
->
->
->-------------------------------------------------------
->SF.Net email is sponsored by: Discover Easy Linux Migration
-Strategies
->from IBM. Find simple to follow Roadmaps, straightforward
-articles,
->informative Webcasts and more! Get everything you need to get
-up to
->speed, fast.
-http://ads.osdn.com/?ad_id=7477&alloc_id=16492&op=click
->_______________________________________________
->Linux-fbdev-devel mailing list
->Linux-fbdev-devel@lists.sourceforge.net
->https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+This patch seem to be already in 2.6.12n and it does not fix my problem.
+The problem on my machine is not with Csync being inactive (it is
+active). I need Csync *and* high hsync polarity. H and V sync polarity  still matters, 
+even if V and H sync are combined to form csync.
+
+Regards,
+Raphael Assenat
+
 
 
 -------------------------------------------------------

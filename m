@@ -1,33 +1,21 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: PATCH: move soft_cursor into fbconsole
-Date: Fri, 24 Jun 2005 13:25:56 -0400
-Message-ID: <9e473391050624102559929cd9@mail.gmail.com>
-References: <9e47339105061021571f479b10@mail.gmail.com>
-	 <200506161111.27115.adaplas@hotpop.com>
-	 <9e4733910506152037193300fa@mail.gmail.com>
-	 <Pine.LNX.4.56.0506210103540.18685@pentafluge.infradead.org>
-	 <9e473391050620173132ea1ce6@mail.gmail.com>
-	 <Pine.LNX.4.56.0506240015300.24330@pentafluge.infradead.org>
-	 <9e473391050624052640aa5279@mail.gmail.com>
-	 <Pine.LNX.4.56.0506241713210.14981@pentafluge.infradead.org>
-	 <9e47339105062409276fcd5223@mail.gmail.com>
-	 <Pine.LNX.4.56.0506241740220.15430@pentafluge.infradead.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Console layer maintainer. (fwd)
+Date: Mon, 27 Jun 2005 10:23:30 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0506271023190.14494@numbat.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DlrwF-0002lK-JQ
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Jun 2005 10:25:59 -0700
-Received: from wproxy.gmail.com ([64.233.184.207])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
-	id 1DlrwE-00036p-3F
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Jun 2005 10:25:59 -0700
-Received: by wproxy.gmail.com with SMTP id 69so467457wri
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 24 Jun 2005 10:25:57 -0700 (PDT)
-In-Reply-To: <Pine.LNX.4.56.0506241740220.15430@pentafluge.infradead.org>
-Content-Disposition: inline
+	id 1Dmou3-0004N9-EZ
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 27 Jun 2005 01:23:39 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
+	id 1Dmou1-0003XV-QT
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 27 Jun 2005 01:23:39 -0700
+Received: from numbat.sonytel.be (mail.sonytel.be [43.221.60.197])
+	by witte.sonytel.be (8.12.10/8.12.10) with ESMTP id j5R8NXpr009774
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 27 Jun 2005 10:23:33 +0200 (MEST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -38,25 +26,29 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@www.infradead.org>
-Cc: James Simmons <jsimmons@pentafluge.infradead.org>, adaplas@pol.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Why are you trying to preserve all of the ".fb_cursor =3D soft_cursor,"
-assignments in the drivers? What purpose do they serve that can't be
-handled by a simple test like this:
+---------- Forwarded message ----------
+Date: Sun, 26 Jun 2005 15:39:15 -0400
+From: sdyoung@miranda.org
+To: geert@linux-m68k.org
+Subject: Console layer maintainer.
 
-Then any in-kernel user does this:
-      /* First try the hardware cursor */
-      if (info->fbops->fb_cursor)
-              err =3D info->fbops->fb_cursor(info, &cursor);
-      /* if that doesn't exist or didn't work, use the software one */
-      if (err)
-              soft_cursor(info, &cursor);
 
---=20
-Jon Smirl
-jonsmirl@gmail.com
+  Hello,
+
+  I'm trying to track down whoever is responsible for maintaining the
+console layer these days.  It's not listed in MAINTAINERS and I'd like
+to discuss some proposed changes before I get too involved with them.
+Can you suggest the right person to talk to? (my changes involve
+altering the behavior of scrollback, which would affect both the vc
+driver and the console drivers beneath).  I'm asking you since I saw
+your name in several places in the relevant source files.
+
+  Thanks,
+  Steve.
 
 
 -------------------------------------------------------

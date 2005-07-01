@@ -1,30 +1,19 @@
 From: James Simmons <jsimmons@www.infradead.org>
-Subject: Re: PATCH: move soft_cursor into fbconsole
-Date: Sat, 2 Jul 2005 00:32:20 +0100 (BST)
-Message-ID: <Pine.LNX.4.56.0507020030120.14405@pentafluge.infradead.org>
-References: <9e47339105061021571f479b10@mail.gmail.com> 
- <200506161111.27115.adaplas@hotpop.com>  <9e4733910506152037193300fa@mail.gmail.com>
-  <Pine.LNX.4.56.0506210103540.18685@pentafluge.infradead.org> 
- <9e473391050620173132ea1ce6@mail.gmail.com> 
- <Pine.LNX.4.56.0506240015300.24330@pentafluge.infradead.org> 
- <9e473391050624052640aa5279@mail.gmail.com> 
- <Pine.LNX.4.56.0506241713210.14981@pentafluge.infradead.org> 
- <9e47339105062409276fcd5223@mail.gmail.com> 
- <Pine.LNX.4.56.0506241740220.15430@pentafluge.infradead.org>
- <9e473391050624102559929cd9@mail.gmail.com>
+Subject: Geode now shows up in sysfs.
+Date: Sat, 2 Jul 2005 00:37:27 +0100 (BST)
+Message-ID: <Pine.LNX.4.56.0507020032330.14405@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DoUzm-0007go-FE
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 01 Jul 2005 16:32:30 -0700
+	id 1DoV4g-00082S-48
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 01 Jul 2005 16:37:34 -0700
 Received: from pentafluge.infradead.org ([213.146.154.40])
-	by sc8-sf-mx1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
+	by sc8-sf-mx2.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
 	(Exim 4.41)
-	id 1DoUzk-0005Wl-Q7
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 01 Jul 2005 16:32:30 -0700
-In-Reply-To: <9e473391050624102559929cd9@mail.gmail.com>
+	id 1DoV4f-0008EA-B8
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 01 Jul 2005 16:37:34 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -37,244 +26,129 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: James Simmons <jsimmons@pentafluge.infradead.org>, adaplas@pol.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: "Antonino A. Daplas" <adaplas@hotpop.com>, Geert Uytterhoeven <geert@linux-m68k.org>, nat.ersoz@myrio.com
 
 
-> Why are you trying to preserve all of the ".fb_cursor = soft_cursor,"
-> assignments in the drivers? What purpose do they serve that can't be
-> handled by a simple test like this:
-> 
-> Then any in-kernel user does this:
->       /* First try the hardware cursor */
->       if (info->fbops->fb_cursor)
->               err = info->fbops->fb_cursor(info, &cursor);
->       /* if that doesn't exist or didn't work, use the software one */
->       if (err)
->               soft_cursor(info, &cursor);
+Going through the drivers I noticed two drivers using framebuffer_alloc 
+without a sturct device, Mach64 for atari and geode. Here is a patch for 
+geode. The mach64 will take a bit longer to figure. Please test. Thank 
+you.
 
-I don't want to make a patch that touches all the drivers. Th epatch I 
-posted is a nice simple patch. If there are no other arguments against it 
-I like to submit it to Andrew.
-
-diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/aty/mach64_cursor.c fbdev-2.6/drivers/video/aty/mach64_cursor.c
---- linus-2.6/drivers/video/aty/mach64_cursor.c	2005-05-10 08:39:33.000000000 -0700
-+++ fbdev-2.6/drivers/video/aty/mach64_cursor.c	2005-06-24 09:04:12.000000000 -0700
-@@ -219,8 +219,8 @@
- 	info->sprite.buf_align = 16; 	/* and 64 lines tall. */
- 	info->sprite.flags = FB_PIXMAP_IO;
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/geode/gx1fb_core.c fbdev-2.6/drivers/video/geode/gx1fb_core.c
+--- linus-2.6/drivers/video/geode/gx1fb_core.c	2005-05-10 08:39:33.000000000 -0700
++++ fbdev-2.6/drivers/video/geode/gx1fb_core.c	2005-07-01 09:18:25.000000000 -0700
+@@ -216,13 +216,13 @@
+ 	.fb_cursor	= soft_cursor,
+ };
  
-+	info->flags |= FBINFO_HWACCEL_CURSOR;
- 	info->fbops->fb_cursor = atyfb_cursor;
+-static struct fb_info * __init gx1fb_init_fbinfo(void)
++static struct fb_info * __init gx1fb_init_fbinfo(struct device *dev)
+ {
+-	struct fb_info *info;
+ 	struct geodefb_par *par;
 -
- 	return 0;
++	struct fb_info *info;
++	
+ 	/* Alloc enough space for the pseudo palette. */
+-	info = framebuffer_alloc(sizeof(struct geodefb_par) + sizeof(u32) * 16, NULL);
++	info = framebuffer_alloc(sizeof(struct geodefb_par) + sizeof(u32) * 16, dev);
+ 	if (!info)
+ 		return NULL;
+ 
+@@ -263,25 +263,16 @@
+ 	return info;
  }
  
-diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/fbsysfs.c fbdev-2.6/drivers/video/fbsysfs.c
---- linus-2.6/drivers/video/fbsysfs.c	2005-06-14 11:51:24.000000000 -0700
-+++ fbdev-2.6/drivers/video/fbsysfs.c	2005-06-24 09:46:33.000000000 -0700
-@@ -311,13 +311,19 @@
- static ssize_t store_cursor(struct class_device *class_device,
- 			    const char * buf, size_t count)
- {
--//	struct fb_info *fb_info = (struct fb_info *)class_get_devdata(class_device);
-+	struct fb_info *fb_info = (struct fb_info *)class_get_devdata(class_device);
-+
-+	if (!(fb_info->flags & FBINFO_HWACCEL_CURSOR))
-+		return -ENXIO;
- 	return 0;
- }
- 
- static ssize_t show_cursor(struct class_device *class_device, char *buf)
- {
--//	struct fb_info *fb_info = (struct fb_info *)class_get_devdata(class_device);
-+	struct fb_info *fb_info = (struct fb_info *)class_get_devdata(class_device);
-+
-+	if (!(fb_info->flags & FBINFO_HWACCEL_CURSOR))
-+		return -ENXIO;
- 	return 0;
- }
- 
-diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/i810/i810.h fbdev-2.6/drivers/video/i810/i810.h
---- linus-2.6/drivers/video/i810/i810.h	2005-05-10 08:39:33.000000000 -0700
-+++ fbdev-2.6/drivers/video/i810/i810.h	2005-06-24 09:04:12.000000000 -0700
-@@ -201,7 +201,6 @@
- #define HAS_ACCELERATION            2
- #define ALWAYS_SYNC                 4
- #define LOCKUP                      8
--#define USE_HWCUR                  16
- 
- struct gtt_data {
- 	struct agp_memory *i810_fb_memory;
-diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/i810/i810_main.c fbdev-2.6/drivers/video/i810/i810_main.c
---- linus-2.6/drivers/video/i810/i810_main.c	2005-06-22 17:09:52.000000000 -0700
-+++ fbdev-2.6/drivers/video/i810/i810_main.c	2005-06-24 09:04:12.000000000 -0700
-@@ -1375,7 +1375,6 @@
- 	decode_var(&info->var, par);
- 	i810_load_regs(par);
- 	i810_init_cursor(par);
 -
- 	encode_fix(&info->fix, info);
- 
- 	if (info->var.accel_flags && !(par->dev_flags & LOCKUP)) {
-@@ -1387,6 +1386,7 @@
- 		info->pixmap.scan_align = 1;
- 		info->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
- 	}
-+	info->flags |= FBINFO_HWACCEL_CURSOR;
- 	return 0;
- }
- 
-@@ -1418,9 +1418,8 @@
- 	struct i810fb_par *par = (struct i810fb_par *)info->par;
- 	u8 __iomem *mmio = par->mmio_start_virtual;
- 
--	if (!(par->dev_flags & USE_HWCUR) || !info->var.accel_flags ||
--	    par->dev_flags & LOCKUP)
--		return soft_cursor(info, cursor);
-+	if (!par->dev_flags & LOCKUP)
-+		return -ENXIO;
- 
- 	if (cursor->image.width > 64 || cursor->image.height > 64)
- 		return -ENXIO;
-diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/intelfb/intelfbdrv.c fbdev-2.6/drivers/video/intelfb/intelfbdrv.c
---- linus-2.6/drivers/video/intelfb/intelfbdrv.c	2005-06-22 17:09:52.000000000 -0700
-+++ fbdev-2.6/drivers/video/intelfb/intelfbdrv.c	2005-06-24 09:04:12.000000000 -0700
-@@ -117,14 +117,10 @@
- #include <linux/slab.h>
- #include <linux/delay.h>
- #include <linux/fb.h>
--#include <linux/console.h>
--#include <linux/selection.h>
- #include <linux/ioport.h>
- #include <linux/init.h>
- #include <linux/pci.h>
- #include <linux/vmalloc.h>
--#include <linux/kd.h>
--#include <linux/vt_kern.h>
- #include <linux/pagemap.h>
- #include <linux/version.h>
- 
-@@ -242,7 +238,7 @@
- static char *mode       = NULL;
- 
- module_param(accel, bool, S_IRUGO);
--MODULE_PARM_DESC(accel, "Enable console acceleration");
-+MODULE_PARM_DESC(accel, "Enable hardware acceleration");
- module_param(vram, int, S_IRUGO);
- MODULE_PARM_DESC(vram, "System RAM to allocate to framebuffer in MiB");
- module_param(voffset, int, S_IRUGO);
-@@ -498,7 +494,7 @@
+-static struct fb_info *gx1fb_info;
+-
+-static int __init gx1fb_init(void)
++static int __init gx1fb_probe(struct device *device)
  {
++	struct platform_device *dev = to_platform_device(device);
++	struct geodefb_par *par;
  	struct fb_info *info;
- 	struct intelfb_info *dinfo;
--	int i, j, err, dvo;
-+	int i, err, dvo;
- 	int aperture_size, stolen_size;
- 	struct agp_kern_info gtt_info;
- 	int agp_memtype;
-@@ -841,13 +837,6 @@
- 	if (bailearly == 5)
- 		bailout(dinfo);
+-        struct geodefb_par *par;
+ 	int ret;
  
--	for (i = 0; i < 16; i++) {
--		j = color_table[i];
--		dinfo->palette[i].red = default_red[j];
--		dinfo->palette[i].green = default_grn[j];
--		dinfo->palette[i].blue = default_blu[j];
--	}
+-#ifndef MODULE
+-	if (fb_get_options("gx1fb", NULL))
+-		return -ENODEV;
+-#endif
 -
- 	if (bailearly == 6)
- 		bailout(dinfo);
+-	info = gx1fb_init_fbinfo();
++	info = gx1fb_init_fbinfo(&dev->dev);
+ 	if (!info)
+ 		return -ENOMEM;
+-	gx1fb_info = info;
+-
+ 	par = info->par;
  
-@@ -1328,9 +1317,10 @@
- 	if (ACCEL(dinfo, info)) {
- 		info->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN |
- 		FBINFO_HWACCEL_COPYAREA | FBINFO_HWACCEL_FILLRECT |
--		FBINFO_HWACCEL_IMAGEBLIT;
-+		FBINFO_HWACCEL_IMAGEBLIT | FBINFO_HWACCEL_CURSOR;
- 	} else {
--		info->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
-+		info->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN | 
-+		FBINFO_HWACCEL_CURSOR;
+ 	/* GX1 display controller and CS5530 video device */
+@@ -310,6 +301,7 @@
+ 		ret = -EINVAL;
+ 		goto err;
  	}
- 	kfree(hw);
++	dev_set_drvdata(&dev->dev, info);
+ 	printk(KERN_INFO "fb%d: %s frame buffer device\n", info->node, info->fix.id);
  	return 0;
-@@ -1359,10 +1349,6 @@
- 			green >>= 8;
- 			blue >>= 8;
  
--			dinfo->palette[regno].red = red;
--			dinfo->palette[regno].green = green;
--			dinfo->palette[regno].blue = blue;
--
- 			intelfbhw_setcolreg(dinfo, regno, red, green, blue,
- 					    transp);
- 		}
-diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/intelfb/intelfb.h fbdev-2.6/drivers/video/intelfb/intelfb.h
---- linus-2.6/drivers/video/intelfb/intelfb.h	2005-05-10 08:39:33.000000000 -0700
-+++ fbdev-2.6/drivers/video/intelfb/intelfb.h	2005-06-24 09:04:12.000000000 -0700
-@@ -234,7 +234,6 @@
+@@ -327,10 +319,10 @@
+ 	return ret;
+ }
  
- 	/* palette */
- 	u32 pseudo_palette[17];
--	struct { u8 red, green, blue, pad; } palette[256];
+-static void __exit gx1fb_cleanup(void)
++static int gx1fb_remove(struct device *device)
+ {
+-	struct fb_info *info = gx1fb_info;
+-	struct geodefb_par *par = gx1fb_info->par;
++	struct fb_info *info = dev_get_drvdata(device);
++	struct geodefb_par *par = info->par;
  
- 	/* chip info */
- 	int pci_chipset;
-diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/intelfb/intelfbhw.c fbdev-2.6/drivers/video/intelfb/intelfbhw.c
---- linus-2.6/drivers/video/intelfb/intelfbhw.c	2005-05-10 08:39:33.000000000 -0700
-+++ fbdev-2.6/drivers/video/intelfb/intelfbhw.c	2005-06-24 09:04:13.000000000 -0700
-@@ -29,14 +29,10 @@
- #include <linux/slab.h>
- #include <linux/delay.h>
- #include <linux/fb.h>
--#include <linux/console.h>
--#include <linux/selection.h>
- #include <linux/ioport.h>
- #include <linux/init.h>
- #include <linux/pci.h>
- #include <linux/vmalloc.h>
--#include <linux/kd.h>
--#include <linux/vt_kern.h>
- #include <linux/pagemap.h>
- #include <linux/version.h>
+ 	unregister_framebuffer(info);
  
-diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/nvidia/nvidia.c fbdev-2.6/drivers/video/nvidia/nvidia.c
---- linus-2.6/drivers/video/nvidia/nvidia.c	2005-06-22 17:09:52.000000000 -0700
-+++ fbdev-2.6/drivers/video/nvidia/nvidia.c	2005-06-24 09:04:13.000000000 -0700
-@@ -1300,6 +1300,7 @@
- 	    | FBINFO_HWACCEL_IMAGEBLIT
- 	    | FBINFO_HWACCEL_FILLRECT
- 	    | FBINFO_HWACCEL_COPYAREA
-+	    | FBINFO_HWACCEL_CURSOR
- 	    | FBINFO_HWACCEL_YPAN;
+@@ -341,6 +333,40 @@
+ 	pci_dev_put(par->vid_dev);
  
- 	fb_videomode_to_modelist(info->monspecs.modedb,
-diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/riva/fbdev.c fbdev-2.6/drivers/video/riva/fbdev.c
---- linus-2.6/drivers/video/riva/fbdev.c	2005-06-22 17:09:52.000000000 -0700
-+++ fbdev-2.6/drivers/video/riva/fbdev.c	2005-06-24 09:04:13.000000000 -0700
-@@ -1704,7 +1704,8 @@
- 		    | FBINFO_HWACCEL_YPAN
- 		    | FBINFO_HWACCEL_COPYAREA
- 		    | FBINFO_HWACCEL_FILLRECT
--	            | FBINFO_HWACCEL_IMAGEBLIT;
-+	            | FBINFO_HWACCEL_IMAGEBLIT
-+		    | FBINFO_HWACCEL_CURSOR;
+ 	framebuffer_release(info);
++	return 0;
++}
++
++static struct platform_device *gx1fb_device;
++
++static struct device_driver gx1fb_driver = {
++	.name	= "geodefb",
++	.bus	= &platform_bus_type,
++	.probe	= gx1fb_probe,
++	.remove = gx1fb_remove,
++};
++
++static int __init gx1fb_init(void)
++{
++	int ret = 0;
++
++#ifndef MODULE
++	if (fb_get_options("gx1fb", NULL))
++		return -ENODEV;
++#endif
++	gx1fb_device = platform_device_register_simple("geodefb", -1, NULL, 0);
++	if (IS_ERR(gx1fb_device))
++		return PTR_ERR(gx1fb_device);
++
++	ret = driver_register(&gx1fb_driver);
++	if (ret < 0)
++		platform_device_unregister(gx1fb_device);
++	return ret;
++}
++
++static void __exit gx1fb_cleanup(void)
++{
++	platform_device_unregister(gx1fb_device);
++	driver_unregister(&gx1fb_driver);
+ }
  
- 	/* Accel seems to not work properly on NV30 yet...*/
- 	if ((par->riva.Architecture == NV_ARCH_30) || noaccel) {
-diff -urN -X /home/jsimmons/dontdiff linus-2.6/include/linux/fb.h fbdev-2.6/include/linux/fb.h
---- linus-2.6/include/linux/fb.h	2005-06-22 17:09:52.000000000 -0700
-+++ fbdev-2.6/include/linux/fb.h	2005-06-24 09:04:13.000000000 -0700
-@@ -702,6 +702,7 @@
- #define FBINFO_HWACCEL_XPAN		0x1000 /* optional */
- #define FBINFO_HWACCEL_YPAN		0x2000 /* optional */
- #define FBINFO_HWACCEL_YWRAP		0x4000 /* optional */
-+#define FBINFO_HWACCEL_CURSOR		0x8000 /* required */
- 
- #define FBINFO_MISC_USEREVENT          0x10000 /* event request
- 						  from userspace */
+ module_init(gx1fb_init);
 
 
 -------------------------------------------------------

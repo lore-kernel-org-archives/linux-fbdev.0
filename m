@@ -1,7 +1,7 @@
 From: Jon Smirl <jonsmirl@gmail.com>
 Subject: Re: PATCH: move soft_cursor into fbconsole
-Date: Fri, 1 Jul 2005 20:28:08 -0400
-Message-ID: <9e473391050701172831e522e7@mail.gmail.com>
+Date: Fri, 1 Jul 2005 20:56:22 -0400
+Message-ID: <9e473391050701175679f468ff@mail.gmail.com>
 References: <9e47339105061021571f479b10@mail.gmail.com>
 	 <Pine.LNX.4.56.0506210103540.18685@pentafluge.infradead.org>
 	 <9e473391050620173132ea1ce6@mail.gmail.com>
@@ -16,16 +16,16 @@ Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.11] helo=sc8-sf-mx1.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.12] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DoVrk-0002Gi-7O
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 01 Jul 2005 17:28:16 -0700
-Received: from wproxy.gmail.com ([64.233.184.200])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.41)
-	id 1DoVrh-0002Lo-Rk
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 01 Jul 2005 17:28:15 -0700
-Received: by wproxy.gmail.com with SMTP id i1so429794wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 01 Jul 2005 17:28:08 -0700 (PDT)
+	id 1DoWJV-0004p2-5h
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 01 Jul 2005 17:56:57 -0700
+Received: from wproxy.gmail.com ([64.233.184.205])
+	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.41)
+	id 1DoWJ2-0007va-Dd
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 01 Jul 2005 17:56:56 -0700
+Received: by wproxy.gmail.com with SMTP id i1so432634wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 01 Jul 2005 17:56:23 -0700 (PDT)
 In-Reply-To: <Pine.LNX.4.56.0507020030120.14405@pentafluge.infradead.org>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -42,17 +42,17 @@ Content-Type: text/plain; charset="us-ascii"
 To: James Simmons <jsimmons@www.infradead.org>
 Cc: James Simmons <jsimmons@pentafluge.infradead.org>, adaplas@pol.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On 7/1/05, James Simmons <jsimmons@www.infradead.org> wrote:
-> I don't want to make a patch that touches all the drivers. Th epatch I
-> posted is a nice simple patch. If there are no other arguments against it
-> I like to submit it to Andrew.
+Another way to think of this, let's make another member variable
+.fb_hwcursor. When the driver has a hardware cusor is sets
+.fb_hwcursor. If you want to use the software cursor use the exisiting
+.fb_cursor.
 
-But we agreed that having the drivers fallback to the softcursor is
-the wrong general thing to do since it only works for fbconsole. Why
-do we want to keep code in place when we agree that it is not needed?
-All it does is add clutter to the driver code.
+If you think about it every driver is going to have the exact same
+assignment .fb_cursor =3D soft_cursor. If every driver is going to have
+exactly the same assignment, why do we need the variable?
 
-You don't need to make the patch, I already made it for you.
+It's the existence of the hardware cursor that varies from driver to
+driver, that's the one we need the variable for.
 
 --=20
 Jon Smirl

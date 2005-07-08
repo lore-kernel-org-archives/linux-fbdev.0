@@ -1,22 +1,17 @@
-From: James Simmons <jsimmons@www.infradead.org>
-Subject: Re: Geode now shows up in sysfs.
-Date: Thu, 7 Jul 2005 20:55:50 +0100 (BST)
-Message-ID: <Pine.LNX.4.56.0507072055200.13219@pentafluge.infradead.org>
-References: <Pine.LNX.4.56.0507020032330.14405@pentafluge.infradead.org>
- <42C90AEF.4030601@arcom.com> <Pine.LNX.4.56.0507062331170.6528@pentafluge.infradead.org>
- <42CD53AB.7040207@arcom.com>
+From: akpm@osdl.org
+Subject: [patch 068/196] coverity: fix fbsysfs null pointer check
+Date: Thu, 07 Jul 2005 17:57:05 -0700
+Message-ID: <200507080057.j680vfSQ004464@shell0.pdx.osdl.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DqcTd-00076k-Gg
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 07 Jul 2005 12:56:05 -0700
-Received: from pentafluge.infradead.org ([213.146.154.40])
+	id 1DqhBc-00086k-Fz
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 07 Jul 2005 17:57:48 -0700
+Received: from smtp.osdl.org ([65.172.181.4])
 	by sc8-sf-mx2-new.sourceforge.net with esmtp (Exim 4.44)
-	id 1DqcTb-0006IT-D5
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 07 Jul 2005 12:56:05 -0700
-In-Reply-To: <42CD53AB.7040207@arcom.com>
+	id 1DqhBc-0003vP-8G
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 07 Jul 2005 17:57:48 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,31 +22,41 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: David Vrabel <dvrabel@arcom.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@hotpop.com>, Geert Uytterhoeven <geert@linux-m68k.org>, nat.ersoz@myrio.com, jsimmons@pentafluge.infradead.org
+To: torvalds@osdl.org
+Cc: akpm@osdl.org, kambarov@berkeley.edu, linux-fbdev-devel@lists.sourceforge.net, zkambarov@coverity.com
 
 
-What would the pci device part be classifed as then?
+From: "KAMBAROV, ZAUR" <kambarov@berkeley.edu>
 
-On Thu, 7 Jul 2005, David Vrabel wrote:
+Correctly test for a null pointer before going and dereferencing it.
 
-> James Simmons wrote:
-> > It is a pci device. I will send another patch to convert it to a pci 
-> > device.
-> 
-> I think it should remain as a platform device because the principle
-> device involved (the display controller which does all the framebuffer
-> stuff) is not a PCI device.
-> 
-> David Vrabel
-> -- 
-> David Vrabel, Design Engineer
-> 
-> Arcom, Clifton Road           Tel: +44 (0)1223 411200 ext. 3233
-> Cambridge CB1 7EA, UK         Web: http://www.arcom.com/
-> 
+This defect was found automatically by Coverity Prevent, a static analysis
+tool.
+
+Signed-off-by: Zaur Kambarov <zkambarov@coverity.com>
+Cc: <linux-fbdev-devel@lists.sourceforge.net>
+Signed-off-by: Andrew Morton <akpm@osdl.org>
+---
+
+ drivers/video/fbsysfs.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
+
+diff -puN drivers/video/fbsysfs.c~coverity-fbsysfs-fix-null-pointer-check drivers/video/fbsysfs.c
+--- devel/drivers/video/fbsysfs.c~coverity-fbsysfs-fix-null-pointer-check	2005-07-07 17:06:33.000000000 -0700
++++ devel-akpm/drivers/video/fbsysfs.c	2005-07-07 17:06:33.000000000 -0700
+@@ -256,7 +256,7 @@ static ssize_t show_cmap(struct class_de
+ 	unsigned int offset = 0, i;
+ 
+ 	if (!fb_info->cmap.red || !fb_info->cmap.blue ||
+-	    fb_info->cmap.green || fb_info->cmap.transp)
++	    !fb_info->cmap.green || !fb_info->cmap.transp)
+ 		return -EINVAL;
+ 
+ 	for (i = 0; i < fb_info->cmap.len; i++) {
+_
 
 
 -------------------------------------------------------

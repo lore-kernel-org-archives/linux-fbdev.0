@@ -1,21 +1,21 @@
 From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Third repost: unregister_chrdev.patch
-Date: Wed, 13 Jul 2005 18:23:39 -0400
-Message-ID: <9e473391050713152335e72ab2@mail.gmail.com>
+Subject: Third repost: radeon_del_edid.patch
+Date: Wed, 13 Jul 2005 18:26:10 -0400
+Message-ID: <9e47339105071315266b17e155@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Dspeq-0005un-AC
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 13 Jul 2005 15:24:48 -0700
-Received: from wproxy.gmail.com ([64.233.184.200])
+	id 1Dsph6-00066o-NM
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 13 Jul 2005 15:27:08 -0700
+Received: from wproxy.gmail.com ([64.233.184.203])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.44)
-	id 1Dspep-00024r-3e
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 13 Jul 2005 15:24:48 -0700
-Received: by wproxy.gmail.com with SMTP id i7so292296wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 13 Jul 2005 15:24:40 -0700 (PDT)
+	id 1Dsph5-0002Tg-Gb
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 13 Jul 2005 15:27:08 -0700
+Received: by wproxy.gmail.com with SMTP id 58so293238wri
+        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 13 Jul 2005 15:27:01 -0700 (PDT)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -36,19 +36,24 @@ Can we get this into the kernel?
 Jon Smirl
 jonsmirl@gmail.com
 
-#fbdev is missing unregister_chrdev() on unload
+#radeonfb does not clean up EDID sysfs attribute
 #Signed-off-by: Jon Smirl <jonsmirl@gmail.com>
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1164,6 +1164,7 @@ static void __exit
- fbmem_exit(void)
- {
-       class_destroy(fb_class);
-+       unregister_chrdev(FB_MAJOR, "fb");
- }
+diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_bas=
+e.c
+--- a/drivers/video/aty/radeon_base.c
++++ b/drivers/video/aty/radeon_base.c
+@@ -2522,6 +2522,11 @@ static void __devexit radeonfb_pci_unreg
 
- module_exit(fbmem_exit);
+      radeonfb_pm_exit(rinfo);
+
++       if (rinfo->mon1_EDID)
++               sysfs_remove_bin_file(&rinfo->pdev->dev.kobj, &edid1_attr);
++       if (rinfo->mon2_EDID)
++               sysfs_remove_bin_file(&rinfo->pdev->dev.kobj, &edid2_attr);
++
+ #if 0
+      /* restore original state
+       *
 
 
 -------------------------------------------------------

@@ -1,19 +1,23 @@
-From: Knut Petersen <Knut_Petersen@t-online.de>
-Subject: Re: how does one _stop_ using fb
-Date: Fri, 15 Jul 2005 17:05:23 +0200
-Message-ID: <42D7D0B3.4020208@t-online.de>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: 2.6.13-rc3-mm1
+Date: Fri, 15 Jul 2005 16:23:49 -0700
+Message-ID: <20050715162349.731ca00d.akpm@osdl.org>
+References: <20050715013653.36006990.akpm@osdl.org>
+	<20050716075242.24aed0bd.yuasa@hh.iij4u.or.jp>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DtRkA-0007Jk-QL
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Jul 2005 08:04:50 -0700
-Received: from mailout04.sul.t-online.com ([194.25.134.18])
-	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.44)
-	id 1DtRk8-00010f-AS
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Jul 2005 08:04:50 -0700
+	id 1DtZas-0006Si-A5
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Jul 2005 16:27:46 -0700
+Received: from smtp.osdl.org ([65.172.181.4])
+	by sc8-sf-mx1.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44)
+	id 1DtZas-00008m-0c
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Jul 2005 16:27:46 -0700
+In-Reply-To: <20050716075242.24aed0bd.yuasa@hh.iij4u.or.jp>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -24,34 +28,33 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+Cc: yuasa@hh.iij4u.or.jp, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@hotpop.com>
 
-Hi everybody,
+Yoichi Yuasa <yuasa@hh.iij4u.or.jp> wrote:
+>
+> Hi Andrew
+> 
+> I got the following error.
+> 
+> make ARCH=mips oldconfig
+> scripts/kconfig/conf -o arch/mips/Kconfig
+> drivers/video/Kconfig:7:warning: type of 'FB' redefined from 'boolean' to 'tristate'
+> 
+> file drivers/char/speakup/Kconfig already scanned?
+> make[1]: *** [oldconfig] Error 1
+> make: *** [oldconfig] Error 2
+> 
 
-James Simmons wrote:
+Well arch/mips/Kconfig is defining CONFIG_FB as bool and
+drivers/video/Kconfig was changed a while ago to define it as tristate.  I
+assume this failure also happens in linus's current tree.  
 
- > You need a driver that supports going back to vga text mode. Unfortunely
- > very few drivers support that. At present we can"t go back.
+It seems odd that mips is privately duplicating the generic code's
+definition.  Maybe that needs to be taken out of there.
 
-I can unload my framebuffer for the cyberblade/i1 and reload it by
-- loading vfb as the first fb module, then
-- loading my fb module
-- switching one or more tty to it with con2fb,
-- switching back all assigned ttys to vfb using con2fb, then
-- unloading my driver and
-- reloading it or a version.
-
-The driver has the capability to detect the startup mode, and it would 
-not be hard
-to program the hardware to that state again. Could anyone please explain 
-in more
-detail what has to be done on the driver level that this vfb fiddling is 
-unnecessary?
-Which few drivers do support that?
-
-cu,
- Knut
+I'll cc the fbdev guys - could someone please come up with fix?  It's a
+showstopper for the MIPS architecture.
 
 
 -------------------------------------------------------

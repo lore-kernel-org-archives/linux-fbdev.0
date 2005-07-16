@@ -1,64 +1,112 @@
-From: Andrew Morton <akpm@osdl.org>
+From: Yoichi Yuasa <yuasa@hh.iij4u.or.jp>
 Subject: Re: 2.6.13-rc3-mm1
-Date: Fri, 15 Jul 2005 16:23:49 -0700
-Message-ID: <20050715162349.731ca00d.akpm@osdl.org>
+Date: Sat, 16 Jul 2005 10:08:40 +0900
+Message-ID: <20050716100840.608e2b99.yuasa@hh.iij4u.or.jp>
 References: <20050715013653.36006990.akpm@osdl.org>
 	<20050716075242.24aed0bd.yuasa@hh.iij4u.or.jp>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+	<20050715162349.731ca00d.akpm@osdl.org>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=sc8-sf-mx1.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DtZas-0006Si-A5
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Jul 2005 16:27:46 -0700
-Received: from smtp.osdl.org ([65.172.181.4])
-	by sc8-sf-mx1.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44)
-	id 1DtZas-00008m-0c
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 15 Jul 2005 16:27:46 -0700
-In-Reply-To: <20050716075242.24aed0bd.yuasa@hh.iij4u.or.jp>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S262050AbVGPBJG@vger.kernel.org>
+In-Reply-To: <20050715162349.731ca00d.akpm@osdl.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-Cc: yuasa@hh.iij4u.or.jp, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@hotpop.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: yuasa@hh.iij4u.or.jp, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, adaplas@hotpop.com
 
-Yoichi Yuasa <yuasa@hh.iij4u.or.jp> wrote:
->
-> Hi Andrew
+Hi,
+
+On Fri, 15 Jul 2005 16:23:49 -0700
+Andrew Morton <akpm@osdl.org> wrote:
+
+> Yoichi Yuasa <yuasa@hh.iij4u.or.jp> wrote:
+> >
+> > Hi Andrew
+> > 
+> > I got the following error.
+> > 
+> > make ARCH=mips oldconfig
+> > scripts/kconfig/conf -o arch/mips/Kconfig
+> > drivers/video/Kconfig:7:warning: type of 'FB' redefined from 'boolean' to 'tristate'
+> > 
+> > file drivers/char/speakup/Kconfig already scanned?
+> > make[1]: *** [oldconfig] Error 1
+> > make: *** [oldconfig] Error 2
+> > 
 > 
-> I got the following error.
+> Well arch/mips/Kconfig is defining CONFIG_FB as bool and
+> drivers/video/Kconfig was changed a while ago to define it as tristate.  I
+> assume this failure also happens in linus's current tree.  
 > 
-> make ARCH=mips oldconfig
-> scripts/kconfig/conf -o arch/mips/Kconfig
-> drivers/video/Kconfig:7:warning: type of 'FB' redefined from 'boolean' to 'tristate'
-> 
-> file drivers/char/speakup/Kconfig already scanned?
-> make[1]: *** [oldconfig] Error 1
-> make: *** [oldconfig] Error 2
-> 
+> It seems odd that mips is privately duplicating the generic code's
+> definition.  Maybe that needs to be taken out of there.
 
-Well arch/mips/Kconfig is defining CONFIG_FB as bool and
-drivers/video/Kconfig was changed a while ago to define it as tristate.  I
-assume this failure also happens in linus's current tree.  
+Yes, It can be removed.
 
-It seems odd that mips is privately duplicating the generic code's
-definition.  Maybe that needs to be taken out of there.
+> I'll cc the fbdev guys - could someone please come up with fix?  It's a
+> showstopper for the MIPS architecture.
 
-I'll cc the fbdev guys - could someone please come up with fix?  It's a
-showstopper for the MIPS architecture.
+Yoichi
 
+Signed-off-by: Yoichi Yuasa <yuasa@hh.iij4u.or.jp>
 
--------------------------------------------------------
-SF.Net email is sponsored by: Discover Easy Linux Migration Strategies
-from IBM. Find simple to follow Roadmaps, straightforward articles,
-informative Webcasts and more! Get everything you need to get up to
-speed, fast. http://ads.osdn.com/?ad_id=7477&alloc_id=16492&op=click
+diff -urN -X dontdiff mm1-orig/arch/mips/Kconfig mm1/arch/mips/Kconfig
+--- mm1-orig/arch/mips/Kconfig	2005-07-15 21:44:53.000000000 +0900
++++ mm1/arch/mips/Kconfig	2005-07-16 10:01:29.000000000 +0900
+@@ -1090,41 +1090,6 @@
+ 	depends on MACH_JAZZ || SNI_RM200_PCI || SGI_IP22 || SGI_IP32
+ 	default y
+ 
+-config FB
+-	bool
+-	depends on MIPS_MAGNUM_4000 || OLIVETTI_M700
+-	default y
+-	---help---
+-	  The frame buffer device provides an abstraction for the graphics
+-	  hardware. It represents the frame buffer of some video hardware and
+-	  allows application software to access the graphics hardware through
+-	  a well-defined interface, so the software doesn't need to know
+-	  anything about the low-level (hardware register) stuff.
+-
+-	  Frame buffer devices work identically across the different
+-	  architectures supported by Linux and make the implementation of
+-	  application programs easier and more portable; at this point, an X
+-	  server exists which uses the frame buffer device exclusively.
+-	  On several non-X86 architectures, the frame buffer device is the
+-	  only way to use the graphics hardware.
+-
+-	  The device is accessed through special device nodes, usually located
+-	  in the /dev directory, i.e. /dev/fb*.
+-
+-	  You need an utility program called fbset to make full use of frame
+-	  buffer devices. Please read <file:Documentation/fb/framebuffer.txt>
+-	  and the Framebuffer-HOWTO at <http://www.tldp.org/docs.html#howto>
+-	  for more information.
+-
+-	  Say Y here and to the driver for your graphics board below if you
+-	  are compiling a kernel for a non-x86 architecture.
+-
+-	  If you are compiling for the x86 architecture, you can say Y if you
+-	  want to play with it, but it is not essential. Please note that
+-	  running graphical applications that directly touch the hardware
+-	  (e.g. an accelerated X server) and that are not frame buffer
+-	  device-aware may cause unexpected results. If unsure, say N.
+-
+ config HAVE_STD_PC_SERIAL_PORT
+ 	bool
+ 
+diff -urN -X dontdiff mm1-orig/drivers/video/Kconfig mm1/drivers/video/Kconfig
+--- mm1-orig/drivers/video/Kconfig	2005-07-13 13:46:46.000000000 +0900
++++ mm1/drivers/video/Kconfig	2005-07-16 09:56:59.000000000 +0900
+@@ -1399,8 +1399,8 @@
+ 	  Say Y here to enable kernel support for the on-board framebuffer.
+ 
+ config FB_G364
+-	bool
+-	depends on MIPS_MAGNUM_4000 || OLIVETTI_M700
++	bool "G364 frame buffer support"
++	depends on (FB = y) && (MIPS_MAGNUM_4000 || OLIVETTI_M700)
+  	select FB_CFB_FILLRECT
+  	select FB_CFB_COPYAREA
+  	select FB_CFB_IMAGEBLIT

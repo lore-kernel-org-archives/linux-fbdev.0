@@ -1,112 +1,64 @@
-From: Yoichi Yuasa <yuasa@hh.iij4u.or.jp>
-Subject: Re: 2.6.13-rc3-mm1
-Date: Sat, 16 Jul 2005 10:08:40 +0900
-Message-ID: <20050716100840.608e2b99.yuasa@hh.iij4u.or.jp>
-References: <20050715013653.36006990.akpm@osdl.org>
-	<20050716075242.24aed0bd.yuasa@hh.iij4u.or.jp>
-	<20050715162349.731ca00d.akpm@osdl.org>
+From: Michal Januszewski <spock@gentoo.org>
+Subject: [PATCH][fbcon] Don't repaint the cursor when it is disabled.
+Date: Sun, 17 Jul 2005 14:00:05 +0200
+Message-ID: <20050717120005.GA28169@spock.one.pl>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S262050AbVGPBJG@vger.kernel.org>
-In-Reply-To: <20050715162349.731ca00d.akpm@osdl.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Q68bSM7Ycu6FN28Q"
+Return-path: <linux-kernel-owner+glk-linux-kernel=40m.gmane.org-S261257AbVGQMAK@vger.kernel.org>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>
-Cc: yuasa@hh.iij4u.or.jp, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, adaplas@hotpop.com
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
+
+
+--Q68bSM7Ycu6FN28Q
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, 15 Jul 2005 16:23:49 -0700
-Andrew Morton <akpm@osdl.org> wrote:
+Currently even when the cursor is disabled (`setterm -cursor off`), it
+is still repainted as a black rectangle the size of a single char. This
+can be seen, for example, by chvt'ing to a free tty, disabling the
+cursor and doing `dd if=3D/dev/urandom of=3D/dev/fb0`.
 
-> Yoichi Yuasa <yuasa@hh.iij4u.or.jp> wrote:
-> >
-> > Hi Andrew
-> > 
-> > I got the following error.
-> > 
-> > make ARCH=mips oldconfig
-> > scripts/kconfig/conf -o arch/mips/Kconfig
-> > drivers/video/Kconfig:7:warning: type of 'FB' redefined from 'boolean' to 'tristate'
-> > 
-> > file drivers/char/speakup/Kconfig already scanned?
-> > make[1]: *** [oldconfig] Error 1
-> > make: *** [oldconfig] Error 2
-> > 
-> 
-> Well arch/mips/Kconfig is defining CONFIG_FB as bool and
-> drivers/video/Kconfig was changed a while ago to define it as tristate.  I
-> assume this failure also happens in linus's current tree.  
-> 
-> It seems odd that mips is privately duplicating the generic code's
-> definition.  Maybe that needs to be taken out of there.
+The patch changes this behaviour by avoiding painting anything when the
+cursor is disabled.
 
-Yes, It can be removed.
+Signed-off-by: Michal Januszewski <spock@gentoo.org>
+---
 
-> I'll cc the fbdev guys - could someone please come up with fix?  It's a
-> showstopper for the MIPS architecture.
+diff -Nupr linux-2.6.12-orig/drivers/video/console/fbcon.c linux-2.6.12/dri=
+vers/video/console/fbcon.c
+--- linux-2.6.12-orig/drivers/video/console/fbcon.c	2005-06-17 21:48:29.000=
+000000 +0200
++++ linux-2.6.12/drivers/video/console/fbcon.c	2005-07-17 13:32:00.00000000=
+0 +0200
+@@ -276,7 +276,8 @@ static void fb_flashcursor(void *private
+=20
+ 	if (!vc || !CON_IS_VISIBLE(vc) ||
+ 	    fbcon_is_inactive(vc, info) ||
+- 	    registered_fb[con2fb_map[vc->vc_num]] !=3D info)
++ 	    registered_fb[con2fb_map[vc->vc_num]] !=3D info ||
++	    vc_cons[ops->currcon].d->vc_deccm !=3D 1)
+ 		return;
+ 	acquire_console_sem();
+ 	p =3D &fb_display[vc->vc_num];
 
-Yoichi
 
-Signed-off-by: Yoichi Yuasa <yuasa@hh.iij4u.or.jp>
+--Q68bSM7Ycu6FN28Q
+Content-Type: application/pgp-signature
+Content-Disposition: inline
 
-diff -urN -X dontdiff mm1-orig/arch/mips/Kconfig mm1/arch/mips/Kconfig
---- mm1-orig/arch/mips/Kconfig	2005-07-15 21:44:53.000000000 +0900
-+++ mm1/arch/mips/Kconfig	2005-07-16 10:01:29.000000000 +0900
-@@ -1090,41 +1090,6 @@
- 	depends on MACH_JAZZ || SNI_RM200_PCI || SGI_IP22 || SGI_IP32
- 	default y
- 
--config FB
--	bool
--	depends on MIPS_MAGNUM_4000 || OLIVETTI_M700
--	default y
--	---help---
--	  The frame buffer device provides an abstraction for the graphics
--	  hardware. It represents the frame buffer of some video hardware and
--	  allows application software to access the graphics hardware through
--	  a well-defined interface, so the software doesn't need to know
--	  anything about the low-level (hardware register) stuff.
--
--	  Frame buffer devices work identically across the different
--	  architectures supported by Linux and make the implementation of
--	  application programs easier and more portable; at this point, an X
--	  server exists which uses the frame buffer device exclusively.
--	  On several non-X86 architectures, the frame buffer device is the
--	  only way to use the graphics hardware.
--
--	  The device is accessed through special device nodes, usually located
--	  in the /dev directory, i.e. /dev/fb*.
--
--	  You need an utility program called fbset to make full use of frame
--	  buffer devices. Please read <file:Documentation/fb/framebuffer.txt>
--	  and the Framebuffer-HOWTO at <http://www.tldp.org/docs.html#howto>
--	  for more information.
--
--	  Say Y here and to the driver for your graphics board below if you
--	  are compiling a kernel for a non-x86 architecture.
--
--	  If you are compiling for the x86 architecture, you can say Y if you
--	  want to play with it, but it is not essential. Please note that
--	  running graphical applications that directly touch the hardware
--	  (e.g. an accelerated X server) and that are not frame buffer
--	  device-aware may cause unexpected results. If unsure, say N.
--
- config HAVE_STD_PC_SERIAL_PORT
- 	bool
- 
-diff -urN -X dontdiff mm1-orig/drivers/video/Kconfig mm1/drivers/video/Kconfig
---- mm1-orig/drivers/video/Kconfig	2005-07-13 13:46:46.000000000 +0900
-+++ mm1/drivers/video/Kconfig	2005-07-16 09:56:59.000000000 +0900
-@@ -1399,8 +1399,8 @@
- 	  Say Y here to enable kernel support for the on-board framebuffer.
- 
- config FB_G364
--	bool
--	depends on MIPS_MAGNUM_4000 || OLIVETTI_M700
-+	bool "G364 frame buffer support"
-+	depends on (FB = y) && (MIPS_MAGNUM_4000 || OLIVETTI_M700)
-  	select FB_CFB_FILLRECT
-  	select FB_CFB_COPYAREA
-  	select FB_CFB_IMAGEBLIT
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFC2khFaQ0HSaOUe+YRAruhAJ45jKOtHsB1GMP31AB28PAxBZzeBQCfcEfP
+6g+FwKpgeA6ziEdBCA7Ecac=
+=tjlD
+-----END PGP SIGNATURE-----
+
+--Q68bSM7Ycu6FN28Q--

@@ -1,22 +1,25 @@
-From: Dave Kavanagh <dumuzix@gmail.com>
-Subject: intelfb does not work with i915
-Date: Wed, 20 Jul 2005 14:25:59 -0300
-Message-ID: <6d86e88105072010252790b42d@mail.gmail.com>
+From: jurriaan <thunder7@xs4all.nl>
+Subject: Re: ghosting with nvidia framebuffer (pci-e 6600), 1600x1200 and 12x22 font
+Date: Wed, 20 Jul 2005 20:33:53 +0200
+Message-ID: <20050720183353.GA15993@amd64.of.nowhere>
+References: <20050706190456.GA20251@amd64.of.nowhere>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=sc8-sf-mx2.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=sc8-sf-mx1.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DvIL4-0005ZA-9l
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 20 Jul 2005 10:26:34 -0700
-Received: from wproxy.gmail.com ([64.233.184.192])
-	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.44)
-	id 1DvIL4-0003Dn-2T
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 20 Jul 2005 10:26:34 -0700
-Received: by wproxy.gmail.com with SMTP id i3so1613969wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 20 Jul 2005 10:26:27 -0700 (PDT)
+	id 1DvJOl-0000Sx-7D
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 20 Jul 2005 11:34:27 -0700
+Received: from smtp-vbr9.xs4all.nl ([194.109.24.29])
+	by sc8-sf-mx1.sourceforge.net with esmtp (Exim 4.44)
+	id 1DvJOj-0003Or-Oh
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 20 Jul 2005 11:34:27 -0700
+Received: from zeeotter.xs4all.nl (zeeotter.xs4all.nl [80.126.31.149])
+	by smtp-vbr9.xs4all.nl (8.13.3/8.13.3) with ESMTP id j6KIYKrN014201
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 20 Jul 2005 20:34:20 +0200 (CEST)
+	(envelope-from jurriaan@rivierenland.xs4all.nl)
 Content-Disposition: inline
+In-Reply-To: <20050706190456.GA20251@amd64.of.nowhere>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,55 +31,36 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: adaplas@hotpop.com, adaplas@pol.net
 
-I have been having no luck getting the intelfb driver working
-with an i915 chipset. I've been searching and reading message
-boards and mail lists for days and haven't found anything.
-It seems that the driver is not setting the proper video timings.
-
-I have tried using the vesafb driver and my hardware works fine.
-
-If I try to use the intelfb driver my monitor either complains
-and shuts off or I get text and graphics that is horizontally
-squiggly (if that makes sense).
-
-I tried initializing the driver in several modes with parameters
-such as:
-
-      video=3Dintelfb
-      video=3Dintelfb:640x480-16@60
-
-
-fbset -i reports the following:
-
-mode "1024x768-70"
-    # D: 75.002 MHz, H: 56.477 kHz, V: 70.071 Hz
-    geometry 1024 768 1024 768 32
-    timings 13333 144 24 29 3 136 6
-    accel true
-    rgba 8/16,8/8,8/0,0/0
-endmode
-
-Frame buffer device information:
-    Name        : Intel(R) 915G
-    Address     : 0xd0000000
-    Size        : 8253440
-    Type        : PACKED PIXELS
-    Visual      : TRUECOLOR
-    XPanStep    : 8
-    YPanStep    : 1
-    YWrapStep   : 0
-    LineLength  : 4096
-    MMIO Address: 0xcfd80000
-    MMIO Size   : 524288
-    Accelerator : Unknown (42)
-
-
-I am using kernel 2.6.12. Any help or ideas would be appreciated.
+From: jurriaan <thunder7@xs4all.nl>
+Date: Wed, Jul 06, 2005 at 09:04:56PM +0200
+> I've bought myself a fine new s939 motherboard, which meant another
+> videocard as well. Since I couldn't get an Ati X600 running reliably
+> under X.org (#@#$*$ FIFO timed out errors are very frustrating, and the
+> only solution I found was to shut down all acceleration, which didn't
+> make me happy), I'm now running an Nvidia 6600.
+> 
+> I'm running at 1600x1200 resolution with the 12x22 font, and a
+> 2.6.13-rc1-mm1 kernel.
+> 
+> A strange effect is noticeable: often characters from the left of the
+> screen are ghosted on the right of the screen. Not all of the pixels
+> that form a character, but enough to be visible. To my best knowledge,
+> the ghosting starts at column 85, and 85 * 12 = 1020, which may mean
+> some sort of erroneous wrap-around at pixel 1024 is taking place?
+> 
+Any others experiencing this? I cc'ed mr Daplas, the maintainer, and I
+haven't heard anything.....
 
 Thanks,
-Dave Kavanagh
+Jurriaan
+-- 
+"From there to here, from here to there, funny things are everywhere."
+        Dr. Seuss
+Debian (Unstable) GNU/Linux 2.6.13-rc2-mm1 5149 bogomips load 0.49
 
 
 -------------------------------------------------------

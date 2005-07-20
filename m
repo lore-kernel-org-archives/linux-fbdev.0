@@ -1,25 +1,21 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: [PATCH] add NULL short circuit to fb_dealloc_cmap()
-Date: Sun, 17 Jul 2005 18:32:07 -0400
-Message-ID: <9e47339105071715322c558403@mail.gmail.com>
-References: <200507172043.41473.jesper.juhl@gmail.com>
-	 <9e473391050717132233347d25@mail.gmail.com>
-	 <Pine.LNX.4.62.0507172314000.4553@numbat.sonytel.be>
+From: Dave Kavanagh <dumuzix@gmail.com>
+Subject: intelfb does not work with i915
+Date: Wed, 20 Jul 2005 14:25:59 -0300
+Message-ID: <6d86e88105072010252790b42d@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=sc8-sf-mx2.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DuHgG-0005PC-2H
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 17 Jul 2005 15:32:16 -0700
-Received: from wproxy.gmail.com ([64.233.184.200])
+	id 1DvIL4-0005ZA-9l
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 20 Jul 2005 10:26:34 -0700
+Received: from wproxy.gmail.com ([64.233.184.192])
 	by sc8-sf-mx2.sourceforge.net with esmtp (Exim 4.44)
-	id 1DuHgE-0003OD-Sv
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 17 Jul 2005 15:32:16 -0700
-Received: by wproxy.gmail.com with SMTP id 37so915292wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 17 Jul 2005 15:32:08 -0700 (PDT)
-In-Reply-To: <Pine.LNX.4.62.0507172314000.4553@numbat.sonytel.be>
+	id 1DvIL4-0003Dn-2T
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 20 Jul 2005 10:26:34 -0700
+Received: by wproxy.gmail.com with SMTP id i3so1613969wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 20 Jul 2005 10:26:27 -0700 (PDT)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -32,34 +28,55 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Jesper Juhl <jesper.juhl@gmail.com>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On 7/17/05, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> >
-> > struct fb_super_cmap {
-> >    struct fb_cmap cmap;
-> >    __u16 red[255];
-> >    __u16 blue[255];
-> >    __u16 green[255];
-> >    __u16 transp[255];
->                   ^^^
-> I assume you meant 256?
->=20
-> > }
-> >
-> > Then adjust the code as need. Have the embedded cmap struct point to
-> > the fields in the super_cmap and the drivers don't have to be changed.
->=20
-> What if your colormap has more than 256 entries?
+I have been having no luck getting the intelfb driver working
+with an i915 chipset. I've been searching and reading message
+boards and mail lists for days and haven't found anything.
+It seems that the driver is not setting the proper video timings.
 
-I meant 256. Does any hardware exist that takes more that 256 entries?=20
-They are __u16 values but I have never seen hardware that take more
-that __u8 either.
+I have tried using the vesafb driver and my hardware works fine.
 
---=20
-Jon Smirl
-jonsmirl@gmail.com
+If I try to use the intelfb driver my monitor either complains
+and shuts off or I get text and graphics that is horizontally
+squiggly (if that makes sense).
+
+I tried initializing the driver in several modes with parameters
+such as:
+
+      video=3Dintelfb
+      video=3Dintelfb:640x480-16@60
+
+
+fbset -i reports the following:
+
+mode "1024x768-70"
+    # D: 75.002 MHz, H: 56.477 kHz, V: 70.071 Hz
+    geometry 1024 768 1024 768 32
+    timings 13333 144 24 29 3 136 6
+    accel true
+    rgba 8/16,8/8,8/0,0/0
+endmode
+
+Frame buffer device information:
+    Name        : Intel(R) 915G
+    Address     : 0xd0000000
+    Size        : 8253440
+    Type        : PACKED PIXELS
+    Visual      : TRUECOLOR
+    XPanStep    : 8
+    YPanStep    : 1
+    YWrapStep   : 0
+    LineLength  : 4096
+    MMIO Address: 0xcfd80000
+    MMIO Size   : 524288
+    Accelerator : Unknown (42)
+
+
+I am using kernel 2.6.12. Any help or ideas would be appreciated.
+
+Thanks,
+Dave Kavanagh
 
 
 -------------------------------------------------------

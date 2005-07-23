@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: ghosting with nvidia framebuffer (pci-e      6600), 1600x1200 and 12x22 font
-Date: Fri, 22 Jul 2005 21:22:13 +0800
-Message-ID: <200507222122.16664.adaplas@gmail.com>
-References: <20050706190456.GA20251@amd64.of.nowhere> <200507221203.31810.adaplas@gmail.com> <20129.194.178.120.170.1122014146.squirrel@194.178.120.170>
+Subject: Re: PATCH: move soft_cursor into fbconsole
+Date: Sat, 23 Jul 2005 13:05:57 +0800
+Message-ID: <200507231305.59225.adaplas@gmail.com>
+References: <9e47339105061021571f479b10@mail.gmail.com> <Pine.LNX.4.56.0507020030120.14405@pentafluge.infradead.org> <9e473391050701175679f468ff@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Dw5pi-0005fG-Ik
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Jul 2005 15:17:30 -0700
-Received: from rproxy.gmail.com ([64.233.170.192])
+	id 1DwCDP-00060k-TD
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Jul 2005 22:06:23 -0700
+Received: from zproxy.gmail.com ([64.233.162.203])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Dw5ph-0002J1-Ay
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Jul 2005 15:17:30 -0700
-Received: by rproxy.gmail.com with SMTP id r35so86497rna
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 22 Jul 2005 15:17:19 -0700 (PDT)
-In-Reply-To: <20129.194.178.120.170.1122014146.squirrel@194.178.120.170>
+	id 1DwCDO-0006NX-EQ
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 22 Jul 2005 22:06:23 -0700
+Received: by zproxy.gmail.com with SMTP id s18so316338nze
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 22 Jul 2005 22:06:12 -0700 (PDT)
+In-Reply-To: <9e473391050701175679f468ff@mail.gmail.com>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -30,50 +30,39 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: jurriaan@rivierenland.xs4all.nl
-Cc: linux-fbdev-devel@lists.sourceforge.net, jurriaan <thunder7@xs4all.nl>, adaplas@hotpop.com, adaplas@pol.net
+To: Jon Smirl <jonsmirl@gmail.com>, James Simmons <jsimmons@www.infradead.org>
+Cc: James Simmons <jsimmons@pentafluge.infradead.org>, adaplas@pol.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Friday 22 July 2005 14:35, Jurriaan Kalkman wrote:
-> > On Thursday 07 July 2005 03:04, jurriaan wrote:
-> >> Kernel command line: root=/dev/hda1 video=nvidiafb:1600x1200-32@85
-> >> atkbd.softrepeat=1
-> >>
-> >> nvidiafb: nVidia device/chipset 10DE0141
-> >> nvidiafb: PCI device 10de:0141 (nVidia Corporation)
-> >> nvidiafb: CRTC0 found
-> >> nvidiafb: CRTC1 found
-> >> nvidiafb: CRTC 0 appears to have a CRT attached
-> >> nvidiafb: Using CRT on CRTC 0
-> >> nvidiafb: MTRR set to ON
-> >> Console: switching to colour frame buffer device 133x54
-> >> nvidiafb: PCI nVidia NV14 framebuffer (64MB @ 0xC0000000)
-> >>
-> >> I'm running at 1600x1200 resolution with the 12x22 font, and a
-> >> 2.6.13-rc1-mm1 kernel.
-> >>
-> >> A strange effect is noticeable: often characters from the left of the
-> >> screen are ghosted on the right of the screen. Not all of the pixels
-> >> that form a character, but enough to be visible. To my best knowledge,
-> >> the ghosting starts at column 85, and 85 * 12 = 1020, which may mean
-> >> some sort of erroneous wrap-around at pixel 1024 is taking place?
-> >
-> > It looks like a timings problem.  Are the effects still present if you
-> > try to change modes?
+On Saturday 02 July 2005 08:56, Jon Smirl wrote:
+> Another way to think of this, let's make another member variable
+> .fb_hwcursor. When the driver has a hardware cusor is sets
+> .fb_hwcursor. If you want to use the software cursor use the exisiting
+> .fb_cursor.
 >
-> I'll try that later tonight, when I'm home again.
-> However, whatever corruption is on screen, when I switch virtual consoles
-> from tty1 to 2 and back (alt-f2 alt-f1), it disappears completely. Until I
-> force the screen to scroll up by pressing return at the last line, then
-> they reappear again.
+> If you think about it every driver is going to have the exact same
+> assignment .fb_cursor = soft_cursor. If every driver is going to have
+> exactly the same assignment, why do we need the variable?
+>
+> It's the existence of the hardware cursor that varies from driver to
+> driver, that's the one we need the variable for.
 
-Ah, okay, if it disappears and then reappears on scrolling, then yes, it is
-probably not a timings problem.  Forget about adjusting the video timings,
-but let me know if switching resolutions work.
+Is this resolved?  I tend to agree with Jon.  Let's just remove all
+references to soft_cursor from all drivers, and let fbcon_cursor() fall back
+to soft_cursor when xxxfb_cursor() is absent.  It is a lot cleaner and saner
+this way, and although it touches all drivers, it is a singe logical change,
+so it's acceptable.
 
-Try setting vyres = yres and see if that helps. It's either a panning
-problem or a bitblit problem.
+Also, I think it might be preferable to have 2 cursor hooks, one
+is fbcon-specific, and the other is for use only in userspace, which needs
+to be more comprehensive.  Or if a single but comprehensive cursor API is
+preferred, then we just adapt fbcon_cursor to use the more powerful
+cursor API.  
+
+So, anyone want to propose a cursor API for fbdev, that is both usable by
+fbcon and userspace?
 
 Tony
+
 
 
 

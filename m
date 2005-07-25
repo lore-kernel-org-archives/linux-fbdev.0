@@ -1,18 +1,28 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: [2.6 patch] FB_INTEL must depend on HW_CONSOLE
-Date: Sun, 24 Jul 2005 00:05:23 +0200
-Message-ID: <20050723220523.GM3160@stusta.de>
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: PATCH: move soft_cursor into fbconsole
+Date: Mon, 25 Jul 2005 12:45:46 -0400
+Message-ID: <9e4733910507250945395b665f@mail.gmail.com>
+References: <9e47339105061021571f479b10@mail.gmail.com>
+	 <Pine.LNX.4.56.0507020030120.14405@pentafluge.infradead.org>
+	 <9e473391050701175679f468ff@mail.gmail.com>
+	 <200507231305.59225.adaplas@gmail.com>
+	 <9e473391050723084153d29566@mail.gmail.com>
+	 <Pine.LNX.4.56.0507251729430.21629@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DwS8V-0007Pu-Ep
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 23 Jul 2005 15:06:23 -0700
-Received: from mailout.stusta.mhn.de ([141.84.69.5])
-	by mail.sourceforge.net with smtp (Exim 4.44)
-	id 1DwS8T-0005hu-TB
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 23 Jul 2005 15:06:23 -0700
+	id 1Dx660-0006DQ-PE
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 25 Jul 2005 09:46:28 -0700
+Received: from wproxy.gmail.com ([64.233.184.198])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1Dx65Z-0003ij-2P
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 25 Jul 2005 09:46:28 -0700
+Received: by wproxy.gmail.com with SMTP id i3so994232wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 25 Jul 2005 09:45:46 -0700 (PDT)
+In-Reply-To: <Pine.LNX.4.56.0507251729430.21629@pentafluge.infradead.org>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -25,42 +35,51 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: James Simmons <jsimmons@infradead.org>
+Cc: adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net
 
-CONFIG_FB_INTEL=y and CONFIG_HW_CONSOLE results in the following compile 
-error:
+On 7/25/05, James Simmons <jsimmons@infradead.org> wrote:
+>=20
+> > 1) the current ioctl one
+>=20
+> Defunct.
+>=20
+> > 2) the new stuff in sysfs. If the hardware cursor is there you get a sy=
+sfs
+> > attribute named cursor. write x,y to it to move the cursor around. I'll=
+ add
+> > the sysfs support as soon as we decide on the interface.
+>=20
+> I was playing with that a bit.
+>=20
+> > I'm still at OLS. Missed seeing both of you at KS. fbdev was discussed =
+and
+> > Linus went with Benh's proposal to move the modesetting API to user spa=
+ce.
+> > Obviously this will have a lot of impact on fbdev.
+>=20
+> I don't have any money to go to such events :-( Looks like fbdev is going
+> away completly :-< We will need embedded graphics libraries to boot a
+> machine in the future. I seen this coming and thats why my motivation for
+> development keeps dropping. I suggest they make a big diff to remove the
+> whole system.
 
-<--  snip  -->
+It is a long way from Linus telling BenH to go ahead and having a
+replacement system in the kernel. My bet is that userspace mode
+setting only happens for a couple of chips. I don't see a lot of
+people jumping up to replace the existing system. I was pushing to
+keep fbdev the way it is but without either of the maintainers there
+to defend fbdev it is a hard sell.
 
-...
-  LD      vmlinux
-drivers/built-in.o: In function `intelfb_pci_register':
-intelfbdrv.c:(.text+0x171960): undefined reference to `color_table'
-intelfbdrv.c:(.text+0x171971): undefined reference to `default_red'
-intelfbdrv.c:(.text+0x17197e): undefined reference to `default_grn'
-intelfbdrv.c:(.text+0x17198b): undefined reference to `default_blu'
-intelfbdrv.c:(.text+0x17199a): undefined reference to `color_table'
-make: *** [vmlinux] Error 1
+If you write a paper for OLS, get it accepted and present it; the
+sponsors will probably pay your airfare. Hotels can be had for
+$40/night. Work on Ted to get an invite to Kernel Summit and then give
+him four months notice that you need airfare and you'll probably get
+it.
 
-<--  snip  -->
-
-
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-
---- linux-2.6.13-rc3-mm1-full/drivers/video/Kconfig.old	2005-07-23 22:12:18.000000000 +0200
-+++ linux-2.6.13-rc3-mm1-full/drivers/video/Kconfig	2005-07-23 22:12:51.000000000 +0200
-@@ -756,7 +756,7 @@
- 
- config FB_INTEL
- 	tristate "Intel 830M/845G/852GM/855GM/865G support (EXPERIMENTAL)"
--	depends on FB && EXPERIMENTAL && PCI && X86 && !X86_64
-+	depends on FB && HW_CONSOLE && EXPERIMENTAL && PCI && X86 && !X86_64
- 	select AGP
- 	select AGP_INTEL
- 	select FB_MODE_HELPERS
-
+--=20
+Jon Smirl
+jonsmirl@gmail.com
 
 
 -------------------------------------------------------

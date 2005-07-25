@@ -1,29 +1,23 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: PATCH: move soft_cursor into fbconsole
-Date: Mon, 25 Jul 2005 12:45:46 -0400
-Message-ID: <9e4733910507250945395b665f@mail.gmail.com>
-References: <9e47339105061021571f479b10@mail.gmail.com>
-	 <Pine.LNX.4.56.0507020030120.14405@pentafluge.infradead.org>
-	 <9e473391050701175679f468ff@mail.gmail.com>
-	 <200507231305.59225.adaplas@gmail.com>
-	 <9e473391050723084153d29566@mail.gmail.com>
-	 <Pine.LNX.4.56.0507251729430.21629@pentafluge.infradead.org>
+From: Terence Soh <Terence.Soh@appliedbiosystems.com>
+Subject: General frame buffer questions (for NS9360)
+Date: Tue, 26 Jul 2005 06:31:57 +0800
+Message-ID: <OF6FF3BF3E.E5A02E1C-ON48257049.007AC48D-48257049.007BD32D@applera.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/alternative; boundary="=_alternative 007BD32C48257049_="
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Dx660-0006DQ-PE
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 25 Jul 2005 09:46:28 -0700
-Received: from wproxy.gmail.com ([64.233.184.198])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Dx65Z-0003ij-2P
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 25 Jul 2005 09:46:28 -0700
-Received: by wproxy.gmail.com with SMTP id i3so994232wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 25 Jul 2005 09:45:46 -0700 (PDT)
-In-Reply-To: <Pine.LNX.4.56.0507251729430.21629@pentafluge.infradead.org>
-Content-Disposition: inline
+	id 1DxBOx-0005Kx-QQ
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 25 Jul 2005 15:26:23 -0700
+Received: from prd051.appliedbiosystems.com ([206.139.64.39])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44)
+	id 1DxBOx-0000Tq-II
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 25 Jul 2005 15:26:23 -0700
+Received: from usfosmta01.pe-c.com (usfosmta01.pe-c.com [167.116.108.7])
+	by prd051.appliedbiosystems.com (Switch-3.1.6/Switch-3.1.6) with ESMTP id j6PMQtgf020382
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 25 Jul 2005 15:26:55 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,52 +28,137 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: James Simmons <jsimmons@infradead.org>
-Cc: adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On 7/25/05, James Simmons <jsimmons@infradead.org> wrote:
->=20
-> > 1) the current ioctl one
->=20
-> Defunct.
->=20
-> > 2) the new stuff in sysfs. If the hardware cursor is there you get a sy=
-sfs
-> > attribute named cursor. write x,y to it to move the cursor around. I'll=
- add
-> > the sysfs support as soon as we decide on the interface.
->=20
-> I was playing with that a bit.
->=20
-> > I'm still at OLS. Missed seeing both of you at KS. fbdev was discussed =
-and
-> > Linus went with Benh's proposal to move the modesetting API to user spa=
-ce.
-> > Obviously this will have a lot of impact on fbdev.
->=20
-> I don't have any money to go to such events :-( Looks like fbdev is going
-> away completly :-< We will need embedded graphics libraries to boot a
-> machine in the future. I seen this coming and thats why my motivation for
-> development keeps dropping. I suggest they make a big diff to remove the
-> whole system.
+This is a multipart message in MIME format.
+--=_alternative 007BD32C48257049_=
+Content-Type: text/plain; charset="US-ASCII"
 
-It is a long way from Linus telling BenH to go ahead and having a
-replacement system in the kernel. My bet is that userspace mode
-setting only happens for a couple of chips. I don't see a lot of
-people jumping up to replace the existing system. I was pushing to
-keep fbdev the way it is but without either of the maintainers there
-to defend fbdev it is a hard sell.
+Hi,
+ 
+I am modifying FSForth GPL fb driver for 8-bit STN displays and ran into 
+segmentation fault running arm konqueror embedded. The strace records are 
 
-If you write a paper for OLS, get it accepted and present it; the
-sponsors will probably pay your airfare. Hotels can be had for
-$40/night. Work on Ted to get an invite to Kernel Summit and then give
-him four months notice that you need airfare and you'll probably get
-it.
+shmget(1829502980, 32768, IPC_CREAT|0600) = 0
+shmat(0, 0, 0)                          = 0x407d9000
+brk(0)                                  = 0x2fe000
+brk(0x2ff000)                           = 0x2ff000
+open("/dev/fb0", O_RDWR)                = 4
+ioctl(4, FBIOGET_FSCREENINFO, 0xbefff9a0) = 0
+ioctl(4, FBIOGET_VSCREENINFO, 0xbefff900) = 0
+old_mmap(NULL, 76800, PROT_READ|PROT_WRITE, MAP_SHARED, 4, 0) = 0x407e1000
+ioctl(4, FBIOGETCMAP, 0x2fe270)         = -1 EINVAL (Invalid argument)
+open("/dev/console", O_WRONLY)          = 5
+write(5, "\33[9;0]\33[?33l\33[?25l\0", 19) = 19
+close(5)                                = 0
+open("/dev/tty", O_WRONLY)              = -1 ENXIO (No such device or 
+address)
+open("/dev/tty0", O_WRONLY)             = 5
+write(5, "\33[9;0]\33[?33l\33[?25l\0", 19) = 19
+close(5)                                = 0
+ioctl(4, FBIOGET_VSCREENINFO, 0xbefff97c) = 0
+ioctl(4, FBIOGET_FSCREENINFO, 0xbefff938) = 0
+brk(0)                                  = 0x2ff000
+brk(0x300000)                           = 0x300000
+ioctl(4, FBIOPUTCMAP, 0xbefff920)       = 0
+--- SIGSEGV (Segmentation fault) @ 0 (0) ---
++++ killed by SIGSEGV +++
 
---=20
-Jon Smirl
-jonsmirl@gmail.com
+My configuration is
+info.fb.var.bit_per_pixel = 8
+info.fb.var.red.offset = 0
+info.fb.var.green.offset = 0
+info.fb.var.blue.offset = 0
+info.fb.var.red.length = 8
+info.fb.var.green.length = 8
+info.fb.var.blue.length = 8
+
+I am assuming that the FBIOPUTCMAP ioctl is causing the sigsegv. I am also 
+assuming that ioctl(4, FBIOPUTCMAP, 0xbefff920) would be serviced by 
+.fb_ioctl callback but I am not getting the printk(s) in my .fb_ioctl 
+callback on the console. What am I getting wrong?
+
+Thanks in advance,
+Terence.
+--=_alternative 007BD32C48257049_=
+Content-Type: text/html; charset="US-ASCII"
+
+
+<br><font size=2 face="sans-serif">Hi,</font>
+<br><font size=2 face="sans-serif">&nbsp;</font>
+<br><font size=2 face="sans-serif">I am modifying FSForth GPL fb driver
+for 8-bit STN displays and ran into segmentation fault running arm konqueror
+embedded. The strace records are </font>
+<br>
+<br><font size=2 face="sans-serif">shmget(1829502980, 32768, IPC_CREAT|0600)
+= 0</font>
+<br><font size=2 face="sans-serif">shmat(0, 0, 0) &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
+0x407d9000</font>
+<br><font size=2 face="sans-serif">brk(0) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp;= 0x2fe000</font>
+<br><font size=2 face="sans-serif">brk(0x2ff000) &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; = 0x2ff000</font>
+<br><font size=2 face="sans-serif">open(&quot;/dev/fb0&quot;, O_RDWR) &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;= 4</font>
+<br><font size=2 face="sans-serif">ioctl(4, FBIOGET_FSCREENINFO, 0xbefff9a0)
+= 0</font>
+<br><font size=2 face="sans-serif">ioctl(4, FBIOGET_VSCREENINFO, 0xbefff900)
+= 0</font>
+<br><font size=2 face="sans-serif">old_mmap(NULL, 76800, PROT_READ|PROT_WRITE,
+MAP_SHARED, 4, 0) = 0x407e1000</font>
+<br><font size=2 face="sans-serif">ioctl(4, FBIOGETCMAP, 0x2fe270) &nbsp;
+&nbsp; &nbsp; &nbsp; = -1 EINVAL (Invalid argument)</font>
+<br><font size=2 face="sans-serif">open(&quot;/dev/console&quot;, O_WRONLY)
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;= 5</font>
+<br><font size=2 face="sans-serif">write(5, &quot;\33[9;0]\33[?33l\33[?25l\0&quot;,
+19) = 19</font>
+<br><font size=2 face="sans-serif">close(5) &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp;= 0</font>
+<br><font size=2 face="sans-serif">open(&quot;/dev/tty&quot;, O_WRONLY)
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;= -1 ENXIO (No such device
+or address)</font>
+<br><font size=2 face="sans-serif">open(&quot;/dev/tty0&quot;, O_WRONLY)
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; = 5</font>
+<br><font size=2 face="sans-serif">write(5, &quot;\33[9;0]\33[?33l\33[?25l\0&quot;,
+19) = 19</font>
+<br><font size=2 face="sans-serif">close(5) &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp;= 0</font>
+<br><font size=2 face="sans-serif">ioctl(4, FBIOGET_VSCREENINFO, 0xbefff97c)
+= 0</font>
+<br><font size=2 face="sans-serif">ioctl(4, FBIOGET_FSCREENINFO, 0xbefff938)
+= 0</font>
+<br><font size=2 face="sans-serif">brk(0) &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp;= 0x2ff000</font>
+<br><font size=2 face="sans-serif">brk(0x300000) &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; = 0x300000</font>
+<br><font size=2 face="sans-serif">ioctl(4, FBIOPUTCMAP, 0xbefff920) &nbsp;
+&nbsp; &nbsp; = 0</font>
+<br><font size=2 face="sans-serif">--- SIGSEGV (Segmentation fault) @ 0
+(0) ---</font>
+<br><font size=2 face="sans-serif">+++ killed by SIGSEGV +++</font>
+<br>
+<br><font size=2 face="sans-serif">My configuration is</font>
+<br><font size=2 face="sans-serif">info.fb.var.bit_per_pixel = 8</font>
+<br><font size=2 face="sans-serif">info.fb.var.red.offset = 0</font>
+<br><font size=2 face="sans-serif">info.fb.var.green.offset = 0</font>
+<br><font size=2 face="sans-serif">info.fb.var.blue.offset = 0</font>
+<br><font size=2 face="sans-serif">info.fb.var.red.length = 8</font>
+<br><font size=2 face="sans-serif">info.fb.var.green.length = 8</font>
+<br><font size=2 face="sans-serif">info.fb.var.blue.length = 8</font>
+<br>
+<br><font size=2 face="sans-serif">I am assuming that the FBIOPUTCMAP ioctl
+is causing the sigsegv. I am also assuming that ioctl(4, FBIOPUTCMAP, 0xbefff920)
+would be serviced by .fb_ioctl callback but I am not getting the printk(s)
+in my .fb_ioctl callback on the console. What am I getting wrong?</font>
+<br>
+<br><font size=2 face="sans-serif">Thanks in advance,</font>
+<br><font size=2 face="sans-serif">Terence.</font>
+--=_alternative 007BD32C48257049_=--
 
 
 -------------------------------------------------------

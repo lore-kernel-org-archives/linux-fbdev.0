@@ -1,24 +1,22 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: Re: Kernel Summit presentation
-Date: Thu, 28 Jul 2005 09:24:17 -0400
-Message-ID: <9e47339105072806242ef1dfbe@mail.gmail.com>
-References: <200507281445.25521.patrakov@ums.usu.ru>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] fbdev: colormap fixes
+Date: Thu, 28 Jul 2005 15:40:43 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0507281540210.24391@numbat.sonytel.be>
+References: <200507280031.j6S0V3L3016861@hera.kernel.org> 
+ <Pine.LNX.4.62.0507280952140.24391@numbat.sonytel.be>
+ <9e473391050728060741040424@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Dy8N5-0007JK-B4
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 06:24:23 -0700
-Received: from wproxy.gmail.com ([64.233.184.203])
+	id 1Dy8dx-00084d-Sa
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 06:41:49 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Dy8N5-0004jd-0s
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 06:24:23 -0700
-Received: by wproxy.gmail.com with SMTP id 36so398190wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 28 Jul 2005 06:24:17 -0700 (PDT)
-In-Reply-To: <200507281445.25521.patrakov@ums.usu.ru>
-Content-Disposition: inline
+	id 1Dy8dU-00037a-W2
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 06:41:50 -0700
+In-Reply-To: <9e473391050728060741040424@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,73 +27,43 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On 7/28/05, Alexander E. Patrakov <patrakov@ums.usu.ru> wrote:
-> Jon Smirl wrote:
->=20
-> > I attached the slides from my kernel summit presentation. The major
-> > change is that Linus does not want a new VT state. Instead we should
-> > open a new VT, switch it to VT_GRAPHICS, and then refuse to
-> > acknowledge VT swap requests. Dave Airlie did another presentation on
-> > mode setting and suspend/resume.
-> >
-> > The simple overview: goal is to get rid of the current VT swap system
-> > but replace it with something that looks just like it. To do this the
-> > console is split into two halves.
-> >
-> > 1) kernel console - it is as simple as possible and always guaranteed
-> > to work. It is simpler than current fbconsole. It automatically uses
-> > whatever mode is set on the monitor. There is only one kernel console
-> > - no VTs.
-> >
-> > 2) user console - implements your normal VTs. Fully accelerated,
-> > supports Unicode, etc.
-> >
-> > No one was really against restructuring the consoles. There was
-> > support for a console that always works even when something like X is
-> > running.
->=20
-> I am really interested in this, and want to help (with code, once
-> architectural issues are solved). But there is a question:
->=20
-> How should applications that currently rely upon a kernel VT system being
-> present (e.g. Xorg, MPlayer, SDL) be modified? (I mean, is there any prop=
-osed
-> API for hunting for a free userspace VC?)
+On Thu, 28 Jul 2005, Jon Smirl wrote:
+> On 7/28/05, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> > On Wed, 27 Jul 2005, Linux Kernel Mailing List wrote:
+> 
+> There are a couple of ways to fix this. 
+> 
+> 1) Add a check to limit use of the sysfs attributes to 256 entries. If
+> you want more you have to use /dev/fb0 and the ioctl. More is an
+> uncommon case.
+> 2) Switch this to a binary parameter. Now you have to use tools like
+> hexdump instead of cat to work with the data. It was nice to be able
+> to use cat to see the current map.
+> 
+> Does anyone have preferences for which way to fix it?
 
-If you are really interested the first place to help is getting the
-new Xegl Xserver working. It is discussed on the xorg, dri-devel and
-dri-egl mailing lists at freedesktop.org.
+I prefer the first way.
 
-We probably won't start working on the other console pieces until the
-Xserver is ready. Without the Xserver it is hard to do anything in the
-new environment.
+> Thanks for catching the problems. I'm posting these patches to fbdev
+> for review first so it is best to catch bugs there.
 
+Sorry, sometimes I miss a few things...
 
->=20
-> --
-> Alexander E. Patrakov
->=20
->=20
-> -------------------------------------------------------
-> SF.Net email is Sponsored by the Better Software Conference & EXPO Septem=
-ber
-> 19-22, 2005 * San Francisco, CA * Development Lifecycle Practices
-> Agile & Plan-Driven Development * Managing Projects & Teams * Testing & Q=
-A
-> Security * Process Improvement & Measurement * http://www.sqe.com/bsce5sf
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
->=20
+Gr{oetje,eeting}s,
 
+						Geert
 
---=20
-Jon Smirl
-jonsmirl@gmail.com
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

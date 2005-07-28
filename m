@@ -1,28 +1,25 @@
 From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: Re: [PATCH] fbdev: colormap fixes
-Date: Thu, 28 Jul 2005 14:18:26 -0400
-Message-ID: <9e47339105072811183ac0f008@mail.gmail.com>
+Subject: Re: [PATCH] fbdev: colormap fixes
+Date: Thu, 28 Jul 2005 15:31:44 -0400
+Message-ID: <9e473391050728123150931cbd@mail.gmail.com>
 References: <200507280031.j6S0V3L3016861@hera.kernel.org>
 	 <Pine.LNX.4.62.0507280952140.24391@numbat.sonytel.be>
-	 <9e473391050728060741040424@mail.gmail.com>
-	 <42E8F0CD.6070500@gmail.com>
-	 <Pine.LNX.4.62.0507281758080.24391@numbat.sonytel.be>
-	 <9e473391050728092936794718@mail.gmail.com>
+	 <9e473391050728074573e40038@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DyCyO-0005oS-7U
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 11:19:12 -0700
-Received: from wproxy.gmail.com ([64.233.184.195])
+	id 1DyE6k-000102-BT
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 12:31:54 -0700
+Received: from wproxy.gmail.com ([64.233.184.194])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1DyCyH-0002tC-EA
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 11:19:12 -0700
-Received: by wproxy.gmail.com with SMTP id i3so475721wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 28 Jul 2005 11:18:26 -0700 (PDT)
-In-Reply-To: <9e473391050728092936794718@mail.gmail.com>
+	id 1DyE6j-0002vg-1h
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 12:31:54 -0700
+Received: by wproxy.gmail.com with SMTP id 36so468887wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 28 Jul 2005 12:31:45 -0700 (PDT)
+In-Reply-To: <9e473391050728074573e40038@mail.gmail.com>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -36,97 +33,67 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-I can't see a way to query how long of cmap the device supports using
-the current fbdev ioctls.
-
-I wouldn't even be messing with cmap except for the true/direct color
-support and gamma ramps. Don't I need to know how long the cmap is in
-order to set the right gamma ramp?
-
-If I set a 256 entry gamma ramp on a card with 1024 entries, will it
-still work right? Or do I need to set all 1024 entries?
-
-On 7/28/05, Jon Smirl <jonsmirl@gmail.com> wrote:
-> On 7/28/05, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > On Thu, 28 Jul 2005, Antonino A. Daplas wrote:
-> > > Jon Smirl wrote:
-> > > > On 7/28/05, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > > > > On Wed, 27 Jul 2005, Linux Kernel Mailing List wrote:
-> > > >
-> > > > There are a couple of ways to fix this.
-> > > > 1) Add a check to limit use of the sysfs attributes to 256 entries.=
- If
-> > > > you want more you have to use /dev/fb0 and the ioctl. More is an
-> > > > uncommon case.
-> > > > 2) Switch this to a binary parameter. Now you have to use tools lik=
-e
-> > > > hexdump instead of cat to work with the data. It was nice to be abl=
-e
-> > > > to use cat to see the current map.
-> > > >
-> > > > Does anyone have preferences for which way to fix it?
-> > >
-> > > Or...
-> > >
-> > >  3) Add another file in sysfs which specifies at what index and how m=
-any
-> > > entries will be read or written from or to the cmap. With this additi=
-onal
-> > > sysfs file, it should be able to handle any reasonable cmap length, b=
-ut
-> > > it will take more than one reading of the color_map file. Another
-> > > advantage is that the entire color map need not be read or written if
-> > > only one field needs to be changed.
-> > >
-> > > I've attached a test patch.  Let me know what you think.
-> >
-> > I like it! ... But, a disadvantages is that it needs to store state bet=
-ween two
-> > non-atomic operations. E.g. imagine two processes doing this at the sam=
-e time.
->=20
-> Two attributes is a big problem with atomicity. If you want access to
-> the full cmap I would switch to a binary attribute or use the existing
-> IOCTL.
->=20
-> Note that you can set the entire map with the new patch, you just
-> can't read it. You can store 1-N entries at any base you want.
->=20
-> >
-> > Gr{oetje,eeting}s,
-> >
-> >                                                 Geert
-> >
-> > --
-> > Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-=
-m68k.org
-> >
-> > In personal conversations with technical people, I call myself a hacker=
-. But
-> > when I'm talking to journalists I just say "programmer" or something li=
-ke that.
-> >                                                             -- Linus To=
-rvalds
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
- in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> >
->=20
->=20
-> --
-> Jon Smirl
-> jonsmirl@gmail.com
->=20
-
+Do we want to apply this patch now to get rid of the buffer overflow hole?
+Then we can take our time and work out a better solution.
 
 --=20
 Jon Smirl
 jonsmirl@gmail.com
+
+Fix a buffer overflow vunerabilty in previous cmap patch
+signed-off-by: Jon Smirl <jonsmirl@gmail.com>
+
+diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
+--- a/drivers/video/fbsysfs.c
++++ b/drivers/video/fbsysfs.c
+@@ -244,15 +244,15 @@ static ssize_t show_virtual(struct class
+=20
+ /* Format for cmap is "%02x%c%4x%4x%4x\n" */
+ /* %02x entry %c transp %4x red %4x blue %4x green \n */
+-/* 255 rows at 16 chars equals 4096 */
+-/* PAGE_SIZE can be 4096 or larger */
++/* 256 rows at 16 chars equals 4096, the normal page size */
++/* the code will automatically adjust for different page sizes */
+ static ssize_t store_cmap(struct class_device *class_device, const char *b=
+uf,
+ =09=09=09  size_t count)
+ {
+ =09struct fb_info *fb_info =3D (struct fb_info *)class_get_devdata(class_d=
+evice);
+ =09int rc, i, start, length, transp =3D 0;
+=20
+-=09if ((count > 4096) || ((count % 16) !=3D 0) || (PAGE_SIZE < 4096))
++=09if ((count > PAGE_SIZE) || ((count % 16) !=3D 0))
+ =09=09return -EINVAL;
+=20
+ =09if (!fb_info->fbops->fb_setcolreg && !fb_info->fbops->fb_setcmap)
+@@ -317,18 +317,18 @@ static ssize_t show_cmap(struct class_de
+ =09   !fb_info->cmap.green)
+ =09=09return -EINVAL;
+=20
+-=09if (PAGE_SIZE < 4096)
++=09if (fb_info->cmap.len > PAGE_SIZE / 16)
+ =09=09return -EINVAL;
+=20
+ =09/* don't mess with the format, the buffer is PAGE_SIZE */
+-=09/* 255 entries at 16 chars per line equals 4096 =3D PAGE_SIZE */
++=09/* 256 entries at 16 chars per line equals 4096 =3D PAGE_SIZE */
+ =09for (i =3D 0; i < fb_info->cmap.len; i++) {
+-=09=09sprintf(&buf[ i * 16], "%02x%c%4x%4x%4x\n", i + fb_info->cmap.start,
++=09=09snprintf(&buf[ i * 16], PAGE_SIZE - i * 16, "%02x%c%4x%4x%4x\n", i
++ fb_info->cmap.start,
+ =09=09=09((fb_info->cmap.transp && fb_info->cmap.transp[i]) ? '*' : ' '),
+ =09=09=09fb_info->cmap.red[i], fb_info->cmap.blue[i],
+ =09=09=09fb_info->cmap.green[i]);
+ =09}
+-=09return 4096;
++=09return 16 * fb_info->cmap.len;
+ }
+=20
+ static ssize_t store_blank(struct class_device *class_device, const char *=
+ buf,
 
 
 -------------------------------------------------------

@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
 Subject: Re: Move softcursor out of fbdev to fbcon
-Date: Thu, 28 Jul 2005 10:12:22 +0800
-Message-ID: <42E83F06.3000508@gmail.com>
-References: <42E73C6E.1090205@gmail.com> <9e473391050727073269e33a44@mail.gmail.com> <42E7D77F.6020005@gmail.com> <Pine.LNX.4.56.0507272313530.4063@pentafluge.infradead.org>
+Date: Thu, 28 Jul 2005 10:12:16 +0800
+Message-ID: <42E83F00.2060403@gmail.com>
+References: <42E73C6E.1090205@gmail.com> <Pine.LNX.4.56.0507272302500.3729@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Dxxsv-0005jP-ER
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 27 Jul 2005 19:12:33 -0700
-Received: from wproxy.gmail.com ([64.233.184.197])
+	id 1Dxxsn-0005jI-Tl
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 27 Jul 2005 19:12:25 -0700
+Received: from wproxy.gmail.com ([64.233.184.200])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Dxxsv-0004jH-3Z
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 27 Jul 2005 19:12:33 -0700
-Received: by wproxy.gmail.com with SMTP id i3so322118wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 27 Jul 2005 19:12:26 -0700 (PDT)
-In-Reply-To: <Pine.LNX.4.56.0507272313530.4063@pentafluge.infradead.org>
+	id 1Dxxsn-0007YF-Bx
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 27 Jul 2005 19:12:25 -0700
+Received: by wproxy.gmail.com with SMTP id 63so324713wri
+        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 27 Jul 2005 19:12:18 -0700 (PDT)
+In-Reply-To: <Pine.LNX.4.56.0507272302500.3729@pentafluge.infradead.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -33,28 +33,50 @@ To: James Simmons <jsimmons@infradead.org>
 Cc: Jon Smirl <jonsmirl@gmail.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 James Simmons wrote:
->>>> And the next step is to eliminate all fbcon-specific fields from
->>>> fb_info to another structure, such as fb_imageblit, fb_fillrect,
->>>> fb_cursor, fb_copyarea.  We'll have a smaller kernel size for
->>>> if fbcon is not enabled.
+>> The changelog says it all. This is a modification of Jon's patch, but
+>> I have moved softcursor.c to the console directory.  Also I removed
+>> the "select FB_SOFTCURSOR" from video/Kconfig and made the compilation
+>> of softcursor unconditional, if framebuffer console is enabled.
+>>
+>> I don't think the fb_cursor hook is usable by other programs, so we
+>> should just restrict this hook for fbcon use only.  For userspace cursor
+>> support, we need a new one.  But instead of one function, I believe
+>> it's better to provide several.  Ie, something like below:
+>>
+>> fbcursor_show()         
+>> fbcursor_move()
+>> fbcursor_loadimage()
+>> fbcursor_loadpalette()
+>> fbcursor_start()
+>> fbcursor_stop() 
+>>
+>> No need to pass all variables to just, say, move the cursor to x,y.
+>>
+>> And the next step is to eliminate all fbcon-specific fields from
+>> fb_info to another structure, such as fb_imageblit, fb_fillrect,
+>> fb_cursor, fb_copyarea.  We'll have a smaller kernel size for
+>> if fbcon is not enabled.
+>>
+>> Comments?
 > 
-> Yipes!!! That will be really hard for hardware accelerated drivers. You 
-> have to make fbdv drivers be aware of when fbcon is loaded. Then check to 
-> see if the device maps to a range of VCs. Then register with the fbcon 
-> layer. Really nasty. More bloat in the long run.
+> Its way to big and gross. Please keep it simple!!!!!! 
 
-You're making it more complicated than it sounds.  As an initial step,
-fields in struct fb_info that are fbcon-specific are placed in another
-struct, say struct fbcon_info.  In register_framebuffer, both fb_info
-and fbcon_info are registered. If CONFIG_FRAMEBUFFER_CONSOLE = n, struct
-fbcon_info will either be null or just end up containing NULL/dummy
-entries. The end result will be a smaller and cleaner fb_info.
+Actually, it's the other way around. Functions should do just one thing.
+In contrast, our fb_cursor() function is doing all of the above
+and more.  Breaking up fb_cursor() into several may have a bit of a
+memory overhead, but the end result is more efficient code.  Do you really
+want the user app to pass the quite large struct fb_cursor to the kernel just
+to move the cursor?  Or is it better just to pass two integers, x and y?
 
-There is really no need for fbdev drivers to detect that fbcon is loaded
-or not, since they do not know anything about it. They just need to check
-if CONFIG_FRAMEBUFFER_CONSOLE is set or not.
- 
-Tony
+Remember, what I'm proposing is an API that is usable by userspace and other
+kernel modules, and only if the driver supports a hardware cursor.  The current
+fb_cursor() used by fbcon can remain, if that is what you want. Because
+fb_cursor() was designed for fbcon (as with all of the fb_* drawing functions),
+they can never be used by other modules without a lot of pain.
+
+Tony 
+
+
 
 
 -------------------------------------------------------

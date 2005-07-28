@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: Re: Move softcursor out of fbdev to fbcon
-Date: Fri, 29 Jul 2005 06:22:39 +0800
-Message-ID: <42E95AAF.3080109@gmail.com>
-References: <42E73C6E.1090205@gmail.com> <9e473391050727073269e33a44@mail.gmail.com> <42E7D77F.6020005@gmail.com> <Pine.LNX.4.56.0507272313530.4063@pentafluge.infradead.org> <42E83F06.3000508@gmail.com> <Pine.LNX.4.56.0507281937370.28080@pentafluge.infradead.org>
+Subject: Re: Re: [PATCH] fbdev: colormap fixes
+Date: Fri, 29 Jul 2005 06:28:21 +0800
+Message-ID: <42E95C05.7@pol.net>
+References: <200507280031.j6S0V3L3016861@hera.kernel.org>	 <42E8F0CD.6070500@gmail.com>	 <Pine.LNX.4.62.0507281758080.24391@numbat.sonytel.be>	 <9e473391050728092936794718@mail.gmail.com>	 <9e47339105072811183ac0f008@mail.gmail.com>	 <Pine.LNX.4.62.0507282202450.29876@numbat.sonytel.be>	 <9e4733910507281315419c3c12@mail.gmail.com>	 <9e47339105072813213db7cee4@mail.gmail.com>	 <9e47339105072813507c00687e@mail.gmail.com>	 <Pine.LNX.4.62.0507282337410.29876@numbat.sonytel.be> <9e47339105072814505b6fe4f8@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DyGm5-0000IA-9A
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 15:22:45 -0700
-Received: from rproxy.gmail.com ([64.233.170.197])
+	id 1DyGrd-0000SX-FJ
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 15:28:29 -0700
+Received: from rproxy.gmail.com ([64.233.170.192])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1DyGm3-00005O-Vg
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 15:22:45 -0700
-Received: by rproxy.gmail.com with SMTP id j1so843552rnf
-        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 28 Jul 2005 15:22:43 -0700 (PDT)
-In-Reply-To: <Pine.LNX.4.56.0507281937370.28080@pentafluge.infradead.org>
+	id 1DyGrc-0000vf-Nl
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 15:28:29 -0700
+Received: by rproxy.gmail.com with SMTP id j1so844538rnf
+        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 28 Jul 2005 15:28:27 -0700 (PDT)
+In-Reply-To: <9e47339105072814505b6fe4f8@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,49 +30,51 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Jon Smirl <jonsmirl@gmail.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@gmail.com>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-James Simmons wrote:
->>>>>> And the next step is to eliminate all fbcon-specific fields from
->>>>>> fb_info to another structure, such as fb_imageblit, fb_fillrect,
->>>>>> fb_cursor, fb_copyarea.  We'll have a smaller kernel size for
->>>>>> if fbcon is not enabled.
->>>>>>             
->>> Yipes!!! That will be really hard for hardware accelerated drivers. You 
->>> have to make fbdv drivers be aware of when fbcon is loaded. Then check to 
->>> see if the device maps to a range of VCs. Then register with the fbcon 
->>> layer. Really nasty. More bloat in the long run.
->>>       
->> You're making it more complicated than it sounds.  As an initial step,
->> fields in struct fb_info that are fbcon-specific are placed in another
->> struct, say struct fbcon_info. 
->>     
->
-> That is what struct display os for in fbcon.
->   
-Exactly.  But the drivers  do not know anything about fbcon, so it 
-cannot be used.
+Jon Smirl wrote:
+> On 7/28/05, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>> On Thu, 28 Jul 2005, Jon Smirl wrote:
+>>> I've verified now that all ATI R300+ chips have 10bit cmaps. These are
+>>> pretty common so I'd be in favor of making this into a binary
+>>> attribute where I can get/set the whole table at once. Given that
+>>> OpenGL is already supporting 12 and 16 bits these tables are only
+>>> going to get much larger.
+>>>
+>>> 1024 entries * 5 fields * 2 bytes = 10KB -- too big for a text attribute.
+>>>
+>>> 65536 entries * 5 fields * 2 bytes = 655KB -- way too big for a text attribute.
+>>>
+>>> The bits_per_pixel sysfs attribute is an easy way to tell how many
+>>> entries you need. You can just set it at 4, 8, 10, etc until you get
+>>> an error. Now you know the max. 2^n and you know how many entries.
+>> No, bits_per_pixel can be (much) larger than the color map size. E.g. a simple
+>> ARGB8888 directcolor mode has bits_per_pixel = 32 and color map size = 256.
+> 
+> So I have the bits_per_pixel attribute wrong in sysfs. It needs to be
+> bits_per_color and then let the driver sort it out.  Otherwise there
+> is no way to set ARGB8888 versus ARGB2101010. With bits per color you
+> would set 8 or 10.
+> 
 
->   
->> In register_framebuffer, both fb_info
->> and fbcon_info are registered. If CONFIG_FRAMEBUFFER_CONSOLE = n, struct
->> fbcon_info will either be null or just end up containing NULL/dummy
->> entries. The end result will be a smaller and cleaner fb_info.
->>
->> There is really no need for fbdev drivers to detect that fbcon is loaded
->> or not, since they do not know anything about it. They just need to check
->> if CONFIG_FRAMEBUFFER_CONSOLE is set or not.
->>     
->
-> This would work for the case of everything being statically built into the 
-> kernel. With modular fbdev drivers and in the future a modular fbcon then 
-> it would get messy.
->
->   
-I don't see the problem.
+No, you have to add another attribute for {transp|red|green|blue}.{len,offset}
+and another attribute for the pixelformat. Then using those, one can
+easily deduce the cmap size.
+ 
+> If that isn't good enough I can switch the attribute to take strings
+> like ARGB8888.
+> 
+
+Please no.
+
+> What do you think, should I just switch to fbconfig names and a binary
+> cmap attribute?
+> 
+
+Does a binary attribute not have the same buffer size limitation as
+the text attribute?  I really don't know, just asking.
 
 Tony
-
 
 
 -------------------------------------------------------

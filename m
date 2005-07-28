@@ -1,27 +1,23 @@
-From: Jon Smirl <jonsmirl@gmail.com>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
 Subject: Re: Move softcursor out of fbdev to fbcon
-Date: Wed, 27 Jul 2005 20:42:47 -0400
-Message-ID: <9e473391050727174222690eea@mail.gmail.com>
-References: <42E73C6E.1090205@gmail.com>
-	 <9e473391050727073269e33a44@mail.gmail.com>
-	 <42E7D77F.6020005@gmail.com>
-	 <Pine.LNX.4.56.0507272313530.4063@pentafluge.infradead.org>
+Date: Thu, 28 Jul 2005 10:12:22 +0800
+Message-ID: <42E83F06.3000508@gmail.com>
+References: <42E73C6E.1090205@gmail.com> <9e473391050727073269e33a44@mail.gmail.com> <42E7D77F.6020005@gmail.com> <Pine.LNX.4.56.0507272313530.4063@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DxwUB-0000x7-3R
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 27 Jul 2005 17:42:55 -0700
+	id 1Dxxsv-0005jP-ER
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 27 Jul 2005 19:12:33 -0700
 Received: from wproxy.gmail.com ([64.233.184.197])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1DxwU9-0001xL-Vo
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 27 Jul 2005 17:42:55 -0700
-Received: by wproxy.gmail.com with SMTP id 36so293297wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 27 Jul 2005 17:42:47 -0700 (PDT)
+	id 1Dxxsv-0004jH-3Z
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 27 Jul 2005 19:12:33 -0700
+Received: by wproxy.gmail.com with SMTP id i3so322118wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 27 Jul 2005 19:12:26 -0700 (PDT)
 In-Reply-To: <Pine.LNX.4.56.0507272313530.4063@pentafluge.infradead.org>
-Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,44 +28,33 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: James Simmons <jsimmons@infradead.org>
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Jon Smirl <jonsmirl@gmail.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On 7/27/05, James Simmons <jsimmons@infradead.org> wrote:
-> > > It has always bugged me that there was no real interface between
-> > > fbconsole and fbdev. For example I tried to write a wrapper for DRM s=
-o
-> > > that fbconsole could use DRM for accelerated console. But fbconsole i=
-s
-> > > so tied into the fbdev data structures writing the wrapper required m=
-e
-> > > to build most of an fbdev driver. I shouldn't need to do that,
-> > > fbconsole should not be poking at fb_info, it should use an API for
-> > > making changes.
-> >
-> > Yes. I think I'm planning to do that in small steps. I'm thinking first=
- of
-> > separating all fbcon-specific fields and place them in another structur=
-e,
-> > ie, fbcon_info.  This struct will be registered separately from fb_info=
-,
-> > and only if fbcon is enabled.
->=20
-> Thats why its called the framebuffer console. It used the framebuffer api=
-.
-> Making a API between fbconsole and fbdev would be more bloat and whould
-> have a performance it. The idea is to go as fast as possible.
+James Simmons wrote:
+>>>> And the next step is to eliminate all fbcon-specific fields from
+>>>> fb_info to another structure, such as fb_imageblit, fb_fillrect,
+>>>> fb_cursor, fb_copyarea.  We'll have a smaller kernel size for
+>>>> if fbcon is not enabled.
+> 
+> Yipes!!! That will be really hard for hardware accelerated drivers. You 
+> have to make fbdv drivers be aware of when fbcon is loaded. Then check to 
+> see if the device maps to a range of VCs. Then register with the fbcon 
+> layer. Really nasty. More bloat in the long run.
 
-A few extra instructions implementing an API won't make much of a
-difference. We can only update the screen 70 times a second or so.
-Wouldn't it be better to make an API than have me copy fbconsole,
-rename it driconsole and then edit it to make it work? An API makes
-the code more maintainable and reusable.
+You're making it more complicated than it sounds.  As an initial step,
+fields in struct fb_info that are fbcon-specific are placed in another
+struct, say struct fbcon_info.  In register_framebuffer, both fb_info
+and fbcon_info are registered. If CONFIG_FRAMEBUFFER_CONSOLE = n, struct
+fbcon_info will either be null or just end up containing NULL/dummy
+entries. The end result will be a smaller and cleaner fb_info.
 
---=20
-Jon Smirl
-jonsmirl@gmail.com
+There is really no need for fbdev drivers to detect that fbcon is loaded
+or not, since they do not know anything about it. They just need to check
+if CONFIG_FRAMEBUFFER_CONSOLE is set or not.
+ 
+Tony
 
 
 -------------------------------------------------------

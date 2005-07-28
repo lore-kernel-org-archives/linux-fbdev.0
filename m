@@ -1,22 +1,22 @@
 From: Jon Smirl <jonsmirl@gmail.com>
 Subject: Re: Re: Kernel Summit presentation
-Date: Thu, 28 Jul 2005 09:21:35 -0400
-Message-ID: <9e473391050728062177dab6db@mail.gmail.com>
+Date: Thu, 28 Jul 2005 09:24:17 -0400
+Message-ID: <9e47339105072806242ef1dfbe@mail.gmail.com>
 References: <200507281445.25521.patrakov@ums.usu.ru>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Dy8KT-0007F1-PQ
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 06:21:41 -0700
-Received: from wproxy.gmail.com ([64.233.184.200])
+	id 1Dy8N5-0007JK-B4
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 06:24:23 -0700
+Received: from wproxy.gmail.com ([64.233.184.203])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Dy8KT-0005wg-CN
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 06:21:41 -0700
-Received: by wproxy.gmail.com with SMTP id i3so415336wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 28 Jul 2005 06:21:35 -0700 (PDT)
+	id 1Dy8N5-0004jd-0s
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 06:24:23 -0700
+Received: by wproxy.gmail.com with SMTP id 36so398190wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 28 Jul 2005 06:24:17 -0700 (PDT)
 In-Reply-To: <200507281445.25521.patrakov@ums.usu.ru>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -65,27 +65,13 @@ On 7/28/05, Alexander E. Patrakov <patrakov@ums.usu.ru> wrote:
 osed
 > API for hunting for a free userspace VC?)
 
-It depends on how the app is implemented. If the app directly messes
-with the hardware it will have to be significantly changed. For
-example there is a new Xserver under development that plays by the new
-rules. The old Xorg server will not work once you enter the new state.
-This is probably true for SDL too.
+If you are really interested the first place to help is getting the
+new Xegl Xserver working. It is discussed on the xorg, dri-devel and
+dri-egl mailing lists at freedesktop.org.
 
-The main goal of the new system is to weed out old apps that directly
-mess with the hardware. These apps will need to be rewritten to work
-in the new model. The fbdev, DRM and OpenGL/EGL APIs will be available
-in the new system.
-
-Standalone SDL would easily port to OpenGL/EGL. EGL is an OpenGL
-extension that allows mode setting and screen control. Using
-OpenGL/EGL will hide the changes from you.
-
-The new system allows two users, each logged on to a separate head of
-a single card. You can't running an old app that messes with the
-hardware in this case. The old app would kill both users.
-
-This is a complicated change in the VT system. It will probably be
-several years before everything is transitioned.
+We probably won't start working on the other console pieces until the
+Xserver is ready. Without the Xserver it is hard to do anything in the
+new environment.
 
 
 >=20

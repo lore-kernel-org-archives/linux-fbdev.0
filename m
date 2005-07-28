@@ -1,7 +1,7 @@
 From: Jon Smirl <jonsmirl@gmail.com>
 Subject: Re: Re: [PATCH] fbdev: colormap fixes
-Date: Thu, 28 Jul 2005 16:21:19 -0400
-Message-ID: <9e47339105072813213db7cee4@mail.gmail.com>
+Date: Thu, 28 Jul 2005 16:50:08 -0400
+Message-ID: <9e47339105072813507c00687e@mail.gmail.com>
 References: <200507280031.j6S0V3L3016861@hera.kernel.org>
 	 <Pine.LNX.4.62.0507280952140.24391@numbat.sonytel.be>
 	 <9e473391050728060741040424@mail.gmail.com>
@@ -11,21 +11,22 @@ References: <200507280031.j6S0V3L3016861@hera.kernel.org>
 	 <9e47339105072811183ac0f008@mail.gmail.com>
 	 <Pine.LNX.4.62.0507282202450.29876@numbat.sonytel.be>
 	 <9e4733910507281315419c3c12@mail.gmail.com>
+	 <9e47339105072813213db7cee4@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DyEsn-0003Mb-Sm
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 13:21:33 -0700
-Received: from wproxy.gmail.com ([64.233.184.201])
+	id 1DyFKa-0004i2-VP
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 13:50:16 -0700
+Received: from wproxy.gmail.com ([64.233.184.206])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1DyEsn-0005Zd-0t
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 13:21:34 -0700
-Received: by wproxy.gmail.com with SMTP id i3so500250wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 28 Jul 2005 13:21:20 -0700 (PDT)
-In-Reply-To: <9e4733910507281315419c3c12@mail.gmail.com>
+	id 1DyFKa-0005At-2d
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 13:50:17 -0700
+Received: by wproxy.gmail.com with SMTP id i3so505022wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 28 Jul 2005 13:50:09 -0700 (PDT)
+In-Reply-To: <9e47339105072813213db7cee4@mail.gmail.com>
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -41,31 +42,20 @@ Content-Type: text/plain; charset="us-ascii"
 To: Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-On 7/28/05, Jon Smirl <jonsmirl@gmail.com> wrote:
-> On 7/28/05, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > On Thu, 28 Jul 2005, Jon Smirl wrote:
-> > > I can't see a way to query how long of cmap the device supports using
-> > > the current fbdev ioctls.
-> >
-> > Look at the lengths of the color bitfields?
->=20
-> Which color bitfields? Does hardware that supports 10bit cmap also
-> support a 10:10:10 framebuffer? If you can't do 10:10:10 how do the
-> 10bit cmaps work?  Does alpha matter in a 10:10:10 scanout buffer?
+I've verified now that all ATI R300+ chips have 10bit cmaps. These are
+pretty common so I'd be in favor of making this into a binary
+attribute where I can get/set the whole table at once. Given that
+OpenGL is already supporting 12 and 16 bits these tables are only
+going to get much larger.
 
-From the OpenGL headers I can see the answer to my questions...
-#define GL_RGB10                                0x8052
-#define GL_RGB10_A2                          0x8059
+1024 entries * 5 fields * 2 bytes =3D 10KB -- too big for a text attribute.
 
-OpenGL supports all of these:
-#define GL_RGB10                                0x8052
-#define GL_RGB12                                0x8053
-#define GL_RGB16                                0x8054
-#define GL_RGB10_A2                          0x8059
-#define GL_RGBA12                               0x805A
-#define GL_RGBA16                               0x805B
+65536 entries * 5 fields * 2 bytes =3D 655KB -- way too big for a text attr=
+ibute.
 
-Are there 12 and 16 bit cmaps too?
+The bits_per_pixel sysfs attribute is an easy way to tell how many
+entries you need. You can just set it at 4, 8, 10, etc until you get
+an error. Now you know the max. 2^n and you know how many entries.
 
 --=20
 Jon Smirl

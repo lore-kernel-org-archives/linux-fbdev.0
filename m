@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
 Subject: Re: Re: [PATCH] fbdev: colormap fixes
-Date: Fri, 29 Jul 2005 06:28:21 +0800
-Message-ID: <42E95C05.7@pol.net>
-References: <200507280031.j6S0V3L3016861@hera.kernel.org>	 <42E8F0CD.6070500@gmail.com>	 <Pine.LNX.4.62.0507281758080.24391@numbat.sonytel.be>	 <9e473391050728092936794718@mail.gmail.com>	 <9e47339105072811183ac0f008@mail.gmail.com>	 <Pine.LNX.4.62.0507282202450.29876@numbat.sonytel.be>	 <9e4733910507281315419c3c12@mail.gmail.com>	 <9e47339105072813213db7cee4@mail.gmail.com>	 <9e47339105072813507c00687e@mail.gmail.com>	 <Pine.LNX.4.62.0507282337410.29876@numbat.sonytel.be> <9e47339105072814505b6fe4f8@mail.gmail.com>
+Date: Fri, 29 Jul 2005 07:19:48 +0800
+Message-ID: <42E96814.8030005@pol.net>
+References: <200507280031.j6S0V3L3016861@hera.kernel.org> <Pine.LNX.4.62.0507280952140.24391@numbat.sonytel.be> <9e473391050728060741040424@mail.gmail.com> <42E8F0CD.6070500@gmail.com> <Pine.LNX.4.62.0507281758080.24391@numbat.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DyGrd-0000SX-FJ
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 15:28:29 -0700
-Received: from rproxy.gmail.com ([64.233.170.192])
+	id 1DyHfX-0002oQ-6r
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 16:20:03 -0700
+Received: from rproxy.gmail.com ([64.233.170.202])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1DyGrc-0000vf-Nl
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 15:28:29 -0700
-Received: by rproxy.gmail.com with SMTP id j1so844538rnf
-        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 28 Jul 2005 15:28:27 -0700 (PDT)
-In-Reply-To: <9e47339105072814505b6fe4f8@mail.gmail.com>
+	id 1DyHfW-0002Nu-P8
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 16:20:03 -0700
+Received: by rproxy.gmail.com with SMTP id a41so875775rng
+        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 28 Jul 2005 16:19:54 -0700 (PDT)
+In-Reply-To: <Pine.LNX.4.62.0507281758080.24391@numbat.sonytel.be>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,51 +30,58 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@gmail.com>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-Jon Smirl wrote:
-> On 7/28/05, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->> On Thu, 28 Jul 2005, Jon Smirl wrote:
->>> I've verified now that all ATI R300+ chips have 10bit cmaps. These are
->>> pretty common so I'd be in favor of making this into a binary
->>> attribute where I can get/set the whole table at once. Given that
->>> OpenGL is already supporting 12 and 16 bits these tables are only
->>> going to get much larger.
+Geert Uytterhoeven wrote:
+> On Thu, 28 Jul 2005, Antonino A. Daplas wrote:
+>> Jon Smirl wrote:
+>>> On 7/28/05, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+>>>> On Wed, 27 Jul 2005, Linux Kernel Mailing List wrote:
+>>> There are a couple of ways to fix this. 
+>>> 1) Add a check to limit use of the sysfs attributes to 256 entries. If
+>>> you want more you have to use /dev/fb0 and the ioctl. More is an
+>>> uncommon case.
+>>> 2) Switch this to a binary parameter. Now you have to use tools like
+>>> hexdump instead of cat to work with the data. It was nice to be able
+>>> to use cat to see the current map.
 >>>
->>> 1024 entries * 5 fields * 2 bytes = 10KB -- too big for a text attribute.
->>>
->>> 65536 entries * 5 fields * 2 bytes = 655KB -- way too big for a text attribute.
->>>
->>> The bits_per_pixel sysfs attribute is an easy way to tell how many
->>> entries you need. You can just set it at 4, 8, 10, etc until you get
->>> an error. Now you know the max. 2^n and you know how many entries.
->> No, bits_per_pixel can be (much) larger than the color map size. E.g. a simple
->> ARGB8888 directcolor mode has bits_per_pixel = 32 and color map size = 256.
+>>> Does anyone have preferences for which way to fix it?
+>> Or...
+>>
+>>  3) Add another file in sysfs which specifies at what index and how many
+>> entries will be read or written from or to the cmap. With this additional
+>> sysfs file, it should be able to handle any reasonable cmap length, but
+>> it will take more than one reading of the color_map file. Another
+>> advantage is that the entire color map need not be read or written if
+>> only one field needs to be changed.
+>>
+>> I've attached a test patch.  Let me know what you think.
 > 
-> So I have the bits_per_pixel attribute wrong in sysfs. It needs to be
-> bits_per_color and then let the driver sort it out.  Otherwise there
-> is no way to set ARGB8888 versus ARGB2101010. With bits per color you
-> would set 8 or 10.
-> 
+> I like it! ... But, a disadvantages is that it needs to store state between two
+> non-atomic operations. E.g. imagine two processes doing this at the same time.
 
-No, you have to add another attribute for {transp|red|green|blue}.{len,offset}
-and another attribute for the pixelformat. Then using those, one can
-easily deduce the cmap size.
- 
-> If that isn't good enough I can switch the attribute to take strings
-> like ARGB8888.
-> 
+We can add a check that if the incoming buffer index start and length does
+not match the current start and len (as set by cmap_range), then exit with
+and empty buffer.
 
-Please no.
+Conversely, users  can always check if the output read from color_map matches
+the value it entered in cmap_range.
 
-> What do you think, should I just switch to fbconfig names and a binary
-> cmap attribute?
-> 
+As a side note:
 
-Does a binary attribute not have the same buffer size limitation as
-the text attribute?  I really don't know, just asking.
+The rest of the fbsysfs attributes suffer from the same thing, especially since the
+value of each attribute depends on each other.  What if one process reads the
+virtual_size, while another one changes the bits_per_pixel?  I'm pretty sure that
+setting bits_per_pixel to a higher value will almost always change the virtual_size.
+
+Currently, the only way to guarantee atomicity is to use the ioctls. The main
+reason why we change the video mode, framebuffer format, color format, etc in one
+go with fb_set_var() is precisely this.
 
 Tony
+
+
+ 
 
 
 -------------------------------------------------------

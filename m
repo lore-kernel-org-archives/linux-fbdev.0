@@ -1,22 +1,24 @@
 From: Andrew Morton <akpm@osdl.org>
-Subject: Re: mttr failures on 2.6.12-mm1
-Date: Thu, 28 Jul 2005 22:01:53 -0700
-Message-ID: <20050728220153.269b4081.akpm@osdl.org>
-References: <1119401665.11299.1.camel@dyn9047017102.beaverton.ibm.com>
+Subject: Re: Fw: framebuffer blitting performance loss 
+ 2.6.12 -> 2.6.13-rc3
+Date: Fri, 29 Jul 2005 00:17:35 -0700
+Message-ID: <20050729001735.5934622f.akpm@osdl.org>
+References: <20050715033912.1cd9b6c3.akpm@osdl.org>
+	<200507221158.23454.adaplas@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DyN1M-0001fG-Lc
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 22:02:56 -0700
+	id 1DyP92-0007BD-PM
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Jul 2005 00:19:00 -0700
 Received: from smtp.osdl.org ([65.172.181.4])
 	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.44)
-	id 1DyN1L-0003RD-UQ
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 28 Jul 2005 22:02:56 -0700
-In-Reply-To: <1119401665.11299.1.camel@dyn9047017102.beaverton.ibm.com>
+	id 1DyP90-0005V8-AW
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Jul 2005 00:19:00 -0700
+In-Reply-To: <200507221158.23454.adaplas@gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,315 +30,36 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Cc: ak@muc.de, linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: adaplas@gmail.com, Knut_Petersen@t-online.de
 
-Badari Pulavarty <pbadari@us.ibm.com> wrote:
+"Antonino A. Daplas" <adaplas@gmail.com> wrote:
 >
-> Andi,
+> On Friday 15 July 2005 18:39, Andrew Morton wrote:
+> > Begin forwarded message:
+> >
+> > Date: Fri, 15 Jul 2005 12:14:37 +0200
+> > From: Knut Petersen <Knut_Petersen@t-online.de>
+> > To: linux-kernel@vger.kernel.org
+> > Subject: framebuffer blitting performance loss  2.6.12 -> 2.6.13-rc3
+> >
+> >
+> > Hi everybody!
+> >
+> > There is a serious performance loss between 2.6.12 and 2.6.13-rc3
+> > affecting _all_ framebuffer devices, especially those with fast
+> > bitblit functions.
+> >
 > 
-> I noticed these on my AMD64 box earlier. Just a warning or anything 
-> to be concerned about ? 
+> I haven't seen any significant performance penalty, between 2.6.12-rc5-mm1
+> and 2.6.13-rc3-mm1.
+> 
+> Based on your results, I would pinpoint the culprit to be in
+> video/console/bitblit.c.  However, the changes there are minor, and should not
+> alter the peformance.
+> 
 
-What happened with this one?  Looks like a bug in the vesafb code.  Do we
-know if it is fixed in 2.6.13-rc4?
-
-(Badari is on leave - could one of the fbdev developers please help out?)
-
-Thanks.
-
-> Thanks,
-> Badari
-> 
-> NET: Registered protocol family 16
-> PCI: Using configuration type 1
-> mtrr: v2.0 (20020519)
-> ACPI: Subsystem revision 20050309
-> ACPI: Interpreter enabled
-> ACPI: Using IOAPIC for interrupt routing
-> ACPI: PCI Root Bridge [PCI0] (0000:00)
-> PCI: Probing PCI hardware (bus 00)
-> ACPI: PCI Interrupt Link [LNKA] (IRQs 3 *5 10 11)
-> ACPI: PCI Interrupt Link [LNKB] (IRQs 3 5 *10 11)
-> ACPI: PCI Interrupt Link [LNKC] (IRQs 3 5 10 *11)
-> ACPI: PCI Interrupt Link [LNKD] (IRQs 3 5 10 *11)
-> ACPI: PCI Root Bridge [PCI1] (0000:08)
-> PCI: Probing PCI hardware (bus 08)
-> SCSI subsystem initialized
-> PCI: Using ACPI for IRQ routing
-> PCI: If a device doesn't work, try "pci=routeirq".  If it helps, post a
-> report
-> PCI: Bridge: 0000:00:06.0
->   IO window: 2000-2fff
->   MEM window: fa000000-fa0fffff
->   PREFETCH window: e0000000-e00fffff
-> PCI: Bridge: 0000:09:01.0
->   IO window: disabled.
->   MEM window: fa400000-faffffff
->   PREFETCH window: fc000000-fdffffff
-> PCI: Bridge: 0000:08:01.0
->   IO window: disabled.
->   MEM window: fa400000-faffffff
->   PREFETCH window: fc000000-fdffffff
-> PCI: Bridge: 0000:08:02.0
->   IO window: 3000-3fff
->   MEM window: fb000000-fb0fffff
->   PREFETCH window: e0000000-e00fffff
-> PCI: Bridge: 0000:08:03.0
->   IO window: disabled.
->   MEM window: disabled.
->   PREFETCH window: disabled.
-> PCI: Bridge: 0000:08:04.0
->   IO window: 4000-4fff
->   MEM window: fb100000-fb1fffff
->   PREFETCH window: e0100000-e01fffff
-> ACPI: PCI Interrupt 0000:08:04.0[A] -> GSI 36 (level, low) -> IRQ 16
-> PCI-DMA: Disabling AGP.
-> PCI-DMA: aperture base @ 8000000 size 65536 KB
-> PCI-DMA: Reserving 64MB of IOMMU area in the AGP aperture
-> IA32 emulation $Id: sys_ia32.c,v 1.32 2002/03/24 13:02:28 ak Exp $
-> audit: initializing netlink socket (disabled)
-> audit(1119372253.776:1): initialized
-> Total HugeTLB memory allocated, 0
-> inotify device minor=63
-> VFS: Disk quotas dquot_6.5.1
-> Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
-> JFS: nTxBlock = 8192, nTxLock = 65536
-> Initializing Cryptographic API
-> PCI: MSI quirk detected. pci_msi_quirk set.
-> PCI: MSI quirk detected. pci_msi_quirk set.
-> PCI: MSI quirk detected. pci_msi_quirk set.
-> PCI: MSI quirk detected. pci_msi_quirk set.
-> vesafb: framebuffer at 0xfc000000, mapped to 0xffffc20000600000, using
-> 1875k, total 16384k
-> vesafb: mode is 800x600x16, linelength=1600, pages=16
-> vesafb: scrolling: redraw
-> vesafb: Truecolor: size=0:5:6:5, shift=0:11:5:0
-> mtrr: type mismatch for fc000000,1000000 old: write-back new: write-
-> combining
-> mtrr: type mismatch for fc000000,800000 old: write-back new: write-
-> combining
-> mtrr: type mismatch for fc000000,400000 old: write-back new: write-
-> combining
-> mtrr: type mismatch for fc000000,200000 old: write-back new: write-
-> combining
-> mtrr: type mismatch for fc000000,100000 old: write-back new: write-
-> combining
-> mtrr: type mismatch for fc000000,80000 old: write-back new: write-
-> combining
-> mtrr: type mismatch for fc000000,40000 old: write-back new: write-
-> combining
-> mtrr: type mismatch for fc000000,20000 old: write-back new: write-
-> combining
-> mtrr: type mismatch for fc000000,10000 old: write-back new: write-
-> combining
-> mtrr: type mismatch for fc000000,8000 old: write-back new: write-
-> combining
-> mtrr: type mismatch for fc000000,4000 old: write-back new: write-
-> combining
-> mtrr: type mismatch for fc000000,2000 old: write-back new: write-
-> combining
-> mtrr: type mismatch for fc000000,1000 old: write-back new: write-
-> combining
-> mtrr: size and base must be multiples of 4 kiB
-> 
-> Call Trace:<ffffffff8011662d>{mtrr_check+77} <ffffffff801169b9>{mtrr_add
-> +41}
->        <ffffffff80647afe>{vesafb_probe+1390}
-> <ffffffff802f3f2f>{driver_probe_device+79}
->        <ffffffff802f4010>{__device_attach+0}
-> <ffffffff802f38c6>{bus_for_each_drv+70}
->        <ffffffff802f4079>{device_attach+89}
-> <ffffffff802f378e>{bus_add_device+62}
->        <ffffffff802f28ad>{device_add+173}
-> <ffffffff802f575f>{platform_device_register+255}
->        <ffffffff80647e7e>{vesafb_init+542} <ffffffff8010b24a>{init+506}
->        <ffffffff8010e967>{child_rip+8} <ffffffff8010b050>{init+0}
->        <ffffffff8010e95f>{child_rip+0}
-> mtrr: size and base must be multiples of 4 kiB
-> 
-> Call Trace:<ffffffff8011662d>{mtrr_check+77} <ffffffff801169b9>{mtrr_add
-> +41}
->        <ffffffff80647afe>{vesafb_probe+1390}
-> <ffffffff802f3f2f>{driver_probe_device+79}
->        <ffffffff802f4010>{__device_attach+0}
-> <ffffffff802f38c6>{bus_for_each_drv+70}
->        <ffffffff802f4079>{device_attach+89}
-> <ffffffff802f378e>{bus_add_device+62}
->        <ffffffff802f28ad>{device_add+173}
-> <ffffffff802f575f>{platform_device_register+255}
->        <ffffffff80647e7e>{vesafb_init+542} <ffffffff8010b24a>{init+506}
->        <ffffffff8010e967>{child_rip+8} <ffffffff8010b050>{init+0}
->        <ffffffff8010e95f>{child_rip+0}
-> mtrr: size and base must be multiples of 4 kiB
-> 
-> Call Trace:<ffffffff8011662d>{mtrr_check+77} <ffffffff801169b9>{mtrr_add
-> +41}
->        <ffffffff80647afe>{vesafb_probe+1390}
-> <ffffffff802f3f2f>{driver_probe_device+79}
->        <ffffffff802f4010>{__device_attach+0}
-> <ffffffff802f38c6>{bus_for_each_drv+70}
->        <ffffffff802f4079>{device_attach+89}
-> <ffffffff802f378e>{bus_add_device+62}
->        <ffffffff802f28ad>{device_add+173}
-> <ffffffff802f575f>{platform_device_register+255}
->        <ffffffff80647e7e>{vesafb_init+542} <ffffffff8010b24a>{init+506}
->        <ffffffff8010e967>{child_rip+8} <ffffffff8010b050>{init+0}
->        <ffffffff8010e95f>{child_rip+0}
-> mtrr: size and base must be multiples of 4 kiB
-> 
-> Call Trace:<ffffffff8011662d>{mtrr_check+77} <ffffffff801169b9>{mtrr_add
-> +41}
->        <ffffffff80647afe>{vesafb_probe+1390}
-> <ffffffff802f3f2f>{driver_probe_device+79}
->        <ffffffff802f4010>{__device_attach+0}
-> <ffffffff802f38c6>{bus_for_each_drv+70}
->        <ffffffff802f4079>{device_attach+89}
-> <ffffffff802f378e>{bus_add_device+62}
->        <ffffffff802f28ad>{device_add+173}
-> <ffffffff802f575f>{platform_device_register+255}
->        <ffffffff80647e7e>{vesafb_init+542} <ffffffff8010b24a>{init+506}
->        <ffffffff8010e967>{child_rip+8} <ffffffff8010b050>{init+0}
->        <ffffffff8010e95f>{child_rip+0}
-> mtrr: size and base must be multiples of 4 kiB
-> 
-> Call Trace:<ffffffff8011662d>{mtrr_check+77} <ffffffff801169b9>{mtrr_add
-> +41}
->        <ffffffff80647afe>{vesafb_probe+1390}
-> <ffffffff802f3f2f>{driver_probe_device+79}
->        <ffffffff802f4010>{__device_attach+0}
-> <ffffffff802f38c6>{bus_for_each_drv+70}
->        <ffffffff802f4079>{device_attach+89}
-> <ffffffff802f378e>{bus_add_device+62}
->        <ffffffff802f28ad>{device_add+173}
-> <ffffffff802f575f>{platform_device_register+255}
->        <ffffffff80647e7e>{vesafb_init+542} <ffffffff8010b24a>{init+506}
->        <ffffffff8010e967>{child_rip+8} <ffffffff8010b050>{init+0}
->        <ffffffff8010e95f>{child_rip+0}
-> mtrr: size and base must be multiples of 4 kiB
-> 
-> Call Trace:<ffffffff8011662d>{mtrr_check+77} <ffffffff801169b9>{mtrr_add
-> +41}
->        <ffffffff80647afe>{vesafb_probe+1390}
-> <ffffffff802f3f2f>{driver_probe_device+79}
->        <ffffffff802f4010>{__device_attach+0}
-> <ffffffff802f38c6>{bus_for_each_drv+70}
->        <ffffffff802f4079>{device_attach+89}
-> <ffffffff802f378e>{bus_add_device+62}
->        <ffffffff802f28ad>{device_add+173}
-> <ffffffff802f575f>{platform_device_register+255}
->        <ffffffff80647e7e>{vesafb_init+542} <ffffffff8010b24a>{init+506}
->        <ffffffff8010e967>{child_rip+8} <ffffffff8010b050>{init+0}
->        <ffffffff8010e95f>{child_rip+0}
-> mtrr: size and base must be multiples of 4 kiB
-> 
-> Call Trace:<ffffffff8011662d>{mtrr_check+77} <ffffffff801169b9>{mtrr_add
-> +41}
->        <ffffffff80647afe>{vesafb_probe+1390}
-> <ffffffff802f3f2f>{driver_probe_device+79}
->        <ffffffff802f4010>{__device_attach+0}
-> <ffffffff802f38c6>{bus_for_each_drv+70}
->        <ffffffff802f4079>{device_attach+89}
-> <ffffffff802f378e>{bus_add_device+62}
->        <ffffffff802f28ad>{device_add+173}
-> <ffffffff802f575f>{platform_device_register+255}
->        <ffffffff80647e7e>{vesafb_init+542} <ffffffff8010b24a>{init+506}
->        <ffffffff8010e967>{child_rip+8} <ffffffff8010b050>{init+0}
->        <ffffffff8010e95f>{child_rip+0}
-> mtrr: size and base must be multiples of 4 kiB
-> 
-> Call Trace:<ffffffff8011662d>{mtrr_check+77} <ffffffff801169b9>{mtrr_add
-> +41}
->        <ffffffff80647afe>{vesafb_probe+1390}
-> <ffffffff802f3f2f>{driver_probe_device+79}
->        <ffffffff802f4010>{__device_attach+0}
-> <ffffffff802f38c6>{bus_for_each_drv+70}
->        <ffffffff802f4079>{device_attach+89}
-> <ffffffff802f378e>{bus_add_device+62}
->        <ffffffff802f28ad>{device_add+173}
-> <ffffffff802f575f>{platform_device_register+255}
->        <ffffffff80647e7e>{vesafb_init+542} <ffffffff8010b24a>{init+506}
->        <ffffffff8010e967>{child_rip+8} <ffffffff8010b050>{init+0}
->        <ffffffff8010e95f>{child_rip+0}
-> mtrr: size and base must be multiples of 4 kiB
-> 
-> Call Trace:<ffffffff8011662d>{mtrr_check+77} <ffffffff801169b9>{mtrr_add
-> +41}
->        <ffffffff80647afe>{vesafb_probe+1390}
-> <ffffffff802f3f2f>{driver_probe_device+79}
->        <ffffffff802f4010>{__device_attach+0}
-> <ffffffff802f38c6>{bus_for_each_drv+70}
->        <ffffffff802f4079>{device_attach+89}
-> <ffffffff802f378e>{bus_add_device+62}
->        <ffffffff802f28ad>{device_add+173}
-> <ffffffff802f575f>{platform_device_register+255}
->        <ffffffff80647e7e>{vesafb_init+542} <ffffffff8010b24a>{init+506}
->        <ffffffff8010e967>{child_rip+8} <ffffffff8010b050>{init+0}
->        <ffffffff8010e95f>{child_rip+0}
-> mtrr: size and base must be multiples of 4 kiB
-> 
-> Call Trace:<ffffffff8011662d>{mtrr_check+77} <ffffffff801169b9>{mtrr_add
-> +41}
->        <ffffffff80647afe>{vesafb_probe+1390}
-> <ffffffff802f3f2f>{driver_probe_device+79}
->        <ffffffff802f4010>{__device_attach+0}
-> <ffffffff802f38c6>{bus_for_each_drv+70}
->        <ffffffff802f4079>{device_attach+89}
-> <ffffffff802f378e>{bus_add_device+62}
->        <ffffffff802f28ad>{device_add+173}
-> <ffffffff802f575f>{platform_device_register+255}
->        <ffffffff80647e7e>{vesafb_init+542} <ffffffff8010b24a>{init+506}
->        <ffffffff8010e967>{child_rip+8} <ffffffff8010b050>{init+0}
->        <ffffffff8010e95f>{child_rip+0}
-> mtrr: size and base must be multiples of 4 kiB
-> 
-> Call Trace:<ffffffff8011662d>{mtrr_check+77} <ffffffff801169b9>{mtrr_add
-> +41}
->        <ffffffff80647afe>{vesafb_probe+1390}
-> <ffffffff802f3f2f>{driver_probe_device+79}
->        <ffffffff802f4010>{__device_attach+0}
-> <ffffffff802f38c6>{bus_for_each_drv+70}
->        <ffffffff802f4079>{device_attach+89}
-> <ffffffff802f378e>{bus_add_device+62}
->        <ffffffff802f28ad>{device_add+173}
-> <ffffffff802f575f>{platform_device_register+255}
->        <ffffffff80647e7e>{vesafb_init+542} <ffffffff8010b24a>{init+506}
->        <ffffffff8010e967>{child_rip+8} <ffffffff8010b050>{init+0}
->        <ffffffff8010e95f>{child_rip+0}
-> mtrr: size and base must be multiples of 4 kiB
-> 
-> Call Trace:<ffffffff8011662d>{mtrr_check+77} <ffffffff801169b9>{mtrr_add
-> +41}
->        <ffffffff80647afe>{vesafb_probe+1390}
-> <ffffffff802f3f2f>{driver_probe_device+79}
->        <ffffffff802f4010>{__device_attach+0}
-> <ffffffff802f38c6>{bus_for_each_drv+70}
->        <ffffffff802f4079>{device_attach+89}
-> <ffffffff802f378e>{bus_add_device+62}
->        <ffffffff802f28ad>{device_add+173}
-> <ffffffff802f575f>{platform_device_register+255}
->        <ffffffff80647e7e>{vesafb_init+542} <ffffffff8010b24a>{init+506}
->        <ffffffff8010e967>{child_rip+8} <ffffffff8010b050>{init+0}
->        <ffffffff8010e95f>{child_rip+0}
-> Console: switching to colour frame buffer device 100x37
-> fb0: VESA VGA frame buffer device
-> Real Time Clock Driver v1.12
-> Non-volatile memory driver v1.2
-> Linux agpgart interface v0.101 (c) Dave Jones
-> cn_fork is registered
-> serio: i8042 AUX port at 0x60,0x64 irq 12
-> serio: i8042 KBD port at 0x60,0x64 irq 1
-> Serial: 8250/16550 driver $Revision: 1.90 $ 8 ports, IRQ sharing
-> disabled
-> ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
-> ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
-> io scheduler noop registered
-> io scheduler anticipatory registered
-> io scheduler deadline registered
-> io scheduler cfq registered
-> RAMDISK driver initialized: 16 RAM disks of 128000K size 1024 blocksize
-> loop: loaded (max 8 devices)
-> tg3.c:v3.31 (June 8, 2005)
+So.. what happened here?  Is the problem still present in 2.6.13-rc4?
 
 
 -------------------------------------------------------

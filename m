@@ -1,24 +1,27 @@
 From: James Simmons <jsimmons@infradead.org>
 Subject: Re: Re: [PATCH] fbdev: colormap fixes
-Date: Fri, 29 Jul 2005 21:13:42 +0100 (BST)
-Message-ID: <Pine.LNX.4.56.0507292106440.17988@pentafluge.infradead.org>
-References: <200507280031.j6S0V3L3016861@hera.kernel.org>
- <Pine.LNX.4.62.0507280952140.24391@numbat.sonytel.be>
- <9e473391050728060741040424@mail.gmail.com> <42E8F0CD.6070500@gmail.com>
- <Pine.LNX.4.62.0507281758080.24391@numbat.sonytel.be>
+Date: Fri, 29 Jul 2005 21:20:21 +0100 (BST)
+Message-ID: <Pine.LNX.4.56.0507292119340.17988@pentafluge.infradead.org>
+References: <200507280031.j6S0V3L3016861@hera.kernel.org>  <42E8F0CD.6070500@gmail.com>
+  <Pine.LNX.4.62.0507281758080.24391@numbat.sonytel.be> 
+ <9e473391050728092936794718@mail.gmail.com>  <9e47339105072811183ac0f008@mail.gmail.com>
+  <Pine.LNX.4.62.0507282202450.29876@numbat.sonytel.be> 
+ <9e4733910507281315419c3c12@mail.gmail.com>  <9e47339105072813213db7cee4@mail.gmail.com>
+  <9e47339105072813507c00687e@mail.gmail.com>  <Pine.LNX.4.62.0507282337410.29876@numbat.sonytel.be>
+ <9e47339105072814505b6fe4f8@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DybFW-00010z-Uo
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Jul 2005 13:14:30 -0700
+	id 1DybLU-0001J0-DF
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Jul 2005 13:20:40 -0700
 Received: from pentafluge.infradead.org ([213.146.154.40])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
 	(Exim 4.44)
-	id 1DybF2-0004Nx-CY
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Jul 2005 13:14:30 -0700
-In-Reply-To: <Pine.LNX.4.62.0507281758080.24391@numbat.sonytel.be>
+	id 1DybLS-0005vS-So
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Jul 2005 13:20:40 -0700
+In-Reply-To: <9e47339105072814505b6fe4f8@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,34 +34,20 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@gmail.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
 
-
-> >  3) Add another file in sysfs which specifies at what index and how many
-> > entries will be read or written from or to the cmap. With this additional
-> > sysfs file, it should be able to handle any reasonable cmap length, but
-> > it will take more than one reading of the color_map file. Another
-> > advantage is that the entire color map need not be read or written if
-> > only one field needs to be changed.
-> > 
-> > I've attached a test patch.  Let me know what you think.
+> > No, bits_per_pixel can be (much) larger than the color map size. E.g. a simple
+> > ARGB8888 directcolor mode has bits_per_pixel = 32 and color map size = 256.
 > 
-> I like it! ... But, a disadvantages is that it needs to store state between two
-> non-atomic operations. E.g. imagine two processes doing this at the same time.
+> So I have the bits_per_pixel attribute wrong in sysfs. It needs to be
+> bits_per_color and then let the driver sort it out.  Otherwise there
+> is no way to set ARGB8888 versus ARGB2101010. With bits per color you
+> would set 8 or 10.
 
-   That is really nice. Setting the values in the color map don't have to 
-be atomic. Programming the hardware color registers do!! You could do a 
-loop filling the color map and then do a sync operation that would flush 
-the values to the hardware. It would be really nice if sysfs files had 
-hooks for syncing so we could do atomic operations :-) 
-     I realized for the cursor it is the same things. We have several 
-fields to set but we don't want to program the cursor over and over 
-again for every slight change. Instead we shoudl cache the changes
-until we want to send those changes to the hardware.
-
-
+You would need bits_per_read, bit_per_green. This doesn't event count the 
+other color spaces avaliable like YUV.
 
 
 

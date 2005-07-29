@@ -1,27 +1,28 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Re: [PATCH] fbdev: colormap fixes
-Date: Fri, 29 Jul 2005 21:20:21 +0100 (BST)
-Message-ID: <Pine.LNX.4.56.0507292119340.17988@pentafluge.infradead.org>
-References: <200507280031.j6S0V3L3016861@hera.kernel.org>  <42E8F0CD.6070500@gmail.com>
-  <Pine.LNX.4.62.0507281758080.24391@numbat.sonytel.be> 
- <9e473391050728092936794718@mail.gmail.com>  <9e47339105072811183ac0f008@mail.gmail.com>
-  <Pine.LNX.4.62.0507282202450.29876@numbat.sonytel.be> 
- <9e4733910507281315419c3c12@mail.gmail.com>  <9e47339105072813213db7cee4@mail.gmail.com>
-  <9e47339105072813507c00687e@mail.gmail.com>  <Pine.LNX.4.62.0507282337410.29876@numbat.sonytel.be>
- <9e47339105072814505b6fe4f8@mail.gmail.com>
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: Fw: framebuffer blitting performance loss 2.6.12 -> 2.6.13-rc3
+Date: Fri, 29 Jul 2005 16:21:24 -0400
+Message-ID: <9e4733910507291321609b4c48@mail.gmail.com>
+References: <20050715033912.1cd9b6c3.akpm@osdl.org>
+	 <200507221158.23454.adaplas@gmail.com>
+	 <20050729001735.5934622f.akpm@osdl.org> <42EA430C.2010405@t-online.de>
+	 <42EA4E6A.70907@gmail.com>
+	 <Pine.LNX.4.56.0507292041110.17988@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DybLU-0001J0-DF
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Jul 2005 13:20:40 -0700
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44)
-	id 1DybLS-0005vS-So
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Jul 2005 13:20:40 -0700
-In-Reply-To: <9e47339105072814505b6fe4f8@mail.gmail.com>
+	id 1DybMS-0001KG-Js
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Jul 2005 13:21:40 -0700
+Received: from wproxy.gmail.com ([64.233.184.194])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1DybMS-000847-4Z
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Jul 2005 13:21:40 -0700
+Received: by wproxy.gmail.com with SMTP id 36so676443wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 29 Jul 2005 13:21:24 -0700 (PDT)
+In-Reply-To: <Pine.LNX.4.56.0507292041110.17988@pentafluge.infradead.org>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,23 +33,108 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@gmail.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Knut Petersen <Knut_Petersen@t-online.de>, Andrew Morton <akpm@osdl.org>
+
+On 7/29/05, James Simmons <jsimmons@infradead.org> wrote:
+>=20
+> > Thank you for your persistence.  I think I know the culprit.  Someone
+> > insisted on using memcpy in fb_pad_aligned_buffer().  I have already
+> > fixed this before, but apparently, the memcpy was brought back.  Try
+> > the attached patch and let me know.
+>=20
+> Yipes, I did that. The memcpy function is suppose to be optimized for the
+> platform. See string.h in the include/asm directory. I seen for example
+> the Athlon would use the 3DNow instruction set to copy data. Something
+> is really wrong with memcpy if moving byte by byte is faster !!!!
+> Alot of drivers use memcpy. If memcpy sucks then drivers should be copyin=
+g
+> byte by byte then. The question I have is this the case for non intel
+> platforms as well. Could someone run the numbers on other platforms?
+
+memmove/memcpy is faster. memcpy is faster than memmove so use it if
+you can. But, there is a lower limit probably around 16 bytes or so
+where the loop becomes faster.  So if you know that you will always be
+copying small fragments use the loop.  The compiler can't decide
+between loop/memcpy for you since it doesn't know the upper limit on
+the length, it is forced to use memcpy since you told it so.
+
+For small things it is even better use a structure assignment if
+possible. That lets the compiler decide to do a loop or memcpy since
+the length is known.
+
+In this case if we could figure out how to give the compiler an upper
+bound on the loop it might decide to unroll it and use multiple moves.
+
+>=20
+> > Tony
+> >
+> >    fbdev: Replace memcpy with for-loop when preparing bitmap
+> >
+> >     Do not use memcpy in fb_pad_aligned_buffer. It is suboptimal becaus=
+e only
+> >     a few bytes are moved at a time. Replace with a for-loop.
+> >
+> >     From: Antonino Daplas <adaplas@pol.net>
+> >     Signed-off-by: Antonino Daplas <adaplas@pol.net>
+> > ---
+> >
+> >  fbmem.c |    6 ++++--
+> >  1 files changed, 4 insertions(+), 2 deletions(-)
+> >
+> > --- a/drivers/video/fbmem.c
+> > +++ b/drivers/video/fbmem.c
+> > @@ -80,10 +80,12 @@ EXPORT_SYMBOL(fb_get_color_depth);
+> >   */
+> >  void fb_pad_aligned_buffer(u8 *dst, u32 d_pitch, u8 *src, u32 s_pitch,=
+ u32 height)
+> >  {
+> > -     int i;
+> > +     int i, j;
+> >
+> >       for (i =3D height; i--; ) {
+> > -             memcpy(dst, src, s_pitch);
+> > +             /* s_pitch is a few bytes at the most, memcpy is suboptim=
+al */
+> > +             for (j =3D 0; j < s_pitch; j++)
+> > +                     dst[j] =3D src[j];
+> >               src +=3D s_pitch;
+> >               dst +=3D d_pitch;
+> >       }
+> >
+> >
+> > -------------------------------------------------------
+> > SF.Net email is Sponsored by the Better Software Conference & EXPO Sept=
+ember
+> > 19-22, 2005 * San Francisco, CA * Development Lifecycle Practices
+> > Agile & Plan-Driven Development * Managing Projects & Teams * Testing &=
+ QA
+> > Security * Process Improvement & Measurement * http://www.sqe.com/bsce5=
+sf
+> > _______________________________________________
+> > Linux-fbdev-devel mailing list
+> > Linux-fbdev-devel@lists.sourceforge.net
+> > https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+> >
+>=20
+>=20
+> -------------------------------------------------------
+> SF.Net email is sponsored by: Discover Easy Linux Migration Strategies
+> from IBM. Find simple to follow Roadmaps, straightforward articles,
+> informative Webcasts and more! Get everything you need to get up to
+> speed, fast. http://ads.osdn.com/?ad_id=3D7477&alloc_id=3D16492&op=3Dclic=
+k
+> _______________________________________________
+> Linux-fbdev-devel mailing list
+> Linux-fbdev-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+>=20
 
 
-> > No, bits_per_pixel can be (much) larger than the color map size. E.g. a simple
-> > ARGB8888 directcolor mode has bits_per_pixel = 32 and color map size = 256.
-> 
-> So I have the bits_per_pixel attribute wrong in sysfs. It needs to be
-> bits_per_color and then let the driver sort it out.  Otherwise there
-> is no way to set ARGB8888 versus ARGB2101010. With bits per color you
-> would set 8 or 10.
-
-You would need bits_per_read, bit_per_green. This doesn't event count the 
-other color spaces avaliable like YUV.
-
+--=20
+Jon Smirl
+jonsmirl@gmail.com
 
 
 -------------------------------------------------------

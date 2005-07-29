@@ -1,23 +1,22 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: Re: mttr failures on 2.6.12-mm1
-Date: Fri, 29 Jul 2005 21:42:27 +0800
-Message-ID: <42EA3243.10305@gmail.com>
-References: <1119401665.11299.1.camel@dyn9047017102.beaverton.ibm.com> <20050728220153.269b4081.akpm@osdl.org>
+From: Knut Petersen <Knut_Petersen@t-online.de>
+Subject: Re: Fw: framebuffer blitting performance loss
+  2.6.12 -> 2.6.13-rc3
+Date: Fri, 29 Jul 2005 16:54:04 +0200
+Message-ID: <42EA430C.2010405@t-online.de>
+References: <20050715033912.1cd9b6c3.akpm@osdl.org>	<200507221158.23454.adaplas@gmail.com> <20050729001735.5934622f.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DyV9G-0007Ve-KR
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Jul 2005 06:43:38 -0700
-Received: from wproxy.gmail.com ([64.233.184.201])
+	id 1DyWEK-0002kE-EM
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Jul 2005 07:52:56 -0700
+Received: from mailout06.sul.t-online.com ([194.25.134.19])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1DyV9G-0001F0-8H
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Jul 2005 06:43:38 -0700
-Received: by wproxy.gmail.com with SMTP id 36so606726wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 29 Jul 2005 06:43:32 -0700 (PDT)
-In-Reply-To: <20050728220153.269b4081.akpm@osdl.org>
+	id 1DyWEK-0007sd-1r
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Jul 2005 07:52:56 -0700
+In-Reply-To: <20050729001735.5934622f.akpm@osdl.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,155 +28,90 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>
-Cc: Badari Pulavarty <pbadari@us.ibm.com>, ak@muc.de
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Andrew Morton <akpm@osdl.org>, adaplas@gmail.com
 
-Andrew Morton wrote:
-> Badari Pulavarty <pbadari@us.ibm.com> wrote:
->> Andi,
+Hi everybody!
+
+>>I haven't seen any significant performance penalty, between 2.6.12-rc5-mm1
+>>and 2.6.13-rc3-mm1.
 >>
->> I noticed these on my AMD64 box earlier. Just a warning or anything 
->> to be concerned about ? 
-> 
-> What happened with this one?  Looks like a bug in the vesafb code.  Do we
-> know if it is fixed in 2.6.13-rc4?
-> 
-> (Badari is on leave - could one of the fbdev developers please help out?)
-> 
-> Thanks.
-> 
->
->> vesafb: mode is 800x600x16, linelength=1600, pages=16
->> vesafb: scrolling: redraw
->> vesafb: Truecolor: size=0:5:6:5, shift=0:11:5:0
->> mtrr: type mismatch for fc000000,1000000 old: write-back new: write-
->> combining
-
-Range is already set to write-back, vesafb attempts to add a write-
-combining mtrr (default for vesafb).
-
->> mtrr: size and base must be multiples of 4 kiB
-
-This is a bug, vesafb attempts to add a size < PAGE_SIZE triggering
-the messages below.
-
+>>Based on your results, I would pinpoint the culprit to be in
+>>video/console/bitblit.c.  However, the changes there are minor, and should not
+>>alter the peformance.
 >>
->> Call Trace:<ffffffff8011662d>{mtrr_check+77} <ffffffff801169b9>{mtrr_add
->> +41}
->>        <ffffffff80647afe>{vesafb_probe+1390}
->> <ffffffff802f3f2f>{driver_probe_device+79}
->>        <ffffffff802f4010>{__device_attach+0}
->> <ffffffff802f38c6>{bus_for_each_drv+70}
->>        <ffffffff802f4079>{device_attach+89}
->> <ffffffff802f378e>{bus_add_device+62}
->>        <ffffffff802f28ad>{device_add+173}
->> <ffffffff802f575f>{platform_device_register+255}
->>        <ffffffff80647e7e>{vesafb_init+542} <ffffffff8010b24a>{init+506}
->>        <ffffffff8010e967>{child_rip+8} <ffffffff8010b050>{init+0}
->>        <ffffffff8010e95f>{child_rip+0}
->> mtrr: size and base must be multiples of 4 kiB
 >>
 >
+>So.. what happened here?  Is the problem still present in 2.6.13-rc4?
+>
+>
+Yes, the problem still is present in 2.6.13-rc4.
+================================================
 
-Here's a patch to fix the above.  To eliminate the warning messages,
-you can add the option mtrr:2 to add a write-back mtrr for vesafb. Or
-just use nomtrr option.
+There is only an insignificant difference of max +/- 2ms between
+2.6.13-rc3 and 2.6.13-rc4 for all measurements.
 
-Full changelog attached.
+Test 1:   reset;time cat scrolltest0
+Test 2:   reset;time cat scrolltest80
+Test 3:   reset;time cat scrolltest160
 
-Tony
+scrolltest0 is a file with 2000 empty lines.
+scrolltest80 is a file with 2000 lines of 80 characters each.
+scrolltest 160 is a file with 2000 lines of 160 characters each.
+
+vesafb tests are made with the original vesafb of the respective kernel 
+versions,
+cyblafb tests all use the same source file, accelerations: fillrect, 
+bitblit, copyarea
+2.6.13-rc* are compiled for 1000Hz system timer as it is also used for 
+2.6.12.
+
+chipset: trident cyberblade/i1
+video mode: vesa 0x307 (1280x1024@75hz)
+8x16 font
+
+Nothing but the kernel changed between the tests,
+the time values given are system time in seconds.
 
 
-    vesafb: Fix mtrr bugs
+ vga=0x307 | test 1   test 2   test 3  | test 1   test 2    test 3 
+           |    video=vesafb:ypan      |       video=vesafb
+-----------+---------------------------+---------------------------
+2.6.12     | 3,753s   4,825s   5,936s  | 4,258s  65,645s  126,898s
+2.6.13-rc4 | 3,937s   5,135s   6,302s  | 4,304s  71,515s  138,674s
+           |  +4,9%   +6,42%   +6,17%  | +1,08%   +8,94%    +9,28%
 
-    1. Fix algorithm for finding the best power of 2 size with mtrr_add().
-    2. Add option to choose the mtrr type by extending the mtrr boot option:
 
-       mtrr:n where n
+ vga=0x307 | test 1   test 2   test 3  | test 1   test 2    test 3 
+           |    video=cyblafb          |   video=cyblafb:noypan
+-----------+---------------------------+---------------------------
+2.6.12     | 0,228s   0,549s   0,870s  | 7,692s   8,015s    8,335s
+2.6.13-rc4 | 0,235s   0,654s   1,072s  | 7,699s   8,120s    8,549s
+           | +3,07%  +19,13%  +23,22%  | +0,09%   +1,31%    +2,57%
 
-        0 = no mtrr (equivalent to using the nomtrr option)
-        1 = uncachable
-        2 = write back
-        3 = write combining (default)
-        4 = write through
 
-    From: Antonino Daplas <adaplas@pol.net>
-    Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
+The numbers show very clearly that 2.6.13-rc* blitting is much slower than
+the blitting of 2.6.12. For cyblafb the time spend for the actual 
+blitting is
+about 257ms for test3, so the actual performance loss for the pre-driver 
+part
+is above 30%
 
- vesafb.c |   47 ++++++++++++++++++++++++++++++++++++-----------
- 1 files changed, 36 insertions(+), 11 deletions(-)
+Now for a real world example:
 
---- a/drivers/video/vesafb.c
-+++ b/drivers/video/vesafb.c
-@@ -46,7 +46,7 @@ static struct fb_fix_screeninfo vesafb_f
- };
- 
- static int             inverse   = 0;
--static int             mtrr      = 1;
-+static int             mtrr      = 3; /* default to write-combining */
- static int	       vram_remap __initdata = 0; /* Set amount of memory to be used */
- static int	       vram_total __initdata = 0; /* Set total amount of memory */
- static int             pmi_setpal = 0;	/* pmi for palette changes ??? */
-@@ -237,8 +237,8 @@ static int __init vesafb_setup(char *opt
- 			pmi_setpal=0;
- 		else if (! strcmp(this_opt, "pmipal"))
- 			pmi_setpal=1;
--		else if (! strcmp(this_opt, "mtrr"))
--			mtrr=1;
-+		else if (! strncmp(this_opt, "mtrr:", 5))
-+			mtrr = simple_strtoul(this_opt+5, NULL, 0);
- 		else if (! strcmp(this_opt, "nomtrr"))
- 			mtrr=0;
- 		else if (! strncmp(this_opt, "vtotal:", 7))
-@@ -420,14 +420,39 @@ static int __init vesafb_probe(struct de
- 
- 	if (mtrr) {
- 		unsigned int temp_size = size_total;
--		/* Find the largest power-of-two */
--		while (temp_size & (temp_size - 1))
--			temp_size &= (temp_size - 1);
--
--		/* Try and find a power of two to add */
--		while (temp_size > PAGE_SIZE &&
--			mtrr_add(vesafb_fix.smem_start, temp_size, MTRR_TYPE_WRCOMB, 1)==-EINVAL) {
--			temp_size >>= 1;
-+		unsigned int type = 0;
-+
-+		switch (mtrr) {
-+		case 1:
-+			type = MTRR_TYPE_UNCACHABLE;
-+			break;
-+		case 2:
-+			type = MTRR_TYPE_WRBACK;
-+			break;
-+		case 3:
-+			type = MTRR_TYPE_WRCOMB;
-+			break;
-+		case 4:
-+			type = MTRR_TYPE_WRTHROUGH;
-+			break;
-+		default:
-+			type = 0;
-+			break;
-+		}
-+
-+		if (type) {
-+			int rc;
-+	
-+			/* Find the largest power-of-two */
-+			while (temp_size & (temp_size - 1))
-+				temp_size &= (temp_size - 1);
-+
-+			/* Try and find a power of two to add */
-+			do { 
-+				rc = mtrr_add(vesafb_fix.smem_start, temp_size,
-+					      type, 1);
-+				temp_size >>= 1;
-+			} while (temp_size >= PAGE_SIZE && rc == -EINVAL);
- 		}
- 	}
- 	
+      reset; time cat patch-2.6.13-rc4
+
+cyblafb, kernel 2.6.12     : 173,013s
+cyblafb, kernel 2.6.13-rc4 : 196,181s
+   difference              :  23,168s ( +13,4% )
+
+Could anyone take the time to measure performance of some other drivers?
+Those using ypan scrolling and hardware accelerated bitblit should be
+most affected.
+
+
+cu,
+ Knut
 
 
 

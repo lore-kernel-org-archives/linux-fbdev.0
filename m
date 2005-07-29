@@ -1,22 +1,22 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: fixing fbdev for various framebuffer configs
-Date: Fri, 29 Jul 2005 14:17:47 +0200 (CEST)
-Message-ID: <Pine.LNX.4.62.0507291416500.5335@numbat.sonytel.be>
-References: <9e473391050729035370d76cc5@mail.gmail.com>  <42EA16A4.2050709@gmail.com>
-  <9e47339105072904523afe0b9f@mail.gmail.com>  <Pine.LNX.4.62.0507291356060.5335@numbat.sonytel.be>
- <9e47339105072905133da5fabc@mail.gmail.com>
+Date: Fri, 29 Jul 2005 14:25:46 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0507291425060.5335@numbat.sonytel.be>
+References: <9e473391050729035370d76cc5@mail.gmail.com> 
+ <Pine.LNX.4.62.0507291317080.5335@numbat.sonytel.be>
+ <9e473391050729043010d54af7@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DyToy-0003Bg-8k
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Jul 2005 05:18:36 -0700
+	id 1DyTx3-0003mS-50
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Jul 2005 05:26:57 -0700
 Received: from witte.sonytel.be ([80.88.33.193])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1DyTow-0004KQ-LD
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Jul 2005 05:18:36 -0700
-In-Reply-To: <9e47339105072905133da5fabc@mail.gmail.com>
+	id 1DyTx2-000739-EX
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Jul 2005 05:26:57 -0700
+In-Reply-To: <9e473391050729043010d54af7@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,68 +29,53 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: "Antonino A. Daplas" <adaplas@hotpop.com>, James Simmons <jsimmons@infradead.org>
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: fbdev <linux-fbdev-devel@lists.sourceforge.net>, "Antonino A. Daplas" <adaplas@hotpop.com>, James Simmons <jsimmons@infradead.org>
 
 On Fri, 29 Jul 2005, Jon Smirl wrote:
 > On 7/29/05, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 > > On Fri, 29 Jul 2005, Jon Smirl wrote:
-> > > On 7/29/05, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> > > > Jon Smirl wrote:
-> > > > > It has been determined that bits per pixel is insuffucient to
-> > > > > enumerate all the needed fbconfigs. Here are the possible fgconfigs
-> > > > > from the OpenGL headers:
-> > > > >
-> > > > > total bits
-> > > > > 8     GL_R3_G3_B2
-> > > > > 8     GL_RGBA2
-> > > > > 12   GL_RGB4
-> > > > > 15   GL_RGB5
-> > > > > 16   GL_R5_G6_B5
-> > > > > 16   GL_RGBA4
-> > > > > 16   GL_RGB5_A1
-> > > > > 24   GL_RGB8
-> > > > > 30   GL_RGB10
-> > > > > 32   GL_RGBA8
-> > > > > 32   GL_RGB10_A2
-> > > > > 36   GL_RGB12
-> > > > > 48   GL_RGB16
-> > > > > 48   GL_RGBA12
-> > > > > 48   GL_FLOAT_RGB16
-> > > > > 64   GL_RGBA16
-> > > > > 64   GL_FLOAT_RGBA16
-> > > > > 96   GL_FLOAT_RGB32
-> > > > > 128 GL_FLOAT_RGBA32
-> > > > >
-> > > > > We need to be able to set any of these through the fbdev interface. We
-> > > > > also need to allow for possible future expansion.
-> > > >
-> > > > To set for example, RGBA16, set {transp|green|red|blue}.len to 16, the
-> > > > offsets to 0, 16, 32, 48, and bits_per_pixel to 64.  Then let the driver
-> > > > sort it out.  I don't know what we can do about the FLOAT formats...
-> > > >
-> > > > >
-> > > > > Ideas on how to adjust the fbdev interface?
-> > > >
-> > > > Well, no need to adjust the interface.  But it is limited though to
-> > > > 16 bits per channel.  Redefining them to 32 will break a lot of apps.
+> > > It has been determined that bits per pixel is insuffucient to
+> > > enumerate all the needed fbconfigs. Here are the possible fgconfigs
+> > > from the OpenGL headers:
+> > >
+> > > total bits
+> > > 8     GL_R3_G3_B2
+> > > 8     GL_RGBA2
+> > > 12   GL_RGB4
+> > > 15   GL_RGB5
+> > > 16   GL_R5_G6_B5
+> > > 16   GL_RGBA4
+> > > 16   GL_RGB5_A1
+> > > 24   GL_RGB8
+> > > 30   GL_RGB10
+> > > 32   GL_RGBA8
+> > > 32   GL_RGB10_A2
+> > > 36   GL_RGB12
+> > > 48   GL_RGB16
+> > > 48   GL_RGBA12
+> > > 64   GL_RGBA16
 > > 
-> > It's only the colormap entries that are limited to 16 bits per color component,
-> > right? The color components in pixel values can be much larger (up to 2^31 bits
-> > :-).
+> > All above (and many more) can be handled fine, cfr.
+> > fb_var_screeninfo.{red,green,blue,transp}.
 > > 
-> > > My current idea is to get rid of the bit_per_pixel attribute and
-> > > replace it with config. Config would take strings like 8,8,8 or
-> > > 5,5,5,1 or 32.,32.,32.
+> > > 48   GL_FLOAT_RGB16
+> > > 64   GL_FLOAT_RGBA16
+> > > 96   GL_FLOAT_RGB32
+> > > 128 GL_FLOAT_RGBA32
+> > >
+> > > We need to be able to set any of these through the fbdev interface. We
+> > > also need to allow for possible future expansion.
+> > >
+> > > Ideas on how to adjust the fbdev interface?
 > > 
-> > That's not acceptable. How do you differentiate between RGB888 (without alpha)
-> > using 24 or 32 bits per pixel?
+> > Floating point pixel values could be handled by a new nonstd flag:
 > 
-> Isn't that the driver's problem? You can't differentiate using OpenGL.
-> This does imply that I need a read only bits_per_pixel to allow apps
-> to caculate the stride.
+> Why non-standard? All of the current higher end ATI/Nvidia cards support it.
 
-You can use fb_fix_screeninfo.line_length (if non-zero) for that.
+It's non-standard in the sense that it's not an integer value.
+
+I don't see a better place to advertise this. Anyone with a better idea?
 
 Gr{oetje,eeting}s,
 

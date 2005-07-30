@@ -1,21 +1,19 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH] vesafb: Document mtrr boot option usage
-Date: Sat, 30 Jul 2005 09:55:47 +0800
-Message-ID: <42EADE23.6010006@gmail.com>
+From: Knut Petersen <Knut_Petersen@t-online.de>
+Subject: Optimizing bitblit.c / fb_pad_*
+Date: Sat, 30 Jul 2005 11:21:47 +0200
+Message-ID: <42EB46AB.1010005@t-online.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1DygZu-0007kx-9W
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Jul 2005 18:55:54 -0700
-Received: from wproxy.gmail.com ([64.233.184.201])
+	id 1DynW5-0006WB-Hb
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 30 Jul 2005 02:20:25 -0700
+Received: from mailout09.sul.t-online.com ([194.25.134.84])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1DygZu-0004JR-8i
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Jul 2005 18:55:54 -0700
-Received: by wproxy.gmail.com with SMTP id i20so683152wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 29 Jul 2005 18:55:48 -0700 (PDT)
+	id 1DynW3-00050R-NS
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 30 Jul 2005 02:20:25 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,43 +25,129 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-    Document mtrr boot option usage to Documentation/fb/vesafb.txt.
+Hi everybody,
 
-    From: Antonino Daplas <adaplas@pol.net>
-    Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
+could you please verify this change to bitblit.c.
 
- vesafb.txt |   16 +++++++++++++++-
- 1 files changed, 15 insertions(+), 1 deletion(-)
+Advantage: For drivers with accelerated blitting a significant 
+performance boost.
 
---- a/Documentation/fb/vesafb.txt
-+++ b/Documentation/fb/vesafb.txt
-@@ -144,7 +144,21 @@ vgapal	Use the standard vga registers fo
- 	This is the default.
- pmipal	Use the protected mode interface for palette changes.
+The execution time for my test3 with cyblafb and ypanning drops from
+0,870s (2.6.13-rc4 with the patch from Antonino) to 0,772s.
+
+If you agree that this is the way to go, we should add some additional 
+code for font
+resolutions different from 8x16.
+
+Should we drop fb_pad_aligned() entirely from the kernel? As far as I 
+see it is only
+used in cases that do not copy too much data. Replacing fb_pad_aligned 
+at those places
+with proper inline code should also help to optimize performance.
+
+
+cu,
+ Knut
+
+
+--- linux-2.6.13-rc4/drivers/video/console/bitblit.c	2005-07-29 10:01:01.000000000 +0200
++++ linux/drivers/video/console/bitblit.c	2005-07-30 09:34:49.000000000 +0200
+@@ -113,12 +113,15 @@
+ 	unsigned int maxcnt = info->pixmap.size/cellsize;
+ 	unsigned int scan_align = info->pixmap.scan_align - 1;
+ 	unsigned int buf_align = info->pixmap.buf_align - 1;
+-	unsigned int shift_low = 0, mod = vc->vc_font.width % 8;
+-	unsigned int shift_high = 8, pitch, cnt, size, k;
++	unsigned int shift_low = 0;
++	unsigned int mod = vc->vc_font.width % 8;
+ 	unsigned int idx = vc->vc_font.width >> 3;
+ 	unsigned int attribute = get_attribute(info, scr_readw(s));
++	unsigned int shift_high = 8;
++	unsigned int pitch, cnt, size, k;
++	unsigned int fast_8x16, i, j;
+ 	struct fb_image image;
+-	u8 *src, *dst, *buf = NULL;
++	u8 *src, *dst, *dstp, *buf = NULL;
  
--mtrr	setup memory type range registers for the vesafb framebuffer.
-+mtrr:n	setup memory type range registers for the vesafb framebuffer
-+	where n: 
-+	      0 - disabled (equivalent to nomtrr)
-+	      1 - uncachable
-+	      2 - write-back
-+	      3 - write-combining (default)
-+	      4 - write-through
+ 	if (attribute) {
+ 		buf = kmalloc(cellsize, GFP_KERNEL);
+@@ -134,6 +137,11 @@
+ 	image.height = vc->vc_font.height;
+ 	image.depth = 1;
+ 
++	if (vc->vc_font.height == 16 && vc->vc_font.width == 8)
++		fast_8x16 = 1;
++	else
++		fast_8x16 = 0;
 +
-+	If you see the following in dmesg, choose the type that matches the
-+	old one. In this example, use "mtrr:2". 
-+...
-+mtrr: type mismatch for e0000000,8000000 old: write-back new: write-combining 
-+...
-+      
-+nomtrr  disable mtrr
+ 	while (count) {
+ 		if (count > maxcnt)
+ 			cnt = k = maxcnt;
+@@ -147,7 +155,8 @@
+ 		size &= ~buf_align;
+ 		dst = fb_get_buffer_offset(info, &info->pixmap, size);
+ 		image.data = dst;
+-		if (mod) {
++
++		if (!mod)
+ 			while (k--) {
+ 				src = vc->vc_font.data + (scr_readw(s++)&
+ 							  charmask)*cellsize;
+@@ -157,15 +166,23 @@
+ 					src = buf;
+ 				}
  
- vremap:n
-         remap 'n' MiB of video RAM. If 0 or not specified, remap memory
+-				fb_pad_unaligned_buffer(dst, pitch, src, idx,
+-						image.height, shift_high,
+-						shift_low, mod);
+-				shift_low += mod;
+-				dst += (shift_low >= 8) ? width : width - 1;
+-				shift_low &= 7;
+-				shift_high = 8 - shift_low;
++				// Optimized for speed, memcpy() is too slow!
++				dstp = dst;
++				if (fast_8x16)
++					for (i = 16; i--; ) {
++						*dstp = src[15-i];
++						dstp += pitch;
++					}
++				else
++					for (i = image.height; i--; ) {
++						for (j = 0; j < idx; j++)
++							dstp[j] = src[j];
++						src += idx;
++						dstp += pitch;
++					}
++				dst += width;
+ 			}
+-		} else {
++		else
+ 			while (k--) {
+ 				src = vc->vc_font.data + (scr_readw(s++)&
+ 							  charmask)*cellsize;
+@@ -175,10 +192,15 @@
+ 					src = buf;
+ 				}
+ 
+-				fb_pad_aligned_buffer(dst, pitch, src, idx, image.height);
+-				dst += width;
++				fb_pad_unaligned_buffer(dst, pitch, src, idx,
++						image.height, shift_high,
++						shift_low, mod);
++				shift_low += mod;
++				dst += (shift_low >= 8) ? width : width - 1;
++				shift_low &= 7;
++				shift_high = 8 - shift_low;
+ 			}
+-		}
++
+ 		info->fbops->fb_imageblit(info, &image);
+ 		image.dx += cnt * vc->vc_font.width;
+ 		count -= cnt;
+
+
 
 
 -------------------------------------------------------

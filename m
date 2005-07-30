@@ -1,23 +1,21 @@
-From: Luca <kronos@people.it>
-Subject: Re: Fw: framebuffer blitting performance loss 2.6.12 -> 2.6.13-rc3
-Date: Sat, 30 Jul 2005 00:45:47 +0200
-Message-ID: <20050729224547.GA18474@dreamland.darkstar.lan>
-References: <20050715033912.1cd9b6c3.akpm@osdl.org> <200507221158.23454.adaplas@gmail.com> <20050729001735.5934622f.akpm@osdl.org> <42EA430C.2010405@t-online.de> <42EA4E6A.70907@gmail.com> <Pine.LNX.4.56.0507292041110.17988@pentafluge.infradead.org>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: [PATCH] vesafb: Document mtrr boot option usage
+Date: Sat, 30 Jul 2005 09:55:47 +0800
+Message-ID: <42EADE23.6010006@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Dydbf-0007CC-RQ
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Jul 2005 15:45:31 -0700
-Received: from mail-relay-4.tiscali.it ([213.205.33.44])
+	id 1DygZu-0007kx-9W
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Jul 2005 18:55:54 -0700
+Received: from wproxy.gmail.com ([64.233.184.201])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Dydbe-0004gE-DX
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Jul 2005 15:45:32 -0700
-Received: from dreamland.darkstar.lan (84.222.35.185) by mail-relay-4.tiscali.it (7.2.063)
-        id 42D77844001439AE for linux-fbdev-devel@lists.sourceforge.net; Sat, 30 Jul 2005 00:45:21 +0200
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.56.0507292041110.17988@pentafluge.infradead.org>
+	id 1DygZu-0004JR-8i
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 29 Jul 2005 18:55:54 -0700
+Received: by wproxy.gmail.com with SMTP id i20so683152wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 29 Jul 2005 18:55:48 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,32 +26,44 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Il Fri, Jul 29, 2005 at 08:51:34PM +0100, James Simmons ha scritto: 
-> > Thank you for your persistence.  I think I know the culprit.  Someone
-> > insisted on using memcpy in fb_pad_aligned_buffer().  I have already
-> > fixed this before, but apparently, the memcpy was brought back.  Try
-> > the attached patch and let me know.
-> 
-> Yipes, I did that. The memcpy function is suppose to be optimized for the 
-> platform. See string.h in the include/asm directory. I seen for example 
-> the Athlon would use the 3DNow instruction set to copy data. Something 
-> is really wrong with memcpy if moving byte by byte is faster !!!! 
+    Document mtrr boot option usage to Documentation/fb/vesafb.txt.
 
-For small copies MMX/3DNow are not used at all. In current kernel
-MMX/3DNow memcpy is used only when data size is greater than 512bytes.
-Remember that MMX/3DNow uses FPU so the kernel must save/restore state
-and this overhead would make the copy slow for small chunks.
+    From: Antonino Daplas <adaplas@pol.net>
+    Signed-off-by: Antonino Daplas <adaplas@pol.net>
+---
 
-Luca
--- 
-Home: http://kronoz.cjb.net
-Se il  destino di un uomo  e` annegare, anneghera` anche  in un bicchier
-d'acqua.
-Proverbio yddish
+ vesafb.txt |   16 +++++++++++++++-
+ 1 files changed, 15 insertions(+), 1 deletion(-)
+
+--- a/Documentation/fb/vesafb.txt
++++ b/Documentation/fb/vesafb.txt
+@@ -144,7 +144,21 @@ vgapal	Use the standard vga registers fo
+ 	This is the default.
+ pmipal	Use the protected mode interface for palette changes.
+ 
+-mtrr	setup memory type range registers for the vesafb framebuffer.
++mtrr:n	setup memory type range registers for the vesafb framebuffer
++	where n: 
++	      0 - disabled (equivalent to nomtrr)
++	      1 - uncachable
++	      2 - write-back
++	      3 - write-combining (default)
++	      4 - write-through
++
++	If you see the following in dmesg, choose the type that matches the
++	old one. In this example, use "mtrr:2". 
++...
++mtrr: type mismatch for e0000000,8000000 old: write-back new: write-combining 
++...
++      
++nomtrr  disable mtrr
+ 
+ vremap:n
+         remap 'n' MiB of video RAM. If 0 or not specified, remap memory
 
 
 -------------------------------------------------------

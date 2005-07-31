@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: Optimizing bitblit.c / fb_pad_*
-Date: Sun, 31 Jul 2005 08:54:30 +0800
-Message-ID: <42EC2146.7040306@gmail.com>
-References: <42EB46AB.1010005@t-online.de> <42EB7A10.4080601@gmail.com> <42EBCA5E.4030209@t-online.de>
+Subject: Re: [PATCH] Re: atyfb h/vsync polarity
+Date: Sun, 31 Jul 2005 09:45:25 +0800
+Message-ID: <42EC2D35.8020909@gmail.com>
+References: <20050622140842.GV20191@midgar.lan.raphnet.net>	<200507221206.44358.adaplas@gmail.com>	<200507310107.16442.alex.kern@gmx.de> <20050730161932.1eebf909.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Dz26T-0008KH-7z
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 30 Jul 2005 17:54:57 -0700
-Received: from wproxy.gmail.com ([64.233.184.198])
+	id 1Dz2tE-00024i-Ie
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 30 Jul 2005 18:45:20 -0700
+Received: from wproxy.gmail.com ([64.233.184.193])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Dz25z-0003kO-67
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 30 Jul 2005 17:54:57 -0700
-Received: by wproxy.gmail.com with SMTP id i20so776122wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 30 Jul 2005 17:54:21 -0700 (PDT)
-In-Reply-To: <42EBCA5E.4030209@t-online.de>
+	id 1Dz2tD-0004E0-Ft
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 30 Jul 2005 18:45:20 -0700
+Received: by wproxy.gmail.com with SMTP id i20so784936wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 30 Jul 2005 18:45:13 -0700 (PDT)
+In-Reply-To: <20050730161932.1eebf909.akpm@osdl.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,16 +29,17 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Andrew Morton <akpm@osdl.org>
+Cc: Alexander Kern <alex.kern@gmx.de>, linux-fbdev-devel@lists.sourceforge.net, raph@raphnet.net
 
-Knut Petersen wrote:
->> PS: Next time you submit a patch, add a Signed-off-line.
-> 
-> ack. btw, should a new driver first be presented in
-> linux-fbdev-devel@lists.sourceforge.net or lkml?
-> 
+Andrew Morton wrote:
 
-Always include linux-fbdev-devel.  But you may CC lkml.
+> 
+> I'll duck this one for now.  Tony, please resend when it's had approproate
+> testing at your end.
+
+Ok.  Although I believe that what the patch is doing is correct.  But I'll
+resend it post 2.6.13.
 
 Tony
 

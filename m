@@ -1,23 +1,25 @@
-From: Andrey Volkov <avolkov@varma-el.com>
-Subject: Re: Re: Where is place of arch independed companion
- chips?
-Date: Wed, 03 Aug 2005 13:09:10 +0400
-Message-ID: <42F089B6.8000304@varma-el.com>
-References: <42EB6A12.70100@varma-el.com> <42EE15AF.5050902@hp.com>	 <20050801181357.GA31144@suse.de> <1123019379.7782.86.camel@localhost.localdomain>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Re: Fw: framebuffer blitting performance loss
+ 2.6.12 -> 2.6.13-rc3
+Date: Wed, 3 Aug 2005 18:29:46 +0100 (BST)
+Message-ID: <Pine.LNX.4.56.0508031828240.2330@pentafluge.infradead.org>
+References: <20050715033912.1cd9b6c3.akpm@osdl.org>  <200507221158.23454.adaplas@gmail.com>
+  <20050729001735.5934622f.akpm@osdl.org> <42EA430C.2010405@t-online.de> 
+ <42EA4E6A.70907@gmail.com>  <Pine.LNX.4.56.0507292041110.17988@pentafluge.infradead.org>
+ <9e4733910507291321609b4c48@mail.gmail.com> <42EAB177.6070808@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E0FFf-00054b-Hf
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Aug 2005 02:09:27 -0700
-Received: from [195.144.244.147] (helo=amanaus.varma-el.com)
+	id 1E0N4E-00067n-2t
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Aug 2005 10:30:10 -0700
+Received: from pentafluge.infradead.org ([213.146.154.40])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
 	(Exim 4.44)
-	id 1E0FFd-0001fo-T0
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Aug 2005 02:09:27 -0700
-In-Reply-To: <1123019379.7782.86.camel@localhost.localdomain>
+	id 1E0N4C-0008HA-Pu
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Aug 2005 10:30:10 -0700
+In-Reply-To: <42EAB177.6070808@gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,42 +30,27 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Greg KH <gregkh@suse.de>, Jamey Hicks <jamey.hicks@hp.com>, linux-kernel@vger.kernel.org, rpurdie@rpsys.net, tony.luck@intel.com, edwardsg@sgi.com
+Cc: Knut Petersen <Knut_Petersen@t-online.de>, Andrew Morton <akpm@osdl.org>
 
-Richard Purdie wrote:
-> On Mon, 2005-08-01 at 11:13 -0700, Greg KH wrote:
+
+> Yes, the loop copies each row of a font character.  For an 8x16 font
+> that's 1 byte. The maximum fontwidth is 32. A 12x22 font does not pass
+> through this function because the width is not a multiple of 8.  So,
+> currently, it's used mostly for 8x16 fonts. 
 > 
->>>Good question.  I was about to submit a patch that created 
->>>drivers/platform because the toplevel driver for MQ11xx is a 
->>>platform_device driver.  Any thoughts on this?
->>
->>drivers/platform sounds good to me.
+> I already know people using 16x30 fonts. There are probably others bigger
+> than that. 
 > 
-> 
-> In another thread (about the ucb1x00) we came up with the idea of
-> drivers/mfd (mfd = multi function devices).
-> 
-> The core and platform specific parts would live here with suitable clear
-> naming and the subsection specific parts that were separable would live
-> in the appropriate place within the kernel.
-> 
-> Just another idea to add to the mix and removes the dilemma of a
-> multifunction device with isn't platform based...
-> 
-drivers/mfd as drivers/mfd, I have not objections. Who will send the
-patch first?
+> Of course, we can always use Duff's version to loop-unroll that particular
+> section, but even at 4 bytes, I don't know if it's worth the effort. Anyone
+> knows people using 32 wide fonts?
 
---
-Regards
-Andrey Volkov
-
-P.S. Tony, Greg, may be it will someone from you? (I've in mind sn/ subdir)
-
-
-
-
+The console system supports up to 32 pixel wide fonts. Even at that 
+maximum size we only copy 4 bytes of data at a time. Unrolling the loop 
+is right.
 
 
 

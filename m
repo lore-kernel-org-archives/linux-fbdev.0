@@ -1,25 +1,25 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Fw: framebuffer blitting performance loss
- 2.6.12 -> 2.6.13-rc3
-Date: Wed, 3 Aug 2005 18:29:46 +0100 (BST)
-Message-ID: <Pine.LNX.4.56.0508031828240.2330@pentafluge.infradead.org>
-References: <20050715033912.1cd9b6c3.akpm@osdl.org>  <200507221158.23454.adaplas@gmail.com>
-  <20050729001735.5934622f.akpm@osdl.org> <42EA430C.2010405@t-online.de> 
- <42EA4E6A.70907@gmail.com>  <Pine.LNX.4.56.0507292041110.17988@pentafluge.infradead.org>
- <9e4733910507291321609b4c48@mail.gmail.com> <42EAB177.6070808@gmail.com>
+Subject: Re: Optimizing bitblit.c / fb_pad_*
+Date: Wed, 3 Aug 2005 18:34:08 +0100 (BST)
+Message-ID: <Pine.LNX.4.56.0508031832350.2330@pentafluge.infradead.org>
+References: <42EB46AB.1010005@t-online.de> <42EB7A10.4080601@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E0N4E-00067n-2t
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Aug 2005 10:30:10 -0700
+	id 1E0N8G-0006Hy-Nw
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Aug 2005 10:34:20 -0700
 Received: from pentafluge.infradead.org ([213.146.154.40])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
 	(Exim 4.44)
-	id 1E0N4C-0008HA-Pu
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Aug 2005 10:30:10 -0700
-In-Reply-To: <42EAB177.6070808@gmail.com>
+	id 1E0N8F-0001GJ-Fw
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Aug 2005 10:34:20 -0700
+Received: from jsimmons (helo=localhost)
+	by pentafluge.infradead.org with local-esmtp (Exim 4.52 #1 (Red Hat Linux))
+	id 1E0N84-0000gN-8l
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Aug 2005 18:34:15 +0100
+In-Reply-To: <42EB7A10.4080601@gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -33,24 +33,33 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Knut Petersen <Knut_Petersen@t-online.de>, Andrew Morton <akpm@osdl.org>
 
 
-> Yes, the loop copies each row of a font character.  For an 8x16 font
-> that's 1 byte. The maximum fontwidth is 32. A 12x22 font does not pass
-> through this function because the width is not a multiple of 8.  So,
-> currently, it's used mostly for 8x16 fonts. 
+> why not make it to something like this?
 > 
-> I already know people using 16x30 fonts. There are probably others bigger
-> than that. 
+> 		for (i = cellsize; i--;) {
+> 			*dstp = src[cellsize-1-i];
+> 			dstp += pitch;
+> 		}
 > 
-> Of course, we can always use Duff's version to loop-unroll that particular
-> section, but even at 4 bytes, I don't know if it's worth the effort. Anyone
-> knows people using 32 wide fonts?
+> This way, it will work with any fontsize, as long as the width
+> is a 8-bit size-aligned.  You can do the same with
+> fb_pad_aligned_buffer(), so the rest can benefit too.
+> 
+> The above is probably a bit slower than your version, but it's a
+> good compromise -- bit_putcs is ugly enough, the price for
+> the optimization.
+> 
+> Tony
+> 
+> PS: Next time you submit a patch, add a Signed-off-line. See this
+> document by akpm:
+> 
+> http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt
 
-The console system supports up to 32 pixel wide fonts. Even at that 
-maximum size we only copy 4 bytes of data at a time. Unrolling the loop 
-is right.
+If you embedded everything then there is no reason to do massivce copies.
+Right now this is not the highest priority. We have alot of other fixes 
+that need to go in.
 
 
 

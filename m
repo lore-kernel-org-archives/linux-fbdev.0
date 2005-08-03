@@ -1,25 +1,19 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Optimizing bitblit.c / fb_pad_*
-Date: Wed, 3 Aug 2005 18:34:08 +0100 (BST)
-Message-ID: <Pine.LNX.4.56.0508031832350.2330@pentafluge.infradead.org>
-References: <42EB46AB.1010005@t-online.de> <42EB7A10.4080601@gmail.com>
+Subject: [PATCH] First pass at cursor fix
+Date: Wed, 3 Aug 2005 19:02:11 +0100 (BST)
+Message-ID: <Pine.LNX.4.56.0508031851020.2330@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E0N8G-0006Hy-Nw
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Aug 2005 10:34:20 -0700
+	id 1E0NZa-0007sc-9I
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Aug 2005 11:02:34 -0700
 Received: from pentafluge.infradead.org ([213.146.154.40])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
 	(Exim 4.44)
-	id 1E0N8F-0001GJ-Fw
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Aug 2005 10:34:20 -0700
-Received: from jsimmons (helo=localhost)
-	by pentafluge.infradead.org with local-esmtp (Exim 4.52 #1 (Red Hat Linux))
-	id 1E0N84-0000gN-8l
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Aug 2005 18:34:15 +0100
-In-Reply-To: <42EB7A10.4080601@gmail.com>
+	id 1E0NZZ-0007jU-Ao
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Aug 2005 11:02:34 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,35 +26,228 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: "Antonino A. Daplas" <adaplas@hotpop.com>, Geert Uytterhoeven <geert@linux-m68k.org>
 
 
-> why not make it to something like this?
-> 
-> 		for (i = cellsize; i--;) {
-> 			*dstp = src[cellsize-1-i];
-> 			dstp += pitch;
-> 		}
-> 
-> This way, it will work with any fontsize, as long as the width
-> is a 8-bit size-aligned.  You can do the same with
-> fb_pad_aligned_buffer(), so the rest can benefit too.
-> 
-> The above is probably a bit slower than your version, but it's a
-> good compromise -- bit_putcs is ugly enough, the price for
-> the optimization.
-> 
-> Tony
-> 
-> PS: Next time you submit a patch, add a Signed-off-line. See this
-> document by akpm:
-> 
-> http://www.zip.com.au/~akpm/linux/patches/stuff/tpp.txt
+The cursor cleanup is being broken into a few parts. This adds a
+flag to see if we have a hardware cursor. It is tested and I will soon 
+send it to Andrew.
 
-If you embedded everything then there is no reason to do massivce copies.
-Right now this is not the highest priority. We have alot of other fixes 
-that need to go in.
-
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/aty/mach64_cursor.c fbdev-2.6/drivers/video/aty/mach64_cursor.c
+--- linus-2.6/drivers/video/aty/mach64_cursor.c	2005-07-11 10:07:21.000000000 -0700
++++ fbdev-2.6/drivers/video/aty/mach64_cursor.c	2005-08-02 16:16:07.000000000 -0700
+@@ -219,8 +219,8 @@
+ 	info->sprite.buf_align = 16; 	/* and 64 lines tall. */
+ 	info->sprite.flags = FB_PIXMAP_IO;
+ 
++	info->flags |= FBINFO_HWACCEL_CURSOR;
+ 	info->fbops->fb_cursor = atyfb_cursor;
+-
+ 	return 0;
+ }
+ 
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/fbsysfs.c fbdev-2.6/drivers/video/fbsysfs.c
+--- linus-2.6/drivers/video/fbsysfs.c	2005-07-31 15:45:22.000000000 -0700
++++ fbdev-2.6/drivers/video/fbsysfs.c	2005-08-02 16:23:13.000000000 -0700
+@@ -371,13 +371,19 @@
+ static ssize_t store_cursor(struct class_device *class_device,
+ 			    const char * buf, size_t count)
+ {
+-//	struct fb_info *fb_info = (struct fb_info *)class_get_devdata(class_device);
++	struct fb_info *fb_info = (struct fb_info *)class_get_devdata(class_device);
++
++	if (!(fb_info->flags & FBINFO_HWACCEL_CURSOR))
++		return -ENXIO;
+ 	return 0;
+ }
+ 
+ static ssize_t show_cursor(struct class_device *class_device, char *buf)
+ {
+-//	struct fb_info *fb_info = (struct fb_info *)class_get_devdata(class_device);
++	struct fb_info *fb_info = (struct fb_info *)class_get_devdata(class_device);
++
++	if (!(fb_info->flags & FBINFO_HWACCEL_CURSOR))
++		return -ENXIO;
+ 	return 0;
+ }
+ 
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/i810/i810.h fbdev-2.6/drivers/video/i810/i810.h
+--- linus-2.6/drivers/video/i810/i810.h	2005-07-11 10:07:21.000000000 -0700
++++ fbdev-2.6/drivers/video/i810/i810.h	2005-08-02 15:00:52.000000000 -0700
+@@ -201,7 +201,6 @@
+ #define HAS_ACCELERATION            2
+ #define ALWAYS_SYNC                 4
+ #define LOCKUP                      8
+-#define USE_HWCUR                  16
+ 
+ struct gtt_data {
+ 	struct agp_memory *i810_fb_memory;
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/i810/i810_main.c fbdev-2.6/drivers/video/i810/i810_main.c
+--- linus-2.6/drivers/video/i810/i810_main.c	2005-07-11 10:07:21.000000000 -0700
++++ fbdev-2.6/drivers/video/i810/i810_main.c	2005-08-02 15:00:52.000000000 -0700
+@@ -1375,7 +1375,6 @@
+ 	decode_var(&info->var, par);
+ 	i810_load_regs(par);
+ 	i810_init_cursor(par);
+-
+ 	encode_fix(&info->fix, info);
+ 
+ 	if (info->var.accel_flags && !(par->dev_flags & LOCKUP)) {
+@@ -1387,6 +1386,7 @@
+ 		info->pixmap.scan_align = 1;
+ 		info->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
+ 	}
++	info->flags |= FBINFO_HWACCEL_CURSOR;
+ 	return 0;
+ }
+ 
+@@ -1418,9 +1418,8 @@
+ 	struct i810fb_par *par = (struct i810fb_par *)info->par;
+ 	u8 __iomem *mmio = par->mmio_start_virtual;
+ 
+-	if (!(par->dev_flags & USE_HWCUR) || !info->var.accel_flags ||
+-	    par->dev_flags & LOCKUP)
+-		return soft_cursor(info, cursor);
++	if (!par->dev_flags & LOCKUP)
++		return -ENXIO;
+ 
+ 	if (cursor->image.width > 64 || cursor->image.height > 64)
+ 		return -ENXIO;
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/intelfb/intelfbdrv.c fbdev-2.6/drivers/video/intelfb/intelfbdrv.c
+--- linus-2.6/drivers/video/intelfb/intelfbdrv.c	2005-07-11 10:07:21.000000000 -0700
++++ fbdev-2.6/drivers/video/intelfb/intelfbdrv.c	2005-08-02 19:01:32.000000000 -0700
+@@ -117,14 +117,10 @@
+ #include <linux/slab.h>
+ #include <linux/delay.h>
+ #include <linux/fb.h>
+-#include <linux/console.h>
+-#include <linux/selection.h>
+ #include <linux/ioport.h>
+ #include <linux/init.h>
+ #include <linux/pci.h>
+ #include <linux/vmalloc.h>
+-#include <linux/kd.h>
+-#include <linux/vt_kern.h>
+ #include <linux/pagemap.h>
+ #include <linux/version.h>
+ 
+@@ -242,7 +238,7 @@
+ static char *mode       = NULL;
+ 
+ module_param(accel, bool, S_IRUGO);
+-MODULE_PARM_DESC(accel, "Enable console acceleration");
++MODULE_PARM_DESC(accel, "Enable hardware acceleration");
+ module_param(vram, int, S_IRUGO);
+ MODULE_PARM_DESC(vram, "System RAM to allocate to framebuffer in MiB");
+ module_param(voffset, int, S_IRUGO);
+@@ -498,7 +494,7 @@
+ {
+ 	struct fb_info *info;
+ 	struct intelfb_info *dinfo;
+-	int i, j, err, dvo;
++	int i, err, dvo;
+ 	int aperture_size, stolen_size;
+ 	struct agp_kern_info gtt_info;
+ 	int agp_memtype;
+@@ -841,13 +837,6 @@
+ 	if (bailearly == 5)
+ 		bailout(dinfo);
+ 
+-	for (i = 0; i < 16; i++) {
+-		j = color_table[i];
+-		dinfo->palette[i].red = default_red[j];
+-		dinfo->palette[i].green = default_grn[j];
+-		dinfo->palette[i].blue = default_blu[j];
+-	}
+-
+ 	if (bailearly == 6)
+ 		bailout(dinfo);
+ 
+@@ -1332,6 +1321,8 @@
+ 	} else {
+ 		info->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
+ 	}
++	if (dinfo->hwcursor)
++		info->flags |= FBINFO_HWACCEL_CURSOR;
+ 	kfree(hw);
+ 	return 0;
+ invalid_mode:
+@@ -1359,10 +1350,6 @@
+ 			green >>= 8;
+ 			blue >>= 8;
+ 
+-			dinfo->palette[regno].red = red;
+-			dinfo->palette[regno].green = green;
+-			dinfo->palette[regno].blue = blue;
+-
+ 			intelfbhw_setcolreg(dinfo, regno, red, green, blue,
+ 					    transp);
+ 		}
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/intelfb/intelfb.h fbdev-2.6/drivers/video/intelfb/intelfb.h
+--- linus-2.6/drivers/video/intelfb/intelfb.h	2005-07-11 10:07:21.000000000 -0700
++++ fbdev-2.6/drivers/video/intelfb/intelfb.h	2005-08-02 19:01:32.000000000 -0700
+@@ -234,7 +234,6 @@
+ 
+ 	/* palette */
+ 	u32 pseudo_palette[17];
+-	struct { u8 red, green, blue, pad; } palette[256];
+ 
+ 	/* chip info */
+ 	int pci_chipset;
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/intelfb/intelfbhw.c fbdev-2.6/drivers/video/intelfb/intelfbhw.c
+--- linus-2.6/drivers/video/intelfb/intelfbhw.c	2005-07-11 10:07:21.000000000 -0700
++++ fbdev-2.6/drivers/video/intelfb/intelfbhw.c	2005-08-02 19:01:32.000000000 -0700
+@@ -29,14 +29,10 @@
+ #include <linux/slab.h>
+ #include <linux/delay.h>
+ #include <linux/fb.h>
+-#include <linux/console.h>
+-#include <linux/selection.h>
+ #include <linux/ioport.h>
+ #include <linux/init.h>
+ #include <linux/pci.h>
+ #include <linux/vmalloc.h>
+-#include <linux/kd.h>
+-#include <linux/vt_kern.h>
+ #include <linux/pagemap.h>
+ #include <linux/version.h>
+ 
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/nvidia/nvidia.c fbdev-2.6/drivers/video/nvidia/nvidia.c
+--- linus-2.6/drivers/video/nvidia/nvidia.c	2005-07-11 10:07:21.000000000 -0700
++++ fbdev-2.6/drivers/video/nvidia/nvidia.c	2005-08-02 15:00:52.000000000 -0700
+@@ -1300,6 +1300,7 @@
+ 	    | FBINFO_HWACCEL_IMAGEBLIT
+ 	    | FBINFO_HWACCEL_FILLRECT
+ 	    | FBINFO_HWACCEL_COPYAREA
++	    | FBINFO_HWACCEL_CURSOR
+ 	    | FBINFO_HWACCEL_YPAN;
+ 
+ 	fb_videomode_to_modelist(info->monspecs.modedb,
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/riva/fbdev.c fbdev-2.6/drivers/video/riva/fbdev.c
+--- linus-2.6/drivers/video/riva/fbdev.c	2005-07-28 10:24:11.000000000 -0700
++++ fbdev-2.6/drivers/video/riva/fbdev.c	2005-08-02 15:00:52.000000000 -0700
+@@ -1704,7 +1704,8 @@
+ 		    | FBINFO_HWACCEL_YPAN
+ 		    | FBINFO_HWACCEL_COPYAREA
+ 		    | FBINFO_HWACCEL_FILLRECT
+-	            | FBINFO_HWACCEL_IMAGEBLIT;
++	            | FBINFO_HWACCEL_IMAGEBLIT
++		    | FBINFO_HWACCEL_CURSOR;
+ 
+ 	/* Accel seems to not work properly on NV30 yet...*/
+ 	if ((par->riva.Architecture == NV_ARCH_30) || noaccel) {
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/include/linux/fb.h fbdev-2.6/include/linux/fb.h
+--- linus-2.6/include/linux/fb.h	2005-07-11 10:07:22.000000000 -0700
++++ fbdev-2.6/include/linux/fb.h	2005-08-02 15:00:52.000000000 -0700
+@@ -702,6 +702,7 @@
+ #define FBINFO_HWACCEL_XPAN		0x1000 /* optional */
+ #define FBINFO_HWACCEL_YPAN		0x2000 /* optional */
+ #define FBINFO_HWACCEL_YWRAP		0x4000 /* optional */
++#define FBINFO_HWACCEL_CURSOR		0x8000 /* required */
+ 
+ #define FBINFO_MISC_USEREVENT          0x10000 /* event request
+ 						  from userspace */
 
 
 -------------------------------------------------------

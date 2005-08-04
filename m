@@ -1,28 +1,23 @@
-From: "Dominik 'Rathann' Mierzejewski" <D.Mierzejewski@icm.edu.pl>
-Subject: Re: cyberblade patch
-Date: Thu, 4 Aug 2005 17:13:42 +0200
-Message-ID: <20050804151342.GB11179@ws-gradcol1.icm.edu.pl>
-References: <20050804102905.GE7605@ws-gradcol1.icm.edu.pl>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Regression: radeonfb: No synchronisation on CRT with
+ linux-2.6.13-rc5
+Date: Fri, 05 Aug 2005 00:44:52 +0200
+Message-ID: <1123195493.30257.75.camel@gaston>
+References: <Pine.LNX.4.58.0508040103100.2220@be1.lrz>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E0hPr-0001Qw-6r
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 Aug 2005 08:13:51 -0700
-Received: from gw.icm.edu.pl ([212.87.0.39] helo=atol.icm.edu.pl)
+	id 1E0oWd-0004V0-TJ
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 Aug 2005 15:49:19 -0700
+Received: from gate.crashing.org ([63.228.1.57])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
 	(Exim 4.44)
-	id 1E0hPp-0008WQ-JV
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 Aug 2005 08:13:51 -0700
-Received: from fs.icm.edu.pl (fs.icm.edu.pl [192.168.1.165])
-	by atol.icm.edu.pl (8.13.1/8.13.1/rzm-5.1/icm) with ESMTP id j74FDheA020270
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 4 Aug 2005 17:13:43 +0200
-Received: from ws-gradcol1.icm.edu.pl (ws-gradcol1.icm.edu.pl [192.168.1.26])
-	by fs.icm.edu.pl (8.13.3/8.13.2/rzm-2.9.4/icm) with ESMTP id j74FDgQm013261
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 4 Aug 2005 17:13:43 +0200 (CEST)
-Content-Disposition: inline
-In-Reply-To: <20050804102905.GE7605@ws-gradcol1.icm.edu.pl>
+	id 1E0oWc-00040G-NN
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 Aug 2005 15:49:20 -0700
+In-Reply-To: <Pine.LNX.4.58.0508040103100.2220@be1.lrz>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,22 +29,22 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Bodo Eggert <7eggert@gmx.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
 
-On Thu, Aug 04, 2005 at 12:29:05PM +0200, Dominik 'Rathann' Mierzejewski wrote:
-> Hello.
-> Could someone send me the cyblafb patch from July 31st?
+On Fri, 2005-08-05 at 00:03 +0200, Bodo Eggert wrote:
+> My CRT is out of sync after radeonfb from 2.6.13-rc5 is initialized. 
+> 2.6.12 does not show this behaviour.
 
-Thank you, I got one from Kelly. I'll report back with results
-ASAP.
+I'm out of town at the moment, could you maybe diff radeonfb between
+working & non-working and CC me the diff ? I don't have my work stuff at
+hand not my kernel images so...
 
-Regards,
+Thanks,
+Ben.
 
--- 
-Dominik 'Rathann' Mierzejewski <rathann*at*icm.edu.pl>
-Interdisciplinary Centre for Mathematical and Computational Modelling
-Warsaw University  |  http://www.icm.edu.pl  |  tel. +48 (22) 5540810
+
+
 
 
 -------------------------------------------------------

@@ -1,19 +1,20 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: [PATCH] Make mach64 a platform device on atari
-Date: Wed, 3 Aug 2005 19:04:24 +0100 (BST)
-Message-ID: <Pine.LNX.4.56.0508031902290.2330@pentafluge.infradead.org>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Fw: [PATCH 2/3] DEC PMAG BA frame buffer update
+Date: Wed, 3 Aug 2005 21:59:54 -0700
+Message-ID: <20050803215954.47d3cfc1.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E0NbZ-0007xq-JN
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Aug 2005 11:04:37 -0700
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	id 1E0Xqu-00073D-0b
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Aug 2005 22:01:08 -0700
+Received: from smtp.osdl.org ([65.172.181.4])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.44)
-	id 1E0NbY-0008DM-Uf
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Aug 2005 11:04:37 -0700
+	id 1E0Xqt-0000Tb-8X
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 03 Aug 2005 22:01:08 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -24,315 +25,443 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: linux-m68k@lists.linux-m68k.org
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Ralf Baechle <ralf@linux-mips.org>
 
 
-This makes the mach64 a platform device on atari m68 devices. Please test 
-and it if is okay I will send it to Andrew Morton.
+for reviewing pleasure (Ralf is shy)
 
-diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/aty/atyfb_base.c fbdev-2.6/drivers/video/aty/atyfb_base.c
---- linus-2.6/drivers/video/aty/atyfb_base.c	2005-07-11 10:07:21.000000000 -0700
-+++ fbdev-2.6/drivers/video/aty/atyfb_base.c	2005-07-27 08:41:24.000000000 -0700
-@@ -244,9 +244,6 @@
-      */
- 
- static int aty_init(struct fb_info *info, const char *name);
--#ifdef CONFIG_ATARI
--static int store_video_par(char *videopar, unsigned char m64_num);
--#endif
- 
- static struct crtc saved_crtc;
- static union aty_pll saved_pll;
-@@ -321,10 +318,8 @@
- #endif
- 
- #ifdef CONFIG_ATARI
--static unsigned int mach64_count __initdata = 0;
--static unsigned long phys_vmembase[FB_MAX] __initdata = { 0, };
--static unsigned long phys_size[FB_MAX] __initdata = { 0, };
--static unsigned long phys_guiregbase[FB_MAX] __initdata = { 0, };
-+static struct mach64_device* __init store_video_par(char *video_str, unsigned char m64_num)
-+static LIST_HEAD(mach64_list);
- #endif
- 
- /* top -> down is an evolution of mach64 chipset, any corrections? */
-@@ -2170,8 +2165,6 @@
-      *  Initialisation
-      */
- 
--static struct fb_info *fb_list = NULL;
--
- static int __init aty_init(struct fb_info *info, const char *name)
- {
- 	struct atyfb_par *par = (struct atyfb_par *) info->par;
-@@ -2562,8 +2555,6 @@
- 	if (register_framebuffer(info) < 0)
- 		goto aty_init_exit;
- 
--	fb_list = info;
--
- 	PRINTKI("fb%d: %s frame buffer device on %s\n",
- 	       info->node, info->fix.id, name);
- 	return 0;
-@@ -2587,10 +2578,13 @@
- }
- 
- #ifdef CONFIG_ATARI
--static int __init store_video_par(char *video_str, unsigned char m64_num)
-+static struct mach64_device* __init store_video_par(char *video_str, unsigned char m64_num)
- {
--	char *p;
- 	unsigned long vmembase, size, guiregbase;
-+	struct platform_device *atyfb_device;
-+	struct mach64_device *device;
-+	struct resource io[2];
-+	char *p;
- 
- 	PRINTKI("store_video_par() '%s' \n", video_str);
- 
-@@ -2604,16 +2598,18 @@
- 		goto mach64_invalid;
- 	guiregbase = simple_strtoul(p, NULL, 0);
- 
--	phys_vmembase[m64_num] = vmembase;
--	phys_size[m64_num] = size;
--	phys_guiregbase[m64_num] = guiregbase;
--	PRINTKI("stored them all: $%08lX $%08lX $%08lX \n", vmembase, size,
--	       guiregbase);
--	return 0;
-+	io[0] = request_mem_region(vmembase, size, "atyfb");
-+	io[1] = request_mem_region(guiregbase, 0x10000, "atyfb");
- 
--      mach64_invalid:
--	phys_vmembase[m64_num] = 0;
--	return -1;
-+	atyfb_device = platform_device_register_simple("atyfb", m64_num, io, 2);
-+	if (IS_ERR(atyfb_device))
-+		return PTR_ERR(atyfb_device);
+Begin forwarded message:
+
+Date: Tue, 2 Aug 2005 11:37:34 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH 2/3] DEC PMAG BA frame buffer update
+
+
+Rewrite PMAG BA frame buffer driver for 2.6.
+
+diff -urN linux-2.6.13-rc4/drivers/video/pmag-ba-fb.c linux-cvs/drivers/video/pmag-ba-fb.c
+--- linux-2.6.13-rc4/drivers/video/pmag-ba-fb.c	2005-03-17 11:53:40.000000000 +0000
++++ linux-cvs/drivers/video/pmag-ba-fb.c	2005-07-11 21:55:31.000000000 +0100
+@@ -1,57 +1,55 @@
+ /*
+- *      linux/drivers/video/pmag-ba-fb.c
++ *	linux/drivers/video/pmag-ba-fb.c
+  *
+- *	PMAG-BA TurboChannel framebuffer card support ... derived from:
++ *	PMAG-BA TURBOchannel Color Frame Buffer (CFB) card support,
++ *	derived from:
+  *	"HP300 Topcat framebuffer support (derived from macfb of all things)
+  *	Phil Blundell <philb@gnu.org> 1998", the original code can be
+- *      found in the file hpfb.c in the same directory.
++ *	found in the file hpfb.c in the same directory.
+  *
+  *	Based on digital document:
+  * 	"PMAG-BA TURBOchannel Color Frame Buffer
+  *	 Functional Specification", Revision 1.2, August 27, 1990
+  *
+- *      DECstation related code Copyright (C) 1999, 2000, 2001 by
+- *      Michael Engel <engel@unix-ag.org>, 
+- *      Karsten Merker <merker@linuxtag.org> and
++ *	DECstation related code Copyright (C) 1999, 2000, 2001 by
++ *	Michael Engel <engel@unix-ag.org>,
++ *	Karsten Merker <merker@linuxtag.org> and
+  *	Harald Koerfgen.
+- *      This file is subject to the terms and conditions of the GNU General
+- *      Public License.  See the file COPYING in the main directory of this
+- *      archive for more details.
++ *	Copyright (c) 2005  Maciej W. Rozycki
+  *
++ *	This file is subject to the terms and conditions of the GNU General
++ *	Public License.  See the file COPYING in the main directory of this
++ *	archive for more details.
+  */
+-#include <linux/module.h>
+-#include <linux/kernel.h>
+-#include <linux/sched.h>
 +
-+	device = kmalloc(sizeof(struct mach64_device), GFP_KERNEL);
-+	PRINTKI("stored them all: $%08lX $%08lX $%08lX \n", vmembase, size, guiregbase);
-+	return device;
-+mach64_invalid:
-+	return NULL;
- }
- #endif /* CONFIG_ATARI */
- 
-@@ -2679,17 +2675,10 @@
- static void aty_st_pal(u_int regno, u_int red, u_int green, u_int blue,
- 		       const struct atyfb_par *par)
- {
--#ifdef CONFIG_ATARI
--	out_8(&par->aty_cmap_regs->windex, regno);
--	out_8(&par->aty_cmap_regs->lut, red);
--	out_8(&par->aty_cmap_regs->lut, green);
--	out_8(&par->aty_cmap_regs->lut, blue);
--#else
- 	writeb(regno, &par->aty_cmap_regs->windex);
- 	writeb(red, &par->aty_cmap_regs->lut);
- 	writeb(green, &par->aty_cmap_regs->lut);
- 	writeb(blue, &par->aty_cmap_regs->lut);
--#endif
- }
- 
-     /*
-@@ -3456,47 +3445,43 @@
- 
- #ifdef CONFIG_ATARI
- 
--static int __devinit atyfb_atari_probe(void)
-+static int __devinit atyfb_atari_probe(struct device *device)
- {
--	struct aty_par *par;
-+	struct platform_device *dev = to_platform_device(device);
- 	struct fb_info *info;
--	int m64_num;
-+	struct aty_par *par;
-+	int size = 0;
- 	u32 clock_r;
- 
--	for (m64_num = 0; m64_num < mach64_count; m64_num++) {
--		if (!phys_vmembase[m64_num] || !phys_size[m64_num] ||
--		    !phys_guiregbase[m64_num]) {
--		    PRINTKI("phys_*[%d] parameters not set => returning early. \n", m64_num);
--			continue;
--		}
--
--		info = framebuffer_alloc(sizeof(struct atyfb_par), NULL);
--		if (!info) {
--			PRINTKE("atyfb_atari_probe() can't alloc fb_info\n");
--			return -ENOMEM;
--		}
--		par = info->par;
-+	info = framebuffer_alloc(sizeof(struct atyfb_par), &dev->dev);
-+	if (!info) {
-+		PRINTKE("atyfb_atari_probe() can't alloc fb_info\n");
-+		return -ENOMEM;
-+	}
-+	par = info->par;
- 
--		info->fix = atyfb_fix;
-+	info->fix = atyfb_fix;
- 
--		par->irq = (unsigned int) -1; /* something invalid */
-+	par->irq = (unsigned int) -1; /* something invalid */
- 
--		/*
--		 *  Map the video memory (physical address given) to somewhere in the
--		 *  kernel address space.
--		 */
--		info->screen_base = ioremap(phys_vmembase[m64_num], phys_size[m64_num]);
--		info->fix.smem_start = (unsigned long)info->screen_base; /* Fake! */
--		par->ati_regbase = ioremap(phys_guiregbase[m64_num], 0x10000) +
--						0xFC00ul;
--		info->fix.mmio_start = (unsigned long)par->ati_regbase; /* Fake! */
--
--		aty_st_le32(CLOCK_CNTL, 0x12345678, par);
--		clock_r = aty_ld_le32(CLOCK_CNTL, par);
--
--		switch (clock_r & 0x003F) {
--		case 0x12:
--			par->clk_wr_offset = 3; /*  */
-+	/*
-+	 *  Map the video memory (physical address given) to somewhere in the
-+	 *  kernel address space.
-+	 */
-+	size = dev->resource[0].start - dev->resource[0].end;
-+	info->fix.smem_start = dev->resource[0].start;
-+	info->screen_base = ioremap(dev->resource[0], size);
++#include <linux/compiler.h>
+ #include <linux/errno.h>
+-#include <linux/string.h>
+-#include <linux/timer.h>
+-#include <linux/mm.h>
+-#include <linux/tty.h>
+-#include <linux/slab.h>
+-#include <linux/delay.h>
+-#include <linux/init.h>
+ #include <linux/fb.h>
+-#include <asm/bootinfo.h>
+-#include <asm/dec/machtype.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/types.h>
 +
-+	size = 0x10000;
-+	info->fix.mmio_start = dev->resource[1].start + 0xFC00ul;
-+	par->ati_regbase = ioremap(dev->resource[1], size) + 0xFC00ul;
++#include <asm/bug.h>
++#include <asm/io.h>
++#include <asm/system.h>
 +
-+	aty_st_le32(CLOCK_CNTL, 0x12345678, par);
-+	clock_r = aty_ld_le32(CLOCK_CNTL, par);
+ #include <asm/dec/tc.h>
 +
-+	switch (clock_r & 0x003F) {
-+	case 0x12:
-+		par->clk_wr_offset = 3; /*  */
- 			break;
- 		case 0x34:
- 			par->clk_wr_offset = 2; /* Medusa ST-IO ISA Adapter etc. */
-@@ -3595,6 +3580,23 @@
+ #include <video/pmag-ba-fb.h>
  
- #endif /* CONFIG_PCI */
- 
-+#ifdef	CONFIG_ATARI
+-struct pmag_ba_ramdac_regs {
+-	unsigned char addr_low;
+-	unsigned char pad0[3];
+-	unsigned char addr_hi;
+-	unsigned char pad1[3];
+-	unsigned char data;
+-	unsigned char pad2[3];
+-	unsigned char cmap;
 +
-+static struct device_driver atyfb_driver = {
-+	.name		= "atyfb",
-+	.probe		= atyfb_atari_probe,
-+	.remove		= __devexit_p(atyfb_atari_remove),
-+}
-+
-+static void __devexit atyfb_atari_remove(struct device *dev)
-+{
-+	struct fb_info *info = dev_get_drvdata(dev);
-+
-+	atyfb_remove(info);
-+}
-+
-+#endif /* CONFIG_ATARI */
-+
- #ifndef MODULE
- static int __init atyfb_setup(char *options)
- {
-@@ -3650,15 +3652,15 @@
- 		 * Why do we need this silly Mach64 argument?
- 		 * We are already here because of mach64= so its redundant.
- 		 */
--		else if (MACH_IS_ATARI
--			 && (!strncmp(this_opt, "Mach64:", 7))) {
--			static unsigned char m64_num;
--			static char mach64_str[80];
-+		else if (MACH_IS_ATARI && (!strncmp(this_opt, "Mach64:", 7))) {
-+			struct mach64_device *dev;
-+			unsigned char m64_num = 0;
-+			char mach64_str[80];
-+
- 			strlcpy(mach64_str, this_opt + 7, sizeof(mach64_str));
--			if (!store_video_par(mach64_str, m64_num)) {
--				m64_num++;
--				mach64_count = m64_num;
--			}
-+			dev = store_video_par(mach64_str, m64_num++); 
-+			if (dev != null)
-+				list_add_tail(dev->node, &mach64_list);
- 		}
- #endif
- 		else
-@@ -3670,6 +3672,8 @@
- 
- static int __init atyfb_init(void)
- {
-+    int retval = 0;	
-+
- #ifndef MODULE
-     char *option = NULL;
- 
-@@ -3679,16 +3683,34 @@
- #endif
- 
- #ifdef CONFIG_PCI
--    pci_register_driver(&atyfb_driver);
-+    retval = pci_register_driver(&atyfb_driver);
- #endif
- #ifdef CONFIG_ATARI
--    atyfb_atari_probe();
-+    retval = driver_register(&atyfb_driver);
-+    if (retval < 0) {
-+	struct platform_device *device;
-+
-+	list_for_each_safe(device, &mach64_list, node) {
-+		platform_device_unregister(&device->dev);
-+		kfree(device);
-+	}
-+    }
- #endif
--    return 0;
-+    return retval;
- }
- 
- static void __exit atyfb_exit(void)
- {
-+#ifdef CONFIG_ATARI
-+	struct platform_device *device;
-+
-+	list_for_each_safe(device, &mach64_list, node) {
-+		platform_device_unregister(&device->dev);
-+		kfree(device);
-+	}
-+	driver_unregister(&atyfb_driver);
-+#endif
-+
- #ifdef CONFIG_PCI
- 	pci_unregister_driver(&atyfb_driver);
- #endif
-diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/aty/atyfb.h fbdev-2.6/drivers/video/aty/atyfb.h
---- linus-2.6/drivers/video/aty/atyfb.h	2005-07-11 10:07:21.000000000 -0700
-+++ fbdev-2.6/drivers/video/aty/atyfb.h	2005-07-22 15:36:41.000000000 -0700
-@@ -187,6 +187,13 @@
- #endif
++struct pmagbafb_par {
++	struct fb_info *next;
++	volatile void __iomem *mmio;
++	volatile u32 __iomem *dac;
++	int slot;
  };
  
-+#ifdef CONFIG_ATARI
-+struct mach64_device {
-+	struct list_head node;
-+	struct platform_device *dev;
-+};
-+#endif
+-/*
+- * Max 3 TURBOchannel slots -> max 3 PMAG-BA :)
+- */
+-static struct fb_info pmagba_fb_info[3];
+ 
+-static struct fb_var_screeninfo pmagbafb_defined = {
++static struct fb_info *root_pmagbafb_dev;
 +
-     /*
-      *  ATI Mach64 features
-      */
++static struct fb_var_screeninfo pmagbafb_defined __initdata = {
+ 	.xres		= 1024,
+ 	.yres		= 864,
+ 	.xres_virtual	= 1024,
+@@ -61,58 +59,71 @@
+ 	.green.length	= 8,
+ 	.blue.length	= 8,
+ 	.activate	= FB_ACTIVATE_NOW,
+-	.height		= 274,
+-	.width		= 195,
+-	.accel		= FB_ACCEL_NONE,
++	.height		= -1,
++	.width		= -1,
++	.accel_flags	= FB_ACCEL_NONE,
++	.pixclock	= 14452,
++	.left_margin	= 116,
++	.right_margin	= 12,
++	.upper_margin	= 34,
++	.lower_margin	= 12,
++	.hsync_len	= 128,
++	.vsync_len	= 3,
++	.sync		= FB_SYNC_ON_GREEN,
+ 	.vmode		= FB_VMODE_NONINTERLACED,
+ };
+ 
+-static struct fb_fix_screeninfo pmagbafb_fix = {
++static struct fb_fix_screeninfo pmagbafb_fix __initdata = {
+ 	.id		= "PMAG-BA",
+-	.smem_len	= (1024 * 864),
++	.smem_len	= (1024 * 1024),
+ 	.type		= FB_TYPE_PACKED_PIXELS,
+ 	.visual		= FB_VISUAL_PSEUDOCOLOR,
+ 	.line_length	= 1024,
++	.mmio_len	= PMAG_BA_SIZE - PMAG_BA_BT459,
+ };
+ 
+-/*
+- * Turn hardware cursor off
+- */
+-void pmagbafb_erase_cursor(struct pmag_ba_ramdac_regs *bt459_regs)
++
++static inline void dac_write(struct pmagbafb_par *par, unsigned int reg, u8 v)
+ {
+-	bt459_regs->addr_low = 0;
+-	bt459_regs->addr_hi = 3;
+-	bt459_regs->data = 0;
++	writeb(v, par->dac + reg / 4);
+ }
+ 
++static inline u8 dac_read(struct pmagbafb_par *par, unsigned int reg)
++{
++	return readb(par->dac + reg / 4);
++}
++
++
+ /*
+- * Set the palette. 
++ * Set the palette.
+  */
+-static int pmagbafb_setcolreg(unsigned regno, unsigned red, unsigned green,
+-			      unsigned blue, unsigned transp,
+-			      struct fb_info *info)
++static int pmagbafb_setcolreg(unsigned int regno, unsigned int red,
++			      unsigned int green, unsigned int blue,
++			      unsigned int transp, struct fb_info *info)
+ {
+-	struct pmag_ba_ramdac_regs *bt459_regs = (struct pmag_ba_ramdac_regs *) info->par;
++	struct pmagbafb_par *par = info->par;
+ 
+-	if (regno >= info->cmap.len)
+-		return 1;
++	BUG_ON(regno >= info->cmap.len);
+ 
+ 	red   >>= 8;	/* The cmap fields are 16 bits    */
+-	green >>= 8;	/* wide, but the harware colormap */
++	green >>= 8;	/* wide, but the hardware colormap */
+ 	blue  >>= 8;	/* registers are only 8 bits wide */
+ 
+-	bt459_regs->addr_low = (__u8) regno;
+-	bt459_regs->addr_hi = 0;
+-	bt459_regs->cmap = red;
+-	bt459_regs->cmap = green;
+-	bt459_regs->cmap = blue;
++	mb();
++	dac_write(par, BT459_ADDR_LO, regno);
++	dac_write(par, BT459_ADDR_HI, 0x00);
++	wmb();
++	dac_write(par, BT459_CMAP, red);
++	wmb();
++	dac_write(par, BT459_CMAP, green);
++	wmb();
++	dac_write(par, BT459_CMAP, blue);
++
+ 	return 0;
+ }
+ 
+ static struct fb_ops pmagbafb_ops = {
+ 	.owner		= THIS_MODULE,
+-	.fb_get_fix	= gen_get_fix,
+-	.fb_get_var	= gen_get_var,
+ 	.fb_setcolreg	= pmagbafb_setcolreg,
+ 	.fb_fillrect	= cfb_fillrect,
+ 	.fb_copyarea	= cfb_copyarea,
+@@ -120,63 +131,133 @@
+ 	.fb_cursor	= soft_cursor,
+ };
+ 
+-int __init pmagbafb_init_one(int slot)
++
++/*
++ * Turn the hardware cursor off.
++ */
++static void __init pmagbafb_erase_cursor(struct fb_info *info)
++{
++	struct pmagbafb_par *par = info->par;
++
++	mb();
++	dac_write(par, BT459_ADDR_LO, 0x00);
++	dac_write(par, BT459_ADDR_HI, 0x03);
++	wmb();
++	dac_write(par, BT459_DATA, 0x00);
++}
++
++
++static int __init pmagbafb_init_one(int slot)
+ {
+-	unsigned long base_addr = get_tc_base_addr(slot);
+-	struct fb_info *info = &pmagba_fb_info[slot]; 
+-	struct display *disp = &pmagba_disp[slot];
+-
+-	printk("PMAG-BA framebuffer in slot %d\n", slot);
+-	/*
+-	 * Framebuffer display memory base address and friends
+-	 */
+-	pmagbafb_fix.smem_start = base_addr + PMAG_BA_ONBOARD_FBMEM_OFFSET;
+-	info->par = (base_addr + PMAG_BA_BT459_OFFSET);
+-
+-	/*
+-	 * Configure the Bt459 RAM DAC
+-	 */
+-	pmagbafb_erase_cursor((struct pmag_ba_ramdac_regs *) info->par);
+-
+-	/*
+-	 *      Let there be consoles..
+-	 */
++	struct fb_info *info;
++	struct pmagbafb_par *par;
++	unsigned long base_addr;
++
++	info = framebuffer_alloc(sizeof(struct pmagbafb_par), NULL);
++	if (!info)
++		return -ENOMEM;
++
++	par = info->par;
++	par->slot = slot;
++	claim_tc_card(par->slot);
++
++	base_addr = get_tc_base_addr(par->slot);
++
++	par->next = root_pmagbafb_dev;
++	root_pmagbafb_dev = info;
++
++	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0)
++		goto err_alloc;
++
+ 	info->fbops = &pmagbafb_ops;
++	info->fix = pmagbafb_fix;
+ 	info->var = pmagbafb_defined;
+-	info->fix = pmagbafb_fix; 
+-	info->screen_base = pmagbafb_fix.smem_start;
+ 	info->flags = FBINFO_DEFAULT;
+ 
+-	fb_alloc_cmap(&fb_info.cmap, 256, 0);
++	/* MMIO mapping setup.  */
++	info->fix.mmio_start = base_addr;
++	par->mmio = ioremap_nocache(info->fix.mmio_start, info->fix.mmio_len);
++	if (!par->mmio)
++		goto err_cmap;
++	par->dac = par->mmio + PMAG_BA_BT459;
++
++	/* Frame buffer mapping setup.  */
++	info->fix.smem_start = base_addr + PMAG_BA_FBMEM;
++	info->screen_base = ioremap_nocache(info->fix.smem_start,
++					    info->fix.smem_len);
++	if (!info->screen_base)
++		goto err_mmio_map;
++	info->screen_size = info->fix.smem_len;
++
++	pmagbafb_erase_cursor(info);
+ 
+ 	if (register_framebuffer(info) < 0)
+-		return 1;
++		goto err_smem_map;
++
++	pr_info("fb%d: %s frame buffer device in slot %d\n",
++		info->node, info->fix.id, par->slot);
++
+ 	return 0;
++
++
++err_smem_map:
++	iounmap(info->screen_base);
++
++err_mmio_map:
++	iounmap(par->mmio);
++
++err_cmap:
++	fb_dealloc_cmap(&info->cmap);
++
++err_alloc:
++	root_pmagbafb_dev = par->next;
++	release_tc_card(par->slot);
++	framebuffer_release(info);
++	return -ENXIO;
++}
++
++static void __exit pmagbafb_exit_one(void)
++{
++	struct fb_info *info = root_pmagbafb_dev;
++	struct pmagbafb_par *par = info->par;
++
++	unregister_framebuffer(info);
++	iounmap(info->screen_base);
++	iounmap(par->mmio);
++	fb_dealloc_cmap(&info->cmap);
++	root_pmagbafb_dev = par->next;
++	release_tc_card(par->slot);
++	framebuffer_release(info);
+ }
+ 
+-/* 
+- * Initialise the framebuffer
+- */
+ 
+-int __init pmagbafb_init(void)
++/*
++ * Initialise the framebuffer.
++ */
++static int __init pmagbafb_init(void)
+ {
+-	int sid;
+-	int found = 0;
++	int count = 0;
++	int slot;
+ 
+ 	if (fb_get_options("pmagbafb", NULL))
+-		return -ENODEV;
++		return -ENXIO;
+ 
+-	if (TURBOCHANNEL) {
+-		while ((sid = search_tc_card("PMAG-BA")) >= 0) {
+-			found = 1;
+-			claim_tc_card(sid);
+-			pmagbafb_init_one(sid);
+-		}
+-		return found ? 0 : -ENODEV;
+-	} else {
+-		return -ENODEV;
++	while ((slot = search_tc_card("PMAG-BA")) >= 0) {
++		if (pmagbafb_init_one(slot) < 0)
++			break;
++		count++;
+ 	}
++	return (count > 0) ? 0 : -ENXIO;
+ }
+ 
++static void __exit pmagbafb_exit(void)
++{
++	while (root_pmagbafb_dev)
++		pmagbafb_exit_one();
++}
++
++
+ module_init(pmagbafb_init);
++module_exit(pmagbafb_exit);
++
+ MODULE_LICENSE("GPL");
+diff -urN linux-2.6.13-rc4/include/video/pmag-ba-fb.h linux-cvs/include/video/pmag-ba-fb.h
+--- linux-2.6.13-rc4/include/video/pmag-ba-fb.h	2004-12-24 21:34:48.000000000 +0000
++++ linux-cvs/include/video/pmag-ba-fb.h	2005-07-11 21:56:17.000000000 +0100
+@@ -1,24 +1,27 @@
+ /*
+- *      linux/drivers/video/pmag-ba-fb.h
++ *	linux/include/video/pmag-ba-fb.h
+  *
+- *      TurboChannel PMAG-BA framebuffer card support,
+- *      Copyright (C) 1999,2000,2001 by
+- *      Michael Engel <engel@unix-ag.org>,
+- *      Karsten Merker <merker@linuxtag.org>
+- *      This file is subject to the terms and conditions of the GNU General
+- *      Public License.  See the file COPYING in the main directory of this
+- *      archive for more details.
+- */
+-
+-/*
+- * Bt459 RAM DAC register base offset (rel. to TC slot base address)
++ *	TURBOchannel PMAG-BA Color Frame Buffer (CFB) card support,
++ *	Copyright (C) 1999, 2000, 2001 by
++ *	Michael Engel <engel@unix-ag.org>,
++ *	Karsten Merker <merker@linuxtag.org>
++ *	Copyright (c) 2005  Maciej W. Rozycki
++ *
++ *	This file is subject to the terms and conditions of the GNU General
++ *	Public License.  See the file COPYING in the main directory of this
++ *	archive for more details.
+  */
+ 
+-#define PMAG_BA_BT459_OFFSET                    0x00200000
+-
+-/*
+- * Begin of PMAG-BA framebuffer memory relative to TC slot address,
+- * resolution is 1024x864x8
+- */
++/* IOmem resource offsets.  */
++#define PMAG_BA_FBMEM		0x000000	/* frame buffer */
++#define PMAG_BA_BT459		0x200000	/* Bt459 RAMDAC */
++#define PMAG_BA_IRQ		0x300000	/* IRQ acknowledge */
++#define PMAG_BA_ROM		0x380000	/* REX option ROM */
++#define PMAG_BA_BT438		0x380000	/* Bt438 clock chip reset */
++#define PMAG_BA_SIZE		0x400000	/* address space size */
+ 
+-#define PMAG_BA_ONBOARD_FBMEM_OFFSET    0x00000000
++/* Bt459 register offsets, byte-wide registers.  */
++#define BT459_ADDR_LO		0x0		/* address low */
++#define BT459_ADDR_HI		0x4		/* address high */
++#define BT459_DATA		0x8		/* data window register */
++#define BT459_CMAP		0xc		/* color map window register */
 
 
 -------------------------------------------------------
-SF.Net email is sponsored by: Discover Easy Linux Migration Strategies
-from IBM. Find simple to follow Roadmaps, straightforward articles,
-informative Webcasts and more! Get everything you need to get up to
-speed, fast. http://ads.osdn.com/?ad_id=7477&alloc_id=16492&op=click
+SF.Net email is Sponsored by the Better Software Conference & EXPO
+September 19-22, 2005 * San Francisco, CA * Development Lifecycle Practices
+Agile & Plan-Driven Development * Managing Projects & Teams * Testing & QA
+Security * Process Improvement & Measurement * http://www.sqe.com/bsce5sf

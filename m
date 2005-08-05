@@ -1,21 +1,23 @@
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Regression: radeonfb: No synchronisation on CRT with linux-2.6.13-rc5
-Date: Fri, 5 Aug 2005 19:38:29 +0200 (CEST)
-Message-ID: <Pine.LNX.4.58.0508051935570.2326@be1.lrz>
-References: <Pine.LNX.4.58.0508040103100.2220@be1.lrz> <1123195493.30257.75.camel@gaston>
+From: Andrey Volkov <avolkov@varma-el.com>
+Subject: Re: framebuffer-driver-for-mq11xx-graphics-chip.patch
+ added to -mm tree
+Date: Fri, 05 Aug 2005 13:47:53 +0400
+Message-ID: <42F335C9.5010009@varma-el.com>
+References: <200508050719.j757JZ5J032664@shell0.pdx.osdl.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E169W-00016U-U8
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Aug 2005 10:38:38 -0700
-Received: from mail-in-09.arcor-online.net ([151.189.21.49])
+	id 1E0yoD-0005wF-UF
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Aug 2005 02:48:09 -0700
+Received: from [195.144.244.147] (helo=amanaus.varma-el.com)
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
 	(Exim 4.44)
-	id 1E169V-0006e5-K9
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Aug 2005 10:38:39 -0700
-In-Reply-To: <1123195493.30257.75.camel@gaston>
+	id 1E0yoC-00089e-Gx
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Aug 2005 02:48:10 -0700
+In-Reply-To: <200508050719.j757JZ5J032664@shell0.pdx.osdl.net>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,27 +28,39 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Bodo Eggert <7eggert@gmx.de>, LKML <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: jamey@handhelds.org, anpaza@mail.ru, mm-commits@vger.kernel.org
 
-On Fri, 5 Aug 2005, Benjamin Herrenschmidt wrote:
-
-> On Fri, 2005-08-05 at 00:03 +0200, Bodo Eggert wrote:
-> > My CRT is out of sync after radeonfb from 2.6.13-rc5 is initialized. 
-> > 2.6.12 does not show this behaviour.
-> 
-> I'm out of town at the moment, could you maybe diff radeonfb between
-> working & non-working and CC me the diff ? I don't have my work stuff at
-> hand not my kernel images so...
-
-There were no changes in radeonfb.c, but I could trace to to 
-CONFIG_PREEMPT. With _NONE, it works as expected.
-
+akpm@osdl.org wrote:
+> + *
+> + *	keithp@keithp.com
+> + *
+> + * ChangeLog
+> + *
+> + * 2003-12-06: Andrew Zabolotny <zap@homelink.ru>
+> + *      - Modified to use the MediaQ SoC base driver to allow
+> + *        sharing of other MediaQ subdevices with other drivers.
+> + * 2003-05-18: <keithp@keithp.com>
+> + *	- Ported from PCI development board to ARM H5400
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/kernel.h>
+> +#include <linux/errno.h>
+> +#include <linux/string.h>
+> +#include <linux/fb.h>
+> +#include <linux/init.h>
+> +#include <linux/device.h>
+> +#include <linux/notifier.h>
+> +#include <../drivers/platform/mq11xx.h>
+	       ^^^^^^^^^^^^^^^^^
+Andrey, Jamey, please, move platform driver
+from drivers/platform to drivers/mfd.
 
 -- 
-There is no such thing as an atheist in a foxhole. 
+Regards
+Andrey Volkov
 
 
 -------------------------------------------------------

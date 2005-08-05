@@ -1,23 +1,21 @@
-From: Alexey Dobriyan <adobriyan@gmail.com>
-Subject: Re: framebuffer-driver-for-mq11xx-graphics-chip.patch added to -mm tree
-Date: Fri, 5 Aug 2005 18:08:34 +0400
-Message-ID: <20050805140834.GC3852@mipter.zuzino.mipt.ru>
-References: <200508050719.j757JZ5J032664@shell0.pdx.osdl.net>
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: Regression: radeonfb: No synchronisation on CRT with linux-2.6.13-rc5
+Date: Fri, 5 Aug 2005 19:38:29 +0200 (CEST)
+Message-ID: <Pine.LNX.4.58.0508051935570.2326@be1.lrz>
+References: <Pine.LNX.4.58.0508040103100.2220@be1.lrz> <1123195493.30257.75.camel@gaston>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E12kQ-0007eh-4v
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Aug 2005 07:00:30 -0700
-Received: from wproxy.gmail.com ([64.233.184.194])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1E12kP-0000kM-27
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Aug 2005 07:00:30 -0700
-Received: by wproxy.gmail.com with SMTP id i17so137748wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 05 Aug 2005 07:00:23 -0700 (PDT)
-Content-Disposition: inline
-In-Reply-To: <200508050719.j757JZ5J032664@shell0.pdx.osdl.net>
+	id 1E169W-00016U-U8
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Aug 2005 10:38:38 -0700
+Received: from mail-in-09.arcor-online.net ([151.189.21.49])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44)
+	id 1E169V-0006e5-K9
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 05 Aug 2005 10:38:39 -0700
+In-Reply-To: <1123195493.30257.75.camel@gaston>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,32 +26,27 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: jamey@handhelds.org
-Cc: anpaza@mail.ru, linux-fbdev-devel@lists.sourceforge.net, akpm@osdl.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Bodo Eggert <7eggert@gmx.de>, LKML <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, Aug 05, 2005 at 12:18:29AM -0700, akpm@osdl.org wrote:
-> This patch adds a framebuffer driver for MQ11xx system-on-chip graphics
-> chip.  This chip is used in several non-PCI ARM and MIPS platforms such as
-> the iPAQ H5550.  This driver depends on the overall platform_device driver
-> for the chip.
+On Fri, 5 Aug 2005, Benjamin Herrenschmidt wrote:
 
-> --- /dev/null
-> +++ devel-akpm/drivers/video/mq1100fb.c
+> On Fri, 2005-08-05 at 00:03 +0200, Bodo Eggert wrote:
+> > My CRT is out of sync after radeonfb from 2.6.13-rc5 is initialized. 
+> > 2.6.12 does not show this behaviour.
+> 
+> I'm out of town at the moment, could you maybe diff radeonfb between
+> working & non-working and CC me the diff ? I don't have my work stuff at
+> hand not my kernel images so...
 
-> + * linux/drivers/mq1100fb.c
+There were no changes in radeonfb.c, but I could trace to to 
+CONFIG_PREEMPT. With _NONE, it works as expected.
 
-Not true.
 
-> +static int mq1100fb_probe (struct device *dev, struct mediaq11xx_base *base)
-> +{
-
-> +	info = kmalloc (sizeof (struct mq1100fb_info), GFP_KERNEL);
-> +	memset (info, 0, sizeof (struct mq1100fb_info));
-
-Unchecked kmalloc().
-
+-- 
+There is no such thing as an atheist in a foxhole. 
 
 
 -------------------------------------------------------

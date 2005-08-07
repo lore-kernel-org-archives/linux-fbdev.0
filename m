@@ -1,23 +1,23 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: Re: [PATCH] Don't allow softcursor use from
- userland
-Date: Mon, 8 Aug 2005 00:25:40 +0100 (BST)
-Message-ID: <Pine.LNX.4.56.0508080021090.12912@pentafluge.infradead.org>
-References: <Pine.LNX.4.56.0508070327550.12196@pentafluge.infradead.org> 
- <20050806212729.0b36a640.akpm@osdl.org> <9e47339105080621415e2f6344@mail.gmail.com>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: Re: [PATCH] mach64 atari patch
+Date: Mon, 08 Aug 2005 07:31:40 +0800
+Message-ID: <42F699DC.20103@gmail.com>
+References: <Pine.LNX.4.56.0508070315260.12196@pentafluge.infradead.org> <Pine.LNX.4.62.0508071316230.31010@gorilla.sonytel.be> <20050807094618.0cc4cadc.akpm@osdl.org> <Pine.LNX.4.56.0508080003360.12912@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E1uWY-0006Wm-0M
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 16:25:46 -0700
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44)
-	id 1E1uWW-0007rh-GQ
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 16:25:46 -0700
-In-Reply-To: <9e47339105080621415e2f6344@mail.gmail.com>
+	id 1E1ucG-0006mz-U5
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 16:31:40 -0700
+Received: from wproxy.gmail.com ([64.233.184.198])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1E1ucE-0001Fh-KU
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 16:31:41 -0700
+Received: by wproxy.gmail.com with SMTP id i5so679558wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 07 Aug 2005 16:31:32 -0700 (PDT)
+In-Reply-To: <Pine.LNX.4.56.0508080003360.12912@pentafluge.infradead.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,37 +28,41 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Jon Smirl <jonsmirl@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>, geert@linux-m68k.org, adaplas@hotpop.com
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, Andrew Morton <akpm@osdl.org>
 
-
-> This change is not agreed too yet. Antonio and I are proposing a
-> different solution.
-> http://comments.gmane.org/gmane.linux.fbdev.devel/7118
+James Simmons wrote:
 > 
-> The alternate solution takes into account that fbconsole is the only
-> user of softcursor and moves softcursor into console.  fbdev drivers
-> then only expose a cursor entry point if they have a hardware cursor.
-> If they don't the entry point is NULL.
+>> I'll also drop fbdev-dont-allow-softcursor-use-from-userland.patch as there
+>> seems to be quite a bit of controversy there.
 > 
-> Nether solution should break existing apps since the existing
-> softcursor scheme was broken from user space and unusable.
+> The disagreement was how much to change it at one time. Some patches where 
+> just huge and did massive changes to all drivers. I wanted to break the patch 
+> up into little pieces. Please apply this patch otherwise we will be stuck 
+> where we are. 
+> 
 
-That is too big a change at one time and moving soft_cursor to fbcon is a 
-partial solution. See my other email. I don't want to touch every driver
-at this point!! First prevent anyone from using soft cursor from userland.
-Second fix fbcon version of the cursor. That mean doing more than just 
-moving the softcursor into fbcon. Third as drivers are updated remove the 
-soft cursor hooks. It will not break anything. 
+Please, my patch (based from Jon's) is huge because it's removing > 200 lines
+and it's moving softcursor.c from drivers/video to drivers/video/console where
+it belongs. But it is _not_ intrusive.  In fact, the majority of the patch consists
+of a single logical change which removes the line below from each driver
 
-P.S
-  When I first started out I sent giant patches that impacted alot of 
-things. People got upset. Please don't repeat my mistakes with giant 
-patches that impact every driver.
+- .fb_cursor = softcursor;
 
+and removes the line below from drivers/video/Kconfig.
 
+- select FB_SOFT_CURSOR
+
+Our proposal aims to make complex code simpler and big code smaller. Your patch,
+on the other hand, although small, introduces another flag  FB_HWCURSOR_SOFTCURSOR,
+which is redundant, and adds yet another level of complexity to an already too
+complex code.
+
+I already have the patch, but I'm not pushing it yet because of an ongoing
+disagreement, in courtesy to other developers such as yourself.
+
+Tony
 
 
 -------------------------------------------------------

@@ -1,67 +1,70 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [patch resend] w100fb: Rewrite for platform
- independence
-Date: Sun, 07 Aug 2005 21:22:03 +0800
-Message-ID: <42F60AFB.9070107@gmail.com>
-References: <1123417929.7800.11.camel@localhost.localdomain>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: [Linux-fbdev-devel] CRTC scanout buffer types
+Date: Sun, 7 Aug 2005 09:41:53 -0400
+Message-ID: <9e47339105080706414faf1e40@mail.gmail.com>
+References: <9e47339105080513195dee0804@mail.gmail.com>
+	 <Pine.LNX.4.62.0508071135450.31010@gorilla.sonytel.be>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E1l6I-0004Dk-Sl
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 06:22:02 -0700
-Received: from wproxy.gmail.com ([64.233.184.194])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1E1l6H-0001g9-Dd
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 06:22:02 -0700
-Received: by wproxy.gmail.com with SMTP id i21so599469wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 07 Aug 2005 06:21:52 -0700 (PDT)
-In-Reply-To: <1123417929.7800.11.camel@localhost.localdomain>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <dri-devel-admin@lists.sourceforge.net>
+In-Reply-To: <Pine.LNX.4.62.0508071135450.31010@gorilla.sonytel.be>
+Content-Disposition: inline
+Sender: dri-devel-admin@lists.sourceforge.net
+Errors-To: dri-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
+	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: akpm@osdl.org, adaplas@pol.net, Richard Purdie <rpurdie@rpsys.net>
+List-Post: <mailto:dri-devel@lists.sourceforge.net>
+List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
+	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=dri-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net, Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: DRI developer's list <dri-devel@lists.sourceforge.net>
 
-Richard Purdie wrote:
-> The code w100fb was based on was horribly Sharp SL-C7x0 specific
-> and there was little else that could be done as I had no access to
-> anything else with a w100 in it. There is no real documentation 
-> about this chipset available.
-> 
-> Ian Molton has access to other platforms with the w100 (Toshiba
-> e-series) and so between us, we've improved w100fb and made it 
-> platform independent. Ian Molton also added support for the 
-> very similar w3220 and w3200 chipsets.
-> 
-> There are a lot of changes here and it nearly amounts to a rewrite 
-> of the driver but it has been extensively tested and is being used 
-> in preference to the original driver in the Zaurus community. I'd
-> therefore like to update the mainline code to reflect this. 
-> 
-> [Comments from Antonino Daplas taken on board, thanks.]
-> 
-> Signed-off-by: Richard Purdie <rpurdie@rpsys.net>
-Acked-by: Antonino Daplas <adaplas@pol.net>
+I'm trying to work out a syntax for the sysfs attribute that will
+control the config. My first idea is to use a alpha/red/blue/green
+syntax. When red is set and blue/green are missing index mode is set.
+When green is set and red/blue are missing gray scale is set.
 
-> -		gSaveImagePtr[i] = NULL;
-> +	if (par->extmem_active && par->saved_extmem) {
-> +		memsize=par->mach->mem->size;
-> +		memcpy(remapped_fbuf + (W100_FB_BASE-MEM_WINDOW_BASE), par->saved_extmem, memsize);
+Are there chips that can scanout from buffers not packed at a power of two?
+How should I work different color spaces (YCbCr) into this?
 
-You missed converting this to memcpy_toio though.
+4bpp Index =3D /4
+4bpp greyscale =3D //4
+8bpp Index =3D /8
+8bpp RGB 332 =3D /3/3/2
+8bpp greyscale =3D //8
+16bpp aRGB 1555 =3D 1/5/5/5
+16bpp RGB 565 =3D /5/6/5
+16bpp aRGB 4444 =3D 4/4/4/4
+16bpp aIndex 88 =3D 8/8
+24bpp RGB 888 =3D /8/8/8
+24bpp aRGB 6666 =3D 6/6/6/6
+32bpp aRGB 8888 =3D 8/8/8/8
+32bpp aRGB 2:10:10:10 =3D 2/10/10/10
 
-Tony
+How are these packed?
+1 bpp monochrome (black =3D 0 and white =3D 1 or vice versa)
+1 bpp indexed
+2 bpp indexed
+3 bpp indexed
+5 bpp indexed
+6 bpp indexed
+7 bpp indexed
+
+These would have the same config, //8, right? You then just control
+what you write to the byte.
+8 bpp monochrome (black is all zeroes and white is all ones or vice versa)
+8 bpp greyscale
+
+How does this work, is one 24 bit color the key?
+32 bpp indexed+RGB 888 with color key to enable RGB888
+
+--=20
+Jon Smirl
+jonsmirl@gmail.com
 
 
 -------------------------------------------------------
@@ -69,3 +72,4 @@ SF.Net email is Sponsored by the Better Software Conference & EXPO
 September 19-22, 2005 * San Francisco, CA * Development Lifecycle Practices
 Agile & Plan-Driven Development * Managing Projects & Teams * Testing & QA
 Security * Process Improvement & Measurement * http://www.sqe.com/bsce5sf
+--

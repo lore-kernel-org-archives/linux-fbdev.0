@@ -1,21 +1,23 @@
-From: Kyle Moffett <mrmacman_g4@mac.com>
+From: Bodo Eggert <7eggert@gmx.de>
 Subject: Re: Regression: radeonfb: No synchronisation on CRT with linux-2.6.13-rc5
-Date: Sun, 7 Aug 2005 21:13:54 -0400
-Message-ID: <96358AEB-784F-444E-A0BA-04AD920284B3@mac.com>
-References: <Pine.LNX.4.58.0508040103100.2220@be1.lrz> <1123195493.30257.75.camel@gaston> <Pine.LNX.4.58.0508051935570.2326@be1.lrz> <1123401069.30257.102.camel@gaston> <3EF2003B-12DF-4EBB-B304-59614AEFAA09@mac.com> <1123431219.30257.115.camel@gaston>
+Date: Sun, 7 Aug 2005 19:25:14 +0200 (CEST)
+Message-ID: <Pine.LNX.4.58.0508071921540.3495@be1.lrz>
+References: <Pine.LNX.4.58.0508040103100.2220@be1.lrz> <1123195493.30257.75.camel@gaston>
+ <Pine.LNX.4.58.0508051935570.2326@be1.lrz> <1123401069.30257.102.camel@gaston>
+ <3EF2003B-12DF-4EBB-B304-59614AEFAA09@mac.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0 (Apple Message framework v733)
-Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E1wDM-000565-Uj
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 18:14:04 -0700
-Received: from smtpout.mac.com ([17.250.248.89])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1E1wDL-0001HW-M7
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 18:14:04 -0700
-In-Reply-To: <1123431219.30257.115.camel@gaston>
+	id 1E1otp-0006jD-5u
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 10:25:25 -0700
+Received: from mail-in-02.arcor-online.net ([151.189.21.42])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44)
+	id 1E1oto-0007VC-Q1
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 10:25:25 -0700
+In-Reply-To: <3EF2003B-12DF-4EBB-B304-59614AEFAA09@mac.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,51 +28,25 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; delsp="yes"; format="flowed"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Bodo Eggert <7eggert@gmx.de>, LKML <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Bodo Eggert <7eggert@gmx.de>, LKML <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
 
-On Aug 7, 2005, at 12:13:38, Benjamin Herrenschmidt wrote:
->> I've got an LCD, and on mine
->> it looks like every third pixel-line gets shifted about 32-64  
->> pixels to
->> the left, and they move with display refresh.  My guess is that
->> something is interrupting radeonfb during a critical time in display
->> syncing and forcing the video card to wait too far into the next line
->> before sending pixels.
->
-> radeonfb is mostly inactive after it has setup the framebuffer and
-> unless you actually draw something, in which case, accel code is  
-> called.
->
-> _However_ there is an unrelated problem with some panels, including  
-> some
-> of the 17": The panel doesn't always "sync" properly. This seem to be
-> related to some subtle timing issue in the LVDS code but I don't know
-> exactly what yet. You can usually get it back by repeately turning the
-> backlight all the way down (which shuts the panel off) and back up  
-> until
-> it "catches".
+On Sun, 7 Aug 2005, Kyle Moffett wrote:
+> On Aug 7, 2005, at 03:51:07, Benjamin Herrenschmidt wrote:
 
-Hmm.  This doesn't really fit as my issues are very reproducible.  The
-behaviour under stock Debian 2.6.8 is identical during reboots and after
-fblevel 0 ; sleep X ; fblevel 15.  Likewise, stock 2.6.11, 2.6.12.4, and
-2.6.13-rc5, although I'm just getting back to testing things.
+> > Ah ! Interesting... I don't see why PREEMPT would affect radeonfb
+> > though ... Can you try something like wrapper radeon_write_mode() with
+> > preempt_disable()/preempt_enable() and tell me if it makes a
+> > difference ?
 
-Cheers,
-Kyle Moffett
+Did not help. The values used to initialize the mode seem to be wrong.
+Copying the aty directory from 2.6.12 did not help, too.
 
---
-There are two ways of constructing a software design. One way is to  
-make it so
-simple that there are obviously no deficiencies. And the other way is  
-to make
-it so complicated that there are no obvious deficiencies.  The first  
-method is
-far more difficult.
-   -- C.A.R. Hoare
-
-
+-- 
+"Never tell the Platoon Sergeant you have nothing to do."
+-Unknown Marine Recruit
 
 
 -------------------------------------------------------

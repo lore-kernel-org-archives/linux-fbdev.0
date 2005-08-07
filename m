@@ -1,23 +1,20 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: Opinions about YUV framebuffers
-Date: Sun, 07 Aug 2005 17:52:27 +0800
-Message-ID: <42F5D9DB.1040007@gmail.com>
-References: <ba2a6a4405080700015bfebaed@mail.gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Choosing the correct framebuffer configuration
+Date: Sun, 7 Aug 2005 11:48:57 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0508071145100.31010@gorilla.sonytel.be>
+References: <9e473391050805184756f055ea@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E1hpS-0002KT-GT
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 02:52:26 -0700
-Received: from wproxy.gmail.com ([64.233.184.200])
+	id 1E1hrD-0002NJ-4S
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 02:54:15 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1E1hpQ-0002vf-8K
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 02:52:26 -0700
-Received: by wproxy.gmail.com with SMTP id i5so612631wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 07 Aug 2005 02:52:15 -0700 (PDT)
-In-Reply-To: <ba2a6a4405080700015bfebaed@mail.gmail.com>
+	id 1E1hrC-0003Je-RJ
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 02:54:15 -0700
+In-Reply-To: <9e473391050805184756f055ea@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,33 +25,56 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: fbdev <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Nishant Kamat wrote:
-> Hi experts,
+On Fri, 5 Aug 2005, Jon Smirl wrote:
+> The chips actually allow nine configs (maybe more when I get a look at
+> the R300 doc). It is ambiguous to set these configs based on BPP since
+> there are multiple configs for various BPP. These configs should
+> instead be set with the transp/red/blue/green fields.
 > 
-> I'd like to solicit some opinions about using the fbdev API for a
-> display controller that accepts data in YUV format. fbcon seems to be
-> written to work only for RGB framebuffers. Is that correct? Would it
+> 4bpp Index = /4
+> 8bpp Index = /8
+> 16bpp aRGB 1555 = 1/5/5/5
+> 16bpp RGB 565 = /5/6/5
+> 16bpp aRGB 4444 = 4/4/4/4
+> 16bpp aIndex 88 = 8/8
+> 24bpp RGB 888 = /8/8/8
+> 32bpp aRGB 8888 = 8/8/8/8
+> 32bpp aRGB 2:10:10:10 = 2/10/10/10
+> 
+> What is the best way to fix this?
 
-No support for YUV formats but fbcon can be made to work with YUV formats.
-For packed pixel, all you need to do is add another define in struct
-fb_fix_screeninfo.visual (ie FB_VISUAL_YUV_PACKED, FB_VISUAL_YUV_PLANAR),
-set info->pseudo_palette entries properly (in fb_setcolreg), do little
-adjustments to cfb_* generic drawing functions so they recognize your new
-visual formats and that's it.  
+Just follow the FBIOPUT_VSCREENINFO rules:
+  - If a value doesn't fit, round it up.
+  - If rounding is impossible, return an error.
 
-For planar formats, you need to write your own imageblit, copyarea and
-fillrect.
-  
-> require lot of change to make it work with YUV data? Can X be run on
-> YUV framebuffers?
+So if a user asks for e.g. bpp 16, transp.length = 1,
+{red,green,blue}.length = 0, you can give him 1555 if your hardware supports
+it. Or 4444 if your hardware doesn't support anything in between 1000 and 4444
+(w.r.t. rounding). But you must not give him 565, since this implies you
+rounded down transp.length.
 
-I don't know if X supports YUV formats, and I also don't know how difficult
-it will be to add support for it in X.   You can start with X's fbdev driver.
+> The interesting hidden config is 30b color.
 
-Tony
+Piece of cake!
+
+    bpp = 32
+    transp.length = 2, {red,green,blue}.length = 10
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

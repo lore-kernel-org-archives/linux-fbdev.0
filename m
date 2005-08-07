@@ -1,61 +1,45 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Regression: radeonfb: No synchronisation on CRT with
- linux-2.6.13-rc5
-Date: Sun, 07 Aug 2005 23:48:08 +0200
-Message-ID: <1123451289.30257.118.camel@gaston>
-References: <Pine.LNX.4.58.0508040103100.2220@be1.lrz>
-	 <1123195493.30257.75.camel@gaston>
-	 <Pine.LNX.4.58.0508051935570.2326@be1.lrz>
-	 <1123401069.30257.102.camel@gaston>
-	 <3EF2003B-12DF-4EBB-B304-59614AEFAA09@mac.com>
-	 <Pine.LNX.4.58.0508071921540.3495@be1.lrz>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Vladimir Dergachev <volodya@mindspring.com>
+Subject: Re: [Linux-fbdev-devel] CRTC scanout buffer types
+Date: Sun, 7 Aug 2005 18:31:27 -0400 (EDT)
+Message-ID: <Pine.LNX.4.62.0508071830270.11306@node2.an-vo.com>
+References: <9e47339105080513195dee0804@mail.gmail.com> 
+ <Pine.LNX.4.62.0508071135450.31010@gorilla.sonytel.be>
+ <9e47339105080706414faf1e40@mail.gmail.com> <42F67719.9050805@us.ibm.com>
+ <42F68105.1080207@pol.net>
+Reply-To: Vladimir Dergachev <volodya@mindspring.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E1t4p-0001un-Sc
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 14:53:03 -0700
-Received: from gate.crashing.org ([63.228.1.57])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44)
-	id 1E1t4o-0007XE-N3
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 14:53:04 -0700
-In-Reply-To: <Pine.LNX.4.58.0508071921540.3495@be1.lrz>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+Return-path: <dri-devel-admin@lists.sourceforge.net>
+In-Reply-To: <42F68105.1080207@pol.net>
+Sender: dri-devel-admin@lists.sourceforge.net
+Errors-To: dri-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
+	<mailto:dri-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Bodo Eggert <7eggert@gmx.de>
-Cc: Kyle Moffett <mrmacman_g4@mac.com>, LKML <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
+List-Post: <mailto:dri-devel@lists.sourceforge.net>
+List-Help: <mailto:dri-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/dri-devel>,
+	<mailto:dri-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=dri-devel>
+Content-Type: TEXT/PLAIN; charset="us-ascii"; format="flowed"
+Content-Transfer-Encoding: 7bit
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Ian Romanick <idr@us.ibm.com>, Jon Smirl <jonsmirl@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, DRI developer's list <dri-devel@lists.sourceforge.net>
 
-On Sun, 2005-08-07 at 19:25 +0200, Bodo Eggert wrote:
-> On Sun, 7 Aug 2005, Kyle Moffett wrote:
-> > On Aug 7, 2005, at 03:51:07, Benjamin Herrenschmidt wrote:
-> 
-> > > Ah ! Interesting... I don't see why PREEMPT would affect radeonfb
-> > > though ... Can you try something like wrapper radeon_write_mode() with
-> > > preempt_disable()/preempt_enable() and tell me if it makes a
-> > > difference ?
-> 
-> Did not help. The values used to initialize the mode seem to be wrong.
-> Copying the aty directory from 2.6.12 did not help, too.
+> I agree that something like the above is acceptable, exept that we need
+> an extra field for offset and another if indexed color or not. So something 
+> like:
+>
+> A:2/0/R:10/2/G:10/12/B:10/22//I
 
-I don't see how PREEMPT could have any impact there unless you are
-experiencing memory corruption... or one of those panels that have so
-subtle timing issues that they sometimes don't sync depending on how
-many flies you have in your room....
+This is getting more cryptic by the minute.
 
-Ben.
+Can't we have a simple field: value lines ? Something like:
+AlphaBits: 2
+AlphaOffset: 0
 
+                    best
+
+                       Vladimir Dergachev
 
 
 
@@ -64,3 +48,4 @@ SF.Net email is Sponsored by the Better Software Conference & EXPO
 September 19-22, 2005 * San Francisco, CA * Development Lifecycle Practices
 Agile & Plan-Driven Development * Managing Projects & Teams * Testing & QA
 Security * Process Improvement & Measurement * http://www.sqe.com/bsce5sf
+--

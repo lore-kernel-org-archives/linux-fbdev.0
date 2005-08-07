@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH] Don't allow softcursor use from userland
-Date: Sun, 07 Aug 2005 18:35:19 +0800
-Message-ID: <42F5E3E7.3020901@gmail.com>
-References: <Pine.LNX.4.56.0508070327550.12196@pentafluge.infradead.org>
+Subject: Re: Choosing the correct framebuffer configuration
+Date: Sun, 07 Aug 2005 19:00:55 +0800
+Message-ID: <42F5E9E7.6090809@gmail.com>
+References: <9e473391050805184756f055ea@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E1iUt-0006HG-90
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 03:35:15 -0700
-Received: from wproxy.gmail.com ([64.233.184.201])
+	id 1E1itd-0007S8-L3
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 04:00:49 -0700
+Received: from wproxy.gmail.com ([64.233.184.200])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1E1iUs-0002l8-2X
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 03:35:15 -0700
-Received: by wproxy.gmail.com with SMTP id i21so590240wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 07 Aug 2005 03:35:08 -0700 (PDT)
-In-Reply-To: <Pine.LNX.4.56.0508070327550.12196@pentafluge.infradead.org>
+	id 1E1itc-0008VB-In
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 04:00:49 -0700
+Received: by wproxy.gmail.com with SMTP id i17so380526wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 07 Aug 2005 04:00:41 -0700 (PDT)
+In-Reply-To: <9e473391050805184756f055ea@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,22 +30,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Andrew Morton <akpm@osdl.org>, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-James Simmons wrote:
+Jon Smirl wrote:
+> If I understand things correctly the framebuffer config is supposed to
+> be controlled by the transp/red/blue/green fields of fb_var_screeninfo
+> during check_var. These fields are then combined to compute the
+> bits_per_pixel.
 > 
-> This patch forbids the cursor use from userland. The reason is that the 
-> cursor area could be altered by a another process and the current system
-> doesn't handle syncing those updates.
+> radeonfb is working from the other direction, it starts with bpp and
+> then computes ARGB. This looks wrong to me.
 > 
 
-I don't really like this change.  I prefer Jon's proposal of setting
-fbops->fb_cursor = NULL and moving softcursor.c to drivers/video/console.
-This will slash > 200 lines of source code and several bytes from the kernel
-image size. Plus it's cleaner.
+> 16bpp aIndex 88 = 8/8
 
-Tony
+Set argb.length = 8, rgb.offset = 0, t.offset = 8.
+The transp.offset differentiates ARGB8 from A8_RGB8.
 
+Tony 
 
 
 -------------------------------------------------------

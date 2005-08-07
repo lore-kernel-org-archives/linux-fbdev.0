@@ -1,23 +1,29 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] mach64 atari patch
-Date: Sun, 7 Aug 2005 09:46:18 -0700
-Message-ID: <20050807094618.0cc4cadc.akpm@osdl.org>
-References: <Pine.LNX.4.56.0508070315260.12196@pentafluge.infradead.org>
-	<Pine.LNX.4.62.0508071316230.31010@gorilla.sonytel.be>
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: Choosing the correct framebuffer configuration
+Date: Sun, 7 Aug 2005 12:53:01 -0400
+Message-ID: <9e47339105080709537a8064bb@mail.gmail.com>
+References: <9e473391050805184756f055ea@mail.gmail.com>
+	 <Pine.LNX.4.62.0508071145100.31010@gorilla.sonytel.be>
+	 <9e473391050807083327b190f9@mail.gmail.com>
+	 <1123430435.3848.332.camel@localhost>
+	 <1123431300.30257.116.camel@gaston>
+	 <1123432349.3978.335.camel@localhost>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E1oJj-0004nO-Hx
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 09:48:07 -0700
-Received: from smtp.osdl.org ([65.172.181.4])
-	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44)
-	id 1E1oJj-0001me-4A
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 09:48:07 -0700
-In-Reply-To: <Pine.LNX.4.62.0508071316230.31010@gorilla.sonytel.be>
+	id 1E1oOa-00057f-LB
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 09:53:08 -0700
+Received: from wproxy.gmail.com ([64.233.184.204])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1E1oOa-0000k5-Ke
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 09:53:08 -0700
+Received: by wproxy.gmail.com with SMTP id i17so407125wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 07 Aug 2005 09:53:01 -0700 (PDT)
+In-Reply-To: <1123432349.3978.335.camel@localhost>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,42 +34,34 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: jsimmons@infradead.org, linux-fbdev-devel@lists.sourceforge.net, adaplas@hotpop.com
+Content-Type: text/plain; charset="iso-8859-1"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
->
-> On Sun, 7 Aug 2005, James Simmons wrote:
-> > This patch makes the mach64 chip a platform device so sysfs can work with 
-> > it. 
-> > 
-> > Signed-off-by: James Simmons <jsimmons@infradead.org>
-> > 
-> > --- linus-2.6/drivers/video/aty/atyfb_base.c	2005-07-11 10:07:21.000000000 -0700
-> > +++ fbdev-2.6/drivers/video/aty/atyfb_base.c	2005-07-27 08:41:24.000000000 -0700
-> > @@ -321,10 +318,8 @@
-> >  #endif
-> >  
-> >  #ifdef CONFIG_ATARI
-> > -static unsigned int mach64_count __initdata = 0;
-> > -static unsigned long phys_vmembase[FB_MAX] __initdata = { 0, };
-> > -static unsigned long phys_size[FB_MAX] __initdata = { 0, };
-> > -static unsigned long phys_guiregbase[FB_MAX] __initdata = { 0, };
-> > +static struct mach64_device* __init store_video_par(char *video_str, unsigned char m64_num)
-> 
-> Missing semicolumn at end of line.
-> 
-> [etc]
->
+On 8/7/05, Michel D=E4nzer <michel@daenzer.net> wrote:
+> On Sun, 2005-08-07 at 18:14 +0200, Benjamin Herrenschmidt wrote:
+> > > > The problem is that the radeonfb driver sees bpp =3D 32 and then se=
+ts
+> > > > rgbt =3D 8/8/8/8. It stomps rgbt without looking at it.
+> > >
+> > > Looks like a radeonfb bug.
+> >
+> > It's not a bug :) radeonfb doesn't support anything but that format for
+> > now.
+>=20
+> According to Geert's rules, it should fail instead of rounding down
+> r/g/b.
 
-Thanks, Geert.
+One problem with these rules is that it makes it hard to determine
+what is the best config available. I can't just set in 255BPP and then
+let it tell me the best available config.
 
-James, I'll drop this one - it seems to need version 2.
+What config should I get if everything is zero, BPP and rgbt?
+According to the rules this is an error, should it instead return the
+best config?
 
-I'll also drop fbdev-dont-allow-softcursor-use-from-userland.patch as there
-seems to be quite a bit of controversy there.
-
+--=20
+Jon Smirl
+jonsmirl@gmail.com
 
 
 -------------------------------------------------------

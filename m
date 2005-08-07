@@ -1,24 +1,21 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: Re: [PATCH] Don't allow softcursor use from userland
-Date: Sun, 7 Aug 2005 00:41:40 -0400
-Message-ID: <9e47339105080621415e2f6344@mail.gmail.com>
-References: <Pine.LNX.4.56.0508070327550.12196@pentafluge.infradead.org>
-	 <20050806212729.0b36a640.akpm@osdl.org>
+From: Nishant Kamat <nishantkamat@gmail.com>
+Subject: Opinions about YUV framebuffers
+Date: Sun, 7 Aug 2005 02:01:57 -0500
+Message-ID: <ba2a6a4405080700015bfebaed@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E1cyr-0006Rg-Qz
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 06 Aug 2005 21:41:49 -0700
-Received: from wproxy.gmail.com ([64.233.184.204])
+	id 1E1fAg-0003oS-H1
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 00:02:10 -0700
+Received: from wproxy.gmail.com ([64.233.184.206])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1E1cyq-00015H-Lm
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 06 Aug 2005 21:41:49 -0700
-Received: by wproxy.gmail.com with SMTP id i17so359970wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 06 Aug 2005 21:41:42 -0700 (PDT)
-In-Reply-To: <20050806212729.0b36a640.akpm@osdl.org>
+	id 1E1fAe-0004s0-Bc
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 00:02:10 -0700
+Received: by wproxy.gmail.com with SMTP id i21so580064wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 07 Aug 2005 00:01:57 -0700 (PDT)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -31,35 +28,20 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>
-Cc: James Simmons <jsimmons@infradead.org>, geert@linux-m68k.org, adaplas@hotpop.com
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On 8/7/05, Andrew Morton <akpm@osdl.org> wrote:
-> James Simmons <jsimmons@infradead.org> wrote:
-> >
-> >  This patch forbids the cursor use from userland. The reason is that th=
-e
-> >  cursor area could be altered by a another process and the current syst=
-em
-> >  doesn't handle syncing those updates.
->=20
-> Can this change break existing apps?
+Hi experts,
 
-This change is not agreed too yet. Antonio and I are proposing a
-different solution.
-http://comments.gmane.org/gmane.linux.fbdev.devel/7118
+I'd like to solicit some opinions about using the fbdev API for a
+display controller that accepts data in YUV format. fbcon seems to be
+written to work only for RGB framebuffers. Is that correct? Would it
+require lot of change to make it work with YUV data? Can X be run on
+YUV framebuffers?
 
-The alternate solution takes into account that fbconsole is the only
-user of softcursor and moves softcursor into console.  fbdev drivers
-then only expose a cursor entry point if they have a hardware cursor.
-If they don't the entry point is NULL.
+Any comments would help!
 
-Nether solution should break existing apps since the existing
-softcursor scheme was broken from user space and unusable.
-
---=20
-Jon Smirl
-jonsmirl@gmail.com
+Thanks,
+Nishant
 
 
 -------------------------------------------------------

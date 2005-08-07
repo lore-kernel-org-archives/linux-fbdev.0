@@ -1,27 +1,27 @@
-From: Jon Smirl <jonsmirl@gmail.com>
-Subject: Re: Choosing the correct framebuffer configuration
-Date: Sun, 7 Aug 2005 12:15:01 -0400
-Message-ID: <9e47339105080709153b7798ad@mail.gmail.com>
-References: <9e473391050805184756f055ea@mail.gmail.com>
-	 <Pine.LNX.4.62.0508071145100.31010@gorilla.sonytel.be>
-	 <9e473391050807083327b190f9@mail.gmail.com>
-	 <1123430435.3848.332.camel@localhost>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Regression: radeonfb: No synchronisation on CRT with
+ linux-2.6.13-rc5
+Date: Sun, 07 Aug 2005 18:13:38 +0200
+Message-ID: <1123431219.30257.115.camel@gaston>
+References: <Pine.LNX.4.58.0508040103100.2220@be1.lrz>
+	 <1123195493.30257.75.camel@gaston>
+	 <Pine.LNX.4.58.0508051935570.2326@be1.lrz>
+	 <1123401069.30257.102.camel@gaston>
+	 <3EF2003B-12DF-4EBB-B304-59614AEFAA09@mac.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E1nnv-0003Jj-Dr
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 09:15:15 -0700
-Received: from wproxy.gmail.com ([64.233.184.204])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1E1nnu-0003Ts-2G
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 09:15:15 -0700
-Received: by wproxy.gmail.com with SMTP id i4so58142wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 07 Aug 2005 09:15:01 -0700 (PDT)
-In-Reply-To: <1123430435.3848.332.camel@localhost>
-Content-Disposition: inline
+	id 1E1nr1-0003PI-UV
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 09:18:27 -0700
+Received: from gate.crashing.org ([63.228.1.57])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44)
+	id 1E1nr1-0001h4-GK
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 07 Aug 2005 09:18:27 -0700
+In-Reply-To: <3EF2003B-12DF-4EBB-B304-59614AEFAA09@mac.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,75 +32,62 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: linux-fbdev-devel@lists.sourceforge.net, =?ISO-8859-1?Q?Michel_D=E4nzer?= <michel@daenzer.net>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Cc: Bodo Eggert <7eggert@gmx.de>, LKML <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
 
-On 8/7/05, Michel D=E4nzer <michel@daenzer.net> wrote:
-> On Sun, 2005-08-07 at 11:33 -0400, Jon Smirl wrote:
-> > On 8/7/05, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > > On Fri, 5 Aug 2005, Jon Smirl wrote:
-> > > > The chips actually allow nine configs (maybe more when I get a look=
- at
-> > > > the R300 doc). It is ambiguous to set these configs based on BPP si=
-nce
-> > > > there are multiple configs for various BPP. These configs should
-> > > > instead be set with the transp/red/blue/green fields.
-> > > >
-> > > > 4bpp Index =3D /4
-> > > > 8bpp Index =3D /8
-> > > > 16bpp aRGB 1555 =3D 1/5/5/5
-> > > > 16bpp RGB 565 =3D /5/6/5
-> > > > 16bpp aRGB 4444 =3D 4/4/4/4
-> > > > 16bpp aIndex 88 =3D 8/8
-> > > > 24bpp RGB 888 =3D /8/8/8
-> > > > 32bpp aRGB 8888 =3D 8/8/8/8
-> > > > 32bpp aRGB 2:10:10:10 =3D 2/10/10/10
-> > > >
-> > > > What is the best way to fix this?
-> > >
-> > > Just follow the FBIOPUT_VSCREENINFO rules:
-> > >   - If a value doesn't fit, round it up.
-> > >   - If rounding is impossible, return an error.
-> > >
-> > > So if a user asks for e.g. bpp 16, transp.length =3D 1,
-> > > {red,green,blue}.length =3D 0, you can give him 1555 if your hardware=
- supports
-> > > it. Or 4444 if your hardware doesn't support anything in between 1000=
- and 4444
-> > > (w.r.t. rounding). But you must not give him 565, since this implies =
-you
-> > > rounded down transp.length.
-> > >
-> > > > The interesting hidden config is 30b color.
-> > >
-> > > Piece of cake!
-> > >
-> > >     bpp =3D 32
-> > >     transp.length =3D 2, {red,green,blue}.length =3D 10
-> >
-> > The problem is that the radeonfb driver sees bpp =3D 32 and then sets
-> > rgbt =3D 8/8/8/8. It stomps rgbt without looking at it.
->=20
-> Looks like a radeonfb bug.
->=20
->=20
-> > The basic problem is what happens if bpp and rgbt are set in
-> > conflicting ways. For example bpp =3D 16 and rgbt =3D 8/8/8/8. Which on=
-e
-> > should win?
->=20
-> Read what you quoted from Geert above.
 
-I'm just verifying everything before changing things. Sometimes there
-are disagreements on what rules we should be following.
+> I'm having a similar issue with my shiny new 17" Powerbook G4.  The
+> radeon chip works fine with framebuffer in 2.6.12.4 _with_ PREEMPT,
+> but not in 2.6.13-rc5 _with_ PREEMPT (configs are virtually identical).
+> I'll try your idea this afternoon when I get the chance.
 
-So from Geert's rules 16bpp doesn't fit with 8/8/8/8 so round it up to
-32bpp. Are we sure that is what applications are expecting to happen?
+Note that PREEMPT is known to cause problems on ppc32 ... I'm not sure
+what's up yet.  (Random SIGILLs/SEGVs in userland typically)
 
---=20
-Jon Smirl
-jonsmirl@gmail.com
+> I wonder if perhaps some code in radeonfb is used under the BKL, which
+> is now preemptable (Or maybe an ordinary spinlock changed or went
+> away?), because I also set PREEMPT_BKL.
+
+radeonfb should only rely on the console semaphore....
+
+>   I've got an LCD, and on mine
+> it looks like every third pixel-line gets shifted about 32-64 pixels to
+> the left, and they move with display refresh.  My guess is that
+> something is interrupting radeonfb during a critical time in display
+> syncing and forcing the video card to wait too far into the next line
+> before sending pixels.
+
+radeonfb is mostly inactive after it has setup the framebuffer and
+unless you actually draw something, in which case, accel code is called.
+
+_However_ there is an unrelated problem with some panels, including some
+of the 17": The panel doesn't always "sync" properly. This seem to be
+related to some subtle timing issue in the LVDS code but I don't know
+exactly what yet. You can usually get it back by repeately turning the
+backlight all the way down (which shuts the panel off) and back up until
+it "catches".
+
+> One other data point, I've seen something like this, except not nearly
+> as bad, is stock debian 2.6.8 vs. stock debian 2.6.11 on powerpc.  The
+> former exhibits some similar (but not nearly as bad) symptoms.  (Same
+> Powerbook), whereas 2.6.11 doesn't.  In that case, neither has PREEMPT.
+> I'll run more tests this afternoon/evening, to try to track it down.
+> 
+> Cheers,
+> Kyle Moffett
+> 
+> --
+> There are two ways of constructing a software design. One way is to  
+> make it so
+> simple that there are obviously no deficiencies. And the other way is  
+> to make
+> it so complicated that there are no obvious deficiencies.  The first  
+> method is
+> far more difficult.
+>    -- C.A.R. Hoare
+> 
+
 
 
 -------------------------------------------------------

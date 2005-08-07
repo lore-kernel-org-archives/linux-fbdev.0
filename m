@@ -1,19 +1,19 @@
 From: James Simmons <jsimmons@infradead.org>
-Subject: [PATCH] mach64 atari patch
-Date: Sun, 7 Aug 2005 03:27:30 +0100 (BST)
-Message-ID: <Pine.LNX.4.56.0508070315260.12196@pentafluge.infradead.org>
+Subject: [PATCH] Don't allow softcursor use from userland
+Date: Sun, 7 Aug 2005 03:34:59 +0100 (BST)
+Message-ID: <Pine.LNX.4.56.0508070327550.12196@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E1at1-00015C-Qz
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 06 Aug 2005 19:27:39 -0700
+	id 1E1b0C-0001Pu-08
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 06 Aug 2005 19:35:04 -0700
 Received: from pentafluge.infradead.org ([213.146.154.40])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
 	(Exim 4.44)
-	id 1E1at1-0008Px-2X
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 06 Aug 2005 19:27:39 -0700
+	id 1E1b0B-0001LS-3l
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 06 Aug 2005 19:35:04 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,307 +30,225 @@ To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>
 
 
-This patch makes the mach64 chip a platform device so sysfs can work with 
-it. 
 
-Signed-off-by: James Simmons <jsimmons@infradead.org>
+This patch forbids the cursor use from userland. The reason is that the 
+cursor area could be altered by a another process and the current system
+doesn't handle syncing those updates.
 
-diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/aty/atyfb_base.c fbdev-2.6/drivers/video/aty/atyfb_base.c
---- linus-2.6/drivers/video/aty/atyfb_base.c	2005-07-11 10:07:21.000000000 -0700
-+++ fbdev-2.6/drivers/video/aty/atyfb_base.c	2005-07-27 08:41:24.000000000 -0700
-@@ -244,9 +244,6 @@
-      */
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/aty/mach64_cursor.c fbdev-2.6/drivers/video/aty/mach64_cursor.c
+--- linus-2.6/drivers/video/aty/mach64_cursor.c	2005-07-11 10:07:21.000000000 -0700
++++ fbdev-2.6/drivers/video/aty/mach64_cursor.c	2005-08-02 16:16:07.000000000 -0700
+@@ -219,8 +219,8 @@
+ 	info->sprite.buf_align = 16; 	/* and 64 lines tall. */
+ 	info->sprite.flags = FB_PIXMAP_IO;
  
- static int aty_init(struct fb_info *info, const char *name);
--#ifdef CONFIG_ATARI
--static int store_video_par(char *videopar, unsigned char m64_num);
--#endif
- 
- static struct crtc saved_crtc;
- static union aty_pll saved_pll;
-@@ -321,10 +318,8 @@
- #endif
- 
- #ifdef CONFIG_ATARI
--static unsigned int mach64_count __initdata = 0;
--static unsigned long phys_vmembase[FB_MAX] __initdata = { 0, };
--static unsigned long phys_size[FB_MAX] __initdata = { 0, };
--static unsigned long phys_guiregbase[FB_MAX] __initdata = { 0, };
-+static struct mach64_device* __init store_video_par(char *video_str, unsigned char m64_num)
-+static LIST_HEAD(mach64_list);
- #endif
- 
- /* top -> down is an evolution of mach64 chipset, any corrections? */
-@@ -2170,8 +2165,6 @@
-      *  Initialisation
-      */
- 
--static struct fb_info *fb_list = NULL;
++	info->flags |= FBINFO_HWACCEL_CURSOR;
+ 	info->fbops->fb_cursor = atyfb_cursor;
 -
- static int __init aty_init(struct fb_info *info, const char *name)
- {
- 	struct atyfb_par *par = (struct atyfb_par *) info->par;
-@@ -2562,8 +2555,6 @@
- 	if (register_framebuffer(info) < 0)
- 		goto aty_init_exit;
- 
--	fb_list = info;
--
- 	PRINTKI("fb%d: %s frame buffer device on %s\n",
- 	       info->node, info->fix.id, name);
  	return 0;
-@@ -2587,10 +2578,13 @@
  }
  
- #ifdef CONFIG_ATARI
--static int __init store_video_par(char *video_str, unsigned char m64_num)
-+static struct mach64_device* __init store_video_par(char *video_str, unsigned char m64_num)
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/fbsysfs.c fbdev-2.6/drivers/video/fbsysfs.c
+--- linus-2.6/drivers/video/fbsysfs.c	2005-07-31 15:45:22.000000000 -0700
++++ fbdev-2.6/drivers/video/fbsysfs.c	2005-08-02 16:23:13.000000000 -0700
+@@ -371,13 +371,19 @@
+ static ssize_t store_cursor(struct class_device *class_device,
+ 			    const char * buf, size_t count)
  {
--	char *p;
- 	unsigned long vmembase, size, guiregbase;
-+	struct platform_device *atyfb_device;
-+	struct mach64_device *device;
-+	struct resource io[2];
-+	char *p;
- 
- 	PRINTKI("store_video_par() '%s' \n", video_str);
- 
-@@ -2604,16 +2598,18 @@
- 		goto mach64_invalid;
- 	guiregbase = simple_strtoul(p, NULL, 0);
- 
--	phys_vmembase[m64_num] = vmembase;
--	phys_size[m64_num] = size;
--	phys_guiregbase[m64_num] = guiregbase;
--	PRINTKI("stored them all: $%08lX $%08lX $%08lX \n", vmembase, size,
--	       guiregbase);
--	return 0;
-+	io[0] = request_mem_region(vmembase, size, "atyfb");
-+	io[1] = request_mem_region(guiregbase, 0x10000, "atyfb");
- 
--      mach64_invalid:
--	phys_vmembase[m64_num] = 0;
--	return -1;
-+	atyfb_device = platform_device_register_simple("atyfb", m64_num, io, 2);
-+	if (IS_ERR(atyfb_device))
-+		return PTR_ERR(atyfb_device);
+-//	struct fb_info *fb_info = (struct fb_info *)class_get_devdata(class_device);
++	struct fb_info *fb_info = (struct fb_info *)class_get_devdata(class_device);
 +
-+	device = kmalloc(sizeof(struct mach64_device), GFP_KERNEL);
-+	PRINTKI("stored them all: $%08lX $%08lX $%08lX \n", vmembase, size, guiregbase);
-+	return device;
-+mach64_invalid:
-+	return NULL;
- }
- #endif /* CONFIG_ATARI */
- 
-@@ -2679,17 +2675,10 @@
- static void aty_st_pal(u_int regno, u_int red, u_int green, u_int blue,
- 		       const struct atyfb_par *par)
- {
--#ifdef CONFIG_ATARI
--	out_8(&par->aty_cmap_regs->windex, regno);
--	out_8(&par->aty_cmap_regs->lut, red);
--	out_8(&par->aty_cmap_regs->lut, green);
--	out_8(&par->aty_cmap_regs->lut, blue);
--#else
- 	writeb(regno, &par->aty_cmap_regs->windex);
- 	writeb(red, &par->aty_cmap_regs->lut);
- 	writeb(green, &par->aty_cmap_regs->lut);
- 	writeb(blue, &par->aty_cmap_regs->lut);
--#endif
++	if (!(fb_info->flags & FBINFO_HWACCEL_CURSOR))
++		return -ENXIO;
+ 	return 0;
  }
  
-     /*
-@@ -3456,47 +3445,43 @@
- 
- #ifdef CONFIG_ATARI
- 
--static int __devinit atyfb_atari_probe(void)
-+static int __devinit atyfb_atari_probe(struct device *device)
+ static ssize_t show_cursor(struct class_device *class_device, char *buf)
  {
--	struct aty_par *par;
-+	struct platform_device *dev = to_platform_device(device);
+-//	struct fb_info *fb_info = (struct fb_info *)class_get_devdata(class_device);
++	struct fb_info *fb_info = (struct fb_info *)class_get_devdata(class_device);
++
++	if (!(fb_info->flags & FBINFO_HWACCEL_CURSOR))
++		return -ENXIO;
+ 	return 0;
+ }
+ 
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/i810/i810.h fbdev-2.6/drivers/video/i810/i810.h
+--- linus-2.6/drivers/video/i810/i810.h	2005-07-11 10:07:21.000000000 -0700
++++ fbdev-2.6/drivers/video/i810/i810.h	2005-08-02 15:00:52.000000000 -0700
+@@ -201,7 +201,6 @@
+ #define HAS_ACCELERATION            2
+ #define ALWAYS_SYNC                 4
+ #define LOCKUP                      8
+-#define USE_HWCUR                  16
+ 
+ struct gtt_data {
+ 	struct agp_memory *i810_fb_memory;
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/i810/i810_main.c fbdev-2.6/drivers/video/i810/i810_main.c
+--- linus-2.6/drivers/video/i810/i810_main.c	2005-07-11 10:07:21.000000000 -0700
++++ fbdev-2.6/drivers/video/i810/i810_main.c	2005-08-02 15:00:52.000000000 -0700
+@@ -1375,7 +1375,6 @@
+ 	decode_var(&info->var, par);
+ 	i810_load_regs(par);
+ 	i810_init_cursor(par);
+-
+ 	encode_fix(&info->fix, info);
+ 
+ 	if (info->var.accel_flags && !(par->dev_flags & LOCKUP)) {
+@@ -1387,6 +1386,7 @@
+ 		info->pixmap.scan_align = 1;
+ 		info->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
+ 	}
++	info->flags |= FBINFO_HWACCEL_CURSOR;
+ 	return 0;
+ }
+ 
+@@ -1418,9 +1418,8 @@
+ 	struct i810fb_par *par = (struct i810fb_par *)info->par;
+ 	u8 __iomem *mmio = par->mmio_start_virtual;
+ 
+-	if (!(par->dev_flags & USE_HWCUR) || !info->var.accel_flags ||
+-	    par->dev_flags & LOCKUP)
+-		return soft_cursor(info, cursor);
++	if (!par->dev_flags & LOCKUP)
++		return -ENXIO;
+ 
+ 	if (cursor->image.width > 64 || cursor->image.height > 64)
+ 		return -ENXIO;
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/intelfb/intelfbdrv.c fbdev-2.6/drivers/video/intelfb/intelfbdrv.c
+--- linus-2.6/drivers/video/intelfb/intelfbdrv.c	2005-07-11 10:07:21.000000000 -0700
++++ fbdev-2.6/drivers/video/intelfb/intelfbdrv.c	2005-08-02 19:01:32.000000000 -0700
+@@ -117,14 +117,10 @@
+ #include <linux/slab.h>
+ #include <linux/delay.h>
+ #include <linux/fb.h>
+-#include <linux/console.h>
+-#include <linux/selection.h>
+ #include <linux/ioport.h>
+ #include <linux/init.h>
+ #include <linux/pci.h>
+ #include <linux/vmalloc.h>
+-#include <linux/kd.h>
+-#include <linux/vt_kern.h>
+ #include <linux/pagemap.h>
+ #include <linux/version.h>
+ 
+@@ -242,7 +238,7 @@
+ static char *mode       = NULL;
+ 
+ module_param(accel, bool, S_IRUGO);
+-MODULE_PARM_DESC(accel, "Enable console acceleration");
++MODULE_PARM_DESC(accel, "Enable hardware acceleration");
+ module_param(vram, int, S_IRUGO);
+ MODULE_PARM_DESC(vram, "System RAM to allocate to framebuffer in MiB");
+ module_param(voffset, int, S_IRUGO);
+@@ -498,7 +494,7 @@
+ {
  	struct fb_info *info;
--	int m64_num;
-+	struct aty_par *par;
-+	int size = 0;
- 	u32 clock_r;
+ 	struct intelfb_info *dinfo;
+-	int i, j, err, dvo;
++	int i, err, dvo;
+ 	int aperture_size, stolen_size;
+ 	struct agp_kern_info gtt_info;
+ 	int agp_memtype;
+@@ -841,13 +837,6 @@
+ 	if (bailearly == 5)
+ 		bailout(dinfo);
  
--	for (m64_num = 0; m64_num < mach64_count; m64_num++) {
--		if (!phys_vmembase[m64_num] || !phys_size[m64_num] ||
--		    !phys_guiregbase[m64_num]) {
--		    PRINTKI("phys_*[%d] parameters not set => returning early. \n", m64_num);
--			continue;
--		}
+-	for (i = 0; i < 16; i++) {
+-		j = color_table[i];
+-		dinfo->palette[i].red = default_red[j];
+-		dinfo->palette[i].green = default_grn[j];
+-		dinfo->palette[i].blue = default_blu[j];
+-	}
 -
--		info = framebuffer_alloc(sizeof(struct atyfb_par), NULL);
--		if (!info) {
--			PRINTKE("atyfb_atari_probe() can't alloc fb_info\n");
--			return -ENOMEM;
--		}
--		par = info->par;
-+	info = framebuffer_alloc(sizeof(struct atyfb_par), &dev->dev);
-+	if (!info) {
-+		PRINTKE("atyfb_atari_probe() can't alloc fb_info\n");
-+		return -ENOMEM;
-+	}
-+	par = info->par;
+ 	if (bailearly == 6)
+ 		bailout(dinfo);
  
--		info->fix = atyfb_fix;
-+	info->fix = atyfb_fix;
+@@ -1332,6 +1321,8 @@
+ 	} else {
+ 		info->flags = FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
+ 	}
++	if (dinfo->hwcursor)
++		info->flags |= FBINFO_HWACCEL_CURSOR;
+ 	kfree(hw);
+ 	return 0;
+ invalid_mode:
+@@ -1359,10 +1350,6 @@
+ 			green >>= 8;
+ 			blue >>= 8;
  
--		par->irq = (unsigned int) -1; /* something invalid */
-+	par->irq = (unsigned int) -1; /* something invalid */
- 
--		/*
--		 *  Map the video memory (physical address given) to somewhere in the
--		 *  kernel address space.
--		 */
--		info->screen_base = ioremap(phys_vmembase[m64_num], phys_size[m64_num]);
--		info->fix.smem_start = (unsigned long)info->screen_base; /* Fake! */
--		par->ati_regbase = ioremap(phys_guiregbase[m64_num], 0x10000) +
--						0xFC00ul;
--		info->fix.mmio_start = (unsigned long)par->ati_regbase; /* Fake! */
+-			dinfo->palette[regno].red = red;
+-			dinfo->palette[regno].green = green;
+-			dinfo->palette[regno].blue = blue;
 -
--		aty_st_le32(CLOCK_CNTL, 0x12345678, par);
--		clock_r = aty_ld_le32(CLOCK_CNTL, par);
--
--		switch (clock_r & 0x003F) {
--		case 0x12:
--			par->clk_wr_offset = 3; /*  */
-+	/*
-+	 *  Map the video memory (physical address given) to somewhere in the
-+	 *  kernel address space.
-+	 */
-+	size = dev->resource[0].start - dev->resource[0].end;
-+	info->fix.smem_start = dev->resource[0].start;
-+	info->screen_base = ioremap(dev->resource[0], size);
-+
-+	size = 0x10000;
-+	info->fix.mmio_start = dev->resource[1].start + 0xFC00ul;
-+	par->ati_regbase = ioremap(dev->resource[1], size) + 0xFC00ul;
-+
-+	aty_st_le32(CLOCK_CNTL, 0x12345678, par);
-+	clock_r = aty_ld_le32(CLOCK_CNTL, par);
-+
-+	switch (clock_r & 0x003F) {
-+	case 0x12:
-+		par->clk_wr_offset = 3; /*  */
- 			break;
- 		case 0x34:
- 			par->clk_wr_offset = 2; /* Medusa ST-IO ISA Adapter etc. */
-@@ -3595,6 +3580,23 @@
- 
- #endif /* CONFIG_PCI */
- 
-+#ifdef	CONFIG_ATARI
-+
-+static struct device_driver atyfb_driver = {
-+	.name		= "atyfb",
-+	.probe		= atyfb_atari_probe,
-+	.remove		= __devexit_p(atyfb_atari_remove),
-+}
-+
-+static void __devexit atyfb_atari_remove(struct device *dev)
-+{
-+	struct fb_info *info = dev_get_drvdata(dev);
-+
-+	atyfb_remove(info);
-+}
-+
-+#endif /* CONFIG_ATARI */
-+
- #ifndef MODULE
- static int __init atyfb_setup(char *options)
- {
-@@ -3650,15 +3652,15 @@
- 		 * Why do we need this silly Mach64 argument?
- 		 * We are already here because of mach64= so its redundant.
- 		 */
--		else if (MACH_IS_ATARI
--			 && (!strncmp(this_opt, "Mach64:", 7))) {
--			static unsigned char m64_num;
--			static char mach64_str[80];
-+		else if (MACH_IS_ATARI && (!strncmp(this_opt, "Mach64:", 7))) {
-+			struct mach64_device *dev;
-+			unsigned char m64_num = 0;
-+			char mach64_str[80];
-+
- 			strlcpy(mach64_str, this_opt + 7, sizeof(mach64_str));
--			if (!store_video_par(mach64_str, m64_num)) {
--				m64_num++;
--				mach64_count = m64_num;
--			}
-+			dev = store_video_par(mach64_str, m64_num++); 
-+			if (dev != null)
-+				list_add_tail(dev->node, &mach64_list);
+ 			intelfbhw_setcolreg(dinfo, regno, red, green, blue,
+ 					    transp);
  		}
- #endif
- 		else
-@@ -3670,6 +3672,8 @@
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/intelfb/intelfb.h fbdev-2.6/drivers/video/intelfb/intelfb.h
+--- linus-2.6/drivers/video/intelfb/intelfb.h	2005-07-11 10:07:21.000000000 -0700
++++ fbdev-2.6/drivers/video/intelfb/intelfb.h	2005-08-02 19:01:32.000000000 -0700
+@@ -234,7 +234,6 @@
  
- static int __init atyfb_init(void)
- {
-+    int retval = 0;	
-+
- #ifndef MODULE
-     char *option = NULL;
+ 	/* palette */
+ 	u32 pseudo_palette[17];
+-	struct { u8 red, green, blue, pad; } palette[256];
  
-@@ -3679,16 +3683,34 @@
- #endif
+ 	/* chip info */
+ 	int pci_chipset;
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/intelfb/intelfbhw.c fbdev-2.6/drivers/video/intelfb/intelfbhw.c
+--- linus-2.6/drivers/video/intelfb/intelfbhw.c	2005-07-11 10:07:21.000000000 -0700
++++ fbdev-2.6/drivers/video/intelfb/intelfbhw.c	2005-08-02 19:01:32.000000000 -0700
+@@ -29,14 +29,10 @@
+ #include <linux/slab.h>
+ #include <linux/delay.h>
+ #include <linux/fb.h>
+-#include <linux/console.h>
+-#include <linux/selection.h>
+ #include <linux/ioport.h>
+ #include <linux/init.h>
+ #include <linux/pci.h>
+ #include <linux/vmalloc.h>
+-#include <linux/kd.h>
+-#include <linux/vt_kern.h>
+ #include <linux/pagemap.h>
+ #include <linux/version.h>
  
- #ifdef CONFIG_PCI
--    pci_register_driver(&atyfb_driver);
-+    retval = pci_register_driver(&atyfb_driver);
- #endif
- #ifdef CONFIG_ATARI
--    atyfb_atari_probe();
-+    retval = driver_register(&atyfb_driver);
-+    if (retval < 0) {
-+	struct platform_device *device;
-+
-+	list_for_each_safe(device, &mach64_list, node) {
-+		platform_device_unregister(&device->dev);
-+		kfree(device);
-+	}
-+    }
- #endif
--    return 0;
-+    return retval;
- }
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/nvidia/nvidia.c fbdev-2.6/drivers/video/nvidia/nvidia.c
+--- linus-2.6/drivers/video/nvidia/nvidia.c	2005-07-11 10:07:21.000000000 -0700
++++ fbdev-2.6/drivers/video/nvidia/nvidia.c	2005-08-02 15:00:52.000000000 -0700
+@@ -1300,6 +1300,7 @@
+ 	    | FBINFO_HWACCEL_IMAGEBLIT
+ 	    | FBINFO_HWACCEL_FILLRECT
+ 	    | FBINFO_HWACCEL_COPYAREA
++	    | FBINFO_HWACCEL_CURSOR
+ 	    | FBINFO_HWACCEL_YPAN;
  
- static void __exit atyfb_exit(void)
- {
-+#ifdef CONFIG_ATARI
-+	struct platform_device *device;
-+
-+	list_for_each_safe(device, &mach64_list, node) {
-+		platform_device_unregister(&device->dev);
-+		kfree(device);
-+	}
-+	driver_unregister(&atyfb_driver);
-+#endif
-+
- #ifdef CONFIG_PCI
- 	pci_unregister_driver(&atyfb_driver);
- #endif
-diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/aty/atyfb.h fbdev-2.6/drivers/video/aty/atyfb.h
---- linus-2.6/drivers/video/aty/atyfb.h	2005-07-11 10:07:21.000000000 -0700
-+++ fbdev-2.6/drivers/video/aty/atyfb.h	2005-07-22 15:36:41.000000000 -0700
-@@ -187,6 +187,13 @@
- #endif
- };
+ 	fb_videomode_to_modelist(info->monspecs.modedb,
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/riva/fbdev.c fbdev-2.6/drivers/video/riva/fbdev.c
+--- linus-2.6/drivers/video/riva/fbdev.c	2005-07-28 10:24:11.000000000 -0700
++++ fbdev-2.6/drivers/video/riva/fbdev.c	2005-08-02 15:00:52.000000000 -0700
+@@ -1704,7 +1704,8 @@
+ 		    | FBINFO_HWACCEL_YPAN
+ 		    | FBINFO_HWACCEL_COPYAREA
+ 		    | FBINFO_HWACCEL_FILLRECT
+-	            | FBINFO_HWACCEL_IMAGEBLIT;
++	            | FBINFO_HWACCEL_IMAGEBLIT
++		    | FBINFO_HWACCEL_CURSOR;
  
-+#ifdef CONFIG_ATARI
-+struct mach64_device {
-+	struct list_head node;
-+	struct platform_device *dev;
-+};
-+#endif
-+
-     /*
-      *  ATI Mach64 features
-      */
+ 	/* Accel seems to not work properly on NV30 yet...*/
+ 	if ((par->riva.Architecture == NV_ARCH_30) || noaccel) {
+diff -urN -X /home/jsimmons/dontdiff linus-2.6/include/linux/fb.h fbdev-2.6/include/linux/fb.h
+--- linus-2.6/include/linux/fb.h	2005-07-11 10:07:22.000000000 -0700
++++ fbdev-2.6/include/linux/fb.h	2005-08-02 15:00:52.000000000 -0700
+@@ -702,6 +702,7 @@
+ #define FBINFO_HWACCEL_XPAN		0x1000 /* optional */
+ #define FBINFO_HWACCEL_YPAN		0x2000 /* optional */
+ #define FBINFO_HWACCEL_YWRAP		0x4000 /* optional */
++#define FBINFO_HWACCEL_CURSOR		0x8000 /* required */
+ 
+ #define FBINFO_MISC_USEREVENT          0x10000 /* event request
+ 						  from userspace */
 
 
 -------------------------------------------------------

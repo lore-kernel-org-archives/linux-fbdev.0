@@ -1,16 +1,14 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: CRTC scanout buffer types
-Date: Mon, 8 Aug 2005 10:39:45 +0200 (CEST)
-Message-ID: <Pine.LNX.4.62.0508081038500.3826@numbat.sonytel.be>
-References: <9e47339105080513195dee0804@mail.gmail.com> 
- <Pine.LNX.4.62.0508071135450.31010@gorilla.sonytel.be> 
- <9e47339105080706414faf1e40@mail.gmail.com>  <42F67719.9050805@us.ibm.com>
- <42F68105.1080207@pol.net>  <Pine.LNX.4.62.0508071830270.11306@node2.an-vo.com>
-  <42F6B21E.1070405@gmail.com> <9e47339105080719338b78aa@mail.gmail.com>
+Date: Mon, 8 Aug 2005 10:41:49 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0508081040130.3826@numbat.sonytel.be>
+References: <9e47339105080513195dee0804@mail.gmail.com>
+ <Pine.LNX.4.62.0508071135450.31010@gorilla.sonytel.be>
+ <9e47339105080706414faf1e40@mail.gmail.com> <42F678BD.7030008@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-In-Reply-To: <9e47339105080719338b78aa@mail.gmail.com>
+In-Reply-To: <42F678BD.7030008@gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -24,28 +22,21 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Vladimir Dergachev <volodya@mindspring.com>, Ian Romanick <idr@us.ibm.com>, DRI developer's list <dri-devel@lists.sourceforge.net>
+Cc: DRI developer's list <dri-devel@lists.sourceforge.net>
 
-On Sun, 7 Aug 2005, Jon Smirl wrote:
-> On 8/7/05, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> > Vladimir Dergachev wrote:
-> > >> I agree that something like the above is acceptable, exept that we need
-> > >> an extra field for offset and another if indexed color or not. So
-> > >> something like:
-> > >>
-> > >> A:2/0/R:10/2/G:10/12/B:10/22//I
+On Mon, 8 Aug 2005, Antonino A. Daplas wrote:
+> Jon Smirl wrote:
+> > How does this work, is one 24 bit color the key?
+> > 32 bpp indexed+RGB 888 with color key to enable RGB888
 > 
-> The offsets are not needed as part of the input, they should be part
-> of the output display. It is the chip driver that will determine the
-> offsets, not the user.
+> This is directcolor. Each component is indexed.
 
-So you cannot select between RGB and BGR on hardware that allows to select
-that?
+No, directcolor is different. This is a mode that combines a pseudocolor
+CLUT256 visual (but only 255 colors, because of the color key) with a truecolor
+RGB888 visual.
 
-> The only exception I can think of is that the radeon hardware can
-> control which nibble is used in 4bpp. I'd say if you need that kind of
-
-This is something completely different, since each nibble is a different pixel.
+E.g. the Matrox Millennium can do this, and IIRC at least Accelerated X
+supports it.
 
 Gr{oetje,eeting}s,
 

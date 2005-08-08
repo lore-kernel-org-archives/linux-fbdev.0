@@ -1,30 +1,21 @@
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Regression: radeonfb: No synchronisation on CRT with linux-2.6.13-rc5
-Date: Tue, 9 Aug 2005 22:13:00 +0200 (CEST)
-Message-ID: <Pine.LNX.4.58.0508092140030.2096@be1.lrz>
-References: <Pine.LNX.4.58.0508040103100.2220@be1.lrz>  <1123195493.30257.75.camel@gaston>
-  <Pine.LNX.4.58.0508051935570.2326@be1.lrz>  <1123401069.30257.102.camel@gaston>
-  <3EF2003B-12DF-4EBB-B304-59614AEFAA09@mac.com>  <Pine.LNX.4.58.0508071921540.3495@be1.lrz>
-  <1123451289.30257.118.camel@gaston>  <Pine.LNX.4.58.0508080158520.7822@be1.lrz>
- <1123489200.30257.133.camel@gaston>
+From: Mark Underwood <basicmark@yahoo.com>
+Subject: Re: Where is place of arch independed companion chips?
+Date: Mon, 8 Aug 2005 22:09:08 +0100 (BST)
+Message-ID: <20050808210908.1672.qmail@web30311.mail.mud.yahoo.com>
+References: <1123019379.7782.86.camel@localhost.localdomain>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E2c99-0006Ol-8V
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Aug 2005 15:00:31 -0700
-Received: from externalmx-1.sourceforge.net ([12.152.184.25])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44)
-	id 1E2c99-0004kE-4M
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Aug 2005 15:00:31 -0700
-Received: from mail-in-04.arcor-online.net ([151.189.21.44])
-	by externalmx-1.sourceforge.net with esmtp (TLSv1:AES256-SHA:256)
-	(Exim 4.41)
-	id 1E2aW5-0002ER-DF
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Aug 2005 13:16:06 -0700
-In-Reply-To: <1123489200.30257.133.camel@gaston>
+	id 1E2Lbv-0004hH-Js
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 08 Aug 2005 21:21:07 -0700
+Received: from [68.142.201.229] (helo=web30311.mail.mud.yahoo.com)
+	by mail.sourceforge.net with smtp (Exim 4.44)
+	id 1E2Etm-00034d-Fe
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 08 Aug 2005 14:11:07 -0700
+In-Reply-To: <1123019379.7782.86.camel@localhost.localdomain>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -35,60 +26,79 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Bodo Eggert <7eggert@gmx.de>, LKML <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
-
-On Mon, 8 Aug 2005, Benjamin Herrenschmidt wrote:
-> On Mon, 2005-08-08 at 02:06 +0200, Bodo Eggert wrote:
-
-> > The wrong values are constant across reboots (see my first mail), and I 
-> > have a CRT.
-> > 
-> > Can you tell me where the timing values are read?
-> 
-> radeon_write_mode() programs the mode. The monitor timing infos are read
-> by the various bits of code in radeon_monitor.c
-> 
-> I'd be curious if you could identify what bit of code is misbehaving
-
-I added preempt_*able around radeon_probe_i2c_connector, and now I get the 
-output from below and still no sync. Obviously you shouldn't msleep in 
-preempt-disabled code. I'll try voluntary preemption, but that will at 
-best hide the error.
-
-Maybe I can mess with the msleep()s like thorndike's cat, but any success 
-will be an accident.
-
-Aug  9 20:58:26 be1 __mod_timer+0xb4/0x100
-Aug  9 20:58:27 be1  [<c04019b1>] schedule_timeout+0x51/0xa0
-Aug  9 20:58:27 be1  [<c011ff60>] process_timeout+0x0/0x10
-Aug  9 20:58:27 be1  [<c012031f>] msleep+0x2f/0x40
-Aug  9 20:58:27 be1  [<c02a3aca>] radeon_probe_i2c_connector+0xaa/0x320
-Aug  9 20:58:27 be1  [<c02a1da2>] radeon_probe_screens+0x482/0x5d0
-Aug  9 20:58:27 be1  [<c0298689>] radeonfb_pci_register+0x309/0x570
-...
-Aug  9 20:58:27 be1 scheduling while atomic: swapper/0x00000001/1
-Aug  9 20:58:27 be1  [<c0400ed9>] schedule+0x589/0x640
-Aug  9 20:58:27 be1  [<c011f492>] lock_timer_base+0x32/0x70
-Aug  9 20:58:27 be1  [<c011f584>] __mod_timer+0xb4/0x100
-Aug  9 20:58:27 be1  [<c04019b1>] schedule_timeout+0x51/0xa0
-Aug  9 20:58:27 be1  [<c011ff60>] process_timeout+0x0/0x10
-Aug  9 20:58:27 be1  [<c012031f>] msleep+0x2f/0x40
-Aug  9 20:58:27 be1  [<c02a3aca>] radeon_probe_i2c_connector+0xaa/0x320
-Aug  9 20:58:27 be1  [<c02a1da2>] radeon_probe_screens+0x482/0x5d0
-Aug  9 20:58:27 be1  [<c0298689>] radeonfb_pci_register+0x309/0x570
-Aug  9 20:58:27 be1  [<c0281318>] __pci_device_probe+0x48/0x60
+Content-Type: text/plain; charset="us-ascii"
+To: Richard Purdie <rpurdie@rpsys.net>, Greg KH <gregkh@suse.de>
+Cc: Jamey Hicks <jamey.hicks@hp.com>, Andrey Volkov <avolkov@varma-el.com>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
 
+--- Richard Purdie <rpurdie@rpsys.net> wrote:
 
--- 
-It is still called paranoia when they really are out to get you.
+> On Mon, 2005-08-01 at 11:13 -0700, Greg KH wrote:
+> > > Good question.  I was about to submit a patch
+> that created=20
+> > > drivers/platform because the toplevel driver for
+> MQ11xx is a=20
+> > > platform_device driver.  Any thoughts on this?
+> >=20
+> > drivers/platform sounds good to me.
+>=20
+> In another thread (about the ucb1x00) we came up
+> with the idea of
+> drivers/mfd (mfd =3D multi function devices).
+>=20
+> The core and platform specific parts would live here
+> with suitable clear
+> naming and the subsection specific parts that were
+> separable would live
+> in the appropriate place within the kernel.
+>=20
+> Just another idea to add to the mix and removes the
+> dilemma of a
+> multifunction device with isn't platform based...
+
+This is where my sugguestion on the ucb1x00 comess in
+(although it seems to have ot lost as I have had no
+reply :-( ). To repeat myself:
+
+I was thinking of something like driver/bus into which
+we might also be able to put the I2C and LL3 buses.
+The only problem is that this might leave some parts
+of the multi function chip homeless (if they can't
+find a home in other subsystems).
+
+I need to do more homework ;-), but
+I think we need a bus driver (I need to see what the
+bus subsystem offers) (IP block specific,
+platform and arch independent), a core driver to
+register busses and clients, and client drivers.
+
+Mark
+
+
+>=20
+> Richard
+>=20
+> -
+> To unsubscribe from this list: send the line
+> "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at=20
+> http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>=20
+
+
+
+	=09
+___________________________________________________________=20
+To help you stay safe and secure online, we've developed the all new Yaho=
+o! Security Centre. http://uk.security.yahoo.com
 
 
 -------------------------------------------------------
 SF.Net email is Sponsored by the Better Software Conference & EXPO
-September 19-22, 2005 * San Francisco, CA * Development Lifecycle Practices
-Agile & Plan-Driven Development * Managing Projects & Teams * Testing & QA
+September 19-22, 2005 * San Francisco, CA * Development Lifecycle Practic=
+es
+Agile & Plan-Driven Development * Managing Projects & Teams * Testing & Q=
+A
 Security * Process Improvement & Measurement * http://www.sqe.com/bsce5sf

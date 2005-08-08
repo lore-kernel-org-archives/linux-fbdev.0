@@ -1,24 +1,28 @@
-From: James Simmons <jsimmons@infradead.org>
-Subject: Re: [PATCH] Don't allow softcursor use from
- userland
-Date: Mon, 8 Aug 2005 18:35:38 +0100 (BST)
-Message-ID: <Pine.LNX.4.56.0508081831220.27739@pentafluge.infradead.org>
-References: <Pine.LNX.4.56.0508070327550.12196@pentafluge.infradead.org>
- <42F5E3E7.3020901@gmail.com> <Pine.LNX.4.56.0508080013400.12912@pentafluge.infradead.org>
- <42F6AE75.6090409@gmail.com>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Fw: [Bugme-new] [Bug 5024] New: nvidiafb blocks X11 w/nvidia driver
+ from starting.
+Date: Mon, 8 Aug 2005 10:36:59 -0700
+Message-ID: <20050808103659.76043bf8.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E2BXI-0002W4-QX
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 08 Aug 2005 10:35:40 -0700
-Received: from pentafluge.infradead.org ([213.146.154.40])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	id 1E2Ba5-0002cf-4n
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 08 Aug 2005 10:38:33 -0700
+Received: from smtp.osdl.org ([65.172.181.4])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.44)
-	id 1E2BXI-0005kd-DU
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 08 Aug 2005 10:35:40 -0700
-In-Reply-To: <42F6AE75.6090409@gmail.com>
+	id 1E2Ba2-0004eW-IL
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 08 Aug 2005 10:38:33 -0700
+Received: from shell0.pdx.osdl.net (fw.osdl.org [65.172.181.6])
+	by smtp.osdl.org (8.12.8/8.12.8) with ESMTP id j78HcEjA026334
+	(version=TLSv1/SSLv3 cipher=EDH-RSA-DES-CBC3-SHA bits=168 verify=NO)
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 8 Aug 2005 10:38:14 -0700
+Received: from bix (shell0.pdx.osdl.net [10.9.0.31])
+	by shell0.pdx.osdl.net (8.13.1/8.11.6) with SMTP id j78HcAcN015296
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 8 Aug 2005 10:38:12 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,34 +33,22 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
 
 
 
-What is wrong with brekaing this patch into smaller pieces????????????
-I'm not getting a answer!!!!! As I said no giant patches that tocuh every 
-driver.
+Begin forwarded message:
 
-> > has software image blit and hardware fillrect. You want to have fbcon use 
-> >   
-> 
-> Then the driver sets fbops->fb_cursor with its own version that does 
-> fillrect instead of imageblit.
+Date: Mon, 8 Aug 2005 09:16:59 -0700
+From: bugme-daemon@kernel-bugs.osdl.org
+To: bugme-new@lists.osdl.org
+Subject: [Bugme-new] [Bug 5024] New: nvidiafb blocks X11 w/nvidia driver from starting.
 
-No. fb_cursor is only used for a hardware cursor case. 
 
-> If you want to add userspace support for hardware cursors then you have to
-> create another API. If you don't want another API, then forget about userspace
-> support. Overloading fbops->fb_cursor is not the answer.
+http://bugzilla.kernel.org/show_bug.cgi?id=5024
 
-So fbops->fb_cursor will not be used at all for the console? 
-
-Look the patch I sent is small and doesn't interfere with many drivers. It 
-does stop your desires either. Personally softcursor should go away.
-
+            Summary: nvidiafb blocks X11 w/nvidia driver from starting.
 
 
 -------------------------------------------------------

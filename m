@@ -1,28 +1,37 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
+From: Jon Smirl <jonsmirl@gmail.com>
 Subject: Re: Re: [PATCH] mach64 atari patch
-Date: Tue, 09 Aug 2005 09:08:09 +0800
-Message-ID: <42F801F9.9090200@gmail.com>
-References: <Pine.LNX.4.56.0508070315260.12196@pentafluge.infradead.org> <Pine.LNX.4.62.0508071316230.31010@gorilla.sonytel.be> <20050807094618.0cc4cadc.akpm@osdl.org> <Pine.LNX.4.56.0508080003360.12912@pentafluge.infradead.org> <42F699DC.20103@gmail.com> <Pine.LNX.4.56.0508090057460.2187@pentafluge.infradead.org> <42F8000A.2040605@gmail.com>
+Date: Mon, 8 Aug 2005 15:01:24 -0400
+Message-ID: <9e473391050808120111ee33ee@mail.gmail.com>
+References: <Pine.LNX.4.56.0508070315260.12196@pentafluge.infradead.org>
+	 <20050807094618.0cc4cadc.akpm@osdl.org>
+	 <Pine.LNX.4.56.0508080003360.12912@pentafluge.infradead.org>
+	 <42F699DC.20103@gmail.com> <9e47339105080716487e59df5c@mail.gmail.com>
+	 <Pine.LNX.4.56.0508081827550.27739@pentafluge.infradead.org>
+	 <9e4733910508081056714061fe@mail.gmail.com>
+	 <Pine.LNX.4.56.0508081907150.27739@pentafluge.infradead.org>
+	 <9e473391050808113479fa1501@mail.gmail.com>
+	 <Pine.LNX.4.56.0508081939260.27739@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E2fgW-0006Y0-Li
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Aug 2005 18:47:12 -0700
+	id 1E2dm3-0004hb-1o
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Aug 2005 16:44:47 -0700
 Received: from externalmx-1.sourceforge.net ([12.152.184.25])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
 	(Exim 4.44)
-	id 1E2f1x-0005es-7L
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Aug 2005 18:05:44 -0700
+	id 1E2dGn-0005lJ-Fj
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Aug 2005 16:12:29 -0700
 Received: from wproxy.gmail.com ([64.233.184.193])
 	by externalmx-1.sourceforge.net with esmtp (Exim 4.41)
-	id 1E2PvE-0000io-3k
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Aug 2005 01:57:20 -0700
-Received: by wproxy.gmail.com with SMTP id i21so930786wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 09 Aug 2005 01:57:13 -0700 (PDT)
-In-Reply-To: <42F8000A.2040605@gmail.com>
+	id 1E2TyB-0004Nb-Vg
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 Aug 2005 06:16:40 -0700
+Received: by wproxy.gmail.com with SMTP id i17so752696wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 09 Aug 2005 06:16:32 -0700 (PDT)
+In-Reply-To: <Pine.LNX.4.56.0508081939260.27739@pentafluge.infradead.org>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -33,58 +42,73 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: James Simmons <jsimmons@infradead.org>, linux-fbdev-devel@lists.sourceforge.net, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, Andrew Morton <akpm@osdl.org>
+Content-Type: text/plain; charset="us-ascii"
+To: James Simmons <jsimmons@infradead.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Geert Uytterhoeven <geert@linux-m68k.org>, "Antonino A. Daplas" <adaplas@hotpop.com>, Andrew Morton <akpm@osdl.org>
 
-Antonino A. Daplas wrote:
-> James Simmons wrote:
->>> Please, my patch (based from Jon's) is huge because it's removing > 
->>> 200 lines
->>> and it's moving softcursor.c from drivers/video to 
->>> drivers/video/console where
->>> it belongs. But it is _not_ intrusive. In fact, the majority of the 
->>> patch consists
->>> of a single logical change which removes the line below from each 
->>> driver
->>>
->>> - .fb_cursor = softcursor;
->>>
->>> and removes the line below from drivers/video/Kconfig.
->>>
->>> - select FB_SOFT_CURSOR
->>>
->>> Our proposal aims to make complex code simpler and big code smaller. 
->>> Your patch,
->>> on the other hand, although small, introduces another flag 
->>> FB_HWCURSOR_SOFTCURSOR,
->>> which is redundant, and adds yet another level of complexity to an 
->>> already too
->>> complex code.
->>
->> I ask you the same question as Jon. Currently several fbdev drivers 
->> have a optional flag to turn on and off the hardware cursor. Should 
->> this functionality
->> be removed and force all fbdev drivers to always have the hardware 
->> cursor avaiable. Thus leaving fbcon to control when to use the 
->> hardware cursor or the software cursor. It all comes down to who 
->> controls when the hardware driver will use the hardware cursor. As 
->> noted several drivers have such a flag. You would have to strip that 
->> flag out of the drivers as well.
->>
->> .
->>
-> BTW, the only drivers that have working hardware cursor support are 
-> rivafb, intelfb,
-> nvidiafb, and i810fb. Except for intelfb, I wrote all of them, if not 
-> the driver, the
-> hardware cursor support. And intelfb's cursor support was based on 
-> i810fb.
-Erratum: Mach64 also has hardware cursor support, which looks like is 
-working. So
-I take the above statement back.
+On 8/8/05, James Simmons <jsimmons@infradead.org> wrote:
+>=20
+> > > au1100fb        int nohwcursor
+> > > intelfb         int hwcursor
+> > > nvidia          int hwcur
+> > > cyberfb
+> > >
+> > > You need to remove this!!!!
+> > >
+> > > What I am arguing is that drivers with hardware cursor support should=
+ be
+> > > able to turn off and on hardware cursor support. That is why the
+> > > HWACCEL_CURSOR flag. Your test the fb_cursor field prevents this!!!
+> >
+> > If you want fbconsole to use the software cusor instead of the
+> > hardware cursor, that's between you and fbconsole to decide. Control
+> > over that choice needs to be in fbconsole, not the base fbdev.
+> >
+> > The fbdev drivers should just unconditionally offer the hardware
+> > cursor if they support it. It is up to the user of the cursor to
+> > choose whether to use it or ignore it.
+>=20
+> Finally you see the point I was making. I wanted it be very clear to ever=
+y
+> one here the implications of your changes. You remove the power to contro=
+l
+> the use of a hardware cursor from the driver. At this point driver writer=
+s
+> need to speak up if they have no problem with this.
 
-Tony
+I'm not working on fbconsole so it did not occur to me what your
+issues was. My user space apps have always had control of whether they
+used the hardware cursor or not.
+
+You will need to ask Tony for a switch. Easiest way is to make it a
+module parameter on fbconsole. That way it will appear in
+/sys/module/fbconsole/parameters and you can use echo to set it from a
+script. There is no need for an ioctl.
+
+It only takes about five lines of code to implement this, something like th=
+is...
+
+fbconsole.c
+
+int use_hw_cursor =3D 0;
+module_parm(use_hw_cursor);
+
+if (fb_info->fb_cursor && use_hw_cursor)
+  fb_info->fb_cursor(...)
+else
+  softcursor
+
+>=20
+> P.S
+>         The patch still needs to broken into smaller pieces.
+>=20
+>=20
+>=20
+
+
+--=20
+Jon Smirl
+jonsmirl@gmail.com
 
 
 -------------------------------------------------------

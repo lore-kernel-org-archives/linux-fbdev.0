@@ -1,21 +1,23 @@
-From: Mark Underwood <basicmark@yahoo.com>
-Subject: Re: Where is place of arch independed companion chips?
-Date: Mon, 8 Aug 2005 22:09:08 +0100 (BST)
-Message-ID: <20050808210908.1672.qmail@web30311.mail.mud.yahoo.com>
-References: <1123019379.7782.86.camel@localhost.localdomain>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: cursor maddnes and a solution
+Date: Wed, 10 Aug 2005 15:50:27 +0800
+Message-ID: <42F9B1C3.2030201@gmail.com>
+References: <Pine.LNX.4.56.0508090115420.2749@pentafluge.infradead.org>	 <42F99B5E.1070309@gmail.com> <9e4733910508092358360f8bc8@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E2Lbv-0004hH-Js
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 08 Aug 2005 21:21:07 -0700
-Received: from [68.142.201.229] (helo=web30311.mail.mud.yahoo.com)
-	by mail.sourceforge.net with smtp (Exim 4.44)
-	id 1E2Etm-00034d-Fe
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 08 Aug 2005 14:11:07 -0700
-In-Reply-To: <1123019379.7782.86.camel@localhost.localdomain>
+	id 1E2lMa-0003cV-FQ
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Aug 2005 00:51:00 -0700
+Received: from wproxy.gmail.com ([64.233.184.196])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1E2lMZ-00051u-CC
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Aug 2005 00:51:00 -0700
+Received: by wproxy.gmail.com with SMTP id i21so74032wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 10 Aug 2005 00:50:53 -0700 (PDT)
+In-Reply-To: <9e4733910508092358360f8bc8@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,79 +28,62 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Richard Purdie <rpurdie@rpsys.net>, Greg KH <gregkh@suse.de>
-Cc: Jamey Hicks <jamey.hicks@hp.com>, Andrey Volkov <avolkov@varma-el.com>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: "Antonino A. Daplas" <adaplas@hotpop.com>, James Simmons <jsimmons@infradead.org>, Jon Smirl <jonsmirl@gmail.com>
 
+Jon Smirl wrote:
+> 
+> The hardware mouse cursor is relevant in graphics mode because you may
+> not be able to generate screens in real time. If you can't the
+> software mouse cursor lags and may become unusable. Hardware mouse
+> cursor eliminates this problem.
+> 
 
---- Richard Purdie <rpurdie@rpsys.net> wrote:
+I don't have anything against hardware cursor support for userspace. And
+I don't even mind if we remove hardware cursor support for fbcon (I don't
+see the benefit anyway).  What I don't want is using fbops->fb_cursor
+to support a userspace hardware cursor.  In it's current incarnation
+it is just wrong.  Besides being a multiplexer with a 100-byte parameter,
+it also requires information that are internal to fbdev only. And even if
+we manage to make it work, we'll end up with a function with a multiple
+personality disorder, it behaves differently when client is fbcon, and
+changes behavior again when the client is userspace.
 
-> On Mon, 2005-08-01 at 11:13 -0700, Greg KH wrote:
-> > > Good question.  I was about to submit a patch
-> that created=20
-> > > drivers/platform because the toplevel driver for
-> MQ11xx is a=20
-> > > platform_device driver.  Any thoughts on this?
-> >=20
-> > drivers/platform sounds good to me.
->=20
-> In another thread (about the ucb1x00) we came up
-> with the idea of
-> drivers/mfd (mfd =3D multi function devices).
->=20
-> The core and platform specific parts would live here
-> with suitable clear
-> naming and the subsection specific parts that were
-> separable would live
-> in the appropriate place within the kernel.
->=20
-> Just another idea to add to the mix and removes the
-> dilemma of a
-> multifunction device with isn't platform based...
+So let's keep fbops->fb_cursor for fbcon use only.  Better yet, let fbcon
+call soft_cursor unconditionally, remove hardware cursor from all drivers,
+then overhaul fbops->fb_cursor. Or if people think this is too radical,
+let's create a new cursor API and gradually phase out the old API, as
+proposed in my previous post. Here's one:
 
-This is where my sugguestion on the ucb1x00 comess in
-(although it seems to have ot lost as I have had no
-reply :-( ). To repeat myself:
+struct fb_cursor_ops {
+	int (*cursor_move)(int x, int y);
+	int (*cursor_show)(int show);
+	int (*cursor_load_image)(u32 *image, int width, int height);
+	int (*cursor_load_color)(struct fb_cmap *cmap);
+	int (*cursor_set_size)(int width, int height);
+	int (*cursor_capabilities)(int set, int caps);
+};
 
-I was thinking of something like driver/bus into which
-we might also be able to put the I2C and LL3 buses.
-The only problem is that this might leave some parts
-of the multi function chip homeless (if they can't
-find a home in other subsystems).
+struct fb_info {
+	...
+	struct fb_cursor_ops *cursor_ops;
+	...
+};
 
-I need to do more homework ;-), but
-I think we need a bus driver (I need to see what the
-bus subsystem offers) (IP block specific,
-platform and arch independent), a core driver to
-register busses and clients, and client drivers.
+In cursor_load_image, we can make image to be always 32-bit truecolor and
+just let the driver convert it to something the hardware can support.
 
-Mark
+In cursor_capabilities, it will either set the capabilities, or get it.
+int caps may be t0o small to describe the capabilities so this can be changed.
 
+Tony
 
->=20
-> Richard
->=20
-> -
-> To unsubscribe from this list: send the line
-> "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at=20
-> http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->=20
-
-
-
-	=09
-___________________________________________________________=20
-To help you stay safe and secure online, we've developed the all new Yaho=
-o! Security Centre. http://uk.security.yahoo.com
+ 
 
 
 -------------------------------------------------------
 SF.Net email is Sponsored by the Better Software Conference & EXPO
-September 19-22, 2005 * San Francisco, CA * Development Lifecycle Practic=
-es
-Agile & Plan-Driven Development * Managing Projects & Teams * Testing & Q=
-A
+September 19-22, 2005 * San Francisco, CA * Development Lifecycle Practices
+Agile & Plan-Driven Development * Managing Projects & Teams * Testing & QA
 Security * Process Improvement & Measurement * http://www.sqe.com/bsce5sf

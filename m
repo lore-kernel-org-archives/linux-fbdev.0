@@ -1,28 +1,27 @@
-From: "Dominik 'Rathann' Mierzejewski" <D.Mierzejewski@icm.edu.pl>
-Subject: Re: cyberblade patch
-Date: Wed, 10 Aug 2005 15:11:48 +0200
-Message-ID: <20050810131148.GC11962@ws-gradcol1.icm.edu.pl>
-References: <20050804102905.GE7605@ws-gradcol1.icm.edu.pl> <20050804151342.GB11179@ws-gradcol1.icm.edu.pl>
+From: Jon Smirl <jonsmirl@gmail.com>
+Subject: Re: cursor maddnes and a solution
+Date: Wed, 10 Aug 2005 09:25:30 -0400
+Message-ID: <9e473391050810062531d77aa7@mail.gmail.com>
+References: <Pine.LNX.4.56.0508090115420.2749@pentafluge.infradead.org>
+	 <42F99B5E.1070309@gmail.com>
+	 <9e4733910508092358360f8bc8@mail.gmail.com>
+	 <42F9B1C3.2030201@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E2qNM-0004gf-PJ
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Aug 2005 06:12:08 -0700
-Received: from gw.icm.edu.pl ([212.87.0.39] helo=atol.icm.edu.pl)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44)
-	id 1E2qNK-0008Md-4L
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Aug 2005 06:12:08 -0700
-Received: from fs.icm.edu.pl (fs.icm.edu.pl [192.168.1.165])
-	by atol.icm.edu.pl (8.13.1/8.13.1/rzm-5.1/icm) with ESMTP id j7ADBpki031378
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 10 Aug 2005 15:11:55 +0200
-Received: from ws-gradcol1.icm.edu.pl (ws-gradcol1.icm.edu.pl [192.168.1.26])
-	by fs.icm.edu.pl (8.13.3/8.13.2/rzm-2.9.4/icm) with ESMTP id j7ADBmjd011183
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 10 Aug 2005 15:11:51 +0200 (CEST)
+	id 1E2qaP-0005H5-SA
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Aug 2005 06:25:37 -0700
+Received: from wproxy.gmail.com ([64.233.184.197])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1E2qaO-0003C5-Jk
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 10 Aug 2005 06:25:37 -0700
+Received: by wproxy.gmail.com with SMTP id i3so120847wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 10 Aug 2005 06:25:30 -0700 (PDT)
+In-Reply-To: <42F9B1C3.2030201@gmail.com>
 Content-Disposition: inline
-In-Reply-To: <20050804151342.GB11179@ws-gradcol1.icm.edu.pl>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,28 +33,30 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@hotpop.com>, James Simmons <jsimmons@infradead.org>
 
-On Thu, Aug 04, 2005 at 05:13:42PM +0200, Dominik 'Rathann' Mierzejewski wrote:
-> On Thu, Aug 04, 2005 at 12:29:05PM +0200, Dominik 'Rathann' Mierzejewski wrote:
-> > Hello.
-> > Could someone send me the cyblafb patch from July 31st?
-> 
-> Thank you, I got one from Kelly. I'll report back with results
-> ASAP.
+On 8/10/05, Antonino A. Daplas <adaplas@gmail.com> wrote:
+> struct fb_cursor_ops {
+>         int (*cursor_move)(int x, int y);
+>         int (*cursor_show)(int show);
+>         int (*cursor_load_image)(u32 *image, int width, int height);
+>         int (*cursor_load_color)(struct fb_cmap *cmap);
+>         int (*cursor_set_size)(int width, int height);
+>         int (*cursor_capabilities)(int set, int caps);
+> };
 
-Silly me, I didn't notice my Trident card was actually Cyber 9525 model,
-not Cyberblade i1. Any suggestions on how to go about running tridentfb?
-Currently it gives me either blank screen or completely garbled screen
-(colorful stripes and squares).
+Doen't fb already support an image format with embedded color map? Can
+we use it and merge:
+>         int (*cursor_load_image)(u32 *image, int width, int height);
+>         int (*cursor_load_color)(struct fb_cmap *cmap);
 
-TIA,
+The size can also be computed from the image so the size call can be elimin=
+ated.
 
--- 
-Dominik 'Rathann' Mierzejewski <rathann*at*icm.edu.pl>
-Interdisciplinary Centre for Mathematical and Computational Modelling
-Warsaw University  |  http://www.icm.edu.pl  |  tel. +48 (22) 5540810
+--=20
+Jon Smirl
+jonsmirl@gmail.com
 
 
 -------------------------------------------------------

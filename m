@@ -1,28 +1,26 @@
-From: "Dominik 'Rathann' Mierzejewski" <D.Mierzejewski@icm.edu.pl>
-Subject: Re: cyberblade patch
-Date: Thu, 11 Aug 2005 12:01:08 +0200
-Message-ID: <20050811100108.GC1287@ws-gradcol1.icm.edu.pl>
-References: <20050804102905.GE7605@ws-gradcol1.icm.edu.pl> <20050804151342.GB11179@ws-gradcol1.icm.edu.pl> <20050810131148.GC11962@ws-gradcol1.icm.edu.pl> <Pine.LNX.4.58.0508101938400.2328@linux.site>
+From: Antonino Daplas <adaplas@gmail.com>
+Subject: Re: mono, gray and index configs
+Date: Thu, 11 Aug 2005 19:08:34 +0800
+Message-ID: <b00ca3bd05081104086fa9e639@mail.gmail.com>
+References: <9e47339105081020216574ac7e@mail.gmail.com>
+	 <42FAE3F8.8080902@gmail.com>
+	 <Pine.LNX.4.62.0508111020520.1037@numbat.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E39sI-0006qw-29
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 11 Aug 2005 03:01:22 -0700
-Received: from gw.icm.edu.pl ([212.87.0.39] helo=atol.icm.edu.pl)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44)
-	id 1E39sE-0003QI-Lx
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 11 Aug 2005 03:01:22 -0700
-Received: from fs.icm.edu.pl (fs.icm.edu.pl [192.168.1.165])
-	by atol.icm.edu.pl (8.13.1/8.13.1/rzm-5.1/icm) with ESMTP id j7BA1Ad2015053
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 11 Aug 2005 12:01:10 +0200
-Received: from ws-gradcol1.icm.edu.pl (ws-gradcol1.icm.edu.pl [192.168.1.26])
-	by fs.icm.edu.pl (8.13.3/8.13.2/rzm-2.9.4/icm) with ESMTP id j7BA187M017768
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 11 Aug 2005 12:01:10 +0200 (CEST)
+	id 1E3AvQ-00027m-QF
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 11 Aug 2005 04:08:40 -0700
+Received: from zproxy.gmail.com ([64.233.162.196])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1E3AvQ-0002P7-Em
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 11 Aug 2005 04:08:40 -0700
+Received: by zproxy.gmail.com with SMTP id 9so225067nzo
+        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 11 Aug 2005 04:08:34 -0700 (PDT)
+In-Reply-To: <Pine.LNX.4.62.0508111020520.1037@numbat.sonytel.be>
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0508101938400.2328@linux.site>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,23 +32,66 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Jon Smirl <jonsmirl@gmail.com>, Geert Uytterhoeven <geert@linux-m68k.org>
 
-On Wed, Aug 10, 2005 at 07:41:42PM +0200, Knut_Petersen@t-online.de wrote:
-> The lack of public docs is the real problem in
-> supporting most trident chips.
+On 8/11/05, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> On Thu, 11 Aug 2005, Antonino A. Daplas wrote:
+> > that all the lengths =3D 1 and offsets =3D 0.  Currently, we have no wa=
+y to
+> > specifically request for mono01, mono10, or 1-bit pseudocolor. Just che=
+ck
+> > for fix->visual afterwards.
+>=20
+> For mono01 or mono10, if the visual is pseudocolor, just set the colormap=
+ to
+> black/white or white/black.
 
-I understand. The Xorg driver seems to be working just fine, though.
-Isn't it possible to use that code as basis? Or is there simply no-one
-who cares and wants to fix bugs in tridentfb?
 
-Regards, 
+I don't know. If I can change the colormap, I would  advertise this as
+1-bit pseudocolor, not monochrome.  Otherwise, why differentiate
+between mono01 and mono10 if I can control what color is 0 and what
+color is 1.  I think the closest definition of monochrome is 1-bit
+static pseudocolor.  And we just have mono01 and mono10 to advertise
+how hardware treats 0/1 (background/foreground or reverse).
 
--- 
-Dominik 'Rathann' Mierzejewski <rathann*at*icm.edu.pl>
-Interdisciplinary Centre for Mathematical and Computational Modelling
-Warsaw University  |  http://www.icm.edu.pl  |  tel. +48 (22) 5540810
+I have a few things that are still not clear to me.  If I understand
+it correctly, monochrome means 2 colors regardless of the bit depth.=20
+So it's possible, for example, to have 8-bit monochrome that has only
+two colors, ie 0x00 and 0xff.   If this was 8-bit static pseudocolor,
+then it has 256 different colors.
+
+(Depending on how correct I am with the interpretation, there might be
+some bugs in fbdev on how it determines the color depth. No one is
+complaining yet though, so greater than 1-bit monochrome is probably
+rare if not nonexistent.)
+
+>=20
+> > For directcolor (indexed) vs truecolor, there is currently no way
+> > to specify which visual you want.  You also have to check for fix->visu=
+al
+> > afterwards.
+> >
+> > One of the reason I also want this sysfs attribute is because in at
+> > least 1 driver (i810fb), it's possible to choose between truecolor and
+> > directcolor but it uses a hack by checking for the var->nonstd flag.
+>=20
+> So the driver should use directcolor instead of truecolor if the hardware
+> supports it. The application can always set a linear colormap if it needs
+> truecolor.
+
+
+A few years ago, I discovered that there are several fbdev apps that
+make ssumptions which are not necessarily correct.  For example, if
+bits_per_pixel > 8, the app assumes the format is truecolor. So the
+app produces wrong colors if fbdev is in directcolor mode (because it
+failed to set the cmap).
+
+So, it is useful to have the capability to choose between truecolor
+and directcolor when dealing with those apps without rebooting or
+recompiling.
+
+Tony
 
 
 -------------------------------------------------------

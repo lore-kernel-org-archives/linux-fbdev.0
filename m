@@ -1,22 +1,23 @@
 From: James Simmons <jsimmons@infradead.org>
 Subject: Re: cursor maddnes and a solution
-Date: Thu, 11 Aug 2005 23:37:32 +0100 (BST)
-Message-ID: <Pine.LNX.4.56.0508112201210.9641@pentafluge.infradead.org>
-References: <Pine.LNX.4.56.0508090115420.2749@pentafluge.infradead.org>
- <42F99B5E.1070309@gmail.com>
+Date: Thu, 11 Aug 2005 23:40:34 +0100 (BST)
+Message-ID: <Pine.LNX.4.56.0508112338410.9641@pentafluge.infradead.org>
+References: <Pine.LNX.4.56.0508090115420.2749@pentafluge.infradead.org> 
+ <42F99B5E.1070309@gmail.com> <9e4733910508092358360f8bc8@mail.gmail.com>
+ <42F9B1C3.2030201@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E3LgC-00012N-9H
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 11 Aug 2005 15:37:40 -0700
+	id 1E3Lj3-0001DB-5J
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 11 Aug 2005 15:40:37 -0700
 Received: from pentafluge.infradead.org ([213.146.154.40])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
 	(Exim 4.44)
-	id 1E3LgB-0001lB-S0
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 11 Aug 2005 15:37:40 -0700
-In-Reply-To: <42F99B5E.1070309@gmail.com>
+	id 1E3Lj2-0002Tn-Nj
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 11 Aug 2005 15:40:37 -0700
+In-Reply-To: <42F9B1C3.2030201@gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,46 +31,33 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@hotpop.com>, Jon Smirl <jonsmirl@gmail.com>
 
 
-> In the end, it seems that you, me and Jon have the same goal in mind. I don't
-> see any disagreement here.
+> I don't have anything against hardware cursor support for userspace. And
+> I don't even mind if we remove hardware cursor support for fbcon (I don't
+> see the benefit anyway).  
 
-I like to see it broken up into smaller pieces. 
+Please don't remove hw cursor support from fbcon :-)
 
-> And how do you propose to implement a softcursor that is not a wrapper to
-> imageblit?  Using fillrect?  That's fine with me. Just take into consideration
-> that an XOR Rop needs to read the contents of the framebuffer first before
-> writing.  And READS are slow on most PCI cards.
-> 
-> What I cannot understand is your aversion against softcursor.  For fbcon,
-> it works 100% of the time, guaranteed, for any kind of driver, fictional or
-> otherwise.
+> struct fb_cursor_ops {
+> 	int (*cursor_move)(int x, int y);
+> 	int (*cursor_show)(int show);
+> 	int (*cursor_load_image)(u32 *image, int width, int height);
+> 	int (*cursor_load_color)(struct fb_cmap *cmap);
+> 	int (*cursor_set_size)(int width, int height);
+> 	int (*cursor_capabilities)(int set, int caps);
+> };
 
-I'm talking about if fillrect is hardware accelerated and imageblit is 
-not. In this case we want to use the fillrect.
+> struct fb_info {
+> 	...
+> 	struct fb_cursor_ops *cursor_ops;
+> 	...
+> };
 
-> ===========================================================================
-> Anyway, I really don't have a strong argument against adding FB_ACCEL_HWCUR
-> flag to fbdev.  What I'm against is the overloading of info->fbops->fb_cursor
-> for userspace. I'll try to clarify:
-
-> Now, our info->fbops->fb_cursor() accepts a parameter struct fb_cursor which is
-> more than 100 bytes in size.  It has everything there in order to have a fully
-> functional cursor.  But, that's a lot of bytes to move.  This is probably okay
-> for the text cursor because the text cursor characteristics are usually in a
-> state of flux. For the mouse cursor, on the other hand, only the position is
-> usually changing.
->
-> So that's why I don't want info->fbops->fb_cursor to be used in user space.  It
-> is inefficient.  Why move 100 bytes of data to move the cursor to x,y? And then
-> you have to take into consideration that the rate of change is very rapid.
-
-Who said you have to move all that data at one time. We can have a struct 
-fb_cursor in struct fb_info like we have for fb_cmap. Fill in default 
-data. Fill in the values you want to change. Call fb_cursor fbops when you 
-want the changes to take affect. Its not that hard to do.
+We don't need all that mess. You just have a struct fb_cursor in struct 
+fb_info and fill in what data you want. All call fb_cusor when you want to 
+alter the hardware state.
 
 
 

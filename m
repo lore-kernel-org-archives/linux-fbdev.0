@@ -1,24 +1,22 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
 Subject: Re: Framebuffer display corruption on 2.6.12
-Date: Fri, 12 Aug 2005 22:11:47 +0300
-Message-ID: <20050812191147.GA27448@sci.fi>
+Date: Sat, 13 Aug 2005 06:20:34 +0800
+Message-ID: <42FD20B2.3080209@gmail.com>
 References: <42FCD122.4070705@gentoo.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E3ewc-0007qB-2D
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 12 Aug 2005 12:11:54 -0700
-Received: from gw02.mail.saunalahti.fi ([195.197.172.116])
+	id 1E3htn-0000kX-4z
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 12 Aug 2005 15:21:11 -0700
+Received: from zproxy.gmail.com ([64.233.162.198])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1E3ewa-00046F-Hn
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 12 Aug 2005 12:11:53 -0700
-Received: from kuori.saunalahti.fi (kuori.saunalahti.fi [195.197.175.23])
-	by gw02.mail.saunalahti.fi (Postfix) with ESMTP id 9C93DD0FF5
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 12 Aug 2005 22:11:47 +0300 (EEST)
-Content-Disposition: inline
+	id 1E3htk-0005eT-FK
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 12 Aug 2005 15:21:11 -0700
+Received: by zproxy.gmail.com with SMTP id 9so475446nzo
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 12 Aug 2005 15:21:02 -0700 (PDT)
 In-Reply-To: <42FCD122.4070705@gentoo.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -30,32 +28,39 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-On Fri, Aug 12, 2005 at 05:41:06PM +0100, Daniel Drake wrote:
+Daniel Drake wrote:
 > Hi,
->=20
-> This looks like a userspace issue, but apparently it only appears after=
-=20
+> 
+> This looks like a userspace issue, but apparently it only appears after 
 > upgrading from 2.6.11 to 2.6.12...
->=20
-> Some Gentoo users have reported display corruption when using the=20
-> framebuffer, easily visible in dialog-based applications. Sample screen=
-shot:
->=20
-> https://bugs.gentoo.org/attachment.cgi?id=3D63264
+> 
+> Some Gentoo users have reported display corruption when using the 
+> framebuffer, easily visible in dialog-based applications. Sample 
+> screenshot:
+> 
+> https://bugs.gentoo.org/attachment.cgi?id=63264
+> 
+> Although the screenshot shows a framebuffer running on top of gentoo's 
+> "framebuffer splash", the same issue exists if you use plain old vesafb 
+> with no splash.
+> 
+> The issue has been reproduced in 2.6.13-rc5-mm1.
 
-I got similar looking corruption when I switched to unicode. Recompiling=20
-ncurses and slang with USE=3Dunicode fixed it. alsamixer and menuconfig=20
-are still corrupted in the console but work fine under gnome-terminal=20
-whereas mc and ufed work in both environments. A case of linking with=20
-libncurses instead of libncursesw I guess...
+I can't reproduce it here.  But can you try to reproduce it with vgacon
+and with fbcon.
 
---=20
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+> 
+> Any pointers in the right direction would be appreciated. Should I get 
+> this reported to the kernel bugzilla?
+> 
+
+You may. (Do it under Drivers->Console/Framebuffers) Some prefer bugzilla,
+some don't. I don't mind which.
+
+Tony
 
 
 -------------------------------------------------------

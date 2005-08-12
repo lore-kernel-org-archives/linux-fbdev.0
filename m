@@ -1,25 +1,32 @@
-From: Knut_Petersen@t-online.de
-Subject: Re: cyberblade patch
-Date: Fri, 12 Aug 2005 06:17:36 +0200 (CEST)
-Message-ID: <Pine.LNX.4.58.0508120553160.2252@linux.site>
-References: <20050804102905.GE7605@ws-gradcol1.icm.edu.pl>
- <20050804151342.GB11179@ws-gradcol1.icm.edu.pl> <20050810131148.GC11962@ws-gradcol1.icm.edu.pl>
- <Pine.LNX.4.58.0508101938400.2328@linux.site> <20050811100108.GC1287@ws-gradcol1.icm.edu.pl>
+From: Daniel Drake <dsd@gentoo.org>
+Subject: Framebuffer display corruption on 2.6.12
+Date: Fri, 12 Aug 2005 17:41:06 +0100
+Message-ID: <42FCD122.4070705@gentoo.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E3aGp-0006hs-Vm
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 12 Aug 2005 07:12:27 -0700
-Received: from mailout01.sul.t-online.com ([194.25.134.80])
+	id 1E3cYR-0007bf-FZ
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 12 Aug 2005 09:38:47 -0700
+Received: from mta08-winn.ispmail.ntl.com ([81.103.221.48])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1E3aGo-0000tL-HD
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 12 Aug 2005 07:12:27 -0700
-Received: from localhost (localhost [127.0.0.1])
-	by linux.site (Postfix) with ESMTP id 037F175F52
-	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 12 Aug 2005 06:17:37 +0200 (CEST)
-In-Reply-To: <20050811100108.GC1287@ws-gradcol1.icm.edu.pl>
+	id 1E3cYO-00041z-Nn
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 12 Aug 2005 09:38:47 -0700
+Received: from aamta10-winn.ispmail.ntl.com ([81.103.221.35])
+          by mta08-winn.ispmail.ntl.com with ESMTP
+          id <20050812163833.CSTV23002.mta08-winn.ispmail.ntl.com@aamta10-winn.ispmail.ntl.com>
+          for <linux-fbdev-devel@lists.sourceforge.net>;
+          Fri, 12 Aug 2005 17:38:33 +0100
+Received: from zog.reactivated.net ([81.99.81.161])
+          by aamta10-winn.ispmail.ntl.com with ESMTP
+          id <20050812163833.SPAU12116.aamta10-winn.ispmail.ntl.com@zog.reactivated.net>
+          for <linux-fbdev-devel@lists.sourceforge.net>;
+          Fri, 12 Aug 2005 17:38:33 +0100
+Received: from [192.168.0.2] (dsd [192.168.0.2])
+	by zog.reactivated.net (Postfix) with ESMTP id A49847BFA20
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 12 Aug 2005 18:07:45 +0100 (BST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,23 +37,34 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-At the end of 2003 I complained about a lot of serious bugs. Nobody cared
-about that. Some people, even one of the linux gurus, just told me to use
-epiafb (not included in the standard distribution), but that driver is 
-even more broken. I then wrote a dirty hack and used it for some time ... 
-a vesafb with integrated cyberblade acceleration. Not really clean enough 
-for release ;-) At the end of 2005 I had some time and wrote cyblafb, based 
-on tridentfb. Probably cyblafb will be extended to include support for 
-cyberblade/i7 and another "Blade 3D" graphics cores. But fixing tridentfb 
-for all chips without hardware access is a task too time consuming for me. 
+Hi,
 
-cu,
- Knut
+This looks like a userspace issue, but apparently it only appears after 
+upgrading from 2.6.11 to 2.6.12...
 
+Some Gentoo users have reported display corruption when using the framebuffer, 
+easily visible in dialog-based applications. Sample screenshot:
+
+https://bugs.gentoo.org/attachment.cgi?id=63264
+
+Although the screenshot shows a framebuffer running on top of gentoo's 
+"framebuffer splash", the same issue exists if you use plain old vesafb with 
+no splash.
+
+The issue has been reproduced in 2.6.13-rc5-mm1.
+
+Any pointers in the right direction would be appreciated. Should I get this 
+reported to the kernel bugzilla?
+
+The original bug URL:
+
+https://bugs.gentoo.org/show_bug.cgi?id=98804
+
+Thanks,
+Daniel
 
 
 -------------------------------------------------------

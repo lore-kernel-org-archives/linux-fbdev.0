@@ -1,23 +1,28 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: Framebuffer display corruption on 2.6.12
-Date: Sat, 13 Aug 2005 06:20:34 +0800
-Message-ID: <42FD20B2.3080209@gmail.com>
-References: <42FCD122.4070705@gentoo.org>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Fw: [Bugme-new] [Bug 5059] New: intelfb - do not keep console
+ resolution
+Date: Sun, 14 Aug 2005 01:26:45 -0700
+Message-ID: <20050814012645.021c1e94.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E3htn-0000kX-4z
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 12 Aug 2005 15:21:11 -0700
-Received: from zproxy.gmail.com ([64.233.162.198])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1E3htk-0005eT-FK
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 12 Aug 2005 15:21:11 -0700
-Received: by zproxy.gmail.com with SMTP id 9so475446nzo
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 12 Aug 2005 15:21:02 -0700 (PDT)
-In-Reply-To: <42FCD122.4070705@gentoo.org>
+	id 1E4Dqg-0000uC-Qc
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 14 Aug 2005 01:28:06 -0700
+Received: from smtp.osdl.org ([65.172.181.4])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44)
+	id 1E4Dqf-0000k6-6Q
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 14 Aug 2005 01:28:06 -0700
+Received: from shell0.pdx.osdl.net (fw.osdl.org [65.172.181.6])
+	by smtp.osdl.org (8.12.8/8.12.8) with ESMTP id j7E8S2jA017756
+	(version=TLSv1/SSLv3 cipher=EDH-RSA-DES-CBC3-SHA bits=168 verify=NO)
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 14 Aug 2005 01:28:02 -0700
+Received: from bix (shell0.pdx.osdl.net [10.9.0.31])
+	by shell0.pdx.osdl.net (8.13.1/8.11.6) with SMTP id j7E8S1od018140
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 14 Aug 2005 01:28:01 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,39 +33,22 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
+Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Daniel Drake wrote:
-> Hi,
-> 
-> This looks like a userspace issue, but apparently it only appears after 
-> upgrading from 2.6.11 to 2.6.12...
-> 
-> Some Gentoo users have reported display corruption when using the 
-> framebuffer, easily visible in dialog-based applications. Sample 
-> screenshot:
-> 
-> https://bugs.gentoo.org/attachment.cgi?id=63264
-> 
-> Although the screenshot shows a framebuffer running on top of gentoo's 
-> "framebuffer splash", the same issue exists if you use plain old vesafb 
-> with no splash.
-> 
-> The issue has been reproduced in 2.6.13-rc5-mm1.
 
-I can't reproduce it here.  But can you try to reproduce it with vgacon
-and with fbcon.
 
-> 
-> Any pointers in the right direction would be appreciated. Should I get 
-> this reported to the kernel bugzilla?
-> 
+Begin forwarded message:
 
-You may. (Do it under Drivers->Console/Framebuffers) Some prefer bugzilla,
-some don't. I don't mind which.
+Date: Sat, 13 Aug 2005 19:54:42 -0700
+From: bugme-daemon@kernel-bugs.osdl.org
+To: bugme-new@lists.osdl.org
+Subject: [Bugme-new] [Bug 5059] New: intelfb - do not keep console resolution
 
-Tony
+
+ http://bugzilla.kernel.org/show_bug.cgi?id=5059
+
+            Summary: intelfb - do not keep console resolution
 
 
 -------------------------------------------------------

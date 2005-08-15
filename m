@@ -1,21 +1,21 @@
 From: James Simmons <jsimmons@infradead.org>
 Subject: Re: [PATCH 2/2] intelfb/fbdev: Save info->flags
  in a local variable
-Date: Mon, 15 Aug 2005 17:28:45 +0100 (BST)
-Message-ID: <Pine.LNX.4.56.0508151726040.7300@pentafluge.infradead.org>
+Date: Mon, 15 Aug 2005 17:31:54 +0100 (BST)
+Message-ID: <Pine.LNX.4.56.0508151729060.7300@pentafluge.infradead.org>
 References: <430098A7.1080102@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E4hpY-0006i5-MO
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 15 Aug 2005 09:28:56 -0700
+	id 1E4hsV-0006tg-9G
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 15 Aug 2005 09:31:59 -0700
 Received: from pentafluge.infradead.org ([213.146.154.40])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
 	(Exim 4.44)
-	id 1E4hpX-000616-Ci
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 15 Aug 2005 09:28:56 -0700
+	id 1E4hsV-0007yh-1K
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 15 Aug 2005 09:31:59 -0700
 In-Reply-To: <430098A7.1080102@gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -33,23 +33,35 @@ To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>, Sylvain Meyer <sylvain.meyer@worldonline.fr>, Pavel Kysilka <goldenfish@bsys.cz>
 
 
->   This bug is caused by intelfb unintentionally destroying info->flags in
->   set_par(). Therefore the flag, FBINFO_MISC_USEREVENT used to notify
->   fbcon of a mode change was cleared causing the above problem. This bug
->   though is not intelfb specific, as other drivers may also be affected.
+> fbmem.c |    6 +++---
+> 1 files changed, 3 insertions(+), 3 deletions(-)
 > 
->   The fix is to save info->flags in a local variable before calling any
->   of the driver hooks.  A more definitive fix (for post 2.6.13) is to
->   separate info->flags into one that is set by the driver and another that
->   is set by core fbdev/fbcon.
+> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+> --- a/drivers/video/fbmem.c
+> +++ b/drivers/video/fbmem.c
+> @@ -643,8 +643,8 @@ fb_pan_display(struct fb_info *info, str
+>  int
+>  fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var)
+>  {
+> -	int err;
+> -
+> +	int err, flags = info->flags;
+> +
+>  	if (var->activate & FB_ACTIVATE_INV_MODE) {
+>  		struct fb_videomode mode1, mode2;
+>  		int ret = 0;
+> @@ -697,7 +697,7 @@ fb_set_var(struct fb_info *info, struct 
+>  			    !list_empty(&info->modelist))
+>  				err = fb_add_videomode(&mode, &info->modelist);
+>  
+> -			if (!err && info->flags & FBINFO_MISC_USEREVENT) {
+> +			if (!err && flags & FBINFO_MISC_USEREVENT) {
+>  				struct fb_event event;
+>  				int evnt = (var->activate & FB_ACTIVATE_ALL) ?
+>  					FB_EVENT_MODE_CHANGE_ALL :
 
-The only problem I have with that patch is that the flags variable can 
-also contain what accelerated features the driver supports in that mode.
-It is possible to have a old mode that supports no hardware acceleration 
-and then change to a mode that does. Save the whole flag has us lose that 
-information. What I suggest is that we mask the flag to save the upper 
-bits and save only those. Then after mode switching OR it with the new 
-mask. 
+I take that back. I misread the code. You are not overwriting the new 
+flag. The patch is good :-)
 
 
 

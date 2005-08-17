@@ -1,21 +1,25 @@
-From: Clemens Koller <clemens.koller@anagramm.de>
-Subject: Re: [F]Framebuffer driver using SM501 hardware.
-Date: Wed, 17 Aug 2005 16:31:53 +0200
-Message-ID: <43034A59.6000008@anagramm.de>
-References: <20050816194825.A62AC353AB5@atlas.denx.de>	<43030D41.3000508@varma-el.com>	<Pine.LNX.4.62.0508171317540.6073@numbat.sonytel.be>	<43032A76.6080104@varma-el.com> <Pine.LNX.4.62.0508171439060.6073@numbat.sonytel.be>
+From: Keith O'Conor <Keith.OConor@cs.tcd.ie>
+Subject: Hardware specs?
+Date: Wed, 17 Aug 2005 17:00:37 +0100
+Message-ID: <43035F25.5000907@cs.tcd.ie>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E5Oxd-0003Qv-Ov
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Aug 2005 07:32:09 -0700
-Received: from moutvdom.kundenserver.de ([212.227.126.249] helo=moutvdomng.kundenserver.de)
+	id 1E5QLn-0008Do-Th
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Aug 2005 09:01:11 -0700
+Received: from relay.cs.tcd.ie ([134.226.32.56] helo=smtp.cs.tcd.ie)
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1E5Oxb-0005sZ-2k
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Aug 2005 07:32:09 -0700
-In-Reply-To: <Pine.LNX.4.62.0508171439060.6073@numbat.sonytel.be>
+	id 1E5QLj-00036q-Ol
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 17 Aug 2005 09:01:12 -0700
+Received: from smtp.cs.tcd.ie (localhost [127.0.0.1])
+	by relay.cs.tcd.ie (Postfix) with ESMTP id 85227AB
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 17 Aug 2005 17:01:02 +0100 (IST)
+Received: from [134.226.35.134] (pc1244.cs.tcd.ie [134.226.35.134])
+	by smtp.cs.tcd.ie (Postfix) with ESMTP id 6F0A54D
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 17 Aug 2005 17:01:02 +0100 (IST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,70 +31,40 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Andrey Volkov <avolkov@varma-el.com>, Linux/PPC Development <linuxppc-dev@ozlabs.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, surendra.yadav@softdel.com
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Hi Geert, Andrey and friends...
+Hi everyone,
+I'm in the position of needing to write a Radeon driver for a new system 
+board being built here at our university. I figured my first steps would 
+be to try and reproduce the radeonfb driver to change the resolution, 
+and go from there.
 
-I am working on ppc, MPC8540, SM501 on PCI,
-drivers=voyagerfb-0.2.tar.gz from last post.
-on linux-2.6
+Up until now I've been only developing graphics applications, so alot of 
+these things are new to me - pixel clocks, horizontal timings, PLL, MTRR 
+etc.etc.... it's all quite overwhelming. I've been reading as much as I 
+can, but there are still big gaps in my understanding - how did everyone 
+else get up to speed in this area?
 
-Geert wrote:
-> Sorry, I cannot follow.
-> 
->  1. If it's a palette issue, your setcolreg() routine doesn't fill in correctly
->     the pseudo palette,
->  2. If it's a RGB565 vs. BGR565 issue, you don't fill in correctly the offsets
->     in the color bitfields in fb_var_screeninfo,
->  3. If it's an endian issue, it's RRRRRGGGGGGBBBBB vs.GGBBBBBRRRRGGGG, right?
->     And then there's no much we can do...
+My main problem is that although it's fairly easy to follow the radeonfb 
+source and the fb in general, when it comes to what register does what 
+I'm completely lost. Did the people who wrote the driver have technical 
+specs from ATI telling them which did what? Are the specs openly 
+available, only under NDA, or not at all?!
 
-It looks for me like 3. = bytes are flipped = an endian issue:
-In 32 (RGBAlpha) mode (the one we want to use) the colors appear
-wrong. I get my /dev/fb0 appear as 
+I'd really appreciate any tips anyone could give me on where I should be 
+looking.
+Thanks,
+Keith
 
-BB GG RR aa BB GG RR aa BB GG RR aa ...
+-- 
 
-In the great SM501 Databook Version 1.02, Page 2-39, it says:
-Configuration 2, Endian Control at MMIO_base+0x00005c:
-write 0x00000000 for little endian or
-write 0xffffffff for big endian
-into this register before touching any other register of the sm501.
-I've tried that, but it didn't change anything on my system. :-(
-(Well, we can flip the DAC outputs in our hw design ;-)
+_____________
+Keith O'Conor
+Image Synthesis Group
+Computer Science Department
+University of Dublin, Trinity College
+http://isg.cs.tcd.ie/keith
 
-Best greets,
-
-Clemens
-_______________________________
-R&D Imaging Devices
-Anagramm GmbH
-Rupert-Mayer-Str. 45/1
-81379 Muenchen
-Germany
-
-http://www.anagramm.de
-Phone: +49-89-741518-50
-Fax: +49-89-741518-19
-
-------------------------------------------------
-details:
-
-$ cp red /dev/fb0 
-gives me a some red color...
-$ bvi red
-00000000  00 00 FF 00 00 00 FF 00 00 00 FF 00 00 00 FF 00 ................
-00000010  00 00 FF 00 00 00 FF 00 00 00 FF 00 00 00 FF 00 ................
-00000020  00 00 FF 00 00 00 FF 00 00 00 FF 00 00 00 FF 00 ................
-...
-$ cp green /dev/fb0 
-gives me a some green color...
-00 FF 00 00 00 FF 00 00 00 FF 00 00 00 FF 00 00
-...
-$ cp blue /dev/fb0
-well... blue
-FF 00 00 00 FF 00 00 00 FF 00 00 00 FF 00 00 00
 
 
 -------------------------------------------------------

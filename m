@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 3/9] nvidiafb: Fallback to firmware EDID
-Date: Sat, 20 Aug 2005 00:38:19 +0800
-Message-ID: <43060AFB.90508@gmail.com>
+Subject: [PATCH 7/9]  console: Fix buffer copy on vc resize
+Date: Sat, 20 Aug 2005 00:47:46 +0800
+Message-ID: <43060D32.7080502@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E6HH7-0002Jg-MM
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Aug 2005 17:31:53 -0700
-Received: from wproxy.gmail.com ([64.233.184.194])
+	id 1E6HHh-0002Pk-9p
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Aug 2005 17:32:29 -0700
+Received: from wproxy.gmail.com ([64.233.184.201])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1E6HH7-0000hQ-Ez
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Aug 2005 17:31:53 -0700
-Received: by wproxy.gmail.com with SMTP id i21so610594wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 19 Aug 2005 17:31:47 -0700 (PDT)
+	id 1E6HHf-0000uI-Uo
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Aug 2005 17:32:29 -0700
+Received: by wproxy.gmail.com with SMTP id i21so610631wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 19 Aug 2005 17:32:22 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,92 +30,90 @@ Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-    If nvidiafb fails to probe the EDID block, get the EDID from the BIOS.
+    On a vc resize, the contents of the old screen buffer are transferred to the
+    new screenbuffer.  If the new screenbuffer is smaller than the old one, only
+    the contents from the bottom are copied to new.  If the contents of the
+    old buffer are located at the top, then the contents will not be copied to
+    the new buffer resulting in a blank screen.
+
+    This bug will happen only if the vc in question is not in the foreground.
+    Doing an fbset -a or con2fbmap will trigger this bug.
+
+    To fix this problem, base the start of the copy from the location of the
+    current cursor.  If the cursor is near the top of the buffer, copy the
+    contents at the top, and if the cursor is near the bottom of the buffer, then
+    copy the contents at the bottom. In the unlikely case where the new row
+    size is greater than 2x smaller than the old one, and the cursor is in the
+    middle, copy 1/2 screenful from the top and bottom of the cursor position.
 
     Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- nv_i2c.c   |   16 ++++++++++++----
- nv_proto.h |    2 +-
- nv_setup.c |    6 +++---
- 3 files changed, 16 insertions(+), 8 deletions(-)
+ vt.c |   37 +++++++++++++++++++++++++++++++------
+ 1 files changed, 31 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/video/nvidia/nv_i2c.c b/drivers/video/nvidia/nv_i2c.c
---- a/drivers/video/nvidia/nv_i2c.c
-+++ b/drivers/video/nvidia/nv_i2c.c
-@@ -194,8 +194,9 @@ static u8 *nvidia_do_probe_i2c_edid(stru
- 	return NULL;
- }
+diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -751,6 +751,7 @@ int vc_resize(struct vc_data *vc, unsign
+ 	unsigned long old_origin, new_origin, new_scr_end, rlth, rrem, err = 0;
+ 	unsigned int old_cols, old_rows, old_row_size, old_screen_size;
+ 	unsigned int new_cols, new_rows, new_row_size, new_screen_size;
++	unsigned int end;
+ 	unsigned short *newscreen;
  
--int nvidia_probe_i2c_connector(struct nvidia_par *par, int conn, u8 **out_edid)
-+int nvidia_probe_i2c_connector(struct fb_info *info, int conn, u8 **out_edid)
- {
-+	struct nvidia_par *par = info->par;
- 	u8 *edid = NULL;
- 	int i;
+ 	WARN_CONSOLE_UNLOCKED();
+@@ -794,20 +795,44 @@ int vc_resize(struct vc_data *vc, unsign
+ 	old_origin = vc->vc_origin;
+ 	new_origin = (long) newscreen;
+ 	new_scr_end = new_origin + new_screen_size;
+-	if (new_rows < old_rows)
+-		old_origin += (old_rows - new_rows) * old_row_size;
++
++	if (vc->vc_y > new_rows) {
++		if (old_rows - vc->vc_y < new_rows) {
++			/*
++			 * Cursor near the bottom, copy contents from the
++			 * bottom of buffer
++			 */
++			old_origin += (old_rows - new_rows) * old_row_size;
++			end = vc->vc_scr_end;
++		} else {
++			/*
++			 * Cursor is in no man's land, copy 1/2 screenful
++			 * from the top and bottom of cursor position
++			 */
++			old_origin += (vc->vc_y - new_rows/2) * old_row_size;
++			end = old_origin + new_screen_size;
++		}
++	} else
++		/*
++		 * Cursor near the top, copy contents from the top of buffer
++		 */
++		end = (old_rows > new_rows) ? old_origin + new_screen_size :
++			vc->vc_scr_end;
  
-@@ -205,10 +206,17 @@ int nvidia_probe_i2c_connector(struct nv
- 		if (edid)
- 			break;
+ 	update_attr(vc);
+ 
+-	while (old_origin < vc->vc_scr_end) {
+-		scr_memcpyw((unsigned short *) new_origin, (unsigned short *) old_origin, rlth);
++	while (old_origin < end) {
++		scr_memcpyw((unsigned short *) new_origin,
++			    (unsigned short *) old_origin, rlth);
+ 		if (rrem)
+-			scr_memsetw((void *)(new_origin + rlth), vc->vc_video_erase_char, rrem);
++			scr_memsetw((void *)(new_origin + rlth),
++				    vc->vc_video_erase_char, rrem);
+ 		old_origin += old_row_size;
+ 		new_origin += new_row_size;
  	}
-+
-+	if (!edid && conn == 1) {
-+		/* try to get from firmware */
-+		edid = kmalloc(EDID_LENGTH, GFP_KERNEL);
-+		if (edid)
-+			memcpy(edid, fb_firmware_edid(info->device),
-+			       EDID_LENGTH);
-+	}
-+
- 	if (out_edid)
- 		*out_edid = edid;
--	if (!edid)
--		return 1;
- 
--	return 0;
-+	return (edid) ? 0 : 1;
- }
-diff --git a/drivers/video/nvidia/nv_proto.h b/drivers/video/nvidia/nv_proto.h
---- a/drivers/video/nvidia/nv_proto.h
-+++ b/drivers/video/nvidia/nv_proto.h
-@@ -34,7 +34,7 @@ void NVLockUnlock(struct nvidia_par *par
- #if defined(CONFIG_FB_NVIDIA_I2C) || defined (CONFIG_PPC_OF)
- void nvidia_create_i2c_busses(struct nvidia_par *par);
- void nvidia_delete_i2c_busses(struct nvidia_par *par);
--int nvidia_probe_i2c_connector(struct nvidia_par *par, int conn,
-+int nvidia_probe_i2c_connector(struct fb_info *info, int conn,
- 			       u8 ** out_edid);
- #else
- #define nvidia_create_i2c_busses(...)
-diff --git a/drivers/video/nvidia/nv_setup.c b/drivers/video/nvidia/nv_setup.c
---- a/drivers/video/nvidia/nv_setup.c
-+++ b/drivers/video/nvidia/nv_setup.c
-@@ -401,7 +401,7 @@ void NVCommonSetup(struct fb_info *info)
- 	nvidia_create_i2c_busses(par);
- 	if (!par->twoHeads) {
- 		par->CRTCnumber = 0;
--		nvidia_probe_i2c_connector(par, 1, &edidA);
-+		nvidia_probe_i2c_connector(info, 1, &edidA);
- 		if (edidA && !fb_parse_edid(edidA, &var)) {
- 			printk("nvidiafb: EDID found from BUS1\n");
- 			monA = &monitorA;
-@@ -488,14 +488,14 @@ void NVCommonSetup(struct fb_info *info)
- 		oldhead = NV_RD32(par->PCRTC0, 0x00000860);
- 		NV_WR32(par->PCRTC0, 0x00000860, oldhead | 0x00000010);
- 
--		nvidia_probe_i2c_connector(par, 1, &edidA);
-+		nvidia_probe_i2c_connector(info, 1, &edidA);
- 		if (edidA && !fb_parse_edid(edidA, &var)) {
- 			printk("nvidiafb: EDID found from BUS1\n");
- 			monA = &monitorA;
- 			fb_edid_to_monspecs(edidA, monA);
- 		}
- 
--		nvidia_probe_i2c_connector(par, 2, &edidB);
-+		nvidia_probe_i2c_connector(info, 2, &edidB);
- 		if (edidB && !fb_parse_edid(edidB, &var)) {
- 			printk("nvidiafb: EDID found from BUS2\n");
- 			monB = &monitorB;
+ 	if (new_scr_end > new_origin)
+-		scr_memsetw((void *)new_origin, vc->vc_video_erase_char, new_scr_end - new_origin);
++		scr_memsetw((void *)new_origin, vc->vc_video_erase_char,
++			    new_scr_end - new_origin);
+ 	if (vc->vc_kmalloced)
+ 		kfree(vc->vc_screenbuf);
+ 	vc->vc_screenbuf = newscreen;
 
 
 

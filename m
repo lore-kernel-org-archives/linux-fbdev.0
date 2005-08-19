@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 5/9] fbdev: Fix greater than 1 bit monochrome color handling
-Date: Sat, 20 Aug 2005 00:43:22 +0800
-Message-ID: <43060C2A.6070609@gmail.com>
+Subject: [PATCH 2/9] savagefb: Driver updates
+Date: Sat, 20 Aug 2005 00:36:12 +0800
+Message-ID: <43060A7C.6010209@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E6HHP-0002OP-Jx
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Aug 2005 17:32:11 -0700
-Received: from wproxy.gmail.com ([64.233.184.194])
+	id 1E6HH6-0002Jf-9B
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Aug 2005 17:31:52 -0700
+Received: from wproxy.gmail.com ([64.233.184.196])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1E6HHO-0000oe-Tf
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Aug 2005 17:32:11 -0700
-Received: by wproxy.gmail.com with SMTP id i21so610611wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 19 Aug 2005 17:32:05 -0700 (PDT)
+	id 1E6HH3-0000fB-PB
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 Aug 2005 17:31:52 -0700
+Received: by wproxy.gmail.com with SMTP id i21so610588wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 19 Aug 2005 17:31:42 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,234 +30,334 @@ Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-    Currently, fbcon assumes that the visual FB_VISUAL_MONO* is always 1 bit.
-    According to Geert, there are old hardware where it's possible to have
-    monochrome at 8-bit, but has only 2 colors, black - 0x00 and white - 0xff.
-    Fix color handlers (fb_get_color_depth, and get_color) for this special case.
+    1. Fallback to firmware EDID if chipset has no DDC/I2C support or if I2C
+    probing failed
 
-    From: Antonino Daplas <adaplas@pol.net>
+    2. Add fb_blank hook
+
+    3. Fix savagefb_suspend/resume to enable driver to successfully suspend
+    and resume from S3, memory or disk
+
     Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/console/bitblit.c |    2 -
- drivers/video/console/fbcon.c   |   26 ++++++++++++++++---------
- drivers/video/fbmem.c           |   41 +++++++++++++++++++++++++++-------------
- drivers/video/nvidia/nvidia.c   |    8 +++----
- include/linux/fb.h              |    3 +-
- 5 files changed, 52 insertions(+), 28 deletions(-)
+ savagefb-i2c.c    |   16 ++++--
+ savagefb.h        |   13 ++++-
+ savagefb_driver.c |  139 +++++++++++++++++++++++++++++++++++++++++++++++-------
+ 3 files changed, 147 insertions(+), 21 deletions(-)
 
-diff --git a/drivers/video/console/bitblit.c b/drivers/video/console/bitblit.c
---- a/drivers/video/console/bitblit.c
-+++ b/drivers/video/console/bitblit.c
-@@ -39,7 +39,7 @@ static inline int get_attribute(struct f
+diff --git a/drivers/video/savage/savagefb-i2c.c b/drivers/video/savage/savagefb-i2c.c
+--- a/drivers/video/savage/savagefb-i2c.c
++++ b/drivers/video/savage/savagefb-i2c.c
+@@ -259,8 +259,9 @@ static u8 *savage_do_probe_i2c_edid(stru
+ 	return buf;
+ }
+ 
+-int savagefb_probe_i2c_connector(struct savagefb_par *par, u8 **out_edid)
++int savagefb_probe_i2c_connector(struct fb_info *info, u8 **out_edid)
  {
- 	int attribute = 0;
++	struct savagefb_par *par = info->par;
+ 	u8 *edid = NULL;
+ 	int i;
  
--	if (fb_get_color_depth(&info->var) == 1) {
-+	if (fb_get_color_depth(&info->var, &info->fix) == 1) {
- 		if (attr_underline(c))
- 			attribute |= FBCON_ATTRIBUTE_UNDERLINE;
- 		if (attr_reverse(c))
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -214,7 +214,7 @@ static inline int fbcon_is_inactive(stru
- static inline int get_color(struct vc_data *vc, struct fb_info *info,
- 	      u16 c, int is_fg)
- {
--	int depth = fb_get_color_depth(&info->var);
-+	int depth = fb_get_color_depth(&info->var, &info->fix);
- 	int color = 0;
- 
- 	if (console_blanked) {
-@@ -230,9 +230,13 @@ static inline int get_color(struct vc_da
- 	switch (depth) {
- 	case 1:
- 	{
-+		int col = ~(0xfff << (max(info->var.green.length,
-+					  max(info->var.red.length,
-+					      info->var.blue.length)))) & 0xff;
-+
- 		/* 0 or 1 */
--		int fg = (info->fix.visual != FB_VISUAL_MONO01) ? 1 : 0;
--		int bg = (info->fix.visual != FB_VISUAL_MONO01) ? 0 : 1;
-+		int fg = (info->fix.visual != FB_VISUAL_MONO01) ? col : 0;
-+		int bg = (info->fix.visual != FB_VISUAL_MONO01) ? 0 : col;
- 
- 		if (console_blanked)
- 			fg = bg;
-@@ -246,7 +250,6 @@ static inline int get_color(struct vc_da
- 		 * is grayscale.
- 		 */
- 		color /= 4;
--		break;
- 	case 3:
- 		/*
- 		 * Last 8 entries of default 16-color palette is a more intense
-@@ -426,7 +429,7 @@ static void fbcon_prepare_logo(struct vc
- 	 * remove underline attribute from erase character
- 	 * if black and white framebuffer.
- 	 */
--	if (fb_get_color_depth(&info->var) == 1)
-+	if (fb_get_color_depth(&info->var, &info->fix) == 1)
- 		erase &= ~0x400;
- 	logo_height = fb_prepare_logo(info);
- 	logo_lines = (logo_height + vc->vc_font.height - 1) /
-@@ -930,7 +933,7 @@ static void fbcon_init(struct vc_data *v
+@@ -270,12 +271,19 @@ int savagefb_probe_i2c_connector(struct 
+ 		if (edid)
+ 			break;
  	}
- 	if (p->userfont)
- 		charcnt = FNTCHARCNT(p->fontdata);
--	vc->vc_can_do_color = (fb_get_color_depth(&info->var) != 1);
-+	vc->vc_can_do_color = (fb_get_color_depth(&info->var, &info->fix)!=1);
- 	vc->vc_complement_mask = vc->vc_can_do_color ? 0x7700 : 0x0800;
- 	if (charcnt == 256) {
- 		vc->vc_hi_font_mask = 0;
-@@ -1178,7 +1181,12 @@ static void fbcon_set_disp(struct fb_inf
- 	if (p->userfont)
- 		charcnt = FNTCHARCNT(p->fontdata);
- 
--	vc->vc_can_do_color = (fb_get_color_depth(var) != 1);
-+	var->activate = FB_ACTIVATE_NOW;
-+	info->var.activate = var->activate;
-+	info->var.yoffset = info->var.xoffset = 0;
-+	fb_set_var(info, var);
 +
-+	vc->vc_can_do_color = (fb_get_color_depth(&info->var, &info->fix)!=1);
- 	vc->vc_complement_mask = vc->vc_can_do_color ? 0x7700 : 0x0800;
- 	if (charcnt == 256) {
- 		vc->vc_hi_font_mask = 0;
-@@ -1967,7 +1975,7 @@ static int fbcon_switch(struct vc_data *
- 	set_blitting_type(vc, info, p);
- 	((struct fbcon_ops *)info->fbcon_par)->cursor_reset = 1;
- 
--	vc->vc_can_do_color = (fb_get_color_depth(&info->var) != 1);
-+	vc->vc_can_do_color = (fb_get_color_depth(&info->var, &info->fix)!=1);
- 	vc->vc_complement_mask = vc->vc_can_do_color ? 0x7700 : 0x0800;
- 	updatescrollmode(p, info, vc);
- 
-@@ -2332,7 +2340,7 @@ static int fbcon_set_palette(struct vc_d
- 	if (!CON_IS_VISIBLE(vc))
- 		return 0;
- 
--	depth = fb_get_color_depth(&info->var);
-+	depth = fb_get_color_depth(&info->var, &info->fix);
- 	if (depth > 3) {
- 		for (i = j = 0; i < 16; i++) {
- 			k = table[i];
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -62,16 +62,26 @@ int num_registered_fb;
-  * Helpers
-  */
- 
--int fb_get_color_depth(struct fb_var_screeninfo *var)
-+int fb_get_color_depth(struct fb_var_screeninfo *var,
-+		       struct fb_fix_screeninfo *fix)
- {
--	if (var->green.length == var->blue.length &&
--	    var->green.length == var->red.length &&
--	    !var->green.offset && !var->blue.offset &&
--	    !var->red.offset)
--		return var->green.length;
--	else
--		return (var->green.length + var->red.length +
--			var->blue.length);
-+	int depth = 0;
-+
-+	if (fix->visual == FB_VISUAL_MONO01 ||
-+	    fix->visual == FB_VISUAL_MONO10)
-+		depth = 1;
-+	else {
-+		if (var->green.length == var->blue.length &&
-+		    var->green.length == var->red.length &&
-+		    var->green.offset == var->blue.offset &&
-+		    var->green.offset == var->red.offset)
-+			depth = var->green.length;
-+		else
-+			depth = var->green.length + var->red.length +
-+				var->blue.length;
++	if (!edid) {
++		/* try to get from firmware */
++		edid = kmalloc(EDID_LENGTH, GFP_KERNEL);
++		if (edid)
++			memcpy(edid, fb_firmware_edid(info->device),
++			       EDID_LENGTH);
 +	}
 +
-+	return depth;
+ 	if (out_edid)
+ 		*out_edid = edid;
+-	if (!edid)
+-		return 1;
+ 
+-	return 0;
++	return (edid) ? 0 : 1;
  }
- EXPORT_SYMBOL(fb_get_color_depth);
  
-@@ -249,13 +259,18 @@ static void fb_set_logo(struct fb_info *
- 			       const struct linux_logo *logo, u8 *dst,
- 			       int depth)
- {
--	int i, j, k, fg = 1;
-+	int i, j, k;
- 	const u8 *src = logo->data;
--	u8 d, xor = (info->fix.visual == FB_VISUAL_MONO01) ? 0xff : 0;
-+	u8 xor = (info->fix.visual == FB_VISUAL_MONO01) ? 0xff : 0;
-+	u8 fg = 1, d;
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/video/savage/savagefb.h b/drivers/video/savage/savagefb.h
+--- a/drivers/video/savage/savagefb.h
++++ b/drivers/video/savage/savagefb.h
+@@ -60,6 +60,7 @@
  
--	if (fb_get_color_depth(&info->var) == 3)
-+	if (fb_get_color_depth(&info->var, &info->fix) == 3)
- 		fg = 7;
+ #define S3_SAVAGE_SERIES(chip)    ((chip>=S3_SAVAGE3D) && (chip<=S3_SAVAGE2000))
  
-+	if (info->fix.visual == FB_VISUAL_MONO01 ||
-+	    info->fix.visual == FB_VISUAL_MONO10)
-+		fg = ~((u8) (0xfff << info->var.green.length));
++#define S3_MOBILE_TWISTER_SERIES(chip) ((chip==S3_TWISTER) || (chip == S3_PROSAVAGEDDR))
+ 
+ /* Chip tags.  These are used to group the adapters into
+  * related families.
+@@ -73,6 +74,8 @@ typedef enum {
+   S3_PROSAVAGE,
+   S3_SUPERSAVAGE,
+   S3_SAVAGE2000,
++  S3_PROSAVAGEDDR,
++  S3_TWISTER,
+   S3_LAST
+ } savage_chipset;
+ 
+@@ -128,6 +131,10 @@ typedef enum {
+ #define BCI_CMD_SET_ROP(cmd, rop)    ((cmd) |= ((rop & 0xFF) << 16))
+ #define BCI_CMD_SEND_COLOR           0x00008000
+ 
++#define DISP_CRT     1
++#define DISP_LCD     2
++#define DISP_DFP     3
 +
- 	switch (depth) {
- 	case 4:
- 		for (i = 0; i < logo->height; i++)
-@@ -318,7 +333,7 @@ static struct logo_data {
+ struct xtimings {
+ 	unsigned int Clock;
+ 	unsigned int HDisplay;
+@@ -166,6 +173,10 @@ struct savagefb_par {
+ 	struct savagefb_i2c_chan chan;
+ 	unsigned char   *edid;
+ 	u32 pseudo_palette[16];
++	int pm_state;
++	int display_type;
++	int dvi;
++	int crtonly;
+ 	int dacSpeedBpp;
+ 	int maxClock;
+ 	int minClock;
+@@ -338,7 +349,7 @@ do {                       \
+ 	} \
+ }
  
- int fb_prepare_logo(struct fb_info *info)
- {
--	int depth = fb_get_color_depth(&info->var);
-+	int depth = fb_get_color_depth(&info->var, &info->fix);
+-extern int savagefb_probe_i2c_connector(struct savagefb_par *par,
++extern int savagefb_probe_i2c_connector(struct fb_info *info,
+ 					u8 **out_edid);
+ extern void savagefb_create_i2c_busses(struct fb_info *info);
+ extern void savagefb_delete_i2c_busses(struct fb_info *info);
+diff --git a/drivers/video/savage/savagefb_driver.c b/drivers/video/savage/savagefb_driver.c
+--- a/drivers/video/savage/savagefb_driver.c
++++ b/drivers/video/savage/savagefb_driver.c
+@@ -1400,6 +1400,58 @@ static int savagefb_pan_display (struct 
+ 	return 0;
+ }
  
- 	memset(&fb_logo, 0, sizeof(struct logo_data));
- 
-diff --git a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
---- a/drivers/video/nvidia/nvidia.c
-+++ b/drivers/video/nvidia/nvidia.c
-@@ -658,7 +658,7 @@ static int nvidia_calc_regs(struct fb_in
- {
- 	struct nvidia_par *par = info->par;
- 	struct _riva_hw_state *state = &par->ModeReg;
--	int i, depth = fb_get_color_depth(&info->var);
-+	int i, depth = fb_get_color_depth(&info->var, &info->fix);
- 	int h_display = info->var.xres / 8 - 1;
- 	int h_start = (info->var.xres + info->var.right_margin) / 8 - 1;
- 	int h_end = (info->var.xres + info->var.right_margin +
-@@ -978,6 +978,9 @@ static int nvidiafb_set_par(struct fb_in
- 	    !par->twoHeads)
- 		par->FPDither = 0;
- 
-+	info->fix.visual = (info->var.bits_per_pixel == 8) ?
-+	    FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_DIRECTCOLOR;
++static int savagefb_blank(int blank, struct fb_info *info)
++{
++	struct savagefb_par *par = info->par;
++	u8 sr8 = 0, srd = 0;
 +
- 	nvidia_init_vga(info);
- 	nvidia_calc_regs(info);
- 	nvidia_write_regs(par);
-@@ -992,9 +995,6 @@ static int nvidiafb_set_par(struct fb_in
- 	NVWriteCrtc(par, 0x11, 0x00);
- 	info->fix.line_length = (info->var.xres_virtual *
- 				 info->var.bits_per_pixel) >> 3;
--	info->fix.visual = (info->var.bits_per_pixel == 8) ?
--	    FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_DIRECTCOLOR;
++	if (par->display_type == DISP_CRT) {
++		vga_out8(0x3c4, 0x08);
++		sr8 = vga_in8(0x3c5);
++		sr8 |= 0x06;
++		vga_out8(0x3c5, sr8);
++		vga_out8(0x3c4, 0x0d);
++		srd = vga_in8(0x3c5);
++		srd &= 0x03;
++
++		switch (blank) {
++		case FB_BLANK_UNBLANK:
++		case FB_BLANK_NORMAL:
++			break;
++		case FB_BLANK_VSYNC_SUSPEND:
++			srd |= 0x10;
++			break;
++		case FB_BLANK_HSYNC_SUSPEND:
++			srd |= 0x40;
++			break;
++		case FB_BLANK_POWERDOWN:
++			srd |= 0x50;
++			break;
++		}
++
++		vga_out8(0x3c4, 0x0d);
++		vga_out8(0x3c5, srd);
++	}
++
++	if (par->display_type == DISP_LCD ||
++	    par->display_type == DISP_DFP) {
++		switch(blank) {
++		case FB_BLANK_UNBLANK:
++		case FB_BLANK_NORMAL:
++			vga_out8(0x3c4, 0x31); /* SR31 bit 4 - FP enable */
++			vga_out8(0x3c5, vga_in8(0x3c5) | 0x10);
++			break;
++		case FB_BLANK_VSYNC_SUSPEND:
++		case FB_BLANK_HSYNC_SUSPEND:
++		case FB_BLANK_POWERDOWN:
++			vga_out8(0x3c4, 0x31); /* SR31 bit 4 - FP enable */
++			vga_out8(0x3c5, vga_in8(0x3c5) & ~0x10);
++			break;
++		}
++	}
++
++	return (blank == FB_BLANK_NORMAL) ? 1 : 0;
++}
+ 
+ static struct fb_ops savagefb_ops = {
+ 	.owner          = THIS_MODULE,
+@@ -1407,6 +1459,7 @@ static struct fb_ops savagefb_ops = {
+ 	.fb_set_par     = savagefb_set_par,
+ 	.fb_setcolreg   = savagefb_setcolreg,
+ 	.fb_pan_display = savagefb_pan_display,
++	.fb_blank       = savagefb_blank,
+ #if defined(CONFIG_FB_SAVAGE_ACCEL)
+ 	.fb_fillrect    = savagefb_fillrect,
+ 	.fb_copyarea    = savagefb_copyarea,
+@@ -1583,8 +1636,7 @@ static int __devinit savage_init_hw (str
+ 	static unsigned char RamSavage4[] =  { 2, 4, 8, 12, 16, 32, 64, 32 };
+ 	static unsigned char RamSavageMX[] = { 2, 8, 4, 16, 8, 16, 4, 16 };
+ 	static unsigned char RamSavageNB[] = { 0, 2, 4, 8, 16, 32, 2, 2 };
 -
- 	if (info->var.accel_flags) {
- 		info->fbops->fb_imageblit = nvidiafb_imageblit;
- 		info->fbops->fb_fillrect = nvidiafb_fillrect;
-diff --git a/include/linux/fb.h b/include/linux/fb.h
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -823,7 +823,8 @@ extern void fb_pad_unaligned_buffer(u8 *
- 				u32 height, u32 shift_high, u32 shift_low, u32 mod);
- extern void fb_pad_aligned_buffer(u8 *dst, u32 d_pitch, u8 *src, u32 s_pitch, u32 height);
- extern void fb_set_suspend(struct fb_info *info, int state);
--extern int fb_get_color_depth(struct fb_var_screeninfo *var);
-+extern int fb_get_color_depth(struct fb_var_screeninfo *var,
-+			      struct fb_fix_screeninfo *fix);
- extern int fb_get_options(char *name, char **option);
- extern int fb_new_modelist(struct fb_info *info);
+-	int videoRam, videoRambytes;
++	int videoRam, videoRambytes, dvi;
+ 
+ 	DBG("savage_init_hw");
+ 
+@@ -1705,6 +1757,30 @@ static int __devinit savage_init_hw (str
+ 	printk (KERN_INFO "savagefb: Detected current MCLK value of %d kHz\n",
+ 		par->MCLK);
+ 
++	/* check for DVI/flat panel */
++	dvi = 0;
++
++	if (par->chip == S3_SAVAGE4) {
++		unsigned char sr30 = 0x00;
++
++		vga_out8(0x3c4, 0x30);
++		/* clear bit 1 */
++		vga_out8(0x3c5, vga_in8(0x3c5) & ~0x02);
++		sr30 = vga_in8(0x3c5);
++		if (sr30 & 0x02 /*0x04 */) {
++			dvi = 1;
++			printk("savagefb: Digital Flat Panel Detected\n");
++		}
++	}
++
++	if (S3_SAVAGE_MOBILE_SERIES(par->chip) ||
++	    (S3_MOBILE_TWISTER_SERIES(par->chip) && !par->crtonly))
++		par->display_type = DISP_LCD;
++	else if (dvi || (par->chip == S3_SAVAGE4 && par->dvi))
++		par->display_type = DISP_DFP;
++	else
++		par->display_type = DISP_CRT;
++
+ 	/* Check LCD panel parrmation */
+ 
+ 	if (par->chip == S3_SAVAGE_MX) {
+@@ -1759,7 +1835,8 @@ static int __devinit savage_init_hw (str
+ 			par->SavagePanelWidth = panelX;
+ 			par->SavagePanelHeight = panelY;
+ 
+-		}
++		} else
++			par->display_type = DISP_CRT;
+ 	}
+ 
+ 	savage_get_default_par (par);
+@@ -1845,15 +1922,15 @@ static int __devinit savage_init_fb_info
+ 		snprintf (info->fix.id, 16, "ProSavageKM");
+ 		break;
+ 	case FB_ACCEL_S3TWISTER_P:
+-		par->chip = S3_PROSAVAGE;
++		par->chip = S3_TWISTER;
+ 		snprintf (info->fix.id, 16, "TwisterP");
+ 		break;
+ 	case FB_ACCEL_S3TWISTER_K:
+-		par->chip = S3_PROSAVAGE;
++		par->chip = S3_TWISTER;
+ 		snprintf (info->fix.id, 16, "TwisterK");
+ 		break;
+ 	case FB_ACCEL_PROSAVAGE_DDR:
+-		par->chip = S3_PROSAVAGE;
++		par->chip = S3_PROSAVAGEDDR;
+ 		snprintf (info->fix.id, 16, "ProSavageDDR");
+ 		break;
+ 	case FB_ACCEL_PROSAVAGE_DDRK:
+@@ -1959,7 +2036,8 @@ static int __devinit savagefb_probe (str
+ 	INIT_LIST_HEAD(&info->modelist);
+ #if defined(CONFIG_FB_SAVAGE_I2C)
+ 	savagefb_create_i2c_busses(info);
+-	savagefb_probe_i2c_connector(par, &par->edid);
++	savagefb_probe_i2c_connector(info, &par->edid);
++	kfree(par->edid);
+ 	fb_edid_to_monspecs(par->edid, &info->monspecs);
+ 	fb_videomode_to_modelist(info->monspecs.modedb,
+ 				 info->monspecs.modedb_len,
+@@ -2111,13 +2189,30 @@ static int savagefb_suspend (struct pci_
+ 
+ 	DBG("savagefb_suspend");
+ 
++
++	par->pm_state = state.event;
++
++	/*
++	 * For PM_EVENT_FREEZE, do not power down so the console
++	 * can remain active.
++	 */
++	if (state.event == PM_EVENT_FREEZE) {
++		dev->dev.power.power_state = state;
++		return 0;
++	}
++
+ 	acquire_console_sem();
+-	fb_set_suspend(info, pci_choose_state(dev, state));
+-	savage_disable_mmio(par);
+-	release_console_sem();
++	fb_set_suspend(info, 1);
++
++	if (info->fbops->fb_sync)
++		info->fbops->fb_sync(info);
+ 
++	savagefb_blank(FB_BLANK_POWERDOWN, info);
++	savage_disable_mmio(par);
++	pci_save_state(dev);
+ 	pci_disable_device(dev);
+ 	pci_set_power_state(dev, pci_choose_state(dev, state));
++	release_console_sem();
+ 
+ 	return 0;
+ }
+@@ -2127,22 +2222,34 @@ static int savagefb_resume (struct pci_d
+ 	struct fb_info *info =
+ 		(struct fb_info *)pci_get_drvdata(dev);
+ 	struct savagefb_par *par = (struct savagefb_par *)info->par;
++	int cur_state = par->pm_state;
+ 
+ 	DBG("savage_resume");
+ 
+-	pci_set_power_state(dev, 0);
+-	pci_restore_state(dev);
+-	if(pci_enable_device(dev))
+-		DBG("err");
++	par->pm_state = PM_EVENT_ON;
+ 
+-	SavagePrintRegs();
++	/*
++	 * The adapter was not powered down coming back from a
++	 * PM_EVENT_FREEZE.
++	 */
++	if (cur_state == PM_EVENT_FREEZE) {
++		pci_set_power_state(dev, PCI_D0);
++		return 0;
++	}
+ 
+ 	acquire_console_sem();
+ 
++	pci_set_power_state(dev, PCI_D0);
++	pci_restore_state(dev);
++
++	if(pci_enable_device(dev))
++		DBG("err");
++
++	pci_set_master(dev);
+ 	savage_enable_mmio(par);
+ 	savage_init_hw(par);
+ 	savagefb_set_par (info);
+-
++	savagefb_blank(FB_BLANK_UNBLANK, info);
+ 	fb_set_suspend (info, 0);
+ 	release_console_sem();
  
 
 

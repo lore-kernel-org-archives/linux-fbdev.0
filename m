@@ -1,35 +1,24 @@
-From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@daenzer.net>
-Subject: Re: Hardware specs?
-Date: Sat, 20 Aug 2005 19:42:11 -0400
-Message-ID: <1124581331.4877.94.camel@localhost>
-References: <43035F25.5000907@cs.tcd.ie>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: mono, gray and index configs
+Date: Mon, 22 Aug 2005 12:17:28 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0508221203410.24432@numbat.sonytel.be>
+References: <9e47339105081020216574ac7e@mail.gmail.com> <42FAE3F8.8080902@gmail.com>
+ <Pine.LNX.4.62.0508111020520.1037@numbat.sonytel.be>
+ <b00ca3bd05081104086fa9e639@mail.gmail.com> <Pine.LNX.4.62.0508111344070.1037@numbat.sonytel.be>
+ <42FB8C29.4070503@gmail.com> <9e47339105081112142c67e1a8@mail.gmail.com><43069BE0.80604@gmail.com>
+ <9e473391050819200950020d7@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E6cyx-0000MU-JW
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 20 Aug 2005 16:42:35 -0700
-Received: from darkcity.gna.ch ([195.226.6.9])
+	id 1E79NS-0003tj-Vj
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 22 Aug 2005 03:18:02 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1E6cyw-0007QP-5B
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 20 Aug 2005 16:42:35 -0700
-Received: from localhost (localhost [127.0.0.1])
-	by darkcity.gna.ch (Postfix) with ESMTP id 531701D348E
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 21 Aug 2005 01:42:25 +0200 (CEST)
-Received: from unknown by localhost (amavisd-new, unix socket)
- id client-XXU1PN4l for <linux-fbdev-devel@lists.sourceforge.net>;
- Sun, 21 Aug 2005 01:42:23 +0200 (CEST)
-Received: from localhost (CPE001124084852-CM014500006147.cpe.net.cable.rogers.com [65.48.154.37])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by darkcity.gna.ch (Postfix) with ESMTP id C358C1D348E
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 21 Aug 2005 01:42:15 +0200 (CEST)
-Received: from daenzer by localhost with local (Exim 4.52)
-	id 1E6cya-0005tH-4v
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 20 Aug 2005 19:42:12 -0400
-In-Reply-To: <43035F25.5000907@cs.tcd.ie>
+	id 1E79NS-000140-Dl
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 22 Aug 2005 03:18:02 -0700
+In-Reply-To: <9e473391050819200950020d7@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -40,39 +29,60 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, 2005-08-17 at 17:00 +0100, Keith O'Conor wrote:=20
->=20
-> Up until now I've been only developing graphics applications, so alot of=20
-> these things are new to me - pixel clocks, horizontal timings, PLL, MTRR=20
-> etc.etc.... it's all quite overwhelming. I've been reading as much as I=20
-> can, but there are still big gaps in my understanding - how did everyone=20
-> else get up to speed in this area?
+On Fri, 19 Aug 2005, Jon Smirl wrote:
+> The patch is just for testing, don't send it on. The radeonfb portion
+> is definitely not finished.
+> 
+> This adds an optional function to each driver that advertises what
+> configs it offers.
+> 
+> +char *radeonfb_getconfigs(struct fb_info *info)
+> +{
+> +	return "I4\nI8\nA1R5G5B5\nR5G6B5\nR8G8B8\nA8R8G8B8\nA4R4G4B4\nA8I8\nA2R10G10B10\n";
+> +}
+>  
+>   static struct fb_ops radeonfb_ops = {
+>  	.owner			= THIS_MODULE,
+> @@ -1873,6 +1909,7 @@ static struct fb_ops radeonfb_ops = {
+>  	.fb_fillrect		= radeonfb_fillrect,
+>  	.fb_copyarea		= radeonfb_copyarea,
+>  	.fb_imageblit		= radeonfb_imageblit,
+> +	.fb_get_configs		= radeonfb_getconfigs,
+>  };
 
-I did it basically the way you're doing it, by reading and tweaking
-code. :)
+Do we really need this?
 
+You can easily write a `probe loop' to find out about all supported configs for
+a driver like this:
 
-> My main problem is that although it's fairly easy to follow the radeonfb=20
-> source and the fb in general, when it comes to what register does what=20
-> I'm completely lost. Did the people who wrote the driver have technical=20
-> specs from ATI telling them which did what?=20
+    for_all_possible_configs(config) {
+	struct fb_var_screeninfo var;
+	set_up_var(var, config);
+	var.activate |= FB_ACTIVATE_TEST;
+	if (ioctl(FBIOPUT_VSCREENINFO)) {
+	    /* config not supported */
+	} else if (config_has_changed(var, config) {
+	    /* config not supported */
+	} else {
+	    /* config is supported */
+	}
+    }
 
-Some of us do, yes.
+Gr{oetje,eeting}s,
 
-> Are the specs openly available, only under NDA, or not at all?!
+						Geert
 
-Only under NDA, and I'm afraid it's hard to get them even under that
-ATM. Your best way forward might be to ask specific questions about
-existing code.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-
---=20
-Earthling Michel D=C3=A4nzer      |     Debian (powerpc), X and DRI develop=
-er
-Libre software enthusiast    |   http://svcs.affero.net/rm.php?r=3Ddaenzer
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

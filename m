@@ -1,18 +1,24 @@
-From: =?iso-8859-1?B?cnViZW4gcXVp8W9uZXMgcnVpeg==?= <yosoytelekin@hotmail.com>
-Subject: Re: I can't get mapping ram work (Arm kernel 2.4 )
-Date: Thu, 25 Aug 2005 20:05:05 +0200
-Message-ID: <BAY109-F21B4E3CE3F5CC94D769D58C8AB0@phx.gbl>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: BUG: fb_imageblit called before fb_check_var
+ and fb_set_par function
+Date: Fri, 26 Aug 2005 02:09:14 +0800
+Message-ID: <430E094A.9030603@gmail.com>
+References: <430DB8E6.8000204@t-online.de> <430DD026.2070303@gmail.com> <430DEAD0.8070403@t-online.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E8M66-0006Ng-6X
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Aug 2005 11:05:06 -0700
-Received: from bay109-f21.bay109.hotmail.com ([64.4.19.31] helo=hotmail.com)
+	id 1E8MAL-0006Y6-0g
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Aug 2005 11:09:29 -0700
+Received: from wproxy.gmail.com ([64.233.184.199])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1E8M66-0005oy-0o
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Aug 2005 11:05:06 -0700
+	id 1E8MAJ-0006lS-Tn
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Aug 2005 11:09:28 -0700
+Received: by wproxy.gmail.com with SMTP id i13so382793wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 25 Aug 2005 11:09:20 -0700 (PDT)
+In-Reply-To: <430DEAD0.8070403@t-online.de>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -24,105 +30,112 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Knut Petersen <Knut_Petersen@t-online.de>
 
-TONY wrote:
------------
-How did you allocate this buffer?  Is is system RAM?  If it's system RAM,
-did you use kmalloc, vmalloc or __get_free_pages. (kmalloc, vmalloc usually
-do not work, you have to use __get_free_pages).
-  Tony
----------
+Knut Petersen wrote:
+> Hi Antonino,
+>=20
+> BTW: Thanks to Jochen Hein for testing cyblafb and reporting the
+> very long timeout after switching from X to console!
+>=20
+>>> I never had expected that upon switching from X to a linux console
+>>> drawing functions like fb_imageblit would be called before the
+>>> fb_check_var and  fb_set_par functions have been called. But that=B4s
+>>> definitely the case.
+>>
+>> I'm surprised.  That was a problem in earlier versions of the kernel
+>> but I think that was fixed.  If you look at fbcon code, all calls to
+>> drawing functions:
+>=20
+> My system is based on SuSE 9.2.
+> Kernel 2.6.13-rc7
+>=20
+> 1. If I do compile cyblafb as a module, there is no problem.
+>=20
+> 2. If I compile cyblafb into the kernel, there is no problem if
+> the first runlevel is 3 and I switch to runlevel 5 after login to
+> a console.
+>=20
+> 3. If I compile cyblafb into the kernel, the problem is 100% reproducib=
+le
+> if the first runlevel is 5. ps ax -H in that case:
+>=20
+> 1342 ?        Ss       0:00   /usr/sbin/cron
+> 1352 ?        Ss       0:00   /usr/sbin/gpm -m /dev/ttyS0 -t ms
+> 1362 ?        S        0:00   /opt/kde3/bin/kdm
+> 1385 ?        S        0:20     /usr/X11R6/bin/X -nolisten tcp -br vt7=20
+> -auth /var/lib/xdm/authdir/authfiles/A:0-Zgg52m
+> 1392 ?        S        0:00     -:0             1681 ?        S       =20
+> 0:00       /bin/sh /usr/X11R6/bin/kde
+> 1716 ?        S        0:00         gpg-agent --daemon --no-detach=20
+> --keep-display /bin/bash /etc/X11/xinit/xinitrc
+> 1786 ?        S        0:00         kwrapper ksmserver
+> 1648 ?        Ss       0:00   login -- root    1744 tty1    Ss+   =20
+> 0:00     -bash
+> 1649 tty2    Ss+    0:00   /sbin/mingetty tty2
+>=20
+> The very first time I switch back from X to a linux console the bug
+> is triggered. cyblafb_sync() , called from cyblafb_imageblit(), times
+> out because mmio is switched off. Then a number of drawing functions
+> is called before the checkvar() and the setpar() are executed.
+>=20
+> Let=B4s count in /var/log/messages .... exactly 64 calls.
+>=20
+> 64 (rows) * 16 (font height) =3D 1024 (screen height). I have not verif=
+ied=20
+> that
+> all those calls are imageblits, but  it seems that somebody wants to re=
+draw
+> the screen.
+>=20
+> After that the bug never triggers again.
+>=20
+> I wonder why there should be a difference between kdm executed first
+> or login executed first, but that=B4s the case.
 
-Hi Tony, yeah , I use __get_free_pages : (this function is called in int=20
-init_module(void) )
+I tried to duplicate the problem, but failed.
 
-int slcdc_init_buffer(void)
-{
-	u_int required_pages;
-	u_int extra_pages;
-	u_int order;
-	struct page *page;
-	u16  *allocated_region;
+First, I inserted stub calls, disable_device(info). I inserted it in fbco=
+n_blank(),
+if blank !=3D 0 and mode_switch !=3D 0. I also inserted another one in fb=
+con_switch(),
+if vc->vc_mode =3D=3D KD_GRAPHICS. These are the circumstances when the c=
+onsole is
+about to be acquired by a graphics apps like X.  Then the stub function,
+disable_device(), in the fbdev driver, just sets a flag.  This flag is cl=
+eared
+on a set_par(). This flag is also checked by the sync, imageblit, fillrec=
+t and
+copyarea functions, which prints something when this flag !=3D 0. I'm not=
+ getting
+any messages.  Which, if I interpret this correctly, that a set_par will =
+always
+be called before any of the drawing functions.
 
-	printk("slcdc data buffer size =3D %x \n",(unsigned int)SLCDC_DATA_MEM_SIZ=
-E);
+The circumstance I can think of that this can happen is when the app fail=
+s to
+set the VT to KD_GRAPHICS mode, but I'm pretty sure kdm does it properly,=
+ in=20
+my machine at least (Suse 9.0).
 
-	if(g_slcdc_dbuffer_address !=3D NULL)
-		return -EINVAL;
-	if(g_slcdc_cbuffer_address !=3D NULL)
-		return -EINVAL;
-	/*find order required to allocate enough memory for it*/
-	required_pages =3D SLCDC_DATA_MEM_SIZE >> PAGE_SHIFT;
-	for (order =3D 0; required_pages >> order; order++){;}
-	extra_pages =3D (1 << order) - required_pages;
-	printk("PAGE_SHIFT=3D0x%x required_pages=3D0x%x\n",PAGE_SHIFT,required_pag=
-es);
-	printk("extra_page=3D0x%x \n",extra_pages);
+Perhaps, if you have the time, you can instrument it better so we can pin=
+point
+where this unwanted calls are coming from.  Months were spent trying to f=
+ix this
+problem, mainly by BenH, and I don't want any stones left unturned.
 
-	if((allocated_region =3D	(u_char *)__get_free_pages(GFP_KERNEL | GFP_DMA, =
+Tony
 
-order)) =3D=3D NULL)
-	{
-		printk("can not allocated memory\n");
-       	return -ENOMEM;
-	}
-
-	g_slcdc_dbuffer_address =3D (u_char *)allocated_region + (extra_pages <<=20
-PAGE_SHIFT);
-	g_slcdc_dbuffer_phyaddress =3D (u_char=20
-*)__virt_to_phys((u_long)g_slcdc_dbuffer_address);
-	printk("g_slcdc_dbuffer_address=3D0x%x \n",(unsigned=20
-int)g_slcdc_dbuffer_address);
-
-    	/* Free all pages that we don't need but were given to us because */
-   	 /* __get_free_pages() works on powers of 2. */
-   	for (;extra_pages;extra_pages--)
-		free_page((u_int)allocated_region + ((extra_pages-1) << PAGE_SHIFT));
-
-	/* Set reserved flag for fb memory to allow it to be remapped into */
-	/* user space by the common fbmem driver using remap_page_range(). */
-	for(page =3D virt_to_page(g_slcdc_dbuffer_address);
-		page < virt_to_page(g_slcdc_dbuffer_address + SLCDC_DATA_MEM_SIZE);
-	    page++)
-	{
-		mem_map_reserve(page);
-	}
-	slcdc_par.screen_start_address =20
-=3D(u_char*)((u_long)g_slcdc_dbuffer_phyaddress);
-	slcdc_par.v_screen_start_address=20
-=3D(u_char*)((u_long)g_slcdc_dbuffer_address);
-	printk("startaddr=3D 0x%x, phyaddr=3D0x%x , size=3D0x%x \n",(unsigned=20
-int)slcdc_par.screen_start_address,(unsigned=20
-int)slcdc_par.v_screen_start_address,(unsigned int)SLCDC_DATA_MEM_SIZE);
-	memset(slcdc_par.v_screen_start_address,0,SLCDC_DATA_MEM_SIZE);
-
-	g_slcdc_cbuffer_address =3D=20
-consistent_alloc(GFP_KERNEL|GFP_DMA,(SLCDC_CMD_MEM_SIZE+4),&g_slcdc_cbuffer=
-_phyaddress);
-	g_slcdc_cbuffer_address =3D (u_long)g_slcdc_cbuffer_address & 0xfffffff4;
-	g_slcdc_cbuffer_phyaddress =3D (u_long)g_slcdc_cbuffer_phyaddress &=20
-0xfffffff4;
-
-	printk("slcdc data buffer address =3D %x cmd buffer address=3D %x \n",(uns=
-igned=20
-int)slcdc_par.screen_start_address,(unsigned int) g_slcdc_cbuffer_address);
-
-	return 0;
-}
-
-I think , I must have a stupid error that fuck's me.. but I don't find it=20
-:-p
-
-Yours Faithfully,
-Rub=E9n Qui=F1ones Ruiz -- UAH University -- Spain
-
-
+PS: I don't know the console subsystem that well, so there may be pathway=
+s that
+I don't know about.
 
 
 -------------------------------------------------------
 SF.Net email is Sponsored by the Better Software Conference & EXPO
-September 19-22, 2005 * San Francisco, CA * Development Lifecycle Practices
-Agile & Plan-Driven Development * Managing Projects & Teams * Testing & QA
+September 19-22, 2005 * San Francisco, CA * Development Lifecycle Practic=
+es
+Agile & Plan-Driven Development * Managing Projects & Teams * Testing & Q=
+A
 Security * Process Improvement & Measurement * http://www.sqe.com/bsce5sf

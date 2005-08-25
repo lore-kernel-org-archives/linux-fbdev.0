@@ -1,22 +1,20 @@
-From: Knut Petersen <Knut_Petersen@t-online.de>
-Subject: Re: BUG: fb_imageblit called before fb_check_var
- and fb_set_par function
-Date: Thu, 25 Aug 2005 17:59:12 +0200
-Message-ID: <430DEAD0.8070403@t-online.de>
-References: <430DB8E6.8000204@t-online.de> <430DD026.2070303@gmail.com>
+From: =?iso-8859-1?B?cnViZW4gcXVp8W9uZXMgcnVpeg==?= <yosoytelekin@hotmail.com>
+Subject: I can't get mapping ram  work  (Arm kernel 2.4 )
+Date: Thu, 25 Aug 2005 19:19:38 +0200
+Message-ID: <BAY109-F126BB75533BFE132A84B9EC8AB0@phx.gbl>
+References: <20050825165333.3D585339DD@sc8-sf-spam1.sourceforge.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E8K5o-00082V-6b
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Aug 2005 08:56:40 -0700
-Received: from mailout02.sul.t-online.com ([194.25.134.17])
+	id 1E8LO7-0004Tj-E4
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Aug 2005 10:19:39 -0700
+Received: from bay109-f12.bay109.hotmail.com ([64.4.19.22] helo=hotmail.com)
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1E8K5k-0004PD-UJ
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Aug 2005 08:56:40 -0700
-In-Reply-To: <430DD026.2070303@gmail.com>
+	id 1E8LO7-0004on-5L
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Aug 2005 10:19:39 -0700
+In-Reply-To: <20050825165333.3D585339DD@sc8-sf-spam1.sourceforge.net>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,78 +26,105 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>
 
-Hi Antonino,
+Hello everybody,
 
-BTW: Thanks to Jochen Hein for testing cyblafb and reporting the
-very long timeout after switching from X to console!
+I'm developing a framebuffer display driver with an armv5 based architectur=
+e=20
+.
+I've been able to send commands and display what I want using the Ioctl=20
+methods (the display works fine).
 
->> I never had expected that upon switching from X to a linux console
->> drawing functions like fb_imageblit would be called before the
->> fb_check_var and  fb_set_par functions have been called. But that=B4s
->> definitely the case.
->
-> I'm surprised.  That was a problem in earlier versions of the kernel
-> but I think that was fixed.  If you look at fbcon code, all calls to
-> drawing functions:
+But now I want to add the framebuffer funcionality , so I wrote:
 
-My system is based on SuSE 9.2.
-Kernel 2.6.13-rc7
+static int slcdc_mmap(struct file *filp, struct vm_area_struct *vma)
+{
+	unsigned long page,pos;
+	unsigned long start =3D (unsigned long)vma->vm_start;
+	unsigned long size =3D (unsigned long)(vma->vm_end-vma->vm_start);
+			printk("\nMMAP CALLED");
+	if(size > SLCDC_DATA_MEM_SIZE)
+		return -EINVAL;
+	pos =3D (unsigned long)slcdc_par.v_screen_start_address;
+	while(size>0){
+		page =3D virt_to_phys((void*)pos);
+		vma->vm_page_prot =3D pgprot_noncached(vma->vm_page_prot);
+		// This is an IO map - tell maydump to skip this VMA
+		vma->vm_flags |=3D VM_IO;
+		vma->vm_flags |=3D VM_RESERVED;
+		if(remap_page_range(start,page,PAGE_SIZE,PAGE_SHARED)){
+					printk("\n\nERRORRRR!!!!!!!!");
+			return -EAGAIN;
+		}
+		start+=3D PAGE_SIZE;
+		pos+=3D PAGE_SIZE;
+		size-=3D PAGE_SIZE;
+	}
 
-1. If I do compile cyblafb as a module, there is no problem.
+	return 0;
+}
 
-2. If I compile cyblafb into the kernel, there is no problem if
-the first runlevel is 3 and I switch to runlevel 5 after login to
-a console.
+Where slcdc_par.v_screen_start_address; is the virtual adress of the=20
+databuffer that must be sent (via a dma provided by the Cpu).
 
-3. If I compile cyblafb into the kernel, the problem is 100% reproducible
-if the first runlevel is 5. ps ax -H in that case:
+In user-space:
 
-1342 ?        Ss       0:00   /usr/sbin/cron
-1352 ?        Ss       0:00   /usr/sbin/gpm -m /dev/ttyS0 -t ms
-1362 ?        S        0:00   /opt/kde3/bin/kdm
-1385 ?        S        0:20     /usr/X11R6/bin/X -nolisten tcp -br vt7=20
--auth /var/lib/xdm/authdir/authfiles/A:0-Zgg52m
-1392 ?        S        0:00     -:0            =20
-1681 ?        S        0:00       /bin/sh /usr/X11R6/bin/kde
-1716 ?        S        0:00         gpg-agent --daemon --no-detach=20
---keep-display /bin/bash /etc/X11/xinit/xinitrc
-1786 ?        S        0:00         kwrapper ksmserver
-1648 ?        Ss       0:00   login -- root   =20
-1744 tty1    Ss+    0:00     -bash
-1649 tty2    Ss+    0:00   /sbin/mingetty tty2
+if((  pMapeo=3D (char *) mmap(NULL, screensize, PROT_READ |=20
+PROT_WRITE,MAP_SHARED,fichero,0))=3D=3DNULL)  {
+				 printf("Error al proyectar el archivo en memoria\n");
+			 	return(4);
+   			  }
+			  if ((int)pMapeo =3D=3D -1) {
+       			 	printf("Error: failed to map device to memory.\n");
+    			    exit(4);
+  			  }
+			  else
+			  	printf("\ntoro Ok %x",pMapeo);
+			 memset(pMapeo,0xffff,screensize);
+			 for (aux=3D0;aux<screensize;aux++){
+			 	printf("\n mapeo =3D %d",*(pMapeo+aux));
+			 }
+			 	aux=3Dioctl(fichero,SLCDC_CMD_RAMWR,&prueba);
+I call to mmap and write successfully (printf shows all 0xff ...) and after=
+=20
+that, I call the RAMWR ioctl:
 
-The very first time I switch back from X to a linux console the bug
-is triggered. cyblafb_sync() , called from cyblafb_imageblit(), times
-out because mmio is switched off. Then a number of drawing functions
-is called before the checkvar() and the setpar() are executed.
+case SLCDC_CMD_RAMWR:
 
-Let=B4s count in /var/log/messages .... exactly 64 calls.
+			printk("RAMWR ");
 
-64 (rows) * 16 (font height) =3D 1024 (screen height). I have not verifie=
-d=20
-that
-all those calls are imageblits, but  it seems that somebody wants to redr=
-aw
-the screen.
+			for (i=3D0;i<8;i++){
+				for (j=3D0;j<127;j++){
+					printk("\n Databuffer=3D%d",*(databuffer+i*128+j));
+				}
 
-After that the bug never triggers again.
+				...send the data...
+			}
+		break;
 
-I wonder why there should be a difference between kdm executed first
-or login executed first, but that=B4s the case.
+Where databuffer is the physical address of=20
+slcdc_par.v_screen_start_address;
 
-Feel free to send patches.
+But, when I run it, printk shows that the memory is filled with 0's instead=
+=20
+of the data written in user-space...
 
-cu,
- Knut
+It seems like remap_page_range didn't work but I've been reading about all =
+
+this process in google and I haven't found the solution to my problem... (i=
+f=20
+anyone wants to see how I initialize the buffer I'll post it... )
+
+Yours faithfully,
+Rub=E9n Qui=F1ones Ruiz -UAH University - Spain
+
+
 
 
 -------------------------------------------------------
 SF.Net email is Sponsored by the Better Software Conference & EXPO
-September 19-22, 2005 * San Francisco, CA * Development Lifecycle Practic=
-es
-Agile & Plan-Driven Development * Managing Projects & Teams * Testing & Q=
-A
+September 19-22, 2005 * San Francisco, CA * Development Lifecycle Practices
+Agile & Plan-Driven Development * Managing Projects & Teams * Testing & QA
 Security * Process Improvement & Measurement * http://www.sqe.com/bsce5sf

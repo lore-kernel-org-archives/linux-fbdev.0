@@ -1,20 +1,35 @@
-From: =?iso-8859-1?B?cnViZW4gcXVp8W9uZXMgcnVpeg==?= <yosoytelekin@hotmail.com>
-Subject: I can't get mapping ram  work  (Arm kernel 2.4 )
-Date: Thu, 25 Aug 2005 19:19:38 +0200
-Message-ID: <BAY109-F126BB75533BFE132A84B9EC8AB0@phx.gbl>
-References: <20050825165333.3D585339DD@sc8-sf-spam1.sourceforge.net>
+From: Ian Romanick <idr@us.ibm.com>
+Subject: Re: [PATCH] Read MGA PInS data on PowerPC
+Date: Thu, 25 Aug 2005 10:39:20 -0700
+Message-ID: <430E0248.8000403@us.ibm.com>
+References: <430CF861.7060208@us.ibm.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="------------020806010803060703090905"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E8LO7-0004Tj-E4
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Aug 2005 10:19:39 -0700
-Received: from bay109-f12.bay109.hotmail.com ([64.4.19.22] helo=hotmail.com)
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1E8LO7-0004on-5L
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Aug 2005 10:19:39 -0700
-In-Reply-To: <20050825165333.3D585339DD@sc8-sf-spam1.sourceforge.net>
+	id 1E8LjC-0005Qf-JX
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Aug 2005 10:41:26 -0700
+Received: from e35.co.us.ibm.com ([32.97.110.133])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44)
+	id 1E8LjC-0004aU-B4
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 Aug 2005 10:41:26 -0700
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com [9.17.195.106])
+	by e35.co.us.ibm.com (8.12.10/8.12.9) with ESMTP id j7PHeiSh377294
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 25 Aug 2005 13:40:46 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.12.10/NCO/VERS6.7) with ESMTP id j7PHdact160886
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 25 Aug 2005 11:39:36 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id j7PHdP72022538
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 25 Aug 2005 11:39:26 -0600
+Received: from [9.49.130.199] (sig-9-49-130-199.mts.ibm.com [9.49.130.199])
+	by d03av01.boulder.ibm.com (8.12.11/8.12.11) with ESMTP id j7PHdP4Z022447
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 25 Aug 2005 11:39:25 -0600
+In-Reply-To: <430CF861.7060208@us.ibm.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -25,102 +40,112 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-Content-Transfer-Encoding: quoted-printable
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Hello everybody,
+This is a multi-part message in MIME format.
+--------------020806010803060703090905
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-I'm developing a framebuffer display driver with an armv5 based architectur=
-e=20
-.
-I've been able to send commands and display what I want using the Ioctl=20
-methods (the display works fine).
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-But now I want to add the framebuffer funcionality , so I wrote:
+This updates the matroxfb code so that it can find the PInS data
+embedded in the BIOS on PowerPC cards.  The process for finding the data
+is different on OpenFirmware cards than on x86 cards, and the code for
+doing so was missing.
 
-static int slcdc_mmap(struct file *filp, struct vm_area_struct *vma)
-{
-	unsigned long page,pos;
-	unsigned long start =3D (unsigned long)vma->vm_start;
-	unsigned long size =3D (unsigned long)(vma->vm_end-vma->vm_start);
-			printk("\nMMAP CALLED");
-	if(size > SLCDC_DATA_MEM_SIZE)
-		return -EINVAL;
-	pos =3D (unsigned long)slcdc_par.v_screen_start_address;
-	while(size>0){
-		page =3D virt_to_phys((void*)pos);
-		vma->vm_page_prot =3D pgprot_noncached(vma->vm_page_prot);
-		// This is an IO map - tell maydump to skip this VMA
-		vma->vm_flags |=3D VM_IO;
-		vma->vm_flags |=3D VM_RESERVED;
-		if(remap_page_range(start,page,PAGE_SIZE,PAGE_SHARED)){
-					printk("\n\nERRORRRR!!!!!!!!");
-			return -EAGAIN;
-		}
-		start+=3D PAGE_SIZE;
-		pos+=3D PAGE_SIZE;
-		size-=3D PAGE_SIZE;
-	}
+After patching, building, installing, and booting a kernel, you should
+grep for "PInS" in /var/log/messages.  You should see two messages in
+the log:
 
-	return 0;
-}
+PInS data found at offset XXXXX
+PInS memtype = X
 
-Where slcdc_par.v_screen_start_address; is the virtual adress of the=20
-databuffer that must be sent (via a dma provided by the Cpu).
+On the GXT135p card I get "31168" and "5".  The first value is
+irrelevant, but it's presence lets me know that the PInS data was
+actually found.  On a GXT130p, the second value should be 3.  Since I
+don't have access to that hardware, if someone can verify that, I will
+submit a follow-on patch that rips out all the memtype parameter stuff.
 
-In user-space:
+fa76838aa195ee448d788ba65d73fa30  matroxfb_PInS-01.patch
 
-if((  pMapeo=3D (char *) mmap(NULL, screensize, PROT_READ |=20
-PROT_WRITE,MAP_SHARED,fichero,0))=3D=3DNULL)  {
-				 printf("Error al proyectar el archivo en memoria\n");
-			 	return(4);
-   			  }
-			  if ((int)pMapeo =3D=3D -1) {
-       			 	printf("Error: failed to map device to memory.\n");
-    			    exit(4);
-  			  }
-			  else
-			  	printf("\ntoro Ok %x",pMapeo);
-			 memset(pMapeo,0xffff,screensize);
-			 for (aux=3D0;aux<screensize;aux++){
-			 	printf("\n mapeo =3D %d",*(pMapeo+aux));
-			 }
-			 	aux=3Dioctl(fichero,SLCDC_CMD_RAMWR,&prueba);
-I call to mmap and write successfully (printf shows all 0xff ...) and after=
-=20
-that, I call the RAMWR ioctl:
+Signed-off-by: Ian Romanick <idr@us.ibm.com>
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.6 (GNU/Linux)
 
-case SLCDC_CMD_RAMWR:
+iD8DBQFDDgJIX1gOwKyEAw8RAp3pAJ0djJUY6XsURmuofK/c8u0cf8w/fwCfafo6
+tCfdbEK4qB5q/JY0ywk04N0=
+=+XtZ
+-----END PGP SIGNATURE-----
 
-			printk("RAMWR ");
+--------------020806010803060703090905
+Content-Type: text/x-patch;
+ name="matroxfb_PInS-01.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="matroxfb_PInS-01.patch"
 
-			for (i=3D0;i<8;i++){
-				for (j=3D0;j<127;j++){
-					printk("\n Databuffer=3D%d",*(databuffer+i*128+j));
-				}
+diff -rud --exclude='*~' linux-2.6.11.8/drivers/video/matrox/matroxfb_misc.c linux-2.6.11.8.matroxfb/drivers/video/matrox/matroxfb_misc.c
+--- linux-2.6.11.8/drivers/video/matrox/matroxfb_misc.c	2005-04-29 18:29:20.000000000 -0700
++++ linux-2.6.11.8.matroxfb/drivers/video/matrox/matroxfb_misc.c	2005-06-20 11:44:49.647889368 -0700
+@@ -67,6 +67,9 @@
+  *
+  *               "David C. Hansen" <haveblue@us.ibm.com>
+  *                     Fixes
++ * 
++ *               "Ian Romanick" <idr@us.ibm.com>
++ *                     Find PInS data in BIOS on PowerPC systems.
+  *
+  * (following author is not in any relation with this code, but his code
+  *  is included in this driver)
+@@ -499,10 +502,35 @@
+ 	get_bios_version(vbios, bd);
+ 	get_bios_output(vbios, bd);
+ 	get_bios_tvout(vbios, bd);
++#if defined(__powerpc__)
++	/* On PowerPC cards, the PInS offset isn't stored at the end of the
++	 * BIOS image.  Instead, you must search the entire BIOS image for
++	 * the magic PInS signature.
++	 * 
++	 * This actually applies to all OpenFirmware base cards.  Since these
++	 * cards could be put in a MIPS or SPARC system, should the condition
++	 * be something different?
++	 */
++	for ( pins_offset = 0 ; pins_offset <= 0xFF80 ; pins_offset++ ) {
++		unsigned char header[3];
++
++		header[0] = readb(vbios + pins_offset);
++		header[1] = readb(vbios + pins_offset + 1);
++		header[2] = readb(vbios + pins_offset + 2);
++		if ( (header[0] == 0x2E) && (header[1] == 0x41)
++		     && ((header[2] == 0x40) || (header[2] == 0x80)) ) {
++			printk(KERN_INFO "PInS data found at offset %u\n",
++			       pins_offset);
++			get_pins(vbios + pins_offset, bd);
++			break;
++		}
++	}
++#else
+ 	pins_offset = readb(vbios + 0x7FFC) | (readb(vbios + 0x7FFD) << 8);
+ 	if (pins_offset <= 0xFF80) {
+ 		get_pins(vbios + pins_offset, bd);
+ 	}
++#endif
+ }
+ 
+ #define get_u16(x) (le16_to_cpu(get_unaligned((__u16*)(x))))
+@@ -758,6 +786,8 @@
+ 	}
+ #endif
+ 	matroxfb_set_limits(PMINFO &ACCESS_FBINFO(bios));
++	printk(KERN_INFO "PInS memtype = %u\n",
++	       (ACCESS_FBINFO(values).reg.opt & 0x1C00) >> 10);
+ }
+ 
+ EXPORT_SYMBOL(matroxfb_DAC_in);
 
-				...send the data...
-			}
-		break;
-
-Where databuffer is the physical address of=20
-slcdc_par.v_screen_start_address;
-
-But, when I run it, printk shows that the memory is filled with 0's instead=
-=20
-of the data written in user-space...
-
-It seems like remap_page_range didn't work but I've been reading about all =
-
-this process in google and I haven't found the solution to my problem... (i=
-f=20
-anyone wants to see how I initialize the buffer I'll post it... )
-
-Yours faithfully,
-Rub=E9n Qui=F1ones Ruiz -UAH University - Spain
-
-
+--------------020806010803060703090905--
 
 
 -------------------------------------------------------

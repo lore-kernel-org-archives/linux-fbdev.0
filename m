@@ -1,22 +1,23 @@
-From: Knut Petersen <Knut_Petersen@t-online.de>
+From: Roman Zippel <zippel@linux-m68k.org>
 Subject: Re: [PATCH 1/1 2.6.13] framebuffer: bit_putcs()
  optimization for 8x* fonts
-Date: Tue, 30 Aug 2005 19:58:51 +0200
-Message-ID: <43149E5B.7040006@t-online.de>
+Date: Tue, 30 Aug 2005 21:13:43 +0200 (CEST)
+Message-ID: <Pine.LNX.4.61.0508302039160.3743@scrub.home>
 References: <43148610.70406@t-online.de> <Pine.LNX.4.62.0508301814470.6045@numbat.sonytel.be>
+ <43149E5B.7040006@t-online.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463811837-1053673453-1125429223=:3743"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EAAKq-0004mW-SN
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 Aug 2005 10:55:48 -0700
-Received: from mailout10.sul.t-online.com ([194.25.134.21])
+	id 1EABYp-00083R-VL
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 Aug 2005 12:14:19 -0700
+Received: from scrub.xs4all.nl ([194.109.195.176] ident=mail)
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EAAKp-0006PD-OD
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 Aug 2005 10:55:49 -0700
-In-Reply-To: <Pine.LNX.4.62.0508301814470.6045@numbat.sonytel.be>
+	id 1EABYp-0000Xd-Bd
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 Aug 2005 12:14:19 -0700
+In-Reply-To: <43149E5B.7040006@t-online.de>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,55 +28,77 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Andrew Morton <akpm@osdl.org>, "Antonino A. Daplas" <adaplas@gmail.com>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Jochen Hein <jochen@jochen.org>
+To: Knut Petersen <Knut_Petersen@t-online.de>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>, "Antonino A. Daplas" <adaplas@gmail.com>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Jochen Hein <jochen@jochen.org>
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
->Probably you can make it even faster by avoiding the multiplication, lik=
-e
->
->    unsigned int offset =3D 0;
->    for (i =3D 0; i < image.height; i++) {
->	dst[offset] =3D src[i];
->	offset +=3D pitch;
->    }
->
+---1463811837-1053673453-1125429223=:3743
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-More than two decades ago I learned to avoid mul and imul. Use shifts,=20
-add and lea instead,
-that was the credo those days. The name of the game was CP/M 80/86, a86,=20
-d86 and ddt ;-)
+Hi,
 
-But let=B4s get serious again.
+On Tue, 30 Aug 2005, Knut Petersen wrote:
 
-Your proposed change of the patch results in a 21 ms performance=20
-decrease on my system.
-Yes, I do know that this is hard to believe. I tested a similar=20
-variation before, and the results
-were even worse.
+> > Probably you can make it even faster by avoiding the multiplication, li=
+ke
+> >=20
+> >    unsigned int offset =3D 0;
+> >    for (i =3D 0; i < image.height; i++) {
+> > =09dst[offset] =3D src[i];
+> > =09offset +=3D pitch;
+> >    }
+> >=20
+>=20
+> More than two decades ago I learned to avoid mul and imul. Use shifts, ad=
+d and
+> lea instead,
+> that was the credo those days. The name of the game was CP/M 80/86, a86, =
+d86
+> and ddt ;-)
+>=20
+> But let=B4s get serious again.
+>=20
+> Your proposed change of the patch results in a 21 ms performance decrease=
+ on
+> my system.
+> Yes, I do know that this is hard to believe. I tested a similar variation
+> before, and the results
+> were even worse.
 
-Avoiding mul is a good idea in assembly language today, but often it is=20
-better to write a
-multiplication  with the loop counter in C and not to introduce an extra=20
-variable instead. The
-compiler will optimize the code and it=B4s easier for gcc without that=20
-extra variable.
+Could you try the patch below, for a few extra cycles you might want to=20
+make it an inline function.
 
-More interesting would be the question what should be done for idx=3D=3D2=
- or=20
-idx=3D=3D3. Probably
-fb_pad_aligned_buffer() is also slower for those cases. But does anybody=20
-use such fonts?
+bye, Roman
 
-cu,
- knut
+Index: linux-2.6/drivers/video/fbmem.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.orig/drivers/video/fbmem.c=092005-08-30 01:55:18.000000000 +0=
+200
++++ linux-2.6/drivers/video/fbmem.c=092005-08-30 21:10:25.705462837 +0200
+@@ -82,11 +82,11 @@ void fb_pad_aligned_buffer(u8 *dst, u32=20
+ {
+ =09int i, j;
+=20
++=09d_pitch -=3D s_pitch;
+ =09for (i =3D height; i--; ) {
+ =09=09/* s_pitch is a few bytes at the most, memcpy is suboptimal */
+ =09=09for (j =3D 0; j < s_pitch; j++)
+-=09=09=09dst[j] =3D src[j];
+-=09=09src +=3D s_pitch;
++=09=09=09*dst++ =3D *src++;
+ =09=09dst +=3D d_pitch;
+ =09}
+ }
+---1463811837-1053673453-1125429223=:3743--
 
 
 -------------------------------------------------------
 SF.Net email is Sponsored by the Better Software Conference & EXPO
-September 19-22, 2005 * San Francisco, CA * Development Lifecycle Practic=
-es
-Agile & Plan-Driven Development * Managing Projects & Teams * Testing & Q=
-A
+September 19-22, 2005 * San Francisco, CA * Development Lifecycle Practices
+Agile & Plan-Driven Development * Managing Projects & Teams * Testing & QA
 Security * Process Improvement & Measurement * http://www.sqe.com/bsce5sf

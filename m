@@ -1,75 +1,67 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/1 2.6.13] framebuffer: bit_putcs()
+From: Knut Petersen <Knut_Petersen@t-online.de>
+Subject: Re: [PATCH 1/1 2.6.13] framebuffer: bit_putcs()
  optimization for 8x* fonts
-Date: Tue, 30 Aug 2005 21:59:40 +0200 (CEST)
-Message-ID: <Pine.LNX.4.62.0508302151520.9194@numbat.sonytel.be>
-References: <43148610.70406@t-online.de> <Pine.LNX.4.62.0508301814470.6045@numbat.sonytel.be>
- <43149E5B.7040006@t-online.de>
+Date: Wed, 31 Aug 2005 00:26:54 +0200
+Message-ID: <4314DD2E.7060901@t-online.de>
+References: <43148610.70406@t-online.de> <Pine.LNX.4.62.0508301814470.6045@numbat.sonytel.be> <43149E5B.7040006@t-online.de> <Pine.LNX.4.61.0508302039160.3743@scrub.home>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584334533-959120381-1125431980=:9194"
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932433AbVH3UAb@vger.kernel.org>
-In-Reply-To: <43149E5B.7040006@t-online.de>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@osdl.org>, "Antonino A. Daplas" <adaplas@gmail.com>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Jochen Hein <jochen@jochen.org>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1EAEWP-0007m0-On
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 Aug 2005 15:24:01 -0700
+Received: from mailout11.sul.t-online.com ([194.25.134.85])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1EAEWN-0001xE-CP
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 Aug 2005 15:24:01 -0700
+In-Reply-To: <Pine.LNX.4.61.0508302039160.3743@scrub.home>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>, "Antonino A. Daplas" <adaplas@gmail.com>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Jochen Hein <jochen@jochen.org>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi Roman,
 
----584334533-959120381-1125431980=:9194
-Content-Type: TEXT/PLAIN; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+>Could you try the patch below, for a few extra cycles you might want to=20
+>make it an inline function.
+> =20
+>
+No, it does not help. If there is any difference, it is too small to be=20
+measured on
+my system ... and my system does run at 1000 Hz.
 
-On Tue, 30 Aug 2005, Knut Petersen wrote:
-> > Probably you can make it even faster by avoiding the multiplication, like
-> > 
-> >    unsigned int offset = 0;
-> >    for (i = 0; i < image.height; i++) {
-> > 	dst[offset] = src[i];
-> > 	offset += pitch;
-> >    }
-> 
-> More than two decades ago I learned to avoid mul and imul. Use shifts, add and
-> lea instead,
-> that was the credo those days. The name of the game was CP/M 80/86, a86, d86
-> and ddt ;-)
-> 
-> But let�s get serious again.
+After 2.6.12 fb_pad_aligned_buffer() was changed to use memcpy() instead=20
+of a
+bytewise copy. That slowed things down a lot, some weeks ago that was=20
+reverted.
+fb_pad_aligned _buffer() isn=B4t that slow, it=B4s just an external funct=
+ion=20
+to be called
+and that means a lot of unnecessary code.
 
-On modern CPUs, a multiplication indeed takes 1 cycle, just like an addition.
-But on older CPUs (still supported by Linux), this is not true.
+How could I make it an inline function? It is used in console/bitblit.c,=20
+nvidia/nvidia.c,
+riva/fbdev.c and softcursor.c.
 
-> Your proposed change of the patch results in a 21 ms performance decrease on
-> my system.
-> Yes, I do know that this is hard to believe. I tested a similar variation
-> before, and the results
-> were even worse.
-> 
-> Avoiding mul is a good idea in assembly language today, but often it is better
-> to write a
-> multiplication  with the loop counter in C and not to introduce an extra
-> variable instead. The
-> compiler will optimize the code and it�s easier for gcc without that extra
-> variable.
+cu,
+ Knut
 
-But you are right. On actual inspection of the generated assembly code for a
-very simple test case, it turns out both (m68k-linux-)gcc 2.95.2 and 3.3.3 are
-smart enough to convert the multiplication to an addition...
 
-And interestingly, if I avoid the multiplication explicitly, gcc 2.95.2 still
-generates the same code, but 3.3.3 adds a few extra instructions to
-save/restore local vars. So this probably explains why it turned out to be
-slower for you. Ugh...
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
----584334533-959120381-1125431980=:9194--
+-------------------------------------------------------
+SF.Net email is Sponsored by the Better Software Conference & EXPO
+September 19-22, 2005 * San Francisco, CA * Development Lifecycle Practic=
+es
+Agile & Plan-Driven Development * Managing Projects & Teams * Testing & Q=
+A
+Security * Process Improvement & Measurement * http://www.sqe.com/bsce5sf

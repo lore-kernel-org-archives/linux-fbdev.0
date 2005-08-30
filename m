@@ -1,76 +1,90 @@
-From: Knut Petersen <Knut_Petersen@t-online.de>
-Subject: [PATCH 1/1 2.6.13] framebuffer: bit_putcs() optimization for 8x*
- fonts
-Date: Tue, 30 Aug 2005 18:15:12 +0200
-Message-ID: <43148610.70406@t-online.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 1/1 2.6.13] framebuffer: bit_putcs()
+ optimization for 8x* fonts
+Date: Tue, 30 Aug 2005 18:18:08 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0508301814470.6045@numbat.sonytel.be>
+References: <43148610.70406@t-online.de>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932195AbVH3QM2@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: Andrew Morton <akpm@osdl.org>
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Jochen Hein <jochen@jochen.org>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1EA8p0-0000NP-9T
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 Aug 2005 09:18:50 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1EA8oz-0005hA-My
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 Aug 2005 09:18:50 -0700
+In-Reply-To: <43148610.70406@t-online.de>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Andrew Morton <akpm@osdl.org>, "Antonino A. Daplas" <adaplas@gmail.com>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Jochen Hein <jochen@jochen.org>
 
-This trivial patch gives a performance boost to the framebuffer console
+On Tue, 30 Aug 2005, Knut Petersen wrote:
+> linux/drivers/video/console/bitblit.c
+> --- linuxorig/drivers/video/console/bitblit.c	2005-08-29 01:41:01.000000000
+> +0200
+> +++ linux/drivers/video/console/bitblit.c	2005-08-30 17:19:57.000000000
+> +0200
+> @@ -114,7 +114,7 @@ static void bit_putcs(struct vc_data *vc
+> 	unsigned int scan_align = info->pixmap.scan_align - 1;
+> 	unsigned int buf_align = info->pixmap.buf_align - 1;
+> 	unsigned int shift_low = 0, mod = vc->vc_font.width % 8;
+> -	unsigned int shift_high = 8, pitch, cnt, size, k;
+> +	unsigned int shift_high = 8, pitch, cnt, size, i, k;
+> 	unsigned int idx = vc->vc_font.width >> 3;
+> 	unsigned int attribute = get_attribute(info, scr_readw(s));
+> 	struct fb_image image;
+> @@ -175,7 +175,11 @@ static void bit_putcs(struct vc_data *vc
+> 					src = buf;
+> 				}
+> 
+> -				fb_pad_aligned_buffer(dst, pitch, src, idx,
+> image.height);
+> +				if (idx == 1)
+> +					for(i=0; i < image.height; i++)
+> +						dst[pitch*i] = src[i];
+                                                    ^^^^^^^
+> +				else
+> +					fb_pad_aligned_buffer(dst, pitch, src,
+> idx, image.height);
+> 				dst += width;
+> 			}
+> 		}
 
-Constructing the bitmaps that are given to the bitblit functions of the=
-=20
-framebuffer
-drivers is time consuming. Here we avoide a call to the slow=20
-fb_pad_aligned_buffer().
-The patch replaces that call with a simple but much more efficient=20
-bytewise copy.
+Probably you can make it even faster by avoiding the multiplication, like
 
-The kernel spends a significant time at this place if you use 8x* fonts=
-=2E=20
-Every
-pixel displayed on your screen is prepared here.
+    unsigned int offset = 0;
+    for (i = 0; i < image.height; i++) {
+	dst[offset] = src[i];
+	offset += pitch;
+    }
 
-Some benchmark results:
+Gr{oetje,eeting}s,
 
-Displaying a file of 2000 lines with 160 characters each takes 889 ms=20
-system
-time using  cyblafb on my system  (I=B4m using a 1280x1024 video mode,
-resulting in a 160x64 character console)
+						Geert
 
-Displaying the same file with the enclosed patch applied to 2.6.13 only=
-=20
-takes
-760 ms system time, saving 129 ms or 14.5%.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-=46ont widths other than 8 are not affected.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
-The advantage and correctness of this patch should be obvious.
 
-Signed-off-by: Knut Petersen <Knut_Petersen@t-online.de>
-
-diff -uprN -X linux/Documentation/dontdiff -x '*.bak' -x '*.ctx' linuxo=
-rig/drivers/video/console/bitblit.c linux/drivers/video/console/bitblit=
-=2Ec
---- linuxorig/drivers/video/console/bitblit.c	2005-08-29 01:41:01.00000=
-0000 +0200
-+++ linux/drivers/video/console/bitblit.c	2005-08-30 17:19:57.000000000=
- +0200
-@@ -114,7 +114,7 @@ static void bit_putcs(struct vc_data *vc
- 	unsigned int scan_align =3D info->pixmap.scan_align - 1;
- 	unsigned int buf_align =3D info->pixmap.buf_align - 1;
- 	unsigned int shift_low =3D 0, mod =3D vc->vc_font.width % 8;
--	unsigned int shift_high =3D 8, pitch, cnt, size, k;
-+	unsigned int shift_high =3D 8, pitch, cnt, size, i, k;
- 	unsigned int idx =3D vc->vc_font.width >> 3;
- 	unsigned int attribute =3D get_attribute(info, scr_readw(s));
- 	struct fb_image image;
-@@ -175,7 +175,11 @@ static void bit_putcs(struct vc_data *vc
- 					src =3D buf;
- 				}
-=20
--				fb_pad_aligned_buffer(dst, pitch, src, idx, image.height);
-+				if (idx =3D=3D 1)
-+					for(i=3D0; i < image.height; i++)
-+						dst[pitch*i] =3D src[i];
-+				else
-+					fb_pad_aligned_buffer(dst, pitch, src, idx, image.height);
- 				dst +=3D width;
- 			}
- 		}
+-------------------------------------------------------
+SF.Net email is Sponsored by the Better Software Conference & EXPO
+September 19-22, 2005 * San Francisco, CA * Development Lifecycle Practices
+Agile & Plan-Driven Development * Managing Projects & Teams * Testing & QA
+Security * Process Improvement & Measurement * http://www.sqe.com/bsce5sf

@@ -1,76 +1,76 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: fbset : strange problem (fwd)
-Date: Tue, 30 Aug 2005 09:19:00 +0800
-Message-ID: <4313B404.3020002@gmail.com>
-References: <Pine.LNX.4.62.0508282156190.27014@numbat.sonytel.be>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Knut Petersen <Knut_Petersen@t-online.de>
+Subject: [PATCH 1/1 2.6.13] framebuffer: bit_putcs() optimization for 8x*
+ fonts
+Date: Tue, 30 Aug 2005 18:15:12 +0200
+Message-ID: <43148610.70406@t-online.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1E9uma-0007r8-2z
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Aug 2005 18:19:24 -0700
-Received: from wproxy.gmail.com ([64.233.184.199])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1E9umZ-0003Em-OQ
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 Aug 2005 18:19:24 -0700
-Received: by wproxy.gmail.com with SMTP id i3so468021wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 29 Aug 2005 18:19:14 -0700 (PDT)
-In-Reply-To: <Pine.LNX.4.62.0508282156190.27014@numbat.sonytel.be>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: p.pouget@nerim.net, Geert Uytterhoeven <geert@linux-m68k.org>
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932195AbVH3QM2@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+To: Andrew Morton <akpm@osdl.org>
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Jochen Hein <jochen@jochen.org>
 
-Geert Uytterhoeven wrote:
-> ---------- Forwarded message ----------
-> Date: Sun, 28 Aug 2005 21:27:58 +0200 (CEST)
-> From: p.pouget@nerim.net
-> To: geert.uytterhoeven@cs.kuleuven.ac.be, geert.uijtterhoeven@cs.kuleuven.ac.be
-> Cc: p.pouget@nerim.net
-> Subject: fbset : strange problem
-> 
-> Hello
-> 
-> I am trying to use the frame buffers under linux 2.6.12.xxx.
-> 
-> fbset should work via the drivers then as the same way regardless the
-> hardware it runs on?
-> 
-> On my dell inspiron using a radeon mobility, everything works well, fbset
-> sets, consfb works etc... vlc uses the frame buffer etc...
-> 
-> On my Tyan S2885, I have problems with 2 radeons:
-> On the 0x4966 ( R250 ) fbset looks like to change the resolution but I see
-> the bios startup screen splitted. The machine is running properly but
-> without screen
-> On the 0x554f ( R423 according FB R430 according xorg ) bfset makes an
-> ooops but the mode is unchnaged and the machine is running with screen.
-> 
+This trivial patch gives a performance boost to the framebuffer console
 
-Is this one machine with 2 radeons?  If it is, can you try doing an 'fbset -fb 
-/dev/fbX' (where X = 0 or 1) and see which one works?  Also, can you try 
-booting with this option in your bootloader:
+Constructing the bitmaps that are given to the bitblit functions of the=
+=20
+framebuffer
+drivers is time consuming. Here we avoide a call to the slow=20
+fb_pad_aligned_buffer().
+The patch replaces that call with a simple but much more efficient=20
+bytewise copy.
 
-fbcon=map:1
+The kernel spends a significant time at this place if you use 8x* fonts=
+=2E=20
+Every
+pixel displayed on your screen is prepared here.
 
-Just to see if the secondary card works okay
+Some benchmark results:
 
-Tony
+Displaying a file of 2000 lines with 160 characters each takes 889 ms=20
+system
+time using  cyblafb on my system  (I=B4m using a 1280x1024 video mode,
+resulting in a 160x64 character console)
 
+Displaying the same file with the enclosed patch applied to 2.6.13 only=
+=20
+takes
+760 ms system time, saving 129 ms or 14.5%.
 
--------------------------------------------------------
-SF.Net email is Sponsored by the Better Software Conference & EXPO
-September 19-22, 2005 * San Francisco, CA * Development Lifecycle Practices
-Agile & Plan-Driven Development * Managing Projects & Teams * Testing & QA
-Security * Process Improvement & Measurement * http://www.sqe.com/bsce5sf
+=46ont widths other than 8 are not affected.
+
+The advantage and correctness of this patch should be obvious.
+
+Signed-off-by: Knut Petersen <Knut_Petersen@t-online.de>
+
+diff -uprN -X linux/Documentation/dontdiff -x '*.bak' -x '*.ctx' linuxo=
+rig/drivers/video/console/bitblit.c linux/drivers/video/console/bitblit=
+=2Ec
+--- linuxorig/drivers/video/console/bitblit.c	2005-08-29 01:41:01.00000=
+0000 +0200
++++ linux/drivers/video/console/bitblit.c	2005-08-30 17:19:57.000000000=
+ +0200
+@@ -114,7 +114,7 @@ static void bit_putcs(struct vc_data *vc
+ 	unsigned int scan_align =3D info->pixmap.scan_align - 1;
+ 	unsigned int buf_align =3D info->pixmap.buf_align - 1;
+ 	unsigned int shift_low =3D 0, mod =3D vc->vc_font.width % 8;
+-	unsigned int shift_high =3D 8, pitch, cnt, size, k;
++	unsigned int shift_high =3D 8, pitch, cnt, size, i, k;
+ 	unsigned int idx =3D vc->vc_font.width >> 3;
+ 	unsigned int attribute =3D get_attribute(info, scr_readw(s));
+ 	struct fb_image image;
+@@ -175,7 +175,11 @@ static void bit_putcs(struct vc_data *vc
+ 					src =3D buf;
+ 				}
+=20
+-				fb_pad_aligned_buffer(dst, pitch, src, idx, image.height);
++				if (idx =3D=3D 1)
++					for(i=3D0; i < image.height; i++)
++						dst[pitch*i] =3D src[i];
++				else
++					fb_pad_aligned_buffer(dst, pitch, src, idx, image.height);
+ 				dst +=3D width;
+ 			}
+ 		}

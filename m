@@ -1,52 +1,73 @@
 From: Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: [PATCH 1/1 2.6.13] framebuffer: bit_putcs()
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/1 2.6.13] framebuffer: bit_putcs()
  optimization for 8x* fonts
-Date: Wed, 31 Aug 2005 17:49:56 +0200 (CEST)
-Message-ID: <Pine.LNX.4.61.0508311725170.3728@scrub.home>
+Date: Wed, 31 Aug 2005 19:15:24 +0200 (CEST)
+Message-ID: <Pine.LNX.4.61.0508311750140.3728@scrub.home>
 References: <43148610.70406@t-online.de> <Pine.LNX.4.62.0508301814470.6045@numbat.sonytel.be>
  <43149E5B.7040006@t-online.de> <Pine.LNX.4.61.0508302039160.3743@scrub.home>
  <4314DD2E.7060901@t-online.de> <Pine.LNX.4.61.0508310159290.3728@scrub.home>
- <4315515C.1040208@gmail.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+ <4315A6AB.5090108@t-online.de>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EAUqm-0000KI-2v
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 31 Aug 2005 08:50:08 -0700
-Received: from scrub.xs4all.nl ([194.109.195.176] ident=mail)
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EAUqk-00065a-UJ
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 31 Aug 2005 08:50:08 -0700
-In-Reply-To: <4315515C.1040208@gmail.com>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S964888AbVHaRPm@vger.kernel.org>
+In-Reply-To: <4315A6AB.5090108@t-online.de>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Knut Petersen <Knut_Petersen@t-online.de>, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Jochen Hein <jochen@jochen.org>
+To: Knut Petersen <Knut_Petersen@t-online.de>
+Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@gmail.com>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Jochen Hein <jochen@jochen.org>, Geert Uytterhoeven <geert@linux-m68k.org>
 
 Hi,
 
-On Wed, 31 Aug 2005, Antonino A. Daplas wrote:
+On Wed, 31 Aug 2005, Knut Petersen wrote:
 
-> Roman, okay if you have a 'Signed-off-by' line?
+> +static inline void __fb_pad_aligned_buffer(u8 *dst, u32 d_pitch, u8 *src, +
+> u32 s_pitch, u32 height)
+> +{
+> +	int i, j;
+> +
+> +	if (likely(s_pitch==1))
+> +		for(i=0; i < height; i++)
+> +			dst[d_pitch*i] = src[i];
+> +	else if (s_pitch==2)
+> +		for(i=0; i < height; i++) {
+> +			*(u16 *)dst = ((u16 *)src)[i];
+> +			dst += d_pitch;
+> +		}
+> +	else {
+> +		d_pitch -= s_pitch;
+> +		for (i = height; i--; ) {
+> +			for (j = 0; j < s_pitch; j++)
+> +				*dst++ = *src++;
+> +			dst += d_pitch;
+> +		}
+> +	}
+> +}
 
-Okay.
+Why did you add the multiply back?
+You have now 3 slightly different variants of the same, which isn't really 
+an improvement. In my example I showed you how to generate the first and 
+last version from the same source.
+If you also want to optimize for other sizes, you might want to always 
+inline the function, if the function call overhead is the largest part 
+anyway, the special case for 2 bytes might not be needed anymore.
+
+BTW this version saves another condition:
+
+static inline void __fb_pad_aligned_buffer(u8 *dst, u32 d_pitch, u8 *src, u32 s_pitch, u32 height)
+{
+	int i, j;
+
+	d_pitch -= s_pitch;
+	i = height;
+	do {
+		/* s_pitch is a few bytes at the most, memcpy is suboptimal */
+		j = s_pitch;
+		do
+			*dst++ = *src++;
+		while (--j > 0);
+		dst += d_pitch;
+	} while (--i > 0);
+}
 
 bye, Roman
-
-
--------------------------------------------------------
-SF.Net email is Sponsored by the Better Software Conference & EXPO
-September 19-22, 2005 * San Francisco, CA * Development Lifecycle Practices
-Agile & Plan-Driven Development * Managing Projects & Teams * Testing & QA
-Security * Process Improvement & Measurement * http://www.sqe.com/bsce5sf

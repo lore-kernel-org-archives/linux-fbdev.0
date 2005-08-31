@@ -1,64 +1,116 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH 1/1 2.6.13] framebuffer: bit_putcs() optimization for
- 8x* fonts
-Date: Wed, 31 Aug 2005 09:14:34 +0800
-Message-ID: <4315047A.4040907@gmail.com>
-References: <43148610.70406@t-online.de>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] radeonfb: Only request resources we need
+Date: Wed, 31 Aug 2005 15:01:57 +1000
+Message-ID: <1125464517.5382.10.camel@gaston>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932313AbVHaBPI@vger.kernel.org>
-In-Reply-To: <43148610.70406@t-online.de>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"
-To: Knut Petersen <Knut_Petersen@t-online.de>
-Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, Jochen Hein <jochen@jochen.org>
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1EAKjh-0007SU-71
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 Aug 2005 22:02:09 -0700
+Received: from gate.crashing.org ([63.228.1.57])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44)
+	id 1EAKjg-00010P-TM
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 Aug 2005 22:02:09 -0700
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Knut Petersen wrote:
-> This trivial patch gives a performance boost to the framebuffer conso=
-le
->=20
-> Constructing the bitmaps that are given to the bitblit functions of t=
-he
-> framebuffer
-> drivers is time consuming. Here we avoide a call to the slow
-> fb_pad_aligned_buffer().
-> The patch replaces that call with a simple but much more efficient
-> bytewise copy.
->=20
-> The kernel spends a significant time at this place if you use 8x* fon=
-ts.
-> Every
-> pixel displayed on your screen is prepared here.
->=20
-> Some benchmark results:
->=20
-> Displaying a file of 2000 lines with 160 characters each takes 889 ms
-> system
-> time using  cyblafb on my system  (I=B4m using a 1280x1024 video mode=
-,
-> resulting in a 160x64 character console)
->=20
-> Displaying the same file with the enclosed patch applied to 2.6.13 on=
-ly
-> takes
-> 760 ms system time, saving 129 ms or 14.5%.
+from: Daniel Burcaw <dburcaw@terrasoftsolutions.com>
 
-Where did this 14.5% come from?  Is it bit_putcs alone or is more
-real world, such as 'time cat text_file'? If I'm to guess, a large
-percent of the improvement is caused by the inlining of the code.
+This patch changes radeon to request only resources 0 and 2 instead of
+all 3. This works around problems with some setups where BAR 1 (IO BAR)
+has not been assigned by the firmware since it's not used on the machine
+and the kernel fails to assign something to it due to the card being
+between a P2P bridge that was configured without an IO range at all.
 
-I'm not against the patch, it will benefit drivers with very fast
-imageblits.  However, since most drivers have imageblits done in softwa=
-re,
-a large proportion of the processing time will go to the imageblit itse=
-lf,
-so I don't think you'll get that high a number (I get only a 4%
-improvement, and this is in a driver with accelerated blits, and it wil=
-l
-probably be lower, ie, in vesafb).
+This typically fixes radeonfb on some Apple Xserve G5 machines
 
-Anyway, with the addition of your patch, bit_putcs has now reached an
-'ugliness threshhold' for a revamp.
+Signed-off-by: Daniel Burcaw <dburcaw@terrasoftsolutions.com>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Tony
+Index: linux-work/drivers/video/aty/radeon_base.c
+===================================================================
+--- linux-work.orig/drivers/video/aty/radeon_base.c	2005-08-01 22:03:46.000000000 +1000
++++ linux-work/drivers/video/aty/radeon_base.c	2005-08-31 14:59:50.000000000 +1000
+@@ -2312,19 +2312,27 @@
+ 	rinfo->mmio_base_phys = pci_resource_start (pdev, 2);
+ 
+ 	/* request the mem regions */
+-	ret = pci_request_regions(pdev, "radeonfb");
++	ret = pci_request_region(pdev, 0, "radeonfb framebuffer");
+ 	if (ret < 0) {
+-		printk( KERN_ERR "radeonfb (%s): cannot reserve PCI regions."
+-			"  Someone already got them?\n", pci_name(rinfo->pdev));
++		printk( KERN_ERR "radeonfb (%s): cannot request region 0.\n",
++			pci_name(rinfo->pdev));
+ 		goto err_release_fb;
+ 	}
+ 
++	ret = pci_request_region(pdev, 2, "radeonfb mmio");
++	if (ret < 0) {
++		printk( KERN_ERR "radeonfb (%s): cannot request region 2.\n",
++			pci_name(rinfo->pdev));
++		goto err_release_pci0;
++	}
++
+ 	/* map the regions */
+ 	rinfo->mmio_base = ioremap(rinfo->mmio_base_phys, RADEON_REGSIZE);
+ 	if (!rinfo->mmio_base) {
+-		printk(KERN_ERR "radeonfb (%s): cannot map MMIO\n", pci_name(rinfo->pdev));
++		printk(KERN_ERR "radeonfb (%s): cannot map MMIO\n",
++		       pci_name(rinfo->pdev));
+ 		ret = -EIO;
+-		goto err_release_pci;
++		goto err_release_pci2;
+ 	}
+ 
+ 	rinfo->fb_local_base = INREG(MC_FB_LOCATION) << 16;
+@@ -2499,10 +2507,12 @@
+ 	if (rinfo->bios_seg)
+ 		radeon_unmap_ROM(rinfo, pdev);
+ 	iounmap(rinfo->mmio_base);
+-err_release_pci:
+-	pci_release_regions(pdev);
++err_release_pci2:
++	pci_release_region(pdev, 2);
++err_release_pci0:
++	pci_release_region(pdev, 0);
+ err_release_fb:
+-	framebuffer_release(info);
++        framebuffer_release(info);
+ err_disable:
+ 	pci_disable_device(pdev);
+ err_out:
+@@ -2548,7 +2558,8 @@
+         iounmap(rinfo->mmio_base);
+         iounmap(rinfo->fb_base);
+  
+- 	pci_release_regions(pdev);
++	pci_release_region(pdev, 2);
++	pci_release_region(pdev, 0);
+ 
+ 	kfree(rinfo->mon1_EDID);
+ 	kfree(rinfo->mon2_EDID);
+
+
+
+
+-------------------------------------------------------
+SF.Net email is Sponsored by the Better Software Conference & EXPO
+September 19-22, 2005 * San Francisco, CA * Development Lifecycle Practices
+Agile & Plan-Driven Development * Managing Projects & Teams * Testing & QA
+Security * Process Improvement & Measurement * http://www.sqe.com/bsce5sf

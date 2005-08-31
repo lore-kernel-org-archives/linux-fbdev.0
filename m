@@ -1,67 +1,98 @@
-From: Knut Petersen <Knut_Petersen@t-online.de>
-Subject: Re: [PATCH 1/1 2.6.13] framebuffer: bit_putcs()
+From: Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/1 2.6.13] framebuffer: bit_putcs()
  optimization for 8x* fonts
-Date: Wed, 31 Aug 2005 00:26:54 +0200
-Message-ID: <4314DD2E.7060901@t-online.de>
-References: <43148610.70406@t-online.de> <Pine.LNX.4.62.0508301814470.6045@numbat.sonytel.be> <43149E5B.7040006@t-online.de> <Pine.LNX.4.61.0508302039160.3743@scrub.home>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+Date: Wed, 31 Aug 2005 02:51:07 +0200 (CEST)
+Message-ID: <Pine.LNX.4.61.0508310159290.3728@scrub.home>
+References: <43148610.70406@t-online.de> <Pine.LNX.4.62.0508301814470.6045@numbat.sonytel.be>
+ <43149E5B.7040006@t-online.de> <Pine.LNX.4.61.0508302039160.3743@scrub.home>
+ <4314DD2E.7060901@t-online.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EAEWP-0007m0-On
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 Aug 2005 15:24:01 -0700
-Received: from mailout11.sul.t-online.com ([194.25.134.85])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EAEWN-0001xE-CP
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 Aug 2005 15:24:01 -0700
-In-Reply-To: <Pine.LNX.4.61.0508302039160.3743@scrub.home>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: Roman Zippel <zippel@linux-m68k.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932308AbVHaAv0@vger.kernel.org>
+In-Reply-To: <4314DD2E.7060901@t-online.de>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Knut Petersen <Knut_Petersen@t-online.de>
 Cc: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>, "Antonino A. Daplas" <adaplas@gmail.com>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Jochen Hein <jochen@jochen.org>
 
-Hi Roman,
+Hi,
 
->Could you try the patch below, for a few extra cycles you might want to=20
->make it an inline function.
-> =20
->
-No, it does not help. If there is any difference, it is too small to be=20
-measured on
-my system ... and my system does run at 1000 Hz.
+On Wed, 31 Aug 2005, Knut Petersen wrote:
 
-After 2.6.12 fb_pad_aligned_buffer() was changed to use memcpy() instead=20
-of a
-bytewise copy. That slowed things down a lot, some weeks ago that was=20
-reverted.
-fb_pad_aligned _buffer() isn=B4t that slow, it=B4s just an external funct=
-ion=20
-to be called
-and that means a lot of unnecessary code.
+> How could I make it an inline function? It is used in console/bitblit.c,
+> nvidia/nvidia.c,
+> riva/fbdev.c and softcursor.c.
 
-How could I make it an inline function? It is used in console/bitblit.c,=20
-nvidia/nvidia.c,
-riva/fbdev.c and softcursor.c.
+Something like below, which has the advantange that there is still only 
+one implementation of the function and if it's still slower, we really 
+need to check the compiler.
 
-cu,
- Knut
+bye, Roman
 
+ drivers/video/console/bitblit.c |    5 ++++-
+ drivers/video/fbmem.c           |   10 +---------
+ include/linux/fb.h              |   13 +++++++++++++
+ 3 files changed, 18 insertions(+), 10 deletions(-)
 
--------------------------------------------------------
-SF.Net email is Sponsored by the Better Software Conference & EXPO
-September 19-22, 2005 * San Francisco, CA * Development Lifecycle Practic=
-es
-Agile & Plan-Driven Development * Managing Projects & Teams * Testing & Q=
-A
-Security * Process Improvement & Measurement * http://www.sqe.com/bsce5sf
+Index: linux-2.6/drivers/video/fbmem.c
+===================================================================
+--- linux-2.6.orig/drivers/video/fbmem.c	2005-08-30 21:17:44.000000000 +0200
++++ linux-2.6/drivers/video/fbmem.c	2005-08-31 01:20:37.000000000 +0200
+@@ -80,15 +80,7 @@ EXPORT_SYMBOL(fb_get_color_depth);
+  */
+ void fb_pad_aligned_buffer(u8 *dst, u32 d_pitch, u8 *src, u32 s_pitch, u32 height)
+ {
+-	int i, j;
+-
+-	for (i = height; i--; ) {
+-		/* s_pitch is a few bytes at the most, memcpy is suboptimal */
+-		for (j = 0; j < s_pitch; j++)
+-			dst[j] = src[j];
+-		src += s_pitch;
+-		dst += d_pitch;
+-	}
++	__fb_pad_aligned_buffer(dst, d_pitch, src, s_pitch, height);
+ }
+ EXPORT_SYMBOL(fb_pad_aligned_buffer);
+ 
+Index: linux-2.6/drivers/video/console/bitblit.c
+===================================================================
+--- linux-2.6.orig/drivers/video/console/bitblit.c	2005-08-30 01:55:20.000000000 +0200
++++ linux-2.6/drivers/video/console/bitblit.c	2005-08-31 01:25:30.000000000 +0200
+@@ -175,7 +175,10 @@ static void bit_putcs(struct vc_data *vc
+ 					src = buf;
+ 				}
+ 
+-				fb_pad_aligned_buffer(dst, pitch, src, idx, image.height);
++				if (likely(idx == 1))
++					__fb_pad_aligned_buffer(dst, pitch, src, 1, image.height);
++				else
++					fb_pad_aligned_buffer(dst, pitch, src, idx, image.height);
+ 				dst += width;
+ 			}
+ 		}
+Index: linux-2.6/include/linux/fb.h
+===================================================================
+--- linux-2.6.orig/include/linux/fb.h	2005-08-30 01:56:29.000000000 +0200
++++ linux-2.6/include/linux/fb.h	2005-08-31 01:21:04.000000000 +0200
+@@ -824,6 +824,19 @@ extern int fb_get_color_depth(struct fb_
+ extern int fb_get_options(char *name, char **option);
+ extern int fb_new_modelist(struct fb_info *info);
+ 
++static inline void __fb_pad_aligned_buffer(u8 *dst, u32 d_pitch, u8 *src, u32 s_pitch, u32 height)
++{
++	int i, j;
++
++	d_pitch -= s_pitch;
++	for (i = height; i--; ) {
++		/* s_pitch is a few bytes at the most, memcpy is suboptimal */
++		for (j = 0; j < s_pitch; j++)
++			*dst++ = *src++;
++		dst += d_pitch;
++	}
++}
++
+ extern struct fb_info *registered_fb[FB_MAX];
+ extern int num_registered_fb;
+ 

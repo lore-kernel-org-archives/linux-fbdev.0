@@ -1,21 +1,21 @@
-From: Knut Petersen <Knut_Petersen@t-online.de>
-Subject: [BUG] [PATCH 8/10] fbcon: Break up bit_putcs into its component functions
-Date: Fri, 02 Sep 2005 13:18:22 +0200
-Message-ID: <431834FE.1030308@t-online.de>
-References: <431775CA.4020509@gmail.com>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: [PATCH] fbcon: Fix screen pointer updating in bit_putcs
+Date: Fri, 02 Sep 2005 21:53:46 +0800
+Message-ID: <4318596A.5020003@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EB9wu-00021Y-Fc
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 02 Sep 2005 04:43:12 -0700
-Received: from mailout11.sul.t-online.com ([194.25.134.85])
+	id 1EBC1T-00074y-Rf
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 02 Sep 2005 06:56:03 -0700
+Received: from zproxy.gmail.com ([64.233.162.198])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EB9ws-0006Ii-Lw
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 02 Sep 2005 04:43:12 -0700
-In-Reply-To: <431775CA.4020509@gmail.com>
+	id 1EBC1S-0000dk-Cf
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 02 Sep 2005 06:56:04 -0700
+Received: by zproxy.gmail.com with SMTP id s18so389022nze
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 02 Sep 2005 06:55:55 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,57 +26,78 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-The patch is broken, please don=B4t apply!
+Bug reported by Knut Petersen:
 
-If count > maxcnt in bit_putcs(), bit_putcs_(un)aligned() is first=20
-called to display
-maxcnt characters. It returns, and the current value for the source=20
-pointer s is lost.
-Then bit_putcs_(un)aligned() is called again, obviously displaying=20
-characters from
-the start of s and not starting after the last allready displayed charact=
-er.
+The screen pointer (*s) is not updated if the loop is iterated more than
+once.
 
-Obviously that will only happen for small pixmap buffers, large fonts=20
-and high
-resolutions. For the default pixmap size of 8k, a 16x32 font this bug=20
-will have
-the described results for all xres > 2048, for the same font and a pixmap
-size of 4k all xres > 1024.
+Do not pass unused variables (xx, yy, and count) to the component function
+of bit_putcs()
 
-A small pixmap sizes of 4k gives better overall performance for at least=20
-the
-cyberbade/i1 / Via Samuel 2 combination because of cache effects.
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
 
-Steps to reproduce:
+---
+ bitblit.c |   20 +++++++++-----------
+ 1 files changed, 9 insertions(+), 11 deletions(-)
 
-    - Reduce pixmap size to 4k, compile and reboot or reload framebuffer=20
-module
-    - fbset 1280x1024
-    - setfont bitstream_vera_sans_mono_roman.16x30.psf
-    - ctrl-alt-f2 ctrl-alt-f1
 
-To Antonino,
-
-    - dont=B4t pass unused parameters like count, xx and yy to=20
-bit_putcs_(un)alligned()
-    - you do not need to calculate idx if you have calculated and passed=20
-s_pitch
-
-cu
- knut
-
+diff --git a/drivers/video/console/bitblit.c b/drivers/video/console/bitblit.c
+--- a/drivers/video/console/bitblit.c
++++ b/drivers/video/console/bitblit.c
+@@ -104,9 +104,8 @@ static void bit_clear(struct vc_data *vc
+ }
+ 
+ static inline void bit_putcs_aligned(struct vc_data *vc, struct fb_info *info,
+-				     const u16 *s, u32 count, u32 yy, u32 xx,
+-				     u32 attr, u32 cnt, u32 d_pitch,
+-				     u32 s_pitch, u32 cellsize,
++				     const u16 *s, u32 attr, u32 cnt,
++				     u32 d_pitch, u32 s_pitch, u32 cellsize,
+ 				     struct fb_image *image, u8 *buf, u8 *dst)
+ {
+ 	u16 charmask = vc->vc_hi_font_mask ? 0x1ff : 0xff;
+@@ -136,8 +135,7 @@ static inline void bit_putcs_aligned(str
+ }
+ 
+ static inline void bit_putcs_unaligned(struct vc_data *vc,
+-				       struct fb_info *info,
+-				       const u16 *s, u32 count, u32 yy, u32 xx,
++				       struct fb_info *info, const u16 *s,
+ 				       u32 attr, u32 cnt, u32 d_pitch,
+ 				       u32 s_pitch, u32 cellsize,
+ 				       struct fb_image *image, u8 *buf,
+@@ -213,16 +211,16 @@ static void bit_putcs(struct vc_data *vc
+ 		image.data = dst;
+ 
+ 		if (!mod)
+-			bit_putcs_aligned(vc, info, s, count, yy, xx,
+-					  attribute, cnt, pitch, width,
+-					  cellsize, &image, buf, dst);
++			bit_putcs_aligned(vc, info, s, attribute, cnt, pitch,
++					  width, cellsize, &image, buf, dst);
+ 		else
+-			bit_putcs_unaligned(vc, info, s, count, yy, xx,
+-					    attribute, cnt, pitch, width,
+-					    cellsize, &image, buf, dst);
++			bit_putcs_unaligned(vc, info, s, attribute, cnt,
++					    pitch, width, cellsize, &image,
++					    buf, dst);
+ 
+ 		image.dx += cnt * vc->vc_font.width;
+ 		count -= cnt;
++		s += cnt;
+ 	}
+ 
+ 	/* buf is always NULL except when in monochrome mode, so in this case
 
 
 
 -------------------------------------------------------
 SF.Net email is Sponsored by the Better Software Conference & EXPO
-September 19-22, 2005 * San Francisco, CA * Development Lifecycle Practic=
-es
-Agile & Plan-Driven Development * Managing Projects & Teams * Testing & Q=
-A
+September 19-22, 2005 * San Francisco, CA * Development Lifecycle Practices
+Agile & Plan-Driven Development * Managing Projects & Teams * Testing & QA
 Security * Process Improvement & Measurement * http://www.sqe.com/bsce5sf

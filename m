@@ -1,21 +1,20 @@
 From: Knut Petersen <Knut_Petersen@t-online.de>
-Subject: Re: [PATCH 8/10] fbcon: Break up bit_putcs into
- its component functions
-Date: Fri, 02 Sep 2005 09:31:17 +0200
-Message-ID: <4317FFC5.7090701@t-online.de>
+Subject: [BUG] [PATCH 8/10] fbcon: Break up bit_putcs into its component functions
+Date: Fri, 02 Sep 2005 13:18:22 +0200
+Message-ID: <431834FE.1030308@t-online.de>
 References: <431775CA.4020509@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EB5y5-0001bZ-FV
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 02 Sep 2005 00:28:09 -0700
-Received: from mailout07.sul.t-online.com ([194.25.134.83])
+	id 1EB9wu-00021Y-Fc
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 02 Sep 2005 04:43:12 -0700
+Received: from mailout11.sul.t-online.com ([194.25.134.85])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EB5y3-0007sp-5A
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 02 Sep 2005 00:28:09 -0700
+	id 1EB9ws-0006Ii-Lw
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 02 Sep 2005 04:43:12 -0700
 In-Reply-To: <431775CA.4020509@gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -28,28 +27,50 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@gmail.com>
 
-Antonino A. Daplas schrieb:
+The patch is broken, please don=B4t apply!
 
->    The function bit_putcs() in drivers/video/console/bitblit.c is becom=
-ing
->    large.  Break it up into its component functions (bit_putcs_unaligne=
-d and
->    bit_putcs_aligned).
->   =20
->    Incorporated fb_pad_aligned_buffer() optimization by Roman Zippel.
->   =20
->    Signed-off-by: Antonino Daplas <adaplas@pol.net>
-> =20
->
+If count > maxcnt in bit_putcs(), bit_putcs_(un)aligned() is first=20
+called to display
+maxcnt characters. It returns, and the current value for the source=20
+pointer s is lost.
+Then bit_putcs_(un)aligned() is called again, obviously displaying=20
+characters from
+the start of s and not starting after the last allready displayed charact=
+er.
 
-Well, breaking up bit_putcs() is ok. But I don=B4t understand why you do=20
-not care about
-blitting time for 16x* fonts.
+Obviously that will only happen for small pixmap buffers, large fonts=20
+and high
+resolutions. For the default pixmap size of 8k, a 16x32 font this bug=20
+will have
+the described results for all xres > 2048, for the same font and a pixmap
+size of 4k all xres > 1024.
 
-cu,
+A small pixmap sizes of 4k gives better overall performance for at least=20
+the
+cyberbade/i1 / Via Samuel 2 combination because of cache effects.
+
+Steps to reproduce:
+
+    - Reduce pixmap size to 4k, compile and reboot or reload framebuffer=20
+module
+    - fbset 1280x1024
+    - setfont bitstream_vera_sans_mono_roman.16x30.psf
+    - ctrl-alt-f2 ctrl-alt-f1
+
+To Antonino,
+
+    - dont=B4t pass unused parameters like count, xx and yy to=20
+bit_putcs_(un)alligned()
+    - you do not need to calculate idx if you have calculated and passed=20
+s_pitch
+
+cu
  knut
+
+
 
 
 -------------------------------------------------------

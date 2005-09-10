@@ -1,23 +1,24 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
+From: Jon Smirl <jonsmirl@gmail.com>
 Subject: Re: can't access video memory?
-Date: Sat, 10 Sep 2005 13:46:55 +0800
-Message-ID: <4322734F.5050407@gmail.com>
-References: <4321A7D6.9070702@comcast.net>
+Date: Sat, 10 Sep 2005 11:01:39 -0400
+Message-ID: <9e4733910509100801508140b4@mail.gmail.com>
+References: <091020051443.548.4322F10400014A8E000002242207020653079A0D00@comcast.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EDyDc-0007Mo-CT
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Sep 2005 22:48:04 -0700
-Received: from zproxy.gmail.com ([64.233.162.200])
+	id 1EE6rX-0000nJ-Ld
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 10 Sep 2005 08:01:51 -0700
+Received: from wproxy.gmail.com ([64.233.184.192])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EDyDb-0002bH-1F
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Sep 2005 22:48:04 -0700
-Received: by zproxy.gmail.com with SMTP id i11so15609nzh
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 09 Sep 2005 22:47:56 -0700 (PDT)
-In-Reply-To: <4321A7D6.9070702@comcast.net>
+	id 1EE6rU-0003Vy-Fq
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 10 Sep 2005 08:01:51 -0700
+Received: by wproxy.gmail.com with SMTP id i3so1717172wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 10 Sep 2005 08:01:39 -0700 (PDT)
+In-Reply-To: <091020051443.548.4322F10400014A8E000002242207020653079A0D00@comcast.net>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,30 +30,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Zack Smith <fbui@comcast.net>
+To: linux-fbdev-devel@lists.sourceforge.net, fbui@comcast.net
 
-Zack Smith wrote:
-> Hi all,
-> 
-> As an experiment I tried accessing a part of (shared) video memory
-> on my system that is not being used for display data, and this caused the
-> kernel to crash. I have 6 megs of space and the display is using only half,
-> but accessing above the 3 meg mark causes the problem. Accessing
-> the lower 3 megs works fine.
-> 
-> Does anyone know what might cause this?
+On 9/10/05, fbui@comcast.net <fbui@comcast.net> wrote:
+> > Zack Smith wrote:=20
+> > > Does anyone know what might cause this?=20
 
-Depends on the driver.  It's possible that the driver did not ioremap
-the entire graphics aperture (ie ioremapped only the first 3 megs).  Or
-the driver set info->fix.smem_len to only 3 MB instead of 6.
+On x86 the kernel is limited to 1GB of virtual address space. So
+physical memory plus mapped video needs to total less than 1GB for
+best performance.
 
-Some drivers are now differentiating between remapped size vs actual
-physical size (radeonfb).  info->screen_size, if not zero, tells the
-amount of the remapped size while info->fix.smem_len, the actual physical
-size.
+Systems with 1GB of RAM or more want to minimize mapped VRAM. Anything
+that is mapped over the minimum pushes kernel data structures out of
+normal access and into highmem access which is significantly slower.
+For example mapping a 512MB video card on a 1GB system knocks about
+10% off from your system performance since it pushes 512MB of RAM into
+highmem access mode.
 
-Tony
+The drivers aren't smart enough to look for less than 1GB of physical
+memory and expand their mapped areas.
+
+None of this applies from user space. There are no problems with
+mapping the full card.
+
+--=20
+Jon Smirl
+jonsmirl@gmail.com
 
 
 -------------------------------------------------------

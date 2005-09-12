@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 2/4] i810fb: Restore xres and yres option parameters
-Date: Mon, 12 Sep 2005 09:15:16 +0800
-Message-ID: <4324D6A4.8080304@gmail.com>
+Subject: [PATCH 4/4] i810fb: Update i810fb documentation
+Date: Mon, 12 Sep 2005 09:18:12 +0800
+Message-ID: <4324D754.9040901@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EEd0V-000434-NZ
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 11 Sep 2005 18:21:15 -0700
-Received: from zproxy.gmail.com ([64.233.162.206])
+	id 1EEd0u-00043L-Hy
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 11 Sep 2005 18:21:40 -0700
+Received: from zproxy.gmail.com ([64.233.162.204])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EEd0U-0007DB-DQ
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 11 Sep 2005 18:21:15 -0700
-Received: by zproxy.gmail.com with SMTP id i11so168161nzh
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 11 Sep 2005 18:21:08 -0700 (PDT)
+	id 1EEd0t-0006Te-4M
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 11 Sep 2005 18:21:40 -0700
+Received: by zproxy.gmail.com with SMTP id 9so1571464nzo
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 11 Sep 2005 18:21:32 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,96 +30,143 @@ Content-Type: text/plain; charset="us-ascii"
 To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-If i810fb successfully probed for the EDID, it will disregard the
-boot option parameters 'xres' and 'yres'.  Fix this regression.
-
-Excellent testing done by Manuel Lauss <mano@roarinelk.homelinux.net>.
+Update i810fb documentation to describe new features and configuration
+changes.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 
 ---
- i810_main.c |   52 +++++++++++++++++++++++++++++++++++-----------------
- 1 files changed, 35 insertions(+), 17 deletions(-)
+ intel810.txt |   56 ++++++++++++++++++++++++++++++--------------------------
+ 1 files changed, 30 insertions(+), 26 deletions(-)
 
 
-diff --git a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_main.c
---- a/drivers/video/i810/i810_main.c
-+++ b/drivers/video/i810/i810_main.c
-@@ -95,18 +95,18 @@ static struct pci_driver i810fb_driver =
- static char *mode_option __devinitdata = NULL;
- static int vram       __devinitdata = 4;
- static int bpp        __devinitdata = 8;
--static int mtrr       __devinitdata = 0;
--static int accel      __devinitdata = 0;
--static int hsync1     __devinitdata = 0;
--static int hsync2     __devinitdata = 0;
--static int vsync1     __devinitdata = 0;
--static int vsync2     __devinitdata = 0;
--static int xres       __devinitdata = 640;
--static int yres       __devinitdata = 480;
--static int vyres      __devinitdata = 0;
--static int sync       __devinitdata = 0;
--static int ext_vga    __devinitdata = 0;
--static int dcolor     __devinitdata = 0;
-+static int mtrr       __devinitdata;
-+static int accel      __devinitdata;
-+static int hsync1     __devinitdata;
-+static int hsync2     __devinitdata;
-+static int vsync1     __devinitdata;
-+static int vsync2     __devinitdata;
-+static int xres       __devinitdata;
-+static int yres       __devinitdata;
-+static int vyres      __devinitdata;
-+static int sync       __devinitdata;
-+static int ext_vga    __devinitdata;
-+static int dcolor     __devinitdata;
+diff --git a/Documentation/fb/intel810.txt b/Documentation/fb/intel810.txt
+--- a/Documentation/fb/intel810.txt
++++ b/Documentation/fb/intel810.txt
+@@ -5,6 +5,7 @@ Intel 810/815 Framebuffer driver
+ 	March 17, 2002
  
- /*------------------------------------------------------------*/
+ 	First Released: July 2001
++	Last Update:    September 12, 2005
+ ================================================================
  
-@@ -1725,12 +1725,21 @@ static void __devinit i810_init_defaults
- 	if (bpp < 8)
- 		bpp = 8;
+ A. Introduction
+@@ -44,6 +45,8 @@ B.  Features
+ 
+ 	- Hardware Cursor Support
+  
++	- Supports EDID probing either by DDC/I2C or through the BIOS
++
+ C.  List of available options
  	
-+	par->i810fb_ops = i810fb_ops;
-+
-+	if (xres)
-+		info->var.xres = xres;
-+	else
-+		info->var.xres = 640;
-+
-+	if (yres)
-+		info->var.yres = yres;
-+	else
-+		info->var.yres = 480;
-+
- 	if (!vyres) 
--		vyres = (vram << 20)/(xres*bpp >> 3);
-+		vyres = (vram << 20)/(info->var.xres*bpp >> 3);
+    a. "video=i810fb"  
+@@ -52,14 +55,17 @@ C.  List of available options
+ 	Recommendation: required
+  
+    b. "xres:<value>"  
+-	select horizontal resolution in pixels
++	select horizontal resolution in pixels. (This parameter will be
++	ignored if 'mode_option' is specified.  See 'o' below).
  
--	par->i810fb_ops = i810fb_ops;
--	info->var.xres = xres;
--	info->var.yres = yres;
- 	info->var.yres_virtual = vyres;
- 	info->var.bits_per_pixel = bpp;
+ 	Recommendation: user preference 
+ 	(default = 640)
  
-@@ -1862,7 +1871,16 @@ static void __devinit i810fb_find_init_m
- 	fb_videomode_to_modelist(specs->modedb, specs->modedb_len,
- 				 &info->modelist);
- 	if (specs->modedb != NULL) {
--		if (specs->misc & FB_MISC_1ST_DETAIL) {
-+		if (xres && yres) {
-+			struct fb_videomode *m;
+    c. "yres:<value>"
+ 	select vertical resolution in scanlines. If Discrete Video Timings
+-	is enabled, this will be ignored and computed as 3*xres/4.  
++	is enabled, this will be ignored and computed as 3*xres/4.  (This
++	parameter will be ignored if 'mode_option' is specified.  See 'o'
++	below)  
+ 
+ 	Recommendation: user preference
+ 	(default = 480)
+@@ -86,7 +92,8 @@ C.  List of available options
+    g. "hsync1/hsync2:<value>" 
+ 	select the minimum and maximum Horizontal Sync Frequency of the 
+ 	monitor in KHz.  If a using a fixed frequency monitor, hsync1 must 
+-	be equal to hsync2. 
++	be equal to hsync2. If EDID probing is successful, these will be
++	ignored and values will be taken from the EDID block.
+ 
+ 	Recommendation: check monitor manual for correct values
+ 	default (29/30)
+@@ -94,7 +101,8 @@ C.  List of available options
+    h. "vsync1/vsync2:<value>" 
+ 	select the minimum and maximum Vertical Sync Frequency of the monitor
+ 	in Hz. You can also use this option to lock your monitor's refresh 
+-	rate.
++	rate. If EDID probing is successful, these will be ignored and values
++	will be taken from the EDID block.
+ 
+ 	Recommendation: check monitor manual for correct values
+ 	(default = 60/60)
+@@ -154,7 +162,11 @@ C.  List of available options
+ 
+ 	Recommendation: do not set
+ 	(default = not set)
+-			
++   o. <xres>x<yres>[-<bpp>][@<refresh>]
++	The driver will now accept specification of boot mode option.  If this
++	is specified, the options 'xres' and 'yres' will be ignored. See
++	Documentation/fb/modedb.txt for usage.
 +
-+			if ((m = fb_find_best_mode(&var, &info->modelist))) {
-+				mode = *m;
-+				found  = 1;
-+			}
-+		}
+ D. Kernel booting
+ 
+ Separate each option/option-pair by commas (,) and the option from its value
+@@ -176,7 +188,10 @@ will be computed based on the hsync1/hsy
+ 
+ IMPORTANT:
+ You must include hsync1, hsync2, vsync1 and vsync2 to enable video modes
+-better than 640x480 at 60Hz.
++better than 640x480 at 60Hz. HOWEVER, if your chipset/display combination
++supports I2C and has an EDID block, you can safely exclude hsync1, hsync2,
++vsync1 and vsync2 parameters.  These parameters will be taken from the EDID
++block.
+ 
+ E.  Module options
+ 	
+@@ -217,32 +232,21 @@ F.  Setup
+ 	   This is required.  The option is under "Character Devices"
+ 
+ 	d. Under "Graphics Support", select "Intel 810/815" either statically
+-	   or as a module.  Choose "use VESA GTF for video timings"  if you 
+-	   need to maximize the capability of your display.  To be on the 
++	   or as a module.  Choose "use VESA Generalized Timing Formula" if
++	   you need to maximize the capability of your display.  To be on the 
+ 	   safe side, you can leave this unselected.  
+   
+-        e. If you want a framebuffer console, enable it under "Console 
++	e. If you want support for DDC/I2C probing (Plug and Play Displays),
++	   set 'Enable DDC Support' to 'y'. To make this option appear, set
++	   'use VESA Generalized Timing Formula' to 'y'.
 +
-+		if (!found && specs->misc & FB_MISC_1ST_DETAIL) {
- 			for (i = 0; i < specs->modedb_len; i++) {
- 				if (specs->modedb[i].flag & FB_MODE_IS_FIRST) {
- 					mode = specs->modedb[i];
++        f. If you want a framebuffer console, enable it under "Console 
+ 	   Drivers"
+ 
+-	f. Compile your kernel. 
++	g. Compile your kernel. 
+ 	  	
+-	g. Load the driver as described in section D and E.
++	h. Load the driver as described in section D and E.
+ 	
+-	Optional:	
+-	h.  If you are going to run XFree86 with its native drivers, the 
+-	    standard XFree86 4.1.0 and 4.2.0 drivers should work as is.
+-            However, there's a bug in the XFree86 i810 drivers.  It attempts 
+-	    to use XAA even when switched to the console. This will crash
+-	    your server. I have a fix at this site:  
+-	    
+-	    http://i810fb.sourceforge.net.  
+-
+-	    You can either use the patch, or just replace 
+-	    
+-            /usr/X11R6/lib/modules/drivers/i810_drv.o
+-
+-	    with the one provided at the website. 	
+-
+ 	i.  Try the DirectFB (http://www.directfb.org) + the i810 gfxdriver
+ 	    patch to see the chipset in action (or inaction :-).
+ 
 
 
 

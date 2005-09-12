@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 1/4] i810fb: Fix oops if CONFIG_FB_I810_I2C is set to no
-Date: Mon, 12 Sep 2005 09:13:32 +0800
-Message-ID: <4324D63C.9070407@gmail.com>
+Subject: [PATCH 2/4] i810fb: Restore xres and yres option parameters
+Date: Mon, 12 Sep 2005 09:15:16 +0800
+Message-ID: <4324D6A4.8080304@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EEd0Q-00042v-8p
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 11 Sep 2005 18:21:10 -0700
+	id 1EEd0V-000434-NZ
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 11 Sep 2005 18:21:15 -0700
 Received: from zproxy.gmail.com ([64.233.162.206])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EEd0O-0007Bn-PV
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 11 Sep 2005 18:21:10 -0700
-Received: by zproxy.gmail.com with SMTP id i11so168145nzh
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 11 Sep 2005 18:21:01 -0700 (PDT)
+	id 1EEd0U-0007DB-DQ
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 11 Sep 2005 18:21:15 -0700
+Received: by zproxy.gmail.com with SMTP id i11so168161nzh
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 11 Sep 2005 18:21:08 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,85 +30,96 @@ Content-Type: text/plain; charset="us-ascii"
 To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Reported by: Manuel Lauss <mano@roarinelk.homelinux.net>
+If i810fb successfully probed for the EDID, it will disregard the
+boot option parameters 'xres' and 'yres'.  Fix this regression.
 
-compiled with CONFIG_FB_I810_I2C = n and CONFIG_FB_I810 = y
-it oopses at boot in file drivers/video/i810/i810_main.c:1884
-
-...
-Unable to handle kernel NULL pointer dereference at virtual address 00000054
-printing eip:
-c02543c0
-*pde = 00000000
-Oops: 0000 [#1]
-last sysfs file:
-Modules linked in:
-CPU:    0
-EIP:    0060:[<c02543c0>]    Not tainted VLI
-EFLAGS: 00010286   (2.6.13-mm2)
-EIP is at i810fb_find_init_mode+0x53/0x93
-eax: c113ddd4   ebx: c1194000   ecx: c04be2dd   edx: c1194000
-esi: c1194008   edi: c113ddd4   ebp: c1194240   esp: c113ddcc
-ds: 007b   es: 007b   ss: 0068
-
-struct fb_monspecs *specs is initialized to NULL causing the oops.
+Excellent testing done by Manuel Lauss <mano@roarinelk.homelinux.net>.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 
 ---
- i810_main.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+ i810_main.c |   52 +++++++++++++++++++++++++++++++++++-----------------
+ 1 files changed, 35 insertions(+), 17 deletions(-)
 
 
 diff --git a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_main.c
 --- a/drivers/video/i810/i810_main.c
 +++ b/drivers/video/i810/i810_main.c
-@@ -950,7 +950,7 @@ static int i810_check_params(struct fb_v
- 			     struct fb_info *info)
- {
- 	struct i810fb_par *par = (struct i810fb_par *) info->par;
--	int line_length, vidmem, mode_valid = 0;
-+	int line_length, vidmem, mode_valid = 0, retval = 0;
- 	u32 vyres = var->yres_virtual, vxres = var->xres_virtual;
- 	/*
- 	 *  Memory limit
-@@ -1026,10 +1026,11 @@ static int i810_check_params(struct fb_v
- 			printk("i810fb: invalid video mode%s\n",
- 			       default_sync ? "" : ". Specifying "
- 			       "vsyncN/hsyncN parameters may help");
-+			retval = -EINVAL;
- 		}
- 	}
+@@ -95,18 +95,18 @@ static struct pci_driver i810fb_driver =
+ static char *mode_option __devinitdata = NULL;
+ static int vram       __devinitdata = 4;
+ static int bpp        __devinitdata = 8;
+-static int mtrr       __devinitdata = 0;
+-static int accel      __devinitdata = 0;
+-static int hsync1     __devinitdata = 0;
+-static int hsync2     __devinitdata = 0;
+-static int vsync1     __devinitdata = 0;
+-static int vsync2     __devinitdata = 0;
+-static int xres       __devinitdata = 640;
+-static int yres       __devinitdata = 480;
+-static int vyres      __devinitdata = 0;
+-static int sync       __devinitdata = 0;
+-static int ext_vga    __devinitdata = 0;
+-static int dcolor     __devinitdata = 0;
++static int mtrr       __devinitdata;
++static int accel      __devinitdata;
++static int hsync1     __devinitdata;
++static int hsync2     __devinitdata;
++static int vsync1     __devinitdata;
++static int vsync2     __devinitdata;
++static int xres       __devinitdata;
++static int yres       __devinitdata;
++static int vyres      __devinitdata;
++static int sync       __devinitdata;
++static int ext_vga    __devinitdata;
++static int dcolor     __devinitdata;
  
--	return 0;
-+	return retval;
- }	
+ /*------------------------------------------------------------*/
  
- /**
-@@ -1830,7 +1831,7 @@ static void __devinit i810fb_find_init_m
- {
- 	struct fb_videomode mode;
- 	struct fb_var_screeninfo var;
--	struct fb_monspecs *specs = NULL;
-+	struct fb_monspecs *specs = &info->monspecs;
- 	int found = 0;
- #ifdef CONFIG_FB_I810_I2C
- 	int i;
-@@ -1853,12 +1854,11 @@ static void __devinit i810fb_find_init_m
- 	if (!err)
- 		printk("i810fb_init_pci: DDC probe successful\n");
+@@ -1725,12 +1725,21 @@ static void __devinit i810_init_defaults
+ 	if (bpp < 8)
+ 		bpp = 8;
+ 	
++	par->i810fb_ops = i810fb_ops;
++
++	if (xres)
++		info->var.xres = xres;
++	else
++		info->var.xres = 640;
++
++	if (yres)
++		info->var.yres = yres;
++	else
++		info->var.yres = 480;
++
+ 	if (!vyres) 
+-		vyres = (vram << 20)/(xres*bpp >> 3);
++		vyres = (vram << 20)/(info->var.xres*bpp >> 3);
  
--	fb_edid_to_monspecs(par->edid, &info->monspecs);
-+	fb_edid_to_monspecs(par->edid, specs);
+-	par->i810fb_ops = i810fb_ops;
+-	info->var.xres = xres;
+-	info->var.yres = yres;
+ 	info->var.yres_virtual = vyres;
+ 	info->var.bits_per_pixel = bpp;
  
--	if (info->monspecs.modedb == NULL)
-+	if (specs->modedb == NULL)
- 		printk("i810fb_init_pci: Unable to get Mode Database\n");
- 
--	specs = &info->monspecs;
+@@ -1862,7 +1871,16 @@ static void __devinit i810fb_find_init_m
  	fb_videomode_to_modelist(specs->modedb, specs->modedb_len,
  				 &info->modelist);
  	if (specs->modedb != NULL) {
+-		if (specs->misc & FB_MISC_1ST_DETAIL) {
++		if (xres && yres) {
++			struct fb_videomode *m;
++
++			if ((m = fb_find_best_mode(&var, &info->modelist))) {
++				mode = *m;
++				found  = 1;
++			}
++		}
++
++		if (!found && specs->misc & FB_MISC_1ST_DETAIL) {
+ 			for (i = 0; i < specs->modedb_len; i++) {
+ 				if (specs->modedb[i].flag & FB_MODE_IS_FIRST) {
+ 					mode = specs->modedb[i];
 
 
 

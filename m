@@ -1,24 +1,31 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: fbcon woes with closed source framebuffer
- kernel module
-Date: Fri, 16 Sep 2005 21:59:17 +0800
-Message-ID: <432ACFB5.8020502@gmail.com>
-References: <196b7d3105091606241b4d2ba4@mail.gmail.com>
+From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
+Subject: save_vga question
+Date: Fri, 16 Sep 2005 21:55:47 +0600
+Message-ID: <432AEB03.5020009@ums.usu.ru>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EGGkf-0004YJ-9h
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 16 Sep 2005 06:59:41 -0700
-Received: from zproxy.gmail.com ([64.233.162.203])
+	id 1EGIdt-0002Vp-3q
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 16 Sep 2005 09:00:49 -0700
+Received: from relay4.usu.ru ([194.226.235.39])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EGGke-0004MQ-8E
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 16 Sep 2005 06:59:41 -0700
-Received: by zproxy.gmail.com with SMTP id 14so611675nzn
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 16 Sep 2005 06:59:33 -0700 (PDT)
-In-Reply-To: <196b7d3105091606241b4d2ba4@mail.gmail.com>
+	id 1EGIdp-0006TW-JD
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 16 Sep 2005 09:00:49 -0700
+Received: from relay4.usu.ru (localhost [127.0.0.1])
+	by relay4.usu.ru (PostSystem) with ESMTP id 6B90616B72
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 16 Sep 2005 22:00:45 +0600 (YEKST)
+Received: from usu2.usu.ru (usu2.usu.ru [194.226.237.16])
+	by relay4.usu.ru (PostSystem) with ESMTP id F19B016B72
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 16 Sep 2005 22:00:44 +0600 (YEKST)
+Received: from localhost.usu2.usu.ru (localhost.usu2.usu.ru [127.0.0.1])
+	by usu2.usu.ru (Postfix) with ESMTP id DB35CA7A32
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 16 Sep 2005 22:00:36 +0600 (YEKST)
+Received: from ums.usu.ru (ums.usu.ru [194.226.236.116])
+	by usu2.usu.ru (Postfix) with ESMTP id 830C5A7A2F
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 16 Sep 2005 22:00:36 +0600 (YEKST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,46 +36,62 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Lior Balkohen wrote:
-> hi list,
-> 
-> i got an STB with STB04xxx Digital Set-Top Box Integrated Controller
-> from IBM (it's a 250Mhz embedded powerpc CPU).
-> 
-> the machine runs a 2.6.9 kernel with a closed source framebuffer
-> kernel module "fb.ko".
-> 
-> I can perform lot of ioctls and mmap the framebuffer device, and
-> implement a putpixel() to draw something on TV-Output.
-> 
-> but when i compile framebuffer based console driver "fbcon.ko" and the
-> fonts "font.ko" and load those modules on the box, I DO NOT get a VT
-> or console login prompt on the TV-output.
+Hello,
 
-Are you sure fbcon is using your framebuffer?  Check lsmod output.
-If fbcon is using the driver, and your kernel did not crash, then
-that closed source driver is already implementing all the drawing
-functions needed by fbcon.
+I am currently developing a framebuffer driver for S3 Trio 3D/2X cards. 
+Well, I have a working non-accelerated driver and I am going to submit 
+it later, but serious code cleanup is needed now.
 
-If you don't see any output, then there's a bug somewhere or hopefully
-just an incorrect setting.  Check the output of fbset -i and post it here.
-An incorrect value in one of the settings can easily lead to a blank
-screen.
+I see that other fb drivers save the card state on the first open and 
+restore it when the open count reaches zero. I also implemented this, 
+but certainly not in the best way: by writing custom functions that save 
+all CRTC, Sequencer, Graphics and Attribute VGA-like registers. I think 
+that using vga_save is better here (because it also saves e.g. fonts), 
+but there is a problem. Some registers of the card lock/unlock other 
+registers. So the code in my custom save function looks like this (e.g. 
+for Sequencer registers):
 
-> 
-> what's wrong? or should i implement my own putc, scroll, etc... or
+static void save_state(struct s3d2xfb_par * par)
+{
+    /* ... */
+    u8 sr08;
+    /* ... */
+    sr08 = readSR(par, 0x08);
+    writeSR(par, 0x06, 0x08); /* Unlock SR10-15, otherwise they are 
+unreadable */
+    for (i=0; i<sizeof(par->saved_SR); i++)
+       par->saved_SR[i] = readSR(par, i);
+    par->saved_SR[0x08] = sr08;
+    writeSR(par, sr08, 0x08);
+    /* ... */
+}
 
-Don't, no use doing this.
+and the corresponding code in the restore function:
 
-> better a terminal for framebuffers like jfbterm, fbiterm???
-> 
+static void restore_state(struct fb_info *info)
+{
+    int i;
+    struct s3d2xfb_par *par = (struct s3d2xfb_par *) info->par;
+    s3d2xfb_unlock_regs(info); /* includes a writeSR(par, sr08, 0x08); */
+    /* ... */
+    for (i=0; i<sizeof(par->saved_SR); i++)
+       if (i!=0x08)
+          writeSR(par, par->saved_SR[i], i);
+    /* ... */
+    writeSR(par, par->saved_SR[0x08], 0x08);
+    /* ... */
+}
 
-As a last resort, perhaps.  Why don't you ask IBM?
+What's the recommended way of using the save_vga() function when such 
+locking problems exist? Is it acceptable to manually save the state 
+necessary to restore locking (SR08 in the example above), unlock 
+everything, and then save the "unlocked" state with vga_save?
 
-Tony
+-- 
+Alexander E. Patrakov
 
 
 -------------------------------------------------------

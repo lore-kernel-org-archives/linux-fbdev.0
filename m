@@ -1,23 +1,24 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: save_vga question
-Date: Sat, 17 Sep 2005 05:15:51 +0800
-Message-ID: <432B3607.7000307@gmail.com>
-References: <432AEB03.5020009@ums.usu.ru>
+From: Lior Balkohen <balkohen@gmail.com>
+Subject: Re: fbcon woes with closed source framebuffer kernel module
+Date: Fri, 16 Sep 2005 18:27:41 +0200
+Message-ID: <196b7d310509160927584f8130@mail.gmail.com>
+References: <196b7d3105091606241b4d2ba4@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EGNZ9-00083u-3c
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 16 Sep 2005 14:16:15 -0700
-Received: from zproxy.gmail.com ([64.233.162.204])
+	id 1EGJ47-0003ir-La
+	for Linux-fbdev-devel@lists.sourceforge.net; Fri, 16 Sep 2005 09:27:55 -0700
+Received: from nproxy.gmail.com ([64.233.182.194])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EGNZ7-0006nk-JX
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 16 Sep 2005 14:16:15 -0700
-Received: by zproxy.gmail.com with SMTP id 14so45130nzn
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 16 Sep 2005 14:16:07 -0700 (PDT)
-In-Reply-To: <432AEB03.5020009@ums.usu.ru>
+	id 1EGJ40-0008LH-9J
+	for Linux-fbdev-devel@lists.sourceforge.net; Fri, 16 Sep 2005 09:27:52 -0700
+Received: by nproxy.gmail.com with SMTP id a4so196416nfc
+        for <Linux-fbdev-devel@lists.sourceforge.net>; Fri, 16 Sep 2005 09:27:42 -0700 (PDT)
+In-Reply-To: <196b7d3105091606241b4d2ba4@mail.gmail.com>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,77 +30,88 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
+To: Linux-fbdev-devel@lists.sourceforge.net
 
-Alexander E. Patrakov wrote:
-> Hello,
-> 
-> I am currently developing a framebuffer driver for S3 Trio 3D/2X cards.
-> Well, I have a working non-accelerated driver and I am going to submit
-> it later, but serious code cleanup is needed now.
-> 
-> I see that other fb drivers save the card state on the first open and
-> restore it when the open count reaches zero. I also implemented this,
-> but certainly not in the best way: by writing custom functions that save
-> all CRTC, Sequencer, Graphics and Attribute VGA-like registers. I think
-> that using vga_save is better here (because it also saves e.g. fonts),
-> but there is a problem. Some registers of the card lock/unlock other
-> registers. So the code in my custom save function looks like this (e.g.
-> for Sequencer registers):
-> 
-> static void save_state(struct s3d2xfb_par * par)
-> {
->    /* ... */
->    u8 sr08;
->    /* ... */
->    sr08 = readSR(par, 0x08);
->    writeSR(par, 0x06, 0x08); /* Unlock SR10-15, otherwise they are
-> unreadable */
->    for (i=0; i<sizeof(par->saved_SR); i++)
->       par->saved_SR[i] = readSR(par, i);
->    par->saved_SR[0x08] = sr08;
->    writeSR(par, sr08, 0x08);
->    /* ... */
-> }
-> 
-> and the corresponding code in the restore function:
-> 
-> static void restore_state(struct fb_info *info)
-> {
->    int i;
->    struct s3d2xfb_par *par = (struct s3d2xfb_par *) info->par;
->    s3d2xfb_unlock_regs(info); /* includes a writeSR(par, sr08, 0x08); */
->    /* ... */
->    for (i=0; i<sizeof(par->saved_SR); i++)
->       if (i!=0x08)
->          writeSR(par, par->saved_SR[i], i);
->    /* ... */
->    writeSR(par, par->saved_SR[0x08], 0x08);
->    /* ... */
-> }
-> 
-> What's the recommended way of using the save_vga() function when such
-> locking problems exist? Is it acceptable to manually save the state
-> necessary to restore locking (SR08 in the example above), unlock
-> everything, and then save the "unlocked" state with vga_save?
-> 
+>Are you sure fbcon is using your framebuffer?  Check lsmod output.
+>If fbcon is using the driver, and your kernel did not crash
 
-save_vga will only save/restore standard VGA registers, ie, in the case of the
-sequencers, SR00 - SR04.  Any registers above those are extended VGA
-registers, ie, their purpose depend from hardware to hardware.
+telnet 192.168.2.150
+Trying 192.168.2.150...
+Connected to 192.168.2.150.
+Escape character is '^]'.
 
-So you can do it 2 ways:  One, you can save all standard VGA registers using
-save_vga and save the extended VGA registers using your own function, unlocking
-the locked registers, if necessary.
 
-Another way is to set state->num_seq = 16, unlock all locked registers, then
-call save_vga.
+welcome on your dreambox! - Kernel 2.6.9 (17:49:20).
+dreambox login: root
+Password:
 
-I prefer doing the first, but it's up to you.  In both case, I think it's
-important to save the registers in their "unlocked" state.
 
-Tony
+BusyBox v1.01 (2005.09.08-20:13+0000) Built-in shell (ash)
+Enter 'help' for a list of built-in commands.
+
+~ > cd /tmp
+/tmp > ls -l *.ko
+-rw-r--r--    1 root     root        39224 Sep 16 17:49 fbcon.ko
+-rw-r--r--    1 root     root         9236 Sep 16 17:49 font.ko
+/tmp > lsmod
+Module                  Size  Used by
+usbhid 22016 0 - Live 0xc389e000
+head 338412 45 - Live 0xc38c9000
+/tmp > insmod ./font.ko
+/tmp > insmod ./fbcon.ko
+/tmp > lsmod
+Module                  Size  Used by
+fbcon 31732 65 - Live 0xc391d000
+font 7008 1 fbcon, Live 0xc3896000
+usbhid 22016 0 - Live 0xc389e000
+head 338412 46 - Live 0xc38c9000
+
+head is used 45 times and after loading fbcon, 46 times, so i think,
+fbcon is using the driver.
+
+>then that closed source driver is already implementing all the drawing
+>functions needed by fbcon.
+
+i don't think so:
+
+nm head.ko | grep pfb
+000125bc t pfb_check_var
+00003a28 d pfb_default
+00000000 t pfb_fix
+00012c50 t pfb_pan_display
+0001edb0 b pfb_pseudo_palette
+00012798 t pfb_set_par
+00012af4 t pfb_setcolreg
+
+>Check the output of fbset -i and post it here.
+
+/tmp > ./fbset -i
+
+mode "720x576-171"
+    # D: 50.000 MHz, H: 54.825 kHz, V: 170.793 Hz
+    geometry 720 576 720 576 8
+    timings 20000 64 64 32 32 64 2
+    laced true
+    rgba 8/16,8/8,8/0,8/24
+endmode
+
+Frame buffer device information:
+    Name        : Pallas FB
+    Address     : 0xa0901000
+    Size        : 2093056
+    Type        : PACKED PIXELS
+    Visual      : PSEUDOCOLOR
+    XPanStep    : 1
+    YPanStep    : 1
+    YWrapStep   : 1
+    LineLength  : 720
+    Accelerator : No
+
+>Why don't you ask IBM?
+actually, the driver does not come from ibm, but from dream
+multimedia, an stb manufacturer, i asked them, and they said, they
+cannot answer any questions about drivers because they have a non
+disclosure agreement with ibm. ;-)
 
 
 -------------------------------------------------------

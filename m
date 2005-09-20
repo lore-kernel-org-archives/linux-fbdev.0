@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH] nvidiafb: Fix absence of cursor in nvidiafb
-Date: Wed, 21 Sep 2005 07:30:21 +0800
-Message-ID: <43309B8D.7060502@gmail.com>
+Subject: [PATCH] fbdev: Fix reversed back and front porches
+Date: Wed, 21 Sep 2005 07:32:49 +0800
+Message-ID: <43309C21.6040901@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EHrkq-0003Ac-Nx
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Sep 2005 16:42:28 -0700
-Received: from zproxy.gmail.com ([64.233.162.204])
+	id 1EHrku-0003Ao-7p
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Sep 2005 16:42:32 -0700
+Received: from zproxy.gmail.com ([64.233.162.206])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EHrko-0004Ta-E6
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Sep 2005 16:42:28 -0700
-Received: by zproxy.gmail.com with SMTP id 14so57967nzn
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 20 Sep 2005 16:42:20 -0700 (PDT)
+	id 1EHrku-0004Tu-4d
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Sep 2005 16:42:32 -0700
+Received: by zproxy.gmail.com with SMTP id i11so1595838nzh
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 20 Sep 2005 16:42:26 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,51 +30,36 @@ Content-Type: text/plain; charset="us-ascii"
 To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-A recent change in nvidiafb caused nvidiafb_cursor to always return -ENXIO
-instead of using the soft_cursor.  This will happen if the parameter "hwcur"
-is not set, which happens to be the default.
+In fbdev perspective, the frontporch is the lower/right margin and the
+backporch is the upper/left margin.
+
+Correct.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
- Kconfig         |    1 +
- nvidia/nvidia.c |    5 ++++-
- 2 files changed, 5 insertions(+), 1 deletion(-)
+ fbcvt.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -650,6 +650,7 @@ config FB_NVIDIA
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-+	select FB_SOFT_CURSOR
- 	help
- 	  This driver supports graphics boards with the nVidia chips, TNT
- 	  and newer. For very old chipsets, such as the RIVA128, then use
-diff --git a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
---- a/drivers/video/nvidia/nvidia.c
-+++ b/drivers/video/nvidia/nvidia.c
-@@ -893,7 +893,7 @@ static int nvidiafb_cursor(struct fb_inf
- 	int i, set = cursor->set;
- 	u16 fg, bg;
+diff --git a/drivers/video/fbcvt.c b/drivers/video/fbcvt.c
+--- a/drivers/video/fbcvt.c
++++ b/drivers/video/fbcvt.c
+@@ -272,11 +272,11 @@ static void fb_cvt_convert_to_mode(struc
+ {
+ 	mode->refresh = cvt->f_refresh;
+ 	mode->pixclock = KHZ2PICOS(cvt->pixclock/1000);
+-	mode->left_margin = cvt->h_front_porch;
+-	mode->right_margin = cvt->h_back_porch;
++	mode->left_margin = cvt->h_back_porch;
++	mode->right_margin = cvt->h_front_porch;
+ 	mode->hsync_len = cvt->hsync;
+-	mode->upper_margin = cvt->v_front_porch;
+-	mode->lower_margin = cvt->v_back_porch;
++	mode->upper_margin = cvt->v_back_porch;
++	mode->lower_margin = cvt->v_front_porch;
+ 	mode->vsync_len = cvt->vsync;
  
--	if (!hwcur || cursor->image.width > MAX_CURS || cursor->image.height > MAX_CURS)
-+	if (cursor->image.width > MAX_CURS || cursor->image.height > MAX_CURS)
- 		return -ENXIO;
- 
- 	NVShowHideCursor(par, 0);
-@@ -1356,6 +1356,9 @@ static int __devinit nvidia_set_fbinfo(s
- 	info->pixmap.size = 8 * 1024;
- 	info->pixmap.flags = FB_PIXMAP_SYSTEM;
- 
-+	if (!hwcur)
-+	    info->fbops->fb_cursor = soft_cursor;
-+
- 	info->var.accel_flags = (!noaccel);
- 
- 	switch (par->Architecture) {
-
+ 	mode->sync &= ~(FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT);
 
 
 

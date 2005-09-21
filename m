@@ -1,25 +1,23 @@
-From: jurriaan <thunder7@xs4all.nl>
-Subject: Re: no cursor on nvidiafb console in 2.6.14-rc1-mm1
-Date: Wed, 21 Sep 2005 13:32:36 +0200
-Message-ID: <20050921113236.GA4461@amd64.of.nowhere>
-References: <20050919175116.GA8172@amd64.of.nowhere> <432F08C1.8010705@ppp0.net> <432F36B4.8030209@gmail.com> <432FBC93.4040007@ppp0.net> <432FE3E0.3020405@gmail.com>
+From: James Simmons <jsimmons@infradead.org>
+Subject: Get the line length from sysfs.
+Date: Wed, 21 Sep 2005 22:03:29 +0100 (BST)
+Message-ID: <Pine.LNX.4.56.0509212202030.10847@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EI2qo-000204-Ce
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Sep 2005 04:33:22 -0700
-Received: from smtp-vbr1.xs4all.nl ([194.109.24.21])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EI2ql-0008Eh-CX
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Sep 2005 04:33:22 -0700
-Received: from zeeotter.xs4all.nl (zeeotter.xs4all.nl [80.126.31.149])
-	by smtp-vbr1.xs4all.nl (8.13.3/8.13.3) with ESMTP id j8LBX7Na070322
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 21 Sep 2005 13:33:07 +0200 (CEST)
-	(envelope-from jurriaan@rivierenland.xs4all.nl)
-Content-Disposition: inline
-In-Reply-To: <432FE3E0.3020405@gmail.com>
+	id 1EIBkf-00069b-2k
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Sep 2005 14:03:37 -0700
+Received: from pentafluge.infradead.org ([213.146.154.40])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44)
+	id 1EIBkd-0004wa-6v
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Sep 2005 14:03:37 -0700
+Received: from jsimmons (helo=localhost)
+	by pentafluge.infradead.org with local-esmtp (Exim 4.52 #1 (Red Hat Linux))
+	id 1EIBkX-0002t3-VR
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Sep 2005 22:03:30 +0100
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,61 +28,38 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Antonino A. Daplas <adaplas@gmail.com>
-Date: Tue, Sep 20, 2005 at 06:26:40PM +0800
-> Heh, didn't realize that. drivers/video/nvidia/nvidia.c, actually.
-> But just apply this patch instead, as a Kconfig change is also
-> needed.
-> 
-> Signed-off-by: Antonino Daplas <adaplas@pol.net>
-> 
-> diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-> --- a/drivers/video/Kconfig
-> +++ b/drivers/video/Kconfig
-> @@ -650,6 +650,7 @@ config FB_NVIDIA
->  	select FB_CFB_FILLRECT
->  	select FB_CFB_COPYAREA
->  	select FB_CFB_IMAGEBLIT
-> +	select FB_SOFT_CURSOR
->  	help
->  	  This driver supports graphics boards with the nVidia chips, TNT
->  	  and newer. For very old chipsets, such as the RIVA128, then use
-> diff --git a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
-> --- a/drivers/video/nvidia/nvidia.c
-> +++ b/drivers/video/nvidia/nvidia.c
-> @@ -893,7 +893,7 @@ static int nvidiafb_cursor(struct fb_inf
->  	int i, set = cursor->set;
->  	u16 fg, bg;
->  
-> -	if (!hwcur || cursor->image.width > MAX_CURS || cursor->image.height > MAX_CURS)
-> +	if (cursor->image.width > MAX_CURS || cursor->image.height > MAX_CURS)
->  		return -ENXIO;
->  
->  	NVShowHideCursor(par, 0);
-> @@ -1356,6 +1356,9 @@ static int __devinit nvidia_set_fbinfo(s
->  	info->pixmap.size = 8 * 1024;
->  	info->pixmap.flags = FB_PIXMAP_SYSTEM;
->  
-> +	if (!hwcur)
-> +	    info->fbops->fb_cursor = soft_cursor;
-> +
->  	info->var.accel_flags = (!noaccel);
->  
->  	switch (par->Architecture) {
-> 
 
-Thanks, this fixes my problem.
+Let me know if this is acceptable. Some people might not like the name.
 
-Jurriaan
--- 
-Pine - the outlook of Unix.
-        Erik Hensema in xs4all.general
-Debian (Unstable) GNU/Linux 2.6.14-rc1-mm1 5404 bogomips load 0.58
+
+--- linus-2.6/drivers/video/fbsysfs.c	2005-07-31 15:45:22.000000000 -0700
++++ fbdev-2.6/drivers/video/fbsysfs.c	2005-09-21 13:54:02.000000000 -0700
+@@ -242,6 +242,13 @@
+ 			fb_info->var.yres_virtual);
+ }
+ 
++static ssize_t show_stride(struct class_device *class_device, char *buf)
++{
++	struct fb_info *fb_info =
++		(struct fb_info *)class_get_devdata(class_device);
++	return snprintf(buf, PAGE_SIZE, "%d\n", fb_info->fix.line_length);
++}
++
+ /* Format for cmap is "%02x%c%4x%4x%4x\n" */
+ /* %02x entry %c transp %4x red %4x blue %4x green \n */
+ /* 256 rows at 16 chars equals 4096, the normal page size */
+@@ -432,6 +439,7 @@
+ 	__ATTR(pan, S_IRUGO|S_IWUSR, show_pan, store_pan),
+ 	__ATTR(virtual_size, S_IRUGO|S_IWUSR, show_virtual, store_virtual),
+ 	__ATTR(name, S_IRUGO, show_name, NULL),
++	__ATTR(stride, S_IRUGO, show_stride, NULL),
+ };
+ 
+ int fb_init_class_device(struct fb_info *fb_info)
 
 
 -------------------------------------------------------

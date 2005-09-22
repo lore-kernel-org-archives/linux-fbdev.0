@@ -1,22 +1,22 @@
-From: Kronos <kronos@people.it>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: Get the line length from sysfs.
-Date: Thu, 22 Sep 2005 01:27:59 +0200
-Message-ID: <20050921232759.GA5988@dreamland.darkstar.lan>
+Date: Thu, 22 Sep 2005 11:38:33 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0509221137530.18908@numbat.sonytel.be>
 References: <Pine.LNX.4.56.0509212202030.10847@pentafluge.infradead.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EIE0J-0003fE-2v
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Sep 2005 16:27:55 -0700
-Received: from apollo2.tiscali.it ([213.205.33.82] helo=cp3a.criticalpath.priv)
+	id 1EINXd-00063u-J2
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Sep 2005 02:38:57 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EIE0H-0001Cm-HP
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Sep 2005 16:27:55 -0700
-Received: from dreamland.darkstar.lan (84.222.33.29) by cp3a.criticalpath.priv (7.2.062.1)
-        id 43204FDB001C6221 for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Sep 2005 01:27:54 +0200
-Content-Disposition: inline
+	id 1EINXc-0001VJ-5b
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Sep 2005 02:38:57 -0700
+Received: from numbat.sonytel.be (mail.sonytel.be [43.221.60.197])
+	by witte.sonytel.be (8.12.10/8.12.10) with ESMTP id j8M9cpva002736
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 22 Sep 2005 11:38:51 +0200 (MEST)
 In-Reply-To: <Pine.LNX.4.56.0509212202030.10847@pentafluge.infradead.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -28,11 +28,14 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Il Wed, Sep 21, 2005 at 10:03:29PM +0100, James Simmons ha scritto: 
+On Wed, 21 Sep 2005, James Simmons wrote:
+> Let me know if this is acceptable. Some people might not like the name.
+> 
+> 
 > --- linus-2.6/drivers/video/fbsysfs.c	2005-07-31 15:45:22.000000000 -0700
 > +++ fbdev-2.6/drivers/video/fbsysfs.c	2005-09-21 13:54:02.000000000 -0700
 > @@ -242,6 +242,13 @@
@@ -43,30 +46,20 @@ Il Wed, Sep 21, 2005 at 10:03:29PM +0100, James Simmons ha scritto:
 > +{
 > +	struct fb_info *fb_info =
 > +		(struct fb_info *)class_get_devdata(class_device);
-
-class_get_devdata returns a void*, you can remove the cast and use just
-one line :)
-
 > +	return snprintf(buf, PAGE_SIZE, "%d\n", fb_info->fix.line_length);
-> +}
-> +
->  /* Format for cmap is "%02x%c%4x%4x%4x\n" */
->  /* %02x entry %c transp %4x red %4x blue %4x green \n */
->  /* 256 rows at 16 chars equals 4096, the normal page size */
-> @@ -432,6 +439,7 @@
->  	__ATTR(pan, S_IRUGO|S_IWUSR, show_pan, store_pan),
->  	__ATTR(virtual_size, S_IRUGO|S_IWUSR, show_virtual, store_virtual),
->  	__ATTR(name, S_IRUGO, show_name, NULL),
-> +	__ATTR(stride, S_IRUGO, show_stride, NULL),
->  };
->  
->  int fb_init_class_device(struct fb_info *fb_info)
 
+Do all drivers set fix.line_length these days?
 
-Luca
--- 
-Home: http://kronoz.cjb.net
-Se non puoi convincerli, confondili.
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

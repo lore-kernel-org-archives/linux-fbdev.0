@@ -1,25 +1,23 @@
-From: Antonino Daplas <adaplas@gmail.com>
-Subject: Re: Get the line length from sysfs.
-Date: Thu, 22 Sep 2005 18:19:43 +0800
-Message-ID: <b00ca3bd05092203193d60c612@mail.gmail.com>
-References: <Pine.LNX.4.56.0509212202030.10847@pentafluge.infradead.org>
-	 <Pine.LNX.4.62.0509221137530.18908@numbat.sonytel.be>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: DRM & MTRR's
+Date: Fri, 23 Sep 2005 22:07:58 +0800
+Message-ID: <43340C3E.5070005@gmail.com>
+References: <1127475052.9377.18.camel@jetpack.demon.co.uk>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EIOBB-0007f0-Uw
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Sep 2005 03:19:49 -0700
-Received: from zproxy.gmail.com ([64.233.162.207])
+	id 1EIoE5-0007Rq-1F
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Sep 2005 07:08:33 -0700
+Received: from zproxy.gmail.com ([64.233.162.199])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EIOBB-00030S-L0
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Sep 2005 03:19:49 -0700
-Received: by zproxy.gmail.com with SMTP id 14so148947nzn
-        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 22 Sep 2005 03:19:43 -0700 (PDT)
-In-Reply-To: <Pine.LNX.4.62.0509221137530.18908@numbat.sonytel.be>
-Content-Disposition: inline
+	id 1EIoE3-0002j4-92
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 23 Sep 2005 07:08:32 -0700
+Received: by zproxy.gmail.com with SMTP id i11so597968nzh
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 23 Sep 2005 07:08:19 -0700 (PDT)
+In-Reply-To: <1127475052.9377.18.camel@jetpack.demon.co.uk>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,33 +29,46 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Alan Hourihane <alanh@fairlite.demon.co.uk>
+Cc: dri-devel@lists.sf.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On 9/22/05, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> On Wed, 21 Sep 2005, James Simmons wrote:
-> > Let me know if this is acceptable. Some people might not like the name.
-> >
-> >
-> > --- linus-2.6/drivers/video/fbsysfs.c 2005-07-31 15:45:22.000000000 -07=
-00
-> > +++ fbdev-2.6/drivers/video/fbsysfs.c 2005-09-21 13:54:02.000000000 -07=
-00
-> > @@ -242,6 +242,13 @@
-> >                       fb_info->var.yres_virtual);
-> >  }
-> >
-> > +static ssize_t show_stride(struct class_device *class_device, char *bu=
-f)
-> > +{
-> > +     struct fb_info *fb_info =3D
-> > +             (struct fb_info *)class_get_devdata(class_device);
-> > +     return snprintf(buf, PAGE_SIZE, "%d\n", fb_info->fix.line_length)=
-;
->
-> Do all drivers set fix.line_length these days?
->
+Alan Hourihane wrote:
+> Has anyone any objections to me removing the MTRR code from the DRM.
+> 
+> It doesn't have the intimate knowledge needed to properly configure
+> MTRR's and fails in many cases.
+> 
+> There are two cases currently, one for the framebuffer and a second for
+> the entire AGP space.
+> 
+> Certainly in Intel hardware this is the same memory space and you always
+> get bogus error messages in your kernel logs as things fail due to lack
+> of boundary checks.
+> 
+> I'm more of the opinion that it should be left up to userspace to
+> configure MTRR's if it indeed wants them and we shouldn't force them
+> within the DRM.
+> 
+> Additionally, the Xserver (for user-space) already sets up the MTRR's,
+> as should Xgl (Xegl) or other user space apps.
+> 
+> What makes the situation a little worse is that vesafb (and other *fb
+> drivers) also setup an mtrr which frequently stops subsequent processes
+> from adding a new one that overlaps an existing write-combining range.
+> But the *fb drivers do provide a nomtrr option in many cases. (But I'd
+> like to remove it from them too :-) or at least default those to off)
 
-They have to, if they want to use any of the cfb_* drawing functions.
+I don't know the repercussions of defaulting to nomtrr. But I would
+surmise that a large percentage of users gives more importance to X/DRI
+performance than console performance (majority of vesafb users still
+use redraw for scrolling where ypan is magnitudes faster, so I'm pretty
+sure defaulting vesafb to nomtrr will not be noticeable to most users,
+they probably go straight to X anyway :-)
+
+I cannot decide on this alone, so I'm going to CC the fbdev-devel list.
+Perhaps I can submit a patch that defaults all drivers to nomtrr and a
+big warning about mtrr not being set in dmesg. If I don't get any
+backlash for a few patch cycles, I can make this permanent.
 
 Tony
 

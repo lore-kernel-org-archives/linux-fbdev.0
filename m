@@ -1,21 +1,19 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH] intelfb: Fix regression (blank display) from ioremap patch
-Date: Thu, 29 Sep 2005 05:19:51 +0800
-Message-ID: <433B08F7.6060608@gmail.com>
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+Subject: [PATCH] fb: straighten up fb drivers menu
+Date: Wed, 28 Sep 2005 21:00:00 -0700
+Message-ID: <20050928210000.57fb7ce6.rdunlap@xenotime.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EKlYf-0001uL-A1
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Sep 2005 16:41:53 -0700
-Received: from xproxy.gmail.com ([66.249.82.203])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EKlYd-0000mh-4M
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Sep 2005 16:41:53 -0700
-Received: by xproxy.gmail.com with SMTP id s7so146062wxc
-        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 28 Sep 2005 16:41:44 -0700 (PDT)
+	id 1EKpaX-00065a-GS
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Sep 2005 21:00:05 -0700
+Received: from xenotime.net ([66.160.160.81])
+	by mail.sourceforge.net with smtp (Exim 4.44)
+	id 1EKpaV-00071F-88
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 28 Sep 2005 21:00:05 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,104 +25,175 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Sylvain Meyer <sylvain.meyer@worldonline.fr>
+To: akpm <akpm@osdl.org>, adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sf.net
 
-- Workaround for the ioremap patch that produces a blank display on some
-  chipsets
-- Make hwcursor = 0 the default.  The hardware cursor does not work with all
-  hardware.
+From: Randy Dunlap <rdunlap@xenotime.net>
 
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
+Arrange frame buffer menu:
+- puts all Epson drivers together
+- removes split of FB_PXA and FB_PXA_PARAMETERS by FB_W100
+- results in PXA, W100, Epson, S3C2410, & Virtual FB drivers being
+  presented at the same menu level as all other FB drivers
+
+Signed-off-by: Randy Dunlap <rdunlap@xenotime.net>
 ---
- Kconfig              |    1 +
- intelfb/intelfbdrv.c |   21 ++++++++++-----------
- 2 files changed, 11 insertions(+), 11 deletions(-)
 
+ drivers/video/Kconfig |  118 ++++++++++++++++++++--------------------
+ 1 files changed, 59 insertions(+), 59 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -768,6 +768,7 @@ config FB_INTEL
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-+	select FB_SOFT_CURSOR
- 	help
- 	  This driver supports the on-board graphics built in to the Intel
-           830M/845G/852GM/855GM/865G chipsets.
-diff --git a/drivers/video/intelfb/intelfbdrv.c b/drivers/video/intelfb/intelfbdrv.c
---- a/drivers/video/intelfb/intelfbdrv.c
-+++ b/drivers/video/intelfb/intelfbdrv.c
-@@ -226,7 +226,7 @@ MODULE_DEVICE_TABLE(pci, intelfb_pci_tab
+diff -Naurp linux-2614-rc2-git6/drivers/video/Kconfig~fb_menu_levels linux-2614-rc2-git6/drivers/video/Kconfig
+--- linux-2614-rc2-git6/drivers/video/Kconfig~fb_menu_levels	2005-09-27 21:36:24.000000000 -0700
++++ linux-2614-rc2-git6/drivers/video/Kconfig	2005-09-27 22:03:10.000000000 -0700
+@@ -641,6 +641,50 @@ config FB_EPSON1355
+ 	  framebuffer.  Product specs at
+ 	  <http://www.erd.epson.com/vdc/html/products.htm>.
  
- static int accel        = 1;
- static int vram         = 4;
--static int hwcursor     = 1;
-+static int hwcursor     = 0;
- static int mtrr         = 1;
- static int fixed        = 0;
- static int noinit       = 0;
-@@ -609,15 +609,9 @@ intelfb_pci_register(struct pci_dev *pde
- 		dinfo->accel = 0;
- 	}
- 
--	if (MB(voffset) < stolen_size)
--		offset = (stolen_size >> 12);
--	else
--		offset = ROUND_UP_TO_PAGE(MB(voffset))/GTT_PAGE_SIZE;
--
- 	/* Framebuffer parameters - Use all the stolen memory if >= vram */
--	if (ROUND_UP_TO_PAGE(stolen_size) >= ((offset << 12) +  MB(vram))) {
-+	if (ROUND_UP_TO_PAGE(stolen_size) >= MB(vram)) {
- 		dinfo->fb.size = ROUND_UP_TO_PAGE(stolen_size);
--		dinfo->fb.offset = 0;
- 		dinfo->fbmem_gart = 0;
- 	} else {
- 		dinfo->fb.size =  MB(vram);
-@@ -648,6 +642,11 @@ intelfb_pci_register(struct pci_dev *pde
- 		return -ENODEV;
- 	}
- 
-+	if (MB(voffset) < stolen_size)
-+		offset = (stolen_size >> 12);
-+	else
-+		offset = ROUND_UP_TO_PAGE(MB(voffset))/GTT_PAGE_SIZE;
++config FB_E1356
++	tristate "Epson SED1356 framebuffer support"
++	depends on FB && EXPERIMENTAL && PCI && MIPS
 +
- 	/* set the mem offsets - set them after the already used pages */
- 	if (dinfo->accel) {
- 		dinfo->ring.offset = offset + gtt_info.current_memory;
-@@ -662,10 +661,11 @@ intelfb_pci_register(struct pci_dev *pde
- 			+ (dinfo->cursor.size >> 12);
- 	}
++config PB1000_CRT
++	bool "Use CRT on Pb1000 (J65)"
++	depends on MIPS_PB1000=y && FB_E1356
++
++config PB1000_NTSC
++	bool "Use Compsite NTSC on Pb1000 (J63)"
++	depends on MIPS_PB1000=y && FB_E1356
++
++config PB1000_TFT
++	bool "Use TFT Panel on Pb1000 (J64)"
++	depends on MIPS_PB1000=y && FB_E1356
++
++config PB1500_CRT
++	bool "Use CRT on Pb1500 " if MIPS_PB1500=y
++	depends on FB_E1356
++
++config PB1500_CRT
++	prompt "Use CRT on Pb1100 "
++	depends on FB_E1356 && MIPS_PB1100=y
++
++config PB1500_TFT
++	bool "Use TFT Panel on Pb1500 " if MIPS_PB1500=y
++	depends on FB_E1356
++
++config PB1500_TFT
++	prompt "Use TFT Panel on Pb1100 "
++	depends on FB_E1356 && MIPS_PB1100=y
++
++config FB_S1D13XXX
++	tristate "Epson S1D13XXX framebuffer support"
++	depends on FB
++	select FB_CFB_FILLRECT
++	select FB_CFB_COPYAREA
++	select FB_CFB_IMAGEBLIT
++	select FB_SOFT_CURSOR
++	help
++	  Support for S1D13XXX framebuffer device family (currently only
++	  working with S1D13806). Product specs at
++	  <http://www.erd.epson.com/vdc/html/legacy_13xxx.htm>
++
+ config FB_NVIDIA
+ 	tristate "nVidia Framebuffer Support"
+ 	depends on FB && PCI
+@@ -1249,38 +1293,6 @@ config FB_PM3
+ 	  similar boards, 3DLabs Permedia3 Create!, Appian Jeronimo 2000
+ 	  and maybe other boards.
  
-+	/* Allocate memories (which aren't stolen) */
- 	/* Map the fb and MMIO regions */
- 	/* ioremap only up to the end of used aperture */
- 	dinfo->aperture.virtual = (u8 __iomem *)ioremap_nocache
--		(dinfo->aperture.physical, (dinfo->fb.offset << 12)
-+		(dinfo->aperture.physical, ((offset + dinfo->fb.offset) << 12)
- 		 + dinfo->fb.size);
- 	if (!dinfo->aperture.virtual) {
- 		ERR_MSG("Cannot remap FB region.\n");
-@@ -682,7 +682,6 @@ intelfb_pci_register(struct pci_dev *pde
- 		return -ENODEV;
- 	}
+-config FB_E1356
+-	tristate "Epson SED1356 framebuffer support"
+-	depends on FB && EXPERIMENTAL && PCI && MIPS
+-
+-config PB1000_CRT
+-	bool "Use CRT on Pb1000 (J65)"
+-	depends on MIPS_PB1000=y && FB_E1356
+-
+-config PB1000_NTSC
+-	bool "Use Compsite NTSC on Pb1000 (J63)"
+-	depends on MIPS_PB1000=y && FB_E1356
+-
+-config PB1000_TFT
+-	bool "Use TFT Panel on Pb1000 (J64)"
+-	depends on MIPS_PB1000=y && FB_E1356
+-
+-config PB1500_CRT
+-	bool "Use CRT on Pb1500 " if MIPS_PB1500=y
+-	depends on FB_E1356
+-
+-config PB1500_CRT
+-	prompt "Use CRT on Pb1100 "
+-	depends on FB_E1356 && MIPS_PB1100=y
+-
+-config PB1500_TFT
+-	bool "Use TFT Panel on Pb1500 " if MIPS_PB1500=y
+-	depends on FB_E1356
+-
+-config PB1500_TFT
+-	prompt "Use TFT Panel on Pb1100 "
+-	depends on FB_E1356 && MIPS_PB1100=y
+-
+ config FB_AU1100
+ 	bool "Au1100 LCD Driver"
+ 	depends on (FB = y) && EXPERIMENTAL && PCI && MIPS && MIPS_PB1100=y
+@@ -1472,23 +1484,6 @@ config FB_PXA
  
--	/* Allocate memories (which aren't stolen) */
- 	if (dinfo->accel) {
- 		if (!(dinfo->gtt_ring_mem =
- 		      agp_allocate_memory(bridge, dinfo->ring.size >> 12,
-@@ -1484,7 +1483,7 @@ intelfb_cursor(struct fb_info *info, str
- #endif
+ 	  If unsure, say N.
  
- 	if (!dinfo->hwcursor)
--		return -ENXIO;
-+		return soft_cursor(info, cursor);
+-config FB_W100
+-	tristate "W100 frame buffer support"
+-	depends on FB && PXA_SHARPSL
+- 	select FB_CFB_FILLRECT
+- 	select FB_CFB_COPYAREA
+- 	select FB_CFB_IMAGEBLIT
+-	select FB_SOFT_CURSOR
+-	---help---
+-	  Frame buffer driver for the w100 as found on the Sharp SL-Cxx series.
+-
+-	  This driver is also available as a module ( = code which can be
+-	  inserted and removed from the running kernel whenever you want). The
+-	  module will be called vfb. If you want to compile it as a module,
+-	  say M here and read <file:Documentation/modules.txt>.
+-
+-	  If unsure, say N.
+-
+ config FB_PXA_PARAMETERS
+ 	bool "PXA LCD command line parameters"
+ 	default n
+@@ -1506,17 +1501,22 @@ config FB_PXA_PARAMETERS
  
- 	intelfbhw_cursor_hide(dinfo);
+ 	  <file:Documentation/fb/pxafb.txt> describes the available parameters.
  
+-config FB_S1D13XXX
+-	tristate "Epson S1D13XXX framebuffer support"
+-	depends on FB
+-	select FB_CFB_FILLRECT
+-	select FB_CFB_COPYAREA
+-	select FB_CFB_IMAGEBLIT
++config FB_W100
++	tristate "W100 frame buffer support"
++	depends on FB && PXA_SHARPSL
++ 	select FB_CFB_FILLRECT
++ 	select FB_CFB_COPYAREA
++ 	select FB_CFB_IMAGEBLIT
+ 	select FB_SOFT_CURSOR
+-	help
+-	  Support for S1D13XXX framebuffer device family (currently only
+-	  working with S1D13806). Product specs at
+-	  <http://www.erd.epson.com/vdc/html/legacy_13xxx.htm>
++	---help---
++	  Frame buffer driver for the w100 as found on the Sharp SL-Cxx series.
++
++	  This driver is also available as a module ( = code which can be
++	  inserted and removed from the running kernel whenever you want). The
++	  module will be called vfb. If you want to compile it as a module,
++	  say M here and read <file:Documentation/modules.txt>.
++
++	  If unsure, say N.
+ 
+ config FB_S3C2410
+ 	tristate "S3C2410 LCD framebuffer support"
 
+---
 
 
 -------------------------------------------------------

@@ -1,40 +1,49 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH] nvidiafb: PPC & mode setting fixes (#2)
-Date: Sun, 02 Oct 2005 15:08:36 +0800
-Message-ID: <433F8774.6000301@gmail.com>
-References: <1128225462.8267.24.camel@gaston> <1128232186.8267.31.camel@gaston>
+Date: Sun, 02 Oct 2005 18:02:06 +1000
+Message-ID: <1128240126.8267.37.camel@gaston>
+References: <1128225462.8267.24.camel@gaston>
+	 <1128232186.8267.31.camel@gaston>  <433F8774.6000301@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751001AbVJBHIn@vger.kernel.org>
-In-Reply-To: <1128232186.8267.31.camel@gaston>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751010AbVJBIFE@vger.kernel.org>
+In-Reply-To: <433F8774.6000301@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Linux Kernel list <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
 
-Benjamin Herrenschmidt wrote:
-> (This version removes a useless bit that slipped in the previous one)
+On Sun, 2005-10-02 at 15:08 +0800, Antonino A. Daplas wrote:
+> Benjamin Herrenschmidt wrote:
+> > (This version removes a useless bit that slipped in the previous one)
+> > 
+> > This patch fixes a couple of things in nvidiafb:
+> > 
+> >  - The code for retreiving the mode from Open Firmware was broken. It
+> > would crash at boot and was copied from the old rivafb code that didn't
+> > work very well (I'll update rivafb too one of these days).
 > 
-> This patch fixes a couple of things in nvidiafb:
+> What do you think of making EDID retrieval from the OF generic?  Or is
+> it too much hassle?
+
+Well, at this point, it only really concerns nvidia and ati's and their
+respective firmwares seem to expose some properties a bit differently...
+The radeon code would probably work for nvidia though as I'm not trying
+to get the connector type for nvidiafb yet, but if I ever try, it seems
+the stuff is a bit different.
+
+I'd say let's keep them separate for now, I may put them in a common
+place some day ..
+
+Ben.
+
+> Thanks for the fix :-)  
 > 
->  - The code for retreiving the mode from Open Firmware was broken. It
-> would crash at boot and was copied from the old rivafb code that didn't
-> work very well (I'll update rivafb too one of these days).
+> Acked-by: Antonino Daplas <adaplas@pol.net>
 
-What do you think of making EDID retrieval from the OF generic?  Or is
-it too much hassle?
+Ok, if you confirm it doesn't seem to do any regression on other
+hardware (I don't have any other nvidia hw to test with), I'd like it
+upstream asap (probably too late for 2.6.14 though).
 
-> 
->  - The mode setting code produced weird results on the 5200 card in the
-> iMac G5 here. X "nv" code works fine though. After comparing them, I
-> found out that we aren't really manipulating some VGA bits the same way
-> and X code seemed better, so I slightly changed the mode setting to do
-> the same and that fixed the problem. (The display was strangely shifted
-> with garbage in the margin but not on all lines, and not in bpp 32)
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-Thanks for the fix :-)  
-
-Acked-by: Antonino Daplas <adaplas@pol.net>
+Ben.

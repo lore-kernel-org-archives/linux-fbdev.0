@@ -1,17 +1,19 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] nvidiafb: PPC & mode setting fixes
-Date: Sun, 02 Oct 2005 13:57:42 +1000
-Message-ID: <1128225462.8267.24.camel@gaston>
+Subject: Re: [PATCH] nvidiafb: PPC & mode setting fixes (#2)
+Date: Sun, 02 Oct 2005 15:49:46 +1000
+Message-ID: <1128232186.8267.31.camel@gaston>
+References: <1128225462.8267.24.camel@gaston>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750960AbVJBEAl@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750978AbVJBFwo@vger.kernel.org>
+In-Reply-To: <1128225462.8267.24.camel@gaston>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 To: "Antonino A. Daplas" <adaplas@gmail.com>
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Linux Kernel list <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
 
-Hi !
+(This version removes a useless bit that slipped in the previous one)
 
 This patch fixes a couple of things in nvidiafb:
 
@@ -27,7 +29,6 @@ the same and that fixed the problem. (The display was strangely shifted
 with garbage in the margin but not on all lines, and not in bpp 32)
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
 Index: linux-work/drivers/video/Kconfig
 ===================================================================
 --- linux-work.orig/drivers/video/Kconfig	2005-09-23 12:53:23.000000000 +1000
@@ -41,21 +42,6 @@ Index: linux-work/drivers/video/Kconfig
         help
  	  This enables I2C support for nVidia Chipsets.  This is used
  	  only for getting EDID information from the attached display
-Index: linux-work/drivers/video/fbmon.c
-===================================================================
---- linux-work.orig/drivers/video/fbmon.c	2005-09-23 12:44:00.000000000 +1000
-+++ linux-work/drivers/video/fbmon.c	2005-09-30 18:28:53.000000000 +1000
-@@ -574,8 +574,9 @@
- 
- 	*dbsize = num;
- 	m = kmalloc(num * sizeof(struct fb_videomode), GFP_KERNEL);
--	if (!m)
-+	if (!m) {
- 		return mode;
-+	}
- 	memmove(m, mode, num * sizeof(struct fb_videomode));
- 	kfree(mode);
- 	return m;
 Index: linux-work/drivers/video/nvidia/nv_of.c
 ===================================================================
 --- linux-work.orig/drivers/video/nvidia/nv_of.c	2005-09-23 12:44:01.000000000 +1000

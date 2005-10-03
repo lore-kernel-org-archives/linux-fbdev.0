@@ -1,49 +1,64 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] nvidiafb: PPC & mode setting fixes (#2)
-Date: Sun, 02 Oct 2005 18:02:06 +1000
-Message-ID: <1128240126.8267.37.camel@gaston>
-References: <1128225462.8267.24.camel@gaston>
-	 <1128232186.8267.31.camel@gaston>  <433F8774.6000301@gmail.com>
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+Subject: [PATCH] au1100fb: use preprocessor instruction for error
+Date: Sun, 2 Oct 2005 17:15:37 -0700
+Message-ID: <20051002171537.4324e9e4.rdunlap@xenotime.net>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751010AbVJBIFE@vger.kernel.org>
-In-Reply-To: <433F8774.6000301@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1EMDzd-0000CM-9q
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 02 Oct 2005 17:15:45 -0700
+Received: from xenotime.net ([66.160.160.81])
+	by mail.sourceforge.net with smtp (Exim 4.44)
+	id 1EMDzc-0004b7-WB
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 02 Oct 2005 17:15:45 -0700
+Received: from midway ([71.111.157.99]) by xenotime.net for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 2 Oct 2005 17:15:39 -0700
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Linux Kernel list <linux-kernel@vger.kernel.org>, linux-fbdev-devel@lists.sourceforge.net
+To: adaplas@pol.net, akpm <akpm@osdl.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Sun, 2005-10-02 at 15:08 +0800, Antonino A. Daplas wrote:
-> Benjamin Herrenschmidt wrote:
-> > (This version removes a useless bit that slipped in the previous one)
-> > 
-> > This patch fixes a couple of things in nvidiafb:
-> > 
-> >  - The code for retreiving the mode from Open Firmware was broken. It
-> > would crash at boot and was copied from the old rivafb code that didn't
-> > work very well (I'll update rivafb too one of these days).
-> 
-> What do you think of making EDID retrieval from the OF generic?  Or is
-> it too much hassle?
+From: Randy Dunlap <rdunlap@xenotime.net>
 
-Well, at this point, it only really concerns nvidia and ati's and their
-respective firmwares seem to expose some properties a bit differently...
-The radeon code would probably work for nvidia though as I'm not trying
-to get the connector type for nvidiafb yet, but if I ever try, it seems
-the stuff is a bit different.
+Use #preprocessor to generate an error instead of a warning
+that may be missed.
+(or was this done intentionally?)
 
-I'd say let's keep them separate for now, I may put them in a common
-place some day ..
+Signed-off-by: Randy Dunlap <rdunlap@xenotime.net>
+---
 
-Ben.
+ drivers/video/au1100fb.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
-> Thanks for the fix :-)  
-> 
-> Acked-by: Antonino Daplas <adaplas@pol.net>
+diff -Naurp linux-2614-rc2-git6/drivers/video/au1100fb.c~au11fb_unknown linux-2614-rc2-git6/drivers/video/au1100fb.c
+--- linux-2614-rc2-git6/drivers/video/au1100fb.c~au11fb_unknown	2005-08-28 16:41:01.000000000 -0700
++++ linux-2614-rc2-git6/drivers/video/au1100fb.c	2005-10-02 16:28:27.000000000 -0700
+@@ -63,7 +63,7 @@
+  */
+ #if defined(CONFIG_MIPS_PB1100) || defined(CONFIG_MIPS_DB1100) || defined(CONFIG_MIPS_HYDROGEN3)
+ #else
+-error Unknown Au1100 board
++#error Unknown Au1100 board
+ #endif
+ 
+ #define CMAPSIZE 16
 
-Ok, if you confirm it doesn't seem to do any regression on other
-hardware (I don't have any other nvidia hw to test with), I'd like it
-upstream asap (probably too late for 2.6.14 though).
 
-Ben.
+---
+
+
+-------------------------------------------------------
+This SF.Net email is sponsored by:
+Power Architecture Resource Center: Free content, downloads, discussions,
+and more. http://solutions.newsforge.com/ibmarch.tmpl

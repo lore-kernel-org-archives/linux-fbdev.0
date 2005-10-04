@@ -1,22 +1,22 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
 Subject: Re: VESA, EDID & flat panels
-Date: Tue, 04 Oct 2005 14:56:22 +0800
-Message-ID: <43422796.8060505@gmail.com>
+Date: Tue, 04 Oct 2005 15:59:34 +0800
+Message-ID: <43423666.8090001@gmail.com>
 References: <1128380013.8267.125.camel@gaston>	 <8a0c36780510031618m48c55f45u648d867bcf0130d2@mail.gmail.com>	 <1128397436.31063.0.camel@gaston>  <434220D0.3020101@gmail.com> <1128407961.31063.50.camel@gaston>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EMgjI-00047g-K2
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 03 Oct 2005 23:56:48 -0700
-Received: from xproxy.gmail.com ([66.249.82.202])
+	id 1EMhjO-00079Z-Qo
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 04 Oct 2005 01:00:58 -0700
+Received: from xproxy.gmail.com ([66.249.82.201])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EMgjI-0001Pi-Dy
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 03 Oct 2005 23:56:48 -0700
-Received: by xproxy.gmail.com with SMTP id s7so304039wxc
-        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 03 Oct 2005 23:56:41 -0700 (PDT)
+	id 1EMhjM-000888-N1
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 04 Oct 2005 01:00:59 -0700
+Received: by xproxy.gmail.com with SMTP id i28so330507wxd
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 04 Oct 2005 01:00:44 -0700 (PDT)
 In-Reply-To: <1128407961.31063.50.camel@gaston>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -48,10 +48,25 @@ Benjamin Herrenschmidt wrote:
 > anything above 0x7f, thus passing it 0x50 is what gives you address
 > 0xa0 :)
 > 
+> Ben.
+> 
+> 
+> 
 
-Yeah, I just realized that :-)
+Here's a snippet from the HDMI specs. Not sure how helpful this is
+
+"8.4.3 Segment pointer
+ Enhanced DDC allows access of up to 32 Kbytes of data. This is accomplished
+ using a combination of the 0xA0/0xA1 address pair and a segment pointer. For
+ each value of the segment pointer, 256 bytes of data are available at the
+ 0xA0/0xA1 address pair. An unspecified segment pointer references the same
+ data as when the segment pointer is zero. Each successive value of the
+ segment pointer allows access to the next two blocks of E-EDID (128 bytes
+ each). The value of the segment pointer register cannot be read since it is
+ reset at the completion of each command."
 
 Tony
+
 
 
 -------------------------------------------------------

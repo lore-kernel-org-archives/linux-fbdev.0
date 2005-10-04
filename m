@@ -1,43 +1,117 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Linux-fbdev-devel] VESA, EDID & flat panels
-Date: Tue, 04 Oct 2005 13:43:55 +1000
-Message-ID: <1128397436.31063.0.camel@gaston>
-References: <1128380013.8267.125.camel@gaston>
-	<8a0c36780510031618m48c55f45u648d867bcf0130d2@mail.gmail.com>
-Reply-To: Discuss issues related to the xorg tree <xorg@lists.freedesktop.org>
+Subject: [PATCH] nvidiafb: Add flat panel dither support
+Date: Tue, 04 Oct 2005 13:50:53 +1000
+Message-ID: <1128397854.31063.8.camel@gaston>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <xorg-bounces@lists.freedesktop.org>
-In-Reply-To: <8a0c36780510031618m48c55f45u648d867bcf0130d2@mail.gmail.com>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1EMdss-0004Em-QQ
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 03 Oct 2005 20:54:30 -0700
+Received: from gate.crashing.org ([63.228.1.57])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44)
+	id 1EMdss-0007oE-D8
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 03 Oct 2005 20:54:31 -0700
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=unsubscribe>
-List-Archive: <http://lists.freedesktop.org/archives/xorg>
-List-Post: <mailto:xorg@lists.freedesktop.org>
-List-Help: <mailto:xorg-request@lists.freedesktop.org?subject=help>
-List-Subscribe: <http://lists.freedesktop.org/mailman/listinfo/xorg>,
-	<mailto:xorg-request@lists.freedesktop.org?subject=subscribe>
-Sender: xorg-bounces@lists.freedesktop.org
-Errors-To: xorg-bounces@lists.freedesktop.org
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Discuss issues related to the xorg tree <xorg@lists.freedesktop.org>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Mon, 2005-10-03 at 18:18 -0500, Richard Smith wrote:
-> > Somebody around here has access to the VESA specs ? I'm trying to figure
-> > out if the EDID block, at least on recent flat panels, tells us wether
-> > the panel digital input is 6:6:6 or 8:8:8 ... If it's 6:6:6, we should
-> > enable dithering in drivers like radeon and "nv", while if 8:8:8, we
-> > should not. If not enabling it on a 6 bits panel, we end up with crappy
-> > looking gradients, if enabling it on a 8 bits panel, we basically end up
-> > sending a 6 bits signal to a 8 bits panel, thus reducing the quality.
-> 
-> We have  a copy from a few years ago.  Its not too descriptive if
-> IIRC.  I'll try to look at it tomorrow.
+nvidiafb didn't fully hook-up the code it borrowed from X for doing flat
+panel dithering (this is useful for 6 bits panels). This adds a driver
+option to force it, and by default "reads" the current value from the
+chip to get the firmware setting. It significantly improves the quality
+of images on the iMac G5 I have here (though the X driver doesn't yet
+"read" the current value and defaults to 0, so you have to add Option
+"FBDither" "true" to your X config file to get that, I'll try to fix
+X.org to "read" the default unless specified asap).
 
-I found a lot of stuff on VESA Public site in fact. Looks like we really
-need to write some infrastructure to get to the EDID extensions :) They
-contain all sort of useful infos, though unfortunately, all of the
-panels I've come accross so far didn't seem to implement them =P
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Ben.
+Index: linux-work/drivers/video/nvidia/nvidia.c
+===================================================================
+--- linux-work.orig/drivers/video/nvidia/nvidia.c	2005-10-04 13:38:17.000000000 +1000
++++ linux-work/drivers/video/nvidia/nvidia.c	2005-10-04 13:41:26.000000000 +1000
+@@ -403,6 +403,7 @@
+ 
+ /* command line data, set in nvidiafb_setup() */
+ static int flatpanel __devinitdata = -1;	/* Autodetect later */
++static int fpdither __devinitdata = -1;
+ static int forceCRTC __devinitdata = -1;
+ static int hwcur __devinitdata = 0;
+ static int noaccel __devinitdata = 0;
+@@ -1018,10 +1019,19 @@
+ 	NVTRACE_ENTER();
+ 
+ 	NVLockUnlock(par, 1);
+-	if (!par->FlatPanel || (info->var.bits_per_pixel != 24) ||
+-	    !par->twoHeads)
++	if (!par->FlatPanel || !par->twoHeads)
+ 		par->FPDither = 0;
+ 
++	if (par->FPDither < 0) {
++		if ((par->Chipset & 0x0ff0) == 0x0110)
++			par->FPDither = !!(NV_RD32(par->PRAMDAC, 0x0528)
++					   & 0x00010000);
++		else
++			par->FPDither = !!(NV_RD32(par->PRAMDAC, 0x083C) & 1);
++		printk(KERN_INFO PFX "Flat panel dithering %s\n",
++		       par->FPDither ? "enabled" : "disabled");
++	}
++
+ 	info->fix.visual = (info->var.bits_per_pixel == 8) ?
+ 	    FB_VISUAL_PSEUDOCOLOR : FB_VISUAL_DIRECTCOLOR;
+ 
+@@ -1540,9 +1550,9 @@
+ 	sprintf(nvidiafb_fix.id, "NV%x", (pd->device & 0x0ff0) >> 4);
+ 
+ 	par->FlatPanel = flatpanel;
+-
+ 	if (flatpanel == 1)
+ 		printk(KERN_INFO PFX "flatpanel support enabled\n");
++	par->FPDither = fpdither;
+ 
+ 	par->CRTCnumber = forceCRTC;
+ 	par->FpScale = (!noscale);
+@@ -1721,6 +1731,8 @@
+ 		} else if (!strncmp(this_opt, "nomtrr", 6)) {
+ 			nomtrr = 1;
+ #endif
++		} else if (!strncmp(this_opt, "fpdither:", 9)) {
++			fpdither = simple_strtol(this_opt+9, NULL, 0);
+ 		} else
+ 			mode_option = this_opt;
+ 	}
+@@ -1767,7 +1779,11 @@
+ module_param(flatpanel, int, 0);
+ MODULE_PARM_DESC(flatpanel,
+ 		 "Enables experimental flat panel support for some chipsets. "
+-		 "(0 or 1=enabled) (default=0)");
++		 "(0=disabled, 1=enabled, -1=autodetect) (default=-1)");
++module_param(fpdither, int, 0);
++MODULE_PARM_DESC(fpdither,
++		 "Enables dithering of flat panel for 6 bits panels. "
++		 "(0=disabled, 1=enabled, -1=autodetect) (default=-1)");
+ module_param(hwcur, int, 0);
+ MODULE_PARM_DESC(hwcur,
+ 		 "Enables hardware cursor implementation. (0 or 1=enabled) "
+
+
+
+
+-------------------------------------------------------
+This SF.Net email is sponsored by:
+Power Architecture Resource Center: Free content, downloads, discussions,
+and more. http://solutions.newsforge.com/ibmarch.tmpl

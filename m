@@ -1,20 +1,23 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] nvidiafb: Fix mode setting & PPC support
-Date: Tue, 04 Oct 2005 13:48:07 +1000
-Message-ID: <1128397687.31063.5.camel@gaston>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: VESA, EDID & flat panels
+Date: Tue, 04 Oct 2005 14:27:28 +0800
+Message-ID: <434220D0.3020101@gmail.com>
+References: <1128380013.8267.125.camel@gaston>	 <8a0c36780510031618m48c55f45u648d867bcf0130d2@mail.gmail.com> <1128397436.31063.0.camel@gaston>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EMdqI-000498-SP
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 03 Oct 2005 20:51:50 -0700
-Received: from gate.crashing.org ([63.228.1.57])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44)
-	id 1EMdqI-00063z-9t
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 03 Oct 2005 20:51:51 -0700
+	id 1EMgHI-0002q8-Do
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 03 Oct 2005 23:27:52 -0700
+Received: from xproxy.gmail.com ([66.249.82.195])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1EMgHF-0000bj-Vm
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 03 Oct 2005 23:27:52 -0700
+Received: by xproxy.gmail.com with SMTP id s7so301689wxc
+        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 03 Oct 2005 23:27:44 -0700 (PDT)
+In-Reply-To: <1128397436.31063.0.camel@gaston>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,350 +29,37 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-This patch fixes nvifiafb mode setting code to be closer to what the X
-driver does, which actually makes it work on the 5200FX I have access
-to. It also fix the routine that gets the EDID from Open Firmware on
-PPC, it was broken in various ways and would crash at boot. Compared to
-the patch I posted to linux-fbdev last week, this one just changes a
-printk to be closer to the other ones in the driver.
+Benjamin Herrenschmidt wrote:
+> On Mon, 2005-10-03 at 18:18 -0500, Richard Smith wrote:
+>>> Somebody around here has access to the VESA specs ? I'm trying to figure
+>>> out if the EDID block, at least on recent flat panels, tells us wether
+>>> the panel digital input is 6:6:6 or 8:8:8 ... If it's 6:6:6, we should
+>>> enable dithering in drivers like radeon and "nv", while if 8:8:8, we
+>>> should not. If not enabling it on a 6 bits panel, we end up with crappy
+>>> looking gradients, if enabling it on a 8 bits panel, we basically end up
+>>> sending a 6 bits signal to a 8 bits panel, thus reducing the quality.
+>> We have  a copy from a few years ago.  Its not too descriptive if
+>> IIRC.  I'll try to look at it tomorrow.
+> 
+> I found a lot of stuff on VESA Public site in fact. Looks like we really
+> need to write some infrastructure to get to the EDID extensions :) They
+> contain all sort of useful infos, though unfortunately, all of the
+> panels I've come accross so far didn't seem to implement them =P
+> 
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+It think it's because the (basic) EDID is retrieved with (basic) DDC
+(address 0x50).  If I'm not mistaken, E-EDID is retrieved with E-DDC
+(address 0xa0). I don't exactly know the protocol (E-DDDC specs are not
+freely available), but try probing your i2c busses with:
 
-Index: linux-work/drivers/video/Kconfig
-===================================================================
---- linux-work.orig/drivers/video/Kconfig	2005-10-02 15:46:57.000000000 +1000
-+++ linux-work/drivers/video/Kconfig	2005-10-02 15:47:18.000000000 +1000
-@@ -662,7 +662,7 @@
- 
- config FB_NVIDIA_I2C
-        bool "Enable DDC Support"
--       depends on FB_NVIDIA && !PPC_OF
-+       depends on FB_NVIDIA
-        help
- 	  This enables I2C support for nVidia Chipsets.  This is used
- 	  only for getting EDID information from the attached display
-Index: linux-work/drivers/video/nvidia/nv_of.c
-===================================================================
---- linux-work.orig/drivers/video/nvidia/nv_of.c	2005-10-02 15:46:57.000000000 +1000
-+++ linux-work/drivers/video/nvidia/nv_of.c	2005-10-04 13:38:32.000000000 +1000
-@@ -27,34 +27,60 @@
- #include "nv_local.h"
- #include "nv_proto.h"
- 
--void nvidia_create_i2c_busses(struct nvidia_par *par) {}
--void nvidia_delete_i2c_busses(struct nvidia_par *par) {}
-+#include "../edid.h"
- 
--int nvidia_probe_i2c_connector(struct fb_info *info, int conn, u8 **out_edid)
-+int nvidia_probe_of_connector(struct fb_info *info, int conn, u8 **out_edid)
- {
- 	struct nvidia_par *par = info->par;
--	struct device_node *dp;
-+	struct device_node *parent, *dp;
- 	unsigned char *pedid = NULL;
--	unsigned char *disptype = NULL;
- 	static char *propnames[] = {
--		"DFP,EDID", "LCD,EDID", "EDID", "EDID1", "EDID,B", "EDID,A", NULL };
-+		"DFP,EDID", "LCD,EDID", "EDID", "EDID1",
-+		"EDID,B", "EDID,A", NULL };
- 	int i;
- 
--	dp = pci_device_to_OF_node(par->pci_dev);
--	for (; dp != NULL; dp = dp->child) {
--		disptype = (unsigned char *)get_property(dp, "display-type", NULL);
--		if (disptype == NULL)
--			continue;
--		if (strncmp(disptype, "LCD", 3) != 0)
--			continue;
-+	parent = pci_device_to_OF_node(par->pci_dev);
-+	if (parent == NULL)
-+		return 1;
-+	if (par->twoHeads) {
-+		char *pname;
-+		int len;
-+
-+		for (dp = NULL;
-+		     (dp = of_get_next_child(parent, dp)) != NULL;) {
-+			pname = (char *)get_property(dp, "name", NULL);
-+			if (!pname)
-+				continue;
-+			len = strlen(pname);
-+			if ((pname[len-1] == 'A' && conn == 1) ||
-+			    (pname[len-1] == 'B' && conn == 2)) {
-+				for (i = 0; propnames[i] != NULL; ++i) {
-+					pedid = (unsigned char *)
-+						get_property(dp, propnames[i],
-+							     NULL);
-+					if (pedid != NULL)
-+						break;
-+				}
-+				of_node_put(dp);
-+				break;
-+			}
-+		}
-+	}
-+	if (pedid == NULL) {
- 		for (i = 0; propnames[i] != NULL; ++i) {
- 			pedid = (unsigned char *)
--				get_property(dp, propnames[i], NULL);
--			if (pedid != NULL) {
--				*out_edid = pedid;
--				return 0;
--			}
-+				get_property(parent, propnames[i], NULL);
-+			if (pedid != NULL)
-+				break;
- 		}
- 	}
-+	if (pedid) {
-+		*out_edid = kmalloc(EDID_LENGTH, GFP_KERNEL);
-+		if (*out_edid == NULL)
-+			return 1;
-+		memcpy(*out_edid, pedid, EDID_LENGTH);
-+		printk(KERN_DEBUG "nvidiafb: Found OF EDID for head %d\n", conn);
-+		return 0;
-+	}
- 	return 1;
- }
-Index: linux-work/drivers/video/nvidia/nv_proto.h
-===================================================================
---- linux-work.orig/drivers/video/nvidia/nv_proto.h	2005-10-02 15:46:57.000000000 +1000
-+++ linux-work/drivers/video/nvidia/nv_proto.h	2005-10-02 15:47:18.000000000 +1000
-@@ -31,7 +31,7 @@
- void NVLockUnlock(struct nvidia_par *par, int);
- 
- /* in nvidia-i2c.c */
--#if defined(CONFIG_FB_NVIDIA_I2C) || defined (CONFIG_PPC_OF)
-+#ifdef CONFIG_FB_NVIDIA_I2C
- void nvidia_create_i2c_busses(struct nvidia_par *par);
- void nvidia_delete_i2c_busses(struct nvidia_par *par);
- int nvidia_probe_i2c_connector(struct fb_info *info, int conn,
-@@ -45,6 +45,16 @@
- } while(0)
- #endif
- 
-+#ifdef CONFIG_FB_OF
-+int nvidia_probe_of_connector(struct fb_info *info, int conn,
-+			      u8 ** out_edid);
-+#else
-+#define nvidia_probe_of_connector(p, c, edid)  \
-+do {                                           \
-+	*(edid) = NULL;                        \
-+} while(0)
-+#endif
-+
- /* in nv_accel.c */
- extern void NVResetGraphics(struct fb_info *info);
- extern void nvidiafb_copyarea(struct fb_info *info,
-Index: linux-work/drivers/video/nvidia/nv_setup.c
-===================================================================
---- linux-work.orig/drivers/video/nvidia/nv_setup.c	2005-10-02 15:46:57.000000000 +1000
-+++ linux-work/drivers/video/nvidia/nv_setup.c	2005-10-02 15:47:18.000000000 +1000
-@@ -190,9 +190,9 @@
- 	present = (NV_RD32(PRAMDAC, 0x0608) & (1 << 28)) ? 1 : 0;
- 
- 	if (present)
--		printk("nvidiafb: CRTC%i found\n", output);
-+		printk("nvidiafb: CRTC%i analog found\n", output);
- 	else
--		printk("nvidiafb: CRTC%i not found\n", output);
-+		printk("nvidiafb: CRTC%i analog not found\n", output);
- 
- 	NV_WR32(par->PRAMDAC0, 0x0608, NV_RD32(par->PRAMDAC0, 0x0608) &
- 		0x0000EFFF);
-@@ -305,6 +305,9 @@
- 	int FlatPanel = -1;	/* really means the CRTC is slaved */
- 	int Television = 0;
- 
-+	memset(&monitorA, 0, sizeof(struct fb_monspecs));
-+	memset(&monitorB, 0, sizeof(struct fb_monspecs));
-+
- 	par->PRAMIN = par->REGS + (0x00710000 / 4);
- 	par->PCRTC0 = par->REGS + (0x00600000 / 4);
- 	par->PRAMDAC0 = par->REGS + (0x00680000 / 4);
-@@ -401,7 +404,8 @@
- 	nvidia_create_i2c_busses(par);
- 	if (!par->twoHeads) {
- 		par->CRTCnumber = 0;
--		nvidia_probe_i2c_connector(info, 1, &edidA);
-+		if (nvidia_probe_i2c_connector(info, 1, &edidA))
-+			nvidia_probe_of_connector(info, 1, &edidA);
- 		if (edidA && !fb_parse_edid(edidA, &var)) {
- 			printk("nvidiafb: EDID found from BUS1\n");
- 			monA = &monitorA;
-@@ -488,14 +492,16 @@
- 		oldhead = NV_RD32(par->PCRTC0, 0x00000860);
- 		NV_WR32(par->PCRTC0, 0x00000860, oldhead | 0x00000010);
- 
--		nvidia_probe_i2c_connector(info, 1, &edidA);
-+		if (nvidia_probe_i2c_connector(info, 1, &edidA))
-+			nvidia_probe_of_connector(info, 1, &edidA);
- 		if (edidA && !fb_parse_edid(edidA, &var)) {
- 			printk("nvidiafb: EDID found from BUS1\n");
- 			monA = &monitorA;
- 			fb_edid_to_monspecs(edidA, monA);
- 		}
- 
--		nvidia_probe_i2c_connector(info, 2, &edidB);
-+		if (nvidia_probe_i2c_connector(info, 2, &edidB))
-+			nvidia_probe_of_connector(info, 2, &edidB);
- 		if (edidB && !fb_parse_edid(edidB, &var)) {
- 			printk("nvidiafb: EDID found from BUS2\n");
- 			monB = &monitorB;
-Index: linux-work/drivers/video/nvidia/nvidia.c
-===================================================================
---- linux-work.orig/drivers/video/nvidia/nvidia.c	2005-10-02 15:46:57.000000000 +1000
-+++ linux-work/drivers/video/nvidia/nvidia.c	2005-10-04 13:38:17.000000000 +1000
-@@ -619,41 +619,85 @@
- 	NVTRACE_LEAVE();
- }
- 
-+#undef DUMP_REG
-+
- static void nvidia_write_regs(struct nvidia_par *par)
- {
- 	struct _riva_hw_state *state = &par->ModeReg;
- 	int i;
- 
- 	NVTRACE_ENTER();
--	NVWriteCrtc(par, 0x11, 0x00);
--
--	NVLockUnlock(par, 0);
- 
- 	NVLoadStateExt(par, state);
- 
- 	NVWriteMiscOut(par, state->misc_output);
- 
-+	for (i = 1; i < NUM_SEQ_REGS; i++) {
-+#ifdef DUMP_REG
-+		printk(" SEQ[%02x] = %08x\n", i, state->seq[i]);
-+#endif
-+		NVWriteSeq(par, i, state->seq[i]);
-+	}
-+
-+	/* Ensure CRTC registers 0-7 are unlocked by clearing bit 7 of CRTC[17] */
-+	NVWriteCrtc(par, 0x11, state->crtc[0x11] & ~0x80);
-+
- 	for (i = 0; i < NUM_CRT_REGS; i++) {
- 		switch (i) {
- 		case 0x19:
- 		case 0x20 ... 0x40:
- 			break;
- 		default:
-+#ifdef DUMP_REG
-+			printk("CRTC[%02x] = %08x\n", i, state->crtc[i]);
-+#endif
- 			NVWriteCrtc(par, i, state->crtc[i]);
- 		}
- 	}
- 
--	for (i = 0; i < NUM_ATC_REGS; i++)
--		NVWriteAttr(par, i, state->attr[i]);
--
--	for (i = 0; i < NUM_GRC_REGS; i++)
-+	for (i = 0; i < NUM_GRC_REGS; i++) {
-+#ifdef DUMP_REG
-+		printk(" GRA[%02x] = %08x\n", i, state->gra[i]);
-+#endif
- 		NVWriteGr(par, i, state->gra[i]);
-+	}
-+
-+	for (i = 0; i < NUM_ATC_REGS; i++) {
-+#ifdef DUMP_REG
-+		printk("ATTR[%02x] = %08x\n", i, state->attr[i]);
-+#endif
-+		NVWriteAttr(par, i, state->attr[i]);
-+	}
- 
--	for (i = 0; i < NUM_SEQ_REGS; i++)
--		NVWriteSeq(par, i, state->seq[i]);
- 	NVTRACE_LEAVE();
- }
- 
-+static void nvidia_vga_protect(struct nvidia_par *par, int on)
-+{
-+	unsigned char tmp;
-+
-+	if (on) {
-+		/*
-+		 * Turn off screen and disable sequencer.
-+		 */
-+		tmp = NVReadSeq(par, 0x01);
-+
-+		NVWriteSeq(par, 0x00, 0x01);		/* Synchronous Reset */
-+		NVWriteSeq(par, 0x01, tmp | 0x20);	/* disable the display */
-+	} else {
-+		/*
-+		 * Reenable sequencer, then turn on screen.
-+		 */
-+
-+		tmp = NVReadSeq(par, 0x01);
-+
-+		NVWriteSeq(par, 0x01, tmp & ~0x20);	/* reenable display */
-+		NVWriteSeq(par, 0x00, 0x03);		/* End Reset */
-+	}
-+}
-+
-+
-+
- static int nvidia_calc_regs(struct fb_info *info)
- {
- 	struct nvidia_par *par = info->par;
-@@ -860,7 +904,7 @@
- 	for (i = 0; i < 0x10; i++)
- 		state->attr[i] = i;
- 	state->attr[0x10] = 0x41;
--	state->attr[0x11] = 0x01;
-+	state->attr[0x11] = 0xff;
- 	state->attr[0x12] = 0x0f;
- 	state->attr[0x13] = 0x00;
- 	state->attr[0x14] = 0x00;
-@@ -983,7 +1027,6 @@
- 
- 	nvidia_init_vga(info);
- 	nvidia_calc_regs(info);
--	nvidia_write_regs(par);
- 
- 	NVLockUnlock(par, 0);
- 	if (par->twoHeads) {
-@@ -992,7 +1035,22 @@
- 		NVLockUnlock(par, 0);
- 	}
- 
--	NVWriteCrtc(par, 0x11, 0x00);
-+	nvidia_vga_protect(par, 1);
-+
-+	nvidia_write_regs(par);
-+
-+#if defined (__BIG_ENDIAN)
-+	/* turn on LFB swapping */
-+	{
-+		unsigned char tmp;
-+
-+		VGA_WR08(par->PCIO, 0x3d4, 0x46);
-+		tmp = VGA_RD08(par->PCIO, 0x3d5);
-+		tmp |= (1 << 7);
-+		VGA_WR08(par->PCIO, 0x3d5, tmp);
-+    }
-+#endif
-+
- 	info->fix.line_length = (info->var.xres_virtual *
- 				 info->var.bits_per_pixel) >> 3;
- 	if (info->var.accel_flags) {
-@@ -1014,7 +1072,7 @@
- 
- 	par->cursor_reset = 1;
- 
--	NVWriteCrtc(par, 0x11, 0xff);
-+	nvidia_vga_protect(par, 0);
- 
- 	NVTRACE_LEAVE();
- 	return 0;
+i2cdump 0,1,2,etc 0xa0 
 
+and see if you get anything.
 
+Tony
 
 
 -------------------------------------------------------

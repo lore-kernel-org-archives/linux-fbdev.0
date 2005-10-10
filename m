@@ -1,21 +1,30 @@
-From: Michal Januszewski <spock@gentoo.org>
-Subject: [PATCH] fbdev: fix the fb_find_nearest_mode() function
-Date: Sun, 9 Oct 2005 11:29:49 +0200
-Message-ID: <20051009092949.GA9610@spock.one.pl>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: VESA, EDID & flat panels
+Date: Mon, 10 Oct 2005 15:50:46 +1000
+Message-ID: <1128923447.17365.117.camel@gaston>
+References: <1128380013.8267.125.camel@gaston>
+	 <8a0c36780510031618m48c55f45u648d867bcf0130d2@mail.gmail.com>
+	 <1128397436.31063.0.camel@gaston> <434220D0.3020101@gmail.com>
+	 <1128407961.31063.50.camel@gaston> <43423666.8090001@gmail.com>
+	 <1128415836.6291.12.camel@gaston>
+	 <8a0c36780510040535g16a3074p66384d8b07d03ea1@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="6TrnltStXW4iwmi0"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EOXVC-0001FW-9U
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 09 Oct 2005 02:29:54 -0700
-Received: from ipp23-131.piekary.net ([80.48.23.131])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EOXVB-000082-4Y
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 09 Oct 2005 02:29:53 -0700
-Content-Disposition: inline
+	id 1EOqbV-0004Uf-IA
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 09 Oct 2005 22:53:41 -0700
+Received: from gate.crashing.org ([63.228.1.57])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44)
+	id 1EOqbb-0001PY-GP
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 09 Oct 2005 22:53:48 -0700
+Received: from gaston (localhost [127.0.0.1])
+	by gate.crashing.org (8.12.8/8.12.8) with ESMTP id j9A5igWG032577
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 10 Oct 2005 00:44:43 -0500
+In-Reply-To: <8a0c36780510040535g16a3074p66384d8b07d03ea1@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,133 +35,34 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
 
+On Tue, 2005-10-04 at 07:35 -0500, Richard Smith wrote:
+> > So I wonder how widespread really is that EEDID stuff... I'm afraid the
+> > reason a lot of monitors come with a windows install CD is that they do
+> > _not_ provide those infos via EDID, but windows has a database with
+> > per-monitor infos (as Apple actually has in OS X) and we should probably
+> > do something similar. (but not in the kernel)
+> 
+> Our experience agrees with you that the EEDID stuff is not well used. 
+> We make some LCD driver products and I'm pretty sure we didn't include
+> the EEDID info.
+> 
+> I gave the specs a quick look and I don't see anything in (thats
+> obvious) there that would allow you to see if the panel is 666 or 888.
+> The specs are somewhat less than clear in several cases so I'll be
+> happy to review any sections closer if you think one might be a
+> possibility.
 
---6TrnltStXW4iwmi0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Look at the EDID EXTENSIONS spec. Extension 0x40 contains the panel
+component bit definition iirc. I found so far only one monitor that
+implemented that extended block (the Apple 23" Cinema HD display) but
+the content seem to be junk =P
 
-Currently the fb_find_nearest_mode() function finds a mode with
-screen resolution closest to that described by the 'var' argument
-and with some arbitrary refresh rate (eg. in the following sequence
-of refresh rates: 70 60 53 85 75, 53 is selected).
-
-This patch fixes the function so that it looks for the closest mode as=20
-far as both resolution and refresh rate are concerned. The function's
-first argument is changed to fb_videomode so that the refresh rate can
-be specified by the caller, as fb_var_screeninfo doesn't have any fields
-that could directly hold this data.
-
-Signed-off-by: Michal Januszewski <spock@gentoo.org>
----
-
-diff -Nurp fbdev-orig/drivers/video/console/fbcon.c fbdev/drivers/video/con=
-sole/fbcon.c
---- fbdev-orig/drivers/video/console/fbcon.c	2005-10-08 23:14:29.000000000 =
-+0200
-+++ fbdev/drivers/video/console/fbcon.c	2005-10-09 01:03:22.000000000 +0200
-@@ -2758,7 +2758,7 @@ static void fbcon_new_modelist(struct fb
- 			continue;
- 		vc =3D vc_cons[i].d;
- 		display_to_var(&var, &fb_display[i]);
--		mode =3D fb_find_nearest_mode(&var, &info->modelist);
-+		mode =3D fb_find_nearest_mode(fb_display[i].mode, &info->modelist);
- 		fb_videomode_to_var(&var, mode);
-=20
- 		if (vc)
-diff -Nurp fbdev-orig/drivers/video/modedb.c fbdev/drivers/video/modedb.c
---- fbdev-orig/drivers/video/modedb.c	2005-10-08 23:14:29.000000000 +0200
-+++ fbdev/drivers/video/modedb.c	2005-10-09 01:25:16.000000000 +0200
-@@ -663,6 +663,7 @@ void fb_var_to_videomode(struct fb_video
- {
- 	u32 pixclock, hfreq, htotal, vtotal;
-=20
-+	mode->refresh =3D 0;
- 	mode->name =3D NULL;
- 	mode->xres =3D var->xres;
- 	mode->yres =3D var->yres;
-@@ -785,39 +786,39 @@ struct fb_videomode *fb_find_best_mode(s
- }
-=20
- /**
-- * fb_find_nearest_mode - find mode closest video mode
-+ * fb_find_nearest_mode - find closest videomode
-  *
-- * @var: pointer to struct fb_var_screeninfo
-+ * @mode: pointer to struct fb_videomode
-  * @head: pointer to modelist
-  *
-  * Finds best matching videomode, smaller or greater in dimension.
-  * If more than 1 videomode is found, will return the videomode with
-- * the closest refresh rate
-+ * the closest refresh rate.
-  */
--struct fb_videomode *fb_find_nearest_mode(struct fb_var_screeninfo *var,
-+struct fb_videomode *fb_find_nearest_mode(struct fb_videomode *mode,
- 					  struct list_head *head)
- {
- 	struct list_head *pos;
- 	struct fb_modelist *modelist;
--	struct fb_videomode *mode, *best =3D NULL;
-+	struct fb_videomode *cmode, *best =3D NULL;
- 	u32 diff =3D -1, diff_refresh =3D -1;
-=20
- 	list_for_each(pos, head) {
- 		u32 d;
-=20
- 		modelist =3D list_entry(pos, struct fb_modelist, list);
--		mode =3D &modelist->mode;
-+		cmode =3D &modelist->mode;
-=20
--		d =3D abs(mode->xres - var->xres) +
--			abs(mode->yres - var->yres);
-+		d =3D abs(cmode->xres - mode->xres) +
-+			abs(cmode->yres - mode->yres);
- 		if (diff > d) {
- 			diff =3D d;
--			best =3D mode;
-+			best =3D cmode;
- 		} else if (diff =3D=3D d) {
--			d =3D abs(mode->refresh - best->refresh);
-+			d =3D abs(cmode->refresh - mode->refresh);
- 			if (diff_refresh > d) {
- 				diff_refresh =3D d;
--				best =3D mode;
-+				best =3D cmode;
- 			}
- 		}
- 	}
-diff -Nurp fbdev-orig/include/linux/fb.h fbdev/include/linux/fb.h
---- fbdev-orig/include/linux/fb.h	2005-10-08 23:14:40.000000000 +0200
-+++ fbdev/include/linux/fb.h	2005-10-09 01:03:17.000000000 +0200
-@@ -898,7 +898,7 @@ extern struct fb_videomode *fb_match_mod
- 					  struct list_head *head);
- extern struct fb_videomode *fb_find_best_mode(struct fb_var_screeninfo *va=
-r,
- 					      struct list_head *head);
--extern struct fb_videomode *fb_find_nearest_mode(struct fb_var_screeninfo =
-*var,
-+extern struct fb_videomode *fb_find_nearest_mode(struct fb_videomode *mode,
- 						 struct list_head *head);
- extern void fb_destroy_modelist(struct list_head *head);
- extern void fb_videomode_to_modelist(struct fb_videomode *modedb, int num,
+Ben.
 
 
---6TrnltStXW4iwmi0
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
-
-iD8DBQFDSOMNaQ0HSaOUe+YRAt0AAJ4r7b5+uL8lb5WaJsrZG55KRHqITQCgkcdj
-x86qV0m1cjenLewOatF9ljw=
-=KlyV
------END PGP SIGNATURE-----
-
---6TrnltStXW4iwmi0--
 
 
 -------------------------------------------------------

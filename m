@@ -1,23 +1,22 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: DRM & MTRR's
-Date: Tue, 11 Oct 2005 06:06:16 +0800
-Message-ID: <434AE5D8.3020806@gmail.com>
-References: <1127475052.9377.18.camel@jetpack.demon.co.uk>	 <43340C3E.5070005@gmail.com> <1128974307.9450.66.camel@jetpack.demon.co.uk>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] radeonfb: prevent spurious recompilations
+Date: Wed, 12 Oct 2005 06:59:02 +1000
+Message-ID: <1129064342.17365.213.camel@gaston>
+References: <20051011215507.64e8aa40.khali@linux-fr.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EP5ml-0005kG-Og
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 10 Oct 2005 15:06:19 -0700
-Received: from zproxy.gmail.com ([64.233.162.207])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EP5mz-00056A-UK
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 10 Oct 2005 15:06:34 -0700
-Received: by zproxy.gmail.com with SMTP id 14so853744nzn
-        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 10 Oct 2005 15:06:20 -0700 (PDT)
-In-Reply-To: <1128974307.9450.66.camel@jetpack.demon.co.uk>
+	id 1EPRJ7-0002Dx-KI
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 11 Oct 2005 14:05:09 -0700
+Received: from gate.crashing.org ([63.228.1.57])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44)
+	id 1EPRJ3-0005aG-6P
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 11 Oct 2005 14:05:09 -0700
+In-Reply-To: <20051011215507.64e8aa40.khali@linux-fr.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,76 +28,22 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Alan Hourihane <alanh@fairlite.demon.co.uk>
-Cc: dri-devel@lists.sf.net, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Alan Hourihane wrote:
-> On Fri, 2005-09-23 at 22:07 +0800, Antonino A. Daplas wrote:
->> Alan Hourihane wrote:
->>> Has anyone any objections to me removing the MTRR code from the DRM.
->>>
->>> It doesn't have the intimate knowledge needed to properly configure
->>> MTRR's and fails in many cases.
->>>
->>> There are two cases currently, one for the framebuffer and a second for
->>> the entire AGP space.
->>>
->>> Certainly in Intel hardware this is the same memory space and you always
->>> get bogus error messages in your kernel logs as things fail due to lack
->>> of boundary checks.
->>>
->>> I'm more of the opinion that it should be left up to userspace to
->>> configure MTRR's if it indeed wants them and we shouldn't force them
->>> within the DRM.
->>>
->>> Additionally, the Xserver (for user-space) already sets up the MTRR's,
->>> as should Xgl (Xegl) or other user space apps.
->>>
->>> What makes the situation a little worse is that vesafb (and other *fb
->>> drivers) also setup an mtrr which frequently stops subsequent processes
->>> from adding a new one that overlaps an existing write-combining range.
->>> But the *fb drivers do provide a nomtrr option in many cases. (But I'd
->>> like to remove it from them too :-) or at least default those to off)
->> I don't know the repercussions of defaulting to nomtrr. But I would
->> surmise that a large percentage of users gives more importance to X/DRI
->> performance than console performance (majority of vesafb users still
->> use redraw for scrolling where ypan is magnitudes faster, so I'm pretty
->> sure defaulting vesafb to nomtrr will not be noticeable to most users,
->> they probably go straight to X anyway :-)
->>
->> I cannot decide on this alone, so I'm going to CC the fbdev-devel list.
->> Perhaps I can submit a patch that defaults all drivers to nomtrr and a
->> big warning about mtrr not being set in dmesg. If I don't get any
->> backlash for a few patch cycles, I can make this permanent.
+On Tue, 2005-10-11 at 21:55 +0200, Jean Delvare wrote:
+> Hi Ben, all,
 > 
-> Tony,
-> 
-> What was the outcome of this in kernel land ??
+> I'm doing frequent changes to the i2c header files, and noticed that
+> the radeonfb driver was recompiled each time I do, although I did not
+> include the I2C/DDC support. This is due to i2c header files being
+> included when they are not needed. Here is a patch fixing the problem.
+> Please consider applying it.
 
-No one responded :-(.  But I'll try to get a patch to the mm tree
-disabling the mtrr's.  
+I generally quite dislike such #ifdef clutter ... 
 
-> 
-> Just to give you an idea of why it really causes problems.
-> 
-> If you are using vesafb and it sets up it's own mtrr for usually the
-> first 4MB of the framebuffer. Now, X will fail to set it's MTRR. And
-> thus the first 4MB remains write-combined.
+Ben.
 
-Yes, I know the problem.  vesafb does attempt to type range the entire
-aperture (which is different from the the actual memory vesafb uses),
-but the Video BIOS usually gets it wrong (the actual aperture size). 
-
-> 
-> Running the isosurf benchmark from Mesa, shows only 300fps. Yet, doing
-> echo "disable=3" > /proc/mtrr to remove that vesafb mtrr and allows X to
-> setup the full range results in isosurf jumping to 650fps.
-> 
-> Defaulting vesafb (and the others) to nomtrr which save us this pain.
-
-Okay.
-
-Tony
 
 
 

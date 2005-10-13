@@ -1,21 +1,28 @@
-From: "David D. Kilzer" <ddkilzer@kilzer.net>
-Subject: Re: Atari mach64 support (fwd)
-Date: Wed, 12 Oct 2005 06:35:23 -0500
-Message-ID: <15C49DB1-DE9D-45CC-95E6-F0071601B213@kilzer.net>
-References: <Pine.LNX.4.62.0509221415250.18908@numbat.sonytel.be>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Fw: [Bugme-new] [Bug 5430] New: ProSavage8 doesn't work correctly
+ with FB_SAVAGE
+Date: Wed, 12 Oct 2005 23:37:15 -0700
+Message-ID: <20051012233715.52471214.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0 (Apple Message framework v734)
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EPets-0002ri-Hj
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 Oct 2005 04:36:00 -0700
-Received: from sccmmhc91.asp.att.net ([204.127.203.211])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EPets-0005sa-AZ
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 Oct 2005 04:36:00 -0700
-In-Reply-To: <Pine.LNX.4.62.0509221415250.18908@numbat.sonytel.be>
+	id 1EPwin-0003fB-OS
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 Oct 2005 23:37:45 -0700
+Received: from smtp.osdl.org ([65.172.181.4])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44)
+	id 1EPwin-00042k-FS
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 Oct 2005 23:37:45 -0700
+Received: from shell0.pdx.osdl.net (fw.osdl.org [65.172.181.6])
+	by smtp.osdl.org (8.12.8/8.12.8) with ESMTP id j9D6bh4s017612
+	(version=TLSv1/SSLv3 cipher=EDH-RSA-DES-CBC3-SHA bits=168 verify=NO)
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 12 Oct 2005 23:37:43 -0700
+Received: from bix (shell0.pdx.osdl.net [10.9.0.31])
+	by shell0.pdx.osdl.net (8.13.1/8.11.6) with SMTP id j9D6bhRS004736
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 12 Oct 2005 23:37:43 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,72 +33,41 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; delsp="yes"; format="flowed"
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux/m68k <linux-m68k@vger.kernel.org>, James Simmons <jsimmons@infradead.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Random code review (see below).
 
-On Sep 22, 2005, at 7:15 AM, Geert Uytterhoeven wrote:
 
-> ---------- Forwarded message ----------
-> Date: Wed, 21 Sep 2005 22:07:01 +0100 (BST)
-> From: James Simmons <jsimmons@infradead.org>
-> To: Geert Uytterhoeven <geert@linux-m68k.org>
-> Cc: Linux Fbdev development list <linux-fbdev- 
-> devel@lists.sourceforge.net>
-> Subject: Atari mach64 support
->
->
-> It's back. Please give this a try. It does compile but I can't test  
-> it.
->
-> diff -urN -X /home/jsimmons/dontdiff linus-2.6/drivers/video/aty/ 
-> atyfb_base.c fbdev-2.6/drivers/video/aty/atyfb_base.c
-> --- linus-2.6/drivers/video/aty/atyfb_base.c    2005-09-13  
-> 14:01:40.000000000 -0700
-> +++ fbdev-2.6/drivers/video/aty/atyfb_base.c    2005-09-21  
-> 13:54:02.000000000 -0700
-> [...]
-> @@ -2276,18 +2268,20 @@
->              par->pll_limits.mclk = 63;
->      }
->
-> -    if (M64_HAS(GTB_DSP)
-> -        && (pll_ref_div = aty_ld_pll_ct(PLL_REF_DIV, par))) {
-> -        int diff1, diff2;
-> -        diff1 = 510 * 14 / pll_ref_div - par->pll_limits.pll_max;
-> -        diff2 = 510 * 29 / pll_ref_div - par->pll_limits.pll_max;
-> -        if (diff1 < 0)
-> -            diff1 = -diff1;
-> -        if (diff2 < 0)
-> -            diff2 = -diff2;
-> -        if (diff2 < diff1) {
-> -            par->ref_clk_per = 1000000000000ULL / 29498928;
-> -            xtal = "29.498928";
-> +    if (M64_HAS(GTB_DSP)) {
-> +        u8 pll_ref_div = aty_ld_pll_ct(PLL_REF_DIV, par);
-> +        if (pll_ref_dev) {
-> +            int diff1, diff2;
-> +            diff1 = 510 * 14 / pll_ref_div - par->pll_limits.pll_max;
-> +            diff2 = 510 * 29 / pll_ref_div - par->pll_limits.pll_max;
-> +            if (diff1 < 0)
-> +                diff1 = -diff1;
-> +            if (diff2 < 0)
-> +                diff2 = -diff2;
-> +            if (diff2 < diff1) {
-> +                par->ref_clk_per = 1000000000000ULL / 29498928;
-> +                xtal = "29.498928";
-> +            }
->          }
->      }
->  #endif /* CONFIG_FB_ATY_CT */
+Begin forwarded message:
 
-Should "if (pll_ref_dev) {" be "if (pll_ref_div) {" to keep the logic  
-the same as the old code, or was this a bug fix?
+Date: Wed, 12 Oct 2005 23:32:44 -0700
+From: bugme-daemon@kernel-bugs.osdl.org
+To: bugme-new@lists.osdl.org
+Subject: [Bugme-new] [Bug 5430] New: ProSavage8 doesn't work correctly with FB_SAVAGE
 
-Dave
 
+http://bugzilla.kernel.org/show_bug.cgi?id=5430
+
+           Summary: ProSavage8 doesn't work correctly with FB_SAVAGE
+    Kernel Version: 2.6.14-rc2
+            Status: NEW
+          Severity: normal
+             Owner: jsimmons@infradead.org
+         Submitter: rich@hq.vsaa.lv
+
+
+Hardware Environment:
+fujitsu siemens lifebook c-1020
+VGA compatible controller: S3 Inc. VT8375 [ProSavage8 KM266/KL266]
+
+Problem Description:
+this videocard works ok in framebuffer console with vesa drivers. if i try to 
+use s3 savage driver (FB_SVAGE), setting framebuffer to 1024x768 results in 
+800x600, area around the text is either black, either red, either blue
+(i'm not exactly sure what this colour depends on)
+
+------- You are receiving this mail because: -------
+You are on the CC list for the bug, or are watching someone who is.
 
 
 -------------------------------------------------------

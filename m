@@ -1,20 +1,24 @@
 From: Andrew Morton <akpm@osdl.org>
-Subject: Fw: [Bugme-new] [Bug 5441] New: SVGATextMode problem on 2.6.14-rc4
-Date: Fri, 14 Oct 2005 10:31:44 -0700
-Message-ID: <20051014103144.16a7bb65.akpm@osdl.org>
+Subject: Re: Fw: [Bugme-new] [Bug 5441] New: SVGATextMode problem on
+ 2.6.14-rc4
+Date: Fri, 14 Oct 2005 16:22:46 -0700
+Message-ID: <20051014162246.6ba852a3.akpm@osdl.org>
+References: <20051014103144.16a7bb65.akpm@osdl.org>
+	<20051014231408.GK5100@bouh.residence.ens-lyon.fr>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EQTQ1-0004Xt-3p
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 14 Oct 2005 10:32:33 -0700
+	id 1EQYt6-0006ig-RY
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 14 Oct 2005 16:22:56 -0700
 Received: from smtp.osdl.org ([65.172.181.4])
 	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.44)
-	id 1EQTPy-0006gU-PD
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 14 Oct 2005 10:32:33 -0700
+	id 1EQYt6-00032L-GA
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 14 Oct 2005 16:22:56 -0700
+In-Reply-To: <20051014231408.GK5100@bouh.residence.ens-lyon.fr>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,50 +30,39 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Samuel Thibault <samuel.thibault@ens-lyon.org>, walt <wa1ter@myrealbox.com>, "bugme-daemon@kernel-bugs.osdl.org" <bugme-daemon@kernel-bugs.osdl.org>
+To: Samuel Thibault <samuel.thibault@ens-lyon.org>, Krzysztof  Oledzki <olel@ans.pl>
+Cc: linux-fbdev-devel@lists.sourceforge.net, wa1ter@myrealbox.com, "bugme-daemon@kernel-bugs.osdl.org" <bugme-daemon@kernel-bugs.osdl.org>
 
+Samuel Thibault <samuel.thibault@ens-lyon.org> wrote:
+>
+> Hum, I didn't know about messy programs like svgatextmode... Couldn't
+> this be integrated in some linux/drivers/video/console/svgacon.c ?... So
+> because of the existence of the svgatextmode program, the kernel is not
+> supposed to touch to CRT_OVERFLOW/SYNC_END/DISP/DISP_END/OFFSET ?
+> 
+> Disabling the check in vgacon_resize() might help indeed, but I'm really
+> not sure whether it will work for any chipset: in my patch, CRT
+> registers are set at each console switch, since stty rows/cols apply to
+> consoles separately...
+> 
+> The attached solution is to keep the test, but if it fails, we assume
+> that the caller knows what it does (i.e. it is svgatextmode) and then
+> disable any further call to vgacon_doresize. Svgatextmode is usually
+> used to _expand_ the display, not to shrink it. And it is harmless in
+> the case of a too big stty rows/cols: the display will just be cropped.
+> I tested it on my laptop, and it works fine with svgatextmode.
+> 
+> A better solution would be that svgatextmode explicitely tells the
+> kernel not to care about video timing, but for this an interface needs
+> be defined and svgatextmode be patched.
 
+hm, you removed bugzilla from the Cc.  Please don't do that.  I've restored
+it, and I've cc'ed the reporter (Krzysztof) directly.
 
-Begin forwarded message:
+Krzysztof, could you please test Samuel's fix (which I forwarded) and let
+us know?
 
-Date: Fri, 14 Oct 2005 05:08:31 -0700
-From: bugme-daemon@kernel-bugs.osdl.org
-To: bugme-new@lists.osdl.org
-Subject: [Bugme-new] [Bug 5441] New: SVGATextMode problem on 2.6.14-rc4
-
-
-http://bugzilla.kernel.org/show_bug.cgi?id=5441
-
-           Summary: SVGATextMode problem on 2.6.14-rc4
-    Kernel Version: 2.6.14-rc4
-            Status: NEW
-          Severity: blocking
-             Owner: jsimmons@infradead.org
-         Submitter: olel@ans.pl
-
-
-Most recent kernel where this bug did not occur: 2.6.13.4
-
-Distribution: Slackware
-
-Problem Description:
-
-After upgrding my kernel to 2.6.14-rc4 I noticed that SVGATextMode, instead of
-changing screen resolution to 100x40, messed my console completely. 
-
-Reverting those two patches helps:
-http://www.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=6d36ba629e0ef47a03d3703ee1d38143c25532a8;hp=7b6a186d65589901a73d460070504a5e02703c45
-http://www.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=28254d439b8c65f93cb331f5aa741efa6a8ec62f;hp=ff55fe2075e3901db4dbdc00e0b44a71bef97afd
-
-Steps to reproduce:
-Use SVGATextMode to change screen resolution.
-
-Tested on:
- - Matrox Graphics, Inc. MGA G200 AGP
-
-------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
+Thanks.
 
 
 -------------------------------------------------------

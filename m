@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 11/17] nvidiafb: Fix empty macro
-Date: Tue, 18 Oct 2005 17:20:24 +0800
-Message-ID: <4354BE58.2050304@gmail.com>
+Subject: [PATCH 15/17] i810fb: Cleanup I2C code
+Date: Tue, 18 Oct 2005 17:22:38 +0800
+Message-ID: <4354BEDE.9050601@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1ERyIy-0000de-1G
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Oct 2005 13:43:28 -0700
+	id 1ERyJR-0000ey-W7
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Oct 2005 13:43:57 -0700
 Received: from zproxy.gmail.com ([64.233.162.207])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1ERyIx-0000v6-Lu
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Oct 2005 13:43:28 -0700
+	id 1ERyJP-0000v6-UU
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Oct 2005 13:43:58 -0700
 Received: by zproxy.gmail.com with SMTP id s18so1165348nze
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 18 Oct 2005 13:43:27 -0700 (PDT)
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 18 Oct 2005 13:43:55 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,26 +30,294 @@ Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Use do {} while(0) for empty reverse_order() macro.
+- The functions for reading the 1st and 2nd bus are essentially the same,
+except for the register.  Consolidate them all.
+
+- According to Nicolas Boichat, there is an undocumented 3rd i2c bus for
+attaching daughter cards.  Add support for this.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
- nv_local.h |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+ i810-i2c.c  |  135 ++++++++++++++++++++----------------------------------------
+ i810.h      |    3 -
+ i810_main.c |    2 
+ i810_regs.h |    1 
+ 4 files changed, 51 insertions(+), 90 deletions(-)
 
 
-diff --git a/drivers/video/nvidia/nv_local.h b/drivers/video/nvidia/nv_local.h
---- a/drivers/video/nvidia/nv_local.h
-+++ b/drivers/video/nvidia/nv_local.h
-@@ -105,7 +105,7 @@ do {                            \
- 	*a = byte_rev[*a];      \
- } while(0)
- #else
--#define reverse_order(l)
-+#define reverse_order(l) do { } while(0)
- #endif                          /* __LITTLE_ENDIAN */
+diff --git a/drivers/video/i810/i810-i2c.c b/drivers/video/i810/i810-i2c.c
+--- a/drivers/video/i810/i810-i2c.c
++++ b/drivers/video/i810/i810-i2c.c
+@@ -46,92 +46,45 @@ static void i810i2c_setscl(void *data, i
+         struct i810fb_par         *par = chan->par;
+ 	u8                        __iomem *mmio = par->mmio_start_virtual;
  
- #endif				/* __NV_LOCAL_H__ */
+-	i810_writel(mmio, GPIOB, (state ? SCL_VAL_OUT : 0) | SCL_DIR |
++	i810_writel(mmio, chan->ddc_base, (state ? SCL_VAL_OUT : 0) | SCL_DIR |
+ 		    SCL_DIR_MASK | SCL_VAL_MASK);
+-	i810_readl(mmio, GPIOB);	/* flush posted write */
++	i810_readl(mmio, chan->ddc_base);	/* flush posted write */
+ }
+ 
+ static void i810i2c_setsda(void *data, int state)
+ {
+-        struct i810fb_i2c_chan    *chan = (struct i810fb_i2c_chan *)data;
++        struct i810fb_i2c_chan    *chan = data;
+         struct i810fb_par         *par = chan->par;
+ 	u8                        __iomem *mmio = par->mmio_start_virtual;
+ 
+- 	i810_writel(mmio, GPIOB, (state ? SDA_VAL_OUT : 0) | SDA_DIR |
++ 	i810_writel(mmio, chan->ddc_base, (state ? SDA_VAL_OUT : 0) | SDA_DIR |
+ 		    SDA_DIR_MASK | SDA_VAL_MASK);
+-	i810_readl(mmio, GPIOB);	/* flush posted write */
++	i810_readl(mmio, chan->ddc_base);	/* flush posted write */
+ }
+ 
+ static int i810i2c_getscl(void *data)
+ {
+-        struct i810fb_i2c_chan    *chan = (struct i810fb_i2c_chan *)data;
++        struct i810fb_i2c_chan    *chan = data;
+         struct i810fb_par         *par = chan->par;
+ 	u8                        __iomem *mmio = par->mmio_start_virtual;
+ 
+-	i810_writel(mmio, GPIOB, SCL_DIR_MASK);
+-	i810_writel(mmio, GPIOB, 0);
+-	return (0 != (i810_readl(mmio, GPIOB) & SCL_VAL_IN));
++	i810_writel(mmio, chan->ddc_base, SCL_DIR_MASK);
++	i810_writel(mmio, chan->ddc_base, 0);
++	return ((i810_readl(mmio, chan->ddc_base) & SCL_VAL_IN) != 0);
+ }
+ 
+ static int i810i2c_getsda(void *data)
+ {
+-        struct i810fb_i2c_chan    *chan = (struct i810fb_i2c_chan *)data;
++        struct i810fb_i2c_chan    *chan = data;
+         struct i810fb_par         *par = chan->par;
+ 	u8                        __iomem *mmio = par->mmio_start_virtual;
+ 
+-	i810_writel(mmio, GPIOB, SDA_DIR_MASK);
+-	i810_writel(mmio, GPIOB, 0);
+-	return (0 != (i810_readl(mmio, GPIOB) & SDA_VAL_IN));
++	i810_writel(mmio, chan->ddc_base, SDA_DIR_MASK);
++	i810_writel(mmio, chan->ddc_base, 0);
++	return ((i810_readl(mmio, chan->ddc_base) & SDA_VAL_IN) != 0);
+ }
+ 
+-static void i810ddc_setscl(void *data, int state)
+-{
+-        struct i810fb_i2c_chan    *chan = (struct i810fb_i2c_chan *)data;
+-        struct i810fb_par       *par = chan->par;
+-	u8                      __iomem *mmio = par->mmio_start_virtual;
+-
+-	i810_writel(mmio, GPIOA, (state ? SCL_VAL_OUT : 0) | SCL_DIR |
+-		    SCL_DIR_MASK | SCL_VAL_MASK);
+-	i810_readl(mmio, GPIOA);	/* flush posted write */
+-}
+-
+-static void i810ddc_setsda(void *data, int state)
+-{
+-        struct i810fb_i2c_chan    *chan = (struct i810fb_i2c_chan *)data;
+-        struct i810fb_par         *par = chan->par;
+-	u8                      __iomem *mmio = par->mmio_start_virtual;
+-
+- 	i810_writel(mmio, GPIOA, (state ? SDA_VAL_OUT : 0) | SDA_DIR |
+-		    SDA_DIR_MASK | SDA_VAL_MASK);
+-	i810_readl(mmio, GPIOA);	/* flush posted write */
+-}
+-
+-static int i810ddc_getscl(void *data)
+-{
+-        struct i810fb_i2c_chan    *chan = (struct i810fb_i2c_chan *)data;
+-        struct i810fb_par         *par = chan->par;
+-	u8                      __iomem *mmio = par->mmio_start_virtual;
+-
+-	i810_writel(mmio, GPIOA, SCL_DIR_MASK);
+-	i810_writel(mmio, GPIOA, 0);
+-	return (0 != (i810_readl(mmio, GPIOA) & SCL_VAL_IN));
+-}
+-
+-static int i810ddc_getsda(void *data)
+-{
+-        struct i810fb_i2c_chan    *chan = (struct i810fb_i2c_chan *)data;
+-        struct i810fb_par         *par = chan->par;
+-	u8                      __iomem *mmio = par->mmio_start_virtual;
+-
+-	i810_writel(mmio, GPIOA, SDA_DIR_MASK);
+-	i810_writel(mmio, GPIOA, 0);
+-	return (0 != (i810_readl(mmio, GPIOA) & SDA_VAL_IN));
+-}
+-
+-#define I2C_ALGO_DDC_I810   0x0e0000
+-#define I2C_ALGO_I2C_I810   0x0f0000
+-static int i810_setup_i2c_bus(struct i810fb_i2c_chan *chan, const char *name,
+-			      int conn)
++static int i810_setup_i2c_bus(struct i810fb_i2c_chan *chan, const char *name)
+ {
+         int rc;
+ 
+@@ -139,22 +92,11 @@ static int i810_setup_i2c_bus(struct i81
+         chan->adapter.owner             = THIS_MODULE;
+         chan->adapter.algo_data         = &chan->algo;
+         chan->adapter.dev.parent        = &chan->par->dev->dev;
+-	switch (conn) {
+-	case 1:
+-		chan->adapter.id                = I2C_ALGO_DDC_I810;
+-		chan->algo.setsda               = i810ddc_setsda;
+-		chan->algo.setscl               = i810ddc_setscl;
+-		chan->algo.getsda               = i810ddc_getsda;
+-		chan->algo.getscl               = i810ddc_getscl;
+-		break;
+-	case 2:
+-		chan->adapter.id                = I2C_ALGO_I2C_I810;
+-		chan->algo.setsda               = i810i2c_setsda;
+-		chan->algo.setscl               = i810i2c_setscl;
+-		chan->algo.getsda               = i810i2c_getsda;
+-		chan->algo.getscl               = i810i2c_getscl;
+-		break;
+-	}
++	chan->adapter.id                = I2C_HW_B_I810;
++	chan->algo.setsda               = i810i2c_setsda;
++	chan->algo.setscl               = i810i2c_setscl;
++	chan->algo.getsda               = i810i2c_getsda;
++	chan->algo.getscl               = i810i2c_getscl;
+ 	chan->algo.udelay               = 10;
+ 	chan->algo.mdelay               = 10;
+         chan->algo.timeout              = (HZ/2);
+@@ -168,11 +110,15 @@ static int i810_setup_i2c_bus(struct i81
+         udelay(20);
+ 
+         rc = i2c_bit_add_bus(&chan->adapter);
++
+         if (rc == 0)
+                 dev_dbg(&chan->par->dev->dev, "I2C bus %s registered.\n",name);
+-        else
++        else {
+                 dev_warn(&chan->par->dev->dev, "Failed to register I2C bus "
+ 			 "%s.\n", name);
++		chan->par = NULL;
++	}
++
+         return rc;
+ }
+ 
+@@ -180,8 +126,14 @@ void i810_create_i2c_busses(struct i810f
+ {
+         par->chan[0].par        = par;
+ 	par->chan[1].par        = par;
+-	i810_setup_i2c_bus(&par->chan[0], "I810-DDC", 1);
+-	i810_setup_i2c_bus(&par->chan[1], "I810-I2C", 2);
++	par->chan[2].par        = par;
++
++	par->chan[0].ddc_base = GPIOA;
++	i810_setup_i2c_bus(&par->chan[0], "I810-DDC");
++	par->chan[1].ddc_base = GPIOB;
++	i810_setup_i2c_bus(&par->chan[1], "I810-I2C");
++	par->chan[2].ddc_base = GPIOC;
++	i810_setup_i2c_bus(&par->chan[2], "I810-GPIOC");
+ }
+ 
+ void i810_delete_i2c_busses(struct i810fb_par *par)
+@@ -189,9 +141,14 @@ void i810_delete_i2c_busses(struct i810f
+         if (par->chan[0].par)
+                 i2c_bit_del_bus(&par->chan[0].adapter);
+         par->chan[0].par = NULL;
++
+ 	if (par->chan[1].par)
+ 		i2c_bit_del_bus(&par->chan[1].adapter);
+ 	par->chan[1].par = NULL;
++
++	if (par->chan[2].par)
++		i2c_bit_del_bus(&par->chan[2].adapter);
++	par->chan[2].par = NULL;
+ }
+ 
+ static u8 *i810_do_probe_i2c_edid(struct i810fb_i2c_chan *chan)
+@@ -221,6 +178,7 @@ static u8 *i810_do_probe_i2c_edid(struct
+ 		DPRINTK("i810-i2c: I2C Transfer successful\n");
+                 return buf;
+ 	}
++
+         DPRINTK("i810-i2c: Unable to read EDID block.\n");
+         kfree(buf);
+         return NULL;
+@@ -233,7 +191,7 @@ int i810_probe_i2c_connector(struct fb_i
+         int i;
+ 
+ 	DPRINTK("i810-i2c: Probe DDC%i Bus\n", conn);
+-	if (conn < 3) {
++	if (conn < 4) {
+ 		for (i = 0; i < 3; i++) {
+ 			/* Do the real work */
+ 			edid = i810_do_probe_i2c_edid(&par->chan[conn-1]);
+@@ -241,11 +199,14 @@ int i810_probe_i2c_connector(struct fb_i
+ 				break;
+ 		}
+ 	} else {
+-		DPRINTK("i810-i2c: Getting EDID from BIOS\n");
+-		edid = kmalloc(EDID_LENGTH, GFP_KERNEL);
+-		if (edid)
+-			memcpy(edid, fb_firmware_edid(info->device),
+-			       EDID_LENGTH);
++		const u8 *e = fb_firmware_edid(info->device);
++
++		if (e != NULL) {
++			DPRINTK("i810-i2c: Getting EDID from BIOS\n");
++			edid = kmalloc(EDID_LENGTH, GFP_KERNEL);
++			if (edid)
++				memcpy(edid, e, EDID_LENGTH);
++		}
+ 	}
+ 
+         if (out_edid)
+@@ -253,5 +214,3 @@ int i810_probe_i2c_connector(struct fb_i
+ 
+         return (edid) ? 0 : 1;
+ }
+-
+-
+diff --git a/drivers/video/i810/i810.h b/drivers/video/i810/i810.h
+--- a/drivers/video/i810/i810.h
++++ b/drivers/video/i810/i810.h
+@@ -249,6 +249,7 @@ struct i810fb_i2c_chan {
+ 	struct i810fb_par *par;
+ 	struct i2c_adapter adapter;
+ 	struct i2c_algo_bit_data algo;
++	unsigned long ddc_base;
+ };
+ 
+ struct i810fb_par {
+@@ -262,7 +263,7 @@ struct i810fb_par {
+ 	struct heap_data         iring;
+ 	struct heap_data         cursor_heap;
+ 	struct vgastate          state;
+-	struct i810fb_i2c_chan   chan[2];
++	struct i810fb_i2c_chan   chan[3];
+ 	atomic_t                 use_count;
+ 	u32 pseudo_palette[17];
+ 	unsigned long mmio_start_phys;
+diff --git a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_main.c
+--- a/drivers/video/i810/i810_main.c
++++ b/drivers/video/i810/i810_main.c
+@@ -1854,7 +1854,7 @@ static void __devinit i810fb_find_init_m
+ #ifdef CONFIG_FB_I810_I2C
+ 	i810_create_i2c_busses(par);
+ 
+-	for (i = 0; i < 3; i++) {
++	for (i = 0; i < 4; i++) {
+ 		err = i810_probe_i2c_connector(info, &par->edid, i+1);
+ 		if (!err)
+ 			break;
+diff --git a/drivers/video/i810/i810_regs.h b/drivers/video/i810/i810_regs.h
+--- a/drivers/video/i810/i810_regs.h
++++ b/drivers/video/i810/i810_regs.h
+@@ -70,6 +70,7 @@
+ #define HVSYNC                0x05000 
+ #define GPIOA                 0x05010
+ #define GPIOB                 0x05014 
++#define GPIOC                 0x0501C
+ 
+ /* Clock Control and Power Management Registers (06000h 06FFFh) */
+ #define DCLK_0D               0x06000
 
 
 

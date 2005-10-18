@@ -1,21 +1,22 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 6/17] vesafb: Fix color palette handling
-Date: Tue, 18 Oct 2005 17:16:56 +0800
-Message-ID: <4354BD88.9060003@gmail.com>
+Subject: [PATCH 9/17] pm2fb: Manual configuration of timings for Elsa Winner
+ 2000 Office
+Date: Tue, 18 Oct 2005 17:19:27 +0800
+Message-ID: <4354BE1F.6030608@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1ERyIK-0000bl-GG
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Oct 2005 13:42:48 -0700
+	id 1ERyIj-0000d5-9v
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Oct 2005 13:43:13 -0700
 Received: from zproxy.gmail.com ([64.233.162.204])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1ERyIK-0000dG-DA
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Oct 2005 13:42:48 -0700
+	id 1ERyIh-0000dG-Tl
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Oct 2005 13:43:13 -0700
 Received: by zproxy.gmail.com with SMTP id 14so1395707nzn
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 18 Oct 2005 13:42:48 -0700 (PDT)
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 18 Oct 2005 13:43:11 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,91 +29,47 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Peter 'p2' De Schrijver <p2@mind.be>
 
-Fix out-of-bounds bug.  The pseudopalette has room only for 16 entries,
-thus, write only the first 16 entries to the pseudopalette.
+From: Peter 'p2' De Schrijver <p2@mind.be>
+
+Attached is a small patch which configures the correct memory clock and
+timings on the Elsa Winner 2000 Office pm2 based card. This is necessary
+when the card is used on a platform which does not support PC style BIOS
+initialization.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
- vesafb.c |   56 +++++++++++++++++++++++++-------------------------------
- 1 files changed, 25 insertions(+), 31 deletions(-)
+ pm2fb.c |   16 ++++++++++++++++
+ 1 files changed, 16 insertions(+)
 
 
-diff --git a/drivers/video/vesafb.c b/drivers/video/vesafb.c
---- a/drivers/video/vesafb.c
-+++ b/drivers/video/vesafb.c
-@@ -164,45 +164,39 @@ static int vesafb_setcolreg(unsigned reg
- 	if (regno >= info->cmap.len)
- 		return 1;
+diff --git a/drivers/video/pm2fb.c b/drivers/video/pm2fb.c
+--- a/drivers/video/pm2fb.c
++++ b/drivers/video/pm2fb.c
+@@ -1120,6 +1120,22 @@ static int __devinit pm2fb_probe(struct 
+ 		default_par->mem_control, default_par->boot_address,
+ 		default_par->mem_config);
  
--	switch (info->var.bits_per_pixel) {
--	case 8:
-+	if (info->var.bits_per_pixel == 8)
- 		vesa_setpalette(regno,red,green,blue);
--		break;
--	case 16:
--		if (info->var.red.offset == 10) {
--			/* 1:5:5:5 */
--			((u32*) (info->pseudo_palette))[regno] =	
-+	else if (regno < 16) {
-+		switch (info->var.bits_per_pixel) {
-+		case 16:
-+			if (info->var.red.offset == 10) {
-+				/* 1:5:5:5 */
-+				((u32*) (info->pseudo_palette))[regno] =
- 					((red   & 0xf800) >>  1) |
- 					((green & 0xf800) >>  6) |
- 					((blue  & 0xf800) >> 11);
--		} else {
--			/* 0:5:6:5 */
--			((u32*) (info->pseudo_palette))[regno] =	
-+			} else {
-+				/* 0:5:6:5 */
-+				((u32*) (info->pseudo_palette))[regno] =
- 					((red   & 0xf800)      ) |
- 					((green & 0xfc00) >>  5) |
- 					((blue  & 0xf800) >> 11);
-+			}
-+			break;
-+		case 24:
-+		case 32:
-+			red   >>= 8;
-+			green >>= 8;
-+			blue  >>= 8;
-+			((u32 *)(info->pseudo_palette))[regno] =
-+				(red   << info->var.red.offset)   |
-+				(green << info->var.green.offset) |
-+				(blue  << info->var.blue.offset);
-+			break;
- 		}
--		break;
--	case 24:
--		red   >>= 8;
--		green >>= 8;
--		blue  >>= 8;
--		((u32 *)(info->pseudo_palette))[regno] =
--			(red   << info->var.red.offset)   |
--			(green << info->var.green.offset) |
--			(blue  << info->var.blue.offset);
--		break;
--	case 32:
--		red   >>= 8;
--		green >>= 8;
--		blue  >>= 8;
--		((u32 *)(info->pseudo_palette))[regno] =
--			(red   << info->var.red.offset)   |
--			(green << info->var.green.offset) |
--			(blue  << info->var.blue.offset);
--		break;
--    }
--    return 0;
++	if(default_par->mem_control == 0 &&
++		default_par->boot_address == 0x31 &&
++		default_par->mem_config == 0x259fffff &&
++		pdev->subsystem_vendor == 0x1048 &&
++		pdev->subsystem_device == 0x0a31) {
++		DPRINTK("subsystem_vendor: %04x, subsystem_device: %04x\n",
++			pdev->subsystem_vendor, pdev->subsystem_device);
++		DPRINTK("We have not been initialized by VGA BIOS "
++			"and are running on an Elsa Winner 2000 Office\n");
++		DPRINTK("Initializing card timings manually...\n");
++		default_par->mem_control=0;
++		default_par->boot_address=0x20;
++		default_par->mem_config=0xe6002021;
++		default_par->memclock=100000;
 +	}
 +
-+	return 0;
- }
- 
- static struct fb_ops vesafb_ops = {
+ 	/* Now work out how big lfb is going to be. */
+ 	switch(default_par->mem_config & PM2F_MEM_CONFIG_RAM_MASK) {
+ 	case PM2F_MEM_BANKS_1:
 
 
 

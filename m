@@ -1,22 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 9/17] pm2fb: Manual configuration of timings for Elsa Winner
- 2000 Office
-Date: Tue, 18 Oct 2005 17:19:27 +0800
-Message-ID: <4354BE1F.6030608@gmail.com>
+Subject: [PATCH 10/17] fbdev: Workaround for buggy EDID blocks
+Date: Tue, 18 Oct 2005 17:19:53 +0800
+Message-ID: <4354BE39.2020800@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1ERyIj-0000d5-9v
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Oct 2005 13:43:13 -0700
-Received: from zproxy.gmail.com ([64.233.162.204])
+	id 1ERyIw-0000dY-GE
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Oct 2005 13:43:26 -0700
+Received: from zproxy.gmail.com ([64.233.162.207])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1ERyIh-0000dG-Tl
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Oct 2005 13:43:13 -0700
-Received: by zproxy.gmail.com with SMTP id 14so1395707nzn
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 18 Oct 2005 13:43:11 -0700 (PDT)
+	id 1ERyIv-0000v6-5g
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Oct 2005 13:43:26 -0700
+Received: by zproxy.gmail.com with SMTP id s18so1165348nze
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 18 Oct 2005 13:43:21 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,47 +28,53 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Peter 'p2' De Schrijver <p2@mind.be>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Peter 'p2' De Schrijver <p2@mind.be>
-
-Attached is a small patch which configures the correct memory clock and
-timings on the Elsa Winner 2000 Office pm2 based card. This is necessary
-when the card is used on a platform which does not support PC style BIOS
-initialization.
+Some EDID blocks set the flag "prefer first detailed timing" without
+providing any detailed timing at all.  Clear this flag if the block
+does not provide detailed timings.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
- pm2fb.c |   16 ++++++++++++++++
- 1 files changed, 16 insertions(+)
+ fbmon.c |   18 +++++++++++++++++-
+ 1 files changed, 17 insertions(+), 1 deletion(-)
 
 
-diff --git a/drivers/video/pm2fb.c b/drivers/video/pm2fb.c
---- a/drivers/video/pm2fb.c
-+++ b/drivers/video/pm2fb.c
-@@ -1120,6 +1120,22 @@ static int __devinit pm2fb_probe(struct 
- 		default_par->mem_control, default_par->boot_address,
- 		default_par->mem_config);
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -827,7 +827,7 @@ int fb_parse_edid(unsigned char *edid, s
+ void fb_edid_to_monspecs(unsigned char *edid, struct fb_monspecs *specs)
+ {
+ 	unsigned char *block;
+-	int i;
++	int i, found = 0;
  
-+	if(default_par->mem_control == 0 &&
-+		default_par->boot_address == 0x31 &&
-+		default_par->mem_config == 0x259fffff &&
-+		pdev->subsystem_vendor == 0x1048 &&
-+		pdev->subsystem_device == 0x0a31) {
-+		DPRINTK("subsystem_vendor: %04x, subsystem_device: %04x\n",
-+			pdev->subsystem_vendor, pdev->subsystem_device);
-+		DPRINTK("We have not been initialized by VGA BIOS "
-+			"and are running on an Elsa Winner 2000 Office\n");
-+		DPRINTK("Initializing card timings manually...\n");
-+		default_par->mem_control=0;
-+		default_par->boot_address=0x20;
-+		default_par->mem_config=0xe6002021;
-+		default_par->memclock=100000;
+ 	if (edid == NULL)
+ 		return;
+@@ -869,6 +869,22 @@ void fb_edid_to_monspecs(unsigned char *
+ 	get_monspecs(edid, specs);
+ 
+ 	specs->modedb = fb_create_modedb(edid, &specs->modedb_len);
++
++	/*
++	 * Workaround for buggy EDIDs that sets that the first
++	 * detailed timing is preferred but has not detailed
++	 * timing specified
++	 */
++	for (i = 0; i < specs->modedb_len; i++) {
++		if (specs->modedb[i].flag & FB_MODE_IS_DETAILED) {
++			found = 1;
++			break;
++		}
 +	}
 +
- 	/* Now work out how big lfb is going to be. */
- 	switch(default_par->mem_config & PM2F_MEM_CONFIG_RAM_MASK) {
- 	case PM2F_MEM_BANKS_1:
++	if (!found)
++		specs->misc &= ~FB_MISC_1ST_DETAIL;
++
+ 	DPRINTK("========================================\n");
+ }
+ 
 
 
 

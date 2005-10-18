@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 16/17] console: Fix compile error
-Date: Tue, 18 Oct 2005 17:23:11 +0800
-Message-ID: <4354BEFF.9070400@gmail.com>
+Subject: [PATCH 13/17] s3c2410fb: initialise device_driver .owner
+Date: Tue, 18 Oct 2005 17:21:20 +0800
+Message-ID: <4354BE90.3080804@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1ERyJW-0000fZ-B6
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Oct 2005 13:44:02 -0700
+	id 1ERyJD-0000eL-8m
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Oct 2005 13:43:43 -0700
 Received: from zproxy.gmail.com ([64.233.162.204])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1ERyJW-0000dG-95
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Oct 2005 13:44:02 -0700
+	id 1ERyJB-0000dG-V3
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Oct 2005 13:43:43 -0700
 Received: by zproxy.gmail.com with SMTP id 14so1395707nzn
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 18 Oct 2005 13:44:02 -0700 (PDT)
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 18 Oct 2005 13:43:41 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,31 +27,33 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Ben Dooks <ben-linux@fluff.org>
 
-Fix following compile error (From Kernel Bugzilla Bug 5427):
+From: Ben Dooks <ben-linux@fluff.org>
 
-include/linux/console_struct.h:53: error: field `vt_mode' has incomplete type
+Initialise the .owner field, so that if the
+driver is built as a module, the system has
+a link to the owner
 
+Signed-off-by: Ben Dooks <ben-linux@fluff.org>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
- console_struct.h |    2 ++
- 1 files changed, 2 insertions(+)
+ s3c2410fb.c |    1 +
+ 1 files changed, 1 insertion(+)
 
 
-diff --git a/include/linux/console_struct.h b/include/linux/console_struct.h
---- a/include/linux/console_struct.h
-+++ b/include/linux/console_struct.h
-@@ -9,6 +9,8 @@
-  * to achieve effects such as fast scrolling by changing the origin.
-  */
+diff --git a/drivers/video/s3c2410fb.c b/drivers/video/s3c2410fb.c
+--- a/drivers/video/s3c2410fb.c
++++ b/drivers/video/s3c2410fb.c
+@@ -883,6 +883,7 @@ static int s3c2410fb_resume(struct devic
  
-+#include <linux/vt.h>
-+
- struct vt_struct;
- 
- #define NPAR 16
+ static struct device_driver s3c2410fb_driver = {
+ 	.name		= "s3c2410-lcd",
++	.owner		= THIS_MODULE,
+ 	.bus		= &platform_bus_type,
+ 	.probe		= s3c2410fb_probe,
+ 	.suspend	= s3c2410fb_suspend,
 
 
 

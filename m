@@ -1,21 +1,19 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 10/17] fbdev: Workaround for buggy EDID blocks
-Date: Tue, 18 Oct 2005 17:19:53 +0800
-Message-ID: <4354BE39.2020800@gmail.com>
+Subject: [PATCH 12/17] fbdev: fix the fb_find_nearest_mode() function
+Date: Tue, 18 Oct 2005 17:20:59 +0800
+Message-ID: <4354BE7B.9080807@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1ERyIw-0000dY-GE
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Oct 2005 13:43:26 -0700
-Received: from zproxy.gmail.com ([64.233.162.207])
+	id 1ERyJ9-0000e1-L2
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Oct 2005 13:43:39 -0700
+Received: from zproxy.gmail.com ([64.233.162.195])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1ERyIv-0000v6-5g
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Oct 2005 13:43:26 -0700
-Received: by zproxy.gmail.com with SMTP id s18so1165348nze
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 18 Oct 2005 13:43:21 -0700 (PDT)
+	id 1ERyJ5-0002dd-FQ
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Oct 2005 13:43:39 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,53 +26,118 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: linux-fbdev-devel@lists.sf.net, Michal Januszewski <spock@gentoo.org>
 
-Some EDID blocks set the flag "prefer first detailed timing" without
-providing any detailed timing at all.  Clear this flag if the block
-does not provide detailed timings.
+From: Michal Januszewski <spock@gentoo.org>
 
+Currently the fb_find_nearest_mode() function finds a mode with
+screen resolution closest to that described by the 'var' argument
+and with some arbitrary refresh rate (eg. in the following sequence
+of refresh rates: 70 60 53 85 75, 53 is selected).
+
+This patch fixes the function so that it looks for the closest mode as
+far as both resolution and refresh rate are concerned. The function's
+first argument is changed to fb_videomode so that the refresh rate can
+be specified by the caller, as fb_var_screeninfo doesn't have any fields
+that could directly hold this data.
+
+Signed-off-by: Michal Januszewski <spock@gentoo.org>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
- fbmon.c |   18 +++++++++++++++++-
- 1 files changed, 17 insertions(+), 1 deletion(-)
+ drivers/video/console/fbcon.c |    3 ++-
+ drivers/video/modedb.c        |   24 +++++++++++++-----------
+ include/linux/fb.h            |    2 +-
+ 3 files changed, 16 insertions(+), 13 deletions(-)
 
 
-diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
---- a/drivers/video/fbmon.c
-+++ b/drivers/video/fbmon.c
-@@ -827,7 +827,7 @@ int fb_parse_edid(unsigned char *edid, s
- void fb_edid_to_monspecs(unsigned char *edid, struct fb_monspecs *specs)
- {
- 	unsigned char *block;
--	int i;
-+	int i, found = 0;
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -2715,7 +2715,8 @@ static void fbcon_new_modelist(struct fb
+ 			continue;
+ 		vc = vc_cons[i].d;
+ 		display_to_var(&var, &fb_display[i]);
+-		mode = fb_find_nearest_mode(&var, &info->modelist);
++		mode = fb_find_nearest_mode(fb_display[i].mode,
++					    &info->modelist);
+ 		fb_videomode_to_var(&var, mode);
  
- 	if (edid == NULL)
+ 		if (vc)
+diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
+--- a/drivers/video/modedb.c
++++ b/drivers/video/modedb.c
+@@ -676,6 +676,8 @@ void fb_var_to_videomode(struct fb_video
+ 	mode->sync = var->sync;
+ 	mode->vmode = var->vmode & FB_VMODE_MASK;
+ 	mode->flag = FB_MODE_IS_FROM_VAR;
++	mode->refresh = 0;
++
+ 	if (!var->pixclock)
  		return;
-@@ -869,6 +869,22 @@ void fb_edid_to_monspecs(unsigned char *
- 	get_monspecs(edid, specs);
  
- 	specs->modedb = fb_create_modedb(edid, &specs->modedb_len);
-+
-+	/*
-+	 * Workaround for buggy EDIDs that sets that the first
-+	 * detailed timing is preferred but has not detailed
-+	 * timing specified
-+	 */
-+	for (i = 0; i < specs->modedb_len; i++) {
-+		if (specs->modedb[i].flag & FB_MODE_IS_DETAILED) {
-+			found = 1;
-+			break;
-+		}
-+	}
-+
-+	if (!found)
-+		specs->misc &= ~FB_MISC_1ST_DETAIL;
-+
- 	DPRINTK("========================================\n");
+@@ -785,39 +787,39 @@ struct fb_videomode *fb_find_best_mode(s
  }
  
+ /**
+- * fb_find_nearest_mode - find mode closest video mode
++ * fb_find_nearest_mode - find closest videomode
+  *
+- * @var: pointer to struct fb_var_screeninfo
++ * @mode: pointer to struct fb_videomode
+  * @head: pointer to modelist
+  *
+  * Finds best matching videomode, smaller or greater in dimension.
+  * If more than 1 videomode is found, will return the videomode with
+- * the closest refresh rate
++ * the closest refresh rate.
+  */
+-struct fb_videomode *fb_find_nearest_mode(struct fb_var_screeninfo *var,
++struct fb_videomode *fb_find_nearest_mode(struct fb_videomode *mode,
+ 					  struct list_head *head)
+ {
+ 	struct list_head *pos;
+ 	struct fb_modelist *modelist;
+-	struct fb_videomode *mode, *best = NULL;
++	struct fb_videomode *cmode, *best = NULL;
+ 	u32 diff = -1, diff_refresh = -1;
+ 
+ 	list_for_each(pos, head) {
+ 		u32 d;
+ 
+ 		modelist = list_entry(pos, struct fb_modelist, list);
+-		mode = &modelist->mode;
++		cmode = &modelist->mode;
+ 
+-		d = abs(mode->xres - var->xres) +
+-			abs(mode->yres - var->yres);
++		d = abs(cmode->xres - mode->xres) +
++			abs(cmode->yres - mode->yres);
+ 		if (diff > d) {
+ 			diff = d;
+-			best = mode;
++			best = cmode;
+ 		} else if (diff == d) {
+-			d = abs(mode->refresh - best->refresh);
++			d = abs(cmode->refresh - mode->refresh);
+ 			if (diff_refresh > d) {
+ 				diff_refresh = d;
+-				best = mode;
++				best = cmode;
+ 			}
+ 		}
+ 	}
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -897,7 +897,7 @@ extern struct fb_videomode *fb_match_mod
+ 					  struct list_head *head);
+ extern struct fb_videomode *fb_find_best_mode(struct fb_var_screeninfo *var,
+ 					      struct list_head *head);
+-extern struct fb_videomode *fb_find_nearest_mode(struct fb_var_screeninfo *var,
++extern struct fb_videomode *fb_find_nearest_mode(struct fb_videomode *mode,
+ 						 struct list_head *head);
+ extern void fb_destroy_modelist(struct list_head *head);
+ extern void fb_videomode_to_modelist(struct fb_videomode *modedb, int num,
 
 
 

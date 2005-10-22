@@ -1,22 +1,21 @@
-From: Jean Delvare <khali@linux-fr.org>
-Subject: [PATCH 2.6] fb: One more I2C-enabled device in savagefb
-Date: Sat, 22 Oct 2005 17:22:56 +0200
-Message-ID: <20051022172256.34eedc1d.khali@linux-fr.org>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Fw: [Bugme-new] [Bug 5482] New: Black screen with radeonfb
+Date: Sat, 22 Oct 2005 02:06:17 -0700
+Message-ID: <20051022020617.0fdea7f1.akpm__19729.4223159135$1130035048$gmane$org@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1ETMWJ-0006PF-O2
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 22 Oct 2005 09:46:59 -0700
-Received: from smtp-dmz-236-saturday.dmz.nerim.net ([195.5.254.236] helo=kellthuzad.dmz.nerim.net)
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1ETMWI-0006SM-I2
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 22 Oct 2005 09:46:59 -0700
-Received: from kraid.nerim.net (smtp-106-saturday.nerim.net [62.4.16.106])
-	by kellthuzad.dmz.nerim.net (Postfix) with ESMTP id DE8EC39896
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 22 Oct 2005 17:23:33 +0200 (CEST)
+	id 1ETVhL-0003nh-9H
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 22 Oct 2005 19:34:59 -0700
+Received: from xenotime.net ([66.160.160.81])
+	by mail.sourceforge.net with smtp (Exim 4.44)
+	id 1ETVhK-00087G-4a
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 22 Oct 2005 19:34:59 -0700
+Resent-To: linux-fbdev-devel@lists.sf.net
+Resent-Message-Id: <20051022193453.25ce6927.rdunlap@xenotime.net>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,37 +27,27 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: "Antonino A. Daplas" <adaplas@pol.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fsdevel@vger.kernel.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Hi Antonino, all,
 
-The I2C bus of the S3 Savage2000 is supposed to work the same way the
-Savage4 does. At least, the legacy i2c-savage4 driver handled both
-devices the same way.
 
-I do not have the hardware to test this, so testers are welcome.
+Begin forwarded message:
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-CC: Antonino A. Daplas <adaplas@pol.net>
+Date: Sat, 22 Oct 2005 02:00:31 -0700
+From: bugme-daemon@kernel-bugs.osdl.org
+To: bugme-new@lists.osdl.org
+Subject: [Bugme-new] [Bug 5482] New: Black screen with radeonfb
 
----
- drivers/video/savage/savagefb-i2c.c |    1 +
- 1 file changed, 1 insertion(+)
 
---- linux-2.6.14-rc4.orig/drivers/video/savage/savagefb-i2c.c	2005-10-22 16:42:00.000000000 +0200
-+++ linux-2.6.14-rc4/drivers/video/savage/savagefb-i2c.c	2005-10-22 16:43:12.000000000 +0200
-@@ -193,6 +193,7 @@
- 		par->chan.algo.getscl = prosavage_gpio_getscl;
- 		break;
- 	case FB_ACCEL_SAVAGE4:
-+	case FB_ACCEL_SAVAGE2000:
- 		par->chan.reg         = 0xff20;
- 		par->chan.ioaddr      = par->mmio.vbase;
- 		par->chan.algo.setsda = savage4_gpio_setsda;
+http://bugzilla.kernel.org/show_bug.cgi?id=5482
 
--- 
-Jean Delvare
+            Summary: Black screen with radeonfb
+     Kernel Version: 2.6.13 .. 2.6.14-rc4
+-
+To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
 
 
 -------------------------------------------------------

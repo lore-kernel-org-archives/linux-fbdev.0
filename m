@@ -1,28 +1,28 @@
 From: Rolf Offermanns <rolf.offermanns@gmx.net>
-Subject: color map vs. pseudo-palette vs. RAMDAC registers
-Date: Mon, 24 Oct 2005 09:48:50 +0200
-Message-ID: <200510240948.50185.rolf.offermanns@gmx.net>
+Subject: SMI712 driver 16bpp color problem (maybe endian related?)
+Date: Mon, 24 Oct 2005 09:49:03 +0200
+Message-ID: <200510240949.03722.rolf.offermanns@gmx.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1ETx4m-0000sy-3T
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 24 Oct 2005 00:49:00 -0700
+	id 1ETx4w-0000ts-Sk
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 24 Oct 2005 00:49:10 -0700
 Received: from mail.sysgo.com ([62.8.134.5])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1ETx4k-0001he-Eb
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 24 Oct 2005 00:49:00 -0700
+	id 1ETx4w-0001lj-HS
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 24 Oct 2005 00:49:11 -0700
 Received: from localhost (localhost [127.0.0.1])
-	by mail.sysgo.com (Postfix) with ESMTP id EF4A8FB877
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 24 Oct 2005 09:48:50 +0200 (CEST)
+	by mail.sysgo.com (Postfix) with ESMTP id 8663CFB86E
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 24 Oct 2005 09:49:04 +0200 (CEST)
 Received: from donald.sysgo.com (unknown [172.20.1.30])
-	by mail.sysgo.com (Postfix) with ESMTP id DD724FB877
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 24 Oct 2005 09:48:50 +0200 (CEST)
+	by mail.sysgo.com (Postfix) with ESMTP id 6F87AFB86E
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 24 Oct 2005 09:49:04 +0200 (CEST)
 Received: from kolab.sysgo.com (rof.sysgo.com [172.22.10.10])
-	by donald.sysgo.com (Postfix) with ESMTP id E98251AE865
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 24 Oct 2005 09:48:48 +0200 (CEST)
+	by donald.sysgo.com (Postfix) with ESMTP id 80FF81AF936
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 24 Oct 2005 09:49:02 +0200 (CEST)
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -38,54 +38,50 @@ Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
 
 Hi All,
-I tried to understand the skeletonfb driver code, and I am confused by some=
-=20
-comments in it:
+I am trying to port a fb driver for the SMI712 chip from kernel 2.4 to 2.6.
 
-I do not understand what the color map and pseudo palette stuff is used for.
+I use the 2.4 driver from SMIs homepage as a template. Having tried for
+several days now, I could need some help in understanding a few things.
 
-=46rom the c file:
-=2D-------------------------------------------------------------------
-Pseudocolor:
-* cmap is not used
-* DAC[X] is programmed to (red, green, blue)
-=2D-------------------------------------------------------------------
-Does that mean, I do not need to allocate a color map, if my driver would o=
-nly=20
-support pseudocolor visual? Is pseudocolor always used for 8bpp or are ther=
-e=20
-situations where 16bpp pseudocolor makes sense?
+I know, that some of the below writings may look confused, because that's
+the state my mind is in right now. :)
 
-=2D------------------------------------------------------------------------=
-=2D---
-Truecolor:
-     *    does not use RAMDAC (usually has 3 of them).
-     *    var->{color}.offset contains start of bitfield
-     *    var->{color}.length contains length of bitfield
-     *    cmap is programmed to (red << red.offset) |=20
-				(green << green.offset) |
-    				(blue << blue.offset) |=20
-				(transp << transp.offset)
-     *    RAMDAC does not exist
-=2D------------------------------------------------------------------------=
-=2D---
-Now I am lost:
-=2D> does not use RAMDAC.=20
-I understand this. It states the same in my chip reference. But what means=
-=20
-"usually has 3 of them" in this context?
+8bpp pseudo-color mode seems to work OK right now, but I am struggeling with
+16bpp mode. 
 
-=2D> cmap is programmed to...
-In the code that follows this comment, not the cmap is programmed, but the=
-=20
-pseudo palette.
-1. Why do I need a pseudo palette and where does its size 16 comes from?
-2. What do I need a color map for?
+According the the manual the chips support RGB565 16bpp. I changed the rgb
+offset/length fields to:
 
-=2D> RAMDAC does not exist <-> "usually has 3 of them"
-???
+red: 11/5
+green: 5/6
+blue: 0/5
 
-Please shed some light on me.
+I test the driver with the XF86FBDev server from x.org-6.8.1. Using the
+xsetroot command for setting the root window color to red/green/blue, I
+noticed, that the color were mixed up like this:
+
+red -> blue
+green -> red
+blue -> green
+
+So I changed the offsets to:
+
+red: 5
+green: 0
+blue: 11
+
+Now I get the expected result for xsetroot. However the color of my window
+decorations look wrong. I use wm2 as window manager. I then tried fbtest
+from CVS (w/o the image test, as I do not have netpbm on my target) and
+there the color look wrong, too. I can post a screenshot (digicam) if that
+is of any help (only tomorrow, because I have the setup in my office).
+
+Does anyone has got an idea of what might be wrong here?
+
+I read about endian problems in the archive.  My target is a ppc440ep (big
+endian) and the chip is on a PCI card. Could this be the problem?
+
+Any hint is greatly appreciated.
 
 Thanks,
 Rolf

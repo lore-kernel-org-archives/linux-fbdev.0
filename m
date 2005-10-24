@@ -1,29 +1,24 @@
-From: Rolf Offermanns <rolf.offermanns@gmx.net>
-Subject: SMI712 driver 16bpp color problem (maybe endian related?)
-Date: Mon, 24 Oct 2005 09:49:03 +0200
-Message-ID: <200510240949.03722.rolf.offermanns@gmx.net>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: color map vs. pseudo-palette vs. RAMDAC
+ registers
+Date: Mon, 24 Oct 2005 09:57:20 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0510240954290.16285@numbat.sonytel.be>
+References: <200510240948.50185.rolf.offermanns@gmx.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1ETx4w-0000ts-Sk
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 24 Oct 2005 00:49:10 -0700
-Received: from mail.sysgo.com ([62.8.134.5])
+	id 1ETxCx-0001QQ-5t
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 24 Oct 2005 00:57:27 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1ETx4w-0001lj-HS
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 24 Oct 2005 00:49:11 -0700
-Received: from localhost (localhost [127.0.0.1])
-	by mail.sysgo.com (Postfix) with ESMTP id 8663CFB86E
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 24 Oct 2005 09:49:04 +0200 (CEST)
-Received: from donald.sysgo.com (unknown [172.20.1.30])
-	by mail.sysgo.com (Postfix) with ESMTP id 6F87AFB86E
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 24 Oct 2005 09:49:04 +0200 (CEST)
-Received: from kolab.sysgo.com (rof.sysgo.com [172.22.10.10])
-	by donald.sysgo.com (Postfix) with ESMTP id 80FF81AF936
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 24 Oct 2005 09:49:02 +0200 (CEST)
-Content-Disposition: inline
+	id 1ETxCu-00010v-R6
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 24 Oct 2005 00:57:27 -0700
+Received: from numbat.sonytel.be (mail.sonytel.be [43.221.60.197])
+	by witte.sonytel.be (8.12.10/8.12.10) with ESMTP id j9O7vKva003210
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 24 Oct 2005 09:57:21 +0200 (MEST)
+In-Reply-To: <200510240948.50185.rolf.offermanns@gmx.net>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,58 +29,73 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Hi All,
-I am trying to port a fb driver for the SMI712 chip from kernel 2.4 to 2.6.
+On Mon, 24 Oct 2005, Rolf Offermanns wrote:
+> I tried to understand the skeletonfb driver code, and I am confused by some 
+> comments in it:
+> 
+> I do not understand what the color map and pseudo palette stuff is used for.
+> 
+> >From the c file:
+> --------------------------------------------------------------------
+> Pseudocolor:
+> * cmap is not used
 
-I use the 2.4 driver from SMIs homepage as a template. Having tried for
-several days now, I could need some help in understanding a few things.
+That should be `pseudo palette is not used'.
 
-I know, that some of the below writings may look confused, because that's
-the state my mind is in right now. :)
+> * DAC[X] is programmed to (red, green, blue)
+> --------------------------------------------------------------------
+> Does that mean, I do not need to allocate a color map, if my driver would only 
+It means you don't have to fill in the pseudo palette in this mode.
 
-8bpp pseudo-color mode seems to work OK right now, but I am struggeling with
-16bpp mode. 
+> support pseudocolor visual? Is pseudocolor always used for 8bpp or are there 
+> situations where 16bpp pseudocolor makes sense?
 
-According the the manual the chips support RGB565 16bpp. I changed the rgb
-offset/length fields to:
+Pseudocolor is not always 8 bpp (1, 2, 4 are common values as well), but large
+values are very uncommon, since 16 bpp pseudocolor would mean a 65536-entries
+colormap.
 
-red: 11/5
-green: 5/6
-blue: 0/5
+> -----------------------------------------------------------------------------
+> Truecolor:
+>      *    does not use RAMDAC (usually has 3 of them).
+>      *    var->{color}.offset contains start of bitfield
+>      *    var->{color}.length contains length of bitfield
+>      *    cmap is programmed to (red << red.offset) | 
+> 				(green << green.offset) |
+>     				(blue << blue.offset) | 
+> 				(transp << transp.offset)
+>      *    RAMDAC does not exist
+> -----------------------------------------------------------------------------
+> Now I am lost:
+> -> does not use RAMDAC. 
+> I understand this. It states the same in my chip reference. But what means 
+> "usually has 3 of them" in this context?
 
-I test the driver with the XF86FBDev server from x.org-6.8.1. Using the
-xsetroot command for setting the root window color to red/green/blue, I
-noticed, that the color were mixed up like this:
+Red, green, and blue.
 
-red -> blue
-green -> red
-blue -> green
+> -> cmap is programmed to...
+> In the code that follows this comment, not the cmap is programmed, but the 
+> pseudo palette.
 
-So I changed the offsets to:
+That should be `pseudo palette' again.
 
-red: 5
-green: 0
-blue: 11
+> 1. Why do I need a pseudo palette and where does its size 16 comes from?
 
-Now I get the expected result for xsetroot. However the color of my window
-decorations look wrong. I use wm2 as window manager. I then tried fbtest
-from CVS (w/o the image test, as I do not have netpbm on my target) and
-there the color look wrong, too. I can post a screenshot (digicam) if that
-is of any help (only tomorrow, because I have the setup in my office).
+It's used to translate from the 16 text console colors to actual pixel values.
 
-Does anyone has got an idea of what might be wrong here?
+Gr{oetje,eeting}s,
 
-I read about endian problems in the archive.  My target is a ppc440ep (big
-endian) and the chip is on a PCI card. Could this be the problem?
+						Geert
 
-Any hint is greatly appreciated.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Thanks,
-Rolf
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

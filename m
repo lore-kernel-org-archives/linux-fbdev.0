@@ -1,21 +1,29 @@
-From: Knut Petersen <Knut_Petersen@t-online.de>
-Subject: Re: mode switching on intelfb and non-CRT displays
-Date: Sun, 23 Oct 2005 09:05:33 +0200
-Message-ID: <435B363D.3030308@t-online.de>
-References: <7ceaf2d70510171035u66d65f53rfd6cfde956c399d7@mail.gmail.com> <4354AD3A.3070504@gmail.com>
+From: Rolf Offermanns <rolf.offermanns@gmx.net>
+Subject: SMI712 driver 16bpp color problem (maybe endian related?)
+Date: Mon, 24 Oct 2005 09:48:35 +0200
+Message-ID: <200510240948.35531.rolf.offermanns@gmx.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1ETZqo-0006Xp-Da
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 23 Oct 2005 00:01:02 -0700
-Received: from mailout11.sul.t-online.com ([194.25.134.85])
+	id 1ETx4X-0000sl-1U
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 24 Oct 2005 00:48:45 -0700
+Received: from mail.sysgo.com ([62.8.134.5])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1ETZqm-00016X-Od
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 23 Oct 2005 00:01:02 -0700
-In-Reply-To: <4354AD3A.3070504@gmail.com>
+	id 1ETx4V-0006mZ-HI
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 24 Oct 2005 00:48:45 -0700
+Received: from localhost (localhost [127.0.0.1])
+	by mail.sysgo.com (Postfix) with ESMTP id 92C91FB86E
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 24 Oct 2005 09:48:36 +0200 (CEST)
+Received: from donald.sysgo.com (unknown [172.20.1.30])
+	by mail.sysgo.com (Postfix) with ESMTP id 80362FB86E
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 24 Oct 2005 09:48:36 +0200 (CEST)
+Received: from kolab.sysgo.com (rof.sysgo.com [172.22.10.10])
+	by donald.sysgo.com (Postfix) with ESMTP id 5F5C81B01BF
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 24 Oct 2005 09:48:34 +0200 (CEST)
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,76 +34,57 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: xgdfalcon@gmail.com
 
-Hi Tony,
+Hi All,
+I am trying to port a fb driver for the SMI712 chip from kernel 2.4 to 2.6.
 
->>What would it take to get intelfb mode switching working with non-CRT
->>displays?=20
->>
->Documentation.  Or you can try googling for vesafb-tng.
-> =20
->
-Something like that should be possible even without documentation from=20
-vendor xyz.
+I use the 2.4 driver from SMIs homepage as a template. Having tried for
+several days now, I could need some help in understanding a few things.
 
-    0: google, read X sources, etc.
+I know, that some of the below writings may look confused, because that's
+the state my mind is in right now. :)
 
-    1: Extend a private version of vesafb and xyz-fb with a function=20
-that dumps all known
-    hardware  registers. Call it at the end of the xyz-fb_set_par()=20
-routine and while loading
-    vesafb.
+8bpp pseudo-color mode seems to work OK right now, but I am struggeling with
+16bpp mode. 
 
-    2. Boot several times (without loading X) and save a vesafb register=20
-dump for every
-    valid vesa mode.
+According the the manual the chips support RGB565 16bpp. I changed the rgb
+offset/length fields to:
 
-    3. Compare the register dumps and try to be intelligent ;-)  Most=20
-probably you will
-    find that only a few registers differ. Some will change with=20
-differnt color depths,
-    some will change with different vertical and horizontal resolutions.=20
-Also a clock
-    divider needs to be discovered.
+red: 11/5
+green: 5/6
+blue: 0/5
 
-    4. Verify your assumptions and release a mode switching xyz-fb driver=
-.
+I test the driver with the XF86FBDev server from x.org-6.8.1. Using the
+xsetroot command for setting the root window color to red/green/blue, I
+noticed, that the color were mixed up like this:
 
-It might also be a good idea to write a little dumpreg program for DOS=20
-and/or Windows.
-If there is e.g. a utility program for DOS that allows you to change the=20
-refresh rate, it
-should be quite easy to identify the clock divider registers.
+red -> blue
+green -> red
+blue -> green
 
-ypan and ywrap scrolling does help a lot to increase speed. Try to=20
-identify as many
-bits of the crt start address value as possible by instrumenting vesafb.=20
-Simply call your
-register dump function at the end of vesafb_pan_display() for several=20
-times and have a close
-look at the bits changed during scrolling. Don=B4t start displaying those=
-=20
-register dumps immediately,
-that way you obviously would lock your pc.
+So I changed the offsets to:
 
-cu,
- knut
+red: 5
+green: 0
+blue: 11
 
-PS and ONLY for the brave: Write a little DOS program that single steps=20
-the BIOS, saves all
-IO to the vga register range to a buffer and displays it after=20
-completion of the mode switch.
-If the BIOS tries to prevent single stepping in real mode, switch to=20
-vm86. It=B4s even possible
-(and easier to implement than a vm86 monitor) to use a memory manager=20
-like qemm386 and
-a few lines of assembly code to map a writable copy of the video bios=20
-image at the place of
-the original bios if necessary.
+Now I get the expected result for xsetroot. However the color of my window
+decorations look wrong. I use wm2 as window manager. I then tried fbtest
+from CVS (w/o the image test, as I do not have netpbm on my target) and
+there the color look wrong, too. I can post a screenshot (digicam) if that
+is of any help (only tomorrow, because I have the setup in my office).
 
+Does anyone has got an idea of what might be wrong here?
+
+I read about endian problems in the archive.  My target is a ppc440ep (big
+endian) and the chip is on a PCI card. Could this be the problem?
+
+Any hint is greatly appreciated.
+
+Thanks,
+Rolf
 
 
 

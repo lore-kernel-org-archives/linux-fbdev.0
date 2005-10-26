@@ -1,22 +1,22 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 4/4] fbdev: Convert a few drivers to use the fb_find_best_display
- helper
-Date: Wed, 26 Oct 2005 20:04:30 +0800
-Message-ID: <435F70CE.1070207@gmail.com>
+Subject: [PATCH 1/4] fbdev: Remove remaining references to soft_cursor from
+ drivers
+Date: Wed, 26 Oct 2005 19:51:31 +0800
+Message-ID: <435F6DC3.6000802@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EUk2e-0001rj-0m
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 26 Oct 2005 05:06:04 -0700
+	id 1EUk2O-0001qc-L0
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 26 Oct 2005 05:05:48 -0700
 Received: from zproxy.gmail.com ([64.233.162.200])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EUk2d-00084U-MS
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 26 Oct 2005 05:06:04 -0700
+	id 1EUk2N-00084U-Cz
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 26 Oct 2005 05:05:48 -0700
 Received: by zproxy.gmail.com with SMTP id 14so104212nzn
-        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 26 Oct 2005 05:06:03 -0700 (PDT)
+        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 26 Oct 2005 05:05:45 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,116 +31,61 @@ Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Convert i810fb, nvidiafb and savagefb to use the fb_find_best_display
-helper when searching for the initial video mode.
+au1100fb and au1200fb still refers to soft_cursor. Remove.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
- i810/i810_main.c         |   17 ++++-------------
- nvidia/nvidia.c          |   18 +++---------------
- savage/savagefb_driver.c |   21 ++++-----------------
- 3 files changed, 11 insertions(+), 45 deletions(-)
+> drivers/video/Kconfig:1249:warning: 'select' used by config symbol 'FB_AU1200' refer to undefined symbol 'FB_SOFT_CURSOR'
+> 
+> This might be due to a clash-of-intent between some of Tony's stuff and the
+> MIPS tree.   A fix against next -mm would suit, thanks.
+> 
+> 
+
+Here's the fix
+ 
+ Kconfig    |    1 -
+ au1100fb.c |    1 -
+ au1200fb.c |    1 -
+ 3 files changed, 3 deletions(-)
 
 
-diff --git a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_main.c
-index 96f5f62..c0c974b 100644
---- a/drivers/video/i810/i810_main.c
-+++ b/drivers/video/i810/i810_main.c
-@@ -1871,27 +1871,18 @@ static void __devinit i810fb_find_init_m
- 	fb_videomode_to_modelist(specs->modedb, specs->modedb_len,
- 				 &info->modelist);
- 	if (specs->modedb != NULL) {
--		if (xres && yres) {
--			struct fb_videomode *m;
-+		struct fb_videomode *m;
- 
-+		if (xres && yres) {
- 			if ((m = fb_find_best_mode(&var, &info->modelist))) {
- 				mode = *m;
- 				found  = 1;
- 			}
- 		}
- 
--		if (!found && specs->misc & FB_MISC_1ST_DETAIL) {
--			for (i = 0; i < specs->modedb_len; i++) {
--				if (specs->modedb[i].flag & FB_MODE_IS_FIRST) {
--					mode = specs->modedb[i];
--					found = 1;
--					break;
--				}
--			}
--		}
--
- 		if (!found) {
--			mode = specs->modedb[0];
-+			m = fb_find_best_display(&info->monspecs, &info->modelist);
-+			mode = *m;
- 			found = 1;
- 		}
- 
-diff --git a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
-index 3ceb74e..8c4cc36 100644
---- a/drivers/video/nvidia/nvidia.c
-+++ b/drivers/video/nvidia/nvidia.c
-@@ -1375,22 +1375,10 @@ static int __devinit nvidia_set_fbinfo(s
- 	fb_var_to_videomode(&modedb, &nvidiafb_default_var);
- 
- 	if (specs->modedb != NULL) {
--		/* get preferred timing */
--		if (specs->misc & FB_MISC_1ST_DETAIL) {
--			int i;
--
--			for (i = 0; i < specs->modedb_len; i++) {
--				if (specs->modedb[i].flag & FB_MODE_IS_FIRST) {
--					modedb = specs->modedb[i];
--					break;
--				}
--			}
--		} else {
--			/* otherwise, get first mode in database */
--			modedb = specs->modedb[0];
--		}
-+		struct fb_videomode *modedb;
- 
--		fb_videomode_to_var(&nvidiafb_default_var, &modedb);
-+		modedb = fb_find_best_display(specs, &info->modelist);
-+		fb_videomode_to_var(&nvidiafb_default_var, modedb);
- 		nvidiafb_default_var.bits_per_pixel = 8;
- 	} else if (par->fpWidth && par->fpHeight) {
- 		char buf[16];
-diff --git a/drivers/video/savage/savagefb_driver.c b/drivers/video/savage/savagefb_driver.c
-index 46b1a9c..62c47ea 100644
---- a/drivers/video/savage/savagefb_driver.c
-+++ b/drivers/video/savage/savagefb_driver.c
-@@ -2052,24 +2052,11 @@ static int __devinit savagefb_probe (str
- 			     info->monspecs.modedb, info->monspecs.modedb_len,
- 			     NULL, 8);
- 	} else if (info->monspecs.modedb != NULL) {
--		struct fb_monspecs *specs = &info->monspecs;
--		struct fb_videomode modedb;
-+		struct fb_videomode *modedb;
- 
--		if (info->monspecs.misc & FB_MISC_1ST_DETAIL) {
--			int i;
--
--			for (i = 0; i < specs->modedb_len; i++) {
--				if (specs->modedb[i].flag & FB_MODE_IS_FIRST) {
--					modedb = specs->modedb[i];
--					break;
--				}
--			}
--		} else {
--			/* otherwise, get first mode in database */
--			modedb = specs->modedb[0];
--		}
--
--		savage_update_var(&info->var, &modedb);
-+		modedb = fb_find_best_display(&info->monspecs,
-+					      &info->modelist);
-+		savage_update_var(&info->var, modedb);
- 	}
- 
- 	/* maximize virtual vertical length */
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index fcb559b..55ae403 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -1246,7 +1246,6 @@ config FB_AU1200
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+-	select FB_SOFT_CURSOR
+ 	help
+ 	  This is the framebuffer driver for the AMD Au1200 SOC.  It can drive
+ 	  various panels and CRTs by passing in kernel cmd line option
+diff --git a/drivers/video/au1100fb.c b/drivers/video/au1100fb.c
+index bf3ac99..a512980 100644
+--- a/drivers/video/au1100fb.c
++++ b/drivers/video/au1100fb.c
+@@ -424,7 +424,6 @@ static struct fb_ops au1100fb_ops =
+ 	.fb_fillrect		= cfb_fillrect,
+ 	.fb_copyarea		= cfb_copyarea,
+ 	.fb_imageblit		= cfb_imageblit,
+-	.fb_cursor		= soft_cursor,
+ 	.fb_rotate		= au1100fb_fb_rotate,
+ 	.fb_mmap		= au1100fb_fb_mmap,
+ };
+diff --git a/drivers/video/au1200fb.c b/drivers/video/au1200fb.c
+index adde4f6..f7243b1 100644
+--- a/drivers/video/au1200fb.c
++++ b/drivers/video/au1200fb.c
+@@ -1555,7 +1555,6 @@ static struct fb_ops au1200fb_fb_ops =
+ 	.fb_fillrect	= cfb_fillrect,
+ 	.fb_copyarea	= cfb_copyarea,
+ 	.fb_imageblit	= cfb_imageblit,
+-	.fb_cursor		= soft_cursor,
+ 	.fb_sync		= NULL,
+ 	.fb_ioctl		= au1200fb_ioctl,
+ 	.fb_mmap		= au1200fb_fb_mmap,
 
 
 

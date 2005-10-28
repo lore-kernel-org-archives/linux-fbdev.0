@@ -1,24 +1,29 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [Openzaurus-devel] Re: Linux 2.6 fbcon	rotation
- - in software
-Date: Thu, 27 Oct 2005 08:09:13 +0800
-Message-ID: <43601AA9.3040103@gmail.com>
-References: <1130301527.27554.246030407@webmail.messagingengine.com>	 <435F6C77.7010603@gmail.com> <1130366966.8322.57.camel@localhost.localdomain>
+From: Jake Moilanen <moilanen@austin.ibm.com>
+Subject: [PATCH] ATI RN50 pci id
+Date: Fri, 28 Oct 2005 13:46:52 -0500
+Message-ID: <20051028134652.6bb2bc57.moilanen@austin.ibm.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EUvKp-0003dR-QG
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 26 Oct 2005 17:09:35 -0700
-Received: from zproxy.gmail.com ([64.233.162.204])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EUvKp-0001uv-8S
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 26 Oct 2005 17:09:35 -0700
-Received: by zproxy.gmail.com with SMTP id 14so205958nzn
-        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 26 Oct 2005 17:09:34 -0700 (PDT)
-In-Reply-To: <1130366966.8322.57.camel@localhost.localdomain>
+	id 1EVZJ3-0002nX-9c
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Oct 2005 11:50:25 -0700
+Received: from e31.co.us.ibm.com ([32.97.110.149])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44)
+	id 1EVZJ3-0007Bu-4n
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Oct 2005 11:50:25 -0700
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com [9.17.195.11])
+	by e31.co.us.ibm.com (8.12.11/8.12.11) with ESMTP id j9SIoFOw025174
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 28 Oct 2005 14:50:15 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by westrelay02.boulder.ibm.com (8.12.10/NCO/VERS6.7) with ESMTP id j9SIoFk9466230
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 28 Oct 2005 12:50:15 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id j9SIoF7h011812
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 28 Oct 2005 12:50:15 -0600
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,44 +35,39 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net, openzaurus-devel@lists.sourceforge.net, hasjim.williams@futaris.org
+To: benh@kernel.crashing.org
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Richard Purdie wrote:
-> On Wed, 2005-10-26 at 19:45 +0800, Antonino A. Daplas wrote:
->> Hasjim Williams wrote:
->>> Hi all,
->>>
->>> I am looking to rotate the framebuffer console on an embedded ARM
->>> device.  I know that both OPIE and GPE (X Windows) support screen
->>> rotation in software.  I think they use a shadow framebuffer...  Has
->>> anyone on either of the lists started implementing this in 2.6.x ???  I
->>> know the Zaurus CL-3xxx series use the pxafb driver and fbcon is rotated
->>> on these devices.  My platform uses the amba_clcd driver and fbcon is
->>> also rotated on this device.
->>>
->>> See http://sourceforge.net/mailarchive/message.php?msg_id=12904686 for
->>> the Zaurus info.
->>>
->>> Is there some easy / good way to add rotated console support to the
->>> kernel?  Or do we have to use a shadow framebuffer?
->> I had a patch that does software rotation for the framebuffer console. But
->> this was during 2.5. The patch does this by having different putcs, putc,
->> bmove, fill, and cursor methods depending on the orientation.
->>
->> If this is really desired, I may try to revive that patch...
-> 
-> I was asked about this offlist and sent Hasjim a copy of the 2.5 patch. 
-> 
-> Console rotation would be extremely useful for several of the Zaurus
-> devices (Collie, Spitz, Akita and Borzoi). These use pxafb or sa1100fb
-> which don't support rotation in hardware. (The other Zaurus models use
-> w100fb which does support hardware rotation).
-> 
+Here's the PCI ID for the ATI RN50 chip.
 
-Ok, I have some spare time this weekend to update the patch.
+Jake
 
-Tony
+Signed-off-by: Jake Moilanen <moilanen@austin.ibm.com>
+
+Index: 2.6.14/drivers/video/aty/ati_ids.h
+===================================================================
+--- 2.6.14.orig/drivers/video/aty/ati_ids.h	2005-03-02 01:38:04.000000000 -0600
++++ 2.6.14/drivers/video/aty/ati_ids.h	2005-10-28 12:51:14.895957225 -0500
+@@ -150,6 +150,7 @@
+ #define PCI_CHIP_RV200_QX		0x5158
+ #define PCI_CHIP_RV100_QY		0x5159
+ #define PCI_CHIP_RV100_QZ		0x515A
++#define PCI_CHIP_RN50			0x515E
+ #define PCI_CHIP_RAGE128RE		0x5245
+ #define PCI_CHIP_RAGE128RF		0x5246
+ #define PCI_CHIP_RAGE128RG		0x5247
+Index: 2.6.14/drivers/video/aty/radeon_base.c
+===================================================================
+--- 2.6.14.orig/drivers/video/aty/radeon_base.c	2005-10-28 09:54:59.864156837 -0500
++++ 2.6.14/drivers/video/aty/radeon_base.c	2005-10-28 12:52:32.164274339 -0500
+@@ -113,6 +113,7 @@
+ 	/* Radeon VE/7000 */
+ 	CHIP_DEF(PCI_CHIP_RV100_QY, 	RV100,	CHIP_HAS_CRTC2),
+ 	CHIP_DEF(PCI_CHIP_RV100_QZ, 	RV100,	CHIP_HAS_CRTC2),
++	CHIP_DEF(PCI_CHIP_RN50,		RV100,	CHIP_HAS_CRTC2),	
+ 	/* Radeon IGP320M (U1) */
+ 	CHIP_DEF(PCI_CHIP_RS100_4336,	RS100,	CHIP_HAS_CRTC2 | CHIP_IS_IGP | CHIP_IS_MOBILITY),
+ 	/* Radeon IGP320 (A3) */
 
 
 -------------------------------------------------------

@@ -1,16 +1,16 @@
 From: syrjala@sci.fi
-Subject: [PATCH 2/5] matroxfb: Add support for Mystique AGP
+Subject: [PATCH 1/5] matroxfb: Remove an unused wait queue entry
 Date: Tue,  1 Nov 2005 00:12:20 +0200 (EET)
-Message-ID: <20051031221220.69515313@kuori.saunalahti.fi>
+Message-ID: <20051031221220.4A38E2EB@kuori.saunalahti.fi>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EWhtE-0004RZ-LP
+	id 1EWhtE-0004Ra-M6
 	for linux-fbdev-devel@lists.sourceforge.net; Mon, 31 Oct 2005 14:12:28 -0800
 Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EWhtC-0000O5-48
+	id 1EWhtC-0000Nz-4X
 	for linux-fbdev-devel@lists.sourceforge.net; Mon, 31 Oct 2005 14:12:28 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -28,66 +28,38 @@ Content-Transfer-Encoding: quoted-printable
 To: vandrove@vc.cvut.cz
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Add new entries for Mystique AGP with the PCI ID 0x051e.
-
-I don't actually have such boards but according to google they do exist.=20
-Curiosly X.Org doesn't recognize that PCI ID. And what's even more=20
-interesting is that Matrox's own Windows drivers don't recognize it=20
-either. After going through about a dozen different versions I did find=20
-one older driver that does list this particular ID. It is also listed in=20
-the pci.ids file.
-
-I'm not sure if non-220 AGP chips exist. I left the chip revision check=20
-intact for AGP chips nonetheless.
+wait_event_event_interruptible() uses a private wait queue entry so=20
+there's no need for the caller to initialize one.
 
 Signed-off-by: Ville Syrj=E4l=E4 <syrjala@sci.fi>
 ---
 
- drivers/video/matrox/matroxfb_base.c |   14 ++++++++++++++
- include/linux/pci_ids.h              |    1 +
- 2 files changed, 15 insertions(+)
+ matroxfb_base.c |    2 --
+ 1 file changed, 2 deletions(-)
 
-diff -uprN linux-2.6.14-1/drivers/video/matrox/matroxfb_base.c linux-2.6.14=
--2/drivers/video/matrox/matroxfb_base.c
---- linux-2.6.14-1/drivers/video/matrox/matroxfb_base.c	2005-10-31 17:44:11=
+diff -uprN linux-2.6.14-0/drivers/video/matrox/matroxfb_base.c linux-2.6.14=
+-1/drivers/video/matrox/matroxfb_base.c
+--- linux-2.6.14-0/drivers/video/matrox/matroxfb_base.c	2005-10-28 03:02:08=
+.000000000 +0300
++++ linux-2.6.14-1/drivers/video/matrox/matroxfb_base.c	2005-10-31 17:44:11=
 .000000000 +0200
-+++ linux-2.6.14-2/drivers/video/matrox/matroxfb_base.c	2005-10-31 17:45:41=
-.000000000 +0200
-@@ -1428,6 +1428,20 @@ static struct board {
- 		MGA_1164,
- 		&vbMystique,
- 		"Mystique 220 (PCI)"},
-+	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_MYS_AGP,	0x02,
-+		0,			0,
-+		DEVF_VIDEO64BIT | DEVF_CROSS4MB,
-+		180000,
-+		MGA_1064,
-+		&vbMystique,
-+		"Mystique (AGP)"},
-+	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_MYS_AGP,	0xFF,
-+		0,			0,
-+		DEVF_VIDEO64BIT | DEVF_SWAPS | DEVF_CROSS4MB,
-+		220000,
-+		MGA_1164,
-+		&vbMystique,
-+		"Mystique 220 (AGP)"},
- #endif
- #ifdef CONFIG_FB_MATROX_G
- 	{PCI_VENDOR_ID_MATROX,	PCI_DEVICE_ID_MATROX_G100_MM,	0xFF,
-diff -uprN linux-2.6.14-1/include/linux/pci_ids.h linux-2.6.14-2/include/li=
-nux/pci_ids.h
---- linux-2.6.14-1/include/linux/pci_ids.h	2005-10-31 17:43:06.000000000 +0=
-200
-+++ linux-2.6.14-2/include/linux/pci_ids.h	2005-10-31 17:46:34.000000000 +0=
-200
-@@ -568,6 +568,7 @@
- #define PCI_DEVICE_ID_MATROX_MIL	0x0519
- #define PCI_DEVICE_ID_MATROX_MYS	0x051A
- #define PCI_DEVICE_ID_MATROX_MIL_2	0x051b
-+#define PCI_DEVICE_ID_MATROX_MYS_AGP	0x051e
- #define PCI_DEVICE_ID_MATROX_MIL_2_AGP	0x051f
- #define PCI_DEVICE_ID_MATROX_MGA_IMP	0x0d10
- #define PCI_DEVICE_ID_MATROX_G100_MM	0x1000
+@@ -264,7 +264,6 @@ static void matroxfb_disable_irq(WPMINFO
+ }
+=20
+ int matroxfb_wait_for_sync(WPMINFO u_int32_t crtc) {
+-	wait_queue_t __wait;
+ 	struct matrox_vsync *vs;
+ 	unsigned int cnt;
+ 	int ret;
+@@ -286,7 +285,6 @@ int matroxfb_wait_for_sync(WPMINFO u_int
+ 	if (ret) {
+ 		return ret;
+ 	}
+-        init_waitqueue_entry(&__wait, current);
+=20
+ 	cnt =3D vs->cnt;
+ 	ret =3D wait_event_interruptible_timeout(vs->wait, cnt !=3D vs->cnt, HZ/1=
+0);
 
 
 

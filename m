@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH] Framebuffer mode required for PowerBook Titanium
-Date: Sun, 06 Nov 2005 08:11:34 +0800
-Message-ID: <436D4A36.70606@gmail.com>
-References: <20051105234938.GA18608@hansmi.ch>
+Subject: Re: [PATCH 11/25] framebuffer: move ioctl32 code to fbmem.c
+Date: Sun, 06 Nov 2005 08:16:26 +0800
+Message-ID: <436D4B5A.2040303@pol.net>
+References: <20051105162650.620266000@b551138y.boeblingen.de.ibm.com> <20051105162714.961205000@b551138y.boeblingen.de.ibm.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EYY8P-0006NJ-Be
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 05 Nov 2005 16:11:45 -0800
-Received: from xproxy.gmail.com ([66.249.82.202])
+	id 1EYYD7-0006ZA-Ix
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 05 Nov 2005 16:16:37 -0800
+Received: from xproxy.gmail.com ([66.249.82.201])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EYY8N-0003x0-QN
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 05 Nov 2005 16:11:45 -0800
-Received: by xproxy.gmail.com with SMTP id i28so149309wxd
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 05 Nov 2005 16:11:42 -0800 (PST)
-In-Reply-To: <20051105234938.GA18608@hansmi.ch>
+	id 1EYYD6-0004zW-9d
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 05 Nov 2005 16:16:37 -0800
+Received: by xproxy.gmail.com with SMTP id h29so145107wxd
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 05 Nov 2005 16:16:35 -0800 (PST)
+In-Reply-To: <20051105162714.961205000@b551138y.boeblingen.de.ibm.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,16 +29,15 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Michael Hanselmann <linux-kernel@hansmi.ch>
-Cc: benh@kernel.crashing.org, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>, linux-fbdev-devel@lists.sourceforge.net
 
-Michael Hanselmann wrote:
-> This patch adds the framebuffer mode required for an Apple PowerBook G4
-> Titanium.
-> 
+Arnd Bergmann wrote:
+> The frame buffer layer already had some code dealing with
+> compat ioctls, this patch moves over the remaining code
+> from fs/compat_ioctl.c
 
-Does booting with video=xxxfb:1152x768M@60 work?  If it does, I would prefer
-that we avoid adding more entries to the global mode database.
+This is fine with me.
 
 Tony
 

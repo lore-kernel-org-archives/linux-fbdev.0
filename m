@@ -1,19 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 0/8] fbcon: Console Rotation
-Date: Mon, 07 Nov 2005 18:59:46 +0800
-Message-ID: <436F33A2.6070107@gmail.com>
+Subject: [PATCH 2/8] fbcon: Console Rotation - Add support to rotate the logo
+Date: Mon, 07 Nov 2005 19:03:55 +0800
+Message-ID: <436F349B.3030903@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EZ5AX-0004RA-Fa
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Nov 2005 03:28:09 -0800
-Received: from xproxy.gmail.com ([66.249.82.196])
+	id 1EZ5Ah-0004RT-FD
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Nov 2005 03:28:19 -0800
+Received: from xproxy.gmail.com ([66.249.82.192])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EZ5AV-00057d-UE
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Nov 2005 03:28:09 -0800
+	id 1EZ5Ag-0006Hq-SO
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Nov 2005 03:28:19 -0800
+Received: by xproxy.gmail.com with SMTP id i28so364656wxd
+        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 07 Nov 2005 03:28:18 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,82 +28,247 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: linux-fbdev-devel@lists.sf.net
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-This patch series implements generic code to rotate the console at 90, 180,
-and 270 degrees. The implementation is completely done in the framebuffer
-console level, thus no changes to the framebuffer layer or to the drivers
-are needed.
+Add support for rotating and positioning of the logo. Rotation and position
+depends on 'int rotate' parameter added to fb_prepare_logo() and
+fb_show_logo().
 
-Console rotation is required by some Sharp-based devices where the natural
-orientation of the display is not at 0 degrees. Also, users that have
-displays that can pivot will benefit by having a console in portrait mode
-if they so desire.
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
 
-The choice to implement the code in the console layer rather than in the
-framebuffer layer is due to the following reasons:
+---
+ drivers/video/console/fbcon.c |    5 -
+ drivers/video/fbmem.c         |  130 +++++++++++++++++++++++++++++++++++++-----
+ include/linux/fb.h            |    4 -
+ 3 files changed, 122 insertions(+), 17 deletions(-)
 
-- it's fast
-- it does not require driver changes
-- it can coexist with devices that can rotate the display at the hardware level
-- it complements graphics applications that can do display rotation
 
-The changes to core fbcon are minimal-- recognition of the console
-rotation angle so it can swap directions, origins and axes (xres vs yres,
-xpanstep vs ypanstep, xoffset vs yoffset, etc) and storage of the rotation
-angle per display. The bulk of the code that does the actual drawing to the
-screen are placed in separate files. Each angle of rotation has separate
-methods (bmove, clear, putcs, cursor, update_start which is derived from
-update_var, and clear_margins).  To mimimize processing time, the fontdata
-are pre-rotated at each console switch (only if the font or the angle has
-changed). 
-
-The option can be compiled out (CONFIG_FRAMEBUFFER_CONSOLE_ROTATION = n) if
-rotation is not needed. 
-
-Choosing the rotation angle can be done in several ways:
-
-1. boot option fbcon=rotate:n, where
-     n = 0 - normal
-     n = 1 - 90 degrees (clockwise)
-     n = 2 - 180 degrees (upside down)
-     n = 3 - 270 degrees (counterclockwise)
-
-2. echo n > /sys/class/graphics/fb[num]/con_rotate
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index b5d678c..26935e2 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -499,6 +499,7 @@ static void fbcon_prepare_logo(struct vc
+ 			       int cols, int rows, int new_cols, int new_rows)
+ {
+ 	/* Need to make room for the logo */
++	struct fbcon_ops *ops = info->fbcon_par;
+ 	int cnt, erase = vc->vc_video_erase_char, step;
+ 	unsigned short *save = NULL, *r, *q;
  
-     where n is the same as described above. It sets the angle of rotation
-of the current console
-
-3 echo n > /sys/class/graphics/fb[num]/con_rotate_all
-
-     where n is the same as described above. Globally sets the angle of
-rotation.
-
-GOTCHAS:
-
-	The option, especially at angles of 90 and 270 degrees, will exercise
-the least used code of drivers.  Namely, at these angles, panning is done
-in the x-axis, so it can reveal bugs in the driver if xpanstep is set
-incorrectly. A workaround is to set xpanstep = 0.
-
-	Secondly, at these angles, the framebuffer memory access can be
-unaligned if (fontheight * bpp) % 32 ~= 0 which can reveal bugs in the drivers
-imageblit, fillrect and copyarea functions.  (I think cfbfillrect may have
-this buglet). A workaround is to use a standard 8x16 font.
-
-Speed:
-
-	The scrolling speed difference between 0 and 180 degrees is minimal,
-somewhere areound 1-2%.  At 90 or 270 degress, speed drops down to a vicinity
-of 30-40%. This is understandable because the blit direction is across the
-framebuffer "direction." Scrolling will be helped at these angles if xpanstep
-is not equal to zero, use of 8x16 fonts, and setting xres_virtual >= xres * 2.
-
-Note: The code is tested on little-endian only, so I don't know if it will
-work in big-endian. Please let me know, it will take only less than a minute
-of your time.
-
-Tony
+@@ -508,7 +509,7 @@ static void fbcon_prepare_logo(struct vc
+ 	 */
+ 	if (fb_get_color_depth(&info->var, &info->fix) == 1)
+ 		erase &= ~0x400;
+-	logo_height = fb_prepare_logo(info);
++	logo_height = fb_prepare_logo(info, ops->rotate);
+ 	logo_lines = (logo_height + vc->vc_font.height - 1) /
+ 		vc->vc_font.height;
+ 	q = (unsigned short *) (vc->vc_origin +
+@@ -2073,7 +2074,7 @@ static int fbcon_switch(struct vc_data *
+ 
+ 		logo_shown = fg_console;
+ 		/* This is protected above by initmem_freed */
+-		fb_show_logo(info);
++		fb_show_logo(info, ops->rotate);
+ 		update_region(vc,
+ 			      vc->vc_origin + vc->vc_size_row * vc->vc_top,
+ 			      vc->vc_size_row * (vc->vc_bottom -
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index e2667dd..7a2a8fa 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -323,9 +323,103 @@ static struct logo_data {
+ 	const struct linux_logo *logo;
+ } fb_logo;
+ 
+-int fb_prepare_logo(struct fb_info *info)
++static void fb_rotate_logo_ud(const u8 *in, u8 *out, u32 width, u32 height)
++{
++	u32 size = width * height, i;
++
++	out += size - 1;
++
++	for (i = size; i--; )
++		*out-- = *in++;
++}
++
++static void fb_rotate_logo_cw(const u8 *in, u8 *out, u32 width, u32 height)
++{
++	int i, j, w = width - 1;
++
++	for (i = 0; i < height; i++)
++		for (j = 0; j < width; j++)
++			out[height * j + w - i] = *in++;
++}
++
++static void fb_rotate_logo_ccw(const u8 *in, u8 *out, u32 width, u32 height)
++{
++	int i, j, w = width - 1;
++
++	for (i = 0; i < height; i++)
++		for (j = 0; j < width; j++)
++			out[height * (w - j) + i] = *in++;
++}
++
++static void fb_rotate_logo(struct fb_info *info, u8 *dst,
++			   struct fb_image *image, int rotate)
++{
++	u32 tmp;
++
++	if (rotate == FB_ROTATE_UD) {
++		image->dx = info->var.xres - image->width;
++		image->dy = info->var.yres - image->height;
++		fb_rotate_logo_ud(image->data, dst, image->width,
++				  image->height);
++	} else if (rotate == FB_ROTATE_CW) {
++		tmp = image->width;
++		image->width = image->height;
++		image->height = tmp;
++		image->dx = info->var.xres - image->height;
++		fb_rotate_logo_cw(image->data, dst, image->width,
++				  image->height);
++	} else if (rotate == FB_ROTATE_CCW) {
++		tmp = image->width;
++		image->width = image->height;
++		image->height = tmp;
++		image->dy = info->var.yres - image->width;
++		fb_rotate_logo_ccw(image->data, dst, image->width,
++				   image->height);
++	}
++
++	image->data = dst;
++}
++
++static void fb_do_show_logo(struct fb_info *info, struct fb_image *image,
++			    int rotate)
++{
++	int x;
++
++	if (rotate == FB_ROTATE_UR) {
++		for (x = 0; x < num_online_cpus() &&
++			     x * (fb_logo.logo->width + 8) <=
++			     info->var.xres - fb_logo.logo->width; x++) {
++			info->fbops->fb_imageblit(info, image);
++			image->dx += fb_logo.logo->width + 8;
++		}
++	} else if (rotate == FB_ROTATE_UD) {
++		for (x = 0; x < num_online_cpus() &&
++			     x * (fb_logo.logo->width + 8) <=
++			     info->var.xres - fb_logo.logo->width; x++) {
++			info->fbops->fb_imageblit(info, image);
++			image->dx -= fb_logo.logo->width + 8;
++		}
++	} else if (rotate == FB_ROTATE_CW) {
++		for (x = 0; x < num_online_cpus() &&
++			     x * (fb_logo.logo->width + 8) <=
++			     info->var.yres - fb_logo.logo->width; x++) {
++			info->fbops->fb_imageblit(info, image);
++			image->dy += fb_logo.logo->width + 8;
++		}
++	} else if (rotate == FB_ROTATE_CCW) {
++		for (x = 0; x < num_online_cpus() &&
++			     x * (fb_logo.logo->width + 8) <=
++			     info->var.yres - fb_logo.logo->width; x++) {
++			info->fbops->fb_imageblit(info, image);
++			image->dy -= fb_logo.logo->width + 8;
++		}
++	}
++}
++
++int fb_prepare_logo(struct fb_info *info, int rotate)
+ {
+ 	int depth = fb_get_color_depth(&info->var, &info->fix);
++	int yres;
+ 
+ 	memset(&fb_logo, 0, sizeof(struct logo_data));
+ 
+@@ -358,10 +452,16 @@ int fb_prepare_logo(struct fb_info *info
+ 	/* Return if no suitable logo was found */
+ 	fb_logo.logo = fb_find_logo(depth);
+ 	
+-	if (!fb_logo.logo || fb_logo.logo->height > info->var.yres) {
++	if (rotate == FB_ROTATE_UR || rotate == FB_ROTATE_UD)
++		yres = info->var.yres;
++	else
++		yres = info->var.xres;
++
++	if (fb_logo.logo && fb_logo.logo->height > yres) {
+ 		fb_logo.logo = NULL;
+ 		return 0;
+ 	}
++
+ 	/* What depth we asked for might be different from what we get */
+ 	if (fb_logo.logo->type == LINUX_LOGO_CLUT224)
+ 		fb_logo.depth = 8;
+@@ -372,12 +472,11 @@ int fb_prepare_logo(struct fb_info *info
+ 	return fb_logo.logo->height;
+ }
+ 
+-int fb_show_logo(struct fb_info *info)
++int fb_show_logo(struct fb_info *info, int rotate)
+ {
+ 	u32 *palette = NULL, *saved_pseudo_palette = NULL;
+-	unsigned char *logo_new = NULL;
++	unsigned char *logo_new = NULL, *logo_rotate = NULL;
+ 	struct fb_image image;
+-	int x;
+ 
+ 	/* Return if the frame buffer is not mapped or suspended */
+ 	if (fb_logo.logo == NULL || info->state != FBINFO_STATE_RUNNING)
+@@ -417,25 +516,30 @@ int fb_show_logo(struct fb_info *info)
+ 		fb_set_logo(info, fb_logo.logo, logo_new, fb_logo.depth);
+ 	}
+ 
++	image.dx = 0;
++	image.dy = 0;
+ 	image.width = fb_logo.logo->width;
+ 	image.height = fb_logo.logo->height;
+-	image.dy = 0;
+ 
+-	for (x = 0; x < num_online_cpus() * (fb_logo.logo->width + 8) &&
+-	     x <= info->var.xres-fb_logo.logo->width; x += (fb_logo.logo->width + 8)) {
+-		image.dx = x;
+-		info->fbops->fb_imageblit(info, &image);
++	if (rotate) {
++		logo_rotate = kmalloc(fb_logo.logo->width *
++				      fb_logo.logo->height, GFP_KERNEL);
++		if (logo_rotate)
++			fb_rotate_logo(info, logo_rotate, &image, rotate);
+ 	}
+-	
++
++	fb_do_show_logo(info, &image, rotate);
++
+ 	kfree(palette);
+ 	if (saved_pseudo_palette != NULL)
+ 		info->pseudo_palette = saved_pseudo_palette;
+ 	kfree(logo_new);
++	kfree(logo_rotate);
+ 	return fb_logo.logo->height;
+ }
+ #else
+-int fb_prepare_logo(struct fb_info *info) { return 0; }
+-int fb_show_logo(struct fb_info *info) { return 0; }
++int fb_prepare_logo(struct fb_info *info, int rotate) { return 0; }
++int fb_show_logo(struct fb_info *info, int rotate) { return 0; }
+ #endif /* CONFIG_LOGO */
+ 
+ static int fbmem_read_proc(char *buf, char **start, off_t offset,
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 51791dc..357dd3a 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -825,8 +825,8 @@ extern void cfb_imageblit(struct fb_info
+ /* drivers/video/fbmem.c */
+ extern int register_framebuffer(struct fb_info *fb_info);
+ extern int unregister_framebuffer(struct fb_info *fb_info);
+-extern int fb_prepare_logo(struct fb_info *fb_info);
+-extern int fb_show_logo(struct fb_info *fb_info);
++extern int fb_prepare_logo(struct fb_info *fb_info, int rotate);
++extern int fb_show_logo(struct fb_info *fb_info, int rotate);
+ extern char* fb_get_buffer_offset(struct fb_info *info, struct fb_pixmap *buf, u32 size);
+ extern void fb_pad_unaligned_buffer(u8 *dst, u32 d_pitch, u8 *src, u32 idx,
+ 				u32 height, u32 shift_high, u32 shift_low, u32 mod);
 
 
 

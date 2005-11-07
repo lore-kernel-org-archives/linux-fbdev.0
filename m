@@ -1,19 +1,21 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: [RFC: 2.6 patch] i386: EXPORT_SYMBOL(screen_info) even #ifndef CONFIG_VT
-Date: Mon, 7 Nov 2005 22:19:06 +0100
-Message-ID: <20051107211906.GD3847@stusta.de>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: [PATCH 3/7 RESEND] fbdev: Possible endian fix in cfbimageblit
+Date: Tue, 08 Nov 2005 06:07:05 +0800
+Message-ID: <436FD009.5010809@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EZEOW-0005Fk-NR
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Nov 2005 13:19:12 -0800
-Received: from mailout.stusta.mhn.de ([141.84.69.5])
-	by mail.sourceforge.net with smtp (Exim 4.44)
-	id 1EZEOW-0007gt-45
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Nov 2005 13:19:12 -0800
-Content-Disposition: inline
+	id 1EZF9J-0007Ba-RI
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Nov 2005 14:07:33 -0800
+Received: from xproxy.gmail.com ([66.249.82.198])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1EZF9H-0001aD-At
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Nov 2005 14:07:33 -0800
+Received: by xproxy.gmail.com with SMTP id h29so477615wxd
+        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 07 Nov 2005 14:07:30 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -25,37 +27,55 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 To: Andrew Morton <akpm@osdl.org>
-Cc: linux-kernel@vger.kernel.org, adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-The folllowing modules require screen_info but don't depend
-on CONFIG_VT:
-- vga16fb.ko
-- intelfb.ko
+Fix possible endian bug(?) when bit testing in slow_imageblit().  This
+function is rarely called (only if (width * bpp) % 32 != 0) thus the bug is
+not triggered.
 
-This patch was already ACK'ed by Antonino A. Daplas.
+However, if the console is rotated at 90 or 270 degrees, the height becomes
+the width, and a variety of fonts have heights that will force a call to
+slow_imageblit().
 
-
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
 
 ---
+ cfbimgblt.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletion(-)
 
-This patch was already sent on:
-- 1 Nov 2005
+I inadvertently included a semicolon here
+#define BIT_NR(b)              (7 - (b));
 
---- linux-2.6.14-rc5-mm1-modular-2.95/arch/i386/kernel/setup.c.old	2005-11-01 16:10:52.000000000 +0100
-+++ linux-2.6.14-rc5-mm1-modular-2.95/arch/i386/kernel/setup.c	2005-11-01 16:11:25.000000000 +0100
-@@ -129,9 +129,7 @@
- EXPORT_SYMBOL(drive_info);
+Tony
+
+diff --git a/drivers/video/cfbimgblt.c b/drivers/video/cfbimgblt.c
+index da664ce..f3b89fe 100644
+--- a/drivers/video/cfbimgblt.c
++++ b/drivers/video/cfbimgblt.c
+@@ -80,10 +80,12 @@ static u32 cfb_tab32[] = {
+ #define LEFT_POS(bpp)          (32 - bpp)
+ #define SHIFT_HIGH(val, bits)  ((val) >> (bits))
+ #define SHIFT_LOW(val, bits)   ((val) << (bits))
++#define BIT_NR(b)              (7 - (b))
+ #else
+ #define LEFT_POS(bpp)          (0)
+ #define SHIFT_HIGH(val, bits)  ((val) << (bits))
+ #define SHIFT_LOW(val, bits)   ((val) >> (bits))
++#define BIT_NR(b)              (b)
  #endif
- struct screen_info screen_info;
--#ifdef CONFIG_VT
- EXPORT_SYMBOL(screen_info);
--#endif
- struct apm_info apm_info;
- EXPORT_SYMBOL(apm_info);
- struct sys_desc_table_struct {
+ 
+ static inline void color_imageblit(const struct fb_image *image, 
+@@ -177,7 +179,7 @@ static inline void slow_imageblit(const 
+ 
+ 		while (j--) {
+ 			l--;
+-			color = (*s & (1 << l)) ? fgcolor : bgcolor;
++			color = (*s & 1 << (BIT_NR(l))) ? fgcolor : bgcolor;
+ 			color <<= LEFT_POS(bpp);
+ 			val |= SHIFT_HIGH(color, shift);
+ 			
+
 
 
 

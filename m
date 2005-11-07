@@ -1,22 +1,22 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 7/8] fbcon: Console Rotation - Add ability to control rotation
- via sysfs
-Date: Mon, 07 Nov 2005 19:09:22 +0800
-Message-ID: <436F35E2.4060201@gmail.com>
+Subject: [PATCH 4/8] fbcon: Console Rotation - Add support for 90-degree console
+ rotation
+Date: Mon, 07 Nov 2005 19:06:11 +0800
+Message-ID: <436F3523.60907@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EZ5BH-0004Tl-EN
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Nov 2005 03:28:55 -0800
+	id 1EZ5Ay-0004SO-JN
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Nov 2005 03:28:36 -0800
 Received: from xproxy.gmail.com ([66.249.82.192])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EZ5BG-0006Hq-Uc
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Nov 2005 03:28:55 -0800
+	id 1EZ5Ax-0006Hq-Ra
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Nov 2005 03:28:36 -0800
 Received: by xproxy.gmail.com with SMTP id i28so364656wxd
-        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 07 Nov 2005 03:28:54 -0800 (PST)
+        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 07 Nov 2005 03:28:35 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,281 +31,510 @@ Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Add ability to set rotation via sysfs.  The attributes are located in
-/sys/class/graphics/fb[n] and accepts 0 - unrotated; 1 - clockwise; 2 -
-upside down; 3 - counterclockwise.
+Add support for 90-degree (clockwise) rotation of the console. To activate,
+boot with:
 
-The attributes are:
-
-con_rotate (r/w) -   set rotation of the active console
-con_rotate_all (w) - set rotation of all consoles
-rotate (r/w) -       set rotation of the framebuffer, if supported.
-Currently, none of the drivers support this.
-
-This is probably temporary, since con_rotate and con_rotate_all are
-console-specific and has no business being under the fb device.  However,
-until the console layer acquires it's own sysfs class, these attributes
-will temporarily reside here.
+fbcon=rotate:1
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 
 ---
- drivers/video/console/fbcon.c |   72 ++++++++++++++++++++++++++++++++++++++++++
- drivers/video/fbmem.c         |   22 ++++++++++++
- drivers/video/fbsysfs.c       |   67 +++++++++++++++++++++++++++++++++++++++
- include/linux/fb.h            |    7 ++++
- 4 files changed, 168 insertions(+)
+ Makefile       |    2 
+ fbcon.c        |   13 +
+ fbcon_cw.c     |  412 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ fbcon_rotate.c |    6 
+ fbcon_rotate.h |    1 
+ 5 files changed, 433 insertions(+), 1 deletion(-)
 
 
+diff --git a/drivers/video/console/Makefile b/drivers/video/console/Makefile
+index 4532bdf..984f8cd 100644
+--- a/drivers/video/console/Makefile
++++ b/drivers/video/console/Makefile
+@@ -32,7 +32,7 @@ ifeq ($(CONFIG_FB_TILEBLITTING),y)
+ obj-$(CONFIG_FRAMEBUFFER_CONSOLE)     += tileblit.o
+ endif
+ ifeq ($(CONFIG_FRAMEBUFFER_CONSOLE_ROTATION),y)
+-obj-$(CONFIG_FRAMEBUFFER_CONSOLE)     += fbcon_rotate.o
++obj-$(CONFIG_FRAMEBUFFER_CONSOLE)     += fbcon_rotate.o fbcon_cw.o
+ endif
+ 
+ obj-$(CONFIG_FB_STI)              += sticore.o font.o
 diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index e829ba1..e7802ff 100644
+index 26935e2..e829ba1 100644
 --- a/drivers/video/console/fbcon.c
 +++ b/drivers/video/console/fbcon.c
-@@ -193,6 +193,8 @@ static void fbcon_preset_disp(struct fb_
- 			      int unit);
- static void fbcon_redraw_move(struct vc_data *vc, struct display *p,
- 			      int line, int count, int dy);
-+static void fbcon_modechanged(struct fb_info *info);
-+static void fbcon_set_all_vcs(struct fb_info *info);
- 
- #ifdef CONFIG_MAC
- /*
-@@ -218,6 +220,51 @@ static inline void fbcon_set_rotation(st
- 	else
- 		ops->rotate = 0;
+@@ -207,12 +207,25 @@ static irqreturn_t fb_vbl_detect(int irq
  }
-+
-+static void fbcon_rotate(struct fb_info *info, u32 rotate)
-+{
-+	struct fbcon_ops *ops= info->fbcon_par;
-+	struct fb_info *fb_info;
-+
-+	if (!ops || ops->currcon == -1)
-+		return;
-+
-+	fb_info = registered_fb[con2fb_map[ops->currcon]];
-+
-+	if (info == fb_info) {
-+		struct display *p = &fb_display[ops->currcon];
-+
-+		if (rotate < 4)
-+			p->con_rotate = rotate;
-+		else
-+			p->con_rotate = 0;
-+
-+		fbcon_modechanged(info);
-+	}
-+}
-+
-+static void fbcon_rotate_all(struct fb_info *info, u32 rotate)
+ #endif
+ 
++#ifdef CONFIG_FRAMEBUFFER_CONSOLE_ROTATION
++static inline void fbcon_set_rotation(struct fb_info *info, struct display *p)
 +{
 +	struct fbcon_ops *ops = info->fbcon_par;
-+	struct vc_data *vc;
-+	struct display *p;
-+	int i;
 +
-+	if (!ops || ops->currcon < 0 || rotate > 3)
-+		return;
-+
-+	for (i = 0; i < MAX_NR_CONSOLES; i++) {
-+		vc = vc_cons[i].d;
-+		if (!vc || vc->vc_mode != KD_TEXT ||
-+		    registered_fb[con2fb_map[i]] != info)
-+			continue;
-+
-+		p = &fb_display[vc->vc_num];
-+		p->con_rotate = rotate;
-+	}
-+
-+	fbcon_set_all_vcs(info);
++	if (!(info->flags & FBINFO_MISC_TILEBLITTING) &&
++	    p->con_rotate < 4)
++		ops->rotate = p->con_rotate;
++	else
++		ops->rotate = 0;
 +}
- #else
++#else
  static inline void fbcon_set_rotation(struct fb_info *info, struct display *p)
  {
-@@ -225,8 +272,25 @@ static inline void fbcon_set_rotation(st
+ 	struct fbcon_ops *ops = info->fbcon_par;
  
  	ops->rotate = FB_ROTATE_UR;
  }
-+
-+static void fbcon_rotate(struct fb_info *info, u32 rotate)
-+{
-+	return;
-+}
-+
-+static void fbcon_rotate_all(struct fb_info *info, u32 rotate)
-+{
-+	return;
-+}
- #endif /* CONFIG_FRAMEBUFFER_CONSOLE_ROTATION */
++#endif /* CONFIG_FRAMEBUFFER_CONSOLE_ROTATION */
  
-+static int fbcon_get_rotate(struct fb_info *info)
-+{
-+	struct fbcon_ops *ops = info->fbcon_par;
-+
-+	return (ops) ? ops->rotate : 0;
-+}
-+
  static inline int fbcon_is_inactive(struct vc_data *vc, struct fb_info *info)
  {
- 	struct fbcon_ops *ops = info->fbcon_par;
-@@ -2864,6 +2928,14 @@ static int fbcon_event_notify(struct not
- 	case FB_EVENT_NEW_MODELIST:
- 		fbcon_new_modelist(info);
- 		break;
-+	case FB_EVENT_SET_CON_ROTATE:
-+		fbcon_rotate(info, *(int *)event->data);
-+		break;
-+	case FB_EVENT_GET_CON_ROTATE:
-+		ret = fbcon_get_rotate(info);
-+		break;
-+	case FB_EVENT_SET_CON_ROTATE_ALL:
-+		fbcon_rotate_all(info, *(int *)event->data);
- 	}
- 
- 	return ret;
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 7a2a8fa..81b6cd2 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1319,6 +1319,28 @@ int fb_new_modelist(struct fb_info *info
- 	return err;
- }
- 
-+/**
-+ * fb_con_duit - user<->fbcon passthrough
-+ * @info: struct fb_info
-+ * @event: notification event to be passed to fbcon
-+ * @data: private data
+diff --git a/drivers/video/console/fbcon_cw.c b/drivers/video/console/fbcon_cw.c
+new file mode 100644
+index 0000000..6c6f3b6
+--- /dev/null
++++ b/drivers/video/console/fbcon_cw.c
+@@ -0,0 +1,412 @@
++/*
++ *  linux/drivers/video/console/fbcon_ud.c -- Software Rotation - 90 degrees
 + *
-+ * DESCRIPTION
-+ * This function is an fbcon-user event passing channel
-+ * which bypasses fbdev.  This is hopefully temporary
-+ * until a user interface for fbcon is created
++ *      Copyright (C) 2005 Antonino Daplas <adaplas @pol.net>
++ *
++ *  This file is subject to the terms and conditions of the GNU General Public
++ *  License.  See the file COPYING in the main directory of this archive for
++ *  more details.
 + */
-+int fb_con_duit(struct fb_info *info, int event, void *data)
++
++#include <linux/config.h>
++#include <linux/module.h>
++#include <linux/string.h>
++#include <linux/fb.h>
++#include <linux/vt_kern.h>
++#include <linux/console.h>
++#include <asm/types.h>
++#include "fbcon.h"
++#include "fbcon_rotate.h"
++
++/*
++ * Rotation 90 degrees
++ */
++
++static inline void cw_update_attr(u8 *dst, u8 *src, int attribute,
++				  struct vc_data *vc)
 +{
-+	struct fb_event evnt;
++	int i, j, offset = (vc->vc_font.height < 10) ? 1 : 2;
++	int width = (vc->vc_font.height + 7) >> 3;
++	u8 c, t = 0, msk = ~(0xff >> offset);
 +
-+	evnt.info = info;
-+	evnt.data = data;
-+
-+	return notifier_call_chain(&fb_notifier_list, event, &evnt);
++	for (i = 0; i < vc->vc_font.width; i++) {
++		for (j = 0; j < width; j++) {
++			c = *src;
++			if (attribute & FBCON_ATTRIBUTE_UNDERLINE && !j)
++				c |= msk;
++			if (attribute & FBCON_ATTRIBUTE_BOLD && i)
++				c |= *(src-width);
++			if (attribute & FBCON_ATTRIBUTE_REVERSE)
++				c = ~c;
++			src++;
++			*dst++ = c;
++			t = c;
++		}
++	}
 +}
-+EXPORT_SYMBOL(fb_con_duit);
 +
- static char *video_options[FB_MAX];
- static int ofonly;
- 
-diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
-index 007c8e9..ea395aa 100644
---- a/drivers/video/fbsysfs.c
-+++ b/drivers/video/fbsysfs.c
-@@ -213,6 +213,70 @@ static ssize_t show_bpp(struct class_dev
- 	return snprintf(buf, PAGE_SIZE, "%d\n", fb_info->var.bits_per_pixel);
- }
- 
-+static ssize_t store_rotate(struct class_device *class_device, const char *buf,
-+			    size_t count)
++
++static void cw_bmove(struct vc_data *vc, struct fb_info *info, int sy,
++		     int sx, int dy, int dx, int height, int width)
 +{
-+	struct fb_info *fb_info = class_get_devdata(class_device);
-+	struct fb_var_screeninfo var;
-+	char **last = NULL;
++	struct display *p = &fb_display[vc->vc_num];
++	struct fb_copyarea area;
++	u32 vxres = GETVXRES(p->scrollmode, info);
++
++	area.sx = vxres - ((sy + height) * vc->vc_font.height);
++	area.sy = sx * vc->vc_font.width;
++	area.dx = vxres - ((dy + height) * vc->vc_font.height);
++	area.dy = dx * vc->vc_font.width;
++	area.width = height * vc->vc_font.height;
++	area.height  = width * vc->vc_font.width;
++
++	info->fbops->fb_copyarea(info, &area);
++}
++
++static void cw_clear(struct vc_data *vc, struct fb_info *info, int sy,
++		     int sx, int height, int width)
++{
++	struct display *p = &fb_display[vc->vc_num];
++	struct fb_fillrect region;
++	int bgshift = (vc->vc_hi_font_mask) ? 13 : 12;
++	u32 vxres = GETVXRES(p->scrollmode, info);
++
++	region.color = attr_bgcol_ec(bgshift,vc);
++	region.dx = vxres - ((sy + height) * vc->vc_font.height);
++	region.dy = sx *  vc->vc_font.width;
++	region.height = width * vc->vc_font.width;
++	region.width = height * vc->vc_font.height;
++	region.rop = ROP_COPY;
++
++	info->fbops->fb_fillrect(info, &region);
++}
++
++static inline void cw_putcs_aligned(struct vc_data *vc, struct fb_info *info,
++				    const u16 *s, u32 attr, u32 cnt,
++				    u32 d_pitch, u32 s_pitch, u32 cellsize,
++				    struct fb_image *image, u8 *buf, u8 *dst)
++{
++	struct fbcon_ops *ops = info->fbcon_par;
++	u16 charmask = vc->vc_hi_font_mask ? 0x1ff : 0xff;
++	u32 idx = (vc->vc_font.height + 7) >> 3;
++	u8 *src;
++
++	while (cnt--) {
++		src = ops->fontbuffer + (scr_readw(s++) & charmask)*cellsize;
++
++		if (attr) {
++			cw_update_attr(buf, src, attr, vc);
++			src = buf;
++		}
++
++		if (likely(idx == 1))
++			__fb_pad_aligned_buffer(dst, d_pitch, src, idx,
++						vc->vc_font.width);
++		else
++			fb_pad_aligned_buffer(dst, d_pitch, src, idx,
++					      vc->vc_font.width);
++
++		dst += d_pitch * vc->vc_font.width;
++	}
++
++	info->fbops->fb_imageblit(info, image);
++}
++
++static void cw_putcs(struct vc_data *vc, struct fb_info *info,
++		      const unsigned short *s, int count, int yy, int xx,
++		      int fg, int bg)
++{
++	struct fb_image image;
++	struct display *p = &fb_display[vc->vc_num];
++	struct fbcon_ops *ops = info->fbcon_par;
++	u32 width = (vc->vc_font.height + 7)/8;
++	u32 cellsize = width * vc->vc_font.width;
++	u32 maxcnt = info->pixmap.size/cellsize;
++	u32 scan_align = info->pixmap.scan_align - 1;
++	u32 buf_align = info->pixmap.buf_align - 1;
++	u32 cnt, pitch, size;
++	u32 attribute = get_attribute(info, scr_readw(s));
++	u8 *dst, *buf = NULL;
++	u32 vxres = GETVXRES(p->scrollmode, info);
++
++	if (!ops->fontbuffer)
++		return;
++
++	image.fg_color = fg;
++	image.bg_color = bg;
++	image.dx = vxres - ((yy + 1) * vc->vc_font.height);
++	image.dy = xx * vc->vc_font.width;
++	image.width = vc->vc_font.height;
++	image.depth = 1;
++
++	if (attribute) {
++		buf = kmalloc(cellsize, GFP_KERNEL);
++		if (!buf)
++			return;
++	}
++
++	while (count) {
++		if (count > maxcnt)
++			cnt = maxcnt;
++		else
++			cnt = count;
++
++		image.height = vc->vc_font.width * cnt;
++		pitch = ((image.width + 7) >> 3) + scan_align;
++		pitch &= ~scan_align;
++		size = pitch * image.height + buf_align;
++		size &= ~buf_align;
++		dst = fb_get_buffer_offset(info, &info->pixmap, size);
++		image.data = dst;
++		cw_putcs_aligned(vc, info, s, attribute, cnt, pitch,
++				 width, cellsize, &image, buf, dst);
++		image.dy += image.height;
++		count -= cnt;
++		s += cnt;
++	}
++
++	/* buf is always NULL except when in monochrome mode, so in this case
++	   it's a gain to check buf against NULL even though kfree() handles
++	   NULL pointers just fine */
++	if (unlikely(buf))
++		kfree(buf);
++
++}
++
++static void cw_clear_margins(struct vc_data *vc, struct fb_info *info,
++			     int bottom_only)
++{
++	unsigned int cw = vc->vc_font.width;
++	unsigned int ch = vc->vc_font.height;
++	unsigned int rw = info->var.yres - (vc->vc_cols*cw);
++	unsigned int bh = info->var.xres - (vc->vc_rows*ch);
++	unsigned int rs = info->var.yres - rw;
++	struct fb_fillrect region;
++	int bgshift = (vc->vc_hi_font_mask) ? 13 : 12;
++
++	region.color = attr_bgcol_ec(bgshift,vc);
++	region.rop = ROP_COPY;
++
++	if (rw && !bottom_only) {
++		region.dx = 0;
++		region.dy = info->var.yoffset + rs;
++		region.height = rw;
++		region.width = info->var.xres_virtual;
++		info->fbops->fb_fillrect(info, &region);
++	}
++
++	if (bh) {
++		region.dx = info->var.xoffset;
++		region.dy = info->var.yoffset;
++                region.height = info->var.yres;
++                region.width = bh;
++		info->fbops->fb_fillrect(info, &region);
++	}
++}
++
++static void cw_cursor(struct vc_data *vc, struct fb_info *info,
++		      struct display *p, int mode, int softback_lines,
++		      int fg, int bg)
++{
++	struct fb_cursor cursor;
++	struct fbcon_ops *ops = (struct fbcon_ops *) info->fbcon_par;
++	unsigned short charmask = vc->vc_hi_font_mask ? 0x1ff : 0xff;
++	int w = (vc->vc_font.height + 7) >> 3, c;
++	int y = real_y(p, vc->vc_y);
++	int attribute, use_sw = (vc->vc_cursor_type & 0x10);
++	int err = 1, dx, dy;
++	char *src;
++	u32 vxres = GETVXRES(p->scrollmode, info);
++
++	if (!ops->fontbuffer)
++		return;
++
++	cursor.set = 0;
++
++	if (softback_lines) {
++		if (y + softback_lines >= vc->vc_rows) {
++			mode = CM_ERASE;
++			ops->cursor_flash = 0;
++			return;
++		} else
++			y += softback_lines;
++	}
++
++ 	c = scr_readw((u16 *) vc->vc_pos);
++	attribute = get_attribute(info, c);
++	src = ops->fontbuffer + ((c & charmask) * (w * vc->vc_font.width));
++
++	if (ops->cursor_state.image.data != src ||
++	    ops->cursor_reset) {
++	    ops->cursor_state.image.data = src;
++	    cursor.set |= FB_CUR_SETIMAGE;
++	}
++
++	if (attribute) {
++		u8 *dst;
++
++		dst = kmalloc(w * vc->vc_font.width, GFP_ATOMIC);
++		if (!dst)
++			return;
++		kfree(ops->cursor_data);
++		ops->cursor_data = dst;
++		cw_update_attr(dst, src, attribute, vc);
++		src = dst;
++	}
++
++	if (ops->cursor_state.image.fg_color != fg ||
++	    ops->cursor_state.image.bg_color != bg ||
++	    ops->cursor_reset) {
++		ops->cursor_state.image.fg_color = fg;
++		ops->cursor_state.image.bg_color = bg;
++		cursor.set |= FB_CUR_SETCMAP;
++	}
++
++	if (ops->cursor_state.image.height != vc->vc_font.width ||
++	    ops->cursor_state.image.width != vc->vc_font.height ||
++	    ops->cursor_reset) {
++		ops->cursor_state.image.height = vc->vc_font.width;
++		ops->cursor_state.image.width = vc->vc_font.height;
++		cursor.set |= FB_CUR_SETSIZE;
++	}
++
++	dx = vxres - ((y * vc->vc_font.height) + vc->vc_font.height);
++	dy = vc->vc_x * vc->vc_font.width;
++
++	if (ops->cursor_state.image.dx != dx ||
++	    ops->cursor_state.image.dy != dy ||
++	    ops->cursor_reset) {
++		ops->cursor_state.image.dx = dx;
++		ops->cursor_state.image.dy = dy;
++		cursor.set |= FB_CUR_SETPOS;
++	}
++
++	if (ops->cursor_state.hot.x || ops->cursor_state.hot.y ||
++	    ops->cursor_reset) {
++		ops->cursor_state.hot.x = cursor.hot.y = 0;
++		cursor.set |= FB_CUR_SETHOT;
++	}
++
++	if (cursor.set & FB_CUR_SETSIZE ||
++	    vc->vc_cursor_type != p->cursor_shape ||
++	    ops->cursor_state.mask == NULL ||
++	    ops->cursor_reset) {
++		char *tmp, *mask = kmalloc(w*vc->vc_font.width, GFP_ATOMIC);
++		int cur_height, size, i = 0;
++		int width = (vc->vc_font.width + 7)/8;
++
++		if (!mask)
++			return;
++
++		tmp = kmalloc(width * vc->vc_font.height, GFP_ATOMIC);
++
++		if (!tmp) {
++			kfree(mask);
++			return;
++		}
++
++		kfree(ops->cursor_state.mask);
++		ops->cursor_state.mask = mask;
++
++		p->cursor_shape = vc->vc_cursor_type;
++		cursor.set |= FB_CUR_SETSHAPE;
++
++		switch (p->cursor_shape & CUR_HWMASK) {
++		case CUR_NONE:
++			cur_height = 0;
++			break;
++		case CUR_UNDERLINE:
++			cur_height = (vc->vc_font.height < 10) ? 1 : 2;
++			break;
++		case CUR_LOWER_THIRD:
++			cur_height = vc->vc_font.height/3;
++			break;
++		case CUR_LOWER_HALF:
++			cur_height = vc->vc_font.height >> 1;
++			break;
++		case CUR_TWO_THIRDS:
++			cur_height = (vc->vc_font.height << 1)/3;
++			break;
++		case CUR_BLOCK:
++		default:
++			cur_height = vc->vc_font.height;
++			break;
++		}
++
++		size = (vc->vc_font.height - cur_height) * width;
++		while (size--)
++			tmp[i++] = 0;
++		size = cur_height * width;
++		while (size--)
++			tmp[i++] = 0xff;
++		memset(mask, 0, w * vc->vc_font.width);
++		rotate_cw(tmp, mask, vc->vc_font.width, vc->vc_font.height);
++		kfree(tmp);
++	}
++
++	switch (mode) {
++	case CM_ERASE:
++		ops->cursor_state.enable = 0;
++		break;
++	case CM_DRAW:
++	case CM_MOVE:
++	default:
++		ops->cursor_state.enable = (use_sw) ? 0 : 1;
++		break;
++	}
++
++	cursor.image.data = src;
++	cursor.image.fg_color = ops->cursor_state.image.fg_color;
++	cursor.image.bg_color = ops->cursor_state.image.bg_color;
++	cursor.image.dx = ops->cursor_state.image.dx;
++	cursor.image.dy = ops->cursor_state.image.dy;
++	cursor.image.height = ops->cursor_state.image.height;
++	cursor.image.width = ops->cursor_state.image.width;
++	cursor.hot.x = ops->cursor_state.hot.x;
++	cursor.hot.y = ops->cursor_state.hot.y;
++	cursor.mask = ops->cursor_state.mask;
++	cursor.enable = ops->cursor_state.enable;
++	cursor.image.depth = 1;
++	cursor.rop = ROP_XOR;
++
++	if (info->fbops->fb_cursor)
++		err = info->fbops->fb_cursor(info, &cursor);
++
++	if (err)
++		soft_cursor(info, &cursor);
++
++	ops->cursor_reset = 0;
++}
++
++int cw_update_start(struct fb_info *info)
++{
++	struct fbcon_ops *ops = info->fbcon_par;
++	struct display *p = &fb_display[ops->currcon];
++	u32 vxres = GETVXRES(p->scrollmode, info);
++	u32 xoffset;
 +	int err;
 +
-+	var = fb_info->var;
-+	var.rotate = simple_strtoul(buf, last, 0);
-+
-+	if ((err = activate(fb_info, &var)))
-+		return err;
-+
-+	return count;
++	xoffset = vxres - (info->var.xres + ops->var.yoffset);
++	ops->var.yoffset = ops->var.xoffset;
++	ops->var.xoffset = xoffset;
++	err = fb_pan_display(info, &ops->var);
++	ops->var.xoffset = info->var.xoffset;
++	ops->var.yoffset = info->var.yoffset;
++	ops->var.vmode = info->var.vmode;
++	return err;
 +}
 +
-+
-+static ssize_t show_rotate(struct class_device *class_device, char *buf)
++void fbcon_rotate_cw(struct fbcon_ops *ops)
 +{
-+	struct fb_info *fb_info = class_get_devdata(class_device);
-+
-+	return snprintf(buf, PAGE_SIZE, "%d\n", fb_info->var.rotate);
++	ops->bmove = cw_bmove;
++	ops->clear = cw_clear;
++	ops->putcs = cw_putcs;
++	ops->clear_margins = cw_clear_margins;
++	ops->cursor = cw_cursor;
++	ops->update_start = cw_update_start;
 +}
++EXPORT_SYMBOL(fbcon_rotate_cw);
 +
-+static ssize_t store_con_rotate(struct class_device *class_device,
-+				const char *buf, size_t count)
-+{
-+        struct fb_info *fb_info = class_get_devdata(class_device);
-+	int rotate;
-+	char **last = NULL;
-+
-+	acquire_console_sem();
-+	rotate = simple_strtoul(buf, last, 0);
-+	fb_con_duit(fb_info, FB_EVENT_SET_CON_ROTATE, &rotate);
-+	release_console_sem();
-+	return count;
-+}
-+
-+static ssize_t store_con_rotate_all(struct class_device *class_device,
-+				const char *buf, size_t count)
-+{
-+        struct fb_info *fb_info = class_get_devdata(class_device);
-+	int rotate;
-+	char **last = NULL;
-+
-+	acquire_console_sem();
-+	rotate = simple_strtoul(buf, last, 0);
-+	fb_con_duit(fb_info, FB_EVENT_SET_CON_ROTATE_ALL, &rotate);
-+	release_console_sem();
-+	return count;
-+}
-+
-+static ssize_t show_con_rotate(struct class_device *class_device, char *buf)
-+{
-+	struct fb_info *fb_info = class_get_devdata(class_device);
-+	int rotate;
-+
-+	acquire_console_sem();
-+	rotate = fb_con_duit(fb_info, FB_EVENT_GET_CON_ROTATE, NULL);
-+	release_console_sem();
-+	return snprintf(buf, PAGE_SIZE, "%d\n", rotate);
-+}
-+
- static ssize_t store_virtual(struct class_device *class_device,
- 			     const char * buf, size_t count)
++MODULE_AUTHOR("Antonino Daplas <adaplas@pol.net>");
++MODULE_DESCRIPTION("Console Rotation (90 degrees) Support");
++MODULE_LICENSE("GPL");
+diff --git a/drivers/video/console/fbcon_rotate.c b/drivers/video/console/fbcon_rotate.c
+index 6a96931..9df009c 100644
+--- a/drivers/video/console/fbcon_rotate.c
++++ b/drivers/video/console/fbcon_rotate.c
+@@ -97,6 +97,12 @@ finished:
+ void fbcon_set_rotate(struct fbcon_ops *ops)
  {
-@@ -440,6 +504,9 @@ static struct class_device_attribute cla
- 	__ATTR(virtual_size, S_IRUGO|S_IWUSR, show_virtual, store_virtual),
- 	__ATTR(name, S_IRUGO, show_name, NULL),
- 	__ATTR(stride, S_IRUGO, show_stride, NULL),
-+	__ATTR(rotate, S_IRUGO|S_IWUSR, show_rotate, store_rotate),
-+	__ATTR(con_rotate, S_IRUGO|S_IWUSR, show_con_rotate, store_con_rotate),
-+	__ATTR(con_rotate_all, S_IWUSR, NULL, store_con_rotate_all),
- };
+ 	ops->rotate_font = fbcon_rotate_font;
++
++	switch(ops->rotate) {
++	case FB_ROTATE_CW:
++		fbcon_rotate_cw(ops);
++		break;
++	}
+ }
+ EXPORT_SYMBOL(fbcon_set_rotate);
  
- int fb_init_class_device(struct fb_info *fb_info)
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 357dd3a..04a58f3 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -508,6 +508,12 @@ struct fb_cursor_user {
- /*	The resolution of the passed in fb_info about to change and
-         all vc's should be changed         */
- #define FB_EVENT_MODE_CHANGE_ALL	0x0A
-+/*      CONSOLE-SPECIFIC: set console rotation */
-+#define FB_EVENT_SET_CON_ROTATE         0x0B
-+/*      CONSOLE-SPECIFIC: get console rotation */
-+#define FB_EVENT_GET_CON_ROTATE         0x0C
-+/*      CONSOLE-SPECIFIC: rotate all consoles */
-+#define FB_EVENT_SET_CON_ROTATE_ALL     0x0D
+diff --git a/drivers/video/console/fbcon_rotate.h b/drivers/video/console/fbcon_rotate.h
+index d8acd6d..8e0320a 100644
+--- a/drivers/video/console/fbcon_rotate.h
++++ b/drivers/video/console/fbcon_rotate.h
+@@ -99,4 +99,5 @@ static inline void rotate_ccw(const char
+ 	}
+ }
  
- struct fb_event {
- 	struct fb_info *info;
-@@ -836,6 +842,7 @@ extern int fb_get_color_depth(struct fb_
- 			      struct fb_fix_screeninfo *fix);
- extern int fb_get_options(char *name, char **option);
- extern int fb_new_modelist(struct fb_info *info);
-+extern int fb_con_duit(struct fb_info *info, int event, void *data);
- 
- extern struct fb_info *registered_fb[FB_MAX];
- extern int num_registered_fb;
++extern void fbcon_rotate_cw(struct fbcon_ops *ops);
+ #endif
 
 
 

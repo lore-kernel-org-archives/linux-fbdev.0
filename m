@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 5/7] fbdev: move ioctl32 code to fbmem.c
-Date: Mon, 07 Nov 2005 19:21:08 +0800
-Message-ID: <436F38A4.4060803@gmail.com>
+Subject: [PATCH 2/7] vga16fb: Convert vga16fb as a platform device
+Date: Mon, 07 Nov 2005 19:15:57 +0800
+Message-ID: <436F376D.5000208@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EZ5Bo-0004W4-53
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Nov 2005 03:29:28 -0800
+	id 1EZ5BX-0004Uk-Cr
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Nov 2005 03:29:11 -0800
 Received: from xproxy.gmail.com ([66.249.82.192])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EZ5Bn-0006Hq-J6
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Nov 2005 03:29:28 -0800
+	id 1EZ5BW-0006Hq-ML
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Nov 2005 03:29:11 -0800
 Received: by xproxy.gmail.com with SMTP id i28so364656wxd
-        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 07 Nov 2005 03:29:27 -0800 (PST)
+        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 07 Nov 2005 03:29:10 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,379 +28,340 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Arnd Bergmann <arnd@arndb.de>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Arnd Bergmann <arnd@arndb.de>
+- Convert vga16fb as a platform device
+- use framebuffer_alloc() to dynamically allocate resources, and
+framebuffer_release() to free
+- remove unneeded casts
+- trivial whitespace changes
 
-The frame buffer layer already had some code dealing with
-compat ioctls, this patch moves over the remaining code
-from fs/compat_ioctl.c
-
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
+
 ---
-Andrew,
-
-If you haven't picked this up yet.
-
- drivers/video/fbmem.c        |  147 +++++++++++++++++++++++++++++++++++++++++--
- fs/compat_ioctl.c            |  143 -----------------------------------------
- include/linux/compat_ioctl.h |    7 --
- 3 files changed, 142 insertions(+), 155 deletions(-)
+ vga16fb.c |  169 ++++++++++++++++++++++++++++++++++++++++----------------------
+ 1 files changed, 110 insertions(+), 59 deletions(-)
 
 
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 81b6cd2..9f18009 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -14,6 +14,7 @@
- #include <linux/config.h>
- #include <linux/module.h>
+diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
+index 690bb6f..226ae8a 100644
+--- a/drivers/video/vga16fb.c
++++ b/drivers/video/vga16fb.c
+@@ -21,6 +21,7 @@
+ #include <linux/fb.h>
+ #include <linux/ioport.h>
+ #include <linux/init.h>
++#include <linux/platform_device.h>
  
-+#include <linux/compat.h>
- #include <linux/types.h>
- #include <linux/errno.h>
- #include <linux/sched.h>
-@@ -933,18 +934,154 @@ fb_ioctl(struct inode *inode, struct fil
- }
+ #include <asm/io.h>
+ #include <video/vga.h>
+@@ -51,35 +52,33 @@
+  * card parameters
+  */
  
- #ifdef CONFIG_COMPAT
-+struct fb_fix_screeninfo32 {
-+	char			id[16];
-+	compat_caddr_t		smem_start;
-+	u32			smem_len;
-+	u32			type;
-+	u32			type_aux;
-+	u32			visual;
-+	u16			xpanstep;
-+	u16			ypanstep;
-+	u16			ywrapstep;
-+	u32			line_length;
-+	compat_caddr_t		mmio_start;
-+	u32			mmio_len;
-+	u32			accel;
-+	u16			reserved[3];
+-static struct fb_info vga16fb; 
+-
+-static struct vga16fb_par {
++struct vga16fb_par {
+ 	/* structure holding original VGA register settings when the
+            screen is blanked */
+ 	struct {
+-		unsigned char	SeqCtrlIndex;		/* Sequencer Index reg.   */
+-		unsigned char	CrtCtrlIndex;		/* CRT-Contr. Index reg.  */
+-		unsigned char	CrtMiscIO;		/* Miscellaneous register */
+-		unsigned char	HorizontalTotal;	/* CRT-Controller:00h */
+-		unsigned char	HorizDisplayEnd;	/* CRT-Controller:01h */
+-		unsigned char	StartHorizRetrace;	/* CRT-Controller:04h */
+-		unsigned char	EndHorizRetrace;	/* CRT-Controller:05h */
+-		unsigned char	Overflow;		/* CRT-Controller:07h */
+-		unsigned char	StartVertRetrace;	/* CRT-Controller:10h */
+-		unsigned char	EndVertRetrace;		/* CRT-Controller:11h */
+-		unsigned char	ModeControl;		/* CRT-Controller:17h */
+-		unsigned char	ClockingMode;		/* Seq-Controller:01h */
++		unsigned char	SeqCtrlIndex;	  /* Sequencer Index reg.   */
++		unsigned char	CrtCtrlIndex;	  /* CRT-Contr. Index reg.  */
++		unsigned char	CrtMiscIO;	  /* Miscellaneous register */
++		unsigned char	HorizontalTotal;  /* CRT-Controller:00h */
++		unsigned char	HorizDisplayEnd;  /* CRT-Controller:01h */
++		unsigned char	StartHorizRetrace;/* CRT-Controller:04h */
++		unsigned char	EndHorizRetrace;  /* CRT-Controller:05h */
++		unsigned char	Overflow;	  /* CRT-Controller:07h */
++		unsigned char	StartVertRetrace; /* CRT-Controller:10h */
++		unsigned char	EndVertRetrace;	  /* CRT-Controller:11h */
++		unsigned char	ModeControl;	  /* CRT-Controller:17h */
++		unsigned char	ClockingMode;	  /* Seq-Controller:01h */
+ 	} vga_state;
+ 	struct vgastate state;
+ 	atomic_t ref_count;
+ 	int palette_blanked, vesa_blanked, mode, isVGA;
+ 	u8 misc, pel_msk, vss, clkdiv;
+ 	u8 crtc[VGA_CRT_C];
+-} vga16_par;
 +};
-+
-+struct fb_cmap32 {
-+	u32			start;
-+	u32			len;
-+	compat_caddr_t	red;
-+	compat_caddr_t	green;
-+	compat_caddr_t	blue;
-+	compat_caddr_t	transp;
-+};
-+
-+static int fb_getput_cmap(struct inode *inode, struct file *file,
-+			unsigned int cmd, unsigned long arg)
-+{
-+	struct fb_cmap_user __user *cmap;
-+	struct fb_cmap32 __user *cmap32;
-+	__u32 data;
-+	int err;
-+
-+	cmap = compat_alloc_user_space(sizeof(*cmap));
-+	cmap32 = compat_ptr(arg);
-+
-+	if (copy_in_user(&cmap->start, &cmap32->start, 2 * sizeof(__u32)))
-+		return -EFAULT;
-+
-+	if (get_user(data, &cmap32->red) ||
-+	    put_user(compat_ptr(data), &cmap->red) ||
-+	    get_user(data, &cmap32->green) ||
-+	    put_user(compat_ptr(data), &cmap->green) ||
-+	    get_user(data, &cmap32->blue) ||
-+	    put_user(compat_ptr(data), &cmap->blue) ||
-+	    get_user(data, &cmap32->transp) ||
-+	    put_user(compat_ptr(data), &cmap->transp))
-+		return -EFAULT;
-+
-+	err = fb_ioctl(inode, file, cmd, (unsigned long) cmap);
-+
-+	if (!err) {
-+		if (copy_in_user(&cmap32->start,
-+				 &cmap->start,
-+				 2 * sizeof(__u32)))
-+			err = -EFAULT;
-+	}
-+	return err;
-+}
-+
-+static int do_fscreeninfo_to_user(struct fb_fix_screeninfo *fix,
-+				  struct fb_fix_screeninfo32 __user *fix32)
-+{
-+	__u32 data;
-+	int err;
-+
-+	err = copy_to_user(&fix32->id, &fix->id, sizeof(fix32->id));
-+
-+	data = (__u32) (unsigned long) fix->smem_start;
-+	err |= put_user(data, &fix32->smem_start);
-+
-+	err |= put_user(fix->smem_len, &fix32->smem_len);
-+	err |= put_user(fix->type, &fix32->type);
-+	err |= put_user(fix->type_aux, &fix32->type_aux);
-+	err |= put_user(fix->visual, &fix32->visual);
-+	err |= put_user(fix->xpanstep, &fix32->xpanstep);
-+	err |= put_user(fix->ypanstep, &fix32->ypanstep);
-+	err |= put_user(fix->ywrapstep, &fix32->ywrapstep);
-+	err |= put_user(fix->line_length, &fix32->line_length);
-+
-+	data = (__u32) (unsigned long) fix->mmio_start;
-+	err |= put_user(data, &fix32->mmio_start);
-+
-+	err |= put_user(fix->mmio_len, &fix32->mmio_len);
-+	err |= put_user(fix->accel, &fix32->accel);
-+	err |= copy_to_user(fix32->reserved, fix->reserved,
-+			    sizeof(fix->reserved));
-+
-+	return err;
-+}
-+
-+static int fb_get_fscreeninfo(struct inode *inode, struct file *file,
-+				unsigned int cmd, unsigned long arg)
-+{
-+	mm_segment_t old_fs;
-+	struct fb_fix_screeninfo fix;
-+	struct fb_fix_screeninfo32 __user *fix32;
-+	int err;
-+
-+	fix32 = compat_ptr(arg);
-+
-+	old_fs = get_fs();
-+	set_fs(KERNEL_DS);
-+	err = fb_ioctl(inode, file, cmd, (unsigned long) &fix);
-+	set_fs(old_fs);
-+
-+	if (!err)
-+		err = do_fscreeninfo_to_user(&fix, fix32);
-+
-+	return err;
-+}
-+
- static long
- fb_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ 
+ /* --------------------------------------------------------------------- */
+ 
+-static struct fb_var_screeninfo vga16fb_defined = {
++static struct fb_var_screeninfo vga16fb_defined __initdata = {
+ 	.xres		= 640,
+ 	.yres		= 480,
+ 	.xres_virtual	= 640,
+@@ -205,7 +204,7 @@ static inline void setindex(int index)
+ static void vga16fb_pan_var(struct fb_info *info, 
+ 			    struct fb_var_screeninfo *var)
  {
--	int fbidx = iminor(file->f_dentry->d_inode);
-+	struct inode *inode = file->f_dentry->d_inode;
-+	int fbidx = iminor(inode);
- 	struct fb_info *info = registered_fb[fbidx];
- 	struct fb_ops *fb = info->fbops;
--	long ret;
-+	long ret = -ENOIOCTLCMD;
+-	struct vga16fb_par *par = (struct vga16fb_par *) info->par;
++	struct vga16fb_par *par = info->par;
+ 	u32 xoffset, pos;
  
--	if (fb->fb_compat_ioctl == NULL)
--		return -ENOIOCTLCMD;
- 	lock_kernel();
--	ret = fb->fb_compat_ioctl(file, cmd, arg, info);
-+	switch(cmd) {
-+	case FBIOGET_VSCREENINFO:
-+	case FBIOPUT_VSCREENINFO:
-+	case FBIOPAN_DISPLAY:
-+	case FBIOGET_CON2FBMAP:
-+	case FBIOPUT_CON2FBMAP:
-+		arg = (unsigned long) compat_ptr(arg);
-+	case FBIOBLANK:
-+		ret = fb_ioctl(inode, file, cmd, arg);
-+		break;
+ 	xoffset = var->xoffset;
+@@ -300,7 +299,7 @@ static void vga16fb_clock_chip(struct vg
+ 
+ static int vga16fb_open(struct fb_info *info, int user)
+ {
+-	struct vga16fb_par *par = (struct vga16fb_par *) info->par;
++	struct vga16fb_par *par = info->par;
+ 	int cnt = atomic_read(&par->ref_count);
+ 
+ 	if (!cnt) {
+@@ -315,7 +314,7 @@ static int vga16fb_open(struct fb_info *
+ 
+ static int vga16fb_release(struct fb_info *info, int user)
+ {
+-	struct vga16fb_par *par = (struct vga16fb_par *) info->par;
++	struct vga16fb_par *par = info->par;
+ 	int cnt = atomic_read(&par->ref_count);
+ 
+ 	if (!cnt)
+@@ -330,7 +329,7 @@ static int vga16fb_release(struct fb_inf
+ static int vga16fb_check_var(struct fb_var_screeninfo *var,
+ 			     struct fb_info *info)
+ {
+-	struct vga16fb_par *par = (struct vga16fb_par *) info->par;
++	struct vga16fb_par *par = info->par;
+ 	u32 xres, right, hslen, left, xtotal;
+ 	u32 yres, lower, vslen, upper, ytotal;
+ 	u32 vxres, xoffset, vyres, yoffset;
+@@ -535,7 +534,7 @@ static int vga16fb_check_var(struct fb_v
+ 
+ static int vga16fb_set_par(struct fb_info *info)
+ {
+-	struct vga16fb_par *par = (struct vga16fb_par *) info->par;
++	struct vga16fb_par *par = info->par;
+ 	u8 gdc[VGA_GFX_C];
+ 	u8 seq[VGA_SEQ_C];
+ 	u8 atc[VGA_ATT_C];
+@@ -677,7 +676,7 @@ static int vga16fb_setcolreg(unsigned re
+ 			     unsigned blue, unsigned transp,
+ 			     struct fb_info *info)
+ {
+-	struct vga16fb_par *par = (struct vga16fb_par *) info->par;
++	struct vga16fb_par *par = info->par;
+ 	int gray;
+ 
+ 	/*
+@@ -850,7 +849,7 @@ static void vga_pal_blank(void)
+ /* 0 unblank, 1 blank, 2 no vsync, 3 no hsync, 4 off */
+ static int vga16fb_blank(int blank, struct fb_info *info)
+ {
+-	struct vga16fb_par *par = (struct vga16fb_par *) info->par;
++	struct vga16fb_par *par = info->par;
+ 
+ 	switch (blank) {
+ 	case FB_BLANK_UNBLANK:				/* Unblank */
+@@ -1201,7 +1200,7 @@ static void vga_imageblit_expand(struct 
+ {
+ 	char __iomem *where = info->screen_base + (image->dx/8) +
+ 		image->dy * info->fix.line_length;
+-	struct vga16fb_par *par = (struct vga16fb_par *) info->par;
++	struct vga16fb_par *par = info->par;
+ 	char *cdat = (char *) image->data;
+ 	char __iomem *dst;
+ 	int x, y;
+@@ -1266,7 +1265,7 @@ static void vga_imageblit_color(struct f
+ 	/*
+ 	 * Draw logo 
+ 	 */
+-	struct vga16fb_par *par = (struct vga16fb_par *) info->par;
++	struct vga16fb_par *par = info->par;
+ 	char __iomem *where =
+ 		info->screen_base + image->dy * info->fix.line_length +
+ 		image->dx/8;
+@@ -1343,89 +1342,141 @@ static int vga16fb_setup(char *options)
+ }
+ #endif
+ 
+-static int __init vga16fb_init(void)
++static int __init vga16fb_probe(struct device *device)
+ {
++	struct platform_device *dev = to_platform_device(device);
++	struct fb_info *info;
++	struct vga16fb_par *par;
+ 	int i;
+-	int ret;
+-#ifndef MODULE
+-	char *option = NULL;
++	int ret = 0;
+ 
+-	if (fb_get_options("vga16fb", &option))
+-		return -ENODEV;
+-
+-	vga16fb_setup(option);
+-#endif
+ 	printk(KERN_DEBUG "vga16fb: initializing\n");
++	info = framebuffer_alloc(sizeof(struct vga16fb_par), &dev->dev);
 +
-+	case FBIOGET_FSCREENINFO:
-+		ret = fb_get_fscreeninfo(inode, file, cmd, arg);
-+		break;
-+
-+	case FBIOGETCMAP:
-+	case FBIOPUTCMAP:
-+		ret = fb_getput_cmap(inode, file, cmd, arg);
-+		break;
-+
-+	default:
-+		if (fb->fb_compat_ioctl)
-+			ret = fb->fb_compat_ioctl(file, cmd, arg, info);
-+		break;
++	if (!info) {
++		ret = -ENOMEM;
++		goto err_fb_alloc;
 +	}
- 	unlock_kernel();
+ 
+ 	/* XXX share VGA_FB_PHYS and I/O region with vgacon and others */
++	info->screen_base = (void __iomem *)VGA_MAP_MEM(VGA_FB_PHYS);
+ 
+-	vga16fb.screen_base = (void __iomem *)VGA_MAP_MEM(VGA_FB_PHYS);
+-	if (!vga16fb.screen_base) {
++	if (!info->screen_base) {
+ 		printk(KERN_ERR "vga16fb: unable to map device\n");
+ 		ret = -ENOMEM;
+ 		goto err_ioremap;
+ 	}
+-	printk(KERN_INFO "vga16fb: mapped to 0x%p\n", vga16fb.screen_base);
+ 
+-	vga16_par.isVGA = ORIG_VIDEO_ISVGA;
+-	vga16_par.palette_blanked = 0;
+-	vga16_par.vesa_blanked = 0;
++	printk(KERN_INFO "vga16fb: mapped to 0x%p\n", info->screen_base);
++	par = info->par;
+ 
+-	i = vga16_par.isVGA? 6 : 2;
++	par->isVGA = ORIG_VIDEO_ISVGA;
++	par->palette_blanked = 0;
++	par->vesa_blanked = 0;
++
++	i = par->isVGA? 6 : 2;
+ 	
+ 	vga16fb_defined.red.length   = i;
+ 	vga16fb_defined.green.length = i;
+ 	vga16fb_defined.blue.length  = i;	
+ 
+ 	/* name should not depend on EGA/VGA */
+-	vga16fb.fbops = &vga16fb_ops;
+-	vga16fb.var = vga16fb_defined;
+-	vga16fb.fix = vga16fb_fix;
+-	vga16fb.par = &vga16_par;
+-	vga16fb.flags = FBINFO_FLAG_DEFAULT |
++	info->fbops = &vga16fb_ops;
++	info->var = vga16fb_defined;
++	info->fix = vga16fb_fix;
++	info->flags = FBINFO_FLAG_DEFAULT |
+ 		FBINFO_HWACCEL_YPAN;
+ 
+-	i = (vga16fb_defined.bits_per_pixel == 8) ? 256 : 16;
+-	ret = fb_alloc_cmap(&vga16fb.cmap, i, 0);
++	i = (info->var.bits_per_pixel == 8) ? 256 : 16;
++	ret = fb_alloc_cmap(&info->cmap, i, 0);
+ 	if (ret) {
+ 		printk(KERN_ERR "vga16fb: unable to allocate colormap\n");
+ 		ret = -ENOMEM;
+ 		goto err_alloc_cmap;
+ 	}
+ 
+-	if (vga16fb_check_var(&vga16fb.var, &vga16fb)) {
++	if (vga16fb_check_var(&info->var, info)) {
+ 		printk(KERN_ERR "vga16fb: unable to validate variable\n");
+ 		ret = -EINVAL;
+ 		goto err_check_var;
+ 	}
+ 
+-	vga16fb_update_fix(&vga16fb);
++	vga16fb_update_fix(info);
+ 
+-	if (register_framebuffer(&vga16fb) < 0) {
++	if (register_framebuffer(info) < 0) {
+ 		printk(KERN_ERR "vga16fb: unable to register framebuffer\n");
+ 		ret = -EINVAL;
+ 		goto err_check_var;
+ 	}
+ 
+ 	printk(KERN_INFO "fb%d: %s frame buffer device\n",
+-	       vga16fb.node, vga16fb.fix.id);
++	       info->node, info->fix.id);
++	dev_set_drvdata(device, info);
+ 
+ 	return 0;
+ 
+  err_check_var:
+-	fb_dealloc_cmap(&vga16fb.cmap);
++	fb_dealloc_cmap(&info->cmap);
+  err_alloc_cmap:
+-	iounmap(vga16fb.screen_base);
++	iounmap(info->screen_base);
+  err_ioremap:
++	framebuffer_release(info);
++ err_fb_alloc:
++	return ret;
++}
++
++static int vga16fb_remove(struct device *device)
++{
++	struct fb_info *info = dev_get_drvdata(device);
++
++	if (info) {
++		unregister_framebuffer(info);
++		iounmap(info->screen_base);
++		fb_dealloc_cmap(&info->cmap);
++	/* XXX unshare VGA regions */
++		framebuffer_release(info);
++	}
++
++	return 0;
++}
++
++static struct device_driver vga16fb_driver = {
++	.name = "vga16fb",
++	.bus  = &platform_bus_type,
++	.probe = vga16fb_probe,
++	.remove = vga16fb_remove,
++};
++
++static struct platform_device vga16fb_device = {
++	.name = "vga16fb",
++};
++
++static int __init vga16fb_init(void)
++{
++	int ret;
++#ifndef MODULE
++	char *option = NULL;
++
++	if (fb_get_options("vga16fb", &option))
++		return -ENODEV;
++
++	vga16fb_setup(option);
++#endif
++	ret = driver_register(&vga16fb_driver);
++
++	if (!ret) {
++		ret = platform_device_register(&vga16fb_device);
++		if (ret)
++			driver_unregister(&vga16fb_driver);
++	}
++
  	return ret;
  }
-diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
-index baf19f9..0d4fbf1 100644
---- a/fs/compat_ioctl.c
-+++ b/fs/compat_ioctl.c
-@@ -838,146 +838,6 @@ static int hdio_getgeo(unsigned int fd, 
- 	return err ? -EFAULT : 0;
+ 
+ static void __exit vga16fb_exit(void)
+ {
+-    unregister_framebuffer(&vga16fb);
+-    iounmap(vga16fb.screen_base);
+-    fb_dealloc_cmap(&vga16fb.cmap);
+-    /* XXX unshare VGA regions */
++	platform_device_unregister(&vga16fb_device);
++	driver_unregister(&vga16fb_driver);
  }
  
--struct fb_fix_screeninfo32 {
--	char			id[16];
--        compat_caddr_t	smem_start;
--	u32			smem_len;
--	u32			type;
--	u32			type_aux;
--	u32			visual;
--	u16			xpanstep;
--	u16			ypanstep;
--	u16			ywrapstep;
--	u32			line_length;
--        compat_caddr_t	mmio_start;
--	u32			mmio_len;
--	u32			accel;
--	u16			reserved[3];
--};
--
--struct fb_cmap32 {
--	u32			start;
--	u32			len;
--	compat_caddr_t	red;
--	compat_caddr_t	green;
--	compat_caddr_t	blue;
--	compat_caddr_t	transp;
--};
--
--static int fb_getput_cmap(unsigned int fd, unsigned int cmd, unsigned long arg)
--{
--	struct fb_cmap_user __user *cmap;
--	struct fb_cmap32 __user *cmap32;
--	__u32 data;
--	int err;
--
--	cmap = compat_alloc_user_space(sizeof(*cmap));
--	cmap32 = compat_ptr(arg);
--
--	if (copy_in_user(&cmap->start, &cmap32->start, 2 * sizeof(__u32)))
--		return -EFAULT;
--
--	if (get_user(data, &cmap32->red) ||
--	    put_user(compat_ptr(data), &cmap->red) ||
--	    get_user(data, &cmap32->green) ||
--	    put_user(compat_ptr(data), &cmap->green) ||
--	    get_user(data, &cmap32->blue) ||
--	    put_user(compat_ptr(data), &cmap->blue) ||
--	    get_user(data, &cmap32->transp) ||
--	    put_user(compat_ptr(data), &cmap->transp))
--		return -EFAULT;
--
--	err = sys_ioctl(fd, cmd, (unsigned long) cmap);
--
--	if (!err) {
--		if (copy_in_user(&cmap32->start,
--				 &cmap->start,
--				 2 * sizeof(__u32)))
--			err = -EFAULT;
--	}
--	return err;
--}
--
--static int do_fscreeninfo_to_user(struct fb_fix_screeninfo *fix,
--				  struct fb_fix_screeninfo32 __user *fix32)
--{
--	__u32 data;
--	int err;
--
--	err = copy_to_user(&fix32->id, &fix->id, sizeof(fix32->id));
--
--	data = (__u32) (unsigned long) fix->smem_start;
--	err |= put_user(data, &fix32->smem_start);
--
--	err |= put_user(fix->smem_len, &fix32->smem_len);
--	err |= put_user(fix->type, &fix32->type);
--	err |= put_user(fix->type_aux, &fix32->type_aux);
--	err |= put_user(fix->visual, &fix32->visual);
--	err |= put_user(fix->xpanstep, &fix32->xpanstep);
--	err |= put_user(fix->ypanstep, &fix32->ypanstep);
--	err |= put_user(fix->ywrapstep, &fix32->ywrapstep);
--	err |= put_user(fix->line_length, &fix32->line_length);
--
--	data = (__u32) (unsigned long) fix->mmio_start;
--	err |= put_user(data, &fix32->mmio_start);
--
--	err |= put_user(fix->mmio_len, &fix32->mmio_len);
--	err |= put_user(fix->accel, &fix32->accel);
--	err |= copy_to_user(fix32->reserved, fix->reserved,
--			    sizeof(fix->reserved));
--
--	return err;
--}
--
--static int fb_get_fscreeninfo(unsigned int fd, unsigned int cmd, unsigned long arg)
--{
--	mm_segment_t old_fs;
--	struct fb_fix_screeninfo fix;
--	struct fb_fix_screeninfo32 __user *fix32;
--	int err;
--
--	fix32 = compat_ptr(arg);
--
--	old_fs = get_fs();
--	set_fs(KERNEL_DS);
--	err = sys_ioctl(fd, cmd, (unsigned long) &fix);
--	set_fs(old_fs);
--
--	if (!err)
--		err = do_fscreeninfo_to_user(&fix, fix32);
--
--	return err;
--}
--
--static int fb_ioctl_trans(unsigned int fd, unsigned int cmd, unsigned long arg)
--{
--	int err;
--
--	switch (cmd) {
--	case FBIOGET_FSCREENINFO:
--		err = fb_get_fscreeninfo(fd,cmd, arg);
--		break;
--
--  	case FBIOGETCMAP:
--	case FBIOPUTCMAP:
--		err = fb_getput_cmap(fd, cmd, arg);
--		break;
--
--	default:
--		do {
--			static int count;
--			if (++count <= 20)
--				printk("%s: Unknown fb ioctl cmd fd(%d) "
--				       "cmd(%08x) arg(%08lx)\n",
--				       __FUNCTION__, fd, cmd, arg);
--		} while(0);
--		err = -ENOSYS;
--		break;
--	};
--
--	return err;
--}
--
- static int hdio_ioctl_trans(unsigned int fd, unsigned int cmd, unsigned long arg)
- {
- 	mm_segment_t old_fs = get_fs();
-@@ -2951,10 +2811,7 @@ HANDLE_IOCTL(BLKGETSIZE, w_long)
- HANDLE_IOCTL(0x1260, broken_blkgetsize)
- HANDLE_IOCTL(BLKFRAGET, w_long)
- HANDLE_IOCTL(BLKSECTGET, w_long)
--HANDLE_IOCTL(FBIOGET_FSCREENINFO, fb_ioctl_trans)
- HANDLE_IOCTL(BLKPG, blkpg_ioctl_trans)
--HANDLE_IOCTL(FBIOGETCMAP, fb_ioctl_trans)
--HANDLE_IOCTL(FBIOPUTCMAP, fb_ioctl_trans)
- HANDLE_IOCTL(HDIO_GET_KEEPSETTINGS, hdio_ioctl_trans)
- HANDLE_IOCTL(HDIO_GET_UNMASKINTR, hdio_ioctl_trans)
- HANDLE_IOCTL(HDIO_GET_DMA, hdio_ioctl_trans)
-diff --git a/include/linux/compat_ioctl.h b/include/linux/compat_ioctl.h
-index 4c63c29..2209ad3 100644
---- a/include/linux/compat_ioctl.h
-+++ b/include/linux/compat_ioctl.h
-@@ -56,13 +56,6 @@ ULONG_IOCTL(TIOCSCTTY)
- COMPATIBLE_IOCTL(TIOCGPTN)
- COMPATIBLE_IOCTL(TIOCSPTLCK)
- COMPATIBLE_IOCTL(TIOCSERGETLSR)
--/* Big F */
--COMPATIBLE_IOCTL(FBIOBLANK)
--COMPATIBLE_IOCTL(FBIOGET_VSCREENINFO)
--COMPATIBLE_IOCTL(FBIOPUT_VSCREENINFO)
--COMPATIBLE_IOCTL(FBIOPAN_DISPLAY)
--COMPATIBLE_IOCTL(FBIOGET_CON2FBMAP)
--COMPATIBLE_IOCTL(FBIOPUT_CON2FBMAP)
- /* Little f */
- COMPATIBLE_IOCTL(FIOCLEX)
- COMPATIBLE_IOCTL(FIONCLEX)
+ MODULE_LICENSE("GPL");
 
 
 

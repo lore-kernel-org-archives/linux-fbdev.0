@@ -1,23 +1,26 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
+From: Andrew Morton <akpm@osdl.org>
 Subject: Re: [PATCH 0/8] fbcon: Console Rotation
-Date: Tue, 08 Nov 2005 13:37:00 +0800
-Message-ID: <4370397C.2040304@gmail.com>
-References: <436F33A2.6070107@gmail.com>	<20051107162301.0f7d5bc6.akpm@osdl.org>	<436FF58A.4090506@gmail.com> <20051107171153.28c4a594.akpm@osdl.org>
+Date: Mon, 7 Nov 2005 22:16:07 -0800
+Message-ID: <20051107221607.76a6c521.akpm@osdl.org>
+References: <436F33A2.6070107@gmail.com>
+	<20051107162301.0f7d5bc6.akpm@osdl.org>
+	<436FF58A.4090506@gmail.com>
+	<20051107171153.28c4a594.akpm@osdl.org>
+	<4370397C.2040304@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EZMAm-0001aa-2c
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Nov 2005 21:37:32 -0800
-Received: from xproxy.gmail.com ([66.249.82.198])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EZMAk-0003Vd-O5
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Nov 2005 21:37:32 -0800
-Received: by xproxy.gmail.com with SMTP id h29so546643wxd
-        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 07 Nov 2005 21:37:30 -0800 (PST)
-In-Reply-To: <20051107171153.28c4a594.akpm@osdl.org>
+	id 1EZMmL-0002v9-U4
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Nov 2005 22:16:21 -0800
+Received: from smtp.osdl.org ([65.172.181.4])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44)
+	id 1EZMmL-00015b-Gg
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 07 Nov 2005 22:16:21 -0800
+In-Reply-To: <4370397C.2040304@gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,34 +32,17 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Andrew Morton wrote:
-> "Antonino A. Daplas" <adaplas@gmail.com> wrote:
->> Andrew Morton wrote:
->>> "Antonino A. Daplas" <adaplas@gmail.com> wrote:
->> The rest are cleanups and can wait.
-> 
-> Well I was also referring to the rotation patches - a new feature.
-> 
-> I guess you'd like them in 2.6.15.  Ho hum.
-> 
+"Antonino A. Daplas" <adaplas@gmail.com> wrote:
+>
+> Unfortunately though, this patch substantially changed fbcon.c, so
+>  any other patch affecting that file may have to wait or risk
+>  conflicts in the future.
 
-Not really, I already had a patch much similar to this since 2.5.x,
-but never pushed it, so it can wait a few kernel versions. I would
-rather that they get the testing for as long as possible. It's the
-Zaurus people that may actually want this feature just because they
-need it, but I believe they have their own development kernel with
-this patch already included.
-
-Unfortunately though, this patch substantially changed fbcon.c, so
-any other patch affecting that file may have to wait or risk
-conflicts in the future.
-
-Tony 
- 
-
+Yes, that's a problem.  We _could_ just slam this in this week and grit our
+teeth.  How would you evaluate the risk of regressions to existing setups?
 
 
 -------------------------------------------------------

@@ -1,305 +1,594 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Fw: Re: 2.6.14-mm2: loop detected in depmod
-Date: Thu, 10 Nov 2005 23:24:11 -0800
-Message-ID: <20051110232411.27e5a379.akpm@osdl.org>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Christoph Hellwig <hch@lst.de>
+Subject: [PATCH 1/2] sanitize ->fb_ioctl prototype
+Date: Fri, 11 Nov 2005 09:34:57 +0100
+Message-ID: <20051111083457.GA26175@lst.de>
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="Multipart=_Thu__10_Nov_2005_23_24_11_-0800_jAGPxZlGpvXFz1uy"
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EaTGv-00050m-IS
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 10 Nov 2005 23:24:29 -0800
-Received: from smtp.osdl.org ([65.172.181.4])
-	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44)
-	id 1EaTGt-0005Mc-J3
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 10 Nov 2005 23:24:29 -0800
-Received: from shell0.pdx.osdl.net (fw.osdl.org [65.172.181.6])
-	by smtp.osdl.org (8.12.8/8.12.8) with ESMTP id jAB7OOnO022123
-	(version=TLSv1/SSLv3 cipher=EDH-RSA-DES-CBC3-SHA bits=168 verify=NO)
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 10 Nov 2005 23:24:24 -0800
-Received: from bix (shell0.pdx.osdl.net [10.9.0.31])
-	by shell0.pdx.osdl.net (8.13.1/8.11.6) with SMTP id jAB7ONPO028609
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 10 Nov 2005 23:24:23 -0800
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
-
-This is a multi-part message in MIME format.
-
---Multipart=_Thu__10_Nov_2005_23_24_11_-0800_jAGPxZlGpvXFz1uy
-Content-Type: text/plain; charset=US-ASCII
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932228AbVKKIfa@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+To: adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+
+The ioctl and file arguments to ->fb_mmap are totally unused and there's
+not reason a driver should need them.
+
+Also update the ->fb_compat_ioctl prototype to be the same as ->fb_mmap.
 
 
-This happens in Linus's latest tree too.
-
-
-Begin forwarded message:
-
-Date: Fri, 11 Nov 2005 00:23:34 -0500
-From: Brice Goglin <Brice.Goglin@ens-lyon.org>
-To: Andrew Morton <akpm@osdl.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.14-mm2: loop detected in depmod
-
-
-Andrew Morton wrote:
-
->ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.14/2.6.14-mm2/
->
->- reiser4 seems to be broken when built as a module (due, I assume, to a
->  reiser4-specific kbuild change).  CONFIG_REISER4_FS=y will be needed.
->
->- New git tree git-cfq.patch - CFQ I/O scheduler updates from Jens
->
->- The git-pcmcia tree has been reinstated
->
->- git-audit and the several -mm fixups to it have been dropped for now - it's
->  undergoing a bit of churn.
->
->- Numerous subsystem updates.  Notably more v4l work.
->
->  
->
-
-Hi Andrew,
-
-Nothing to declare during compilation of this new -mm, except this
-warning in depmod:
-
-WARNING: Module
-/lib/modules/2.6.14-mm2/kernel/drivers/video/console/fbcon_ud.ko
-ignored, due to loop
-WARNING: Module
-/lib/modules/2.6.14-mm2/kernel/drivers/video/console/fbcon_rotate.ko
-ignored, due to loop
-WARNING: Module
-/lib/modules/2.6.14-mm2/kernel/drivers/video/console/fbcon_cw.ko
-ignored, due to loop
-WARNING: Module
-/lib/modules/2.6.14-mm2/kernel/drivers/video/console/fbcon_ccw.ko
-ignored, due to loop
-WARNING: Module
-/lib/modules/2.6.14-mm2/kernel/drivers/video/console/fbcon.ko ignored,
-due to loop
-WARNING: Loop detected:
-/lib/modules/2.6.14-mm2/kernel/drivers/video/console/bitblit.ko needs
-fbcon.ko needs fbcon_cw.ko needs fbcon_rotate.ko which needs bitblit.ko
-again!
-WARNING: Module
-/lib/modules/2.6.14-mm2/kernel/drivers/video/console/bitblit.ko ignored,
-due to loop
-
-.config is attached
-
-Regards,
-Brice Goglin
-
-
-
---Multipart=_Thu__10_Nov_2005_23_24_11_-0800_jAGPxZlGpvXFz1uy
-Content-Type: application/x-gzip;
- name="config.gz"
-Content-Disposition: attachment;
- filename="config.gz"
-Content-Transfer-Encoding: base64
-
-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
-
---Multipart=_Thu__10_Nov_2005_23_24_11_-0800_jAGPxZlGpvXFz1uy--
-
-
--------------------------------------------------------
-SF.Net email is sponsored by:
-Tame your development challenges with Apache's Geronimo App Server. Download
-it for free - -and be entered to win a 42" plasma tv or your very own
-Sony(tm)PSP.  Click here to play: http://sourceforge.net/geronimo.php
+Index: linux-2.6/drivers/video/amifb.c
+===================================================================
+--- linux-2.6.orig/drivers/video/amifb.c	2005-11-10 01:20:49.000000000 +0100
++++ linux-2.6/drivers/video/amifb.c	2005-11-10 01:28:56.000000000 +0100
+@@ -1129,9 +1129,7 @@
+ 			   const struct fb_copyarea *region);
+ static void amifb_imageblit(struct fb_info *info,
+ 			    const struct fb_image *image);
+-static int amifb_ioctl(struct inode *inode, struct file *file,
+-		       unsigned int cmd, unsigned long arg,
+-		       struct fb_info *info);
++static int amifb_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg);
+ 
+ 
+ 	/*
+@@ -2170,9 +2168,8 @@
+ 	 * Amiga Frame Buffer Specific ioctls
+ 	 */
+ 
+-static int amifb_ioctl(struct inode *inode, struct file *file,
+-		       unsigned int cmd, unsigned long arg,
+-		       struct fb_info *info)
++static int amifb_ioctl(struct fb_info *info,
++		       unsigned int cmd, unsigned long arg)
+ {
+ 	union {
+ 		struct fb_fix_cursorinfo fix;
+Index: linux-2.6/drivers/video/arcfb.c
+===================================================================
+--- linux-2.6.orig/drivers/video/arcfb.c	2005-11-10 01:20:49.000000000 +0100
++++ linux-2.6/drivers/video/arcfb.c	2005-11-10 01:28:56.000000000 +0100
+@@ -397,9 +397,8 @@
+ 				image->height);
+ }
+ 
+-static int arcfb_ioctl(struct inode *inode, struct file *file,
+-			  unsigned int cmd, unsigned long arg,
+-			  struct fb_info *info)
++static int arcfb_ioctl(struct fb_info *info,
++			  unsigned int cmd, unsigned long arg)
+ {
+ 	void __user *argp = (void __user *)arg;
+ 	struct arcfb_par *par = info->par;
+Index: linux-2.6/drivers/video/atafb.c
+===================================================================
+--- linux-2.6.orig/drivers/video/atafb.c	2005-11-10 01:20:49.000000000 +0100
++++ linux-2.6/drivers/video/atafb.c	2005-11-10 01:28:56.000000000 +0100
+@@ -2571,8 +2571,7 @@
+ }
+ 
+ static int
+-atafb_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+-	       unsigned long arg, int con, struct fb_info *info)
++atafb_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+ {
+ 	switch (cmd) {
+ #ifdef FBCMD_GET_CURRENTPAR
+Index: linux-2.6/drivers/video/aty/aty128fb.c
+===================================================================
+--- linux-2.6.orig/drivers/video/aty/aty128fb.c	2005-11-10 01:20:49.000000000 +0100
++++ linux-2.6/drivers/video/aty/aty128fb.c	2005-11-10 01:28:56.000000000 +0100
+@@ -431,8 +431,7 @@
+ static int aty128fb_pan_display(struct fb_var_screeninfo *var,
+ 			   struct fb_info *fb);
+ static int aty128fb_blank(int blank, struct fb_info *fb);
+-static int aty128fb_ioctl(struct inode *inode, struct file *file, u_int cmd,
+-			  u_long arg, struct fb_info *info);
++static int aty128fb_ioctl(struct fb_info *info, u_int cmd);
+ static int aty128fb_sync(struct fb_info *info);
+ 
+     /*
+@@ -2108,8 +2107,7 @@
+ /* in param: u32*	backlight value: 0 to 15 */
+ #define FBIO_ATY128_SET_MIRROR	_IOW('@', 2, __u32)
+ 
+-static int aty128fb_ioctl(struct inode *inode, struct file *file, u_int cmd,
+-			  u_long arg, struct fb_info *info)
++static int aty128fb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
+ {
+ 	struct aty128fb_par *par = info->par;
+ 	u32 value;
+Index: linux-2.6/drivers/video/aty/atyfb_base.c
+===================================================================
+--- linux-2.6.orig/drivers/video/aty/atyfb_base.c	2005-11-10 01:20:49.000000000 +0100
++++ linux-2.6/drivers/video/aty/atyfb_base.c	2005-11-10 01:28:56.000000000 +0100
+@@ -229,8 +229,7 @@
+ 	u_int transp, struct fb_info *info);
+ static int atyfb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info);
+ static int atyfb_blank(int blank, struct fb_info *info);
+-static int atyfb_ioctl(struct inode *inode, struct file *file, u_int cmd,
+-	u_long arg, struct fb_info *info);
++static int atyfb_ioctl(struct fb_info *info, u_int cmd, u_long arg);
+ extern void atyfb_fillrect(struct fb_info *info, const struct fb_fillrect *rect);
+ extern void atyfb_copyarea(struct fb_info *info, const struct fb_copyarea *area);
+ extern void atyfb_imageblit(struct fb_info *info, const struct fb_image *image);
+@@ -1706,8 +1705,7 @@
+ #define FBIO_WAITFORVSYNC _IOW('F', 0x20, __u32)
+ #endif
+ 
+-static int atyfb_ioctl(struct inode *inode, struct file *file, u_int cmd,
+-	u_long arg, struct fb_info *info)
++static int atyfb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
+ {
+ 	struct atyfb_par *par = (struct atyfb_par *) info->par;
+ #ifdef __sparc__
+Index: linux-2.6/drivers/video/aty/radeon_base.c
+===================================================================
+--- linux-2.6.orig/drivers/video/aty/radeon_base.c	2005-11-10 01:20:49.000000000 +0100
++++ linux-2.6/drivers/video/aty/radeon_base.c	2005-11-10 01:28:56.000000000 +0100
+@@ -864,8 +864,8 @@
+ }
+ 
+ 
+-static int radeonfb_ioctl (struct inode *inode, struct file *file, unsigned int cmd,
+-                           unsigned long arg, struct fb_info *info)
++static int radeonfb_ioctl (struct fb_info *info, unsigned int cmd,
++                           unsigned long arg)
+ {
+         struct radeonfb_info *rinfo = info->par;
+ 	unsigned int tmp;
+Index: linux-2.6/drivers/video/bw2.c
+===================================================================
+--- linux-2.6.orig/drivers/video/bw2.c	2005-11-10 01:20:49.000000000 +0100
++++ linux-2.6/drivers/video/bw2.c	2005-11-10 01:28:56.000000000 +0100
+@@ -36,8 +36,7 @@
+ static int bw2_blank(int, struct fb_info *);
+ 
+ static int bw2_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
+-static int bw2_ioctl(struct inode *, struct file *, unsigned int,
+-		     unsigned long, struct fb_info *);
++static int bw2_ioctl(struct fb_info *, unsigned int, unsigned long);
+ 
+ /*
+  *  Frame buffer operations
+@@ -179,8 +178,7 @@
+ 				  vma);
+ }
+ 
+-static int bw2_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+-		     unsigned long arg, struct fb_info *info)
++static int bw2_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+ {
+ 	struct bw2_par *par = (struct bw2_par *) info->par;
+ 
+Index: linux-2.6/drivers/video/cg14.c
+===================================================================
+--- linux-2.6.orig/drivers/video/cg14.c	2005-11-10 01:20:49.000000000 +0100
++++ linux-2.6/drivers/video/cg14.c	2005-11-10 01:28:56.000000000 +0100
+@@ -32,8 +32,7 @@
+ 			 unsigned, struct fb_info *);
+ 
+ static int cg14_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
+-static int cg14_ioctl(struct inode *, struct file *, unsigned int,
+-		      unsigned long, struct fb_info *);
++static int cg14_ioctl(struct fb_info *, unsigned int, unsigned long);
+ static int cg14_pan_display(struct fb_var_screeninfo *, struct fb_info *);
+ 
+ /*
+@@ -275,8 +274,7 @@
+ 				  par->iospace, vma);
+ }
+ 
+-static int cg14_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+-		      unsigned long arg, struct fb_info *info)
++static int cg14_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+ {
+ 	struct cg14_par *par = (struct cg14_par *) info->par;
+ 	struct cg14_regs __iomem *regs = par->regs;
+Index: linux-2.6/drivers/video/cg3.c
+===================================================================
+--- linux-2.6.orig/drivers/video/cg3.c	2005-11-10 01:20:49.000000000 +0100
++++ linux-2.6/drivers/video/cg3.c	2005-11-10 01:28:56.000000000 +0100
+@@ -34,8 +34,7 @@
+ static int cg3_blank(int, struct fb_info *);
+ 
+ static int cg3_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
+-static int cg3_ioctl(struct inode *, struct file *, unsigned int,
+-		     unsigned long, struct fb_info *);
++static int cg3_ioctl(struct fb_info *, unsigned int, unsigned long);
+ 
+ /*
+  *  Frame buffer operations
+@@ -238,8 +237,7 @@
+ 				  vma);
+ }
+ 
+-static int cg3_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+-		     unsigned long arg, struct fb_info *info)
++static int cg3_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+ {
+ 	struct cg3_par *par = (struct cg3_par *) info->par;
+ 
+Index: linux-2.6/drivers/video/cg6.c
+===================================================================
+--- linux-2.6.orig/drivers/video/cg6.c	2005-11-10 01:20:49.000000000 +0100
++++ linux-2.6/drivers/video/cg6.c	2005-11-10 01:28:56.000000000 +0100
+@@ -37,8 +37,7 @@
+ static void cg6_fillrect(struct fb_info *, const struct fb_fillrect *);
+ static int cg6_sync(struct fb_info *);
+ static int cg6_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
+-static int cg6_ioctl(struct inode *, struct file *, unsigned int,
+-		     unsigned long, struct fb_info *);
++static int cg6_ioctl(struct fb_info *, unsigned int, unsigned long);
+ 
+ /*
+  *  Frame buffer operations
+@@ -532,8 +531,7 @@
+ 				  vma);
+ }
+ 
+-static int cg6_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+-		     unsigned long arg, struct fb_info *info)
++static int cg6_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+ {
+ 	struct cg6_par *par = (struct cg6_par *) info->par;
+ 
+Index: linux-2.6/drivers/video/fbmem.c
+===================================================================
+--- linux-2.6.orig/drivers/video/fbmem.c	2005-11-10 01:26:31.000000000 +0100
++++ linux-2.6/drivers/video/fbmem.c	2005-11-10 01:30:13.000000000 +0100
+@@ -929,7 +929,7 @@
+ 	default:
+ 		if (fb->fb_ioctl == NULL)
+ 			return -EINVAL;
+-		return fb->fb_ioctl(inode, file, cmd, arg, info);
++		return fb->fb_ioctl(info, cmd, arg);
+ 	}
+ }
+ 
+@@ -1079,7 +1079,7 @@
+ 
+ 	default:
+ 		if (fb->fb_compat_ioctl)
+-			ret = fb->fb_compat_ioctl(file, cmd, arg, info);
++			ret = fb->fb_compat_ioctl(cmd, arg, info);
+ 		break;
+ 	}
+ 	unlock_kernel();
+Index: linux-2.6/drivers/video/ffb.c
+===================================================================
+--- linux-2.6.orig/drivers/video/ffb.c	2005-11-10 01:20:49.000000000 +0100
++++ linux-2.6/drivers/video/ffb.c	2005-11-10 01:28:56.000000000 +0100
+@@ -38,8 +38,7 @@
+ static void ffb_copyarea(struct fb_info *, const struct fb_copyarea *);
+ static int ffb_sync(struct fb_info *);
+ static int ffb_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
+-static int ffb_ioctl(struct inode *, struct file *, unsigned int,
+-		     unsigned long, struct fb_info *);
++static int ffb_ioctl(struct fb_info *, unsigned int, unsigned long);
+ static int ffb_pan_display(struct fb_var_screeninfo *, struct fb_info *);
+ 
+ /*
+@@ -846,8 +845,7 @@
+ 				  0, vma);
+ }
+ 
+-static int ffb_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+-		     unsigned long arg, struct fb_info *info)
++static int ffb_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+ {
+ 	struct ffb_par *par = (struct ffb_par *) info->par;
+ 
+Index: linux-2.6/drivers/video/imsttfb.c
+===================================================================
+--- linux-2.6.orig/drivers/video/imsttfb.c	2005-11-10 01:20:49.000000000 +0100
++++ linux-2.6/drivers/video/imsttfb.c	2005-11-10 01:28:56.000000000 +0100
+@@ -1263,8 +1263,7 @@
+ #define FBIMSTT_GETIDXREG	0x545406
+ 
+ static int
+-imsttfb_ioctl(struct inode *inode, struct file *file, u_int cmd,
+-	      u_long arg, struct fb_info *info)
++imsttfb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
+ {
+ 	struct imstt_par *par = (struct imstt_par *) info->par;
+ 	void __user *argp = (void __user *)arg;
+Index: linux-2.6/drivers/video/intelfb/intelfbdrv.c
+===================================================================
+--- linux-2.6.orig/drivers/video/intelfb/intelfbdrv.c	2005-11-10 01:26:31.000000000 +0100
++++ linux-2.6/drivers/video/intelfb/intelfbdrv.c	2005-11-10 01:28:56.000000000 +0100
+@@ -160,9 +160,8 @@
+ 
+ static int intelfb_sync(struct fb_info *info);
+ 
+-static int intelfb_ioctl(struct inode *inode, struct file *file,
+-			 unsigned int cmd, unsigned long arg,
+-			 struct fb_info *info);
++static int intelfb_ioctl(struct fb_info *info,
++			 unsigned int cmd, unsigned long arg);
+ 
+ static int __devinit intelfb_pci_register(struct pci_dev *pdev,
+ 					  const struct pci_device_id *ent);
+@@ -1391,8 +1390,7 @@
+ 
+ /* When/if we have our own ioctls. */
+ static int
+-intelfb_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+-	      unsigned long arg, struct fb_info *info)
++intelfb_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+ {
+ 	int retval = 0;
+ 
+Index: linux-2.6/drivers/video/kyro/fbdev.c
+===================================================================
+--- linux-2.6.orig/drivers/video/kyro/fbdev.c	2005-11-10 01:20:49.000000000 +0100
++++ linux-2.6/drivers/video/kyro/fbdev.c	2005-11-10 01:28:56.000000000 +0100
+@@ -586,9 +586,8 @@
+ }
+ #endif
+ 
+-static int kyrofb_ioctl(struct inode *inode, struct file *file,
+-			unsigned int cmd, unsigned long arg,
+-			struct fb_info *info)
++static int kyrofb_ioctl(struct fb_info *info,
++			unsigned int cmd, unsigned long arg)
+ {
+ 	overlay_create ol_create;
+ 	overlay_viewport_set ol_viewport_set;
+Index: linux-2.6/drivers/video/leo.c
+===================================================================
+--- linux-2.6.orig/drivers/video/leo.c	2005-11-10 01:20:49.000000000 +0100
++++ linux-2.6/drivers/video/leo.c	2005-11-10 01:28:56.000000000 +0100
+@@ -33,8 +33,7 @@
+ static int leo_blank(int, struct fb_info *);
+ 
+ static int leo_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
+-static int leo_ioctl(struct inode *, struct file *, unsigned int,
+-		     unsigned long, struct fb_info *);
++static int leo_ioctl(struct fb_info *, unsigned int, unsigned long);
+ static int leo_pan_display(struct fb_var_screeninfo *, struct fb_info *);
+ 
+ /*
+@@ -371,8 +370,7 @@
+ 				  vma);
+ }
+ 
+-static int leo_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+-		     unsigned long arg, struct fb_info *info)
++static int leo_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+ {
+ 	struct leo_par *par = (struct leo_par *) info->par;
+ 
+Index: linux-2.6/drivers/video/matrox/matroxfb_base.c
+===================================================================
+--- linux-2.6.orig/drivers/video/matrox/matroxfb_base.c	2005-11-10 01:20:49.000000000 +0100
++++ linux-2.6/drivers/video/matrox/matroxfb_base.c	2005-11-10 01:28:56.000000000 +0100
+@@ -865,9 +865,8 @@
+ 	.name	 = "Panellink output",
+ };
+ 
+-static int matroxfb_ioctl(struct inode *inode, struct file *file,
+-			  unsigned int cmd, unsigned long arg,
+-			  struct fb_info *info)
++static int matroxfb_ioctl(struct fb_info *info,
++			  unsigned int cmd, unsigned long arg)
+ {
+ 	void __user *argp = (void __user *)arg;
+ 	MINFO_FROM_INFO(info);
+Index: linux-2.6/drivers/video/matrox/matroxfb_crtc2.c
+===================================================================
+--- linux-2.6.orig/drivers/video/matrox/matroxfb_crtc2.c	2005-11-10 01:20:49.000000000 +0100
++++ linux-2.6/drivers/video/matrox/matroxfb_crtc2.c	2005-11-10 01:28:56.000000000 +0100
+@@ -419,11 +419,10 @@
+ 	return 0;
+ }
+ 
+-static int matroxfb_dh_ioctl(struct inode* inode,
+-		struct file* file,
++static int matroxfb_dh_ioctl(struct fb_info *info,
+ 		unsigned int cmd,
+-		unsigned long arg,
+-		struct fb_info* info) {
++		unsigned long arg)
++{
+ #define m2info (container_of(info, struct matroxfb_dh_fb_info, fbcon))
+ 	MINFO_FROM(m2info->primary_dev);
+ 
+@@ -457,7 +456,7 @@
+ 		case MATROXFB_GET_OUTPUT_MODE:
+ 		case MATROXFB_GET_ALL_OUTPUTS:
+ 			{
+-				return ACCESS_FBINFO(fbcon.fbops)->fb_ioctl(inode, file, cmd, arg, &ACCESS_FBINFO(fbcon));
++				return ACCESS_FBINFO(fbcon.fbops)->fb_ioctl(&ACCESS_FBINFO(fbcon), cmd, arg);
+ 			}
+ 		case MATROXFB_SET_OUTPUT_CONNECTION:
+ 			{
+Index: linux-2.6/drivers/video/p9100.c
+===================================================================
+--- linux-2.6.orig/drivers/video/p9100.c	2005-11-10 01:20:49.000000000 +0100
++++ linux-2.6/drivers/video/p9100.c	2005-11-10 01:28:56.000000000 +0100
+@@ -32,8 +32,7 @@
+ static int p9100_blank(int, struct fb_info *);
+ 
+ static int p9100_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
+-static int p9100_ioctl(struct inode *, struct file *, unsigned int,
+-		       unsigned long, struct fb_info *);
++static int p9100_ioctl(struct fb_info *, unsigned int, unsigned long);
+ 
+ /*
+  *  Frame buffer operations
+@@ -230,8 +229,8 @@
+ 				  vma);
+ }
+ 
+-static int p9100_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+-		       unsigned long arg, struct fb_info *info)
++static int p9100_ioctl(struct fb_info *info, unsigned int cmd,
++		       unsigned long arg)
+ {
+ 	struct p9100_par *par = (struct p9100_par *) info->par;
+ 
+Index: linux-2.6/drivers/video/pm3fb.c
+===================================================================
+--- linux-2.6.orig/drivers/video/pm3fb.c	2005-11-10 01:20:49.000000000 +0100
++++ linux-2.6/drivers/video/pm3fb.c	2005-11-10 01:28:56.000000000 +0100
+@@ -657,9 +657,7 @@
+ static void pm3fb_detect(void);
+ static int pm3fb_pan_display(const struct fb_var_screeninfo *var,
+ 			     struct fb_info_gen *info);
+-static int pm3fb_ioctl(struct inode *inode, struct file *file,
+-                       u_int cmd, u_long arg, int con,
+-		       struct fb_info *info);
++static int pm3fb_ioctl(struct fb_info *info, u_int cmd, u_long arg);
+ 
+ 
+ /* the struct that hold them together */
+@@ -3438,9 +3436,7 @@
+ 	return 0;
+ }
+ 
+-static int pm3fb_ioctl(struct inode *inode, struct file *file,
+-                       u_int cmd, u_long arg, int con,
+-		       struct fb_info *info)
++static int pm3fb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
+ {
+ 	struct pm3fb_info *l_fb_info = (struct pm3fb_info *) info;
+ 	u32 cm, i;
+Index: linux-2.6/drivers/video/pmag-aa-fb.c
+===================================================================
+--- linux-2.6.orig/drivers/video/pmag-aa-fb.c	2005-11-10 01:20:49.000000000 +0100
++++ linux-2.6/drivers/video/pmag-aa-fb.c	2005-11-10 01:28:56.000000000 +0100
+@@ -299,8 +299,7 @@
+ 		return -EINVAL;
+ }
+ 
+-static int aafb_ioctl(struct inode *inode, struct file *file, u32 cmd,
+-		      unsigned long arg, int con, struct fb_info *info)
++static int aafb_ioctl(struct fb_info *info, u32 cmd, unsigned long arg)
+ {
+ 	/* TODO: Not yet implemented */
+ 	return -ENOIOCTLCMD;
+Index: linux-2.6/drivers/video/radeonfb.c
+===================================================================
+--- linux-2.6.orig/drivers/video/radeonfb.c	2005-11-10 01:20:49.000000000 +0100
++++ linux-2.6/drivers/video/radeonfb.c	2005-11-10 01:28:56.000000000 +0100
+@@ -1497,8 +1497,8 @@
+ }
+ 
+ 
+-static int radeonfb_ioctl (struct inode *inode, struct file *file, unsigned int cmd,
+-                           unsigned long arg, struct fb_info *info)
++static int radeonfb_ioctl (struct fb_info *info, unsigned int cmd,
++                           unsigned long arg)
+ {
+         struct radeonfb_info *rinfo = (struct radeonfb_info *) info;
+ 	unsigned int tmp;
+Index: linux-2.6/drivers/video/sis/sis_main.c
+===================================================================
+--- linux-2.6.orig/drivers/video/sis/sis_main.c	2005-11-10 01:20:49.000000000 +0100
++++ linux-2.6/drivers/video/sis/sis_main.c	2005-11-10 01:28:56.000000000 +0100
+@@ -1744,12 +1744,8 @@
+ /* ----------- FBDev related routines for all series ---------- */
+ 
+ static int
+-sisfb_ioctl(struct inode *inode, struct file *file,
+-            unsigned int cmd, unsigned long arg,
+-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0)
+-	    int con,
+-#endif
+-	    struct fb_info *info)
++sisfb_ioctl(struct fb_info *info,
++            unsigned int cmd, unsigned long arg)
+ {
+ 	struct sis_video_info	*ivideo = (struct sis_video_info *)info->par;
+ 	struct sis_memreq	sismemreq;
+@@ -1924,19 +1920,6 @@
+ 	return 0;
+ }
+ 
+-#ifdef SIS_NEW_CONFIG_COMPAT
+-static long
+-sisfb_compat_ioctl(struct file *f, unsigned int cmd, unsigned long arg, struct fb_info *info)
+-{
+-	int ret;
+-
+-	lock_kernel();
+-	ret = sisfb_ioctl(NULL, f, cmd, arg, info);
+-	unlock_kernel();
+-	return ret;
+-}
+-#endif
+-
+ static int
+ sisfb_get_fix(struct fb_fix_screeninfo *fix, int con, struct fb_info *info)
+ {
+@@ -2007,7 +1990,7 @@
+ #endif
+ 	.fb_sync	= fbcon_sis_sync,
+ #ifdef SIS_NEW_CONFIG_COMPAT
+-	.fb_compat_ioctl= sisfb_compat_ioctl,
++	.fb_compat_ioctl= sisfb_ioctl,
+ #endif
+ 	.fb_ioctl	= sisfb_ioctl
+ };
+Index: linux-2.6/drivers/video/sstfb.c
+===================================================================
+--- linux-2.6.orig/drivers/video/sstfb.c	2005-11-10 01:20:49.000000000 +0100
++++ linux-2.6/drivers/video/sstfb.c	2005-11-10 01:28:56.000000000 +0100
+@@ -770,8 +770,7 @@
+ 	return 0;
+ }
+ 
+-static int sstfb_ioctl(struct inode *inode, struct file *file,
+-                       u_int cmd, u_long arg, struct fb_info *info )
++static int sstfb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
+ {
+ 	struct sstfb_par *par = (struct sstfb_par *) info->par;
+ 	struct pci_dev *sst_dev = par->dev;
+Index: linux-2.6/drivers/video/tcx.c
+===================================================================
+--- linux-2.6.orig/drivers/video/tcx.c	2005-11-10 01:20:49.000000000 +0100
++++ linux-2.6/drivers/video/tcx.c	2005-11-10 01:28:56.000000000 +0100
+@@ -34,8 +34,7 @@
+ static int tcx_blank(int, struct fb_info *);
+ 
+ static int tcx_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
+-static int tcx_ioctl(struct inode *, struct file *, unsigned int,
+-		     unsigned long, struct fb_info *);
++static int tcx_ioctl(struct fb_info *, unsigned int, unsigned long);
+ static int tcx_pan_display(struct fb_var_screeninfo *, struct fb_info *);
+ 
+ /*
+@@ -310,8 +309,8 @@
+ 				  vma);
+ }
+ 
+-static int tcx_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+-		     unsigned long arg, struct fb_info *info)
++static int tcx_ioctl(struct fb_info *info, unsigned int cmd,
++		     unsigned long arg)
+ {
+ 	struct tcx_par *par = (struct tcx_par *) info->par;
+ 
+Index: linux-2.6/include/linux/fb.h
+===================================================================
+--- linux-2.6.orig/include/linux/fb.h	2005-11-10 01:26:32.000000000 +0100
++++ linux-2.6/include/linux/fb.h	2005-11-10 01:28:56.000000000 +0100
+@@ -608,12 +608,12 @@
+ 	int (*fb_sync)(struct fb_info *info);
+ 
+ 	/* perform fb specific ioctl (optional) */
+-	int (*fb_ioctl)(struct inode *inode, struct file *file, unsigned int cmd,
+-			unsigned long arg, struct fb_info *info);
++	int (*fb_ioctl)(struct fb_info *info, unsigned int cmd,
++			unsigned long arg);
+ 
+ 	/* Handle 32bit compat ioctl (optional) */
+-	long (*fb_compat_ioctl)(struct file *f, unsigned cmd, unsigned long arg,
+-			       struct fb_info *info);
++	int (*fb_compat_ioctl)(struct fb_info *info, unsigned cmd,
++			unsigned long arg);
+ 
+ 	/* perform fb specific mmap */
+ 	int (*fb_mmap)(struct fb_info *info, struct file *file, struct vm_area_struct *vma);

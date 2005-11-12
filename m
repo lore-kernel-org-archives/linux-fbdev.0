@@ -1,80 +1,90 @@
-From: Jurij Smakov <jurij@wooyd.org>
-Subject: Image defects with 2.6.14/atyfb/Sunblade 100
-Date: Fri, 11 Nov 2005 21:51:23 -0800 (PST)
-Message-ID: <Pine.LNX.4.63.0511112134500.3900@bobcat>
-Reply-To: jurij@wooyd.org
+From: Knut Petersen <Knut_Petersen@t-online.de>
+Subject: Re: geodefb issues, possible patch
+Date: Sat, 12 Nov 2005 08:37:29 +0100
+Message-ID: <43759BB9.70409@t-online.de>
+References: <eb77d7060511110405i13b8bc8aw335147185398cd22@mail.gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463804416-2026778518-1131774683=:3900"
-Return-path: <bounce-debian-sparc=debian-sparc=m.gmane.org@lists.debian.org>
-Resent-Message-ID: <DH0RwB.A.EfF.ELYdDB@murphy>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1Eapqs-0001Lq-Be
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 11 Nov 2005 23:31:06 -0800
+Received: from mailout07.sul.t-online.com ([194.25.134.83])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1Eapqs-0007tI-1e
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 11 Nov 2005 23:31:06 -0800
+In-Reply-To: <eb77d7060511110405i13b8bc8aw335147185398cd22@mail.gmail.com>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:debian-sparc@lists.debian.org>
-List-Help: <mailto:debian-sparc-request@lists.debian.org?subject=help>
-List-Subscribe: <mailto:debian-sparc-request@lists.debian.org?subject=subscribe>
-List-Unsubscribe: <mailto:debian-sparc-request@lists.debian.org?subject=unsubscribe>
-To: Linux-fbdev-devel@lists.sourceforge.net
-Cc: debian-sparc@lists.debian.org
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----1463804416-2026778518-1131774683=:3900
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+>i have a patch if someone is interested. the problem is that i dont
+>know what else to do, as i cant debug (with printf's) the driver as i
+>dont have a screen, how does a fb driver gets debugged?=20
+>
+First of all, it=B4s a good idea to allow the driver to be compiled eithe=
+r=20
+as a
+module or as a permanent part of the kernel. If it=B4s a module, it is re=
+ally
+helpfull if it can be unloaded / reloaded.  Allow your driver to be loade=
+d
+with vesafb or vesafb-tng compiled into the kernel, normally that should
+be possible if you do not fail if you cannot get exclusive access to some
+resources vesafb reserves. That way you might start with vesafb, load=20
+version
+1 of your driver, map consoles to either one, do some testing, map all
+consoles to vesafb, unload your module and load a new version. That helpe=
+d
+a lot in debugging cyblafb.
 
-[Forwarding information to linux-fbdev-devel]
+If you do loop for some conditions, always include a timeout.
 
-Hello,
+Use printks, and have a look at the system log after a reboot.
 
-Recently Luigi Gangitano has pointed out a linux-fbdev-devel thread [0]
-in which progress was achieved in fixing the atyfb bug resulting in 
-console and X display corruption on SunBlade 100, filed as #321200 in the 
-Debian bug tracking system [1]. The patch mentioned in the thread (which 
-we plan to include in the next Debian kernel package release) is attached. 
-While the situation with this patch is greatly improved, users testing the 
-new 2.6.14 kernel packages have reported [2,3] that there is still some 
-minor screen corruption in a form of red dots or lines. A screenshot 
-(provided by Andrey Chernomyrdin) can be viewed at [4]. We'd appreciate 
-any ideas which could lead to the resolution of this problem.
+Use a serial console or another computer connected via network.
 
-Please CC the responses to me (and, optionally to the 
-debian-sparc@lists.debian.org), as I'm not subscribed to this list.
+Let the driver display some status information at a fixed location of
+the screen.
 
-[0] http://marc.theaimsgroup.com/?t=111088248100003&r=1&w=2
-[1] http://bugs.debian.org/321200
-[2] http://lists.debian.org/debian-sparc/2005/11/msg00076.html
-[3] http://lists.debian.org/debian-sparc/2005/11/msg00087.html
-[4] http://www.wooyd.org/debian/tmp/sunblade.png
+First of all: write a userspace program that does a complete register dum=
+p.
+Boot with vesafb and all vga=3D??? parameters supported by the bios and s=
+tore
+those register dump.  Include a register dump function in the driver and=20
+compare
+the register values to those found for vesafb.
 
-Thanks and best regards,
+Don=B4t believe documentation that indexed registers end at index x if x =
+is
+less than the highest possible value. If bits of a value are stored in=20
+several
+places (e.g. vga screen start address), don=B4t assume that the documenta=
+tion
+documents all high bits.
 
-Jurij Smakov                                        jurij@wooyd.org
-Debian kernel team
-Key: http://www.wooyd.org/pgpkey/                   KeyID: C99E03CC
----1463804416-2026778518-1131774683=:3900
-Content-Type: TEXT/PLAIN; charset=US-ASCII; name=sparc-atyfb-xl-gr.patch
-Content-Transfer-Encoding: BASE64
-Content-Description: 
-Content-Disposition: attachment; filename=sparc-atyfb-xl-gr.patch
+Get it right unaccelerated first.
 
-ZGlmZiAtYXVyIGEvZHJpdmVycy92aWRlby9hdHkvYXR5ZmJfYmFzZS5jIGIv
-ZHJpdmVycy92aWRlby9hdHkvYXR5ZmJfYmFzZS5jDQotLS0gYS9kcml2ZXJz
-L3ZpZGVvL2F0eS9hdHlmYl9iYXNlLmMJMjAwNS0xMC0yNyAxNzowMjowOC4w
-MDAwMDAwMDAgLTA3MDANCisrKyBiL2RyaXZlcnMvdmlkZW8vYXR5L2F0eWZi
-X2Jhc2UuYwkyMDA1LTExLTA5IDE5OjU2OjE4LjAwMDAwMDAwMCAtMDgwMA0K
-QEAgLTQwNCw3ICs0MDQsNyBAQA0KIAl7IFBDSV9DSElQX01BQ0g2NEdNLCAi
-M0QgUkFHRSBYTCAoTWFjaDY0IEdNLCBBR1ApIiwgMjMwLCA4MywgNjMsIEFU
-SV9DSElQXzI2NFhMIH0sDQogCXsgUENJX0NISVBfTUFDSDY0R04sICIzRCBS
-QUdFIFhMIChNYWNoNjQgR04sIEFHUCkiLCAyMzAsIDgzLCA2MywgQVRJX0NI
-SVBfMjY0WEwgfSwNCiAJeyBQQ0lfQ0hJUF9NQUNINjRHTywgIjNEIFJBR0Ug
-WEwgKE1hY2g2NCBHTywgUENJLTY2L0JHQSkiLCAyMzAsIDgzLCA2MywgQVRJ
-X0NISVBfMjY0WEwgfSwNCi0JeyBQQ0lfQ0hJUF9NQUNINjRHUiwgIjNEIFJB
-R0UgWEwgKE1hY2g2NCBHUiwgUENJLTMzTUh6KSIsIDIzMCwgODMsIDYzLCBB
-VElfQ0hJUF8yNjRYTCB9LA0KKwl7IFBDSV9DSElQX01BQ0g2NEdSLCAiM0Qg
-UkFHRSBYTCAoTWFjaDY0IEdSLCBQQ0ktMzNNSHopIiwgMjMwLCA4MywgNjMs
-IEFUSV9DSElQXzI2NFhMIHwgTTY0Rl9TRFJBTV9NQUdJQ19QTEwgfSwNCiAJ
-eyBQQ0lfQ0hJUF9NQUNINjRHTCwgIjNEIFJBR0UgWEwgKE1hY2g2NCBHTCwg
-UENJKSIsIDIzMCwgODMsIDYzLCBBVElfQ0hJUF8yNjRYTCB9LA0KIAl7IFBD
-SV9DSElQX01BQ0g2NEdTLCAiM0QgUkFHRSBYTCAoTWFjaDY0IEdTLCBQQ0kp
-IiwgMjMwLCA4MywgNjMsIEFUSV9DSElQXzI2NFhMIH0sDQogDQo=
+cu,
+ knut
 
----1463804416-2026778518-1131774683=:3900--
+
+
+-------------------------------------------------------
+SF.Net email is sponsored by:
+Tame your development challenges with Apache's Geronimo App Server. Downl=
+oad
+it for free - -and be entered to win a 42" plasma tv or your very own
+Sony(tm)PSP.  Click here to play: http://sourceforge.net/geronimo.php

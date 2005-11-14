@@ -1,21 +1,22 @@
-From: David Vrabel <dvrabel@arcom.com>
-Subject: Re: geodefb issues, possible patch
-Date: Mon, 14 Nov 2005 13:52:00 +0000
-Message-ID: <43789680.4030703@arcom.com>
-References: <eb77d7060511110405i13b8bc8aw335147185398cd22@mail.gmail.com>	 <43749BC7.8030705@arcom.com> <eb77d7060511111730o1edcb19fqf60c98e76098c6c3@mail.gmail.com>
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Subject: Re: fbcon bug?
+Date: Mon, 14 Nov 2005 21:13:40 +0200
+Message-ID: <20051114191340.GA12139@sci.fi>
+References: <4377F564.6000704@comcast.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Ebekk-0002XF-98
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Nov 2005 05:52:10 -0800
-Received: from webapps.arcom.com ([194.200.159.168])
+	id 1Ebjm7-0001A7-FE
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Nov 2005 11:13:55 -0800
+Received: from gw02.mail.saunalahti.fi ([195.197.172.116])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Ebekj-0003Kq-4f
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Nov 2005 05:52:10 -0800
-In-Reply-To: <eb77d7060511111730o1edcb19fqf60c98e76098c6c3@mail.gmail.com>
+	id 1Ebjm4-000693-T8
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Nov 2005 11:13:55 -0800
+Content-Disposition: inline
+In-Reply-To: <4377F564.6000704@comcast.net>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,47 +27,33 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="iso-8859-1"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Jorge Luis Zapata Muga wrote:
-> 
-> ok here it is (i have manually copy it from the screen)
-> 
-> 00:12.4 VGA compatible controller: Cyrix Corporation 5530 Video
-> [Kahlua] (prog-if 00 [VGA])
-> Subsystem: Cyrix Corporation Unknown device 0001
-> Control: I/0+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr-
-> Stepping- SERR- FastB2B-
-> Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=mdeium >TAbort-
-> <Tabort- <MAbort< >SERR- <PERR-
-> Region 0: Memory at 408000000 (32-bit, non-prefetchable) [size=8M]
-> Expansion ROM at <unassigned> [dissabled]
+On Sun, Nov 13, 2005 at 09:24:36PM -0500, Zack Smith wrote:
+> Hi all,
+>=20
+> I've noticed that 2.6.14, when a console switch occurs going
+> from a console that is KD_TEXT to one that is KD_GRAPHICS,
+> fbcon doesn't seem to immediately shut down the cursor. It appears
+> to draw or undraw the cursor at least once before it disables
+> cursor activity due to graphics mode.
+>=20
+> Does anybody know if this bug has been corrected in 14.1 or .2,
+> or if anyone would mind if I go in and fix it?
 
-Okay, this is wrong. It should have a 4 KiB region for the video device
-registers.  For example:
+I'm not sure if it's related but there is a cursor problem with atyfb.=20
+When doing ioctl(... KD_GRAPHICS) the cursor remains visible in most=20
+cases. Sometimes it does disappear properly but that is quite rare.=20
+However doing a vt switch to another vt and back again seems to fix it=20
+every time so I'm not sure it's the same problem you're seeing. None of=20
+the other fb drivers I use implement a hardware cursor which is probably=20
+the reason I'm only seeing it on atyfb.
 
-00:12.4 VGA compatible controller: Cyrix Corporation 5530 Video [Kahlua]
-(prog-if 00 [VGA])
-	[...]
-        Region 0: Memory at 40800000 (32-bit, non-prefetchable) [size=8M]
-        Region 1: Memory at 40010000 (32-bit, non-prefetchable) [size=4K]
-	[...]
-
-Your BIOS isn't properly initializing the device resources and I'm
-rather surprised it ever worked...
-
-Now I thought the kernel was supposed to fix-up problems with PCI
-resources and I'm not sure why it isn't doing it in this case.
-
-Perhaps you could try a PCI fixup to straighten out the BARs/resources?
-
-David Vrabel
--- 
-David Vrabel, Design Engineer
-
-Arcom, Clifton Road           Tel: +44 (0)1223 411200 ext. 3233
-Cambridge CB1 7EA, UK         Web: http://www.arcom.com/
+--=20
+Ville Syrj=E4l=E4
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
 
 
 -------------------------------------------------------

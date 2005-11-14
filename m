@@ -1,22 +1,22 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: Re: fbcon bug?
-Date: Mon, 14 Nov 2005 21:13:40 +0200
-Message-ID: <20051114191340.GA12139@sci.fi>
-References: <4377F564.6000704@comcast.net>
+From: Kevin Hilman <khilman@mvista.com>
+Subject: Use of 'reserved' fields in var_screeninfo
+Date: Mon, 14 Nov 2005 11:17:31 -0800
+Message-ID: <4378E2CB.3080902@mvista.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Ebjm7-0001A7-FE
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Nov 2005 11:13:55 -0800
-Received: from gw02.mail.saunalahti.fi ([195.197.172.116])
+	id 1Ebjph-0001Js-Ec
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Nov 2005 11:17:37 -0800
+Received: from gateway-1237.mvista.com ([12.44.186.158] helo=hermes.mvista.com)
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Ebjm4-000693-T8
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Nov 2005 11:13:55 -0800
-Content-Disposition: inline
-In-Reply-To: <4377F564.6000704@comcast.net>
+	id 1Ebjpf-0001lk-Sx
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Nov 2005 11:17:37 -0800
+Received: from [127.0.0.1] (godzilla.mvista.com [10.0.0.2])
+	by hermes.mvista.com (Postfix) with ESMTP id 11FB71A9BC
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 14 Nov 2005 11:17:32 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,33 +27,35 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-On Sun, Nov 13, 2005 at 09:24:36PM -0500, Zack Smith wrote:
-> Hi all,
->=20
-> I've noticed that 2.6.14, when a console switch occurs going
-> from a console that is KD_TEXT to one that is KD_GRAPHICS,
-> fbcon doesn't seem to immediately shut down the cursor. It appears
-> to draw or undraw the cursor at least once before it disables
-> cursor activity due to graphics mode.
->=20
-> Does anybody know if this bug has been corrected in 14.1 or .2,
-> or if anyone would mind if I go in and fix it?
+Hello,
 
-I'm not sure if it's related but there is a cursor problem with atyfb.=20
-When doing ioctl(... KD_GRAPHICS) the cursor remains visible in most=20
-cases. Sometimes it does disappear properly but that is quite rare.=20
-However doing a vt switch to another vt and back again seems to fix it=20
-every time so I'm not sure it's the same problem you're seeing. None of=20
-the other fb drivers I use implement a hardware cursor which is probably=20
-the reason I'm only seeing it on atyfb.
+I've got a question about the purpose of the reserved fields in the
+var_screeninfo struct:
 
---=20
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+struct fb_var_screeninfo {
+	[ ... ]
+	__u32 reserved[5];		/* Reserved for future compatibility */
+};
+
+What are these reserved for?  Is it appropriate for drivers to use these for
+additional, HW-specific values that are then made available to the VSCREENINFO
+ioctls?
+
+If a driver does store state here, or attempt to pass info using an ioctl, the
+data is promptly overwritten by fbcon during an fbcon_switch(), when it creates
+a var_screeninfo struct, memsets it to zero, copies a couple fields and passes
+it to fb_set_var().
+
+I have a patch to copy the 'reserved' fields during an fbcon_switch() that
+solves the problem but I'm not sure if this is the right thing to do.
+
+-- 
+Kevin Hilman
+MontaVista Software -- http://www.mvista.com/
+
 
 
 -------------------------------------------------------

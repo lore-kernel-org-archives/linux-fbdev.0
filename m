@@ -1,21 +1,21 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Use of 'reserved' fields in var_screeninfo
-Date: Mon, 14 Nov 2005 21:14:04 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0511142113560.15023@numbat.sonytel.be>
-References: <4378E2CB.3080902@mvista.com> <Pine.LNX.4.62.0511142029340.15023@numbat.sonytel.be>
- <4378E997.50208@mvista.com> <4378EC27.7010502@mvista.com> <4378EDB5.30901@gmail.com>
+From: Zack Smith <fbui@comcast.net>
+Subject: Re: fbcon bug?
+Date: Mon, 14 Nov 2005 19:21:49 -0500
+Message-ID: <43792A1D.50208@comcast.net>
+References: <4377F564.6000704@comcast.net> <20051114191340.GA12139@sci.fi> <4378EF3E.8050609@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EbkiO-0003cj-P2
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Nov 2005 12:14:08 -0800
-Received: from witte.sonytel.be ([80.88.33.193])
+	id 1Eboa9-0005Xy-4h
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Nov 2005 16:21:53 -0800
+Received: from rwcrmhc13.comcast.net ([216.148.227.118] helo=rwcrmhc12.comcast.net)
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EbkiN-0001er-54
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Nov 2005 12:14:08 -0800
-In-Reply-To: <4378EDB5.30901@gmail.com>
+	id 1Eboa7-0007qZ-S3
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 14 Nov 2005 16:21:53 -0800
+In-Reply-To: <4378EF3E.8050609@gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,36 +26,26 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: khilman@mvista.com
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 15 Nov 2005, Antonino A. Daplas wrote:
-> Kevin Hilman wrote:
-> > Kevin Hilman wrote:
-> >> Geert Uytterhoeven wrote:
-> > 
-> > I think a device-specific ioctl is the way to go.
-> 
-> Or sysfs.
+Antonino A. Daplas wrote:
+> Once the console is in KD_GRPHICS mode, all access the to the 
+> framebuffer are essentially stopped. 
 
-Even better!
+What I'm seeing is that after a console switch to a KD_GRAPHICS console 
+(call it A)
+from a KD_TEXT console (console B), B's cursor is seemingly undrawn in A.
+Basically, wherever the cursor was B, that's where you will see a black 
+box drawn in A,
+and there is a delay in its being drawn.
 
-Gr{oetje,eeting}s,
+Zack
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
 
 
 -------------------------------------------------------
-SF.Net email is sponsored by:
-Tame your development challenges with Apache's Geronimo App Server. Download
-it for free - -and be entered to win a 42" plasma tv or your very own
-Sony(tm)PSP.  Click here to play: http://sourceforge.net/geronimo.php
+This SF.Net email is sponsored by the JBoss Inc.  Get Certified Today
+Register for a JBoss Training Course.  Free Certification Exam
+for All Training Attendees Through End of 2005. For more info visit:
+http://ads.osdn.com/?ad_id=7628&alloc_id=16845&op=click

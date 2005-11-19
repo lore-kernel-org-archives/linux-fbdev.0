@@ -1,19 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH] fbcon: Console Rotation - Fix wrong shift calculation
-Date: Sat, 19 Nov 2005 09:47:17 +0800
-Message-ID: <437E8425.3040706@gmail.com>
+Subject: [PATCH] fbdev: Shift pixel value before entering loop in cfbimageblit
+Date: Sat, 19 Nov 2005 09:53:15 +0800
+Message-ID: <437E858B.90801@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EdI53-0007K8-J4
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Nov 2005 18:03:53 -0800
-Received: from zproxy.gmail.com ([64.233.162.204])
+	id 1EdI5F-0007L6-Sm
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Nov 2005 18:04:05 -0800
+Received: from zproxy.gmail.com ([64.233.162.199])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EdI51-0003te-6c
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Nov 2005 18:03:53 -0800
+	id 1EdI5F-0003wt-N6
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 18 Nov 2005 18:04:05 -0800
+Received: by zproxy.gmail.com with SMTP id z3so306219nzf
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 18 Nov 2005 18:04:05 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,44 +28,39 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: linux-fbdev-devel@lists.sf.net
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-The shift value (amount to shift the bitmap so first pixel starts at
-origin(0,0)) is incorrect. This causes corrupted characters or a kernel
-crash if fontwidth is not divisible by 8 at 270 degrees, or fontheight
-not divisible by 8 at 180 degrees.
-
-Report and part of the fix contributed by Knut Petersen.
+In slow imageblit, the pixel value is shifted by a certain amount
+(dependent on the bpp and endianness) for each iteration.  This is
+inefficient.  Better do the shifting once before going into the loop.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/console/fbcon_rotate.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/cfbimgblt.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/console/fbcon_rotate.h b/drivers/video/console/fbcon_rotate.h
-index 90c6720..e504fbf 100644
---- a/drivers/video/console/fbcon_rotate.h
-+++ b/drivers/video/console/fbcon_rotate.h
-@@ -49,7 +49,7 @@ static inline void pattern_set_bit(u32 x
- static inline void rotate_ud(const char *in, char *out, u32 width, u32 height)
- {
- 	int i, j;
--	int shift = width % 8;
-+	int shift = (8 - (width % 8)) & 7;
+diff --git a/drivers/video/cfbimgblt.c b/drivers/video/cfbimgblt.c
+index a7770c4..7a01742 100644
+--- a/drivers/video/cfbimgblt.c
++++ b/drivers/video/cfbimgblt.c
+@@ -162,6 +162,8 @@ static inline void slow_imageblit(const 
+ 	u32 i, j, l;
+ 	
+ 	dst2 = (u32 __iomem *) dst1;
++	fgcolor <<= LEFT_POS(bpp);
++	bgcolor <<= LEFT_POS(bpp);
  
- 	width = (width + 7) & ~7;
- 
-@@ -85,7 +85,7 @@ static inline void rotate_cw(const char 
- static inline void rotate_ccw(const char *in, char *out, u32 width, u32 height)
- {
- 	int i, j, h = height, w = width;
--	int shift = width % 8;
-+	int shift = (8 - (width % 8)) & 7;
- 
- 	width = (width + 7) & ~7;
- 	height = (height + 7) & ~7;
-
+ 	for (i = image->height; i--; ) {
+ 		shift = val = 0;
+@@ -180,7 +182,6 @@ static inline void slow_imageblit(const 
+ 		while (j--) {
+ 			l--;
+ 			color = (*s & 1 << (BIT_NR(l))) ? fgcolor : bgcolor;
+-			color <<= LEFT_POS(bpp);
+ 			val |= SHIFT_HIGH(color, shift);
+ 			
+ 			/* Did the bitshift spill bits to the next long? */
 
 
 

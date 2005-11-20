@@ -1,64 +1,50 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH] fbcon: Store struct display when setting all vcs
-Date: Sun, 20 Nov 2005 20:44:54 +0800
-Message-ID: <43806FC6.4030403@gmail.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Adrian Bunk <bunk@stusta.de>
+Subject: [2.6 patch] video/matrox/matroxfb_misc.c: remove dead code
+Date: Mon, 21 Nov 2005 00:15:34 +0100
+Message-ID: <20051120231534.GG16060@stusta.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EdxKa-000873-My
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Nov 2005 14:06:40 -0800
-Received: from zproxy.gmail.com ([64.233.162.196])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EdxKZ-0004yH-9j
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Nov 2005 14:06:40 -0800
-Received: by zproxy.gmail.com with SMTP id r28so602670nza
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 20 Nov 2005 14:06:38 -0800 (PST)
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932111AbVKTXPg@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Transfer-Encoding: 7bit
+To: vandrove@vc.cvut.cz
+Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net, linux-kernel@vger.kernel.org
 
-Store struct display when setting all vc's.  Otherwise, fbcon's behavior
-becomes undefined, such as malpositioning of the cursor.
+The Coverity checker spotted this dead code.
 
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
+
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+
 ---
 
-Not for 2.6.15, unless you push this - fbcon-sanitize-fbcon.patch
+ drivers/video/matrox/matroxfb_misc.c |    8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
 
- drivers/video/console/fbcon.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index efb5064..1a8f0ea 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -2779,6 +2779,8 @@ static void fbcon_set_all_vcs(struct fb_
- 				fbcon_update_softback(vc);
- 		}
- 	}
-+
-+	ops->p = &fb_display[ops->currcon];
- }
+--- linux-2.6.15-rc1-mm2-full/drivers/video/matrox/matroxfb_misc.c.old	2005-11-20 22:27:01.000000000 +0100
++++ linux-2.6.15-rc1-mm2-full/drivers/video/matrox/matroxfb_misc.c	2005-11-20 22:27:21.000000000 +0100
+@@ -192,11 +192,8 @@
+ 	unsigned int wd;
+ 	unsigned int divider;
+ 	int i;
+-	int fwidth;
+ 	struct matrox_hw_state * const hw = &ACCESS_FBINFO(hw);
  
- static int fbcon_mode_deleted(struct fb_info *info,
-
-
-
--------------------------------------------------------
-This SF.Net email is sponsored by the JBoss Inc.  Get Certified Today
-Register for a JBoss Training Course.  Free Certification Exam
-for All Training Attendees Through End of 2005. For more info visit:
-http://ads.osdn.com/?ad_id=7628&alloc_id=16845&op=click
+-	fwidth = 8;
+-
+ 	DBG(__FUNCTION__)
+ 
+ 	hw->SEQ[0] = 0x00;
+@@ -235,10 +232,7 @@
+ 	hw->ATTR[16] = 0x41;
+ 	hw->ATTR[17] = 0xFF;
+ 	hw->ATTR[18] = 0x0F;
+-	if (fwidth == 9)
+-		hw->ATTR[19] = 0x08;
+-	else
+-		hw->ATTR[19] = 0x00;
++	hw->ATTR[19] = 0x00;
+ 	hw->ATTR[20] = 0x00;
+ 
+ 	hd = m->HDisplay >> 3;

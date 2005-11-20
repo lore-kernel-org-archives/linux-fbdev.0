@@ -1,21 +1,23 @@
-From: Knut Petersen <Knut_Petersen@t-online.de>
-Subject: Re: 2 more fbcon rotation bugs
-Date: Sun, 20 Nov 2005 10:03:16 +0100
-Message-ID: <43803BD4.7080403@t-online.de>
-References: <437DF1EA.7010906@t-online.de> <437E3856.9030509@gmail.com> <437EFA9B.8090402@t-online.de> <437FF1F8.9020307@gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Re: 2 more fbcon rotation bugs
+Date: Sun, 20 Nov 2005 10:58:32 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0511201055080.2941@numbat.sonytel.be>
+References: <437DF1EA.7010906@t-online.de> <437E3856.9030509@gmail.com>
+ <437EFA9B.8090402@t-online.de> <437FF1F8.9020307@gmail.com>
+ <43803BD4.7080403@t-online.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584334533-124771815-1132480712=:2941"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Edl6Q-0003WO-0b
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Nov 2005 01:03:14 -0800
-Received: from mailout06.sul.t-online.com ([194.25.134.19])
+	id 1EdlyE-00053N-Ix
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Nov 2005 01:58:50 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Edl6O-0001Ax-OK
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Nov 2005 01:03:14 -0800
-In-Reply-To: <437FF1F8.9020307@gmail.com>
+	id 1EdlyC-0002yh-AM
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 20 Nov 2005 01:58:50 -0800
+In-Reply-To: <43803BD4.7080403@t-online.de>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,46 +28,63 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
->It seems that cfbfillrect and cfbcopyarea were written in a big-endian
->machine (if I'm not mistaken, by Geert on m68k?) as unaligned access in
->little endian produces this bug.
->
-> =20
->
-That patch set fixes my problems with vesafb. For the tested subset of=20
-possible
-font dimensions and rotation values everything seems to be ok now. But ma=
-ybe
-someone with a  big-endian machine should also verify the code.
+---584334533-124771815-1132480712=:2941
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by witte.sonytel.be id jAK9wXrq020893
 
-Isn=B4t it amazing that code as old as this still contains undetected bug=
-s?
+On Sun, 20 Nov 2005, Knut Petersen wrote:
+> > It seems that cfbfillrect and cfbcopyarea were written in a big-endia=
+n
+> > machine (if I'm not mistaken, by Geert on m68k?) as unaligned access =
+in
+> > little endian produces this bug.
+> > =20
+> That patch set fixes my problems with vesafb. For the tested subset of
+> possible
+> font dimensions and rotation values everything seems to be ok now. But =
+maybe
+> someone with a  big-endian machine should also verify the code.
+>=20
+> Isn=B4t it amazing that code as old as this still contains undetected b=
+ugs?
 
-Is there anything like a framebuffer test suite that could be used for a=20
-quick verification
-of especially the seldom used features?
+It's not _that_ old, it was written in the 2.5 timeframe ;-)
+And it's about corner cases. Rotation opens up some parts of the code tha=
+t were
+never used with 8x8, 8x16, and 12x22 fonts.
 
-btw: my favourite text editor sedt fails if the number of lines exceeds=20
-an internal
-limit hit by rotation =3D=3D 1 or 3 and small fonts, but it complains tha=
-t=20
-it cannot read
-its perfectly readable initialization file in that case ...  I wonder if=20
-there are more
-applications like that.
+> Is there anything like a framebuffer test suite that could be used for =
+a quick
+> verification
+> of especially the seldom used features?
 
-cu,
- Knut
+There exists fbtest, but it doesn't test the internal drawing routines.
 
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m6=
+8k.org
+
+In personal conversations with technical people, I call myself a hacker. =
+But
+when I'm talking to journalists I just say "programmer" or something like=
+ that.
+							    -- Linus Torvalds
+---584334533-124771815-1132480712=:2941--
 
 
 -------------------------------------------------------
 This SF.Net email is sponsored by the JBoss Inc.  Get Certified Today
 Register for a JBoss Training Course.  Free Certification Exam
 for All Training Attendees Through End of 2005. For more info visit:
-http://ads.osdn.com/?ad_id=3D7628&alloc_id=3D16845&op=3Dclick
+http://ads.osdn.com/?ad_id=7628&alloc_id=16845&op=click

@@ -1,62 +1,72 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [Linux-fbdev-devel] Re: Console rotation problems
-Date: Thu, 24 Nov 2005 18:13:51 +0800
-Message-ID: <4385925F.8010108@gmail.com>
-References: <1132793150.26560.357.camel@gaston>  <1132793556.26560.361.camel@gaston> <1132796831.26560.392.camel@gaston> <1132801542.26560.402.camel@gaston> <43855DBA.1050302@gmail.com> <Pine.LNX.4.62.0511241042360.6400@numbat.sonytel.be>
+From: Knut Petersen <Knut_Petersen@t-online.de>
+Subject: Patch to framebuffer
+Date: Thu, 24 Nov 2005 18:21:44 +0100
+Message-ID: <4385F6A8.60808@t-online.de>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932628AbVKXKOu@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.62.0511241042360.6400@numbat.sonytel.be>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Andrew Morton <akpm@osdl.org>, Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1EfKnD-0000MK-73
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 24 Nov 2005 09:21:55 -0800
+Received: from mailout06.sul.t-online.com ([194.25.134.19])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1EfKn9-0000jy-Qr
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 24 Nov 2005 09:21:55 -0800
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: nathan.cline@gmail.com
+Cc: linux-fbdev-devel@lists.sourceforge.net, Linux Kernel Development <linux-kernel@vger.kernel.org>, "Antonino A. Daplas" <adaplas@gmail.com>
 
-Geert Uytterhoeven wrote:
-> On Thu, 24 Nov 2005, Antonino A. Daplas wrote:
->> Benjamin Herrenschmidt wrote:
->>> Remove bogus usage of test/set_bit() from fbcon rotation code and just
->>> manipulate the bits directly. This fixes an oops on powerpc among others
->>> and should be faster. Seems to work fine on the G5 here.
->> Thanks, I reached a point when my head became muddled with bit 
->> manipulations, so I used arch-specific bitops but complete forgot
->> that they were atomic :-)
-> 
-> I haven't really looked at the rotation code, but I guess it can be optimized a
-> lot by using similar techniques like c2p (chunky-to-planar) conversions.
-> 
+Hi Nathan,
 
-Actually, BenH's patch touched code that is in the slow path.  The font
-rotation is done on the entire fontdata, then stored, on a console switch.
-Thus the rest of the drawing functions need not do repetitive and expensive
-bitmap rotation.
+Updating only one framebuffer console at a time is a real feature for me,
+it allows a really quick developement cycle:
 
-Scrolling performance of a normally oriented and upside-down rotation is
-practically the same (1024x768 8x16 redraw).
+            compile vesafb into the kernel, cyblafb as a module
+            start with vesafb
+loop:    load cyblafb
+            switch to cyblafb, test it
+            correct bugs, compile new cyblafb module
+            switch to vesafb
+            unload vesafb
+            goto loop
+           
+Although both vesafb and cyblafb control the same hardware, this is
+possible because of the "feature" you want to remove.
 
-con_rotate = 0
-real    0m2.550s
-user    0m0.000s
-sys     0m2.543s
+On the other hand I do understand that your patch is valuable, if I had
+two monitors attached I certainly would like to be able to use both at the
+same time.
 
-con_rotate = 2
-real    0m2.559s
-user    0m0.001s
-sys     0m2.545s
+I believe that you should introduce your code either as a compile time
+option or even better it should be possible to disable it via sysfs:
+
+     /sys/class/graphics/fb?/update_mode
+
+0 could be the default and would activate your new code
+1 would restore the old "one active" mode.
+
+Please  consider my arguments and join us at
+
+linux-fbdev-devel@lists.sourceforge.net
+
+cu,
+ Knut
 
 
-CCW and CW rotation, is of course slower, because the blit direction
-tends to be top->down, rather than left->right.
-
-con_rotate = 1
-real    0m4.675s
-user    0m0.000s
-sys     0m4.663s
-
-con_rotate = 3
-real    0m4.701s
-user    0m0.001s
-sys     0m4.684s
-  
-Tony
+-------------------------------------------------------
+This SF.net email is sponsored by: Splunk Inc. Do you grep through log files
+for problems?  Stop!  Download the new AJAX search engine that makes
+searching your log files as easy as surfing the  web.  DOWNLOAD SPLUNK!
+http://ads.osdn.com/?ad_id=7637&alloc_id=16865&op=click

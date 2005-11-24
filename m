@@ -1,24 +1,24 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH 4/4] fbdev: Convert a few drivers
- to use the fb_find_best_display helper
-Date: Thu, 24 Nov 2005 14:44:16 +0800
-Message-ID: <43856140.2010706@gmail.com>
+	to use the fb_find_best_display helper
+Date: Thu, 24 Nov 2005 17:53:58 +1100
+Message-ID: <1132815239.26560.445.camel@gaston>
 References: <435F70CE.1070207@gmail.com> <1132809627.26560.436.camel@gaston>
+	 <43856140.2010706@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EfArA-00020D-1Z
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Nov 2005 22:45:20 -0800
-Received: from xproxy.gmail.com ([66.249.82.194])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EfAr9-0002ER-UM
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Nov 2005 22:45:20 -0800
-Received: by xproxy.gmail.com with SMTP id s6so128632wxc
-        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 23 Nov 2005 22:45:19 -0800 (PST)
-In-Reply-To: <1132809627.26560.436.camel@gaston>
+	id 1EfB3Y-0002as-1V
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Nov 2005 22:58:08 -0800
+Received: from gate.crashing.org ([63.228.1.57])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44)
+	id 1EfB3X-0003YJ-Tm
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Nov 2005 22:58:08 -0800
+In-Reply-To: <43856140.2010706@gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,39 +30,33 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Andrew Morton <akpm@osdl.org>, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>
 
-Benjamin Herrenschmidt wrote:
-> On Wed, 2005-10-26 at 20:04 +0800, Antonino A. Daplas wrote:
->> Convert i810fb, nvidiafb and savagefb to use the fb_find_best_display
->> helper when searching for the initial video mode.
+
+> My experience though is the contrary.  I find that if the edid has
+> detailed timings and the 'prefer first detailed timing' flag is set,
+> the detailed timings are reliable even on CRT displays.
 > 
->>From my experience, the 1st detailed timing is only good for flat
-> panels... A lot of CRTs put junk in there. In fact, I suspect for CRT,
-> the only sane thing is to default to 1024x768 if it fits the timings or
-> 640x480 if not =P and let the user/distro deal with changing to
-> something else.
+> However, there are buggy edid blocks where the flag is set, but there
+> are no detailed timings at all, and that's when I get garbage.  (I already
+> sent a patch that fixes these buggy edid blocks).
+
+Ok, it may have been these then, I remember issues with some IBM CRTs a
+while ago :)
+
+>And still, there are edid blocks where they enumerate detailed timings
+> but does not set the flag. This should not present with problems though.
 > 
+> Anyway, if there are such bad edid's out there, it's good if users refer
+> them to the list so I can add them to the monitor blacklist database (we
+> already have that in fbmon.c which currently has 2 entries). Anyway,
+> users can always override the chosen default mode if it does not work
+> for them.
 
-My experience though is the contrary.  I find that if the edid has
-detailed timings and the 'prefer first detailed timing' flag is set,
-the detailed timings are reliable even on CRT displays.
+Ben.
 
-However, there are buggy edid blocks where the flag is set, but there
-are no detailed timings at all, and that's when I get garbage.  (I already
-sent a patch that fixes these buggy edid blocks).
 
-And still, there are edid blocks where they enumerate detailed timings
-but does not set the flag. This should not present with problems though.
-
-Anyway, if there are such bad edid's out there, it's good if users refer
-them to the list so I can add them to the monitor blacklist database (we
-already have that in fbmon.c which currently has 2 entries). Anyway,
-users can always override the chosen default mode if it does not work
-for them.
-
-Tony
 
 
 -------------------------------------------------------

@@ -1,75 +1,89 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Console rotation problems
-Date: Thu, 24 Nov 2005 14:05:42 +1100
-Message-ID: <1132801542.26560.402.camel@gaston>
-References: <1132793150.26560.357.camel@gaston>
-	 <1132793556.26560.361.camel@gaston>  <1132796831.26560.392.camel@gaston>
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: [PATCH] Add sysfs entry to disable framebuffer access
+Date: Thu, 24 Nov 2005 05:09:09 +0000
+Message-ID: <20051124050909.GA28015@srcf.ucam.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932617AbVKXDJn@vger.kernel.org>
-In-Reply-To: <1132796831.26560.392.camel@gaston>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030597AbVKXFJb@vger.kernel.org>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: adaplas@gmail.com
-Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 7bit
+To: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-Remove bogus usage of test/set_bit() from fbcon rotation code and just
-manipulate the bits directly. This fixes an oops on powerpc among others
-and should be faster. Seems to work fine on the G5 here.
+What
+----
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+The following patch adds a state file to /sys/class/graphics/fb*. 
+Echoing values to it will alter the contents of fb_info->state, 
+resulting in reads and writes to the framebuffer device being discarded 
+and EPERM being returned.
+
+Why
 ---
 
-And here is the fix. Tony, did I miss something ?
+When resuming from ACPI suspend to RAM, video hardware is not required 
+to be in a sane state. The most effective workaround is vbetool, a 
+userspace application that executes video BIOS code in order to 
+reinitialise the graphics hardware. Different hardware requires 
+different reinitialisation, and keeping this policy in userspace is more 
+sensible than putting it in the kernel.
 
-Index: linux-serialfix/drivers/video/console/fbcon_rotate.h
-===================================================================
---- linux-serialfix.orig/drivers/video/console/fbcon_rotate.h	2005-11-23 11:07:23.000000000 +1100
-+++ linux-serialfix/drivers/video/console/fbcon_rotate.h	2005-11-24 14:02:22.000000000 +1100
-@@ -21,21 +21,13 @@
-         (s == SCROLL_REDRAW || s == SCROLL_MOVE || !(i)->fix.xpanstep) ? \
-         (i)->var.xres : (i)->var.xres_virtual; })
- 
--/*
-- * The bitmap is always big endian
-- */
--#if defined(__LITTLE_ENDIAN)
--#define FBCON_BIT(b) (7 - (b))
--#else
--#define FBCON_BIT(b) (b)
--#endif
- 
- static inline int pattern_test_bit(u32 x, u32 y, u32 pitch, const char *pat)
- {
- 	u32 tmp = (y * pitch) + x, index = tmp / 8,  bit = tmp % 8;
- 
- 	pat +=index;
--	return (test_bit(FBCON_BIT(bit), (void *)pat));
-+	return (*pat) & (0x80 >> bit);
+However, since reinitialisation occurs in userspace, it happens some 
+time after the kernel has restarted. During resume, the kernel attempts 
+to printk all sorts of information. If a framebuffer is in use, this 
+will trigger framebuffer writes. Since the hardware has not yet been 
+reinitialised, this can result in system hangs.
+
+This patch allows userspace to disable framebuffer writes immediately 
+before suspend. On resume, userspace can then reinitialise the 
+hardware and reenable framebuffer writes. As a result, system resiliance 
+over suspend/resume is improved.
+
+Signed-off-by: Matthew Garrett <mjg59@srcf.ucam.org>
+
+--- a/drivers/video/fbsysfs.c	2005-11-24 02:07:07 +0000
++++ b/drivers/video/fbsysfs.c	2005-11-24 02:07:58 +0000
+@@ -492,6 +492,30 @@
+ 	return snprintf(buf, PAGE_SIZE, "%s\n", fb_info->fix.id);
  }
  
- static inline void pattern_set_bit(u32 x, u32 y, u32 pitch, char *pat)
-@@ -43,7 +35,8 @@ static inline void pattern_set_bit(u32 x
- 	u32 tmp = (y * pitch) + x, index = tmp / 8, bit = tmp % 8;
- 
- 	pat += index;
--	set_bit(FBCON_BIT(bit), (void *)pat);
++static ssize_t store_fbstate(struct class_device *class_device, const char * buf,
++			   size_t count)
++{
++	struct fb_info *fb_info =
++		(struct fb_info *)class_get_devdata(class_device);
++	u32 state;
++	char *last = NULL;
 +
-+	(*pat) |= 0x80 >> bit;
- }
++	state = simple_strtoul(buf, &last, 0);
++
++	acquire_console_sem();
++	fb_set_suspend(fb_info, (int)state);
++	release_console_sem();
++
++	return count;
++}
++
++static ssize_t show_fbstate(struct class_device *class_device, char *buf)
++{
++	struct fb_info *fb_info =
++		(struct fb_info *)class_get_devdata(class_device);
++	return snprintf(buf, PAGE_SIZE, "%d\n", fb_info->state);
++}
++
+ static struct class_device_attribute class_device_attrs[] = {
+ 	__ATTR(bits_per_pixel, S_IRUGO|S_IWUSR, show_bpp, store_bpp),
+ 	__ATTR(blank, S_IRUGO|S_IWUSR, show_blank, store_blank),
+@@ -507,6 +531,7 @@
+ 	__ATTR(rotate, S_IRUGO|S_IWUSR, show_rotate, store_rotate),
+ 	__ATTR(con_rotate, S_IRUGO|S_IWUSR, show_con_rotate, store_con_rotate),
+ 	__ATTR(con_rotate_all, S_IWUSR, NULL, store_con_rotate_all),
++	__ATTR(state, S_IRUGO|S_IWUSR, show_fbstate, store_fbstate),
+ };
  
- static inline void rotate_ud(const char *in, char *out, u32 width, u32 height)
-Index: linux-serialfix/drivers/video/console/fbcon_ccw.c
-===================================================================
---- linux-serialfix.orig/drivers/video/console/fbcon_ccw.c	2005-11-15 11:54:14.000000000 +1100
-+++ linux-serialfix/drivers/video/console/fbcon_ccw.c	2005-11-24 14:03:48.000000000 +1100
-@@ -34,7 +34,7 @@ static inline void ccw_update_attr(u8 *d
- 		msk <<= (8 - mod);
- 
- 	if (offset > mod)
--		set_bit(FBCON_BIT(7), (void *)&msk1);
-+		msk1 |= 0x01;
- 
- 	for (i = 0; i < vc->vc_font.width; i++) {
- 		for (j = 0; j < width; j++) {
+ int fb_init_class_device(struct fb_info *fb_info)
+
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org

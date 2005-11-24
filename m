@@ -1,89 +1,54 @@
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: [PATCH] Add sysfs entry to disable framebuffer access
-Date: Thu, 24 Nov 2005 05:09:09 +0000
-Message-ID: <20051124050909.GA28015@srcf.ucam.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 4/4] fbdev: Convert a few drivers
+	to use the fb_find_best_display helper
+Date: Thu, 24 Nov 2005 16:20:27 +1100
+Message-ID: <1132809627.26560.436.camel@gaston>
+References: <435F70CE.1070207@gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030597AbVKXFJb@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1Ef9av-0006Oq-1p
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Nov 2005 21:24:29 -0800
+Received: from gate.crashing.org ([63.228.1.57])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44)
+	id 1Ef9at-0008R6-N1
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 23 Nov 2005 21:24:29 -0800
+In-Reply-To: <435F70CE.1070207@gmail.com>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Andrew Morton <akpm@osdl.org>
 
-What
-----
+On Wed, 2005-10-26 at 20:04 +0800, Antonino A. Daplas wrote:
+> Convert i810fb, nvidiafb and savagefb to use the fb_find_best_display
+> helper when searching for the initial video mode.
 
-The following patch adds a state file to /sys/class/graphics/fb*. 
-Echoing values to it will alter the contents of fb_info->state, 
-resulting in reads and writes to the framebuffer device being discarded 
-and EPERM being returned.
+From my experience, the 1st detailed timing is only good for flat
+panels... A lot of CRTs put junk in there. In fact, I suspect for CRT,
+the only sane thing is to default to 1024x768 if it fits the timings or
+640x480 if not =P and let the user/distro deal with changing to
+something else.
 
-Why
----
-
-When resuming from ACPI suspend to RAM, video hardware is not required 
-to be in a sane state. The most effective workaround is vbetool, a 
-userspace application that executes video BIOS code in order to 
-reinitialise the graphics hardware. Different hardware requires 
-different reinitialisation, and keeping this policy in userspace is more 
-sensible than putting it in the kernel.
-
-However, since reinitialisation occurs in userspace, it happens some 
-time after the kernel has restarted. During resume, the kernel attempts 
-to printk all sorts of information. If a framebuffer is in use, this 
-will trigger framebuffer writes. Since the hardware has not yet been 
-reinitialised, this can result in system hangs.
-
-This patch allows userspace to disable framebuffer writes immediately 
-before suspend. On resume, userspace can then reinitialise the 
-hardware and reenable framebuffer writes. As a result, system resiliance 
-over suspend/resume is improved.
-
-Signed-off-by: Matthew Garrett <mjg59@srcf.ucam.org>
-
---- a/drivers/video/fbsysfs.c	2005-11-24 02:07:07 +0000
-+++ b/drivers/video/fbsysfs.c	2005-11-24 02:07:58 +0000
-@@ -492,6 +492,30 @@
- 	return snprintf(buf, PAGE_SIZE, "%s\n", fb_info->fix.id);
- }
- 
-+static ssize_t store_fbstate(struct class_device *class_device, const char * buf,
-+			   size_t count)
-+{
-+	struct fb_info *fb_info =
-+		(struct fb_info *)class_get_devdata(class_device);
-+	u32 state;
-+	char *last = NULL;
-+
-+	state = simple_strtoul(buf, &last, 0);
-+
-+	acquire_console_sem();
-+	fb_set_suspend(fb_info, (int)state);
-+	release_console_sem();
-+
-+	return count;
-+}
-+
-+static ssize_t show_fbstate(struct class_device *class_device, char *buf)
-+{
-+	struct fb_info *fb_info =
-+		(struct fb_info *)class_get_devdata(class_device);
-+	return snprintf(buf, PAGE_SIZE, "%d\n", fb_info->state);
-+}
-+
- static struct class_device_attribute class_device_attrs[] = {
- 	__ATTR(bits_per_pixel, S_IRUGO|S_IWUSR, show_bpp, store_bpp),
- 	__ATTR(blank, S_IRUGO|S_IWUSR, show_blank, store_blank),
-@@ -507,6 +531,7 @@
- 	__ATTR(rotate, S_IRUGO|S_IWUSR, show_rotate, store_rotate),
- 	__ATTR(con_rotate, S_IRUGO|S_IWUSR, show_con_rotate, store_con_rotate),
- 	__ATTR(con_rotate_all, S_IWUSR, NULL, store_con_rotate_all),
-+	__ATTR(state, S_IRUGO|S_IWUSR, show_fbstate, store_fbstate),
- };
- 
- int fb_init_class_device(struct fb_info *fb_info)
+Ben.
 
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+
+
+-------------------------------------------------------
+This SF.net email is sponsored by: Splunk Inc. Do you grep through log files
+for problems?  Stop!  Download the new AJAX search engine that makes
+searching your log files as easy as surfing the  web.  DOWNLOAD SPLUNK!
+http://ads.osdn.com/?ad_id=7637&alloc_id=16865&op=click

@@ -1,19 +1,19 @@
 From: Knut Petersen <Knut_Petersen@t-online.de>
-Subject: Patch to framebuffer
-Date: Thu, 24 Nov 2005 18:21:44 +0100
-Message-ID: <4385F6A8.60808@t-online.de>
+Subject: RFC: bitmap line alignment
+Date: Fri, 25 Nov 2005 13:16:35 +0100
+Message-ID: <438700A3.3070503@t-online.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EfKnD-0000MK-73
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 24 Nov 2005 09:21:55 -0800
-Received: from mailout06.sul.t-online.com ([194.25.134.19])
+	id 1EfcVN-0003qI-KB
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 25 Nov 2005 04:16:41 -0800
+Received: from mailout01.sul.t-online.com ([194.25.134.80])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EfKn9-0000jy-Qr
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 24 Nov 2005 09:21:55 -0800
+	id 1EfcVM-0006uT-7U
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 25 Nov 2005 04:16:41 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -24,49 +24,45 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: nathan.cline@gmail.com
-Cc: linux-fbdev-devel@lists.sourceforge.net, Linux Kernel Development <linux-kernel@vger.kernel.org>, "Antonino A. Daplas" <adaplas@gmail.com>
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Hi Nathan,
+Hi everybody
 
-Updating only one framebuffer console at a time is a real feature for me,
-it allows a really quick developement cycle:
+I learned the hard way that image->width*image->height is not equal to th=
+e
+number of bits consumed by the image bitmap. Every single line of bits is
+aligned to a byte boundary.
 
-            compile vesafb into the kernel, cyblafb as a module
-            start with vesafb
-loop:    load cyblafb
-            switch to cyblafb, test it
-            correct bugs, compile new cyblafb module
-            switch to vesafb
-            unload vesafb
-            goto loop
-           
-Although both vesafb and cyblafb control the same hardware, this is
-possible because of the "feature" you want to remove.
+Wouldn=B4t it be much more efficient to align every line to an u32 bounda=
+ry?
+Despite the obvious advantages of aligned cpu access to large arrays it
+would also help to simplify the code for at least the cyberblade=20
+acceleration
+engine.
 
-On the other hand I do understand that your patch is valuable, if I had
-two monitors attached I certainly would like to be able to use both at the
-same time.
+The cyberblade always requires 32 bit quantities, so if the width of the=20
+image
+is eg. 33, I have to feed _two_ u32 to it for every pixel line. Is the=20
+same true
+for other acceleration engines?
 
-I believe that you should introduce your code either as a compile time
-option or even better it should be possible to disable it via sysfs:
+I have not read the code of most of the framebuffer drivers, but I know=20
+that
+a lot of them do not use accelerated imageblits. Those that do provide=20
+their own
+functions would need to be adapted, as well as the cfb_imageblit=20
+function ...
 
-     /sys/class/graphics/fb?/update_mode
-
-0 could be the default and would activate your new code
-1 would restore the old "one active" mode.
-
-Please  consider my arguments and join us at
-
-linux-fbdev-devel@lists.sourceforge.net
+Comments, please.
 
 cu,
  Knut
 
 
 -------------------------------------------------------
-This SF.net email is sponsored by: Splunk Inc. Do you grep through log files
+This SF.net email is sponsored by: Splunk Inc. Do you grep through log fi=
+les
 for problems?  Stop!  Download the new AJAX search engine that makes
 searching your log files as easy as surfing the  web.  DOWNLOAD SPLUNK!
-http://ads.osdn.com/?ad_id=7637&alloc_id=16865&op=click
+http://ads.osdn.com/?ad_id=3D7637&alloc_id=3D16865&op=3Dclick

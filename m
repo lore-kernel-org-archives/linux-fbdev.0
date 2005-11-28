@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 15/16] cg3fb: Kconfig fix
-Date: Wed, 30 Nov 2005 09:05:42 +0800
-Message-ID: <438CFAE6.7090108@gmail.com>
+Subject: [PATCH 14/16] fbdev: Cleanup
+Date: Mon, 28 Nov 2005 23:46:54 +0800
+Message-ID: <438B266E.1060801@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EhGph-0002W0-OC
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Nov 2005 17:32:29 -0800
-Received: from zproxy.gmail.com ([64.233.162.201])
+	id 1EhGpb-0002Uz-5i
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Nov 2005 17:32:23 -0800
+Received: from zproxy.gmail.com ([64.233.162.203])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EhGpg-0002py-I2
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Nov 2005 17:32:29 -0800
-Received: by zproxy.gmail.com with SMTP id r28so881935nza
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 29 Nov 2005 17:32:28 -0800 (PST)
+	id 1EhGpa-00035W-P8
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Nov 2005 17:32:23 -0800
+Received: by zproxy.gmail.com with SMTP id z3so2537654nzf
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 29 Nov 2005 17:32:21 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,57 +28,204 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Mark Fortescue <mark@mtfhpc.demon.co.uk>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
-
-A cut and past error regarding the CG3 frame buffer needs to be fixed. It
-also affects Creator/Creator3D/Elite3D.
+- remove unneeded casts
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/Kconfig |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
+ drivers/video/fbsysfs.c |   53 ++++++++++++++++++-----------------------------
+ 1 files changed, 20 insertions(+), 33 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 25b6ca6..3e470c8 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -534,6 +534,12 @@ config FB_SUN3
- 	bool "Sun3 framebuffer support"
- 	depends on (FB = y) && (SUN3 || SUN3X) && BROKEN
+diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
+index 1f7302e..15707e4 100644
+--- a/drivers/video/fbsysfs.c
++++ b/drivers/video/fbsysfs.c
+@@ -106,8 +106,7 @@ static int mode_string(char *buf, unsign
+ static ssize_t store_mode(struct class_device *class_device, const char * buf,
+ 			  size_t count)
+ {
+-	struct fb_info *fb_info =
+-		(struct fb_info *)class_get_devdata(class_device);
++	struct fb_info *fb_info = class_get_devdata(class_device);
+ 	char mstr[100];
+ 	struct fb_var_screeninfo var;
+ 	struct fb_modelist *modelist;
+@@ -137,8 +136,7 @@ static ssize_t store_mode(struct class_d
  
-+config FB_SBUS
-+	bool "SBUS and UPA framebuffers"
-+	depends on (FB = y) && (SPARC32 || SPARC64)
-+	help
-+	  Say Y if you want support for SBUS or UPA based frame buffer device.
-+
- config FB_BW2
- 	bool "BWtwo support"
- 	depends on (FB = y) && ((SPARC32 || SPARC64) && FB_SBUS || (SUN3 || SUN3X) && FB_SUN3)
-@@ -546,6 +552,7 @@ config FB_BW2
- config FB_CG3
- 	bool "CGthree support"
- 	depends on (FB = y) && ((SPARC32 || SPARC64) && FB_SBUS || (SUN3 || SUN3X) && FB_SUN3)
-+	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
- 	help
-@@ -1210,12 +1217,6 @@ config FB_AU1100
+ static ssize_t show_mode(struct class_device *class_device, char *buf)
+ {
+-	struct fb_info *fb_info =
+-		(struct fb_info *)class_get_devdata(class_device);
++	struct fb_info *fb_info = class_get_devdata(class_device);
  
- source "drivers/video/geode/Kconfig"
+ 	if (!fb_info->mode)
+ 		return 0;
+@@ -149,8 +147,7 @@ static ssize_t show_mode(struct class_de
+ static ssize_t store_modes(struct class_device *class_device, const char * buf,
+ 			   size_t count)
+ {
+-	struct fb_info *fb_info =
+-		(struct fb_info *)class_get_devdata(class_device);
++	struct fb_info *fb_info = class_get_devdata(class_device);
+ 	LIST_HEAD(old_list);
+ 	int i = count / sizeof(struct fb_videomode);
  
--config FB_SBUS
--	bool "SBUS and UPA framebuffers"
--	depends on (FB = y) && (SPARC32 || SPARC64)
--	help
--	  Say Y if you want support for SBUS or UPA based frame buffer device.
--
- config FB_FFB
- 	bool "Creator/Creator3D/Elite3D support"
- 	depends on FB_SBUS && SPARC64
+@@ -174,8 +171,7 @@ static ssize_t store_modes(struct class_
+ 
+ static ssize_t show_modes(struct class_device *class_device, char *buf)
+ {
+-	struct fb_info *fb_info =
+-		(struct fb_info *)class_get_devdata(class_device);
++	struct fb_info *fb_info = class_get_devdata(class_device);
+ 	unsigned int i;
+ 	struct list_head *pos;
+ 	struct fb_modelist *modelist;
+@@ -193,8 +189,7 @@ static ssize_t show_modes(struct class_d
+ static ssize_t store_bpp(struct class_device *class_device, const char * buf,
+ 			 size_t count)
+ {
+-	struct fb_info *fb_info =
+-		(struct fb_info *)class_get_devdata(class_device);
++	struct fb_info *fb_info = class_get_devdata(class_device);
+ 	struct fb_var_screeninfo var;
+ 	char ** last = NULL;
+ 	int err;
+@@ -208,8 +203,7 @@ static ssize_t store_bpp(struct class_de
+ 
+ static ssize_t show_bpp(struct class_device *class_device, char *buf)
+ {
+-	struct fb_info *fb_info =
+-		(struct fb_info *)class_get_devdata(class_device);
++	struct fb_info *fb_info = class_get_devdata(class_device);
+ 	return snprintf(buf, PAGE_SIZE, "%d\n", fb_info->var.bits_per_pixel);
+ }
+ 
+@@ -280,8 +274,7 @@ static ssize_t show_con_rotate(struct cl
+ static ssize_t store_virtual(struct class_device *class_device,
+ 			     const char * buf, size_t count)
+ {
+-	struct fb_info *fb_info =
+-		(struct fb_info *)class_get_devdata(class_device);
++	struct fb_info *fb_info = class_get_devdata(class_device);
+ 	struct fb_var_screeninfo var;
+ 	char *last = NULL;
+ 	int err;
+@@ -300,16 +293,14 @@ static ssize_t store_virtual(struct clas
+ 
+ static ssize_t show_virtual(struct class_device *class_device, char *buf)
+ {
+-	struct fb_info *fb_info =
+-		(struct fb_info *)class_get_devdata(class_device);
++	struct fb_info *fb_info = class_get_devdata(class_device);
+ 	return snprintf(buf, PAGE_SIZE, "%d,%d\n", fb_info->var.xres_virtual,
+ 			fb_info->var.yres_virtual);
+ }
+ 
+ static ssize_t show_stride(struct class_device *class_device, char *buf)
+ {
+-	struct fb_info *fb_info =
+-		(struct fb_info *)class_get_devdata(class_device);
++	struct fb_info *fb_info = class_get_devdata(class_device);
+ 	return snprintf(buf, PAGE_SIZE, "%d\n", fb_info->fix.line_length);
+ }
+ 
+@@ -320,7 +311,7 @@ static ssize_t show_stride(struct class_
+ static ssize_t store_cmap(struct class_device *class_device, const char *buf,
+ 			  size_t count)
+ {
+-	struct fb_info *fb_info = (struct fb_info *)class_get_devdata(class_device);
++	struct fb_info *fb_info = class_get_devdata(class_device);
+ 	int rc, i, start, length, transp = 0;
+ 
+ 	if ((count > PAGE_SIZE) || ((count % 16) != 0))
+@@ -380,8 +371,7 @@ static ssize_t store_cmap(struct class_d
+ 
+ static ssize_t show_cmap(struct class_device *class_device, char *buf)
+ {
+-	struct fb_info *fb_info =
+-		(struct fb_info *)class_get_devdata(class_device);
++	struct fb_info *fb_info = class_get_devdata(class_device);
+ 	unsigned int i;
+ 
+ 	if (!fb_info->cmap.red || !fb_info->cmap.blue ||
+@@ -405,8 +395,7 @@ static ssize_t show_cmap(struct class_de
+ static ssize_t store_blank(struct class_device *class_device, const char * buf,
+ 			   size_t count)
+ {
+-	struct fb_info *fb_info =
+-		(struct fb_info *)class_get_devdata(class_device);
++	struct fb_info *fb_info = class_get_devdata(class_device);
+ 	char *last = NULL;
+ 	int err;
+ 
+@@ -422,41 +411,40 @@ static ssize_t store_blank(struct class_
+ 
+ static ssize_t show_blank(struct class_device *class_device, char *buf)
+ {
+-//	struct fb_info *fb_info = (struct fb_info *)class_get_devdata(class_device);
++//	struct fb_info *fb_info = class_get_devdata(class_device);
+ 	return 0;
+ }
+ 
+ static ssize_t store_console(struct class_device *class_device,
+ 			     const char * buf, size_t count)
+ {
+-//	struct fb_info *fb_info = (struct fb_info *)class_get_devdata(class_device);
++//	struct fb_info *fb_info = class_get_devdata(class_device);
+ 	return 0;
+ }
+ 
+ static ssize_t show_console(struct class_device *class_device, char *buf)
+ {
+-//	struct fb_info *fb_info = (struct fb_info *)class_get_devdata(class_device);
++//	struct fb_info *fb_info = class_get_devdata(class_device);
+ 	return 0;
+ }
+ 
+ static ssize_t store_cursor(struct class_device *class_device,
+ 			    const char * buf, size_t count)
+ {
+-//	struct fb_info *fb_info = (struct fb_info *)class_get_devdata(class_device);
++//	struct fb_info *fb_info = class_get_devdata(class_device);
+ 	return 0;
+ }
+ 
+ static ssize_t show_cursor(struct class_device *class_device, char *buf)
+ {
+-//	struct fb_info *fb_info = (struct fb_info *)class_get_devdata(class_device);
++//	struct fb_info *fb_info = class_get_devdata(class_device);
+ 	return 0;
+ }
+ 
+ static ssize_t store_pan(struct class_device *class_device, const char * buf,
+ 			 size_t count)
+ {
+-	struct fb_info *fb_info =
+-		(struct fb_info *)class_get_devdata(class_device);
++	struct fb_info *fb_info = class_get_devdata(class_device);
+ 	struct fb_var_screeninfo var;
+ 	char *last = NULL;
+ 	int err;
+@@ -479,15 +467,14 @@ static ssize_t store_pan(struct class_de
+ 
+ static ssize_t show_pan(struct class_device *class_device, char *buf)
+ {
+-	struct fb_info *fb_info =
+-		(struct fb_info *)class_get_devdata(class_device);
++	struct fb_info *fb_info = class_get_devdata(class_device);
+ 	return snprintf(buf, PAGE_SIZE, "%d,%d\n", fb_info->var.xoffset,
+ 			fb_info->var.xoffset);
+ }
+ 
+ static ssize_t show_name(struct class_device *class_device, char *buf)
+ {
+-	struct fb_info *fb_info = (struct fb_info *)class_get_devdata(class_device);
++	struct fb_info *fb_info = class_get_devdata(class_device);
+ 
+ 	return snprintf(buf, PAGE_SIZE, "%s\n", fb_info->fix.id);
+ }
 
 
 

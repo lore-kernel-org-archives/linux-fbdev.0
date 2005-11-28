@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 4/16] rivafb: Driver cleanups
-Date: Mon, 28 Nov 2005 23:17:30 +0800
-Message-ID: <438B1F8A.7020801@gmail.com>
+Subject: [PATCH 8/16] imsttfb: Driver cleanups
+Date: Mon, 28 Nov 2005 23:25:56 +0800
+Message-ID: <438B2184.1010908@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EhGn8-00023V-3u
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Nov 2005 17:29:50 -0800
-Received: from zproxy.gmail.com ([64.233.162.205])
+	id 1EhGom-0002Pm-Ag
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Nov 2005 17:31:32 -0800
+Received: from zproxy.gmail.com ([64.233.162.201])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EhGn7-000244-Jp
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Nov 2005 17:29:50 -0800
-Received: by zproxy.gmail.com with SMTP id z3so2537390nzf
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 29 Nov 2005 17:29:48 -0800 (PST)
+	id 1EhGol-0002py-SH
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Nov 2005 17:31:32 -0800
+Received: by zproxy.gmail.com with SMTP id r28so881935nza
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 29 Nov 2005 17:31:30 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,259 +28,226 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Ryan Nielsen <ran@krazynet.com>
 
-- remove redundant casts
+- remove unneeded casts
+- the pseudo_palette, if using the generic drawing functions, must always
+be u32 regardless of the bpp
+- use framebuffer_alloc/framebuffer_release to allocate memory
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/riva/fbdev.c      |   44 ++++++++++++++++++++-------------------
- drivers/video/riva/rivafb-i2c.c |    8 ++++---
- 2 files changed, 26 insertions(+), 26 deletions(-)
+ drivers/video/imsttfb.c |   56 +++++++++++++++++++++++------------------------
+ 1 files changed, 27 insertions(+), 29 deletions(-)
 
-diff --git a/drivers/video/riva/fbdev.c b/drivers/video/riva/fbdev.c
-index 3e9f96e..dd7b2cc 100644
---- a/drivers/video/riva/fbdev.c
-+++ b/drivers/video/riva/fbdev.c
-@@ -630,7 +630,7 @@ static void riva_load_video_mode(struct 
- 	int bpp, width, hDisplaySize, hDisplay, hStart,
- 	    hEnd, hTotal, height, vDisplay, vStart, vEnd, vTotal, dotClock;
- 	int hBlankStart, hBlankEnd, vBlankStart, vBlankEnd;
--	struct riva_par *par = (struct riva_par *) info->par;
-+	struct riva_par *par = info->par;
- 	struct riva_regs newmode;
- 	
- 	NVTRACE_ENTER();
-@@ -925,7 +925,7 @@ riva_set_rop_solid(struct riva_par *par,
- 
- static void riva_setup_accel(struct fb_info *info)
+diff --git a/drivers/video/imsttfb.c b/drivers/video/imsttfb.c
+index 7fbe242..a5d8130 100644
+--- a/drivers/video/imsttfb.c
++++ b/drivers/video/imsttfb.c
+@@ -323,6 +323,7 @@ struct imstt_par {
+ 	unsigned long cmap_regs_phys;
+ 	__u8 *cmap_regs;
+ 	__u32 ramdac;
++	__u32 palette[16];
+ };
+  
+ enum {
+@@ -657,7 +658,7 @@ set_imstt_regvals_tvp (struct imstt_par 
+ static void
+ set_imstt_regvals (struct fb_info *info, u_int bpp)
  {
--	struct riva_par *par = (struct riva_par *) info->par;
-+	struct riva_par *par = info->par;
+-	struct imstt_par *par = (struct imstt_par *) info->par;
++	struct imstt_par *par = info->par;
+ 	struct imstt_regvals *init = &par->init;
+ 	__u32 ctl, pitch, byteswap, scr;
  
- 	RIVA_FIFO_FREE(par->riva, Clip, 2);
- 	NV_WR32(&par->riva.Clip->TopLeft, 0, 0x0);
-@@ -979,7 +979,7 @@ static int riva_get_cmap_len(const struc
- #ifdef CONFIG_PMAC_BACKLIGHT
- static int riva_set_backlight_enable(int on, int level, void *data)
+@@ -749,7 +750,7 @@ set_imstt_regvals (struct fb_info *info,
+ static inline void
+ set_offset (struct fb_var_screeninfo *var, struct fb_info *info)
  {
--	struct riva_par *par = (struct riva_par *)data;
-+	struct riva_par *par = data;
- 	U032 tmp_pcrt, tmp_pmc;
- 
- 	tmp_pmc = par->riva.PMC[0x10F0/4] & 0x0000FFFF;
-@@ -1008,7 +1008,7 @@ static int riva_set_backlight_level(int 
- 
- static int rivafb_open(struct fb_info *info, int user)
+-	struct imstt_par *par = (struct imstt_par *) info->par;
++	struct imstt_par *par = info->par;
+ 	__u32 off = var->yoffset * (info->fix.line_length >> 3)
+ 		    + ((var->xoffset * (var->bits_per_pixel >> 3)) >> 3);
+ 	write_reg_le32(par->dc_regs, SSR, off);
+@@ -863,7 +864,7 @@ imsttfb_check_var(struct fb_var_screenin
+ static int
+ imsttfb_set_par(struct fb_info *info) 
  {
--	struct riva_par *par = (struct riva_par *) info->par;
-+	struct riva_par *par = info->par;
- 	int cnt = atomic_read(&par->ref_count);
- 
- 	NVTRACE_ENTER();
-@@ -1034,7 +1034,7 @@ static int rivafb_open(struct fb_info *i
- 
- static int rivafb_release(struct fb_info *info, int user)
+-	struct imstt_par *par = (struct imstt_par *) info->par;
++	struct imstt_par *par = info->par;
+ 		
+ 	if (!compute_imstt_regvals(par, info->var.xres, info->var.yres))
+ 		return -EINVAL;
+@@ -881,7 +882,7 @@ static int
+ imsttfb_setcolreg (u_int regno, u_int red, u_int green, u_int blue,
+ 		   u_int transp, struct fb_info *info)
  {
--	struct riva_par *par = (struct riva_par *) info->par;
-+	struct riva_par *par = info->par;
- 	int cnt = atomic_read(&par->ref_count);
+-	struct imstt_par *par = (struct imstt_par *) info->par;
++	struct imstt_par *par = info->par;
+ 	u_int bpp = info->var.bits_per_pixel;
  
- 	NVTRACE_ENTER();
-@@ -1057,7 +1057,7 @@ static int rivafb_release(struct fb_info
- static int rivafb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
+ 	if (regno > 255)
+@@ -905,14 +906,17 @@ imsttfb_setcolreg (u_int regno, u_int re
+ 	if (regno < 16)
+ 		switch (bpp) {
+ 			case 16:
+-				((u16 *)info->pseudo_palette)[regno] = (regno << (info->var.green.length == 5 ? 10 : 11)) | (regno << 5) | regno;
++				par->palette[regno] =
++					(regno << (info->var.green.length ==
++					5 ? 10 : 11)) | (regno << 5) | regno;
+ 				break;
+ 			case 24:
+-				((u32 *)info->pseudo_palette)[regno] = (regno << 16) | (regno << 8) | regno;
++				par->palette[regno] =
++					(regno << 16) | (regno << 8) | regno;
+ 				break;
+ 			case 32: {
+ 				int i = (regno << 8) | regno;
+-				((u32 *)info->pseudo_palette)[regno] = (i << 16) | i;
++				par->palette[regno] = (i << 16) |i;
+ 				break;
+ 			}
+ 		}
+@@ -935,7 +939,7 @@ imsttfb_pan_display(struct fb_var_screen
+ static int 
+ imsttfb_blank(int blank, struct fb_info *info)
  {
- 	struct fb_videomode *mode;
--	struct riva_par *par = (struct riva_par *) info->par;
-+	struct riva_par *par = info->par;
- 	int nom, den;		/* translating from pixels->bytes */
- 	int mode_valid = 0;
- 	
-@@ -1166,7 +1166,7 @@ static int rivafb_check_var(struct fb_va
+-	struct imstt_par *par = (struct imstt_par *) info->par;
++	struct imstt_par *par = info->par;
+ 	__u32 ctrl;
  
- static int rivafb_set_par(struct fb_info *info)
- {
--	struct riva_par *par = (struct riva_par *) info->par;
-+	struct riva_par *par = info->par;
+ 	ctrl = read_reg_le32(par->dc_regs, STGCTL);
+@@ -989,7 +993,7 @@ imsttfb_blank(int blank, struct fb_info 
+ static void
+ imsttfb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
+ { 
+-	struct imstt_par *par = (struct imstt_par *) info->par;
++	struct imstt_par *par = info->par;
+ 	__u32 Bpp, line_pitch, bgc, dx, dy, width, height;
  
- 	NVTRACE_ENTER();
- 	/* vgaHWunlock() + riva unlock (0x7F) */
-@@ -1205,7 +1205,7 @@ static int rivafb_set_par(struct fb_info
- static int rivafb_pan_display(struct fb_var_screeninfo *var,
- 			      struct fb_info *info)
+ 	bgc = rect->color;
+@@ -1033,7 +1037,7 @@ imsttfb_fillrect(struct fb_info *info, c
+ static void
+ imsttfb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
  {
--	struct riva_par *par = (struct riva_par *)info->par;
-+	struct riva_par *par = info->par;
- 	unsigned int base;
+-	struct imstt_par *par = (struct imstt_par *) info->par;
++	struct imstt_par *par = info->par;
+ 	__u32 Bpp, line_pitch, fb_offset_old, fb_offset_new, sp, dp_octl;
+  	__u32 cnt, bltctl, sx, sy, dx, dy, height, width;
  
- 	NVTRACE_ENTER();
-@@ -1241,7 +1241,7 @@ static int rivafb_pan_display(struct fb_
+@@ -1195,7 +1199,7 @@ imstt_set_cursor(struct imstt_par *par, 
+ static int 
+ imsttfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ {
+-	struct imstt_par *par = (struct imstt_par *) info->par;
++	struct imstt_par *par = info->par;
+         u32 flags = cursor->set, fg, bg, xx, yy;
  
- static int rivafb_blank(int blank, struct fb_info *info)
+ 	if (cursor->dest == NULL && cursor->rop == ROP_XOR)
+@@ -1266,7 +1270,7 @@ static int
+ imsttfb_ioctl(struct inode *inode, struct file *file, u_int cmd,
+ 	      u_long arg, struct fb_info *info)
  {
--	struct riva_par *par= (struct riva_par *)info->par;
-+	struct riva_par *par= info->par;
- 	unsigned char tmp, vesa;
+-	struct imstt_par *par = (struct imstt_par *) info->par;
++	struct imstt_par *par = info->par;
+ 	void __user *argp = (void __user *)arg;
+ 	__u32 reg[2];
+ 	__u8 idx[2];
+@@ -1350,7 +1354,7 @@ static struct fb_ops imsttfb_ops = {
+ static void __devinit
+ init_imstt(struct fb_info *info)
+ {
+-	struct imstt_par *par = (struct imstt_par *) info->par;
++	struct imstt_par *par = info->par;
+ 	__u32 i, tmp, *ip, *end;
  
- 	tmp = SEQin(par, 0x01) & ~0x20;	/* screen on/off */
-@@ -1304,7 +1304,7 @@ static int rivafb_setcolreg(unsigned reg
- 			  unsigned blue, unsigned transp,
- 			  struct fb_info *info)
- {
--	struct riva_par *par = (struct riva_par *)info->par;
-+	struct riva_par *par = info->par;
- 	RIVA_HW_INST *chip = &par->riva;
- 	int i;
- 
-@@ -1393,7 +1393,7 @@ static int rivafb_setcolreg(unsigned reg
-  */
- static void rivafb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
- {
--	struct riva_par *par = (struct riva_par *) info->par;
-+	struct riva_par *par = info->par;
- 	u_int color, rop = 0;
- 
- 	if ((info->flags & FBINFO_HWACCEL_DISABLED)) {
-@@ -1449,7 +1449,7 @@ static void rivafb_fillrect(struct fb_in
-  */
- static void rivafb_copyarea(struct fb_info *info, const struct fb_copyarea *region)
- {
--	struct riva_par *par = (struct riva_par *) info->par;
-+	struct riva_par *par = info->par;
- 
- 	if ((info->flags & FBINFO_HWACCEL_DISABLED)) {
- 		cfb_copyarea(info, region);
-@@ -1495,7 +1495,7 @@ static inline void convert_bgcolor_16(u3
- static void rivafb_imageblit(struct fb_info *info, 
- 			     const struct fb_image *image)
- {
--	struct riva_par *par = (struct riva_par *) info->par;
-+	struct riva_par *par = info->par;
- 	u32 fgx = 0, bgx = 0, width, tmp;
- 	u8 *cdat = (u8 *) image->data;
- 	volatile u32 __iomem *d;
-@@ -1580,7 +1580,7 @@ static void rivafb_imageblit(struct fb_i
-  */
- static int rivafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
- {
--	struct riva_par *par = (struct riva_par *) info->par;
-+	struct riva_par *par = info->par;
- 	u8 data[MAX_CURS * MAX_CURS/8];
- 	int i, set = cursor->set;
- 	u16 fg, bg;
-@@ -1664,7 +1664,7 @@ static int rivafb_cursor(struct fb_info 
- 
- static int rivafb_sync(struct fb_info *info)
- {
--	struct riva_par *par = (struct riva_par *)info->par;
-+	struct riva_par *par = info->par;
- 
- 	wait_for_idle(par);
- 	return 0;
-@@ -1696,7 +1696,7 @@ static struct fb_ops riva_fb_ops = {
- static int __devinit riva_set_fbinfo(struct fb_info *info)
- {
- 	unsigned int cmap_len;
--	struct riva_par *par = (struct riva_par *) info->par;
-+	struct riva_par *par = info->par;
- 
- 	NVTRACE_ENTER();
- 	info->flags = FBINFO_DEFAULT
-@@ -1733,7 +1733,7 @@ static int __devinit riva_set_fbinfo(str
- #ifdef CONFIG_PPC_OF
- static int __devinit riva_get_EDID_OF(struct fb_info *info, struct pci_dev *pd)
- {
--	struct riva_par *par = (struct riva_par *) info->par;
-+	struct riva_par *par = info->par;
- 	struct device_node *dp;
- 	unsigned char *pedid = NULL;
- 	unsigned char *disptype = NULL;
-@@ -1767,7 +1767,7 @@ static int __devinit riva_get_EDID_OF(st
- #if defined(CONFIG_FB_RIVA_I2C) && !defined(CONFIG_PPC_OF)
- static int __devinit riva_get_EDID_i2c(struct fb_info *info)
- {
--	struct riva_par *par = (struct riva_par *) info->par;
-+	struct riva_par *par = info->par;
- 	struct fb_var_screeninfo var;
- 	int i;
- 
-@@ -1837,7 +1837,7 @@ static void __devinit riva_get_EDID(stru
- static void __devinit riva_get_edidinfo(struct fb_info *info)
- {
- 	struct fb_var_screeninfo *var = &rivafb_default_var;
--	struct riva_par *par = (struct riva_par *) info->par;
-+	struct riva_par *par = info->par;
- 
- 	fb_edid_to_monspecs(par->EDID, &info->monspecs);
- 	fb_videomode_to_modelist(info->monspecs.modedb, info->monspecs.modedb_len,
-@@ -1909,7 +1909,7 @@ static int __devinit rivafb_probe(struct
- 		ret = -ENOMEM;
- 		goto err_ret;
+ 	tmp = read_reg_le32(par->dc_regs, PRC);
+@@ -1413,7 +1417,7 @@ init_imstt(struct fb_info *info)
+ 	if ((info->var.xres * info->var.yres) * (info->var.bits_per_pixel >> 3) > info->fix.smem_len
+ 	    || !(compute_imstt_regvals(par, info->var.xres, info->var.yres))) {
+ 		printk("imsttfb: %ux%ux%u not supported\n", info->var.xres, info->var.yres, info->var.bits_per_pixel);
+-		kfree(info);
++		framebuffer_release(info);
+ 		return;
  	}
--	default_par = (struct riva_par *) info->par;
-+	default_par = info->par;
- 	default_par->pdev = pd;
  
- 	info->pixmap.addr = kmalloc(8 * 1024, GFP_KERNEL);
-@@ -2070,7 +2070,7 @@ static int __devinit rivafb_probe(struct
+@@ -1449,7 +1453,7 @@ init_imstt(struct fb_info *info)
+ 	fb_alloc_cmap(&info->cmap, 0, 0);
  
- err_iounmap_screen_base:
- #ifdef CONFIG_FB_RIVA_I2C
--	riva_delete_i2c_busses((struct riva_par *) info->par);
-+	riva_delete_i2c_busses(info->par);
- #endif
+ 	if (register_framebuffer(info) < 0) {
+-		kfree(info);
++		framebuffer_release(info);
+ 		return;
+ 	}
+ 
+@@ -1474,26 +1478,21 @@ imsttfb_probe(struct pci_dev *pdev, cons
+ 		printk(KERN_ERR "imsttfb: no OF node for pci device\n");
+ #endif /* CONFIG_PPC_OF */
+ 
+-	size = sizeof(struct fb_info) + sizeof(struct imstt_par) +
+-		sizeof(u32) * 16;
+-
+-	info = kmalloc(size, GFP_KERNEL);
++	info = framebuffer_alloc(sizeof(struct imstt_par), &pdev->dev);
+ 
+ 	if (!info) {
+ 		printk(KERN_ERR "imsttfb: Can't allocate memory\n");
+ 		return -ENOMEM;
+ 	}
+ 
+-	memset(info, 0, size);
+-
+-	par = (struct imstt_par *) (info + 1);
++	par = info->par;
+ 
+ 	addr = pci_resource_start (pdev, 0);
+ 	size = pci_resource_len (pdev, 0);
+ 
+ 	if (!request_mem_region(addr, size, "imsttfb")) {
+ 		printk(KERN_ERR "imsttfb: Can't reserve memory region\n");
+-		kfree(info);
++		framebuffer_release(info);
+ 		return -ENODEV;
+ 	}
+ 
+@@ -1516,14 +1515,13 @@ imsttfb_probe(struct pci_dev *pdev, cons
+ 	}
+ 
+ 	info->fix.smem_start = addr;
+-	info->screen_base = (__u8 *)ioremap(addr, par->ramdac == IBM ? 0x400000 : 0x800000);
++	info->screen_base = (__u8 *)ioremap(addr, par->ramdac == IBM ?
++					    0x400000 : 0x800000);
+ 	info->fix.mmio_start = addr + 0x800000;
+ 	par->dc_regs = ioremap(addr + 0x800000, 0x1000);
+ 	par->cmap_regs_phys = addr + 0x840000;
+ 	par->cmap_regs = (__u8 *)ioremap(addr + 0x840000, 0x1000);
+-	info->par = par;
+-	info->pseudo_palette = (void *) (par + 1);
+-	info->device = &pdev->dev;
++	info->pseudo_palette = par->palette;
+ 	init_imstt(info);
+ 
+ 	pci_set_drvdata(pdev, info);
+@@ -1534,7 +1532,7 @@ static void __devexit
+ imsttfb_remove(struct pci_dev *pdev)
+ {
+ 	struct fb_info *info = pci_get_drvdata(pdev);
+-	struct imstt_par *par = (struct imstt_par *) info->par;
++	struct imstt_par *par = info->par;
+ 	int size = pci_resource_len(pdev, 0);
+ 
+ 	unregister_framebuffer(info);
+@@ -1542,7 +1540,7 @@ imsttfb_remove(struct pci_dev *pdev)
+ 	iounmap(par->dc_regs);
  	iounmap(info->screen_base);
- err_iounmap_pramin:
-@@ -2093,7 +2093,7 @@ err_ret:
- static void __exit rivafb_remove(struct pci_dev *pd)
- {
- 	struct fb_info *info = pci_get_drvdata(pd);
--	struct riva_par *par = (struct riva_par *) info->par;
-+	struct riva_par *par = info->par;
- 	
- 	NVTRACE_ENTER();
- 	if (!info)
-diff --git a/drivers/video/riva/rivafb-i2c.c b/drivers/video/riva/rivafb-i2c.c
-index 77151d8..8b1967f 100644
---- a/drivers/video/riva/rivafb-i2c.c
-+++ b/drivers/video/riva/rivafb-i2c.c
-@@ -30,7 +30,7 @@
+ 	release_mem_region(info->fix.smem_start, size);
+-	kfree(info);
++	framebuffer_release(info);
+ }
  
- static void riva_gpio_setscl(void* data, int state)
- {
--	struct riva_i2c_chan 	*chan = (struct riva_i2c_chan *)data;
-+	struct riva_i2c_chan 	*chan = data;
- 	struct riva_par 	*par = chan->par;
- 	u32			val;
- 
-@@ -48,7 +48,7 @@ static void riva_gpio_setscl(void* data,
- 
- static void riva_gpio_setsda(void* data, int state)
- {
--	struct riva_i2c_chan 	*chan = (struct riva_i2c_chan *)data;
-+	struct riva_i2c_chan 	*chan = data;
- 	struct riva_par 	*par = chan->par;
- 	u32			val;
- 
-@@ -66,7 +66,7 @@ static void riva_gpio_setsda(void* data,
- 
- static int riva_gpio_getscl(void* data)
- {
--	struct riva_i2c_chan 	*chan = (struct riva_i2c_chan *)data;
-+	struct riva_i2c_chan 	*chan = data;
- 	struct riva_par 	*par = chan->par;
- 	u32			val = 0;
- 
-@@ -81,7 +81,7 @@ static int riva_gpio_getscl(void* data)
- 
- static int riva_gpio_getsda(void* data)
- {
--	struct riva_i2c_chan 	*chan = (struct riva_i2c_chan *)data;
-+	struct riva_i2c_chan 	*chan = data;
- 	struct riva_par 	*par = chan->par;
- 	u32			val = 0;
- 
+ #ifndef MODULE
 
 
 

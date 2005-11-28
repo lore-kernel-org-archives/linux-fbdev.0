@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 3/16] i810fb: Driver cleanups
-Date: Mon, 28 Nov 2005 23:16:31 +0800
-Message-ID: <438B1F4F.1000802@gmail.com>
+Subject: [PATCH 2/16] savagefb: Driver cleanup
+Date: Mon, 28 Nov 2005 23:15:28 +0800
+Message-ID: <438B1F10.7090708@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EhGmz-00022j-PV
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Nov 2005 17:29:41 -0800
-Received: from zproxy.gmail.com ([64.233.162.204])
+	id 1EhGmv-00022J-Hj
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Nov 2005 17:29:37 -0800
+Received: from zproxy.gmail.com ([64.233.162.194])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EhGmu-0002EI-8r
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Nov 2005 17:29:41 -0800
-Received: by zproxy.gmail.com with SMTP id r28so881708nza
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 29 Nov 2005 17:29:35 -0800 (PST)
+	id 1EhGmo-0001SK-3A
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Nov 2005 17:29:37 -0800
+Received: by zproxy.gmail.com with SMTP id r28so881625nza
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 29 Nov 2005 17:29:29 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,288 +31,349 @@ To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 - remove redundant casts
+- remove symbol_get/symbol_put
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/i810/i810-i2c.c   |    2 +-
- drivers/video/i810/i810_accel.c |   26 +++++++++++++-------------
- drivers/video/i810/i810_main.c  |   30 +++++++++++++++---------------
- 3 files changed, 29 insertions(+), 29 deletions(-)
+ drivers/video/savage/savagefb-i2c.c    |   45 ++++++++++++--------------------
+ drivers/video/savage/savagefb_accel.c  |    8 +++---
+ drivers/video/savage/savagefb_driver.c |   33 +++++++++++------------
+ 3 files changed, 36 insertions(+), 50 deletions(-)
 
-diff --git a/drivers/video/i810/i810-i2c.c b/drivers/video/i810/i810-i2c.c
-index 277b51a..bd410e0 100644
---- a/drivers/video/i810/i810-i2c.c
-+++ b/drivers/video/i810/i810-i2c.c
-@@ -43,7 +43,7 @@
+diff --git a/drivers/video/savage/savagefb-i2c.c b/drivers/video/savage/savagefb-i2c.c
+index aeec437..00719a9 100644
+--- a/drivers/video/savage/savagefb-i2c.c
++++ b/drivers/video/savage/savagefb-i2c.c
+@@ -49,7 +49,7 @@
  
- static void i810i2c_setscl(void *data, int state)
+ static void savage4_gpio_setscl(void *data, int val)
  {
--        struct i810fb_i2c_chan    *chan = (struct i810fb_i2c_chan *)data;
-+        struct i810fb_i2c_chan    *chan = data;
-         struct i810fb_par         *par = chan->par;
- 	u8                        __iomem *mmio = par->mmio_start_virtual;
+-	struct savagefb_i2c_chan *chan = (struct savagefb_i2c_chan *)data;
++	struct savagefb_i2c_chan *chan = data;
+ 	unsigned int r;
  
-diff --git a/drivers/video/i810/i810_accel.c b/drivers/video/i810/i810_accel.c
-index 1ba6567..76764ea 100644
---- a/drivers/video/i810/i810_accel.c
-+++ b/drivers/video/i810/i810_accel.c
-@@ -58,7 +58,7 @@ static inline void i810_report_error(u8 
-  */	
- static inline int wait_for_space(struct fb_info *info, u32 space)
+ 	r = readl(chan->ioaddr + chan->reg);
+@@ -63,7 +63,7 @@ static void savage4_gpio_setscl(void *da
+ 
+ static void savage4_gpio_setsda(void *data, int val)
  {
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
- 	u32 head, count = WAIT_COUNT, tail;
- 	u8 __iomem *mmio = par->mmio_start_virtual;
+-	struct savagefb_i2c_chan *chan = (struct savagefb_i2c_chan *)data;
++	struct savagefb_i2c_chan *chan = data;
  
-@@ -89,7 +89,7 @@ static inline int wait_for_space(struct 
-  */
- static inline int wait_for_engine_idle(struct fb_info *info)
+ 	unsigned int r;
+ 	r = readl(chan->ioaddr + chan->reg);
+@@ -77,21 +77,21 @@ static void savage4_gpio_setsda(void *da
+ 
+ static int savage4_gpio_getscl(void *data)
  {
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
- 	u8 __iomem *mmio = par->mmio_start_virtual;
- 	int count = WAIT_COUNT;
+-	struct savagefb_i2c_chan *chan = (struct savagefb_i2c_chan *)data;
++	struct savagefb_i2c_chan *chan = data;
  
-@@ -117,7 +117,7 @@ static inline int wait_for_engine_idle(s
-  */ 
- static inline u32 begin_iring(struct fb_info *info, u32 space)
+ 	return (0 != (readl(chan->ioaddr + chan->reg) & SAVAGE4_I2C_SCL_IN));
+ }
+ 
+ static int savage4_gpio_getsda(void *data)
  {
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
+-	struct savagefb_i2c_chan *chan = (struct savagefb_i2c_chan *)data;
++	struct savagefb_i2c_chan *chan = data;
  
- 	if (par->dev_flags & ALWAYS_SYNC) 
- 		wait_for_engine_idle(info);
-@@ -162,7 +162,7 @@ static inline void source_copy_blit(int 
- 				    int xdir, int src, int dest, int rop, 
- 				    int blit_bpp, struct fb_info *info)
+ 	return (0 != (readl(chan->ioaddr + chan->reg) & SAVAGE4_I2C_SDA_IN));
+ }
+ 
+ static void prosavage_gpio_setscl(void* data, int val)
  {
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
+-	struct savagefb_i2c_chan *chan = (struct savagefb_i2c_chan *)data;
++	struct savagefb_i2c_chan *chan = data;
+ 	u32			  r;
  
- 	if (begin_iring(info, 24 + IRING_PAD)) return;
+ 	SET_CR_IX(chan->ioaddr, chan->reg);
+@@ -107,7 +107,7 @@ static void prosavage_gpio_setscl(void* 
  
-@@ -196,7 +196,7 @@ static inline void color_blit(int width,
- 			      int rop, int what, int blit_bpp, 
+ static void prosavage_gpio_setsda(void* data, int val)
+ {
+-	struct savagefb_i2c_chan *chan = (struct savagefb_i2c_chan *)data;
++	struct savagefb_i2c_chan *chan = data;
+ 	unsigned int r;
+ 
+ 	SET_CR_IX(chan->ioaddr, chan->reg);
+@@ -123,7 +123,7 @@ static void prosavage_gpio_setsda(void* 
+ 
+ static int prosavage_gpio_getscl(void* data)
+ {
+-	struct savagefb_i2c_chan *chan = (struct savagefb_i2c_chan *)data;
++	struct savagefb_i2c_chan *chan = data;
+ 
+ 	SET_CR_IX(chan->ioaddr, chan->reg);
+ 	return (0 != (GET_CR_DATA(chan->ioaddr) & PROSAVAGE_I2C_SCL_IN));
+@@ -131,7 +131,7 @@ static int prosavage_gpio_getscl(void* d
+ 
+ static int prosavage_gpio_getsda(void* data)
+ {
+-	struct savagefb_i2c_chan *chan = (struct savagefb_i2c_chan *)data;
++	struct savagefb_i2c_chan *chan = data;
+ 
+ 	SET_CR_IX(chan->ioaddr, chan->reg);
+ 	return (0 != (GET_CR_DATA(chan->ioaddr) & PROSAVAGE_I2C_SDA_IN));
+@@ -140,10 +140,9 @@ static int prosavage_gpio_getsda(void* d
+ static int savage_setup_i2c_bus(struct savagefb_i2c_chan *chan,
+ 				const char *name)
+ {
+-	int (*add_bus)(struct i2c_adapter *) = symbol_get(i2c_bit_add_bus);
+ 	int rc = 0;
+ 
+-	if (add_bus && chan->par) {
++	if (chan->par) {
+ 		strcpy(chan->adapter.name, name);
+ 		chan->adapter.owner		= THIS_MODULE;
+ 		chan->adapter.id		= I2C_HW_B_SAVAGE;
+@@ -161,7 +160,7 @@ static int savage_setup_i2c_bus(struct s
+ 		chan->algo.setscl(chan, 1);
+ 		udelay(20);
+ 
+-		rc = add_bus(&chan->adapter);
++		rc = i2c_bit_add_bus(&chan->adapter);
+ 
+ 		if (rc == 0)
+ 			dev_dbg(&chan->par->pcidev->dev,
+@@ -169,8 +168,6 @@ static int savage_setup_i2c_bus(struct s
+ 		else
+ 			dev_warn(&chan->par->pcidev->dev,
+ 				 "Failed to register I2C bus %s.\n", name);
+-
+-		symbol_put(i2c_bit_add_bus);
+ 	} else
+ 		chan->par = NULL;
+ 
+@@ -179,7 +176,7 @@ static int savage_setup_i2c_bus(struct s
+ 
+ void savagefb_create_i2c_busses(struct fb_info *info)
+ {
+-	struct savagefb_par *par = (struct savagefb_par *)info->par;
++	struct savagefb_par *par = info->par;
+ 	par->chan.par	= par;
+ 
+ 	switch(info->fix.accel) {
+@@ -210,14 +207,10 @@ void savagefb_create_i2c_busses(struct f
+ 
+ void savagefb_delete_i2c_busses(struct fb_info *info)
+ {
+-	struct savagefb_par *par = (struct savagefb_par *)info->par;
+-	int (*del_bus)(struct i2c_adapter *) =
+-		symbol_get(i2c_bit_del_bus);
+-
+-	if (del_bus && par->chan.par) {
+-		del_bus(&par->chan.adapter);
+-		symbol_put(i2c_bit_del_bus);
+-	}
++	struct savagefb_par *par = info->par;
++
++	if (par->chan.par)
++		i2c_bit_del_bus(&par->chan.adapter);
+ 
+ 	par->chan.par = NULL;
+ }
+@@ -225,8 +218,6 @@ void savagefb_delete_i2c_busses(struct f
+ static u8 *savage_do_probe_i2c_edid(struct savagefb_i2c_chan *chan)
+ {
+ 	u8 start = 0x0;
+-	int (*transfer)(struct i2c_adapter *, struct i2c_msg *, int) =
+-		symbol_get(i2c_transfer);
+ 	struct i2c_msg msgs[] = {
+ 		{
+ 			.addr	= SAVAGE_DDC,
+@@ -240,21 +231,19 @@ static u8 *savage_do_probe_i2c_edid(stru
+ 	};
+ 	u8 *buf = NULL;
+ 
+-	if (transfer && chan->par) {
++	if (chan->par) {
+ 		buf = kmalloc(EDID_LENGTH, GFP_KERNEL);
+ 
+ 		if (buf) {
+ 			msgs[1].buf = buf;
+ 
+-			if (transfer(&chan->adapter, msgs, 2) != 2) {
++			if (i2c_transfer(&chan->adapter, msgs, 2) != 2) {
+ 				dev_dbg(&chan->par->pcidev->dev,
+ 					"Unable to read EDID block.\n");
+ 				kfree(buf);
+ 				buf = NULL;
+ 			}
+ 		}
+-
+-		symbol_put(i2c_transfer);
+ 	}
+ 
+ 	return buf;
+diff --git a/drivers/video/savage/savagefb_accel.c b/drivers/video/savage/savagefb_accel.c
+index bac8ea3..bbcc055 100644
+--- a/drivers/video/savage/savagefb_accel.c
++++ b/drivers/video/savage/savagefb_accel.c
+@@ -21,7 +21,7 @@ static u32 savagefb_rop[] = {
+ 
+ int savagefb_sync(struct fb_info *info)
+ {
+-	struct savagefb_par *par = (struct savagefb_par *)info->par;
++	struct savagefb_par *par = info->par;
+ 
+ 	par->SavageWaitIdle(par);
+ 	return 0;
+@@ -29,7 +29,7 @@ int savagefb_sync(struct fb_info *info)
+ 
+ void savagefb_copyarea(struct fb_info *info, const struct fb_copyarea *region)
+ {
+-	struct savagefb_par *par = (struct savagefb_par *)info->par;
++	struct savagefb_par *par = info->par;
+ 	int sx = region->sx, dx = region->dx;
+ 	int sy = region->sy, dy = region->dy;
+ 	int cmd;
+@@ -63,7 +63,7 @@ void savagefb_copyarea(struct fb_info *i
+ 
+ void savagefb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
+ {
+-	struct savagefb_par *par = (struct savagefb_par *)info->par;
++	struct savagefb_par *par = info->par;
+ 	int cmd, color;
+ 
+ 	if (!rect->width || !rect->height)
+@@ -90,7 +90,7 @@ void savagefb_fillrect(struct fb_info *i
+ 
+ void savagefb_imageblit(struct fb_info *info, const struct fb_image *image)
+ {
+-	struct savagefb_par *par = (struct savagefb_par *)info->par;
++	struct savagefb_par *par = info->par;
+ 	int fg, bg, size, i, width;
+ 	int cmd;
+ 	u32 *src = (u32 *) image->data;
+diff --git a/drivers/video/savage/savagefb_driver.c b/drivers/video/savage/savagefb_driver.c
+index 09e2f28..baddd2b 100644
+--- a/drivers/video/savage/savagefb_driver.c
++++ b/drivers/video/savage/savagefb_driver.c
+@@ -686,7 +686,7 @@ static void savage_update_var(struct fb_
+ static int savagefb_check_var (struct fb_var_screeninfo   *var,
+ 			       struct fb_info *info)
+ {
+-	struct savagefb_par *par = (struct savagefb_par *)info->par;
++	struct savagefb_par *par = info->par;
+ 	int memlen, vramlen, mode_valid = 0;
+ 
+ 	DBG("savagefb_check_var");
+@@ -1025,7 +1025,7 @@ static int savagefb_setcolreg(unsigned  
+ 			      unsigned        transp,
  			      struct fb_info *info)
  {
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
+-	struct savagefb_par *par = (struct savagefb_par *)info->par;
++	struct savagefb_par *par = info->par;
  
- 	if (begin_iring(info, 24 + IRING_PAD)) return;
- 
-@@ -237,7 +237,7 @@ static inline void mono_src_copy_imm_bli
- 					  int dest, const u32 *src, int bg,
- 					  int fg, struct fb_info *info)
+ 	if (regno >= NR_PALETTE)
+ 		return -EINVAL;
+@@ -1328,7 +1328,7 @@ static void savagefb_set_fix(struct fb_i
+ #if defined(CONFIG_FB_SAVAGE_ACCEL)
+ static void savagefb_set_clip(struct fb_info *info)
  {
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
+-    struct savagefb_par *par = (struct savagefb_par *)info->par;
++    struct savagefb_par *par = info->par;
+     int cmd;
  
- 	if (begin_iring(info, 24 + (dsize << 2) + IRING_PAD)) return;
+     cmd = BCI_CMD_NOP | BCI_CMD_CLIP_NEW;
+@@ -1342,7 +1342,7 @@ static void savagefb_set_clip(struct fb_
  
-@@ -255,7 +255,7 @@ static inline void mono_src_copy_imm_bli
- 
- static inline void load_front(int offset, struct fb_info *info)
+ static int savagefb_set_par (struct fb_info *info)
  {
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
+-	struct savagefb_par *par = (struct savagefb_par *)info->par;
++	struct savagefb_par *par = info->par;
+ 	struct fb_var_screeninfo *var = &info->var;
+ 	int err;
  
- 	if (begin_iring(info, 8 + IRING_PAD)) return;
- 
-@@ -297,7 +297,7 @@ static inline void i810fb_iring_enable(s
- 
- void i810fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect)
+@@ -1381,7 +1381,7 @@ static int savagefb_set_par (struct fb_i
+ static int savagefb_pan_display (struct fb_var_screeninfo *var,
+ 				 struct fb_info           *info)
  {
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
- 	u32 dx, dy, width, height, dest, rop = 0, color = 0;
+-	struct savagefb_par *par = (struct savagefb_par *)info->par;
++	struct savagefb_par *par = info->par;
+ 	u_int y_bottom;
  
- 	if (!info->var.accel_flags || par->dev_flags & LOCKUP ||
-@@ -323,7 +323,7 @@ void i810fb_fillrect(struct fb_info *inf
- 	
- void i810fb_copyarea(struct fb_info *info, const struct fb_copyarea *region) 
+ 	y_bottom = var->yoffset;
+@@ -1534,7 +1534,7 @@ static void savage_disable_mmio (struct 
+ 
+ static int __devinit savage_map_mmio (struct fb_info *info)
  {
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
- 	u32 sx, sy, dx, dy, pitch, width, height, src, dest, xdir;
+-	struct savagefb_par *par = (struct savagefb_par *)info->par;
++	struct savagefb_par *par = info->par;
+ 	DBG ("savage_map_mmio");
  
- 	if (!info->var.accel_flags || par->dev_flags & LOCKUP ||
-@@ -362,7 +362,7 @@ void i810fb_copyarea(struct fb_info *inf
+ 	if (S3_SAVAGE3D_SERIES (par->chip))
+@@ -1567,7 +1567,7 @@ static int __devinit savage_map_mmio (st
  
- void i810fb_imageblit(struct fb_info *info, const struct fb_image *image)
+ static void __devinit savage_unmap_mmio (struct fb_info *info)
  {
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
- 	u32 fg = 0, bg = 0, size, dst;
- 	
- 	if (!info->var.accel_flags || par->dev_flags & LOCKUP ||
-@@ -398,7 +398,7 @@ void i810fb_imageblit(struct fb_info *in
+-	struct savagefb_par *par = (struct savagefb_par *)info->par;
++	struct savagefb_par *par = info->par;
+ 	DBG ("savage_unmap_mmio");
  
- int i810fb_sync(struct fb_info *info)
+ 	savage_disable_mmio(par);
+@@ -1581,7 +1581,7 @@ static void __devinit savage_unmap_mmio 
+ static int __devinit savage_map_video (struct fb_info *info,
+ 				       int video_len)
  {
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
- 	
- 	if (!info->var.accel_flags || par->dev_flags & LOCKUP)
- 		return 0;
-@@ -408,7 +408,7 @@ int i810fb_sync(struct fb_info *info)
+-	struct savagefb_par *par = (struct savagefb_par *)info->par;
++	struct savagefb_par *par = info->par;
+ 	int resource;
  
- void i810fb_load_front(u32 offset, struct fb_info *info)
+ 	DBG("savage_map_video");
+@@ -1619,7 +1619,7 @@ static int __devinit savage_map_video (s
+ 
+ static void __devinit savage_unmap_video (struct fb_info *info)
  {
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
- 	u8 __iomem *mmio = par->mmio_start_virtual;
+-	struct savagefb_par *par = (struct savagefb_par *)info->par;
++	struct savagefb_par *par = info->par;
  
- 	if (!info->var.accel_flags || par->dev_flags & LOCKUP)
-@@ -428,7 +428,7 @@ void i810fb_load_front(u32 offset, struc
-  */
- void i810fb_init_ringbuffer(struct fb_info *info)
+ 	DBG("savage_unmap_video");
+ 
+@@ -1869,7 +1869,7 @@ static int __devinit savage_init_fb_info
+ 					  struct pci_dev *dev,
+ 					  const struct pci_device_id *id)
  {
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
- 	u32 tmp1, tmp2;
- 	u8 __iomem *mmio = par->mmio_start_virtual;
- 	
-diff --git a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_main.c
-index 9310ae9..4954a8e 100644
---- a/drivers/video/i810/i810_main.c
-+++ b/drivers/video/i810/i810_main.c
-@@ -817,7 +817,7 @@ static void i810_load_cursor_image(int w
+-	struct savagefb_par *par = (struct savagefb_par *)info->par;
++	struct savagefb_par *par = info->par;
+ 	int err = 0;
  
- static void i810_load_cursor_colors(int fg, int bg, struct fb_info *info)
+ 	par->pcidev  = dev;
+@@ -2139,8 +2139,7 @@ static int __devinit savagefb_probe (str
+ 
+ static void __devexit savagefb_remove (struct pci_dev *dev)
  {
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
- 	u8 __iomem *mmio = par->mmio_start_virtual;
- 	u8 red, green, blue, trans, temp;
+-	struct fb_info *info =
+-		(struct fb_info *)pci_get_drvdata(dev);
++	struct fb_info *info = pci_get_drvdata(dev);
  
-@@ -990,7 +990,7 @@ static void set_color_bitfields(struct f
- static int i810_check_params(struct fb_var_screeninfo *var, 
- 			     struct fb_info *info)
+ 	DBG("savagefb_remove");
+ 
+@@ -2174,9 +2173,8 @@ static void __devexit savagefb_remove (s
+ 
+ static int savagefb_suspend (struct pci_dev* dev, pm_message_t state)
  {
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
- 	int line_length, vidmem, mode_valid = 0, retval = 0;
- 	u32 vyres = var->yres_virtual, vxres = var->xres_virtual;
- 	/*
-@@ -1084,7 +1084,7 @@ static int i810_check_params(struct fb_v
-  */
- static int encode_fix(struct fb_fix_screeninfo *fix, struct fb_info *info)
+-	struct fb_info *info =
+-		(struct fb_info *)pci_get_drvdata(dev);
+-	struct savagefb_par *par = (struct savagefb_par *)info->par;
++	struct fb_info *info = pci_get_drvdata(dev);
++	struct savagefb_par *par = info->par;
+ 
+ 	DBG("savagefb_suspend");
+ 
+@@ -2210,9 +2208,8 @@ static int savagefb_suspend (struct pci_
+ 
+ static int savagefb_resume (struct pci_dev* dev)
  {
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
+-	struct fb_info *info =
+-		(struct fb_info *)pci_get_drvdata(dev);
+-	struct savagefb_par *par = (struct savagefb_par *)info->par;
++	struct fb_info *info = pci_get_drvdata(dev);
++	struct savagefb_par *par = info->par;
+ 	int cur_state = par->pm_state;
  
-     	memset(fix, 0, sizeof(struct fb_fix_screeninfo));
- 
-@@ -1195,7 +1195,7 @@ static void decode_var(const struct fb_v
- static int i810fb_getcolreg(u8 regno, u8 *red, u8 *green, u8 *blue, 
- 			    u8 *transp, struct fb_info *info)
- {
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
- 	u8 __iomem *mmio = par->mmio_start_virtual;
- 	u8 temp;
- 
-@@ -1234,7 +1234,7 @@ static int i810fb_getcolreg(u8 regno, u8
- 
- static int i810fb_open(struct fb_info *info, int user)
- {
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
- 	u32 count = atomic_read(&par->use_count);
- 	
- 	if (count == 0) {
-@@ -1253,7 +1253,7 @@ static int i810fb_open(struct fb_info *i
- 
- static int i810fb_release(struct fb_info *info, int user)
- {
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
- 	u32 count;
- 	
- 	count = atomic_read(&par->use_count);
-@@ -1275,7 +1275,7 @@ static int i810fb_setcolreg(unsigned reg
- 			    unsigned blue, unsigned transp, 
- 			    struct fb_info *info)
- {
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
- 	u8 __iomem *mmio = par->mmio_start_virtual;
- 	u8 temp;
- 	int i;
-@@ -1369,7 +1369,7 @@ static int i810fb_setcolreg(unsigned reg
- static int i810fb_pan_display(struct fb_var_screeninfo *var, 
- 			      struct fb_info *info)
- {
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
- 	u32 total;
- 	
- 	total = var->xoffset * par->depth + 
-@@ -1381,7 +1381,7 @@ static int i810fb_pan_display(struct fb_
- 
- static int i810fb_blank (int blank_mode, struct fb_info *info)
- {
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
- 	u8 __iomem *mmio = par->mmio_start_virtual;
- 	int mode = 0, pwr, scr_off = 0;
- 	
-@@ -1426,7 +1426,7 @@ static int i810fb_blank (int blank_mode,
- 
- static int i810fb_set_par(struct fb_info *info)
- {
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
- 
- 	decode_var(&info->var, par);
- 	i810_load_regs(par);
-@@ -1470,7 +1470,7 @@ static int i810fb_check_var(struct fb_va
- 
- static int i810fb_cursor(struct fb_info *info, struct fb_cursor *cursor)
- {
--	struct i810fb_par *par = (struct i810fb_par *)info->par;
-+	struct i810fb_par *par = info->par;
- 	u8 __iomem *mmio = par->mmio_start_virtual;
- 
- 	if (!par->dev_flags & LOCKUP)
-@@ -1557,7 +1557,7 @@ static struct fb_ops i810fb_ops __devini
- static int i810fb_suspend(struct pci_dev *dev, pm_message_t state)
- {
- 	struct fb_info *info = pci_get_drvdata(dev);
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
- 	int blank = 0, prev_state = par->cur_state;
- 
- 	if (state.event == prev_state)
-@@ -1594,7 +1594,7 @@ static int i810fb_suspend(struct pci_dev
- static int i810fb_resume(struct pci_dev *dev) 
- {
- 	struct fb_info *info = pci_get_drvdata(dev);
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
- 
- 	if (par->cur_state == 0)
- 		return 0;
-@@ -1651,7 +1651,7 @@ static void __devinit i810_fix_offsets(s
- 
- static int __devinit i810_alloc_agp_mem(struct fb_info *info)
- {
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
- 	int size;
- 	struct agp_bridge_data *bridge;
- 	
-@@ -2115,7 +2115,7 @@ static void i810fb_release_resource(stru
- static void __exit i810fb_remove_pci(struct pci_dev *dev)
- {
- 	struct fb_info *info = pci_get_drvdata(dev);
--	struct i810fb_par *par = (struct i810fb_par *) info->par;
-+	struct i810fb_par *par = info->par;
- 
- 	unregister_framebuffer(info);  
- 	i810fb_release_resource(info, par);
+ 	DBG("savage_resume");
 
 
 

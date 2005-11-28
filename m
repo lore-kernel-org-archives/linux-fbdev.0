@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 13/16] tdfxfb: Driver cleanups
-Date: Mon, 28 Nov 2005 23:45:46 +0800
-Message-ID: <438B262A.30809@gmail.com>
+Subject: [PATCH 12/16] sstfb: Driver cleanups
+Date: Mon, 28 Nov 2005 23:40:37 +0800
+Message-ID: <438B24F5.8090801@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EhGpT-0002U6-AP
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Nov 2005 17:32:15 -0800
-Received: from zproxy.gmail.com ([64.233.162.203])
+	id 1EhGpK-0002TL-UK
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Nov 2005 17:32:06 -0800
+Received: from zproxy.gmail.com ([64.233.162.201])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EhGpS-00035W-GG
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Nov 2005 17:32:15 -0800
-Received: by zproxy.gmail.com with SMTP id z3so2537654nzf
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 29 Nov 2005 17:32:13 -0800 (PST)
+	id 1EhGpI-0002py-SA
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Nov 2005 17:32:06 -0800
+Received: by zproxy.gmail.com with SMTP id r28so881935nza
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 29 Nov 2005 17:32:04 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,305 +28,504 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Hannu Mallat <hmallat@cc.hut.fi>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Ghozlane Toumi <gtoumi@laposte.net>
 
 - remove unneeded casts
-- move memory for pseudo_palette inside struct tdfxfb_par
-- whitespace changes
+- make setcolreg return success if regno > 15, but don't do anything
+- use framebuffer_alloc/framebuffer_release to allocate/free memory
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/tdfxfb.c |   57 ++++++++++++++++++---------------
- include/video/tdfx.h   |   84 ++++++++++++++++++++++++------------------------
- 2 files changed, 73 insertions(+), 68 deletions(-)
+ drivers/video/sstfb.c |   60 ++++++++++++++++++++++---------------------------
+ include/video/sstfb.h |    1 +
+ 2 files changed, 28 insertions(+), 33 deletions(-)
 
-diff --git a/drivers/video/tdfxfb.c b/drivers/video/tdfxfb.c
-index 60bc890..3e7baf4 100644
---- a/drivers/video/tdfxfb.c
-+++ b/drivers/video/tdfxfb.c
-@@ -291,7 +291,7 @@ static inline void banshee_make_room(str
-  
- static int banshee_wait_idle(struct fb_info *info)
+diff --git a/drivers/video/sstfb.c b/drivers/video/sstfb.c
+index e0f14df..8a5ce21 100644
+--- a/drivers/video/sstfb.c
++++ b/drivers/video/sstfb.c
+@@ -382,7 +382,7 @@ static void sstfb_clear_screen(struct fb
+ static int sstfb_check_var(struct fb_var_screeninfo *var,
+ 		struct fb_info *info)
  {
--	struct tdfx_par *par = (struct tdfx_par *) info->par; 
-+	struct tdfx_par *par = info->par;
- 	int i = 0;
- 
- 	banshee_make_room(par, 1);
-@@ -364,7 +364,7 @@ static u32 do_calc_pll(int freq, int* fr
- 
- static void do_write_regs(struct fb_info *info, struct banshee_reg* reg) 
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	int hSyncOff   = var->xres + var->right_margin + var->left_margin;
+ 	int vSyncOff   = var->yres + var->lower_margin + var->upper_margin;
+ 	int vBackPorch = var->left_margin, yDim = var->yres;
+@@ -542,7 +542,7 @@ static int sstfb_check_var(struct fb_var
+  */
+ static int sstfb_set_par(struct fb_info *info)
  {
--	struct tdfx_par *par = (struct tdfx_par *) info->par; 
-+	struct tdfx_par *par = info->par;
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	u32 lfbmode, fbiinit1, fbiinit2, fbiinit3, fbiinit5, fbiinit6=0;
+ 	struct pci_dev *sst_dev = par->dev;
+ 	unsigned int freq;
+@@ -748,13 +748,14 @@ static int sstfb_set_par(struct fb_info 
+ static int sstfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+                            u_int transp, struct fb_info *info)
+ {
++	struct sstfb_par *par = info->par;
+ 	u32 col;
+ 
+ 	f_dddprintk("sstfb_setcolreg\n");
+ 	f_dddprintk("%-2d rgbt: %#x, %#x, %#x, %#x\n",
+ 	            regno, red, green, blue, transp);
+-	if (regno >= 16)
+-		return -EINVAL;
++	if (regno > 15)
++		return 0;
+ 
+ 	red    >>= (16 - info->var.red.length);
+ 	green  >>= (16 - info->var.green.length);
+@@ -765,7 +766,7 @@ static int sstfb_setcolreg(u_int regno, 
+ 	    | (blue  << info->var.blue.offset)
+ 	    | (transp << info->var.transp.offset);
+ 	
+-	((u32 *)info->pseudo_palette)[regno] = col;
++	par->palette[regno] = col;
+ 
+ 	return 0;
+ }
+@@ -773,7 +774,7 @@ static int sstfb_setcolreg(u_int regno, 
+ static int sstfb_ioctl(struct inode *inode, struct file *file,
+                        u_int cmd, u_long arg, struct fb_info *info )
+ {
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	struct pci_dev *sst_dev = par->dev;
+ 	u32 fbiinit0, tmp, val;
+ 	u_long p;
+@@ -830,7 +831,7 @@ static int sstfb_ioctl(struct inode *ino
+ #if 0
+ static void sstfb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
+ {
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	u32 stride = info->fix.line_length;
+    
+ 	if (!IS_VOODOO2(par))
+@@ -855,7 +856,7 @@ static void sstfb_copyarea(struct fb_inf
+  */
+ static void sstfb_fillrect(struct fb_info *info, const struct fb_fillrect *rect) 
+ {
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	u32 stride = info->fix.line_length;
+ 
+ 	if (!IS_VOODOO2(par))
+@@ -925,7 +926,7 @@ static int __devinit sst_get_memsize(str
+ 
+ static int __devinit sst_detect_att(struct fb_info *info)
+ {
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	int i, mir, dir;
+ 
+ 	for (i=0; i<3; i++) {
+@@ -950,7 +951,7 @@ static int __devinit sst_detect_att(stru
+ 
+ static int __devinit sst_detect_ti(struct fb_info *info)
+ {
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	int i, mir, dir;
+ 
+ 	for (i = 0; i<3; i++) {
+@@ -986,7 +987,7 @@ static int __devinit sst_detect_ti(struc
+  */
+ static int __devinit sst_detect_ics(struct fb_info *info)
+ {
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	int m_clk0_1, m_clk0_7, m_clk1_b;
+ 	int n_clk0_1, n_clk0_7, n_clk1_b;
  	int i;
- 
- 	banshee_wait_idle(info);
-@@ -469,7 +469,7 @@ static unsigned long do_lfb_size(struct 
- 
- static int tdfxfb_check_var(struct fb_var_screeninfo *var,struct fb_info *info) 
+@@ -1023,7 +1024,7 @@ static int __devinit sst_detect_ics(stru
+ static int sst_set_pll_att_ti(struct fb_info *info, 
+ 		const struct pll_timing *t, const int clock)
  {
--	struct tdfx_par *par = (struct tdfx_par *) info->par; 
-+	struct tdfx_par *par = info->par;
- 	u32 lpitch;
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	u8 cr0, cc;
  
- 	if (var->bits_per_pixel != 8  && var->bits_per_pixel != 16 &&
-@@ -558,7 +558,7 @@ static int tdfxfb_check_var(struct fb_va
+ 	/* enable indexed mode */
+@@ -1077,7 +1078,7 @@ static int sst_set_pll_att_ti(struct fb_
+ static int sst_set_pll_ics(struct fb_info *info,
+ 		const struct pll_timing *t, const int clock)
+ {
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	u8 pll_ctrl;
  
- static int tdfxfb_set_par(struct fb_info *info)
- {
--	struct tdfx_par *par = (struct tdfx_par *) info->par;	
-+	struct tdfx_par *par = info->par;
- 	u32 hdispend, hsyncsta, hsyncend, htotal;
- 	u32 hd, hs, he, ht, hbs, hbe;
- 	u32 vd, vs, ve, vt, vbs, vbe;
-@@ -780,7 +780,7 @@ static int tdfxfb_set_par(struct fb_info
- static int tdfxfb_setcolreg(unsigned regno, unsigned red, unsigned green,  
- 			    unsigned blue,unsigned transp,struct fb_info *info) 
- {
--	struct tdfx_par *par = (struct tdfx_par *) info->par;
-+	struct tdfx_par *par = info->par;
- 	u32 rgbcol;
-    
- 	if (regno >= info->cmap.len || regno > 255) return 1;
-@@ -794,11 +794,15 @@ static int tdfxfb_setcolreg(unsigned reg
- 			break;
- 		/* Truecolor has no hardware color palettes. */
- 		case FB_VISUAL_TRUECOLOR:
--			rgbcol = (CNVT_TOHW( red, info->var.red.length) << info->var.red.offset) |
--				 (CNVT_TOHW( green, info->var.green.length) << info->var.green.offset) |
--				 (CNVT_TOHW( blue, info->var.blue.length) << info->var.blue.offset) |
--				 (CNVT_TOHW( transp, info->var.transp.length) << info->var.transp.offset);
--				((u32*)(info->pseudo_palette))[regno] = rgbcol;
-+			rgbcol = (CNVT_TOHW( red, info->var.red.length) <<
-+				  info->var.red.offset) |
-+				 (CNVT_TOHW( green, info->var.green.length) <<
-+				  info->var.green.offset) |
-+				 (CNVT_TOHW( blue, info->var.blue.length) <<
-+				  info->var.blue.offset) |
-+				 (CNVT_TOHW( transp, info->var.transp.length) <<
-+				  info->var.transp.offset);
-+				par->palette[regno] = rgbcol;
- 			break;
- 		default:
- 			DPRINTK("bad depth %u\n", info->var.bits_per_pixel);
-@@ -810,7 +814,7 @@ static int tdfxfb_setcolreg(unsigned reg
- /* 0 unblank, 1 blank, 2 no vsync, 3 no hsync, 4 off */
- static int tdfxfb_blank(int blank, struct fb_info *info)
- { 
--	struct tdfx_par *par = (struct tdfx_par *) info->par;
-+	struct tdfx_par *par = info->par;
- 	u32 dacmode, state = 0, vgablank = 0;
+ 	sst_dac_write(DACREG_ICS_PLLRMA, DACREG_ICS_PLL_CTRL);
+@@ -1114,7 +1115,7 @@ static int sst_set_pll_ics(struct fb_inf
  
- 	dacmode = tdfx_inl(par, DACMODE);
-@@ -855,7 +859,7 @@ static int tdfxfb_blank(int blank, struc
- static int tdfxfb_pan_display(struct fb_var_screeninfo *var,
- 			      struct fb_info *info) 
+ static void sst_set_vidmod_att_ti(struct fb_info *info, const int bpp)
  {
--	struct tdfx_par *par = (struct tdfx_par *) info->par;
-+	struct tdfx_par *par = info->par;
- 	u32 addr;  	
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	u8 cr0;
  
- 	if (nopan || var->xoffset || (var->yoffset > var->yres_virtual))
-@@ -878,7 +882,7 @@ static int tdfxfb_pan_display(struct fb_
-  */
- static void tdfxfb_fillrect(struct fb_info *info, const struct fb_fillrect *rect) 
- {
--	struct tdfx_par *par = (struct tdfx_par *) info->par;
-+	struct tdfx_par *par = info->par;
- 	u32 bpp = info->var.bits_per_pixel;
- 	u32 stride = info->fix.line_length;
- 	u32 fmt= stride | ((bpp+((bpp==8) ? 0 : 8)) << 13); 
-@@ -894,7 +898,7 @@ static void tdfxfb_fillrect(struct fb_in
- 	if (info->fix.visual == FB_VISUAL_PSEUDOCOLOR) {
- 		tdfx_outl(par,	COLORFORE, rect->color);
- 	} else { /* FB_VISUAL_TRUECOLOR */
--		tdfx_outl(par, COLORFORE, ((u32*)(info->pseudo_palette))[rect->color]);
-+		tdfx_outl(par, COLORFORE, par->palette[rect->color]);
- 	}
- 	tdfx_outl(par,	COMMAND_2D, COMMAND_2D_FILLRECT | (tdfx_rop << 24));
- 	tdfx_outl(par,	DSTSIZE,    rect->width | (rect->height << 16));
-@@ -906,7 +910,7 @@ static void tdfxfb_fillrect(struct fb_in
-  */
- static void tdfxfb_copyarea(struct fb_info *info, const struct fb_copyarea *area)  
- {
--	struct tdfx_par *par = (struct tdfx_par *) info->par;
-+	struct tdfx_par *par = info->par;
-    	u32 sx = area->sx, sy = area->sy, dx = area->dx, dy = area->dy;
- 	u32 bpp = info->var.bits_per_pixel;
- 	u32 stride = info->fix.line_length;
-@@ -938,7 +942,7 @@ static void tdfxfb_copyarea(struct fb_in
+ 	sst_dac_write(DACREG_WMA, 0); 	/* backdoor */
+@@ -1149,7 +1150,7 @@ static void sst_set_vidmod_att_ti(struct
  
- static void tdfxfb_imageblit(struct fb_info *info, const struct fb_image *image) 
+ static void sst_set_vidmod_ics(struct fb_info *info, const int bpp)
  {
--	struct tdfx_par *par = (struct tdfx_par *) info->par;
-+	struct tdfx_par *par = info->par;
- 	int size = image->height * ((image->width * image->depth + 7)>>3);
- 	int fifo_free;
- 	int i, stride = info->fix.line_length;
-@@ -961,8 +965,10 @@ static void tdfxfb_imageblit(struct fb_i
- 				break;
- 			case FB_VISUAL_TRUECOLOR:
- 			default:
--				tdfx_outl(par, COLORFORE, ((u32*)(info->pseudo_palette))[image->fg_color]);
--				tdfx_outl(par, COLORBACK, ((u32*)(info->pseudo_palette))[image->bg_color]);
-+				tdfx_outl(par, COLORFORE,
-+					  par->palette[image->fg_color]);
-+				tdfx_outl(par, COLORBACK,
-+					  par->palette[image->bg_color]);
- 		}
- #ifdef __BIG_ENDIAN
- 		srcfmt = 0x400000 | BIT(20);
-@@ -1007,7 +1013,7 @@ static void tdfxfb_imageblit(struct fb_i
- #ifdef TDFX_HARDWARE_CURSOR
- static int tdfxfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
- {
--	struct tdfx_par *par = (struct tdfx_par *) info->par;
-+	struct tdfx_par *par = info->par;
- 	unsigned long flags;
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
  
- 	/*
-@@ -1157,18 +1163,17 @@ static int __devinit tdfxfb_probe(struct
- {
- 	struct tdfx_par *default_par;
- 	struct fb_info *info;
--	int size, err, lpitch;
-+	int err, lpitch;
+ 	switch(bpp) {
+ 	case 16:
+@@ -1308,7 +1309,7 @@ static int __devinit sst_init(struct fb_
  
- 	if ((err = pci_enable_device(pdev))) {
- 		printk(KERN_WARNING "tdfxfb: Can't enable pdev: %d\n", err);
- 		return err;
+ static void  __devexit sst_shutdown(struct fb_info *info)
+ {
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	struct pci_dev *dev = par->dev;
+ 	struct pll_timing gfx_timings;
+ 	int Fout;
+@@ -1394,12 +1395,6 @@ static int __devinit sstfb_probe(struct 
+ 	struct sst_spec *spec;
+ 	int err;
+ 
+-	struct all_info {
+-		struct fb_info info;
+-		struct sstfb_par par;
+-		u32 pseudo_palette[16];
+-	} *all;
+-	
+ 	/* Enable device in PCI config. */
+ 	if ((err=pci_enable_device(pdev))) {
+ 		eprintk("cannot enable device\n");
+@@ -1407,14 +1402,13 @@ static int __devinit sstfb_probe(struct 
  	}
  
--	size = sizeof(struct tdfx_par)+256*sizeof(u32);
-+	info = framebuffer_alloc(sizeof(struct tdfx_par), &pdev->dev);
- 
--	info = framebuffer_alloc(size, &pdev->dev);
--
--	if (!info)	return -ENOMEM;
+ 	/* Allocate the fb and par structures.  */
+-	all = kmalloc(sizeof(*all), GFP_KERNEL);
+-	if (!all)
++	info = framebuffer_alloc(sizeof(struct sstfb_par), &pdev->dev);
 +	if (!info)
-+		return -ENOMEM;
- 		
- 	default_par = info->par;
-  
-@@ -1248,7 +1253,7 @@ static int __devinit tdfxfb_probe(struct
-    
- 	info->fbops		= &tdfxfb_ops;
- 	info->fix		= tdfx_fix; 	
--	info->pseudo_palette	= (void *)(default_par + 1); 
-+	info->pseudo_palette	= default_par->palette;
- 	info->flags		= FBINFO_DEFAULT | FBINFO_HWACCEL_YPAN;
- #ifdef CONFIG_FB_3DFX_ACCEL
- 	info->flags             |= FBINFO_HWACCEL_FILLRECT |
-@@ -1340,7 +1345,7 @@ static void tdfxfb_setup(char *options)
- static void __devexit tdfxfb_remove(struct pci_dev *pdev)
- {
- 	struct fb_info *info = pci_get_drvdata(pdev);
--	struct tdfx_par *par = (struct tdfx_par *) info->par;
-+	struct tdfx_par *par = info->par;
+ 		return -ENOMEM;
+-	memset(all, 0, sizeof(*all));
+-	pci_set_drvdata(pdev, all);
++
++	pci_set_drvdata(pdev, info);
+ 	
+-	info = &all->info;
+-	par  = info->par = &all->par;
++	par  = info->par;
+ 	fix  = &info->fix;
+ 	
+ 	par->type = id->driver_data;
+@@ -1471,7 +1465,7 @@ static int __devinit sstfb_probe(struct 
  
+ 	info->flags	= FBINFO_DEFAULT;
+ 	info->fbops	= &sstfb_ops;
+-	info->pseudo_palette = &all->pseudo_palette;
++	info->pseudo_palette = par->palette;
+ 
+ 	fix->type	= FB_TYPE_PACKED_PIXELS;
+ 	fix->visual	= FB_VISUAL_TRUECOLOR;
+@@ -1527,7 +1521,7 @@ fail_mmio_remap:
+ fail_fb_mem:
+ 	release_mem_region(fix->mmio_start, info->fix.mmio_len);
+ fail_mmio_mem:
+-	kfree(info);
++	framebuffer_release(info);
+ 	return -ENXIO; 	/* no voodoo detected */
+ }
+ 
+@@ -1537,7 +1531,7 @@ static void __devexit sstfb_remove(struc
+ 	struct fb_info *info;
+ 
+ 	info = pci_get_drvdata(pdev);
+-	par = (struct sstfb_par *) info->par;
++	par = info->par;
+ 	
+ 	sst_shutdown(info);
  	unregister_framebuffer(info);
- 	iounmap(par->regbase_virt);
-diff --git a/include/video/tdfx.h b/include/video/tdfx.h
-index 0423767..c1cc94b 100644
---- a/include/video/tdfx.h
-+++ b/include/video/tdfx.h
-@@ -140,52 +140,52 @@
- #ifdef __KERNEL__
+@@ -1545,7 +1539,7 @@ static void __devexit sstfb_remove(struc
+ 	iounmap(par->mmio_vbase);
+ 	release_mem_region(info->fix.smem_start, 0x400000);
+ 	release_mem_region(info->fix.mmio_start, info->fix.mmio_len);
+-	kfree(info);
++	framebuffer_release(info);
+ }- remove unneeded casts
+- make setcolreg return success if regno > 15, but don't do anything
+- use framebuffer_alloc/framebuffer_release to allocate/free memory
+
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
+---
+
+ drivers/video/sstfb.c |   60 ++++++++++++++++++++++---------------------------
+ include/video/sstfb.h |    1 +
+ 2 files changed, 28 insertions(+), 33 deletions(-)
+
+diff --git a/drivers/video/sstfb.c b/drivers/video/sstfb.c
+index e0f14df..8a5ce21 100644
+--- a/drivers/video/sstfb.c
++++ b/drivers/video/sstfb.c
+@@ -382,7 +382,7 @@ static void sstfb_clear_screen(struct fb
+ static int sstfb_check_var(struct fb_var_screeninfo *var,
+ 		struct fb_info *info)
+ {
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	int hSyncOff   = var->xres + var->right_margin + var->left_margin;
+ 	int vSyncOff   = var->yres + var->lower_margin + var->upper_margin;
+ 	int vBackPorch = var->left_margin, yDim = var->yres;
+@@ -542,7 +542,7 @@ static int sstfb_check_var(struct fb_var
+  */
+ static int sstfb_set_par(struct fb_info *info)
+ {
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	u32 lfbmode, fbiinit1, fbiinit2, fbiinit3, fbiinit5, fbiinit6=0;
+ 	struct pci_dev *sst_dev = par->dev;
+ 	unsigned int freq;
+@@ -748,13 +748,14 @@ static int sstfb_set_par(struct fb_info 
+ static int sstfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+                            u_int transp, struct fb_info *info)
+ {
++	struct sstfb_par *par = info->par;
+ 	u32 col;
  
- struct banshee_reg {
--  /* VGA rubbish */
--  unsigned char att[21];
--  unsigned char crt[25];
--  unsigned char gra[ 9];
--  unsigned char misc[1];
--  unsigned char seq[ 5];
--
--  /* Banshee extensions */
--  unsigned char ext[2];
--  unsigned long vidcfg;
--  unsigned long vidpll;
--  unsigned long mempll;
--  unsigned long gfxpll;
--  unsigned long dacmode;
--  unsigned long vgainit0;
--  unsigned long vgainit1;
--  unsigned long screensize;
--  unsigned long stride;
--  unsigned long cursloc;
--  unsigned long curspataddr;
--  unsigned long cursc0;
--  unsigned long cursc1;
--  unsigned long startaddr;
--  unsigned long clip0min;
--  unsigned long clip0max;
--  unsigned long clip1min;
--  unsigned long clip1max;
--  unsigned long srcbase;
--  unsigned long dstbase;
--  unsigned long miscinit0;	
-+	/* VGA rubbish */
-+	unsigned char att[21];
-+	unsigned char crt[25];
-+	unsigned char gra[ 9];
-+	unsigned char misc[1];
-+	unsigned char seq[ 5];
+ 	f_dddprintk("sstfb_setcolreg\n");
+ 	f_dddprintk("%-2d rgbt: %#x, %#x, %#x, %#x\n",
+ 	            regno, red, green, blue, transp);
+-	if (regno >= 16)
+-		return -EINVAL;
++	if (regno > 15)
++		return 0;
+ 
+ 	red    >>= (16 - info->var.red.length);
+ 	green  >>= (16 - info->var.green.length);
+@@ -765,7 +766,7 @@ static int sstfb_setcolreg(u_int regno, 
+ 	    | (blue  << info->var.blue.offset)
+ 	    | (transp << info->var.transp.offset);
+ 	
+-	((u32 *)info->pseudo_palette)[regno] = col;
++	par->palette[regno] = col;
+ 
+ 	return 0;
+ }
+@@ -773,7 +774,7 @@ static int sstfb_setcolreg(u_int regno, 
+ static int sstfb_ioctl(struct inode *inode, struct file *file,
+                        u_int cmd, u_long arg, struct fb_info *info )
+ {
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	struct pci_dev *sst_dev = par->dev;
+ 	u32 fbiinit0, tmp, val;
+ 	u_long p;
+@@ -830,7 +831,7 @@ static int sstfb_ioctl(struct inode *ino
+ #if 0
+ static void sstfb_copyarea(struct fb_info *info, const struct fb_copyarea *area)
+ {
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	u32 stride = info->fix.line_length;
+    
+ 	if (!IS_VOODOO2(par))
+@@ -855,7 +856,7 @@ static void sstfb_copyarea(struct fb_inf
+  */
+ static void sstfb_fillrect(struct fb_info *info, const struct fb_fillrect *rect) 
+ {
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	u32 stride = info->fix.line_length;
+ 
+ 	if (!IS_VOODOO2(par))
+@@ -925,7 +926,7 @@ static int __devinit sst_get_memsize(str
+ 
+ static int __devinit sst_detect_att(struct fb_info *info)
+ {
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	int i, mir, dir;
+ 
+ 	for (i=0; i<3; i++) {
+@@ -950,7 +951,7 @@ static int __devinit sst_detect_att(stru
+ 
+ static int __devinit sst_detect_ti(struct fb_info *info)
+ {
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	int i, mir, dir;
+ 
+ 	for (i = 0; i<3; i++) {
+@@ -986,7 +987,7 @@ static int __devinit sst_detect_ti(struc
+  */
+ static int __devinit sst_detect_ics(struct fb_info *info)
+ {
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	int m_clk0_1, m_clk0_7, m_clk1_b;
+ 	int n_clk0_1, n_clk0_7, n_clk1_b;
+ 	int i;
+@@ -1023,7 +1024,7 @@ static int __devinit sst_detect_ics(stru
+ static int sst_set_pll_att_ti(struct fb_info *info, 
+ 		const struct pll_timing *t, const int clock)
+ {
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	u8 cr0, cc;
+ 
+ 	/* enable indexed mode */
+@@ -1077,7 +1078,7 @@ static int sst_set_pll_att_ti(struct fb_
+ static int sst_set_pll_ics(struct fb_info *info,
+ 		const struct pll_timing *t, const int clock)
+ {
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	u8 pll_ctrl;
+ 
+ 	sst_dac_write(DACREG_ICS_PLLRMA, DACREG_ICS_PLL_CTRL);
+@@ -1114,7 +1115,7 @@ static int sst_set_pll_ics(struct fb_inf
+ 
+ static void sst_set_vidmod_att_ti(struct fb_info *info, const int bpp)
+ {
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	u8 cr0;
+ 
+ 	sst_dac_write(DACREG_WMA, 0); 	/* backdoor */
+@@ -1149,7 +1150,7 @@ static void sst_set_vidmod_att_ti(struct
+ 
+ static void sst_set_vidmod_ics(struct fb_info *info, const int bpp)
+ {
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 
+ 	switch(bpp) {
+ 	case 16:
+@@ -1308,7 +1309,7 @@ static int __devinit sst_init(struct fb_
+ 
+ static void  __devexit sst_shutdown(struct fb_info *info)
+ {
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	struct pci_dev *dev = par->dev;
+ 	struct pll_timing gfx_timings;
+ 	int Fout;
+@@ -1394,12 +1395,6 @@ static int __devinit sstfb_probe(struct 
+ 	struct sst_spec *spec;
+ 	int err;
+ 
+-	struct all_info {
+-		struct fb_info info;
+-		struct sstfb_par par;
+-		u32 pseudo_palette[16];
+-	} *all;
+-	
+ 	/* Enable device in PCI config. */
+ 	if ((err=pci_enable_device(pdev))) {
+ 		eprintk("cannot enable device\n");
+@@ -1407,14 +1402,13 @@ static int __devinit sstfb_probe(struct 
+ 	}
+ 
+ 	/* Allocate the fb and par structures.  */
+-	all = kmalloc(sizeof(*all), GFP_KERNEL);
+-	if (!all)
++	info = framebuffer_alloc(sizeof(struct sstfb_par), &pdev->dev);
++	if (!info)
+ 		return -ENOMEM;
+-	memset(all, 0, sizeof(*all));
+-	pci_set_drvdata(pdev, all);
 +
-+	/* Banshee extensions */
-+	unsigned char ext[2];
-+	unsigned long vidcfg;
-+	unsigned long vidpll;
-+	unsigned long mempll;
-+	unsigned long gfxpll;
-+	unsigned long dacmode;
-+	unsigned long vgainit0;
-+	unsigned long vgainit1;
-+	unsigned long screensize;
-+	unsigned long stride;
-+	unsigned long cursloc;
-+	unsigned long curspataddr;
-+	unsigned long cursc0;
-+	unsigned long cursc1;
-+	unsigned long startaddr;
-+	unsigned long clip0min;
-+	unsigned long clip0max;
-+	unsigned long clip1min;
-+	unsigned long clip1max;
-+	unsigned long srcbase;
-+	unsigned long dstbase;
-+	unsigned long miscinit0;
++	pci_set_drvdata(pdev, info);
+ 	
+-	info = &all->info;
+-	par  = info->par = &all->par;
++	par  = info->par;
+ 	fix  = &info->fix;
+ 	
+ 	par->type = id->driver_data;
+@@ -1471,7 +1465,7 @@ static int __devinit sstfb_probe(struct 
+ 
+ 	info->flags	= FBINFO_DEFAULT;
+ 	info->fbops	= &sstfb_ops;
+-	info->pseudo_palette = &all->pseudo_palette;
++	info->pseudo_palette = par->palette;
+ 
+ 	fix->type	= FB_TYPE_PACKED_PIXELS;
+ 	fix->visual	= FB_VISUAL_TRUECOLOR;
+@@ -1527,7 +1521,7 @@ fail_mmio_remap:
+ fail_fb_mem:
+ 	release_mem_region(fix->mmio_start, info->fix.mmio_len);
+ fail_mmio_mem:
+-	kfree(info);
++	framebuffer_release(info);
+ 	return -ENXIO; 	/* no voodoo detected */
+ }
+ 
+@@ -1537,7 +1531,7 @@ static void __devexit sstfb_remove(struc
+ 	struct fb_info *info;
+ 
+ 	info = pci_get_drvdata(pdev);
+-	par = (struct sstfb_par *) info->par;
++	par = info->par;
+ 	
+ 	sst_shutdown(info);
+ 	unregister_framebuffer(info);
+@@ -1545,7 +1539,7 @@ static void __devexit sstfb_remove(struc
+ 	iounmap(par->mmio_vbase);
+ 	release_mem_region(info->fix.smem_start, 0x400000);
+ 	release_mem_region(info->fix.mmio_start, info->fix.mmio_len);
+-	kfree(info);
++	framebuffer_release(info);
+ }
+ 
+ 
+@@ -1613,7 +1607,7 @@ static int sstfb_dump_regs(struct fb_inf
+ 
+ 	const int pci_s = sizeof(pci_regs)/sizeof(pci_regs[0]);
+ 	const int sst_s = sizeof(sst_regs)/sizeof(sst_regs[0]);
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	struct pci_dev *dev = par->dev;
+ 	u32 pci_res[pci_s];
+ 	u32 sst_res[sst_s];
+diff --git a/include/video/sstfb.h b/include/video/sstfb.h
+index 0d77b52..3570f9c 100644
+--- a/include/video/sstfb.h
++++ b/include/video/sstfb.h
+@@ -334,6 +334,7 @@ struct sst_spec {
  };
  
- struct tdfx_par {
--  u32 max_pixclock;
-+	u32 max_pixclock;
+ struct sstfb_par {
 +	u32 palette[16];
-+	void __iomem *regbase_virt;
-+	unsigned long iobase;
-+	u32 baseline;
-+
-+	struct {
-+		int w,u,d;
-+		unsigned long enable,disable;
-+		struct timer_list timer;
-+	} hwcursor;
+ 	unsigned int yDim;
+ 	unsigned int hSyncOn;	/* hsync_len */
+ 	unsigned int hSyncOff;	/* left_margin + xres + right_margin */
+
  
--  void __iomem *regbase_virt;
--  unsigned long iobase;
--  u32 baseline;
--
--  struct {
--     int w,u,d;
--     unsigned long enable,disable;
--     struct timer_list timer;
--  } hwcursor; 
--
--  spinlock_t DAClock;
-+	spinlock_t DAClock;
+ 
+@@ -1613,7 +1607,7 @@ static int sstfb_dump_regs(struct fb_inf
+ 
+ 	const int pci_s = sizeof(pci_regs)/sizeof(pci_regs[0]);
+ 	const int sst_s = sizeof(sst_regs)/sizeof(sst_regs[0]);
+-	struct sstfb_par *par = (struct sstfb_par *) info->par;
++	struct sstfb_par *par = info->par;
+ 	struct pci_dev *dev = par->dev;
+ 	u32 pci_res[pci_s];
+ 	u32 sst_res[sst_s];
+diff --git a/include/video/sstfb.h b/include/video/sstfb.h
+index 0d77b52..3570f9c 100644
+--- a/include/video/sstfb.h
++++ b/include/video/sstfb.h
+@@ -334,6 +334,7 @@ struct sst_spec {
  };
  
- #endif /* __KERNEL__ */
+ struct sstfb_par {
++	u32 palette[16];
+ 	unsigned int yDim;
+ 	unsigned int hSyncOn;	/* hsync_len */
+ 	unsigned int hSyncOff;	/* left_margin + xres + right_margin */
 
 
 

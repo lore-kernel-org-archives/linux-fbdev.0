@@ -1,23 +1,20 @@
-From: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH 9/16] kyrofb: Driver cleanups
-Date: Wed, 30 Nov 2005 12:42:43 +0200
-Message-ID: <20051130104243.GA16158@linux-sh.org>
-References: <438B2257.60100@gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: scroll modes
+Date: Wed, 30 Nov 2005 13:48:59 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0511301347230.2123@pademelon.sonytel.be>
+References: <438D9E60.7040007@t-online.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="J2SCkAp4GZ/dPZZf"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EhPQG-0007je-HG
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 30 Nov 2005 02:42:48 -0800
-Received: from smtp2.pp.htv.fi ([213.243.153.35])
+	id 1EhROV-0006K0-Rb
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 30 Nov 2005 04:49:07 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EhPQF-0000yv-9v
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 30 Nov 2005 02:42:48 -0800
-Content-Disposition: inline
-In-Reply-To: <438B2257.60100@gmail.com>
+	id 1EhROV-00052H-Dc
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 30 Nov 2005 04:49:08 -0800
+In-Reply-To: <438D9E60.7040007@t-online.de>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,40 +25,35 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>
 
+On Wed, 30 Nov 2005, Knut Petersen wrote:
+> Is there a patch for "true ywrap" scrolling?
 
---J2SCkAp4GZ/dPZZf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Is there a need for a patch (except for a patch to cyblafb)?
 
-On Mon, Nov 28, 2005 at 11:29:27PM +0800, Antonino A. Daplas wrote:
-> - remove unneeded casts
-> - use framebuffer_alloc/framebuffer_release to allocate/free memory
-> - the pseudo_palette is always u32 regardless of bpp if using generic
->   drawing functions
->=20
-> Signed-off-by: Antonino Daplas <adaplas@pol.net>
+> There is no need for moving data around in video memory or to redraw the
+> screen
+> as the cyberblade hardware handles wrapping at the end of the video memory
+> perfectly
+> fine.
 
-Looks good, thanks.
+Ywrap has been working fine with amifb since ages (unless someone broke it very
+recently).
 
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+Gr{oetje,eeting}s,
 
---J2SCkAp4GZ/dPZZf
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+						Geert
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-iD8DBQFDjYIj1K+teJFxZ9wRAmN6AJ9H7WSdEF4Qy1v2ODCto+xKnQyZggCbBroT
-K/AoTFP7vbZgIxlF39Jqq1U=
-=UiM1
------END PGP SIGNATURE-----
-
---J2SCkAp4GZ/dPZZf--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

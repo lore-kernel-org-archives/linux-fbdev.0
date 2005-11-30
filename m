@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 9/16] kyrofb: Driver cleanups
-Date: Mon, 28 Nov 2005 23:29:27 +0800
-Message-ID: <438B2257.60100@gmail.com>
+Subject: [PATCH 16/16] atyfb: Remove BIOS-less booting
+Date: Wed, 30 Nov 2005 09:27:50 +0800
+Message-ID: <438D0016.9080300@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EhGor-0002Q6-NE
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Nov 2005 17:31:37 -0800
-Received: from zproxy.gmail.com ([64.233.162.203])
+	id 1EhGpq-0002XC-EW
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Nov 2005 17:32:38 -0800
+Received: from zproxy.gmail.com ([64.233.162.201])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EhGor-00035W-C6
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Nov 2005 17:31:37 -0800
-Received: by zproxy.gmail.com with SMTP id z3so2537654nzf
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 29 Nov 2005 17:31:36 -0800 (PST)
+	id 1EhGpp-0002py-On
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Nov 2005 17:32:38 -0800
+Received: by zproxy.gmail.com with SMTP id r28so881935nza
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 29 Nov 2005 17:32:37 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,167 +28,444 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Paul Mundt <lethal@linux-sh.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-- remove unneeded casts
-- use framebuffer_alloc/framebuffer_release to allocate/free memory
-- the pseudo_palette is always u32 regardless of bpp if using generic
-  drawing functions
+CONFIG_ATYFB_XL_INIT option is broken for a long time. It will always
+cause a kernel hang.
+
+Since no one has fixed this problem for some time now, remove it from
+atyfb.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/kyro/fbdev.c |   32 ++++++++++++++------------------
- include/video/kyro.h       |    1 +
- 2 files changed, 15 insertions(+), 18 deletions(-)
+ drivers/video/Kconfig          |    6 -
+ drivers/video/aty/Makefile     |    1 
+ drivers/video/aty/atyfb.h      |    1 
+ drivers/video/aty/atyfb_base.c |    4 
+ drivers/video/aty/xlinit.c     |  359 ----------------------------------------
+ 5 files changed, 0 insertions(+), 371 deletions(-)
 
-diff --git a/drivers/video/kyro/fbdev.c b/drivers/video/kyro/fbdev.c
-index 5eb4d5c..bcd359b 100644
---- a/drivers/video/kyro/fbdev.c
-+++ b/drivers/video/kyro/fbdev.c
-@@ -73,8 +73,6 @@ static struct fb_var_screeninfo kyro_var
- 	.vmode		= FB_VMODE_NONINTERLACED,
- };
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 3e470c8..d6940ec 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -993,12 +993,6 @@ config FB_ATY_GENERIC_LCD
+ 	  Say Y if you have a laptop with an ATI Rage LT PRO, Rage Mobility,
+ 	  Rage XC, or Rage XL chipset.
  
--static struct kyrofb_info *currentpar;
+-config FB_ATY_XL_INIT
+-	bool "Rage XL No-BIOS Init support"
+-	depends on FB_ATY_CT
+-	help
+-	  Say Y here to support booting a Rage XL without BIOS support.
 -
- typedef struct {
- 	STG4000REG __iomem *pSTGReg;	/* Virtual address of PCI register region */
- 	u32 ulNextFreeVidMem;	/* Offset from start of vid mem to next free region */
-@@ -309,7 +307,7 @@ enum {
- /* Accessors */
- static int kyro_dev_video_mode_set(struct fb_info *info)
- {
--	struct kyrofb_info *par = (struct kyrofb_info *)info->par;
-+	struct kyrofb_info *par = info->par;
+ config FB_ATY_GX
+ 	bool "Mach64 GX support" if PCI
+ 	depends on FB_ATY
+diff --git a/drivers/video/aty/Makefile b/drivers/video/aty/Makefile
+index 9dec962..1852139 100644
+--- a/drivers/video/aty/Makefile
++++ b/drivers/video/aty/Makefile
+@@ -5,7 +5,6 @@ obj-$(CONFIG_FB_RADEON) += radeonfb.o
+ atyfb-y				:= atyfb_base.o mach64_accel.o mach64_cursor.o
+ atyfb-$(CONFIG_FB_ATY_GX)	+= mach64_gx.o
+ atyfb-$(CONFIG_FB_ATY_CT)	+= mach64_ct.o
+-atyfb-$(CONFIG_FB_ATY_XL_INIT)  += xlinit.o
  
- 	/* Turn off display */
- 	StopVTG(deviceInfo.pSTGReg);
-@@ -402,7 +400,7 @@ static inline unsigned long get_line_len
+ atyfb-objs			:= $(atyfb-y)
  
- static int kyrofb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- {
--	struct kyrofb_info *par = (struct kyrofb_info *)info->par;
-+	struct kyrofb_info *par = info->par;
+diff --git a/drivers/video/aty/atyfb.h b/drivers/video/aty/atyfb.h
+index 09de173..71d30b5 100644
+--- a/drivers/video/aty/atyfb.h
++++ b/drivers/video/aty/atyfb.h
+@@ -354,6 +354,5 @@ static inline void wait_for_idle(struct 
  
- 	if (var->bits_per_pixel != 16 && var->bits_per_pixel != 32) {
- 		printk(KERN_WARNING "kyrofb: depth not supported: %u\n", var->bits_per_pixel);
-@@ -478,7 +476,7 @@ static int kyrofb_check_var(struct fb_va
- 
- static int kyrofb_set_par(struct fb_info *info)
- {
--	struct kyrofb_info *par = (struct kyrofb_info *)info->par;
-+	struct kyrofb_info *par = info->par;
- 	unsigned long lineclock;
- 	unsigned long frameclock;
- 
-@@ -536,20 +534,22 @@ static int kyrofb_set_par(struct fb_info
- static int kyrofb_setcolreg(u_int regno, u_int red, u_int green,
- 			    u_int blue, u_int transp, struct fb_info *info)
- {
-+	struct kyrofb_info *par = info->par;
-+
- 	if (regno > 255)
- 		return 1;	/* Invalid register */
- 
- 	if (regno < 16) {
- 		switch (info->var.bits_per_pixel) {
- 		case 16:
--			((u16*)(info->pseudo_palette))[regno] =
-+			par->palette[regno] =
- 			     (red   & 0xf800) |
- 			    ((green & 0xfc00) >> 5) |
- 			    ((blue  & 0xf800) >> 11);
- 			break;
- 		case 32:
- 			red >>= 8; green >>= 8; blue >>= 8; transp >>= 8;
--			((u32*)(info->pseudo_palette))[regno] =
-+			par->palette[regno] =
- 			    (transp << 24) | (red << 16) | (green << 8) | blue;
- 			break;
- 		}
-@@ -675,6 +675,7 @@ static int __devinit kyrofb_probe(struct
- 				  const struct pci_device_id *ent)
- {
- 	struct fb_info *info;
-+	struct kyrofb_info *currentpar;
- 	unsigned long size;
- 	int err;
- 
-@@ -683,14 +684,11 @@ static int __devinit kyrofb_probe(struct
- 		return err;
- 	}
- 
--	size = sizeof(struct fb_info) + sizeof(struct kyrofb_info) + 16 * sizeof(u32);
--	info = kmalloc(size, GFP_KERNEL);
-+	info = framebuffer_alloc(sizeof(struct kyrofb_info), &pdev->dev);
- 	if (!info)
- 		return -ENOMEM;
- 
--	memset(info, 0, size);
+ extern void aty_reset_engine(const struct atyfb_par *par);
+ extern void aty_init_engine(struct atyfb_par *par, struct fb_info *info);
+-extern int  atyfb_xl_init(struct fb_info *info);
+ extern void aty_st_pll_ct(int offset, u8 val, const struct atyfb_par *par);
+ extern u8   aty_ld_pll_ct(int offset, const struct atyfb_par *par);
+diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
+index de684cf..4645d07 100644
+--- a/drivers/video/aty/atyfb_base.c
++++ b/drivers/video/aty/atyfb_base.c
+@@ -2291,10 +2291,6 @@ static int __init aty_init(struct fb_inf
+ 		par->dac_ops = &aty_dac_ct;
+ 		par->pll_ops = &aty_pll_ct;
+ 		par->bus_type = PCI;
+-#ifdef CONFIG_FB_ATY_XL_INIT
+-		if (IS_XL(par->pci_id))
+-			atyfb_xl_init(info);
+-#endif
+ 		par->ram_type = (aty_ld_le32(CONFIG_STAT0, par) & 0x07);
+ 		ramname = aty_ct_ram[par->ram_type];
+ 		/* for many chips, the mclk is 67 MHz for SDRAM, 63 MHz otherwise */
+diff --git a/drivers/video/aty/xlinit.c b/drivers/video/aty/xlinit.c
+deleted file mode 100644
+index a085cbf..0000000
+--- a/drivers/video/aty/xlinit.c
++++ /dev/null
+@@ -1,359 +0,0 @@
+-/*
+- *  ATI Rage XL Initialization. Support for Xpert98 and Victoria
+- *  PCI cards.
+- *
+- *  Copyright (C) 2002 MontaVista Software Inc.
+- *  Author: MontaVista Software, Inc.
+- *         	stevel@mvista.com or source@mvista.com
+- *
+- *  This program is free software; you can redistribute  it and/or modify it
+- *  under  the terms of  the GNU General  Public License as published by the
+- *  Free Software Foundation;  either version 2 of the  License, or (at your
+- *  option) any later version.
+- *
+- *  THIS  SOFTWARE  IS PROVIDED   ``AS  IS'' AND   ANY  EXPRESS OR IMPLIED
+- *  WARRANTIES,   INCLUDING, BUT NOT  LIMITED  TO, THE IMPLIED WARRANTIES OF
+- *  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN
+- *  NO  EVENT  SHALL   THE AUTHOR  BE    LIABLE FOR ANY   DIRECT, INDIRECT,
+- *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+- *  NOT LIMITED   TO, PROCUREMENT OF  SUBSTITUTE GOODS  OR SERVICES; LOSS OF
+- *  USE, DATA,  OR PROFITS; OR  BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+- *  ANY THEORY OF LIABILITY, WHETHER IN  CONTRACT, STRICT LIABILITY, OR TORT
+- *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+- *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+- *
+- *  You should have received a copy of the  GNU General Public License along
+- *  with this program; if not, write  to the Free Software Foundation, Inc.,
+- *  675 Mass Ave, Cambridge, MA 02139, USA.
+- */
+-#include <linux/config.h>
+-#include <linux/module.h>
+-#include <linux/kernel.h>
+-#include <linux/errno.h>
+-#include <linux/string.h>
+-#include <linux/mm.h> 
+-#include <linux/slab.h>
+-#include <linux/vmalloc.h>
+-#include <linux/delay.h>
+-#include <linux/fb.h>
+-#include <linux/init.h>
+-#include <linux/pci.h>
+-#include <asm/io.h>
+-#include <video/mach64.h>
+-#include "atyfb.h"
 -
--	currentpar = (struct kyrofb_info *)(info + 1);
-+	currentpar = info->par;
- 
- 	kyro_fix.smem_start = pci_resource_start(pdev, 0);
- 	kyro_fix.smem_len   = pci_resource_len(pdev, 0);
-@@ -716,8 +714,7 @@ static int __devinit kyrofb_probe(struct
- 
- 	info->fbops		= &kyrofb_ops;
- 	info->fix		= kyro_fix;
--	info->par		= currentpar;
--	info->pseudo_palette	= (void *)(currentpar + 1);
-+	info->pseudo_palette	= currentpar->palette;
- 	info->flags		= FBINFO_DEFAULT;
- 
- 	SetCoreClockPLL(deviceInfo.pSTGReg, pdev);
-@@ -741,7 +738,6 @@ static int __devinit kyrofb_probe(struct
- 
- 	fb_memset(info->screen_base, 0, size);
- 
--	info->device = &pdev->dev;
- 	if (register_framebuffer(info) < 0)
- 		goto out_unmap;
- 
-@@ -757,7 +753,7 @@ static int __devinit kyrofb_probe(struct
- out_unmap:
- 	iounmap(currentpar->regbase);
- 	iounmap(info->screen_base);
--	kfree(info);
-+	framebuffer_release(info);
- 
- 	return -EINVAL;
- }
-@@ -765,7 +761,7 @@ out_unmap:
- static void __devexit kyrofb_remove(struct pci_dev *pdev)
- {
- 	struct fb_info *info = pci_get_drvdata(pdev);
--	struct kyrofb_info *par = (struct kyrofb_info *)info->par;
-+	struct kyrofb_info *par = info->par;
- 
- 	/* Reset the board */
- 	StopVTG(deviceInfo.pSTGReg);
-@@ -789,7 +785,7 @@ static void __devexit kyrofb_remove(stru
- 
- 	unregister_framebuffer(info);
- 	pci_set_drvdata(pdev, NULL);
--	kfree(info);
-+	framebuffer_release(info);
- }
- 
- static int __init kyrofb_init(void)
-diff --git a/include/video/kyro.h b/include/video/kyro.h
-index 1bed37c..dba7de2 100644
---- a/include/video/kyro.h
-+++ b/include/video/kyro.h
-@@ -15,6 +15,7 @@
- struct kyrofb_info {
- 	void __iomem *regbase;
- 
-+	u32 palette[16];
- 	u32 HTot;	/* Hor Total Time    */
- 	u32 HFP;	/* Hor Front Porch   */
- 	u32 HST;	/* Hor Sync Time     */
+-#define MPLL_GAIN       0xad
+-#define VPLL_GAIN       0xd5
+-
+-enum {
+-	VICTORIA = 0,
+-	XPERT98,
+-	NUM_XL_CARDS
+-};
+-
+-extern const struct aty_pll_ops aty_pll_ct;
+-
+-#define DEFAULT_CARD XPERT98
+-static int xl_card = DEFAULT_CARD;
+-
+-static const struct xl_card_cfg_t {
+-	int ref_crystal; // 10^4 Hz
+-	int mem_type;
+-	int mem_size;
+-	u32 mem_cntl;
+-	u32 ext_mem_cntl;
+-	u32 mem_addr_config;
+-	u32 bus_cntl;
+-	u32 dac_cntl;
+-	u32 hw_debug;
+-	u32 custom_macro_cntl;
+-	u8  dll2_cntl;
+-	u8  pll_yclk_cntl;
+-} card_cfg[NUM_XL_CARDS] = {
+-	// VICTORIA
+-	{	2700, SDRAM, 0x800000,
+-		0x10757A3B, 0x64000C81, 0x00110202, 0x7b33A040,
+-		0x82010102, 0x48803800, 0x005E0179,
+-		0x50, 0x25
+-	},
+-	// XPERT98
+-	{	1432,  WRAM, 0x800000,
+-		0x00165A2B, 0xE0000CF1, 0x00200213, 0x7333A001,
+-		0x8000000A, 0x48833800, 0x007F0779,
+-		0x10, 0x19
+-	}
+-};
+-	  
+-typedef struct {
+-	u8 lcd_reg;
+-	u32 val;
+-} lcd_tbl_t;
+-
+-static const lcd_tbl_t lcd_tbl[] = {
+-	{ 0x01,	0x000520C0 },
+-	{ 0x08,	0x02000408 },
+-	{ 0x03,	0x00000F00 },
+-	{ 0x00,	0x00000000 },
+-	{ 0x02,	0x00000000 },
+-	{ 0x04,	0x00000000 },
+-	{ 0x05,	0x00000000 },
+-	{ 0x06,	0x00000000 },
+-	{ 0x33,	0x00000000 },
+-	{ 0x34,	0x00000000 },
+-	{ 0x35,	0x00000000 },
+-	{ 0x36,	0x00000000 },
+-	{ 0x37,	0x00000000 }
+-};
+-
+-static void reset_gui(struct atyfb_par *par)
+-{
+-	aty_st_8(GEN_TEST_CNTL+1, 0x01, par);
+-	aty_st_8(GEN_TEST_CNTL+1, 0x00, par);
+-	aty_st_8(GEN_TEST_CNTL+1, 0x02, par);
+-	mdelay(5);
+-}
+-
+-static void reset_sdram(struct atyfb_par *par)
+-{
+-	u8 temp;
+-
+-	temp = aty_ld_8(EXT_MEM_CNTL, par);
+-	temp |= 0x02;
+-	aty_st_8(EXT_MEM_CNTL, temp, par); // MEM_SDRAM_RESET = 1b
+-	temp |= 0x08;
+-	aty_st_8(EXT_MEM_CNTL, temp, par); // MEM_CYC_TEST    = 10b
+-	temp |= 0x0c;
+-	aty_st_8(EXT_MEM_CNTL, temp, par); // MEM_CYC_TEST    = 11b
+-	mdelay(5);
+-	temp &= 0xf3;
+-	aty_st_8(EXT_MEM_CNTL, temp, par); // MEM_CYC_TEST    = 00b
+-	temp &= 0xfd;
+-	aty_st_8(EXT_MEM_CNTL, temp, par); // MEM_SDRAM_REST  = 0b
+-	mdelay(5);
+-}
+-
+-static void init_dll(struct atyfb_par *par)
+-{
+-	// enable DLL
+-	aty_st_pll_ct(PLL_GEN_CNTL,
+-		   aty_ld_pll_ct(PLL_GEN_CNTL, par) & 0x7f,
+-		   par);
+-
+-	// reset DLL
+-	aty_st_pll_ct(DLL_CNTL, 0x82, par);
+-	aty_st_pll_ct(DLL_CNTL, 0xE2, par);
+-	mdelay(5);
+-	aty_st_pll_ct(DLL_CNTL, 0x82, par);
+-	mdelay(6);
+-}
+-
+-static void reset_clocks(struct atyfb_par *par, struct pll_ct *pll,
+-			 int hsync_enb)
+-{
+-	reset_gui(par);
+-	aty_st_pll_ct(MCLK_FB_DIV, pll->mclk_fb_div, par);
+-	aty_st_pll_ct(SCLK_FB_DIV, pll->sclk_fb_div, par);
+-
+-	mdelay(15);
+-	init_dll(par);
+-	aty_st_8(GEN_TEST_CNTL+1, 0x00, par);
+-	mdelay(5);
+-	aty_st_8(CRTC_GEN_CNTL+3, 0x04, par);
+-	mdelay(6);
+-	reset_sdram(par);
+-	aty_st_8(CRTC_GEN_CNTL+3,
+-		 hsync_enb ? 0x00 : 0x04, par);
+-
+-	aty_st_pll_ct(SPLL_CNTL2, pll->spll_cntl2, par);
+-	aty_st_pll_ct(PLL_GEN_CNTL, pll->pll_gen_cntl, par);
+-	aty_st_pll_ct(PLL_VCLK_CNTL, pll->pll_vclk_cntl, par);
+-}
+-
+-int atyfb_xl_init(struct fb_info *info)
+-{
+-	const struct xl_card_cfg_t * card = &card_cfg[xl_card];
+-	struct atyfb_par *par = (struct atyfb_par *) info->par;
+-	union aty_pll pll;
+-	int err;
+-	u32 temp;
+-	
+-	aty_st_8(CONFIG_STAT0, 0x85, par);
+-	mdelay(10);
+-
+-	/*
+-	 * The following needs to be set before the call
+-	 * to var_to_pll() below. They'll be re-set again
+-	 * to the same values in aty_init().
+-	 */
+-	par->ref_clk_per = 100000000UL/card->ref_crystal;
+-	par->ram_type = card->mem_type;
+-	info->fix.smem_len = card->mem_size;
+-	if (xl_card == VICTORIA) {
+-		// the MCLK, XCLK are 120MHz on victoria card
+-		par->mclk_per = 1000000/120;
+-		par->xclk_per = 1000000/120;
+-		par->features &= ~M64F_MFB_FORCE_4;
+-	}
+-	
+-	/*
+-	 * Calculate mclk and xclk dividers, etc. The passed
+-	 * pixclock and bpp values don't matter yet, the vclk
+-	 * isn't programmed until later.
+-	 */
+-	if ((err = aty_pll_ct.var_to_pll(info, 39726, 8, &pll)))
+-		return err;
+-
+-	aty_st_pll_ct(LVDS_CNTL0, 0x00, par);
+-	aty_st_pll_ct(DLL2_CNTL, card->dll2_cntl, par);
+-	aty_st_pll_ct(V2PLL_CNTL, 0x10, par);
+-	aty_st_pll_ct(MPLL_CNTL, MPLL_GAIN, par);
+-	aty_st_pll_ct(VPLL_CNTL, VPLL_GAIN, par);
+-	aty_st_pll_ct(PLL_VCLK_CNTL, 0x00, par);
+-	aty_st_pll_ct(VFC_CNTL, 0x1B, par);
+-	aty_st_pll_ct(PLL_REF_DIV, pll.ct.pll_ref_div, par);
+-	aty_st_pll_ct(PLL_EXT_CNTL, pll.ct.pll_ext_cntl, par);
+-	aty_st_pll_ct(SPLL_CNTL2, 0x03, par);
+-	aty_st_pll_ct(PLL_GEN_CNTL, 0x44, par);
+-
+-	reset_clocks(par, &pll.ct, 0);
+-	mdelay(10);
+-
+-	aty_st_pll_ct(VCLK_POST_DIV, 0x03, par);
+-	aty_st_pll_ct(VCLK0_FB_DIV, 0xDA, par);
+-	aty_st_pll_ct(VCLK_POST_DIV, 0x0F, par);
+-	aty_st_pll_ct(VCLK1_FB_DIV, 0xF5, par);
+-	aty_st_pll_ct(VCLK_POST_DIV, 0x3F, par);
+-	aty_st_pll_ct(PLL_EXT_CNTL, 0x40 | pll.ct.pll_ext_cntl, par);
+-	aty_st_pll_ct(VCLK2_FB_DIV, 0x00, par);
+-	aty_st_pll_ct(VCLK_POST_DIV, 0xFF, par);
+-	aty_st_pll_ct(PLL_EXT_CNTL, 0xC0 | pll.ct.pll_ext_cntl, par);
+-	aty_st_pll_ct(VCLK3_FB_DIV, 0x00, par);
+-
+-	aty_st_8(BUS_CNTL, 0x01, par);
+-	aty_st_le32(BUS_CNTL, card->bus_cntl | 0x08000000, par);
+-
+-	aty_st_le32(CRTC_GEN_CNTL, 0x04000200, par);
+-	aty_st_le16(CONFIG_STAT0, 0x0020, par);
+-	aty_st_le32(MEM_CNTL, 0x10151A33, par);
+-	aty_st_le32(EXT_MEM_CNTL, 0xE0000C01, par);
+-	aty_st_le16(CRTC_GEN_CNTL+2, 0x0000, par);
+-	aty_st_le32(DAC_CNTL, card->dac_cntl, par);
+-	aty_st_le16(GEN_TEST_CNTL, 0x0100, par);
+-	aty_st_le32(CUSTOM_MACRO_CNTL, 0x003C0171, par);
+-	aty_st_le32(MEM_BUF_CNTL, 0x00382848, par);
+-
+-	aty_st_le32(HW_DEBUG, card->hw_debug, par);
+-	aty_st_le16(MEM_ADDR_CONFIG, 0x0000, par);
+-	aty_st_le16(GP_IO+2, 0x0000, par);
+-	aty_st_le16(GEN_TEST_CNTL, 0x0000, par);
+-	aty_st_le16(EXT_DAC_REGS+2, 0x0000, par);
+-	aty_st_le32(CRTC_INT_CNTL, 0x00000000, par);
+-	aty_st_le32(TIMER_CONFIG, 0x00000000, par);
+-	aty_st_le32(0xEC, 0x00000000, par);
+-	aty_st_le32(0xFC, 0x00000000, par);
+-
+-#if defined (CONFIG_FB_ATY_GENERIC_LCD)
+-	{
+-		int i;
+-
+-		for (i = 0; i < ARRAY_SIZE(lcd_tbl); i++)
+-			aty_st_lcd(lcd_tbl[i].lcd_reg, lcd_tbl[i].val, par);
+-	}
+-#endif
+-
+-	aty_st_le16(CONFIG_STAT0, 0x00A4, par);
+-	mdelay(10);
+-
+-	aty_st_8(BUS_CNTL+1, 0xA0, par);
+-	mdelay(10);
+-	
+-	reset_clocks(par, &pll.ct, 1);
+-	mdelay(10);
+-
+-	// something about power management
+-	aty_st_8(LCD_INDEX, 0x08, par);
+-	aty_st_8(LCD_DATA, 0x0A, par);
+-	aty_st_8(LCD_INDEX, 0x08, par);
+-	aty_st_8(LCD_DATA+3, 0x02, par);
+-	aty_st_8(LCD_INDEX, 0x08, par);
+-	aty_st_8(LCD_DATA, 0x0B, par);
+-	mdelay(2);
+-	
+-	// enable display requests, enable CRTC
+-	aty_st_8(CRTC_GEN_CNTL+3, 0x02, par);
+-	// disable display
+-	aty_st_8(CRTC_GEN_CNTL, 0x40, par);
+-	// disable display requests, disable CRTC
+-	aty_st_8(CRTC_GEN_CNTL+3, 0x04, par);
+-	mdelay(10);
+-
+-	aty_st_pll_ct(PLL_YCLK_CNTL, 0x25, par);
+-
+-	aty_st_le16(CUSTOM_MACRO_CNTL, 0x0179, par);
+-	aty_st_le16(CUSTOM_MACRO_CNTL+2, 0x005E, par);
+-	aty_st_le16(CUSTOM_MACRO_CNTL+2, card->custom_macro_cntl>>16, par);
+-	aty_st_8(CUSTOM_MACRO_CNTL+1,
+-		 (card->custom_macro_cntl>>8) & 0xff, par);
+-
+-	aty_st_le32(MEM_ADDR_CONFIG, card->mem_addr_config, par);
+-	aty_st_le32(MEM_CNTL, card->mem_cntl, par);
+-	aty_st_le32(EXT_MEM_CNTL, card->ext_mem_cntl, par);
+-
+-	aty_st_8(CONFIG_STAT0, 0xA0 | card->mem_type, par);
+-
+-	aty_st_pll_ct(PLL_YCLK_CNTL, 0x01, par);
+-	mdelay(15);
+-	aty_st_pll_ct(PLL_YCLK_CNTL, card->pll_yclk_cntl, par);
+-	mdelay(1);
+-	
+-	reset_clocks(par, &pll.ct, 0);
+-	mdelay(50);
+-	reset_clocks(par, &pll.ct, 0);
+-	mdelay(50);
+-
+-	// enable extended register block
+-	aty_st_8(BUS_CNTL+3, 0x7B, par);
+-	mdelay(1);
+-	// disable extended register block
+-	aty_st_8(BUS_CNTL+3, 0x73, par);
+-
+-	aty_st_8(CONFIG_STAT0, 0x80 | card->mem_type, par);
+-
+-	// disable display requests, disable CRTC
+-	aty_st_8(CRTC_GEN_CNTL+3, 0x04, par);
+-	// disable mapping registers in VGA aperture
+-	aty_st_8(CONFIG_CNTL, aty_ld_8(CONFIG_CNTL, par) & ~0x04, par);
+-	mdelay(50);
+-	// enable display requests, enable CRTC
+-	aty_st_8(CRTC_GEN_CNTL+3, 0x02, par);
+-
+-	// make GPIO's 14,15,16 all inputs
+-	aty_st_8(LCD_INDEX, 0x07, par);
+-	aty_st_8(LCD_DATA+3, 0x00, par);
+-
+-	// enable the display
+-	aty_st_8(CRTC_GEN_CNTL, 0x00, par);
+-	mdelay(17);
+-	// reset the memory controller
+-	aty_st_8(GEN_TEST_CNTL+1, 0x02, par);
+-	mdelay(15);
+-	aty_st_8(GEN_TEST_CNTL+1, 0x00, par);
+-	mdelay(30);
+-
+-	// enable extended register block
+-	aty_st_8(BUS_CNTL+3,
+-		 (u8)(aty_ld_8(BUS_CNTL+3, par) | 0x08),
+-		 par);
+-	// set FIFO size to 512 (PIO)
+-	aty_st_le32(GUI_CNTL,
+-		    aty_ld_le32(GUI_CNTL, par) & ~0x3,
+-		    par);
+-
+-	// enable CRT and disable lcd
+-	aty_st_8(LCD_INDEX, 0x01, par);
+-	temp = aty_ld_le32(LCD_DATA, par);
+-	temp = (temp | 0x01) & ~0x02;
+-	aty_st_le32(LCD_DATA, temp, par);
+-	return 0;
+-}
+-
 
 
 

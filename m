@@ -1,21 +1,23 @@
-From: Knut Petersen <Knut_Petersen@t-online.de>
-Subject: Re: atyfb & lockups
-Date: Wed, 30 Nov 2005 07:48:25 +0100
-Message-ID: <438D4B39.5090208@t-online.de>
-References: <1133329905.16726.69.camel@gaston>
+From: Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH 9/16] kyrofb: Driver cleanups
+Date: Wed, 30 Nov 2005 12:42:43 +0200
+Message-ID: <20051130104243.GA16158@linux-sh.org>
+References: <438B2257.60100@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="J2SCkAp4GZ/dPZZf"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EhLl3-0002Uu-GD
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Nov 2005 22:48:01 -0800
-Received: from mailout11.sul.t-online.com ([194.25.134.85])
+	id 1EhPQG-0007je-HG
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 30 Nov 2005 02:42:48 -0800
+Received: from smtp2.pp.htv.fi ([213.243.153.35])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EhLl3-0006Mh-4g
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 29 Nov 2005 22:48:01 -0800
-In-Reply-To: <1133329905.16726.69.camel@gaston>
+	id 1EhPQF-0000yv-9v
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 30 Nov 2005 02:42:48 -0800
+Content-Disposition: inline
+In-Reply-To: <438B2257.60100@gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,46 +28,40 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
 
->I have an old PowerBook Wallstreet I here with a Rage LT-G. I've been
->booting it from Open Firmware instead of MacOS lately (thus didn't give
->a chance to the MacOS driver to do it's own tweaking of the chip) and
->the machine has been reliably locking up on me. Solid lockups. I finally
->figured out that the lockups appear to be atyfb related and that booting
->with video=atyfb:noaccel fixes it.
->It seems that when it's lockup, the whole machine is down, that is it
->won't take interrupts to get to the xmon low level debugger nor
->anything, thus I suspect the PCI is locked up.
->  
->
-Well, there are other possibilities.
+--J2SCkAp4GZ/dPZZf
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-When does the lockup occure?  Immediately when booting? Later? During 
-start of 
-xdm/kdm? Random?
+On Mon, Nov 28, 2005 at 11:29:27PM +0800, Antonino A. Daplas wrote:
+> - remove unneeded casts
+> - use framebuffer_alloc/framebuffer_release to allocate/free memory
+> - the pseudo_palette is always u32 regardless of bpp if using generic
+>   drawing functions
+>=20
+> Signed-off-by: Antonino Daplas <adaplas@pol.net>
 
->Are there any ideas of where to look for the source of the problem ?
->
->  
->
+Looks good, thanks.
 
-I would start to investigate the case by instrumenting and extending the 
-fb_sync code.
-Try to include code there that resets the chip and switches to the 
-noaccel counterparts of the
-accelerated functions when a timeout occures. That way you should have a 
-chance to resume.
-Is the timeout counter ok? Maybe you should decrease/increase it.   If 
-switching to
-the noaccel function works, include a register dump before resetting the 
-chip, use show_trace()
-etc for further debugging.
+Acked-by: Paul Mundt <lethal@linux-sh.org>
 
-cu,
- knut
+--J2SCkAp4GZ/dPZZf
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFDjYIj1K+teJFxZ9wRAmN6AJ9H7WSdEF4Qy1v2ODCto+xKnQyZggCbBroT
+K/AoTFP7vbZgIxlF39Jqq1U=
+=UiM1
+-----END PGP SIGNATURE-----
+
+--J2SCkAp4GZ/dPZZf--
 
 
 -------------------------------------------------------

@@ -1,26 +1,23 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: atyfb & lockups
-Date: Fri, 02 Dec 2005 13:14:14 +1100
-Message-ID: <1133489654.6100.53.camel@gaston>
-References: <1133329905.16726.69.camel@gaston>
-	 <438D4B39.5090208@t-online.de>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: scroll modes
+Date: Fri, 02 Dec 2005 07:27:50 +0800
+Message-ID: <438F86F6.9090800@gmail.com>
+References: <438D9E60.7040007@t-online.de> <Pine.LNX.4.62.0511301347230.2123@pademelon.sonytel.be> <438DE211.2060900@t-online.de> <438E0E23.2000203@gmail.com> <438E2D8E.2040503@t-online.de> <438E3D66.8080601@gmail.com> <438F8136.5030005@t-online.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Ei0Xs-0001uk-9K
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 01 Dec 2005 18:21:08 -0800
-Received: from gate.crashing.org ([63.228.1.57])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44)
-	id 1Ei0Xq-00009t-Ry
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 01 Dec 2005 18:21:08 -0800
-Received: from gaston (localhost [127.0.0.1])
-	by gate.crashing.org (8.12.8/8.12.8) with ESMTP id jB22HcWG007461
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 1 Dec 2005 20:17:40 -0600
-In-Reply-To: <438D4B39.5090208@t-online.de>
+	id 1EhxrI-0007qJ-6U
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 01 Dec 2005 15:29:00 -0800
+Received: from zproxy.gmail.com ([64.233.162.202])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1EhxrG-0006ru-Pe
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 01 Dec 2005 15:29:00 -0800
+Received: by zproxy.gmail.com with SMTP id r28so397588nza
+        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 01 Dec 2005 15:28:58 -0800 (PST)
+In-Reply-To: <438F8136.5030005@t-online.de>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,53 +28,62 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"
+To: Knut Petersen <Knut_Petersen@t-online.de>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Geert Uytterhoeven <geert@linux-m68k.org>
 
+Knut Petersen wrote:
+> Hi Geert/Antonino,
+>=20
+ > I have to admit that I=B4m not one of those gurus who fully understand=
+ the
+> fbcon
+> console layer in all details ... so please check that this does not
+> break anything else.
+>=20
 
-> Well, there are other possibilities.
-> 
-> When does the lockup occure?  Immediately when booting? Later? During 
-> start of 
-> xdm/kdm? Random?
+I think I see the problem.  Can you try this instead?
 
-During boot, when drawing text in console mode, usually when it starts
-scrolling but not necessarily.
+Tony
 
-> I would start to investigate the case by instrumenting and extending the 
-> fb_sync code.
-> Try to include code there that resets the chip and switches to the 
-> noaccel counterparts of the
-> accelerated functions when a timeout occures. That way you should have a 
-> chance to resume.
+PS: Do you still need the previous patch?  The one that adjusts
+p->vrows?
 
-Yah, I should do something like that. I remember trying to track that
-bug down a while ago now, and I think I had it working by adding syncs
-all over the place.
-
-However, I think the problem is more likely to be some bad fifo or
-bandwidth setting in the engine causing it to lockup when loaded. It
-works if I boot MacOS and use BootX to then boot linux, though I then
-have different display problems (definitely look like incorrect settings
-of the display fifo).
-
-> Is the timeout counter ok? Maybe you should decrease/increase it.   If 
-> switching to
-> the noaccel function works, include a register dump before resetting the 
-> chip, use show_trace()
-> etc for further debugging.
-
-Will do all of these as soon as I find some time. My initial post was
-mostly to ping in case it was a known issue or somebody else already
-tracked it down.
-
-Ben.
-
-
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index eda237e..587b70e 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -727,13 +727,18 @@ fb_pan_display(struct fb_info *info, str
+ {
+         int xoffset =3D var->xoffset;
+         int yoffset =3D var->yoffset;
+-        int err;
++        int err, yres;
+=20
+-        if (!info->fbops->fb_pan_display || xoffset < 0 || yoffset < 0 |=
+|
+-	    xoffset + info->var.xres > info->var.xres_virtual ||
+-            yoffset + info->var.yres > info->var.yres_virtual)
+-                return -EINVAL;
++	if (var->vmode & FB_VMODE_YWRAP)
++		yres =3D 0;
++	else
++		yres =3D info->var.yres;
+=20
++        if (!info->fbops->fb_pan_display || xoffset < 0 || yoffset < 0 |=
+|
++	    var->yoffset + yres > info->var.yres_virtual ||
++	    var->xoffset + info->var.xres > info->var.xres_virtual)
++		return -EINVAL;
++=09
+ 	if ((err =3D info->fbops->fb_pan_display(var, info)))
+ 		return err;
+=20
 
 
 -------------------------------------------------------
-This SF.net email is sponsored by: Splunk Inc. Do you grep through log files
+This SF.net email is sponsored by: Splunk Inc. Do you grep through log fi=
+les
 for problems?  Stop!  Download the new AJAX search engine that makes
 searching your log files as easy as surfing the  web.  DOWNLOAD SPLUNK!
-http://ads.osdn.com/?ad_id=7637&alloc_id=16865&op=click
+http://ads.osdn.com/?ad_id=3D7637&alloc_id=3D16865&op=3Dclick

@@ -1,21 +1,26 @@
-From: Knut Petersen <Knut_Petersen@t-online.de>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: scroll modes
-Date: Fri, 02 Dec 2005 11:55:15 +0100
-Message-ID: <43902813.2010604@t-online.de>
-References: <438D9E60.7040007@t-online.de> <Pine.LNX.4.62.0511301347230.2123@pademelon.sonytel.be> <438DE211.2060900@t-online.de> <438E0E23.2000203@gmail.com>
+Date: Sat, 3 Dec 2005 13:01:40 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0512031259010.31646@pademelon.sonytel.be>
+References: <438D9E60.7040007@t-online.de> <Pine.LNX.4.62.0511301347230.2123@pademelon.sonytel.be>
+ <438DE211.2060900@t-online.de> <438E0E23.2000203@gmail.com>
+ <438E2D8E.2040503@t-online.de> <438E3D66.8080601@gmail.com>
+ <438F8136.5030005@t-online.de> <438F86F6.9090800@gmail.com>
+ <438F8B9D.1060605@t-online.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1597428643-1133611261=:31646"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Ei9UM-0000Uw-Cg
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 02 Dec 2005 03:54:06 -0800
-Received: from mailout05.sul.t-online.com ([194.25.134.82])
+	id 1EiW5O-0004Gi-Ke
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 03 Dec 2005 04:01:50 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Ei9UK-00051n-Qp
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 02 Dec 2005 03:54:06 -0800
-In-Reply-To: <438E0E23.2000203@gmail.com>
+	id 1EiW5M-0006jM-4n
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 03 Dec 2005 04:01:50 -0800
+In-Reply-To: <438F8B9D.1060605@t-online.de>
+Content-ID: <Pine.LNX.4.62.0512031301100.31646@pademelon.sonytel.be>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,125 +31,72 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Geert Uytterhoeven <geert@linux-m68k.org>
+To: Knut Petersen <Knut_Petersen@t-online.de>
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, Linux/m68k <linux-m68k@vger.kernel.org>
 
-Hi Tony
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-first of all, in updatescrollmode we introduce a the local fh, but latero=
-n
-vc->vc_font.height is often read again. Fixing that would be a cosmetic=20
-change, as
-the compiler should optimize that anyway.
+---584337861-1597428643-1133611261=:31646
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+Content-ID: <Pine.LNX.4.62.0512031301101.31646@pademelon.sonytel.be>
+Content-Transfer-Encoding: quoted-printable
+X-MIME-Autoconverted: from 8bit to quoted-printable by witte.sonytel.be id jB3C1frq011131
 
->diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon=
-.c
->index 1a8f0ea..5ebe68f 100644
->--- a/drivers/video/console/fbcon.c
->+++ b/drivers/video/console/fbcon.c
->@@ -1972,12 +1972,6 @@ static __inline__ void updatescrollmode(
-> 	int fast_imageblit =3D (cap & FBINFO_HWACCEL_IMAGEBLIT) &&
-> 		!(cap & FBINFO_HWACCEL_DISABLED);
+On Fri, 2 Dec 2005, Knut Petersen wrote:
+> Antonino A. Daplas schrieb:
+> > I think I see the problem.  Can you try this instead?
+> > =20
+> I have to get up in 6 hours, so I will check it tomorrow. I think your =
+fix is
+> right, the problem
+> was  returning with -EINVAL if yoffset + info->var.yres >
+> info->var.yres_virtual instead of
+> calling the drivers panning function.
 >=20
->-	p->vrows =3D vyres/fh;
->-	if (yres > (fh * (vc->vc_rows + 1)))
->-		p->vrows -=3D (yres - (fh * vc->vc_rows)) / fh;
->-	if ((yres % fh) && (vyres % fh < yres % fh))
->-		p->vrows--;
->-
-> 	if (good_wrap || good_pan) {
-> 		if (reading_fast || fast_copyarea)
-> 			p->scrollmode =3D good_wrap ?
->@@ -1991,6 +1985,16 @@ static __inline__ void updatescrollmode(
-> 		else
-> 			p->scrollmode =3D SCROLL_REDRAW;
-> 	}
->+
->+	p->vrows =3D vyres/fh;
-> =20
->
-ok, does not change anything.
+> > Tony
+> >=20
+> > PS: Do you still need the previous patch?  The one that adjusts
+> > p->vrows?
+> >=20
+> > =20
+> Don=B4t know,  but it=B4s in my working configuration, so at least it d=
+oes not
+> break anything.
+>=20
+> Geert stated that ywrap scrolling should be fine on amifb ... is that r=
+eally
+> true with
+> current code?
 
->+
->+	if (p->scrollmode !=3D SCROLL_WRAP_MOVE &&
->+	    (yres > (fh * (vc->vc_rows + 1))))
->+		    p->vrows -=3D (yres - (fh * vc->vc_rows)) / fh;
->+
-> =20
->
-1024x768, vyres 2048, seems to  work with and without that extra
-"p->scrollmode !=3D SCROLL_WRAP_MOVE", but could you please
-explain when  "yres > (fh * (vc->vc_rows + 1))" will be true?
+To be honest, I don't know. The last kernel I booted on real Amiga hardwa=
+re
+was 2.6.8.1.
 
->+	if ((yres % fh) && (vyres % fh < yres % fh))
->+		p->vrows--;
-> =20
->
-ok, does not change anything.
+Anyone who can confirm that amifb works fine in recent kernels? Or perhap=
+s
+ywrap got disabled somewhere (which reminds me I still have to benchmark =
+the
+various scrollmodes to find the optimal value for amifb)?
 
-Further comments to updatescrollmode:
+Gr{oetje,eeting}s,
 
-      int good_wrap =3D (cap & FBINFO_HWACCEL_YWRAP) &&
-              divides(ywrap, vc->vc_font.height) &&
-              divides(vc->vc_font.height, vyres);
+						Geert
 
-is broken as it does not check that vyres * vxres =3D=3D whole available =
-video
-memory. Or is there hardware that has an adjustable wrap address? Hmm, I
-even can think of a way to reprogram the cyberblade/i1 to wrap at the 1, =
-2,
-4 or 8MB boundaries while the system is running.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m6=
+8k.org
 
-Even if that additional check would be introduced it would have problems
-- with drivers like vesafb that do not map all available memory
-- with drivers that do not know about all available memory
-- with drivers that allow users to specify arbitraty values for the=20
-video memory size.
-
-I don=B4t like the whole concept of updatescrollmode based on the evaluat=
-ion
-of various flags, asumptions and values.
-
-Scrolling with YWRAP_MOVE is faster than scrolling with YPAN_MOVE,
-often much faster. Execution time of  a "cat testfile" drops for mode=20
-1024x768-32
-from 1.225s to 0.835s with cyblafb.
-
-But I don=B4t like that the bottom status line of my curses based editor=20
-jumps while
-scrolling up/down. So I have several options:
-
-  - Don=B4t use ywrap scrolling
-  - Ignore the anoying flicker of the base line
-  - change the working YWRAP_MOVE
-  - submit an alternative YWRAP_SOMETHING
-
-But how should that YWRAP_SOMETHING be selected by updatescrollmode?
-The individual driver does know best about the hardware about user=20
-preferences
-and of the supported scroll modes in any situation.
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D
-Wouldn=B4t it be easier and cleaner to introduce a new optional fb_ops=20
-function
-fb_scrollmode(...) that would, if implemented in the driver, replace and=20
-extend
-the functionality  implemented in updatescrollmode?!
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D
-
-cu,
- Knut
-
+In personal conversations with technical people, I call myself a hacker. =
+But
+when I'm talking to journalists I just say "programmer" or something like=
+ that.
+							    -- Linus Torvalds
+---584337861-1597428643-1133611261=:31646--
 
 
 -------------------------------------------------------
-This SF.net email is sponsored by: Splunk Inc. Do you grep through log fi=
-les
+This SF.net email is sponsored by: Splunk Inc. Do you grep through log files
 for problems?  Stop!  Download the new AJAX search engine that makes
 searching your log files as easy as surfing the  web.  DOWNLOAD SPLUNK!
-http://ads.osdn.com/?ad_id=3D7637&alloc_id=3D16865&op=3Dclick
+http://ads.osdn.com/?ad_id=7637&alloc_id=16865&op=click

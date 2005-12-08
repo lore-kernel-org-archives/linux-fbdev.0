@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: Frame swapping
-Date: Fri, 09 Dec 2005 05:18:18 +0800
-Message-ID: <4398A31A.70309@gmail.com>
-References: <35786B99AB3FDC45A8215724617919736D9180@gbrwgceumf01.eu.xerox.net>
+Subject: Re: PCI nvidiafb card init with a broken BIOS?
+Date: Fri, 09 Dec 2005 05:39:42 +0800
+Message-ID: <4398A81E.1040601@gmail.com>
+References: <1133523556.7994.21.camel@localhost.localdomain>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EkTGD-0001Ou-9i
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Dec 2005 13:25:05 -0800
-Received: from xproxy.gmail.com ([66.249.82.204])
+	id 1EkTUU-0002PS-3j
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Dec 2005 13:39:50 -0800
+Received: from xproxy.gmail.com ([66.249.82.203])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EkTGA-0000ad-KN
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Dec 2005 13:25:05 -0800
-Received: by xproxy.gmail.com with SMTP id s6so502454wxc
-        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 08 Dec 2005 13:25:02 -0800 (PST)
-In-Reply-To: <35786B99AB3FDC45A8215724617919736D9180@gbrwgceumf01.eu.xerox.net>
+	id 1EkTUT-0007fj-VF
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Dec 2005 13:39:50 -0800
+Received: by xproxy.gmail.com with SMTP id h29so482489wxd
+        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 08 Dec 2005 13:39:47 -0800 (PST)
+In-Reply-To: <1133523556.7994.21.camel@localhost.localdomain>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,35 +30,37 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Clive.Jenkins@xerox.com
+Cc: Richard Purdie <rpurdie@rpsys.net>
 
-Jenkins, Clive wrote:
-> How is frame swapping done, using the mechanisms provided
-> by FB (in 2.4 and 2.6)?
-> Can anyone point me to any good code examples in the
-> existing FB device drivers?
+Richard Purdie wrote:
+> Hi,
 > 
-> ["Frame swapping" or "video page flipping" is switching
-> to an alternate framebuffer memory area during the
-> vertical blank period. This is a common technique to
-> achieve animation or a single clean change of picture.]
+> I have a Dell Poweredge 1600SC which is a Dual P4 Xeon system with an
+> inbuilt ATI Rage XL. It has a variety of PCI slots and I tried inserting
+> a PCI XFX Geforce FX 5200 256mb into it to upgrade its graphics
+> capability as the inbuilt Rage XL can't cope with the resolutions I want
+> to use.
+> 
+> Whilst the machine boots with the new card in, I see nothing on any of
+> the video outputs from the BIOS or Linux. It looks like the BIOS can't
+> cope with the card. (I've tried the card in each PCI slot).
+> 
+> I've included the Linux bootup below for 2.6.15-rc2. nvidiafb does load
+> but the video memory size looks wrong and it pauses for a long time
+> before printing "DMA Get lockup".  Reading Dell's forums, it looks like
+> the inbuilt card is moved in memory rather than disabled and you can see
+> this being detected as fb1 but again, no video output from it.
+> 
+> Its a long shot but it there any way I can get Linux to correctly init
+> the PCI card and undo any damage done by the broken BIOS? Would
+> disabling ACPI help or is there anything else I can try?
 
-Use the pan display ioctl, FBIOPAN_DISPLAY.  Basically, set
-var->yres_virtual to be at least 2x var->yres so you can have
-2 video buffers, one visible, one offscreen.  Then just do a
-ypan ioctl to set which buffer becomes visible and which
-becomes offscreen.
+Does vesafb work for this card?
 
-Doing it during vblank is a little difficult.  You can poll
-the VGA registers (which is slow), or set up an interrupt
-handler for the driver you are using that waits for vblank.
-
-See www.directfb.org for code on how this can be done.  Also,
-the directfb source have patches to some drivers that implements
-the wating for vblank, such as in matroxfb.
+You can also try to compile nvidiafb as a module, then initialize the card
+with a user land app (ie, lrmi or X), before a modprobe nvidiafb.
 
 Tony
-
 
 
 -------------------------------------------------------

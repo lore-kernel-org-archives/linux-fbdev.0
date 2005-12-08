@@ -1,19 +1,30 @@
-From: Dirk Henning Gerdes <mail@dirk-gerdes.de>
-Subject: dirty artefacts on bootup
-Date: Tue, 06 Dec 2005 13:25:27 +0100
-Message-ID: <1133871927.5595.8.camel@noti>
+From: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
+Subject: Frame swapping
+Date: Thu, 8 Dec 2005 15:24:03 -0000
+Message-ID: <35786B99AB3FDC45A8215724617919736D9180@gbrwgceumf01.eu.xerox.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EjbtD-0000Qu-Ly
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Dec 2005 04:25:47 -0800
-Received: from mail3.netbeat.de ([193.254.185.27])
-	by mail.sourceforge.net with smtp (Exim 4.44)
-	id 1Ejbt9-0006sE-6C
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 06 Dec 2005 04:25:47 -0800
+	id 1EkNdv-0002Fz-30
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Dec 2005 07:25:11 -0800
+Received: from wvmler1.mail.xerox.com ([13.8.138.216])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44)
+	id 1EkNds-00047f-8g
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Dec 2005 07:25:11 -0800
+Received: from wvmlir1.mail.xerox.com (wvmlir1.mail.xerox.com [13.147.8.221])
+	by wvmler1.mail.xerox.com (8.13.4/8.13.1) with ESMTP id jB8FP2fe008221
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 8 Dec 2005 07:25:02 -0800
+Received: from wvmlir1.mail.xerox.com (localhost [127.0.0.1])
+	by wvmlir1.mail.xerox.com (8.13.4/8.13.1) with ESMTP id jB8FOpGF018090
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 8 Dec 2005 07:24:51 -0800
+Received: from usa7061gw02.na.xerox.net (usa7061gw02.na.xerox.net [13.151.32.4])
+	by wvmlir1.mail.xerox.com (8.13.4/8.13.1) with ESMTP id jB8FOoR8018075
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 8 Dec 2005 07:24:51 -0800
+Content-class: urn:content-classes:message
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -25,45 +36,20 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Hi Benjamin,
+How is frame swapping done, using the mechanisms provided
+by FB (in 2.4 and 2.6)?
+Can anyone point me to any good code examples in the
+existing FB device drivers?
 
-I'm using the radeon framebuffer driver on a sony-notebook with a radeon
-9200 mobile.
+["Frame swapping" or "video page flipping" is switching
+to an alternate framebuffer memory area during the
+vertical blank period. This is a common technique to
+achieve animation or a single clean change of picture.]
 
-During bootup I get dirty artefacts on the screen. 
-It's hard to explain. The text first is clear on the screen, but then
-there come so many dirty lines on top of it, that you cannot read
-anything.
-When the xserver is started, the problem is away. switching to a console
-with [Alt][CTRL][F1] works perfectly. And then you can read the text
-normally.
-
-I have compiled the driver with the debug-option, which brought the
-following output.
-I'm not quite sur, if this can help, because I got it, when the console
-worked after starting X.
-
-[  148.839846] hStart = 1040, hEnd = 1176, hTotal = 1344
-[  148.839851] vStart = 770, vEnd = 776, vTotal = 806
-[  148.839855] h_total_disp = 0x7f00ync_strt_wid = 0x11040a
-[  148.839858] v_total_disp = 0x2ff0325noti login: [  148.839846] hStart
-= 1040, hEnd = 1176, hTotal = 1344
-[  148.839851] vStart = 770, vEnd = 776, vTotal = 806
-[  148.839855] h_total_disp = 0x7f00a7ync_strt_wid = 0x60301
-[  148.839860] pixclock = 15384
-[  148.839862] freq = 6500
-
-Is there anything I can do to get this dirty lines away?
-
-Thanks for your help 
-
-Dirk
-
-
-
+Thanks,
+Clive
 
 
 -------------------------------------------------------

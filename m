@@ -1,23 +1,22 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: PCI nvidiafb card init with a broken BIOS?
-Date: Fri, 09 Dec 2005 05:39:42 +0800
-Message-ID: <4398A81E.1040601@gmail.com>
-References: <1133523556.7994.21.camel@localhost.localdomain>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] nvidiafb: Fix 6xxx/7xxx cards
+Date: Fri, 09 Dec 2005 09:17:36 +1100
+Message-ID: <1134080257.11760.19.camel@gaston>
+References: <1133944427.7168.70.camel@gaston>  <43989DA3.8070602@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EkTUU-0002PS-3j
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Dec 2005 13:39:50 -0800
-Received: from xproxy.gmail.com ([66.249.82.203])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EkTUT-0007fj-VF
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Dec 2005 13:39:50 -0800
-Received: by xproxy.gmail.com with SMTP id h29so482489wxd
-        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 08 Dec 2005 13:39:47 -0800 (PST)
-In-Reply-To: <1133523556.7994.21.camel@localhost.localdomain>
+	id 1EkU7i-0004qX-3J
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Dec 2005 14:20:22 -0800
+Received: from gate.crashing.org ([63.228.1.57])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44)
+	id 1EkU7g-0007oJ-Ew
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Dec 2005 14:20:21 -0800
+In-Reply-To: <43989DA3.8070602@gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,37 +29,27 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Richard Purdie <rpurdie@rpsys.net>
+Cc: "Antonino A. Daplas" <adaplas@hotpop.com>, Andrew Morton <akpm@osdl.org>
 
-Richard Purdie wrote:
-> Hi,
+On Fri, 2005-12-09 at 04:54 +0800, Antonino A. Daplas wrote:
+> Benjamin Herrenschmidt wrote:
+> > Recent X "nv" driver was fixed for various issues with modern 6xxx and
+> > 7xxx cards. This patch ports those fixes to nvidiafb. This makes it work
+> > fine on the 6600 bundled with the newest G5 macs. I've verified it still
+> > works on the 5200FX of the iMacG5.
 > 
-> I have a Dell Poweredge 1600SC which is a Dual P4 Xeon system with an
-> inbuilt ATI Rage XL. It has a variety of PCI slots and I tried inserting
-> a PCI XFX Geforce FX 5200 256mb into it to upgrade its graphics
-> capability as the inbuilt Rage XL can't cope with the resolutions I want
-> to use.
+> Yes, I have a similar patch in my tree but I'm waiting for people to verify
+> the patch.
 > 
-> Whilst the machine boots with the new card in, I see nothing on any of
-> the video outputs from the BIOS or Linux. It looks like the BIOS can't
-> cope with the card. (I've tried the card in each PCI slot).
-> 
-> I've included the Linux bootup below for 2.6.15-rc2. nvidiafb does load
-> but the video memory size looks wrong and it pauses for a long time
-> before printing "DMA Get lockup".  Reading Dell's forums, it looks like
-> the inbuilt card is moved in memory rather than disabled and you can see
-> this being detected as fb1 but again, no video output from it.
-> 
-> Its a long shot but it there any way I can get Linux to correctly init
-> the PCI card and undo any damage done by the broken BIOS? Would
-> disabling ACPI help or is there anything else I can try?
+> (And I have I more patch for pci-e cards, and still waiting for testers
+> to respond.)
 
-Does vesafb work for this card?
+Can you send me your version of the patch ? I spotted a couple of bugs
+in your previous code, I want to make sure it's all fixed :)
 
-You can also try to compile nvidiafb as a module, then initialize the card
-with a user land app (ie, lrmi or X), before a modprobe nvidiafb.
+Ben.
 
-Tony
+
 
 
 -------------------------------------------------------

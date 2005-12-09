@@ -1,106 +1,208 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: Frame swapping
-Date: Fri, 09 Dec 2005 20:27:39 +0800
-Message-ID: <4399783B.9020203@gmail.com>
-References: <35786B99AB3FDC45A8215724617919736D9183@gbrwgceumf01.eu.xerox.net>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Knut Petersen <Knut_Petersen@t-online.de>
+Subject: Re: [PATCH 1/1 2.6.15-rc4-git1] Fix switching to KD_TEXT
+Date: Fri, 09 Dec 2005 12:53:27 +0100
+Message-ID: <43997037.4020206@t-online.de>
+References: <4398B888.50005@t-online.de> <4398CEAF.9050303@gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EkhLn-0006B8-OB
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 04:27:47 -0800
-Received: from zproxy.gmail.com ([64.233.162.198])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EkhLm-0002ms-7V
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 04:27:47 -0800
-Received: by zproxy.gmail.com with SMTP id r28so860792nza
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 09 Dec 2005 04:27:44 -0800 (PST)
-In-Reply-To: <35786B99AB3FDC45A8215724617919736D9183@gbrwgceumf01.eu.xerox.net>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751309AbVLINPB@vger.kernel.org>
+In-Reply-To: <4398CEAF.9050303@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>
 
-Jenkins, Clive wrote:
->> From: Antonino A. Daplas [mailto:adaplas@gmail.com] 
->> Sent: 08 December 2005 21:18
->> To: linux-fbdev-devel@lists.sourceforge.net
->> Cc: Jenkins, Clive
->> Subject: Re: [Linux-fbdev-devel] Frame swapping
->>
->> Jenkins, Clive wrote:
->>> How is frame swapping done, using the mechanisms provided
->>> by FB (in 2.4 and 2.6)?
->>> Can anyone point me to any good code examples in the
->>> existing FB device drivers?
->>>
->>> ["Frame swapping" or "video page flipping" is switching
->>> to an alternate framebuffer memory area during the
->>> vertical blank period. This is a common technique to
->>> achieve animation or a single clean change of picture.]
->> Use the pan display ioctl, FBIOPAN_DISPLAY.  Basically, set
->> var->yres_virtual to be at least 2x var->yres so you can have
->> 2 video buffers, one visible, one offscreen.  Then just do a
->> ypan ioctl to set which buffer becomes visible and which
->> becomes offscreen.
->>
->> Doing it during vblank is a little difficult.  You can poll
->> the VGA registers (which is slow), or set up an interrupt
->> handler for the driver you are using that waits for vblank.
->>
->> See www.directfb.org for code on how this can be done.  Also,
->> the directfb source have patches to some drivers that implements
->> the wating for vblank, such as in matroxfb.
->>
->> Tony
-> 
-> Thanks Tony. I was thinking I would have to implement my own
-> ioctl to do this, but I agree it can be regarded as a special
-> case of panning (even though my hardware doesn't fully support
-> panning).
-> 
-> I would expect panning to be smooth and glitch-free whenever
-> possible within the limitations of the hardware, so the
-> switch-over should always occur during vblank. I have seen some
-> drivers that definitely do this, by deferring all updates until
-> the vb interrupt. But maybe many other drivers don't bother.
+Hi Tony!
 
-Yes, Because waiting for vblank will slow down console scrolling.
+>Sorry, NAK for now.  Unless other people agree that it is okay for the=
+m
+>to have an unconditional call to set_par() for every console switch. N=
+ote
+>that the set_par() in some drivers is terribly slow (several seconds a=
+t least).
+>
+>Let's wait a few days, if nobody disagrees with you, so be it.
+>
+> =20
+>
+Which hardware needs several seconds? I do run relatively slow hardware=
+,=20
+but a complete
+set_par() needs less than 0.003 seconds with cyblafb.
 
-> 
-> Another way might be to do a GETVAR ioctl, modify "yoffset",
-> set the FB_ACTIVATE_VBL bit of "activate", and do a SETVAR
-> ioctl. I am sure this is the intended usage of the ACTIVATE_VBL
-> bit, even though it may not be well supported by existing drivers.
-> 
+If there really is hardware that needs _several_ seconds for _one_=20
+set_par(), then we should
+really be more carefull when to call that function.
 
-No, this will be terribly slow.  And most drivers ignore 
-ACTIVATE_VBL flag and also resets the yoffset to zero on a
-SETVAR ioctl.
+Let=B4s have a look at a switch from the framebuffer console to X and b=
+ack.
 
-> I notice in fbmem.c (2.4.20 version), there is no fall-back
-> code for the PAN_DISPLAY ioctl when the device method is absent.
-> Perhaps the getvar/modify/setvar above should be coded here.
+Kernel is a 2.6.15-rc4-git1 with my current cyblafb + your patches=20
+needed for cyblafb
++ the patch we are talking about.
 
-Possibly.  But don't do this for the reasons mentioned above.
-It would be simpler to implement a pan_display hook.
+=46ramebuffer console is 1 with mode 1280x1024, X console is 7 and has=20
+been set to 1024x768
+before X was activated.
 
-Tony
+Now I do run "chvt 7;sleep 3;chvt 1" on the vt 1.
 
+    [  972.360841]  [<c0282331>] cyblafb_set_par+0x31/0xd80
+    [  972.360898]  [<c027bb38>] fb_set_var+0x1e8/0x210
+    [  972.360925]  [<c02742fc>] fbcon_switch+0x16c/0x690
+    [  972.360951]  [<c02cc645>] redraw_screen+0xe5/0x1c0
+    [  972.360989]  [<c02c811a>] complete_change_console+0x2a/0xd0
+    [  972.361018]  [<c02c8203>] change_console+0x43/0x90
+    [  972.361043]  [<c02ceebd>] console_callback+0xed/0x110
+    [  972.361101]  [<c0127e6a>] worker_thread+0x1ba/0x260
+    [  972.361143]  [<c012c115>] kthread+0x95/0xd0
+    [  972.361171]  [<c0100c15>] kernel_thread_helper+0x5/0x10
+    [  972.361212] cyblafb: Switching to new mode: fbset -g 1024 768=20
+1024 768 8 -t 15385 160 24 29 3 136 6
+    [  972.363308] cyblafb: pixclock =3D 64.99 MHz, k/m/n 1 b 6e
 
--------------------------------------------------------
-This SF.net email is sponsored by: Splunk Inc. Do you grep through log files
-for problems?  Stop!  Download the new AJAX search engine that makes
-searching your log files as easy as surfing the  web.  DOWNLOAD SPLUNK!
-http://ads.osdn.com/?ad_id=7637&alloc_id=16865&op=click
+    [  972.363916]  [<c0282331>] cyblafb_set_par+0x31/0xd80
+    [  972.363945]  [<c0274759>] fbcon_switch+0x5c9/0x690
+    [  972.363969]  [<c02cc645>] redraw_screen+0xe5/0x1c0
+    [  972.363996]  [<c02c811a>] complete_change_console+0x2a/0xd0
+    [  972.364023]  [<c02c8203>] change_console+0x43/0x90
+    [  972.364047]  [<c02ceebd>] console_callback+0xed/0x110
+    [  972.364093]  [<c0127e6a>] worker_thread+0x1ba/0x260
+    [  972.364121]  [<c012c115>] kthread+0x95/0xd0
+    [  972.364143]  [<c0100c15>] kernel_thread_helper+0x5/0x10
+    [  972.364181] cyblafb: Switching to new mode: fbset -g 1024 768=20
+1024 768 8 -t 15385 160 24 29 3 136 6
+    [  972.366271] cyblafb: pixclock =3D 64.99 MHz, k/m/n 1 b 6e
+    [  972.366325] cyblafb: Switching to KD_GRAPHICS
+
+Not so nice. Now let=B4s have a look at the log entries caused switchin=
+g=20
+back to
+the framebuffer console:
+
+This call to set_par() is the result of my patch:
+
+    [  975.751407]  [<c0282331>] cyblafb_set_par+0x31/0xd80
+    [  975.751437]  [<c027bb38>] fb_set_var+0x1e8/0x210
+    [  975.751462]  [<c02742fc>] fbcon_switch+0x16c/0x690
+    [  975.751486]  [<c02cc645>] redraw_screen+0xe5/0x1c0
+    [  975.751513]  [<c02c811a>] complete_change_console+0x2a/0xd0
+    [  975.751540]  [<c02c765d>] vt_ioctl+0x103d/0x19b0
+    [  975.751564]  [<c02c17eb>] tty_ioctl+0x18b/0x3d0
+    [  975.751587]  [<c016e92a>] do_ioctl+0x5a/0x90
+    [  975.751613]  [<c016eaeb>] vfs_ioctl+0x5b/0x1d0
+    [  975.751640]  [<c016eca5>] sys_ioctl+0x45/0x70
+    [  975.751666]  [<c01029a9>] syscall_call+0x7/0xb
+    [  975.751702] cyblafb: Switching to new mode: fbset -g 1280 1024=20
+2048 4096 8 -t 7407 232 16 39 0 160 3
+    [  975.753795] cyblafb: pixclock =3D 135.00 MHz, k/m/n 0 5 3a
+
+Without that prior set_par() that=B4s the point where the enhanced cybl=
+afb=20
+would
+have serious problems:
+
+    [  975.753839] cyblafb_pan_display: entry
+    [  975.753853]  [<c0281f7c>] cyblafb_pan_display+0x9c/0xb0
+    [  975.753883]  [<c027b911>] fb_pan_display+0x61/0xa0
+    [  975.753925]  [<c027ba4f>] fb_set_var+0xff/0x210
+    [  975.753949]  [<c02742fc>] fbcon_switch+0x16c/0x690
+    [  975.753973]  [<c02cc645>] redraw_screen+0xe5/0x1c0
+    [  975.754000]  [<c02c811a>] complete_change_console+0x2a/0xd0
+    [  975.754027]  [<c02c765d>] vt_ioctl+0x103d/0x19b0
+    [  975.754051]  [<c02c17eb>] tty_ioctl+0x18b/0x3d0
+    [  975.754074]  [<c016e92a>] do_ioctl+0x5a/0x90
+    [  975.754100]  [<c016eaeb>] vfs_ioctl+0x5b/0x1d0
+    [  975.754127]  [<c016eca5>] sys_ioctl+0x45/0x70
+    [  975.754153]  [<c01029a9>] syscall_call+0x7/0xb
+
+Again a call to set_par:
+
+    [  975.754744]  [<c0282331>] cyblafb_set_par+0x31/0xd80
+    [  975.754773]  [<c0274759>] fbcon_switch+0x5c9/0x690
+    [  975.754796]  [<c02cc645>] redraw_screen+0xe5/0x1c0
+    [  975.754823]  [<c02c811a>] complete_change_console+0x2a/0xd0
+    [  975.754850]  [<c02c765d>] vt_ioctl+0x103d/0x19b0
+    [  975.754875]  [<c02c17eb>] tty_ioctl+0x18b/0x3d0
+    [  975.754917]  [<c016e92a>] do_ioctl+0x5a/0x90
+    [  975.754943]  [<c016eaeb>] vfs_ioctl+0x5b/0x1d0
+    [  975.754970]  [<c016eca5>] sys_ioctl+0x45/0x70
+    [  975.754996]  [<c01029a9>] syscall_call+0x7/0xb
+    [  975.755032] cyblafb: Switching to new mode: fbset -g 1280 1024=20
+2048 4096 8 -t 7407 232 16 39 0 160 3
+    [  975.757123] cyblafb: pixclock =3D 135.00 MHz, k/m/n 0 5 3a
+
+Now the save_state() function is called:
+
+    [  975.757745] cyblafb: Switching to KD_TEXT
+
+and again a call to set_par():
+
+    [  975.757759]  [<c0282331>] cyblafb_set_par+0x31/0xd80
+    [  975.757789]  [<c027bb38>] fb_set_var+0x1e8/0x210
+    [  975.757813]  [<c027498a>] fbcon_blank+0x11a/0x1b0
+    [  975.757837]  [<c02cff17>] do_unblank_screen+0x67/0x120
+    [  975.757869]  [<c02c8130>] complete_change_console+0x40/0xd0
+    [  975.757955]  [<c02c765d>] vt_ioctl+0x103d/0x19b0
+    [  975.757979]  [<c02c17eb>] tty_ioctl+0x18b/0x3d0
+    [  975.758002]  [<c016e92a>] do_ioctl+0x5a/0x90
+    [  975.758029]  [<c016eaeb>] vfs_ioctl+0x5b/0x1d0
+    [  975.758055]  [<c016eca5>] sys_ioctl+0x45/0x70
+    [  975.758081]  [<c01029a9>] syscall_call+0x7/0xb
+    [  975.758117] cyblafb: Switching to new mode: fbset -g 1280 1024=20
+2048 4096 8 -t 7407 232 16 39 0 160 3
+    [  975.760205] cyblafb: pixclock =3D 135.00 MHz, k/m/n 0 5 3a
+
+And now, the be really shure, again, a call to set_par():
+
+    [  975.760827]  [<c0282331>] cyblafb_set_par+0x31/0xd80
+    [  975.760856]  [<c0274759>] fbcon_switch+0x5c9/0x690
+    [  975.760880]  [<c02cc645>] redraw_screen+0xe5/0x1c0
+    [  975.760923]  [<c02749e6>] fbcon_blank+0x176/0x1b0
+    [  975.760947]  [<c02cff17>] do_unblank_screen+0x67/0x120
+    [  975.760976]  [<c02c8130>] complete_change_console+0x40/0xd0
+    [  975.761002]  [<c02c765d>] vt_ioctl+0x103d/0x19b0
+    [  975.761027]  [<c02c17eb>] tty_ioctl+0x18b/0x3d0
+    [  975.761050]  [<c016e92a>] do_ioctl+0x5a/0x90
+    [  975.761076]  [<c016eaeb>] vfs_ioctl+0x5b/0x1d0
+    [  975.761102]  [<c016eca5>] sys_ioctl+0x45/0x70
+    [  975.761129]  [<c01029a9>] syscall_call+0x7/0xb
+    [  975.761164] cyblafb: Switching to new mode: fbset -g 1280 1024=20
+2048 4096 8 -t 7407 232 16 39 0 160 3
+    [  975.763280] cyblafb: pixclock =3D 135.00 MHz, k/m/n 0 5 3a
+
+=46irst of all: set_par is executed too often. With and without my patc=
+h.
+
+If we would know that vt x is nothing but the vt used for X, we could=20
+introduce a policy
+to completely ignore all framebuffer operations for that console. That=20
+also would result
+in a much nicer look of the modeswitch. Do we need a new kernel=20
+parameter or should
+this be implemented by detected which vt is switched to KD_GRAPHICS?
+
+Switching from X to the console could be optimized a lot, I=B4m shure t=
+hat=20
+you do agree.
+We do need _one_ call to set_par() etc, but this must be at the right=20
+place. And the right
+place is somewhere before any other driver operation is called, with th=
+e=20
+exception of
+check_var() and init functions obviously.
+
+Think about your NAK carefully. I might submit a patch to skeletonfb.c=20
+that inserts
+a warning at all places that might be unexpectedly called with a=20
+hardware state different
+to that set by set_par(). ;-))))
+
+And please don=B4t argue that X or certain releases are broken. That is=
+=20
+true, but ordinary
+users will use those broken versions for years.
+
+cu,
+ Knut

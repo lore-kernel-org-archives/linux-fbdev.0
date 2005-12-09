@@ -1,17 +1,17 @@
 From: syrjala@sci.fi
-Subject: [PATCH 07/10] atyfb: Improve blanking
+Subject: [PATCH 08/10] atyfb: Rage XL/XC cleanup
 Date: Fri,  9 Dec 2005 02:44:28 +0200 (EET)
-Message-ID: <20051209004428.39183278@kuori.saunalahti.fi>
+Message-ID: <20051209004428.595512B9@kuori.saunalahti.fi>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EkWNI-0004w6-UI
+	id 1EkWNI-0004vl-8e
 	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Dec 2005 16:44:36 -0800
-Received: from gw02.mail.saunalahti.fi ([195.197.172.116])
+Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EkWNI-0002Sn-FQ
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Dec 2005 16:44:37 -0800
+	id 1EkWNG-0002So-SD
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Dec 2005 16:44:36 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,82 +28,55 @@ Content-Transfer-Encoding: quoted-printable
 To: alex.kern@gmx.de
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Force blanking signal and disable display requests when blanked.
-Don't disable LCD backlight with FB_BLANK_NORMAL.
+Clean up Rage XL/XC chip descriptions.
 
 Signed-off-by: Ville Syrj=E4l=E4 <syrjala@sci.fi>
 ---
 
- atyfb_base.c |   24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+ atyfb_base.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff -urpN linux-6/drivers/video/aty/atyfb_base.c linux-7/drivers/video/aty=
+diff -urpN linux-7/drivers/video/aty/atyfb_base.c linux-8/drivers/video/aty=
 /atyfb_base.c
---- linux-6/drivers/video/aty/atyfb_base.c	2005-12-09 02:54:45.000000000 +0=
+--- linux-7/drivers/video/aty/atyfb_base.c	2005-12-09 02:55:42.000000000 +0=
 200
-+++ linux-7/drivers/video/aty/atyfb_base.c	2005-12-09 02:55:42.000000000 +0=
++++ linux-8/drivers/video/aty/atyfb_base.c	2005-12-09 02:56:32.000000000 +0=
 200
-@@ -2645,16 +2645,16 @@ static int __init store_video_par(char *
- static int atyfb_blank(int blank, struct fb_info *info)
- {
- 	struct atyfb_par *par =3D (struct atyfb_par *) info->par;
--	u8 gen_cntl;
-+	u32 gen_cntl;
+@@ -409,12 +409,12 @@ static struct {
+ 	{ PCI_CHIP_MACH64LP, "3D RAGE LT PRO (Mach64 LP, PCI)", 230, 100, 100, 13=
+5, ATI_CHIP_264LTPRO },
+ 	{ PCI_CHIP_MACH64LQ, "3D RAGE LT PRO (Mach64 LQ, PCI)", 230, 100, 100, 13=
+5, ATI_CHIP_264LTPRO },
 =20
- 	if (par->lock_blank || par->asleep)
- 		return 0;
+-	{ PCI_CHIP_MACH64GM, "3D RAGE XL (Mach64 GM, AGP)", 230, 83, 63, 135, ATI=
+_CHIP_264XL },
+-	{ PCI_CHIP_MACH64GN, "3D RAGE XL (Mach64 GN, AGP)", 230, 83, 63, 135, ATI=
+_CHIP_264XL },
+-	{ PCI_CHIP_MACH64GO, "3D RAGE XL (Mach64 GO, PCI-66/BGA)", 230, 83, 63, 1=
+35, ATI_CHIP_264XL },
+-	{ PCI_CHIP_MACH64GR, "3D RAGE XL (Mach64 GR, PCI-33MHz)", 230, 83, 63, 13=
+5, ATI_CHIP_264XL },
+-	{ PCI_CHIP_MACH64GL, "3D RAGE XL (Mach64 GL, PCI)", 230, 83, 63, 135, ATI=
+_CHIP_264XL },
+-	{ PCI_CHIP_MACH64GS, "3D RAGE XL (Mach64 GS, PCI)", 230, 83, 63, 135, ATI=
+_CHIP_264XL },
++	{ PCI_CHIP_MACH64GM, "3D RAGE XL (Mach64 GM, AGP 2x)", 230, 83, 63, 135, =
+ATI_CHIP_264XL },
++	{ PCI_CHIP_MACH64GN, "3D RAGE XC (Mach64 GN, AGP 2x)", 230, 83, 63, 135, =
+ATI_CHIP_264XL },
++	{ PCI_CHIP_MACH64GO, "3D RAGE XL (Mach64 GO, PCI-66)", 230, 83, 63, 135, =
+ATI_CHIP_264XL },
++	{ PCI_CHIP_MACH64GL, "3D RAGE XC (Mach64 GL, PCI-66)", 230, 83, 63, 135, =
+ATI_CHIP_264XL },
++	{ PCI_CHIP_MACH64GR, "3D RAGE XL (Mach64 GR, PCI-33)", 230, 83, 63, 135, =
+ATI_CHIP_264XL },
++	{ PCI_CHIP_MACH64GS, "3D RAGE XC (Mach64 GS, PCI-33)", 230, 83, 63, 135, =
+ATI_CHIP_264XL },
 =20
- #ifdef CONFIG_PMAC_BACKLIGHT
--	if ((_machine =3D=3D _MACH_Pmac) && blank)
-+	if ((_machine =3D=3D _MACH_Pmac) && blank > FB_BLANK_NORMAL)
- 		set_backlight_enable(0);
- #elif defined(CONFIG_FB_ATY_GENERIC_LCD)
--	if (par->lcd_table && blank &&
-+	if (par->lcd_table && blank > FB_BLANK_NORMAL &&
- 	    (aty_ld_lcd(LCD_GEN_CNTL, par) & LCD_ON)) {
- 		u32 pm =3D aty_ld_lcd(POWER_MANAGEMENT, par);
- 		pm &=3D ~PWR_BLON;
-@@ -2662,31 +2662,31 @@ static int atyfb_blank(int blank, struct
- 	}
- #endif
-=20
--	gen_cntl =3D aty_ld_8(CRTC_GEN_CNTL, par);
-+	gen_cntl =3D aty_ld_le32(CRTC_GEN_CNTL, par);
- 	switch (blank) {
-         	case FB_BLANK_UNBLANK:
--			gen_cntl &=3D ~(0x4c);
-+			gen_cntl &=3D ~0x400004c;
- 			break;
- 		case FB_BLANK_NORMAL:
--			gen_cntl |=3D 0x40;
-+			gen_cntl |=3D 0x4000040;
- 			break;
- 		case FB_BLANK_VSYNC_SUSPEND:
--			gen_cntl |=3D 0x8;
-+			gen_cntl |=3D 0x4000048;
- 			break;
- 		case FB_BLANK_HSYNC_SUSPEND:
--			gen_cntl |=3D 0x4;
-+			gen_cntl |=3D 0x4000044;
- 			break;
- 		case FB_BLANK_POWERDOWN:
--			gen_cntl |=3D 0x4c;
-+			gen_cntl |=3D 0x400004c;
- 			break;
- 	}
--	aty_st_8(CRTC_GEN_CNTL, gen_cntl, par);
-+	aty_st_le32(CRTC_GEN_CNTL, gen_cntl, par);
-=20
- #ifdef CONFIG_PMAC_BACKLIGHT
--	if ((_machine =3D=3D _MACH_Pmac) && !blank)
-+	if ((_machine =3D=3D _MACH_Pmac) && blank <=3D FB_BLANK_NORMAL)
- 		set_backlight_enable(1);
- #elif defined(CONFIG_FB_ATY_GENERIC_LCD)
--	if (par->lcd_table && !blank &&
-+	if (par->lcd_table && blank <=3D FB_BLANK_NORMAL &&
- 	    (aty_ld_lcd(LCD_GEN_CNTL, par) & LCD_ON)) {
- 		u32 pm =3D aty_ld_lcd(POWER_MANAGEMENT, par);
- 		pm |=3D PWR_BLON;
+ 	{ PCI_CHIP_MACH64LM, "3D RAGE Mobility P/M (Mach64 LM, AGP 2x)", 230, 83,=
+ 125, 135, ATI_CHIP_MOBILITY },
+ 	{ PCI_CHIP_MACH64LN, "3D RAGE Mobility L (Mach64 LN, AGP 2x)", 230, 83, 1=
+25, 135, ATI_CHIP_MOBILITY },
 
 
 

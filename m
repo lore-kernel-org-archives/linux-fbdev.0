@@ -1,17 +1,17 @@
 From: syrjala@sci.fi
-Subject: [PATCH 08/10] atyfb: Rage XL/XC cleanup
-Date: Fri,  9 Dec 2005 02:44:28 +0200 (EET)
-Message-ID: <20051209004428.595512B9@kuori.saunalahti.fi>
+Subject: [PATCH 02/10] atyfb: Reduce verbosity
+Date: Fri,  9 Dec 2005 02:44:27 +0200 (EET)
+Message-ID: <20051209004427.85F571F5@kuori.saunalahti.fi>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EkWNI-0004vl-8e
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Dec 2005 16:44:36 -0800
-Received: from gw01.mail.saunalahti.fi ([195.197.172.115])
+	id 1EkWNH-0004vZ-Mg
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Dec 2005 16:44:35 -0800
+Received: from gw02.mail.saunalahti.fi ([195.197.172.116])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EkWNG-0002So-SD
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Dec 2005 16:44:36 -0800
+	id 1EkWNF-0004lO-4h
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 08 Dec 2005 16:44:35 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,55 +28,96 @@ Content-Transfer-Encoding: quoted-printable
 To: alex.kern@gmx.de
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Clean up Rage XL/XC chip descriptions.
+Don't complain about invalid modes when FB_ACTIVATE_TEST is used.
 
 Signed-off-by: Ville Syrj=E4l=E4 <syrjala@sci.fi>
 ---
 
- atyfb_base.c |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ atyfb_base.c |   32 ++++++++++++++++++++++++--------
+ 1 file changed, 24 insertions(+), 8 deletions(-)
 
-diff -urpN linux-7/drivers/video/aty/atyfb_base.c linux-8/drivers/video/aty=
+diff -urpN linux-1/drivers/video/aty/atyfb_base.c linux-2/drivers/video/aty=
 /atyfb_base.c
---- linux-7/drivers/video/aty/atyfb_base.c	2005-12-09 02:55:42.000000000 +0=
+--- linux-1/drivers/video/aty/atyfb_base.c	2005-12-09 00:42:04.000000000 +0=
 200
-+++ linux-8/drivers/video/aty/atyfb_base.c	2005-12-09 02:56:32.000000000 +0=
++++ linux-2/drivers/video/aty/atyfb_base.c	2005-12-09 02:43:28.000000000 +0=
 200
-@@ -409,12 +409,12 @@ static struct {
- 	{ PCI_CHIP_MACH64LP, "3D RAGE LT PRO (Mach64 LP, PCI)", 230, 100, 100, 13=
-5, ATI_CHIP_264LTPRO },
- 	{ PCI_CHIP_MACH64LQ, "3D RAGE LT PRO (Mach64 LQ, PCI)", 230, 100, 100, 13=
-5, ATI_CHIP_264LTPRO },
+@@ -109,9 +109,18 @@
+ #define GUI_RESERVE	(1 * PAGE_SIZE)
 =20
--	{ PCI_CHIP_MACH64GM, "3D RAGE XL (Mach64 GM, AGP)", 230, 83, 63, 135, ATI=
-_CHIP_264XL },
--	{ PCI_CHIP_MACH64GN, "3D RAGE XL (Mach64 GN, AGP)", 230, 83, 63, 135, ATI=
-_CHIP_264XL },
--	{ PCI_CHIP_MACH64GO, "3D RAGE XL (Mach64 GO, PCI-66/BGA)", 230, 83, 63, 1=
-35, ATI_CHIP_264XL },
--	{ PCI_CHIP_MACH64GR, "3D RAGE XL (Mach64 GR, PCI-33MHz)", 230, 83, 63, 13=
-5, ATI_CHIP_264XL },
--	{ PCI_CHIP_MACH64GL, "3D RAGE XL (Mach64 GL, PCI)", 230, 83, 63, 135, ATI=
-_CHIP_264XL },
--	{ PCI_CHIP_MACH64GS, "3D RAGE XL (Mach64 GS, PCI)", 230, 83, 63, 135, ATI=
-_CHIP_264XL },
-+	{ PCI_CHIP_MACH64GM, "3D RAGE XL (Mach64 GM, AGP 2x)", 230, 83, 63, 135, =
-ATI_CHIP_264XL },
-+	{ PCI_CHIP_MACH64GN, "3D RAGE XC (Mach64 GN, AGP 2x)", 230, 83, 63, 135, =
-ATI_CHIP_264XL },
-+	{ PCI_CHIP_MACH64GO, "3D RAGE XL (Mach64 GO, PCI-66)", 230, 83, 63, 135, =
-ATI_CHIP_264XL },
-+	{ PCI_CHIP_MACH64GL, "3D RAGE XC (Mach64 GL, PCI-66)", 230, 83, 63, 135, =
-ATI_CHIP_264XL },
-+	{ PCI_CHIP_MACH64GR, "3D RAGE XL (Mach64 GR, PCI-33)", 230, 83, 63, 135, =
-ATI_CHIP_264XL },
-+	{ PCI_CHIP_MACH64GS, "3D RAGE XC (Mach64 GS, PCI-33)", 230, 83, 63, 135, =
-ATI_CHIP_264XL },
+ /* FIXME: remove the FAIL definition */
+-#define FAIL(msg) do { printk(KERN_CRIT "atyfb: " msg "\n"); return -EINVA=
+L; } while (0)
+-#define FAIL_MAX(msg, x, _max_) do { if(x > _max_) { printk(KERN_CRIT "aty=
+fb: " msg " %x(%x)\n", x, _max_); return -EINVAL; } } while (0)
+-
++#define FAIL(msg) do { \
++	if (!(var->activate & FB_ACTIVATE_TEST)) \
++		printk(KERN_CRIT "atyfb: " msg "\n"); \
++	return -EINVAL; \
++} while (0)
++#define FAIL_MAX(msg, x, _max_) do { \
++	if (x > _max_) { \
++		if (!(var->activate & FB_ACTIVATE_TEST)) \
++			printk(KERN_CRIT "atyfb: " msg " %x(%x)\n", x, _max_); \
++		return -EINVAL; \
++	} \
++} while (0)
+ #ifdef DEBUG
+ #define DPRINTK(fmt, args...)	printk(KERN_DEBUG "atyfb: " fmt, ## args)
+ #else
+@@ -840,11 +849,14 @@ static int aty_var_to_crtc(const struct=20
+ 			   know if one is connected. So it's better to fail then.
+ 			 */
+ 			if (crtc->lcd_gen_cntl & CRT_ON) {
+-				PRINTKI("Disable LCD panel, because video mode does not fit.\n");
++				if (!(var->activate & FB_ACTIVATE_TEST))
++					PRINTKI("Disable LCD panel, because video mode does not fit.\n");
+ 				crtc->lcd_gen_cntl &=3D ~LCD_ON;
+ 				/*aty_st_lcd(LCD_GEN_CNTL, crtc->lcd_gen_cntl, par);*/
+ 			} else {
+-				FAIL("Video mode exceeds size of LCD panel.\nConnect this computer to =
+a conventional monitor if you really need this mode.");
++				if (!(var->activate & FB_ACTIVATE_TEST))
++					PRINTKE("Video mode exceeds size of LCD panel.\nConnect this computer=
+ to a conventional monitor if you really need this mode.\n");
++				return -EINVAL;
+ 			}
+ 		}
+ 	}
+@@ -1184,7 +1196,8 @@ static int aty_crtc_to_var(const struct=20
+ 		var->transp.length =3D 8;
+ 		break;
+ 	default:
+-		FAIL("Invalid pixel width");
++		PRINTKE("Invalid pixel width\n");
++		return -EINVAL;
+ 	}
 =20
- 	{ PCI_CHIP_MACH64LM, "3D RAGE Mobility P/M (Mach64 LM, AGP 2x)", 230, 83,=
- 125, 135, ATI_CHIP_MOBILITY },
- 	{ PCI_CHIP_MACH64LN, "3D RAGE Mobility L (Mach64 LN, AGP 2x)", 230, 83, 1=
-25, 135, ATI_CHIP_MOBILITY },
+ 	/* output */
+@@ -1241,7 +1254,8 @@ static int atyfb_set_par(struct fb_info=20
+ 	pixclock =3D atyfb_get_pixclock(var, par);
+=20
+ 	if (pixclock =3D=3D 0) {
+-		FAIL("Invalid pixclock");
++		PRINTKE("Invalid pixclock\n");
++		return -EINVAL;
+ 	} else {
+ 		if((err =3D par->pll_ops->var_to_pll(info, pixclock, var->bits_per_pixel=
+, &par->pll)))
+ 			return err;
+@@ -1446,7 +1460,9 @@ static int atyfb_check_var(struct fb_var
+ 	pixclock =3D atyfb_get_pixclock(var, par);
+=20
+ 	if (pixclock =3D=3D 0) {
+-		FAIL("Invalid pixclock");
++		if (!(var->activate & FB_ACTIVATE_TEST))
++			PRINTKE("Invalid pixclock\n");
++		return -EINVAL;
+ 	} else {
+ 		if((err =3D par->pll_ops->var_to_pll(info, pixclock, var->bits_per_pixel=
+, &pll)))
+ 			return err;
 
 
 

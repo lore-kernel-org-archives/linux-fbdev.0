@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 15/18] atyfb: Rage XL/XC cleanup
-Date: Sat, 10 Dec 2005 14:13:34 +0800
-Message-ID: <439A720E.2010504@gmail.com>
+Subject: [PATCH 12/18] atyfb: Don't stretch with CRT
+Date: Sat, 10 Dec 2005 14:12:30 +0800
+Message-ID: <439A71CE.5040208@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Eky6B-0002rq-FV
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:20:47 -0800
-Received: from zproxy.gmail.com ([64.233.162.207])
+	id 1Eky5g-0002r5-4K
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:20:16 -0800
+Received: from zproxy.gmail.com ([64.233.162.201])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Eky6A-0004wu-5s
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:20:47 -0800
-Received: by zproxy.gmail.com with SMTP id k1so1082358nzf
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 09 Dec 2005 22:20:45 -0800 (PST)
+	id 1Eky5f-0004n4-SW
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:20:16 -0800
+Received: by zproxy.gmail.com with SMTP id v1so1114984nzb
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 09 Dec 2005 22:20:15 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,55 +32,40 @@ Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, =?IS
 
 From: Ville Syrj=E4l=E4 <syrjala@sci.fi>
 
-Clean up Rage XL/XC chip descriptions.
+The overlay on 3D Rage LT Pro doesn't work correctly if stretching is
+enabled when using only a CRT.
 
 Signed-off-by: Ville Syrj=E4l=E4 <syrjala@sci.fi>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/aty/atyfb_base.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/video/aty/atyfb_base.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_bas=
 e.c
-index c4a953c..52b8b36 100644
+index ae8f12d..af4a09d 100644
 --- a/drivers/video/aty/atyfb_base.c
 +++ b/drivers/video/aty/atyfb_base.c
-@@ -409,12 +409,12 @@ static struct {
- 	{ PCI_CHIP_MACH64LP, "3D RAGE LT PRO (Mach64 LP, PCI)", 230, 100, 100, =
-135, ATI_CHIP_264LTPRO },
- 	{ PCI_CHIP_MACH64LQ, "3D RAGE LT PRO (Mach64 LQ, PCI)", 230, 100, 100, =
-135, ATI_CHIP_264LTPRO },
+@@ -982,7 +982,7 @@ static int aty_var_to_crtc(const struct=20
+ 		crtc->horz_stretching &=3D
+ 			~(HORZ_STRETCH_RATIO | HORZ_STRETCH_LOOP | AUTO_HORZ_RATIO |
+ 			HORZ_STRETCH_MODE | HORZ_STRETCH_EN);
+-		if (xres < par->lcd_width) {
++		if (xres < par->lcd_width && crtc->lcd_gen_cntl & LCD_ON) {
+ 			do {
+ 				/*
+ 				* The horizontal blender misbehaves when HDisplay is less than a
+@@ -1044,7 +1044,7 @@ static int aty_var_to_crtc(const struct=20
+ 			} while (0);
+ 		}
 =20
--	{ PCI_CHIP_MACH64GM, "3D RAGE XL (Mach64 GM, AGP)", 230, 83, 63, 135, A=
-TI_CHIP_264XL },
--	{ PCI_CHIP_MACH64GN, "3D RAGE XL (Mach64 GN, AGP)", 230, 83, 63, 135, A=
-TI_CHIP_264XL },
--	{ PCI_CHIP_MACH64GO, "3D RAGE XL (Mach64 GO, PCI-66/BGA)", 230, 83, 63,=
- 135, ATI_CHIP_264XL },
--	{ PCI_CHIP_MACH64GR, "3D RAGE XL (Mach64 GR, PCI-33MHz)", 230, 83, 63, =
-135, ATI_CHIP_264XL },
--	{ PCI_CHIP_MACH64GL, "3D RAGE XL (Mach64 GL, PCI)", 230, 83, 63, 135, A=
-TI_CHIP_264XL },
--	{ PCI_CHIP_MACH64GS, "3D RAGE XL (Mach64 GS, PCI)", 230, 83, 63, 135, A=
-TI_CHIP_264XL },
-+	{ PCI_CHIP_MACH64GM, "3D RAGE XL (Mach64 GM, AGP 2x)", 230, 83, 63, 135=
-, ATI_CHIP_264XL },
-+	{ PCI_CHIP_MACH64GN, "3D RAGE XC (Mach64 GN, AGP 2x)", 230, 83, 63, 135=
-, ATI_CHIP_264XL },
-+	{ PCI_CHIP_MACH64GO, "3D RAGE XL (Mach64 GO, PCI-66)", 230, 83, 63, 135=
-, ATI_CHIP_264XL },
-+	{ PCI_CHIP_MACH64GL, "3D RAGE XC (Mach64 GL, PCI-66)", 230, 83, 63, 135=
-, ATI_CHIP_264XL },
-+	{ PCI_CHIP_MACH64GR, "3D RAGE XL (Mach64 GR, PCI-33)", 230, 83, 63, 135=
-, ATI_CHIP_264XL },
-+	{ PCI_CHIP_MACH64GS, "3D RAGE XC (Mach64 GS, PCI-33)", 230, 83, 63, 135=
-, ATI_CHIP_264XL },
+-		if (vdisplay < par->lcd_height) {
++		if (vdisplay < par->lcd_height && crtc->lcd_gen_cntl & LCD_ON) {
+ 			crtc->vert_stretching =3D (VERT_STRETCH_USE0 | VERT_STRETCH_EN |
+ 				(((vdisplay * (VERT_STRETCH_RATIO0 + 1)) / par->lcd_height) & VERT_S=
+TRETCH_RATIO0));
 =20
- 	{ PCI_CHIP_MACH64LM, "3D RAGE Mobility P/M (Mach64 LM, AGP 2x)", 230, 8=
-3, 125, 135, ATI_CHIP_MOBILITY },
- 	{ PCI_CHIP_MACH64LN, "3D RAGE Mobility L (Mach64 LN, AGP 2x)", 230, 83,=
- 125, 135, ATI_CHIP_MOBILITY },
 
 
 

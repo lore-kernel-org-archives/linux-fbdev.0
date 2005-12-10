@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 02/18] fbdev: Pan display fixes
-Date: Sat, 10 Dec 2005 14:09:42 +0800
-Message-ID: <439A7126.7010107@gmail.com>
+Subject: [PATCH 01/18] fbcon: Add ability to save/restore graphics state
+Date: Sat, 10 Dec 2005 14:09:26 +0800
+Message-ID: <439A7116.6070807@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Eky3i-0002nt-Om
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:18:14 -0800
-Received: from zproxy.gmail.com ([64.233.162.194])
+	id 1Eky3c-0002nm-2M
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:18:08 -0800
+Received: from zproxy.gmail.com ([64.233.162.195])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Eky3i-0005h5-FV
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:18:14 -0800
-Received: by zproxy.gmail.com with SMTP id 40so1075086nzk
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 09 Dec 2005 22:18:13 -0800 (PST)
+	id 1Eky3b-0003od-Pl
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:18:08 -0800
+Received: by zproxy.gmail.com with SMTP id z3so1046282nzf
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 09 Dec 2005 22:18:06 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,57 +30,56 @@ Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-- Fix fb_pan_display rejecting yoffsets that are valid if panning mode
-  is ywrap.
-- Add more robust error checking in fb_pan_display specially since this
-  function is accessible by userland apps.
+Add hooks to save and restore the graphics state.  These hooks are called
+in fbcon_blank() when entering/leaving KD_GRAPHICS mode.  This is needed
+by savagefb at least so it can cooperate with savage_dri and by cyblafb.
+
+State save/restoration can be full or partial.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/fbmem.c |   26 +++++++++++++++++++++-----
- 1 files changed, 21 insertions(+), 5 deletions(-)
+ drivers/video/console/fbcon.c |    5 ++++-
+ include/linux/fb.h            |    6 ++++++
+ 2 files changed, 10 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 6240aed..10dfdf0 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -722,14 +722,30 @@ static void try_to_load(int fb)
- int
- fb_pan_display(struct fb_info *info, struct fb_var_screeninfo *var)
- {
-+	struct fb_fix_screeninfo *fix = &info->fix;
-         int xoffset = var->xoffset;
-         int yoffset = var->yoffset;
--        int err;
-+        int err = 0, yres = info->var.yres;
-+
-+	if (var->yoffset > 0) {
-+		if (var->vmode & FB_VMODE_YWRAP) {
-+			if (!fix->ywrapstep || (var->yoffset % fix->ywrapstep))
-+				err = -EINVAL;
-+			else
-+				yres = 0;
-+		} else if (!fix->ypanstep || (var->yoffset % fix->ypanstep))
-+			err = -EINVAL;
-+	}
-+
-+	if (var->xoffset > 0 && (!fix->xpanstep ||
-+				 (var->xoffset % fix->xpanstep)))
-+		err = -EINVAL;
-+
-+        if (err || !info->fbops->fb_pan_display || xoffset < 0 ||
-+	    yoffset < 0 || var->yoffset + yres > info->var.yres_virtual ||
-+	    var->xoffset + info->var.xres > info->var.xres_virtual)
-+		return -EINVAL;
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 1a8f0ea..9678045 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -2181,11 +2181,14 @@ static int fbcon_blank(struct vc_data *v
+ 		ops->graphics = 1;
  
--        if (xoffset < 0 || yoffset < 0 || !info->fbops->fb_pan_display ||
--            xoffset + info->var.xres > info->var.xres_virtual ||
--            yoffset + info->var.yres > info->var.yres_virtual)
--                return -EINVAL;
- 	if ((err = info->fbops->fb_pan_display(var, info)))
- 		return err;
-         info->var.xoffset = var->xoffset;
+ 		if (!blank) {
++			if (info->fbops->fb_save_state)
++				info->fbops->fb_save_state(info);
+ 			var.activate = FB_ACTIVATE_NOW | FB_ACTIVATE_FORCE;
+ 			fb_set_var(info, &var);
+ 			ops->graphics = 0;
+ 			ops->var = info->var;
+-		}
++		} else if (info->fbops->fb_restore_state)
++			info->fbops->fb_restore_state(info);
+ 	}
+ 
+  	if (!fbcon_is_inactive(vc, info)) {
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 58e6c21..7d6d970 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -617,6 +617,12 @@ struct fb_ops {
+ 
+ 	/* perform fb specific mmap */
+ 	int (*fb_mmap)(struct fb_info *info, struct file *file, struct vm_area_struct *vma);
++
++	/* save current hardware state */
++	void (*fb_save_state)(struct fb_info *info);
++
++	/* restore saved state */
++	void (*fb_restore_state)(struct fb_info *info);
+ };
+ 
+ #ifdef CONFIG_FB_TILEBLITTING
 
 
 

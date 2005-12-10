@@ -1,21 +1,21 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 16/18] atyfb: VT/GT cleanup
-Date: Sat, 10 Dec 2005 14:14:27 +0800
-Message-ID: <439A7243.1080208@gmail.com>
+From: Knut Petersen <Knut_Petersen@t-online.de>
+Subject: Re: [PATCH 1/1 2.6.15-rc4-git1] Fix switching to KD_TEXT
+Date: Sat, 10 Dec 2005 07:28:21 +0100
+Message-ID: <439A7585.6050600@t-online.de>
+References: <4398B888.50005@t-online.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Eky6L-0002s5-Fg
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:20:57 -0800
-Received: from zproxy.gmail.com ([64.233.162.202])
+	id 1EkyCj-0003Bt-L0
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:27:33 -0800
+Received: from mailout02.sul.t-online.com ([194.25.134.17])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Eky6L-0007YV-2a
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:20:57 -0800
-Received: by zproxy.gmail.com with SMTP id o1so1121639nzf
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 09 Dec 2005 22:20:56 -0800 (PST)
+	id 1EkyCi-0002wl-39
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:27:33 -0800
+In-Reply-To: <4398B888.50005@t-online.de>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,150 +26,81 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, =?ISO-8859-1?Q?Ville_Syrj=C3=A4l=C3=A4?= <syrjala@sci.fi>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Knut Petersen <Knut_Petersen@t-online.de>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, Andrew Morton <akpm@osdl.org>, "Antonino A. Daplas" <adaplas@gmail.com>
 
-atyfb: VT/GT cleanup
-From: Ville Syrj=E4l=E4 <syrjala@sci.fi>
+Please do forget about that patch I sent to you some days ago. An 
+enhanced version
+will follow soon.
 
-Clean up VT and GT chip descriptions.
+cu,
+ knut
 
-All B revision VT chips are called 264VT3. Verified from pictures of the
-chips as the specs are a bit unlear in this.
+Knut Petersen schrieb:
 
-GT revision B1 is Rage II, B2 is Rage II+. Specs and chip pictures seem
-to agree.
-
-VT revision A4 is 264VT2. Revision A3 is probably a plain 264VT.
-
-Signed-off-by: Ville Syrj=E4l=E4 <syrjala@sci.fi>
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
-
- drivers/video/aty/atyfb_base.c |   62 ++++++++++++++++++++++++++--------=
-------
- 1 files changed, 41 insertions(+), 21 deletions(-)
-
-diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_bas=
-e.c
-index 52b8b36..36c6449 100644
---- a/drivers/video/aty/atyfb_base.c
-+++ b/drivers/video/aty/atyfb_base.c
-@@ -380,11 +380,12 @@ static struct {
- #ifdef CONFIG_FB_ATY_CT
- 	{ PCI_CHIP_MACH64CT, "ATI264CT (Mach64 CT)", 135, 60, 60, 0, ATI_CHIP_2=
-64CT },
- 	{ PCI_CHIP_MACH64ET, "ATI264ET (Mach64 ET)", 135, 60, 60, 0, ATI_CHIP_2=
-64ET },
--	{ PCI_CHIP_MACH64VT, "ATI264VT? (Mach64 VT)", 170, 67, 67, 80, ATI_CHIP=
-_264VT },
-+
-+	{ PCI_CHIP_MACH64VT, "ATI264VT (Mach64 VT)", 170, 67, 67, 80, ATI_CHIP_=
-264VT },
- 	{ PCI_CHIP_MACH64GT, "3D RAGE (Mach64 GT)", 135, 63, 63, 80, ATI_CHIP_2=
-64GT },
--	/* FIXME { ...ATI_264GU, maybe ATI_CHIP_264GTDVD }, */
--	{ PCI_CHIP_MACH64GU, "3D RAGE II+ (Mach64 GTB)", 200, 67, 67, 100, ATI_=
-CHIP_264GTB  },
--	{ PCI_CHIP_MACH64VU, "ATI264VTB (Mach64 VU)", 200, 67, 67, 80, ATI_CHIP=
-_264VT3 },
-+
-+	{ PCI_CHIP_MACH64VU, "ATI264VT3 (Mach64 VU)", 200, 67, 67, 80, ATI_CHIP=
-_264VT3 },
-+	{ PCI_CHIP_MACH64GU, "3D RAGE II+ (Mach64 GU)", 200, 67, 67, 100, ATI_C=
-HIP_264GTB },
-=20
- 	{ PCI_CHIP_MACH64LT, "3D RAGE LT (Mach64 LT)", 135, 63, 63, 0, ATI_CHIP=
-_264LT },
- 	 /* FIXME chipset maybe ATI_CHIP_264LTPRO ? */
-@@ -460,44 +461,63 @@ static int __devinit correct_chipset(str
- #endif
- #ifdef CONFIG_FB_ATY_CT
- 	case PCI_CHIP_MACH64VT:
--		rev &=3D 0xc7;
--		if(rev =3D=3D 0x00) {
--			name =3D "ATI264VTA3 (Mach64 VT)";
--			par->pll_limits.pll_max =3D 170;
--			par->pll_limits.mclk =3D 67;
--			par->pll_limits.xclk =3D 67;
--			par->pll_limits.ecp_max =3D 80;
--			par->features =3D ATI_CHIP_264VT;
--		} else if(rev =3D=3D 0x40) {
--			name =3D "ATI264VTA4 (Mach64 VT)";
-+		switch (rev & 0x07) {
-+		case 0x00:
-+			switch (rev & 0xc0) {
-+			case 0x00:
-+				name =3D "ATI264VT (A3) (Mach64 VT)";
-+				par->pll_limits.pll_max =3D 170;
-+				par->pll_limits.mclk =3D 67;
-+				par->pll_limits.xclk =3D 67;
-+				par->pll_limits.ecp_max =3D 80;
-+				par->features =3D ATI_CHIP_264VT;
-+				break;
-+			case 0x40:
-+				name =3D "ATI264VT2 (A4) (Mach64 VT)";
-+				par->pll_limits.pll_max =3D 200;
-+				par->pll_limits.mclk =3D 67;
-+				par->pll_limits.xclk =3D 67;
-+				par->pll_limits.ecp_max =3D 80;
-+				par->features =3D ATI_CHIP_264VT | M64F_MAGIC_POSTDIV;
-+				break;
-+			}
-+			break;
-+		case 0x01:
-+			name =3D "ATI264VT3 (B1) (Mach64 VT)";
- 			par->pll_limits.pll_max =3D 200;
- 			par->pll_limits.mclk =3D 67;
- 			par->pll_limits.xclk =3D 67;
- 			par->pll_limits.ecp_max =3D 80;
--			par->features =3D ATI_CHIP_264VT | M64F_MAGIC_POSTDIV;
--		} else {
--			name =3D "ATI264VTB (Mach64 VT)";
-+			par->features =3D ATI_CHIP_264VTB;
-+			break;
-+		case 0x02:
-+			name =3D "ATI264VT3 (B2) (Mach64 VT)";
- 			par->pll_limits.pll_max =3D 200;
- 			par->pll_limits.mclk =3D 67;
- 			par->pll_limits.xclk =3D 67;
- 			par->pll_limits.ecp_max =3D 80;
--			par->features =3D ATI_CHIP_264VTB;
-+			par->features =3D ATI_CHIP_264VT3;
-+			break;
- 		}
- 		break;
- 	case PCI_CHIP_MACH64GT:
--		rev &=3D 0x07;
--		if(rev =3D=3D 0x01) {
-+		switch (rev & 0x07) {
-+		case 0x01:
-+			name =3D "3D RAGE II (Mach64 GT)";
- 			par->pll_limits.pll_max =3D 170;
- 			par->pll_limits.mclk =3D 67;
- 			par->pll_limits.xclk =3D 67;
- 			par->pll_limits.ecp_max =3D 80;
- 			par->features =3D ATI_CHIP_264GTB;
--		} else if(rev =3D=3D 0x02) {
-+			break;
-+		case 0x02:
-+			name =3D "3D RAGE II+ (Mach64 GT)";
- 			par->pll_limits.pll_max =3D 200;
- 			par->pll_limits.mclk =3D 67;
- 			par->pll_limits.xclk =3D 67;
- 			par->pll_limits.ecp_max =3D 100;
- 			par->features =3D ATI_CHIP_264GTB;
-+			break;
- 		}
- 		break;
- #endif
+>  Every framebuffer driver relies on the assumption that the set_par() 
+> function
+> of the driver is called before drawing functions and other functions 
+> dependent
+> on the hardware state are executed.
+>
+> This assumption is false in two cases, and one is a genuine linux
+> bug:
+>
+>    1: Whenever you switch from X to a framebuffer console for the very
+>        first time, there is a chance that a broken X system has _not_ set
+>        the mode to KD_GRAPHICS, thus the vt and framebuffer code
+>        executes a screen redraw and several other functions before a
+>        set_par() is executed. This is believed to be not a bug of linux
+>        but a bug of X/xdm.
+>
+>    2: Whenever a switch from X to a framebuffer console occures,
+>         the pan_display() function of the driver is called once before
+>         the set_par() function of the driver is called. Code path:
+>         complete_change_console -> redraw_screen -> fbcon_switch ->
+>         bit_update_start-> fb_pan_display -> xyz_pan_display.
+>         This is clearly a bug of linux.
+>
+> Although our primary goal must be to fix linux bugs and not to work
+> around bugs of X, the patch fixes both of the cases.
+>
+> The advantage and correctness of this patch should be obvious. Yes, it
+> does add a possibly slow call to the fb_set_par() function, but at this
+> point it is necessary.
+>
+> Signed-off-by: Knut Petersen <Knut_Petersen@t-online.de>
+>
+>
+> diff -uprN -X linux/Documentation/dontdiff -x '*.bak' -x '*.ctx' 
+> linuxorig/drivers/video/console/fbcon.c 
+> linux/drivers/video/console/fbcon.c
+> --- linuxorig/drivers/video/console/fbcon.c    2005-12-02 
+> 12:18:04.000000000 +0100
+> +++ linux/drivers/video/console/fbcon.c    2005-12-06 
+> 09:06:56.000000000 +0100
+> @@ -2103,10 +2103,11 @@ static int fbcon_switch(struct vc_data *
+>     fb_set_var(info, &var);
+>     ops->var = info->var;
+>
+> -    if (old_info != NULL && old_info != info) {
+> -        if (info->fbops->fb_set_par)
+> -            info->fbops->fb_set_par(info);
+> +    if (old_info != NULL && old_info != info)
+>         fbcon_del_cursor_timer(old_info);
+> +
+> +    if (info->fbops->fb_set_par) {
+> +        info->fbops->fb_set_par(info);
+>         fbcon_add_cursor_timer(info);
+>     }
+>
+>
+>
 
 
 
 -------------------------------------------------------
-This SF.net email is sponsored by: Splunk Inc. Do you grep through log fi=
-les
+This SF.net email is sponsored by: Splunk Inc. Do you grep through log files
 for problems?  Stop!  Download the new AJAX search engine that makes
 searching your log files as easy as surfing the  web.  DOWNLOAD SPLUNK!
-http://ads.osdn.com/?ad_id=3D7637&alloc_id=3D16865&op=3Dclick
+http://ads.osdn.com/?ad_id=7637&alloc_id=16865&op=click

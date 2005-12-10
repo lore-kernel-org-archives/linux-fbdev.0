@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 17/18] atyfb: LT/LG cleanup
-Date: Sat, 10 Dec 2005 14:14:44 +0800
-Message-ID: <439A7254.2020500@gmail.com>
+Subject: [PATCH 14/18] atyfb: Improve blanking
+Date: Sat, 10 Dec 2005 14:13:19 +0800
+Message-ID: <439A71FF.2040209@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Eky6W-0002sd-Sv
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:21:08 -0800
-Received: from zproxy.gmail.com ([64.233.162.198])
+	id 1Eky5y-0002rg-5R
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:20:34 -0800
+Received: from zproxy.gmail.com ([64.233.162.203])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Eky6W-000560-FB
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:21:08 -0800
-Received: by zproxy.gmail.com with SMTP id z3so1046564nzf
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 09 Dec 2005 22:21:07 -0800 (PST)
+	id 1Eky5x-0007Ds-SC
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:20:34 -0800
+Received: by zproxy.gmail.com with SMTP id n29so1146262nzf
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 09 Dec 2005 22:20:32 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,70 +32,82 @@ Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, =?IS
 
 From: Ville Syrj=E4l=E4 <syrjala@sci.fi>
 
-Clean up LT and LG chip descriptions.
-
-"Mach64 LG" is called 3D Rage LT in the specs and ATI press releases.
-
-"Mach64 LT" is unclear. XFree86 driver doesn't know this chip at all.
-Windows display.inf calls it just "mach64 LT" and it uses the same
-driver as VT-A/GT-A and older chips. VT-B/GT-B and better use another
-driver and all of those chips have a more descriptive name in the
-display.inf file. That makes me think this chip is not a 3D Rage chip.
+Force blanking signal and disable display requests when blanked.
+Don't disable LCD backlight with FB_BLANK_NORMAL.
 
 Signed-off-by: Ville Syrj=E4l=E4 <syrjala@sci.fi>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/aty/atyfb_base.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+ drivers/video/aty/atyfb_base.c |   24 ++++++++++++------------
+ 1 files changed, 12 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_bas=
 e.c
-index 36c6449..d9c9074 100644
+index 77e7ca3..c4a953c 100644
 --- a/drivers/video/aty/atyfb_base.c
 +++ b/drivers/video/aty/atyfb_base.c
-@@ -349,6 +349,7 @@ static unsigned long phys_guiregbase[FB_
- #define ATI_CHIP_264VT3    (M64F_VT | M64F_INTEGRATED | M64F_VT_BUS | M6=
-4F_GTB_DSP | M64F_SDRAM_MAGIC_PLL)
- #define ATI_CHIP_264VT4    (M64F_VT | M64F_INTEGRATED               | M6=
-4F_GTB_DSP)
+@@ -2645,16 +2645,16 @@ static int __init store_video_par(char *
+ static int atyfb_blank(int blank, struct fb_info *info)
+ {
+ 	struct atyfb_par *par =3D (struct atyfb_par *) info->par;
+-	u8 gen_cntl;
++	u32 gen_cntl;
 =20
-+/* FIXME what is this chip? */
- #define ATI_CHIP_264LT     (M64F_GT | M64F_INTEGRATED               | M6=
-4F_GTB_DSP)
+ 	if (par->lock_blank || par->asleep)
+ 		return 0;
 =20
- /* make sets shorter */
-@@ -381,15 +382,16 @@ static struct {
- 	{ PCI_CHIP_MACH64CT, "ATI264CT (Mach64 CT)", 135, 60, 60, 0, ATI_CHIP_2=
-64CT },
- 	{ PCI_CHIP_MACH64ET, "ATI264ET (Mach64 ET)", 135, 60, 60, 0, ATI_CHIP_2=
-64ET },
+ #ifdef CONFIG_PMAC_BACKLIGHT
+-	if ((_machine =3D=3D _MACH_Pmac) && blank)
++	if ((_machine =3D=3D _MACH_Pmac) && blank > FB_BLANK_NORMAL)
+ 		set_backlight_enable(0);
+ #elif defined(CONFIG_FB_ATY_GENERIC_LCD)
+-	if (par->lcd_table && blank &&
++	if (par->lcd_table && blank > FB_BLANK_NORMAL &&
+ 	    (aty_ld_lcd(LCD_GEN_CNTL, par) & LCD_ON)) {
+ 		u32 pm =3D aty_ld_lcd(POWER_MANAGEMENT, par);
+ 		pm &=3D ~PWR_BLON;
+@@ -2662,31 +2662,31 @@ static int atyfb_blank(int blank, struct
+ 	}
+ #endif
 =20
-+	/* FIXME what is this chip? */
-+	{ PCI_CHIP_MACH64LT, "ATI264LT (Mach64 LT)", 135, 63, 63, 0, ATI_CHIP_2=
-64LT },
-+
- 	{ PCI_CHIP_MACH64VT, "ATI264VT (Mach64 VT)", 170, 67, 67, 80, ATI_CHIP_=
-264VT },
- 	{ PCI_CHIP_MACH64GT, "3D RAGE (Mach64 GT)", 135, 63, 63, 80, ATI_CHIP_2=
-64GT },
+-	gen_cntl =3D aty_ld_8(CRTC_GEN_CNTL, par);
++	gen_cntl =3D aty_ld_le32(CRTC_GEN_CNTL, par);
+ 	switch (blank) {
+         	case FB_BLANK_UNBLANK:
+-			gen_cntl &=3D ~(0x4c);
++			gen_cntl &=3D ~0x400004c;
+ 			break;
+ 		case FB_BLANK_NORMAL:
+-			gen_cntl |=3D 0x40;
++			gen_cntl |=3D 0x4000040;
+ 			break;
+ 		case FB_BLANK_VSYNC_SUSPEND:
+-			gen_cntl |=3D 0x8;
++			gen_cntl |=3D 0x4000048;
+ 			break;
+ 		case FB_BLANK_HSYNC_SUSPEND:
+-			gen_cntl |=3D 0x4;
++			gen_cntl |=3D 0x4000044;
+ 			break;
+ 		case FB_BLANK_POWERDOWN:
+-			gen_cntl |=3D 0x4c;
++			gen_cntl |=3D 0x400004c;
+ 			break;
+ 	}
+-	aty_st_8(CRTC_GEN_CNTL, gen_cntl, par);
++	aty_st_le32(CRTC_GEN_CNTL, gen_cntl, par);
 =20
- 	{ PCI_CHIP_MACH64VU, "ATI264VT3 (Mach64 VU)", 200, 67, 67, 80, ATI_CHIP=
-_264VT3 },
- 	{ PCI_CHIP_MACH64GU, "3D RAGE II+ (Mach64 GU)", 200, 67, 67, 100, ATI_C=
-HIP_264GTB },
-=20
--	{ PCI_CHIP_MACH64LT, "3D RAGE LT (Mach64 LT)", 135, 63, 63, 0, ATI_CHIP=
-_264LT },
--	 /* FIXME chipset maybe ATI_CHIP_264LTPRO ? */
--	{ PCI_CHIP_MACH64LG, "3D RAGE LT-G (Mach64 LG)", 230, 63, 63, 100, ATI_=
-CHIP_264LTG | M64F_LT_LCD_REGS | M64F_G3_PB_1024x768 },
-+	{ PCI_CHIP_MACH64LG, "3D RAGE LT (Mach64 LG)", 230, 63, 63, 100, ATI_CH=
-IP_264LTG | M64F_LT_LCD_REGS | M64F_G3_PB_1024x768 },
-=20
- 	{ PCI_CHIP_MACH64VV, "ATI264VT4 (Mach64 VV)", 230, 83, 83, 100, ATI_CHI=
-P_264VT4 },
-=20
+ #ifdef CONFIG_PMAC_BACKLIGHT
+-	if ((_machine =3D=3D _MACH_Pmac) && !blank)
++	if ((_machine =3D=3D _MACH_Pmac) && blank <=3D FB_BLANK_NORMAL)
+ 		set_backlight_enable(1);
+ #elif defined(CONFIG_FB_ATY_GENERIC_LCD)
+-	if (par->lcd_table && !blank &&
++	if (par->lcd_table && blank <=3D FB_BLANK_NORMAL &&
+ 	    (aty_ld_lcd(LCD_GEN_CNTL, par) & LCD_ON)) {
+ 		u32 pm =3D aty_ld_lcd(POWER_MANAGEMENT, par);
+ 		pm |=3D PWR_BLON;
 
 
 

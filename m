@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 18/18] nvidiafb: Add support for some pci-e chipsets
-Date: Sat, 10 Dec 2005 14:15:16 +0800
-Message-ID: <439A7274.9090003@gmail.com>
+Subject: [PATCH 17/18] atyfb: LT/LG cleanup
+Date: Sat, 10 Dec 2005 14:14:44 +0800
+Message-ID: <439A7254.2020500@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Eky6j-0002sj-Qn
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:21:21 -0800
-Received: from zproxy.gmail.com ([64.233.162.192])
+	id 1Eky6W-0002sd-Sv
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:21:08 -0800
+Received: from zproxy.gmail.com ([64.233.162.198])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Eky6j-0007sx-Dr
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:21:21 -0800
-Received: by zproxy.gmail.com with SMTP id r28so1047208nza
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 09 Dec 2005 22:21:20 -0800 (PST)
+	id 1Eky6W-000560-FB
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:21:08 -0800
+Received: by zproxy.gmail.com with SMTP id z3so1046564nzf
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 09 Dec 2005 22:21:07 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,119 +26,83 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset="iso-8859-1"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, =?ISO-8859-1?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>
 
-Chipsets with PCI device ids & 0xf0 == 0x00f0 has their actual
-chipset type in offset 0x1800 of the mmio space.  Add support for this.
+From: Ville Syrj=E4l=E4 <syrjala@sci.fi>
 
+Clean up LT and LG chip descriptions.
+
+"Mach64 LG" is called 3D Rage LT in the specs and ATI press releases.
+
+"Mach64 LT" is unclear. XFree86 driver doesn't know this chip at all.
+Windows display.inf calls it just "mach64 LT" and it uses the same
+driver as VT-A/GT-A and older chips. VT-B/GT-B and better use another
+driver and all of those chips have a more descriptive name in the
+display.inf file. That makes me think this chip is not a 3D Rage chip.
+
+Signed-off-by: Ville Syrj=E4l=E4 <syrjala@sci.fi>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/nvidia/nvidia.c |   42 ++++++++++++++++++++++++++++++++++++-----
- include/linux/pci_ids.h       |    5 +++++
- 2 files changed, 42 insertions(+), 5 deletions(-)
+ drivers/video/aty/atyfb_base.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
-index dcf2e7a..b350cd7 100644
---- a/drivers/video/nvidia/nvidia.c
-+++ b/drivers/video/nvidia/nvidia.c
-@@ -284,6 +284,16 @@ static struct pci_device_id nvidiafb_pci
- 	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
- 	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6200,
- 	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-+	{PCI_VENDOR_ID_NVIDIA, PCIE_DEVICE_ID_NVIDIA_GEFORCE_6800_ALT1,
-+	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-+	{PCI_VENDOR_ID_NVIDIA, PCIE_DEVICE_ID_NVIDIA_GEFORCE_6600_ALT1,
-+	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-+	{PCI_VENDOR_ID_NVIDIA, PCIE_DEVICE_ID_NVIDIA_GEFORCE_6600_ALT2,
-+	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-+	{PCI_VENDOR_ID_NVIDIA, PCIE_DEVICE_ID_NVIDIA_GEFORCE_6200_ALT1,
-+	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
-+	{PCI_VENDOR_ID_NVIDIA, PCIE_DEVICE_ID_NVIDIA_GEFORCE_6800_GT,
-+	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
- 	{PCI_VENDOR_ID_NVIDIA, 0x0252,
- 	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
- 	{PCI_VENDOR_ID_NVIDIA, 0x0313,
-@@ -1448,11 +1458,34 @@ static int __devinit nvidia_set_fbinfo(s
- 	return nvidiafb_check_var(&info->var, info);
- }
- 
--static u32 __devinit nvidia_get_arch(struct pci_dev *pd)
-+static u32 __devinit nvidia_get_chipset(struct fb_info *info)
- {
-+	struct nvidia_par *par = info->par;
-+	u32 id = (par->pci_dev->vendor << 16) | par->pci_dev->device;
+diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_bas=
+e.c
+index 36c6449..d9c9074 100644
+--- a/drivers/video/aty/atyfb_base.c
++++ b/drivers/video/aty/atyfb_base.c
+@@ -349,6 +349,7 @@ static unsigned long phys_guiregbase[FB_
+ #define ATI_CHIP_264VT3    (M64F_VT | M64F_INTEGRATED | M64F_VT_BUS | M6=
+4F_GTB_DSP | M64F_SDRAM_MAGIC_PLL)
+ #define ATI_CHIP_264VT4    (M64F_VT | M64F_INTEGRATED               | M6=
+4F_GTB_DSP)
+=20
++/* FIXME what is this chip? */
+ #define ATI_CHIP_264LT     (M64F_GT | M64F_INTEGRATED               | M6=
+4F_GTB_DSP)
+=20
+ /* make sets shorter */
+@@ -381,15 +382,16 @@ static struct {
+ 	{ PCI_CHIP_MACH64CT, "ATI264CT (Mach64 CT)", 135, 60, 60, 0, ATI_CHIP_2=
+64CT },
+ 	{ PCI_CHIP_MACH64ET, "ATI264ET (Mach64 ET)", 135, 60, 60, 0, ATI_CHIP_2=
+64ET },
+=20
++	/* FIXME what is this chip? */
++	{ PCI_CHIP_MACH64LT, "ATI264LT (Mach64 LT)", 135, 63, 63, 0, ATI_CHIP_2=
+64LT },
 +
-+	printk("nvidiafb: PCI id - %x\n", id);
-+	if ((id & 0xfff0) == 0x00f0) {
-+		/* pci-e */
-+		printk("nvidiafb: PCI-E card\n");
-+		id = NV_RD32(par->REGS, 0x1800);
-+
-+		if ((id & 0x0000ffff) == 0x000010DE) 
-+			id = 0x10DE0000 | (id >> 16);
-+		else if ((id & 0xffff0000) == 0xDE100000) /* wrong endian */
-+			id = 0x10DE0000 | ((id << 8) & 0x0000ff00) |
-+                            ((id >> 8) & 0x000000ff);
-+	}
-+
-+	printk("nvidiafb: Actual id - %x\n", id);
-+	return id;
-+}
-+
-+static u32 __devinit nvidia_get_arch(struct fb_info *info)
-+{
-+	struct nvidia_par *par = info->par;
- 	u32 arch = 0;
- 
--	switch (pd->device & 0x0ff0) {
-+	switch (par->Chipset & 0x0ff0) {
- 	case 0x0100:		/* GeForce 256 */
- 	case 0x0110:		/* GeForce2 MX */
- 	case 0x0150:		/* GeForce2 */
-@@ -1535,9 +1568,6 @@ static int __devinit nvidiafb_probe(stru
- 		goto err_out_request;
- 	}
- 
--	par->Architecture = nvidia_get_arch(pd);
--
--	par->Chipset = (pd->vendor << 16) | pd->device;
- 	printk(KERN_INFO PFX "nVidia device/chipset %X\n", par->Chipset);
- 
- 	if (par->Architecture == 0) {
-@@ -1572,6 +1602,8 @@ static int __devinit nvidiafb_probe(stru
- 		goto err_out_free_base0;
- 	}
- 
-+	par->Chipset = nvidia_get_chipset(info);
-+	par->Architecture = nvidia_get_arch(info);
- 	NVCommonSetup(info);
- 
- 	par->FbAddress = nvidiafb_fix.smem_start;
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index f08ff15..17d60e0 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -1037,6 +1037,11 @@
- #define PCI_DEVICE_ID_NVIDIA_NVENET_6		0x00e6
- #define PCI_DEVICE_ID_NVIDIA_CK8S_AUDIO		0x00ea
- #define PCI_DEVICE_ID_NVIDIA_NFORCE3S_SATA2	0x00ee
-+#define PCIE_DEVICE_ID_NVIDIA_GEFORCE_6800_ALT1 0x00f0
-+#define PCIE_DEVICE_ID_NVIDIA_GEFORCE_6600_ALT1 0x00f1
-+#define PCIE_DEVICE_ID_NVIDIA_GEFORCE_6600_ALT2 0x00f2
-+#define PCIE_DEVICE_ID_NVIDIA_GEFORCE_6200_ALT1 0x00f3
-+#define PCIE_DEVICE_ID_NVIDIA_GEFORCE_6800_GT   0x00f9
- #define PCI_DEVICE_ID_NVIDIA_GEFORCE_SDR	0x0100
- #define PCI_DEVICE_ID_NVIDIA_GEFORCE_DDR	0x0101
- #define PCI_DEVICE_ID_NVIDIA_QUADRO		0x0103
+ 	{ PCI_CHIP_MACH64VT, "ATI264VT (Mach64 VT)", 170, 67, 67, 80, ATI_CHIP_=
+264VT },
+ 	{ PCI_CHIP_MACH64GT, "3D RAGE (Mach64 GT)", 135, 63, 63, 80, ATI_CHIP_2=
+64GT },
+=20
+ 	{ PCI_CHIP_MACH64VU, "ATI264VT3 (Mach64 VU)", 200, 67, 67, 80, ATI_CHIP=
+_264VT3 },
+ 	{ PCI_CHIP_MACH64GU, "3D RAGE II+ (Mach64 GU)", 200, 67, 67, 100, ATI_C=
+HIP_264GTB },
+=20
+-	{ PCI_CHIP_MACH64LT, "3D RAGE LT (Mach64 LT)", 135, 63, 63, 0, ATI_CHIP=
+_264LT },
+-	 /* FIXME chipset maybe ATI_CHIP_264LTPRO ? */
+-	{ PCI_CHIP_MACH64LG, "3D RAGE LT-G (Mach64 LG)", 230, 63, 63, 100, ATI_=
+CHIP_264LTG | M64F_LT_LCD_REGS | M64F_G3_PB_1024x768 },
++	{ PCI_CHIP_MACH64LG, "3D RAGE LT (Mach64 LG)", 230, 63, 63, 100, ATI_CH=
+IP_264LTG | M64F_LT_LCD_REGS | M64F_G3_PB_1024x768 },
+=20
+ 	{ PCI_CHIP_MACH64VV, "ATI264VT4 (Mach64 VV)", 230, 83, 83, 100, ATI_CHI=
+P_264VT4 },
+=20
 
 
 
 
 -------------------------------------------------------
-This SF.net email is sponsored by: Splunk Inc. Do you grep through log files
+This SF.net email is sponsored by: Splunk Inc. Do you grep through log fi=
+les
 for problems?  Stop!  Download the new AJAX search engine that makes
 searching your log files as easy as surfing the  web.  DOWNLOAD SPLUNK!
-http://ads.osdn.com/?ad_id=7637&alloc_id=16865&op=click
+http://ads.osdn.com/?ad_id=3D7637&alloc_id=3D16865&op=3Dclick

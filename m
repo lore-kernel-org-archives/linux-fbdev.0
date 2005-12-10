@@ -1,24 +1,19 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH 1/1 2.6.15-rc4-git1] Fixing switch to KD_TEXT, enhanced
- version
-Date: Sat, 10 Dec 2005 22:32:15 +0800
-Message-ID: <439AE6EF.6070006@gmail.com>
-References: <439A81AE.5030509@t-online.de>
+From: Knut Petersen <Knut_Petersen@t-online.de>
+Subject: [PATCH 1/1] Constant spelling
+Date: Sat, 10 Dec 2005 19:45:06 +0100
+Message-ID: <439B2232.9010906@t-online.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1El5mE-0000EA-JN
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 10 Dec 2005 06:32:42 -0800
-Received: from wproxy.gmail.com ([64.233.184.207])
+	id 1El9ho-0003bV-RQ
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 10 Dec 2005 10:44:24 -0800
+Received: from mailout05.sul.t-online.com ([194.25.134.82])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1El5mE-0000Ya-7s
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 10 Dec 2005 06:32:42 -0800
-Received: by wproxy.gmail.com with SMTP id 68so1531616wri
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 10 Dec 2005 06:32:38 -0800 (PST)
-In-Reply-To: <439A81AE.5030509@t-online.de>
+	id 1El9hm-0001nG-FI
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 10 Dec 2005 10:44:24 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,47 +24,42 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Knut Petersen <Knut_Petersen@t-online.de>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Andrew Morton <akpm@osdl.org>
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-Knut Petersen wrote:
-> Every framebuffer driver relies on the assumption that the
-> set_par() function of the driver is called before drawing
-> functions and other functions dependent on the hardware
-> state are executed.
-> 
-> Whenever you switch from X to a framebuffer console for the
-> very first time, there is a chance that a broken X system has
-> _not_ set the mode to KD_GRAPHICS, thus the vt and framebuffer
-> code executes a screen redraw and several other functions
-> before a set_par() is executed. This is believed to be not a
-> bug of linux but a bug of X/xdm. At least some X releases
-> used by SuSE and Debian show this behaviour.
-> 
-> There was a 2nd case, but that has been fixed by Antonino
-> Daplas on 10-dec-2005.
-> 
-> This patch allows drivers to set a flag to inform fbcon_switch()
-> that they prefer a set_par() call on every console switch,
-> working around the problems caused by the broken X releases.
-> 
-> The flag will be used by the next release of cyblafb and might
-> help other drivers that assume a hardware state different to
-> the one used by X.
-> 
-> As the default behaviour does not change, this patch should
-> be acceptable to everybody.
-> 
-> Signed-off-by: Knut Petersen <Knut_Petersen@t-online.de>
+Obviously constants should be spelled correctly.
+Follow-up to fbdev-fixing-switch-to-kd_text-enhanced-version.patch
 
-Acked-by: Antonino Daplas <adaplas@pol.net>
 
-> +#define FBINFO_MISC_ALLWAYS_SETPAR   0x40000
-                       ^^^^^^^
-Please post a follow up patch to fix the spelling.
+Signed-off-by: Knut Petersen <Knut_Petersen@t-online.de>
 
-Tony
+
+diff -uprN -X linux/Documentation/dontdiff -x '*.bak' -x '*.ctx' linuxorig/drivers/video/console/fbcon.c linuxtmp/drivers/video/console/fbcon.c
+--- linuxorig/drivers/video/console/fbcon.c	2005-12-10 19:36:49.000000000 +0100
++++ linuxtmp/drivers/video/console/fbcon.c	2005-12-10 19:36:40.000000000 +0100
+@@ -2104,7 +2104,7 @@ static int fbcon_switch(struct vc_data *
+  	ops->var = info->var;
+
+  	if (old_info != NULL && (old_info != info ||
+-				 info->flags & FBINFO_MISC_ALLWAYS_SETPAR)) {
++				 info->flags & FBINFO_MISC_ALWAYS_SETPAR)) {
+  		if (info->fbops->fb_set_par)
+  			info->fbops->fb_set_par(info);
+  		fbcon_del_cursor_timer(old_info);
+diff -uprN -X linux/Documentation/dontdiff -x '*.bak' -x '*.ctx' linuxorig/include/linux/fb.h linuxtmp/include/linux/fb.h
+--- linuxorig/include/linux/fb.h	2005-12-10 19:36:49.000000000 +0100
++++ linuxtmp/include/linux/fb.h	2005-12-10 19:36:42.000000000 +0100
+@@ -735,7 +735,7 @@ struct fb_tile_ops {
+   * code whenever there is a bug report related to switching between X and the
+   * framebuffer console.
+   */
+-#define FBINFO_MISC_ALLWAYS_SETPAR   0x40000
++#define FBINFO_MISC_ALWAYS_SETPAR   0x40000
+
+
+  struct fb_info {
+
 
 
 -------------------------------------------------------

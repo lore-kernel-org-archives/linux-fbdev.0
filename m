@@ -1,23 +1,24 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH 02/18] fbdev: Pan display fixes
-Date: Sat, 10 Dec 2005 22:24:53 +0800
-Message-ID: <439AE535.1010608@gmail.com>
-References: <439A7126.7010107@gmail.com> <20051210002306.7342f0c8.akpm@osdl.org>
+Subject: Re: [PATCH 1/1 2.6.15-rc4-git1] Fixing switch to KD_TEXT, enhanced
+ version
+Date: Sat, 10 Dec 2005 22:32:15 +0800
+Message-ID: <439AE6EF.6070006@gmail.com>
+References: <439A81AE.5030509@t-online.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1El5f3-0008HT-Pc
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 10 Dec 2005 06:25:17 -0800
-Received: from zproxy.gmail.com ([64.233.162.206])
+	id 1El5mE-0000EA-JN
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 10 Dec 2005 06:32:42 -0800
+Received: from wproxy.gmail.com ([64.233.184.207])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1El5f2-0006eF-9G
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 10 Dec 2005 06:25:17 -0800
-Received: by zproxy.gmail.com with SMTP id z3so1088570nzf
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 10 Dec 2005 06:25:10 -0800 (PST)
-In-Reply-To: <20051210002306.7342f0c8.akpm@osdl.org>
+	id 1El5mE-0000Ya-7s
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 10 Dec 2005 06:32:42 -0800
+Received: by wproxy.gmail.com with SMTP id 68so1531616wri
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 10 Dec 2005 06:32:38 -0800 (PST)
+In-Reply-To: <439A81AE.5030509@t-online.de>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,28 +30,44 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Knut Petersen <Knut_Petersen@t-online.de>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-Andrew Morton wrote:
-> "Antonino A. Daplas" <adaplas@gmail.com> wrote:
->>  @@ -722,14 +722,30 @@ static void try_to_load(int fb)
->>   int
->>   fb_pan_display(struct fb_info *info, struct fb_var_screeninfo *var)
->>   {
->>  +	struct fb_fix_screeninfo *fix = &info->fix;
->>           int xoffset = var->xoffset;
->>           int yoffset = var->yoffset;
->>  -        int err;
->>  +        int err = 0, yres = info->var.yres;
->>  +
->>  +	if (var->yoffset > 0) {
+Knut Petersen wrote:
+> Every framebuffer driver relies on the assumption that the
+> set_par() function of the driver is called before drawing
+> functions and other functions dependent on the hardware
+> state are executed.
 > 
-> Something horrid has happened to your whitespace.
+> Whenever you switch from X to a framebuffer console for the
+> very first time, there is a chance that a broken X system has
+> _not_ set the mode to KD_GRAPHICS, thus the vt and framebuffer
+> code executes a screen redraw and several other functions
+> before a set_par() is executed. This is believed to be not a
+> bug of linux but a bug of X/xdm. At least some X releases
+> used by SuSE and Debian show this behaviour.
 > 
+> There was a 2nd case, but that has been fixed by Antonino
+> Daplas on 10-dec-2005.
+> 
+> This patch allows drivers to set a flag to inform fbcon_switch()
+> that they prefer a set_par() call on every console switch,
+> working around the problems caused by the broken X releases.
+> 
+> The flag will be used by the next release of cyblafb and might
+> help other drivers that assume a hardware state different to
+> the one used by X.
+> 
+> As the default behaviour does not change, this patch should
+> be acceptable to everybody.
+> 
+> Signed-off-by: Knut Petersen <Knut_Petersen@t-online.de>
 
-It's the original that is using spaces instead of tabs. I did
-not notice it though until you mentioned it.
+Acked-by: Antonino Daplas <adaplas@pol.net>
+
+> +#define FBINFO_MISC_ALLWAYS_SETPAR   0x40000
+                       ^^^^^^^
+Please post a follow up patch to fix the spelling.
 
 Tony
 

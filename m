@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 07/18] fbcon: Avoid illegal display panning
-Date: Sat, 10 Dec 2005 14:11:07 +0800
-Message-ID: <439A717B.7010903@gmail.com>
+Subject: [PATCH 06/18] vga16fb: Trim vga16fb_pan_display
+Date: Sat, 10 Dec 2005 14:10:49 +0800
+Message-ID: <439A7169.5090504@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Eky4g-0002ow-Cv
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:19:14 -0800
-Received: from zproxy.gmail.com ([64.233.162.194])
+	id 1Eky4U-0002oq-OW
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:19:02 -0800
+Received: from zproxy.gmail.com ([64.233.162.198])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Eky4g-0004QR-3n
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:19:14 -0800
-Received: by zproxy.gmail.com with SMTP id z31so1040737nzd
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 09 Dec 2005 22:19:13 -0800 (PST)
+	id 1Eky4U-00040H-5J
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:19:02 -0800
+Received: by zproxy.gmail.com with SMTP id r28so1046970nza
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 09 Dec 2005 22:19:01 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,65 +30,35 @@ Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Avoid calls to fb_pan_display when driver is suspended or not
-in text mode.
+Remove error checking and updating from vga16fb_pan_display.  This is
+guaranteed to be done by the core layer.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/console/fbcon.c |   25 +++++++++++++++++++------
- 1 files changed, 19 insertions(+), 6 deletions(-)
+ drivers/video/vga16fb.c |    8 --------
+ 1 files changed, 0 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index 9678045..d089209 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -2136,8 +2136,12 @@ static int fbcon_switch(struct vc_data *
+diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
+index 226ae8a..f3f16fd 100644
+--- a/drivers/video/vga16fb.c
++++ b/drivers/video/vga16fb.c
+@@ -705,15 +705,7 @@ static int vga16fb_setcolreg(unsigned re
+ static int vga16fb_pan_display(struct fb_var_screeninfo *var,
+ 			       struct fb_info *info) 
+ {
+-	if (var->xoffset + info->var.xres > info->var.xres_virtual ||
+-	    var->yoffset + info->var.yres > info->var.yres_virtual)
+-		return -EINVAL;
+-
+ 	vga16fb_pan_var(info, var);
+-
+-	info->var.xoffset = var->xoffset;
+-	info->var.yoffset = var->yoffset;
+-	info->var.vmode &= ~FB_VMODE_YWRAP;
+ 	return 0;
+ }
  
- 	scrollback_max = 0;
- 	scrollback_current = 0;
--	ops->var.xoffset = ops->var.yoffset = p->yscroll = 0;
--	ops->update_start(info);
-+
-+	if (!fbcon_is_inactive(vc, info)) {
-+	    ops->var.xoffset = ops->var.yoffset = p->yscroll = 0;
-+	    ops->update_start(info);
-+	}
-+
- 	fbcon_set_palette(vc, color_table); 	
- 	fbcon_clear_margins(vc, 0);
- 
-@@ -2736,8 +2740,12 @@ static void fbcon_modechanged(struct fb_
- 		updatescrollmode(p, info, vc);
- 		scrollback_max = 0;
- 		scrollback_current = 0;
--		ops->var.xoffset = ops->var.yoffset = p->yscroll = 0;
--		ops->update_start(info);
-+		
-+		if (!fbcon_is_inactive(vc, info)) {
-+		    ops->var.xoffset = ops->var.yoffset = p->yscroll = 0;
-+		    ops->update_start(info);
-+		}
-+
- 		fbcon_set_palette(vc, color_table);
- 		update_screen(vc);
- 		if (softback_buf)
-@@ -2774,8 +2782,13 @@ static void fbcon_set_all_vcs(struct fb_
- 			updatescrollmode(p, info, vc);
- 			scrollback_max = 0;
- 			scrollback_current = 0;
--			ops->var.xoffset = ops->var.yoffset = p->yscroll = 0;
--			ops->update_start(info);
-+
-+			if (!fbcon_is_inactive(vc, info)) {
-+			    ops->var.xoffset = ops->var.yoffset =
-+				p->yscroll = 0;
-+			    ops->update_start(info);
-+			}
-+
- 			fbcon_set_palette(vc, color_table);
- 			update_screen(vc);
- 			if (softback_buf)
 
 
 

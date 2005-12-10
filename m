@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 14/18] atyfb: Improve blanking
-Date: Sat, 10 Dec 2005 14:13:19 +0800
-Message-ID: <439A71FF.2040209@gmail.com>
+Subject: [PATCH 13/18] atyfb: Set ECP divider
+Date: Sat, 10 Dec 2005 14:13:00 +0800
+Message-ID: <439A71EC.9030203@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Eky5y-0002rg-5R
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:20:34 -0800
-Received: from zproxy.gmail.com ([64.233.162.203])
+	id 1Eky5p-0002rb-6Y
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:20:25 -0800
+Received: from zproxy.gmail.com ([64.233.162.201])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Eky5x-0007Ds-SC
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:20:34 -0800
-Received: by zproxy.gmail.com with SMTP id n29so1146262nzf
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 09 Dec 2005 22:20:32 -0800 (PST)
+	id 1Eky5o-0004n4-G6
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 09 Dec 2005 22:20:25 -0800
+Received: by zproxy.gmail.com with SMTP id v1so1114984nzb
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 09 Dec 2005 22:20:24 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,82 +32,293 @@ Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, =?IS
 
 From: Ville Syrj=E4l=E4 <syrjala@sci.fi>
 
-Force blanking signal and disable display requests when blanked.
-Don't disable LCD backlight with FB_BLANK_NORMAL.
+Set ECP (scaler/overlay clock) divider. The limits were taken from the
+XFree86 ati driver.
 
 Signed-off-by: Ville Syrj=E4l=E4 <syrjala@sci.fi>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/aty/atyfb_base.c |   24 ++++++++++++------------
- 1 files changed, 12 insertions(+), 12 deletions(-)
+ drivers/video/aty/atyfb.h      |    1=20
+ drivers/video/aty/atyfb_base.c |   86 +++++++++++++++++++++-------------=
+------
+ drivers/video/aty/mach64_ct.c  |   17 +++++++-
+ 3 files changed, 61 insertions(+), 43 deletions(-)
 
+diff --git a/drivers/video/aty/atyfb.h b/drivers/video/aty/atyfb.h
+index 71d30b5..e9b7a64 100644
+--- a/drivers/video/aty/atyfb.h
++++ b/drivers/video/aty/atyfb.h
+@@ -50,6 +50,7 @@ struct pll_info {
+ 	int sclk, mclk, mclk_pm, xclk;
+ 	int ref_div;
+ 	int ref_clk;
++	int ecp_max;
+ };
+=20
+ typedef struct {
 diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_bas=
 e.c
-index 77e7ca3..c4a953c 100644
+index af4a09d..77e7ca3 100644
 --- a/drivers/video/aty/atyfb_base.c
 +++ b/drivers/video/aty/atyfb_base.c
-@@ -2645,16 +2645,16 @@ static int __init store_video_par(char *
- static int atyfb_blank(int blank, struct fb_info *info)
+@@ -368,58 +368,58 @@ static unsigned long phys_guiregbase[FB_
+ static struct {
+ 	u16 pci_id;
+ 	const char *name;
+-	int pll, mclk, xclk;
++	int pll, mclk, xclk, ecp_max;
+ 	u32 features;
+ } aty_chips[] __devinitdata =3D {
+ #ifdef CONFIG_FB_ATY_GX
+ 	/* Mach64 GX */
+-	{ PCI_CHIP_MACH64GX, "ATI888GX00 (Mach64 GX)", 135, 50, 50, ATI_CHIP_88=
+800GX },
+-	{ PCI_CHIP_MACH64CX, "ATI888CX00 (Mach64 CX)", 135, 50, 50, ATI_CHIP_88=
+800CX },
++	{ PCI_CHIP_MACH64GX, "ATI888GX00 (Mach64 GX)", 135, 50, 50, 0, ATI_CHIP=
+_88800GX },
++	{ PCI_CHIP_MACH64CX, "ATI888CX00 (Mach64 CX)", 135, 50, 50, 0, ATI_CHIP=
+_88800CX },
+ #endif /* CONFIG_FB_ATY_GX */
+=20
+ #ifdef CONFIG_FB_ATY_CT
+-	{ PCI_CHIP_MACH64CT, "ATI264CT (Mach64 CT)", 135, 60, 60, ATI_CHIP_264C=
+T },
+-	{ PCI_CHIP_MACH64ET, "ATI264ET (Mach64 ET)", 135, 60, 60, ATI_CHIP_264E=
+T },
+-	{ PCI_CHIP_MACH64VT, "ATI264VT? (Mach64 VT)", 170, 67, 67, ATI_CHIP_264=
+VT },
+-	{ PCI_CHIP_MACH64GT, "3D RAGE (Mach64 GT)", 135, 63, 63, ATI_CHIP_264GT=
+ },
++	{ PCI_CHIP_MACH64CT, "ATI264CT (Mach64 CT)", 135, 60, 60, 0, ATI_CHIP_2=
+64CT },
++	{ PCI_CHIP_MACH64ET, "ATI264ET (Mach64 ET)", 135, 60, 60, 0, ATI_CHIP_2=
+64ET },
++	{ PCI_CHIP_MACH64VT, "ATI264VT? (Mach64 VT)", 170, 67, 67, 80, ATI_CHIP=
+_264VT },
++	{ PCI_CHIP_MACH64GT, "3D RAGE (Mach64 GT)", 135, 63, 63, 80, ATI_CHIP_2=
+64GT },
+ 	/* FIXME { ...ATI_264GU, maybe ATI_CHIP_264GTDVD }, */
+-	{ PCI_CHIP_MACH64GU, "3D RAGE II+ (Mach64 GTB)", 200, 67, 67, ATI_CHIP_=
+264GTB  },
+-	{ PCI_CHIP_MACH64VU, "ATI264VTB (Mach64 VU)", 200, 67, 67, ATI_CHIP_264=
+VT3 },
++	{ PCI_CHIP_MACH64GU, "3D RAGE II+ (Mach64 GTB)", 200, 67, 67, 100, ATI_=
+CHIP_264GTB  },
++	{ PCI_CHIP_MACH64VU, "ATI264VTB (Mach64 VU)", 200, 67, 67, 80, ATI_CHIP=
+_264VT3 },
+=20
+-	{ PCI_CHIP_MACH64LT, "3D RAGE LT (Mach64 LT)", 135, 63, 63, ATI_CHIP_26=
+4LT },
++	{ PCI_CHIP_MACH64LT, "3D RAGE LT (Mach64 LT)", 135, 63, 63, 0, ATI_CHIP=
+_264LT },
+ 	 /* FIXME chipset maybe ATI_CHIP_264LTPRO ? */
+-	{ PCI_CHIP_MACH64LG, "3D RAGE LT-G (Mach64 LG)", 230, 63, 63, ATI_CHIP_=
+264LTG | M64F_LT_LCD_REGS | M64F_G3_PB_1024x768 },
++	{ PCI_CHIP_MACH64LG, "3D RAGE LT-G (Mach64 LG)", 230, 63, 63, 100, ATI_=
+CHIP_264LTG | M64F_LT_LCD_REGS | M64F_G3_PB_1024x768 },
+=20
+-	{ PCI_CHIP_MACH64VV, "ATI264VT4 (Mach64 VV)", 230, 83, 83, ATI_CHIP_264=
+VT4 },
++	{ PCI_CHIP_MACH64VV, "ATI264VT4 (Mach64 VV)", 230, 83, 83, 100, ATI_CHI=
+P_264VT4 },
+=20
+-	{ PCI_CHIP_MACH64GV, "3D RAGE IIC (Mach64 GV, PCI)", 230, 83, 83, ATI_C=
+HIP_264GT2C },
+-	{ PCI_CHIP_MACH64GW, "3D RAGE IIC (Mach64 GW, AGP)", 230, 83, 83, ATI_C=
+HIP_264GT2C },
+-	{ PCI_CHIP_MACH64GY, "3D RAGE IIC (Mach64 GY, PCI)", 230, 83, 83, ATI_C=
+HIP_264GT2C },
+-	{ PCI_CHIP_MACH64GZ, "3D RAGE IIC (Mach64 GZ, AGP)", 230, 83, 83, ATI_C=
+HIP_264GT2C },
+-
+-	{ PCI_CHIP_MACH64GB, "3D RAGE PRO (Mach64 GB, BGA, AGP)", 230, 100, 100=
+, ATI_CHIP_264GTPRO },
+-	{ PCI_CHIP_MACH64GD, "3D RAGE PRO (Mach64 GD, BGA, AGP 1x)", 230, 100, =
+100, ATI_CHIP_264GTPRO },
+-	{ PCI_CHIP_MACH64GI, "3D RAGE PRO (Mach64 GI, BGA, PCI)", 230, 100, 100=
+, ATI_CHIP_264GTPRO | M64F_MAGIC_VRAM_SIZE },
+-	{ PCI_CHIP_MACH64GP, "3D RAGE PRO (Mach64 GP, PQFP, PCI)", 230, 100, 10=
+0, ATI_CHIP_264GTPRO },
+-	{ PCI_CHIP_MACH64GQ, "3D RAGE PRO (Mach64 GQ, PQFP, PCI, limited 3D)", =
+230, 100, 100, ATI_CHIP_264GTPRO },
+-
+-	{ PCI_CHIP_MACH64LB, "3D RAGE LT PRO (Mach64 LB, AGP)", 236, 75, 100, A=
+TI_CHIP_264LTPRO },
+-	{ PCI_CHIP_MACH64LD, "3D RAGE LT PRO (Mach64 LD, AGP)", 230, 100, 100, =
+ATI_CHIP_264LTPRO },
+-	{ PCI_CHIP_MACH64LI, "3D RAGE LT PRO (Mach64 LI, PCI)", 230, 100, 100, =
+ATI_CHIP_264LTPRO | M64F_G3_PB_1_1 | M64F_G3_PB_1024x768 },
+-	{ PCI_CHIP_MACH64LP, "3D RAGE LT PRO (Mach64 LP, PCI)", 230, 100, 100, =
+ATI_CHIP_264LTPRO },
+-	{ PCI_CHIP_MACH64LQ, "3D RAGE LT PRO (Mach64 LQ, PCI)", 230, 100, 100, =
+ATI_CHIP_264LTPRO },
+-
+-	{ PCI_CHIP_MACH64GM, "3D RAGE XL (Mach64 GM, AGP)", 230, 83, 63, ATI_CH=
+IP_264XL },
+-	{ PCI_CHIP_MACH64GN, "3D RAGE XL (Mach64 GN, AGP)", 230, 83, 63, ATI_CH=
+IP_264XL },
+-	{ PCI_CHIP_MACH64GO, "3D RAGE XL (Mach64 GO, PCI-66/BGA)", 230, 83, 63,=
+ ATI_CHIP_264XL },
+-	{ PCI_CHIP_MACH64GR, "3D RAGE XL (Mach64 GR, PCI-33MHz)", 230, 83, 63, =
+ATI_CHIP_264XL },
+-	{ PCI_CHIP_MACH64GL, "3D RAGE XL (Mach64 GL, PCI)", 230, 83, 63, ATI_CH=
+IP_264XL },
+-	{ PCI_CHIP_MACH64GS, "3D RAGE XL (Mach64 GS, PCI)", 230, 83, 63, ATI_CH=
+IP_264XL },
+-
+-	{ PCI_CHIP_MACH64LM, "3D RAGE Mobility P/M (Mach64 LM, AGP 2x)", 230, 8=
+3, 125, ATI_CHIP_MOBILITY },
+-	{ PCI_CHIP_MACH64LN, "3D RAGE Mobility L (Mach64 LN, AGP 2x)", 230, 83,=
+ 125, ATI_CHIP_MOBILITY },
+-	{ PCI_CHIP_MACH64LR, "3D RAGE Mobility P/M (Mach64 LR, PCI)", 230, 83, =
+125, ATI_CHIP_MOBILITY },
+-	{ PCI_CHIP_MACH64LS, "3D RAGE Mobility L (Mach64 LS, PCI)", 230, 83, 12=
+5, ATI_CHIP_MOBILITY },
++	{ PCI_CHIP_MACH64GV, "3D RAGE IIC (Mach64 GV, PCI)", 230, 83, 83, 100, =
+ATI_CHIP_264GT2C },
++	{ PCI_CHIP_MACH64GW, "3D RAGE IIC (Mach64 GW, AGP)", 230, 83, 83, 100, =
+ATI_CHIP_264GT2C },
++	{ PCI_CHIP_MACH64GY, "3D RAGE IIC (Mach64 GY, PCI)", 230, 83, 83, 100, =
+ATI_CHIP_264GT2C },
++	{ PCI_CHIP_MACH64GZ, "3D RAGE IIC (Mach64 GZ, AGP)", 230, 83, 83, 100, =
+ATI_CHIP_264GT2C },
++
++	{ PCI_CHIP_MACH64GB, "3D RAGE PRO (Mach64 GB, BGA, AGP)", 230, 100, 100=
+, 125, ATI_CHIP_264GTPRO },
++	{ PCI_CHIP_MACH64GD, "3D RAGE PRO (Mach64 GD, BGA, AGP 1x)", 230, 100, =
+100, 125, ATI_CHIP_264GTPRO },
++	{ PCI_CHIP_MACH64GI, "3D RAGE PRO (Mach64 GI, BGA, PCI)", 230, 100, 100=
+, 125, ATI_CHIP_264GTPRO | M64F_MAGIC_VRAM_SIZE },
++	{ PCI_CHIP_MACH64GP, "3D RAGE PRO (Mach64 GP, PQFP, PCI)", 230, 100, 10=
+0, 125, ATI_CHIP_264GTPRO },
++	{ PCI_CHIP_MACH64GQ, "3D RAGE PRO (Mach64 GQ, PQFP, PCI, limited 3D)", =
+230, 100, 100, 125, ATI_CHIP_264GTPRO },
++
++	{ PCI_CHIP_MACH64LB, "3D RAGE LT PRO (Mach64 LB, AGP)", 236, 75, 100, 1=
+35, ATI_CHIP_264LTPRO },
++	{ PCI_CHIP_MACH64LD, "3D RAGE LT PRO (Mach64 LD, AGP)", 230, 100, 100, =
+135, ATI_CHIP_264LTPRO },
++	{ PCI_CHIP_MACH64LI, "3D RAGE LT PRO (Mach64 LI, PCI)", 230, 100, 100, =
+135, ATI_CHIP_264LTPRO | M64F_G3_PB_1_1 | M64F_G3_PB_1024x768 },
++	{ PCI_CHIP_MACH64LP, "3D RAGE LT PRO (Mach64 LP, PCI)", 230, 100, 100, =
+135, ATI_CHIP_264LTPRO },
++	{ PCI_CHIP_MACH64LQ, "3D RAGE LT PRO (Mach64 LQ, PCI)", 230, 100, 100, =
+135, ATI_CHIP_264LTPRO },
++
++	{ PCI_CHIP_MACH64GM, "3D RAGE XL (Mach64 GM, AGP)", 230, 83, 63, 135, A=
+TI_CHIP_264XL },
++	{ PCI_CHIP_MACH64GN, "3D RAGE XL (Mach64 GN, AGP)", 230, 83, 63, 135, A=
+TI_CHIP_264XL },
++	{ PCI_CHIP_MACH64GO, "3D RAGE XL (Mach64 GO, PCI-66/BGA)", 230, 83, 63,=
+ 135, ATI_CHIP_264XL },
++	{ PCI_CHIP_MACH64GR, "3D RAGE XL (Mach64 GR, PCI-33MHz)", 230, 83, 63, =
+135, ATI_CHIP_264XL },
++	{ PCI_CHIP_MACH64GL, "3D RAGE XL (Mach64 GL, PCI)", 230, 83, 63, 135, A=
+TI_CHIP_264XL },
++	{ PCI_CHIP_MACH64GS, "3D RAGE XL (Mach64 GS, PCI)", 230, 83, 63, 135, A=
+TI_CHIP_264XL },
++
++	{ PCI_CHIP_MACH64LM, "3D RAGE Mobility P/M (Mach64 LM, AGP 2x)", 230, 8=
+3, 125, 135, ATI_CHIP_MOBILITY },
++	{ PCI_CHIP_MACH64LN, "3D RAGE Mobility L (Mach64 LN, AGP 2x)", 230, 83,=
+ 125, 135, ATI_CHIP_MOBILITY },
++	{ PCI_CHIP_MACH64LR, "3D RAGE Mobility P/M (Mach64 LR, PCI)", 230, 83, =
+125, 135, ATI_CHIP_MOBILITY },
++	{ PCI_CHIP_MACH64LS, "3D RAGE Mobility L (Mach64 LS, PCI)", 230, 83, 12=
+5, 135, ATI_CHIP_MOBILITY },
+ #endif /* CONFIG_FB_ATY_CT */
+ };
+=20
+@@ -440,6 +440,7 @@ static int __devinit correct_chipset(str
+ 	par->pll_limits.pll_max =3D aty_chips[i].pll;
+ 	par->pll_limits.mclk =3D aty_chips[i].mclk;
+ 	par->pll_limits.xclk =3D aty_chips[i].xclk;
++	par->pll_limits.ecp_max =3D aty_chips[i].ecp_max;
+ 	par->features =3D aty_chips[i].features;
+=20
+ 	chip_id =3D aty_ld_le32(CONFIG_CHIP_ID, par);
+@@ -465,18 +466,21 @@ static int __devinit correct_chipset(str
+ 			par->pll_limits.pll_max =3D 170;
+ 			par->pll_limits.mclk =3D 67;
+ 			par->pll_limits.xclk =3D 67;
++			par->pll_limits.ecp_max =3D 80;
+ 			par->features =3D ATI_CHIP_264VT;
+ 		} else if(rev =3D=3D 0x40) {
+ 			name =3D "ATI264VTA4 (Mach64 VT)";
+ 			par->pll_limits.pll_max =3D 200;
+ 			par->pll_limits.mclk =3D 67;
+ 			par->pll_limits.xclk =3D 67;
++			par->pll_limits.ecp_max =3D 80;
+ 			par->features =3D ATI_CHIP_264VT | M64F_MAGIC_POSTDIV;
+ 		} else {
+ 			name =3D "ATI264VTB (Mach64 VT)";
+ 			par->pll_limits.pll_max =3D 200;
+ 			par->pll_limits.mclk =3D 67;
+ 			par->pll_limits.xclk =3D 67;
++			par->pll_limits.ecp_max =3D 80;
+ 			par->features =3D ATI_CHIP_264VTB;
+ 		}
+ 		break;
+@@ -486,11 +490,13 @@ static int __devinit correct_chipset(str
+ 			par->pll_limits.pll_max =3D 170;
+ 			par->pll_limits.mclk =3D 67;
+ 			par->pll_limits.xclk =3D 67;
++			par->pll_limits.ecp_max =3D 80;
+ 			par->features =3D ATI_CHIP_264GTB;
+ 		} else if(rev =3D=3D 0x02) {
+ 			par->pll_limits.pll_max =3D 200;
+ 			par->pll_limits.mclk =3D 67;
+ 			par->pll_limits.xclk =3D 67;
++			par->pll_limits.ecp_max =3D 100;
+ 			par->features =3D ATI_CHIP_264GTB;
+ 		}
+ 		break;
+diff --git a/drivers/video/aty/mach64_ct.c b/drivers/video/aty/mach64_ct.=
+c
+index 9bdb2aa..e705693 100644
+--- a/drivers/video/aty/mach64_ct.c
++++ b/drivers/video/aty/mach64_ct.c
+@@ -206,9 +206,7 @@ static int aty_valid_pll_ct(const struct
  {
+ 	u32 q;
  	struct atyfb_par *par =3D (struct atyfb_par *) info->par;
--	u8 gen_cntl;
-+	u32 gen_cntl;
+-#ifdef DEBUG
+ 	int pllvclk;
+-#endif
 =20
- 	if (par->lock_blank || par->asleep)
- 		return 0;
-=20
- #ifdef CONFIG_PMAC_BACKLIGHT
--	if ((_machine =3D=3D _MACH_Pmac) && blank)
-+	if ((_machine =3D=3D _MACH_Pmac) && blank > FB_BLANK_NORMAL)
- 		set_backlight_enable(0);
- #elif defined(CONFIG_FB_ATY_GENERIC_LCD)
--	if (par->lcd_table && blank &&
-+	if (par->lcd_table && blank > FB_BLANK_NORMAL &&
- 	    (aty_ld_lcd(LCD_GEN_CNTL, par) & LCD_ON)) {
- 		u32 pm =3D aty_ld_lcd(POWER_MANAGEMENT, par);
- 		pm &=3D ~PWR_BLON;
-@@ -2662,31 +2662,31 @@ static int atyfb_blank(int blank, struct
- 	}
+ 	/* FIXME: use the VTB/GTB /{3,6,12} post dividers if they're better sui=
+ted */
+ 	q =3D par->ref_clk_per * pll->pll_ref_div * 4 / vclk_per;
+@@ -223,13 +221,26 @@ static int aty_valid_pll_ct(const struct
+ 	pll->vclk_post_div_real =3D postdividers[pll->vclk_post_div];
+ 	//    pll->vclk_post_div <<=3D 6;
+ 	pll->vclk_fb_div =3D q * pll->vclk_post_div_real / 8;
+-#ifdef DEBUG
+ 	pllvclk =3D (1000000 * 2 * pll->vclk_fb_div) /
+ 		(par->ref_clk_per * pll->pll_ref_div);
++#ifdef DEBUG
+ 	printk("atyfb(%s): pllvclk=3D%d MHz, vclk=3D%d MHz\n",
+ 		__FUNCTION__, pllvclk, pllvclk / pll->vclk_post_div_real);
  #endif
+ 	pll->pll_vclk_cntl =3D 0x03; /* VCLK =3D PLL_VCLK/VCLKx_POST */
++
++	/* Set ECP (scaler/overlay clock) divider */
++	if (par->pll_limits.ecp_max) {
++		int ecp =3D pllvclk / pll->vclk_post_div_real;
++		int ecp_div =3D 0;
++
++		while (ecp > par->pll_limits.ecp_max && ecp_div < 2) {
++			ecp >>=3D 1;
++			ecp_div++;
++		}
++		pll->pll_vclk_cntl |=3D ecp_div << 4;
++	}
++
+ 	return 0;
+ }
 =20
--	gen_cntl =3D aty_ld_8(CRTC_GEN_CNTL, par);
-+	gen_cntl =3D aty_ld_le32(CRTC_GEN_CNTL, par);
- 	switch (blank) {
-         	case FB_BLANK_UNBLANK:
--			gen_cntl &=3D ~(0x4c);
-+			gen_cntl &=3D ~0x400004c;
- 			break;
- 		case FB_BLANK_NORMAL:
--			gen_cntl |=3D 0x40;
-+			gen_cntl |=3D 0x4000040;
- 			break;
- 		case FB_BLANK_VSYNC_SUSPEND:
--			gen_cntl |=3D 0x8;
-+			gen_cntl |=3D 0x4000048;
- 			break;
- 		case FB_BLANK_HSYNC_SUSPEND:
--			gen_cntl |=3D 0x4;
-+			gen_cntl |=3D 0x4000044;
- 			break;
- 		case FB_BLANK_POWERDOWN:
--			gen_cntl |=3D 0x4c;
-+			gen_cntl |=3D 0x400004c;
- 			break;
- 	}
--	aty_st_8(CRTC_GEN_CNTL, gen_cntl, par);
-+	aty_st_le32(CRTC_GEN_CNTL, gen_cntl, par);
-=20
- #ifdef CONFIG_PMAC_BACKLIGHT
--	if ((_machine =3D=3D _MACH_Pmac) && !blank)
-+	if ((_machine =3D=3D _MACH_Pmac) && blank <=3D FB_BLANK_NORMAL)
- 		set_backlight_enable(1);
- #elif defined(CONFIG_FB_ATY_GENERIC_LCD)
--	if (par->lcd_table && !blank &&
-+	if (par->lcd_table && blank <=3D FB_BLANK_NORMAL &&
- 	    (aty_ld_lcd(LCD_GEN_CNTL, par) & LCD_ON)) {
- 		u32 pm =3D aty_ld_lcd(POWER_MANAGEMENT, par);
- 		pm |=3D PWR_BLON;
 
 
 

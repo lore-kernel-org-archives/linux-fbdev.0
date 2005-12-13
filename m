@@ -1,20 +1,30 @@
-From: Knut Petersen <Knut_Petersen@t-online.de>
-Subject: [PATCH 1/1: 2.6.15-rc5-git3] Disable ywrap if not supported by fbcon
- scrolling code
-Date: Tue, 13 Dec 2005 14:26:00 +0100
-Message-ID: <439ECBE8.5090002@t-online.de>
+From: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
+Subject: write() to zero length framebuffer -- bug report
+Date: Tue, 13 Dec 2005 14:33:36 -0000
+Message-ID: <35786B99AB3FDC45A8215724617919736D918C@gbrwgceumf01.eu.xerox.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EmADL-00035I-2C
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 13 Dec 2005 05:29:07 -0800
-Received: from mailout01.sul.t-online.com ([194.25.134.80])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EmADJ-0004H4-Fs
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 13 Dec 2005 05:29:07 -0800
+	id 1EmBFE-000748-S6
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 13 Dec 2005 06:35:08 -0800
+Received: from wvmler2.mail.xerox.com ([13.8.138.217])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44)
+	id 1EmBFC-00005g-W6
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 13 Dec 2005 06:35:08 -0800
+Received: from wvmlir2.mail.xerox.com (wvmlir2.mail.xerox.com [13.147.8.222])
+	by wvmler2.mail.xerox.com (8.13.4/8.13.1) with ESMTP id jBDEZ3To017384
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 13 Dec 2005 06:35:03 -0800
+Received: from wvmlir2.mail.xerox.com (localhost [127.0.0.1])
+	by wvmlir2.mail.xerox.com (8.13.4/8.13.1) with ESMTP id jBDEYac2031640
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 13 Dec 2005 06:34:36 -0800
+Received: from usa7061gw02.na.xerox.net (usa7061gw02.na.xerox.net [13.151.32.4])
+	by wvmlir2.mail.xerox.com (8.13.4/8.13.1) with ESMTP id jBDEYahD031615
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 13 Dec 2005 06:34:36 -0800
+Content-class: urn:content-classes:message
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -25,41 +35,19 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Andrew Morton <akpm@osdl.org>
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-updatescrollmode() must not select ywrap scrolling if
-divides(vc->vc_font.height, yres) is not true as this is not
-supported by the actual ywrap scrolling code.
+In the vanilla 2.4.20 kernel version of fbmem.c, the function
+fb_write() returns zero if the framebuffer size (fix.smem_size)
+is zero, instead of -ENOSPC. This causes a normal user program
+to loop forever.
 
-The bug is triggered with e.g. mode 800x600, vxres 1024,
-vyres 8192, bpp 8, font dimensions 8x16, 8Mb video ram
-and FBINFO_HWACCEL_YWRAP set. If those conditions
-are met, scrolling is broken and garbage is permanently
-displayed at the bottom of the screen.
+Looking at the code for vanilla 2.6.10 and 2.6.11, the situation
+is complicated by the new info.screen_size and kmalloc-ing a
+buffer, but the bug is still there.
 
-No regression, no possible side effects.
-
-Definitely needed by cyblafb and probably needed by amifb.
-
-Signed-off-by: Knut Petersen <Knut_Petersen@t-online.de>
-
-diff -uprN -X linux/Documentation/dontdiff -x '*.bak' -x '*.ctx' linuxorig/drivers/video/console/fbcon.c linux/drivers/video/console/fbcon.c
---- linuxorig/drivers/video/console/fbcon.c	2005-12-13 13:09:56.000000000 +0100
-+++ linux/drivers/video/console/fbcon.c	2005-12-13 13:55:20.000000000 +0100
-@@ -1968,7 +1968,8 @@ static __inline__ void updatescrollmode(
- 		divides(ypan, vc->vc_font.height) && vyres > yres;
- 	int good_wrap = (cap & FBINFO_HWACCEL_YWRAP) &&
- 		divides(ywrap, vc->vc_font.height) &&
--		divides(vc->vc_font.height, vyres);
-+		divides(vc->vc_font.height, vyres) &&
-+		divides(vc->vc_font.height, yres);
- 	int reading_fast = cap & FBINFO_READS_FAST;
- 	int fast_copyarea = (cap & FBINFO_HWACCEL_COPYAREA) &&
- 		!(cap & FBINFO_HWACCEL_DISABLED);
-
-
+Clive
 
 
 -------------------------------------------------------

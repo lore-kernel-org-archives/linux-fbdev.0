@@ -1,24 +1,24 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: write() to zero length framebuffer -- bug
- report
-Date: Tue, 13 Dec 2005 23:36:35 +0800
-Message-ID: <439EEA83.90204@gmail.com>
-References: <35786B99AB3FDC45A8215724617919736D918C@gbrwgceumf01.eu.xerox.net>
+Subject: Re: [PATCH 1/1: 2.6.15-rc5-git3] Disable ywrap if not supported by
+ fbcon scrolling code
+Date: Tue, 13 Dec 2005 23:43:55 +0800
+Message-ID: <439EEC3B.1050603@gmail.com>
+References: <439ECBE8.5090002@t-online.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EmCCz-0002uk-Nj
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 13 Dec 2005 07:36:53 -0800
-Received: from zproxy.gmail.com ([64.233.162.201])
+	id 1EmCJz-0003PU-8g
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 13 Dec 2005 07:44:07 -0800
+Received: from zproxy.gmail.com ([64.233.162.198])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EmCCv-0003VC-6m
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 13 Dec 2005 07:36:53 -0800
-Received: by zproxy.gmail.com with SMTP id r28so1699082nza
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 13 Dec 2005 07:36:46 -0800 (PST)
-In-Reply-To: <35786B99AB3FDC45A8215724617919736D918C@gbrwgceumf01.eu.xerox.net>
+	id 1EmCJx-0002pX-VV
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 13 Dec 2005 07:44:07 -0800
+Received: by zproxy.gmail.com with SMTP id j2so1761054nzf
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 13 Dec 2005 07:44:05 -0800 (PST)
+In-Reply-To: <439ECBE8.5090002@t-online.de>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,22 +30,26 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: "Jenkins, Clive" <Clive.Jenkins@xerox.com>
+To: Knut Petersen <Knut_Petersen@t-online.de>
+Cc: Andrew Morton <akpm@osdl.org>, Geert Uytterhoeven <geert@linux-m68k.org>, linux-fbdev-devel@lists.sourceforge.net
 
-Jenkins, Clive wrote:
-> In the vanilla 2.4.20 kernel version of fbmem.c, the function
-> fb_write() returns zero if the framebuffer size (fix.smem_size)
-> is zero, instead of -ENOSPC. This causes a normal user program
-> to loop forever.
+Knut Petersen wrote:
+> updatescrollmode() must not select ywrap scrolling if
+> divides(vc->vc_font.height, yres) is not true as this is not
+> supported by the actual ywrap scrolling code.
 > 
-> Looking at the code for vanilla 2.6.10 and 2.6.11, the situation
-> is complicated by the new info.screen_size and kmalloc-ing a
-> buffer, but the bug is still there.
-
-Thank you. Will fix.
-
-Tony
+> The bug is triggered with e.g. mode 800x600, vxres 1024,
+> vyres 8192, bpp 8, font dimensions 8x16, 8Mb video ram
+> and FBINFO_HWACCEL_YWRAP set. If those conditions
+> are met, scrolling is broken and garbage is permanently
+> displayed at the bottom of the screen.
+> 
+> No regression, no possible side effects.
+> 
+> Definitely needed by cyblafb and probably needed by amifb.
+> 
+> Signed-off-by: Knut Petersen <Knut_Petersen@t-online.de>
+Acked-by: Antonino Daplas <adaplas@pol.net>
 
 
 -------------------------------------------------------

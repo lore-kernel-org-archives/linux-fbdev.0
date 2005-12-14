@@ -1,33 +1,22 @@
-From: Luc Verhaegen <libv@skynet.be>
-Subject: Re: Re: [PATCH 1/1: 2.6.15-rc5-git3] Fixed and updated CyblaFB
-Date: Wed, 14 Dec 2005 16:18:24 +0100
-Message-ID: <20051214151824.GA9248@skynet.be>
-References: <439EF4CB.8030007@t-online.de> <20051213142054.4fd59226.akpm@osdl.org> <43A01969.6050109@t-online.de> <Pine.LNX.4.62.0512141604281.498@pademelon.sonytel.be>
+From: Knut Petersen <Knut_Petersen@t-online.de>
+Subject: Re: Re: [PATCH 1/1: 2.6.15-rc5-git3] Fixed and
+ updated CyblaFB
+Date: Wed, 14 Dec 2005 19:41:53 +0100
+Message-ID: <43A06771.6060808@t-online.de>
+References: <439EF4CB.8030007@t-online.de> <43A03568.6010602@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EmYPD-00060W-6Y
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Dec 2005 07:18:59 -0800
-Received: from outmx014.isp.belgacom.be ([195.238.4.69])
-	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44)
-	id 1EmYPB-0005yu-Jr
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Dec 2005 07:18:59 -0800
-Received: from outmx014.isp.belgacom.be (localhost [127.0.0.1])
-        by outmx014.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with ESMTP id jBEFIfjL030874
-        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 14 Dec 2005 16:18:42 +0100
-        (envelope-from <libv@skynet.be>)
-Received: from death (224-141.246.81.adsl.skynet.be [81.246.141.224])
-        by outmx014.isp.belgacom.be (8.12.11/8.12.11/Skynet-OUT-2.22) with ESMTP id jBEFIOBb030661
-        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 14 Dec 2005 16:18:24 +0100
-        (envelope-from <libv@skynet.be>)
-Received: from death by death with local (Exim 3.36 #1 (Debian))
-	id 1EmYOe-0002PP-00
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 14 Dec 2005 16:18:24 +0100
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.62.0512141604281.498@pademelon.sonytel.be>
+	id 1EmbYo-00038q-Mt
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Dec 2005 10:41:06 -0800
+Received: from mailout06.sul.t-online.com ([194.25.134.19])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1EmbYn-00071F-Ts
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Dec 2005 10:41:06 -0800
+In-Reply-To: <43A03568.6010602@gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -38,49 +27,123 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, Dec 14, 2005 at 04:05:07PM +0100, Geert Uytterhoeven wrote:
-> On Wed, 14 Dec 2005, Knut Petersen wrote:
-> > Andrew Morton wrote:
-> > > Masking pointers to 32 bits.  Is this driver supposed to be run on 64-bit
-> > > machines?
-> > >  
-> > Never can it be run on anything else but 32 bit machines because this graphics
-> > core is
-> > integrated in the VIA VT8601A northbridge. So the cpu is either a VIA C3,
-> > a VIA Eden, a Pentium III or a Celeron. It is planned to add support for
-> > closely related
-> > graphics cores, but also those can be run with nothing but 32 bit cpus,
-> > starting from the
-> > first pentium. Even if this driver would be compiled into a 64 bit kernel, the
-> > imageblit function never would be executed as the init code never will find
-> > the
-> > cyberblade/i1 graphics core in such a system.
-> 
-> Until VIA adds 64-bit support to it's C3 line...
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
-They still don't have the C7 out. And they've become pretty silent ever 
-since their big but empty press release about 64-bit in oktober of 2004.
+Antonino Daplas wrote:
 
-If 64bit every really happens for VIA, then it won't be tied to the 
-PLE133 or a trident descendant.
+>But current users of cyblafb will be affected if your patch
+>does have a problem.
+>
+> =20
+>
+They definitely will be affected when they lock their system
+while trying rotation options ...
 
-I'd be more worried about this getting ported to the XGI V3, but afaik 
-XGI is not as nice a player as it originally made out to be.
- 
-Luc Verhaegen.
-http://www.livejournal.com/users/libv/
+>>+    // That should never happen, but it would be fatal
+>>   =20
+>>
+>
+>It won't :-)
+>
+> =20
+>
+The graphics engine would not react kindly, and it does not really hurt.
+
+>>+    if (image->width =3D=3D 0 || image->height =3D=3D 0) {
+>>+        output("imageblit: width/height 0 detected\n");
+>>+        return;
+>>+    }
+>>+
+>>+    if (bpp < 8 || bpp > 32 || bpp % 8 !=3D 0 ||
+>>+                   info->pixmap.scan_align > 4 ) {
+>>   =20
+>>
+>Why this paranoid check?  The check_var() function already
+>guaranteed that these conditions will not happen.
+>
+> =20
+>
+Yes, I am a bit paranoid. That paranoia led to the discovery of some bugs
+nobody knew or cared about. But you are right, this check might be a bit =
+too
+paranoid.
+
+>Do you really have to support scan_align 1 and 2?  Why not just stick
+>with scan_align of 4, the code is so much easier to understand? I can't
+>find anything useful with this, even for debugging.
+>
+> =20
+>
+Well, you are shure that there is really not a single bug left in the=20
+bitmap construction
+code? And that the code will never be touched again because it already=20
+is optimal? I
+think support for all alignment possibilities will be handy in the near=20
+future, and
+although it could be hidden by an #ifdef or stay a private patch, I=20
+prefer to include it.
+
+Currently bitmap construction takes longer than blitting the image to=20
+the screen with
+cyblafb, and I think I will have a very close look at that code soon.
+
+BTW, something fundamental: Isn=B4t the pixelmap alignment really a=20
+property of the
+image bitmap like the depth of the image data?
+
+>>+    // try to be smart about (x|y)res(_virtual) problems.
+>>+    //
+>>+    if (var->xres % 8 !=3D 0)
+>>        return -EINVAL;
+>>   =20
+>>
+>
+>Isn't this too much?  Why not var->xres =3D (var->xres + 7) & ~7?
+>
+> =20
+>
+Do you really think that this is a good idea? I would like to ease the=20
+use of
+e.g. fbset in scripts by returning -EINVAL when something as fundamental =
+as
+the selected xres is not acceptable. Ok, it=B4s always possible to parse=20
+the output
+of fbset -s  in those cases.
+
+>>+    if (var->xres_virtual % 8 !=3D 0)
+>>+        var->xres_virtual &=3D ~7;
+>>   =20
+>>
+>
+>Or just var->xres_virtual &=3D ~7 without the if (...)
+> =20
+>
+Yes. That saves a few bytes.
+
+>Wrong boolean check?  Should be if (vesafb & 4). Or might as
+>well get rid of this check, it's redundant.
+>
+>Shouldn't this be if (vesafb & 4)?
+> =20
+>
+>and this...
+>
+> =20
+>
+>and this...?
+> =20
+>
+No, no, no, no.
+
+cu,
+ Knut
 
 
 -------------------------------------------------------
-This SF.net email is sponsored by: Splunk Inc. Do you grep through log files
+This SF.net email is sponsored by: Splunk Inc. Do you grep through log fi=
+les
 for problems?  Stop!  Download the new AJAX search engine that makes
 searching your log files as easy as surfing the  web.  DOWNLOAD SPLUNK!
-http://ads.osdn.com/?ad_id=7637&alloc_id=16865&op=click
+http://ads.osdn.com/?ad_id=3D7637&alloc_id=3D16865&op=3Dclick

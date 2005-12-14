@@ -1,22 +1,22 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH 1/1: 2.6.15-rc5-git3] Fixed and updated CyblaFB
-Date: Tue, 13 Dec 2005 14:20:54 -0800
-Message-ID: <20051213142054.4fd59226.akpm@osdl.org>
-References: <439EF4CB.8030007@t-online.de>
+From: Knut Petersen <Knut_Petersen@t-online.de>
+Subject: Re: Re: [PATCH 1/1: 2.6.15-rc5-git3] Fixed and
+ updated CyblaFB
+Date: Wed, 14 Dec 2005 14:08:57 +0100
+Message-ID: <43A01969.6050109@t-online.de>
+References: <439EF4CB.8030007@t-online.de> <20051213142054.4fd59226.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EmIWM-0003kV-K2
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 13 Dec 2005 14:21:18 -0800
-Received: from smtp.osdl.org ([65.172.181.4])
-	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44)
-	id 1EmIWK-00025s-0u
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 13 Dec 2005 14:21:18 -0800
-In-Reply-To: <439EF4CB.8030007@t-online.de>
+	id 1EmXzb-0003uH-8b
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Dec 2005 06:52:31 -0800
+Received: from mailout10.sul.t-online.com ([194.25.134.21])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1EmXza-0007L3-SC
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 14 Dec 2005 06:52:31 -0800
+In-Reply-To: <20051213142054.4fd59226.akpm@osdl.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,122 +27,79 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Knut Petersen <Knut_Petersen@t-online.de>
-Cc: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Knut Petersen <Knut_Petersen@t-online.de> wrote:
+Andrew Morton wrote:
+
+>Well yes, but effects on cyblafb are possible!  We'd be putting new and
+>un-tested-in-linus's-tree code into the tree at the last minute.
 >
-> With kernel 2.6.15-rc5-git3 all patches needed by this new version
-> of cyblafb reached the main line kernel. So here it is.
-> 
-> Main advantages:
-> ============
->    - vxres > xres support
->    - ywrap support
->    - much faster for almost all modes (e.g. 1280x1024-16bpp
->       draws more than 41 full screens of text instead of about 25
->       full screens of text per second on authors Epia 5000)
->    - module init/exit code fixed
->    - bugs triggered by console rotation fixed
->    - lots of minor improvements
->    - startup modes suitable for high performance scrolling
->       in all directions
-> 
-> As only one single graphics core is affected, there should be no
-> reason not to include it in 2.6.15. No side effects are possible.
+>It would hardly be a calamity if we were to merge this into 2.6.15 of
+>course, but the principle which you describe ain't right.
+> =20
+>
+I write and maintain cyblafb because vesafb is really too slow on my =20
+532 Mhz
+system.
 
-Well yes, but effects on cyblafb are possible!  We'd be putting new and
-un-tested-in-linus's-tree code into the tree at the last minute.
+All changes to cyblafb fall into the following categories:
 
-It would hardly be a calamity if we were to merge this into 2.6.15 of
-course, but the principle which you describe ain't right.
+    -  code to take advantage of all available video memory and thus to=20
+allow
+        ywrap scrolling.
+    - code to allow vxres > xres and thus to allow xwrap scrolling while
+       rotation is set to 1 or 3
+    - code that helps in testing the upper framebuffer layers. As far as=20
+I know,
+       cyblafb is the only driver that can be configured at boot or=20
+module load
+       time to request image data with 8, 16 or 32 bit image data alignme=
+nt.
+    - bug fixes
 
-> +static int basestride = 0;
+I use the cyblafb framebuffer console for about 80% of my work. Any bug=20
+in the first
+two categories would be immediately recognized by either a locked PC or=20
+display
+corruptions, the code of the third category has been seriously tested,=20
+and there is also
+no real possibility of remaining bugs as these also would be either=20
+visible or would
+lock the system immediately.
 
-That consumes storage in vmlinux or cylbafb.ko.  I'll remove the `= 0'.
+I don=B4t know of any cyblafb user that is running the -mm kernels, so=20
+testing the
+changes there does conform to principles but does not help much in realit=
+y.
 
-> -	int direction;
-> -
-> -	s1 = point(ca->sx,ca->sy);
-> -	s2 = point(ca->sx+ca->width-1,ca->sy+ca->height-1);
-> -	d1 = point(ca->dx,ca->dy);
-> -	d2 = point(ca->dx+ca->width-1,ca->dy+ca->height-1);
-> -	if ((ca->sy > ca->dy) || ((ca->sy == ca->dy) && (ca->sx > ca->dx)))
-> -		direction = 0;
-> -	else
-> -		direction = 2;
-> -
-> -	cyblafb_sync(info);
-> +        __u32 s1,s2,d1,d2;
-> +        int direction;
->  
-> -	out32(GE44,0xa0000000|1<<19|1<<2|direction);
-> -	out32(GE00,direction?s2:s1);
-> -	out32(GE04,direction?s1:s2);
-> -	out32(GE08,direction?d2:d1);
-> -	out32(GE0C,direction?d1:d2);
-> +        s1 = point(ca->sx,0);
-> +        s2 = point(ca->sx+ca->width-1,ca->height-1);
-> +        d1 = point(ca->dx,0);
-> +        d2 = point(ca->dx+ca->width-1,ca->height-1);
-> +
-> +        if ((ca->sy > ca->dy) || ((ca->sy == ca->dy) && (ca->sx > ca->dx)))
-> +                direction = 0;
-> +        else
-> +                direction = 2;
-> +
-> +	out32(GEB8,basestride | ((ca->dy * info->var.xres_virtual *
-> +				info->var.bits_per_pixel) >> 6));
-> +	out32(GEC8,basestride | ((ca->sy * info->var.xres_virtual *
-> +				info->var.bits_per_pixel) >> 6 ));
-> +        out32(GE44,0xa0000000|1<<19|1<<2|direction);
-> +        out32(GE00,direction?s2:s1);
-> +        out32(GE04,direction?s1:s2);
-> +        out32(GE08,direction?d2:d1);
-> +        out32(GE0C,direction?d1:d2);
+>Masking pointers to 32 bits.  Is this driver supposed to be run on 64-bi=
+t
+>machines?
+> =20
+>
+Never can it be run on anything else but 32 bit machines because this=20
+graphics core is
+integrated in the VIA VT8601A northbridge. So the cpu is either a VIA C3,
+a VIA Eden, a Pentium III or a Celeron. It is planned to add support for=20
+closely related
+graphics cores, but also those can be run with nothing but 32 bit cpus,=20
+starting from the
+first pentium. Even if this driver would be compiled into a 64 bit=20
+kernel, the
+imageblit function never would be executed as the init code never will=20
+find the
+cyberblade/i1 graphics core in such a system.
 
-The above hunk is full of whitespace damage (spaces instead of tabs).  I
-fixed that, and other places like it.
+Sorry for the whitespace damage.
 
-> -			index+=3;
-> -			break;
-> +	if (likely(info->pixmap.scan_align == 4)) {
-> +		int dds = ((image->width + 31) >> 5) * image->height;
-> +		while (dds--)
-> +			out32(GE9C,*pd++);
-> +	} else {
-> +		int i, j, dds = image->width / 32, bits = image->width % 32;
-> +		for (i=0; i<image->height; i++) {
-> +			for (j=0; j<dds; j++)
-> +				out32(GE9C, *pd++);
-> +			if(bits != 0) {
-> +				out32(GE9C, *pd);
-> +				if (info->pixmap.scan_align == 2)
-> +					pd = (u32*)((u32) pd +
-> +						(((bits + 15) >> 4) << 1) );
-> +				else
-> +					pd = (u32*)((u32) pd +
-> +						((bits + 7) >> 3));
-> +			}
-
-Masking pointers to 32 bits.  Is this driver supposed to be run on 64-bit
-machines?
-
-> +	info->pixmap.addr = kmalloc(CYBLAFB_PIXMAPSIZE, GFP_KERNEL);
-> +	if (!info->pixmap.addr) {
-> +		output("allocation of pixmap buffer failed!\n");
-> +		goto errout_alloc_pixmap;
-> +	}
-> +	memset(info->pixmap.addr, 0, CYBLAFB_PIXMAPSIZE);
-
-I'll switch this to kzalloc().
-
-
+cu,
+ knut
 
 
 -------------------------------------------------------
-This SF.net email is sponsored by: Splunk Inc. Do you grep through log files
+This SF.net email is sponsored by: Splunk Inc. Do you grep through log fi=
+les
 for problems?  Stop!  Download the new AJAX search engine that makes
 searching your log files as easy as surfing the  web.  DOWNLOAD SPLUNK!
-http://ads.osdn.com/?ad_id=7637&alloc_id=16865&op=click
+http://ads.osdn.com/?ad_id=3D7637&alloc_id=3D16865&op=3Dclick

@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 9/9] fbdev: Fix typos in Kconfig
-Date: Wed, 21 Dec 2005 15:17:52 +0800
-Message-ID: <43A901A0.4010802@gmail.com>
+Subject: [PATCH 7/9] fbcon: Code cleanups
+Date: Tue, 20 Dec 2005 20:50:47 +0800
+Message-ID: <43A7FE27.3020009@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EoyFy-0002F1-KY
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Dec 2005 23:19:26 -0800
+	id 1EoyFM-0002Ct-LA
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Dec 2005 23:18:48 -0800
 Received: from zproxy.gmail.com ([64.233.162.205])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EoyFx-0005Kv-BN
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Dec 2005 23:19:26 -0800
+	id 1EoyFL-0005Kv-2z
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Dec 2005 23:18:48 -0800
 Received: by zproxy.gmail.com with SMTP id z3so76970nzf
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 20 Dec 2005 23:19:25 -0800 (PST)
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 20 Dec 2005 23:18:46 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,42 +28,119 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
-
-FB: Fix typoes in Kconfig.
+- replace kmalloc with kzalloc
+- remove repeated define (FONTCHHCNT)
+- remove unneeded local variable (redraw) in ypan_{up|down}_redraw
+- add and delete cursor timer in fbcon_switch() if old_info != info
     
-Signed-off-by: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/Kconfig |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/console/fbcon.c        |   27 +++++++++++----------------
+ drivers/video/console/fbcon_rotate.h |    2 --
+ 2 files changed, 11 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index d6940ec..276601c 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -1370,7 +1370,7 @@ config FB_PXA
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index 9740a66..2edd58f 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -687,13 +687,12 @@ static int con2fb_acquire_newinfo(struct
+ 		err = -ENODEV;
  
- 	  This driver is also available as a module ( = code which can be
- 	  inserted and removed from the running kernel whenever you want). The
--	  module will be called vfb. If you want to compile it as a module,
-+	  module will be called pxafb. If you want to compile it as a module,
- 	  say M here and read <file:Documentation/modules.txt>.
+ 	if (!err) {
+-		ops = kmalloc(sizeof(struct fbcon_ops), GFP_KERNEL);
++		ops = kzalloc(sizeof(struct fbcon_ops), GFP_KERNEL);
+ 		if (!ops)
+ 			err = -ENOMEM;
+ 	}
  
- 	  If unsure, say N.
-@@ -1403,7 +1403,7 @@ config FB_W100
+ 	if (!err) {
+-		memset(ops, 0, sizeof(struct fbcon_ops));
+ 		info->fbcon_par = ops;
+ 		set_blitting_type(vc, info);
+ 	}
+@@ -919,13 +918,12 @@ static const char *fbcon_startup(void)
+ 		return NULL;
+ 	}
  
- 	  This driver is also available as a module ( = code which can be
- 	  inserted and removed from the running kernel whenever you want). The
--	  module will be called vfb. If you want to compile it as a module,
-+	  module will be called w100fb. If you want to compile it as a module,
- 	  say M here and read <file:Documentation/modules.txt>.
+-	ops = kmalloc(sizeof(struct fbcon_ops), GFP_KERNEL);
++	ops = kzalloc(sizeof(struct fbcon_ops), GFP_KERNEL);
+ 	if (!ops) {
+ 		module_put(owner);
+ 		return NULL;
+ 	}
  
- 	  If unsure, say N.
-
+-	memset(ops, 0, sizeof(struct fbcon_ops));
+ 	ops->currcon = -1;
+ 	ops->graphics = 1;
+ 	ops->cur_rotate = -1;
+@@ -1408,16 +1406,13 @@ static __inline__ void ypan_up_redraw(st
+ 	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
+ 	struct fbcon_ops *ops = info->fbcon_par;
+ 	struct display *p = &fb_display[vc->vc_num];
+-	int redraw = 0;
+ 
+ 	p->yscroll += count;
++
+ 	if (p->yscroll > p->vrows - vc->vc_rows) {
+ 		p->yscroll -= p->vrows - vc->vc_rows;
+-		redraw = 1;
+-	}
+-
+-	if (redraw)
+ 		fbcon_redraw_move(vc, p, t + count, vc->vc_rows - count, t);
++	}
+ 
+ 	ops->var.xoffset = 0;
+ 	ops->var.yoffset = p->yscroll * vc->vc_font.height;
+@@ -1459,16 +1454,13 @@ static __inline__ void ypan_down_redraw(
+ 	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
+ 	struct fbcon_ops *ops = info->fbcon_par;
+ 	struct display *p = &fb_display[vc->vc_num];
+-	int redraw = 0;
+ 
+ 	p->yscroll -= count;
++
+ 	if (p->yscroll < 0) {
+ 		p->yscroll += p->vrows - vc->vc_rows;
+-		redraw = 1;
+-	}
+-
+-	if (redraw)
+ 		fbcon_redraw_move(vc, p, t, vc->vc_rows - count, t + count);
++	}
+ 
+ 	ops->var.xoffset = 0;
+ 	ops->var.yoffset = p->yscroll * vc->vc_font.height;
+@@ -2105,8 +2097,11 @@ static int fbcon_switch(struct vc_data *
+ 				 info->flags & FBINFO_MISC_ALWAYS_SETPAR)) {
+ 		if (info->fbops->fb_set_par)
+ 			info->fbops->fb_set_par(info);
+-		fbcon_del_cursor_timer(old_info);
+-		fbcon_add_cursor_timer(info);
++
++		if (old_info != info) {
++			fbcon_del_cursor_timer(old_info);
++			fbcon_add_cursor_timer(info);
++		}
+ 	}
+ 
+ 	set_blitting_type(vc, info);
+diff --git a/drivers/video/console/fbcon_rotate.h b/drivers/video/console/fbcon_rotate.h
+index 1b8f92f..75be5ce 100644
+--- a/drivers/video/console/fbcon_rotate.h
++++ b/drivers/video/console/fbcon_rotate.h
+@@ -11,8 +11,6 @@
+ #ifndef _FBCON_ROTATE_H
+ #define _FBCON_ROTATE_H
+ 
+-#define FNTCHARCNT(fd)	(((int *)(fd))[-3])
+-
+ #define GETVYRES(s,i) ({                           \
+         (s == SCROLL_REDRAW || s == SCROLL_MOVE) ? \
+         (i)->var.yres : (i)->var.yres_virtual; })
 
 
 

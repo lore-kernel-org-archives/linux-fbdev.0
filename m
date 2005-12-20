@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 7/9] fbcon: Code cleanups
-Date: Tue, 20 Dec 2005 20:50:47 +0800
-Message-ID: <43A7FE27.3020009@gmail.com>
+Subject: [PATCH 8/9] fbdev: Replace kmalloc with kzalloc
+Date: Tue, 20 Dec 2005 20:50:56 +0800
+Message-ID: <43A7FE30.4000606@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EoyFM-0002Ct-LA
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Dec 2005 23:18:48 -0800
+	id 1EoyFj-0002EI-G2
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Dec 2005 23:19:11 -0800
 Received: from zproxy.gmail.com ([64.233.162.205])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EoyFL-0005Kv-2z
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Dec 2005 23:18:48 -0800
+	id 1EoyFi-0005Kv-4D
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Dec 2005 23:19:11 -0800
 Received: by zproxy.gmail.com with SMTP id z3so76970nzf
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 20 Dec 2005 23:18:46 -0800 (PST)
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 20 Dec 2005 23:19:09 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,117 +30,87 @@ Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-- replace kmalloc with kzalloc
-- remove repeated define (FONTCHHCNT)
-- remove unneeded local variable (redraw) in ypan_{up|down}_redraw
-- add and delete cursor timer in fbcon_switch() if old_info != info
+Replace kmalloc with kzalloc
     
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/console/fbcon.c        |   27 +++++++++++----------------
- drivers/video/console/fbcon_rotate.h |    2 --
- 2 files changed, 11 insertions(+), 18 deletions(-)
+ drivers/video/fbcvt.c    |    3 +--
+ drivers/video/fbmon.c    |    3 +--
+ drivers/video/fbsysfs.c  |    5 +++--
+ drivers/video/vgastate.c |    5 +++--
+ 4 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index 9740a66..2edd58f 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -687,13 +687,12 @@ static int con2fb_acquire_newinfo(struct
- 		err = -ENODEV;
+diff --git a/drivers/video/fbcvt.c b/drivers/video/fbcvt.c
+index 0b6af00..ac90883 100644
+--- a/drivers/video/fbcvt.c
++++ b/drivers/video/fbcvt.c
+@@ -214,12 +214,11 @@ static void fb_cvt_print_name(struct fb_
+ {
+ 	u32 pixcount, pixcount_mod;
+ 	int cnt = 255, offset = 0, read = 0;
+-	u8 *buf = kmalloc(256, GFP_KERNEL);
++	u8 *buf = kzalloc(256, GFP_KERNEL);
  
- 	if (!err) {
--		ops = kmalloc(sizeof(struct fbcon_ops), GFP_KERNEL);
-+		ops = kzalloc(sizeof(struct fbcon_ops), GFP_KERNEL);
- 		if (!ops)
- 			err = -ENOMEM;
- 	}
+ 	if (!buf)
+ 		return;
  
- 	if (!err) {
--		memset(ops, 0, sizeof(struct fbcon_ops));
- 		info->fbcon_par = ops;
- 		set_blitting_type(vc, info);
- 	}
-@@ -919,13 +918,12 @@ static const char *fbcon_startup(void)
+-	memset(buf, 0, 256);
+ 	pixcount = (cvt->xres * (cvt->yres/cvt->interlace))/1000000;
+ 	pixcount_mod = (cvt->xres * (cvt->yres/cvt->interlace)) % 1000000;
+ 	pixcount_mod /= 1000;
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index 0ef75a9..7c74e73 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -528,10 +528,9 @@ static struct fb_videomode *fb_create_mo
+ 	unsigned char *block;
+ 	int num = 0, i;
+ 
+-	mode = kmalloc(50 * sizeof(struct fb_videomode), GFP_KERNEL);
++	mode = kzalloc(50 * sizeof(struct fb_videomode), GFP_KERNEL);
+ 	if (mode == NULL)
  		return NULL;
- 	}
+-	memset(mode, 0, 50 * sizeof(struct fb_videomode));
  
--	ops = kmalloc(sizeof(struct fbcon_ops), GFP_KERNEL);
-+	ops = kzalloc(sizeof(struct fbcon_ops), GFP_KERNEL);
- 	if (!ops) {
- 		module_put(owner);
+ 	if (edid == NULL || !edid_checksum(edid) || 
+ 	    !edid_check_header(edid)) {
+diff --git a/drivers/video/fbsysfs.c b/drivers/video/fbsysfs.c
+index 3514703..6d26057 100644
+--- a/drivers/video/fbsysfs.c
++++ b/drivers/video/fbsysfs.c
+@@ -43,10 +43,11 @@ struct fb_info *framebuffer_alloc(size_t
+ 	if (size)
+ 		fb_info_size += PADDING;
+ 
+-	p = kmalloc(fb_info_size + size, GFP_KERNEL);
++	p = kzalloc(fb_info_size + size, GFP_KERNEL);
++
+ 	if (!p)
  		return NULL;
- 	}
- 
--	memset(ops, 0, sizeof(struct fbcon_ops));
- 	ops->currcon = -1;
- 	ops->graphics = 1;
- 	ops->cur_rotate = -1;
-@@ -1408,16 +1406,13 @@ static __inline__ void ypan_up_redraw(st
- 	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
- 	struct fbcon_ops *ops = info->fbcon_par;
- 	struct display *p = &fb_display[vc->vc_num];
--	int redraw = 0;
- 
- 	p->yscroll += count;
+-	memset(p, 0, fb_info_size + size);
 +
- 	if (p->yscroll > p->vrows - vc->vc_rows) {
- 		p->yscroll -= p->vrows - vc->vc_rows;
--		redraw = 1;
--	}
--
--	if (redraw)
- 		fbcon_redraw_move(vc, p, t + count, vc->vc_rows - count, t);
-+	}
+ 	info = (struct fb_info *) p;
  
- 	ops->var.xoffset = 0;
- 	ops->var.yoffset = p->yscroll * vc->vc_font.height;
-@@ -1459,16 +1454,13 @@ static __inline__ void ypan_down_redraw(
- 	struct fb_info *info = registered_fb[con2fb_map[vc->vc_num]];
- 	struct fbcon_ops *ops = info->fbcon_par;
- 	struct display *p = &fb_display[vc->vc_num];
--	int redraw = 0;
+ 	if (size)
+diff --git a/drivers/video/vgastate.c b/drivers/video/vgastate.c
+index d9e01da..15179ec 100644
+--- a/drivers/video/vgastate.c
++++ b/drivers/video/vgastate.c
+@@ -356,10 +356,11 @@ int save_vga(struct vgastate *state)
+ {
+ 	struct regstate *saved;
  
- 	p->yscroll -= count;
+-	saved = kmalloc(sizeof(struct regstate), GFP_KERNEL);
++	saved = kzalloc(sizeof(struct regstate), GFP_KERNEL);
 +
- 	if (p->yscroll < 0) {
- 		p->yscroll += p->vrows - vc->vc_rows;
--		redraw = 1;
--	}
--
--	if (redraw)
- 		fbcon_redraw_move(vc, p, t, vc->vc_rows - count, t + count);
-+	}
- 
- 	ops->var.xoffset = 0;
- 	ops->var.yoffset = p->yscroll * vc->vc_font.height;
-@@ -2105,8 +2097,11 @@ static int fbcon_switch(struct vc_data *
- 				 info->flags & FBINFO_MISC_ALWAYS_SETPAR)) {
- 		if (info->fbops->fb_set_par)
- 			info->fbops->fb_set_par(info);
--		fbcon_del_cursor_timer(old_info);
--		fbcon_add_cursor_timer(info);
+ 	if (saved == NULL)
+ 		return 1;
+-	memset (saved, 0, sizeof(struct regstate));
 +
-+		if (old_info != info) {
-+			fbcon_del_cursor_timer(old_info);
-+			fbcon_add_cursor_timer(info);
-+		}
- 	}
- 
- 	set_blitting_type(vc, info);
-diff --git a/drivers/video/console/fbcon_rotate.h b/drivers/video/console/fbcon_rotate.h
-index 1b8f92f..75be5ce 100644
---- a/drivers/video/console/fbcon_rotate.h
-+++ b/drivers/video/console/fbcon_rotate.h
-@@ -11,8 +11,6 @@
- #ifndef _FBCON_ROTATE_H
- #define _FBCON_ROTATE_H
- 
--#define FNTCHARCNT(fd)	(((int *)(fd))[-3])
--
- #define GETVYRES(s,i) ({                           \
-         (s == SCROLL_REDRAW || s == SCROLL_MOVE) ? \
-         (i)->var.yres : (i)->var.yres_virtual; })
+ 	state->vidstate = (void *)saved;
+ 		
+ 	if (state->flags & VGA_SAVE_CMAP) {
 
 
 

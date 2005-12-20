@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 5/9] s3c2410fb: cleanup and fix
-Date: Tue, 20 Dec 2005 20:50:20 +0800
-Message-ID: <43A7FE0C.1090105@gmail.com>
+Subject: [PATCH 3/9] nvidiafb: Add boot option 'bpp'
+Date: Tue, 20 Dec 2005 20:49:11 +0800
+Message-ID: <43A7FDC7.9040707@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EoyF5-0002Bx-Gg
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Dec 2005 23:18:31 -0800
+	id 1EoyEj-0002BF-TL
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Dec 2005 23:18:09 -0800
 Received: from zproxy.gmail.com ([64.233.162.201])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EoyF4-0005tJ-49
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Dec 2005 23:18:31 -0800
+	id 1EoyEi-0005tJ-7E
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Dec 2005 23:18:09 -0800
 Received: by zproxy.gmail.com with SMTP id r28so82174nza
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 20 Dec 2005 23:18:29 -0800 (PST)
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 20 Dec 2005 23:18:05 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,65 +28,89 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Arnaud Patard <arnaud.patard@rtp-net.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Arnaud Patard <arnaud.patard@rtp-net.org>
+Add boot/module option 'bpp' so user can specify at what color
+depth to boot into.
     
-Here are some cleanups for the s3c2410fb drivers. It :
-* Removes a buggy call to s3c2410fb_init_registers. There was two calls
-  to this function but the first was done without all initialisations
-  done. No oops but it may confuse some LCDs.
-* Makes two functions static.
-    
-Signed-Off-By: Arnaud Patard <arnaud.patard@rtp-net.org>
-Signed-Off-By: Antonino Daplas <adaplas@pol.net>
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/s3c2410fb.c |   10 ++++------
- 1 files changed, 4 insertions(+), 6 deletions(-)
+ drivers/video/nvidia/nvidia.c |   25 +++++++++++++++++++++----
+ 1 files changed, 21 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/s3c2410fb.c b/drivers/video/s3c2410fb.c
-index ce6e749..1ff78cb 100644
---- a/drivers/video/s3c2410fb.c
-+++ b/drivers/video/s3c2410fb.c
-@@ -552,7 +552,7 @@ static inline void modify_gpio(void __io
-  * s3c2410fb_init_registers - Initialise all LCD-related registers
-  */
+diff --git a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
+index 099d64a..ae6f2ff 100644
+--- a/drivers/video/nvidia/nvidia.c
++++ b/drivers/video/nvidia/nvidia.c
+@@ -428,6 +428,7 @@ static int noaccel __devinitdata = 0;
+ static int noscale __devinitdata = 0;
+ static int paneltweak __devinitdata = 0;
+ static int vram __devinitdata = 0;
++static int bpp __devinitdata = 8;
+ #ifdef CONFIG_MTRR
+ static int nomtrr __devinitdata = 0;
+ #endif
+@@ -1392,24 +1393,36 @@ static int __devinit nvidia_set_fbinfo(s
+ 				 info->monspecs.modedb_len, &info->modelist);
+ 	fb_var_to_videomode(&modedb, &nvidiafb_default_var);
  
--int s3c2410fb_init_registers(struct s3c2410fb_info *fbi)
-+static int s3c2410fb_init_registers(struct s3c2410fb_info *fbi)
- {
- 	unsigned long flags;
++	switch (bpp) {
++	case 0 ... 8:
++		bpp = 8;
++		break;
++	case 9 ... 16:
++		bpp = 16;
++		break;
++	default:
++		bpp = 32;
++		break;
++	}
++
+ 	if (specs->modedb != NULL) {
+ 		struct fb_videomode *modedb;
  
-@@ -634,7 +634,7 @@ static irqreturn_t s3c2410fb_irq(int irq
+ 		modedb = fb_find_best_display(specs, &info->modelist);
+ 		fb_videomode_to_var(&nvidiafb_default_var, modedb);
+-		nvidiafb_default_var.bits_per_pixel = 8;
++		nvidiafb_default_var.bits_per_pixel = bpp;
+ 	} else if (par->fpWidth && par->fpHeight) {
+ 		char buf[16];
  
- static char driver_name[]="s3c2410fb";
+ 		memset(buf, 0, 16);
+ 		snprintf(buf, 15, "%dx%dMR", par->fpWidth, par->fpHeight);
+ 		fb_find_mode(&nvidiafb_default_var, info, buf, specs->modedb,
+-			     specs->modedb_len, &modedb, 8);
++			     specs->modedb_len, &modedb, bpp);
+ 	}
  
--int __init s3c2410fb_probe(struct platform_device *pdev)
-+static int __init s3c2410fb_probe(struct platform_device *pdev)
- {
- 	struct s3c2410fb_info *info;
- 	struct fb_info	   *fbinfo;
-@@ -667,8 +667,6 @@ int __init s3c2410fb_probe(struct platfo
- 	info->fb = fbinfo;
- 	platform_set_drvdata(pdev, fbinfo);
+ 	if (mode_option)
+ 		fb_find_mode(&nvidiafb_default_var, info, mode_option,
+-			     specs->modedb, specs->modedb_len, &modedb, 8);
++			     specs->modedb, specs->modedb_len, &modedb, bpp);
  
--	s3c2410fb_init_registers(info);
+ 	info->var = nvidiafb_default_var;
+ 	info->fix.visual = (info->var.bits_per_pixel == 8) ?
+@@ -1769,6 +1782,8 @@ static int __devinit nvidiafb_setup(char
+ #endif
+ 		} else if (!strncmp(this_opt, "fpdither:", 9)) {
+ 			fpdither = simple_strtol(this_opt+9, NULL, 0);
++		} else if (!strncmp(this_opt, "bpp:", 4)) {
++			bpp = simple_strtoul(this_opt+4, NULL, 0);
+ 		} else
+ 			mode_option = this_opt;
+ 	}
+@@ -1846,7 +1861,9 @@ MODULE_PARM_DESC(vram,
+ 		 "(default=0 - remap entire memory)");
+ module_param(mode_option, charp, 0);
+ MODULE_PARM_DESC(mode_option, "Specify initial video mode");
 -
- 	dprintk("devinit\n");
- 
- 	strcpy(fbinfo->fix.id, driver_name);
-@@ -701,8 +699,8 @@ int __init s3c2410fb_probe(struct platfo
- 	fbinfo->var.yres_virtual    = mach_info->yres.defval;
- 	fbinfo->var.bits_per_pixel  = mach_info->bpp.defval;
- 
--	fbinfo->var.upper_margin    = S3C2410_LCDCON2_GET_VBPD(mregs->lcdcon2) +1;
--	fbinfo->var.lower_margin    = S3C2410_LCDCON2_GET_VFPD(mregs->lcdcon2) +1;
-+	fbinfo->var.upper_margin    = S3C2410_LCDCON2_GET_VBPD(mregs->lcdcon2) + 1;
-+	fbinfo->var.lower_margin    = S3C2410_LCDCON2_GET_VFPD(mregs->lcdcon2) + 1;
- 	fbinfo->var.vsync_len	    = S3C2410_LCDCON2_GET_VSPW(mregs->lcdcon2) + 1;
- 
- 	fbinfo->var.left_margin	    = S3C2410_LCDCON3_GET_HFPD(mregs->lcdcon3) + 1;
++module_param(bpp, int, 0);
++MODULE_PARM_DESC(bpp, "pixel width in bits"
++		 "(default=8)");
+ #ifdef CONFIG_MTRR
+ module_param(nomtrr, bool, 0);
+ MODULE_PARM_DESC(nomtrr, "Disables MTRR support (0 or 1=disabled) "
 
 
 

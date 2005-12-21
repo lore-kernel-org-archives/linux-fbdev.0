@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 6/9] i810fb: Fix suspend and resume hooks
-Date: Tue, 20 Dec 2005 20:50:38 +0800
-Message-ID: <43A7FE1E.4000001@gmail.com>
+Subject: [PATCH 9/9] fbdev: Fix typos in Kconfig
+Date: Wed, 21 Dec 2005 15:17:52 +0800
+Message-ID: <43A901A0.4010802@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EoyFD-0002CX-Ox
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Dec 2005 23:18:39 -0800
-Received: from zproxy.gmail.com ([64.233.162.201])
+	id 1EoyFy-0002F1-KY
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Dec 2005 23:19:26 -0800
+Received: from zproxy.gmail.com ([64.233.162.205])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EoyFD-0005tJ-BD
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Dec 2005 23:18:39 -0800
-Received: by zproxy.gmail.com with SMTP id r28so82174nza
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 20 Dec 2005 23:18:39 -0800 (PST)
+	id 1EoyFx-0005Kv-BN
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 20 Dec 2005 23:19:26 -0800
+Received: by zproxy.gmail.com with SMTP id z3so76970nzf
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 20 Dec 2005 23:19:25 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,116 +28,42 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
 
-The i810fb suspend and resume hooks have suffered bitrot over time.
-Update to current framework, but functionality still not guaranteed to
-work.
+From: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
+
+FB: Fix typoes in Kconfig.
     
+Signed-off-by: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/i810/i810_main.c |   56 ++++++++++++++++++++--------------------
- 1 files changed, 28 insertions(+), 28 deletions(-)
+ drivers/video/Kconfig |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_main.c
-index 4954a8e..266d0ab 100644
---- a/drivers/video/i810/i810_main.c
-+++ b/drivers/video/i810/i810_main.c
-@@ -42,6 +42,7 @@
- #include <linux/pci_ids.h>
- #include <linux/resource.h>
- #include <linux/unistd.h>
-+#include <linux/console.h>
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index d6940ec..276601c 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -1370,7 +1370,7 @@ config FB_PXA
  
- #include <asm/io.h>
- #include <asm/div64.h>
-@@ -1558,35 +1559,28 @@ static int i810fb_suspend(struct pci_dev
- {
- 	struct fb_info *info = pci_get_drvdata(dev);
- 	struct i810fb_par *par = info->par;
--	int blank = 0, prev_state = par->cur_state;
--
--	if (state.event == prev_state)
--		return 0;
+ 	  This driver is also available as a module ( = code which can be
+ 	  inserted and removed from the running kernel whenever you want). The
+-	  module will be called vfb. If you want to compile it as a module,
++	  module will be called pxafb. If you want to compile it as a module,
+ 	  say M here and read <file:Documentation/modules.txt>.
  
- 	par->cur_state = state.event;
+ 	  If unsure, say N.
+@@ -1403,7 +1403,7 @@ config FB_W100
  
--	switch (state.event) {
--	case 1:
--		blank = VESA_VSYNC_SUSPEND;
--		break;
--	case 2:
--		blank = VESA_HSYNC_SUSPEND;
--		break;
--	case 3:
--		blank = VESA_POWERDOWN;
--		break;
--	default:
--		return -EINVAL;
-+	if (state.event == PM_EVENT_FREEZE) {
-+		dev->dev.power.power_state = state;
-+		return 0;
- 	}
--	info->fbops->fb_blank(blank, info);
+ 	  This driver is also available as a module ( = code which can be
+ 	  inserted and removed from the running kernel whenever you want). The
+-	  module will be called vfb. If you want to compile it as a module,
++	  module will be called w100fb. If you want to compile it as a module,
+ 	  say M here and read <file:Documentation/modules.txt>.
  
--	if (!prev_state) { 
--		agp_unbind_memory(par->i810_gtt.i810_fb_memory);
--		agp_unbind_memory(par->i810_gtt.i810_cursor_memory);
--		pci_disable_device(dev);
--	}
-+	acquire_console_sem();
-+	fb_set_suspend(info, 1);
-+
-+	if (info->fbops->fb_sync)
-+		info->fbops->fb_sync(info);
-+
-+	i810fb_blank(FB_BLANK_POWERDOWN, info);
-+	agp_unbind_memory(par->i810_gtt.i810_fb_memory);
-+	agp_unbind_memory(par->i810_gtt.i810_cursor_memory);
-+
- 	pci_save_state(dev);
-+	pci_disable_device(dev);
- 	pci_set_power_state(dev, pci_choose_state(dev, state));
-+	release_console_sem();
- 
- 	return 0;
- }
-@@ -1595,22 +1589,28 @@ static int i810fb_resume(struct pci_dev 
- {
- 	struct fb_info *info = pci_get_drvdata(dev);
- 	struct i810fb_par *par = info->par;
-+	int cur_state = par->cur_state;
-+
-+	par->cur_state = PM_EVENT_ON;
- 
--	if (par->cur_state == 0)
-+	if (cur_state == PM_EVENT_FREEZE) {
-+		pci_set_power_state(dev, PCI_D0);
- 		return 0;
-+	}
- 
--	pci_restore_state(dev);
-+	acquire_console_sem();
- 	pci_set_power_state(dev, PCI_D0);
-+	pci_restore_state(dev);
- 	pci_enable_device(dev);
-+	pci_set_master(dev);
- 	agp_bind_memory(par->i810_gtt.i810_fb_memory,
- 			par->fb.offset);
- 	agp_bind_memory(par->i810_gtt.i810_cursor_memory,
- 			par->cursor_heap.offset);
--
-+	i810fb_set_par(info);
-+	fb_set_suspend (info, 0);
- 	info->fbops->fb_blank(VESA_NO_BLANKING, info);
--
--	par->cur_state = 0;
--
-+	release_console_sem();
- 	return 0;
- }
- /***********************************************************************
+ 	  If unsure, say N.
+
 
 
 

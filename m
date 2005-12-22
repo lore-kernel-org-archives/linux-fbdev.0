@@ -1,28 +1,20 @@
-From: Stuffed Crust <pizza@shaftnet.org>
-Subject: radeonfb: Radeon Mobility X700 (M26) + x86-64 supported?
-Date: Thu, 22 Dec 2005 22:13:33 -0500
-Message-ID: <20051223031333.GA14399@shaftnet.org>
+From: Christian Trefzer <ctrefzer@gmx.de>
+Subject: [PATCH] neofb: take existing display configuration as default
+Date: Thu, 22 Dec 2005 19:49:54 +0100
+Message-ID: <20051222184952.GA1423@hermes.uziel.local>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="+HP7ph2BbKc20aGI"
+	protocol="application/pgp-signature"; boundary="lEGEL1/lMxI0MVQ2"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Epf94-0007TX-Ai
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Dec 2005 21:07:10 -0800
-Received: from rrcs-24-73-230-86.se.biz.rr.com
-	([24.73.230.86] helo=shaft.shaftnet.org ident=[CdRYKMBU8VN0DO2EMK4vz2ma5GRHTwXo])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44)
-	id 1Epf93-00089a-IL
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Dec 2005 21:07:10 -0800
-Received: from shaft.shaftnet.org (localhost [127.0.0.1])
-	by shaft.shaftnet.org (8.12.11/8.12.11) with ESMTP id jBN3DXcr014969
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 22 Dec 2005 22:13:33 -0500
-Received: (from pizza@localhost)
-	by shaft.shaftnet.org (8.12.11/8.12.8/Submit) id jBN3DXtd014966
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Dec 2005 22:13:33 -0500
+	id 1EpVWr-0006GN-HF
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Dec 2005 10:51:05 -0800
+Received: from mxout01.versatel.de ([212.7.152.117])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1EpVWo-00028B-Tz
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Dec 2005 10:51:05 -0800
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -35,147 +27,128 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Antonino Daplas <adaplas@pol.net>, Denis Oliver Kropp <dok@directfb.org>
 
 
---+HP7ph2BbKc20aGI
-Content-Type: text/plain; charset=utf-8
+--lEGEL1/lMxI0MVQ2
+Content-Type: multipart/mixed; boundary="vkogqOf2sHV7VnPd"
 Content-Disposition: inline
+
+
+--vkogqOf2sHV7VnPd
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+
+Hello everyone,
+
+on a Dell Latitude CPi-A I noticed a strangeness wrt. the handling of an
+external monitor by the neomagic framebuffer driver, namely when the
+laptop is docked in a C/Dock II with the lid shut.
+
+A cold boot would result in the BIOS configuring the video chip to use
+the "external monitor only" mode, yet neofb would default to "internal
+LCD only".  An attempt for a quick fix by using the Fn-F8 keystroke to
+toggle the display combination modes resulted in a reproductible hard
+lock, powering down being the only solution.
+
+The attached patch makes neofb probe the register for the current
+display mode, using that value as a default if nothing was specified as
+kernel/module parameter. Any comment welcome.
+
+If I should have wrongly Cc:ed someone, please let me know.
+
+
+Some questions related to neofb:
+I was desperately looking for any kind of specification regarding the
+NeoMagic NM2200 and similar chips - trying to understand what neofb.c
+does in general was possible, but understandind the hardware was not.
+With further information regarding registers and their intended use, I
+might play a little with the chip and driver. Any pointers to stuff on
+the web (google hit almost nil) or attachments would be great. TIA!
+
+
+Further issues I would like to investigate are, also with the CPi-A
+docked in the C/Dock II:
+
+ - Even though "neofb:external" is given on the kernel command line, the
+   external display is not activated. This is not in any way changed by
+   the attached patch. The register values for display mode selection
+   seem correct, though - I verified that by adding printk statements
+   all over the place.
+   It seems that the only missing thing is the final activation of the
+   external display output: toggling the internal/external display three
+   times via the keystroke gives the usual modulo 3 result, changing
+   from (inactive) external-only to internal-only, then dual, then
+   (active) external only. Any hints on where to look in particular?
+
+ - Once the latter is fixed, I might look into pushing the resolution
+   and depth to its limits. Recent X.org drivers put the NM2200 with
+   2560KB to 1280x1024 at 16bpp, vesafb gave me only 8bpp but the
+   resolution was alright. Would it be possible to get a framebuffer of
+   1280x1024x16 out of this thing?
+
+
+One more thing that might be trivial for someone who ate the NeoMagic
+specs for breakfast:
+
+ - Shutting the lid turns off the LCD backlight, but if power saving is
+   configured via setterm, it is flipped back on once the given timeout
+   is reached. In my case, with an open lid the backlight is off after
+   five minutes. With the lid shut, it will be back on after five
+   minutes ; ) Some state-machine-like info about certain registers,
+   anyone?
+
+
+Thanks for your time.
+
+--
+Chris
+
+--vkogqOf2sHV7VnPd
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline; filename="neofb-use-register-value-as-default.patch"
 Content-Transfer-Encoding: quoted-printable
 
-I have an AMD64 laptop with a Radeon Mobility X700, and a 1680x1050
-screen.  I'm trying to get it to work with the "new" radeonfb driver in
-Linux 2.6.15-rc6.  I have not tested the "old" driver.  As best as I can=20
-tell, I'm the second person to ask about this particular bit of=20
-hardware.
+--- a/drivers/video/neofb.c	2005-12-19 19:47:20.000000000 +0100
++++ b/drivers/video/neofb.c	2005-12-22 02:39:32.000000000 +0100
+@@ -852,8 +852,8 @@
+=20
+ 	/* If the user did not specify any display devices, then... */
+ 	if (par->PanelDispCntlReg1 =3D=3D 0x00) {
+-		/* Default to internal (i.e., LCD) only. */
+-		par->PanelDispCntlReg1 |=3D 0x02;
++		/* Default to the value stored in the register. */
++		par->PanelDispCntlReg1 =3D vga_rgfx(NULL, 0x20) & 0x03;
+ 	}
+=20
+ 	/* If we are using a fixed mode, then tell the chip we are. */
 
-The Radeon M26, aka Mobility X700, is supposedly a derivative of the
-desktop X700, aka RV410, which in turn is supposedly derived from the
-R423. (They certainly make this rather confusing..) As configured, mine=20
-has 128 megs of RAM and a PCI ID of 1002:5653. =20
+--vkogqOf2sHV7VnPd--
 
-This deviceid is not present in the device table, but to get it detected=20
-to begin with, I added this to the device table in radeon_base.c:=20
-
-CHIP_DEF(PCI_CHIP_RV410_XX,     R420,   CHIP_HAS_CRTC2 | CHIP_IS_MOBILITY),
-
-And in ati_ids.h:
-
-#define PCI_CHIP_RV410_XX               0x5653
-
-As I mentioned, this chip (M26, RV410) is supposedly closer to the X800=20
-(R420) than the X600 (RV380).  Just in case, I tried setting it to a=20
-'RV380' target as well, with similar results.=20
-
-Basically what happens is that on initialization the screen goes blank=20
-but the system is otherwise responsive.  logging in remotely, I'm able=20
-to get this output from the point where 'modprobe radeonfb' is called:
-
-ACPI: PCI Interrupt 0000:01:00.0[A] -> GSI 18 (level, low) -> IRQ 217
-radeonfb: Retreived PLL infos from BIOS
-radeonfb: Reference=3D0.00 MHz (RefDiv=3D0) Memory=3D200.00 Mhz, System=3D2=
-00.00 MHz
-radeonfb: PLL min 0 max 36438016
-radeonfb: No connector info table detected
-Non-DDC laptop panel detected
-radeonfb: Monitor 1 type LCD found
-radeonfb: Monitor 2 type CRT found
-radeonfb: panel ID string: J=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD&=
-=EF=BF=BDQ
-radeonfb: detected LVDS panel size from BIOS: 9728x1734
-radeondb: BIOS provided dividers will be used
-radeonfb: Assuming panel size 9728x1734
-radeonfb: Dynamic Clock Power Management enabled
-Console: switching to colour frame buffer device 80x25
-radeonfb (0000:01:00.0): ATI Radeon VS=20
-
-Meanwhile, 'modprobe radeonfb panel_yres=3D1050 monitor_layout=3DLVDS=20
-	   ignore_edid=3D1 nomodeset=3D1 force_measure_pll=3D1=20
-           mode_option=3D1280x1024-8@60 force_dfp=3D1' gives:
-
-ACPI: PCI Interrupt 0000:01:00.0[A] -> GSI 18 (level, low) -> IRQ 217
-xtal calculation failed: 4674
-radeonfb: Used default PLL infos
-radeonfb: Reference=3D27.00 MHz (RefDiv=3D12) Memory=3D166.00 Mhz, System=
-=3D166.00 MHz
-radeonfb: PLL min 12000 max 35000
-radeonfb: No connector info table detected
-radeonfb: Monitor 1 type LCD found
-radeonfb: Monitor 2 type no found
-radeonfb: panel ID string: J=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD&=
-=EF=BF=BDQ
-radeonfb: detected LVDS panel size from BIOS: 9728x1734
-radeondb: BIOS provided dividers will be used
-radeonfb: Assuming panel size 9728x1734
-radeonfb: Dynamic Clock Power Management enabled
-Console: switching to colour frame buffer device 80x25
-radeonfb (0000:01:00.0): ATI Radeon VS=20
-
-Mucking with module options has no discernable effect, and the LVDS
-panel information is consistently misdetected, obviously..  It would
-seem that all of the panel information is garbage.  (does fetching the
-panel info from the BIOS work when running on an x86-64 system?)
-
-Finally, the output 'lspci -vv', after the modprobe:
-
-01:00.0 VGA compatible controller: ATI Technologies Inc Radeon Mobility X70=
-0 (PCIE) (prog-if 00 [VGA])
-        Subsystem: Acer Incorporated [ALI]: Unknown device 007e
-        Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr-=
- Stepping- SERR- FastB2B-
-        Status: Cap+ 66Mhz- UDF- FastB2B- ParErr- DEVSEL=3Dfast >TAbort- <T=
-Abort- <MAbort- >SERR- <PERR-
-        Interrupt: pin A routed to IRQ 217
-        Region 0: Memory at c8000000 (32-bit, prefetchable) [size=3D128M]
-        Region 1: I/O ports at 9000 [size=3D256]
-        Region 2: Memory at c0100000 (32-bit, non-prefetchable) [size=3D64K]
-        [virtual] Expansion ROM at c0120000 [disabled] [size=3D128K]
-        Capabilities: [50] Power Management version 2
-                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=3D0mA PME(D0-,D1-,D2=
--,D3hot-,D3cold-)
-                Status: D0 PME-Enable- DSel=3D0 DScale=3D0 PME-
-        Capabilities: [58] Express Endpoint IRQ 0
-                Device: Supported: MaxPayload 128 bytes, PhantFunc 0, ExtTa=
-g+
-                Device: Latency L0s <256ns, L1 <4us
-                Device: AtnBtn- AtnInd- PwrInd-
-                Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
-                Device: RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
-                Device: MaxPayload 128 bytes, MaxReadReq 128 bytes
-                Link: Supported Speed 2.5Gb/s, Width x16, ASPM L0s L1, Port=
- 0
-                Link: Latency L0s <256ns, L1 <2us
-                Link: ASPM Disabled RCB 64 bytes CommClk- ExtSynch-
-                Link: Speed 2.5Gb/s, Width x16
-        Capabilities: [80] Message Signalled Interrupts: 64bit+ Queue=3D0/0=
- Enable-
-                Address: 0000000000000000  Data: 0000
-        Capabilities: [100] Advanced Error Reporting
-
-I can provide additional information as needed, and of course act as a
-guniea pig.  I'll be installing a i386 kernel (+userland) on this box
-tomorrow to see it it behaves any differently.
-
-Any suggestions on what I can do?
-
- - Solomon
---=20
-Solomon Peachy        				 ICQ: 1318344
-Melbourne, FL 					=20
-Quidquid latine dictum sit, altum viditur.
-
---+HP7ph2BbKc20aGI
+--lEGEL1/lMxI0MVQ2
 Content-Type: application/pgp-signature
 Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.2.4 (GNU/Linux)
+Version: GnuPG v1.4.2 (GNU/Linux)
 
-iD8DBQFDq2tdPuLgii2759ARAldPAKDazYPL8vgBVTgeUVypoP0NRla9OQCgnAt4
-LFdLUjD/r1N2mvJP9i0jnAM=
-=jKXq
+iQIVAwUBQ6r1Tl2m8MprmeOlAQIO1g/+MDl4cHCTb47/lNyOWwNnExvuWnKobS7A
+Hx7qy/VJCva9a9MqeodiI9nVtP/vyL7dw1TM8O1IKN2RwupT72vpPbA4q2Glhl47
+3XKhJ32HYPm+z69fnBXNDeqmXICitd1PHTilxUNeYZmNzIAs6F5kntYsoITtAOmA
+egDrgWC7myv70kHuNdr8HRmDDNtqjt97G3veGZnZt0fKwBW+jffoTTh2h+CYrRnQ
+Nb8jJAlQkHEUF2geOC1R/Jy8nGlm3L0uB4iNV6e4BR8xP+xoOTGMbS4dzvTt5nqj
+gjW15LUvybLMSElacliUf6WJ+eOPOKNsCwjVG+r/IhabHHisRdul+Nx4Hk8ieFZQ
+JVuR/0Z+QycaCmQo9Yx0rj7zDznVk4jVcy6yiLSzIJWRrItJjXx+uU5zf2WcAFz3
+UhJl1sT29PJV57hvubKYthdHjio9wT5yOASvZfM6sew6mOURJYCyZ/cEVN3yQdZA
+K27n+Rbhf5M+j8fGxkIOrh0/6apjEG+sfSTccS7Xufhpc7V+JoH2N0jpWBYEN89M
+TH3V+ppGbvmiu+0Oa7tBrS4ExWLJjGP6OIheGKCC3KKWKd9jJWR5K5S/CfhvepQi
+k22Aab/UzLhRPvQJRl/SBuybz7lIZz3hCMjnaYqg7Zzja8yRZ6jMM1knBHZwcaQK
+Ob46Xf6L1fY=
+=PXDl
 -----END PGP SIGNATURE-----
 
---+HP7ph2BbKc20aGI--
+--lEGEL1/lMxI0MVQ2--
+
 
 
 -------------------------------------------------------

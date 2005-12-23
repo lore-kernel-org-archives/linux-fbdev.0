@@ -1,24 +1,27 @@
-From: Harald Welte <laforge@gnumonks.org>
-Subject: Re: [PATCH] radeonfb ATI 9100IGP shared main memory / VRAM
-Date: Wed, 21 Dec 2005 23:26:39 +0100
-Message-ID: <20051221222639.GT4495@sunbeam.de.gnumonks.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Re: [PATCH] radeonfb ATI 9100IGP shared
+	main memory / VRAM
+Date: Fri, 23 Dec 2005 11:40:33 +1100
+Message-ID: <1135298433.10035.221.camel@gaston>
 References: <20051221203706.GR4495@sunbeam.de.gnumonks.org>
+	 <20051221222639.GT4495@sunbeam.de.gnumonks.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="U7F658e60E1K4csu"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EpCQ0-0006BA-QG
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Dec 2005 14:26:44 -0800
-Received: from ganesha.gnumonks.org ([213.95.27.120])
+	id 1Epb1C-0000bY-Cf
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Dec 2005 16:42:46 -0800
+Received: from gate.crashing.org ([63.228.1.57])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
 	(Exim 4.44)
-	id 1EpCPy-0004nB-7x
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 21 Dec 2005 14:26:44 -0800
-Content-Disposition: inline
-In-Reply-To: <20051221203706.GR4495@sunbeam.de.gnumonks.org>
+	id 1Epb1A-0001rx-TP
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 22 Dec 2005 16:42:46 -0800
+Received: from gaston (localhost [127.0.0.1])
+	by gate.crashing.org (8.12.8/8.12.8) with ESMTP id jBN0bgWG016461
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 22 Dec 2005 18:37:43 -0600
+In-Reply-To: <20051221222639.GT4495@sunbeam.de.gnumonks.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,47 +32,25 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: "Ben. Herrenschmidt" <benh@kernel.crashing.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
+
+On Wed, 2005-12-21 at 23:26 +0100, Harald Welte wrote:
+> On Wed, Dec 21, 2005 at 09:37:06PM +0100, Harald Welte wrote:
+> > I've altered radeon_base.c with a special exception for this chip, see
+> > the patch below.  Now everything works like a charm.
+> 
+> unfortunately I now discovered that the PCI resource is always 64MB in
+> size, even when the UMA BIOS setting is configured to smaller (e.g. 8MB)
+> sizes.
+> 
+> I don't have a clue for a proper fix, but maybe you have ;)
+
+You didn't get my mail about using RADEON_NB_TOM instead ?
+
+Ben.
 
 
---U7F658e60E1K4csu
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, Dec 21, 2005 at 09:37:06PM +0100, Harald Welte wrote:
-> I've altered radeon_base.c with a special exception for this chip, see
-> the patch below.  Now everything works like a charm.
-
-unfortunately I now discovered that the PCI resource is always 64MB in
-size, even when the UMA BIOS setting is configured to smaller (e.g. 8MB)
-sizes.
-
-I don't have a clue for a proper fix, but maybe you have ;)
-
---=20
-- Harald Welte <laforge@gnumonks.org>          	        http://gnumonks.org/
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D
-"Privacy in residential applications is a desirable marketing option."
-                                                  (ETSI EN 300 175-7 Ch. A6)
-
---U7F658e60E1K4csu
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
-
-iD8DBQFDqdafXaXGVTD0i/8RAgmYAJ9KwXuAR7rxUARvbLYPHrXwg72MIQCgtQmx
-qCVrTXpmKkPQrml9r45ViTc=
-=VwPV
------END PGP SIGNATURE-----
-
---U7F658e60E1K4csu--
 
 
 -------------------------------------------------------

@@ -1,21 +1,35 @@
-From: Knut Petersen <Knut_Petersen@t-online.de>
-Subject: Re: fbcon rotation or cyblafb bugs?
-Date: Tue, 27 Dec 2005 08:43:03 +0100
-Message-ID: <43B0F087.1070405@t-online.de>
-References: <43AFC436.9090002@t-online.de>
+From: Petr Vandrovec <vandrove@vc.cvut.cz>
+Subject: Re: radeonfb: Radeon Mobility X700 (M26) + x86-64
+ supported?
+Date: Fri, 30 Dec 2005 18:37:43 +0100
+Message-ID: <43B57067.1010807@vc.cvut.cz>
+References: <20051223031333.GA14399@shaftnet.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Er9Sp-0007uE-6B
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 26 Dec 2005 23:41:43 -0800
-Received: from mailout07.sul.t-online.com ([194.25.134.83])
+	id 1EsOCX-0000JH-39
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Dec 2005 09:38:01 -0800
+Received: from mailgw.cvut.cz ([147.32.3.235])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Er9So-0001Xh-11
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 26 Dec 2005 23:41:43 -0800
-In-Reply-To: <43AFC436.9090002@t-online.de>
+	id 1EsOCU-0001AT-Gr
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 30 Dec 2005 09:38:01 -0800
+Received: from mailgw (localhost [127.0.0.1])
+	by mailgw.cvut.cz (Postfix) with SMTP id 99CA313B82B
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 30 Dec 2005 18:37:55 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+	by mailgw.cvut.cz (Postfix) with ESMTP id 817AE13B888
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 30 Dec 2005 18:37:55 +0100 (CET)
+Received: from mailgw.cvut.cz ([127.0.0.1])
+	by localhost (mailgw [127.0.0.1]) (amavisd-new, port 10024) with LMTP
+	id 05831-01-41 for <linux-fbdev-devel@lists.sourceforge.net>;
+	Fri, 30 Dec 2005 18:37:55 +0100 (CET)
+Received: from [127.0.0.1] (vana.vc.cvut.cz [147.32.240.58])
+	by mailgw.cvut.cz (Postfix) with ESMTP id 144CB13B82B
+	for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 30 Dec 2005 18:37:52 +0100 (CET)
+In-Reply-To: <20051223031333.GA14399@shaftnet.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,36 +40,61 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Knut Petersen schrieb:
+Stuffed Crust wrote:
+> I have an AMD64 laptop with a Radeon Mobility X700, and a 1680x1050
+> screen.  I'm trying to get it to work with the "new" radeonfb driver in
+> Linux 2.6.15-rc6.  I have not tested the "old" driver.  As best as I can 
+> tell, I'm the second person to ask about this particular bit of 
+> hardware.
+> 
+> The Radeon M26, aka Mobility X700, is supposedly a derivative of the
+> desktop X700, aka RV410, which in turn is supposedly derived from the
+> R423. (They certainly make this rather confusing..) As configured, mine 
+> has 128 megs of RAM and a PCI ID of 1002:5653.  
+> 
+> This deviceid is not present in the device table, but to get it detected 
+> to begin with, I added this to the device table in radeon_base.c: 
+> 
+> CHIP_DEF(PCI_CHIP_RV410_XX,     R420,   CHIP_HAS_CRTC2 | CHIP_IS_MOBILITY),
+> 
+> And in ati_ids.h:
+> 
+> #define PCI_CHIP_RV410_XX               0x5653
+> 
+> As I mentioned, this chip (M26, RV410) is supposedly closer to the X800 
+> (R420) than the X600 (RV380).  Just in case, I tried setting it to a 
+> 'RV380' target as well, with similar results. 
 
-> Can anybody confirm that clockwise / counterclockwise console rotation=20
-> is working
-> or not working for arbitrary virtual x resolutions? Using cyblafb I=20
-> get solid lockups
-> for certain combinations of font height and vxres. It does work=20
-> perfectly reliable for
-> other combinations. It would be really nice if someone could run a=20
-> test like e.g.
+I have simillar notebook, just with 1920x1200 panel.  Unfortunately new 
+BIOS these pieces use has information in other places, so radeonfb does 
+not find anything (as far as I can tell, panel ID string is not in the 
+BIOS image at all, and i2c busses are connected elsewhere than on 
+hardware radeonfb knows about).
 
+> Mucking with module options has no discernable effect, and the LVDS
+> panel information is consistently misdetected, obviously..  It would
+> seem that all of the panel information is garbage.  (does fetching the
+> panel info from the BIOS work when running on an x86-64 system?)
 
-Forget about that help request, my problems are caused by a hardware bug=20
-of the
-cyberblade/i1 graphics core.
+It is not in the BIOS anymore.  VESA call 0x4F15 works fine, but I did 
+not bothered with looking at the BIOS yet.  With my hardware radeonfb 
+correctly finds that LVDS output is programmed for 1920x1200 and does 
+not touch it, unfortunately it has some problems with memory fetches 
+which cause pixels (+-)512-768 and 1536-1792 to be missing on display, 
+and right side of picture being black.
 
-Whenever an imageblit tries to blit across  pixel colum 2048, the=20
-graphics engine locks up.
-Rock solid. Isn=B4t that a nice christmas gift?
+For now I use vesafb - unfortunately BIOS does not have 1920x1200 
+videomode, but 1600x1200 works more or less acceptable, those pixels are 
+really small...
+								Petr
 
-cu,
- knut
 
 
 -------------------------------------------------------
-This SF.net email is sponsored by: Splunk Inc. Do you grep through log fi=
-les
+This SF.net email is sponsored by: Splunk Inc. Do you grep through log files
 for problems?  Stop!  Download the new AJAX search engine that makes
 searching your log files as easy as surfing the  web.  DOWNLOAD SPLUNK!
-http://ads.osdn.com/?ad_id=3D7637&alloc_id=3D16865&op=3Dclick
+http://ads.osdn.com/?ad_id=7637&alloc_id=16865&op=click

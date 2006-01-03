@@ -1,19 +1,27 @@
-From: "St.Michael" <adams.st@chelny.com>
-Subject: Trusted
-Date: Thu, 29 Dec 2005 14:57:36 -0000 (UTC)
-Message-ID: <55666.196.200.121.14.1135868256.squirrel__41708.6839363494$1136027290$gmane$org@mail.tmobileprepaid.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: radeonfb: Radeon Mobility X700 (M26) +
+	x86-64 supported?
+Date: Tue, 03 Jan 2006 11:38:17 +1100
+Message-ID: <1136248698.4688.2.camel@localhost.localdomain>
+References: <20051223031333.GA14399@shaftnet.org>
+	 <43B57067.1010807@vc.cvut.cz>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Es8nF-0001FF-S7
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 29 Dec 2005 17:10:53 -0800
-Received: from adsl-66-218-63-32.dslextreme.com ([66.218.63.32] helo=mail.pomoyka.com)
-	by mail.sourceforge.net with smtp (Exim 4.44)
-	id 1Es8nF-0002hk-FG
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 29 Dec 2005 17:10:53 -0800
+	id 1EtaB2-00016R-Cn
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 02 Jan 2006 16:37:24 -0800
+Received: from gate.crashing.org ([63.228.1.57])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44)
+	id 1EtaB0-0004S1-3I
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 02 Jan 2006 16:37:24 -0800
+Received: from localhost.localdomain (localhost [127.0.0.1])
+	by gate.crashing.org (8.12.8/8.12.8) with ESMTP id k030VaWG022908
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 2 Jan 2006 18:31:37 -0600
+In-Reply-To: <43B57067.1010807@vc.cvut.cz>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -25,77 +33,31 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
 
 
+> It is not in the BIOS anymore.  VESA call 0x4F15 works fine, but I did 
+> not bothered with looking at the BIOS yet.  With my hardware radeonfb 
+> correctly finds that LVDS output is programmed for 1920x1200 and does 
+> not touch it, unfortunately it has some problems with memory fetches 
+> which cause pixels (+-)512-768 and 1536-1792 to be missing on display, 
+> and right side of picture being black.
+> 
+> For now I use vesafb - unfortunately BIOS does not have 1920x1200 
+> videomode, but 1600x1200 works more or less acceptable, those pixels are 
+> really small...
 
+Does it work with a recent X.org ? What does it say in the log ? The ATI
+BIOS tables have changed format and radeonfb doesn't (yet) know about
+the new format.
 
-Phone: +234-802-764-0445
+Ben.
 
-I am the chairman of the contract award committee of the National Petrole=
-um
-Corporation here in Nigeria.
-
-After due deliberation with my partner, I decided to forward to you this
-business proposal, we want you to assist us receive the sum of Twenty eig=
-ht
-million, six hundred thousand united state bills(us28.6m) into your accou=
-nt.
-This fund resulted from an over-invoiced contract awarded by us under the
-budget allocation to my ministry and the bill was approved for payment by
-the concerned ministries. The contract was executed, commissioned and the
-contractor was paid his actual cost of the contract. Now, we are left wit=
-h
-the balance of us28.6m as the over invoiced amount, which we have
-deliberately over estimated for our own use. Please note that the law
-forbids civil servants to operate or own foreign accounts hence this
-contact, we have agreed to share the money in the following percentages: =
-30
-for you, 60 for us 10 for tax as may be required by your government.
-
-Note that this transaction is very much free from all sorts of risk hence
-the business was carefully planned before it was successfully executed an=
-d
-we the officials involved in the deal have put many years in service to o=
-ur
-ministry. We have been exercising patience for this privilege for so long
-not until the presidential announcement last week, that all foreign
-contractors owed be paid forthwith, this will enable the presidency
-reconcile our debt ratio with the outside world and to most of us, this i=
-s a
-lifetime blessing we cannot afford to miss. Upon indication of your inter=
-est
-to fully co-operate with us, a payment application/information form will =
-be
-sent to you via email for completion.
-
-Be informed also that the above mentioned formV when properly completed b=
-y
-you and
-return  via email, will enable us seek/secure approval of the fund from t=
-he
-concerned government quarters/ministries within 1-2 banking days.
-
-As soon as we confirm receipt of this money in your nominated bank accoun=
-t,
-my partner and I will come over to your country to arrange for our own sh=
-are
-and possibly invest part of this money in your country.
-
-Let honesty and trust be our watchword throughout this transaction. I sha=
-ll
-furnish you with some details about myself. Your prompt reply will be hig=
-hly
-appreciated.
-
-Best regards.
-
-Adams I.S.A
 
 
 
 -------------------------------------------------------
-This SF.net email is sponsored by: Splunk Inc. Do you grep through log fi=
-les
+This SF.net email is sponsored by: Splunk Inc. Do you grep through log files
 for problems?  Stop!  Download the new AJAX search engine that makes
 searching your log files as easy as surfing the  web.  DOWNLOAD SPLUNK!
-http://ads.osdn.com/?ad_id=3D7637&alloc_id=3D16865&op=3Dclick
+http://ads.osdn.com/?ad_id=7637&alloc_id=16865&op=click

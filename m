@@ -1,26 +1,25 @@
-From: Michal Suchanek <hramrach@gmail.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: ATI X600 on 2.6.15
-Date: Thu, 5 Jan 2006 21:30:55 +0100
-Message-ID: <a5d587fb0601051230y1c8c0dddo46f08ad678524067@mail.gmail.com>
+Date: Fri, 06 Jan 2006 09:27:46 +1100
+Message-ID: <1136500066.4840.98.camel@localhost.localdomain>
 References: <20060105014229.GB10726@localhost>
 	 <1136455013.4840.73.camel@localhost.localdomain>
 	 <20060105113148.GA21807@localhost>
+	 <a5d587fb0601051230y1c8c0dddo46f08ad678524067@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EublF-0001VZ-JO
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 05 Jan 2006 12:31:01 -0800
-Received: from zproxy.gmail.com ([64.233.162.200])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1EublC-0002vB-4b
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 05 Jan 2006 12:30:58 -0800
-Received: by zproxy.gmail.com with SMTP id z3so3074190nzf
-        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 05 Jan 2006 12:30:55 -0800 (PST)
-In-Reply-To: <20060105113148.GA21807@localhost>
-Content-Disposition: inline
+	id 1EudZQ-0007rv-0x
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 05 Jan 2006 14:26:56 -0800
+Received: from gate.crashing.org ([63.228.1.57])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44)
+	id 1EudZO-0000HD-FQ
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 05 Jan 2006 14:26:56 -0800
+In-Reply-To: <a5d587fb0601051230y1c8c0dddo46f08ad678524067@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,15 +30,19 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="windows-1254"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>, bob.picco@hp.com
+Content-Type: text/plain; charset="us-ascii"
+To: Michal Suchanek <hramrach@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, bob.picco@hp.com
 
-T24gMS81LzA2LCBCb2IgUGljY28gPGJvYi5waWNjb0BocC5jb20+IHdyb3RlOgo+IEZyb20geG9y
-Zy5jb25mOgo+ICMgVGhpcyBsb2FkcyB0aGUgRFJJIG1vZHVsZQo+ICMgICAgTG9hZCAgICAgICAi
-ZHJpIgo+Cj4gU28gRFJJIGlzIGRpc2FibGVkLgo+Ck5vdCBuZWNjZXNzcmlseS4gSUlSQyBJIGRp
-c2FibGVkIGV4cGxpY2l0IGxvYWRpbmcgb2YgZHJpIGJlY2F1c2UgaXQKbG9hZGVkIGF1dG9tYWdp
-Y2FsbHkuCgpNaWNoYWwK
+On Thu, 2006-01-05 at 21:30 +0100, Michal Suchanek wrote:
+> On 1/5/06, Bob Picco <bob.picco@hp.com> wrote:> From xorg.conf:> # This loads the DRI module> #    Load     
+>   "dri">> So DRI is disabled.>Not neccessrily. IIRC I disabled explicit loading of dri because itloaded automagically.
+
+Best is to move the kernel module out of the way
+
+Ben.
+
+
 
 
 -------------------------------------------------------

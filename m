@@ -1,26 +1,22 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [patch] [radeonfb] Radeon Mobility X700
-	(M26) and ATOM bios support
-Date: Thu, 05 Jan 2006 20:59:15 +1100
-Message-ID: <1136455156.4840.76.camel@localhost.localdomain>
-References: <20060103204404.GA23313@shaftnet.org>
+From: "Bob Picco" <bob.picco@hp.com>
+Subject: Re: ATI X600 on 2.6.15
+Date: Thu, 5 Jan 2006 06:31:48 -0500
+Message-ID: <20060105113148.GA21807@localhost>
+References: <20060105014229.GB10726@localhost> <1136455013.4840.73.camel@localhost.localdomain>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EuRsy-0007TI-AL
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 05 Jan 2006 01:58:20 -0800
-Received: from gate.crashing.org ([63.228.1.57])
+	id 1EuTMR-0003eX-7h
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 05 Jan 2006 03:32:51 -0800
+Received: from atlrel9.hp.com ([156.153.255.214])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
 	(Exim 4.44)
-	id 1EuRsx-0006xS-3D
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 05 Jan 2006 01:58:20 -0800
-Received: from localhost.localdomain (localhost [127.0.0.1])
-	by gate.crashing.org (8.12.8/8.12.8) with ESMTP id k059qNWG022433
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 5 Jan 2006 03:52:24 -0600
-In-Reply-To: <20060103204404.GA23313@shaftnet.org>
+	id 1EuTMO-0004Mt-Pk
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 05 Jan 2006 03:32:51 -0800
+Content-Disposition: inline
+In-Reply-To: <1136455013.4840.73.camel@localhost.localdomain>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,30 +28,38 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Transfer-Encoding: 7bit
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net, bob.picco@hp.com
 
-On Tue, 2006-01-03 at 15:44 -0500, Stuffed Crust wrote:
-> Signed-off-by:  Solomon Peachy <pizza@shaftnet.org>
+Benjamin Herrenschmidt wrote:	[Thu Jan 05 2006, 04:56:53AM EST]
+> On Wed, 2006-01-04 at 20:42 -0500, Bob Picco wrote:
+> > I have machine lockups on 2.6.15 with gentoo bits and lastest x11-org
+> > bits. A simple startx with three xterms doesn't even render the fonts
+> > correctly.  Eventually the machine wedges and can't be pinged.
+> > Switching the xorg.conf driver from radeon to vesa works and creates a
+> > reasonable environment. This seems to have manifested itself since
+> > 2.6.15-rc1.
+> > 
+> > The laptop is a Compaq NX9600 with maximum memory and a large disk.
+> > 
+> > Should anyone care for further data captured from /proc, config, logs
+> > and etc., I'll be glad to forward them along.  I'd also be willing to
+> > debug and/or test whatever suggestions might be made.
 > 
-> Newer Radeon graphics cards use a different table layout in their 
-> BIOSes, known as 'ATOM'.  
+> Is DRI enabled ? If yes, try disabling it. Recent kernels have the r300
+> enable DRM, thus X will automatically enable use of CCE acceleration
+> even for simple 2D, but that isn't very stable on those cards yet.
 > 
-> I've attached a patch (against 2.6.15) which implements the PLL and LVDS
-> parsing out of the ATOM BIOSes, using the current X.org sources as a
-> reference.  Notably absent is the code which detects the connectors and
-> TDMS information, but it's of lesser importance at the moment.
+> Ben.
+> 
+From xorg.conf:
+# This loads the DRI module
+#    Load       "dri"
 
-Inresting. I started doing that (and updated the pre-ATOM BIOS code too)
-but never finished... One thing you could do that would be useful is
-move the various BIOS code to separate function and setup function
-pointers that can be set based on the BIOS type instead of the endless
-stream if (atom_bios) xxx else yyy. That way, it will be cleaner and
-I'll be able to more easily add other variations like retreiving infos
-from Open Firmware on ppc etc...
+So DRI is disabled.
 
-Ben.
-
-
+bob
 
 
 -------------------------------------------------------

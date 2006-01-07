@@ -1,43 +1,73 @@
-From: Knut Petersen <Knut_Petersen@t-online.de>
-Subject: [PATCH 1/1: 2.6.15] fbcon: =?ISO-8859-1?Q?don=B4t_call_set=5F?=
- =?ISO-8859-1?Q?par=28=29_in_fbcon=5Finit=28=29_if_vc=5Fmode_=3D?=
- =?ISO-8859-1?Q?=3D_KD=5FGRAPHICS?=
-Date: Sat, 07 Jan 2006 10:22:04 +0100
-Message-ID: <43BF883C.5030708@t-online.de>
+From: Adam Felix Bogacki <afb@paradise.net.nz>
+Subject: How to disable 'rivafb_pan_display START' at boot ?
+Date: Sun, 08 Jan 2006 09:42:02 +1300
+Message-ID: <43C0279A.7060708@paradise.net.nz>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030376AbWAGJVL@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: Andrew Morton <akpm@osdl.org>, "Antonino A. Daplas" <adaplas@gmail.com>, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Return-path: <bounce-debian-powerpc=debian-powerpc=m.gmane.org@lists.debian.org>
+Resent-Message-ID: <oaAKqC.A.3OB.ssCwDB@murphy>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:debian-powerpc@lists.debian.org>
+List-Help: <mailto:debian-powerpc-request@lists.debian.org?subject=help>
+List-Subscribe: <mailto:debian-powerpc-request@lists.debian.org?subject=subscribe>
+List-Unsubscribe: <mailto:debian-powerpc-request@lists.debian.org?subject=unsubscribe>
+Content-Type: text/plain; charset="us-ascii"
+To: ajoshi@unixbox.com, linux-fbdev-devel@lists.sourceforge.net, linux-nvidia@lists.surfsouth.com, debian-powerpc@lists.debian.org
 
-Nothing prevents a user to modprobe a framebuffer driver from
-e.g. the xterm prompt. As a result, the set_par() function of the driver
-will be called from fbcon_init().
+Hi,  I had to recompile the kernel after an OOPS wiped out things
+including all old kernel images .. after using a LiveCD I could boot
+but had to manually mount and had no network connection.
 
-This is fatal as a lot of X / framebuffer combinations are unable
-to recover from set_par() reprogramming the graphics controller in
-KD_GRAPHICS mode.
+I recompiled via 'make menuconfig' a number of times until there were no
+error
+messages after 'make modules_install' and went through the usual process
+until after
+reboot I able to do
 
-It is also unnecessary as the set_par() function will be called during
-a switch to KD_TEXT anyway. Because of this no side effects are
-possible.
+'Tux:~# /etc/rcS.d/S40networking start'
 
-Signed-off-by: Knut Petersen <Knut_Petersen@t-online.de>
+and go straight into 'apt-get update' and 'apt-get -f upgrade' successfully.
 
-diff -uprN -X linux/Documentation/dontdiff -x '*.bak' -x '*.ctx' 
-linuxorig/drivers/video/console/fbcon.c linux/drivers/video/console/fbcon.c
+The upgrade was big and took a long time. I had noticed some instability
+on what looked like a malformed screensaver so I kept tapping the spacebar as 
+the upgrade moved into install phase.
 
---- linuxorig/drivers/video/console/fbcon.c	2006-01-07 09:18:25.000000000 +0100
-+++ linux/drivers/video/console/fbcon.c	2006-01-07 07:31:08.000000000 +0100
-@@ -1110,7 +1110,7 @@ static void fbcon_init(struct vc_data *v
- 	 *
- 	 * We need to do it in fbcon_init() to prevent screen corruption.
- 	 */
--	if (CON_IS_VISIBLE(vc)) {
-+	if (CON_IS_VISIBLE(vc) && vc->vc_mode == KD_TEXT) {
- 		if (info->fbops->fb_set_par &&
- 		    !(ops->flags & FBCON_FLAGS_INIT))
- 			info->fbops->fb_set_par(info);
+At one stage I had to leave the keyboard briefly and on returning found ..
+
+[xxx.xxxxxx] rivafb_pan_display START   [xxx.xxxxxx] rivafb_pan_display START
+[xxx.xxxxxx] rivafb_pan_display END     [xxx.xxxxxx] rivafb_pan_display END
+[xxx.xxxxxx] rivafb_pan_display START   [xxx.xxxxxx] rivafb_pan_display START
+[xxx.xxxxxx] rivafb_pan_display END     [xxx.xxxxxx] rivafb_pan_display END
+[xxx.xxxxxx] rivafb_pan_display START   [xxx.xxxxxx] rivafb_pan_display START
+[xxx.xxxxxx] rivafb_pan_display END     [xxx.xxxxxx] rivafb_pan_display END
+[xxx.xxxxxx] rivafb_pan_display START   [xxx.xxxxxx] rivafb_pan_display START
+[xxx.xxxxxx] rivafb_pan_display END     [xxx.xxxxxx] rivafb_pan_display END
+
+.. in the left half of the screen, [xxx] being digits rapidly cycling upwards.
+
+I have been trying various boot parameters to disable 'rivafb' without
+success, including
+
+BOOT_DEBUG=3
+debian/installer/framebuffer=false
+video=vga16:off
+console=ttys0
+console=tty1
+
+Also, the font is really tiny and I've tried to introduce arguments to
+suit 1024x768 'fb1024' works on the Gentoo-based Rescue CD but not here, neither do
+variants including 'video=rivafb:1024' or 'rivafb=1024' .. but that is a minor point.
+ 
+I've discovered that 'rivafb' is known to be incompatible with the
+nvidia driver and since it is in the kernel the only fix seems to be to
+
+'make menuconfig' -> Device Drivers -> Graphics -> Framebuffer (and
+disable 'rivafb') before 'make bzImage' and so on.
+
+Successive 'init=1'  reboots get almost as far as passwd login before the 
+'rivafb screensaver' kicks in ..
+
+How do I disable it ?
+
+Adam Bogacki.
+afb@paradise.net.nz

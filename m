@@ -1,24 +1,24 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: How to disable 'rivafb_pan_display START'
- at boot ?
-Date: Mon, 09 Jan 2006 08:12:30 +0800
-Message-ID: <43C1AA6E.5020409@gmail.com>
-References: <43C0279A.7060708@paradise.net.nz>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] nvidiafb: Fix 6xxx/7xxx cards
+Date: Mon, 09 Jan 2006 13:32:13 +1100
+Message-ID: <1136773933.30123.100.camel@localhost.localdomain>
+References: <1133944427.7168.70.camel@gaston>  <43989DA3.8070602@gmail.com>
+	 <1134080257.11760.19.camel@gaston>  <4398B995.6000903@gmail.com>
+	 <1134287682.6989.49.camel@gaston>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Evkey-0008H9-AP
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Jan 2006 16:13:16 -0800
-Received: from zproxy.gmail.com ([64.233.162.195])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Evkev-0007HT-Dx
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Jan 2006 16:13:15 -0800
-Received: by zproxy.gmail.com with SMTP id r28so3171063nza
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 08 Jan 2006 16:13:12 -0800 (PST)
-In-Reply-To: <43C0279A.7060708@paradise.net.nz>
+	id 1Evmqy-0007na-Fg
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Jan 2006 18:33:48 -0800
+Received: from gate.crashing.org ([63.228.1.57])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44)
+	id 1Evmqx-0004US-6I
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Jan 2006 18:33:48 -0800
+In-Reply-To: <1134287682.6989.49.camel@gaston>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,13 +31,20 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: ajoshi@unixbox.com, linux-nvidia@lists.surfsouth.com, debian-powerpc@lists.debian.org
+Cc: "Antonino A. Daplas" <adaplas@hotpop.com>, Andrew Morton <akpm@osdl.org>
 
-Adam Felix Bogacki wrote:
- 
-> How do I disable it ?
+On Sun, 2005-12-11 at 18:54 +1100, Benjamin Herrenschmidt wrote:
+> > I already told akpm to drop mine and take yours instead as you already
+> > verified that it works.  I'll send you the pci-e support patch, diffed
+> > against your patch if you want.
 
-video=rivafb:off
+It's not yet upstream and we are about to merge the new g5 support.
+Andrew, will you send it to Linus or was there some issues with the
+patch ?
+
+Ben.
+
+
 
 
 -------------------------------------------------------

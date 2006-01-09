@@ -1,29 +1,31 @@
-From: Andrew Morton <akpm@osdl.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH] nvidiafb: Fix 6xxx/7xxx cards
-Date: Sun, 8 Jan 2006 21:43:24 -0800
-Message-ID: <20060108214324.0fc93c39.akpm@osdl.org>
-References: <1133944427.7168.70.camel@gaston>
-	<43989DA3.8070602@gmail.com>
-	<1134080257.11760.19.camel@gaston>
-	<4398B995.6000903@gmail.com>
-	<1134287682.6989.49.camel@gaston>
-	<1136773933.30123.100.camel@localhost.localdomain>
-	<20060108191311.00ab5dba.akpm@osdl.org>
-	<1136780002.12377.1.camel@localhost.localdomain>
+Date: Mon, 09 Jan 2006 17:38:56 +1100
+Message-ID: <1136788737.20511.3.camel@localhost.localdomain>
+References: <1133944427.7168.70.camel@gaston> <43989DA3.8070602@gmail.com>
+	 <1134080257.11760.19.camel@gaston> <4398B995.6000903@gmail.com>
+	 <1134287682.6989.49.camel@gaston>
+	 <1136773933.30123.100.camel@localhost.localdomain>
+	 <20060108191311.00ab5dba.akpm@osdl.org>
+	 <1136780002.12377.1.camel@localhost.localdomain>
+	 <20060108214324.0fc93c39.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EvqEy-0006uw-Kf
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Jan 2006 22:10:48 -0800
-Received: from smtp.osdl.org ([65.172.181.4])
-	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	id 1EvqfO-0007uL-HQ
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Jan 2006 22:38:06 -0800
+Received: from gate.crashing.org ([63.228.1.57])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
 	(Exim 4.44)
-	id 1EvqEx-0005QK-8A
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Jan 2006 22:10:48 -0800
-In-Reply-To: <1136780002.12377.1.camel@localhost.localdomain>
+	id 1EvqfN-0007pd-1C
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Jan 2006 22:38:06 -0800
+Received: from localhost.localdomain (localhost [127.0.0.1])
+	by gate.crashing.org (8.12.8/8.12.8) with ESMTP id k096VoWG026285
+	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 9 Jan 2006 00:31:52 -0600
+In-Reply-To: <20060108214324.0fc93c39.akpm@osdl.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -35,21 +37,28 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@hotpop.com
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->
-> > Anyway, all of the above patches apply OK to whatever is in git-powerpc so
-> > I spose we can just merge git-powerpc and be happy.  Soon, I hope - I have
-> > a few things held up by that tree.
+On Sun, 2006-01-08 at 21:43 -0800, Andrew Morton wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> >
+> > > Anyway, all of the above patches apply OK to whatever is in git-powerpc so
+> > > I spose we can just merge git-powerpc and be happy.  Soon, I hope - I have
+> > > a few things held up by that tree.
+> > 
+> > We are working on it.
+> > 
 > 
-> We are working on it.
+> hm, OK.
 > 
+> You now shrink-dentry-struct-spufs-fix.patch, which I'll resend.
 
-hm, OK.
+Ok. Paulus is just only back from vacation, so we have a big backlog of
+stuffs. Hopefully he'll have something for Linus to pull tonight or
+tomorrow.
 
-You now shrink-dentry-struct-spufs-fix.patch, which I'll resend.
+Ben.
+
 
 
 

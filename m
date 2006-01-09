@@ -1,20 +1,26 @@
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [Fwd: [PATCH] nvidiafb: Fixes for new G5]
-Date: Mon, 09 Jan 2006 15:17:32 +1100
-Message-ID: <1136780252.14374.0.camel@localhost.localdomain>
+Subject: Re: [PATCH] nvidiafb: Fix 6xxx/7xxx cards
+Date: Mon, 09 Jan 2006 15:13:21 +1100
+Message-ID: <1136780002.12377.1.camel@localhost.localdomain>
+References: <1133944427.7168.70.camel@gaston> <43989DA3.8070602@gmail.com>
+	 <1134080257.11760.19.camel@gaston> <4398B995.6000903@gmail.com>
+	 <1134287682.6989.49.camel@gaston>
+	 <1136773933.30123.100.camel@localhost.localdomain>
+	 <20060108191311.00ab5dba.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1EvoUp-0002ro-HM
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Jan 2006 20:19:03 -0800
+	id 1EvoeT-0003HE-G9
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Jan 2006 20:29:01 -0800
 Received: from gate.crashing.org ([63.228.1.57])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
 	(Exim 4.44)
-	id 1EvoUo-0008BF-QP
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Jan 2006 20:19:03 -0800
+	id 1EvoeS-0005yF-4s
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 08 Jan 2006 20:29:01 -0800
+In-Reply-To: <20060108191311.00ab5dba.akpm@osdl.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,209 +36,28 @@ To: Andrew Morton <akpm@osdl.org>
 Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@hotpop.com
 
 
-Recent X "nv" driver was fixed for various issues with modern 6xxx and
-7xxx cards. This patch ports those fixes to nvidiafb. This makes it work
-fine on the 6600 bundled with the newest G5 macs. I've verified it still
-works on the 5200FX of the iMacG5.
+> Gad.  It looks like a variant of Ben's patch is in the powerpc tree.  wtf
+> is it doing there?
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+What's going on is that the powerpc tree contains that patch bcs it
+contains all the necessary bits to boot a new g5 and that includes it.
+However, paulus is currently cooking a merged tree for linus with all of
+that stuff, but not the nvidiafb patch since it's not the proper way to
+get it in sneaked inside a powerpc merge ;)
 
-Index: linux-work/drivers/video/nvidia/nv_hw.c
-===================================================================
---- linux-work.orig/drivers/video/nvidia/nv_hw.c	2005-11-24 17:18:46.000000000 +1100
-+++ linux-work/drivers/video/nvidia/nv_hw.c	2005-12-07 19:14:52.000000000 +1100
-@@ -848,7 +848,7 @@ void NVCalcStateExt(struct nvidia_par *p
- 		    int width,
- 		    int hDisplaySize, int height, int dotClock, int flags)
- {
--	int pixelDepth, VClk;
-+	int pixelDepth, VClk = 0;
- 	/*
- 	 * Save mode parameters.
- 	 */
-@@ -938,17 +938,26 @@ void NVLoadStateExt(struct nvidia_par *p
- 
- 	if (par->Architecture == NV_ARCH_04) {
- 		NV_WR32(par->PFB, 0x0200, state->config);
--	} else if ((par->Chipset & 0xfff0) == 0x0090) {
--		for (i = 0; i < 15; i++) {
--			NV_WR32(par->PFB, 0x0600 + (i * 0x10), 0);
--			NV_WR32(par->PFB, 0x0604 + (i * 0x10), par->FbMapSize - 1);
--		}
--	} else {
-+	} else if ((par->Architecture < NV_ARCH_40) ||
-+		   (par->Chipset & 0xfff0) == 0x0040) {
- 		for (i = 0; i < 8; i++) {
- 			NV_WR32(par->PFB, 0x0240 + (i * 0x10), 0);
--			NV_WR32(par->PFB, 0x0244 + (i * 0x10), par->FbMapSize - 1);
-+			NV_WR32(par->PFB, 0x0244 + (i * 0x10),
-+				par->FbMapSize - 1);
- 		}
--	}
-+	} else {
-+		int regions = 12;
-+  	 
-+		if (((par->Chipset & 0xfff0) == 0x0090) ||
-+		    ((par->Chipset & 0xfff0) == 0x01D0) ||
-+		    ((par->Chipset & 0xfff0) == 0x0290))
-+			regions = 15;  	 
-+		for(i = 0; i < regions; i++) {
-+			NV_WR32(par->PFB, 0x0600 + (i * 0x10), 0);
-+			NV_WR32(par->PFB, 0x0604 + (i * 0x10),
-+				par->FbMapSize - 1);
-+		}
-+	} 
- 
- 	if (par->Architecture >= NV_ARCH_40) {
- 		NV_WR32(par->PRAMIN, 0x0000 * 4, 0x80000010);
-@@ -1182,11 +1191,17 @@ void NVLoadStateExt(struct nvidia_par *p
- 			NV_WR32(par->PGRAPH, 0x0608, 0xFFFFFFFF);
- 		} else {
- 			if (par->Architecture >= NV_ARCH_40) {
-+				u32 tmp;
-+
- 				NV_WR32(par->PGRAPH, 0x0084, 0x401287c0);
- 				NV_WR32(par->PGRAPH, 0x008C, 0x60de8051);
- 				NV_WR32(par->PGRAPH, 0x0090, 0x00008000);
- 				NV_WR32(par->PGRAPH, 0x0610, 0x00be3c5f);
- 
-+				tmp = NV_RD32(par->REGS, 0x1540) & 0xff;
-+				for(i = 0; tmp && !(tmp & 1); tmp >>= 1, i++);
-+				NV_WR32(par->PGRAPH, 0x5000, i);
-+ 
- 				if ((par->Chipset & 0xfff0) == 0x0040) {
- 					NV_WR32(par->PGRAPH, 0x09b0,
- 						0x83280fff);
-@@ -1211,6 +1226,7 @@ void NVLoadStateExt(struct nvidia_par *p
- 						0xffff7fff);
- 					break;
- 				case 0x00C0:
-+				case 0x0120:
- 					NV_WR32(par->PGRAPH, 0x0828,
- 						0x007596ff);
- 					NV_WR32(par->PGRAPH, 0x082C,
-@@ -1245,6 +1261,7 @@ void NVLoadStateExt(struct nvidia_par *p
- 						0x00100000);
- 					break;
- 				case 0x0090:
-+				case 0x0290:
- 					NV_WR32(par->PRAMDAC, 0x0608,
- 						NV_RD32(par->PRAMDAC, 0x0608) |
- 						0x00100000);
-@@ -1310,14 +1327,44 @@ void NVLoadStateExt(struct nvidia_par *p
- 				}
- 			}
- 
--			if ((par->Chipset & 0xfff0) == 0x0090) {
--				for (i = 0; i < 60; i++)
--					NV_WR32(par->PGRAPH, 0x0D00 + i,
--						NV_RD32(par->PFB, 0x0600 + i));
-+			if ((par->Architecture < NV_ARCH_40) ||
-+			    ((par->Chipset & 0xfff0) == 0x0040)) {
-+				for (i = 0; i < 32; i++) {
-+					NV_WR32(par->PGRAPH, 0x0900 + i*4,
-+						NV_RD32(par->PFB, 0x0240 +i*4));
-+					NV_WR32(par->PGRAPH, 0x6900 + i*4,
-+						NV_RD32(par->PFB, 0x0240 +i*4));
-+				}
- 			} else {
--				for (i = 0; i < 32; i++)
--					NV_WR32(par->PGRAPH, 0x0900 + i,
--						NV_RD32(par->PFB, 0x0240 + i));
-+				if (((par->Chipset & 0xfff0) == 0x0090) ||
-+				    ((par->Chipset & 0xfff0) == 0x01D0) ||
-+				    ((par->Chipset & 0xfff0) == 0x0290)) {
-+					for (i = 0; i < 60; i++) {
-+						NV_WR32(par->PGRAPH,
-+							0x0D00 + i*4,
-+							NV_RD32(par->PFB,
-+								0x0600 + i*4));
-+						NV_WR32(par->PGRAPH,
-+							0x6900 + i*4,
-+							NV_RD32(par->PFB,
-+								0x0600 + i*4));
-+					}
-+				} else {
-+					for (i = 0; i < 48; i++) {
-+						NV_WR32(par->PGRAPH,
-+							0x0900 + i*4,
-+							NV_RD32(par->PFB,
-+								0x0600 + i*4));
-+						if(((par->Chipset & 0xfff0)
-+						    != 0x0160) &&
-+						   ((par->Chipset & 0xfff0)
-+						    != 0x0220))
-+							NV_WR32(par->PGRAPH,
-+								0x6900 + i*4,
-+								NV_RD32(par->PFB,
-+									0x0600 + i*4));
-+					}
-+				}
- 			}
- 
- 			if (par->Architecture >= NV_ARCH_40) {
-@@ -1338,7 +1385,9 @@ void NVLoadStateExt(struct nvidia_par *p
- 					NV_WR32(par->PGRAPH, 0x0868,
- 						par->FbMapSize - 1);
- 				} else {
--					if((par->Chipset & 0xfff0) == 0x0090) {
-+					if ((par->Chipset & 0xfff0) == 0x0090 ||
-+					    (par->Chipset & 0xfff0) == 0x01D0 ||
-+					    (par->Chipset & 0xfff0) == 0x0290) {
- 						NV_WR32(par->PGRAPH, 0x0DF0,
- 							NV_RD32(par->PFB, 0x0200));
- 						NV_WR32(par->PGRAPH, 0x0DF4,
-Index: linux-work/drivers/video/nvidia/nv_setup.c
-===================================================================
---- linux-work.orig/drivers/video/nvidia/nv_setup.c	2005-11-24 17:18:46.000000000 +1100
-+++ linux-work/drivers/video/nvidia/nv_setup.c	2005-12-07 19:09:01.000000000 +1100
-@@ -285,7 +285,6 @@ static void nv10GetConfig(struct nvidia_
- 			par->CrystalFreqKHz = 27000;
- 	}
- 
--	par->CursorStart = (par->RamAmountKBytes - 96) * 1024;
- 	par->CURSOR = NULL;	/* can't set this here */
- 	par->MinVClockFreqKHz = 12000;
- 	par->MaxVClockFreqKHz = par->twoStagePLL ? 400000 : 350000;
-@@ -382,6 +381,8 @@ void NVCommonSetup(struct fb_info *info)
- 	case 0x0146:
- 	case 0x0147:
- 	case 0x0148:
-+	case 0x0098:
-+	case 0x0099:
- 		mobile = 1;
- 		break;
- 	default:
-Index: linux-work/drivers/video/nvidia/nvidia.c
-===================================================================
---- linux-work.orig/drivers/video/nvidia/nvidia.c	2005-11-24 17:18:46.000000000 +1100
-+++ linux-work/drivers/video/nvidia/nvidia.c	2005-12-07 18:52:36.000000000 +1100
-@@ -1485,6 +1485,8 @@ static u32 __devinit nvidia_get_arch(str
- 	case 0x0210:
- 	case 0x0220:
- 	case 0x0230:
-+	case 0x0290:
-+	case 0x0390:
- 		arch = NV_ARCH_40;
- 		break;
- 	case 0x0020:		/* TNT, TNT2 */
-@@ -1581,10 +1583,15 @@ static int __devinit nvidiafb_probe(stru
- 	if (par->FbMapSize > 64 * 1024 * 1024)
- 		par->FbMapSize = 64 * 1024 * 1024;
- 
--	par->FbUsableSize = par->FbMapSize - (128 * 1024);
-+	if(par->Architecture >= NV_ARCH_40)
-+  	        par->FbUsableSize = par->FbMapSize - (560 * 1024);
-+	else
-+		par->FbUsableSize = par->FbMapSize - (128 * 1024);
- 	par->ScratchBufferSize = (par->Architecture < NV_ARCH_10) ? 8 * 1024 :
- 	    16 * 1024;
- 	par->ScratchBufferStart = par->FbUsableSize - par->ScratchBufferSize;
-+	par->CursorStart = par->FbUsableSize + (32 * 1024);
-+
- 	info->screen_base = ioremap(nvidiafb_fix.smem_start, par->FbMapSize);
- 	info->screen_size = par->FbUsableSize;
- 	nvidiafb_fix.smem_len = par->RamAmountKBytes * 1024;
+> Anyway, all of the above patches apply OK to whatever is in git-powerpc so
+> I spose we can just merge git-powerpc and be happy.  Soon, I hope - I have
+> a few things held up by that tree.
+
+We are working on it.
+
+> Tell Paul to grovel appropriately to Linus when he sends it though -
+> putting non-arch stuff into an arch tree tends to upset him.  
+
+Well, that's why we aren't sending it to Linus ourselves... I'll send it
+back to you separately.
+
+Ben.
 
 
 

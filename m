@@ -1,27 +1,20 @@
-From: "Eric Schoeller" <erics@plek.net>
-Subject: RE: 855resolution patch and linux framebuffer
-Date: Mon, 9 Jan 2006 15:33:12 -0700
-Message-ID: <01fb01c6156c$ac9169a0$43030f0a@CUERIC>
-References: <43BF18CD.8060706@gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] aty: remove unnecessary CONFIG_PCI
+Date: Tue, 10 Jan 2006 21:27:14 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0601102124340.3646@pademelon.sonytel.be>
+References: <200601101728.k0AHSlWh018934@hera.kernel.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Ew5ZC-0000Yw-PI
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Jan 2006 14:32:42 -0800
-Received: from edgar1.colorado.edu ([128.138.129.100])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44)
-	id 1Ew5ZC-0006xe-9w
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Jan 2006 14:32:42 -0800
-Received: from CUERIC (comp113np-67-dhcp.int.Colorado.EDU [10.15.3.67])
-	(authenticated bits=0)
-	by edgar1.colorado.edu (8.13.3/8.13.3/UnixOps+Hesiod+SSL) with ESMTP id k09MWeid017488
-	(version=TLSv1/SSLv3 cipher=RC4-MD5 bits=128 verify=NO)
-	for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 9 Jan 2006 15:32:40 -0700 (MST)
-In-Reply-To: <43BF18CD.8060706@gmail.com>
+	id 1EwQ5d-0004u0-6E
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 10 Jan 2006 12:27:33 -0800
+Received: from witte.sonytel.be ([80.88.33.193])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1EwQ5b-0003wr-M9
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 10 Jan 2006 12:27:33 -0800
+In-Reply-To: <200601101728.k0AHSlWh018934@hera.kernel.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,54 +25,67 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Richard Knutsson <ricknu-0@student.ltu.se>
+Cc: "Antonino A. Daplas" <adaplas@pol.net>, Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-Would you, or anyone else be able to recommend an alternative?
-
-Thanks
-
-
------Original Message-----
-From: linux-fbdev-devel-admin@lists.sourceforge.net
-[mailto:linux-fbdev-devel-admin@lists.sourceforge.net] On Behalf Of Antonino
-A. Daplas
-Sent: Friday, January 06, 2006 6:27 PM
-To: linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: [Linux-fbdev-devel] 855resolution patch and linux framebuffer
-
-Eric Schoeller wrote:
-> I have been working recently with the framebuffer driver vesafb and
-> kernel 2.6.14. I am using the Intel 855GME chipset on a dell 700m
-> laptop. The native resolution of the LCD on this device is 1280x800 -
-> but can only be achieved after using Alain Porier's 855resolution patch
-> to enter the correct mode into the chipset's BIOS. The sad thing is that
-> I have to do this on every boot - and thus I have to run it before I
-> load the vesafb driver. This procedure is undesirable.
-> Is there a way similar functionality of this 855resolution patch could
-> be integrated into the kernel in some way?
-> I think it would be very useful for everyone who is using this chipset
-> and is dealing with having to enter modes into the BIOS in similar
-> fashions.
+On Tue, 10 Jan 2006, Linux Kernel Mailing List wrote:
+> tree 2567482d480da5d320cc7af065f03716e41dbbd6
+> parent 2b4f2f4b0132afa9f441171285cca354377bf5d0
+> author Richard Knutsson <ricknu-0@student.ltu.se> Tue, 10 Jan 2006 12:52:55 -0800
+> committer Linus Torvalds <torvalds@g5.osdl.org> Wed, 11 Jan 2006 00:01:42 -0800
 > 
+> [PATCH] aty: remove unnecessary CONFIG_PCI
+> 
+> Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
+> Cc: "Antonino A. Daplas" <adaplas@pol.net>
+> Signed-off-by: Andrew Morton <akpm@osdl.org>
+> Signed-off-by: Linus Torvalds <torvalds@osdl.org>
+> 
+>  drivers/video/aty/atyfb_base.c |    4 ----
+>  1 files changed, 4 deletions(-)
+> 
+> diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
+> index 3fefdb0..d8195f7 100644
+> --- a/drivers/video/aty/atyfb_base.c
+> +++ b/drivers/video/aty/atyfb_base.c
+> @@ -3692,9 +3692,7 @@ static int __init atyfb_init(void)
+>      atyfb_setup(option);
+>  #endif
+>  
+> -#ifdef CONFIG_PCI
+>      pci_register_driver(&atyfb_driver);
+> -#endif
+>  #ifdef CONFIG_ATARI
+>      atyfb_atari_probe();
+>  #endif
+> @@ -3703,9 +3701,7 @@ static int __init atyfb_init(void)
+>  
+>  static void __exit atyfb_exit(void)
+>  {
+> -#ifdef CONFIG_PCI
+>  	pci_unregister_driver(&atyfb_driver);
+> -#endif
+>  }
 
-It would require BIOS calls, and we don't have any facility yet to make
-BIOS calls in the kernel.
+Have you compile-tested this? Since atyfb_driver is not defined if CONFIG_PCI
+is not set and pci_register_driver() is not a macro but an inline function (so
+the compiler will see the reference to atyfb_driver), I'm afraid it will break
+the non-CONFIG_PCI build.
 
-Tony
+[Disclaimer: I'm not in a position to compile-test it myself right now]
 
+Gr{oetje,eeting}s,
 
+						Geert
 
--------------------------------------------------------
-This SF.net email is sponsored by: Splunk Inc. Do you grep through log files
-for problems?  Stop!  Download the new AJAX search engine that makes
-searching your log files as easy as surfing the  web.  DOWNLOAD SPLUNK!
-http://ads.osdn.com/?ad_id=7637&alloc_id=16865&op=click
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

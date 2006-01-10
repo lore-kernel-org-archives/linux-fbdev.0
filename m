@@ -1,22 +1,22 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
 Subject: Re: [PATCH] nvidiafb: Fix 6xxx/7xxx cards
-Date: Tue, 10 Jan 2006 09:23:14 +0800
-Message-ID: <43C30C82.7060406@gmail.com>
+Date: Tue, 10 Jan 2006 09:26:07 +0800
+Message-ID: <43C30D2F.1060401@gmail.com>
 References: <1133944427.7168.70.camel@gaston>	<43989DA3.8070602@gmail.com>	<1134080257.11760.19.camel@gaston>	<4398B995.6000903@gmail.com>	<1134287682.6989.49.camel@gaston>	<1136773933.30123.100.camel@localhost.localdomain> <20060108191311.00ab5dba.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Ew8Ew-00085y-OK
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Jan 2006 17:23:58 -0800
-Received: from zproxy.gmail.com ([64.233.162.201])
+	id 1Ew8Hi-0008IG-M0
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Jan 2006 17:26:50 -0800
+Received: from zproxy.gmail.com ([64.233.162.199])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Ew8Eu-0002kb-Cw
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Jan 2006 17:23:58 -0800
-Received: by zproxy.gmail.com with SMTP id z3so3925824nzf
-        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 09 Jan 2006 17:23:55 -0800 (PST)
+	id 1Ew8Hi-0001B1-0V
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 09 Jan 2006 17:26:50 -0800
+Received: by zproxy.gmail.com with SMTP id z3so3926273nzf
+        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 09 Jan 2006 17:26:48 -0800 (PST)
 In-Reply-To: <20060108191311.00ab5dba.akpm@osdl.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -30,7 +30,7 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: benh@kernel.crashing.org, adaplas@hotpop.com
+Cc: benh@kernel.crashing.org, adaplas@hotpop.com, Andrew Morton <akpm@osdl.org>
 
 Andrew Morton wrote:
 > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
@@ -47,6 +47,7 @@ Linus, on Dec 10 and Dec 16 respectively. I have these in my inbox.
 - nvidiafb-fix-6xxx-7xxx-cards.patch removed from -mm tree 12/16/2005
 
 Tony
+
 
 
 -------------------------------------------------------

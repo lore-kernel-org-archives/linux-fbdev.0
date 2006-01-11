@@ -1,63 +1,95 @@
-From: Sven Luther <sven.luther@wanadoo.fr>
-Subject: Bug#347186: linux-image-2.6.14-2-alpha-generic: garbled Matrox framebuffer
-Date: Wed, 11 Jan 2006 12:48:48 +0100
-Message-ID: <20060111114848.GA6453@localhost.localdomain>
-References: <20060109090849.GB3481@tennyson.dodds.net> <20060109093517.GA23253@localhost.localdomain> <20060109105146.GE3481@tennyson.dodds.net> <20060111102827.GF7691@nancy> <43C4EAD4.2090704@pol.net>
-Reply-To: Sven Luther <sven.luther@wanadoo.fr>,
-	347186@bugs.debian.org
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: [PATCH 5/5] fbdev: Update maintainers list
+Date: Wed, 11 Jan 2006 20:00:19 +0800
+Message-ID: <43C4F353.3060706@gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <bounce-debian-bugs-dist=glddb-debian-bugs-dist=m.gmane.org@lists.debian.org>
-Resent-To: debian-bugs-dist@lists.debian.org
-Resent-Message-ID: <handler.347186.B347186.113698026919986@bugs.debian.org>
-Content-Disposition: inline
-In-Reply-To: <43C4EAD4.2090704@pol.net>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:debian-bugs-dist@lists.debian.org>
-List-Help: <mailto:debian-bugs-dist-request@lists.debian.org?subject=help>
-List-Subscribe: <mailto:debian-bugs-dist-request@lists.debian.org?subject=subscribe>
-List-Unsubscribe: <mailto:debian-bugs-dist-request@lists.debian.org?subject=unsubscribe>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Antonino A. Daplas" <adaplas@pol.net>
-Cc: maximilian attems <maks@sternwelten.at>, Steve Langasek <vorlon@debian.org>, 347186@bugs.debian.org, Sven Luther <sven.luther@wanadoo.fr>, linux-fbdev-devel@lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1Ewf5k-0005ps-Gj
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 11 Jan 2006 04:28:40 -0800
+Received: from zproxy.gmail.com ([64.233.162.206])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1Ewf5h-0006t5-9F
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 11 Jan 2006 04:28:40 -0800
+Received: by zproxy.gmail.com with SMTP id r28so137883nza
+        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 11 Jan 2006 04:28:37 -0800 (PST)
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, Jan 11, 2006 at 07:24:04PM +0800, Antonino A. Daplas wrote:
-> maximilian attems wrote:
-> > dear adaplas,
-> > 
-> > could you please take a look at this matroxfb debian bug report:
-> > http://bugs.debian.org/347186
-> > 
-> > On Mon, 09 Jan 2006, Steve Langasek wrote:
-> > 
-> > <snipp>
-> >>>> Sigh, can't get a break with alpha kernel support around here.  After
-> >>>> upgrading to 2.6.14 (from 2.4.27), the Matrox framebuffer no longer works
-> >>>> correctly on my alpha with a Matrox Millenium II.  The matroxfb_base module
-> >>>> loads without error, but gives me corrupt video output only.
-> >>> Try turning off acceleration.
-> >> Doesn't make a difference.
-> >>
-> >> What did make a difference was, after googling, loading fbcon manually
-> >> before loading matroxfb_base.  Given that I'm loading matroxfb_base by hand
-> >> (/etc/modules), it's not getting loaded via udev or anything like that, it
-> >> seems to me that it's my responsibility to load fbcon by hand as well, but
-> >> it's still something of an unexpected change from 2.4.
-> 
-> You can always compile fbcon statically and the fbdev as modules so you get
-> the same behavior as 2.4.  (The separation of fbdev from fbcon is advantageous
-> in embedded systems where the console is not needed).
-> 
-> (There's a new document Documentation/fb/fbcon.txt that explains some of the
-> changes. It's new in 2.6.15).
+Update maintainer's list.
 
-Also, note : 
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
+---
 
-  http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=311815
-  [powerpc] screen garbage when using matroxfb acceleration
+ MAINTAINERS |   22 +++++++++++++++++-----
+ 1 files changed, 17 insertions(+), 5 deletions(-)
 
-this is on powerpc64 though, so it may be some 64-bitness issue.
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 725606d..caf7a6b 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -1323,6 +1323,12 @@ M:	ttb@tentacle.dhs.org and rml@novell.c
+ L:	linux-kernel@vger.kernel.org
+ S:	Maintained
+ 
++INTEL FRAMEBUFFER DRIVER (excluding 810 and 815)
++P:      Sylvain Meyer
++M:      sylvain.meyer@worldonline.fr
++L:      linux-fbdev-devel@lists.sourceforge.net
++S:      Maintained
++
+ INTEL 810/815 FRAMEBUFFER DRIVER
+ P:      Antonino Daplas
+ M:      adaplas@pol.net
+@@ -1924,11 +1930,11 @@ W:	http://linux-ntfs.sf.net/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/aia21/ntfs-2.6.git
+ S:	Maintained
+ 
+-NVIDIA (RIVA) FRAMEBUFFER DRIVER
+-P:	Ani Joshi
+-M:	ajoshi@shell.unixbox.com
+-L:	linux-nvidia@lists.surfsouth.com
+-S:	Maintained
++NVIDIA (rivafb and nvidiafb) FRAMEBUFFER DRIVER
++P:      Antonino Daplas
++M:      adaplas@pol.net
++L:      linux-fbdev-devel@lists.sourceforge.net
++S:      Maintained
+ 
+ ORACLE CLUSTER FILESYSTEM 2 (OCFS2)
+ P:	Mark Fasheh
+@@ -2223,6 +2229,12 @@ L:	rtl@rtlinux.org
+ W:	www.rtlinux.org
+ S:	Maintained
+ 
++S3 SAVAGE FRAMEBUFFER DRIVER
++P:      Antonino Daplas
++M:      adaplas@pol.net
++L:      linux-fbdev-devel@lists.sourceforge.net
++S:      Maintained
++
+ S390
+ P:	Martin Schwidefsky
+ M:	schwidefsky@de.ibm.com
 
-Friendly,
 
-Sven Luther
+
+-------------------------------------------------------
+This SF.net email is sponsored by: Splunk Inc. Do you grep through log files
+for problems?  Stop!  Download the new AJAX search engine that makes
+searching your log files as easy as surfing the  web.  DOWNLOAD SPLUNK!
+http://ads.osdn.com/?ad_id=7637&alloc_id=16865&op=click

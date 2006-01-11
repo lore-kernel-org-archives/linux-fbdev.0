@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 3/5] fbdev: Sanitize ->fb_ioctl prototype
-Date: Wed, 11 Jan 2006 19:58:39 +0800
-Message-ID: <43C4F2EF.7070503@gmail.com>
+Subject: [PATCH 4/5] fbdev: Sanitize ->fb_mmap prototype
+Date: Wed, 11 Jan 2006 19:59:27 +0800
+Message-ID: <43C4F31F.9000904@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Ewf5Z-0005po-Ah
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 11 Jan 2006 04:28:29 -0800
-Received: from zproxy.gmail.com ([64.233.162.201])
+	id 1Ewf5e-0005pr-Gu
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 11 Jan 2006 04:28:34 -0800
+Received: from zproxy.gmail.com ([64.233.162.206])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Ewf5Y-0006rP-Fa
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 11 Jan 2006 04:28:29 -0800
-Received: by zproxy.gmail.com with SMTP id 13so123669nzp
-        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 11 Jan 2006 04:28:28 -0800 (PST)
+	id 1Ewf5d-0006t5-Ip
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 11 Jan 2006 04:28:34 -0800
+Received: by zproxy.gmail.com with SMTP id r28so137883nza
+        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 11 Jan 2006 04:28:33 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,642 +32,459 @@ Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Chri
 
 From: Christoph Hellwig <hch@lst.de>
 
-The ioctl and file arguments to ->fb_mmap are totally unused and there's
-not reason a driver should need them.
+Again, no need for a file argument.  If we'd really need it it's in
+vma->vm_file already.  gbefb and sgivwfb used to set vma->vm_file to
+the file argument, but the kernel alrady did that.
 
-Also update the ->fb_compat_ioctl prototype to be the same as ->fb_mmap.
-
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/amifb.c                 |    9 +++------
- drivers/video/arcfb.c                 |    5 ++---
- drivers/video/atafb.c                 |    3 +--
- drivers/video/aty/aty128fb.c          |    6 ++----
- drivers/video/aty/atyfb_base.c        |    6 ++----
- drivers/video/aty/radeon_base.c       |    4 ++--
- drivers/video/bw2.c                   |    6 ++----
- drivers/video/cg14.c                  |    6 ++----
- drivers/video/cg3.c                   |    6 ++----
- drivers/video/cg6.c                   |    6 ++----
- drivers/video/fbmem.c                 |    4 ++--
- drivers/video/ffb.c                   |    6 ++----
- drivers/video/imsttfb.c               |    3 +--
- drivers/video/intelfb/intelfbdrv.c    |    8 +++-----
- drivers/video/kyro/fbdev.c            |    5 ++---
- drivers/video/leo.c                   |    6 ++----
- drivers/video/matrox/matroxfb_base.c  |    5 ++---
- drivers/video/matrox/matroxfb_crtc2.c |    9 ++++-----
- drivers/video/p9100.c                 |    7 +++----
- drivers/video/pm3fb.c                 |    8 ++------
- drivers/video/pmag-aa-fb.c            |    3 +--
- drivers/video/radeonfb.c              |    4 ++--
- drivers/video/sis/sis_main.c          |   28 ++++++++--------------------
- drivers/video/sis/sis_main.h          |    5 +++++
- drivers/video/sstfb.c                 |    3 +--
- drivers/video/tcx.c                   |    7 +++----
- include/linux/fb.h                    |    8 ++++----
- 27 files changed, 67 insertions(+), 109 deletions(-)
+ drivers/video/68328fb.c        |    6 ++----
+ drivers/video/acornfb.c        |    2 +-
+ drivers/video/amba-clcd.c      |    2 +-
+ drivers/video/aty/atyfb_base.c |    4 ++--
+ drivers/video/au1100fb.c       |    2 +-
+ drivers/video/bw2.c            |    4 ++--
+ drivers/video/cg14.c           |    4 ++--
+ drivers/video/cg3.c            |    4 ++--
+ drivers/video/cg6.c            |    4 ++--
+ drivers/video/controlfb.c      |    4 ++--
+ drivers/video/fbmem.c          |    2 +-
+ drivers/video/ffb.c            |    4 ++--
+ drivers/video/gbefb.c          |    3 +--
+ drivers/video/igafb.c          |    2 +-
+ drivers/video/leo.c            |    4 ++--
+ drivers/video/p9100.c          |    4 ++--
+ drivers/video/pxafb.c          |    2 +-
+ drivers/video/sa1100fb.c       |    2 +-
+ drivers/video/sgivwfb.c        |    5 ++---
+ drivers/video/tcx.c            |    4 ++--
+ drivers/video/vfb.c            |    4 ++--
+ include/linux/fb.h             |    2 +-
+ 22 files changed, 35 insertions(+), 39 deletions(-)
 
-diff --git a/drivers/video/amifb.c b/drivers/video/amifb.c
-index 2c42a81..3033c72 100644
---- a/drivers/video/amifb.c
-+++ b/drivers/video/amifb.c
-@@ -1131,9 +1131,7 @@ static void amifb_copyarea(struct fb_inf
- 			   const struct fb_copyarea *region);
- static void amifb_imageblit(struct fb_info *info,
- 			    const struct fb_image *image);
--static int amifb_ioctl(struct inode *inode, struct file *file,
--		       unsigned int cmd, unsigned long arg,
--		       struct fb_info *info);
-+static int amifb_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg);
+diff --git a/drivers/video/68328fb.c b/drivers/video/68328fb.c
+index 3b0ddc5..78488bb 100644
+--- a/drivers/video/68328fb.c
++++ b/drivers/video/68328fb.c
+@@ -102,8 +102,7 @@ static int mc68x328fb_setcolreg(u_int re
+ 			 u_int transp, struct fb_info *info);
+ static int mc68x328fb_pan_display(struct fb_var_screeninfo *var,
+ 			   struct fb_info *info);
+-static int mc68x328fb_mmap(struct fb_info *info, struct file *file,
+-		    struct vm_area_struct *vma);
++static int mc68x328fb_mmap(struct fb_info *info, struct vm_area_struct *vma);
  
+ static struct fb_ops mc68x328fb_ops = {
+ 	.fb_check_var	= mc68x328fb_check_var,
+@@ -398,8 +397,7 @@ static int mc68x328fb_pan_display(struct
+      *  Most drivers don't need their own mmap function 
+      */
  
- 	/*
-@@ -2172,9 +2170,8 @@ static void amifb_imageblit(struct fb_in
- 	 * Amiga Frame Buffer Specific ioctls
- 	 */
- 
--static int amifb_ioctl(struct inode *inode, struct file *file,
--		       unsigned int cmd, unsigned long arg,
--		       struct fb_info *info)
-+static int amifb_ioctl(struct fb_info *info,
-+		       unsigned int cmd, unsigned long arg)
+-static int mc68x328fb_mmap(struct fb_info *info, struct file *file,
+-		    struct vm_area_struct *vma)
++static int mc68x328fb_mmap(struct fb_info *info, struct vm_area_struct *vma)
  {
- 	union {
- 		struct fb_fix_cursorinfo fix;
-diff --git a/drivers/video/arcfb.c b/drivers/video/arcfb.c
-index 89060b2..df8e566 100644
---- a/drivers/video/arcfb.c
-+++ b/drivers/video/arcfb.c
-@@ -399,9 +399,8 @@ static void arcfb_imageblit(struct fb_in
- 				image->height);
- }
- 
--static int arcfb_ioctl(struct inode *inode, struct file *file,
--			  unsigned int cmd, unsigned long arg,
--			  struct fb_info *info)
-+static int arcfb_ioctl(struct fb_info *info,
-+			  unsigned int cmd, unsigned long arg)
- {
- 	void __user *argp = (void __user *)arg;
- 	struct arcfb_par *par = info->par;
-diff --git a/drivers/video/atafb.c b/drivers/video/atafb.c
-index 15ec129..e69ab65 100644
---- a/drivers/video/atafb.c
-+++ b/drivers/video/atafb.c
-@@ -2571,8 +2571,7 @@ atafb_pan_display(struct fb_var_screenin
- }
- 
+ #ifndef MMU
+ 	/* this is uClinux (no MMU) specific code */
+diff --git a/drivers/video/acornfb.c b/drivers/video/acornfb.c
+index 750cebb..b058273 100644
+--- a/drivers/video/acornfb.c
++++ b/drivers/video/acornfb.c
+@@ -883,7 +883,7 @@ acornfb_pan_display(struct fb_var_screen
+  * Note that we are entered with the kernel locked.
+  */
  static int
--atafb_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
--	       unsigned long arg, int con, struct fb_info *info)
-+atafb_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+-acornfb_mmap(struct fb_info *info, struct file *file, struct vm_area_struct *vma)
++acornfb_mmap(struct fb_info *info, struct vm_area_struct *vma)
  {
- 	switch (cmd) {
- #ifdef FBCMD_GET_CURRENTPAR
-diff --git a/drivers/video/aty/aty128fb.c b/drivers/video/aty/aty128fb.c
-index e686185..bfc8a93 100644
---- a/drivers/video/aty/aty128fb.c
-+++ b/drivers/video/aty/aty128fb.c
-@@ -431,8 +431,7 @@ static int aty128fb_setcolreg(u_int regn
- static int aty128fb_pan_display(struct fb_var_screeninfo *var,
- 			   struct fb_info *fb);
- static int aty128fb_blank(int blank, struct fb_info *fb);
--static int aty128fb_ioctl(struct inode *inode, struct file *file, u_int cmd,
--			  u_long arg, struct fb_info *info);
-+static int aty128fb_ioctl(struct fb_info *info, u_int cmd, unsigned long arg);
- static int aty128fb_sync(struct fb_info *info);
+ 	unsigned long off, start;
+ 	u32 len;
+diff --git a/drivers/video/amba-clcd.c b/drivers/video/amba-clcd.c
+index 69421c8..4881d06 100644
+--- a/drivers/video/amba-clcd.c
++++ b/drivers/video/amba-clcd.c
+@@ -308,7 +308,7 @@ static int clcdfb_blank(int blank_mode, 
+ 	return 0;
+ }
  
-     /*
-@@ -2108,8 +2107,7 @@ static int aty128fb_setcolreg(u_int regn
- /* in param: u32*	backlight value: 0 to 15 */
- #define FBIO_ATY128_SET_MIRROR	_IOW('@', 2, __u32)
- 
--static int aty128fb_ioctl(struct inode *inode, struct file *file, u_int cmd,
--			  u_long arg, struct fb_info *info)
-+static int aty128fb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
+-static int clcdfb_mmap(struct fb_info *info, struct file *file,
++static int clcdfb_mmap(struct fb_info *info,
+ 		       struct vm_area_struct *vma)
  {
- 	struct aty128fb_par *par = info->par;
- 	u32 value;
+ 	struct clcd_fb *fb = to_clcd(info);
 diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
-index ed81005..75b463a 100644
+index 75b463a..485be38 100644
 --- a/drivers/video/aty/atyfb_base.c
 +++ b/drivers/video/aty/atyfb_base.c
-@@ -238,8 +238,7 @@ static int atyfb_setcolreg(u_int regno, 
- 	u_int transp, struct fb_info *info);
- static int atyfb_pan_display(struct fb_var_screeninfo *var, struct fb_info *info);
- static int atyfb_blank(int blank, struct fb_info *info);
--static int atyfb_ioctl(struct inode *inode, struct file *file, u_int cmd,
--	u_long arg, struct fb_info *info);
-+static int atyfb_ioctl(struct fb_info *info, u_int cmd, u_long arg);
- extern void atyfb_fillrect(struct fb_info *info, const struct fb_fillrect *rect);
+@@ -243,7 +243,7 @@ extern void atyfb_fillrect(struct fb_inf
  extern void atyfb_copyarea(struct fb_info *info, const struct fb_copyarea *area);
  extern void atyfb_imageblit(struct fb_info *info, const struct fb_image *image);
-@@ -1739,8 +1738,7 @@ struct atyclk {
- #define FBIO_WAITFORVSYNC _IOW('F', 0x20, __u32)
+ #ifdef __sparc__
+-static int atyfb_mmap(struct fb_info *info, struct file *file, struct vm_area_struct *vma);
++static int atyfb_mmap(struct fb_info *info, struct vm_area_struct *vma);
  #endif
+ static int atyfb_sync(struct fb_info *info);
  
--static int atyfb_ioctl(struct inode *inode, struct file *file, u_int cmd,
--	u_long arg, struct fb_info *info)
-+static int atyfb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
+@@ -1843,7 +1843,7 @@ static int atyfb_sync(struct fb_info *in
+ }
+ 
+ #ifdef __sparc__
+-static int atyfb_mmap(struct fb_info *info, struct file *file, struct vm_area_struct *vma)
++static int atyfb_mmap(struct fb_info *info, struct vm_area_struct *vma)
  {
  	struct atyfb_par *par = (struct atyfb_par *) info->par;
- #ifdef __sparc__
-diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
-index 156db84..c9f0c5a 100644
---- a/drivers/video/aty/radeon_base.c
-+++ b/drivers/video/aty/radeon_base.c
-@@ -864,8 +864,8 @@ static int radeonfb_pan_display (struct 
- }
- 
- 
--static int radeonfb_ioctl (struct inode *inode, struct file *file, unsigned int cmd,
--                           unsigned long arg, struct fb_info *info)
-+static int radeonfb_ioctl (struct fb_info *info, unsigned int cmd,
-+                           unsigned long arg)
+ 	unsigned int size, page, map_size = 0;
+diff --git a/drivers/video/au1100fb.c b/drivers/video/au1100fb.c
+index a512980..2406899 100644
+--- a/drivers/video/au1100fb.c
++++ b/drivers/video/au1100fb.c
+@@ -379,7 +379,7 @@ void au1100fb_fb_rotate(struct fb_info *
+  * Map video memory in user space. We don't use the generic fb_mmap method mainly
+  * to allow the use of the TLB streaming flag (CCA=6)
+  */
+-int au1100fb_fb_mmap(struct fb_info *fbi, struct file *file, struct vm_area_struct *vma)
++int au1100fb_fb_mmap(struct fb_info *fbi, struct vm_area_struct *vma)
  {
-         struct radeonfb_info *rinfo = info->par;
- 	unsigned int tmp;
+ 	struct au1100fb_device *fbdev = to_au1100fb_device(fbi);
+ 	unsigned int len;
 diff --git a/drivers/video/bw2.c b/drivers/video/bw2.c
-index 9248fe1..641a6c1 100644
+index 641a6c1..c029db4 100644
 --- a/drivers/video/bw2.c
 +++ b/drivers/video/bw2.c
-@@ -36,8 +36,7 @@
+@@ -35,7 +35,7 @@
+ 
  static int bw2_blank(int, struct fb_info *);
  
- static int bw2_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
--static int bw2_ioctl(struct inode *, struct file *, unsigned int,
--		     unsigned long, struct fb_info *);
-+static int bw2_ioctl(struct fb_info *, unsigned int, unsigned long);
+-static int bw2_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
++static int bw2_mmap(struct fb_info *, struct vm_area_struct *);
+ static int bw2_ioctl(struct fb_info *, unsigned int, unsigned long);
  
  /*
-  *  Frame buffer operations
-@@ -181,8 +180,7 @@ static int bw2_mmap(struct fb_info *info
- 				  vma);
- }
+@@ -168,7 +168,7 @@ static struct sbus_mmap_map bw2_mmap_map
+ 	{ .size = 0 }
+ };
  
--static int bw2_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
--		     unsigned long arg, struct fb_info *info)
-+static int bw2_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+-static int bw2_mmap(struct fb_info *info, struct file *file, struct vm_area_struct *vma)
++static int bw2_mmap(struct fb_info *info, struct vm_area_struct *vma)
  {
- 	struct bw2_par *par = (struct bw2_par *) info->par;
+ 	struct bw2_par *par = (struct bw2_par *)info->par;
  
 diff --git a/drivers/video/cg14.c b/drivers/video/cg14.c
-index a561471..edb9936 100644
+index edb9936..63b6c79 100644
 --- a/drivers/video/cg14.c
 +++ b/drivers/video/cg14.c
-@@ -32,8 +32,7 @@ static int cg14_setcolreg(unsigned, unsi
+@@ -31,7 +31,7 @@
+ static int cg14_setcolreg(unsigned, unsigned, unsigned, unsigned,
  			 unsigned, struct fb_info *);
  
- static int cg14_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
--static int cg14_ioctl(struct inode *, struct file *, unsigned int,
--		      unsigned long, struct fb_info *);
-+static int cg14_ioctl(struct fb_info *, unsigned int, unsigned long);
+-static int cg14_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
++static int cg14_mmap(struct fb_info *, struct vm_area_struct *);
+ static int cg14_ioctl(struct fb_info *, unsigned int, unsigned long);
  static int cg14_pan_display(struct fb_var_screeninfo *, struct fb_info *);
  
- /*
-@@ -277,8 +276,7 @@ static int cg14_mmap(struct fb_info *inf
- 				  par->iospace, vma);
+@@ -267,7 +267,7 @@ static int cg14_setcolreg(unsigned regno
+ 	return 0;
  }
  
--static int cg14_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
--		      unsigned long arg, struct fb_info *info)
-+static int cg14_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+-static int cg14_mmap(struct fb_info *info, struct file *file, struct vm_area_struct *vma)
++static int cg14_mmap(struct fb_info *info, struct vm_area_struct *vma)
  {
  	struct cg14_par *par = (struct cg14_par *) info->par;
- 	struct cg14_regs __iomem *regs = par->regs;
+ 
 diff --git a/drivers/video/cg3.c b/drivers/video/cg3.c
-index 9fcd896..027f707 100644
+index 027f707..3de6e1b 100644
 --- a/drivers/video/cg3.c
 +++ b/drivers/video/cg3.c
-@@ -34,8 +34,7 @@ static int cg3_setcolreg(unsigned, unsig
+@@ -33,7 +33,7 @@ static int cg3_setcolreg(unsigned, unsig
+ 			 unsigned, struct fb_info *);
  static int cg3_blank(int, struct fb_info *);
  
- static int cg3_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
--static int cg3_ioctl(struct inode *, struct file *, unsigned int,
--		     unsigned long, struct fb_info *);
-+static int cg3_ioctl(struct fb_info *, unsigned int, unsigned long);
+-static int cg3_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
++static int cg3_mmap(struct fb_info *, struct vm_area_struct *);
+ static int cg3_ioctl(struct fb_info *, unsigned int, unsigned long);
  
  /*
-  *  Frame buffer operations
-@@ -240,8 +239,7 @@ static int cg3_mmap(struct fb_info *info
- 				  vma);
- }
+@@ -229,7 +229,7 @@ static struct sbus_mmap_map cg3_mmap_map
+ 	{ .size = 0 }
+ };
  
--static int cg3_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
--		     unsigned long arg, struct fb_info *info)
-+static int cg3_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+-static int cg3_mmap(struct fb_info *info, struct file *file, struct vm_area_struct *vma)
++static int cg3_mmap(struct fb_info *info, struct vm_area_struct *vma)
  {
- 	struct cg3_par *par = (struct cg3_par *) info->par;
+ 	struct cg3_par *par = (struct cg3_par *)info->par;
  
 diff --git a/drivers/video/cg6.c b/drivers/video/cg6.c
-index 050835e..678e335 100644
+index 678e335..7aab91e 100644
 --- a/drivers/video/cg6.c
 +++ b/drivers/video/cg6.c
-@@ -37,8 +37,7 @@ static void cg6_imageblit(struct fb_info
+@@ -36,7 +36,7 @@ static int cg6_blank(int, struct fb_info
+ static void cg6_imageblit(struct fb_info *, const struct fb_image *);
  static void cg6_fillrect(struct fb_info *, const struct fb_fillrect *);
  static int cg6_sync(struct fb_info *);
- static int cg6_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
--static int cg6_ioctl(struct inode *, struct file *, unsigned int,
--		     unsigned long, struct fb_info *);
-+static int cg6_ioctl(struct fb_info *, unsigned int, unsigned long);
+-static int cg6_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
++static int cg6_mmap(struct fb_info *, struct vm_area_struct *);
+ static int cg6_ioctl(struct fb_info *, unsigned int, unsigned long);
  
  /*
-  *  Frame buffer operations
-@@ -534,8 +533,7 @@ static int cg6_mmap(struct fb_info *info
- 				  vma);
- }
+@@ -523,7 +523,7 @@ static struct sbus_mmap_map cg6_mmap_map
+ 	{ .size	= 0 }
+ };
  
--static int cg6_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
--		     unsigned long arg, struct fb_info *info)
-+static int cg6_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+-static int cg6_mmap(struct fb_info *info, struct file *file, struct vm_area_struct *vma)
++static int cg6_mmap(struct fb_info *info, struct vm_area_struct *vma)
  {
- 	struct cg6_par *par = (struct cg6_par *) info->par;
+ 	struct cg6_par *par = (struct cg6_par *)info->par;
  
+diff --git a/drivers/video/controlfb.c b/drivers/video/controlfb.c
+index 03798e9..655301a 100644
+--- a/drivers/video/controlfb.c
++++ b/drivers/video/controlfb.c
+@@ -128,7 +128,7 @@ static int controlfb_pan_display(struct 
+ static int controlfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+ 	u_int transp, struct fb_info *info);
+ static int controlfb_blank(int blank_mode, struct fb_info *info);
+-static int controlfb_mmap(struct fb_info *info, struct file *file,
++static int controlfb_mmap(struct fb_info *info,
+ 	struct vm_area_struct *vma);
+ static int controlfb_set_par (struct fb_info *info);
+ static int controlfb_check_var (struct fb_var_screeninfo *var, struct fb_info *info);
+@@ -280,7 +280,7 @@ static int controlfb_pan_display(struct 
+  * for controlfb.
+  * Note there's no locking in here; it's done in fb_mmap() in fbmem.c.
+  */
+-static int controlfb_mmap(struct fb_info *info, struct file *file,
++static int controlfb_mmap(struct fb_info *info,
+                        struct vm_area_struct *vma)
+ {
+        unsigned long off, start;
 diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 83e2594..571069b 100644
+index 571069b..49c9536 100644
 --- a/drivers/video/fbmem.c
 +++ b/drivers/video/fbmem.c
-@@ -957,7 +957,7 @@ fb_ioctl(struct inode *inode, struct fil
- 	default:
- 		if (fb->fb_ioctl == NULL)
- 			return -EINVAL;
--		return fb->fb_ioctl(inode, file, cmd, arg, info);
-+		return fb->fb_ioctl(info, cmd, arg);
+@@ -1135,7 +1135,7 @@ fb_mmap(struct file *file, struct vm_are
+ 	if (fb->fb_mmap) {
+ 		int res;
+ 		lock_kernel();
+-		res = fb->fb_mmap(info, file, vma);
++		res = fb->fb_mmap(info, vma);
+ 		unlock_kernel();
+ 		return res;
  	}
- }
- 
-@@ -1107,7 +1107,7 @@ fb_compat_ioctl(struct file *file, unsig
- 
- 	default:
- 		if (fb->fb_compat_ioctl)
--			ret = fb->fb_compat_ioctl(file, cmd, arg, info);
-+			ret = fb->fb_compat_ioctl(cmd, arg, info);
- 		break;
- 	}
- 	unlock_kernel();
 diff --git a/drivers/video/ffb.c b/drivers/video/ffb.c
-index c4870d5..d096c12 100644
+index d096c12..9c9b21d 100644
 --- a/drivers/video/ffb.c
 +++ b/drivers/video/ffb.c
-@@ -38,8 +38,7 @@ static void ffb_fillrect(struct fb_info 
+@@ -37,7 +37,7 @@ static void ffb_imageblit(struct fb_info
+ static void ffb_fillrect(struct fb_info *, const struct fb_fillrect *);
  static void ffb_copyarea(struct fb_info *, const struct fb_copyarea *);
  static int ffb_sync(struct fb_info *);
- static int ffb_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
--static int ffb_ioctl(struct inode *, struct file *, unsigned int,
--		     unsigned long, struct fb_info *);
-+static int ffb_ioctl(struct fb_info *, unsigned int, unsigned long);
+-static int ffb_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
++static int ffb_mmap(struct fb_info *, struct vm_area_struct *);
+ static int ffb_ioctl(struct fb_info *, unsigned int, unsigned long);
  static int ffb_pan_display(struct fb_var_screeninfo *, struct fb_info *);
  
- /*
-@@ -848,8 +847,7 @@ static int ffb_mmap(struct fb_info *info
- 				  0, vma);
+@@ -838,7 +838,7 @@ static struct sbus_mmap_map ffb_mmap_map
+ 	{ .size = 0 }
+ };
+ 
+-static int ffb_mmap(struct fb_info *info, struct file *file, struct vm_area_struct *vma)
++static int ffb_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ {
+ 	struct ffb_par *par = (struct ffb_par *)info->par;
+ 
+diff --git a/drivers/video/gbefb.c b/drivers/video/gbefb.c
+index d744c51..38d2272 100644
+--- a/drivers/video/gbefb.c
++++ b/drivers/video/gbefb.c
+@@ -979,7 +979,7 @@ static int gbefb_check_var(struct fb_var
+ 	return 0;
  }
  
--static int ffb_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
--		     unsigned long arg, struct fb_info *info)
-+static int ffb_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
+-static int gbefb_mmap(struct fb_info *info, struct file *file,
++static int gbefb_mmap(struct fb_info *info,
+ 			struct vm_area_struct *vma)
  {
- 	struct ffb_par *par = (struct ffb_par *) info->par;
+ 	unsigned long size = vma->vm_end - vma->vm_start;
+@@ -1000,7 +1000,6 @@ static int gbefb_mmap(struct fb_info *in
+ 		pgprot_fb(pgprot_val(vma->vm_page_prot));
  
-diff --git a/drivers/video/imsttfb.c b/drivers/video/imsttfb.c
-index a5d8130..ad416ae 100644
---- a/drivers/video/imsttfb.c
-+++ b/drivers/video/imsttfb.c
-@@ -1267,8 +1267,7 @@ imsttfb_cursor(struct fb_info *info, str
- #define FBIMSTT_GETIDXREG	0x545406
+ 	vma->vm_flags |= VM_IO | VM_RESERVED;
+-	vma->vm_file = file;
  
- static int
--imsttfb_ioctl(struct inode *inode, struct file *file, u_int cmd,
--	      u_long arg, struct fb_info *info)
-+imsttfb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
- {
- 	struct imstt_par *par = info->par;
- 	void __user *argp = (void __user *)arg;
-diff --git a/drivers/video/intelfb/intelfbdrv.c b/drivers/video/intelfb/intelfbdrv.c
-index 0090544..6b8bd3c 100644
---- a/drivers/video/intelfb/intelfbdrv.c
-+++ b/drivers/video/intelfb/intelfbdrv.c
-@@ -157,9 +157,8 @@ static int intelfb_cursor(struct fb_info
- 
- static int intelfb_sync(struct fb_info *info);
- 
--static int intelfb_ioctl(struct inode *inode, struct file *file,
--			 unsigned int cmd, unsigned long arg,
--			 struct fb_info *info);
-+static int intelfb_ioctl(struct fb_info *info,
-+			 unsigned int cmd, unsigned long arg);
- 
- static int __devinit intelfb_pci_register(struct pci_dev *pdev,
- 					  const struct pci_device_id *ent);
-@@ -1380,8 +1379,7 @@ intelfb_pan_display(struct fb_var_screen
- 
- /* When/if we have our own ioctls. */
- static int
--intelfb_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
--	      unsigned long arg, struct fb_info *info)
-+intelfb_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
- {
- 	int retval = 0;
- 
-diff --git a/drivers/video/kyro/fbdev.c b/drivers/video/kyro/fbdev.c
-index bcd359b..477ad29 100644
---- a/drivers/video/kyro/fbdev.c
-+++ b/drivers/video/kyro/fbdev.c
-@@ -586,9 +586,8 @@ static int __init kyrofb_setup(char *opt
+ 	/* look for the starting tile */
+ 	tile = &gbe_tiles.cpu[offset >> TILE_SHIFT];
+diff --git a/drivers/video/igafb.c b/drivers/video/igafb.c
+index e326f44..6b88050 100644
+--- a/drivers/video/igafb.c
++++ b/drivers/video/igafb.c
+@@ -219,7 +219,7 @@ static void iga_blank_border(struct iga_
  }
- #endif
  
--static int kyrofb_ioctl(struct inode *inode, struct file *file,
--			unsigned int cmd, unsigned long arg,
--			struct fb_info *info)
-+static int kyrofb_ioctl(struct fb_info *info,
-+			unsigned int cmd, unsigned long arg)
+ #ifdef __sparc__
+-static int igafb_mmap(struct fb_info *info, struct file *file,
++static int igafb_mmap(struct fb_info *info,
+ 		      struct vm_area_struct *vma)
  {
- 	overlay_create ol_create;
- 	overlay_viewport_set ol_viewport_set;
+ 	struct iga_par *par = (struct iga_par *)info->par;
 diff --git a/drivers/video/leo.c b/drivers/video/leo.c
-index 494287f..fb14787 100644
+index fb14787..a23cfdb 100644
 --- a/drivers/video/leo.c
 +++ b/drivers/video/leo.c
-@@ -33,8 +33,7 @@ static int leo_setcolreg(unsigned, unsig
+@@ -32,7 +32,7 @@ static int leo_setcolreg(unsigned, unsig
+ 			 unsigned, struct fb_info *);
  static int leo_blank(int, struct fb_info *);
  
- static int leo_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
--static int leo_ioctl(struct inode *, struct file *, unsigned int,
--		     unsigned long, struct fb_info *);
-+static int leo_ioctl(struct fb_info *, unsigned int, unsigned long);
+-static int leo_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
++static int leo_mmap(struct fb_info *, struct vm_area_struct *);
+ static int leo_ioctl(struct fb_info *, unsigned int, unsigned long);
  static int leo_pan_display(struct fb_var_screeninfo *, struct fb_info *);
  
- /*
-@@ -373,8 +372,7 @@ static int leo_mmap(struct fb_info *info
- 				  vma);
- }
- 
--static int leo_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
--		     unsigned long arg, struct fb_info *info)
-+static int leo_ioctl(struct fb_info *info, unsigned int cmd, unsigned long arg)
- {
- 	struct leo_par *par = (struct leo_par *) info->par;
- 
-diff --git a/drivers/video/matrox/matroxfb_base.c b/drivers/video/matrox/matroxfb_base.c
-index 1be8e30..951c997 100644
---- a/drivers/video/matrox/matroxfb_base.c
-+++ b/drivers/video/matrox/matroxfb_base.c
-@@ -864,9 +864,8 @@ static struct matrox_altout panellink_ou
- 	.name	 = "Panellink output",
+@@ -362,7 +362,7 @@ static struct sbus_mmap_map leo_mmap_map
+ 	{ .size = 0 }
  };
  
--static int matroxfb_ioctl(struct inode *inode, struct file *file,
--			  unsigned int cmd, unsigned long arg,
--			  struct fb_info *info)
-+static int matroxfb_ioctl(struct fb_info *info,
-+			  unsigned int cmd, unsigned long arg)
+-static int leo_mmap(struct fb_info *info, struct file *file, struct vm_area_struct *vma)
++static int leo_mmap(struct fb_info *info, struct vm_area_struct *vma)
  {
- 	void __user *argp = (void __user *)arg;
- 	MINFO_FROM_INFO(info);
-diff --git a/drivers/video/matrox/matroxfb_crtc2.c b/drivers/video/matrox/matroxfb_crtc2.c
-index d52d7d8..27eb4bb 100644
---- a/drivers/video/matrox/matroxfb_crtc2.c
-+++ b/drivers/video/matrox/matroxfb_crtc2.c
-@@ -419,11 +419,10 @@ static int matroxfb_dh_get_vblank(const 
- 	return 0;
- }
+ 	struct leo_par *par = (struct leo_par *)info->par;
  
--static int matroxfb_dh_ioctl(struct inode* inode,
--		struct file* file,
-+static int matroxfb_dh_ioctl(struct fb_info *info,
- 		unsigned int cmd,
--		unsigned long arg,
--		struct fb_info* info) {
-+		unsigned long arg)
-+{
- #define m2info (container_of(info, struct matroxfb_dh_fb_info, fbcon))
- 	MINFO_FROM(m2info->primary_dev);
- 
-@@ -457,7 +456,7 @@ static int matroxfb_dh_ioctl(struct inod
- 		case MATROXFB_GET_OUTPUT_MODE:
- 		case MATROXFB_GET_ALL_OUTPUTS:
- 			{
--				return ACCESS_FBINFO(fbcon.fbops)->fb_ioctl(inode, file, cmd, arg, &ACCESS_FBINFO(fbcon));
-+				return ACCESS_FBINFO(fbcon.fbops)->fb_ioctl(&ACCESS_FBINFO(fbcon), cmd, arg);
- 			}
- 		case MATROXFB_SET_OUTPUT_CONNECTION:
- 			{
 diff --git a/drivers/video/p9100.c b/drivers/video/p9100.c
-index b251e75..a1025e9 100644
+index a1025e9..0d19575 100644
 --- a/drivers/video/p9100.c
 +++ b/drivers/video/p9100.c
-@@ -32,8 +32,7 @@ static int p9100_setcolreg(unsigned, uns
+@@ -31,7 +31,7 @@ static int p9100_setcolreg(unsigned, uns
+ 			   unsigned, struct fb_info *);
  static int p9100_blank(int, struct fb_info *);
  
- static int p9100_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
--static int p9100_ioctl(struct inode *, struct file *, unsigned int,
--		       unsigned long, struct fb_info *);
-+static int p9100_ioctl(struct fb_info *, unsigned int, unsigned long);
+-static int p9100_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
++static int p9100_mmap(struct fb_info *, struct vm_area_struct *);
+ static int p9100_ioctl(struct fb_info *, unsigned int, unsigned long);
  
  /*
-  *  Frame buffer operations
-@@ -232,8 +231,8 @@ static int p9100_mmap(struct fb_info *in
- 				  vma);
- }
- 
--static int p9100_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
--		       unsigned long arg, struct fb_info *info)
-+static int p9100_ioctl(struct fb_info *info, unsigned int cmd,
-+		       unsigned long arg)
- {
- 	struct p9100_par *par = (struct p9100_par *) info->par;
- 
-diff --git a/drivers/video/pm3fb.c b/drivers/video/pm3fb.c
-index 2e11b60..0e78ddc 100644
---- a/drivers/video/pm3fb.c
-+++ b/drivers/video/pm3fb.c
-@@ -657,9 +657,7 @@ static void pm3fb_set_disp(const void *p
- static void pm3fb_detect(void);
- static int pm3fb_pan_display(const struct fb_var_screeninfo *var,
- 			     struct fb_info_gen *info);
--static int pm3fb_ioctl(struct inode *inode, struct file *file,
--                       u_int cmd, u_long arg, int con,
--		       struct fb_info *info);
-+static int pm3fb_ioctl(struct fb_info *info, u_int cmd, u_long arg);
- 
- 
- /* the struct that hold them together */
-@@ -3438,9 +3436,7 @@ static int pm3fb_pan_display(const struc
- 	return 0;
- }
- 
--static int pm3fb_ioctl(struct inode *inode, struct file *file,
--                       u_int cmd, u_long arg, int con,
--		       struct fb_info *info)
-+static int pm3fb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
- {
- 	struct pm3fb_info *l_fb_info = (struct pm3fb_info *) info;
- 	u32 cm, i;
-diff --git a/drivers/video/pmag-aa-fb.c b/drivers/video/pmag-aa-fb.c
-index 28d1fe5..d92f352 100644
---- a/drivers/video/pmag-aa-fb.c
-+++ b/drivers/video/pmag-aa-fb.c
-@@ -299,8 +299,7 @@ static int aafb_set_cmap(struct fb_cmap 
- 		return -EINVAL;
- }
- 
--static int aafb_ioctl(struct inode *inode, struct file *file, u32 cmd,
--		      unsigned long arg, int con, struct fb_info *info)
-+static int aafb_ioctl(struct fb_info *info, u32 cmd, unsigned long arg)
- {
- 	/* TODO: Not yet implemented */
- 	return -ENOIOCTLCMD;
-diff --git a/drivers/video/radeonfb.c b/drivers/video/radeonfb.c
-index 600318f..db9fb90 100644
---- a/drivers/video/radeonfb.c
-+++ b/drivers/video/radeonfb.c
-@@ -1497,8 +1497,8 @@ static int radeonfb_pan_display (struct 
- }
- 
- 
--static int radeonfb_ioctl (struct inode *inode, struct file *file, unsigned int cmd,
--                           unsigned long arg, struct fb_info *info)
-+static int radeonfb_ioctl (struct fb_info *info, unsigned int cmd,
-+                           unsigned long arg)
- {
-         struct radeonfb_info *rinfo = (struct radeonfb_info *) info;
- 	unsigned int tmp;
-diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
-index dea1a46..8adf5bf 100644
---- a/drivers/video/sis/sis_main.c
-+++ b/drivers/video/sis/sis_main.c
-@@ -1743,13 +1743,14 @@ sisfb_blank(int blank, struct fb_info *i
- 
- /* ----------- FBDev related routines for all series ---------- */
- 
--static int
--sisfb_ioctl(struct inode *inode, struct file *file,
--            unsigned int cmd, unsigned long arg,
--#if LINUX_VERSION_CODE < KERNEL_VERSION(2,5,0)
--	    int con,
-+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15)
-+static int	sisfb_ioctl(struct fb_info *info, unsigned int cmd,
-+			    unsigned long arg)
-+#else
-+static int	sisfb_ioctl(struct inode *inode, struct file *file,
-+				unsigned int cmd, unsigned long arg,
-+				struct fb_info *info)
- #endif
--	    struct fb_info *info)
- {
- 	struct sis_video_info	*ivideo = (struct sis_video_info *)info->par;
- 	struct sis_memreq	sismemreq;
-@@ -1924,19 +1925,6 @@ sisfb_ioctl(struct inode *inode, struct 
- 	return 0;
- }
- 
--#ifdef SIS_NEW_CONFIG_COMPAT
--static long
--sisfb_compat_ioctl(struct file *f, unsigned int cmd, unsigned long arg, struct fb_info *info)
--{
--	int ret;
--
--	lock_kernel();
--	ret = sisfb_ioctl(NULL, f, cmd, arg, info);
--	unlock_kernel();
--	return ret;
--}
--#endif
--
- static int
- sisfb_get_fix(struct fb_fix_screeninfo *fix, int con, struct fb_info *info)
- {
-@@ -2007,7 +1995,7 @@ static struct fb_ops sisfb_ops = {
- #endif
- 	.fb_sync	= fbcon_sis_sync,
- #ifdef SIS_NEW_CONFIG_COMPAT
--	.fb_compat_ioctl= sisfb_compat_ioctl,
-+	.fb_compat_ioctl= sisfb_ioctl,
- #endif
- 	.fb_ioctl	= sisfb_ioctl
+@@ -221,7 +221,7 @@ static struct sbus_mmap_map p9100_mmap_m
+ 	{ 0,			0,		0		    }
  };
-diff --git a/drivers/video/sis/sis_main.h b/drivers/video/sis/sis_main.h
-index 445bcbb..70b6df3 100644
---- a/drivers/video/sis/sis_main.h
-+++ b/drivers/video/sis/sis_main.h
-@@ -727,9 +727,14 @@ static int	sisfb_ioctl(struct inode *ino
- #endif
  
- #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,5,0)
-+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,15)
-+static int	sisfb_ioctl(struct fb_info *info, unsigned int cmd,
-+			    unsigned long arg);
-+#else
- static int	sisfb_ioctl(struct inode *inode, struct file *file,
- 				unsigned int cmd, unsigned long arg,
- 				struct fb_info *info);
-+#endif
- static int	sisfb_set_par(struct fb_info *info);
- static int	sisfb_blank(int blank,
- 				struct fb_info *info);
-diff --git a/drivers/video/sstfb.c b/drivers/video/sstfb.c
-index 8a5ce21..99921df 100644
---- a/drivers/video/sstfb.c
-+++ b/drivers/video/sstfb.c
-@@ -771,8 +771,7 @@ static int sstfb_setcolreg(u_int regno, 
+-static int p9100_mmap(struct fb_info *info, struct file *file, struct vm_area_struct *vma)
++static int p9100_mmap(struct fb_info *info, struct vm_area_struct *vma)
+ {
+ 	struct p9100_par *par = (struct p9100_par *)info->par;
+ 
+diff --git a/drivers/video/pxafb.c b/drivers/video/pxafb.c
+index 9fc10b9..53ad61f 100644
+--- a/drivers/video/pxafb.c
++++ b/drivers/video/pxafb.c
+@@ -395,7 +395,7 @@ static int pxafb_blank(int blank, struct
  	return 0;
  }
  
--static int sstfb_ioctl(struct inode *inode, struct file *file,
--                       u_int cmd, u_long arg, struct fb_info *info )
-+static int sstfb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
+-static int pxafb_mmap(struct fb_info *info, struct file *file,
++static int pxafb_mmap(struct fb_info *info,
+ 		      struct vm_area_struct *vma)
  {
- 	struct sstfb_par *par = info->par;
- 	struct pci_dev *sst_dev = par->dev;
+ 	struct pxafb_info *fbi = (struct pxafb_info *)info;
+diff --git a/drivers/video/sa1100fb.c b/drivers/video/sa1100fb.c
+index 2ea1354..feaa3c0 100644
+--- a/drivers/video/sa1100fb.c
++++ b/drivers/video/sa1100fb.c
+@@ -816,7 +816,7 @@ static int sa1100fb_blank(int blank, str
+ 	return 0;
+ }
+ 
+-static int sa1100fb_mmap(struct fb_info *info, struct file *file,
++static int sa1100fb_mmap(struct fb_info *info,
+ 			 struct vm_area_struct *vma)
+ {
+ 	struct sa1100fb_info *fbi = (struct sa1100fb_info *)info;
+diff --git a/drivers/video/sgivwfb.c b/drivers/video/sgivwfb.c
+index 7054660..2e6df1f 100644
+--- a/drivers/video/sgivwfb.c
++++ b/drivers/video/sgivwfb.c
+@@ -115,7 +115,7 @@ static int sgivwfb_set_par(struct fb_inf
+ static int sgivwfb_setcolreg(u_int regno, u_int red, u_int green,
+ 			     u_int blue, u_int transp,
+ 			     struct fb_info *info);
+-static int sgivwfb_mmap(struct fb_info *info, struct file *file,
++static int sgivwfb_mmap(struct fb_info *info,
+ 			struct vm_area_struct *vma);
+ 
+ static struct fb_ops sgivwfb_ops = {
+@@ -706,7 +706,7 @@ static int sgivwfb_setcolreg(u_int regno
+ 	return 0;
+ }
+ 
+-static int sgivwfb_mmap(struct fb_info *info, struct file *file,
++static int sgivwfb_mmap(struct fb_info *info,
+ 			struct vm_area_struct *vma)
+ {
+ 	unsigned long size = vma->vm_end - vma->vm_start;
+@@ -723,7 +723,6 @@ static int sgivwfb_mmap(struct fb_info *
+ 	if (remap_pfn_range(vma, vma->vm_start, offset >> PAGE_SHIFT,
+ 						size, vma->vm_page_prot))
+ 		return -EAGAIN;
+-	vma->vm_file = file;
+ 	printk(KERN_DEBUG "sgivwfb: mmap framebuffer P(%lx)->V(%lx)\n",
+ 	       offset, vma->vm_start);
+ 	return 0;
 diff --git a/drivers/video/tcx.c b/drivers/video/tcx.c
-index 2b27b44..cb94077 100644
+index cb94077..95b9182 100644
 --- a/drivers/video/tcx.c
 +++ b/drivers/video/tcx.c
-@@ -34,8 +34,7 @@ static int tcx_setcolreg(unsigned, unsig
+@@ -33,7 +33,7 @@ static int tcx_setcolreg(unsigned, unsig
+ 			 unsigned, struct fb_info *);
  static int tcx_blank(int, struct fb_info *);
  
- static int tcx_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
--static int tcx_ioctl(struct inode *, struct file *, unsigned int,
--		     unsigned long, struct fb_info *);
-+static int tcx_ioctl(struct fb_info *, unsigned int, unsigned long);
+-static int tcx_mmap(struct fb_info *, struct file *, struct vm_area_struct *);
++static int tcx_mmap(struct fb_info *, struct vm_area_struct *);
+ static int tcx_ioctl(struct fb_info *, unsigned int, unsigned long);
  static int tcx_pan_display(struct fb_var_screeninfo *, struct fb_info *);
  
- /*
-@@ -312,8 +311,8 @@ static int tcx_mmap(struct fb_info *info
- 				  vma);
- }
+@@ -301,7 +301,7 @@ static struct sbus_mmap_map __tcx_mmap_m
+ 	{ .size = 0 }
+ };
  
--static int tcx_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
--		     unsigned long arg, struct fb_info *info)
-+static int tcx_ioctl(struct fb_info *info, unsigned int cmd,
-+		     unsigned long arg)
+-static int tcx_mmap(struct fb_info *info, struct file *file, struct vm_area_struct *vma)
++static int tcx_mmap(struct fb_info *info, struct vm_area_struct *vma)
  {
- 	struct tcx_par *par = (struct tcx_par *) info->par;
+ 	struct tcx_par *par = (struct tcx_par *)info->par;
  
+diff --git a/drivers/video/vfb.c b/drivers/video/vfb.c
+index ffa1ad4..53208cb 100644
+--- a/drivers/video/vfb.c
++++ b/drivers/video/vfb.c
+@@ -81,7 +81,7 @@ static int vfb_setcolreg(u_int regno, u_
+ 			 u_int transp, struct fb_info *info);
+ static int vfb_pan_display(struct fb_var_screeninfo *var,
+ 			   struct fb_info *info);
+-static int vfb_mmap(struct fb_info *info, struct file *file,
++static int vfb_mmap(struct fb_info *info,
+ 		    struct vm_area_struct *vma);
+ 
+ static struct fb_ops vfb_ops = {
+@@ -368,7 +368,7 @@ static int vfb_pan_display(struct fb_var
+      *  Most drivers don't need their own mmap function 
+      */
+ 
+-static int vfb_mmap(struct fb_info *info, struct file *file,
++static int vfb_mmap(struct fb_info *info,
+ 		    struct vm_area_struct *vma)
+ {
+ 	return -EINVAL;
 diff --git a/include/linux/fb.h b/include/linux/fb.h
-index a973be2..6da8a80 100644
+index 6da8a80..2cb19e6 100644
 --- a/include/linux/fb.h
 +++ b/include/linux/fb.h
-@@ -608,12 +608,12 @@ struct fb_ops {
- 	int (*fb_sync)(struct fb_info *info);
- 
- 	/* perform fb specific ioctl (optional) */
--	int (*fb_ioctl)(struct inode *inode, struct file *file, unsigned int cmd,
--			unsigned long arg, struct fb_info *info);
-+	int (*fb_ioctl)(struct fb_info *info, unsigned int cmd,
-+			unsigned long arg);
- 
- 	/* Handle 32bit compat ioctl (optional) */
--	long (*fb_compat_ioctl)(struct file *f, unsigned cmd, unsigned long arg,
--			       struct fb_info *info);
-+	int (*fb_compat_ioctl)(struct fb_info *info, unsigned cmd,
-+			unsigned long arg);
+@@ -616,7 +616,7 @@ struct fb_ops {
+ 			unsigned long arg);
  
  	/* perform fb specific mmap */
- 	int (*fb_mmap)(struct fb_info *info, struct file *file, struct vm_area_struct *vma);
+-	int (*fb_mmap)(struct fb_info *info, struct file *file, struct vm_area_struct *vma);
++	int (*fb_mmap)(struct fb_info *info, struct vm_area_struct *vma);
+ 
+ 	/* save current hardware state */
+ 	void (*fb_save_state)(struct fb_info *info);
 
 
 

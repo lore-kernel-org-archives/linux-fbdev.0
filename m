@@ -1,60 +1,53 @@
-From: Olaf Hering <olh@suse.de>
-Subject: Re: wrong cursor position with nvidiafb
-Date: Sun, 22 Jan 2006 16:38:38 +0100
-Message-ID: <20060122153838.GA15532@suse.de>
-References: <20060122152246.GA15053@suse.de>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Kumba <kumba@gentoo.org>
+Subject: [PATCH]: Fix SGI O2 Compile error in drivers/video/gbefb.c
+Date: Mon, 23 Jan 2006 20:32:05 +0000
+Message-ID: <20060123203205.GB499@toucan.gentoo.org>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1F0hIg-0002Zu-Ms
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 22 Jan 2006 07:38:42 -0800
-Received: from mail.suse.de ([195.135.220.2] helo=mx1.suse.de)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44)
-	id 1F0hIf-00082L-9m
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 22 Jan 2006 07:38:42 -0800
-Received: from Relay2.suse.de (mail2.suse.de [195.135.221.8])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by mx1.suse.de (Postfix) with ESMTP id CFE8EE8A4
-	for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 22 Jan 2006 16:38:38 +0100 (CET)
+Content-Type: multipart/mixed; boundary="lEGEL1/lMxI0MVQ2"
+Return-path: <linux-mips-bounce@linux-mips.org>
 Content-Disposition: inline
-In-Reply-To: <20060122152246.GA15053@suse.de>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Sender: linux-mips-bounce@linux-mips.org
+Errors-to: linux-mips-bounce@linux-mips.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-
- On Sun, Jan 22, Olaf Hering wrote:
-
-> The cursor on my G5 is incorrectly placed at line 39, while input appears
-> correctly at the  at the bottom of the screen.
-> (Line after 'Starting kernel based NFS server' is corrupted)
-> If the screen goes blank and I hit a key, it is placed correctly and
-> everything is restored correctly.
-
-Its the rckbd start script. When it runs, the cursor position will be
-wrong.
+Cc: linux-mips@linux-mips.org
 
 
--- 
-short story of a lazy sysadmin:
- alias appserv=wotan
+--lEGEL1/lMxI0MVQ2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+Hi all,
+
+Around line ~1247 in drivers/video/gbefb.c, gbefb_remove_sysfs uses the wrong parameter, causing an O2 kernel build 
+to break when using this driver.  The attached patch supplies the correct parameter, allowing the build to succeed.
 
 
--------------------------------------------------------
-This SF.net email is sponsored by: Splunk Inc. Do you grep through log files
-for problems?  Stop!  Download the new AJAX search engine that makes
-searching your log files as easy as surfing the  web.  DOWNLOAD SPLUNK!
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=103432&bid=230486&dat=121642
+--Kumba
+
+
+--
+Gentoo/MIPS Team Lead
+Gentoo Foundation Board of Trustees
+
+"Such is oft the course of deeds that move the wheels of the world: small hands do them because they must, while the 
+eyes of the great are elsewhere." --Elrond
+
+--lEGEL1/lMxI0MVQ2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="misc-2.6.15-ip32-fix-another-gbefb-typo.patch"
+
+diff -Naurp linux-2.6.15.1.orig/drivers/video/gbefb.c linux-2.6.15.1/drivers/video/gbefb.c
+--- linux-2.6.15.1.orig/drivers/video/gbefb.c	2006-01-02 22:21:10.000000000 -0500
++++ linux-2.6.15.1/drivers/video/gbefb.c	2006-01-18 23:22:29.000000000 -0500
+@@ -1244,7 +1244,7 @@ static int __devexit gbefb_remove(struct
+ 			  (void *)gbe_tiles.cpu, gbe_tiles.dma);
+ 	release_mem_region(GBE_BASE, sizeof(struct sgi_gbe));
+ 	iounmap(gbe);
+-	gbefb_remove_sysfs(dev);
++	gbefb_remove_sysfs(&p_dev->dev);
+ 	framebuffer_release(info);
+ 
+ 	return 0;
+
+--lEGEL1/lMxI0MVQ2--

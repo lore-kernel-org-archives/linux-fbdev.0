@@ -1,51 +1,41 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH]: Fix SGI O2 Compile error in drivers/video/gbefb.c
-Date: Tue, 24 Jan 2006 07:53:04 +0800
-Message-ID: <43D56C60.4030402@gmail.com>
-References: <20060123203205.GB499@toucan.gentoo.org>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Martin Michlmayr <tbm@cyrius.com>
+Subject: Compiler error in =?utf-8?Q?drivers=2Fvide?=
+	=?utf-8?Q?o=2Fcirrusfb=2Ec=3A_syntax_error_before_=E2=80=98volatile?=
+	=?utf-8?B?4oCZ?=
+Date: Tue, 24 Jan 2006 02:51:30 +0000
+Message-ID: <20060124025130.GA8418@deprecation.cyrius.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1F1BUI-0001Jf-Um
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 23 Jan 2006 15:52:42 -0800
-Received: from xproxy.gmail.com ([66.249.82.196])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1F1BUH-0001RU-VM
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 23 Jan 2006 15:52:43 -0800
-Received: by xproxy.gmail.com with SMTP id s6so720311wxc
-        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 23 Jan 2006 15:52:40 -0800 (PST)
-In-Reply-To: <20060123203205.GB499@toucan.gentoo.org>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-mips@linux-mips.org, kumba@gentoo.org
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-mips-bounce@linux-mips.org>
+Content-Disposition: inline
+Sender: linux-mips-bounce@linux-mips.org
+Errors-to: linux-mips-bounce@linux-mips.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="utf-8"
+To: linux-fbdev-devel@lists.sourceforge.net, jgarzik@pobox.com
+Cc: linux-mips@linux-mips.org
 
-Kumba wrote:
-> Hi all,
-> 
-> Around line ~1247 in drivers/video/gbefb.c, gbefb_remove_sysfs uses the wrong parameter, causing an O2 kernel build 
-> to break when using this driver.  The attached patch supplies the correct parameter, allowing the build to succeed.
-> 
+I get the following compiler error for drivers/video/cirrusfb.c on
+mips:
 
-Okay.  Thanks.
+  CC      drivers/video/cirrusfb.o
+In file included from include/video/vga.h:25,
+                 from drivers/video/cirrusfb.c:70:
+include/asm/vga.h:29: error: syntax error before =E2=80=98volatile=E2=80=
+=99
+include/asm/vga.h:34: error: syntax error before =E2=80=98volatile=E2=80=
+=99
+make[2]: *** [drivers/video/cirrusfb.o] Error 1
 
-Tony
+These lines define scr_writew() and scr_readw():
 
+29:static inline void scr_writew(u16 val, volatile u16 *addr)
+34:static inline u16 scr_readw(volatile const u16 *addr)
 
--------------------------------------------------------
-This SF.net email is sponsored by: Splunk Inc. Do you grep through log files
-for problems?  Stop!  Download the new AJAX search engine that makes
-searching your log files as easy as surfing the  web.  DOWNLOAD SPLUNK!
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=103432&bid=230486&dat=121642
+Note that some other arches (powerpc, alpha) have the same
+definitions in vga.h.
+
+This is with 2.6.15.
+--=20
+Martin Michlmayr
+http://www.cyrius.com/

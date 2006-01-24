@@ -1,61 +1,46 @@
-From: Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: Compiler error in =?utf-8?Q?drivers=2F?=
-	=?utf-8?Q?video=2Fcirrusfb=2Ec=3A_syntax_error_before_=E2=80=98volatile?=
-	=?utf-8?B?4oCZ?=
-Date: Tue, 24 Jan 2006 13:58:53 +0000
-Message-ID: <20060124135853.GE3459@linux-mips.org>
-References: <20060124025130.GA8418@deprecation.cyrius.com>
+From: Knut Petersen <Knut_Petersen@t-online.de>
+Subject: intelfb
+Date: Tue, 24 Jan 2006 17:37:50 +0100
+Message-ID: <43D657DE.7080607@t-online.de>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-mips-bounce@linux-mips.org>
-Content-Disposition: inline
-In-Reply-To: <20060124025130.GA8418@deprecation.cyrius.com>
-Sender: linux-mips-bounce@linux-mips.org
-Errors-to: linux-mips-bounce@linux-mips.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="utf-8"
-To: Martin Michlmayr <tbm@cyrius.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, jgarzik@pobox.com, linux-mips@linux-mips.org
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1F1RB4-0008Pa-2g
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Jan 2006 08:37:54 -0800
+Received: from mailout06.sul.t-online.com ([194.25.134.19])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1F1RB2-0003Uo-RI
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Jan 2006 08:37:54 -0800
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
 
-On Tue, Jan 24, 2006 at 02:51:30AM +0000, Martin Michlmayr wrote:
+As this driver obviously has problems at least for
+the 915GM: Could someone please point me to a
+reasonable register reference for the graphics part
+of that chip?
 
-> I get the following compiler error for drivers/video/cirrusfb.c on
-> mips:
->=20
->   CC      drivers/video/cirrusfb.o
-> In file included from include/video/vga.h:25,
->                  from drivers/video/cirrusfb.c:70:
-> include/asm/vga.h:29: error: syntax error before =E2=80=98volatile=E2=
-=80=99
-> include/asm/vga.h:34: error: syntax error before =E2=80=98volatile=E2=
-=80=99
-> make[2]: *** [drivers/video/cirrusfb.o] Error 1
->=20
-> These lines define scr_writew() and scr_readw():
->=20
-> 29:static inline void scr_writew(u16 val, volatile u16 *addr)
-> 34:static inline u16 scr_readw(volatile const u16 *addr)
->=20
-> Note that some other arches (powerpc, alpha) have the same
-> definitions in vga.h.
->=20
-> This is with 2.6.15.
+BTW: Is there really no maintainer?
 
-Interesting catch.  The reason is this code in <linux/vt_buffer.h>:
+cu,
+ Knut
 
-[...]
-#if defined(CONFIG_VGA_CONSOLE) || defined(CONFIG_MDA_CONSOLE)
-#include <asm/vga.h>
-#endif
 
-#ifndef VT_BUF_HAVE_RW
-#define scr_writew(val, addr) (*(addr) =3D (val))
-#define scr_readw(addr) (*(addr))
-#define scr_memcpyw(d, s, c) memcpy(d, s, c)
-[...]
-
-But VT_BUF_HAVE_RW is defined in <asm/vga.h>, so if neither
-CONFIG_VGA_CONSOLE nor CONFIG_MDA_CONSOLE is defined compilation will
-blow up when <asm/vga.h> is being imported later.
-
-  Ralf
+-------------------------------------------------------
+This SF.net email is sponsored by: Splunk Inc. Do you grep through log files
+for problems?  Stop!  Download the new AJAX search engine that makes
+searching your log files as easy as surfing the  web.  DOWNLOAD SPLUNK!
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=103432&bid=230486&dat=121642

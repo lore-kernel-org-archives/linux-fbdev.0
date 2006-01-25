@@ -1,63 +1,50 @@
-From: Manuel Lauss <mano@roarinelk.homelinux.net>
-Subject: Re: [PATCH] i810fb: make probe of DDC3 optional
-Date: Wed, 25 Jan 2006 08:30:52 +0100
-Message-ID: <20060125073052.GA7859@roarinelk.homelinux.net>
-References: <20060125071718.GA7757@roarinelk.homelinux.net> <43D7278E.2030808@gmail.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Issue with clgenfb module
+Date: Wed, 25 Jan 2006 22:06:04 +0100 (CET)
+Message-ID: <Pine.LNX.4.62.0601252205090.24270@pademelon.sonytel.be>
+References: <yam10251.1290.139074696@smtp.pop.debitel.net>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1F1f7H-0001qE-8I
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Jan 2006 23:30:55 -0800
-Received: from fnoeppeil48.netpark.at ([217.175.205.176] helo=roarinelk.homelinux.net)
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44)
-	id 1F1f7G-0007c2-V7
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 24 Jan 2006 23:30:55 -0800
-Content-Disposition: inline
-In-Reply-To: <43D7278E.2030808@gmail.com>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+Return-path: <bounce-debian-68k=debian-68k=m.gmane.org@lists.debian.org>
+Sender: geert@sonycom.com
+In-Reply-To: <yam10251.1290.139074696@smtp.pop.debitel.net>
+Resent-Message-ID: <I0SSbD.A.c3F.Ph-1DB@murphy>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+List-Post: <mailto:debian-68k@lists.debian.org>
+List-Help: <mailto:debian-68k-request@lists.debian.org?subject=help>
+List-Subscribe: <mailto:debian-68k-request@lists.debian.org?subject=subscribe>
+List-Unsubscribe: <mailto:debian-68k-request@lists.debian.org?subject=unsubscribe>
+Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Peter Krummrich <peter.krummrich@debitel.net>
+Cc: Debian GNU/Linux m68k <debian-68k@lists.debian.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, Jan 25, 2006 at 03:23:58PM +0800, Antonino A. Daplas wrote:
-> Manuel Lauss wrote:
-> > Some time before 2.6.15, a third DDC channel was added to i810fb.
-> > On systems where these ddc pins are not connected, the probe
-> > takes about 10 seconds.
-> > 
-> > Introduce a config option to disable the probe on ddc channel 3.
-> > Reduces boot time on my i815 laptop by 10 seconds.
+On Wed, 25 Jan 2006, Peter Krummrich wrote:
+> in my set-up (Amiga2000, PicassoII graphics adapter), there is an issue with
+> the display. In low resolution modes (640x460), there are some flickering
+> pixels. Many more of them occur, if I switch to higher resolution modes
+> (1024x768). Scrolling really results in a mess on the display in these
+> modes.
 > 
-> Thanks.  Would a boot option be preferable than config?  Default would
-> be to skip probing the 3rd bus.
+> When looking at the code of clgenfb, I found that the value for the display
+> memory clock MCLK is calculated depending on the value of the video pixel
+> clock VCLK. According to the video adapter chip (Cirrus Logic GD5426)
+> manual, MCLK should be set depending on video memory speed, i. e.
+> regardless of VCLK. If MCLK is calculated depending on VCLK, the memory
+> interface can be overclocked for higher resolution modes.
+> 
+> Is someone who used to work on clgenfb code still around? I would like to
+> discuss this issue with him and try to come up with code that avoids the
+> display problems with my Picasso board.
 
-of course.
- 
-> If you agree, I'll do the patch myself.
+Maybe someone on linux-fbdev-devel@lists.sourceforge.net can help?
 
-fine with me, thanks.
+Gr{oetje,eeting}s,
 
-> Tony
+						Geert
 
--- 
- Manuel Lauss
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-
--------------------------------------------------------
-This SF.net email is sponsored by: Splunk Inc. Do you grep through log files
-for problems?  Stop!  Download the new AJAX search engine that makes
-searching your log files as easy as surfing the  web.  DOWNLOAD SPLUNK!
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=103432&bid=230486&dat=121642
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds

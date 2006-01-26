@@ -1,50 +1,60 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Issue with clgenfb module
-Date: Wed, 25 Jan 2006 22:06:04 +0100 (CET)
-Message-ID: <Pine.LNX.4.62.0601252205090.24270@pademelon.sonytel.be>
-References: <yam10251.1290.139074696@smtp.pop.debitel.net>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [PATCH] i810fb: make probe of DDC3 optional
+Date: Thu, 26 Jan 2006 14:37:48 +0800
+Message-ID: <43D86E3C.5030805@gmail.com>
+References: <20060125071718.GA7757@roarinelk.homelinux.net> <43D7278E.2030808@gmail.com> <20060125073052.GA7859@roarinelk.homelinux.net> <43D72D8E.9020609@gmail.com> <20060126060356.GA9730@roarinelk.homelinux.net>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <bounce-debian-68k=debian-68k=m.gmane.org@lists.debian.org>
-Sender: geert@sonycom.com
-In-Reply-To: <yam10251.1290.139074696@smtp.pop.debitel.net>
-Resent-Message-ID: <I0SSbD.A.c3F.Ph-1DB@murphy>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:debian-68k@lists.debian.org>
-List-Help: <mailto:debian-68k-request@lists.debian.org?subject=help>
-List-Subscribe: <mailto:debian-68k-request@lists.debian.org?subject=subscribe>
-List-Unsubscribe: <mailto:debian-68k-request@lists.debian.org?subject=unsubscribe>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Peter Krummrich <peter.krummrich@debitel.net>
-Cc: Debian GNU/Linux m68k <debian-68k@lists.debian.org>, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1F20lB-0008Ik-Gl
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 Jan 2006 22:37:33 -0800
+Received: from xproxy.gmail.com ([66.249.82.194])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1F20lA-0008Nv-4a
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 25 Jan 2006 22:37:33 -0800
+Received: by xproxy.gmail.com with SMTP id s6so177301wxc
+        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 25 Jan 2006 22:37:30 -0800 (PST)
+In-Reply-To: <20060126060356.GA9730@roarinelk.homelinux.net>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: Manuel Lauss <mano@roarinelk.homelinux.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, 25 Jan 2006, Peter Krummrich wrote:
-> in my set-up (Amiga2000, PicassoII graphics adapter), there is an issue with
-> the display. In low resolution modes (640x460), there are some flickering
-> pixels. Many more of them occur, if I switch to higher resolution modes
-> (1024x768). Scrolling really results in a mess on the display in these
-> modes.
+Manuel Lauss wrote:
+> On Wed, Jan 25, 2006 at 03:49:34PM +0800, Antonino A. Daplas wrote:
+>> Manuel Lauss wrote:
+>>> On Wed, Jan 25, 2006 at 03:23:58PM +0800, Antonino A. Daplas wrote:
+>>>> Manuel Lauss wrote:
+>> Can you test this patch?
+>>
+>> Probing for the 3rd bus needs to be done explicitly:
+>>
+>> video=i810fb:ddc3; or
+>>
+>> modprobe i810fb i810fb.ddc3=1
 > 
-> When looking at the code of clgenfb, I found that the value for the display
-> memory clock MCLK is calculated depending on the value of the video pixel
-> clock VCLK. According to the video adapter chip (Cirrus Logic GD5426)
-> manual, MCLK should be set depending on video memory speed, i. e.
-> regardless of VCLK. If MCLK is calculated depending on VCLK, the memory
-> interface can be overclocked for higher resolution modes.
+> Works as expected. Only built-in tested, though.
 > 
-> Is someone who used to work on clgenfb code still around? I would like to
-> discuss this issue with him and try to come up with code that avoids the
-> display problems with my Picasso board.
 
-Maybe someone on linux-fbdev-devel@lists.sourceforge.net can help?
+Thanks.
 
-Gr{oetje,eeting}s,
+Tony
 
-						Geert
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+-------------------------------------------------------
+This SF.net email is sponsored by: Splunk Inc. Do you grep through log files
+for problems?  Stop!  Download the new AJAX search engine that makes
+searching your log files as easy as surfing the  web.  DOWNLOAD SPLUNK!
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=103432&bid=230486&dat=121642

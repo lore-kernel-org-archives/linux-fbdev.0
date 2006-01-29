@@ -1,23 +1,22 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH] fbdev: Fix usage of blank value passed to fb_blank
-Date: Sun, 29 Jan 2006 10:18:19 +0800
-Message-ID: <43DC25EB.1040005@gmail.com>
-References: <20060127231314.GA28324@hansmi.ch> <20060127.204645.96477793.davem@davemloft.net> <43DB0839.6010703@gmail.com> <200601282106.21664.ioe-lkml@rameria.de>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] i810fb: Do not probe the third i2c bus by default
+Date: Sun, 29 Jan 2006 00:16:31 -0800
+Message-ID: <20060129001631.597a7766.akpm@osdl.org>
+References: <43DC2236.4030900@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1F329m-0006TI-KC
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 28 Jan 2006 18:19:10 -0800
-Received: from xproxy.gmail.com ([66.249.82.197])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1F329m-0001xZ-9y
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 28 Jan 2006 18:19:10 -0800
-Received: by xproxy.gmail.com with SMTP id s8so586024wxc
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 28 Jan 2006 18:19:08 -0800 (PST)
-In-Reply-To: <200601282106.21664.ioe-lkml@rameria.de>
+	id 1F37jy-0003XL-9x
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 29 Jan 2006 00:16:54 -0800
+Received: from smtp.osdl.org ([65.172.181.4])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44)
+	id 1F37jx-0007hc-PF
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 29 Jan 2006 00:16:54 -0800
+In-Reply-To: <43DC2236.4030900@gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,62 +28,26 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Ingo Oeser <ioe-lkml@rameria.de>, linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>, benh@kernel.crashing.org, linux-kernel@hansmi.ch
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, mano@roarinelk.homelinux.net
 
-The fb_blank() hook accepts 5 blanking levels which include 1 level designed
-for console use only.  Userspace is only aware of 4 levels. Thus, it's
-possible for userspace to request VESA_VSYNC_SUSPEND which, in turn, is
-interpreted by the fb driver as a request for FB_BLANK_NORMAL. A few drivers
-return -EINVAL for this, confusing userspace apps that the driver may not
-have VESA blanking support.
+"Antonino A. Daplas" <adaplas@gmail.com> wrote:
+>
+> 
+>  Some time before 2.6.15, a third DDC channel was added to i810fb.
+>  On systems where these ddc pins are not connected, the probe
+>  takes about 10 seconds.
+> 
+>  Add a boot/module  option for i810fb to explicitly probe for the 3rd
+>  ddc bus if needed.
 
-Fix by incrementing the blank value by one if the request originated from
-userspace.
+argh.  We really shouldn't be adding options like this.  People just won't
+know that the option exists and they'll sit there wondering why their
+kernel doesn't work right.  Or we invert the sense of the option and they
+sit there wondering why the bootup is so slow.
 
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
-
-Ingo Oeser wrote:
-> > May I suggest to hide this implementation detail?
-> > 
-
-Yes.  The change will be invisible to drivers.
-
-Unfortunately, this may cause some userland breakage.  X should work.
-However, some apps may have been developed that uses the FB_BLANK constants
-(DirectFB?).  In these cases, they'll get a deeper blank level instead, so it
-probably won't affect them significantly.  A follow up patch that hides the 
-FB_BLANK constants may be worthwhile.
-
- drivers/video/fbmem.c |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index d2dede6..5bed0fb 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -843,6 +843,19 @@ fb_blank(struct fb_info *info, int blank
- {	
-  	int ret = -EINVAL;
- 
-+	/*
-+	 * The framebuffer core supports 5 blanking levels (FB_BLANK), whereas
-+	 * VESA defined only 4.  The extra level, FB_BLANK_NORMAL, is a
-+	 * console invention and is not related to power management.
-+	 * Unfortunately, fb_blank callers, especially X, pass VESA constants
-+	 * leading to undefined behavior.
-+	 *
-+	 * To avoid confusion, fb_blank will assume VESA constants if coming
-+	 * from userspace, and FB_BLANK constants if coming from the kernel.
-+	 */
-+	if (info->flags & FBINFO_MISC_USEREVENT && blank)
-+		blank++;
-+
-  	if (blank > FB_BLANK_POWERDOWN)
-  		blank = FB_BLANK_POWERDOWN;
- 
-
+Is there not any way in which to fix this so things just work?  A 10-second
+timeout sounds crazy.
 
 
 -------------------------------------------------------

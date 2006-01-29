@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
 Subject: Re: [PATCH] fbdev: Fix usage of blank value passed
  to fb_blank
-Date: Mon, 30 Jan 2006 06:19:35 +0800
-Message-ID: <43DD3F77.5090306@gmail.com>
+Date: Mon, 30 Jan 2006 07:34:38 +0800
+Message-ID: <43DD510E.9090404@gmail.com>
 References: <20060127231314.GA28324@hansmi.ch> <20060127.204645.96477793.davem@davemloft.net> <43DB0839.6010703@gmail.com> <200601282106.21664.ioe-lkml@rameria.de> <43DC25EB.1040005@gmail.com> <20060129144228.GA22425@sci.fi>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1F3Ktn-0004uw-EF
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 29 Jan 2006 14:19:55 -0800
-Received: from xproxy.gmail.com ([66.249.82.192])
+	id 1F3M4R-0001QT-Lf
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 29 Jan 2006 15:34:59 -0800
+Received: from xproxy.gmail.com ([66.249.82.200])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1F3Ktl-00086J-SY
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 29 Jan 2006 14:19:55 -0800
-Received: by xproxy.gmail.com with SMTP id h29so594407wxd
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 29 Jan 2006 14:19:53 -0800 (PST)
+	id 1F3M4Q-0004iC-DR
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 29 Jan 2006 15:34:59 -0800
+Received: by xproxy.gmail.com with SMTP id h29so599925wxd
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 29 Jan 2006 15:34:56 -0800 (PST)
 In-Reply-To: <20060129144228.GA22425@sci.fi>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -55,45 +55,15 @@ s
 > constants not the VESA constants.
 >=20
 
-Hmm, you're correct... But I do remember that particular error before,
-about FBIOBLANK returning -EINVAL. I think it may be coming from=20
-this particular code
-
-
-Bool
-fbdevHWSaveScreen(ScreenPtr pScreen, int mode)
-{
-	ScrnInfoPtr pScrn =3D xf86Screens[pScreen->myNum];
-	fbdevHWPtr fPtr =3D FBDEVHWPTR(pScrn);
-	unsigned long unblank;
-
-	TRACE_ENTER("HWSaveScreen");
-	if (!pScrn->vtSema)
-		return TRUE;
-
-	unblank =3D xf86IsUnblank(mode);
-
-	if (-1 =3D=3D ioctl(fPtr->fd, FBIOBLANK, (void *)(1-unblank))) {
-		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-			   "FBIOBLANK: %s\n", strerror(errno));
-		return FALSE;
-	}
-
-	return TRUE;
-}
-
-The FBIOBLANK ioctl call passes only 2 possible values, 0 and 1
-(1-unblank).
-
-Andrew,=20
-
-I think you should drop this patch, Xorg/XFree86's fbdevhw DPMS support
-does the correct thing. It's only the above that may be producing the
-particular error as reported by David. I'm not sure how to fix that
-(kernel or X side).
-
+How about if we silently convert FB_BLANK_NORMAL requests to
+FB_BLANK_VSYNC_SUSPEND, would that work?
 
 Tony
+
+PS: Soft blanking is very difficult, if not impossible, to
+implement correctly kernel-side, so we can either fail (current
+code), silently fail but return success, or convert to the next
+blank level.
 
 
 -------------------------------------------------------

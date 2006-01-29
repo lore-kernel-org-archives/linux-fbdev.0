@@ -1,21 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH] i810fb: Do not probe the third i2c bus by default
-Date: Sun, 29 Jan 2006 10:02:30 +0800
-Message-ID: <43DC2236.4030900@gmail.com>
+Subject: [PATCH] fbdev: Fix usage of blank value passed to fb_blank
+Date: Sun, 29 Jan 2006 10:18:19 +0800
+Message-ID: <43DC25EB.1040005@gmail.com>
+References: <20060127231314.GA28324@hansmi.ch> <20060127.204645.96477793.davem@davemloft.net> <43DB0839.6010703@gmail.com> <200601282106.21664.ioe-lkml@rameria.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1F324u-0006BO-IW
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 28 Jan 2006 18:14:08 -0800
-Received: from xproxy.gmail.com ([66.249.82.206])
+	id 1F329m-0006TI-KC
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 28 Jan 2006 18:19:10 -0800
+Received: from xproxy.gmail.com ([66.249.82.197])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1F324t-0000gw-Te
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 28 Jan 2006 18:14:08 -0800
-Received: by xproxy.gmail.com with SMTP id h29so522788wxd
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 28 Jan 2006 18:14:06 -0800 (PST)
+	id 1F329m-0001xZ-9y
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 28 Jan 2006 18:19:10 -0800
+Received: by xproxy.gmail.com with SMTP id s8so586024wxc
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 28 Jan 2006 18:19:08 -0800 (PST)
+In-Reply-To: <200601282106.21664.ioe-lkml@rameria.de>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,117 +29,61 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Manuel Lauss <mano@roarinelk.homelinux.net>
+To: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Ingo Oeser <ioe-lkml@rameria.de>, linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>, benh@kernel.crashing.org, linux-kernel@hansmi.ch
 
-From: Manuel Lauss <mano@roarinelk.homelinux.net>
+The fb_blank() hook accepts 5 blanking levels which include 1 level designed
+for console use only.  Userspace is only aware of 4 levels. Thus, it's
+possible for userspace to request VESA_VSYNC_SUSPEND which, in turn, is
+interpreted by the fb driver as a request for FB_BLANK_NORMAL. A few drivers
+return -EINVAL for this, confusing userspace apps that the driver may not
+have VESA blanking support.
 
-Some time before 2.6.15, a third DDC channel was added to i810fb.
-On systems where these ddc pins are not connected, the probe
-takes about 10 seconds.
-
-Add a boot/module  option for i810fb to explicitly probe for the 3rd
-ddc bus if needed.
+Fix by incrementing the blank value by one if the request originated from
+userspace.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/i810/i810-i2c.c  |    6 +++---
- drivers/video/i810/i810.h      |    1 +
- drivers/video/i810/i810_main.c |   13 ++++++++++---
- 3 files changed, 14 insertions(+), 6 deletions(-)
+Ingo Oeser wrote:
+> > May I suggest to hide this implementation detail?
+> > 
 
-diff --git a/drivers/video/i810/i810-i2c.c b/drivers/video/i810/i810-i2c.c
-index bd410e0..e3c8b5f 100644
---- a/drivers/video/i810/i810-i2c.c
-+++ b/drivers/video/i810/i810-i2c.c
-@@ -191,11 +191,11 @@ int i810_probe_i2c_connector(struct fb_i
-         u8 *edid = NULL;
-         int i;
+Yes.  The change will be invisible to drivers.
+
+Unfortunately, this may cause some userland breakage.  X should work.
+However, some apps may have been developed that uses the FB_BLANK constants
+(DirectFB?).  In these cases, they'll get a deeper blank level instead, so it
+probably won't affect them significantly.  A follow up patch that hides the 
+FB_BLANK constants may be worthwhile.
+
+ drivers/video/fbmem.c |   13 +++++++++++++
+ 1 files changed, 13 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index d2dede6..5bed0fb 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -843,6 +843,19 @@ fb_blank(struct fb_info *info, int blank
+ {	
+  	int ret = -EINVAL;
  
--	DPRINTK("i810-i2c: Probe DDC%i Bus\n", conn);
--	if (conn < 4) {
-+	DPRINTK("i810-i2c: Probe DDC%i Bus\n", conn+1);
-+	if (conn < par->ddc_num) {
- 		for (i = 0; i < 3; i++) {
- 			/* Do the real work */
--			edid = i810_do_probe_i2c_edid(&par->chan[conn-1]);
-+			edid = i810_do_probe_i2c_edid(&par->chan[conn]);
- 			if (edid)
- 				break;
- 		}
-diff --git a/drivers/video/i810/i810.h b/drivers/video/i810/i810.h
-index 6c187d5..579195c 100644
---- a/drivers/video/i810/i810.h
-+++ b/drivers/video/i810/i810.h
-@@ -280,6 +280,7 @@ struct i810fb_par {
- 	u32 blit_bpp;
- 	u32 ovract;
- 	u32 cur_state;
-+	u32 ddc_num;
- 	int mtrr_reg;
- 	u16 bltcntl;
- 	u8 interlace;
-diff --git a/drivers/video/i810/i810_main.c b/drivers/video/i810/i810_main.c
-index 266d0ab..d8467c0 100644
---- a/drivers/video/i810/i810_main.c
-+++ b/drivers/video/i810/i810_main.c
-@@ -149,6 +149,7 @@ static int vyres      __devinitdata;
- static int sync       __devinitdata;
- static int extvga     __devinitdata;
- static int dcolor     __devinitdata;
-+static int ddc3       __devinitdata = 2;
- 
- /*------------------------------------------------------------*/
- 
-@@ -1763,6 +1764,8 @@ static void __devinit i810_init_defaults
- 	if (sync) 
- 		par->dev_flags |= ALWAYS_SYNC;
- 
-+	par->ddc_num = ddc3;
++	/*
++	 * The framebuffer core supports 5 blanking levels (FB_BLANK), whereas
++	 * VESA defined only 4.  The extra level, FB_BLANK_NORMAL, is a
++	 * console invention and is not related to power management.
++	 * Unfortunately, fb_blank callers, especially X, pass VESA constants
++	 * leading to undefined behavior.
++	 *
++	 * To avoid confusion, fb_blank will assume VESA constants if coming
++	 * from userspace, and FB_BLANK constants if coming from the kernel.
++	 */
++	if (info->flags & FBINFO_MISC_USEREVENT && blank)
++		blank++;
 +
- 	if (bpp < 8)
- 		bpp = 8;
- 	
-@@ -1885,7 +1888,7 @@ static void __devinit i810fb_find_init_m
- 	int found = 0;
- #ifdef CONFIG_FB_I810_I2C
- 	int i;
--	int err;
-+	int err = 1;
- 	struct i810fb_par *par = info->par;
- #endif
+  	if (blank > FB_BLANK_POWERDOWN)
+  		blank = FB_BLANK_POWERDOWN;
  
-@@ -1895,8 +1898,8 @@ static void __devinit i810fb_find_init_m
- #ifdef CONFIG_FB_I810_I2C
- 	i810_create_i2c_busses(par);
- 
--	for (i = 0; i < 4; i++) {
--		err = i810_probe_i2c_connector(info, &par->edid, i+1);
-+	for (i = 0; i < par->ddc_num + 1; i++) {
-+		err = i810_probe_i2c_connector(info, &par->edid, i);
- 		if (!err)
- 			break;
- 	}
-@@ -1983,6 +1986,8 @@ static int __devinit i810fb_setup(char *
- 			vsync2 = simple_strtoul(this_opt+7, NULL, 0);
- 		else if (!strncmp(this_opt, "dcolor", 6))
- 			dcolor = 1;
-+		else if (!strncmp(this_opt, "ddc3", 4))
-+			ddc3 = 3;
- 		else
- 			mode_option = this_opt;
- 	}
-@@ -2190,6 +2195,8 @@ MODULE_PARM_DESC(sync, "wait for accel e
- module_param(dcolor, bool, 0);
- MODULE_PARM_DESC(dcolor, "use DirectColor visuals"
- 		 " (default = 0 = TrueColor)");
-+module_param(ddc3, bool, 0);
-+MODULE_PARM_DESC(ddc3, "Probe DDC bus 3 (default = 0 = no)");
- module_param(mode_option, charp, 0);
- MODULE_PARM_DESC(mode_option, "Specify initial video mode");
- 
-
 
 
 

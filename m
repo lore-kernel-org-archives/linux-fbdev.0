@@ -1,57 +1,29 @@
 From: Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] i810fb: Do not probe the third i2c bus by default
-Date: Sun, 29 Jan 2006 00:16:31 -0800
-Message-ID: <20060129001631.597a7766.akpm@osdl.org>
-References: <43DC2236.4030900@gmail.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [PATCH] fbdev: Fix usage of blank value passed to fb_blank
+Date: Sun, 29 Jan 2006 00:18:32 -0800
+Message-ID: <20060129001832.4fe6fd7f.akpm@osdl.org>
+References: <20060127231314.GA28324@hansmi.ch>
+	<20060127.204645.96477793.davem@davemloft.net>
+	<43DB0839.6010703@gmail.com>
+	<200601282106.21664.ioe-lkml@rameria.de>
+	<43DC25EB.1040005@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1F37jy-0003XL-9x
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 29 Jan 2006 00:16:54 -0800
-Received: from smtp.osdl.org ([65.172.181.4])
-	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44)
-	id 1F37jx-0007hc-PF
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 29 Jan 2006 00:16:54 -0800
-In-Reply-To: <43DC2236.4030900@gmail.com>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750796AbWA2ITM@vger.kernel.org>
+In-Reply-To: <43DC25EB.1040005@gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, mano@roarinelk.homelinux.net
+Cc: linux-fbdev-devel@lists.sourceforge.net, ioe-lkml@rameria.de, linux-kernel@vger.kernel.org, davem@davemloft.net, benh@kernel.crashing.org, linux-kernel@hansmi.ch
 
 "Antonino A. Daplas" <adaplas@gmail.com> wrote:
 >
-> 
->  Some time before 2.6.15, a third DDC channel was added to i810fb.
->  On systems where these ddc pins are not connected, the probe
->  takes about 10 seconds.
-> 
->  Add a boot/module  option for i810fb to explicitly probe for the 3rd
->  ddc bus if needed.
+> Unfortunately, this may cause some userland breakage.  X should work.
+>  However, some apps may have been developed that uses the FB_BLANK constants
+>  (DirectFB?).  In these cases, they'll get a deeper blank level instead, so it
+>  probably won't affect them significantly.  A follow up patch that hides the 
+>  FB_BLANK constants may be worthwhile.
 
-argh.  We really shouldn't be adding options like this.  People just won't
-know that the option exists and they'll sit there wondering why their
-kernel doesn't work right.  Or we invert the sense of the option and they
-sit there wondering why the bootup is so slow.
-
-Is there not any way in which to fix this so things just work?  A 10-second
-timeout sounds crazy.
-
-
--------------------------------------------------------
-This SF.net email is sponsored by: Splunk Inc. Do you grep through log files
-for problems?  Stop!  Download the new AJAX search engine that makes
-searching your log files as easy as surfing the  web.  DOWNLOAD SPLUNK!
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=103432&bid=230486&dat=121642
+Would prefer to avoid any userland breakage.  Is this followup patch
+happening?

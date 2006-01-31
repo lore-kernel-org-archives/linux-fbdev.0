@@ -1,19 +1,24 @@
-From: chinlu chinawa <chinluchinawa@yahoo.co.uk>
-Subject: Hi, questions from a newbie
-Date: Tue, 31 Jan 2006 19:45:47 +0000 (GMT)
-Message-ID: <20060131194547.80483.qmail@web27002.mail.ukl.yahoo.com>
+From: Richard Smith <smithbone@gmail.com>
+Subject: Re: [patch] Framebuffer driver for Geode GX
+Date: Tue, 31 Jan 2006 16:41:41 -0500
+Message-ID: <8a0c36780601311341l83868bble5eafde500f513d7@mail.gmail.com>
+References: <43DF9C09.30806@arcom.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1F41Rs-0001d8-MQ
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 31 Jan 2006 11:45:56 -0800
-Received: from web27002.mail.ukl.yahoo.com ([217.146.177.2])
-	by mail.sourceforge.net with smtp (Exim 4.44)
-	id 1F41Rp-000360-I9
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 31 Jan 2006 11:45:56 -0800
+	id 1F43Fw-00032w-5W
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 31 Jan 2006 13:41:44 -0800
+Received: from zproxy.gmail.com ([64.233.162.206])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1F43Fv-0003Yd-5Q
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 31 Jan 2006 13:41:44 -0800
+Received: by zproxy.gmail.com with SMTP id z3so660nzf
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 31 Jan 2006 13:41:41 -0800 (PST)
+In-Reply-To: <43DF9C09.30806@arcom.com>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,51 +32,23 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Hi,
-
-I'm not a proper programmer, althought I've been for
-years now programming through Xlib, just cose I love
-it. All I know about programming and xlib is what I've
-learnt "the hard way".
-
-I say this, so you can get an idea more or less of who
-I am. I've ulpoaded a screenshot of my xterm, whis can
-be found here:
-
-http://www.geocities.com/ucho_trabajo/fbdev/xterm_shot.png
-
-This is an xserver running with the fbdev driver, and
-my question in this regard is it would be possible to
-have a tty rendering glyphs through framebuffer, like
-the one I post above? that would be really great
-
-I'm also asking myself, whether is physically possible
-to make a "really minimal window manager" to let it
-run directly through the framebuffer, is there any
-resource or book I could look at?
-
-I'm concerned about the existence of directfb, but
-with actual level of programming to fully understand
-it's sources could take me years.
-
-Might also ask for any general resources or simple
-known applications withi the framebuffer, or just for
-any advise on how to get on with fb.
-
-Kind Regards,
-
-
-
-	=09
-___________________________________________________________=20
-To help you stay safe and secure online, we've developed the all new Yaho=
-o! Security Centre. http://uk.security.yahoo.com
+T24gMS8zMS8wNiwgRGF2aWQgVnJhYmVsIDxkdnJhYmVsQGFyY29tLmNvbT4gd3JvdGU6Cj4gQSBm
+cmFtZWJ1ZmZlciBkcml2ZXIgZm9yIHRoZSBkaXNwbGF5IGNvbnRyb2xsZXIgaW4gQU1EIEdlb2Rl
+IEdYCj4gcHJvY2Vzc29ycyAoR2VvZGUgR1g1MzMsIEdlb2RlIEdYNTAwIGV0Yy4pLiAgVGVzdGVk
+IGF0IDY0MHg0ODAsIDgwMHg2MDAsCj4gMTAyNHg3NjggYW5kIDEyODB4MTAyNCBhdCA4LCAxNiwg
+YW5kIDI0IGJwcCB3aXRoIGJvdGggQ1JUIGFuZCBURlQuICBObwo+IGFjY2VsZXJhdGVkIGZlYXR1
+cmVzIGN1cnJlbnRseSBpbXBsZW1lbnRlZCBhbmQgY29tcHJlc3Npb24gcmVtYWlucyBkaXNhYmxl
+ZC4KPgo+IFRoaXMgZHJpdmVyIHJlcXVpcmVzIHRoYXQgdGhlIEJJT1MgKG9yIHRoZSBTb2Z0Vkcv
+RmlybWJhc2UgY29kZSBpbiB0aGUKPiBCSU9TKSBoYXMgY3JlYXRlZCBhbiBhcHByb3ByaWF0ZSB2
+aXJ0dWFsIFBDSSBoZWFkZXIuCj4KPiBTaWduZWQtb2ZmLWJ5OiBEYXZpZCBWcmFiZWwgPGR2cmFi
+ZWxAYXJjb20uY29tPgo+IC0tCj4gRGF2aWQgVnJhYmVsLCBEZXNpZ24gRW5naW5lZXIKCkFzaWRl
+IGZyb20gYmVpbmcgbW9yZSByZWNpZW50IHdoYXRzIHRoZSBkaWZmZXJlbmNlIGJldHdlZW4geW91
+ciBkcml2ZXIKYW5kIHRoZSAyLjYuMTEgZHJpdmVyIHBhdGNoIGZyb20gQU1EPwoKLS0KUmljaGFy
+ZCBBLiBTbWl0aAo=
 
 
 -------------------------------------------------------
-This SF.net email is sponsored by: Splunk Inc. Do you grep through log fi=
-les
+This SF.net email is sponsored by: Splunk Inc. Do you grep through log files
 for problems?  Stop!  Download the new AJAX search engine that makes
 searching your log files as easy as surfing the  web.  DOWNLOAD SPLUNK!
-http://sel.as-us.falkag.net/sel?cmd=3Dlnk&kid=3D103432&bid=3D230486&dat=3D=
-121642
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=103432&bid=230486&dat=121642

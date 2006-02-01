@@ -1,21 +1,26 @@
-From: David Vrabel <dvrabel@arcom.com>
+From: Richard Smith <smithbone@gmail.com>
 Subject: Re: [patch] Framebuffer driver for Geode GX
-Date: Wed, 01 Feb 2006 10:07:08 +0000
-Message-ID: <43E0884C.8050607@arcom.com>
-References: <43DF9C09.30806@arcom.com> <8a0c36780601311341l83868bble5eafde500f513d7@mail.gmail.com>
+Date: Wed, 1 Feb 2006 07:13:51 -0600
+Message-ID: <8a0c36780602010513p7808d411nc17cdf0713e51e18@mail.gmail.com>
+References: <43DF9C09.30806@arcom.com>
+	 <8a0c36780601311341l83868bble5eafde500f513d7@mail.gmail.com>
+	 <43E0884C.8050607@arcom.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1F4EtS-0007Nu-WC
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 01 Feb 2006 02:07:18 -0800
-Received: from webapps.arcom.com ([194.200.159.168])
+	id 1F4Ho5-0004RT-1V
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 01 Feb 2006 05:13:57 -0800
+Received: from zproxy.gmail.com ([64.233.162.192])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1F4EtQ-0001SX-DC
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 01 Feb 2006 02:07:18 -0800
-In-Reply-To: <8a0c36780601311341l83868bble5eafde500f513d7@mail.gmail.com>
+	id 1F4Ho1-0005ol-2c
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 01 Feb 2006 05:13:56 -0800
+Received: by zproxy.gmail.com with SMTP id z3so121838nzf
+        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 01 Feb 2006 05:13:51 -0800 (PST)
+In-Reply-To: <43E0884C.8050607@arcom.com>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,37 +32,25 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: smithbone@gmail.com
+To: David Vrabel <dvrabel@arcom.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Richard Smith wrote:
-> On 1/31/06, David Vrabel <dvrabel@arcom.com> wrote:
-> 
->>A framebuffer driver for the display controller in AMD Geode GX
->>processors (Geode GX533, Geode GX500 etc.).  Tested at 640x480, 800x600,
->>1024x768 and 1280x1024 at 8, 16, and 24 bpp with both CRT and TFT.  No
->>accelerated features currently implemented and compression remains disabled.
->>
->>This driver requires that the BIOS (or the SoftVG/Firmbase code in the
->>BIOS) has created an appropriate virtual PCI header.
-> 
-> Aside from being more recient whats the difference between your driver
-> and the 2.6.11 driver patch from AMD?
-
-There's only a driver for the Geode LX (or more correctly, our AMD FAE
-couldn't point me to a driver for the Geode GX).
-
-AMD's drivers tend to use their OS independant HAL (c.f. cimarron for
-the Geode LX driver and their use of the Durango API in their old 2.4
-drivers for the Geode GX).  As such, they're not suitable for inclusion
-into the kernel anyway.
-
-David Vrabel
--- 
-David Vrabel, Design Engineer
-
-Arcom, Clifton Road           Tel: +44 (0)1223 411200 ext. 3233
-Cambridge CB1 7EA, UK         Web: http://www.arcom.com/
+PiA+IEFzaWRlIGZyb20gYmVpbmcgbW9yZSByZWNpZW50IHdoYXRzIHRoZSBkaWZmZXJlbmNlIGJl
+dHdlZW4geW91ciBkcml2ZXIKPiA+IGFuZCB0aGUgMi42LjExIGRyaXZlciBwYXRjaCBmcm9tIEFN
+RD8KPgo+IFRoZXJlJ3Mgb25seSBhIGRyaXZlciBmb3IgdGhlIEdlb2RlIExYIChvciBtb3JlIGNv
+cnJlY3RseSwgb3VyIEFNRCBGQUUKPiBjb3VsZG4ndCBwb2ludCBtZSB0byBhIGRyaXZlciBmb3Ig
+dGhlIEdlb2RlIEdYKS4KCkhtbS4uLiBPbmUgb2Ygb3VyIHZlbmRvcnMgIHdhbnRzIHVzIHRvIHVz
+ZSBhIEdYIGZvciByZXBsYWNlbWVudCBvZgpzb21lIFNUUEMgc3R1ZmYgYW5kIGhpcyBGQUUgKG91
+dCBvZiBkYWxsYXMsIFRYKSBzZWVtZWQgdG8gdGhpbmsgdGhlcmUKd2FzIGEgZHJpdmVyLiAgSSds
+bCBmb3J3YXJkIG9uIHlvdXIgY29tbWVudHMgYW5kIHNlZSBpZiBoZSBjb21lcyB1cAp3aXRoIHRo
+ZSBzYW1lIHRoaW5nLiAgIFBlcmhhcHMgaGUgd2FzIG9ubHkgdGhpbmtpbmcgYWJvdXQgMi40LgoK
+PiBBTUQncyBkcml2ZXJzIHRlbmQgdG8gdXNlIHRoZWlyIE9TIGluZGVwZW5kYW50IEhBTCAoYy5m
+LiBjaW1hcnJvbiBmb3IKPiB0aGUgR2VvZGUgTFggZHJpdmVyIGFuZCB0aGVpciB1c2Ugb2YgdGhl
+IER1cmFuZ28gQVBJIGluIHRoZWlyIG9sZCAyLjQKPiBkcml2ZXJzIGZvciB0aGUgR2VvZGUgR1gp
+LiAgQXMgc3VjaCwgdGhleSdyZSBub3Qgc3VpdGFibGUgZm9yIGluY2x1c2lvbgo+IGludG8gdGhl
+IGtlcm5lbCBhbnl3YXkuCgpBaC4uIEljay4gIEkgaGF0ZSB0aG9zZS4gIFRoZSBTVFBDIGhhcyB0
+aGF0IGFzIHdlbGwuICBJdCdzIGJlZW4gdGhlCnNvdXJjZSBvZiBtdWNoIHBhaW4gZm9yIG1lLgoK
+VGhhbmtzIGZvciBpbmZvLgoKLS0KUmljaGFyZCBBLiBTbWl0aAo=
 
 
 -------------------------------------------------------

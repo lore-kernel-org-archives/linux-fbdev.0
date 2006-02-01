@@ -1,24 +1,21 @@
-From: Richard Smith <smithbone@gmail.com>
+From: David Vrabel <dvrabel@arcom.com>
 Subject: Re: [patch] Framebuffer driver for Geode GX
-Date: Tue, 31 Jan 2006 16:41:41 -0500
-Message-ID: <8a0c36780601311341l83868bble5eafde500f513d7@mail.gmail.com>
-References: <43DF9C09.30806@arcom.com>
+Date: Wed, 01 Feb 2006 10:07:08 +0000
+Message-ID: <43E0884C.8050607@arcom.com>
+References: <43DF9C09.30806@arcom.com> <8a0c36780601311341l83868bble5eafde500f513d7@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1F43Fw-00032w-5W
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 31 Jan 2006 13:41:44 -0800
-Received: from zproxy.gmail.com ([64.233.162.206])
+	id 1F4EtS-0007Nu-WC
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 01 Feb 2006 02:07:18 -0800
+Received: from webapps.arcom.com ([194.200.159.168])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1F43Fv-0003Yd-5Q
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 31 Jan 2006 13:41:44 -0800
-Received: by zproxy.gmail.com with SMTP id z3so660nzf
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 31 Jan 2006 13:41:41 -0800 (PST)
-In-Reply-To: <43DF9C09.30806@arcom.com>
-Content-Disposition: inline
+	id 1F4EtQ-0001SX-DC
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 01 Feb 2006 02:07:18 -0800
+In-Reply-To: <8a0c36780601311341l83868bble5eafde500f513d7@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,21 +27,37 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+To: smithbone@gmail.com
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-T24gMS8zMS8wNiwgRGF2aWQgVnJhYmVsIDxkdnJhYmVsQGFyY29tLmNvbT4gd3JvdGU6Cj4gQSBm
-cmFtZWJ1ZmZlciBkcml2ZXIgZm9yIHRoZSBkaXNwbGF5IGNvbnRyb2xsZXIgaW4gQU1EIEdlb2Rl
-IEdYCj4gcHJvY2Vzc29ycyAoR2VvZGUgR1g1MzMsIEdlb2RlIEdYNTAwIGV0Yy4pLiAgVGVzdGVk
-IGF0IDY0MHg0ODAsIDgwMHg2MDAsCj4gMTAyNHg3NjggYW5kIDEyODB4MTAyNCBhdCA4LCAxNiwg
-YW5kIDI0IGJwcCB3aXRoIGJvdGggQ1JUIGFuZCBURlQuICBObwo+IGFjY2VsZXJhdGVkIGZlYXR1
-cmVzIGN1cnJlbnRseSBpbXBsZW1lbnRlZCBhbmQgY29tcHJlc3Npb24gcmVtYWlucyBkaXNhYmxl
-ZC4KPgo+IFRoaXMgZHJpdmVyIHJlcXVpcmVzIHRoYXQgdGhlIEJJT1MgKG9yIHRoZSBTb2Z0Vkcv
-RmlybWJhc2UgY29kZSBpbiB0aGUKPiBCSU9TKSBoYXMgY3JlYXRlZCBhbiBhcHByb3ByaWF0ZSB2
-aXJ0dWFsIFBDSSBoZWFkZXIuCj4KPiBTaWduZWQtb2ZmLWJ5OiBEYXZpZCBWcmFiZWwgPGR2cmFi
-ZWxAYXJjb20uY29tPgo+IC0tCj4gRGF2aWQgVnJhYmVsLCBEZXNpZ24gRW5naW5lZXIKCkFzaWRl
-IGZyb20gYmVpbmcgbW9yZSByZWNpZW50IHdoYXRzIHRoZSBkaWZmZXJlbmNlIGJldHdlZW4geW91
-ciBkcml2ZXIKYW5kIHRoZSAyLjYuMTEgZHJpdmVyIHBhdGNoIGZyb20gQU1EPwoKLS0KUmljaGFy
-ZCBBLiBTbWl0aAo=
+Richard Smith wrote:
+> On 1/31/06, David Vrabel <dvrabel@arcom.com> wrote:
+> 
+>>A framebuffer driver for the display controller in AMD Geode GX
+>>processors (Geode GX533, Geode GX500 etc.).  Tested at 640x480, 800x600,
+>>1024x768 and 1280x1024 at 8, 16, and 24 bpp with both CRT and TFT.  No
+>>accelerated features currently implemented and compression remains disabled.
+>>
+>>This driver requires that the BIOS (or the SoftVG/Firmbase code in the
+>>BIOS) has created an appropriate virtual PCI header.
+> 
+> Aside from being more recient whats the difference between your driver
+> and the 2.6.11 driver patch from AMD?
+
+There's only a driver for the Geode LX (or more correctly, our AMD FAE
+couldn't point me to a driver for the Geode GX).
+
+AMD's drivers tend to use their OS independant HAL (c.f. cimarron for
+the Geode LX driver and their use of the Durango API in their old 2.4
+drivers for the Geode GX).  As such, they're not suitable for inclusion
+into the kernel anyway.
+
+David Vrabel
+-- 
+David Vrabel, Design Engineer
+
+Arcom, Clifton Road           Tel: +44 (0)1223 411200 ext. 3233
+Cambridge CB1 7EA, UK         Web: http://www.arcom.com/
 
 
 -------------------------------------------------------

@@ -1,42 +1,42 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: [-mm patch] drivers/video/geode/video_gx.c: make struct gx_pll_table_48MHz static
-Date: Fri, 10 Feb 2006 01:43:55 +0100
-Message-ID: <20060210004355.GJ3524@stusta.de>
-References: <20060207220627.345107c3.akpm@osdl.org>
+From: Mattia Dongili <malattia@linux.it>
+Subject: Re: [PATCH] fbdev: Fix typo in fbmem.c
+Date: Fri, 10 Feb 2006 17:34:07 +0100
+Message-ID: <20060210163407.GA3531@inferi.kami.home>
+References: <20060207220627.345107c3.akpm@osdl.org> <20060210145243.GA3581@inferi.kami.home> <43ECADBC.2080107@gmail.com>
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750900AbWBJAn5@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751287AbWBJQde@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <20060207220627.345107c3.akpm@osdl.org>
+In-Reply-To: <43ECADBC.2080107@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: Andrew Morton <akpm@osdl.org>, David Vrabel <dvrabel@arcom.com>
-Cc: linux-kernel@vger.kernel.org, Antonino Daplas <adaplas@pol.net>, linux-fbdev-devel@lists.sourceforge.net
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, Feb 07, 2006 at 10:06:27PM -0800, Andrew Morton wrote:
->...
-> Changes since 2.6.16-rc1-mm5:
->...
-> +fbdev-framebuffer-driver-for-geode-gx.patch
->...
->  fbdev updates/drivers/fixes
->...
+On Fri, Feb 10, 2006 at 11:14:04PM +0800, Antonino A. Daplas wrote:
+> A typo in fbmem.c prevents recognition of video= parameter.
+> 
+> Signed-off-by: Antonino Daplas <adaplas@pol.net>
+> 
+> ---
+> Mattia Dongili wrote:
+> 
+> > On Tue, Feb 07, 2006 at 10:06:27PM -0800, Andrew Morton wrote:
+> >> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.16-rc2/2.6.16-rc2-mm1/
+> > 
+> > Hello,
+> > 
+> > radeonfb ignores the video= parameter and always run at 1400x1050 (the
+> > highest available). Things where fine with .16-rc1-mm5.
+> > I also tried booting with 640x480-32@60 without success.
+> 
+> Try this patch.
 
+Thanks, now working as usual. (BTW: my ISP smtp is blacklisted so my
+messages won't reach linux-fbdev-devel)
 
-There is no good reason for struct gx_pll_table_48MHz being global.
-
-
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-
---- linux-2.6.16-rc2-mm1-full/drivers/video/geode/video_gx.c.old	2006-02-10 00:55:07.000000000 +0100
-+++ linux-2.6.16-rc2-mm1-full/drivers/video/geode/video_gx.c	2006-02-10 00:56:13.000000000 +0100
-@@ -34,7 +34,7 @@
- #define PREMULT2 ((u32)MSR_GLCP_SYS_RSTPLL_DOTPREMULT2)
- #define PREDIV2  ((u32)MSR_GLCP_SYS_RSTPLL_DOTPOSTDIV3)
- 
--struct gx_pll_entry gx_pll_table_48MHz[] = {
-+static struct gx_pll_entry gx_pll_table_48MHz[] = {
- 	{ 40123, POSTDIV3,	    0x00000BF2 },	/*  24.9230 */
- 	{ 39721, 0,		    0x00000037 },	/*  25.1750 */
- 	{ 35308, POSTDIV3|PREMULT2, 0x00000B1A },	/*  28.3220 */
+ciao
+-- 
+mattia
+:wq!

@@ -1,80 +1,106 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH] fbdev: Fix typo in fbmem.c
-Date: Fri, 10 Feb 2006 23:14:04 +0800
-Message-ID: <43ECADBC.2080107@gmail.com>
-References: <20060207220627.345107c3.akpm@osdl.org> <20060210145243.GA3581@inferi.kami.home>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Mattia Dongili <malattia@linux.it>
+Subject: Radeonfb ignores video= parameter [was: Re: 2.6.16-rc2-mm1]
+Date: Fri, 10 Feb 2006 15:52:43 +0100
+Message-ID: <20060210145243.GA3581@inferi.kami.home>
+References: <20060207220627.345107c3.akpm@osdl.org>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1F7ZyL-0000bh-8a
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Feb 2006 07:14:09 -0800
-Received: from pproxy.gmail.com ([64.233.166.183])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1F7ZyJ-0001vs-JR
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Feb 2006 07:14:09 -0800
-Received: by pproxy.gmail.com with SMTP id s49so224550pyc
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Feb 2006 07:14:02 -0800 (PST)
-In-Reply-To: <20060210145243.GA3581@inferi.kami.home>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932101AbWBJOwA@vger.kernel.org>
+Content-Disposition: inline
+In-Reply-To: <20060207220627.345107c3.akpm@osdl.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
-Cc: malattia@linux.it
+Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
 
-A typo in fbmem.c prevents recognition of video= parameter.
-
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
-
----
-Mattia Dongili wrote:
-
-> On Tue, Feb 07, 2006 at 10:06:27PM -0800, Andrew Morton wrote:
->> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.16-rc2/2.6.16-rc2-mm1/
+On Tue, Feb 07, 2006 at 10:06:27PM -0800, Andrew Morton wrote:
 > 
-> Hello,
-> 
-> radeonfb ignores the video= parameter and always run at 1400x1050 (the
-> highest available). Things where fine with .16-rc1-mm5.
-> I also tried booting with 640x480-32@60 without success.
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.16-rc2/2.6.16-rc2-mm1/
 
-Try this patch.
+Hello,
 
-Tony
+radeonfb ignores the video= parameter and always run at 1400x1050 (the
+highest available). Things where fine with .16-rc1-mm5.
+I also tried booting with 640x480-32@60 without success.
 
-PS: Andrew, maybe this patch should go into your hotfixes?
+# fbset -s
+mode "1400x1050-60"
+    # D: 108.003 MHz, H: 63.983 kHz, V: 60.021 Hz
+    geometry 1400 1050 1408 1050 8
+    timings 9259 136 40 13 0 112 3
+    hsync high
+    vsync high
+    rgba 8/0,8/0,8/0,0/0
+endmode
 
- fbmem.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
+Oh, however running
+	fbset -xres 800 -yres 600
+works when the system is up.
 
+This is the relevant dmesg snippets:
 
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 6454a37..3ff1a54 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1569,7 +1569,7 @@ int fb_get_options(char *name, char **op
- 	return retval;
- }
- 
--#ifdef MODULE
-+#ifndef MODULE
- /**
-  *	video_setup - process command line options
-  *	@options: string of options
+[    0.000000] Linux version 2.6.16-rc2-mm1-1 (mattia@inferi) (gcc version 4.0.3 20051201 (prerelease) (Debian 4.0.2-5)) #1 PREEMPT Wed Feb 8 13:19:29 CET 2006
+...
+[    8.398523] Kernel command line: root=/dev/hda1 ro vga=extended video=radeonfb:800x600-32@60 fbcon=font:Acorn8x8 lapic resume=/dev/hda2
+[    8.399088] CPU 0 irqstacks, hard=c03c1000 soft=c03c2000
+[    8.399095] PID hash table entries: 1024 (order: 10, 16384 bytes)
+[    8.482408] Console: colour VGA+ 80x50
+...
+[    8.919903] ACPI: PCI Interrupt Link [LNKA] enabled at IRQ 9
+[    8.919950] ACPI: PCI Interrupt 0000:01:00.0[A] -> Link [LNKA] -> GSI 9 (level, low) -> IRQ 9
+[    8.930704] radeonfb: Retrieved PLL infos from BIOS
+[    8.930750] radeonfb: Reference=27.00 MHz (RefDiv=60) Memory=166.00 Mhz, System=166.00 MHz
+[    8.930804] radeonfb: PLL min 12000 max 35000
+[    9.865869] Non-DDC laptop panel detected
+[   10.861036] radeonfb: Monitor 1 type LCD found
+[   10.861080] radeonfb: Monitor 2 type no found
+[   10.861127] radeonfb: panel ID string: Samsung LTN150P1-L02    
+[   10.861172] radeonfb: detected LVDS panel size from BIOS: 1400x1050
+[   10.861217] radeondb: BIOS provided dividers will be used
+[   11.096839] radeonfb: Dynamic Clock Power Management enabled
+[   11.364622] Console: switching to colour frame buffer device 175x131
+[   11.365363] radeonfb (0000:01:00.0): ATI Radeon LY 
+...
 
+the only thing being different from -rc1-mm5:
+--- boot_as_usual_but_working	2006-02-10 15:43:03.505874694 +0100
++++ boot_as_usual	2006-02-10 15:42:55.322907583 +0100
+@@ -1,4 +1,4 @@
+-Linux version 2.6.16-rc1-mm5-1 (mattia@inferi) (gcc version 4.0.3 20051201 (prerelease) (Debian 4.0.2-5)) #1 PREEMPT Sat Feb 4 14:38:36 CET 2006
++Linux version 2.6.16-rc2-mm1-1 (mattia@inferi) (gcc version 4.0.3 20051201 (prerelease) (Debian 4.0.2-5)) #1 PREEMPT Wed Feb 8 13:19:29 CET 2006
+ BIOS-provided physical RAM map:
+  BIOS-e820: 0000000000000000 - 000000000009e800 (usable)
+  BIOS-e820: 000000000009e800 - 00000000000a0000 (reserved)
+@@ -144,7 +144,7 @@
+ radeonfb: detected LVDS panel size from BIOS: 1400x1050
+ radeondb: BIOS provided dividers will be used
+ radeonfb: Dynamic Clock Power Management enabled
+-Console: switching to colour frame buffer device 100x75
++Console: switching to colour frame buffer device 175x131
+ radeonfb (0000:01:00.0): ATI Radeon LY 
+ ACPI: AC Adapter [ACAD] (on-line)
+ ACPI: Battery Slot [BAT1] (battery present)
 
--------------------------------------------------------
-This SF.net email is sponsored by: Splunk Inc. Do you grep through log files
-for problems?  Stop!  Download the new AJAX search engine that makes
-searching your log files as easy as surfing the  web.  DOWNLOAD SPLUNK!
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=103432&bid=230486&dat=121642
+And finally lspci:
+
+0000:01:00.0 VGA compatible controller: ATI Technologies Inc Radeon Mobility M6 LY (prog-if 00 [VGA])
+	Subsystem: Sony Corporation VAIO PCG-GR214EP/GR214MP/GR215MP/GR314MP/GR315MP
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping+ SERR- FastB2B+
+	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+	Latency: 66 (2000ns min), Cache Line Size: 0x08 (32 bytes)
+	Interrupt: pin A routed to IRQ 9
+	Region 0: Memory at d8000000 (32-bit, prefetchable) [size=128M]
+	Region 1: I/O ports at 3000 [size=256]
+	Region 2: Memory at d0100000 (32-bit, non-prefetchable) [size=64K]
+	Expansion ROM at d0120000 [disabled] [size=128K]
+	Capabilities: [58] AGP version 2.0
+		Status: RQ=48 Iso- ArqSz=0 Cal=0 SBA+ ITACoh- GART64- HTrans- 64bit- FW- AGP3- Rate=x1,x2,x4
+		Command: RQ=1 ArqSz=0 Cal=0 SBA+ AGP- GART64- 64bit- FW- Rate=<none>
+	Capabilities: [50] Power Management version 2
+		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+-- 
+mattia
+:wq!

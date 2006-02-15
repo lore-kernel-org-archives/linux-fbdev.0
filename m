@@ -1,57 +1,108 @@
-From: ctrefzer@gmx.de
-Subject: [-mm PATCH] neofb: enable LCD properly on unblank
-Date: Wed, 15 Feb 2006 06:53:47 +0100
-Message-ID: <20060215055347.GA10941@zeus.uziel.local>
-References: <200602150417.k1F4HSKX011435@shell0.pdx.osdl.net>
+From: Christian Trefzer <ctrefzer@gmx.de>
+Subject: Re: [patch 24/24] neofb: avoid resetting display config on unblank
+Date: Wed, 15 Feb 2006 09:42:35 +0100
+Message-ID: <20060215084235.GA10220@zeus.uziel.local>
+References: <20060214215943.37902fc4.akpm@osdl.org>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="PEIAKu/WMn1b1Hv9"
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1422981AbWBOFxw@vger.kernel.org>
+	protocol="application/pgp-signature"; boundary="YiEDa0DAkWCtVeE4"
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1F9IFI-0001Iv-3i
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 15 Feb 2006 00:42:44 -0800
+Received: from mail.gmx.net ([213.165.64.21])
+	by mail.sourceforge.net with smtp (Exim 4.44)
+	id 1F9IFH-0005Cj-LY
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 15 Feb 2006 00:42:44 -0800
 Content-Disposition: inline
-In-Reply-To: <200602150417.k1F4HSKX011435@shell0.pdx.osdl.net>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-To: akpm@osdl.org
-Cc: adaplas@pol.net, linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+In-Reply-To: <20060214215943.37902fc4.akpm@osdl.org>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+To: Andrew Morton <akpm@osdl.org>
+Cc: torvalds@osdl.org, adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net, lkml <linux-kernel@vger.kernel.org>
 
 
---PEIAKu/WMn1b1Hv9
+--YiEDa0DAkWCtVeE4
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi Andrew,
 
-On Tue, Feb 14, 2006 at 08:16:29PM -0800, akpm@osdl.org wrote:
-> The patch titled
->=20
->      neofb: avoid resetting display config on unblank
->=20
-> has been removed from the -mm tree.  Its filename is
->=20
->      neofb-avoid-resetting-display-config-on-unblank.patch
->=20
-> This patch was probably dropped from -mm because
-> it has now been merged into a subsystem tree or
-> into Linus's tree, or because it was folded into
-> its parent patch in the -mm tree.
+first of all, my apologies for this mess. Finally, I got things right
+wrt. the driver, now let me see if I can submit the patch properly, for
+once : /
 
-seems like I was running late with my patch to handle the LCD properly
-after blanking the screen.
 
-We definitely need the patch below to get the LCD's backlight to a sane
-state after unblanking. Otherwise, it is disabled unconditionally,
-because the LCD is turned of literally in the registers during blank.
-Reading those again on unblank will simply not reactivate the LCD, yet
-DPMS was handled properly, leading me to wrong conclusions.
+On Tue, Feb 14, 2006 at 09:59:43PM -0800, Andrew Morton wrote:
+> The earlier patch has already been merged.  Please check that the version
+> which I merged into -mm still makes sense.
+>=20
+> The above isn't a very good changelog entry.  It doesn't tell us what
+> problem the patch fixes and it doesn't tell us how it fixes it.
 
-This adds a new variable to struct neo_par for storing a boolean whether
-to read the register values next time we (un)blank. For some reason it
-was not sufficient to check against !blank_mode while reading registers
-in the beginning of neofb_blank().
+Thanks for the slap. Here goes:
 
-Reworked patch against neofb.c having
-neofb-avoid-resetting-display-config-on-unblank.patch applied.
+Actually, there were two mistakes in the register-read-on-(un)blank
+approach.
+
+- First, without proper register (un)locking the value read back will
+  always be zero, and this is what I missed entirely until just now. Due
+  to this, the logic could not be verified at all and I tried some bogus
+  checks which are completely stupid.
+
+- Second, the LCD status bit will always be set to zero when the
+  backlight has been turned off. Reading the value back during unblank
+  will disable the LCD unconditionally, regardless of the state it is
+  supposed to be in, since we set it to zero beforehand.
+
+
+So this is what we do now:
+
+- create a new variable in struct neofb_par, and use that to determine
+  whether to read back registers (initialized to true)
+
+- before actually blanking the screen, read back the register to sense
+  any possible change made through Fn key combo
+
+- use proper neoUnlock() / neoLock() to actually read something
+
+- every call to neofb_blank() determines if we read back next time:
+  blanking disables readback, unblanking (FB_BLANK_UNBLANK) enables it
+
+
+This should give us a nice and clean state machine. Has been thoroughly
+tested on a Dell Latitude CPiA / NM220 Chip docked to a C/Dock2 with
+attached CRT in all possible combinations of LCD/CRT on/off. I changed
+the config via Fn key, let the console blank, unblanked by keypress -
+works flawlessly.
+
+
+Below patch applies against what should currently be in Linus' tree, as
+my previous error-prone attempt has already been merged. I'd call this
+neofb-read-display-config-properly.patch as it applies on top of my
+previous already-merged mess.
+
+Andrew, please discard any other patches of mine still in -mm, this
+would be the solution to this issue unless somebody else finds a
+problem.
+
+The only problem left wrt. neofb AFAICS would be the initialization of
+CRT-only resulting in no signal being received by the monitor. This is
+in no way changed by any of my patches.=20
+
+
+> "Signed-off-by:", please.
 
 Signed-off-by: Christian Trefzer <ctrefzer@gmx.de>
 
@@ -65,8 +116,8 @@ Signed-off-by: Christian Trefzer <ctrefzer@gmx.de>
  	unsigned char PanelVertCenterReg1;
  	unsigned char PanelVertCenterReg2;
  	unsigned char PanelVertCenterReg3;
---- a/drivers/video/neofb.c	2006-02-08 21:24:05.000000000 +0100
-+++ b/drivers/video/neofb.c	2006-02-11 11:39:39.346365480 +0100
+--- a/drivers/video/neofb.c	2006-02-15 06:27:58.000000000 +0100
++++ b/drivers/video/neofb.c	2006-02-15 08:56:14.295858976 +0100
 @@ -843,6 +843,9 @@
 =20
  	par->SysIfaceCntl2 =3D 0xc0;	/* VESA Bios sets this to 0x80! */
@@ -77,7 +128,7 @@ Signed-off-by: Christian Trefzer <ctrefzer@gmx.de>
  	/* Enable any user specified display devices. */
  	par->PanelDispCntlReg1 =3D 0x00;
  	if (par->internal_display)
-@@ -1334,12 +1337,13 @@
+@@ -1334,12 +1337,16 @@
  	struct neofb_par *par =3D (struct neofb_par *)info->par;
  	int seqflags, lcdflags, dpmsflags, reg;
 =20
@@ -86,12 +137,13 @@ Signed-off-by: Christian Trefzer <ctrefzer@gmx.de>
 -	 * FN keystroke
 -	 */
 -	par->PanelDispCntlReg1 =3D vga_rgfx(NULL, 0x20) & 0x03;
--
-+	/* Reload the value stored in the register, if sensible. It might have be=
-en
-+	 * changed via FN keystroke. */
-+	if (par->PanelDispCntlRegRead && !blank_mode) {
+=20
++	/* Reload the value stored in the register, if sensible. It might have
++	 * been changed via FN keystroke. */
++	if (par->PanelDispCntlRegRead) {
++		neoUnlock();
 +		par->PanelDispCntlReg1 =3D vga_rgfx(NULL, 0x20) & 0x03;
++		neoLock(&par->state);
 +	}
 +	par->PanelDispCntlRegRead =3D !blank_mode;
 +=09
@@ -99,26 +151,34 @@ en
  	case FB_BLANK_POWERDOWN:	/* powerdown - both sync lines down */
  		seqflags =3D VGA_SR01_SCREEN_OFF; /* Disable sequencer */
 
---PEIAKu/WMn1b1Hv9
+--YiEDa0DAkWCtVeE4
 Content-Type: application/pgp-signature
 Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.2 (GNU/Linux)
 
-iQIVAwUBQ/LB612m8MprmeOlAQKqGw/+Onf/d85BnGV1jBs27k8/bCWxOAW0QVyl
-AReeIuIhiOO0MgEG6LVmHVkAuFO4BhAuqccP5bxkWyuvPXwMpPP2ZaoivAN1Wtc0
-odKOQRzPZeO9Yv4lryv2REAq9DIMm728O4oAGK8fYquP+k23qWJSvb2l+Hbq62DL
-LXJHIHlymLmIlZic8w07Hm/oYD7Ac4+6taZ68If8wARFTV5d3jbc0O5YQZgu83qg
-lQZbMZLKkbfo0isusILC7OLW3f8aGGjSEteynrxRgQGCVsX3M5t5WJz/OtgTw6MJ
-HoOhWbl0Ry5ehJclEg5WdLWIRIvSk02cGVDEMVPeMLoK6fFcYIE3cA8xybE6v9j/
-6P8P2Ah4SQEtqPBaR7pjVDNr2DUeW0DAK+EsMxLJXvCVFX90T3a+DRMSjxnJwl2g
-6L9MXqW8Pcr4pGZ5hVg+Odxumh0BB2lrScZjN4YrKFWGorgb8TgevUmKGAlqKVDY
-Qf1AeIeWteU6JELPLcaPP+ipUqcg815TeG2ItssdkIVGxPHF+12ZesrIjcdHJYAd
-/6ZEaX96ohNQU/QAJiNHZLYrcYLfpagWCGhUGKr4tDJ2qJDjtJG25fUPT/Fa8/DF
-ZxASgb3KsLpFBxxhRbf/dgHyJ28yWqd0iv/zqT/xPfBlWp7UAEbq/H2Ts7Wm8V0J
-S4pdnmWkb/8=
-=bDg6
+iQIVAwUBQ/Lpel2m8MprmeOlAQJwvRAAuhmIeEDlQ+xuNN2kBay3Ujd7T4v2t86e
+PlTJNFsb1Q8ve0xnHdYZT6/2YT0EyR4HofHVbw1KP+lJpcwHjHG3ckL5wIrPMABJ
+cZNugIsUFdV7awvolgIOIUbCTmNf//+Z7ECksH5Xefn58ZkqIkNr272yLj7cu72e
+ddFC33iszA0VhFwm/86Ya+L/nF+68E1lxAM31Yp4qn9m5wn22QYgNbUrn92S6EB+
+ZMJTm0SLYJPSCoRODKSetbskuAckp5MpiB1xRSeIM2HztnIfHqUNut+q4KexrGiD
+FQOUGCvvdQyDhEvgiM/RU13rJSrNZWs4vgWmSuYnRBERjisToDhb4AJbqTALCmBb
+Vfza9dDZ2m1mM8XPbrLqHNnsn2y83sC3DfO+PdyyE2t8xQRf73inBs4uaFLFDHL9
+VNk5Y7pMSfh2KGhKg2sQDhmaZh/ZW2dfIjhpT+xZaOcK1Hiz+jxd2yUUOF+tc35l
+UDzA6KFTURxGbib3Bsp34dxkpD3FbjMrr8HXoUg1iD1H42vsDFXX1nBUrVHhZUuM
+r1mbNEOE6OT7LV9Av/GBa9gCiVReI5kx/IFy+vCkka4lvf16mxLAmdaQsvqYFflt
+x/3nDfLhPz9tLp5DehRWiLv5IDorxBQHrOzYzAWSMmoJcgwsbJn26joixSfaWz+w
+M2WXmwlVMMA=
+=ECgo
 -----END PGP SIGNATURE-----
 
---PEIAKu/WMn1b1Hv9--
+--YiEDa0DAkWCtVeE4--
+
+
+
+-------------------------------------------------------
+This SF.net email is sponsored by: Splunk Inc. Do you grep through log files
+for problems?  Stop!  Download the new AJAX search engine that makes
+searching your log files as easy as surfing the  web.  DOWNLOAD SPLUNK!
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=103432&bid=230486&dat=121642

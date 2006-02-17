@@ -1,19 +1,19 @@
 From: Martin Michlmayr <tbm@cyrius.com>
-Subject: [PATCH] IP32 gbefb depth change fix
-Date: Fri, 17 Feb 2006 03:37:47 +0000
-Message-ID: <20060217033747.GA3779@deprecation.cyrius.com>
+Subject: [PATCH] Set default of FB_GBE_MEM to 4 MB since >= 4 MB allocation breaks fb
+Date: Fri, 17 Feb 2006 12:46:54 +0000
+Message-ID: <20060217124654.GA17201@deprecation.cyrius.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1F9wRS-0007ku-1p
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 16 Feb 2006 19:37:58 -0800
+	id 1FA50s-00008b-FH
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 17 Feb 2006 04:47:06 -0800
 Received: from sorrow.cyrius.com ([65.19.161.204])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
 	(Exim 4.44)
-	id 1F9wRQ-0001DI-TR
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 16 Feb 2006 19:37:58 -0800
+	id 1FA50q-00008G-EU
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 17 Feb 2006 04:47:06 -0800
 Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
@@ -28,42 +28,34 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Kaj-Michael Lang <milang@tal.org>
 
-From: Kaj-Michael Lang <milang@tal.org>
+[PATCH] Set default of FB_GBE_MEM to 4 MB since >= 4 MB allocation breaks fb
 
-IP32 gbefb depth change fix
+Allocating more than 4 MB memory for the GBE (SGI O2) framebuffer
+completely breakfs gbefb support at the moment.  According to comments
+on #mipslinux, more than 4 MB has never worked correctly in Linux.
+Therefore, the default should be 4 MB.
 
-The gbefb driver does not update the framebuffer layers visual setting
-when depth is changed with fbset, resulting in strange colors (very
-dark blue in 16-bit, almost black in 24-bit).
-
-Signed-off-by: Kaj-Michael Lang <milang@tal.org>
 Signed-off-by: Martin Michlmayr <tbm@cyrius.com>
 
 ---
 
- gbefb.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/video/gbefb.c
-+++ b/drivers/video/gbefb.c
-@@ -656,12 +656,15 @@ static int gbefb_set_par(struct fb_info 
- 	switch (bytesPerPixel) {
- 	case 1:
- 		SET_GBE_FIELD(WID, TYP, val, GBE_CMODE_I8);
-+		info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
- 		break;
- 	case 2:
- 		SET_GBE_FIELD(WID, TYP, val, GBE_CMODE_ARGB5);
-+		info->fix.visual = FB_VISUAL_TRUECOLOR;
- 		break;
- 	case 4:
- 		SET_GBE_FIELD(WID, TYP, val, GBE_CMODE_RGB8);
-+		info->fix.visual = FB_VISUAL_TRUECOLOR;
- 		break;
- 	}
- 	SET_GBE_FIELD(WID, BUF, val, GBE_BMODE_BOTH);
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 7d7724c..9d684bb 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -520,7 +520,7 @@ config FB_GBE
+ config FB_GBE_MEM
+ 	int "Video memory size in MB"
+ 	depends on FB_GBE
+-	default 8
++	default 4
+ 	help
+ 	  This is the amount of memory reserved for the framebuffer,
+ 	  which can be any value between 1MB and 8MB.
 
 -- 
 Martin Michlmayr

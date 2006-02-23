@@ -1,22 +1,21 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH 4/5] fbdev: Make BIOS EDID reading configurable
-Date: Thu, 23 Feb 2006 16:34:38 -0800
-Message-ID: <20060223163438.63ce04e8.akpm@osdl.org>
-References: <43FDA3C2.2010109@gmail.com>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: [PATCH 3/5] au1100fb: replaced io_remap_page_range() with io_remap_pfn_range()
+Date: Thu, 23 Feb 2006 19:59:06 +0800
+Message-ID: <43FDA38A.9090409@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FCQvV-00082p-EB
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Feb 2006 16:35:17 -0800
-Received: from smtp.osdl.org ([65.172.181.4])
-	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44)
-	id 1FCQvU-0004sU-6x
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Feb 2006 16:35:17 -0800
-In-Reply-To: <43FDA3C2.2010109@gmail.com>
+	id 1FCSIG-0001ya-Lx
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Feb 2006 18:02:52 -0800
+Received: from pproxy.gmail.com ([64.233.166.181])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1FCSIF-0004cx-BC
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Feb 2006 18:02:52 -0800
+Received: by pproxy.gmail.com with SMTP id s49so239226pyc
+        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 23 Feb 2006 18:02:50 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,21 +27,44 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Freddy Spierenburg <freddy@dusktilldawn.nl>
 
-"Antonino A. Daplas" <adaplas@gmail.com> wrote:
->
-> DDC reading via the Video BIOS may take several tens of seconds with
->  some combination of display cards and monitors.
-> 
->  Make this option configurable and select only for drivers that need it.
+From: Freddy Spierenburg <freddy@dusktilldawn.nl>
 
-But that's not what the patch actually does - it requires that the user
-select the option.
+Replaced the no longer existing io_remap_page_range() routine
+with the io_remap_pfn_range() routine. Did not have a chance yet
+to test the functionality of the driver, but at least the kernel
+compiles cleanly again.
 
-Also, is it not possible to defer this operation until we've parsed the
-command line, control it with a kernel boot parameter?
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
+---
+
+ drivers/video/au1100fb.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/video/au1100fb.c b/drivers/video/au1100fb.c
+index 2406899..3d04b2d 100644
+--- a/drivers/video/au1100fb.c
++++ b/drivers/video/au1100fb.c
+@@ -49,6 +49,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/ctype.h>
+ #include <linux/dma-mapping.h>
++#include <linux/platform_device.h>
+ 
+ #include <asm/mach-au1x00/au1000.h>
+ 
+@@ -406,7 +407,7 @@ int au1100fb_fb_mmap(struct fb_info *fbi
+ 
+ 	vma->vm_flags |= VM_IO;
+ 
+-	if (io_remap_page_range(vma, vma->vm_start, off,
++	if (io_remap_pfn_range(vma, vma->vm_start, off >> PAGE_SHIFT,
+ 				vma->vm_end - vma->vm_start,
+ 				vma->vm_page_prot)) {
+ 		return -EAGAIN;
+
 
 
 -------------------------------------------------------

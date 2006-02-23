@@ -1,28 +1,21 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [patch] [radeonfb] Radeon Mobility X700
-	(M26) and ATOM bios support
-Date: Thu, 23 Feb 2006 17:50:58 +1100
-Message-ID: <1140677458.8264.24.camel@localhost.localdomain>
-References: <20060103204404.GA23313@shaftnet.org>
-	 <1139952530.7903.31.camel@localhost.localdomain>
-	 <20060222221916.GB17359@shaftnet.org> <20060223060939.GA27224@shaftnet.org>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: [PATCH] asiliantfb: Fix pseudo_palette setup in asiliantfb_setcolreg()
+Date: Thu, 23 Feb 2006 20:40:22 +0800
+Message-ID: <43FDAD36.5040804@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FCAJe-00062c-Mc
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 22 Feb 2006 22:51:06 -0800
-Received: from gate.crashing.org ([63.228.1.57])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44)
-	id 1FCAJd-00016M-GO
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 22 Feb 2006 22:51:06 -0800
-Received: from localhost.localdomain (localhost [127.0.0.1])
-	by gate.crashing.org (8.12.8/8.12.8) with ESMTP id k1N6fcWG030897
-	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 23 Feb 2006 00:41:39 -0600
-In-Reply-To: <20060223060939.GA27224@shaftnet.org>
+	id 1FCNLv-0007m1-UV
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Feb 2006 12:46:19 -0800
+Received: from pproxy.gmail.com ([64.233.166.181])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1FCNLt-0000Ra-Io
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Feb 2006 12:46:20 -0800
+Received: by pproxy.gmail.com with SMTP id i49so174626pyi
+        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 23 Feb 2006 12:46:16 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,34 +27,66 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
+The setcolreg function will attempt to write 24 color entries to the
+pseudo_pallette. However, the pseudo_palette has only space for 16
+entries.
 
-> And to follow up to myself, here is a third patch.  I've started 
-> incorporating bits and pieces from the "oooold" non-working rewrite 
-> that you sent me for inspiration.  Changes from last patch:
-> 
->  * Naming cleanups
->  * Merge the OpenFirmware PLL detection into the function pointer mess.
->  * Merge the oooold patch's legacy bios connector parsing code, As the 
->    original stuff didn't really do anything anyway, I don't see the harm.  
->  * Merge the ooold patch's atom bios connector parsing code, but it still 
->    doesn't work yet.  It's late and my eyes hurt.
-> 
-> The good news is that I'm typing this using this patch on my Radeon 
-> M26 (mmm.. 1680x1050!), but the bad news is that I don't know if the 
-> legacy BIOS code works, especially the connector parsing stuff.
-> 
-> Let me know if I'm going down the right path.  The RadeonFB driver is 
-> pretty complicated, so I'm trying to take baby steps as I figure more 
-> of it out.
+Thanks to Atsushi Nemoto for reporting this bug.
 
-From your comments, you sound on the right track. I haven't had time to
-review the patches yet but I'll do asap, I'm very happy somebody is
-tackling those issues :)
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
+---
 
-Ben.
+ drivers/video/asiliantfb.c |   21 +++++++++------------
+ 1 files changed, 9 insertions(+), 12 deletions(-)
 
+diff --git a/drivers/video/asiliantfb.c b/drivers/video/asiliantfb.c
+index 69f7554..c924d81 100644
+--- a/drivers/video/asiliantfb.c
++++ b/drivers/video/asiliantfb.c
+@@ -322,32 +322,29 @@ static int asiliantfb_setcolreg(u_int re
+ 	writeb(green, mmio_base + 0x791);
+ 	writeb(blue, mmio_base + 0x791);
+ 
+-	switch(p->var.bits_per_pixel) {
+-	case 15:
+-		if (regno < 16) {
++	if (regno < 16) {
++		switch(p->var.red.offset) {
++		case 10: /* RGB 555 */
+ 			((u32 *)(p->pseudo_palette))[regno] =
+ 				((red & 0xf8) << 7) |
+ 				((green & 0xf8) << 2) |
+ 				((blue & 0xf8) >> 3);
+-		}
+-		break;
+-	case 16:
+-		if (regno < 16) {
++			break;
++		case 11: /* RGB 565 */
+ 			((u32 *)(p->pseudo_palette))[regno] =
+ 				((red & 0xf8) << 8) |
+ 				((green & 0xfc) << 3) |
+ 				((blue & 0xf8) >> 3);
+-		}
+-		break;
+-	case 24:
+-		if (regno < 24) {
++			break;
++		case 16: /* RGB 888 */
+ 			((u32 *)(p->pseudo_palette))[regno] =
+ 				(red << 16)  |
+ 				(green << 8) |
+ 				(blue);
++			break;
+ 		}
+-		break;
+ 	}
++
+ 	return 0;
+ }
+ 
 
 
 

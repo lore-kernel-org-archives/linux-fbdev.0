@@ -1,24 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: Re: Re: atyfb, console, kernel 2.6.14 & Sony
- Vaio C1VE
-Date: Sat, 25 Feb 2006 05:16:07 +0800
-Message-ID: <43FF7797.7040403@gmail.com>
-References: <83d4769a9bceb571796228cb5c7534c3@csi.com>
+Subject: [PATCH 4/5] fbdev: Make BIOS EDID reading configurable
+Date: Thu, 23 Feb 2006 20:00:02 +0800
+Message-ID: <43FDA3C2.2010109@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FCkIn-0007D6-8i
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Feb 2006 13:16:37 -0800
-Received: from wproxy.gmail.com ([64.233.184.196])
+	id 1FCpyR-0005ZR-Tn
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Feb 2006 19:19:59 -0800
+Received: from wproxy.gmail.com ([64.233.184.193])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FCkIl-0001BN-SX
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Feb 2006 13:16:37 -0800
-Received: by wproxy.gmail.com with SMTP id 71so380594wra
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 24 Feb 2006 13:16:34 -0800 (PST)
-In-Reply-To: <83d4769a9bceb571796228cb5c7534c3@csi.com>
+	id 1FCpyR-0007oz-2G
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Feb 2006 19:19:59 -0800
+Received: by wproxy.gmail.com with SMTP id i20so428049wra
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 24 Feb 2006 19:19:58 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,48 +27,93 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: fractallyte@csi.com
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Fractallyte wrote:
-> Hi
-> 
-> OK, tried out the 2.6.15.4 kernel.  dmesg:
-> 
->     atyfb: using auxiliary register aperture
->     atyfb: 3D RAGE Mobility P/M (Mach64 LR, PCI) [0x4c52 rev 0x64]
->     atyfb: Mach64 BIOS is located at c0000, mapped at c00c0000.
->     atyfb: BIOS frequency table:
->     atyfb: PCLK_min_freq 984, PCLK_max_freq 23600, ref_freq 2950,
-> ref_divider 64
->     atyfb: MCLK_pwd 4200, MCLK_max_freq 8300, XCLK_max_freq 12500,
-> SCLK_freq 5000
->     atyfb: BIOS contains driver information table.
->     atyfb: colour active matrix monitor detected: Sharp
->     atyfb:        id=1, 1024x480 pixels, 262144 colours (LT mode)
->     atyfb:        supports refresh rates [60], default 60 Hz
->     atyfb:        LCD CRTC parameters: 42.8044  1024 1048 1184 1344  480
-> 489 495 525
->     atyfb:                           : 23618 160 1024 24 136 30 480 9 6
->     atyfb: 8M SDRAM (1:1), 29.498928 MHz XTAL, 236 MHz PLL, 83 Mhz MCLK,
-> 125 MHz XCLK
->     Console: switching to colour frame buffer device 128x30
->     atyfb: fb0: ATY Mach64 frame buffer device on PCI
-> 
-> It's only *seems* to be a success...  The console is correctly set to
-> 128x30, however the timings are apparently not passed from the BIOS to
-> the console driver.  From this point on the screen becomes unreadable
-> and unusable: white blooms from the edges and spreads inward.
-> 
-> I'll try it out with the 2.6.16 kernel tomorrow...
-> 
-> Thanks for your help!
+DDC reading via the Video BIOS may take several tens of seconds with
+some combination of display cards and monitors.
 
-Too many Mobility's that need xclk=62.  Try booting with:
+Make this option configurable and select only for drivers that need it.
 
-video=atyfb:xclk:62
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
+---
 
-Tony
+ arch/i386/boot/video.S |    2 ++
+ drivers/video/Kconfig  |   12 ++++++++++++
+ drivers/video/fbmon.c  |    6 +++---
+ 3 files changed, 17 insertions(+), 3 deletions(-)
+
+diff --git a/arch/i386/boot/video.S b/arch/i386/boot/video.S
+index 2ac40c8..0000a26 100644
+--- a/arch/i386/boot/video.S
++++ b/arch/i386/boot/video.S
+@@ -1924,6 +1924,7 @@ skip10:	movb	%ah, %al
+ 	ret
+ 
+ store_edid:
++#ifdef CONFIG_FB_FIRMWARE_EDID
+ 	pushw	%es				# just save all registers
+ 	pushw	%ax
+ 	pushw	%bx
+@@ -1954,6 +1955,7 @@ store_edid:
+ 	popw	%bx
+ 	popw	%ax
+ 	popw	%es
++#endif
+ 	ret
+ 
+ # VIDEO_SELECT-only variables
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index e31390a..87384d3 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -70,6 +70,18 @@ config FB_MACMODES
+        depends on FB
+        default n
+ 
++config FB_FIRMWARE_EDID
++       bool "Enable firmware EDID"
++       depends on FB
++       default n
++       ---help---
++         This enables access to the EDID transferred from the firmware.
++	 On the i386, this is from the Video BIOS. Enable this if DDC/I2C
++	 transfers do not work for your driver and if you are using
++	 nvidiafb, i810fb or savagefb.
++
++	 If unsure, say N.
++
+ config FB_MODE_HELPERS
+         bool "Enable Video Mode Handling Helpers"
+         depends on FB
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index 7c74e73..53beeb4 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -1281,7 +1281,7 @@ int fb_validate_mode(const struct fb_var
+ 		-EINVAL : 0;
+ }
+ 
+-#if defined(__i386__)
++#if defined(CONFIG_FB_FIRMWARE_EDID) && defined(__i386__)
+ #include <linux/pci.h>
+ 
+ /*
+@@ -1311,11 +1311,11 @@ const unsigned char *fb_firmware_edid(st
+ {
+ 	return NULL;
+ }
+-#endif /* _i386_ */
++#endif
++EXPORT_SYMBOL(fb_firmware_edid);
+ 
+ EXPORT_SYMBOL(fb_parse_edid);
+ EXPORT_SYMBOL(fb_edid_to_monspecs);
+-EXPORT_SYMBOL(fb_firmware_edid);
+ EXPORT_SYMBOL(fb_get_mode);
+ EXPORT_SYMBOL(fb_validate_mode);
+ EXPORT_SYMBOL(fb_destroy_modedb);
+
 
 
 -------------------------------------------------------

@@ -1,26 +1,22 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [patch] [radeonfb] Radeon M26 and ATOM bios support (take 4)
-Date: Fri, 24 Feb 2006 10:15:21 +1100
-Message-ID: <1140736521.8264.49.camel@localhost.localdomain>
-References: <20060103204404.GA23313@shaftnet.org>
-	 <1139952530.7903.31.camel@localhost.localdomain>
-	 <20060222221916.GB17359@shaftnet.org> <20060223060939.GA27224@shaftnet.org>
-	 <1140677458.8264.24.camel@localhost.localdomain>
-	 <20060223223619.GA14458@shaftnet.org>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 4/5] fbdev: Make BIOS EDID reading configurable
+Date: Thu, 23 Feb 2006 16:34:38 -0800
+Message-ID: <20060223163438.63ce04e8.akpm@osdl.org>
+References: <43FDA3C2.2010109@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FCPgF-000867-My
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Feb 2006 15:15:27 -0800
-Received: from gate.crashing.org ([63.228.1.57])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	id 1FCQvV-00082p-EB
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Feb 2006 16:35:17 -0800
+Received: from smtp.osdl.org ([65.172.181.4])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
 	(Exim 4.44)
-	id 1FCPgE-000098-8R
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Feb 2006 15:15:27 -0800
-In-Reply-To: <20060223223619.GA14458@shaftnet.org>
+	id 1FCQvU-0004sU-6x
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Feb 2006 16:35:17 -0800
+In-Reply-To: <43FDA3C2.2010109@gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,26 +28,21 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Stuffed Crust <pizza@shaftnet.org>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
+"Antonino A. Daplas" <adaplas@gmail.com> wrote:
+>
+> DDC reading via the Video BIOS may take several tens of seconds with
+>  some combination of display cards and monitors.
+> 
+>  Make this option configurable and select only for drivers that need it.
 
-> And of course, OpenFirmware integration, and doing something with the 
-> TMDS PLL information. 
+But that's not what the patch actually does - it requires that the user
+select the option.
 
-Yeah. Also, I need to create some kind of table of known OpenFirmware
-cards and their associated connector maping since unfortunately, the
-firmware driver doesn't provide the information... But I'll do that
-afterward.
-
-> I'm unsure how to best to proceed from here, so this patch is it until 
-> I get some more directed feedback.  
-
-I'll review properly next week.
-
-Ben.
-
-
+Also, is it not possible to defer this operation until we've parsed the
+command line, control it with a kernel boot parameter?
 
 
 -------------------------------------------------------

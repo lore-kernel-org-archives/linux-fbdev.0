@@ -1,21 +1,23 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 1/5] gbefb: IP32 gbefb depth change fix
-Date: Thu, 23 Feb 2006 19:56:45 +0800
-Message-ID: <43FDA2FD.2070300@gmail.com>
+From: Fractallyte <fractallyte@csi.com>
+Subject: Re: Re: atyfb, console, kernel 2.6.14 & Sony Vaio C1VE
+Date: Fri, 24 Feb 2006 20:16:52 +0000
+Message-ID: <83d4769a9bceb571796228cb5c7534c3@csi.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
+Mime-Version: 1.0 (Apple Message framework v622)
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FCiwY-000564-86
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Feb 2006 11:49:34 -0800
-Received: from pproxy.gmail.com ([64.233.166.181])
+	id 1FCjN7-0008OT-PY
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Feb 2006 12:17:01 -0800
+Received: from anchor-post-35.mail.demon.net ([194.217.242.85])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FCiwW-0008Ev-0J
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Feb 2006 11:49:34 -0800
-Received: by pproxy.gmail.com with SMTP id o67so458708pye
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 24 Feb 2006 11:49:31 -0800 (PST)
+	id 1FCjN5-0003Ob-72
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Feb 2006 12:17:01 -0800
+Received: from serendip.demon.co.uk ([80.176.90.177] helo=[192.168.0.4])
+	by anchor-post-35.mail.demon.net with esmtp (Exim 4.42)
+	id 1FCjN0-000OaE-HT
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Feb 2006 20:16:54 +0000
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,44 +28,43 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Kaj-Michael Lang <milang@tal.org>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-From: Kaj-Michael Lang <milang@tal.org>
+Hi
 
-The gbefb driver does not update the framebuffer layers visual setting
-when depth is changed with fbset, resulting in strange colors (very
-dark blue in 16-bit, almost black in 24-bit).
+OK, tried out the 2.6.15.4 kernel.  dmesg:
 
-Signed-off-by: Kaj-Michael Lang <milang@tal.org>
-Signed-off-by: Martin Michlmayr <tbm@cyrius.com>
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
+	atyfb: using auxiliary register aperture
+	atyfb: 3D RAGE Mobility P/M (Mach64 LR, PCI) [0x4c52 rev 0x64]
+	atyfb: Mach64 BIOS is located at c0000, mapped at c00c0000.
+	atyfb: BIOS frequency table:
+	atyfb: PCLK_min_freq 984, PCLK_max_freq 23600, ref_freq 2950, 
+ref_divider 64
+	atyfb: MCLK_pwd 4200, MCLK_max_freq 8300, XCLK_max_freq 12500, 
+SCLK_freq 5000
+	atyfb: BIOS contains driver information table.
+	atyfb: colour active matrix monitor detected: Sharp
+	atyfb:        id=1, 1024x480 pixels, 262144 colours (LT mode)
+	atyfb:        supports refresh rates [60], default 60 Hz
+	atyfb:        LCD CRTC parameters: 42.8044  1024 1048 1184 1344  480 
+489 495 525
+	atyfb:                           : 23618 160 1024 24 136 30 480 9 6
+	atyfb: 8M SDRAM (1:1), 29.498928 MHz XTAL, 236 MHz PLL, 83 Mhz MCLK, 
+125 MHz XCLK
+	Console: switching to colour frame buffer device 128x30
+	atyfb: fb0: ATY Mach64 frame buffer device on PCI
 
- drivers/video/gbefb.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+It's only *seems* to be a success...  The console is correctly set to 
+128x30, however the timings are apparently not passed from the BIOS to 
+the console driver.  From this point on the screen becomes unreadable 
+and unusable: white blooms from the edges and spreads inward.
 
-diff --git a/drivers/video/gbefb.c b/drivers/video/gbefb.c
-index c9a7cdf..5e25b98 100644
---- a/drivers/video/gbefb.c
-+++ b/drivers/video/gbefb.c
-@@ -656,12 +656,15 @@ static int gbefb_set_par(struct fb_info 
- 	switch (bytesPerPixel) {
- 	case 1:
- 		SET_GBE_FIELD(WID, TYP, val, GBE_CMODE_I8);
-+		info->fix.visual = FB_VISUAL_PSEUDOCOLOR;
- 		break;
- 	case 2:
- 		SET_GBE_FIELD(WID, TYP, val, GBE_CMODE_ARGB5);
-+		info->fix.visual = FB_VISUAL_TRUECOLOR;
- 		break;
- 	case 4:
- 		SET_GBE_FIELD(WID, TYP, val, GBE_CMODE_RGB8);
-+		info->fix.visual = FB_VISUAL_TRUECOLOR;
- 		break;
- 	}
- 	SET_GBE_FIELD(WID, BUF, val, GBE_BMODE_BOTH);
+I'll try it out with the 2.6.16 kernel tomorrow...
+
+Thanks for your help!
+
+Amir
 
 
 

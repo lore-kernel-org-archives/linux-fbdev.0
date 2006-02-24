@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH] fbdev: Make config firmware EDID default to yes
-Date: Fri, 24 Feb 2006 13:44:36 +0800
-Message-ID: <43FE9D44.6040907@gmail.com>
-References: <43FDA3C2.2010109@gmail.com>	<20060223163438.63ce04e8.akpm@osdl.org>	<43FE83DA.3050505@gmail.com> <20060223201030.d5a70121.akpm@osdl.org> <43FE9898.3030801@gmail.com>
+Subject: Re: [PATCH 4/5] fbdev: Make BIOS EDID reading configurable
+Date: Fri, 24 Feb 2006 11:56:10 +0800
+Message-ID: <43FE83DA.3050505@gmail.com>
+References: <43FDA3C2.2010109@gmail.com> <20060223163438.63ce04e8.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FCVlX-0001sa-P4
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Feb 2006 21:45:19 -0800
+	id 1FCXvj-0007dE-0G
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Feb 2006 00:03:59 -0800
 Received: from pproxy.gmail.com ([64.233.166.181])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FCVlX-0005yu-Ma
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Feb 2006 21:45:19 -0800
-Received: by pproxy.gmail.com with SMTP id i75so283812pye
-        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 23 Feb 2006 21:45:19 -0800 (PST)
-In-Reply-To: <43FE9898.3030801@gmail.com>
+	id 1FCXvh-0007CO-OB
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Feb 2006 00:03:59 -0800
+Received: by pproxy.gmail.com with SMTP id s49so310075pyc
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 24 Feb 2006 00:03:56 -0800 (PST)
+In-Reply-To: <20060223163438.63ce04e8.akpm@osdl.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,50 +32,40 @@ Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
 Cc: linux-fbdev-devel@lists.sourceforge.net
 
-- Make CONFIG_FB_FIRMWARE_EDID default to yes
-- Add more info to Kconfig help section on when to select N for this option
+Andrew Morton wrote:
+> "Antonino A. Daplas" <adaplas@gmail.com> wrote:
+>> DDC reading via the Video BIOS may take several tens of seconds with
+>>  some combination of display cards and monitors.
+>>
+>>  Make this option configurable and select only for drivers that need it.
+> 
+> But that's not what the patch actually does - it requires that the user
+> select the option.
 
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
+You got me there :-).  Initially, I had:
 
-Antonino A. Daplas wrote:
-> Andrew Morton wrote:
->> "Antonino A. Daplas" <adaplas@gmail.com> wrote:
->> Hmm.  You're right, 'default y' looks better. Would you like me to send you
-> a patch, or would you rather take care of it?
+select FB_FIRMWARE_EDID if ...
 
-On second thought, I'll just send you an update.
+in Kconfig on selected drivers, but in the end removed it.  And, I forgot
+to change the changelog.
+
+The reason I removed the "select ..." part is because the user won't be
+able to deselect this option.
+ 
+> 
+> Also, is it not possible to defer this operation until we've parsed the
+> command line, control it with a kernel boot parameter?
+> 
+
+I thought of that, but it seems a bit complicated to me to parse boot
+options in assembly so I left this for another time.
+
+The firmware EDID is only used as fallback, or if drivers have no DDC/I2C
+support. Currently, all drivers that use the firmware EDID also have I2C
+support in place. And chances are, if DDC transfers failed, the firmware
+EDID will also be absent.
 
 Tony
-
- drivers/video/Kconfig |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index e6a02d6..e9b5045 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -73,14 +73,18 @@ config FB_MACMODES
- config FB_FIRMWARE_EDID
-        bool "Enable firmware EDID"
-        depends on FB
--       default n
-+       default y
-        ---help---
-          This enables access to the EDID transferred from the firmware.
- 	 On the i386, this is from the Video BIOS. Enable this if DDC/I2C
- 	 transfers do not work for your driver and if you are using
- 	 nvidiafb, i810fb or savagefb.
- 
--	 If unsure, say N.
-+	 In general, choosing Y for this option is safe.  If you 
-+	 experience extremely long delays while booting before you get
-+	 something on your display, try setting this to N.  Matrox cards in
-+	 combination with certain motherboards and monitors are known to
-+	 suffer from this problem.
- 
- config FB_MODE_HELPERS
-         bool "Enable Video Mode Handling Helpers"
 
 
 -------------------------------------------------------

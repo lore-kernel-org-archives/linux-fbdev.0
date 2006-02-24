@@ -1,21 +1,26 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 3/5] au1100fb: replaced io_remap_page_range() with io_remap_pfn_range()
-Date: Thu, 23 Feb 2006 19:59:06 +0800
-Message-ID: <43FDA38A.9090409@gmail.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: ATI Rage XL with no BIOS support
+Date: Fri, 24 Feb 2006 14:52:13 +1100
+Message-ID: <1140753133.8264.75.camel@localhost.localdomain>
+References: <dc70db7d0602211329j71a441edg5778e91e012d1299@mail.gmail.com>
+	 <43FB7BF2.6020506@Sun.COM>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FCSIG-0001ya-Lx
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Feb 2006 18:02:52 -0800
-Received: from pproxy.gmail.com ([64.233.166.181])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FCSIF-0004cx-BC
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Feb 2006 18:02:52 -0800
-Received: by pproxy.gmail.com with SMTP id s49so239226pyc
-        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 23 Feb 2006 18:02:50 -0800 (PST)
+	id 1FCU0C-0006SQ-2Z
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Feb 2006 19:52:20 -0800
+Received: from gate.crashing.org ([63.228.1.57])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44)
+	id 1FCU0A-0008CB-Qi
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Feb 2006 19:52:20 -0800
+Received: from localhost.localdomain (localhost [127.0.0.1])
+	by gate.crashing.org (8.12.8/8.12.8) with ESMTP id k1O3glWG021596
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 23 Feb 2006 21:42:48 -0600
+In-Reply-To: <43FB7BF2.6020506@Sun.COM>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,43 +32,25 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Freddy Spierenburg <freddy@dusktilldawn.nl>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-From: Freddy Spierenburg <freddy@dusktilldawn.nl>
+On Tue, 2006-02-21 at 12:45 -0800, Jay Cotton wrote:
+> Basically you are screwed.
+> 
+> There is a way to fix this, but the code is closed source and ATI will not
+> allow it out of there control.  So, unless you can read the bios prom
+> into memory and execute the first 1024 bytes in 16bit mode, you will not
+> be able to recover.
 
-Replaced the no longer existing io_remap_page_range() routine
-with the io_remap_pfn_range() routine. Did not have a chance yet
-to test the functionality of the driver, but at least the kernel
-compiles cleanly again.
+First 1024 bytes ? hrm... that isn't much... doesn't seem to work much
+for me. I have a board with a Rage Mobility, ATI gave us a BIOS image,
+I've tried running it in an x86 emulator (it's a ppc machine) to no
+avail so far. That BIOS appears to be mucking around with all sort of
+things not directly related to the actual video chip, like strange IO
+ports all around the legacy space (more than just the timers) etc...
 
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
+Ben.
 
- drivers/video/au1100fb.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/video/au1100fb.c b/drivers/video/au1100fb.c
-index 2406899..3d04b2d 100644
---- a/drivers/video/au1100fb.c
-+++ b/drivers/video/au1100fb.c
-@@ -49,6 +49,7 @@
- #include <linux/interrupt.h>
- #include <linux/ctype.h>
- #include <linux/dma-mapping.h>
-+#include <linux/platform_device.h>
- 
- #include <asm/mach-au1x00/au1000.h>
- 
-@@ -406,7 +407,7 @@ int au1100fb_fb_mmap(struct fb_info *fbi
- 
- 	vma->vm_flags |= VM_IO;
- 
--	if (io_remap_page_range(vma, vma->vm_start, off,
-+	if (io_remap_pfn_range(vma, vma->vm_start, off >> PAGE_SHIFT,
- 				vma->vm_end - vma->vm_start,
- 				vma->vm_page_prot)) {
- 		return -EAGAIN;
 
 
 

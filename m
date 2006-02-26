@@ -1,26 +1,24 @@
-From: "Richard Smith" <smithbone@gmail.com>
-Subject: Re: ATI Rage XL with no BIOS support
-Date: Sun, 26 Feb 2006 12:02:34 -0600
-Message-ID: <8a0c36780602261002y744e90f6p627d42fa7b22c5be@mail.gmail.com>
-References: <dc70db7d0602211329j71a441edg5778e91e012d1299@mail.gmail.com>
-	 <43FB7BF2.6020506@Sun.COM>
-	 <1140753133.8264.75.camel@localhost.localdomain>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: Re: Re: atyfb, console, kernel 2.6.14 & Sony
+ Vaio C1VE
+Date: Mon, 27 Feb 2006 05:07:05 +0800
+Message-ID: <44021879.7040806@gmail.com>
+References: <83d4769a9bceb571796228cb5c7534c3@csi.com> <43FF7797.7040403@gmail.com> <2b6bda73c1ef8b8d6463bbe2de83a431@csi.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FDQE9-0002tw-TI
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Feb 2006 10:02:37 -0800
-Received: from zproxy.gmail.com ([64.233.162.201])
+	id 1FDT79-0005EU-HT
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Feb 2006 13:07:35 -0800
+Received: from wproxy.gmail.com ([64.233.184.200])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FDQE9-0004Tj-GZ
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Feb 2006 10:02:38 -0800
-Received: by zproxy.gmail.com with SMTP id i11so717810nzh
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 26 Feb 2006 10:02:36 -0800 (PST)
-In-Reply-To: <1140753133.8264.75.camel@localhost.localdomain>
-Content-Disposition: inline
+	id 1FDT79-00009r-2X
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Feb 2006 13:07:35 -0800
+Received: by wproxy.gmail.com with SMTP id 50so697481wri
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 26 Feb 2006 13:07:33 -0800 (PST)
+In-Reply-To: <2b6bda73c1ef8b8d6463bbe2de83a431@csi.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,28 +30,41 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net, alancarbr@gmail.com
+To: Fractallyte <fractallyte@csi.com>
+Cc: =?ISO-8859-1?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-PiA+IFRoZXJlIGlzIGEgd2F5IHRvIGZpeCB0aGlzLCBidXQgdGhlIGNvZGUgaXMgY2xvc2VkIHNv
-dXJjZSBhbmQgQVRJIHdpbGwgbm90Cj4gPiBhbGxvdyBpdCBvdXQgb2YgdGhlcmUgY29udHJvbC4g
-IFNvLCB1bmxlc3MgeW91IGNhbiByZWFkIHRoZSBiaW9zIHByb20KPiA+IGludG8gbWVtb3J5IGFu
-ZCBleGVjdXRlIHRoZSBmaXJzdCAxMDI0IGJ5dGVzIGluIDE2Yml0IG1vZGUsIHlvdSB3aWxsIG5v
-dAo+ID4gYmUgYWJsZSB0byByZWNvdmVyLgo+Cj4gRmlyc3QgMTAyNCBieXRlcyA/IGhybS4uLiB0
-aGF0IGlzbid0IG11Y2guLi4gZG9lc24ndCBzZWVtIHRvIHdvcmsgbXVjaAo+IGZvciBtZS4gSSBo
-YXZlIGEgYm9hcmQgd2l0aCBhIFJhZ2UgTW9iaWxpdHksIEFUSSBnYXZlIHVzIGEgQklPUyBpbWFn
-ZSwKPiBJJ3ZlIHRyaWVkIHJ1bm5pbmcgaXQgaW4gYW4geDg2IGVtdWxhdG9yIChpdCdzIGEgcHBj
-IG1hY2hpbmUpIHRvIG5vCj4gYXZhaWwgc28gZmFyLiBUaGF0IEJJT1MgYXBwZWFycyB0byBiZSBt
-dWNraW5nIGFyb3VuZCB3aXRoIGFsbCBzb3J0IG9mCj4gdGhpbmdzIG5vdCBkaXJlY3RseSByZWxh
-dGVkIHRvIHRoZSBhY3R1YWwgdmlkZW8gY2hpcCwgbGlrZSBzdHJhbmdlIElPCj4gcG9ydHMgYWxs
-IGFyb3VuZCB0aGUgbGVnYWN5IHNwYWNlIChtb3JlIHRoYW4ganVzdCB0aGUgdGltZXJzKSBldGMu
-Li4KCkkndmUgcnVuIHRoZSBNb2JpbGl0eSBNMSBiaW9zIHVuZGVyIHRoZSBlbXVsYXRvciBhdmFp
-bGFibGUgZnJvbQpMaW51eEJJT1MgYW5kIHBvc3RlZCBhIGNhcmQgdW5kZXIgYSBrZXJuZWwgYm9v
-dGVkIGJ5IExpbnV4QklPUyAoc28gbm8KQklPUyBwb3N0KS4gIFRoZSBNMSBpcyBhIG1hY2g2NCBi
-YXNlZCBjaGlwIGp1c3QgbGlrZSB0aGUgUmFnZSBYTC4KCkl0J3MgYmVlbiBhd2hpbGUgYnV0IEkg
-cmVjYWxsIGhhdmluZyB0byBmaXggdGhlIHdheSB0aGUgdGltZXIgd2FzCmhhbmRsZWQuICB0aGUg
-TEIgZW11bGF0b3IganVzdCBsZXRzIHRoZSB0aW1lciBJTydzIHBhc3MgdGhvdWdoIHRvIHRoZQp0
-aW1lciB3aGljaCBkb2Vzbid0IHdvcmsgc28gaG90IHdoaWxlIExpbnV4IGlzIHVzaW5nIGl0LgoK
-LS0KUmljaGFyZCBBLiBTbWl0aAo=
+Fractallyte wrote:
+
+Putting back Ville and fbdev-devel back on the CC list.
+
+> Thanks for the quick reply!
+> 
+> I tried what you suggested, but it has no effect.  The interesting thing
+> is that the BIOS timings and geometry work perfectly in Xorg.  I've
+> tried using SVGATextMode and FBSet using these values, but neither works.
+> 
+> Could it be that the display is correct (it fills up the screen, after
+> all - just stretched out), but the console just doesn't recognise it?
+
+I doubt it.  If you can run X over fbdev and you get a perfect display,
+then I would agree with you that this is a bug in the console code.
+ 
+> On 24 Feb 2006, at 21:16, Antonino A. Daplas wrote:
+>>
+>> Too many Mobility's that need xclk=62.  Try booting with:
+>>
+>> video=atyfb:xclk:62
+>>
+>> Tony
+>>
+>>
+> 
+> Thanks!
+> 
+> Amir
+> 
+> 
+
 
 
 -------------------------------------------------------

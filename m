@@ -1,21 +1,19 @@
-From: Gabor Gombas <gombasg@sztaki.hu>
-Subject: Re: Re: [patch] [radeonfb] Radeon M26 and ATOM bios support (take 4)
-Date: Wed, 1 Mar 2006 17:56:34 +0100
-Message-ID: <20060301165633.GG17561@boogie.lpds.sztaki.hu>
-References: <20060103204404.GA23313@shaftnet.org> <1139952530.7903.31.camel@localhost.localdomain> <20060222221916.GB17359@shaftnet.org> <20060223060939.GA27224@shaftnet.org> <1140677458.8264.24.camel@localhost.localdomain> <20060223223619.GA14458@shaftnet.org> <1140736521.8264.49.camel@localhost.localdomain> <20060301033338.GA20460@shaftnet.org> <1141184789.4157.30.camel@localhost.localdomain>
+From: chinlu chinawa <chinluchinawa@yahoo.co.uk>
+Subject: devel question from a newbie
+Date: Wed, 1 Mar 2006 19:24:57 +0000 (GMT)
+Message-ID: <20060301192458.22631.qmail@web27001.mail.ukl.yahoo.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FEUcz-0005bQ-V0
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 01 Mar 2006 08:56:42 -0800
-Received: from boogie.lpds.sztaki.hu ([193.225.12.226])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FEUcy-0008FQ-FF
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 01 Mar 2006 08:56:42 -0800
-Content-Disposition: inline
-In-Reply-To: <1141184789.4157.30.camel@localhost.localdomain>
+	id 1FEWwa-0005hZ-VL
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 01 Mar 2006 11:25:04 -0800
+Received: from web27001.mail.ukl.yahoo.com ([217.146.177.1])
+	by mail.sourceforge.net with smtp (Exim 4.44)
+	id 1FEWwW-0000pE-GN
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 01 Mar 2006 11:25:04 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,30 +24,45 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Stuffed Crust <pizza@shaftnet.org>
+Content-Type: text/plain; charset="windows-1252"
+To: "linux-fbdev-devel@lists.sourceforge.net" <linux-fbdev-devel@lists.sourceforge.net>
 
-On Wed, Mar 01, 2006 at 02:46:29PM +1100, Benjamin Herrenschmidt wrote:
+Hello,
 
-> In fact, a mix of both might do the trick... module/kernel argument for
-> a default override and sysfs for "live" override ?
+I've been trying to to render images within the
+xserver using the framebuffer device. This server
+doesn't have a mouse running, nor wm.
 
-Nowadays you can use sysfs to both display and modify module parameters,
-so making use of that would be the best.
+Images are mapped just a second, I think till the
+xserver refreshes the screen.
 
-Gabor
+I've seen kd.h, and KD_ family ioctls, but haven't
+achieved yet to do a successful one.
 
--- 
-     ---------------------------------------------------------
-     MTA SZTAKI Computer and Automation Research Institute
-                Hungarian Academy of Sciences
-     ---------------------------------------------------------
+So I'm just wondering whether is there anyone who
+could tell me something about.
+
+What I'm trying to do is to use an xterm, within a
+server with no wm (and no mouse) running on it, to run
+a ncurses app I've done which supports images. It
+works properly on a tty.
+
+Kind Regards,
+
+
+
+	=09
+___________________________________________________________=20
+Yahoo! Photos =96 NEW, now offering a quality print service from just 8p =
+a photo http://uk.photos.yahoo.com
 
 
 -------------------------------------------------------
-This SF.Net email is sponsored by xPML, a groundbreaking scripting language
-that extends applications into web and mobile media. Attend the live webcast
-and join the prime developer group breaking into this new coding territory!
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=110944&bid=241720&dat=121642
+This SF.Net email is sponsored by xPML, a groundbreaking scripting langua=
+ge
+that extends applications into web and mobile media. Attend the live webc=
+ast
+and join the prime developer group breaking into this new coding territor=
+y!
+http://sel.as-us.falkag.net/sel?cmd=3Dlnk&kid=3D110944&bid=3D241720&dat=3D=
+121642

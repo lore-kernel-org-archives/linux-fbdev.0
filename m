@@ -1,24 +1,28 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: Re: Re: atyfb, console, kernel 2.6.14 & Sony
- Vaio C1VE
-Date: Mon, 27 Feb 2006 05:07:05 +0800
-Message-ID: <44021879.7040806@gmail.com>
-References: <83d4769a9bceb571796228cb5c7534c3@csi.com> <43FF7797.7040403@gmail.com> <2b6bda73c1ef8b8d6463bbe2de83a431@csi.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [patch] [radeonfb] Radeon M26 and ATOM bios support (take 4)
+Date: Wed, 01 Mar 2006 14:46:29 +1100
+Message-ID: <1141184789.4157.30.camel@localhost.localdomain>
+References: <20060103204404.GA23313@shaftnet.org>
+	 <1139952530.7903.31.camel@localhost.localdomain>
+	 <20060222221916.GB17359@shaftnet.org> <20060223060939.GA27224@shaftnet.org>
+	 <1140677458.8264.24.camel@localhost.localdomain>
+	 <20060223223619.GA14458@shaftnet.org>
+	 <1140736521.8264.49.camel@localhost.localdomain>
+	 <20060301033338.GA20460@shaftnet.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FDT79-0005EU-HT
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Feb 2006 13:07:35 -0800
-Received: from wproxy.gmail.com ([64.233.184.200])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FDT79-00009r-2X
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Feb 2006 13:07:35 -0800
-Received: by wproxy.gmail.com with SMTP id 50so697481wri
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 26 Feb 2006 13:07:33 -0800 (PST)
-In-Reply-To: <2b6bda73c1ef8b8d6463bbe2de83a431@csi.com>
+	id 1FEIIN-0008B7-Ng
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 28 Feb 2006 19:46:35 -0800
+Received: from gate.crashing.org ([63.228.1.57])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44)
+	id 1FEIIN-0004JF-Ff
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 28 Feb 2006 19:46:35 -0800
+In-Reply-To: <20060301033338.GA20460@shaftnet.org>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,40 +34,60 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Fractallyte <fractallyte@csi.com>
-Cc: =?ISO-8859-1?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Stuffed Crust <pizza@shaftnet.org>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Fractallyte wrote:
 
-Putting back Ville and fbdev-devel back on the CC list.
+> I basically have two chunks of remaining code to write:
+> 
+> 1) The OpenFirmware stuff, which basically requires some re-jiggering of 
+>    arguments passed in and return codes.  
 
-> Thanks for the quick reply!
-> 
-> I tried what you suggested, but it has no effect.  The interesting thing
-> is that the BIOS timings and geometry work perfectly in Xorg.  I've
-> tried using SVGATextMode and FBSet using these values, but neither works.
-> 
-> Could it be that the display is correct (it fills up the screen, after
-> all - just stretched out), but the console just doesn't recognise it?
+Or just write a small howto and I will do the job :) I've been very busy
+lately mostly due to my newborn child, thus I didn't help more than
+that, but I'm really interested in your work. I also want to bring along
+a bunch of fixes like the memory mapping fixes I've been doing on X.org
+radeon driver recently.
 
-I doubt it.  If you can run X over fbdev and you get a perfect display,
-then I would agree with you that this is a bug in the console code.
- 
-> On 24 Feb 2006, at 21:16, Antonino A. Daplas wrote:
->>
->> Too many Mobility's that need xclk=62.  Try booting with:
->>
->> video=atyfb:xclk:62
->>
->> Tony
->>
->>
+> 2) User-specified layout code isn't smart enough to try the secondary 
+>    connectors if the primary connectors don't have anything connected.
+>    (This could be lessened by extending the syntax to explicitly state 
+>     CRT,CRT2,DFP,DFP2,etc..)
+
+Agreed. (And X too btw ...)
+
+In fact, we need a way to provide the driver with the full connector
+mapping I think, in case it can't be obtained from the firmware.
+
+> Then there's the big open question of how we should allow the user
+> to override the connector table, in case we mis-detect or don't have a
+> table to begin with.  If we have DDC enabled we can build a 
+> connector table by probing all DDC ports, using the existing logic. 
+
+module option is the easy/cheap way but sucks in some ways... sysfs per
+device instance is nice but a bit "too late" unless we have a way for
+the driver to re-probe... which is a good thing to have anyway since we
+might finally deal with screen hotplug :)
+
+In fact, a mix of both might do the trick... module/kernel argument for
+a default override and sysfs for "live" override ?
+
+I would however not bother too much at the moment with that. Let's get
+the rest working first
+
+> Thoughts?
 > 
-> Thanks!
-> 
-> Amir
-> 
-> 
+> (This work builds on the radeon-atom-4 patch, and is definately in the 
+>  "heavily experimental" stage.  I'll post a patch once I have time to 
+>  clean it up and fix the first two points)
+
+Thanks.
+
+I'll look at your stuff in more detail asap and will then let it simmer
+in -mm if I'm happy enough for at least a kernel version...
+
+Ben.
+
 
 
 

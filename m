@@ -1,82 +1,82 @@
-From: Richard Purdie <rpurdie@rpsys.net>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
 Subject: Re: RFC: Backlight Class sysfs attribute behaviour
-Date: Mon, 06 Mar 2006 00:08:54 +0000
-Message-ID: <1141603734.6521.85.camel@localhost.localdomain>
+Date: Mon, 06 Mar 2006 09:00:27 +0800
+Message-ID: <440B89AB.3020203@gmail.com>
 References: <1141571334.6521.38.camel@localhost.localdomain>
-	 <20060306010909.190f06fe.zap@homelink.ru>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750762AbWCFAJI@vger.kernel.org>
-In-Reply-To: <20060306010909.190f06fe.zap@homelink.ru>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1FG45e-0006Jv-Vn
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 05 Mar 2006 17:00:46 -0800
+Received: from pproxy.gmail.com ([64.233.166.177])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1FG45e-0003Q8-Kc
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 05 Mar 2006 17:00:47 -0800
+Received: by pproxy.gmail.com with SMTP id s49so744036pyc
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 05 Mar 2006 17:00:45 -0800 (PST)
+In-Reply-To: <1141571334.6521.38.camel@localhost.localdomain>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Zabolotny <zap@homelink.ru>
-Cc: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Andrew Zabolotny <zap@homelink.ru>, LKML <linux-kernel@vger.kernel.org>
 
-On Mon, 2006-03-06 at 01:09 +0300, Andrew Zabolotny wrote:
-> On Sun, 05 Mar 2006 15:08:53 +0000
-> Richard Purdie <rpurdie@rpsys.net> wrote:
+Richard Purdie wrote:
+> At present, the backlight class presents two attributes to sysfs,
+> brightness and power. I'm a little confused as to whether these
+> attributes are currently doing the right things.
 > 
-> > The solution might be to have brightness always return the user
-> > requested value y and have a new attribute returning the brightness as
-> > determined by the driver once it accounts for all the factors it needs
-> > to consider. Naming of such an attribute is tricky -
-> > "driver_brightness" perthaps?
-> Maybe by analogy to sound card there can be a 'master' control, and one
-> 'user' control. But it's not clear how many of these strings you will
-> need for every 'real' attribute. Why two and not three? Why three and
-> not ten?
+> Taking brightness, at any one time we have several different brightness
+> values:
+> 
+> * User requested brightness (echo y > /sys/class/backlight/xxx/brightness)
+> * Driver determined brightness which accounts for things like FB 
+>   blanking, low battery backlight limiting (an example from corgi_bl), 
+>   user requested power state, device suspend/resume.
+> 
+> The solution might be to have brightness always return the user
+> requested value y and have a new attribute returning the brightness as
+> determined by the driver once it accounts for all the factors it needs
+> to consider. Naming of such an attribute is tricky - "driver_brightness"
+> perthaps?
 
-I'm just wondering about the name of the single attribute that reflects
-the status of the current actual brightness value that the driver has
-chosen.
+Why not just agree on a normal range of values (ie, 0-255), and let the
+driver "denormalize" them?  Thus, a driver that has only 2 levels of
+brightness, will treat 0-127 as 0 and 128-255 as 1, and will return only
+two possible values 0 and 255.
 
-> But I don't think that's a kernel-side problem. I think it would be
-> better to have some daemon controlling these attributes (and keeping
-> track of as many factors as needed) and programming the final, 'true'
-> kernel value. Then a set of user-mode tools could be provided to alter
-> them, and a simple API.
+If a user requests max brightness (255), and the driver is capable of setting
+it, then it returns 255.  But if for some reason it can't (ie low power state),
+it returns the current max brightness, normalized, (ie 128 instead of 255 and
+because that the scale is 0-255, a value of 128 tells the user that only
+half of max brightness was set).
 
-If all the events that could influence the backlight were available in
-userspace, I'd agree but they're not. There might be a need for a daemon
-in userspace for various reasons depending on the application but I'm
-not concerned about that.
+And instead of a new "driver_brightness" attribute, why not just a new
+attribute that returns the number of brightness levels?
 
-> Well with power it's simple: LCD is either powered or it's not. After
-> resuming the LCD should be always powered on, and the program can then
-> turn it back off if it's desired. FB blanking isn't a issue with X11/
-> Qtopia, as far as I understand? And finally, the 'user' requested power
-> state has to be tracked by the program that does the blanking (say an
-> audio player or such).
+It's similar for power.  We can agree on a range, 0-255.  The range might be
+overkill but is consistent with brightness.  The callback converts the VESA
+constants to 0 - 0, 1 - 64, 2 - 128, 3 - 255 and sends the value to the driver.
+The driver, denormalizes them to, most probably, on and off (0-127 - on,
+128-255 - off).
 
-So the user powers down the LCD, the FB blanking then blanks and
-unblanks. What should the current LCD power status be? The LCD should
-still be off as far as I can see yet the LCD/backlight class doesn't do
-this at present.
+Tony
 
-I'm beginning to favour a system where backlight drivers only provide
-two functions:
 
-int (*set_status)(struct backlight_device *, int brightness, int power, int fb_blank);
-int (*get_status)(struct backlight_device *);
 
-set_status passes the user requested brightness and power values along
-with the current fb_blanking status to the driver. The driver can then
-set the hardware up as appropriate. 
-
-get_status returns the brightness for the current configuration.
-
-The backlight core itself keeps track of the requested power and
-brightness values rather than having every backlight driver including
-the logic. This has the advantage of keeping behaviour the same and
-avoiding subtle logic bugs of which there are several at the moment.
-
-This also means that "echo 31 > brightness; cat brightness" will always
-give the expected answer of whatever brightness the user is requesting
-and the actual current driver brightness choice is available through
-"cat driver_brightness".
-
-Does this seem reasonable?
-
-Richard
+-------------------------------------------------------
+This SF.Net email is sponsored by xPML, a groundbreaking scripting language
+that extends applications into web and mobile media. Attend the live webcast
+and join the prime developer group breaking into this new coding territory!
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=110944&bid=241720&dat=121642

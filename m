@@ -1,23 +1,23 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
+From: Richard Purdie <rpurdie@rpsys.net>
 Subject: Re: RFC: Backlight Class sysfs attribute behaviour
-Date: Mon, 06 Mar 2006 09:00:27 +0800
-Message-ID: <440B89AB.3020203@gmail.com>
+Date: Mon, 06 Mar 2006 08:45:28 +0000
+Message-ID: <1141634729.6524.14.camel@localhost.localdomain>
 References: <1141571334.6521.38.camel@localhost.localdomain>
+	 <440B89AB.3020203@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FG45e-0006Jv-Vn
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 05 Mar 2006 17:00:46 -0800
-Received: from pproxy.gmail.com ([64.233.166.177])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FG45e-0003Q8-Kc
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 05 Mar 2006 17:00:47 -0800
-Received: by pproxy.gmail.com with SMTP id s49so744036pyc
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sun, 05 Mar 2006 17:00:45 -0800 (PST)
-In-Reply-To: <1141571334.6521.38.camel@localhost.localdomain>
+	id 1FGBLa-00070e-S3
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Mar 2006 00:45:42 -0800
+Received: from tim.rpsys.net ([194.106.48.114] ident=0)
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44)
+	id 1FGBLZ-00020O-Bs
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 06 Mar 2006 00:45:43 -0800
+In-Reply-To: <440B89AB.3020203@gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,49 +29,48 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Richard Purdie <rpurdie@rpsys.net>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Andrew Zabolotny <zap@homelink.ru>, LKML <linux-kernel@vger.kernel.org>
 
-Richard Purdie wrote:
-> At present, the backlight class presents two attributes to sysfs,
-> brightness and power. I'm a little confused as to whether these
-> attributes are currently doing the right things.
-> 
-> Taking brightness, at any one time we have several different brightness
-> values:
-> 
-> * User requested brightness (echo y > /sys/class/backlight/xxx/brightness)
-> * Driver determined brightness which accounts for things like FB 
->   blanking, low battery backlight limiting (an example from corgi_bl), 
->   user requested power state, device suspend/resume.
-> 
-> The solution might be to have brightness always return the user
-> requested value y and have a new attribute returning the brightness as
-> determined by the driver once it accounts for all the factors it needs
-> to consider. Naming of such an attribute is tricky - "driver_brightness"
-> perthaps?
+On Mon, 2006-03-06 at 09:00 +0800, Antonino A. Daplas wrote:
+> Why not just agree on a normal range of values (ie, 0-255), and let the
+> driver "denormalize" them?  Thus, a driver that has only 2 levels of
+> brightness, will treat 0-127 as 0 and 128-255 as 1, and will return only
+> two possible values 0 and 255.
+>
+> If a user requests max brightness (255), and the driver is capable of setting
+> it, then it returns 255.  But if for some reason it can't (ie low power state),
+> it returns the current max brightness, normalized, (ie 128 instead of 255 and
+> because that the scale is 0-255, a value of 128 tells the user that only
+> half of max brightness was set).
 
-Why not just agree on a normal range of values (ie, 0-255), and let the
-driver "denormalize" them?  Thus, a driver that has only 2 levels of
-brightness, will treat 0-127 as 0 and 128-255 as 1, and will return only
-two possible values 0 and 255.
+We already have a max_brightness attribute and brightness can vary
+between 0 and max_brightness (hence avoiding scaling issues which we
+leave to userspace).
 
-If a user requests max brightness (255), and the driver is capable of setting
-it, then it returns 255.  But if for some reason it can't (ie low power state),
-it returns the current max brightness, normalized, (ie 128 instead of 255 and
-because that the scale is 0-255, a value of 128 tells the user that only
-half of max brightness was set).
+> And instead of a new "driver_brightness" attribute, why not just a new
+> attribute that returns the number of brightness levels?
 
-And instead of a new "driver_brightness" attribute, why not just a new
-attribute that returns the number of brightness levels?
+The idea of the driver_brightness attribute is to separate the user
+requested brightness value from the actual brightness value decided by
+the driver. The driver determines the real brightness by combining:
 
-It's similar for power.  We can agree on a range, 0-255.  The range might be
-overkill but is consistent with brightness.  The callback converts the VESA
-constants to 0 - 0, 1 - 64, 2 - 128, 3 - 255 and sends the value to the driver.
-The driver, denormalizes them to, most probably, on and off (0-127 - on,
-128-255 - off).
+* the user supplied power sysfs attribute
+* the user supplied brightness sysfs attribute
+* the current FB blanking state
+* any other driver specific factors
 
-Tony
+At present, the user specified values through the sysfs attributes can
+easily get lost as other factors overwrite it (FB blanking overwrites
+user specified power for example). This leads to a class interface with
+unpredictable behaviour.
+
+I'm therefore suggesting separation of the values so each attribute
+reads and writes in a predicable manner and the actual state determined
+by the driver becomes a new readonly sysfs attribute
+("driver_brightness" although I'm open to suggestions of a better name).
+
+Richard
 
 
 

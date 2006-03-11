@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 5/18] nvidiafb: Remove NULL check
-Date: Sat, 11 Mar 2006 09:49:46 +0800
-Message-ID: <44122CBA.40701@gmail.com>
+Subject: [PATCH 8/18] imsttfb: Fix resource leak
+Date: Sat, 11 Mar 2006 09:50:18 +0800
+Message-ID: <44122CDA.8090400@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FHtNH-0002Vz-Op
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Mar 2006 17:58:31 -0800
+	id 1FHtNU-0002Wc-7Z
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Mar 2006 17:58:44 -0800
 Received: from pproxy.gmail.com ([64.233.166.180])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FHtNH-0003lQ-Co
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Mar 2006 17:58:32 -0800
+	id 1FHtNU-0003lQ-0u
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Mar 2006 17:58:44 -0800
 Received: by pproxy.gmail.com with SMTP id z59so419612pyg
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Mar 2006 17:58:28 -0800 (PST)
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Mar 2006 17:58:41 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,29 +30,30 @@ Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Remove unnecessary NULL check, as struct info will never be NULL.
+The struct info and device resource may not be released in the driver's
+error path. Fix.
 
-Coverity Bug 835
+Coverity Bug 671
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/nvidia/nvidia.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+ drivers/video/imsttfb.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
-index c758b38..018dd81 100644
---- a/drivers/video/nvidia/nvidia.c
-+++ b/drivers/video/nvidia/nvidia.c
-@@ -1771,8 +1771,6 @@ static void __exit nvidiafb_remove(struc
- 	struct nvidia_par *par = info->par;
+diff --git a/drivers/video/imsttfb.c b/drivers/video/imsttfb.c
+index ad416ae..7db4254 100644
+--- a/drivers/video/imsttfb.c
++++ b/drivers/video/imsttfb.c
+@@ -1510,6 +1510,8 @@ imsttfb_probe(struct pci_dev *pdev, cons
+ 		default:
+ 			printk(KERN_INFO "imsttfb: Device 0x%x unknown, "
+ 					 "contact maintainer.\n", pdev->device);
++			release_mem_region(addr, size);
++			framebuffer_release(info);
+ 			return -ENODEV;
+ 	}
  
- 	NVTRACE_ENTER();
--	if (!info)
--		return;
- 
- 	unregister_framebuffer(info);
- #ifdef CONFIG_MTRR
 
 
 

@@ -1,22 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH] newportcon: sparse: Fix warnings in newport driver about
- non-static functions
-Date: Sat, 11 Mar 2006 09:54:53 +0800
-Message-ID: <44122DED.2010505@gmail.com>
+Subject: [PATCH 15/18] aty128fb: Fix array overrun
+Date: Sat, 11 Mar 2006 09:51:34 +0800
+Message-ID: <44122D26.8070907@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FHtvc-0005wT-1l
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Mar 2006 18:34:00 -0800
+	id 1FHtyP-0006Fx-Bu
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Mar 2006 18:36:53 -0800
 Received: from pproxy.gmail.com ([64.233.166.180])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FHtOP-0003lQ-4U
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Mar 2006 17:59:42 -0800
+	id 1FHtO1-0003lQ-RF
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 10 Mar 2006 17:59:18 -0800
 Received: by pproxy.gmail.com with SMTP id z59so419612pyg
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Mar 2006 17:59:38 -0800 (PST)
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 10 Mar 2006 17:59:15 -0800 (PST)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,42 +28,51 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Brad Douglas <brad@neruo.com>
 
-From: Ralf Baechle <ralf@linux-mips.org>
+Fix static array overrun
 
-There are more sparse warnings but fixing those will require some more
-work than I want to do without hardware for testing at hand.
+Coverity Bug 556
 
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/console/newport_con.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/aty/aty128fb.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/video/console/newport_con.c b/drivers/video/console/newport_con.c
-index 762c7a5..e99fe30 100644
---- a/drivers/video/console/newport_con.c
-+++ b/drivers/video/console/newport_con.c
-@@ -149,7 +149,7 @@ static inline void newport_clear_lines(i
- 	newport_clear_screen(0, ystart, 1280 + 63, yend, ci);
- }
+diff --git a/drivers/video/aty/aty128fb.c b/drivers/video/aty/aty128fb.c
+index bfc8a93..620c9a9 100644
+--- a/drivers/video/aty/aty128fb.c
++++ b/drivers/video/aty/aty128fb.c
+@@ -1326,7 +1326,7 @@ static int aty128_var_to_pll(u32 period_
+ 	unsigned char post_dividers[] = {1,2,4,8,3,6,12};
+ 	u32 output_freq;
+ 	u32 vclk;        /* in .01 MHz */
+-	int i;
++	int i = 0;
+ 	u32 n, d;
  
--void newport_reset(void)
-+static void newport_reset(void)
- {
- 	unsigned short treg;
- 	int i;
-@@ -193,7 +193,7 @@ void newport_reset(void)
-  * calculate the actual screen size by reading
-  * the video timing out of the VC2
-  */
--void newport_get_screensize(void)
-+static void newport_get_screensize(void)
- {
- 	int i, cols;
- 	unsigned short ventry, treg;
+ 	vclk = 100000000 / period_in_ps;	/* convert units to 10 kHz */
+@@ -1340,15 +1340,16 @@ static int aty128_var_to_pll(u32 period_
+ 	/* now, find an acceptable divider */
+ 	for (i = 0; i < sizeof(post_dividers); i++) {
+ 		output_freq = post_dividers[i] * vclk;
+-		if (output_freq >= c.ppll_min && output_freq <= c.ppll_max)
++		if (output_freq >= c.ppll_min && output_freq <= c.ppll_max) {
++			pll->post_divider = post_dividers[i];
+ 			break;
++		}
+ 	}
+ 
+ 	/* calculate feedback divider */
+ 	n = c.ref_divider * output_freq;
+ 	d = c.ref_clk;
+ 
+-	pll->post_divider = post_dividers[i];
+ 	pll->feedback_divider = round_div(n, d);
+ 	pll->vclk = vclk;
+ 
+
 
 
 

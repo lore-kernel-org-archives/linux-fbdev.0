@@ -1,23 +1,22 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: Framebuffer questions
-Date: Fri, 17 Mar 2006 05:26:39 +0800
-Message-ID: <4419D80F.9030806@gmail.com>
-References: <20060315211022.GA4474@localhost.localdomain> <4418BD6A.9080600@gmail.com> <20060316101744.GA3034@localhost.localdomain>
+From: "Dave Airlie" <airlied@gmail.com>
+Subject: intelfb i9xx support
+Date: Mon, 20 Mar 2006 21:25:41 +1100
+Message-ID: <21d7e9970603200225k6df55452iacbe7ccbf6518d47@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FJzzZ-0002pL-Co
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 16 Mar 2006 13:26:45 -0800
-Received: from xproxy.gmail.com ([66.249.82.205])
+	id 1FLHa6-0004FE-Df
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 20 Mar 2006 02:25:46 -0800
+Received: from nproxy.gmail.com ([64.233.182.197])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FJzzY-00066K-V2
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 16 Mar 2006 13:26:45 -0800
-Received: by xproxy.gmail.com with SMTP id s6so318334wxc
-        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 16 Mar 2006 13:26:44 -0800 (PST)
-In-Reply-To: <20060316101744.GA3034@localhost.localdomain>
+	id 1FLHa5-0006SS-MA
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 20 Mar 2006 02:25:46 -0800
+Received: by nproxy.gmail.com with SMTP id x37so717458nfc
+        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 20 Mar 2006 02:25:41 -0800 (PST)
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,32 +28,29 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: santiago@mail.cz
+To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Ondrej Zajicek wrote:
-> Thank you for answers. Perhaps i found some time to write
-> some API documentation.
-> 
-> On Thu, Mar 16, 2006 at 09:20:42AM +0800, Antonino A. Daplas wrote:
->>> - If i have to supply complete mode timings for videomode change
->>>   why there is modedb.c and mode lines stored inside drivers?
->> Usually, these entries are used only on startup. Some drivers support
->> built-in internal mode tables, some use standard algo's (GTF, CVT) to
->> compute the mode timings. With these drivers, passing xres and yres is
->> usually enough. 
-> 
-> So with these drivers it is not possible to set non-standard timings
-> (because other timing arguments are always ignored)?
+Hi,
 
-As long as the modeline is valid, drivers tend to accept them. It is only
-when you passed invalid timings that drivers will
+This is an inquiry on whether anyone has been looking at i9xx support
+for intelfb? and to announce my intention to add support for CRT
+modesetting on i915 and i945 chipsets to the intelfb driver
 
-a. reject;
-b. compute with GTF/CVT; or
-c. get the nearest modeline from its internal table.
+I've put a git tree with an i915fb branch
 
-Tony
+git://git.kernel.org/pub/scm/linux/kernel/git/airlied/intelfb-2.6.git
+
+This contains my initial code to set mode on i9xx, it doesn't seem to
+regress i8xx, but I haven't be able to test it on my i9xx hardware
+yet, but it should give an idea of the direction I am headed in. I'll
+be trying to get this finished in the next week or so...
+
+The i915 also has integrated LVDS but I've no hw to test that on.
+
+The code is based on my work for adding real modesetting to the i810 X driv=
+er...
+
+Dave.
 
 
 -------------------------------------------------------

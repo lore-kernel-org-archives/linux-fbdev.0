@@ -1,21 +1,22 @@
-From: Mardy <mardy@users.sourceforge.net>
-Subject: Re: Re: [PATCH] Add acceleration support to ATI Imageon
-Date: Thu, 23 Mar 2006 14:28:25 +0100
-Message-ID: <20060323132825.GB10824@pupilla>
-References: <20060323112930.GA10090@pupilla> <4422987A.7030900@pol.net> <44229A2E.1040109@pol.net>
+From: Knut Petersen <Knut_Petersen@t-online.de>
+Subject: Re: Re: cyblafb in kernel 2.6.16: corrupted display
+  in Xfree86
+Date: Thu, 23 Mar 2006 15:57:23 +0100
+Message-ID: <4422B753.5080704@t-online.de>
+References: <20060322234812.GB2361@intevation.de> <44225DAD.8080004@t-online.de> <20060323125244.GB5579@intevation.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FMPrn-0007uG-F7
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Mar 2006 05:28:43 -0800
-Received: from smtp010.mail.ukl.yahoo.com ([217.12.11.79])
-	by mail.sourceforge.net with smtp (Exim 4.44)
-	id 1FMPrl-0000RP-TW
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Mar 2006 05:28:43 -0800
-Content-Disposition: inline
-In-Reply-To: <44229A2E.1040109@pol.net>
+	id 1FMROA-0002Yp-2d
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Mar 2006 07:06:14 -0800
+Received: from mailout03.sul.t-online.com ([194.25.134.81])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1FMRO9-0004WP-My
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Mar 2006 07:06:14 -0800
+In-Reply-To: <20060323125244.GB5579@intevation.de>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,45 +27,53 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: "Antonino A. Daplas" <adaplas@pol.net>, Richard Purdie <rpurdie@rpsys.net>
+Cc: Thomas Arendsen Hein <thomas@intevation.de>
 
-Le die Thu, Mar 23, 2006 at 08:53:02PM +0800, Antonino A. Daplas ha scribite:
-> > 
-> > I presume that w100_wait_complete is a "wait for engine idle" function?
+Thomas Arendsen Hein schrieb:
 
-Yes: without it, the characters were written in the framebuffer before
-the copyarea operation actually took place. I didn't notice we had a
-sync operation, too.
+>>That is very slow. Use geometry 1152 864 2048 4096 8
+>>    
+>>
+>
+>This only works with kernel 2.6.16, not with 2.6.15.6
+>
+>  
+>
+ACK
 
-> > You can wrap w100_wait_complete() as w100fb_sync() and add this to fb_ops, ie
-> > 
-> > .fb_sync = w100fb_sync.
+>>Are there any problems if you use the standard resolutions, eg 1024x768 
+>>or 1280x1024?
+>>    
+>>
+>
+>No and yes:
+>Everything works fine when using
+>/sbin/modprobe cyblafb bpp=16 mode=1280x1024 ref=85
+>but I get the same problems if I do:
+>/sbin/modprobe cyblafb && /usr/sbin/fbset -a 1280x1024-85
+>
+>  
+>
 
-Yes, it's definitely better.
+Please Try:
 
-> Although the result is the same, I prefer an OR (|) rather than
-> addition (+)... At first glance, an OR makes you think of bitsetting
-> while the addition is a bit confusing at first.
+/sbin/modprobe cyblafb && /usr/sbin/fbset -a 1280x1024-85 -depth 16
 
-Will do, and resend a new patch.
-Thanks!
+/sbin/modprobe cyblafb && /usr/sbin/fbset -g 1152 864 1152 864 8 -t 10000 168 40 57 13 152 11
+
+/sbin/modprobe cyblafb && /usr/sbin/fbset -g 1152 864 1152 864 16 -t 10000 168 40 57 13 152 11
+
+/sbin/modprobe cyblafb && /usr/sbin/fbset -g 1152 864 2048 4096 8 -t 10000 168 40 57 13 152 11
+
+/sbin/modprobe cyblafb && /usr/sbin/fbset -g 1152 864 2048 2048 16 -t 10000 168 40 57 13 152 11
 
 
--- 
-Saluti,
-    Mardy
-http://interlingua.altervista.org
+Is there a special reason not to use the X* trident driver?
 
-	
-
-	
-		
-___________________________________ 
-Yahoo! Mail: gratis 1GB per i messaggi e allegati da 10MB 
-http://mail.yahoo.it
+cu,
+ Knut
 
 
 

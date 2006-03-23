@@ -1,83 +1,91 @@
-From: Sylvain Meyer <sylvain.meyer@worldonline.fr>
-Subject: Re: [Linux-fbdev-devel] [PATCH] [git tree] Intel i9xx support for
- intelfb
-Date: Thu, 23 Mar 2006 18:57:05 +0100
-Message-ID: <4422E171.1040909@worldonline.fr>
-References: <21d7e9970603221820p5c89e46fgbd9878a3c60eac0a@mail.gmail.com>	 <b00ca3bd0603222159t63ea0f4j38e085ecff5b93c8@mail.gmail.com> <21d7e9970603222209r45beeb99nccc6435b99b79154@mail.gmail.com>
+From: Thomas Arendsen Hein <thomas@intevation.de>
+Subject: Re: cyblafb in kernel 2.6.16: corrupted display    in Xfree86
+Date: Thu, 23 Mar 2006 19:39:08 +0100
+Message-ID: <20060323183908.GA9907@intevation.de>
+References: <20060322234812.GB2361@intevation.de> <44225DAD.8080004@t-online.de> <20060323125244.GB5579@intevation.de> <4422B753.5080704@t-online.de> <20060323160321.GB7464@intevation.de> <4422D390.4030500@t-online.de>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1422640AbWCWR7M@vger.kernel.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="iso-8859-1"; format="flowed"
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1FMUiH-000319-9F
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Mar 2006 10:39:13 -0800
+Received: from aktaia.intevation.org ([212.95.126.10] helo=mail.intevation.de)
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1FMUiG-0006vf-1A
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Mar 2006 10:39:13 -0800
+Received: from localhost (localhost [127.0.0.1])
+	by mail.intevation.de (Postfix) with ESMTP id EB9C036F13
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 23 Mar 2006 19:39:10 +0100 (CET)
+Received: from intevation.de (eukrante.hq [192.168.11.14])
+	by mail.intevation.de (Postfix) with SMTP id 7DE7836DE1
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 23 Mar 2006 19:39:08 +0100 (CET)
+Content-Disposition: inline
+In-Reply-To: <4422D390.4030500@t-online.de>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, akpm@osdl.org
 
-        Sorry for my very long silence.
+* Knut Petersen <Knut_Petersen@t-online.de> [20060323 18:07]:
+> Thomas Arendsen Hein schrieb:
+> 
+> >With /sbin/modprobe cyblafb && /usr/sbin/fbset -a 1152x864-70 -depth 16
+> >(changing fb.modes would probably help, too) everything is back to
+> >normal for me.
+>
+> So the problem is that the 8bpp modes do not work with the
+> X framebuffer driver. Please report that bug, I think X is responsible.
 
-=46or i2c support. I've done it to have a workable tv-out on my hardwar=
-e.=20
-It was the main reason  why i ported the driver to kernels 2.6 as i use=
-=20
-my computer as a set-top-box only connected to a tv. I've it on my own=20
-tree (very old).
-I can send you the code. I did it in a way not accepted by kernel=20
-reviewers as my tv driver (for chrontel ch7011 chipset) is all in kerne=
-l=20
-space. But it can be a base for a better scheme.
+But why did it work up to 2.6.15.6 then?
+I know for sure that I had 8bpp in fb console and 16bpp in X.
 
-Regards
-Sylvain
+> >>Is there a special reason not to use the X* trident driver?
+> >
+> >Yes, I had crashes when using more than one X display (e.g. one
+> >local xdm and one "X -query other :1"), 
+>
+> Try it again, the recent cyblafb works around X and xdm bugs
+> that could have caused that crashes.
 
-Dave Airlie a =E9crit:
+No, I had crashes with non-fb console and trident X driver.
 
->>>This code isn't perfect but I've got no documentation so I cannot
->>>answer some questions on what exactly is going on just yet...
->>>     =20
->>>
->>Better than nothing, and if it works for digital displays, then that
->>would be great.
->>   =20
->>
+I never tested if cyblafb console and trident X have problems.
+
+> >and switching between X and
+> >console is _much_ faster this way.
 >
->It doesn't support LVDS or DVI yet but I'm hoping to make it go in
->that direction, I've no LVDS h/w, and some chipsets have it integrated
->and some don't, but this is a better basis for future work, and I'll
->have no problems keeping it updated with fixes as they come from the
->X.org driver... I'd like to get at least LVDS support working for
->laptop users with these chipsets, getting DVI working is a bit more
->work as there are external chips that need to be driven over i2c, so
->I'll need to at least add i2c support to the i8xx driver. (I noticed
->Sylvain has done some of this work before)..... I'd like to expose i2c
->buses to userspace anyways....
->
-> =20
->
->>There's no git tree for the framebuffer layer, I just send updates
->>directly to akpm. Andrew?
->>
->>   =20
->>
->
->I'd like to keep the git history if possible, so maybe we can pull
->this tree into -mm and I can get it pulled by Linus later.
->
->Regards,
->Dave
->
->
->-------------------------------------------------------
->This SF.Net email is sponsored by xPML, a groundbreaking scripting lan=
-guage
->that extends applications into web and mobile media. Attend the live w=
-ebcast
->and join the prime developer group breaking into this new coding terri=
-tory!
->http://sel.as-us.falkag.net/sel?cmd=3Dk&kid=110944&bid$1720&dat=121642
->_______________________________________________
->Linux-fbdev-devel mailing list
->Linux-fbdev-devel@lists.sourceforge.net
->https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
->
-> =20
->
+> I doubt that ... switching between X trident and cyblafb and back again
+> takes only a few miliseconds here.
+
+Maybe I had little variations in the monitor timings which caused
+the monitor to re-sync. With X on cyblafb this is obviously always
+identical.
+
+
+I've found another problem with the new cyblafb under X which didn't
+happen before: DPMS no longer turns of the monitor. At the time
+where DPMS suspend kicked in before, now the xlock clock simply
+stops updating, but is still visible (xlock -mode dclock).
+
+Thomas
+
+-- 
+Email: thomas@intevation.de
+http://intevation.de/~thomas/
+
+
+-------------------------------------------------------
+This SF.Net email is sponsored by xPML, a groundbreaking scripting language
+that extends applications into web and mobile media. Attend the live webcast
+and join the prime developer group breaking into this new coding territory!
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=110944&bid=241720&dat=121642

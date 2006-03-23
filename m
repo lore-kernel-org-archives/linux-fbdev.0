@@ -1,29 +1,22 @@
-From: "Dave Airlie" <airlied@gmail.com>
-Subject: Re: [PATCH] [git tree] Intel i9xx support for intelfb
-Date: Fri, 24 Mar 2006 09:47:13 +1100
-Message-ID: <21d7e9970603231447h379fad73rcc4711ee6e3dfb19@mail.gmail.com>
-References: <21d7e9970603221820p5c89e46fgbd9878a3c60eac0a@mail.gmail.com>
-	 <b00ca3bd0603222159t63ea0f4j38e085ecff5b93c8@mail.gmail.com>
-	 <21d7e9970603222209r45beeb99nccc6435b99b79154@mail.gmail.com>
-	 <4422E171.1040909@worldonline.fr>
-	 <21d7e9970603231428t1172c5cdlaffe3603b920fc5a@mail.gmail.com>
-	 <442323D6.2060101@worldonline.fr>
+From: Knut Petersen <Knut_Petersen@t-online.de>
+Subject: Re: Re: cyblafb in kernel 2.6.16: corrupted display
+    in Xfree86
+Date: Thu, 23 Mar 2006 23:46:09 +0100
+Message-ID: <44232531.1050006@t-online.de>
+References: <20060322234812.GB2361@intevation.de> <44225DAD.8080004@t-online.de> <20060323125244.GB5579@intevation.de> <4422B753.5080704@t-online.de> <20060323160321.GB7464@intevation.de> <4422D390.4030500@t-online.de> <20060323183908.GA9907@intevation.de>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FMYaQ-00074b-TP
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Mar 2006 14:47:22 -0800
-Received: from [64.233.182.188] (helo=nproxy.gmail.com)
+	id 1FMYhZ-0007wz-Ir
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Mar 2006 14:54:45 -0800
+Received: from mailout02.sul.t-online.com ([194.25.134.17])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FMYaP-0006W3-Mo
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Mar 2006 14:47:23 -0800
-Received: by nproxy.gmail.com with SMTP id l37so440337nfc
-        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 23 Mar 2006 14:47:14 -0800 (PST)
-In-Reply-To: <442323D6.2060101@worldonline.fr>
-Content-Disposition: inline
+	id 1FMYhY-0004EQ-ER
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 23 Mar 2006 14:54:45 -0800
+In-Reply-To: <20060323183908.GA9907@intevation.de>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,54 +27,54 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>
 
-On 3/24/06, Sylvain Meyer <sylvain.meyer@worldonline.fr> wrote:
->  Dave Airlie a =E9crit:
+Thomas Arendsen Hein schrieb:
+
+>* Knut Petersen <Knut_Petersen@t-online.de> [20060323 18:07]:
+>  
 >
-> >On 3/24/06, Sylvain Meyer <sylvain.meyer@worldonline.fr> wrote:
-> >
-> >
-> >>        Sorry for my very long silence.
-> >>
-> >>For i2c support. I've done it to have a workable tv-out on my hardware.
-> >>It was the main reason  why i ported the driver to kernels 2.6 as i use
-> >>my computer as a set-top-box only connected to a tv. I've it on my own
-> >>tree (very old).
-> >>I can send you the code. I did it in a way not accepted by kernel
-> >>reviewers as my tv driver (for chrontel ch7011 chipset) is all in kerne=
-l
-> >>space. But it can be a base for a better scheme.
-> >>
-> >>
-> >
-> >I actually have your code already, I picked it up on directfb-dev
-> >quite a while back :-)
-> >
-> >
-> >
->         Ok. Not needed then. No change so far.
+>>Thomas Arendsen Hein schrieb:
+>>
+>>    
+>>
+>>>With /sbin/modprobe cyblafb && /usr/sbin/fbset -a 1152x864-70 -depth 16
+>>>(changing fb.modes would probably help, too) everything is back to
+>>>normal for me.
+>>>      
+>>>
+>>So the problem is that the 8bpp modes do not work with the
+>>X framebuffer driver. Please report that bug, I think X is responsible.
+>>    
+>>
 >
-> Sylvain
+>But why did it work up to 2.6.15.6 then?
+>I know for sure that I had 8bpp in fb console and 16bpp in X.
 >
+>  
 >
->
->
->
-> -------------------------------------------------------
-> This SF.Net email is sponsored by xPML, a groundbreaking scripting langua=
-ge
-> that extends applications into web and mobile media. Attend the live webc=
-ast
-> and join the prime developer group breaking into this new coding territor=
-y!
-> http://sel.as-us.falkag.net/sel?cmdlnk&kid=110944&bid$1720&dat=121642
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
->
+Well, cyblafb does not use vga style panning registers any longer.
+That change is necessary to support ywrap scrolling and to allow
+screen rotation. The trident X driver does not know about the
+graphics engine registers I use instead, and I had to include
+some hacks to allow that to work.
+
+Try to change
+
+    #define CYBLAFB_KD_GRAPHICS_QUIRK 1
+
+to
+
+    #define CYBLAFB_KD_GRAPHICS_QUIRK 0
+
+in cyblafb.c for purely diagnostic purposes. Does that restore the old
+behaviour for you?
+
+
+cu,
+ Knut
 
 
 -------------------------------------------------------

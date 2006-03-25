@@ -1,67 +1,73 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: Linux 2.6.16: Cursor trouble on Matrox Millenium
- II framebuffer
-Date: Fri, 24 Mar 2006 20:18:30 +0800
-Message-ID: <4423E396.7070403@gmail.com>
-References: <20060324003155.83478.qmail@web52902.mail.yahoo.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Adrian Bunk <bunk@stusta.de>
+Subject: [RFC: 2.6 patch] video/sis/init301.c:SiS_ChrontelDoSomething2(): remove dead code
+Date: Sat, 25 Mar 2006 20:47:29 +0100
+Message-ID: <20060325194729.GR4053@stusta.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FMlFY-0004xi-Dn
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Mar 2006 04:18:40 -0800
-Received: from pproxy.gmail.com ([64.233.166.183])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FMlFX-00086C-4y
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 24 Mar 2006 04:18:40 -0800
-Received: by pproxy.gmail.com with SMTP id z59so662379pyg
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 24 Mar 2006 04:18:38 -0800 (PST)
-In-Reply-To: <20060324003155.83478.qmail@web52902.mail.yahoo.com>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751105AbWCYTrc@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Dave Airlie <airlied@gmail.com>, rankincj@yahoo.com
+Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@osdl.org>
+Cc: thomas@winischhofer.net, adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-Chris Rankin wrote:
-> --- Dave Airlie <airlied@gmail.com> wrote:
->> Just to let you know what I do, I boot up in text mode, ssh in and
->> modprobe my fb driver then fbcon... I don't touch the console during
->> that time.. if I vt switch and come back it works fine..
-> 
-> If vt-switching "fixes" things then that would explain why I can't reproduce this bug now.
-> 
+The Coverity checker spotted these two unused variables.
 
-Can you both try this patch?
+Please check whether this patch is correct or whether they should be 
+used.
 
-Tony
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index eb46629..bf4aeb5 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -1142,6 +1142,7 @@ static void fbcon_init(struct vc_data *v
- 		set_blitting_type(vc, info);
- 	}
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+
+---
+
+This patch was already sent on:
+- 10 Mar 2006
+
+ drivers/video/sis/init301.c |   11 +----------
+ 1 file changed, 1 insertion(+), 10 deletions(-)
+
+--- linux-2.6.16-rc5-mm3-full/drivers/video/sis/init301.c.old	2006-03-09 23:39:56.000000000 +0100
++++ linux-2.6.16-rc5-mm3-full/drivers/video/sis/init301.c	2006-03-09 23:40:48.000000000 +0100
+@@ -8560,39 +8560,30 @@
  
-+	ops->p = &fb_display[fg_console];
+      }
  }
  
- static void fbcon_deinit(struct vc_data *vc)
-
-
--------------------------------------------------------
-This SF.Net email is sponsored by xPML, a groundbreaking scripting language
-that extends applications into web and mobile media. Attend the live webcast
-and join the prime developer group breaking into this new coding territory!
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=110944&bid=241720&dat=121642
+ static void
+ SiS_ChrontelDoSomething2(struct SiS_Private *SiS_Pr)
+ {
+-     unsigned short temp,tempcl,tempch;
++     unsigned short temp;
+ 
+      SiS_LongDelay(SiS_Pr, 1);
+-     tempcl = 3;
+-     tempch = 0;
+ 
+      do {
+        temp = SiS_GetCH701x(SiS_Pr,0x66);
+        temp &= 0x04;  /* PLL stable? -> bail out */
+        if(temp == 0x04) break;
+ 
+        if(SiS_Pr->ChipType == SIS_740) {
+           /* Power down LVDS output, PLL normal operation */
+           SiS_SetCH701x(SiS_Pr,0x76,0xac);
+        }
+ 
+        SiS_SetCH701xForLCD(SiS_Pr);
+ 
+-       if(tempcl == 0) {
+-           if(tempch == 3) break;
+-	   SiS_ChrontelResetDB(SiS_Pr);
+-	   tempcl = 3;
+-	   tempch++;
+-       }
+-       tempcl--;
+        temp = SiS_GetCH701x(SiS_Pr,0x76);
+        temp &= 0xfb;  /* Reset PLL */
+        SiS_SetCH701x(SiS_Pr,0x76,temp);
+        SiS_LongDelay(SiS_Pr, 2);
+        temp = SiS_GetCH701x(SiS_Pr,0x76);
+        temp |= 0x04;  /* PLL normal operation */
+        SiS_SetCH701x(SiS_Pr,0x76,temp);

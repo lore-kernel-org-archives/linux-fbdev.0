@@ -1,21 +1,20 @@
 From: Richard Purdie <rpurdie@rpsys.net>
-Subject: [patch 3/3] Corgi backlight: Generalise to support other Sharp SL
- hardware
-Date: Sun, 26 Mar 2006 23:59:02 +0100
-Message-ID: <1143413942.18513.41.camel@localhost.localdomain>
+Subject: pxafb: Minor driver fixes
+Date: Mon, 27 Mar 2006 00:08:08 +0100
+Message-ID: <1143414489.18513.51.camel@localhost.localdomain>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FNeCU-00020T-Af
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Mar 2006 14:59:10 -0800
+	id 1FNeLJ-0002sc-3X
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Mar 2006 15:08:17 -0800
 Received: from tim.rpsys.net ([194.106.48.114] ident=0)
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
 	(Exim 4.44)
-	id 1FNeCQ-0004k5-OH
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Mar 2006 14:59:10 -0800
+	id 1FNeLI-0006Rz-BB
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Mar 2006 15:08:16 -0800
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,160 +27,54 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Generalise the Corgi backlight driver by moving the default intensity
-and limit mask settings into the platform specific data structure. This
-enables the driver to support other Zaurus hardware, specifically the
-SL-6000x (Tosa) model.
+Fixes for the pxafb driver:
 
-Also change the spinlock to a mutex (the spinlock is overkill).
+* Return -EINVAL for resolutions that are too large as per framebuffer
+driver policy.
+* Increase the error timeout for disabling the LCD controller. The
+current timeout is sometimes too short on the Sharp Zaurus Cxx00
+hardware and an extra delay in an error path shouldn't any problems.
+* Fix a dev reference which causes a compile error when DEBUG is
+defined.
 
 Signed-off-by: Richard Purdie <rpurdie@rpsys.net>
 
-Index: linux-2.6.16/arch/arm/mach-pxa/corgi.c
+Index: linux-2.6.15/drivers/video/pxafb.c
 ===================================================================
---- linux-2.6.16.orig/arch/arm/mach-pxa/corgi.c	2006-03-26 17:04:28.000000000 +0100
-+++ linux-2.6.16/arch/arm/mach-pxa/corgi.c	2006-03-26 23:09:00.000000000 +0100
-@@ -142,6 +142,8 @@
-  */
- static struct corgibl_machinfo corgi_bl_machinfo = {
- 	.max_intensity = 0x2f,
-+	.default_intensity = 0x1f,
-+	.limit_mask = 0x0b,
- 	.set_bl_intensity = corgi_bl_set_intensity,
- };
+--- linux-2.6.15.orig/drivers/video/pxafb.c	2006-01-28 22:48:01.000000000 +0000
++++ linux-2.6.15/drivers/video/pxafb.c	2006-01-28 22:57:01.000000000 +0000
+@@ -232,9 +232,9 @@
+ 	if (var->yres < MIN_YRES)
+ 		var->yres = MIN_YRES;
+ 	if (var->xres > fbi->max_xres)
+-		var->xres = fbi->max_xres;
++		return -EINVAL;
+ 	if (var->yres > fbi->max_yres)
+-		var->yres = fbi->max_yres;
++		return -EINVAL;
+ 	var->xres_virtual =
+ 		max(var->xres_virtual, var->xres);
+ 	var->yres_virtual =
+@@ -781,7 +781,7 @@
+ 	LCCR0 &= ~LCCR0_LDM;	/* Enable LCD Disable Done Interrupt */
+ 	LCCR0 |= LCCR0_DIS;	/* Disable LCD Controller */
  
-Index: linux-2.6.16/arch/arm/mach-pxa/spitz.c
-===================================================================
---- linux-2.6.16.orig/arch/arm/mach-pxa/spitz.c	2006-03-26 17:04:28.000000000 +0100
-+++ linux-2.6.16/arch/arm/mach-pxa/spitz.c	2006-03-26 23:09:00.000000000 +0100
-@@ -221,6 +221,8 @@
-  * Spitz Backlight Device
-  */
- static struct corgibl_machinfo spitz_bl_machinfo = {
-+	.default_intensity = 0x1f,
-+	.limit_mask = 0x0b,
- 	.max_intensity = 0x2f,
- };
+-	schedule_timeout(20 * HZ / 1000);
++	schedule_timeout(200 * HZ / 1000);
+ 	remove_wait_queue(&fbi->ctrlr_wait, &wait);
  
-Index: linux-2.6.16/drivers/video/backlight/Kconfig
-===================================================================
---- linux-2.6.16.orig/drivers/video/backlight/Kconfig	2006-03-26 17:04:28.000000000 +0100
-+++ linux-2.6.16/drivers/video/backlight/Kconfig	2006-03-26 19:01:13.000000000 +0100
-@@ -43,11 +43,11 @@
- 	default y
+ 	/* disable LCD controller clock */
+@@ -1274,7 +1274,7 @@
+ 	struct pxafb_mach_info *inf;
+ 	int ret;
  
- config BACKLIGHT_CORGI
--	tristate "Sharp Corgi Backlight Driver (SL-C7xx Series)"
-+	tristate "Sharp Corgi Backlight Driver (SL Series)"
- 	depends on BACKLIGHT_DEVICE && PXA_SHARPSL
- 	default y
- 	help
--	  If you have a Sharp Zaurus SL-C7xx, say y to enable the
-+	  If you have a Sharp Zaurus SL-C7xx, SL-Cxx00 or SL-6000x say y to enable the
- 	  backlight driver.
+-	dev_dbg(dev, "pxafb_probe\n");
++	dev_dbg(&dev->dev, "pxafb_probe\n");
  
- config BACKLIGHT_HP680
-Index: linux-2.6.16/include/asm-arm/arch-pxa/sharpsl.h
-===================================================================
---- linux-2.6.16.orig/include/asm-arm/arch-pxa/sharpsl.h	2006-03-26 17:04:28.000000000 +0100
-+++ linux-2.6.16/include/asm-arm/arch-pxa/sharpsl.h	2006-03-26 18:38:54.000000000 +0100
-@@ -27,6 +27,8 @@
-  */
- struct corgibl_machinfo {
- 	int max_intensity;
-+	int default_intensity;
-+	int limit_mask;
- 	void (*set_bl_intensity)(int intensity);
- };
- extern void corgibl_limit_intensity(int limit);
-Index: linux-2.6.16/drivers/video/backlight/corgi_bl.c
-===================================================================
---- linux-2.6.16.orig/drivers/video/backlight/corgi_bl.c	2006-03-26 18:07:27.000000000 +0100
-+++ linux-2.6.16/drivers/video/backlight/corgi_bl.c	2006-03-26 18:44:52.000000000 +0100
-@@ -1,7 +1,7 @@
- /*
-- *  Backlight Driver for Sharp Corgi
-+ *  Backlight Driver for Sharp Zaurus Handhelds (various models)
-  *
-- *  Copyright (c) 2004-2005 Richard Purdie
-+ *  Copyright (c) 2004-2006 Richard Purdie
-  *
-  *  Based on Sharp's 2.4 Backlight Driver
-  *
-@@ -15,21 +15,17 @@
- #include <linux/kernel.h>
- #include <linux/init.h>
- #include <linux/platform_device.h>
--#include <linux/spinlock.h>
-+#include <linux/mutex.h>
- #include <linux/fb.h>
- #include <linux/backlight.h>
--
- #include <asm/arch/sharpsl.h>
- #include <asm/hardware/sharpsl_pm.h>
- 
--#define CORGI_DEFAULT_INTENSITY		0x1f
--#define CORGI_LIMIT_MASK		0x0b
--
- static int corgibl_intensity;
--static void (*corgibl_mach_set_intensity)(int intensity);
--static spinlock_t bl_lock = SPIN_LOCK_UNLOCKED;
-+static DEFINE_MUTEX(bl_mutex);
- static struct backlight_properties corgibl_data;
- static struct backlight_device *corgi_backlight_device;
-+static struct corgibl_machinfo *bl_machinfo;
- 
- static unsigned long corgibl_flags;
- #define CORGIBL_SUSPENDED     0x01
-@@ -37,7 +33,6 @@
- 
- static int corgibl_send_intensity(struct backlight_device *bd)
- {
--	unsigned long flags;
- 	void (*corgi_kick_batt)(void);
- 	int intensity = bd->props->brightness;
- 
-@@ -48,13 +43,11 @@
- 	if (corgibl_flags & CORGIBL_SUSPENDED)
- 		intensity = 0;
- 	if (corgibl_flags & CORGIBL_BATTLOW)
--		intensity &= CORGI_LIMIT_MASK;
--
--	spin_lock_irqsave(&bl_lock, flags);
--
--	corgibl_mach_set_intensity(intensity);
-+		intensity &= bl_machinfo->limit_mask;
- 
--	spin_unlock_irqrestore(&bl_lock, flags);
-+ 	mutex_lock(&bl_mutex);
-+	bl_machinfo->set_bl_intensity(intensity);
-+	mutex_unlock(&bl_mutex);
- 
- 	corgibl_intensity = intensity;
- 
-@@ -122,8 +115,10 @@
- {
- 	struct corgibl_machinfo *machinfo = pdev->dev.platform_data;
- 
-+	bl_machinfo = machinfo;
- 	corgibl_data.max_brightness = machinfo->max_intensity;
--	corgibl_mach_set_intensity = machinfo->set_bl_intensity;
-+	if (!machinfo->limit_mask)
-+		machinfo->limit_mask = -1;
- 
- 	corgi_backlight_device = backlight_device_register ("corgi-bl",
- 		NULL, &corgibl_data);
-@@ -131,7 +126,7 @@
- 		return PTR_ERR (corgi_backlight_device);
- 
- 	corgibl_data.power = FB_BLANK_UNBLANK;
--	corgibl_data.brightness = CORGI_DEFAULT_INTENSITY;
-+	corgibl_data.brightness = machinfo->default_intensity;
- 	corgibl_send_intensity(corgi_backlight_device);
- 
- 	printk("Corgi Backlight Driver Initialized.\n");
+ 	inf = dev->dev.platform_data;
+ 	ret = -ENOMEM;
 
 
 

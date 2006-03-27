@@ -1,37 +1,18 @@
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
 Subject: Re: funny framebuffer fonts on PowerBook with radeonfb
-Date: Mon, 27 Mar 2006 12:17:21 +1100
-Message-ID: <1143422242.3589.2.camel@localhost.localdomain>
+Date: Mon, 27 Mar 2006 09:19:55 +0800
+Message-ID: <44273DBB.9070207@gmail.com>
 References: <20060327004741.GA19187@MAIL.13thfloor.at>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FNgNi-0007Zf-26
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Mar 2006 17:18:54 -0800
-Received: from gate.crashing.org ([63.228.1.57])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44)
-	id 1FNgNf-0005Cy-JT
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 26 Mar 2006 17:18:54 -0800
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751228AbWC0BUn@vger.kernel.org>
 In-Reply-To: <20060327004741.GA19187@MAIL.13thfloor.at>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Herbert Poetzl <herbert@13thfloor.at>
-Cc: linux-fbdev-devel@lists.sourceforge.net, Linux Kernel ML <linux-kernel@vger.kernel.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linux-fbdev-devel@lists.sourceforge.net, Linux Kernel ML <linux-kernel@vger.kernel.org>
 
-On Mon, 2006-03-27 at 02:47 +0200, Herbert Poetzl wrote:
+Herbert Poetzl wrote:
 > Hey Ben!
 > 
 > 2.6.16 and 2.6.15-something show a funny behaviour
@@ -54,20 +35,40 @@ On Mon, 2006-03-27 at 02:47 +0200, Herbert Poetzl wrote:
 > if there is some testing I can do for you, or when
 > you need more info, please let me know. here a few
 > details for the machine:
+> 
 
-I have a similar machine and haven't seen such a problem with it so
-far ... does this happen after you load X or already at boot before X
-ever kicks in ? Does it happen if you don't load any font (that is for
-example boot with init=/bin/sh to prevent any init script to try to load
-a font)
+What font are you using? I presume the dimensions are
+not divisible by 8.  Can you try this patch?
 
-Ben.
+Tony
 
-
-
-
--------------------------------------------------------
-This SF.Net email is sponsored by xPML, a groundbreaking scripting language
-that extends applications into web and mobile media. Attend the live webcast
-and join the prime developer group breaking into this new coding territory!
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=110944&bid=241720&dat=121642
+diff --git a/drivers/video/cfbimgblt.c b/drivers/video/cfbimgblt.c
+index 910e233..8ba6152 100644
+--- a/drivers/video/cfbimgblt.c
++++ b/drivers/video/cfbimgblt.c
+@@ -169,7 +169,7 @@ static inline void slow_imageblit(const 
+ 
+ 		while (j--) {
+ 			l--;
+-			color = (*s & 1 << (FB_BIT_NR(l))) ? fgcolor : bgcolor;
++			color = (*s & (1 << l)) ? fgcolor : bgcolor;
+ 			val |= FB_SHIFT_HIGH(color, shift);
+ 			
+ 			/* Did the bitshift spill bits to the next long? */
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 17fc771..4fe1d2d 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -841,12 +841,10 @@ struct fb_info {
+ #define FB_LEFT_POS(bpp)          (32 - bpp)
+ #define FB_SHIFT_HIGH(val, bits)  ((val) >> (bits))
+ #define FB_SHIFT_LOW(val, bits)   ((val) << (bits))
+-#define FB_BIT_NR(b)              (7 - (b))
+ #else
+ #define FB_LEFT_POS(bpp)          (0)
+ #define FB_SHIFT_HIGH(val, bits)  ((val) << (bits))
+ #define FB_SHIFT_LOW(val, bits)   ((val) >> (bits))
+-#define FB_BIT_NR(b)              (b)
+ #endif
+ 
+     /*

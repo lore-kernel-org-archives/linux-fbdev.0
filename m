@@ -1,59 +1,59 @@
-From: gregkh@suse.de
-Subject: [patch 19/26] fbcon: Fix big-endian bogosity in slow_imageblit()
-Date: Tue, 4 Apr 2006 17:01:00 -0700
-Message-ID: <20060405000100.GT27049@kroah.com>
-References: <20060404235634.696852000@quad.kroah.org>
+From: Greg Stark <gsstark@mit.edu>
+Subject: Re: Fw: atyfb doesn't work for me
+Date: 04 Apr 2006 16:59:18 -0400
+Message-ID: <877j65awgp.fsf@stark.xeocode.com>
+References: <20060404030318.3c80b12a.akpm@osdl.org>
+	<20060404151655.GA28811@sci.fi> <87d5fxb7zp.fsf@stark.xeocode.com>
+	<20060404172210.GA7425@sci.fi>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750968AbWDEAGR@vger.kernel.org>
-Content-Disposition: inline; filename="fbcon-fix-big-endian-bogosity-in.patch"
-In-Reply-To: <20060404235927.GA27049@kroah.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: linux-kernel@vger.kernel.org, stable@kernel.org, Andrew Morton <akpm@osdl.org>
-Cc: Justin Forbes <jmforbes@linuxtx.org>, Zwane Mwaikambo <zwane@arm.linux.org.uk>, Theodore Ts'o <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>, Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>, torvalds@osdl.org, alan@lxorguk.ukuu.org.uk, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Antonino Daplas <adaplas@pol.net>, Herbert Poetzl <herbert@13thfloor.at>, Greg Kroah-Hartman <gregkh@suse.de>
+Content-Transfer-Encoding: quoted-printable
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1FQsca-0004Yd-7k
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 04 Apr 2006 13:59:28 -0700
+Received: from stark.xeocode.com ([216.58.44.227])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1FQscZ-00025c-6i
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 04 Apr 2006 13:59:28 -0700
+In-Reply-To: <20060404172210.GA7425@sci.fi>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="iso-8859-1"
+To: =?iso-8859-1?q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>
+Cc: Greg Stark <gsstark@mit.edu>, linux-fbdev-devel@lists.sourceforge.net
 
-The monochrome->color expansion routine that handles bitmaps which have
-(widths % 8) != 0 (slow_imageblit) produces corrupt characters in big-endian.
-This is caused by a bogus bit test in slow_imageblit().
 
-Fix.
+Ville Syrj=E4l=E4 <syrjala@sci.fi> writes:
 
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
-Acked-by: Herbert Poetzl <herbert@13thfloor.at>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> IIRC SciTech had some solution to the problem... and google found it :)
+> http://www.scitechsoft.com/ftp/snap/linux/videoboot/
 
----
- drivers/video/cfbimgblt.c |    2 +-
- include/linux/fb.h        |    2 --
- 2 files changed, 1 insertion(+), 3 deletions(-)
+Fascinating. it seems the code is all GPL and MIT-style licensed. Any rea=
+son
+it hasn't been merged in except for code complexity arguments?
 
---- linux-2.6.16.1.orig/drivers/video/cfbimgblt.c
-+++ linux-2.6.16.1/drivers/video/cfbimgblt.c
-@@ -169,7 +169,7 @@ static inline void slow_imageblit(const 
- 
- 		while (j--) {
- 			l--;
--			color = (*s & 1 << (FB_BIT_NR(l))) ? fgcolor : bgcolor;
-+			color = (*s & (1 << l)) ? fgcolor : bgcolor;
- 			val |= FB_SHIFT_HIGH(color, shift);
- 			
- 			/* Did the bitshift spill bits to the next long? */
---- linux-2.6.16.1.orig/include/linux/fb.h
-+++ linux-2.6.16.1/include/linux/fb.h
-@@ -839,12 +839,10 @@ struct fb_info {
- #define FB_LEFT_POS(bpp)          (32 - bpp)
- #define FB_SHIFT_HIGH(val, bits)  ((val) >> (bits))
- #define FB_SHIFT_LOW(val, bits)   ((val) << (bits))
--#define FB_BIT_NR(b)              (7 - (b))
- #else
- #define FB_LEFT_POS(bpp)          (0)
- #define FB_SHIFT_HIGH(val, bits)  ((val) << (bits))
- #define FB_SHIFT_LOW(val, bits)   ((val) >> (bits))
--#define FB_BIT_NR(b)              (b)
- #endif
- 
-     /*
 
---
+--=20
+greg
+
+
+
+-------------------------------------------------------
+This SF.Net email is sponsored by xPML, a groundbreaking scripting langua=
+ge
+that extends applications into web and mobile media. Attend the live webc=
+ast
+and join the prime developer group breaking into this new coding territor=
+y!
+http://sel.as-us.falkag.net/sel?cmd=3Dlnk&kid=3D110944&bid=3D241720&dat=3D=
+121642

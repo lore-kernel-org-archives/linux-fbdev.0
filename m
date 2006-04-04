@@ -1,67 +1,30 @@
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Subject: Re: Fw: atyfb doesn't work for me
-Date: Tue, 4 Apr 2006 20:22:10 +0300
-Message-ID: <20060404172210.GA7425@sci.fi>
-References: <20060404030318.3c80b12a.akpm@osdl.org> <20060404151655.GA28811@sci.fi> <87d5fxb7zp.fsf@stark.xeocode.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Adrian Bunk <bunk@stusta.de>
+Subject: [2.6 patch] video/aty/atyfb_base.c: fix an off-by-one error
+Date: Tue, 4 Apr 2006 20:54:54 +0200
+Message-ID: <20060404185454.GW6529@stusta.de>
 Mime-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FQpEQ-0003eM-0C
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 04 Apr 2006 10:22:18 -0700
-Received: from gw02.mail.saunalahti.fi ([195.197.172.116])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FQpEO-0000z7-KS
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 04 Apr 2006 10:22:18 -0700
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1750802AbWDDSy5@vger.kernel.org>
 Content-Disposition: inline
-In-Reply-To: <87d5fxb7zp.fsf@stark.xeocode.com>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="iso-8859-1"
-To: Greg Stark <gsstark@mit.edu>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: adaplas@pol.net
+Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
 
-On Tue, Apr 04, 2006 at 12:50:18PM -0400, Greg Stark wrote:
->=20
-> Ville Syrj=E4l=E4 <syrjala@sci.fi> writes:
->=20
-> > Unfortunately atyfb relies on the BIOS to initialize the card. You se=
-em=20
-> > to have multiple cards in your system which won't work.
->=20
-> Hum. And I was trying it out in the hopes of working around a bug in th=
-e X
-> server that's preventing it from initializing those cards (neither are =
-the
-> primary card).
->=20
-> There isn't some standalone user-space program to initialize them out t=
-here is
-> there? Or anything else maybe that would help?
+This patch fixes an obvious of-by-one error spotted by the Coverity 
+checker.
 
-There's vbetool but I don't think it handles secondary cards.
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-IIRC SciTech had some solution to the problem... and google found it :)
-http://www.scitechsoft.com/ftp/snap/linux/videoboot/
-
---=20
-Ville Syrj=E4l=E4
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
-
-
--------------------------------------------------------
-This SF.Net email is sponsored by xPML, a groundbreaking scripting language
-that extends applications into web and mobile media. Attend the live webcast
-and join the prime developer group breaking into this new coding territory!
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=110944&bid=241720&dat=121642
+--- linux-2.6.17-rc1-mm1-full/drivers/video/aty/atyfb_base.c.old	2006-04-04 20:20:18.000000000 +0200
++++ linux-2.6.17-rc1-mm1-full/drivers/video/aty/atyfb_base.c	2006-04-04 20:20:33.000000000 +0200
+@@ -3400,7 +3400,7 @@ static int __devinit atyfb_pci_probe(str
+ 	struct atyfb_par *par;
+ 	int i, rc = -ENOMEM;
+ 
+-	for (i = ARRAY_SIZE(aty_chips); i >= 0; i--)
++	for (i = ARRAY_SIZE(aty_chips) - 1; i >= 0; i--)
+ 		if (pdev->device == aty_chips[i].pci_id)
+ 			break;
+ 

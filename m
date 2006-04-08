@@ -1,23 +1,27 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: Bug in vga16fb?
-Date: Fri, 07 Apr 2006 00:44:46 +0800
-Message-ID: <4435457E.3010208@gmail.com>
-References: <20060404204002.GB2251@localhost.localdomain> <44344950.9090703@vc.cvut.cz> <20060406073713.GA3051@localhost.localdomain> <44351E1A.8050404@gmail.com> <20060406143901.GA9683@localhost.localdomain>
+From: Andrew Morton <akpm@osdl.org>
+Subject: atyfb on sparc32
+Date: Sat, 8 Apr 2006 01:09:25 -0700
+Message-ID: <20060408010925.3b1ee060.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FRXc0-0007vi-Aq
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 06 Apr 2006 09:45:36 -0700
-Received: from pproxy.gmail.com ([64.233.166.182])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FRXc0-0005TD-81
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 06 Apr 2006 09:45:36 -0700
-Received: by pproxy.gmail.com with SMTP id o67so246338pye
-        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 06 Apr 2006 09:45:32 -0700 (PDT)
-In-Reply-To: <20060406143901.GA9683@localhost.localdomain>
+	id 1FS8Wp-0001nZ-8L
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 08 Apr 2006 01:10:43 -0700
+Received: from smtp.osdl.org ([65.172.181.4])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44)
+	id 1FS8Wo-0001xm-RU
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 08 Apr 2006 01:10:43 -0700
+Received: from shell0.pdx.osdl.net (fw.osdl.org [65.172.181.6])
+	by smtp.osdl.org (8.12.8/8.12.8) with ESMTP id k388AftH025997
+	(version=TLSv1/SSLv3 cipher=EDH-RSA-DES-CBC3-SHA bits=168 verify=NO)
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 8 Apr 2006 01:10:42 -0700
+Received: from bix (shell0.pdx.osdl.net [10.9.0.31])
+	by shell0.pdx.osdl.net (8.13.1/8.11.6) with SMTP id k388AeXB024766
+	for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 8 Apr 2006 01:10:41 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,39 +34,22 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: santiago@mail.cz
 
-Ondrej Zajicek wrote:
-> On Thu, Apr 06, 2006 at 09:56:42PM +0800, Antonino A. Daplas wrote:
->> Ondrej Zajicek wrote:
->>> On Thu, Apr 06, 2006 at 12:48:48AM +0200, Petr Vandrovec wrote:
->>>> Ondrej Zajicek wrote:
->>> Even if we find some possibility to autodetect what hardware does (or in
->>> case of another, non-VGA hardware using CFB4 mode) there would be
->>> problem that driver cannot say it to userspace (or generic kernel
->>> functions like cfb_imageblit). Maybe there should be some flag in
->>> type_aux specifying whether given packed pixel mode is LSB-first or
->>> MSB-first (relevant only for bpp % 8 != 0) ?
->>>
->> var->{red|green|blue|transp}.msb_right
-> 
-> I think that this bit says something different - ordering of bits inside
-> one color component. This is OK for all VGA (MSB bit of color index is
-> left), i hope.
-> 
-> Problem is in ordering of pixels inside a byte, which is completely
-> orthogonal to bitplane.msb_right-ness.
-> 
-> But maybe i misunderstood of meaning of 
-> var->{red|green|blue|transp}.msb_right ...
-> 
-> 
-
-I know, but since it is completely unused, you can use that to tell userspace
-what the format is.  Or if you want something less specific, use var->nonstd.
-Or if you want to standardize, add another FB_VISUAL_* entry.
-
-Tony
+drivers/video/aty/atyfb_base.c: In function `atyfb_ioctl':
+drivers/video/aty/atyfb_base.c:1752: error: `FBTYPE_PCI_GENERIC' undeclared (first use in this function)
+drivers/video/aty/atyfb_base.c:1752: error: (Each undeclared identifier is reported only once
+drivers/video/aty/atyfb_base.c:1752: error: for each function it appears in.)
+drivers/video/aty/atyfb_base.c: In function `atyfb_mmap':
+drivers/video/aty/atyfb_base.c:1869: warning: integer constant is too large for "unsigned long" type
+drivers/video/aty/atyfb_base.c: In function `atyfb_setup_sparc':
+drivers/video/aty/atyfb_base.c:2893: error: `_PAGE_CACHE' undeclared (first use in this function)
+drivers/video/aty/atyfb_base.c:2894: error: `_PAGE_E' undeclared (first use in this function)
+drivers/video/aty/atyfb_base.c:2907: error: `_PAGE_IE' undeclared (first use in this function)
+drivers/video/aty/atyfb_base.c: In function `atyfb_pci_probe':
+drivers/video/aty/atyfb_base.c:3466: warning: integer constant is too large for "unsigned long" type
+drivers/video/aty/atyfb_base.c:3466: warning: large integer implicitly truncated to unsigned type
+drivers/video/aty/atyfb_base.c:3469: error: `_PAGE_CACHE' undeclared (first use in this function)
+drivers/video/aty/atyfb_base.c:3470: error: `_PAGE_E' undeclared (first use in this function)
 
 
 -------------------------------------------------------

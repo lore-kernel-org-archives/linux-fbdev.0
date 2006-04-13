@@ -1,19 +1,32 @@
-From: Adrian Bunk <bunk@stusta.de>
-Subject: [RFC: 2.6 patch] drivers/video/: remove unused exports
-Date: Tue, 11 Apr 2006 00:22:18 +0200
-Message-ID: <20060410222218.GM2408@stusta.de>
+From: "Paul A. Clarke" <pc@us.ibm.com>
+Subject: Re: [Fwd: [PATCH][matroxfb] G450 jittery display
+ on ppc systems]
+Date: Wed, 12 Apr 2006 19:11:00 -0500
+Message-ID: <443D9714.3070300@us.ibm.com>
+References: <443D4F18.2070406@us.ibm.com> <443D70A7.8020702@vc.cvut.cz>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FT4ms-0007cX-AX
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 10 Apr 2006 15:23:10 -0700
-Received: from emailhub.stusta.mhn.de ([141.84.69.5] helo=mailout.stusta.mhn.de)
-	by mail.sourceforge.net with smtp (Exim 4.44)
-	id 1FT4mr-000422-Pl
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 10 Apr 2006 15:23:10 -0700
-Content-Disposition: inline
+	id 1FTpQa-0006ki-77
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 Apr 2006 17:11:16 -0700
+Received: from e34.co.us.ibm.com ([32.97.110.152])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44)
+	id 1FTpQY-0006HD-R5
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 12 Apr 2006 17:11:16 -0700
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com [9.17.195.11])
+	by e34.co.us.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id k3D0B1sm007745
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 12 Apr 2006 20:11:01 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by westrelay02.boulder.ibm.com (8.12.10/NCO/VER6.8) with ESMTP id k3D07VYY150496
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 12 Apr 2006 18:07:31 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11/8.13.3) with ESMTP id k3D0B14j005110
+	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 12 Apr 2006 18:11:01 -0600
+In-Reply-To: <443D70A7.8020702@vc.cvut.cz>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -24,75 +37,29 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: adaplas@pol.net
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Petr Vandrovec <vandrove@vc.cvut.cz>
+Cc: linux-fbdev-devel@lists.sourceforge.net, Ian Romanick <idr@us.ibm.com>
 
-This patch removes the following unused EXPORT_SYMBOL's:
-- fbcvt.c: fb_find_mode_cvt
-- fbmem.c: fb_con_duit
-- fbmem.c: fb_new_modelist
-- macmodes.c: mac_var_to_vmode
-- modedb.c: fb_delete_videomode
-- modedb.c: fb_destroy_modelist
+Petr Vandrovec wrote:
+> Paul A. Clarke wrote:
+>> Just a polite nudge on this patch
+[...]
+> It looks fine to me.  Except that I'd like to know why this has to be 
+> done - is it something common to all DVI displays, or something you got 
+> hint on from Matrox, or ... ?
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+I believe it is common to all systems where the initialization code (BIOS, 
+FCODE, etc.) doesn't leave the card in a completely viable state.  It's not a 
+DVI-specific thing in that I still can't get any DVI signals, but it does appear 
+from my tests that this line is the most significant line in the patch:
 
----
++                matroxfb_DAC_out(PMINFO M1064_XDVICLKCTRL, 0);
 
- drivers/video/fbcvt.c    |    1 -
- drivers/video/fbmem.c    |    2 --
- drivers/video/macmodes.c |    1 -
- drivers/video/modedb.c   |    2 --
- 4 files changed, 6 deletions(-)
-
---- linux-2.6.17-rc1-mm2-full/drivers/video/fbcvt.c.old	2006-04-10 23:19:00.000000000 +0200
-+++ linux-2.6.17-rc1-mm2-full/drivers/video/fbcvt.c	2006-04-10 23:19:08.000000000 +0200
-@@ -376,4 +376,3 @@
- 
- 	return 0;
- }
--EXPORT_SYMBOL(fb_find_mode_cvt);
---- linux-2.6.17-rc1-mm2-full/drivers/video/fbmem.c.old	2006-04-10 23:19:35.000000000 +0200
-+++ linux-2.6.17-rc1-mm2-full/drivers/video/fbmem.c	2006-04-10 23:19:54.000000000 +0200
-@@ -1500,7 +1500,6 @@
- 
- 	return blocking_notifier_call_chain(&fb_notifier_list, event, &evnt);
- }
--EXPORT_SYMBOL(fb_con_duit);
- 
- static char *video_options[FB_MAX];
- static int ofonly;
-@@ -1611,6 +1610,5 @@
- EXPORT_SYMBOL(fb_register_client);
- EXPORT_SYMBOL(fb_unregister_client);
- EXPORT_SYMBOL(fb_get_options);
--EXPORT_SYMBOL(fb_new_modelist);
- 
- MODULE_LICENSE("GPL");
---- linux-2.6.17-rc1-mm2-full/drivers/video/macmodes.c.old	2006-04-10 23:21:51.000000000 +0200
-+++ linux-2.6.17-rc1-mm2-full/drivers/video/macmodes.c	2006-04-10 23:21:59.000000000 +0200
-@@ -327,7 +327,6 @@
-     }
-     return -EINVAL;
- }
--EXPORT_SYMBOL(mac_var_to_vmode);
- 
- /**
-  *	mac_map_monitor_sense - Convert monitor sense to vmode
---- linux-2.6.17-rc1-mm2-full/drivers/video/modedb.c.old	2006-04-10 23:23:12.000000000 +0200
-+++ linux-2.6.17-rc1-mm2-full/drivers/video/modedb.c	2006-04-10 23:23:30.000000000 +0200
-@@ -1016,8 +1016,6 @@
- EXPORT_SYMBOL(fb_var_to_videomode);
- EXPORT_SYMBOL(fb_mode_is_equal);
- EXPORT_SYMBOL(fb_add_videomode);
--EXPORT_SYMBOL(fb_delete_videomode);
--EXPORT_SYMBOL(fb_destroy_modelist);
- EXPORT_SYMBOL(fb_match_mode);
- EXPORT_SYMBOL(fb_find_best_mode);
- EXPORT_SYMBOL(fb_find_nearest_mode);
-
+And, I got some hints from Matrox.  :-)
+-- 
+Regards,
+Paul Clarke
 
 
 -------------------------------------------------------

@@ -1,23 +1,20 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: Behaviour change of /dev/fb0?
-Date: Sat, 15 Apr 2006 08:53:21 +0800
-Message-ID: <44404401.3030702@gmail.com>
-References: <1145009768.6179.7.camel@localhost.localdomain>
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+Subject: [PATCH] radeonfb section mismatches
+Date: Fri, 14 Apr 2006 21:25:30 -0700
+Message-ID: <20060414212530.0140b70f.rdunlap@xenotime.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FUZ31-0006mk-6r
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 14 Apr 2006 17:53:59 -0700
-Received: from pproxy.gmail.com ([64.233.166.179])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FUZ30-0005AE-61
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 14 Apr 2006 17:53:59 -0700
-Received: by pproxy.gmail.com with SMTP id i49so193728pye
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 14 Apr 2006 17:53:57 -0700 (PDT)
-In-Reply-To: <1145009768.6179.7.camel@localhost.localdomain>
+	id 1FUcJM-0001uf-Po
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 14 Apr 2006 21:23:04 -0700
+Received: from xenotime.net ([66.160.160.81])
+	by mail.sourceforge.net with smtp (Exim 4.44)
+	id 1FUcJM-000638-FT
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 14 Apr 2006 21:23:04 -0700
+Received: from midway.site ([71.111.157.99]) by xenotime.net for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 14 Apr 2006 21:23:02 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,70 +27,39 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@rpsys.net>
+Cc: adaplas@pol.net, benh@kernel.crashing.org, akpm <akpm@osdl.org>
 
-Richard Purdie wrote:
-> Ignoring whether this is a good idea or not, under 2.6.15 you could run
-> 
-> dd if=/dev/zero of=/dev/fb0
-> 
-> which would clear the framebuffer. It would end up saying "dd: /dev/fb0:
-> No space left on device".
-> 
-> Under 2.6.16 (and a recent git kernel), the same command clears the
-> screen but then hangs. Was the change in behaviour intentional? 
-> 
-> I've noticed this on a couple of ARM based Zaurus handhelds under both
-> w100fb and pxafb.
-> 
+From: Randy Dunlap <rdunlap@xenotime.net>
 
-After reading 'man 2 read' more thoroughly, I've adjusted fb_write()'s
-return codes  appropriately.  Can you try this patch and let me know if it
-fixes your problem.
+Marking radeon_pci_register() as __devinit clears up all section
+mismatch warnings that are caused by radeon_pci_register() calling
+various __devinit function.  Is there some reason not to do this?
 
-Tony
+WARNING: drivers/video/aty/radeonfb.o - Section mismatch: reference to .init.text: from .text.radeonfb_pci_register after 'radeonfb_pci_register' (at offset 0x628)
+WARNING: drivers/video/aty/radeonfb.o - Section mismatch: reference to .init.text: from .text.radeonfb_pci_register after 'radeonfb_pci_register' (at offset 0x6b5)
+WARNING: drivers/video/aty/radeonfb.o - Section mismatch: reference to .init.text: from .text.radeonfb_pci_register after 'radeonfb_pci_register' (at offset 0x6bd)
+WARNING: drivers/video/aty/radeonfb.o - Section mismatch: reference to .init.text:radeon_probe_screens from .text.radeonfb_pci_register after 'radeonfb_pci_register' (at offset 0x7d6)
+WARNING: drivers/video/aty/radeonfb.o - Section mismatch: reference to .init.text:radeon_check_modes from .text.radeonfb_pci_register after 'radeonfb_pci_register' (at offset 0x7e5)
 
-fbdev: Fix return error of fb_write()
-
-- return -EFBIG if file offset is past the maximum allowable offset
-- return -EFBIG and write to end of framebuffer if size is bigger than the
-  framebuffer length
-- return -ENOSPC and write to end of framebuffer if size is bigger than the
-  framebuffer length - file offset
-
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
+Signed-off-by: Randy Dunlap <rdunlap@xenotime.net>
 ---
+ drivers/video/aty/radeon_base.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
- drivers/video/fbmem.c |   12 +++++++++---
- 1 files changed, 9 insertions(+), 3 deletions(-)
+--- linux-2617-rc1g8.orig/drivers/video/aty/radeon_base.c
++++ linux-2617-rc1g8/drivers/video/aty/radeon_base.c
+@@ -2265,7 +2265,7 @@ static struct bin_attribute edid2_attr =
+ };
+ 
+ 
+-static int radeonfb_pci_register (struct pci_dev *pdev,
++static int __devinit radeonfb_pci_register (struct pci_dev *pdev,
+ 				  const struct pci_device_id *ent)
+ {
+ 	struct fb_info *info;
 
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 944855b..8a643bf 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -669,13 +669,19 @@ fb_write(struct file *file, const char _
- 		total_size = info->fix.smem_len;
- 
- 	if (p > total_size)
--		return 0;
-+		return -EFBIG;
- 
--	if (count >= total_size)
-+	if (count >= total_size) {
-+		err = -EFBIG;
- 		count = total_size;
-+	}
-+
-+	if (count + p > total_size) {
-+		if (!err)
-+			err = -ENOSPC;
- 
--	if (count + p > total_size)
- 		count = total_size - p;
-+	}
- 
- 	buffer = kmalloc((count > PAGE_SIZE) ? PAGE_SIZE : count,
- 			 GFP_KERNEL);
+
+---
 
 
 -------------------------------------------------------

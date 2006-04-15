@@ -1,58 +1,67 @@
-From: Knut Petersen <Knut_Petersen@t-online.de>
-Subject: Re: (no subject)
-Date: Sat, 15 Apr 2006 07:47:24 +0200
-Message-ID: <444088EC.9020808@t-online.de>
-References: <200604141502.k3EF2u4C031951@falbala.ti.uam.es>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Adrian Bunk <bunk@stusta.de>
+Subject: [2.6 patch] cleanup the CONFIG_VIDEO_SELECT mess
+Date: Sat, 15 Apr 2006 13:56:16 +0200
+Message-ID: <20060415115616.GE15022@stusta.de>
 Mime-Version: 1.0
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932497AbWDOL4S@vger.kernel.org>
+Content-Disposition: inline
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FUdkh-0002Mw-C0
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 14 Apr 2006 22:55:23 -0700
-Received: from mailout11.sul.t-online.com ([194.25.134.85])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FUdkg-0000z1-8j
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 14 Apr 2006 22:55:23 -0700
-In-Reply-To: <200604141502.k3EF2u4C031951@falbala.ti.uam.es>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: linux-fbdev-devel@lists.sourceforge.net
+To: linux-kernel@vger.kernel.org
+Cc: adaplas@pol.net, linux-fbdev-devel@lists.sourceforge.net, ak@suse.de, discuss@x86-64.org, thomas@winischhofer.net
 
+We had three (sic) VIDEO_SELECT options:
+- two in drivers/video/Kconfig
+- one in drivers/video/console/Kconfig
 
->intelfb: Framebuffer driver for Intel(R)
->830M/845G/852GM/855GM/865G/915G/915GM chipsets
->intelfb: Version 0.9.2
->intelfb: 00:02.0: Intel(R) 855GME, aperture size 128MB, stolen memory 892kB
->intelfb: Non-CRT device is enabled ( LVDS port ).  Disabling mode switching.
->intelfb: Video mode must be programmed at boot time.
->
->
->the driver (*) is inside kernel.
->  
->
-Yes - of course, why not? It should be possible to compile a framebuffer
-driver into the kernel without problems, and it should be possible to
-load it as a module ... even from within xterm ;-)
+This patch removes the two options in drivers/video/Kconfig and also 
+removes the unneeded usage in drivers/video/sis/sis_main.c .
 
-Why do you believe that this is related to any of the problems?
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-cu,
- knut
+---
 
+ drivers/video/Kconfig        |   11 -----------
+ drivers/video/sis/sis_main.c |    2 +-
+ 2 files changed, 1 insertion(+), 12 deletions(-)
 
--------------------------------------------------------
-This SF.Net email is sponsored by xPML, a groundbreaking scripting language
-that extends applications into web and mobile media. Attend the live webcast
-and join the prime developer group breaking into this new coding territory!
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=110944&bid=241720&dat=121642
+--- linux-2.6.17-rc1-mm2-full/drivers/video/Kconfig.old	2006-04-15 13:37:49.000000000 +0200
++++ linux-2.6.17-rc1-mm2-full/drivers/video/Kconfig	2006-04-15 13:38:07.000000000 +0200
+@@ -481,11 +481,6 @@
+ 	  You will get a boot time penguin logo at no additional cost. Please
+ 	  read <file:Documentation/fb/vesafb.txt>. If unsure, say Y.
+ 
+-config VIDEO_SELECT
+-	bool
+-	depends on FB_VESA
+-	default y
+-
+ config FB_HGA
+ 	tristate "Hercules mono graphics support"
+ 	depends on FB && X86
+@@ -508,12 +503,6 @@
+ 	This will compile the Hercules mono graphics with
+ 	acceleration functions.
+ 
+-
+-config VIDEO_SELECT
+-	bool
+-	depends on (FB = y) && X86
+-	default y
+-
+ config FB_SGIVW
+ 	tristate "SGI Visual Workstation framebuffer support"
+ 	depends on FB && X86_VISWS
+--- linux-2.6.17-rc1-mm2-full/drivers/video/sis/sis_main.c.old	2006-04-15 13:38:41.000000000 +0200
++++ linux-2.6.17-rc1-mm2-full/drivers/video/sis/sis_main.c	2006-04-15 13:39:13.000000000 +0200
+@@ -275,7 +275,7 @@
+ static void __devinit
+ sisfb_get_vga_mode_from_kernel(void)
+ {
+-#if (defined(__i386__) || defined(__x86_64__)) && defined(CONFIG_VIDEO_SELECT)
++#ifdef CONFIG_X86
+ 	char mymode[32];
+ 	int  mydepth = screen_info.lfb_depth;
+ 

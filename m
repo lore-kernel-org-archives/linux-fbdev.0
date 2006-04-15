@@ -1,228 +1,72 @@
-From: Giorgio Lando <patroclo7@gmail.com>
-Subject: [PATCH 2.6.16] radeonfb: powerdrain issue on IBM thinkpads and suspend-to-D2
-Date: Sat, 15 Apr 2006 16:13:54 +0200
-Message-ID: <20060415141354.GA27523@clarabella.clarabella>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] radeonfb section mismatches
+Date: Sun, 16 Apr 2006 06:27:02 +1000
+Message-ID: <1145132822.4233.0.camel@localhost.localdomain>
+References: <20060414212530.0140b70f.rdunlap@xenotime.net>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1030246AbWDOOIw@vger.kernel.org>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: benh@kernel.crashing.org
-Cc: linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net, Joel.Becker@oracle.com, Antti.Andreimann@mail.ee, degrenier@easyconnect.fr, vbraun@physics.upenn.edu
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1FUrOC-00053s-Kc
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 15 Apr 2006 13:29:04 -0700
+Received: from gate.crashing.org ([63.228.1.57])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44)
+	id 1FUrOC-0007Nw-7F
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 15 Apr 2006 13:29:04 -0700
+In-Reply-To: <20060414212530.0140b70f.rdunlap@xenotime.net>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
+To: "Randy.Dunlap" <rdunlap@xenotime.net>
+Cc: linux-fbdev-devel@lists.sourceforge.net, adaplas@pol.net, akpm <akpm@osdl.org>
 
-Many IBM Thinkpad T4* models and some R* and X* with radeon video cards, when 
-suspended to RAM, draw too much power, reducing drastically the battery 
-lifetime. The solution is to enable suspend-to-D2 on non-PPC-machines. Since 
-this is in general not well documented, suspend-to-D2 is enabled only on 
-machines where it is known to work. These machines are identified through 
-their DMI strings and listed in a white-list into the patch itself.  
+On Fri, 2006-04-14 at 21:25 -0700, Randy.Dunlap wrote:
+> From: Randy Dunlap <rdunlap@xenotime.net>
+> 
+> Marking radeon_pci_register() as __devinit clears up all section
+> mismatch warnings that are caused by radeon_pci_register() calling
+> various __devinit function.  Is there some reason not to do this?
 
-This behaviour can be overriden with module options: through these options
-suspend-to-D2 can be:
-i) enabled also on non-whitelisted machines (since the white-list is partial 
-and can be enlarged in the time);
-ii) disabled on whitelisted machines, in case of negative side-effects.
+Looks ok to me
 
-The module options can be passed at boot time including the following 
-corresponding parameter in the kernel command line:
-i) video=radeonfb:force_sleep=1
-ii) video=radeonfb:nosleep=1
+> Signed-off-by: Randy Dunlap <rdunlap@xenotime.net>
 
-Signed-off-by: Antti Andreimann <Antti.Andreimann@mail.ee> 
-Acked-by: Volker Braun <vbraun@physics.upenn.edu>
-Acked-by: Joel Becker <Joel.Becker@oracle.com>
-Signed-off-by: Thomas De Grenier De Latour <degrenier@easyconnect.fr>
-Signed-off-by: Giorgio Lando <patroclo7@gmail.com>
----
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-  linux-2.6.16/drivers/video/aty/radeon_base.c |   17 ++++++++++++++++- 
-  linux-2.6.16/drivers/video/aty/radeon_pm.c   |   118 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++- 
-  2 files changed, 112 insertions(+), 1 deletion(-)
+> ---
+>  drivers/video/aty/radeon_base.c |    2 +-
+>  1 files changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- linux-2617-rc1g8.orig/drivers/video/aty/radeon_base.c
+> +++ linux-2617-rc1g8/drivers/video/aty/radeon_base.c
+> @@ -2265,7 +2265,7 @@ static struct bin_attribute edid2_attr =
+>  };
+>  
+> 
+> -static int radeonfb_pci_register (struct pci_dev *pdev,
+> +static int __devinit radeonfb_pci_register (struct pci_dev *pdev,
+>  				  const struct pci_device_id *ent)
+>  {
+>  	struct fb_info *info;
+> 
+> 
+> ---
 
---- linux-2.6.16/drivers/video/aty/radeon_base.c
-+++ linux-2.6.16/drivers/video/aty/radeon_base.c
-@@ -272,7 +272,10 @@ static int force_measure_pll = 0;
- #ifdef CONFIG_MTRR
- static int nomtrr = 0;
- #endif
--
-+#if defined(CONFIG_PM) && defined(CONFIG_X86)
-+int force_sleep = 0;
-+int nosleep = 0;
-+#endif
- /*
-  * prototypes
-  */
-@@ -2615,6 +2618,12 @@ static int __init radeonfb_setup (char *
- 			force_measure_pll = 1;
- 		} else if (!strncmp(this_opt, "ignore_edid", 11)) {
- 			ignore_edid = 1;
-+#if defined(CONFIG_PM) && defined(CONFIG_X86)
-+	 	} else if (!strncmp(this_opt, "force_sleep", 11)) {
-+			force_sleep = 1;
-+		} else if (!strncmp(this_opt, "nosleep", 7)) {
-+			nosleep = 1;
-+#endif
- 		} else
- 			mode_option = this_opt;
- 	}
-@@ -2670,3 +2679,9 @@ module_param(panel_yres, int, 0);
- MODULE_PARM_DESC(panel_yres, "int: set panel yres");
- module_param(mode_option, charp, 0);
- MODULE_PARM_DESC(mode_option, "Specify resolution as \"<xres>x<yres>[-<bpp>][@<refresh>]\" ");
-+#if defined(CONFIG_PM) && defined(CONFIG_X86)
-+module_param(force_sleep, bool, 0);
-+MODULE_PARM_DESC(force_sleep, "bool: force D2 sleep mode on non whitelisted laptops");
-+module_param(nosleep, bool, 0);
-+MODULE_PARM_DESC(nosleep, "bool: disable D2 sleep mode, ignoring whitelisted laptops");
-+#endif
---- linux-2.6.16/drivers/video/aty/radeon_pm.c
-+++ /var/abs/local/kernel26/src/linux-2.6.16/drivers/video/aty/radeon_pm.c	
-@@ -27,6 +27,95 @@
- 
- #include "ati_ids.h"
- 
-+#if defined(CONFIG_PM) && defined(CONFIG_X86)
-+/* DMI is used to detect PC laptops known to support D2 sleep */
-+#include <linux/dmi.h>
-+
-+/* Whitelist of PC laptops known to support D2 sleep */
-+static int radeon_sleep_dmi_whitelisted(struct dmi_system_id *id) {
-+	printk(KERN_DEBUG "radeonfb: %s detected, enabling D2 sleep\n", id->ident);
-+	return 1;
-+}
-+#define RADEON_SLEEP_THINKPAD_DMI_MATCH_MODEL(model) { \
-+	.ident = "IBM ThinkPad " model, \
-+	.callback = radeon_sleep_dmi_whitelisted, \
-+	.matches = { \
-+		DMI_MATCH(DMI_BOARD_VENDOR, "IBM"), \
-+		DMI_MATCH(DMI_PRODUCT_VERSION, "ThinkPad " model) \
-+	} \
-+}
-+#define RADEON_SLEEP_THINKPAD_DMI_MATCH_TYPE(type,name) { \
-+	.ident = "IBM ThinkPad " name " (" type ")", \
-+	.callback = radeon_sleep_dmi_whitelisted, \
-+	.matches = { \
-+		DMI_MATCH(DMI_BOARD_VENDOR, "IBM"), \
-+		DMI_MATCH(DMI_PRODUCT_NAME, type) \
-+	} \
-+}
-+static struct dmi_system_id radeon_sleep_dmi_whitelist[] = {
-+	// This models all had at least one positive report and no negative one
-+	RADEON_SLEEP_THINKPAD_DMI_MATCH_MODEL("R50"),
-+	RADEON_SLEEP_THINKPAD_DMI_MATCH_MODEL("R51"),
-+	RADEON_SLEEP_THINKPAD_DMI_MATCH_MODEL("T40p"),
-+	RADEON_SLEEP_THINKPAD_DMI_MATCH_MODEL("T40"),
-+	RADEON_SLEEP_THINKPAD_DMI_MATCH_MODEL("T41p"),
-+	RADEON_SLEEP_THINKPAD_DMI_MATCH_MODEL("T41"),
-+	RADEON_SLEEP_THINKPAD_DMI_MATCH_MODEL("T42"),
-+	// Same for this ones, but it's still to confirm that the DMI string exists
-+	RADEON_SLEEP_THINKPAD_DMI_MATCH_MODEL("T30"),
-+	RADEON_SLEEP_THINKPAD_DMI_MATCH_MODEL("R32"),
-+	RADEON_SLEEP_THINKPAD_DMI_MATCH_MODEL("X31"),
-+	// R40 does not have the version DMI string
-+	RADEON_SLEEP_THINKPAD_DMI_MATCH_TYPE("2681","R40"),
-+	RADEON_SLEEP_THINKPAD_DMI_MATCH_TYPE("2682","R40"),
-+	RADEON_SLEEP_THINKPAD_DMI_MATCH_TYPE("2683","R40"),
-+	RADEON_SLEEP_THINKPAD_DMI_MATCH_TYPE("2722","R40"),
-+	RADEON_SLEEP_THINKPAD_DMI_MATCH_TYPE("2723","R40"),
-+	RADEON_SLEEP_THINKPAD_DMI_MATCH_TYPE("2724","R40"),
-+	RADEON_SLEEP_THINKPAD_DMI_MATCH_TYPE("2892","R40"),
-+	RADEON_SLEEP_THINKPAD_DMI_MATCH_TYPE("2893","R40"),
-+	RADEON_SLEEP_THINKPAD_DMI_MATCH_TYPE("2896","R40"),
-+	RADEON_SLEEP_THINKPAD_DMI_MATCH_TYPE("2897","R40"),
-+	RADEON_SLEEP_THINKPAD_DMI_MATCH_TYPE("2898","R40"),
-+	RADEON_SLEEP_THINKPAD_DMI_MATCH_TYPE("2899","R40"),
-+	{ .ident = NULL }
-+};
-+
-+/* Need a blacklist too because DMI matching is done by substrings search */
-+#define RADEON_SLEEP_THINKPAD_DMI_UNMATCH_MODEL(model) { \
-+	.ident = "IBM ThinkPad " model, \
-+	.matches = { \
-+		DMI_MATCH(DMI_BOARD_VENDOR, "IBM"), \
-+		DMI_MATCH(DMI_PRODUCT_VERSION, "ThinkPad " model) \
-+	} \
-+}
-+#define RADEON_SLEEP_THINKPAD_DMI_UNMATCH_TYPE(type,name) { \
-+	.ident = "IBM ThinkPad " name " (" type ")", \
-+	.matches = { \
-+		DMI_MATCH(DMI_BOARD_VENDOR, "IBM"), \
-+		DMI_MATCH(DMI_PRODUCT_NAME, type) \
-+	} \
-+}
-+static struct dmi_system_id radeon_sleep_dmi_blacklist[] = {
-+	// Excluded by lack of positive report, and possibly wrong substring match
-+	RADEON_SLEEP_THINKPAD_DMI_UNMATCH_MODEL("R50p"),
-+	RADEON_SLEEP_THINKPAD_DMI_UNMATCH_MODEL("R50e"),
-+	RADEON_SLEEP_THINKPAD_DMI_UNMATCH_MODEL("R51e"),
-+	// T42p excluded because of one negative report and no positive one
-+	RADEON_SLEEP_THINKPAD_DMI_UNMATCH_MODEL("T42p"),
-+	{ .ident = NULL }
-+};
-+
-+/* Macro for checking DMI infos against the whitelist */
-+#define radeon_sleep_match_whitelist() \
-+	(! dmi_check_system(radeon_sleep_dmi_blacklist) \
-+	 && dmi_check_system(radeon_sleep_dmi_whitelist))
-+
-+/* Module parameters to ignore the whitelist */
-+extern int force_sleep;
-+extern int nosleep;
-+#endif /* defined(CONFIG_PM) && defined(CONFIG_X86) */
-+
- static void radeon_pm_disable_dynamic_mode(struct radeonfb_info *rinfo)
- {
- 	u32 tmp;
-@@ -852,7 +941,13 @@ static void radeon_pm_setup_for_suspend(
- 	/* because both INPLL and OUTPLL take the same lock, that's why. */
- 	tmp = INPLL( pllMCLK_MISC) | MCLK_MISC__EN_MCLK_TRISTATE_IN_SUSPEND;
- 	OUTPLL( pllMCLK_MISC, tmp);
--	
-+
-+	/* BUS_CNTL1__MOBILE_PLATORM_SEL setting is northbridge chipset
-+	 * and radeon chip dependent. Thus we only enable it on Mac for
-+	 * now (until we get more info on how to compute the correct
-+	 * value for various X86 bridges).
-+	 */
-+#ifdef CONFIG_PPC_PMAC	
- 	/* AGP PLL control */
- 	if (rinfo->family <= CHIP_FAMILY_RV280) {
- 		OUTREG(BUS_CNTL1, INREG(BUS_CNTL1) |  BUS_CNTL1__AGPCLK_VALID);
-@@ -864,6 +959,7 @@ static void radeon_pm_setup_for_suspend(
- 		OUTREG(BUS_CNTL1, INREG(BUS_CNTL1));
- 		OUTREG(BUS_CNTL1, (INREG(BUS_CNTL1) & ~0x4000) | 0x8000);
- 	}
-+#endif
- 
- 	OUTREG(CRTC_OFFSET_CNTL, (INREG(CRTC_OFFSET_CNTL)
- 				  & ~CRTC_OFFSET_CNTL__CRTC_STEREO_SYNC_OUT_EN));
-@@ -2789,6 +2885,26 @@ void radeonfb_pm_init(struct radeonfb_in
- #endif
- 	}
- #endif /* defined(CONFIG_PPC_PMAC) */
-+
-+/* The PM code also works on some PC laptops.
-+ * We can do D2 on at least M7 and M9 on some IBM ThinkPad models.
-+ */
-+#if defined(CONFIG_X86)
-+	if (!nosleep && (force_sleep || radeon_sleep_match_whitelist())) {
-+		if (force_sleep)
-+			printk(KERN_DEBUG "radeonfb: forcefully enabling D2 sleep mode\n");
-+
-+		if (rinfo->is_mobility && rinfo->pm_reg &&
-+		    rinfo->family <= CHIP_FAMILY_RV250)
-+			rinfo->pm_mode |= radeon_pm_d2;
-+
-+		/* Power down TV DAC, that saves a significant amount of power,
-+		 * we'll have something better once we actually have some TVOut
-+		 * support
-+		 */
-+		OUTREG(TV_DAC_CNTL, INREG(TV_DAC_CNTL) | 0x07000000);
-+	}
-+#endif /* defined(CONFIG_X86) */
- #endif /* defined(CONFIG_PM) */
- }
- 
+
+
+-------------------------------------------------------
+This SF.Net email is sponsored by xPML, a groundbreaking scripting language
+that extends applications into web and mobile media. Attend the live webcast
+and join the prime developer group breaking into this new coding territory!
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=110944&bid=241720&dat=121642

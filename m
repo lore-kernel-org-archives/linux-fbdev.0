@@ -1,95 +1,103 @@
-From: Richard Purdie <rpurdie@rpsys.net>
-Subject: Re: [Linux-fbdev-devel] Behaviour change of /dev/fb0?
-Date: Sat, 15 Apr 2006 01:13:14 +0100
-Message-ID: <1145059994.6179.33.camel@localhost.localdomain>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: Behaviour change of /dev/fb0?
+Date: Sat, 15 Apr 2006 08:53:21 +0800
+Message-ID: <44404401.3030702@gmail.com>
 References: <1145009768.6179.7.camel@localhost.localdomain>
-	 <44403068.3020909@gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751423AbWDOAN1@vger.kernel.org>
-In-Reply-To: <44403068.3020909@gmail.com>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1FUZ31-0006mk-6r
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 14 Apr 2006 17:53:59 -0700
+Received: from pproxy.gmail.com ([64.233.166.179])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1FUZ30-0005AE-61
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 14 Apr 2006 17:53:59 -0700
+Received: by pproxy.gmail.com with SMTP id i49so193728pye
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 14 Apr 2006 17:53:57 -0700 (PDT)
+In-Reply-To: <1145009768.6179.7.camel@localhost.localdomain>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@rpsys.net>
 
-On Sat, 2006-04-15 at 07:29 +0800, Antonino A. Daplas wrote:
-> Richard Purdie wrote:
-> > Ignoring whether this is a good idea or not, under 2.6.15 you could run
-> > 
-> > dd if=/dev/zero of=/dev/fb0
-> > 
-> > which would clear the framebuffer. It would end up saying "dd: /dev/fb0:
-> > No space left on device".
-> > 
-> > Under 2.6.16 (and a recent git kernel), the same command clears the
-> > screen but then hangs. Was the change in behaviour intentional? 
-> > 
-> > I've noticed this on a couple of ARM based Zaurus handhelds under both
-> > w100fb and pxafb.
-> > 
+Richard Purdie wrote:
+> Ignoring whether this is a good idea or not, under 2.6.15 you could run
 > 
-> There is a change in behavior of fb_read and fb_write committed Jan 2006.
-> They return the number of bytes read or written if the requested size
-> is bigger than the remaining space.  Previously, they returned -ENOSPC.
+> dd if=/dev/zero of=/dev/fb0
 > 
-> But I haven't experienced hangs...
+> which would clear the framebuffer. It would end up saying "dd: /dev/fb0:
+> No space left on device".
+> 
+> Under 2.6.16 (and a recent git kernel), the same command clears the
+> screen but then hangs. Was the change in behaviour intentional? 
+> 
+> I've noticed this on a couple of ARM based Zaurus handhelds under both
+> w100fb and pxafb.
+> 
 
-The change in question is:
+After reading 'man 2 read' more thoroughly, I've adjusted fb_write()'s
+return codes  appropriately.  Can you try this patch and let me know if it
+fixes your problem.
 
-@@ -661,19 +664,19 @@ fb_write(struct file *file, const char _
- 		return info->fbops->fb_write(file, buf, count, ppos);
- 	
- 	total_size = info->screen_size;
-+
- 	if (total_size == 0)
- 		total_size = info->fix.smem_len;
- 
- 	if (p > total_size)
--	    return -ENOSPC;
-+		return 0;
-+
- 	if (count >= total_size)
--	    count = total_size;
--	err = 0;
--	if (count + p > total_size) {
--	    count = total_size - p;
--	    err = -ENOSPC;
--	}
--	cnt = 0;
-+		count = total_size;
-+
-+	if (count + p > total_size)
-+		count = total_size - p;
-+
- 	buffer = kmalloc((count > PAGE_SIZE) ? PAGE_SIZE : count,
- 			 GFP_KERNEL);
- 	if (!buffer)
+Tony
 
-I agree with the latter part of this but not the change for the "if (p >
-total_size)" case. If we return zero here, the writer will just keep
-retrying to write to the device indefinitely and therefore hang. Would
-it make sense to revert that part of the change?:
+fbdev: Fix return error of fb_write()
 
+- return -EFBIG if file offset is past the maximum allowable offset
+- return -EFBIG and write to end of framebuffer if size is bigger than the
+  framebuffer length
+- return -ENOSPC and write to end of framebuffer if size is bigger than the
+  framebuffer length - file offset
 
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
+---
 
-If we reach the end of the framebuffer, we should return an out of space
-error, not zero. Returning zero implies we might be able to write
-further bytes at some future time which isn't true.
+ drivers/video/fbmem.c |   12 +++++++++---
+ 1 files changed, 9 insertions(+), 3 deletions(-)
 
-Signed-off-by: Richard Purdie <rpurdie@rpsys.net>
-
-Index: git/drivers/video/fbmem.c
-===================================================================
---- git.orig/drivers/video/fbmem.c	2006-04-13 00:22:28.000000000 +0100
-+++ git/drivers/video/fbmem.c	2006-04-15 01:04:37.000000000 +0100
-@@ -674,7 +674,7 @@
+diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
+index 944855b..8a643bf 100644
+--- a/drivers/video/fbmem.c
++++ b/drivers/video/fbmem.c
+@@ -669,13 +669,19 @@ fb_write(struct file *file, const char _
  		total_size = info->fix.smem_len;
  
  	if (p > total_size)
 -		return 0;
-+		return -ENOSPC;
++		return -EFBIG;
  
- 	if (count >= total_size)
+-	if (count >= total_size)
++	if (count >= total_size) {
++		err = -EFBIG;
  		count = total_size;
++	}
++
++	if (count + p > total_size) {
++		if (!err)
++			err = -ENOSPC;
+ 
+-	if (count + p > total_size)
+ 		count = total_size - p;
++	}
+ 
+ 	buffer = kmalloc((count > PAGE_SIZE) ? PAGE_SIZE : count,
+ 			 GFP_KERNEL);
+
+
+-------------------------------------------------------
+This SF.Net email is sponsored by xPML, a groundbreaking scripting language
+that extends applications into web and mobile media. Attend the live webcast
+and join the prime developer group breaking into this new coding territory!
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=110944&bid=241720&dat=121642

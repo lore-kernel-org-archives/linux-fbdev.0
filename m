@@ -1,23 +1,20 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Re: Behaviour change of /dev/fb0?
-Date: Fri, 14 Apr 2006 21:31:05 -0700
-Message-ID: <20060414213105.09f0dd8d.akpm@osdl.org>
-References: <1145009768.6179.7.camel@localhost.localdomain>
-	<44404401.3030702@gmail.com>
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+Subject: [PATCH] pm2fb section mismatches
+Date: Fri, 14 Apr 2006 21:49:05 -0700
+Message-ID: <20060414214905.375a308a.rdunlap@xenotime.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FUcRW-0002g1-RD
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 14 Apr 2006 21:31:30 -0700
-Received: from smtp.osdl.org ([65.172.181.4])
-	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44)
-	id 1FUcRW-0007ry-LM
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 14 Apr 2006 21:31:30 -0700
-In-Reply-To: <44404401.3030702@gmail.com>
+	id 1FUcgB-00049h-2A
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 14 Apr 2006 21:46:39 -0700
+Received: from xenotime.net ([66.160.160.81])
+	by mail.sourceforge.net with smtp (Exim 4.44)
+	id 1FUcgB-0001x5-2d
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 14 Apr 2006 21:46:39 -0700
+Received: from midway.site ([71.111.157.99]) by xenotime.net for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 14 Apr 2006 21:46:38 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,53 +26,45 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org, rpurdie@rpsys.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: adaplas@pol.net, jim.hague@acm.org
 
-"Antonino A. Daplas" <adaplas@gmail.com> wrote:
->
-> Richard Purdie wrote:
-> > Ignoring whether this is a good idea or not, under 2.6.15 you could run
-> > 
-> > dd if=/dev/zero of=/dev/fb0
-> > 
-> > which would clear the framebuffer. It would end up saying "dd: /dev/fb0:
-> > No space left on device".
-> > 
-> > Under 2.6.16 (and a recent git kernel), the same command clears the
-> > screen but then hangs. Was the change in behaviour intentional? 
-> > 
-> > I've noticed this on a couple of ARM based Zaurus handhelds under both
-> > w100fb and pxafb.
-> > 
-> 
-> After reading 'man 2 read' more thoroughly, I've adjusted fb_write()'s
-> return codes  appropriately.  Can you try this patch and let me know if it
-> fixes your problem.
-> 
-> Tony
-> 
-> fbdev: Fix return error of fb_write()
-> 
-> - return -EFBIG if file offset is past the maximum allowable offset
+From: Randy Dunlap <rdunlap@xenotime.net>
 
-OK.
+modpost warns:
 
-> - return -EFBIG and write to end of framebuffer if size is bigger than the
->   framebuffer length
+WARNING: drivers/video/pm2fb.o - Section mismatch: reference to .init.data: from .text.pm2fb_set_par after 'pm2fb_set_par' (at offset 0x7d4)
+WARNING: drivers/video/pm2fb.o - Section mismatch: reference to .init.data: from .text.pm2fb_set_par after 'pm2fb_set_par' (at offset 0x7f9)
 
-We should return the number of bytes written in this case.
+These are due to pm2fb_set_par() referencing <lowhsync> and
+<lowvsync>, which are __devinitdata.  Question is:  can
+pm2fb_set_par() [or any fb_set_par method] be called after
+driver initializtion?  I.e., do all of those calls in
+console/fbcon.c to fbops->fb_set_par() happen only during
+driver init, or can they happen later?  If they can happen
+later, then this patch is needed.
 
-> - return -ENOSPC and write to end of framebuffer if size is bigger than the
->   framebuffer length - file offset
+Signed-off-by: Randy Dunlap <rdunlap@xenotime.net>
+---
+ drivers/video/pm2fb.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Also here.
+--- linux-2617-rc1g8.orig/drivers/video/pm2fb.c
++++ linux-2617-rc1g8/drivers/video/pm2fb.c
+@@ -73,8 +73,8 @@ static char *mode __devinitdata = NULL;
+  * these flags allow the user to specify that requests for +ve sync
+  * should be silently turned in -ve sync.
+  */
+-static int lowhsync __devinitdata = 0;
+-static int lowvsync __devinitdata = 0;
++static int lowhsync;
++static int lowvsync;
+ 
+ /*
+  * The hardware state of the graphics card that isn't part of the
 
 
-If we can transfer _any_ bytes, we should do so, then return the number of
-bytes transferred.  If no bytes were transferrable then we should return
--Ewhatever.
-
+---
 
 
 -------------------------------------------------------

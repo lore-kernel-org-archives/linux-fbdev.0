@@ -1,22 +1,32 @@
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-Subject: Re: [2.6 patch] fix section mismatch in pm2fb.o
-Date: Tue, 18 Apr 2006 18:09:15 -0700
-Message-ID: <20060418180915.b67a7917.rdunlap@xenotime.net>
-References: <20060418235038.GC11582@stusta.de>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Fw: [Bugme-new] [Bug 6417] New: savagefb conflicts with x.org
+ savage driver
+Date: Thu, 20 Apr 2006 12:27:38 -0700
+Message-ID: <20060420122738.5bd5b588.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from [10.3.1.93] (helo=sc8-sf-list1-new.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FW19g-0004zQ-5O
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Apr 2006 18:06:52 -0700
-Received: from xenotime.net ([66.160.160.81])
-	by mail.sourceforge.net with smtp (Exim 4.44)
-	id 1FW19e-0004FT-WF
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 18 Apr 2006 18:06:52 -0700
-Received: from midway.site ([71.111.157.99]) by xenotime.net for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 18 Apr 2006 18:06:48 -0700
-In-Reply-To: <20060418235038.GC11582@stusta.de>
+	id 1FWepf-0007SF-Mv
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 20 Apr 2006 12:28:51 -0700
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1FWepf-0005s4-Nt
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 20 Apr 2006 12:28:51 -0700
+Received: from smtp.osdl.org ([65.172.181.4])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44)
+	id 1FWepc-0003NZ-5Z
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 20 Apr 2006 12:28:51 -0700
+Received: from shell0.pdx.osdl.net (fw.osdl.org [65.172.181.6])
+	by smtp.osdl.org (8.12.8/8.12.8) with ESMTP id k3KJSYtH028024
+	(version=TLSv1/SSLv3 cipher=EDH-RSA-DES-CBC3-SHA bits=168 verify=NO)
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 20 Apr 2006 12:28:36 -0700
+Received: from bix (shell0.pdx.osdl.net [10.9.0.31])
+	by shell0.pdx.osdl.net (8.13.1/8.11.6) with SMTP id k3KJSUJh005257
+	for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 20 Apr 2006 12:28:32 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,55 +39,39 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: bunk@stusta.de, akpm@osdl.org, adaplas@pol.net, darrenrjenkins@gmail.com, linux-kernel@vger.kernel.org
 
-On Wed, 19 Apr 2006 01:50:38 +0200 Adrian Bunk wrote:
 
-> From: Darren Jenkins <darrenrjenkins@gmail.com>
-> 
-> There are a couple of Section mismatch problems in drivers/video/pm2fb.o
-> 
-> WARNING: drivers/video/pm2fb.o - Section mismatch: reference
-> to .init.data: from .text after 'pm2fb_set_par' (at offset 0xd5d)
-> WARNING: drivers/video/pm2fb.o - Section mismatch: reference
-> to .init.data: from .text after 'pm2fb_set_par' (at offset 0xd82)
-> 
-> They are caused because pm2fb_set_par() uses lowhsync and lowvsync which
-> are marked __devinitdata.
-> 
-> This patch simply removes the __devinitdata annotations.
-> 
-> Signed-off-by: Darren Jenkins <darrenrjenkins@gmail.com>
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
-> 
-> ---
-> 
-> This patch was already sent on:
-> - 9 Apr 2006
-> 
-> --- 2.6.16-git20/drivers/video/pm2fb.c.orig	2006-04-03 19:08:51.000000000 +1000
-> +++ 2.6.16-git20/drivers/video/pm2fb.c	2006-04-03 19:09:34.000000000 +1000
-> @@ -73,8 +73,8 @@ static char *mode __devinitdata = NULL;
->   * these flags allow the user to specify that requests for +ve sync
->   * should be silently turned in -ve sync.
->   */
-> -static int lowhsync __devinitdata = 0;
-> -static int lowvsync __devinitdata = 0;
-> +static int lowhsync = 0;
-> +static int lowvsync = 0;
->  
->  /*
->   * The hardware state of the graphics card that isn't part of the
 
-I'll ack that since I've already posted it to linux-fbdev-devel
-and it's been acked there.
+Begin forwarded message:
 
----
-~Randy
+Date: Thu, 20 Apr 2006 07:44:34 -0700
+From: bugme-daemon@bugzilla.kernel.org
+To: bugme-new@lists.osdl.org
+Subject: [Bugme-new] [Bug 6417] New: savagefb conflicts with x.org savage driver
+
+
+http://bugzilla.kernel.org/show_bug.cgi?id=6417
+
+           Summary: savagefb conflicts with x.org savage driver
+    Kernel Version: 2.6.16.9
+            Status: NEW
+          Severity: normal
+             Owner: jsimmons@infradead.org
+         Submitter: rich@hq.vsaa.lv
+
+
+this is a companion bug to
+https://bugs.freedesktop.org/show_bug.cgi?id=5878
+short description : if savage driver is used in x.org together with savagefb, 
+it results in seriously garbled and distorted screen - coupled with severe 
+slowdowns.
+
+------- You are receiving this mail because: -------
+You are on the CC list for the bug, or are watching someone who is.
 
 
 -------------------------------------------------------
-This SF.Net email is sponsored by xPML, a groundbreaking scripting language
-that extends applications into web and mobile media. Attend the live webcast
-and join the prime developer group breaking into this new coding territory!
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=110944&bid=241720&dat=121642
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easier
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642

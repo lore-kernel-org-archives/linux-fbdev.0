@@ -1,21 +1,25 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH] fbdev: Remove duplicate #include's
-Date: Sat, 22 Apr 2006 11:21:36 +0800
-Message-ID: <4449A140.7080104@gmail.com>
+Subject: [PATCH] fbdev: cleanup the CONFIG_VIDEO_SELECT mess
+Date: Sat, 22 Apr 2006 11:20:32 +0800
+Message-ID: <4449A100.4080703@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from [10.3.1.93] (helo=sc8-sf-list1-new.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FX8hk-0006jz-QI
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 21 Apr 2006 20:22:40 -0700
-Received: from pproxy.gmail.com ([64.233.166.178])
+	id 1FX8hg-0006jp-EU
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 21 Apr 2006 20:22:36 -0700
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1FX8hg-0005UR-CG
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 21 Apr 2006 20:22:36 -0700
+Received: from pproxy.gmail.com ([64.233.166.176])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FX8hj-0000Hl-Tp
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 21 Apr 2006 20:22:40 -0700
-Received: by pproxy.gmail.com with SMTP id i49so649973pye
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 21 Apr 2006 20:22:29 -0700 (PDT)
+	id 1FX8he-0006Zz-Ej
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 21 Apr 2006 20:22:36 -0700
+Received: by pproxy.gmail.com with SMTP id i49so649963pye
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 21 Apr 2006 20:22:23 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,76 +36,63 @@ Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Adri
 
 From: Adrian Bunk <bunk@stusta.de>
 
-This patch removes unneeded duplicate #include's of the same header
-file.
+We had three (sic) VIDEO_SELECT options:
+- two in drivers/video/Kconfig
+- one in drivers/video/console/Kconfig
 
-In the case of fbmon.c linux/pci.h is now #include'd unconditional, but
-this should be safe.
+This patch removes the two options in drivers/video/Kconfig and also
+removes the unneeded usage in drivers/video/sis/sis_main.c .
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/fbmem.c |    2 --
- drivers/video/fbmon.c |    3 +--
- drivers/video/tgafb.c |    1 -
- 3 files changed, 1 insertions(+), 5 deletions(-)
+ drivers/video/Kconfig        |   11 -----------
+ drivers/video/sis/sis_main.c |    2 +-
+ 2 files changed, 1 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 372aa17..9bb6763 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -34,7 +34,6 @@
- #endif
- #include <linux/devfs_fs_kernel.h>
- #include <linux/err.h>
--#include <linux/kernel.h>
- #include <linux/device.h>
- #include <linux/efi.h>
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 5641498..1d1381b 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -483,11 +483,6 @@ config FB_VESA
+ 	  You will get a boot time penguin logo at no additional cost. Please
+ 	  read <file:Documentation/fb/vesafb.txt>. If unsure, say Y.
  
-@@ -162,7 +161,6 @@ char* fb_get_buffer_offset(struct fb_inf
- }
+-config VIDEO_SELECT
+-	bool
+-	depends on FB_VESA
+-	default y
+-
+ config FB_HGA
+ 	tristate "Hercules mono graphics support"
+ 	depends on FB && X86
+@@ -510,12 +505,6 @@ config FB_HGA_ACCEL
+ 	This will compile the Hercules mono graphics with
+ 	acceleration functions.
  
- #ifdef CONFIG_LOGO
--#include <linux/linux_logo.h>
- 
- static inline unsigned safe_shift(unsigned d, int n)
+-
+-config VIDEO_SELECT
+-	bool
+-	depends on (FB = y) && X86
+-	default y
+-
+ config FB_SGIVW
+ 	tristate "SGI Visual Workstation framebuffer support"
+ 	depends on FB && X86_VISWS
+diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
+index 8adf5bf..c63c0e7 100644
+--- a/drivers/video/sis/sis_main.c
++++ b/drivers/video/sis/sis_main.c
+@@ -275,7 +275,7 @@ sisfb_search_mode(char *name, BOOLEAN qu
+ static void __devinit
+ sisfb_get_vga_mode_from_kernel(void)
  {
-diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-index 53beeb4..fbbcb71 100644
---- a/drivers/video/fbmon.c
-+++ b/drivers/video/fbmon.c
-@@ -29,9 +29,9 @@
- #include <linux/tty.h>
- #include <linux/fb.h>
- #include <linux/module.h>
-+#include <linux/pci.h>
- #include <video/edid.h>
- #ifdef CONFIG_PPC_OF
--#include <linux/pci.h>
- #include <asm/prom.h>
- #include <asm/pci-bridge.h>
- #endif
-@@ -1282,7 +1282,6 @@ int fb_validate_mode(const struct fb_var
- }
+-#if (defined(__i386__) || defined(__x86_64__)) && defined(CONFIG_VIDEO_SELECT)
++#ifdef CONFIG_X86
+ 	char mymode[32];
+ 	int  mydepth = screen_info.lfb_depth;
  
- #if defined(CONFIG_FB_FIRMWARE_EDID) && defined(__i386__)
--#include <linux/pci.h>
- 
- /*
-  * We need to ensure that the EDID block is only returned for
-diff --git a/drivers/video/tgafb.c b/drivers/video/tgafb.c
-index 7398bd4..6c2c78a 100644
---- a/drivers/video/tgafb.c
-+++ b/drivers/video/tgafb.c
-@@ -26,7 +26,6 @@
- #include <linux/selection.h>
- #include <asm/io.h>
- #include <video/tgafb.h>
--#include <linux/selection.h>
- 
- /*
-  * Local functions.
 
 
 

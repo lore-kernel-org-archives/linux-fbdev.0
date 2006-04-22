@@ -1,25 +1,21 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH] fbdev: cleanup the CONFIG_VIDEO_SELECT mess
-Date: Sat, 22 Apr 2006 11:20:32 +0800
-Message-ID: <4449A100.4080703@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH 3/4] suspend: Documentation update for IBM Thinkpad X30
+Date: Sat, 22 Apr 2006 11:01:16 +0200
+Message-ID: <20060422090116.GE3590@elf.ucw.cz>
+References: <444999D8.6090104@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [10.3.1.93] (helo=sc8-sf-list1-new.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FX8hg-0006jp-EU
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 21 Apr 2006 20:22:36 -0700
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FX8hg-0005UR-CG
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 21 Apr 2006 20:22:36 -0700
-Received: from pproxy.gmail.com ([64.233.166.176])
+	id 1FXDzz-0004lU-0g
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 22 Apr 2006 02:01:51 -0700
+Received: from gprs189-60.eurotel.cz ([160.218.189.60] helo=amd.ucw.cz)
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FX8he-0006Zz-Ej
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 21 Apr 2006 20:22:36 -0700
-Received: by pproxy.gmail.com with SMTP id i49so649963pye
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 21 Apr 2006 20:22:23 -0700 (PDT)
+	id 1FXDzv-00087v-G9
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 22 Apr 2006 02:01:51 -0700
+Content-Disposition: inline
+In-Reply-To: <444999D8.6090104@gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,69 +27,47 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Adrian Bunk <bunk@stusta.de>
+Content-Transfer-Encoding: 7bit
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: Adrian Bunk <bunk@stusta.de>
+On So 22-04-06 10:50:00, Antonino A. Daplas wrote:
+> As reported in Bugzilla Bug 6406, resume from S3 results in a blank
+> screen.
+> 
+> For the IBM Thinkpad X30 using vesafb as the console driver, successful
+> resume from S3 requires option acpi_sleep=s3_bios,s3_mode.  Update
+> documentation.
+> 
+> I would presume that, in any hardware, using vesafb as the console driver will
+> require as a minimum s3_mode.
 
-We had three (sic) VIDEO_SELECT options:
-- two in drivers/video/Kconfig
-- one in drivers/video/console/Kconfig
+Well, some hardware just preserves video state, but you are right that
+anything that needs s3_bios probably needs s3_mode, too.
 
-This patch removes the two options in drivers/video/Kconfig and also
-removes the unneeded usage in drivers/video/sis/sis_main.c .
+Do you think you could try code from suspend.sf.net and fix whitelist
+there? It is really wrong to have whitelist in .txt, when it should
+have been machine-readable.
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
+(I applied this:
 
- drivers/video/Kconfig        |   11 -----------
- drivers/video/sis/sis_main.c |    2 +-
- 2 files changed, 1 insertions(+), 12 deletions(-)
+diff --git a/Documentation/power/video.txt
+b/Documentation/power/video.txt
+index a8004cc..d859faa 100644
+--- a/Documentation/power/video.txt
++++ b/Documentation/power/video.txt
+@@ -143,7 +143,7 @@ IBM TP T41p                 s3_bios (2), switch to
+X a
+ IBM TP T42                     s3_bios (2)
+ IBM ThinkPad T42p (2373-GTG)   s3_bios (2)
+ IBM TP X20                     ??? (*)
+-IBM TP X30                     s3_bios (2)
++IBM TP X30                     s3_bios, s3_mode (4)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 5641498..1d1381b 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -483,11 +483,6 @@ config FB_VESA
- 	  You will get a boot time penguin logo at no additional cost. Please
- 	  read <file:Documentation/fb/vesafb.txt>. If unsure, say Y.
- 
--config VIDEO_SELECT
--	bool
--	depends on FB_VESA
--	default y
--
- config FB_HGA
- 	tristate "Hercules mono graphics support"
- 	depends on FB && X86
-@@ -510,12 +505,6 @@ config FB_HGA_ACCEL
- 	This will compile the Hercules mono graphics with
- 	acceleration functions.
- 
--
--config VIDEO_SELECT
--	bool
--	depends on (FB = y) && X86
--	default y
--
- config FB_SGIVW
- 	tristate "SGI Visual Workstation framebuffer support"
- 	depends on FB && X86_VISWS
-diff --git a/drivers/video/sis/sis_main.c b/drivers/video/sis/sis_main.c
-index 8adf5bf..c63c0e7 100644
---- a/drivers/video/sis/sis_main.c
-+++ b/drivers/video/sis/sis_main.c
-@@ -275,7 +275,7 @@ sisfb_search_mode(char *name, BOOLEAN qu
- static void __devinit
- sisfb_get_vga_mode_from_kernel(void)
- {
--#if (defined(__i386__) || defined(__x86_64__)) && defined(CONFIG_VIDEO_SELECT)
-+#ifdef CONFIG_X86
- 	char mymode[32];
- 	int  mydepth = screen_info.lfb_depth;
- 
-
+...we do not want to give wrong options.)
+								Pavel
+-- 
+Thanks for all the (sleeping) penguins.
 
 
 -------------------------------------------------------

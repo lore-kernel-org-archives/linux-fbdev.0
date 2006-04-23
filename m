@@ -1,23 +1,21 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
+From: Pavel Machek <pavel@ucw.cz>
 Subject: Re: [PATCH 3/4] suspend: Documentation update for IBM Thinkpad X30
-Date: Sun, 23 Apr 2006 08:31:30 +0800
-Message-ID: <444ACAE2.1070909@gmail.com>
-References: <444999D8.6090104@gmail.com> <20060422090116.GE3590@elf.ucw.cz>
+Date: Sun, 23 Apr 2006 14:46:33 +0200
+Message-ID: <20060423124633.GA24548@elf.ucw.cz>
+References: <444999D8.6090104@gmail.com> <20060422090116.GE3590@elf.ucw.cz> <444ACAE2.1070909@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FXSxX-0005qj-S2
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 22 Apr 2006 18:00:19 -0700
-Received: from pproxy.gmail.com ([64.233.166.183])
+	id 1FXdzc-0006B5-Ss
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 23 Apr 2006 05:47:12 -0700
+Received: from gprs189-60.eurotel.cz ([160.218.189.60] helo=amd.ucw.cz)
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FXSxS-0000JC-BG
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 22 Apr 2006 18:00:18 -0700
-Received: by pproxy.gmail.com with SMTP id i49so808480pye
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 22 Apr 2006 18:00:04 -0700 (PDT)
-In-Reply-To: <20060422090116.GE3590@elf.ucw.cz>
+	id 1FXdzY-0002Wu-A0
+	for linux-fbdev-devel@lists.sourceforge.net; Sun, 23 Apr 2006 05:47:13 -0700
+Content-Disposition: inline
+In-Reply-To: <444ACAE2.1070909@gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,34 +27,44 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Pavel Machek <pavel@ucw.cz>
+Content-Transfer-Encoding: 7bit
+To: "Antonino A. Daplas" <adaplas@gmail.com>
 Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Pavel Machek wrote:
-> On So 22-04-06 10:50:00, Antonino A. Daplas wrote:
->> As reported in Bugzilla Bug 6406, resume from S3 results in a blank
->> screen.
->>
->> For the IBM Thinkpad X30 using vesafb as the console driver, successful
->> resume from S3 requires option acpi_sleep=s3_bios,s3_mode.  Update
->> documentation.
->>
->> I would presume that, in any hardware, using vesafb as the console driver will
->> require as a minimum s3_mode.
+On Ne 23-04-06 08:31:30, Antonino A. Daplas wrote:
+> Pavel Machek wrote:
+> > On So 22-04-06 10:50:00, Antonino A. Daplas wrote:
+> >> As reported in Bugzilla Bug 6406, resume from S3 results in a blank
+> >> screen.
+> >>
+> >> For the IBM Thinkpad X30 using vesafb as the console driver, successful
+> >> resume from S3 requires option acpi_sleep=s3_bios,s3_mode.  Update
+> >> documentation.
+> >>
+> >> I would presume that, in any hardware, using vesafb as the console driver will
+> >> require as a minimum s3_mode.
+> > 
+> > Well, some hardware just preserves video state, but you are right that
+> > anything that needs s3_bios probably needs s3_mode, too.
 > 
-> Well, some hardware just preserves video state, but you are right that
-> anything that needs s3_bios probably needs s3_mode, too.
+> For vgacon, s3_bios may be the only option needed since POSTING automatically goes
+> to text mode. For vesafb, s3_mode, in most cases, will also required.
 
-For vgacon, s3_bios may be the only option needed since POSTING automatically goes
-to text mode. For vesafb, s3_mode, in most cases, will also required.
+Agreed.
 
+> > Do you think you could try code from suspend.sf.net and fix whitelist
+> > there?
 > 
-> Do you think you could try code from suspend.sf.net and fix whitelist
-> there?
+> I'll try, although in-kernel suspend works for me properly.
 
-I'll try, although in-kernel suspend works for me properly.
+Please do, we'd really like to use s2ram everywhere (so it "just
+works"), and we want to know that we are not breaking working setups,
+too. (Plus whitelist entry can probably be improved).
 
-Tony
+								Pavel
+
+-- 
+Thanks for all the (sleeping) penguins.
 
 
 -------------------------------------------------------

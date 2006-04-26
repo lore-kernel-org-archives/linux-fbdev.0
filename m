@@ -1,74 +1,51 @@
-From: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 3/4] suspend: Documentation update for IBM Thinkpad X30
-Date: Sun, 23 Apr 2006 14:46:33 +0200
-Message-ID: <20060423124633.GA24548@elf.ucw.cz>
-References: <444999D8.6090104@gmail.com> <20060422090116.GE3590@elf.ucw.cz> <444ACAE2.1070909@gmail.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Woody Suwalski <woodys@xandros.com>
+Subject: Re: 2.6.16-rc3 + Xorg 6.9.0  - works for me...
+Date: Wed, 26 Apr 2006 14:38:34 -0400
+Message-ID: <444FBE2A.90106@xandros.com>
+References: <43F4AF97.8080909@xandros.com> <443E3A4B.8000101@netwinder.org> <443E4435.1060904@xandros.com> <443F8EB1.30803@netwinder.org>
 Mime-Version: 1.0
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FXdzc-0006B5-Ss
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 23 Apr 2006 05:47:12 -0700
-Received: from gprs189-60.eurotel.cz ([160.218.189.60] helo=amd.ucw.cz)
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FXdzY-0002Wu-A0
-	for linux-fbdev-devel@lists.sourceforge.net; Sun, 23 Apr 2006 05:47:13 -0700
-Content-Disposition: inline
-In-Reply-To: <444ACAE2.1070909@gmail.com>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Return-path: <bounce-debian-arm=debian-arm=m.gmane.org@lists.debian.org>
+In-Reply-To: <443F8EB1.30803@netwinder.org>
+Resent-Message-ID: <K7pIRB.A.rtF.jL8TEB@murphy>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Post: <mailto:debian-arm@lists.debian.org>
+List-Help: <mailto:debian-arm-request@lists.debian.org?subject=help>
+List-Subscribe: <mailto:debian-arm-request@lists.debian.org?subject=subscribe>
+List-Unsubscribe: <mailto:debian-arm-request@lists.debian.org?subject=unsubscribe>
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
+To: Martin Michlmayr <tbm@cyrius.com>, rmk@arm.linux.org.uk
+Cc: Ralph Siemsen <ralphs@netwinder.org>, linux-fbdev-devel@lists.sourceforge.net, debian-arm@lists.debian.org
 
-On Ne 23-04-06 08:31:30, Antonino A. Daplas wrote:
-> Pavel Machek wrote:
-> > On So 22-04-06 10:50:00, Antonino A. Daplas wrote:
-> >> As reported in Bugzilla Bug 6406, resume from S3 results in a blank
-> >> screen.
-> >>
-> >> For the IBM Thinkpad X30 using vesafb as the console driver, successful
-> >> resume from S3 requires option acpi_sleep=s3_bios,s3_mode.  Update
-> >> documentation.
-> >>
-> >> I would presume that, in any hardware, using vesafb as the console driver will
-> >> require as a minimum s3_mode.
-> > 
-> > Well, some hardware just preserves video state, but you are right that
-> > anything that needs s3_bios probably needs s3_mode, too.
-> 
-> For vgacon, s3_bios may be the only option needed since POSTING automatically goes
-> to text mode. For vesafb, s3_mode, in most cases, will also required.
+ >>>
+I just upgraded my Netwinder from 2.4.27 to 2.6.15 and the framebuffer
+no longer works.  Console works but when I start X.org I first get a
+corrupted screen and a little bit later the whole machine hangs.
+There's no panic or any information on the serial console.
+<<<
 
-Agreed.
+This problem appears only on Cyber2010 chips (Netwinders with Cyber2000 
+work OK)
 
-> > Do you think you could try code from suspend.sf.net and fix whitelist
-> > there?
-> 
-> I'll try, although in-kernel suspend works for me properly.
+The crash issue on 2010 can be solved by disabling burst mode on the 
+Cyberpro 2010 (graphic register 0x30, EXT_BUS_CTL_PCIBURST_WRITE=0). It 
+is enabled in the kernel driver by default now.
 
-Please do, we'd really like to use s2ram everywhere (so it "just
-works"), and we want to know that we are not breaking working setups,
-too. (Plus whitelist entry can probably be improved).
+However, I can see in the cyber2000fb.c file that the 2010 is also used 
+on Shark architecture.
 
-								Pavel
+Martin, Russell,
+Can you verify if the current 2.6.1x kernel + X 6.9 works OK on SHARK 
+machine??? I do not have any of them here to test...
+
+Basically we need to establish, if this fix is needed just for 
+Netwinders with CyberPro 2010 (here tested on machine with 1M VRAM in 
+32-bit mode, but Martin seems to have problem on 2M VRAM Netwinder?) or 
+all machines with CyberPro 2010.
+
+Thanks, Woody
 
 -- 
-Thanks for all the (sleeping) penguins.
-
-
--------------------------------------------------------
-Using Tomcat but need to do more? Need to support web services, security?
-Get stuff done quickly with pre-integrated technology to make your job easier
-Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642
+Xandros Corporation
+Simple. Powerful. Linux.
+Visit us at http://www.xandros.com

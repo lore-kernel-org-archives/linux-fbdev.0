@@ -1,51 +1,77 @@
 From: Woody Suwalski <woodys@xandros.com>
 Subject: Re: 2.6.16-rc3 + Xorg 6.9.0  - works for me...
-Date: Wed, 26 Apr 2006 14:38:34 -0400
-Message-ID: <444FBE2A.90106@xandros.com>
-References: <43F4AF97.8080909@xandros.com> <443E3A4B.8000101@netwinder.org> <443E4435.1060904@xandros.com> <443F8EB1.30803@netwinder.org>
+Date: Wed, 26 Apr 2006 16:15:05 -0400
+Message-ID: <444FD4C9.1040209@xandros.com>
+References: <43F4AF97.8080909@xandros.com> <443E3A4B.8000101@netwinder.org> <443E4435.1060904@xandros.com> <443F8EB1.30803@netwinder.org> <444FBE2A.90106@xandros.com> <20060426200907.GE9738@flint.arm.linux.org.uk>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <bounce-debian-arm=debian-arm=m.gmane.org@lists.debian.org>
-In-Reply-To: <443F8EB1.30803@netwinder.org>
-Resent-Message-ID: <K7pIRB.A.rtF.jL8TEB@murphy>
+Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1FYqPz-0006Yg-Ck
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 26 Apr 2006 13:15:23 -0700
+Received: from [209.87.236.18] (helo=xandros.com)
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44)
+	id 1FYqPt-0006LY-On
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 26 Apr 2006 13:15:20 -0700
+In-Reply-To: <20060426200907.GE9738@flint.arm.linux.org.uk>
+Sender: linux-fbdev-devel-admin@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
 List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Post: <mailto:debian-arm@lists.debian.org>
-List-Help: <mailto:debian-arm-request@lists.debian.org?subject=help>
-List-Subscribe: <mailto:debian-arm-request@lists.debian.org?subject=subscribe>
-List-Unsubscribe: <mailto:debian-arm-request@lists.debian.org?subject=unsubscribe>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: Martin Michlmayr <tbm@cyrius.com>, rmk@arm.linux.org.uk
-Cc: Ralph Siemsen <ralphs@netwinder.org>, linux-fbdev-devel@lists.sourceforge.net, debian-arm@lists.debian.org
+To: Russell King <rmk@arm.linux.org.uk>
+Cc: Martin Michlmayr <tbm@cyrius.com>, Ralph Siemsen <ralphs@netwinder.org>, linux-fbdev-devel@lists.sourceforge.net, debian-arm@lists.debian.org
 
- >>>
-I just upgraded my Netwinder from 2.4.27 to 2.6.15 and the framebuffer
-no longer works.  Console works but when I start X.org I first get a
-corrupted screen and a little bit later the whole machine hangs.
-There's no panic or any information on the serial console.
-<<<
+Russell King wrote:
+> On Wed, Apr 26, 2006 at 02:38:34PM -0400, Woody Suwalski wrote:
+>> I just upgraded my Netwinder from 2.4.27 to 2.6.15 and the framebuffer
+>> no longer works.  Console works but when I start X.org I first get a
+>> corrupted screen and a little bit later the whole machine hangs.
+>> There's no panic or any information on the serial console.
+>> <<<
+>>
+>> This problem appears only on Cyber2010 chips (Netwinders with Cyber2000 
+>> work OK)
+>>
+>> The crash issue on 2010 can be solved by disabling burst mode on the 
+>> Cyberpro 2010 (graphic register 0x30, EXT_BUS_CTL_PCIBURST_WRITE=0). It 
+>> is enabled in the kernel driver by default now.
+> 
+> Exactly the same code exists in the 2.4.21-rmk kernel (just diff'd the
+> two drivers), so I don't understand why hasn't the problem been reported
+> against 2.4 kernels.
 
-This problem appears only on Cyber2010 chips (Netwinders with Cyber2000 
-work OK)
+Yes, but the problem may be caused by faster/slower/smarter... driving 
+of PCI bus e.t.c... It just happens to trigger now the right noise level...
 
-The crash issue on 2010 can be solved by disabling burst mode on the 
-Cyberpro 2010 (graphic register 0x30, EXT_BUS_CTL_PCIBURST_WRITE=0). It 
-is enabled in the kernel driver by default now.
+> 
+>> Martin, Russell,
+>> Can you verify if the current 2.6.1x kernel + X 6.9 works OK on SHARK 
+>> machine??? I do not have any of them here to test...
+> 
+> I don't have Shark hardware either.
+> 
+Well, maybe Martin or Wookey can find one...
 
-However, I can see in the cyber2000fb.c file that the 2010 is also used 
-on Shark architecture.
-
-Martin, Russell,
-Can you verify if the current 2.6.1x kernel + X 6.9 works OK on SHARK 
-machine??? I do not have any of them here to test...
-
-Basically we need to establish, if this fix is needed just for 
-Netwinders with CyberPro 2010 (here tested on machine with 1M VRAM in 
-32-bit mode, but Martin seems to have problem on 2M VRAM Netwinder?) or 
-all machines with CyberPro 2010.
-
-Thanks, Woody
+Woody
 
 -- 
 Xandros Corporation
 Simple. Powerful. Linux.
 Visit us at http://www.xandros.com
+
+
+-------------------------------------------------------
+Using Tomcat but need to do more? Need to support web services, security?
+Get stuff done quickly with pre-integrated technology to make your job easier
+Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronimo
+http://sel.as-us.falkag.net/sel?cmd=lnk&kid=120709&bid=263057&dat=121642

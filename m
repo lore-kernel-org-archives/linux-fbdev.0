@@ -1,25 +1,25 @@
-From: David Vrabel <dvrabel@arcom.com>
+From: "Jorge Luis Zapata Muga" <jorgeluis.zapata@gmail.com>
 Subject: Re: geode problem
-Date: Thu, 27 Apr 2006 16:39:38 +0100
-Message-ID: <4450E5BA.9020302@arcom.com>
+Date: Thu, 27 Apr 2006 21:00:39 +0200
+Message-ID: <eb77d7060604271200s723c7f56u8b83b9452c67ce6d@mail.gmail.com>
 References: <eb77d7060604261806y4faa1107l5464316fa005266e@mail.gmail.com>
+	 <4450E5BA.9020302@arcom.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [10.3.1.93] (helo=sc8-sf-list1-new.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FZ8cr-0002i4-T0
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 27 Apr 2006 08:41:53 -0700
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FZ8cr-0000qO-UD
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 27 Apr 2006 08:41:53 -0700
-Received: from webapps.arcom.com ([194.200.159.168])
+	id 1FZBqG-0000gr-0c
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 27 Apr 2006 12:07:56 -0700
+Received: from pproxy.gmail.com ([64.233.166.178])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FZ8cq-0003r6-Ib
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 27 Apr 2006 08:41:53 -0700
-In-Reply-To: <eb77d7060604261806y4faa1107l5464316fa005266e@mail.gmail.com>
+	id 1FZBqE-0004aS-LG
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 27 Apr 2006 12:07:56 -0700
+Received: by pproxy.gmail.com with SMTP id i49so2171505pye
+        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 27 Apr 2006 12:07:52 -0700 (PDT)
+In-Reply-To: <4450E5BA.9020302@arcom.com>
+Content-Disposition: inline
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -33,19 +33,43 @@ List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-de
 Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Here's my previous response to Jorge for reference.
+On 4/27/06, David Vrabel <dvrabel@arcom.com> wrote:
+> Here's my previous response to Jorge for reference.
+>
+> I would suspect there's something funny going on with the VGA emulation
+> going on the the VSA code in the BIOS.  Perhaps have a look through the
+> 2.4 driver and see if there's anything in there that disables the VSA
+> code/VGA emulation?
+>
+indeed, i agree with you. the upper "window" seems to be the vga
+memory, if i scroll i can see what is "below" for a second. also
+changing the crt registers for vga screen start address the green
+pixels dissapear, i get black ones instead.
 
-I would suspect there's something funny going on with the VGA emulation
-going on the the VSA code in the BIOS.  Perhaps have a look through the
-2.4 driver and see if there's anything in there that disables the VSA
-code/VGA emulation?
+the problem is that on the 2.4 every place where is supposed to keep
+the softvga silent doesnt seem to work.
 
-David Vrabel
--- 
-David Vrabel, Design Engineer
-
-Arcom, Clifton Road           Tel: +44 (0)1223 411200 ext. 3233
-Cambridge CB1 7EA, UK         Web: http://www.arcom.com/
+> David Vrabel
+> --
+> David Vrabel, Design Engineer
+>
+> Arcom, Clifton Road           Tel: +44 (0)1223 411200 ext. 3233
+> Cambridge CB1 7EA, UK         Web: http://www.arcom.com/
+>
+>
+> -------------------------------------------------------
+> Using Tomcat but need to do more? Need to support web services, security?
+> Get stuff done quickly with pre-integrated technology to make your job ea=
+sier
+> Download IBM WebSphere Application Server v.1.0.1 based on Apache Geronim=
+o
+> http://sel.as-us.falkag.net/sel?cmd=3Dlnk&kid=3D120709&bid=3D263057&dat=
+=3D121642
+> _______________________________________________
+> Linux-fbdev-devel mailing list
+> Linux-fbdev-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+>
 
 
 -------------------------------------------------------

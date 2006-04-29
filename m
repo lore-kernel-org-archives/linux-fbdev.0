@@ -1,25 +1,25 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 1/12] fbdev: More accurate sync range extrapolation
-Date: Sat, 29 Apr 2006 08:26:49 +0800
-Message-ID: <4452B2C9.1050104@gmail.com>
+Subject: [PATCH 3/12] atyfb: Fix hardware cursor handling
+Date: Sat, 29 Apr 2006 08:30:31 +0800
+Message-ID: <4452B3A7.6090907@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from [10.3.1.93] (helo=sc8-sf-list1-new.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FZdhp-0003iM-I8
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 17:53:05 -0700
+	id 1FZdhr-0003jl-W8
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 17:53:07 -0700
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FZdhp-00015u-MO
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 17:53:05 -0700
+	id 1FZdhs-000163-29
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 17:53:08 -0700
 Received: from xproxy.gmail.com ([66.249.82.205])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FZdho-0006gw-TW
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 17:53:05 -0700
+	id 1FZdhq-0006gw-Tn
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 17:53:08 -0700
 Received: by xproxy.gmail.com with SMTP id t4so1463996wxc
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 28 Apr 2006 17:53:01 -0700 (PDT)
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 28 Apr 2006 17:53:06 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,92 +32,84 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Alexander Kern <alex.kern@gmx.de>, =?ISO-8859-1?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>
 
-The EDID block should specify the display's operating limits (vertical and 
-horizontal sync ranges, and maximum dot clock).  If not given by the EDID
-block, the ranges are extrapolated from the modelist.  However, the 
-computation used is only a rough approximation, and the resulting values may
-not reflect the actual capability of the display.  This problem is frequently
-encountered when the EDID block has a single entry, the single mode entry will
-fail validation.
+Fix image and color handling in atyfb_cursor()
 
-To prevent this, calculate the values based on the same method used in
-fb_validate_mode().
+- In the 2-bit scheme of the cursor image, just set the first bit to
+be always zero (turn off transparency and/or XOR), and just do the masking
+manually
+- The cursor color is converted into 32-bit RGBA8888 using struct fb_cmap.
+Each component in the cmap is u16 in size, so mask the upper 8 bits.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/fbmon.c |   28 ++++++++++++++++++++++++----
- 1 files changed, 24 insertions(+), 4 deletions(-)
+ drivers/video/aty/mach64_cursor.c |   33 +++++++++++++--------------------
+ 1 files changed, 13 insertions(+), 20 deletions(-)
 
-diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-index fbbcb71..87b0224 100644
---- a/drivers/video/fbmon.c
-+++ b/drivers/video/fbmon.c
-@@ -605,6 +605,7 @@ static int fb_get_monitor_limits(unsigne
- 	block = edid + DETAILED_TIMING_DESCRIPTIONS_START;
+diff --git a/drivers/video/aty/mach64_cursor.c b/drivers/video/aty/mach64_cursor.c
+index ad8b749..27bf013 100644
+--- a/drivers/video/aty/mach64_cursor.c
++++ b/drivers/video/aty/mach64_cursor.c
+@@ -66,11 +66,6 @@ static const u8 cursor_bits_lookup[16] =
+ 	0x01, 0x41, 0x11, 0x51, 0x05, 0x45, 0x15, 0x55
+ };
  
- 	DPRINTK("      Monitor Operating Limits: ");
-+
- 	for (i = 0; i < 4; i++, block += DETAILED_TIMING_DESCRIPTION_SIZE) {
- 		if (edid_is_limits_block(block)) {
- 			specs->hfmin = H_MIN_RATE * 1000;
-@@ -618,11 +619,12 @@ static int fb_get_monitor_limits(unsigne
- 			break;
- 		}
- 	}
--	
-+
- 	/* estimate monitor limits based on modes supported */
- 	if (retval) {
--		struct fb_videomode *modes;
-+		struct fb_videomode *modes, *mode;
- 		int num_modes, i, hz, hscan, pixclock;
-+		int vtotal, htotal;
+-static const u8 cursor_mask_lookup[16] = {
+-	0xaa, 0x2a, 0x8a, 0x0a, 0xa2, 0x22, 0x82, 0x02,
+-	0xa8, 0x28, 0x88, 0x08, 0xa0, 0x20, 0x80, 0x00
+-};
+-
+ static int atyfb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ {
+ 	struct atyfb_par *par = (struct atyfb_par *) info->par;
+@@ -130,13 +125,13 @@ static int atyfb_cursor(struct fb_info *
+ 		fg_idx = cursor->image.fg_color;
+ 		bg_idx = cursor->image.bg_color;
  
- 		modes = fb_create_modedb(edid, &num_modes);
- 		if (!modes) {
-@@ -632,20 +634,38 @@ static int fb_get_monitor_limits(unsigne
+-		fg = (info->cmap.red[fg_idx] << 24) |
+-		     (info->cmap.green[fg_idx] << 16) |
+-		     (info->cmap.blue[fg_idx] << 8) | 15;
+-
+-		bg = (info->cmap.red[bg_idx] << 24) |
+-		     (info->cmap.green[bg_idx] << 16) |
+-		     (info->cmap.blue[bg_idx] << 8);
++		fg = ((info->cmap.red[fg_idx] & 0xff) << 24) |
++		     ((info->cmap.green[fg_idx] & 0xff) << 16) |
++		     ((info->cmap.blue[fg_idx] & 0xff) << 8) | 0xff;
++
++		bg = ((info->cmap.red[bg_idx] & 0xff) << 24) |
++		     ((info->cmap.green[bg_idx] & 0xff) << 16) |
++		     ((info->cmap.blue[bg_idx] & 0xff) << 8);
  
- 		retval = 0;
- 		for (i = 0; i < num_modes; i++) {
--			hz = modes[i].refresh;
-+			mode = &modes[i];
- 			pixclock = PICOS2KHZ(modes[i].pixclock) * 1000;
--			hscan = (modes[i].yres * 105 * hz + 5000)/100;
-+			htotal = mode->xres + mode->right_margin + mode->hsync_len
-+				+ mode->left_margin;
-+			vtotal = mode->yres + mode->lower_margin + mode->vsync_len
-+				+ mode->upper_margin;
-+
-+			if (mode->vmode & FB_VMODE_INTERLACED)
-+				vtotal /= 2;
-+
-+			if (mode->vmode & FB_VMODE_DOUBLE)
-+				vtotal *= 2;
-+
-+			hscan = (pixclock + htotal / 2) / htotal;
-+			hscan = (hscan + 500) / 1000 * 1000;
-+			hz = (hscan + vtotal / 2) / vtotal;
- 			
- 			if (specs->dclkmax == 0 || specs->dclkmax < pixclock)
- 				specs->dclkmax = pixclock;
-+
- 			if (specs->dclkmin == 0 || specs->dclkmin > pixclock)
- 				specs->dclkmin = pixclock;
-+
- 			if (specs->hfmax == 0 || specs->hfmax < hscan)
- 				specs->hfmax = hscan;
-+
- 			if (specs->hfmin == 0 || specs->hfmin > hscan)
- 				specs->hfmin = hscan;
-+
- 			if (specs->vfmax == 0 || specs->vfmax < hz)
- 				specs->vfmax = hz;
-+
- 			if (specs->vfmin == 0 || specs->vfmin > hz)
- 				specs->vfmin = hz;
+ 		wait_for_fifo(2, par);
+ 		aty_st_le32(CUR_CLR0, bg, par);
+@@ -166,19 +161,17 @@ static int atyfb_cursor(struct fb_info *
+ 			switch (cursor->rop) {
+ 			case ROP_XOR:
+ 			    // Upper 4 bits of mask data
+-			    fb_writeb(cursor_mask_lookup[m >> 4 ] |
+-				cursor_bits_lookup[(b ^ m) >> 4], dst++);
++			    fb_writeb(cursor_bits_lookup[(b ^ m) >> 4], dst++);
+ 			    // Lower 4 bits of mask
+-			    fb_writeb(cursor_mask_lookup[m & 0x0f ] |
+-				cursor_bits_lookup[(b ^ m) & 0x0f], dst++);
++			    fb_writeb(cursor_bits_lookup[(b ^ m) & 0x0f],
++				      dst++);
+ 			    break;
+ 			case ROP_COPY:
+ 			    // Upper 4 bits of mask data
+-			    fb_writeb(cursor_mask_lookup[m >> 4 ] |
+-				cursor_bits_lookup[(b & m) >> 4], dst++);
++			    fb_writeb(cursor_bits_lookup[(b & m) >> 4], dst++);
+ 			    // Lower 4 bits of mask
+-			    fb_writeb(cursor_mask_lookup[m & 0x0f ] |
+-				cursor_bits_lookup[(b & m) & 0x0f], dst++);
++			    fb_writeb(cursor_bits_lookup[(b & m) & 0x0f],
++				      dst++);
+ 			    break;
+ 			}
  		}
 
 

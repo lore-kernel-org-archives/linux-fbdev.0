@@ -1,25 +1,26 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 2/12] nvidiafb: Revise pci_device_id table
-Date: Sat, 29 Apr 2006 08:46:24 +0800
-Message-ID: <4452B760.1040603@gmail.com>
+From: Dennis Munsie <dmunsie@cecropia.com>
+Subject: Re: [PATCH 2.6.16] Add 1366x768 (WXGA) mode to modedb
+Date: Fri, 28 Apr 2006 21:31:07 -0400
+Message-ID: <D34BD406-8A9A-41B4-BF3F-C1FD4095B91C@cecropia.com>
+References: <B3DB462A-3D86-4803-AC99-52C8F94541F3@cecropia.com> <4452ADD2.6040002@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
+Mime-Version: 1.0 (Apple Message framework v749.3)
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [10.3.1.93] (helo=sc8-sf-list1-new.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FZeIg-0007zb-BV
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 18:31:10 -0700
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FZeIg-0001Ow-Br
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 18:31:10 -0700
-Received: from xproxy.gmail.com ([66.249.82.205])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FZdip-0006gw-SL
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 17:54:08 -0700
-Received: by xproxy.gmail.com with SMTP id t4so1463996wxc
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 28 Apr 2006 17:54:07 -0700 (PDT)
+	id 1FZeIm-000807-5V
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 18:31:16 -0700
+Received: from mail3.sea5.speakeasy.net ([69.17.117.5])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44)
+	id 1FZeIm-0005aR-0z
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 18:31:16 -0700
+Received: from pool-71-126-246-21.bstnma.fios.verizon.net (HELO [192.168.0.100]) (dmunsie@cecropia.com@[71.126.246.21])
+          (envelope-sender <dmunsie@cecropia.com>)
+          by mail3.sea5.speakeasy.net (qmail-ldap-1.03) with RC4-SHA encrypted SMTP
+          for <linux-fbdev-devel@lists.sourceforge.net>; 29 Apr 2006 01:31:10 -0000
+In-Reply-To: <4452ADD2.6040002@gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,426 +31,43 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+Content-Type: text/plain; charset="us-ascii"; delsp="yes"; format="flowed"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-nVidia is churning out chipsets like there's no tomorrow. And even though the
-pci_device_id table now has numerous entries, it is still not guaranteed that
-all supported devices are included or will be included.
+I'm away from the actual machine, but I did just try it blindly and  
+checked out the output from the driver with dmesg:
 
-Fortunately, nvidiafb has chipset detection logic built in.  So, change
-the contents of the pci_device_id table so it will capture all nVidia devices
-of the display class. Unsupported chipsets will then be filtered out by
-nvidiafb's detection logic.
+fbcvt: Aspect ratio not CVT standard
+fbcvt: 1360x768@60: CVT Name - Not a CVT standard - 1.044 Mega Pixel  
+Image
 
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
+intelfb: intelfb_check_var: accel_flags is 0
+intelfb: intelfb_var_to_depth: bpp: 32, green.length is 0
+intelfb: Initial video mode is 1366x768-32@59.
 
- drivers/video/nvidia/nvidia.c |  362 +----------------------------------------
- 1 files changed, 6 insertions(+), 356 deletions(-)
+It looks as if something valid is coming back and the driver is  
+setting up the mode, but at this point I don't know if there is  
+really something on the display or not.  One thing that is  
+disconcerting is that I asked for 60Hz and it returned back 59Hz.   
+Another thing, which may be nothing, is that second line where it  
+says the mode is 1360x768.  I am specifically requesting  
+1366x768M-32@60 in for my modeline.
 
-diff --git a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
-index 093ab99..97f3855 100644
---- a/drivers/video/nvidia/nvidia.c
-+++ b/drivers/video/nvidia/nvidia.c
-@@ -70,359 +70,10 @@
- #define MAX_CURS		32
- 
- static struct pci_device_id nvidiafb_pci_tbl[] = {
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_TNT,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_TNT2,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_UTNT2,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_TNT_UNKNOWN,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_VTNT2,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_UVTNT2,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_ITNT2,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_SDR,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_DDR,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE2_MX,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE2_MX2,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE2_GO,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO2_MXR,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE2_GTS,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE2_GTS2,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE2_ULTRA,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO2_PRO,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_MX_460,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_MX_440,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_MX_420,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_MX_440_SE,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_440_GO,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_420_GO,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_460_GO,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_420_GO_M32,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_500XGL,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_440_GO_M64,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_200,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_550XGL,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_500_GOGL,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_410_GO_M16,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_MX_440_8X,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_MX_440SE_8X,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_MX_420_8X,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_MX_4000,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_448_GO,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_488_GO,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_580_XGL,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_MX_MAC,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_280_NVS,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_380_XGL,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_IGEFORCE2,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE3,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE3_1,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE3_2,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO_DDC,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_TI_4600,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_TI_4400,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_TI_4200,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_900XGL,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_750XGL,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_700XGL,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_TI_4800,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_TI_4800_8X,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_TI_4800SE,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_4200_GO,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_980_XGL,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_780_XGL,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_700_GOGL,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5800_ULTRA,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5800,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO_FX_2000,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO_FX_1000,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5600_ULTRA,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5600,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5600SE,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_GO5600,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_GO5650,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO_FX_GO700,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5200,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5200_ULTRA,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5200_1,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5200SE,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_GO5200,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_GO5250,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_GO5250_32,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_GO_5200,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO_NVS_280_PCI,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO_FX_500,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_GO5300,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_GO5100,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5900_ULTRA,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5900,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5900XT,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5950_ULTRA,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO_FX_3000,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5700_ULTRA,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5700,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5700LE,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5700VE,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_GO5700_1,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_GO5700_2,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO_FX_GO1000,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO_FX_1100,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5500,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5100,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO_FX_700,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5900ZT,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6800_ULTRA,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6800,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6800_LE,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6800_GT,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO_FX_4000,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6600_GT,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6600,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6610_XL,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO_FX_540,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6200,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCIE_DEVICE_ID_NVIDIA_GEFORCE_6800_ALT1,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCIE_DEVICE_ID_NVIDIA_GEFORCE_6600_ALT1,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCIE_DEVICE_ID_NVIDIA_GEFORCE_6600_ALT2,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCIE_DEVICE_ID_NVIDIA_GEFORCE_6200_ALT1,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCIE_DEVICE_ID_NVIDIA_GEFORCE_6800_GT,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCIE_DEVICE_ID_NVIDIA_QUADRO_NVS280,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0252,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0313,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0316,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0317,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x031D,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x031E,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x031F,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0329,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x032F,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0345,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0349,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x034B,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x034F,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x00c0,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_GEFORCE_6800A,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_GEFORCE_6800A_LE,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_GEFORCE_GO_6800,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_GEFORCE_GO_6800_ULTRA,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_QUADRO_FX_GO1400,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x00cd,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_QUADRO_FX_1400,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0142,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0143,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0144,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0145,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0146,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0147,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0148,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0149,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x014b,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x14c,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x014d,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0160,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6200_TURBOCACHE,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0162,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0163,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_GO_6200,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0165,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_GO_6250,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_GO_6200_1,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_GO_6250_1,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0169,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x016b,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x016c,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x016d,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x016e,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0210,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6800B,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6800B_LE,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6800B_GT,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_7800_GT,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_7800_GTX,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_GO_7800,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_GO_7800_GTX,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x021d,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x021e,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0220,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0221,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0222,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{PCI_VENDOR_ID_NVIDIA, 0x0228,
--	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
--	{0,}			/* terminate list */
-+	{PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
-+	 PCI_BASE_CLASS_DISPLAY << 16, 0xff0000, 0},
-+	{ 0, }
- };
--
- MODULE_DEVICE_TABLE(pci, nvidiafb_pci_tbl);
- 
- /* command line data, set in nvidiafb_setup() */
-@@ -1532,10 +1183,10 @@ static u32 __devinit nvidia_get_chipset(
- 	struct nvidia_par *par = info->par;
- 	u32 id = (par->pci_dev->vendor << 16) | par->pci_dev->device;
- 
--	printk("nvidiafb: PCI id - %x\n", id);
-+	printk(KERN_INFO PFX "Device ID: %x \n", id);
-+
- 	if ((id & 0xfff0) == 0x00f0) {
- 		/* pci-e */
--		printk("nvidiafb: PCI-E card\n");
- 		id = NV_RD32(par->REGS, 0x1800);
- 
- 		if ((id & 0x0000ffff) == 0x000010DE)
-@@ -1543,9 +1194,9 @@ static u32 __devinit nvidia_get_chipset(
- 		else if ((id & 0xffff0000) == 0xDE100000) /* wrong endian */
- 			id = 0x10DE0000 | ((id << 8) & 0x0000ff00) |
-                             ((id >> 8) & 0x000000ff);
-+		printk(KERN_INFO PFX "Subsystem ID: %x \n", id);
- 	}
- 
--	printk("nvidiafb: Actual id - %x\n", id);
- 	return id;
- }
- 
-@@ -1663,7 +1314,6 @@ static int __devinit nvidiafb_probe(stru
- 	}
- 
- 	par->Chipset = nvidia_get_chipset(info);
--	printk(KERN_INFO PFX "nVidia device/chipset %X\n", par->Chipset);
- 	par->Architecture = nvidia_get_arch(info);
- 
- 	if (par->Architecture == 0) {
+I will be able to test it more thoroughly on Monday when I am back in  
+the office.
 
+thanks!
+dennis
 
+On Apr 28, 2006, at 8:05 PM, Antonino A. Daplas wrote:
+
+> Can you try first if any of these options will work for you:
+>
+> video=xxxfb:1366x768M@60
+>
+> or
+>
+> video=xxxfb:1366x768MR@60
 
 
 -------------------------------------------------------

@@ -1,25 +1,25 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 5/12] atyfb: Set correct acceleration flags
-Date: Sat, 29 Apr 2006 08:33:49 +0800
-Message-ID: <4452B46D.7070900@gmail.com>
+Subject: [PATCH 7/12] vesafb: Update platform code
+Date: Sat, 29 Apr 2006 08:37:03 +0800
+Message-ID: <4452B52F.4010807@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from [10.3.1.93] (helo=sc8-sf-list1-new.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FZdiE-0003o7-0H
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 17:53:30 -0700
+	id 1FZdiL-0003oj-I5
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 17:53:37 -0700
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FZdiE-00016v-58
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 17:53:30 -0700
+	id 1FZdiL-00017A-Np
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 17:53:37 -0700
 Received: from xproxy.gmail.com ([66.249.82.205])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FZdiC-0006gw-TC
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 17:53:30 -0700
+	id 1FZdiL-0006gw-Fz
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 17:53:37 -0700
 Received: by xproxy.gmail.com with SMTP id t4so1463996wxc
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 28 Apr 2006 17:53:28 -0700 (PDT)
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 28 Apr 2006 17:53:37 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,49 +32,53 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Alexander Kern <alex.kern@gmx.de>, =?ISO-8859-1?Q?Ville_Syrj=E4l=E4?= <syrjala@sci.fi>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Gerd Knorr <kraxel@bytesex.org>
 
-Set the appropriate acceleration flags so fbcon can choose the optimal
-scrolling mode.
+Update platform code to dynamically allocate the platform device
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/aty/atyfb_base.c |   14 +++++++++++++-
- 1 files changed, 13 insertions(+), 1 deletions(-)
+ drivers/video/vesafb.c |   17 ++++++++++++-----
+ 1 files changed, 12 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
-index d9d7d3c..4813e4a 100644
---- a/drivers/video/aty/atyfb_base.c
-+++ b/drivers/video/aty/atyfb_base.c
-@@ -1280,6 +1280,14 @@ static int atyfb_set_par(struct fb_info 
+diff --git a/drivers/video/vesafb.c b/drivers/video/vesafb.c
+index b0b9acf..2fbaa84 100644
+--- a/drivers/video/vesafb.c
++++ b/drivers/video/vesafb.c
+@@ -460,9 +460,7 @@ static struct platform_driver vesafb_dri
+ 	},
+ };
  
- 	par->accel_flags = var->accel_flags; /* hack */
+-static struct platform_device vesafb_device = {
+-	.name	= "vesafb",
+-};
++static struct platform_device *vesafb_device;
  
-+	if (var->accel_flags) {
-+		info->fbops->fb_sync = atyfb_sync;
-+		info->flags &= ~FBINFO_HWACCEL_DISABLED;
-+	} else {
-+		info->fbops->fb_sync = NULL;
-+		info->flags |= FBINFO_HWACCEL_DISABLED;
-+	}
+ static int __init vesafb_init(void)
+ {
+@@ -475,10 +473,19 @@ static int __init vesafb_init(void)
+ 	ret = platform_driver_register(&vesafb_driver);
+ 
+ 	if (!ret) {
+-		ret = platform_device_register(&vesafb_device);
+-		if (ret)
++		vesafb_device = platform_device_alloc("vesafb", 0);
 +
- 	if (par->blitter_may_be_busy)
- 		wait_for_idle(par);
- 
-@@ -2506,7 +2514,11 @@ static int __init aty_init(struct fb_inf
- 
- 	info->fbops = &atyfb_ops;
- 	info->pseudo_palette = pseudo_palette;
--	info->flags = FBINFO_FLAG_DEFAULT;
-+	info->flags = FBINFO_DEFAULT           |
-+	              FBINFO_HWACCEL_IMAGEBLIT |
-+	              FBINFO_HWACCEL_FILLRECT  |
-+	              FBINFO_HWACCEL_COPYAREA  |
-+	              FBINFO_HWACCEL_YPAN;
- 
- #ifdef CONFIG_PMAC_BACKLIGHT
- 	if (M64_HAS(G3_PB_1_1) && machine_is_compatible("PowerBook1,1")) {
++		if (vesafb_device)
++			ret = platform_device_add(vesafb_device);
++		else
++			ret = -ENOMEM;
++
++		if (ret) {
++			platform_device_put(vesafb_device);
+ 			platform_driver_unregister(&vesafb_driver);
++		}
+ 	}
++
+ 	return ret;
+ }
+ module_init(vesafb_init);
 
 
 

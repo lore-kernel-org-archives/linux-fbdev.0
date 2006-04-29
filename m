@@ -1,24 +1,25 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH 2.6.16] Add 1366x768 (WXGA) mode to
- modedb
-Date: Sat, 29 Apr 2006 08:05:38 +0800
-Message-ID: <4452ADD2.6040002@gmail.com>
-References: <B3DB462A-3D86-4803-AC99-52C8F94541F3@cecropia.com>
+Subject: [PATCH 1/12] fbdev: More accurate sync range extrapolation
+Date: Sat, 29 Apr 2006 08:26:49 +0800
+Message-ID: <4452B2C9.1050104@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from [10.3.1.93] (helo=sc8-sf-list1-new.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FZcxy-00051g-HO
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 17:05:42 -0700
-Received: from xproxy.gmail.com ([66.249.82.207])
+	id 1FZdhp-0003iM-I8
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 17:53:05 -0700
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1FZdhp-00015u-MO
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 17:53:05 -0700
+Received: from xproxy.gmail.com ([66.249.82.205])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FZcxy-0004tL-3B
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 17:05:42 -0700
-Received: by xproxy.gmail.com with SMTP id t4so1459451wxc
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 28 Apr 2006 17:05:37 -0700 (PDT)
-In-Reply-To: <B3DB462A-3D86-4803-AC99-52C8F94541F3@cecropia.com>
+	id 1FZdho-0006gw-TW
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 17:53:05 -0700
+Received: by xproxy.gmail.com with SMTP id t4so1463996wxc
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 28 Apr 2006 17:53:01 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,48 +31,95 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: dmunsie@cecropia.com
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Dennis Munsie wrote:
-> From: Dennis Munsie <dmunsie@cecropia.com>
-> 
-> Adds 1366x768 @ 60Hz to drivers/video/modedb.c.
-> 
-> Signed-off-by: Dennis Munsie <dmunsie@cecropia.com>
-> 
-> ---
-> 
->  drivers/video/modedb.c |    6 +++++-
-> 1 file changed, 5 insertions(+), 1 deletion(-)
-> 
-> --- linux-2.6.16/drivers/video/modedb.c    2006-03-20 00:53:29.000000000
-> -0500
-> +++ linux-2.6.16-wxga/drivers/video/modedb.c    2006-04-27
-> 17:08:11.000000000 -0500
-> @@ -255,7 +255,11 @@ static const struct fb_videomode modedb[
->     /* 1152x768, 60 Hz, PowerBook G4 Titanium I and II */
->     NULL, 60, 1152, 768, 15386, 158, 26, 29, 3, 136, 6,
->     FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
-> -    },
-> +    }, {
-> +    /* 1366x768, 60 Hz, 47.403 kHz hsync, WXGA 16:9 aspect ratio */
-> +    NULL, 60, 1366, 768, 13806, 120, 10, 14, 3, 32, 5,
-> +    0, FB_VMODE_NONINTERLACED
-> +    },
-> };
-> #ifdef CONFIG_FB_MODE_HELPERS
-> 
+The EDID block should specify the display's operating limits (vertical and 
+horizontal sync ranges, and maximum dot clock).  If not given by the EDID
+block, the ranges are extrapolated from the modelist.  However, the 
+computation used is only a rough approximation, and the resulting values may
+not reflect the actual capability of the display.  This problem is frequently
+encountered when the EDID block has a single entry, the single mode entry will
+fail validation.
 
-Can you try first if any of these options will work for you:
+To prevent this, calculate the values based on the same method used in
+fb_validate_mode().
 
-video=xxxfb:1366x768M@60
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
+---
 
-or 
+ drivers/video/fbmon.c |   28 ++++++++++++++++++++++++----
+ 1 files changed, 24 insertions(+), 4 deletions(-)
 
-video=xxxfb:1366x768MR@60
+diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
+index fbbcb71..87b0224 100644
+--- a/drivers/video/fbmon.c
++++ b/drivers/video/fbmon.c
+@@ -605,6 +605,7 @@ static int fb_get_monitor_limits(unsigne
+ 	block = edid + DETAILED_TIMING_DESCRIPTIONS_START;
+ 
+ 	DPRINTK("      Monitor Operating Limits: ");
++
+ 	for (i = 0; i < 4; i++, block += DETAILED_TIMING_DESCRIPTION_SIZE) {
+ 		if (edid_is_limits_block(block)) {
+ 			specs->hfmin = H_MIN_RATE * 1000;
+@@ -618,11 +619,12 @@ static int fb_get_monitor_limits(unsigne
+ 			break;
+ 		}
+ 	}
+-	
++
+ 	/* estimate monitor limits based on modes supported */
+ 	if (retval) {
+-		struct fb_videomode *modes;
++		struct fb_videomode *modes, *mode;
+ 		int num_modes, i, hz, hscan, pixclock;
++		int vtotal, htotal;
+ 
+ 		modes = fb_create_modedb(edid, &num_modes);
+ 		if (!modes) {
+@@ -632,20 +634,38 @@ static int fb_get_monitor_limits(unsigne
+ 
+ 		retval = 0;
+ 		for (i = 0; i < num_modes; i++) {
+-			hz = modes[i].refresh;
++			mode = &modes[i];
+ 			pixclock = PICOS2KHZ(modes[i].pixclock) * 1000;
+-			hscan = (modes[i].yres * 105 * hz + 5000)/100;
++			htotal = mode->xres + mode->right_margin + mode->hsync_len
++				+ mode->left_margin;
++			vtotal = mode->yres + mode->lower_margin + mode->vsync_len
++				+ mode->upper_margin;
++
++			if (mode->vmode & FB_VMODE_INTERLACED)
++				vtotal /= 2;
++
++			if (mode->vmode & FB_VMODE_DOUBLE)
++				vtotal *= 2;
++
++			hscan = (pixclock + htotal / 2) / htotal;
++			hscan = (hscan + 500) / 1000 * 1000;
++			hz = (hscan + vtotal / 2) / vtotal;
+ 			
+ 			if (specs->dclkmax == 0 || specs->dclkmax < pixclock)
+ 				specs->dclkmax = pixclock;
++
+ 			if (specs->dclkmin == 0 || specs->dclkmin > pixclock)
+ 				specs->dclkmin = pixclock;
++
+ 			if (specs->hfmax == 0 || specs->hfmax < hscan)
+ 				specs->hfmax = hscan;
++
+ 			if (specs->hfmin == 0 || specs->hfmin > hscan)
+ 				specs->hfmin = hscan;
++
+ 			if (specs->vfmax == 0 || specs->vfmax < hz)
+ 				specs->vfmax = hz;
++
+ 			if (specs->vfmin == 0 || specs->vfmin > hz)
+ 				specs->vfmin = hz;
+ 		}
 
-Tony
 
 
 -------------------------------------------------------

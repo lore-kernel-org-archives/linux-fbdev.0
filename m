@@ -1,25 +1,25 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 12/12] fbdev: Firmware EDID fixes
-Date: Sat, 29 Apr 2006 08:44:40 +0800
-Message-ID: <4452B6F8.9050202@gmail.com>
+Subject: [PATCH 2/12] nvidiafb: Revise pci_device_id table
+Date: Sat, 29 Apr 2006 08:46:24 +0800
+Message-ID: <4452B760.1040603@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from [10.3.1.93] (helo=sc8-sf-list1-new.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FZdun-0005Tb-2z
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 18:06:29 -0700
+	id 1FZeIg-0007zb-BV
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 18:31:10 -0700
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FZdun-0001IM-3c
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 18:06:29 -0700
+	id 1FZeIg-0001Ow-Br
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 18:31:10 -0700
 Received: from xproxy.gmail.com ([66.249.82.205])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FZdik-0006gw-2A
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 17:54:02 -0700
+	id 1FZdip-0006gw-SL
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 28 Apr 2006 17:54:08 -0700
 Received: by xproxy.gmail.com with SMTP id t4so1463996wxc
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 28 Apr 2006 17:54:01 -0700 (PDT)
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 28 Apr 2006 17:54:07 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,176 +34,421 @@ Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-- make firmware edid independent from framebuffer (No need to choose
-  framebuffer just to disable this option
-- enable this option in X86_64
-- check if VBE/DDC function is implemented before calling actual function
+nVidia is churning out chipsets like there's no tomorrow. And even though the
+pci_device_id table now has numerous entries, it is still not guaranteed that
+all supported devices are included or will be included.
+
+Fortunately, nvidiafb has chipset detection logic built in.  So, change
+the contents of the pci_device_id table so it will capture all nVidia devices
+of the display class. Unsupported chipsets will then be filtered out by
+nvidiafb's detection logic.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- arch/i386/boot/video.S   |   19 ++++++++++++++++++-
- arch/x86_64/boot/video.S |   19 +++++++++++++++++++
- drivers/video/Kconfig    |   31 +++++++++++++++----------------
- drivers/video/fbmon.c    |    2 +-
- 4 files changed, 53 insertions(+), 18 deletions(-)
+ drivers/video/nvidia/nvidia.c |  362 +----------------------------------------
+ 1 files changed, 6 insertions(+), 356 deletions(-)
 
-diff --git a/arch/i386/boot/video.S b/arch/i386/boot/video.S
-index c9343c3..8c2a6fa 100644
---- a/arch/i386/boot/video.S
-+++ b/arch/i386/boot/video.S
-@@ -1929,7 +1929,7 @@ skip10:	movb	%ah, %al
- 	ret
+diff --git a/drivers/video/nvidia/nvidia.c b/drivers/video/nvidia/nvidia.c
+index 093ab99..97f3855 100644
+--- a/drivers/video/nvidia/nvidia.c
++++ b/drivers/video/nvidia/nvidia.c
+@@ -70,359 +70,10 @@
+ #define MAX_CURS		32
  
- store_edid:
--#ifdef CONFIG_FB_FIRMWARE_EDID
-+#ifdef CONFIG_FIRMWARE_EDID
- 	pushw	%es				# just save all registers
- 	pushw	%ax
- 	pushw	%bx
-@@ -1947,6 +1947,22 @@ store_edid:
- 	rep
- 	stosl
- 
-+	pushw   %es				# save ES
-+	xorw    %di, %di                        # Report Capability
-+	pushw   %di
-+	popw    %es                             # ES:DI must be 0:0
-+	movw	$0x4f15, %ax
-+	xorw	%bx, %bx
-+	xorw	%cx, %cx
-+	int	$0x10
-+	popw    %es                             # restore ES
-+
-+	cmpb    $0x00, %ah                      # call successful
-+	jne     no_edid
-+
-+	cmpb    $0x4f, %al                      # function supported
-+	jne     no_edid
-+
- 	movw	$0x4f15, %ax                    # do VBE/DDC
- 	movw	$0x01, %bx
- 	movw	$0x00, %cx
-@@ -1954,6 +1970,7 @@ store_edid:
- 	movw	$0x140, %di
- 	int	$0x10
- 
-+no_edid:
- 	popw	%di				# restore all registers
- 	popw	%dx
- 	popw	%cx
-diff --git a/arch/x86_64/boot/video.S b/arch/x86_64/boot/video.S
-index 32327bb..2aa565c 100644
---- a/arch/x86_64/boot/video.S
-+++ b/arch/x86_64/boot/video.S
-@@ -1929,6 +1929,7 @@ skip10:	movb	%ah, %al
- 	ret
- 
- store_edid:
-+#ifdef CONFIG_FIRMWARE_EDID
- 	pushw	%es				# just save all registers
- 	pushw	%ax
- 	pushw	%bx
-@@ -1946,6 +1947,22 @@ store_edid:
- 	rep
- 	stosl
- 
-+	pushw   %es				# save ES
-+	xorw    %di, %di                        # Report Capability
-+	pushw   %di
-+	popw    %es                             # ES:DI must be 0:0
-+	movw	$0x4f15, %ax
-+	xorw	%bx, %bx
-+	xorw	%cx, %cx
-+	int	$0x10
-+	popw    %es                             # restore ES
-+
-+	cmpb    $0x00, %ah                      # call successful
-+	jne     no_edid
-+
-+	cmpb    $0x4f, %al                      # function supported
-+	jne     no_edid
-+
- 	movw	$0x4f15, %ax                    # do VBE/DDC
- 	movw	$0x01, %bx
- 	movw	$0x00, %cx
-@@ -1953,12 +1970,14 @@ store_edid:
- 	movw	$0x140, %di
- 	int	$0x10
- 
-+no_edid:
- 	popw	%di				# restore all registers
- 	popw	%dx
- 	popw	%cx
- 	popw	%bx
- 	popw	%ax
- 	popw	%es
-+#endif
- 	ret
- 
- # VIDEO_SELECT-only variables
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 1d1381b..db6f0cd 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -4,6 +4,21 @@
- 
- menu "Graphics support"
- 
-+config FIRMWARE_EDID
-+       bool "Enable firmware EDID"
-+       default y
-+       ---help---
-+         This enables access to the EDID transferred from the firmware.
-+	 On the i386, this is from the Video BIOS. Enable this if DDC/I2C
-+	 transfers do not work for your driver and if you are using
-+	 nvidiafb, i810fb or savagefb.
-+
-+	 In general, choosing Y for this option is safe.  If you
-+	 experience extremely long delays while booting before you get
-+	 something on your display, try setting this to N.  Matrox cards in
-+	 combination with certain motherboards and monitors are known to
-+	 suffer from this problem.
-+
- config FB
- 	tristate "Support for frame buffer devices"
- 	---help---
-@@ -70,22 +85,6 @@ config FB_MACMODES
-        depends on FB
-        default n
- 
--config FB_FIRMWARE_EDID
--       bool "Enable firmware EDID"
--       depends on FB
--       default y
--       ---help---
--         This enables access to the EDID transferred from the firmware.
--	 On the i386, this is from the Video BIOS. Enable this if DDC/I2C
--	 transfers do not work for your driver and if you are using
--	 nvidiafb, i810fb or savagefb.
+ static struct pci_device_id nvidiafb_pci_tbl[] = {
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_TNT,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_TNT2,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_UTNT2,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_TNT_UNKNOWN,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_VTNT2,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_UVTNT2,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_ITNT2,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_SDR,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_DDR,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE2_MX,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE2_MX2,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE2_GO,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO2_MXR,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE2_GTS,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE2_GTS2,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE2_ULTRA,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO2_PRO,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_MX_460,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_MX_440,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_MX_420,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_MX_440_SE,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_440_GO,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_420_GO,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_460_GO,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_420_GO_M32,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_500XGL,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_440_GO_M64,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_200,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_550XGL,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_500_GOGL,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_410_GO_M16,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_MX_440_8X,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_MX_440SE_8X,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_MX_420_8X,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_MX_4000,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_448_GO,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_488_GO,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_580_XGL,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_MX_MAC,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_280_NVS,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_380_XGL,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_IGEFORCE2,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE3,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE3_1,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE3_2,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO_DDC,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_TI_4600,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_TI_4400,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_TI_4200,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_900XGL,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_750XGL,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_700XGL,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_TI_4800,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_TI_4800_8X,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_TI_4800SE,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE4_4200_GO,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_980_XGL,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_780_XGL,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO4_700_GOGL,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5800_ULTRA,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5800,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO_FX_2000,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO_FX_1000,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5600_ULTRA,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5600,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5600SE,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_GO5600,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_GO5650,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO_FX_GO700,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5200,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5200_ULTRA,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5200_1,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5200SE,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_GO5200,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_GO5250,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_GO5250_32,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_GO_5200,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO_NVS_280_PCI,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO_FX_500,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_GO5300,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_GO5100,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5900_ULTRA,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5900,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5900XT,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5950_ULTRA,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO_FX_3000,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5700_ULTRA,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5700,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5700LE,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5700VE,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_GO5700_1,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_GO5700_2,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO_FX_GO1000,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO_FX_1100,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5500,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5100,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO_FX_700,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_FX_5900ZT,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6800_ULTRA,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6800,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6800_LE,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6800_GT,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO_FX_4000,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6600_GT,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6600,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6610_XL,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_QUADRO_FX_540,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6200,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCIE_DEVICE_ID_NVIDIA_GEFORCE_6800_ALT1,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCIE_DEVICE_ID_NVIDIA_GEFORCE_6600_ALT1,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCIE_DEVICE_ID_NVIDIA_GEFORCE_6600_ALT2,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCIE_DEVICE_ID_NVIDIA_GEFORCE_6200_ALT1,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCIE_DEVICE_ID_NVIDIA_GEFORCE_6800_GT,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCIE_DEVICE_ID_NVIDIA_QUADRO_NVS280,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0252,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0313,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0316,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0317,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x031D,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x031E,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x031F,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0329,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x032F,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0345,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0349,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x034B,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x034F,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x00c0,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_GEFORCE_6800A,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_GEFORCE_6800A_LE,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_GEFORCE_GO_6800,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_GEFORCE_GO_6800_ULTRA,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_QUADRO_FX_GO1400,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x00cd,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_QUADRO_FX_1400,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0142,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0143,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0144,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0145,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0146,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0147,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0148,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0149,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x014b,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x14c,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x014d,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0160,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6200_TURBOCACHE,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0162,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0163,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_GO_6200,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0165,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_GO_6250,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_GO_6200_1,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_GO_6250_1,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0169,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x016b,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x016c,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x016d,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x016e,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0210,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6800B,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6800B_LE,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_6800B_GT,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_7800_GT,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_7800_GTX,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_GO_7800,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, PCI_DEVICE_ID_NVIDIA_GEFORCE_GO_7800_GTX,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x021d,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x021e,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0220,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0221,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0222,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{PCI_VENDOR_ID_NVIDIA, 0x0228,
+-	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+-	{0,}			/* terminate list */
++	{PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID, PCI_ANY_ID, PCI_ANY_ID,
++	 PCI_BASE_CLASS_DISPLAY << 16, 0xff0000, 0},
++	{ 0, }
+ };
 -
--	 In general, choosing Y for this option is safe.  If you
--	 experience extremely long delays while booting before you get
--	 something on your display, try setting this to N.  Matrox cards in
--	 combination with certain motherboards and monitors are known to
--	 suffer from this problem.
--
- config FB_MODE_HELPERS
-         bool "Enable Video Mode Handling Helpers"
-         depends on FB
-diff --git a/drivers/video/fbmon.c b/drivers/video/fbmon.c
-index 87b0224..3ccfff7 100644
---- a/drivers/video/fbmon.c
-+++ b/drivers/video/fbmon.c
-@@ -1301,7 +1301,7 @@ int fb_validate_mode(const struct fb_var
- 		-EINVAL : 0;
+ MODULE_DEVICE_TABLE(pci, nvidiafb_pci_tbl);
+ 
+ /* command line data, set in nvidiafb_setup() */
+@@ -1532,10 +1183,10 @@ static u32 __devinit nvidia_get_chipset(
+ 	struct nvidia_par *par = info->par;
+ 	u32 id = (par->pci_dev->vendor << 16) | par->pci_dev->device;
+ 
+-	printk("nvidiafb: PCI id - %x\n", id);
++	printk(KERN_INFO PFX "Device ID: %x \n", id);
++
+ 	if ((id & 0xfff0) == 0x00f0) {
+ 		/* pci-e */
+-		printk("nvidiafb: PCI-E card\n");
+ 		id = NV_RD32(par->REGS, 0x1800);
+ 
+ 		if ((id & 0x0000ffff) == 0x000010DE)
+@@ -1543,9 +1194,9 @@ static u32 __devinit nvidia_get_chipset(
+ 		else if ((id & 0xffff0000) == 0xDE100000) /* wrong endian */
+ 			id = 0x10DE0000 | ((id << 8) & 0x0000ff00) |
+                             ((id >> 8) & 0x000000ff);
++		printk(KERN_INFO PFX "Subsystem ID: %x \n", id);
+ 	}
+ 
+-	printk("nvidiafb: Actual id - %x\n", id);
+ 	return id;
  }
  
--#if defined(CONFIG_FB_FIRMWARE_EDID) && defined(__i386__)
-+#if defined(CONFIG_FIRMWARE_EDID) && defined(CONFIG_X86)
+@@ -1663,7 +1314,6 @@ static int __devinit nvidiafb_probe(stru
+ 	}
  
- /*
-  * We need to ensure that the EDID block is only returned for
+ 	par->Chipset = nvidia_get_chipset(info);
+-	printk(KERN_INFO PFX "nVidia device/chipset %X\n", par->Chipset);
+ 	par->Architecture = nvidia_get_arch(info);
+ 
+ 	if (par->Architecture == 0) {
+
 
 
 

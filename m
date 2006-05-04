@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 6/9] vt:  Delay the update of the visible console
-Date: Thu, 04 May 2006 20:33:21 +0800
-Message-ID: <4459F491.9050409@gmail.com>
+Subject: [PATCH 9/9] fbdev: Coverity Bug 90
+Date: Thu, 04 May 2006 20:35:43 +0800
+Message-ID: <4459F51F.7000009@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Fbd5s-0007rT-BO
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 May 2006 05:38:08 -0700
+	id 1Fbd65-0007sA-K2
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 May 2006 05:38:21 -0700
 Received: from wx-out-0102.google.com ([66.249.82.202])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Fbd5s-0002Pa-3M
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 May 2006 05:38:08 -0700
+	id 1Fbd65-0002Pa-G7
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 May 2006 05:38:21 -0700
 Received: by wx-out-0102.google.com with SMTP id h26so310349wxd
-        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 04 May 2006 05:38:07 -0700 (PDT)
+        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 04 May 2006 05:38:21 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,80 +28,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, David Hollister <david.hollister@amd.com>, Jordan Crouse <jordan.crouse@amd.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-From: David Hollister <david.hollister@amd.com>
+It's a false positive, but let's suppress it anyway.
 
-This patch delays the update of the visible framebuffer console until
-all other consoles have been initialized in order to avoid losing
-information.  This only seems to be a problem with modules, not with
-built-in drivers.
-
-Signed-off-by: David Hollister <david.hollister@amd.com>
-Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/char/vt.c |   26 +++++++++++++++++---------
- 1 files changed, 17 insertions(+), 9 deletions(-)
+ drivers/video/modedb.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/char/vt.c b/drivers/char/vt.c
-index 78e0bd2..5251c0c 100644
---- a/drivers/char/vt.c
-+++ b/drivers/char/vt.c
-@@ -2663,7 +2663,7 @@ int __init vty_init(void)
- 
- int take_over_console(const struct consw *csw, int first, int last, int deflt)
- {
--	int i, j = -1;
-+	int i, j = -1, k = -1;
- 	const char *desc;
- 	struct module *owner;
- 
-@@ -2699,8 +2699,11 @@ int take_over_console(const struct consw
- 			continue;
- 
- 		j = i;
--		if (CON_IS_VISIBLE(vc))
-+		if (CON_IS_VISIBLE(vc)) {
-+			k = i;
- 			save_screen(vc);
-+		}
-+
- 		old_was_color = vc->vc_can_do_color;
- 		vc->vc_sw->con_deinit(vc);
- 		vc->vc_origin = (unsigned long)vc->vc_screenbuf;
-@@ -2716,18 +2719,23 @@ int take_over_console(const struct consw
- 		 */
- 		if (old_was_color != vc->vc_can_do_color)
- 			clear_buffer_attributes(vc);
--
--		if (CON_IS_VISIBLE(vc))
--			update_screen(vc);
+diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
+index 1aa36d3..7e539b6 100644
+--- a/drivers/video/modedb.c
++++ b/drivers/video/modedb.c
+@@ -791,8 +791,9 @@ struct fb_videomode *fb_find_best_mode(s
+ 			if (diff > d) {
+ 				diff = d;
+ 				best = mode;
+-			} else if (diff == d && mode->refresh > best->refresh)
+-			    best = mode;
++			} else if (diff == d && best &&
++				   mode->refresh > best->refresh)
++				best = mode;
+ 		}
  	}
-+
- 	printk("Console: switching ");
- 	if (!deflt)
- 		printk("consoles %d-%d ", first+1, last+1);
--	if (j >= 0)
-+	if (j >= 0) {
-+		struct vc_data *vc = vc_cons[j].d;
-+
- 		printk("to %s %s %dx%d\n",
--		       vc_cons[j].d->vc_can_do_color ? "colour" : "mono",
--		       desc, vc_cons[j].d->vc_cols, vc_cons[j].d->vc_rows);
--	else
-+		       vc->vc_can_do_color ? "colour" : "mono",
-+		       desc, vc->vc_cols, vc->vc_rows);
-+
-+		if (k >= 0) {
-+			vc = vc_cons[k].d;
-+			update_screen(vc);
-+		}
-+	} else
- 		printk("to %s\n", desc);
- 
- 	release_console_sem();
+ 	return best;
 
 
 

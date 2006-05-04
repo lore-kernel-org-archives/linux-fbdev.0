@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 3/9] intelfb: Use firmware EDID for mode database
-Date: Thu, 04 May 2006 20:30:20 +0800
-Message-ID: <4459F3DC.9090208@gmail.com>
+Subject: [PATCH 2/9] fbdev: Add 1366x768 (WXGA) mode to mode database
+Date: Thu, 04 May 2006 20:28:36 +0800
+Message-ID: <4459F374.3020708@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Fbd5W-0007mF-Ty
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 May 2006 05:37:46 -0700
+	id 1Fbd5S-0007lr-5C
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 May 2006 05:37:42 -0700
 Received: from wx-out-0102.google.com ([66.249.82.202])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Fbd5W-0002Pa-Oh
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 May 2006 05:37:47 -0700
+	id 1Fbd5S-0002Pa-0J
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 May 2006 05:37:42 -0700
 Received: by wx-out-0102.google.com with SMTP id h26so310349wxd
-        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 04 May 2006 05:37:46 -0700 (PDT)
+        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 04 May 2006 05:37:41 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,74 +28,34 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Sylvain Meyer <sylvain.meyer@worldonline.fr>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Dennis Munsie <dmunsie@cecropia.com>
 
-Use firmware EDID for the driver's private mode database. Untested.
+From: Dennis Munsie <dmunsie@cecropia.com>
 
+Adds 1366x768 @ 60Hz to drivers/video/modedb.c.
+
+Signed-off-by: Dennis Munsie <dmunsie@cecropia.com>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/intelfb/intelfbdrv.c |   36 +++++++++++++++++++++++++++++++++---
- 1 files changed, 33 insertions(+), 3 deletions(-)
+ drivers/video/modedb.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/intelfb/intelfbdrv.c b/drivers/video/intelfb/intelfbdrv.c
-index 2aba6a4..66bd6ab 100644
---- a/drivers/video/intelfb/intelfbdrv.c
-+++ b/drivers/video/intelfb/intelfbdrv.c
-@@ -132,6 +132,7 @@
+diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
+index 26a1c61..1aa36d3 100644
+--- a/drivers/video/modedb.c
++++ b/drivers/video/modedb.c
+@@ -259,6 +259,10 @@ static const struct fb_videomode modedb[
+ 	/* 1152x768, 60 Hz, PowerBook G4 Titanium I and II */
+ 	NULL, 60, 1152, 768, 15386, 158, 26, 29, 3, 136, 6,
+ 	FB_SYNC_HOR_HIGH_ACT|FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED
++    }, {
++	/* 1366x768, 60 Hz, 47.403 kHz hsync, WXGA 16:9 aspect ratio */
++	NULL, 60, 1366, 768, 13806, 120, 10, 14, 3, 32, 5,
++	0, FB_VMODE_NONINTERLACED
+     },
+ };
  
- #include "intelfb.h"
- #include "intelfbhw.h"
-+#include "../edid.h"
- 
- static void __devinit get_initial_mode(struct intelfb_info *dinfo);
- static void update_dinfo(struct intelfb_info *dinfo,
-@@ -1031,13 +1032,42 @@ intelfb_init_var(struct intelfb_info *di
- 		       sizeof(struct fb_var_screeninfo));
- 		msrc = 5;
- 	} else {
-+		const u8 *edid_s = fb_firmware_edid(&dinfo->pdev->dev);
-+		u8 *edid_d = NULL;
-+
-+		if (edid_s) {
-+			edid_d = kmalloc(128, GFP_KERNEL);
-+
-+			if (edid_d) {
-+				memcpy(edid_d, edid_s, 128);
-+				fb_edid_to_monspecs(edid_d,
-+						    &dinfo->info->monspecs);
-+				kfree(edid_d);
-+			}
-+		}
-+
- 		if (mode) {
-+			printk("intelfb: Looking for mode in private "
-+			       "database\n");
- 			msrc = fb_find_mode(var, dinfo->info, mode,
--					    vesa_modes, VESA_MODEDB_SIZE,
-+					    dinfo->info->monspecs.modedb,
-+					    dinfo->info->monspecs.modedb_len,
- 					    NULL, 0);
--			if (msrc)
--				msrc |= 8;
-+
-+			if (msrc && msrc > 1) {
-+				printk("intelfb: No mode in private database, "
-+				       "intelfb: looking for mode in global "
-+				       "database ");
-+				msrc = fb_find_mode(var, dinfo->info, mode,
-+						    vesa_modes,
-+						    VESA_MODEDB_SIZE, NULL, 0);
-+
-+				if (msrc)
-+					msrc |= 8;
-+			}
-+
- 		}
-+
- 		if (!msrc) {
- 			msrc = fb_find_mode(var, dinfo->info, PREFERRED_MODE,
- 					    vesa_modes, VESA_MODEDB_SIZE,
 
 
 

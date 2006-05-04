@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 4/9] vesafb: Fix return code of vesafb_setcolreg
-Date: Thu, 04 May 2006 20:31:07 +0800
-Message-ID: <4459F40B.2000700@gmail.com>
+Subject: [PATCH 7/9] atyfb: Fix dead code
+Date: Thu, 04 May 2006 20:34:07 +0800
+Message-ID: <4459F4BF.3050701@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Fbd5c-0007mW-Fq
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 May 2006 05:37:52 -0700
+	id 1Fbd5x-0007rn-3B
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 May 2006 05:38:13 -0700
 Received: from wx-out-0102.google.com ([66.249.82.202])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Fbd5c-0002Pa-Aa
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 May 2006 05:37:52 -0700
+	id 1Fbd5w-0002Pa-U4
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 04 May 2006 05:38:13 -0700
 Received: by wx-out-0102.google.com with SMTP id h26so310349wxd
-        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 04 May 2006 05:37:52 -0700 (PDT)
+        for <linux-fbdev-devel@lists.sourceforge.net>; Thu, 04 May 2006 05:38:12 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,84 +30,36 @@ Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-If the hardware palette cannot be accessed, make vesafb_setcolreg return
-a nonzero value.
+Coverity Bug 68:
+
+Fix dead code
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/vesafb.c |   16 +++++++++++-----
- 1 files changed, 11 insertions(+), 5 deletions(-)
+ drivers/video/aty/atyfb_base.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/video/vesafb.c b/drivers/video/vesafb.c
-index 2fbaa84..eff2ebc 100644
---- a/drivers/video/vesafb.c
-+++ b/drivers/video/vesafb.c
-@@ -80,10 +80,11 @@ static int vesafb_pan_display(struct fb_
- 	return 0;
- }
- 
--static void vesa_setpalette(int regno, unsigned red, unsigned green,
-+static int vesa_setpalette(int regno, unsigned red, unsigned green,
- 			    unsigned blue)
- {
- 	int shift = 16 - depth;
-+	int err = -EINVAL;
- 
- #ifdef __i386__
- 	struct { u_char blue, green, red, pad; } entry;
-@@ -102,7 +103,7 @@ static void vesa_setpalette(int regno, u
-                   "d" (regno),          /* EDX */
-                   "D" (&entry),         /* EDI */
-                   "S" (&pmi_pal));      /* ESI */
--		return;
-+		err = 0;
- 	}
- #endif
- 
-@@ -110,18 +111,23 @@ static void vesa_setpalette(int regno, u
-  * without protected mode interface and if VGA compatible,
-  * try VGA registers...
-  */
--	if (vga_compat) {
-+	if (err && vga_compat) {
- 		outb_p(regno,       dac_reg);
- 		outb_p(red   >> shift, dac_val);
- 		outb_p(green >> shift, dac_val);
- 		outb_p(blue  >> shift, dac_val);
-+		err = 0;
- 	}
-+
-+	return err;
- }
- 
- static int vesafb_setcolreg(unsigned regno, unsigned red, unsigned green,
- 			    unsigned blue, unsigned transp,
- 			    struct fb_info *info)
- {
-+	int err = 0;
-+
- 	/*
- 	 *  Set a single color register. The values supplied are
- 	 *  already rounded down to the hardware's capabilities
-@@ -133,7 +139,7 @@ static int vesafb_setcolreg(unsigned reg
- 		return 1;
- 
- 	if (info->var.bits_per_pixel == 8)
--		vesa_setpalette(regno,red,green,blue);
-+		err = vesa_setpalette(regno,red,green,blue);
- 	else if (regno < 16) {
- 		switch (info->var.bits_per_pixel) {
- 		case 16:
-@@ -164,7 +170,7 @@ static int vesafb_setcolreg(unsigned reg
+diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
+index 4813e4a..cacabf6 100644
+--- a/drivers/video/aty/atyfb_base.c
++++ b/drivers/video/aty/atyfb_base.c
+@@ -2304,12 +2304,15 @@ static int __init aty_init(struct fb_inf
+ 			break;
  		}
- 	}
- 
--	return 0;
-+	return err;
- }
- 
- static struct fb_ops vesafb_ops = {
+ 		switch (clk_type) {
++#ifdef CONFIG_ATARI
+ 		case CLK_ATI18818_1:
+ 			par->pll_ops = &aty_pll_ati18818_1;
+ 			break;
++#else
+ 		case CLK_IBMRGB514:
+ 			par->pll_ops = &aty_pll_ibm514;
+ 			break;
++#endif
+ #if 0 /* dead code */
+ 		case CLK_STG1703:
+ 			par->pll_ops = &aty_pll_stg1703;
 
 
 

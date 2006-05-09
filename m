@@ -1,25 +1,31 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 2.6.17-rc3] fbdev: tag interlaced
- mode in sysfs
-Date: Tue, 9 May 2006 16:16:41 +0200 (CEST)
-Message-ID: <Pine.LNX.4.62.0605091616190.20573@pademelon.sonytel.be>
-References: <44609B1A.1010603@st.com>
+From: Andrew Morton <akpm@osdl.org>
+Subject: Fw: [Bugme-new] [Bug 6523] New: savagefb console is 1 px off
+Date: Tue, 9 May 2006 07:23:07 -0700
+Message-ID: <20060509072307.0e51170c.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from [10.3.1.93] (helo=sc8-sf-list1-new.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FdT18-0003kc-9w
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 May 2006 07:16:50 -0700
+	id 1FdT9p-0004q1-Q7
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 May 2006 07:25:49 -0700
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FdT18-00061W-7d
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 May 2006 07:16:50 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FdT16-0006jO-Lp
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 May 2006 07:16:50 -0700
-In-Reply-To: <44609B1A.1010603@st.com>
+	id 1FdT9p-00068m-QT
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 May 2006 07:25:49 -0700
+Received: from smtp.osdl.org ([65.172.181.4])
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44)
+	id 1FdT9o-00022i-Dr
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 May 2006 07:25:49 -0700
+Received: from shell0.pdx.osdl.net (fw.osdl.org [65.172.181.6])
+	by smtp.osdl.org (8.12.8/8.12.8) with ESMTP id k49EPitH006354
+	(version=TLSv1/SSLv3 cipher=EDH-RSA-DES-CBC3-SHA bits=168 verify=NO)
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 9 May 2006 07:25:45 -0700
+Received: from bix (shell0.pdx.osdl.net [10.9.0.31])
+	by shell0.pdx.osdl.net (8.13.1/8.11.6) with SMTP id k49EPi1o010747
+	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 9 May 2006 07:25:44 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -30,27 +36,40 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: TEXT/PLAIN; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: adaplas@pol.net
+Content-Type: text/plain; charset="us-ascii"
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Tue, 9 May 2006, Daniel THOMPSON wrote:
-> A patch to tag interlaced modes with 'i' whenever they appear in .../mode and
-> .../modelist.
 
-And while we're at it, while not tag doublescanned modes with `d'?
 
-Gr{oetje,eeting}s,
+Begin forwarded message:
 
-						Geert
+Date: Tue, 9 May 2006 05:40:20 -0700
+From: bugme-daemon@bugzilla.kernel.org
+To: bugme-new@lists.osdl.org
+Subject: [Bugme-new] [Bug 6523] New: savagefb console is 1 px off
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+http://bugzilla.kernel.org/show_bug.cgi?id=6523
+
+           Summary: savagefb console is 1 px off
+    Kernel Version: 2.6.16.9
+            Status: NEW
+          Severity: low
+             Owner: jsimmons@infradead.org
+         Submitter: rich@hq.vsaa.lv
+
+
+S3 VT8375 ProSavage8
+during boot video=savagefb:1024x768@60 is passed to the kernel.
+this is fujitsu-siemens lifebook c-1020, native resolution for the lcd is 1024x
+768.
+
+in console, screen is shifted one pixel to the left, so that left side is 
+missing one px, at the rioght side a line is drawn (it's colour seems to depend 
+on some other location on the screen)
+
+------- You are receiving this mail because: -------
+You are on the CC list for the bug, or are watching someone who is.
 
 
 -------------------------------------------------------

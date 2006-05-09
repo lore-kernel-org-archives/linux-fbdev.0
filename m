@@ -1,31 +1,25 @@
-From: Daniel THOMPSON <daniel.thompson@st.com>
-Subject: [PATCH 2.6.17-rc3] fbdev: tag interlaced mode in sysfs
-Date: Tue, 09 May 2006 14:37:30 +0100
-Message-ID: <44609B1A.1010603@st.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 2.6.17-rc3] fbdev: tag interlaced
+ mode in sysfs
+Date: Tue, 9 May 2006 16:16:41 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0605091616190.20573@pademelon.sonytel.be>
+References: <44609B1A.1010603@st.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="------------030504000108060905010807"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from [10.3.1.93] (helo=sc8-sf-list1-new.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FdSPE-0007pQ-5v
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 May 2006 06:37:40 -0700
+	id 1FdT18-0003kc-9w
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 May 2006 07:16:50 -0700
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FdSPE-0005di-6v
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 May 2006 06:37:40 -0700
-Received: from lon-del-03.spheriq.net ([195.46.50.99])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44)
-	id 1FdSPB-00063O-Bh
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 May 2006 06:37:40 -0700
-Received: from lon-out-03.spheriq.net ([195.46.50.131])
-        by lon-del-03.spheriq.net with ESMTP id k49DbY3b011530
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 9 May 2006 13:37:34 GMT
-Received: from lon-cus-02.spheriq.net (lon-cus-02.spheriq.net [195.46.50.38])
-        by lon-out-03.spheriq.net with ESMTP id k49DbXi6028352
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 9 May 2006 13:37:33 GMT
+	id 1FdT18-00061W-7d
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 May 2006 07:16:50 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1FdT16-0006jO-Lp
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 09 May 2006 07:16:50 -0700
+In-Reply-To: <44609B1A.1010603@st.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -36,63 +30,27 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: TEXT/PLAIN; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 Cc: adaplas@pol.net
 
-This is a multi-part message in MIME format.
---------------030504000108060905010807
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+On Tue, 9 May 2006, Daniel THOMPSON wrote:
+> A patch to tag interlaced modes with 'i' whenever they appear in .../mode and
+> .../modelist.
 
-A patch to tag interlaced modes with 'i' whenever they appear in 
-.../mode and .../modelist.
--- 
-Daniel Thompson (STMicroelectronics) <daniel.thompson@st.com>
-1000 Aztec West, Almondsbury, Bristol, BS32 4SQ. 01454 462659
+And while we're at it, while not tag doublescanned modes with `d'?
 
-If a car is a horseless carriage then is a motorcycle a horseless horse?
+Gr{oetje,eeting}s,
 
---------------030504000108060905010807
-Content-Type: text/x-patch;
- name*0="linux-2.6.17-rc3-fbdev_tag_interlaced_modes_in_sysfs.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename*0="linux-2.6.17-rc3-fbdev_tag_interlaced_modes_in_sysfs.patch"
+						Geert
 
-Modify the sysfs description of a video mode such that interlaced modes are
-indicated by suffixing the number of visible lines with an i (e.g. U:1920x1080i-50).
-This is useful to disambiguate some of the CEA-861 video format timings
-(especially those for EDTV).
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Signed-off-by: Daniel R Thompson <daniel.thompson@st.com>
-Index: linux-2.6.17-rc3/drivers/video/fbsysfs.c
-===================================================================
---- linux-2.6.17-rc3.orig/drivers/video/fbsysfs.c	2006-05-03 15:14:16.000000000 +0100
-+++ linux-2.6.17-rc3/drivers/video/fbsysfs.c	2006-05-09 14:08:38.000000000 +0100
-@@ -95,13 +95,20 @@
- 		       const struct fb_videomode *mode)
- {
- 	char m = 'U';
-+	char *v = "";
-+
- 	if (mode->flag & FB_MODE_IS_DETAILED)
- 		m = 'D';
- 	if (mode->flag & FB_MODE_IS_VESA)
- 		m = 'V';
- 	if (mode->flag & FB_MODE_IS_STANDARD)
- 		m = 'S';
--	return snprintf(&buf[offset], PAGE_SIZE - offset, "%c:%dx%d-%d\n", m, mode->xres, mode->yres, mode->refresh);
-+
-+	if (mode->vmode & FB_VMODE_INTERLACED)
-+		v = "i";
-+
-+	return snprintf(&buf[offset], PAGE_SIZE - offset, "%c:%dx%d%s-%d\n",
-+	                m, mode->xres, mode->yres, v, mode->refresh);
- }
- 
- static ssize_t store_mode(struct class_device *class_device, const char * buf,
-
---------------030504000108060905010807--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
 
 
 -------------------------------------------------------

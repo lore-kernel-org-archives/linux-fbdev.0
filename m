@@ -1,27 +1,23 @@
-From: Ondrej Zajicek <santiago@mail.cz>
-Subject: Two bugs in fbcon?
-Date: Tue, 16 May 2006 16:07:43 +0200
-Message-ID: <20060516140743.GA11762@localhost.localdomain>
+From: Sylvain Garrigues <garrigue@enst.fr>
+Subject: Framebuffer output but no framebuffer console output
+Date: Tue, 16 May 2006 17:02:14 +0200
+Message-ID: <4469E976.1080709@enst.fr>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from [10.3.1.93] (helo=sc8-sf-list1-new.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Fg0DI-0003Y2-Ol
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 16 May 2006 07:07:52 -0700
-Received: from smtp1.kolej.mff.cuni.cz ([195.113.24.4])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44)
-	id 1Fg0DG-0005YJ-Vb
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 16 May 2006 07:07:52 -0700
-Received: from localhost.localdomain (feanorr.kolej.mff.cuni.cz [195.113.26.209])
-	by smtp1.kolej.mff.cuni.cz (8.13.1/8.13.1) with ESMTP id k4GE7j8f060214
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 16 May 2006 16:07:46 +0200 (CEST)
-	(envelope-from zajio1am@artax.karlin.mff.cuni.cz)
-Received: from santiago by localhost.localdomain with local (Exim 4.50)
-	id 1Fg0D9-0003Tc-4g
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 16 May 2006 16:07:43 +0200
-Content-Disposition: inline
+	id 1Fg133-0003Zm-LL
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 16 May 2006 08:01:21 -0700
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1Fg133-0003uX-QG
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 16 May 2006 08:01:21 -0700
+Received: from a.mx.realmagic.fr ([82.229.218.57])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1Fg132-0003wS-8E
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 16 May 2006 08:01:21 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,56 +28,37 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"; format="flowed"
 To: linux-fbdev-devel@lists.sourceforge.net
 
-(i resent this email as previous one seems to be lost, so i am sorry
-in case you get both ones)
+Hello,
 
-Hello
+I wrote a framebuffer based on the virtual framebuffer (vfb.c) for an 
+embedded device which has a TV output. Basically, I just had to modify 
+the mmap, init, and exit functions so as to use my own memory addresses. 
+I'm using a kernel 2.6.15.1 and the vfb in that tree.
 
-I found that in  kernel 2.6.16.16 is some very strange behavior in fbcon.
-I added some printks to some functions in fbcon and i found this:
+This framebuffer works very well, I can make X run on top of it and see 
+my X desktop on the TV. However, in console mode, it doesn't work. Well, 
+it receives keyboard events as if I type 'root' <enter> 'halt', the 
+embedded devices actually halts. So the problem is that there's no echo 
+on the TV in console mode.
 
-I am on vt0, i have active vt0-vt3. When i modprobe fbcon (having fbdev
-driver inserted before), functions fbcon.c/fbcon_init() and
-fbcon.c/updatescrollmode() are called for each active vt.
+To redirect a tty to the framebuffer, I'm using the con2fb program 
+(ftp://platan.vc.cvut.cz/pub/linux/matrox-latest/con2fb.c.gz 
+<ftp://platan.vc.cvut.cz/pub/linux/matrox-latest/con2fb.c.gz>) which 
+redirects a tty to a framebuffer. So, as I said, once redirected, I 
+don't get any echo on the TV, althought key strokes are taken into account.
 
-Order is:
-fbcon_init(vt0)
-updatescrollmode(vt0)
-updatescrollmode(vt1)
-fbcon_init(vt1)
-updatescrollmode(vt2)
-fbcon_init(vt2)
-updatescrollmode(vt3)
-fbcon_init(vt3)
+What is the problem? Is vfb unfit for console frame buffering? Should I 
+consider taking vesafb as a basis? Is the con2fb wrong?  Should I 
+compile vfb with some fonts? Notice that on my development station (the 
+embedded device is on a PCI board), my VESA framebuffer works well, so 
+my kernel is OK with console framebuffer options.
 
-for vt1-vt3 updatescrollmode is called before fbcon_init which caused that
-associated struct display::vrows value is computed (in updatescrollmode()
-- fbcon.c:1970) from old vc->vc_rows (which is updated in fbcon_init()).
-
-Now second strangeness - I am still on vt0 (immediately after modprobe
-fbcon), but during calls to bitblit.c/bit_cursor() display structure
-associated with vt3 is used (in bitblit.c:244 - ops->p). Combined with
-previous strangeness (bad vrows values in vt1-vt3) i get cursor visible
-on bad row.
-
-When i switch to another vt or switch resolution, then this is corrected
-(next calls to bitblit.c/bit_cursor() are using correct display
-structure).
-
-I don't understand fbcon enough to correct this problem (and be sure not to
-make some other :-)).
-
-
--- 
-Elen sila lumenn' omentielvo
-
-Ondrej 'SanTiago' Zajicek (email: santiago@mail.cz, jabber: santiago@njs.netlab.cz)
-OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
-"To err is human -- to blame it on a computer is even more so."
+Any help would be very very appreciated.
+Best regards,
+Sylvain.
 
 
 -------------------------------------------------------

@@ -1,27 +1,24 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: Two bugs in fbcon?
-Date: Sat, 20 May 2006 08:30:06 +0800
-Message-ID: <446E630E.9060500@gmail.com>
-References: <20060515210310.GA1199@localhost.localdomain>
+Subject: Re: Framebuffer output but no framebuffer console
+ output
+Date: Sat, 20 May 2006 08:39:44 +0800
+Message-ID: <446E6550.1040106@gmail.com>
+References: <4469E269.7090605@enst.fr>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [10.3.1.93] (helo=sc8-sf-list1-new.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FhFME-0000qQ-IY
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 May 2006 17:30:14 -0700
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FhFME-0001TW-IW
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 May 2006 17:30:14 -0700
-Received: from py-out-1112.google.com ([64.233.166.176])
+	id 1FhFVW-0002P4-IK
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 May 2006 17:39:50 -0700
+Received: from py-out-1112.google.com ([64.233.166.183])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FhFMD-00032Q-64
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 May 2006 17:30:14 -0700
-Received: by py-out-1112.google.com with SMTP id z59so1064744pyg
-        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 19 May 2006 17:30:11 -0700 (PDT)
-In-Reply-To: <20060515210310.GA1199@localhost.localdomain>
+	id 1FhFVV-0000JL-CX
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 19 May 2006 17:39:50 -0700
+Received: by py-out-1112.google.com with SMTP id z59so1066054pyg
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 19 May 2006 17:39:47 -0700 (PDT)
+In-Reply-To: <4469E269.7090605@enst.fr>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,50 +31,40 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: santiago@mail.cz
+Cc: garrigue@enst.fr
 
-Ondrej Zajicek wrote:
-> Hello
+Sylvain Garrigues wrote:
+> Hello,
 > 
-> I found that in  kernel 2.6.16.16 is some very strange behavior in fbcon.
-> I added some printks to some functions in fbcon and i found this:
+> I wrote a framebuffer based on the virtual framebuffer (vfb.c) for an
+> embedded device which has a TV output. Basically, I just had to modify
+> the mmap, init, and exit functions so as to use my own memory addresses.
+> I'm using a kernel 2.6.15.1 and the vfb in that tree.
 > 
-> I am on vt0, i have active vt0-vt3. When i modprobe fbcon (having fbdev
-> driver inserted before), functions fbcon.c/fbcon_init() and
-> fbcon.c/updatescrollmode() are called for each active vt.
+> This framebuffer works very well, I can make X run on top of it and see
+> my X desktop on the TV. However, in console mode, it doesn't work. Well,
+> it receives keyboard events as if I type 'root' <enter> 'halt', the
+> embedded devices actually halts. So the problem is that there's no echo
+> on the TV in console mode.
 > 
-> Order is:
-> fbcon_init(vt0)
-> updatescrollmode(vt0)
-> updatescrollmode(vt1)
-> fbcon_init(vt1)
-> updatescrollmode(vt2)
-> fbcon_init(vt2)
-> updatescrollmode(vt3)
-> fbcon_init(vt3)
+> To redirect a tty to the framebuffer, I'm using the con2fb program
+> (ftp://platan.vc.cvut.cz/pub/linux/matrox-latest/con2fb.c.gz
+> <ftp://platan.vc.cvut.cz/pub/linux/matrox-latest/con2fb.c.gz>) which
+> redirects a tty to a framebuffer. So, as I said, once redirected, I
+> don't get any echo on the screen, althought key strokes are taken into
+> account.
 > 
-> for vt1-vt3 updatescrollmode is called before fbcon_init which caused that
-> associated struct display::vrows value is computed (in updatescrollmode()
-> - fbcon.c:1970) from old vc->vc_rows (which is updated in fbcon_init()).
-> 
-> Now second strangeness - I am still on vt0 (immediately after modprobe fbcon),
-> but during calls to bitblit.c/bit_cursor display structure associated with
-> vt3 is used (in bitblit.c:244 - ops->p). Combined with previous strangeness
-> (bad vrows values in vt1-vt3) i get cursor visible on bad row.
-> 
-> When i switch to another vt or switch resolution, then this is corrected 
-> (next calls to bitblit.c/bit_cursor are using correct display structure.).
-> 
-> I don't understand fbcon enough to correct this problem (and be sure not to
-> make some other :-)).
-> 
+> What is the problem? Is vfb unfit for console frame buffering? Should I
+> consider taking vesafb as a basis? Is the con2fb wrong?  Should I
+> compile vfb with some fonts? Notice that on my development station (the
+> embedded device is on a PCI board), my VESA framebuffer works well, so
+> my kernel is OK with console framebuffer options.
 
-Might be fixed in Linus's latest git tree.  Try applying this changeset:
+No vfb should work.
 
-http://www.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=1a37d5f51020b9967d4b4094f6d627d0873a6469
+Can you post fbset -i, cat /proc/fb and dmesg after running con2fb.
 
 Tony
-
 
 
 -------------------------------------------------------

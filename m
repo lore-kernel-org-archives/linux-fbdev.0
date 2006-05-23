@@ -1,26 +1,23 @@
-From: "Nathan King" <natetheking@gmail.com>
-Subject: lower level stuff
-Date: Tue, 23 May 2006 16:41:00 -0500
-Message-ID: <bb9a78950605231441o297b3419rf4c6b64dde20a655@mail.gmail.com>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: Twister savagefb doesn't sync
+Date: Wed, 24 May 2006 05:43:05 +0800
+Message-ID: <447381E9.4060705@gmail.com>
+References: <44698356.80806@iit.demokritos.gr> <447359B8.7020304@iit.demokritos.gr>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/alternative; 
-	boundary="----=_Part_4220_16369383.1148420460371"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [10.3.1.93] (helo=sc8-sf-list1-new.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Fieck-0003x8-2g
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 23 May 2006 14:41:06 -0700
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Fieck-0004I0-3w
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 23 May 2006 14:41:06 -0700
-Received: from nz-out-0102.google.com ([64.233.162.193])
+	id 1Fief1-0004LQ-1a
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 23 May 2006 14:43:27 -0700
+Received: from py-out-1112.google.com ([64.233.166.176])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Fiecj-0000hT-Jc
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 23 May 2006 14:41:06 -0700
-Received: by nz-out-0102.google.com with SMTP id f1so1502776nzc
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 23 May 2006 14:41:00 -0700 (PDT)
+	id 1Fieey-0005qL-6x
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 23 May 2006 14:43:27 -0700
+Received: by py-out-1112.google.com with SMTP id z59so2001343pyg
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 23 May 2006 14:43:22 -0700 (PDT)
+In-Reply-To: <447359B8.7020304@iit.demokritos.gr>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -31,33 +28,42 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: vasvir@iit.demokritos.gr
 
-------=_Part_4220_16369383.1148420460371
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Vassilis Virvilis wrote:
+> Vassilis Virvilis wrote:
+>> Hi,
+> 
+>> The problem at hand is savagefb. The specific model is 0x5333:0x8d01
+>> (twisterP).
+>> I am using a recent enough kernel and I am trying to use fb through SDL.
+>>
+> [snip]
+> 
+> Any ideas on how should I proceed to make the S3 savage work with my
+> monitors,
+> and preferably with any monitor?
+> 
+> For example since X / Bios combination works is it possible to get into
+> the right
+> mode and then dump the registers somehow for examination or for later
+> feeding?
+> 
 
-Hey folks,
+If you can somehow dump the registers of the working and non-working mode,
+we might be able find a pattern.
 
-Bit new to this. I want to monkey with the drivers that do the actual
-fillrect and bitblt business. Is ts vga16fb I want, or is there something
-else now. Using Fedora Core 5.
+If you don't know how to dump the register contents, let me know and I'll
+send you a userspace utility to do that.
 
-Much thanks,
-Nathan
+> Is it possible for the kernel driver to use Bios switching?
+> 
 
-------=_Part_4220_16369383.1148420460371
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Currently, no.
 
-Hey folks,<br><br>Bit new to this. I want to monkey with the drivers that d=
-o the actual fillrect and bitblt business. Is ts vga16fb I want, or is ther=
-e something else now. Using Fedora Core 5.<br><br>Much thanks,<br>Nathan
-<br>
-
-------=_Part_4220_16369383.1148420460371--
+Tony
 
 
 -------------------------------------------------------

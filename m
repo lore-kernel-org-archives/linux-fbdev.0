@@ -1,31 +1,26 @@
-From: Ondrej Zajicek <santiago@mail.cz>
-Subject: Re: Two bugs in fbcon?
-Date: Tue, 23 May 2006 23:11:05 +0200
-Message-ID: <20060523211105.GA2190@localhost.localdomain>
-References: <20060515210310.GA1199@localhost.localdomain> <446E630E.9060500@gmail.com>
+From: "Nathan King" <natetheking@gmail.com>
+Subject: lower level stuff
+Date: Tue, 23 May 2006 16:41:00 -0500
+Message-ID: <bb9a78950605231441o297b3419rf4c6b64dde20a655@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="d6Gm4EdcadzBjdND"
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_4220_16369383.1148420460371"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from [10.3.1.93] (helo=sc8-sf-list1-new.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Fie9v-00007u-6F
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 23 May 2006 14:11:19 -0700
-Received: from smtp1.kolej.mff.cuni.cz ([195.113.24.4])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44)
-	id 1Fie9t-0006OO-DE
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 23 May 2006 14:11:19 -0700
-Received: from localhost.localdomain (feanorr.kolej.mff.cuni.cz [195.113.26.209])
-	by smtp1.kolej.mff.cuni.cz (8.13.1/8.13.1) with ESMTP id k4NLB8BP092797
-	for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 23 May 2006 23:11:09 +0200 (CEST)
-	(envelope-from zajio1am@artax.karlin.mff.cuni.cz)
-Received: from santiago by localhost.localdomain with local (Exim 4.50)
-	id 1Fie9h-0000eF-9q
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 23 May 2006 23:11:05 +0200
-Content-Disposition: inline
-In-Reply-To: <446E630E.9060500@gmail.com>
+	id 1Fieck-0003x8-2g
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 23 May 2006 14:41:06 -0700
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1Fieck-0004I0-3w
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 23 May 2006 14:41:06 -0700
+Received: from nz-out-0102.google.com ([64.233.162.193])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1Fiecj-0000hT-Jc
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 23 May 2006 14:41:06 -0700
+Received: by nz-out-0102.google.com with SMTP id f1so1502776nzc
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 23 May 2006 14:41:00 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -38,53 +33,31 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 To: linux-fbdev-devel@lists.sourceforge.net
 
-
---d6Gm4EdcadzBjdND
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+------=_Part_4220_16369383.1148420460371
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: quoted-printable
-
-On Sat, May 20, 2006 at 08:30:06AM +0800, Antonino A. Daplas wrote:
-> Ondrej Zajicek wrote:
-> > Now second strangeness - I am still on vt0 (immediately after modprobe =
-fbcon),
-> > but during calls to bitblit.c/bit_cursor display structure associated w=
-ith
-> > vt3 is used (in bitblit.c:244 - ops->p). Combined with previous strange=
-ness
-> > (bad vrows values in vt1-vt3) i get cursor visible on bad row.
->=20
-> Might be fixed in Linus's latest git tree.  Try applying this changeset:
->=20
-> http://www.kernel.org/git/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=
-=3Dcommitdiff;h=3D1a37d5f51020b9967d4b4094f6d627d0873a6469
->=20
-> Tony
-
-Yes, this corrects it. Thank you.
-
---=20
-Elen sila lumenn' omentielvo
-
-Ondrej 'SanTiago' Zajicek (email: santiago@mail.cz, jabber: santiago@njs.ne=
-tlab.cz)
-OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
-"To err is human -- to blame it on a computer is even more so."
-
---d6Gm4EdcadzBjdND
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
 Content-Disposition: inline
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
+Hey folks,
 
-iEYEARECAAYFAkRzemgACgkQw1GB2RHercOs5gCfSB8HVAM2yp5zezsYqQKRIQxr
-eZkAnjussUKiffiRBz6qHFL8h2YF6zAm
-=jscn
------END PGP SIGNATURE-----
+Bit new to this. I want to monkey with the drivers that do the actual
+fillrect and bitblt business. Is ts vga16fb I want, or is there something
+else now. Using Fedora Core 5.
 
---d6Gm4EdcadzBjdND--
+Much thanks,
+Nathan
+
+------=_Part_4220_16369383.1148420460371
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+
+Hey folks,<br><br>Bit new to this. I want to monkey with the drivers that d=
+o the actual fillrect and bitblt business. Is ts vga16fb I want, or is ther=
+e something else now. Using Fedora Core 5.<br><br>Much thanks,<br>Nathan
+<br>
+
+------=_Part_4220_16369383.1148420460371--
 
 
 -------------------------------------------------------

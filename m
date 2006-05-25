@@ -1,29 +1,24 @@
-From: "Jordan Crouse" <jordan.crouse@amd.com>
-Subject: [PATCH] fbcon: Fix scrollback with logo issue immediately after
- boot
-Date: Wed, 24 May 2006 13:41:28 -0600
-Message-ID: <20060524194128.GA2680@cosmic.amd.com>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [PATCH] fbcon: Fix scrollback with logo issue
+ immediately after boot
+Date: Thu, 25 May 2006 08:35:12 +0800
+Message-ID: <4474FBC0.5050806@gmail.com>
+References: <20060524194128.GA2680@cosmic.amd.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="5mCyUwZo2JvN/JJP"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [10.3.1.93] (helo=sc8-sf-list1-new.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FizFA-0004bn-Mr
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 24 May 2006 12:42:08 -0700
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FizFA-0004yq-PJ
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 24 May 2006 12:42:08 -0700
-Received: from amdext4.amd.com ([163.181.251.6])
+	id 1Fj3p6-00051l-UI
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 24 May 2006 17:35:32 -0700
+Received: from py-out-1112.google.com ([64.233.166.183])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FizF7-0004jZ-Vw
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 24 May 2006 12:42:08 -0700
-Received: from SAUSGW02.amd.com (sausgw02.amd.com [163.181.250.22])
-	by amdext4.amd.com (8.12.11/8.12.11/AMD) with ESMTP id k4OJfXbt020669
-	for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 24 May 2006 14:42:19 -0500
-Content-Disposition: inline
+	id 1Fj3p5-0008QI-O7
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 24 May 2006 17:35:33 -0700
+Received: by py-out-1112.google.com with SMTP id b29so2049461pya
+        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 24 May 2006 17:35:30 -0700 (PDT)
+In-Reply-To: <20060524194128.GA2680@cosmic.amd.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -34,63 +29,23 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: david.hollister@amd.com
+Cc: david.hollister@amd.com, jordan.crouse@amd.com
 
+Jordan Crouse wrote:
+> Greeting folks -
+> 
+> Sending on a patch against latest git that attempts to fix an issue with
+> the scrollback buffer in the fbcon immediately after boot.    As always,
+> comments welcome.
 
---5mCyUwZo2JvN/JJP
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Looks sane.  Does this patch fix the problem mentioned here?
 
-Greeting folks -
+http://marc.theaimsgroup.com/?l=linux-kernel&m=114821885109864&w=2
 
-Sending on a patch against latest git that attempts to fix an issue with
-the scrollback buffer in the fbcon immediately after boot.    As always,
-comments welcome.
+Tony
 
-Regards,
-Jordan
-
---5mCyUwZo2JvN/JJP
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline;
- filename=fbcon.patch
-Content-Transfer-Encoding: 7bit
-
-PATCH: Fix scrollback with logo issue immediately after boot.
-
-From: David Hollister <david.hollister@amd.com>
-
-After the system boots with the logo, if the first action is a
-scrollback, the screen may become garbled.  This patch ensures
-that the softback_curr value is updated along with softback_in
-following the scrollback.
-
-Signed-off-by: David Hollister <david.hollister@amd.com>
-Signed-off-by: Jordan Crouse <jordan.crouse@amd.com>
----
-
- drivers/video/console/fbcon.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index ca02071..953eb8c 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -2631,7 +2631,7 @@ static int fbcon_scrolldelta(struct vc_d
- 					scr_memcpyw((u16 *) q, (u16 *) p,
- 						    vc->vc_size_row);
- 				}
--				softback_in = p;
-+				softback_in = softback_curr = p;
- 				update_region(vc, vc->vc_origin,
- 					      logo_lines * vc->vc_cols);
- 			}
-
---5mCyUwZo2JvN/JJP--
 
 
 

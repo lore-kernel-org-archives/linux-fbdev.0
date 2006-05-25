@@ -1,24 +1,20 @@
 From: Dennis Munsie <dmunsie@cecropia.com>
-Subject: [PATCH 2.6.17-rc-mm3] intelfb 9xx stride alignment
-Date: Thu, 25 May 2006 17:26:27 -0400
-Message-ID: <27E98AF9-CFFA-4E1F-B6CA-DD4CA1D895BA@cecropia.com>
+Subject: [PATCH 2.6.17-rc4-mm3] intelfb use default modedb table
+Date: Thu, 25 May 2006 17:30:58 -0400
+Message-ID: <C9EC694F-679D-4487-A715-42D80ABAA539@cecropia.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0 (Apple Message framework v750)
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [10.3.1.93] (helo=sc8-sf-list1-new.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FjNLT-0005Uz-Dy
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 May 2006 14:26:15 -0700
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FjNLT-0006Zo-ED
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 May 2006 14:26:15 -0700
-Received: from mail1.sea5.speakeasy.net ([69.17.117.3])
+	id 1FjNPn-0005xx-Hq
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 May 2006 14:30:43 -0700
+Received: from mail2.sea5.speakeasy.net ([69.17.117.4])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
 	(Exim 4.44)
-	id 1FjNLS-0006wO-2j
-	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 May 2006 14:26:15 -0700
+	id 1FjNPn-0001Et-CW
+	for linux-fbdev-devel@lists.sourceforge.net; Thu, 25 May 2006 14:30:43 -0700
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -35,8 +31,8 @@ Cc: Eric Hustvedt <ehustvedt@cecropia.com>, Dave Airlie <airlied@skynet.ie>, Syl
 
 Hi all,
 
-Quick patch to correct the stride alignment on the 9xx chipsets.   
-This allows modes like 1366x768 to be displayed correctly.
+This changes the intelfb driver to use the default modedb table  
+instead of the VESA mode table.
 
 regards,
 dennis
@@ -45,72 +41,44 @@ dennis
 
 From: Dennis Munsie <dmunsie@cecropia.com>
 
-intelfb -- uses stride alignment of 64 on the 9xx chipsets.
+intelfb driver -- use the regular modedb table instead of the VESA  
+modedb
+table.  Ideally, the 9xx stride patch should be applied first, since  
+there
+are modes in the VESA table that won't work without that patch.
 
 Signed-off-by: Dennis Munsie <dmunsie@cecropia.com>
 
 ---
 
-drivers/video/intelfb/intelfb.h    |    1 +
-drivers/video/intelfb/intelfbdrv.c |    5 ++++-
-drivers/video/intelfb/intelfbhw.c  |    6 ++++--
-3 files changed, 9 insertions(+), 3 deletions(-)
+drivers/video/intelfb/intelfbdrv.c |    6 ++----
+1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff -Naurp -X linux-2.6.17-rc4-945-fix/Documentation/dontdiff  
-linux-2.6.17-rc4-945-fix/drivers/video/intelfb/intelfb.h linux-2.6.17- 
-rc4-9xx-stride/drivers/video/intelfb/intelfb.h
---- linux-2.6.17-rc4-945-fix/drivers/video/intelfb/intelfb.h	 
-2006-05-25 15:50:24.000000000 -0500
-+++ linux-2.6.17-rc4-9xx-stride/drivers/video/intelfb/intelfb.h	 
-2006-05-25 15:55:09.000000000 -0500
-@@ -59,6 +59,7 @@
-#define INTEL_REG_SIZE			0x80000
-#define STRIDE_ALIGNMENT		16
-+#define STRIDE_ALIGNMENT_I9XX	64
-#define PALETTE_8_ENTRIES		256
-diff -Naurp -X linux-2.6.17-rc4-945-fix/Documentation/dontdiff  
-linux-2.6.17-rc4-945-fix/drivers/video/intelfb/intelfbdrv.c  
-linux-2.6.17-rc4-9xx-stride/drivers/video/intelfb/intelfbdrv.c
---- linux-2.6.17-rc4-945-fix/drivers/video/intelfb/intelfbdrv.c	 
-2006-05-25 15:50:24.000000000 -0500
-+++ linux-2.6.17-rc4-9xx-stride/drivers/video/intelfb/intelfbdrv.c	 
-2006-05-25 15:54:03.000000000 -0500
-@@ -1171,7 +1171,10 @@ update_dinfo(struct intelfb_info *dinfo,
+diff -Naurp -X linux-2.6.17-rc4-9xx-stride/Documentation/dontdiff  
+linux-2.6.17-rc4-9xx-stride/drivers/video/intelfb/intelfbdrv.c  
+linux-2.6.17-rc4-use-default-modedb-table/drivers/video/intelfb/ 
+intelfbdrv.c
+--- linux-2.6.17-rc4-9xx-stride/drivers/video/intelfb/intelfbdrv.c	 
+2006-05-25 16:18:15.000000000 -0500
++++ linux-2.6.17-rc4-use-default-modedb-table/drivers/video/intelfb/ 
+intelfbdrv.c	2006-05-25 16:19:51.000000000 -0500
+@@ -1059,8 +1059,7 @@ intelfb_init_var(struct intelfb_info *di
+				       "intelfb: looking for mode in global "
+				       "database ");
+				msrc = fb_find_mode(var, dinfo->info, mode,
+-						    vesa_modes,
+-						    VESA_MODEDB_SIZE, NULL, 0);
++						    NULL, 0, NULL, 0);
+				if (msrc)
+					msrc |= 8;
+@@ -1070,8 +1069,7 @@ intelfb_init_var(struct intelfb_info *di
+		if (!msrc) {
+			msrc = fb_find_mode(var, dinfo->info, PREFERRED_MODE,
+-					    vesa_modes, VESA_MODEDB_SIZE,
+-					    NULL, 0);
++					    NULL, 0, NULL, 0);
+		}
 	}
-	/* Make sure the line length is a aligned correctly. */
--	dinfo->pitch = ROUND_UP_TO(dinfo->pitch, STRIDE_ALIGNMENT);
-+	if (IS_I9XX(dinfo))
-+		dinfo->pitch = ROUND_UP_TO(dinfo->pitch, STRIDE_ALIGNMENT_I9XX);
-+	else
-+		dinfo->pitch = ROUND_UP_TO(dinfo->pitch, STRIDE_ALIGNMENT);
-	if (FIXED_MODE(dinfo))
-		dinfo->pitch = dinfo->initial_pitch;
-diff -Naurp -X linux-2.6.17-rc4-945-fix/Documentation/dontdiff  
-linux-2.6.17-rc4-945-fix/drivers/video/intelfb/intelfbhw.c  
-linux-2.6.17-rc4-9xx-stride/drivers/video/intelfb/intelfbhw.c
---- linux-2.6.17-rc4-945-fix/drivers/video/intelfb/intelfbhw.c	 
-2006-05-25 15:50:24.000000000 -0500
-+++ linux-2.6.17-rc4-9xx-stride/drivers/video/intelfb/intelfbhw.c	 
-2006-05-25 16:13:28.000000000 -0500
-@@ -1025,6 +1025,7 @@ intelfbhw_mode_to_hw(struct intelfb_info
-	u32 vsync_start, vsync_end, vblank_start, vblank_end, vtotal, vactive;
-	u32 vsync_pol, hsync_pol;
-	u32 *vs, *vb, *vt, *hs, *hb, *ht, *ss, *pipe_conf;
-+	u32 stride_alignment;
-	DBG_MSG("intelfbhw_mode_to_hw\n");
-@@ -1236,9 +1237,10 @@ intelfbhw_mode_to_hw(struct intelfb_info
-	hw->disp_a_base += dinfo->fb.offset << 12;
-	/* Check stride alignment. */
--	if (hw->disp_a_stride % STRIDE_ALIGNMENT != 0) {
-+	stride_alignment = IS_I9XX(dinfo) ? STRIDE_ALIGNMENT_I9XX :  
-STRIDE_ALIGNMENT;
-+	if (hw->disp_a_stride % stride_alignment != 0) {
-		WRN_MSG("display stride %d has bad alignment %d\n",
--			hw->disp_a_stride, STRIDE_ALIGNMENT);
-+			hw->disp_a_stride, stride_alignment);
-		return 1;
-	}
-
 
 
 

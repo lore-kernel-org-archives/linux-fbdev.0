@@ -1,24 +1,28 @@
-From: Dennis Munsie <dmunsie@cecropia.com>
-Subject: [PATCH 2.6.17-rc4-mm3] intelfb int option parsing fix
-Date: Fri, 26 May 2006 09:40:58 -0400
-Message-ID: <BD3E63BE-993E-4953-9FCF-0E3BED9347DE@cecropia.com>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: Re: [PATCH 2.6.17-rc4-mm3] intelfb 945G/GM
+ video fix
+Date: Sat, 27 May 2006 05:18:07 +0800
+Message-ID: <4477708F.4090505@gmail.com>
+References: <06E28340-802B-4587-9A76-75A59127F7F9@cecropia.com> <Pine.LNX.4.64.0605260032200.5525@skynet.skynet.ie>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0 (Apple Message framework v750)
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from [10.3.1.93] (helo=sc8-sf-list1-new.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FjcYs-0006wi-Qg
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 26 May 2006 06:41:06 -0700
+	id 1FjjhJ-00045Q-Jo
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 26 May 2006 14:18:17 -0700
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FjcYs-00053y-Mq
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 26 May 2006 06:41:06 -0700
-Received: from mail6.sea5.speakeasy.net ([69.17.117.8])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44)
-	id 1FjcYl-0004el-1d
-	for linux-fbdev-devel@lists.sourceforge.net; Fri, 26 May 2006 06:41:03 -0700
+	id 1FjjhJ-0004K5-H3
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 26 May 2006 14:18:17 -0700
+Received: from py-out-1112.google.com ([64.233.166.177])
+	by mail.sourceforge.net with esmtp (Exim 4.44)
+	id 1FjjhG-0006O5-UX
+	for linux-fbdev-devel@lists.sourceforge.net; Fri, 26 May 2006 14:18:17 -0700
+Received: by py-out-1112.google.com with SMTP id b29so282699pya
+        for <linux-fbdev-devel@lists.sourceforge.net>; Fri, 26 May 2006 14:18:13 -0700 (PDT)
+In-Reply-To: <Pine.LNX.4.64.0605260032200.5525@skynet.skynet.ie>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,47 +33,35 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"; delsp="yes"; format="flowed"
+Content-Type: text/plain; charset="us-ascii"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Eric Hustvedt <ehustvedt@cecropia.com>, Dave Airlie <airlied@skynet.ie>, Sylvain Meyer <sylvain.meyer@worldonline.fr>
+Cc: Dennis Munsie <dmunsie@cecropia.com>, Eric Hustvedt <ehustvedt@cecropia.com>, Sylvain Meyer <sylvain.meyer@worldonline.fr>, Dave Airlie <airlied@linux.ie>
 
-Hi all,
+Dave Airlie wrote:
+> 
+>> This is a small patch that I would like others to take a look at.  We
+>> ran into an issue where on the motherboard we are using, Intel
+>> D945GTP, the video wouldn't come up in the proper state even with Dave
+>> Airlie's patches for 945. I had created a 945 patch that I hadn't
+>> released, and that one did work.  The only difference between the two
+>> was that I had a one line hack to write to the DPLL register twice. 
+>> Now, this should be harmless on other chipsets, but I can't be sure
+>> without testing.  I've tried asking Intel about this, but I haven't
+>> gotten any information on it from them.
+> 
+> This just looks wrong, I've got an 945G at home, I'm just a bit swamped
+> with other things, the current intelfbdev code could do with a refresh
+> from my X.org driver tree, I just haven't had the time lately to pull
+> over the code....
+> 
+> you can see my X.org driver code at:
+> git pull http://people.freedesktop.org/~airlied/git/xf86-video-i810/.git
+> 
 
-Passing along a patch that fixes integer option parsing in the  
-intelfb driver.  The only option this really affects is the vram option.
+I'll drop this patch in the meantime.  As for the 3 other patches, do they
+look okay to you?
 
-regards,
-dennis
-
----
-From: Eric Hustvedt <ehustvedt@cecropia.com>
-
-Fix integer option parsing in the intelfb driver. The macro wasn't
-accounting for the equal sign past the option name. As a result,
-the vram option always returned 0.
-
-Signed-off-by: Eric Hustvedt <ehustvedt@cecropia.com>
-Signed-off-by: Dennis Munsie <dmunsie@cecropia.com>
-
---
-
-intelfbdrv.c |    2 +-
-1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-2.6.17-rc4-mmpatches/drivers/video/intelfb/intelfbdrv.c	 
-2006-05-24 11:26:40.000000000 -0600
-+++ linux-2.6.17-rc4-stolen/drivers/video/intelfb/intelfbdrv.c	 
-2006-05-25 14:21:37.000000000 -0600
-@@ -264,7 +265,7 @@ MODULE_PARM_DESC(mode,
-#ifndef MODULE
-#define OPT_EQUAL(opt, name) (!strncmp(opt, name, strlen(name)))
--#define OPT_INTVAL(opt, name) simple_strtoul(opt + strlen(name),  
-NULL, 0)
-+#define OPT_INTVAL(opt, name) simple_strtoul(opt + strlen(name) + 1,  
-NULL, 0)
-#define OPT_STRVAL(opt, name) (opt + strlen(name))
-static __inline__ char *
-
+Tony
 
 
 -------------------------------------------------------

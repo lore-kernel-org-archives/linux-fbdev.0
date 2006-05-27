@@ -1,23 +1,22 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: Twister savagefb doesn't sync
-Date: Sat, 27 May 2006 17:29:31 +0800
-Message-ID: <44781BFB.5020708@gmail.com>
-References: <44698356.80806@iit.demokritos.gr> <447359B8.7020304@iit.demokritos.gr> <447381E9.4060705@gmail.com> <447803FC.8050009@iit.demokritos.gr> <44781B3A.5030406@gmail.com>
+From: Dennis Munsie <dmunsie@cecropia.com>
+Subject: Re: intelfb updates
+Date: Sat, 27 May 2006 09:54:21 -0400
+Message-ID: <79930B43-7A1E-4590-8179-576A6858E7EA@cecropia.com>
+References: <21d7e9970605270158l1ee8551cw7cc8910378cc43de@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
+Mime-Version: 1.0 (Apple Message framework v750)
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Fjv78-0001tz-90
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 May 2006 02:29:42 -0700
-Received: from py-out-1112.google.com ([64.233.166.178])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Fjv78-0003e2-2G
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 May 2006 02:29:42 -0700
-Received: by py-out-1112.google.com with SMTP id b29so78247pya
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 27 May 2006 02:29:40 -0700 (PDT)
-In-Reply-To: <44781B3A.5030406@gmail.com>
+	id 1FjzFJ-0005DJ-OJ
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 May 2006 06:54:25 -0700
+Received: from mail2.sea5.speakeasy.net ([69.17.117.4])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44)
+	id 1FjzFI-0007jR-OD
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 May 2006 06:54:25 -0700
+In-Reply-To: <21d7e9970605270158l1ee8551cw7cc8910378cc43de@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,54 +27,24 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: vasvir@iit.demokritos.gr, linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"; delsp="yes"; format="flowed"
+To: airlied@gmail.com
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>, linux-fbdev-devel@lists.sourceforge.net
 
-Antonino A. Daplas wrote:
-> Vassilis Virvilis wrote:
->> Antonino A. Daplas wrote:
->>
->>> If you can somehow dump the registers of the working and non-working
->>> mode,
->>> we might be able find a pattern.
->>>
->>> If you don't know how to dump the register contents, let me know and I'll
->>> send you a userspace utility to do that.
->>>
->>>
->> I found dumpreg from the svgalib distribution (svgalib-bin in debian).
->> Is this
->> sufficient? 
-> 
-> It might not be sufficient as it won't be able to recognize savage extended
-> VGA registers.
-> 
->> If not could you please send me the userspace utility you
->> mentioned
->> the other day?
->>
-> 
-> Ok, attached, it's a quick hack. Before using it open the file savagedump.c 
-> and look for the following defines:
-> 
-> #define PCI_ID        0x8d04  /* put the PCI id of the device here */
-> #define PCI_PBASE     0xdfe80000  /* put the start address of the PCI resource here */
-> 
-> and replace the above values with your own. First do "lspci -n | grep "Class 0300"
-> and you'll get something like this:
-> 
-> 01:00.0 Class 0300: 5333:8d04
-> 
-> Use the last 4 digit ID for the PCI_ID (ie 8d04):
-> 
-> Then do lspci -v -n 5333:8d04 (using instead the vendor:device that you got) and you
+Dave --
 
-Typo.  I meant
+I'm away for the long weekend here in the states, but I will test it  
+on my 915 and 945 boards on Tuesday.
 
-lspci -v -d 5333:8d04
+thanks!
+dennis
 
-Tony
+On May 27, 2006, at 4:58 AM, Dave Airlie wrote:
+
+> Dennis I'd appreciate you testing this on your i945 system to see if
+> the PLL register problem is fixed, I'm a bit snowed under and my 945
+> isn't connected to anything at the moment.
+>
 
 
 -------------------------------------------------------

@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 5/5] backlight: Fix Kconfig dependency
-Date: Sun, 28 May 2006 08:42:07 +0800
-Message-ID: <4478F1DF.9080804@gmail.com>
+Subject: [PATCH 3/5] au1100fb: Add power management support
+Date: Sun, 28 May 2006 08:42:37 +0800
+Message-ID: <4478F1FD.2080702@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Fk9NV-0001qQ-Mi
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 May 2006 17:43:33 -0700
+	id 1Fk9Nb-0001qk-E5
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 May 2006 17:43:39 -0700
 Received: from py-out-1112.google.com ([64.233.166.180])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Fk9NV-0008KM-Jl
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 May 2006 17:43:33 -0700
+	id 1Fk9Na-0008KM-9U
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 May 2006 17:43:39 -0700
 Received: by py-out-1112.google.com with SMTP id b29so208814pya
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 27 May 2006 17:43:33 -0700 (PDT)
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 27 May 2006 17:43:38 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,40 +28,95 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Andrew Zabolotny <zap@homelink.ru>, Richard Purdie <rpurdie@rpsys.net>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Ralf Baechle <ralf@linux-mips.org>
 
-CONFIG_FB = m and CONFIG_{BACKLIGHT:LCD}_CLASS_DEVICE = y is possible
-resulting in link errors. Fix by making backlight and lcd class also
-depend on FB
+From: Rodolfo Giometti <giometti@linux.it>
+
+Add power management support.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/backlight/Kconfig |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/au1100fb.c |   40 ++++++++++++++++++++++++++++++++++++++--
+ 1 files changed, 38 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index 02f1529..022f9d3 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -10,7 +10,7 @@ menuconfig BACKLIGHT_LCD_SUPPORT
+diff --git a/drivers/video/au1100fb.c b/drivers/video/au1100fb.c
+index f55c16a..0a800bf 100644
+--- a/drivers/video/au1100fb.c
++++ b/drivers/video/au1100fb.c
+@@ -7,6 +7,8 @@
+  *  	Karl Lessard <klessard@sunrisetelecom.com>
+  *  	<c.pellegrin@exadron.com>
+  *
++ * PM support added by Rodolfo Giometti <giometti@linux.it>
++ *
+  * Copyright 2002 MontaVista Software
+  * Author: MontaVista Software, Inc.
+  *		ppopov@mvista.com or source@mvista.com
+@@ -602,17 +604,49 @@ int au1100fb_drv_remove(struct device *d
+ 	return 0;
+ }
  
- config BACKLIGHT_CLASS_DEVICE
-         tristate "Lowlevel Backlight controls"
--	depends on BACKLIGHT_LCD_SUPPORT
-+	depends on BACKLIGHT_LCD_SUPPORT && FB
- 	default m
- 	help
- 	  This framework adds support for low-level control of the LCD
-@@ -26,7 +26,7 @@ config BACKLIGHT_DEVICE
++#ifdef CONFIG_PM
++static u32 sys_clksrc;
++static struct au1100fb_regs fbregs;
++
+ int au1100fb_drv_suspend(struct device *dev, pm_message_t state)
+ {
+-	/* TODO */
++	struct au1100fb_device *fbdev = (struct au1100fb_device*) dev_get_drvdata(dev);
++
++	if (!fbdev)
++		return 0;
++
++	/* Save the clock source state */
++	sys_clksrc = au_readl(SYS_CLKSRC);
++
++	/* Blank the LCD */
++	au1100fb_fb_blank(VESA_POWERDOWN, &fbdev->info);
++
++	/* Stop LCD clocking */
++	au_writel(sys_clksrc & ~SYS_CS_ML_MASK, SYS_CLKSRC);
++
++	memcpy(&fbregs, fbdev->regs, sizeof(struct au1100fb_regs));
++
+ 	return 0;
+ }
  
- config LCD_CLASS_DEVICE
-         tristate "Lowlevel LCD controls"
--	depends on BACKLIGHT_LCD_SUPPORT
-+	depends on BACKLIGHT_LCD_SUPPORT && FB
- 	default m
- 	help
- 	  This framework adds support for low-level control of LCD.
+ int au1100fb_drv_resume(struct device *dev)
+ {
+-	/* TODO */
++	struct au1100fb_device *fbdev = (struct au1100fb_device*) dev_get_drvdata(dev);
++
++	if (!fbdev)
++		return 0;
++
++	memcpy(fbdev->regs, &fbregs, sizeof(struct au1100fb_regs));
++
++	/* Restart LCD clocking */
++	au_writel(sys_clksrc, SYS_CLKSRC);
++
++	/* Unblank the LCD */
++	au1100fb_fb_blank(VESA_NO_BLANKING, &fbdev->info);
++
+ 	return 0;
+ }
++#endif
+ 
+ static struct device_driver au1100fb_driver = {
+ 	.name		= "au1100-lcd",
+@@ -620,8 +654,10 @@ static struct device_driver au1100fb_dri
+ 
+ 	.probe		= au1100fb_drv_probe,
+         .remove		= au1100fb_drv_remove,
++#ifdef CONFIG_PM
+ 	.suspend	= au1100fb_drv_suspend,
+         .resume		= au1100fb_drv_resume,
++#endif
+ };
+ 
+ /*-------------------------------------------------------------------------*/
+
 
 
 

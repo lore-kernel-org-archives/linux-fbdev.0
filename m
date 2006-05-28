@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 1/5] fbdev: Remove unused exports
-Date: Sun, 28 May 2006 08:33:13 +0800
-Message-ID: <4478EFC9.5020703@gmail.com>
+Subject: [PATCH 2/5] au1100fb: Fix compilation
+Date: Sun, 28 May 2006 08:35:49 +0800
+Message-ID: <4478F065.4010502@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Fk9NJ-0001oh-TH
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 May 2006 17:43:21 -0700
+	id 1Fk9NL-0001pB-WD
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 May 2006 17:43:24 -0700
 Received: from py-out-1112.google.com ([64.233.166.180])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Fk9NH-0008KM-HW
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 May 2006 17:43:22 -0700
+	id 1Fk9NL-0008KM-OX
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 May 2006 17:43:24 -0700
 Received: by py-out-1112.google.com with SMTP id b29so208814pya
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 27 May 2006 17:43:17 -0700 (PDT)
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 27 May 2006 17:43:23 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,81 +28,172 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Adrian Bunk <bunk@stusta.de>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Ralf Baechle <ralf@linux-mips.org>
 
-From: Adrian Bunk <bunk@stusta.de>
+From: Rodolfo Giometti <giometti@linux.it>
 
-This patch removes the following unused EXPORT_SYMBOL's:
-- fbcvt.c: fb_find_mode_cvt
-- fbmem.c: fb_con_duit
-- fbmem.c: fb_new_modelist
-- macmodes.c: mac_var_to_vmode
-- modedb.c: fb_delete_videomode
-- modedb.c: fb_destroy_modelist
+Fix compilation
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/fbcvt.c    |    1 -
- drivers/video/fbmem.c    |    2 --
- drivers/video/macmodes.c |    1 -
- drivers/video/modedb.c   |    2 --
- 4 files changed, 0 insertions(+), 6 deletions(-)
+ drivers/video/au1100fb.c |   21 ++++++++++++++-------
+ 1 files changed, 14 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/video/fbcvt.c b/drivers/video/fbcvt.c
-index ac90883..b549899 100644
---- a/drivers/video/fbcvt.c
-+++ b/drivers/video/fbcvt.c
-@@ -376,4 +376,3 @@ int fb_find_mode_cvt(struct fb_videomode
+diff --git a/drivers/video/au1100fb.c b/drivers/video/au1100fb.c
+index d7d2dba..f55c16a 100644
+--- a/drivers/video/au1100fb.c
++++ b/drivers/video/au1100fb.c
+@@ -214,10 +214,13 @@ int au1100fb_setmode(struct au1100fb_dev
+  */
+ int au1100fb_fb_setcolreg(unsigned regno, unsigned red, unsigned green, unsigned blue, unsigned transp, struct fb_info *fbi)
+ {
+-	struct au1100fb_device *fbdev = to_au1100fb_device(fbi);
+-	u32 *palette = fbdev->regs->lcd_pallettebase;
++	struct au1100fb_device *fbdev;
++	u32 *palette;
+ 	u32 value;
  
++	fbdev = to_au1100fb_device(fbi);
++	palette = fbdev->regs->lcd_pallettebase;
++
+ 	if (regno > (AU1100_LCD_NBR_PALETTE_ENTRIES - 1))
+ 		return -EINVAL;
+ 
+@@ -316,9 +319,11 @@ int au1100fb_fb_blank(int blank_mode, stFrom: Rodolfo Giometti <giometti@linux.it>
+
+Fix compilation
+
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
+---
+
+ drivers/video/au1100fb.c |   21 ++++++++++++++-------
+ 1 files changed, 14 insertions(+), 7 deletions(-)
+
+diff --git a/drivers/video/au1100fb.c b/drivers/video/au1100fb.c
+index d7d2dba..f55c16a 100644
+--- a/drivers/video/au1100fb.c
++++ b/drivers/video/au1100fb.c
+@@ -214,10 +214,13 @@ int au1100fb_setmode(struct au1100fb_dev
+  */
+ int au1100fb_fb_setcolreg(unsigned regno, unsigned red, unsigned green, unsigned blue, unsigned transp, struct fb_info *fbi)
+ {
+-	struct au1100fb_device *fbdev = to_au1100fb_device(fbi);
+-	u32 *palette = fbdev->regs->lcd_pallettebase;
++	struct au1100fb_device *fbdev;
++	u32 *palette;
+ 	u32 value;
+ 
++	fbdev = to_au1100fb_device(fbi);
++	palette = fbdev->regs->lcd_pallettebase;
++
+ 	if (regno > (AU1100_LCD_NBR_PALETTE_ENTRIES - 1))
+ 		return -EINVAL;
+ 
+@@ -316,9 +319,11 @@ int au1100fb_fb_blank(int blank_mode, st
+  */
+ int au1100fb_fb_pan_display(struct fb_var_screeninfo *var, struct fb_info *fbi)
+ {
+-	struct au1100fb_device *fbdev = to_au1100fb_device(fbi);
++	struct au1100fb_device *fbdev;
+ 	int dy;
+ 
++	fbdev = to_au1100fb_device(fbi);
++
+ 	print_dbg("fb_pan_display %p %p", var, fbi);
+ 
+ 	if (!var || !fbdev) {
+@@ -382,10 +387,12 @@ void au1100fb_fb_rotate(struct fb_info *
+  */
+ int au1100fb_fb_mmap(struct fb_info *fbi, struct vm_area_struct *vma)
+ {
+-	struct au1100fb_device *fbdev = to_au1100fb_device(fbi);
++	struct au1100fb_device *fbdev;
+ 	unsigned int len;
+ 	unsigned long start=0, off;
+ 
++	fbdev = to_au1100fb_device(fbi);
++
+ 	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT)) {
+ 		return -EINVAL;
+ 	}
+@@ -467,7 +474,7 @@ int au1100fb_drv_probe(struct device *de
+ 
+ 	if (!request_mem_region(au1100fb_fix.mmio_start, au1100fb_fix.mmio_len,
+ 				DRIVER_NAME)) {
+-		print_err("fail to lock memory region at 0x%08x",
++		print_err("fail to lock memory region at 0x%08lx",
+ 				au1100fb_fix.mmio_start);
+ 		return -EBUSY;
+ 	}
+@@ -595,13 +602,13 @@ int au1100fb_drv_remove(struct device *d
  	return 0;
  }
--EXPORT_SYMBOL(fb_find_mode_cvt);
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 2529805..2279d14 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1509,7 +1509,6 @@ int fb_con_duit(struct fb_info *info, in
  
- 	return blocking_notifier_call_chain(&fb_notifier_list, event, &evnt);
+-int au1100fb_drv_suspend(struct device *dev, u32 state, u32 level)
++int au1100fb_drv_suspend(struct device *dev, pm_message_t state)
+ {
+ 	/* TODO */
+ 	return 0;
  }
--EXPORT_SYMBOL(fb_con_duit);
  
- static char *video_options[FB_MAX];
- static int ofonly;
-@@ -1620,6 +1619,5 @@ EXPORT_SYMBOL(fb_set_suspend);
- EXPORT_SYMBOL(fb_register_client);
- EXPORT_SYMBOL(fb_unregister_client);
- EXPORT_SYMBOL(fb_get_options);
--EXPORT_SYMBOL(fb_new_modelist);
+-int au1100fb_drv_resume(struct device *dev, u32 level)
++int au1100fb_drv_resume(struct device *dev)
+ {
+ 	/* TODO */
+ 	return 0;
+
+  */
+ int au1100fb_fb_pan_display(struct fb_var_screeninfo *var, struct fb_info *fbi)
+ {
+-	struct au1100fb_device *fbdev = to_au1100fb_device(fbi);
++	struct au1100fb_device *fbdev;
+ 	int dy;
  
- MODULE_LICENSE("GPL");
-diff --git a/drivers/video/macmodes.c b/drivers/video/macmodes.c
-index c0385c6..95f5fc6 100644
---- a/drivers/video/macmodes.c
-+++ b/drivers/video/macmodes.c
-@@ -327,7 +327,6 @@ int mac_var_to_vmode(const struct fb_var
-     }
-     return -EINVAL;
++	fbdev = to_au1100fb_device(fbi);
++
+ 	print_dbg("fb_pan_display %p %p", var, fbi);
+ 
+ 	if (!var || !fbdev) {
+@@ -382,10 +387,12 @@ void au1100fb_fb_rotate(struct fb_info *
+  */
+ int au1100fb_fb_mmap(struct fb_info *fbi, struct vm_area_struct *vma)
+ {
+-	struct au1100fb_device *fbdev = to_au1100fb_device(fbi);
++	struct au1100fb_device *fbdev;
+ 	unsigned int len;
+ 	unsigned long start=0, off;
+ 
++	fbdev = to_au1100fb_device(fbi);
++
+ 	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT)) {
+ 		return -EINVAL;
+ 	}
+@@ -467,7 +474,7 @@ int au1100fb_drv_probe(struct device *de
+ 
+ 	if (!request_mem_region(au1100fb_fix.mmio_start, au1100fb_fix.mmio_len,
+ 				DRIVER_NAME)) {
+-		print_err("fail to lock memory region at 0x%08x",
++		print_err("fail to lock memory region at 0x%08lx",
+ 				au1100fb_fix.mmio_start);
+ 		return -EBUSY;
+ 	}
+@@ -595,13 +602,13 @@ int au1100fb_drv_remove(struct device *d
+ 	return 0;
  }
--EXPORT_SYMBOL(mac_var_to_vmode);
  
- /**
-  *	mac_map_monitor_sense - Convert monitor sense to vmode
-diff --git a/drivers/video/modedb.c b/drivers/video/modedb.c
-index 7e539b6..ff54546 100644
---- a/drivers/video/modedb.c
-+++ b/drivers/video/modedb.c
-@@ -1021,8 +1021,6 @@ EXPORT_SYMBOL(fb_videomode_to_var);
- EXPORT_SYMBOL(fb_var_to_videomode);
- EXPORT_SYMBOL(fb_mode_is_equal);
- EXPORT_SYMBOL(fb_add_videomode);
--EXPORT_SYMBOL(fb_delete_videomode);
--EXPORT_SYMBOL(fb_destroy_modelist);
- EXPORT_SYMBOL(fb_match_mode);
- EXPORT_SYMBOL(fb_find_best_mode);
- EXPORT_SYMBOL(fb_find_nearest_mode);
+-int au1100fb_drv_suspend(struct device *dev, u32 state, u32 level)
++int au1100fb_drv_suspend(struct device *dev, pm_message_t state)
+ {
+ 	/* TODO */
+ 	return 0;
+ }
+ 
+-int au1100fb_drv_resume(struct device *dev, u32 level)
++int au1100fb_drv_resume(struct device *dev)
+ {
+ 	/* TODO */
+ 	return 0;
 
 
 

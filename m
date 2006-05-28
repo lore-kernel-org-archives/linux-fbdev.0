@@ -1,21 +1,25 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 3/5] au1100fb: Add power management support
-Date: Sun, 28 May 2006 08:42:37 +0800
-Message-ID: <4478F1FD.2080702@gmail.com>
+Subject: [PATCH 4/5] s3c2410fb: Fix resume
+Date: Sun, 28 May 2006 08:45:25 +0800
+Message-ID: <4478F2A5.6040409@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from [10.3.1.93] (helo=sc8-sf-list1-new.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Fk9Nb-0001qk-E5
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 May 2006 17:43:39 -0700
-Received: from py-out-1112.google.com ([64.233.166.180])
+	id 1Fk9PR-0002EW-IB
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 May 2006 17:45:33 -0700
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1Fk9PR-0005WO-LB
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 May 2006 17:45:33 -0700
+Received: from py-out-1112.google.com ([64.233.166.178])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Fk9Na-0008KM-9U
-	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 May 2006 17:43:39 -0700
-Received: by py-out-1112.google.com with SMTP id b29so208814pya
-        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 27 May 2006 17:43:38 -0700 (PDT)
+	id 1Fk9PR-0000sm-Az
+	for linux-fbdev-devel@lists.sourceforge.net; Sat, 27 May 2006 17:45:33 -0700
+Received: by py-out-1112.google.com with SMTP id c30so354184pyc
+        for <linux-fbdev-devel@lists.sourceforge.net>; Sat, 27 May 2006 17:45:31 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -28,94 +32,86 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Ralf Baechle <ralf@linux-mips.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Arnaud Patard <arnaud.patard@rtp-net.org>
 
-From: Rodolfo Giometti <giometti@linux.it>
+From: Arnaud Patard <arnaud.patard@rtp-net.org>
 
-Add power management support.
+regs.lcdcon1 was not updated on suspend. The result was a garbaged display
+on resume. This bug was first noticed by Christer Weinigel. This patch is a
+modified version of the one he sent to me.
 
+Signed-Off-By: Arnaud Patard <arnaud.patard@rtp-net.org>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/au1100fb.c |   40 ++++++++++++++++++++++++++++++++++++++--
- 1 files changed, 38 insertions(+), 2 deletions(-)
+Forgot Signed-off-line
 
-diff --git a/drivers/video/au1100fb.c b/drivers/video/au1100fb.c
-index f55c16a..0a800bf 100644
---- a/drivers/video/au1100fb.c
-+++ b/drivers/video/au1100fb.c
-@@ -7,6 +7,8 @@
-  *  	Karl Lessard <klessard@sunrisetelecom.com>
-  *  	<c.pellegrin@exadron.com>
-  *
-+ * PM support added by Rodolfo Giometti <giometti@linux.it>
-+ *
-  * Copyright 2002 MontaVista Software
-  * Author: MontaVista Software, Inc.
-  *		ppopov@mvista.com or source@mvista.com
-@@ -602,17 +604,49 @@ int au1100fb_drv_remove(struct device *d
- 	return 0;
- }
+Tony
+
+ drivers/video/s3c2410fb.c |   17 +++++++++++------
+ 1 files changed, 11 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/video/s3c2410fb.c b/drivers/video/s3c2410fb.c
+index 9451932..fbc4118 100644
+--- a/drivers/video/s3c2410fb.c
++++ b/drivers/video/s3c2410fb.c
+@@ -641,6 +641,7 @@ static int __init s3c2410fb_probe(struct
+ 	int ret;
+ 	int irq;
+ 	int i;
++	u32 lcdcon1;
  
-+#ifdef CONFIG_PM
-+static u32 sys_clksrc;
-+static struct au1100fb_regs fbregs;
+ 	mach_info = pdev->dev.platform_data;
+ 	if (mach_info == NULL) {
+@@ -672,6 +673,11 @@ static int __init s3c2410fb_probe(struct
+ 
+ 	memcpy(&info->regs, &mach_info->regs, sizeof(info->regs));
+ 
++	/* Stop the video and unset ENVID if set */
++	info->regs.lcdcon1 &= ~S3C2410_LCDCON1_ENVID;
++	lcdcon1 = readl(S3C2410_LCDCON1);
++	writel(lcdcon1 & ~S3C2410_LCDCON1_ENVID, S3C2410_LCDCON1);
 +
- int au1100fb_drv_suspend(struct device *dev, pm_message_t state)
+ 	info->mach_info		    = pdev->dev.platform_data;
+ 
+ 	fbinfo->fix.type	    = FB_TYPE_PACKED_PIXELS;
+@@ -794,15 +800,14 @@ dealloc_fb:
+  * shutdown the lcd controller
+ */
+ 
+-static void s3c2410fb_stop_lcd(void)
++static void s3c2410fb_stop_lcd(struct s3c2410fb_info *fbi)
  {
--	/* TODO */
-+	struct au1100fb_device *fbdev = (struct au1100fb_device*) dev_get_drvdata(dev);
-+
-+	if (!fbdev)
-+		return 0;
-+
-+	/* Save the clock source state */
-+	sys_clksrc = au_readl(SYS_CLKSRC);
-+
-+	/* Blank the LCD */
-+	au1100fb_fb_blank(VESA_POWERDOWN, &fbdev->info);
-+
-+	/* Stop LCD clocking */
-+	au_writel(sys_clksrc & ~SYS_CS_ML_MASK, SYS_CLKSRC);
-+
-+	memcpy(&fbregs, fbdev->regs, sizeof(struct au1100fb_regs));
-+
- 	return 0;
+ 	unsigned long flags;
+-	unsigned long tmp;
+ 
+ 	local_irq_save(flags);
+ 
+-	tmp = readl(S3C2410_LCDCON1);
+-	writel(tmp & ~S3C2410_LCDCON1_ENVID, S3C2410_LCDCON1);
++	fbi->regs.lcdcon1 &= ~S3C2410_LCDCON1_ENVID;
++	writel(fbi->regs.lcdcon1, S3C2410_LCDCON1);
+ 
+ 	local_irq_restore(flags);
  }
+@@ -816,7 +821,7 @@ static int s3c2410fb_remove(struct platf
+ 	struct s3c2410fb_info *info = fbinfo->par;
+ 	int irq;
  
- int au1100fb_drv_resume(struct device *dev)
- {
--	/* TODO */
-+	struct au1100fb_device *fbdev = (struct au1100fb_device*) dev_get_drvdata(dev);
-+
-+	if (!fbdev)
-+		return 0;
-+
-+	memcpy(fbdev->regs, &fbregs, sizeof(struct au1100fb_regs));
-+
-+	/* Restart LCD clocking */
-+	au_writel(sys_clksrc, SYS_CLKSRC);
-+
-+	/* Unblank the LCD */
-+	au1100fb_fb_blank(VESA_NO_BLANKING, &fbdev->info);
-+
- 	return 0;
- }
-+#endif
+-	s3c2410fb_stop_lcd();
++	s3c2410fb_stop_lcd(info);
+ 	msleep(1);
  
- static struct device_driver au1100fb_driver = {
- 	.name		= "au1100-lcd",
-@@ -620,8 +654,10 @@ static struct device_driver au1100fb_dri
+ 	s3c2410fb_unmap_video_memory(info);
+@@ -844,7 +849,7 @@ static int s3c2410fb_suspend(struct plat
+ 	struct fb_info	   *fbinfo = platform_get_drvdata(dev);
+ 	struct s3c2410fb_info *info = fbinfo->par;
  
- 	.probe		= au1100fb_drv_probe,
-         .remove		= au1100fb_drv_remove,
-+#ifdef CONFIG_PM
- 	.suspend	= au1100fb_drv_suspend,
-         .resume		= au1100fb_drv_resume,
-+#endif
- };
+-	s3c2410fb_stop_lcd();
++	s3c2410fb_stop_lcd(info);
  
- /*-------------------------------------------------------------------------*/
+ 	/* sleep before disabling the clock, we need to ensure
+ 	 * the LCD DMA engine is not going to get back on the bus
 
 
 

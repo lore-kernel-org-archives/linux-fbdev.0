@@ -1,21 +1,21 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 2/2] au1100fb: Add power management support
-Date: Tue, 30 May 2006 05:41:28 +0800
-Message-ID: <447B6A88.1090105@gmail.com>
+Subject: [PATCH 1/2] au1100fb: Fix compilation
+Date: Tue, 30 May 2006 05:40:37 +0800
+Message-ID: <447B6A55.2000401@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FkpWf-0005yV-7r
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 May 2006 14:43:49 -0700
+	id 1FkpWc-0005yQ-QC
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 May 2006 14:43:46 -0700
 Received: from py-out-1112.google.com ([64.233.166.181])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FkpWf-0007lm-29
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 May 2006 14:43:49 -0700
+	id 1FkpWb-0007lm-LQ
+	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 May 2006 14:43:46 -0700
 Received: by py-out-1112.google.com with SMTP id b29so228815pya
-        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 29 May 2006 14:43:48 -0700 (PDT)
+        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 29 May 2006 14:43:43 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -32,91 +32,99 @@ Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Rodo
 
 From: Rodolfo Giometti <giometti@linux.it>
 
-Add power management support
+Fix the following warning on compilation:
+
+drivers/video/au1100fb.c: In function `au1100fb_fb_setcolreg':
+drivers/video/au1100fb.c:219: warning: ISO C90 forbids mixed declarations and code
+drivers/video/au1100fb.c: In function `au1100fb_fb_pan_display':
+drivers/video/au1100fb.c:321: warning: ISO C90 forbids mixed declarations and code
+drivers/video/au1100fb.c: In function `au1100fb_fb_mmap':
+drivers/video/au1100fb.c:387: warning: ISO C90 forbids mixed declarations and code
+drivers/video/au1100fb.c: In function `au1100fb_drv_probe':
+drivers/video/au1100fb.c:471: warning: unsigned int format, long unsigned int arg (arg 2)
+drivers/video/au1100fb.c: At top level:
+drivers/video/au1100fb.c:617: warning: initialization from incompatible pointer type
+drivers/video/au1100fb.c:618: warning: initialization from incompatible pointer type
 
 Signed-off-by: Rodolfo Giometti <giometti@linux.it>
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/au1100fb.c |   40 ++++++++++++++++++++++++++++++++++++++--
- 1 files changed, 38 insertions(+), 2 deletions(-)
+ drivers/video/au1100fb.c |   21 ++++++++++++++-------
+ 1 files changed, 14 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/video/au1100fb.c b/drivers/video/au1100fb.c
-index f55c16a..fcb8a4c 100644
+index d7d2dba..f55c16a 100644
 --- a/drivers/video/au1100fb.c
 +++ b/drivers/video/au1100fb.c
-@@ -7,6 +7,8 @@
-  *  	Karl Lessard <klessard@sunrisetelecom.com>
-  *  	<c.pellegrin@exadron.com>
-  *
-+ * PM support added by Rodolfo Giometti <giometti@linux.it>
-+ *
-  * Copyright 2002 MontaVista Software
-  * Author: MontaVista Software, Inc.
-  *		ppopov@mvista.com or source@mvista.com
-@@ -602,17 +604,49 @@ int au1100fb_drv_remove(struct device *d
- 	return 0;
- }
- 
-+#ifdef CONFIG_PM
-+static u32 sys_clksrc;
-+static struct au1100fb_regs fbregs;
-+
- int au1100fb_drv_suspend(struct device *dev, pm_message_t state)
+@@ -214,10 +214,13 @@ int au1100fb_setmode(struct au1100fb_dev
+  */
+ int au1100fb_fb_setcolreg(unsigned regno, unsigned red, unsigned green, unsigned blue, unsigned transp, struct fb_info *fbi)
  {
--	/* TODO */
-+	struct au1100fb_device *fbdev = dev_get_drvdata(dev);
-+
-+	if (!fbdev)
-+		return 0;
-+
-+	/* Save the clock source state */
-+	sys_clksrc = au_readl(SYS_CLKSRC);
-+
-+	/* Blank the LCD */
-+	au1100fb_fb_blank(VESA_POWERDOWN, &fbdev->info);
-+
-+	/* Stop LCD clocking */
-+	au_writel(sys_clksrc & ~SYS_CS_ML_MASK, SYS_CLKSRC);
-+
-+	memcpy(&fbregs, fbdev->regs, sizeof(struct au1100fb_regs));
-+
- 	return 0;
- }
+-	struct au1100fb_device *fbdev = to_au1100fb_device(fbi);
+-	u32 *palette = fbdev->regs->lcd_pallettebase;
++	struct au1100fb_device *fbdev;
++	u32 *palette;
+ 	u32 value;
  
- int au1100fb_drv_resume(struct device *dev)
++	fbdev = to_au1100fb_device(fbi);
++	palette = fbdev->regs->lcd_pallettebase;
++
+ 	if (regno > (AU1100_LCD_NBR_PALETTE_ENTRIES - 1))
+ 		return -EINVAL;
+ 
+@@ -316,9 +319,11 @@ int au1100fb_fb_blank(int blank_mode, st
+  */
+ int au1100fb_fb_pan_display(struct fb_var_screeninfo *var, struct fb_info *fbi)
  {
--	/* TODO */
-+	struct au1100fb_device *fbdev = dev_get_drvdata(dev);
+-	struct au1100fb_device *fbdev = to_au1100fb_device(fbi);
++	struct au1100fb_device *fbdev;
+ 	int dy;
+ 
++	fbdev = to_au1100fb_device(fbi);
 +
-+	if (!fbdev)
-+		return 0;
+ 	print_dbg("fb_pan_display %p %p", var, fbi);
+ 
+ 	if (!var || !fbdev) {
+@@ -382,10 +387,12 @@ void au1100fb_fb_rotate(struct fb_info *
+  */
+ int au1100fb_fb_mmap(struct fb_info *fbi, struct vm_area_struct *vma)
+ {
+-	struct au1100fb_device *fbdev = to_au1100fb_device(fbi);
++	struct au1100fb_device *fbdev;
+ 	unsigned int len;
+ 	unsigned long start=0, off;
+ 
++	fbdev = to_au1100fb_device(fbi);
 +
-+	memcpy(fbdev->regs, &fbregs, sizeof(struct au1100fb_regs));
-+
-+	/* Restart LCD clocking */
-+	au_writel(sys_clksrc, SYS_CLKSRC);
-+
-+	/* Unblank the LCD */
-+	au1100fb_fb_blank(VESA_NO_BLANKING, &fbdev->info);
-+
+ 	if (vma->vm_pgoff > (~0UL >> PAGE_SHIFT)) {
+ 		return -EINVAL;
+ 	}
+@@ -467,7 +474,7 @@ int au1100fb_drv_probe(struct device *de
+ 
+ 	if (!request_mem_region(au1100fb_fix.mmio_start, au1100fb_fix.mmio_len,
+ 				DRIVER_NAME)) {
+-		print_err("fail to lock memory region at 0x%08x",
++		print_err("fail to lock memory region at 0x%08lx",
+ 				au1100fb_fix.mmio_start);
+ 		return -EBUSY;
+ 	}
+@@ -595,13 +602,13 @@ int au1100fb_drv_remove(struct device *d
  	return 0;
  }
-+#endif
  
- static struct device_driver au1100fb_driver = {
- 	.name		= "au1100-lcd",
-@@ -620,8 +654,10 @@ static struct device_driver au1100fb_dri
+-int au1100fb_drv_suspend(struct device *dev, u32 state, u32 level)
++int au1100fb_drv_suspend(struct device *dev, pm_message_t state)
+ {
+ 	/* TODO */
+ 	return 0;
+ }
  
- 	.probe		= au1100fb_drv_probe,
-         .remove		= au1100fb_drv_remove,
-+#ifdef CONFIG_PM
- 	.suspend	= au1100fb_drv_suspend,
-         .resume		= au1100fb_drv_resume,
-+#endif
- };
- 
- /*-------------------------------------------------------------------------*/
+-int au1100fb_drv_resume(struct device *dev, u32 level)
++int au1100fb_drv_resume(struct device *dev)
+ {
+ 	/* TODO */
+ 	return 0;
 
 
 

@@ -1,21 +1,22 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH] maxinefb: Fix compilation error
-Date: Tue, 30 May 2006 05:42:50 +0800
-Message-ID: <447B6ADA.9000702@gmail.com>
+From: "Prakhar Vig" <prakharv@gmail.com>
+Subject: How to use ISRAm as a frame buffer in Linux
+Date: Tue, 30 May 2006 15:02:55 +0530
+Message-ID: <dbee5b5a0605300232r15a2c13dr4153bb39a2024411@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_4950_12491052.1148981575949"
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FkpWv-00060L-6u
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 May 2006 14:44:05 -0700
-Received: from py-out-1112.google.com ([64.233.166.181])
+	id 1Fl32u-0006kE-S3
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 May 2006 05:10:00 -0700
+Received: from ug-out-1314.google.com ([66.249.92.174])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FkpWr-0007lm-Ns
-	for linux-fbdev-devel@lists.sourceforge.net; Mon, 29 May 2006 14:44:02 -0700
-Received: by py-out-1112.google.com with SMTP id b29so228815pya
-        for <linux-fbdev-devel@lists.sourceforge.net>; Mon, 29 May 2006 14:44:01 -0700 (PDT)
+	id 1Fl32u-0002Cd-A2
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 May 2006 05:10:00 -0700
+Received: by ug-out-1314.google.com with SMTP id j40so1201012ugd
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 30 May 2006 05:09:56 -0700 (PDT)
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -26,53 +27,51 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Martin Michlmayr <tbm@cyrius.com>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-From: Martin Michlmayr <tbm@cyrius.com>
+------=_Part_4950_12491052.1148981575949
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Fix the following compilation error:
+ Hi All,
 
-CC      drivers/video/maxinefb.o
-drivers/video/maxinefb.c:58: warning: initializer-string for array of chars is too long
-drivers/video/maxinefb.c:58: warning: (near initialization for \u2018maxinefb_fix.id\u2019)
-drivers/video/maxinefb.c:110: error: unknown field \u2018fb_get_fix\u2019 specified in initializer
-drivers/video/maxinefb.c:110: error: \u2018gen_get_fix\u2019 undeclared here (not in a function)
-drivers/video/maxinefb.c:111: error: unknown field \u2018fb_get_var\u2019 specified in initializer
-drivers/video/maxinefb.c:111: error: \u2018gen_get_var\u2019 undeclared here (not in a function)
-make[2]: *** [drivers/video/maxinefb.o] Error 1
+I would like to read a Image data already present in the framebuffer, as I
+am new to this , I am finding it difficult to read. I have written one small
+application where I want to read Image pixels value which are present in
+Frame buffer.
 
-Signed-off-by: Martin Michlmayr <tbm@cyrius.com>
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
+I am working on linux and also want to use ISRAM as a frame buffer, but
+finding it difficult to use it.
 
- drivers/video/maxinefb.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
+Please help me out, if some one know something in this regard. I will highly
+appreciate if someone can provide me code snippet for the same. As this will
+clear my lots of doubts.
 
-diff --git a/drivers/video/maxinefb.c b/drivers/video/maxinefb.c
-index 743e7ad..f85421b 100644
---- a/drivers/video/maxinefb.c
-+++ b/drivers/video/maxinefb.c
-@@ -55,7 +55,7 @@ static struct fb_var_screeninfo maxinefb
- };
- 
- static struct fb_fix_screeninfo maxinefb_fix = {
--	.id =		"Maxine onboard graphics 1024x768x8",
-+	.id =		"Maxine",
- 	.smem_len =	(1024*768),
- 	.type =		FB_TYPE_PACKED_PIXELS,
- 	.visual =	FB_VISUAL_PSEUDOCOLOR,
-@@ -107,8 +107,6 @@ static int maxinefb_setcolreg(unsigned r
- 
- static struct fb_ops maxinefb_ops = {
- 	.owner		= THIS_MODULE,
--	.fb_get_fix	= gen_get_fix,
--	.fb_get_var	= gen_get_var,
- 	.fb_setcolreg	= maxinefb_setcolreg,
- 	.fb_fillrect	= cfb_fillrect,
- 	.fb_copyarea	= cfb_copyarea,
+Thanks And Regards
+ Prakhar
 
+------=_Part_4950_12491052.1148981575949
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<div id="mb_0">
+<div>
+<div>Hi All,</div>
+<div>&nbsp;</div>
+<div>I would like to read a Image data already present in the framebuffer, as I am new to this , I am finding it difficult to read. I have written one small application where I want to read Image pixels value which are present in Frame buffer. 
+</div>
+<div>&nbsp;</div>
+<div>I am working on linux and also want to use ISRAM as a frame buffer, but finding it difficult to use it.</div>
+<div>&nbsp;</div>
+<div>Please help me out, if some one know something in this regard. I will highly appreciate if someone can provide me code snippet for the same. As this will clear my lots of doubts.</div>
+<div>&nbsp;</div>
+<div>Thanks And Regards</div></div>
+<div><span class="sg">
+<div>Prakhar</div></span></div></div>
+
+------=_Part_4950_12491052.1148981575949--
 
 
 -------------------------------------------------------

@@ -1,22 +1,27 @@
-From: "Prakhar Vig" <prakharv@gmail.com>
-Subject: How to use ISRAm as a frame buffer in Linux
-Date: Tue, 30 May 2006 15:02:55 +0530
-Message-ID: <dbee5b5a0605300232r15a2c13dr4153bb39a2024411@mail.gmail.com>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [directfb-dev] printk on framebuffer console
+Date: Tue, 30 May 2006 20:17:57 +0800
+Message-ID: <447C37F5.8000008@gmail.com>
+References: <447C03C6.3000805@singnet.com.sg>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/alternative; 
-	boundary="----=_Part_4950_12491052.1148981575949"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
+Received: from [10.3.1.93] (helo=sc8-sf-list1-new.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Fl32u-0006kE-S3
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 May 2006 05:10:00 -0700
-Received: from ug-out-1314.google.com ([66.249.92.174])
+	id 1Fl3As-0007z9-LZ
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 May 2006 05:18:14 -0700
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1Fl3As-0002OC-J3
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 May 2006 05:18:14 -0700
+Received: from py-out-1112.google.com ([64.233.166.178])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Fl32u-0002Cd-A2
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 May 2006 05:10:00 -0700
-Received: by ug-out-1314.google.com with SMTP id j40so1201012ugd
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 30 May 2006 05:09:56 -0700 (PDT)
+	id 1Fl3Ap-0001lr-PW
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 May 2006 05:18:14 -0700
+Received: by py-out-1112.google.com with SMTP id b29so386140pya
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 30 May 2006 05:18:06 -0700 (PDT)
+In-Reply-To: <447C03C6.3000805@singnet.com.sg>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -27,51 +32,42 @@ List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-To: linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: Terence Soh <gopher@singnet.com.sg>
+Cc: directfb-dev@directfb.org, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-------=_Part_4950_12491052.1148981575949
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Terence Soh wrote:
+> Hi,
+> 
+> I'm seeking advise on getting printk displayed on the framebuffer console.
 
- Hi All,
+You're better off sending this to linux-fbdev-devel, so I'm adding
+this to the CC list.
 
-I would like to read a Image data already present in the framebuffer, as I
-am new to this , I am finding it difficult to read. I have written one small
-application where I want to read Image pixels value which are present in
-Frame buffer.
+> 
+> My display is RGB555 VGA resolution and I using the mainline kernel 
+> font_8x8 for fonts and I've disabled the serial console and tile 
+> blitting support. At the moment, the printk are printing black lines on 
+> the screen instead of the printk statements.
+> 
+> In bitblit.c bit_putcs(),the image.depth = 1. Is this correct for my 
+> application?
+> 
+> Also is font_8x8 suitable for 16 bit screens? It seems  like it's meant 
+> for monochrome display.
 
-I am working on linux and also want to use ISRAM as a frame buffer, but
-finding it difficult to use it.
+Yes, the monochrome bitmap are expanded to the current foreground and
+background colors of the console.
 
-Please help me out, if some one know something in this regard. I will highly
-appreciate if someone can provide me code snippet for the same. As this will
-clear my lots of doubts.
+First, make sure that writing directly to the framebuffer memory displays
+something properly on your monitor.
 
-Thanks And Regards
- Prakhar
+Then make sure that your driver has a working xxxfb_setcolreg function()
+and that info->pseudo_palette is properly filled up.
 
-------=_Part_4950_12491052.1148981575949
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Make sure also that info->var and info->fix are correctly set.
 
-<div id="mb_0">
-<div>
-<div>Hi All,</div>
-<div>&nbsp;</div>
-<div>I would like to read a Image data already present in the framebuffer, as I am new to this , I am finding it difficult to read. I have written one small application where I want to read Image pixels value which are present in Frame buffer. 
-</div>
-<div>&nbsp;</div>
-<div>I am working on linux and also want to use ISRAM as a frame buffer, but finding it difficult to use it.</div>
-<div>&nbsp;</div>
-<div>Please help me out, if some one know something in this regard. I will highly appreciate if someone can provide me code snippet for the same. As this will clear my lots of doubts.</div>
-<div>&nbsp;</div>
-<div>Thanks And Regards</div></div>
-<div><span class="sg">
-<div>Prakhar</div></span></div></div>
-
-------=_Part_4950_12491052.1148981575949--
+Tony
 
 
 -------------------------------------------------------

@@ -1,27 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [directfb-dev] printk on framebuffer console
-Date: Tue, 30 May 2006 20:17:57 +0800
-Message-ID: <447C37F5.8000008@gmail.com>
-References: <447C03C6.3000805@singnet.com.sg>
+Subject: Re: How to use ISRAm as a frame buffer in Linux
+Date: Tue, 30 May 2006 20:33:47 +0800
+Message-ID: <447C3BAB.70003@gmail.com>
+References: <dbee5b5a0605300232r15a2c13dr4153bb39a2024411@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [10.3.1.93] (helo=sc8-sf-list1-new.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Fl3As-0007z9-LZ
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 May 2006 05:18:14 -0700
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Fl3As-0002OC-J3
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 May 2006 05:18:14 -0700
-Received: from py-out-1112.google.com ([64.233.166.178])
+	id 1Fl3Q9-0001K9-VU
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 May 2006 05:34:01 -0700
+Received: from py-out-1112.google.com ([64.233.166.179])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1Fl3Ap-0001lr-PW
-	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 May 2006 05:18:14 -0700
-Received: by py-out-1112.google.com with SMTP id b29so386140pya
-        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 30 May 2006 05:18:06 -0700 (PDT)
-In-Reply-To: <447C03C6.3000805@singnet.com.sg>
+	id 1Fl3Q7-0000aB-MG
+	for linux-fbdev-devel@lists.sourceforge.net; Tue, 30 May 2006 05:34:02 -0700
+Received: by py-out-1112.google.com with SMTP id b29so390391pya
+        for <linux-fbdev-devel@lists.sourceforge.net>; Tue, 30 May 2006 05:33:58 -0700 (PDT)
+In-Reply-To: <dbee5b5a0605300232r15a2c13dr4153bb39a2024411@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -33,39 +29,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Terence Soh <gopher@singnet.com.sg>
-Cc: directfb-dev@directfb.org, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: prakharv@gmail.com
 
-Terence Soh wrote:
-> Hi,
-> 
-> I'm seeking advise on getting printk displayed on the framebuffer console.
+Prakhar Vig wrote:
+> Hi All,
+>  
+> I would like to read a Image data already present in the framebuffer, as
+> I am new to this , I am finding it difficult to read. I have written one
+> small application where I want to read Image pixels value which are
+> present in Frame buffer.
+>  
 
-You're better off sending this to linux-fbdev-devel, so I'm adding
-this to the CC list.
+You can simply open and read /dev/fb0 and it will dump the framebuffer
+in raw format.
 
-> 
-> My display is RGB555 VGA resolution and I using the mainline kernel 
-> font_8x8 for fonts and I've disabled the serial console and tile 
-> blitting support. At the moment, the printk are printing black lines on 
-> the screen instead of the printk statements.
-> 
-> In bitblit.c bit_putcs(),the image.depth = 1. Is this correct for my 
-> application?
-> 
-> Also is font_8x8 suitable for 16 bit screens? It seems  like it's meant 
-> for monochrome display.
+cat /dev/fb0 will also do the trick.
 
-Yes, the monochrome bitmap are expanded to the current foreground and
-background colors of the console.
-
-First, make sure that writing directly to the framebuffer memory displays
-something properly on your monitor.
-
-Then make sure that your driver has a working xxxfb_setcolreg function()
-and that info->pseudo_palette is properly filled up.
-
-Make sure also that info->var and info->fix are correctly set.
+Google for a screenshot program for the framebuffer. fbgrab is an example.
 
 Tony
 

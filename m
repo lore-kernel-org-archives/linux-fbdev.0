@@ -1,23 +1,23 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: printk on framebuffer console
-Date: Wed, 31 May 2006 19:11:36 +0800
-Message-ID: <447D79E8.3090102@gmail.com>
-References: <447C03C6.3000805@singnet.com.sg> <447C37F5.8000008@gmail.com> <447CE73C.2060807@singnet.com.sg> <447CE95C.2080603@gmail.com> <447CF5BF.5080507@singnet.com.sg> <447D189C.1010100@gmail.com> <447D5134.1090502@singnet.com.sg>
+Subject: Re: How to use ISRAm as a frame buffer in Linux
+Date: Wed, 31 May 2006 19:39:06 +0800
+Message-ID: <447D805A.6080805@gmail.com>
+References: <dbee5b5a0605300232r15a2c13dr4153bb39a2024411@mail.gmail.com>	 <447C3BAB.70003@gmail.com>	 <dbee5b5a0605302143l7b0b4d24kdf0d77685b7ad4d9@mail.gmail.com>	 <447D204A.60007@gmail.com> <dbee5b5a0605310240q3de9582cwccf9d5ee4a012a46@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91] helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FlOc8-0006bX-1D
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 31 May 2006 04:11:48 -0700
-Received: from wx-out-0102.google.com ([66.249.82.195])
+	id 1FlP2j-0001bj-8a
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 31 May 2006 04:39:17 -0700
+Received: from py-out-1112.google.com ([64.233.166.182])
 	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FlOc7-0005lk-NE
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 31 May 2006 04:11:47 -0700
-Received: by wx-out-0102.google.com with SMTP id t14so2938wxc
-        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 31 May 2006 04:11:47 -0700 (PDT)
-In-Reply-To: <447D5134.1090502@singnet.com.sg>
+	id 1FlP2j-0000Hr-0H
+	for linux-fbdev-devel@lists.sourceforge.net; Wed, 31 May 2006 04:39:17 -0700
+Received: by py-out-1112.google.com with SMTP id b29so688748pya
+        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 31 May 2006 04:39:13 -0700 (PDT)
+In-Reply-To: <dbee5b5a0605310240q3de9582cwccf9d5ee4a012a46@mail.gmail.com>
 Sender: linux-fbdev-devel-admin@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -29,31 +29,46 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 Content-Type: text/plain; charset="us-ascii"
-To: Terence Soh <gopher@singnet.com.sg>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: Prakhar Vig <prakharv@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
-Terence Soh wrote:
->> Remove the console=ttyS0 from your boot parameter (or change it to tty0)
->> and the system messages should go to the framebuffer console.
-> You're right, that worked.
-> 
-> Is there any way I can disable the printf/printk once my QT-Embedded
-> application starts?
+Prakhar Vig wrote:
+> Hi Antonino,
+> thanks for ur help.
+>  
+> As u have told I am using an application that reads a data from
+> framebuffer by opening /dev/fb0. I am attaching the code for ur
+> convineance, I would like to ask following questions:
+>  
+> 1) In this code I am using mmap to allocate memory to frame buffer which
+> has one argument
+> MAP_SHARED or MAP_PRIVATE.
 
-The simplest solution is to write a utility that opens /dev/tty0
-for example, then do an ioctl,
+If you use MAP_PRIVATE, it will create a map using copy-on-write which
+is visible only to the process the requested the mmap.  You don't want
+this, use MAP_PRIVATE.
+ 
+> Could you please explain for what this meant
+> for i.e whether it ie related to allocation in SDRAM or ISRAM.
+> MAP_SHARED in SDRAM and MAP_PRIVATE in ISRAM is it so.
+>  
+> 2) If not, Could you please tell me how to allocate framebuffer to ISRAM
+> as is faster to access from ISRAM than SDRAM.
 
-ioctl(fd, KDSETMODE, KD_GRAPHICS);
+I don't know. Is this memory visible to the CPU? If it is then it
+is certainly mappable. If not, then you have to allocate a shadow
+buffer using system RAM, then on intervals, transfer the contents of
+the shadow buffer to and from this memory region using DMA.
 
-where fd is the file descriptor of /dev/tty0 for instance.
+>  
+> 3) Also, tell me whether I need to use DMA to access data from ISRAM,
+> will it improve the speed of accessing the data from ISRAM. Is it
+> mandatory to use DMA if you want to make it work fast.
 
-To get back your console, do this:
+You cannot use DMA when your method of access is mmap. You can certainly
+use DMA to transfer contents to a shadow buffer which is in turn mmapped.
 
-ioctl(fd, KDSETMODE, KD_TEXT);
-
-Tony
-
-
+Tony  
 
 
 -------------------------------------------------------

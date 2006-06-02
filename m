@@ -1,60 +1,50 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH 2.6.17-rc5-mm1] EDID cleanup
-Date: Thu, 01 Jun 2006 04:35:16 +0800
-Message-ID: <447DFE04.6000804@gmail.com>
-References: <AFBA4E6B-73B8-46EA-A7F6-A233BC78CE93@cecropia.com>
+From: Terence Soh <gopher@singnet.com.sg>
+Subject: Spinning wheel animation splashscreen
+Date: Fri, 02 Jun 2006 16:09:02 +0800
+Message-ID: <447FF21E.8040500@singnet.com.sg>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-admin@lists.sourceforge.net>
-Received: from [10.3.1.93] (helo=sc8-sf-list1-new.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FlXWW-0008BC-KA
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 31 May 2006 13:42:36 -0700
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92] helo=mail.sourceforge.net)
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-list1-b.sourceforge.net ([10.3.1.7]
+	helo=sc8-sf-list1.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FlXWW-0000W4-NF
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 31 May 2006 13:42:36 -0700
-Received: from hu-out-0102.google.com ([72.14.214.197])
-	by mail.sourceforge.net with esmtp (Exim 4.44)
-	id 1FlXWV-0000Oe-1t
-	for linux-fbdev-devel@lists.sourceforge.net; Wed, 31 May 2006 13:42:36 -0700
-Received: by hu-out-0102.google.com with SMTP id 32so1025944huf
-        for <linux-fbdev-devel@lists.sourceforge.net>; Wed, 31 May 2006 13:42:34 -0700 (PDT)
-In-Reply-To: <AFBA4E6B-73B8-46EA-A7F6-A233BC78CE93@cecropia.com>
-Sender: linux-fbdev-devel-admin@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-admin@lists.sourceforge.net
+	id 1Fm4wH-0005Om-7T for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 02 Jun 2006 01:23:26 -0700
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1Fm4wB-0000mH-5W for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 02 Jun 2006 01:23:19 -0700
+Received: from smtp43.singnet.com.sg ([165.21.103.151])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Fm4jU-0000ss-DC
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 02 Jun 2006 01:10:14 -0700
+Received: from [167.116.151.204] ([63.150.136.42])
+	by smtp43.singnet.com.sg (8.13.6/8.13.6) with ESMTP id k5289svS019918
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Fri, 2 Jun 2006 16:09:55 +0800
+List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
 List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
 List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
 List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-Content-Type: text/plain; charset="us-ascii"
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Dave Airlie <airlied@skynet.ie>, Sylvain Meyer <sylvain.meyer@worldonline.fr>, Eric Hustvedt <ehustvedt@cecropia.com>
 
-Dennis Munsie wrote:
-> Just a small patch to remove a hard buffer size.
-> 
-> ---
-> 
-> From: Dennis Munsie <dmunsie@cecropia.com>
-> 
-> Removed hard coded EDID buffer size.
-> 
-> Signed-off-by: Dennis Munsie <dmunsie@cecropia.com>
-Acked-by: Antonino Daplas <adaplas@pol.net>
+Hi,
 
-Dave, I'll leave all intelfb patches to you.
+Is there any current implementation for animating the splash screen?
 
-Tony 
+Are there any advises for implementing one such as a spinning wheel?
 
+Is it advisable to use the bit_cursor function in bitblit.c to animate 
+the screen?
 
--------------------------------------------------------
-All the advantages of Linux Managed Hosting--Without the Cost and Risk!
-Fully trained technicians. The highest number of Red Hat certifications in
-the hosting industry. Fanatical Support. Click to learn more
-http://sel.as-us.falkag.net/sel?cmd=lnk&kid=107521&bid=248729&dat=121642
+Thanks in advance,
+Terence.

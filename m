@@ -1,31 +1,28 @@
-From: "Alex Deucher" <alexdeucher@gmail.com>
-Subject: Re: Twister savagefb doesn't sync
-Date: Tue, 6 Jun 2006 01:11:16 -0400
-Message-ID: <a728f9f90606052211v43de97c7l91a22a9faa93f76c@mail.gmail.com>
-References: <44698356.80806@iit.demokritos.gr> <447381E9.4060705@gmail.com>
-	<447803FC.8050009@iit.demokritos.gr> <44781B3A.5030406@gmail.com>
-	<44781BFB.5020708@gmail.com> <447994A8.30600@iit.demokritos.gr>
-	<447A3CC0.9060403@gmail.com> <447AF58E.3050803@iit.demokritos.gr>
-	<447B60D7.8020204@gmail.com> <44845DEC.1000608@iit.demokritos.gr>
+From: "Nathan King" <natetheking@gmail.com>
+Subject: vesafb
+Date: Mon, 5 Jun 2006 13:02:45 -0500
+Message-ID: <bb9a78950606051102s514075aar7924d05756ccd3c1@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============1956321939=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
+Received: from sc8-sf-list1-b.sourceforge.net ([10.3.1.7]
+	helo=sc8-sf-list1.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Fo5db-00059e-Ax for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 07 Jun 2006 14:32:27 -0700
-Received: from ug-out-1314.google.com ([66.249.92.173])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Fo5dZ-0007be-Vz
+	id 1Fo5mT-0006DA-J4 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 07 Jun 2006 14:41:37 -0700
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1Fo5mT-0006yk-AQ for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 07 Jun 2006 14:41:37 -0700
+Received: from nz-out-0102.google.com ([64.233.162.206])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Fo5mT-0002ig-6t
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 07 Jun 2006 14:32:27 -0700
-Received: by ug-out-1314.google.com with SMTP id o2so497509uge
+	Wed, 07 Jun 2006 14:41:37 -0700
+Received: by nz-out-0102.google.com with SMTP id s18so421333nze
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 07 Jun 2006 14:32:23 -0700 (PDT)
-In-Reply-To: <44845DEC.1000608@iit.demokritos.gr>
-Content-Disposition: inline
+	Wed, 07 Jun 2006 14:41:31 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,41 +33,65 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: vasvir@iit.demokritos.gr, linux-fbdev-devel@lists.sourceforge.net
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On 6/5/06, Vassilis Virvilis <vasvir@iit.demokritos.gr> wrote:
-> Antonino A. Daplas wrote:
-> >
-> > Much simpler if you just load X first with UseBIOS False then dump the regs.
-> > Do the same with UseBIOS True.  You mentioned that X does not work if the
-> > option UseBIOS is false.
-> >
-> > Tony
-> >
->
-> Any ideas about the data I posted?
-> http://marc.theaimsgroup.com/?l=linux-fbdev-devel&m=114908868820818&w=2
->
-> I can undestand that is problem difficult to tackle remotely.
->
+--===============1956321939==
+Content-Type: multipart/alternative; 
+	boundary="----=_Part_4763_31592448.1149530565257"
 
-The reason the savage xorg drver uses the bios is because almost every
-panel they connect to the chip seems to require fairly custom timings.
- the twisters and prosavages are even worse than the discrete chips.
-Also, only the bios seems to know the magic incantation necessary for
-dualhead.  I tried for a while to add non-bios mode setting to crtc2
-without much luck.
+------=_Part_4763_31592448.1149530565257
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-For a short term fix, just program the registers with the new values
-from the bios.  You may be able to just get away with adjusting the
-crtc1 dclk (SR12, SR13, SR29). A real fix may require special
-calculations or tables for different chip/panel combos.
+Hey folks,
 
-Alex
+I'm trying to get a feel for how all this works as I get ready to really
+start monkeying with the driver, so I liberally sprinkled some printk's
+around vesafb.c and cfb_fillrect.c and recompiled. However I only ever get
+messages from three of the vesafb.c functions, all on bootup, and none from
+cfb_fillrect.c. I know doing all those messages will slow down my system(or
+they would if they worked right) but I'm just trying to figure out what
+files control what.
+
+So my question is, which files are responsible for all these constant
+fillrect and bitblt operations, and can they monkeyed with to generate
+kernel or other messages?
+
+Using 2.6.16 with fedora core 5 and the VESA driver.
+
+Many thanks,
+Nathan
+
+------=_Part_4763_31592448.1149530565257
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Hey folks,<br><br>I'm trying to get a feel for how all this works as I get ready to really start monkeying with the driver, so I liberally sprinkled some printk's around vesafb.c and cfb_fillrect.c and recompiled. However I only ever get messages from three of the 
+vesafb.c functions, all on bootup, and none from cfb_fillrect.c. I know doing all those messages will slow down my system(or they would if they worked right) but I'm just trying to figure out what files control what. <br>
+<br>So my question is, which files are responsible for all these constant fillrect and bitblt operations, and can they monkeyed with to generate kernel or other messages?<br><br>Using 2.6.16 with fedora core 5 and the VESA driver.
+<br><br>Many thanks,<br>Nathan<br>
+
+------=_Part_4763_31592448.1149530565257--
 
 
-> Thanks anyway.
->
->     .bill
->
+--===============1956321939==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+
+--===============1956321939==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--===============1956321939==--

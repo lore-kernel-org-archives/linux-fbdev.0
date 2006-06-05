@@ -1,9 +1,15 @@
-From: Malcolm Parsons <malcolm.parsons@gmail.com>
-Subject: [PATCH] Fix fbcon limited scroll in
-	SCROLL_PAN_REDRAW mode
-Date: Sun, 4 Jun 2006 11:02:03 +0100
-Message-ID: <20060604100202.GA22768@arthur>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Vassilis Virvilis <vasvir@iit.demokritos.gr>
+Subject: Re: Twister savagefb doesn't sync
+Date: Mon, 05 Jun 2006 19:38:04 +0300
+Message-ID: <44845DEC.1000608@iit.demokritos.gr>
+References: <44698356.80806@iit.demokritos.gr>
+	<447359B8.7020304@iit.demokritos.gr> <447381E9.4060705@gmail.com>
+	<447803FC.8050009@iit.demokritos.gr>
+	<44781B3A.5030406@gmail.com> <44781BFB.5020708@gmail.com>
+	<447994A8.30600@iit.demokritos.gr> <447A3CC0.9060403@gmail.com>
+	<447AF58E.3050803@iit.demokritos.gr> <447B60D7.8020204@gmail.com>
+Reply-To: vasvir@iit.demokritos.gr,
+	linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
@@ -11,30 +17,18 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-list1-b.sourceforge.net ([10.3.1.7]
 	helo=sc8-sf-list1.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FnQRG-0005Bo-PE for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 05 Jun 2006 18:32:59 -0700
+	id 1FnR2d-0007ON-6W for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 05 Jun 2006 19:11:36 -0700
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FnQRB-0003kV-7g for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 05 Jun 2006 18:32:53 -0700
-Received: from smtp-out4.blueyonder.co.uk ([195.188.213.7])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FmpQs-0001LM-4o
+	id 1FnI0e-0005jo-VN for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 05 Jun 2006 09:32:56 -0700
+Received: from zeus.iit.demokritos.gr ([143.233.226.2])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FnI0W-000611-Eb
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 04 Jun 2006 03:02:07 -0700
-Received: from [172.23.170.147] (helo=anti-virus03-10)
-	by smtp-out4.blueyonder.co.uk with smtp (Exim 4.52)
-	id 1FmpQq-0008J0-9n for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 04 Jun 2006 11:02:04 +0100
-Received: from [82.33.127.97] (helo=arthur)
-	by asmtp-out3.blueyonder.co.uk with esmtp (Exim 4.52)
-	id 1FmpQp-0002XM-QQ for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 04 Jun 2006 11:02:03 +0100
-Received: from malcolm by arthur with local (Exim 4.62)
-	(envelope-from <malcolm.parsons@gmail.com>) id 1FmpQp-000643-5A
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 04 Jun 2006 11:02:03 +0100
-Content-Disposition: inline
+	Mon, 05 Jun 2006 09:32:50 -0700
+In-Reply-To: <447B60D7.8020204@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -45,30 +39,23 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net
 
+Antonino A. Daplas wrote:
+> 
+> Much simpler if you just load X first with UseBIOS False then dump the regs.
+> Do the same with UseBIOS True.  You mentioned that X does not work if the
+> option UseBIOS is false.
+> 
+> Tony 
+> 
 
-When scrolling up in SCROLL_PAN_REDRAW mode with a large limited scroll
-region, the bottom few lines have to be redrawn.  Without this patch, 
-the wrong text is drawn into these lines, corrupting the display.
+Any ideas about the data I posted?
+http://marc.theaimsgroup.com/?l=linux-fbdev-devel&m=114908868820818&w=2
 
-Observed in 2.6.14 when running an IRC client in the Nintendo DS linux
-port.
+I can undestand that is problem difficult to tackle remotely.
 
-I haven't tested if scrolling down has the same problem.
+Thanks anyway.
 
-Patch against 2.6.17-rc5 (git):
-
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index 953eb8c..47ba1a7 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -1745,7 +1745,7 @@ static int fbcon_scroll(struct vc_data *
- 					fbcon_redraw_move(vc, p, 0, t, count);
- 				ypan_up_redraw(vc, t, count);
- 				if (vc->vc_rows - b > 0)
--					fbcon_redraw_move(vc, p, b - count,
-+					fbcon_redraw_move(vc, p, b,
- 							  vc->vc_rows - b, b);
- 			} else
- 				fbcon_redraw_move(vc, p, t + count, b - t - count, t);
+    .bill

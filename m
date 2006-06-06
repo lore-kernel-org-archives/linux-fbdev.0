@@ -1,49 +1,75 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
 Subject: Re: [PATCH 0/7] Detaching fbcon
-Date: Wed, 07 Jun 2006 07:15:56 +0800
-Message-ID: <44860CAC.90107@gmail.com>
-References: <44856223.9010606@gmail.com>	 <9e4733910606060910m44cd4edfs8155c1fe031b37fe@mail.gmail.com>	 <9e4733910606060919p2a137e07wd58b51a227f5aa5e@mail.gmail.com>	 <4485DB6C.704@gmail.com>	 <9e4733910606061400i172d20a7qa9583b9b9245f6f9@mail.gmail.com>	 <21d7e9970606061439m6e914bf8ya5567b672d5e14bb@mail.gmail.com> <9e4733910606061455l2ab3a217q431a90a6c3555813@mail.gmail.com>
+Date: Wed, 07 Jun 2006 07:17:18 +0800
+Message-ID: <44860CFE.2060908@gmail.com>
+References: <44856223.9010606@gmail.com>	 <9e4733910606060910m44cd4edfs8155c1fe031b37fe@mail.gmail.com>	 <9e4733910606060919p2a137e07wd58b51a227f5aa5e@mail.gmail.com>	 <4485DB6C.704@gmail.com> <9e4733910606061400i172d20a7qa9583b9b9245f6f9@mail.gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751345AbWFFXRd@vger.kernel.org>
-In-Reply-To: <9e4733910606061455l2ab3a217q431a90a6c3555813@mail.gmail.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751349AbWFFXRx@vger.kernel.org>
+In-Reply-To: <9e4733910606061400i172d20a7qa9583b9b9245f6f9@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 To: Jon Smirl <jonsmirl@gmail.com>
-Cc: Dave Airlie <airlied@gmail.com>, Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
 Jon Smirl wrote:
-> On 6/6/06, Dave Airlie <airlied@gmail.com> wrote:
->> > > >
->> > How is the stack maintained of what was previously bound to console?
->> > What if I unbind fbcon on a system that doesn't have VGAcon for a
->> backup?
+> On 6/6/06, Antonino A. Daplas <adaplas@gmail.com> wrote:
+>> Jon Smirl wrote:
+>> > On 6/6/06, Jon Smirl <jonsmirl@gmail.com> wrote:
+>> >> On 6/6/06, Antonino A. Daplas <adaplas@gmail.com> wrote:
+>> >> > Overall, this feature is a great help for developers working in the
+>> >> > framebuffer or console layer.  There is not need to continually
+>> >> reboot the
+>> >> > kernel for every small change. It is also useful for regular users
+>> >> who wants
+>> >> > to choose between a graphical console or a text console without
+>> >> having to
+>> >> > reboot.
+>> >>
+>> >> Instead of the sysfs attribute, what about creating a new escape
+>> >> sequence that you send to the console system to detach? Doing it that
+>> >> way would make more sense from a stacking order. It just seems
+>> >> backwards to me that you ask a lower layer to detach from the layer
+>> >> above it. The escape sequence would also work for any console
+>> >> implementation, not just fbcon.
+>> >>
+>> >> If console detached this way and there was nothing to fallback to
+>> >> (systems without VGAcon), it would know not to try and print anything
+>> >> until something reattaches to it.
+>> >
+>> > Another thought, controlling whether console is attached or not is an
+>> > attribute of console, not of fbcon.
 >>
->> You could try actually reading the patches...
+>> If the console attached fbcon, then I agree that console should decide
+>> when to detach fbcon.  But that's not what happens, it's fbcon that
+>> attaches itself.
+>>
+>> It's not that you're wrong, it's just how the current vt/console layer
+>> works.  If someone do decide to add this feature to the vt/console layer,
+>> then I'm more than willing to have fbcon support that as well.
 > 
-> I was working on a patch for this but now I've lost interest.
+> This is just kind of twisted since console increments the fbcon ref
+> count.
 
-How come? I never believed you're the type to lose interest so easily :-)
+Oh, the console and vt layer is exactly that, twisted :-)
 
-> 
-> Detach should be an attribute off from /dev/console. /dev/console is
-> using the standard device support and appears at
-> /sys/class/tty/console so /sys/class/tty/console/detach can be added
-> as an attribute. /sys/class/tty/console could have another attribute
-> which lists the available drivers. One solution would be for the
-> attribute to list the names of the available drivers that have
-> registered with console and then copy one of those names back to the
-> attribute to select where console is bound.
-> 
-> In my opinion attach/detach does not belong as an attribute on fbcon,
-> it is part of /dev/console. The fact that fbcon has to ask console to
-> unbind from it implies these attributes are in the wrong place.
+> Is /dev/console a real device, it that where the sysfs
+> attribute should go?
 
-Okay, you and Andrew persuaded me to change the location of the control.
-I did say that if someone makes the necessary change to the vt layer that
-it won't be a problem. The necessary infrastructure is already introduced
-by this patch to make it work like what you and Andrew want. 
+We have /sys/class/tty/console.
 
+ 
+> How is the stack maintained of what was previously bound to console?
+
+That's the problem, there is no stack.  Once a driver binds to a console,
+the previous driver is lost.
+
+> What if I unbind fbcon on a system that doesn't have VGAcon for a backup?
+
+All systems have a backup console, otherwise you're system won't boot.
+It's either vgacon or dummycon.
+
+Tony
 Tony
  

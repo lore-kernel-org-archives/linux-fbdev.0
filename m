@@ -1,74 +1,65 @@
-From: Vassilis Virvilis <vasvir@iit.demokritos.gr>
-Subject: Re: Twister savagefb doesn't sync
-Date: Tue, 06 Jun 2006 12:57:43 +0300
-Message-ID: <44855197.7040801@iit.demokritos.gr>
-References: <44698356.80806@iit.demokritos.gr> <447381E9.4060705@gmail.com>	
-	<447803FC.8050009@iit.demokritos.gr>
-	<44781B3A.5030406@gmail.com>	 <44781BFB.5020708@gmail.com>
-	<447994A8.30600@iit.demokritos.gr>	 <447A3CC0.9060403@gmail.com>
-	<447AF58E.3050803@iit.demokritos.gr>	 <447B60D7.8020204@gmail.com>
-	<44845DEC.1000608@iit.demokritos.gr>
-	<a728f9f90606052211v43de97c7l91a22a9faa93f76c@mail.gmail.com>
-Reply-To: vasvir@iit.demokritos.gr,
-	linux-fbdev-devel@lists.sourceforge.net
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: [PATCH 0/7] Detaching fbcon
+Date: Tue, 06 Jun 2006 19:08:19 +0800
+Message-ID: <44856223.9010606@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FnYEO-0007al-Ts for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 06 Jun 2006 02:52:13 -0700
-Received: from zeus.iit.demokritos.gr ([143.233.226.2])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FnYEM-0002Aq-9j
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 06 Jun 2006 02:52:12 -0700
-In-Reply-To: <a728f9f90606052211v43de97c7l91a22a9faa93f76c@mail.gmail.com>
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Alex Deucher <alexdeucher@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@gmail.com>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751209AbWFFLKT@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-Alex Deucher wrote:
-> On 6/5/06, Vassilis Virvilis <vasvir@iit.demokritos.gr> wrote:
-> 
-> The reason the savage xorg drver uses the bios is because almost every
-> panel they connect to the chip seems to require fairly custom timings.
-> the twisters and prosavages are even worse than the discrete chips.
-> Also, only the bios seems to know the magic incantation necessary for
-> dualhead.  I tried for a while to add non-bios mode setting to crtc2
-> without much luck.
+One of the limitations of the framebuffer console system is its inablity to
+unload or detach itself from the console layer.  And once it loads, it also
+locks in framebuffer drivers preventing their unload. Although the con2fbmap
+utility does provide a means to unload individual drivers, it requires that at
+least one framebuffer driver is loaded for use by fbcon.
 
-I don't care for dualhead right now. I can imagine it is 4 times weirder
-than my current setup. What is crtc*?
+With this change, it is possible to detach fbcon from the console layer. If it
+is detached, it will reattach the boot console driver (which is permanently
+loaded) back to the console layer so the system can continue to work.  As a
+consequence, fbcon will also decrement its reference count of individual
+framebuffer drivers, allowing all of these drivers to be unloaded even if
+fbcon is still loaded.
 
-> 
-> For a short term fix, just program the registers with the new values
-> from the bios.  You may be able to just get away with adjusting the
-> crtc1 dclk (SR12, SR13, SR29).
+Unless you use drivers that restores the display to text mode (rivafb and
+i810fb, for example), detaching fbcon does require assistance from userspace
+tools (ie, vbetools) for text mode to be restored completely.  Without the
+help of these tools, fbcon will leave the VGA console corrupted. The methods
+that can be used will be described in Documentation/fb/fbcon.txt.
 
-I will try that. Thanks for the suggestion.
+Because the vt layer also increments the module reference count for each
+console driver, fbcon cannot be directly unloaded.  It must be detached first
+prior to unload.
 
-A real fix may require special
-> calculations or tables for different chip/panel combos.
-> 
+Similarly, fbcon can be reattached to the console layer without having to
+reload the module.  A nice feature if fbcon is compiled statically.
 
-I will try for both of my monitors and I will report here any
-success or failure unless of course I am told that this info is
-not desirable.
+Attaching and detaching fbcon is done via sysfs attributes. A class device
+entry for fbcon is created in /sys/class/graphics. The two attributes that
+controls this feature are detach and attach. Two other attributes that are
+piggybacked under /sys/class/graphics/fb[n] that are fbcon-specific,
+'con_rotate' and 'con_rotate_all' are moved to fbcon.  They are renamed as
+'rotate' and 'rotate_all' respectively.
 
-Do you know if changing the number of colors 256/64K/16M requires
-clock adjustments (SR12, SR13, SR29)?
+Overall, this feature is a great help for developers working in the
+framebuffer or console layer.  There is not need to continually reboot the
+kernel for every small change. It is also useful for regular users who wants
+to choose between a graphical console or a text console without having to
+reboot.
 
-Thanks for answering.
+Example usage for x86:
 
-      .bill
+/* start in text mode */
+modprobe xxxfb
+modprobe fbcon
+/* graphical mode with fbcon using xxxfb */
+echo 1 > /sys/class/graphics/fbcon/detach
+/* back to text mode, will produce corrupt display unless vbetool is used */
+rmmod xxxfb
+modprobe yyyfb
+/* back to graphical mode with fbcon using yyyfb */
+
+Before trying out this feature, please read Documentation/fb/fbcon.txt.

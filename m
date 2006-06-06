@@ -1,76 +1,145 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 5/7] Detaching fbcon: Clean up exit code
-Date: Tue, 06 Jun 2006 19:08:55 +0800
-Message-ID: <44856247.8090405@gmail.com>
+Subject: [PATCH 7/7] Detaching fbcon: Update documentation
+Date: Tue, 06 Jun 2006 19:09:05 +0800
+Message-ID: <44856251.6050909@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751235AbWFFLLJ@vger.kernel.org>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751237AbWFFLLk@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
 Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-To detach fbcon, it must also clean up all resources it allocated. This was
-never done before because fbcon cannot be unloaded. 
+Update Documentation/fb/fbcon.txt on the following:
+
+1. sysfs attributes are now located in class/graphics/fbcon
+2. instructions on how to attach, detach and/or unload fbcon
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/console/fbcon.c |   43 +++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 43 insertions(+), 0 deletions(-)
+ Documentation/fb/fbcon.txt |  104 ++++++++++++++++++++++++++++++++++++++++++--
+ 1 files changed, 100 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index 014afea..a8de822 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -3112,6 +3112,49 @@ static void __exit fbcon_deinit_class_de
+diff --git a/Documentation/fb/fbcon.txt b/Documentation/fb/fbcon.txt
+index 08dce0f..f3a3be0 100644
+--- a/Documentation/fb/fbcon.txt
++++ b/Documentation/fb/fbcon.txt
+@@ -135,10 +135,10 @@ C. Boot options
  
- static void __exit fbcon_exit(void)
- {
-+	struct fb_info *info;
-+	int i, j, mapped;
+ 	The angle can be changed anytime afterwards by 'echoing' the same
+ 	numbers to any one of the 2 attributes found in
+-	/sys/class/graphics/fb{x}
++	 /sys/class/graphics/fbcon
+ 
+-		con_rotate     - rotate the display of the active console
+-		con_rotate_all - rotate the display of all consoles
++		rotate     - rotate the display of the active console
++		rotate_all - rotate the display of all consoles
+ 
+ 	Console rotation will only become available if Console Rotation
+ 	Support is compiled in your kernel.
+@@ -148,5 +148,101 @@ C. Boot options
+ 	Actually, the underlying fb driver is totally ignorant of console
+ 	rotation.
+ 
+----
++C. Attaching, Detaching and Unloading
 +
-+	for (i = 0; i < FB_MAX; i++) {
-+		info = registered_fb[i];
++It's possible to detach/attach the framebuffer console from the vt layer by
++echoing anything to the following sysfs attributes found
++/sys/class/graphics/fbcon.
 +
-+		if (info && info->fbcon_par)
-+			fbcon_del_cursor_timer(info);
-+	}
++	   attach - attach framebuffer console to vt layer
++	   detach - detach framebuffer console to vt layer
 +
-+#ifdef CONFIG_ATARI
-+	free_irq(IRQ_AUTO_4, fbcon_vbl_handler);
-+#endif
-+#ifdef CONFIG_MAC
-+	if (MACH_IS_MAC && vbl_detected)
-+		free_irq(IRQ_MAC_VBL, fbcon_vbl_handler);
-+#endif
++If fbcon is detached from the vt layer, your boot console driver (which is
++usually VGA text mode) will take over.  A few drivers (rivafb and i810fb) will
++restore VGA text mode for you.  With the rest, before detaching fbcon, you
++must take a few additional steps to make sure that your VGA text mode is
++restored properly. The following is one of the several methods that you can do:
 +
-+	kfree((void *)softback_buf);
++1. Download or install vbetool.  This utility is included with most
++   distributions nowadays, and is usually part of the suspend/resume tool.
 +
-+	for (i = 0; i < FB_MAX; i++) {
-+		mapped = 0;
-+		info = registered_fb[i];
++2. In your kernel configuration, ensure that CONFIG_FRAMEBUFFER_CONSOLE is set
++   to 'y' or 'm'. Enable one or more of your favorite framebuffer drivers.
 +
-+		if (info == NULL)
-+			continue;
++3. Boot into text mode and as root run:
 +
-+		for (j = 0; j < MAX_NR_CONSOLES; j++) {
-+			if (con2fb_map[j] == i) {
-+				con2fb_map[j] = -1;
-+				mapped = 1;
-+			}
-+		}
++	vbetool vbestate save > <vga state file>
 +
-+		if (mapped) {
-+			if (info->fbops->fb_release)
-+				info->fbops->fb_release(info, 0);
-+			module_put(info->fbops->owner);
-+			kfree(info->fbcon_par);
-+			info->fbcon_par = NULL;
-+		}
-+	}
++	The above command saves the register contents of your graphics
++	hardware to <vga state file>.  You need to do this step only once as
++	the state file can be reused.
 +
- 	fbcon_deinit_class_device();
- 	class_device_destroy(fb_class, MKDEV(FB_MAJOR, FB_MAX));
- }
++4. If fbcon is compiled as a module, load fbcon by doing:
++
++       modprobe fbcon
++
++5. Now to detach fbcon:
++
++       vbetool vbestate restore < <vga state file> && \
++       echo 1 > /sys/class/graphics/fbcon/detach
++
++6. That's it, you're back to VGA mode. And if you compiled your drivers as
++   modules, you can unload them at will.  So if you want to change your driver
++   from xxxfb to yyyfb, you can do this:
++
++	detach fbcon
++	rmmod xxxfb
++	modprobe yyyfb
++
++	Of course, con2fbmap can do the same thing but will not work if xxxfb
++	and yyyfb are not compatible (ie, cannot be loaded at the same time).
++
++7. To reattach fbcon:
++
++       echo 1 > /sys/class/graphics/fbcon/attach
++
++8. Once the framebuffer console is detached, and if it is compiled as a module,
++the module can be unloaded with 'rmmod fbcon'.  This feature is great for
++developers.
++
++Notes for vesafb users:
++=======================
++
++Unfortunately, if your bootline includes a vga=xxx parameter that sets the
++hardware in graphics mode, such as when loading vesafb, vgacon will not load.
++Instead, vgacon will replace the default boot console with dummycon, and you
++won't get any display after detaching fbcon. Your machine is still alive, so
++you can reattach vesafb. However, to reattach vesafb, you need to do one of
++the following:
++
++Variation 1:
++
++    a. Before detaching fbcon, do
++
++       vbetool vbemode save > <vesa state file> # do once for each vesafb mode,
++						# the file can be reused
++
++    b. Detach fbcon as in step 5.
++
++    c. Attach fbcon
++
++        vbetool vbestate restore < <vesa state file> && \
++	echo 1 > /sys/class/graphics/fbcon/attach
++
++Variation 2:
++
++    a. Before detaching fbcon, do:
++
++       vbetool vbemode get
++
++    b. Take note of the mode number
++
++    b. Detach fbcon as in step 5.
++
++    c. Attach fbcon:
++
++       vbetool vbemode set <mode number> && \
++       echo 1 > /sys/class/graphics/fbcon/attach
++
++--
+ Antonino Daplas <adaplas@pol.net>

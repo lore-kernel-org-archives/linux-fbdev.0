@@ -1,76 +1,65 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH 6/7] Detaching fbcon: Add capability to attach/detach
- fbcon
-Date: Wed, 07 Jun 2006 07:17:14 +0800
-Message-ID: <44860CFA.4040409@gmail.com>
-References: <4485624C.9070707@gmail.com> <20060606151210.22751bce.akpm@osdl.org>
+Subject: [PATCH] fbcon: Fix limited scroll in
+	SCROLL_PAN_REDRAW mode
+Date: Tue, 06 Jun 2006 19:09:11 +0800
+Message-ID: <44856257.3080707@gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751346AbWFFXRj@vger.kernel.org>
-In-Reply-To: <20060606151210.22751bce.akpm@osdl.org>
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1Fo56Z-0001Wt-VN for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 07 Jun 2006 13:58:20 -0700
+Received: from wx-out-0102.google.com ([66.249.82.199])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Fo56Y-0007fp-Hr
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 07 Jun 2006 13:58:20 -0700
+Received: by wx-out-0102.google.com with SMTP id h29so181465wxd
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Wed, 07 Jun 2006 13:58:17 -0700 (PDT)
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
 
-Andrew Morton wrote:
-> On Tue, 06 Jun 2006 19:09:00 +0800
-> "Antonino A. Daplas" <adaplas@gmail.com> wrote:
-> 
->> Add the ability to detach and attach the framebuffer console to and from
->> the vt layer. This is done by echo'ing any value to sysfs attributes located
->> in class/graphics/fbcon. The two attributes are:
->>
->>       attach - bind fbcon to the vt layer
->>       detach - unbind fbcon from the vt layer
-> 
-> That's a bit unusual.  Normally a bind or unbind operation will operate
-> primarily upon the thing which is bound to, not upon the thing which is
-> bound.
+From: Malcom Parsons <malcolm.parsons@gmail.com>
 
-I'm not against this.
+When scrolling up in SCROLL_PAN_REDRAW mode with a large limited scroll
+region, the bottom few lines have to be redrawn.  Without this patch,
+the wrong text is drawn into these lines, corrupting the display.
 
-> 
-> I assume it makes sense this way, given the way the vt layer operates.  But
-> it rather rules out binding the fbcon layer to anything apart from the vt
-> layer (just thinking about it design-wise).
+Observed in 2.6.14 when running an IRC client in the Nintendo DS linux
+port.
 
-The vt-layer is different in that the device themselves bind to it, not
-the other way around.  As I've told Jon, if someone change the vt-layer so
-it behaves in a standard way, I'm all for it (that someone is probably me).
+I haven't tested if scrolling down has the same problem.
 
-But thinking about it, it is probably not very difficult to change the
-vt-layer.  We just make the vt-layer keep a list of registered drivers. And 
-we already have /sys/class/tty/console, so I can put the attribute there
-for bind and unbind.
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
+---
 
-> 
-> ummm, expressing it differently:
-> 
-> 	echo "bind fbcon" > /sys/whatever/some-vt-file
-> 	echo "unbind fbcon" > /sys/whatever/some-vt-file
-> 
-> would be more typical usage.
-> 
->> Once fbcon is detached from the vt layer, fbcon can be unloaded if compiled as
->> a module. This feature is quite useful for developers who work on the
->> framebuffer or console subsystem. This is also useful for users who want to
->> go to text mode or graphics mode without having to reboot.
-> 
-> Do we have a place where this can be documented?
+ drivers/video/console/fbcon.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-In Documentation/fb/fbcon.txt.
-
-> 
->> Directly unloading the fbcon module is not possible because the vt layer
->> increments the module reference count for all bound consoles.  Detaching fbcon
->> decrements the module reference count to zero so unloading becomes possible.
-> 
-> Right.  So the vt layer should be told to let go of the fbcon layer.  It's
-> a vt operation, not an fbcon one, yes?
-
-Yes. I'll take a stab at doing it this way. 
-
-Tony
- 
+diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
+index b910eff..4b7be68 100644
+--- a/drivers/video/console/fbcon.c
++++ b/drivers/video/console/fbcon.c
+@@ -1751,7 +1751,7 @@ static int fbcon_scroll(struct vc_data *
+ 					fbcon_redraw_move(vc, p, 0, t, count);
+ 				ypan_up_redraw(vc, t, count);
+ 				if (vc->vc_rows - b > 0)
+-					fbcon_redraw_move(vc, p, b - count,
++					fbcon_redraw_move(vc, p, b,
+ 							  vc->vc_rows - b, b);
+ 			} else
+ 				fbcon_redraw_move(vc, p, t + count, b - t - count, t);

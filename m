@@ -1,32 +1,27 @@
-From: "Alex Deucher" <alexdeucher@gmail.com>
-Subject: Re: Twister savagefb doesn't sync
-Date: Tue, 6 Jun 2006 10:43:53 -0400
-Message-ID: <a728f9f90606060743t7fd6dfdfia3e2a050ff954e06@mail.gmail.com>
-References: <44698356.80806@iit.demokritos.gr> <44781B3A.5030406@gmail.com>
-	<44781BFB.5020708@gmail.com> <447994A8.30600@iit.demokritos.gr>
-	<447A3CC0.9060403@gmail.com> <447AF58E.3050803@iit.demokritos.gr>
-	<447B60D7.8020204@gmail.com> <44845DEC.1000608@iit.demokritos.gr>
-	<a728f9f90606052211v43de97c7l91a22a9faa93f76c@mail.gmail.com>
-	<44855197.7040801@iit.demokritos.gr>
+From: Dennis Munsie <dmunsie@cecropia.com>
+Subject: Re: intelfb updates
+Date: Thu, 8 Jun 2006 15:22:06 -0400
+Message-ID: <F5D6A59D-BDC3-4C01-BDF3-CB16AFDC9AED@cecropia.com>
+References: <21d7e9970605270158l1ee8551cw7cc8910378cc43de@mail.gmail.com>
+	<509BC7A5-C965-47C5-BB5F-416EC23D508A@cecropia.com>
+	<2E36B04D-0D7E-4D25-B2C7-D3EF201FFB1E@cecropia.com>
+	<21d7e9970606070155u5523432ew52ce4e705178711d@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
+Mime-Version: 1.0 (Apple Message framework v750)
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Fo9av-0004p9-Er for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 07 Jun 2006 18:45:57 -0700
-Received: from ug-out-1314.google.com ([66.249.92.173])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Fo9au-0008Oc-4y
+	id 1FoQ3F-0001cQ-Fd for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 08 Jun 2006 12:20:17 -0700
+Received: from mail4.sea5.speakeasy.net ([69.17.117.6])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1FoQ3B-0005RX-2z
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 07 Jun 2006 18:45:57 -0700
-Received: by ug-out-1314.google.com with SMTP id y2so549320uge
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 07 Jun 2006 18:45:53 -0700 (PDT)
-In-Reply-To: <44855197.7040801@iit.demokritos.gr>
-Content-Disposition: inline
+	Thu, 08 Jun 2006 12:20:14 -0700
+In-Reply-To: <21d7e9970606070155u5523432ew52ce4e705178711d@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -37,58 +32,43 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: vasvir@iit.demokritos.gr
-Cc: linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@gmail.com>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Eric Hustvedt <ehustvedt@cecropia.com>, "Antonino A. Daplas" <adaplas@gmail.com>
 
-On 6/6/06, Vassilis Virvilis <vasvir@iit.demokritos.gr> wrote:
-> Alex Deucher wrote:
-> > On 6/5/06, Vassilis Virvilis <vasvir@iit.demokritos.gr> wrote:
-> >
-> > The reason the savage xorg drver uses the bios is because almost every
-> > panel they connect to the chip seems to require fairly custom timings.
-> > the twisters and prosavages are even worse than the discrete chips.
-> > Also, only the bios seems to know the magic incantation necessary for
-> > dualhead.  I tried for a while to add non-bios mode setting to crtc2
-> > without much luck.
+Here is what I found -- I put the 3 different versions of calc_vclock 
+() into a test harness.  I used the PLL values that I'm assuming that  
+the BIOS set.  Here is the chunk of the test harness that actually  
+calls the 3 versions:
+
+     printf("   old clock = %d\n", old_calc_vclock(PLLS_I9xx, 20, 6,  
+3, 0, 0, 0));
+     printf("before clock = %d\n", CALC_VCLOCK(20, 6, 3, 0, 0));
+     printf(" after clock = %d\n", calc_vclock(PLLS_I9xx, 20, 6, 3,  
+0, 0, 0));
+
+here is the output of the program:
+
+[gentoo-test:~ (3.715 Mb)]$ ./a.out
+    old clock = 0
+before clock = 283200
+Floating point exception
+
+I tried disabling the call to intelfbhw_print_hw_state() where I  
+determined that my crash was occurring, but the kernel continued hang  
+(it deadlocked on a spinlock actually, in the fbcon layer).  At this  
+point, I broke it down into the separate patches, determined which  
+one was causing the problem, and disabled it in my build :)
+
+I also have all of the debugging options turned on -- DEBUG, VERBOSE,  
+and REGDUMP.
+
+dennis
+
+On Jun 7, 2006, at 4:55 AM, Dave Airlie wrote:
+
+> Wow, can you give me some numbers from the old/new calc_vclock?
 >
-> I don't care for dualhead right now. I can imagine it is 4 times weirder
-> than my current setup. What is crtc*?
-
-twisters/prosavages can't do dualhead anyway. crtc stands for crt
-controller.  it's just another name for a display controller (ie,
-thing that scans out the image).
-
+> what does it return when it works and when it doesn't work?
 >
-> >
-> > For a short term fix, just program the registers with the new values
-> > from the bios.  You may be able to just get away with adjusting the
-> > crtc1 dclk (SR12, SR13, SR29).
->
-> I will try that. Thanks for the suggestion.
->
-> A real fix may require special
-> > calculations or tables for different chip/panel combos.
-> >
->
-> I will try for both of my monitors and I will report here any
-> success or failure unless of course I am told that this info is
-> not desirable.
-
-Sounds good.
-
->
-> Do you know if changing the number of colors 256/64K/16M requires
-> clock adjustments (SR12, SR13, SR29)?
-
-It shouldn't.
-
->
-> Thanks for answering.
-
-No problem.
-
-Alex
-
->
->       .bill
->
+> I'm unsure what could be different on i945, but I'm sure something  
+> could be :-)

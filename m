@@ -1,169 +1,158 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 2/5] VT binding: Add sysfs support
-Date: Fri, 09 Jun 2006 16:39:51 +0800
-Message-ID: <448933D7.6040301@gmail.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+Subject: [PATCH 5/5] VT binding: Add new doc file describing the feature
+Date: Fri, 09 Jun 2006 16:40:39 +0800
+Message-ID: <44893407.4020507@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Focac-0005J6-GB for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 09 Jun 2006 01:43:34 -0700
-Received: from py-out-1112.google.com ([64.233.166.178])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Focac-0002g3-65
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 09 Jun 2006 01:43:34 -0700
-Received: by py-out-1112.google.com with SMTP id x31so892948pye
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 09 Jun 2006 01:43:33 -0700 (PDT)
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751452AbWFIIoL@vger.kernel.org>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
+Content-Type: text/plain; charset="us-ascii"
 To: Andrew Morton <akpm@osdl.org>
-Cc: Greg KH <gregkh@suse.de>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-Add sysfs attributes for binding and unbinding VT console drivers. The
-attributes are located in /sys/class/tty/console and are namely:
+This newly added file will:
 
-    A. backend - list registered drivers in the following format:
+- Describe the characteristics of 2 general types of console drivers
+- How to use the sysfs to unbind and bind console drivers
+- Uses for this feature
 
-    "I C: Description"
-
-    Where: I  = ID number of the driver
-           C  = status of the driver which can be:
-
-		S = system driver
-		B = bound modular driver
-		U = unbound modular driver
-
-	   Description - text description of the driver
-
-    B. bind - binds a driver to the console layer
-
-       echo <ID> > /sys/class/tty/console/bind
-
-    C. unbind - unbinds a driver from the console layer
-
-       echo <ID> > /sys/class/tty/console/unbind
-
-The tty layer does nothing to these attributes except create them and punt all
-requests to the VT layer.
-
-Signed-off-by: Antonino Daplas <pol.net>
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/char/tty_io.c |   53 ++++++++++++++++++++++++++++++++++++++++++++++++-
- include/linux/tty.h   |   19 ++++++++++++++++++
- 2 files changed, 71 insertions(+), 1 deletions(-)
+ Documentation/console/console.txt |  127 +++++++++++++++++++++++++++++++++++++
+ 1 files changed, 127 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index a5730a6..e23d360 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -3231,6 +3231,47 @@ #ifdef CONFIG_VT
- static struct cdev vc0_cdev;
- #endif
- 
-+static ssize_t store_bind(struct class_device *class_device,
-+			  const char *buf, size_t count)
-+{
-+	int index = simple_strtoul(buf, NULL, 0);
+diff --git a/Documentation/console/console.txt b/Documentation/console/console.txt
+new file mode 100644
+index 0000000..4f3f285
+--- /dev/null
++++ b/Documentation/console/console.txt
+@@ -0,0 +1,127 @@
++Console Drivers
++===============
 +
-+	vt_bind(index);
-+	return count;
-+}
++The linux kernel has 2 general types of console drivers.  The first type is
++assigned by the kernel to all the virtual consoles during the boot process.
++This type will be called 'system driver', and only one system driver is allowed
++to exist. The system driver is persistent and it can never be unloaded, though
++it may become inactive.
 +
-+static ssize_t store_unbind(struct class_device *class_device,
-+			    const char *buf, size_t count)
-+{
-+	int index = simple_strtoul(buf, NULL, 0);
++The second type has to be explicitly loaded and unloaded. This will be called
++'modular driver' by this document. Multiple modular drivers can coexist at
++any time with each driver sharing the console with other drivers including
++the system driver. However, modular drivers cannot take over the console
++that is currently occupied by another modular driver. (Exception: Drivers that
++call take_over_console() will succeed in the takeover regardless of the type
++of driver occupying the consoles.) They can only take over the console that is
++occupied by the system driver. In the same token, if the modular driver is
++released by the console, the system driver will take over.
 +
-+	vt_unbind(index);
-+	return count;
-+}
++Modular drivers, from the programmer's point of view, has to call:
 +
-+static ssize_t show_con_drivers(struct class_device *class_device, char *buf)
-+{
-+	return vt_show_drivers(buf);
-+}
++	 take_over_console() - load and bind driver to console layer
++	 give_up_console() - unbind and unload driver
 +
-+static struct class_device_attribute class_device_attrs[] = {
-+	__ATTR(bind,   S_IWUSR, NULL, store_bind),
-+	__ATTR(unbind, S_IWUSR, NULL, store_unbind),
-+	__ATTR(backend, S_IRUGO, show_con_drivers, NULL),
-+};
++In newer kernels, the following are also available:
 +
-+static struct class_device *console_class_device;
++	 register_con_driver()
++	 unregister_con_driver()
 +
-+static int console_init_class_device(void)
-+{
-+	int i;
++If sysfs is enabled, the contents of /sys/class/tty/console/backend can be
++examined. This shows the console drivers currently registered by the system. On
++an x86 system with the framebuffer console enabled, the contents of this
++attribute may be like this:
 +
-+	for (i = 0; i < ARRAY_SIZE(class_device_attrs); i++)
-+		class_device_create_file(console_class_device,
-+					 &class_device_attrs[i]);
-+	return 0;
-+}
++cat /sys/class/tty/console/backend
++0 S: VGA+
++1 B: frame buffer device
 +
- /*
-  * Ok, now we can initialize the rest of the tty devices and can count
-  * on memory allocations, interrupts etc..
-@@ -3249,7 +3290,17 @@ static int __init tty_init(void)
- 	    register_chrdev_region(MKDEV(TTYAUX_MAJOR, 1), 1, "/dev/console") < 0)
- 		panic("Couldn't register /dev/console driver\n");
- 	devfs_mk_cdev(MKDEV(TTYAUX_MAJOR, 1), S_IFCHR|S_IRUSR|S_IWUSR, "console");
--	class_device_create(tty_class, NULL, MKDEV(TTYAUX_MAJOR, 1), NULL, "console");
-+	console_class_device = class_device_create(tty_class, NULL,
-+						   MKDEV(TTYAUX_MAJOR, 1),
-+						   NULL, "console");
-+	if (IS_ERR(console_class_device)) {
-+		printk(KERN_WARNING "Unable to create class device "
-+		       "for console; errno = %ldn",
-+		       PTR_ERR(console_class_device));
-+		console_class_device = NULL;
-+	} else
-+		console_init_class_device();
++The first line shows the VGA console driver, while the second line shows
++the framebuffer console driver.
 +
- 
- #ifdef CONFIG_UNIX98_PTYS
- 	cdev_init(&ptmx_cdev, &ptmx_fops);
-diff --git a/include/linux/tty.h b/include/linux/tty.h
-index cb35ca5..3edaa5d 100644
---- a/include/linux/tty.h
-+++ b/include/linux/tty.h
-@@ -347,6 +347,25 @@ extern void console_print(const char *);
- extern int vt_ioctl(struct tty_struct *tty, struct file * file,
- 		    unsigned int cmd, unsigned long arg);
- 
-+#ifdef CONFIG_VT
-+extern int vt_bind(int index);
-+extern int vt_unbind(int index);
-+extern int vt_show_drivers(char *buf);
-+#else
-+static inline int vt_bind(int index)
-+{
-+	return 0;
-+}
-+static inline int vt_unbind(int index)
-+{
-+	return 0;
-+}
-+static inline int vt_show_drivers(char *buf)
-+{
-+	return 0;
-+}
-+#endif
++The leftmost numeric character is the driver ID.  The middle character with
++the colon describes the status of the driver.
 +
- static inline dev_t tty_devnum(struct tty_struct *tty)
- {
- 	return MKDEV(tty->driver->major, tty->driver->minor_start) + tty->index;
++    S: - system driver (binding unspecified)
++    B: - bound modular driver
++    U: - unbound modular driver
++
++The last column is the description of the driver.
++
++Under /sys/class/tty/console are two other attributes, 'bind' and
++'unbind'. What does these 2 attributes do? As their name implies, echo'ing the
++driver ID to 'bind' will bind an unbound modular driver, and to 'unbind' will
++unbind a bound modular driver. Echo'ing the ID of a system driver to either
++attribute will do nothing.
++
++Thus:
++
++echo 1 > /sys/class/tty/console/unbind
++cat /sys/class/tty/console/backend
++0 S: VGA+
++1 U: frame buffer device
++
++When unbinding, the modular driver is detached first, and then the system
++driver takes over the consoles vacated by the driver. Binding, on the other
++hand, will bind the driver to the consoles that are currently occupied by a
++system driver.
++
++How useful is this feature? This is very useful for console driver
++developers. By unbinding the driver from the console layer, one can unload the
++driver, make changes, recompile, reload and rebind the driver without any need
++for rebooting the kernel. For regular users who may want to switch from
++framebuffer console to VGA console and vice versa, this feature also makes
++this possible. (NOTE NOTE NOTE: Please read fbcon.txt under Documentation/fb
++for more details).
++
++Notes for developers:
++=====================
++
++take_over_console() is now broken up into:
++
++     register_con_driver()
++     bind_con_driver() - private function
++
++give_up_console() is a wrapper to unregister_con_driver(), and a driver must
++be fully unbound for this call to succeed. con_is_bound() will check if the
++driver is bound or not.
++
++Guidelines for console driver writers:
++=====================================
++
++In order for binding to and unbinding from the console to properly work,
++console drivers must follow these guidelines:
++
++1. All drivers, except system drivers, must call either register_con_driver()
++   or take_over_console(). register_con_driver() will just add the driver to
++   the console's internal list. It won't take over the
++   console. take_over_console(), as it name implies, will also take over (or
++   bind to) the console.
++
++2. All resources allocated during con->con_init() must be released in
++   con->con_deinit().
++
++3. All resources allocated in con->con_startup() must be released when the
++   driver, which was previously bound, becomes unbound.  The console layer
++   does not have a complementary call to con->con_startup() so it's up to the
++   driver to check when it's legal to release these resources. Calling
++   con_is_bound() in con->con_deinit() will help.  If the call returned
++   false(), then it's safe to release the resources.  This balance has to be
++   ensured because con->con_startup() can be called again when a request to
++   rebind the driver to the console arrives.
++
++4. Upon exit of the driver, ensure that the driver is totally unbound. If the
++   condition is satisfied, then the driver must call unregister_con_driver()
++   or give_up_console().
++
++5. unregister_con_driver() can also be called on conditions which make it
++   impossible for the driver to service console requests.  This can happen
++   with the framebuffer console that suddenly lost all of its drivers.
++
++The current crop of console drivers should still work correctly, but binding
++and unbinding them may cause problems. With minimal fixes, these drivers can
++be made to work correctly.
++
++==========================
++Antonino Daplas <adaplas@pol.net>
++

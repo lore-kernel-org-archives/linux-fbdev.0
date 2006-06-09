@@ -1,29 +1,25 @@
-From: "Randy.Dunlap" <rdunlap@xenotime.net>
-Subject: [PATCH] trident fb section fixes
-Date: Thu, 8 Jun 2006 20:38:54 -0700
-Message-ID: <20060608203854.2379a987.rdunlap@xenotime.net>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: [PATCH 4/5] VT binding: fbcon: Update
+	documentation
+Date: Fri, 09 Jun 2006 16:40:23 +0800
+Message-ID: <448933F7.5080605@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-list1-b.sourceforge.net ([10.3.1.7]
-	helo=sc8-sf-list1.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FoY0u-0004xM-8U for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 08 Jun 2006 20:50:26 -0700
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FoY0t-0003Vx-Vl for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 08 Jun 2006 20:50:23 -0700
-Received: from xenotime.net ([66.160.160.81])
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1FoY0s-0004CP-Vx
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1Focaz-0005JK-T8 for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 09 Jun 2006 01:43:57 -0700
+Received: from py-out-1112.google.com ([64.233.166.178])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Focav-0002g3-7z
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 08 Jun 2006 20:50:24 -0700
-Received: from midway.site ([71.245.102.105]) by xenotime.net for
-	<linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 8 Jun 2006 20:50:20 -0700
+	Fri, 09 Jun 2006 01:43:57 -0700
+Received: by py-out-1112.google.com with SMTP id x31so892948pye
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Fri, 09 Jun 2006 01:43:53 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -34,55 +30,139 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: akpm <akpm@osdl.org>, adaplas@pol.net, jani@iv.ro
+To: Andrew Morton <akpm@osdl.org>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-From: Randy Dunlap <rdunlap@xenotime.net>
+Update Documentation/fb/fbcon.txt to reflect the following changes:
 
-Priority: not critical.
-Change 3 functions from __init to __devinit.
-Could be an init/probe problem in theory, but not observed, so not
-high priority IMO.
+1. Simple illustration of the binding of the console down to individual
+framebuffer drivers
 
-Fix section mismatch warnings:
-WARNING: drivers/video/tridentfb.o - Section mismatch: reference to .init.text: from .text between 'trident_pci_probe' (at offset 0x1aad) and 'trident_pci_remove'
-WARNING: drivers/video/tridentfb.o - Section mismatch: reference to .init.text: from .text between 'trident_pci_probe' (at offset 0x1b22) and 'trident_pci_remove'
-WARNING: drivers/video/tridentfb.o - Section mismatch: reference to .init.text: from .text between 'trident_pci_probe' (at offset 0x1b31) and 'trident_pci_remove'
+2. Usage of userspace tools to help with recovery of text console
 
-Signed-off-by: Randy Dunlap <rdunlap@xenotime.net>
+3. How to use the attributes in /sys/class/tty/console to unload fbcon
+and the framebuffer drivers
+
+Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
- drivers/video/tridentfb.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- linux-2617-rc6.orig/drivers/video/tridentfb.c
-+++ linux-2617-rc6/drivers/video/tridentfb.c
-@@ -551,7 +551,7 @@ static inline void enable_mmio(void)
- #define crtc_unlock()	write3X4(CRTVSyncEnd, read3X4(CRTVSyncEnd) & 0x7F)
- 
- /*  Return flat panel's maximum x resolution */
--static int __init get_nativex(void)
-+static int __devinit get_nativex(void)
- {
- 	int x,y,tmp;
- 
-@@ -658,7 +658,7 @@ static void set_number_of_lines(int line
-  * If we see that FP is active we assume we have one.
-  * Otherwise we have a CRT display.User can override.
-  */
--static unsigned int __init get_displaytype(void)
-+static unsigned int __devinit get_displaytype(void)
- {
- 	if (fp)
- 		return DISPLAY_FP;
-@@ -668,7 +668,7 @@ static unsigned int __init get_displayty
- }
- 
- /* Try detecting the video memory size */
--static unsigned int __init get_memsize(void)
-+static unsigned int __devinit get_memsize(void)
- {
- 	unsigned char tmp, tmp2;
- 	unsigned int k;
+ Documentation/fb/fbcon.txt |   73 ++++++++++++++++++++++++++++++--------------
+ 1 files changed, 50 insertions(+), 23 deletions(-)
 
-
----
+diff --git a/Documentation/fb/fbcon.txt b/Documentation/fb/fbcon.txt
+index f3a3be0..b91aea5 100644
+--- a/Documentation/fb/fbcon.txt
++++ b/Documentation/fb/fbcon.txt
+@@ -150,14 +150,42 @@ C. Boot options
+ 
+ C. Attaching, Detaching and Unloading
+ 
+-It's possible to detach/attach the framebuffer console from the vt layer by
+-echoing anything to the following sysfs attributes found
+-/sys/class/graphics/fbcon.
++Before going on on how to attach, detach and unload the framebuffer console, an
++illustration of the dependencies may help.
+ 
+-	   attach - attach framebuffer console to vt layer
+-	   detach - detach framebuffer console to vt layer
++The console layer, as with most subsystems, needs a driver that interfaces with
++the hardware. Thus, in a VGA console:
+ 
+-If fbcon is detached from the vt layer, your boot console driver (which is
++console ---> VGA driver ---> hardware.
++
++Assuming the VGA driver can be unloaded, one must first unbind the VGA driver
++from the console layer before unloading the driver.  The VGA driver cannot be
++unloaded if it is still bound to the console layer. (See
++Documentation/console/console.txt for more information).
++
++This is more complicated in the case of the the framebuffer console (fbcon),
++because fbcon is an intermediate layer between the console and the drivers:
++
++console ---> fbcon ---> fbdev drivers ---> hardware
++
++The fbdev drivers cannot be unloaded if it's bound to fbcon, and fbcon cannot
++be unloaded if it's bound to the console layer.
++
++So to unload the fbdev drivers, one must first unbind fbcon from the console,
++then unbind the fbdev drivers from fbcon.  Fortunately, unbinding fbcon from
++the console layer will automatically unbind framebuffer drivers from
++fbcon. Thus, there is no need to explicitly unbind the fbdev drivers from
++fbcon.
++
++So, how do we unbind fbcon from the console? Part of the answer is in
++Documentation/console/console.txt. To summarize:
++
++Echo the ID number of the 'frame buffer driver' to:
++
++sys/class/tty/console/bind - attach framebuffer console to console layer
++sys/class/tty/console/unbind - detach framebuffer console from console layer
++
++If fbcon is detached from the console layer, your boot console driver (which is
+ usually VGA text mode) will take over.  A few drivers (rivafb and i810fb) will
+ restore VGA text mode for you.  With the rest, before detaching fbcon, you
+ must take a few additional steps to make sure that your VGA text mode is
+@@ -183,27 +211,26 @@ restored properly. The following is one 
+ 
+ 5. Now to detach fbcon:
+ 
+-       vbetool vbestate restore < <vga state file> && \
+-       echo 1 > /sys/class/graphics/fbcon/detach
++       'cat /sys/class/tty/console/backend' and take note of the ID
+ 
+-6. That's it, you're back to VGA mode. And if you compiled your drivers as
+-   modules, you can unload them at will.  So if you want to change your driver
+-   from xxxfb to yyyfb, you can do this:
++The above is probably needed only once. Then:
+ 
+-	detach fbcon
+-	rmmod xxxfb
+-	modprobe yyyfb
++       vbetool vbestate restore < <vga state file> && \
++       echo <ID> > /sys/class/tty/console/unbind
+ 
+-	Of course, con2fbmap can do the same thing but will not work if xxxfb
+-	and yyyfb are not compatible (ie, cannot be loaded at the same time).
++6. That's it, you're back to VGA mode. And if you compiled fbcon as a module,
++   you can unload it by 'rmmod fbcon'
+ 
+ 7. To reattach fbcon:
+ 
+-       echo 1 > /sys/class/graphics/fbcon/attach
++       echo <ID> > /sys/class/tty/console/bind
+ 
+-8. Once the framebuffer console is detached, and if it is compiled as a module,
+-the module can be unloaded with 'rmmod fbcon'.  This feature is great for
+-developers.
++8. Once fbcon is unbound, all drivers registered to the system will also
++become unbound.  This means that fbcon and individual framebuffer drivers
++can be unloaded or reloaded at will. Reloading the drivers or fbcon will
++automatically bind the console, fbcon and the drivers together. Unloading
++all the drivers without unloading fbcon will make it impossible for the
++console to bind fbcon.
+ 
+ Notes for vesafb users:
+ =======================
+@@ -227,11 +254,11 @@ Variation 1:
+     c. Attach fbcon
+ 
+         vbetool vbestate restore < <vesa state file> && \
+-	echo 1 > /sys/class/graphics/fbcon/attach
+-
+ Variation 2:
+ 
+     a. Before detaching fbcon, do:
++	echo <ID> > /sys/class/tty/console/bind
++
+ 
+        vbetool vbemode get
+ 
+@@ -242,7 +269,7 @@ Variation 2:
+     c. Attach fbcon:
+ 
+        vbetool vbemode set <mode number> && \
+-       echo 1 > /sys/class/graphics/fbcon/attach
++	echo <ID> > /sys/class/tty/console/bind
+ 
+ --
+ Antonino Daplas <adaplas@pol.net>

@@ -1,27 +1,29 @@
-From: Dennis Munsie <dmunsie@cecropia.com>
-Subject: Re: intelfb updates
-Date: Thu, 8 Jun 2006 15:22:06 -0400
-Message-ID: <F5D6A59D-BDC3-4C01-BDF3-CB16AFDC9AED@cecropia.com>
-References: <21d7e9970605270158l1ee8551cw7cc8910378cc43de@mail.gmail.com>
-	<509BC7A5-C965-47C5-BB5F-416EC23D508A@cecropia.com>
-	<2E36B04D-0D7E-4D25-B2C7-D3EF201FFB1E@cecropia.com>
-	<21d7e9970606070155u5523432ew52ce4e705178711d@mail.gmail.com>
+From: "Randy.Dunlap" <rdunlap@xenotime.net>
+Subject: [PATCH] trident fb section fixes
+Date: Thu, 8 Jun 2006 20:38:54 -0700
+Message-ID: <20060608203854.2379a987.rdunlap@xenotime.net>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0 (Apple Message framework v750)
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
+Received: from sc8-sf-list1-b.sourceforge.net ([10.3.1.7]
+	helo=sc8-sf-list1.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FoQ3F-0001cQ-Fd for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 08 Jun 2006 12:20:17 -0700
-Received: from mail4.sea5.speakeasy.net ([69.17.117.6])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1FoQ3B-0005RX-2z
+	id 1FoY0u-0004xM-8U for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 08 Jun 2006 20:50:26 -0700
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1FoY0t-0003Vx-Vl for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 08 Jun 2006 20:50:23 -0700
+Received: from xenotime.net ([66.160.160.81])
+	by mail.sourceforge.net with smtp (Exim 4.44) id 1FoY0s-0004CP-Vx
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 08 Jun 2006 12:20:14 -0700
-In-Reply-To: <21d7e9970606070155u5523432ew52ce4e705178711d@mail.gmail.com>
+	Thu, 08 Jun 2006 20:50:24 -0700
+Received: from midway.site ([71.245.102.105]) by xenotime.net for
+	<linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 8 Jun 2006 20:50:20 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,42 +35,54 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Eric Hustvedt <ehustvedt@cecropia.com>, "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: akpm <akpm@osdl.org>, adaplas@pol.net, jani@iv.ro
 
-Here is what I found -- I put the 3 different versions of calc_vclock 
-() into a test harness.  I used the PLL values that I'm assuming that  
-the BIOS set.  Here is the chunk of the test harness that actually  
-calls the 3 versions:
+From: Randy Dunlap <rdunlap@xenotime.net>
 
-     printf("   old clock = %d\n", old_calc_vclock(PLLS_I9xx, 20, 6,  
-3, 0, 0, 0));
-     printf("before clock = %d\n", CALC_VCLOCK(20, 6, 3, 0, 0));
-     printf(" after clock = %d\n", calc_vclock(PLLS_I9xx, 20, 6, 3,  
-0, 0, 0));
+Priority: not critical.
+Change 3 functions from __init to __devinit.
+Could be an init/probe problem in theory, but not observed, so not
+high priority IMO.
 
-here is the output of the program:
+Fix section mismatch warnings:
+WARNING: drivers/video/tridentfb.o - Section mismatch: reference to .init.text: from .text between 'trident_pci_probe' (at offset 0x1aad) and 'trident_pci_remove'
+WARNING: drivers/video/tridentfb.o - Section mismatch: reference to .init.text: from .text between 'trident_pci_probe' (at offset 0x1b22) and 'trident_pci_remove'
+WARNING: drivers/video/tridentfb.o - Section mismatch: reference to .init.text: from .text between 'trident_pci_probe' (at offset 0x1b31) and 'trident_pci_remove'
 
-[gentoo-test:~ (3.715 Mb)]$ ./a.out
-    old clock = 0
-before clock = 283200
-Floating point exception
+Signed-off-by: Randy Dunlap <rdunlap@xenotime.net>
+---
+ drivers/video/tridentfb.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-I tried disabling the call to intelfbhw_print_hw_state() where I  
-determined that my crash was occurring, but the kernel continued hang  
-(it deadlocked on a spinlock actually, in the fbcon layer).  At this  
-point, I broke it down into the separate patches, determined which  
-one was causing the problem, and disabled it in my build :)
+--- linux-2617-rc6.orig/drivers/video/tridentfb.c
++++ linux-2617-rc6/drivers/video/tridentfb.c
+@@ -551,7 +551,7 @@ static inline void enable_mmio(void)
+ #define crtc_unlock()	write3X4(CRTVSyncEnd, read3X4(CRTVSyncEnd) & 0x7F)
+ 
+ /*  Return flat panel's maximum x resolution */
+-static int __init get_nativex(void)
++static int __devinit get_nativex(void)
+ {
+ 	int x,y,tmp;
+ 
+@@ -658,7 +658,7 @@ static void set_number_of_lines(int line
+  * If we see that FP is active we assume we have one.
+  * Otherwise we have a CRT display.User can override.
+  */
+-static unsigned int __init get_displaytype(void)
++static unsigned int __devinit get_displaytype(void)
+ {
+ 	if (fp)
+ 		return DISPLAY_FP;
+@@ -668,7 +668,7 @@ static unsigned int __init get_displayty
+ }
+ 
+ /* Try detecting the video memory size */
+-static unsigned int __init get_memsize(void)
++static unsigned int __devinit get_memsize(void)
+ {
+ 	unsigned char tmp, tmp2;
+ 	unsigned int k;
 
-I also have all of the debugging options turned on -- DEBUG, VERBOSE,  
-and REGDUMP.
 
-dennis
-
-On Jun 7, 2006, at 4:55 AM, Dave Airlie wrote:
-
-> Wow, can you give me some numbers from the old/new calc_vclock?
->
-> what does it return when it works and when it doesn't work?
->
-> I'm unsure what could be different on i945, but I'm sure something  
-> could be :-)
+---

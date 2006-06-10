@@ -1,55 +1,57 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH 2/5] VT binding: Add sysfs support
-Date: Sat, 10 Jun 2006 13:56:58 +0800
-Message-ID: <448A5F2A.5060104@gmail.com>
-References: <448933D7.6040301@gmail.com> <20060609220803.GB7636@suse.de> <448A147A.3030108@gmail.com> <20060610043752.GA20088@suse.de>
+From: Ingo Oeser <ioe-lkml@rameria.de>
+Subject: Re: [PATCH 3/5] VT binding: Update fbcon to support binding
+Date: Sat, 10 Jun 2006 13:10:02 +0200
+Message-ID: <200606101310.04174.ioe-lkml@rameria.de>
+References: <448933EB.3070003@gmail.com>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S932413AbWFJF5M@vger.kernel.org>
-In-Reply-To: <20060610043752.GA20088@suse.de>
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751485AbWFJLN6@vger.kernel.org>
+In-Reply-To: <448933EB.3070003@gmail.com>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="us-ascii"
-To: Greg KH <gregkh@suse.de>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
 Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-Greg KH wrote:
-> On Sat, Jun 10, 2006 at 08:38:18AM +0800, Antonino A. Daplas wrote:
->> Greg KH wrote:
->>> On Fri, Jun 09, 2006 at 04:39:51PM +0800, Antonino A. Daplas wrote:
->>>> Add sysfs attributes for binding and unbinding VT console drivers. The
->>>> attributes are located in /sys/class/tty/console and are namely:
->>>>
->>>>     A. backend - list registered drivers in the following format:
->>>>
->>>>     "I C: Description"
->>> No, this violates the "one value per file" issue with sysfs.  How do you
->>> know you will not overflow the buffer passed to you?
->> I was wondering about this. I just want a way to show what are the currently
->> loaded drivers, so it's a read-only attribute.  It's using snprintf (though
->> I haven't added a check for possible overflows, should be a 2-liner). Maximum
->> number of lines is 16, and there are examples of this rule-breakage in the
->> current sysfs tree.
->>
->> /sys/class/usb_host/usb_hostx/device/pools
-> 
-> Ah, thanks for pointing this out.  Those files should go to debugfs,
-> they do NOT belong in sysfs at all.
-> 
->> Yes, none are valid excuses.  Anyway, what would be the best way? I was
->> considering creating another class for vt_console, but that would entail
->> the creation of a new device major number just for this.
-> 
-> No, you don't need a major to create a new class in sysfs at all.  Look
-> at usb_host for an example of that :)
+Hi Antonio,
 
-Aha, I see it now. Yes, this is exactly what I need. Thanks for the tip.
-
-> Ok, I also read the 0/5 in this series which describes this in detail,
-> sorry for not seeing that (hint, cc: everyone on the series that one
-> too, so they get a bit of detail in the future.)
+On Friday, 9. June 2006 10:40, Antonino A. Daplas wrote:
+>     5. When fbcon is completely unbound from the console layer, fbcon will
+>        also release (iow, decrement module reference counts to zero) all fbdev
+>        drivers. In other words, a bind or unbind request from the console layer
+>        will propagate down to the framebuffer drivers.
 > 
+>     6. If fbcon is not bound to the console, it will ignore all notifier
+>        events (except driver registration and unregistration) and all sysfs
+>        requests.
 
-Sorry about that, slipped my mind.
+Wow! 
 
-Tony
+Now one can:
+
+	- implement different framebuffer drivers for a chip. 
+	- try a stable and development version without rebooting,
+	- have probing with user interaction ("if you see me please 
+	  press enter else I will try the previous driver in 15 seconds.") 
+	  instead of deciding on "failsafe" (vga/vesa) and "fast" 
+	  (special driver) at boot.
+
+I love it!
+
+Just the take_over_console() as alternative API looks strange. 
+
+It's ok as an intermeditate step (likely, if I remember the discussions
+correctly). If it should stay, it should require the console to 
+be registered first. 
+
+Can be changed later, once as you make progress and don't reach a release
+kernel. This is NO show stopper for me.
+
+Progress is the most important thing for development in this areas 
+until it reaches a release kernel.
+
+
+Regards
+
+Ingo Oeser

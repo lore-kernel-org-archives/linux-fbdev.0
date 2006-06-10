@@ -1,33 +1,30 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH 3/5] VT binding: Update fbcon to
-	support binding
-Date: Sat, 10 Jun 2006 21:28:05 +0800
-Message-ID: <448AC8E5.6040106@gmail.com>
-References: <448933EB.3070003@gmail.com>
-	<200606101310.04174.ioe-lkml@rameria.de>
+From: "Jon Smirl" <jonsmirl@gmail.com>
+Subject: Re: [PATCH 5/5] VT binding: Add new doc file
+	describing the feature
+Date: Sat, 10 Jun 2006 12:16:56 -0400
+Message-ID: <9e4733910606100916r74615af8i34d37f323414034c@mail.gmail.com>
+References: <44893407.4020507@gmail.com>
+	<9e4733910606092253n7fe4e074xe54eaec0fe4149f3@mail.gmail.com>
+	<448AC8BE.7090202@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-list1-b.sourceforge.net ([10.3.1.7]
-	helo=sc8-sf-list1.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Fp3Vg-0005j3-1k for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 10 Jun 2006 06:28:16 -0700
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Fp3Vf-0003D0-Qs for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 10 Jun 2006 06:28:15 -0700
-Received: from py-out-1112.google.com ([64.233.166.178])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Fp3Vf-0003bM-KN
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1Fp68w-0006EO-Sw for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 10 Jun 2006 09:16:58 -0700
+Received: from nz-out-0102.google.com ([64.233.162.204])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Fp68w-0004Sy-Do
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 10 Jun 2006 06:28:15 -0700
-Received: by py-out-1112.google.com with SMTP id x31so1230119pye
+	Sat, 10 Jun 2006 09:16:58 -0700
+Received: by nz-out-0102.google.com with SMTP id z3so966136nzf
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 10 Jun 2006 06:28:15 -0700 (PDT)
-In-Reply-To: <200606101310.04174.ioe-lkml@rameria.de>
+	Sat, 10 Jun 2006 09:16:57 -0700 (PDT)
+In-Reply-To: <448AC8BE.7090202@gmail.com>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -38,42 +35,105 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Ingo Oeser <ioe-lkml@rameria.de>
-Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, Greg KH <greg@kroah.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-Ingo Oeser wrote:
-> Hi Antonio,
-> 
-> On Friday, 9. June 2006 10:40, Antonino A. Daplas wrote:
->>     5. When fbcon is completely unbound from the console layer, fbcon will
->>        also release (iow, decrement module reference counts to zero) all fbdev
->>        drivers. In other words, a bind or unbind request from the console layer
->>        will propagate down to the framebuffer drivers.
->>
->>     6. If fbcon is not bound to the console, it will ignore all notifier
->>        events (except driver registration and unregistration) and all sysfs
->>        requests.
-> 
-> Wow! 
-> 
-> Now one can:
-> 
-> 	- implement different framebuffer drivers for a chip. 
-> 	- try a stable and development version without rebooting,
-> 	- have probing with user interaction ("if you see me please 
-> 	  press enter else I will try the previous driver in 15 seconds.") 
-> 	  instead of deciding on "failsafe" (vga/vesa) and "fast" 
-> 	  (special driver) at boot.
+On 6/10/06, Antonino A. Daplas <adaplas@gmail.com> wrote:
+> Jon Smirl wrote:
+> > On 6/9/06, Antonino A. Daplas <adaplas@gmail.com> wrote:
+> >> - Describe the characteristics of 2 general types of console drivers
+> >> - How to use the sysfs to unbind and bind console drivers
+> >> - Uses for this feature
+> >
+> > I like this new binding feature and that for doing the work to make it
+> > happen. It is definitely something I will use in the future.
+> >
+> >> From the docs I see a distinction between system consoles and modular
+> > consoles, can't all consoles be created equally?  The only rule would
+> > be, that if there is only a single console registered it can't be
+> > unbound or unregistered. It shouldn't matter which console is the last
+> > one left.
+>
+> Yes, it can be made that way. I just made it like that because
+> system consoles, since they are initialized very, very early, have to
+> be compiled statically. Therefore, they have can never be unloaded. So
+> why give them the prerogative to directly unbind, when they can never
+> be unloaded? One can unbind them anyway by binding a modular driver.
+>
+> It would also make binding/unbinding a more complicated process.
 
-Yes, all of the above are possible :-), and with our present user tools,
-are currently very, very doable (at least in x86).
+I may be looking at the problem a little differently. I see the
+drivers like fb, vga, etc as registering with the console and saying
+they are capable of providing console services. I then see the console
+system as opening one of the registered devices. A driver is free to
+register/unregister whenever it wants to as long as it isn't open by
+the console system. Console can only open one driver at a time.
+Opening another driver automatically closes the previous driver and
+one driver always has to be open.
 
-> 
-> I love it!
-> 
-> Just the take_over_console() as alternative API looks strange.
+> I was thinking of changing it to something like this, after GregKH's
+> suggestion:
+>
+> /sys/class/vtconsole --- vgacon - bind
+>                      :
+>                      --- fbcon - bind
+>                      :
+>                      --- dummycon - bind
+>
+> ... with the 'bind' as a r/w attribute, 0 for unbound/unbind, 1 for
+> bound/bind.
 
-It's not an alternative API, it's the default API and behavior. So, I
-just can't remove it without breaking all console drivers.
+This model implies that more than one driver can be open which isn't
+true.  Since there is one attribute per driver this also implies that
+binding(registering) is a driver attribute, not a console one.
 
-Tony
+If you move binding(registering) over to be a driver property it
+doesn't need to be an explicit attribute. When a driver first loads it
+will always register with console. When it unloads it will always
+unregister and we know that the unregister will succeed because if
+console has you open you won't be able to unload and get to the
+unregister code.
+
+The problem with the previous system was that bind(register) and open
+were combined into a single operation when they should be separate. I
+should be able to load four console drivers and then pick the one I
+want to switch to without automatically having the console jump to
+each device as the drivers are loaded.
+
+> > We have these console systems: dummy, serial, vga, mda, prom, sti,
+> > newport, sisusb, fb, network (isn't there some way to use the net for
+> > console?)
+>
+> network is different.  It's a different class of console itself.  We
+> have different console classes BTW. We have netconsole, serial console,
+> vt consoles etc. fbcon, vgacon, promcon, etc all fall under the vt
+> console class.
+
+Over time it would nice if these all merged to a single
+interchangeable interface. I would really like to be able to
+dynamically switch to serial/net while debugging a video driver. Is
+there some fundamental reason why these can't be merged?
+
+> > All of these console system could follow the same protocol for
+> > registering/binding as the modular consoles so we would end up with a
+> > single class of console, not modular vs system.
+>
+> That was the plan before, the problem here is that we won't have any
+> output during the early part of the boot process. That's why I
+> differentiated them into system and modular consoles.
+
+The current way of doing this still works. If a console driver is
+compiled in use the CONFIG flags to statically initialize it's
+registration(bind) state with console. Console will then just open the
+first one it finds. Registering just says, here's a pointer I'm able
+to be a console. Unregistering takes the pointer away. I agree that
+there has to be a protocol exception in this case since the console
+drivers don't get initialized until after we want console output.
+
+> What do you think?
+
+Am I making more sense now?
+
+-- 
+Jon Smirl
+jonsmirl@gmail.com

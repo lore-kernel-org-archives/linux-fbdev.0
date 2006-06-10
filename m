@@ -1,11 +1,12 @@
 From: "Jon Smirl" <jonsmirl@gmail.com>
 Subject: Re: [PATCH 5/5] VT binding: Add new doc file
 	describing the feature
-Date: Sat, 10 Jun 2006 12:16:56 -0400
-Message-ID: <9e4733910606100916r74615af8i34d37f323414034c@mail.gmail.com>
+Date: Sat, 10 Jun 2006 13:01:52 -0400
+Message-ID: <9e4733910606101001j1a10eb9x89d4c2b200fe5ba8@mail.gmail.com>
 References: <44893407.4020507@gmail.com>
 	<9e4733910606092253n7fe4e074xe54eaec0fe4149f3@mail.gmail.com>
 	<448AC8BE.7090202@gmail.com>
+	<9e4733910606100916r74615af8i34d37f323414034c@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -14,16 +15,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Fp68w-0006EO-Sw for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 10 Jun 2006 09:16:58 -0700
-Received: from nz-out-0102.google.com ([64.233.162.204])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Fp68w-0004Sy-Do
+	id 1Fp6qS-0001lY-IZ for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 10 Jun 2006 10:01:56 -0700
+Received: from nz-out-0102.google.com ([64.233.162.202])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Fp6qO-0003pO-LC
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sat, 10 Jun 2006 09:16:58 -0700
-Received: by nz-out-0102.google.com with SMTP id z3so966136nzf
+	Sat, 10 Jun 2006 10:01:53 -0700
+Received: by nz-out-0102.google.com with SMTP id z3so972412nzf
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sat, 10 Jun 2006 09:16:57 -0700 (PDT)
-In-Reply-To: <448AC8BE.7090202@gmail.com>
+	Sat, 10 Jun 2006 10:01:52 -0700 (PDT)
+In-Reply-To: <9e4733910606100916r74615af8i34d37f323414034c@mail.gmail.com>
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -38,101 +39,32 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: "Antonino A. Daplas" <adaplas@gmail.com>
 Cc: Andrew Morton <akpm@osdl.org>, Greg KH <greg@kroah.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-On 6/10/06, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> Jon Smirl wrote:
-> > On 6/9/06, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> >> - Describe the characteristics of 2 general types of console drivers
-> >> - How to use the sysfs to unbind and bind console drivers
-> >> - Uses for this feature
-> >
-> > I like this new binding feature and that for doing the work to make it
-> > happen. It is definitely something I will use in the future.
-> >
-> >> From the docs I see a distinction between system consoles and modular
-> > consoles, can't all consoles be created equally?  The only rule would
-> > be, that if there is only a single console registered it can't be
-> > unbound or unregistered. It shouldn't matter which console is the last
-> > one left.
->
-> Yes, it can be made that way. I just made it like that because
-> system consoles, since they are initialized very, very early, have to
-> be compiled statically. Therefore, they have can never be unloaded. So
-> why give them the prerogative to directly unbind, when they can never
-> be unloaded? One can unbind them anyway by binding a modular driver.
->
-> It would also make binding/unbinding a more complicated process.
+On 6/10/06, Jon Smirl <jonsmirl@gmail.com> wrote:
+> The problem with the previous system was that bind(register) and open
+> were combined into a single operation when they should be separate. I
+> should be able to load four console drivers and then pick the one I
+> want to switch to without automatically having the console jump to
+> each device as the drivers are loaded.
 
-I may be looking at the problem a little differently. I see the
-drivers like fb, vga, etc as registering with the console and saying
-they are capable of providing console services. I then see the console
-system as opening one of the registered devices. A driver is free to
-register/unregister whenever it wants to as long as it isn't open by
-the console system. Console can only open one driver at a time.
-Opening another driver automatically closes the previous driver and
-one driver always has to be open.
+I should clarify this, take_over_console() combines the registration
+and open operations. If I loaded four console drivers using
+take_over_console() my console would bounce from device to device as
+the drivers are loaded. The real problem with the take_over_console()
+implementation was that it effectively made loading console drivers
+into a stack operation instead of a set operation.
 
-> I was thinking of changing it to something like this, after GregKH's
-> suggestion:
->
-> /sys/class/vtconsole --- vgacon - bind
->                      :
->                      --- fbcon - bind
->                      :
->                      --- dummycon - bind
->
-> ... with the 'bind' as a r/w attribute, 0 for unbound/unbind, 1 for
-> bound/bind.
+take_over_console() is not incompatible with the scheme I described in
+the previous mail if the implementation is changed inside console.
+The new implementation would just call the register and open
+operations as described earlier. When loading four consoles using
+take_over_console() you would still bounce through the four consoles
+but once loaded the console drivers would act as a set. You could use
+sysfs to switch to any of the registered consoles. If a console driver
+is not open it could be unloaded in any order.
 
-This model implies that more than one driver can be open which isn't
-true.  Since there is one attribute per driver this also implies that
-binding(registering) is a driver attribute, not a console one.
-
-If you move binding(registering) over to be a driver property it
-doesn't need to be an explicit attribute. When a driver first loads it
-will always register with console. When it unloads it will always
-unregister and we know that the unregister will succeed because if
-console has you open you won't be able to unload and get to the
-unregister code.
-
-The problem with the previous system was that bind(register) and open
-were combined into a single operation when they should be separate. I
-should be able to load four console drivers and then pick the one I
-want to switch to without automatically having the console jump to
-each device as the drivers are loaded.
-
-> > We have these console systems: dummy, serial, vga, mda, prom, sti,
-> > newport, sisusb, fb, network (isn't there some way to use the net for
-> > console?)
->
-> network is different.  It's a different class of console itself.  We
-> have different console classes BTW. We have netconsole, serial console,
-> vt consoles etc. fbcon, vgacon, promcon, etc all fall under the vt
-> console class.
-
-Over time it would nice if these all merged to a single
-interchangeable interface. I would really like to be able to
-dynamically switch to serial/net while debugging a video driver. Is
-there some fundamental reason why these can't be merged?
-
-> > All of these console system could follow the same protocol for
-> > registering/binding as the modular consoles so we would end up with a
-> > single class of console, not modular vs system.
->
-> That was the plan before, the problem here is that we won't have any
-> output during the early part of the boot process. That's why I
-> differentiated them into system and modular consoles.
-
-The current way of doing this still works. If a console driver is
-compiled in use the CONFIG flags to statically initialize it's
-registration(bind) state with console. Console will then just open the
-first one it finds. Registering just says, here's a pointer I'm able
-to be a console. Unregistering takes the pointer away. I agree that
-there has to be a protocol exception in this case since the console
-drivers don't get initialized until after we want console output.
-
-> What do you think?
-
-Am I making more sense now?
+Long term I think take_over_console() should be deprecated in favor of
+a register(bind) call from the console driver and an explicit sysfs
+action to move the console.
 
 -- 
 Jon Smirl

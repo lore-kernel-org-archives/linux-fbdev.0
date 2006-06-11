@@ -1,70 +1,129 @@
-From: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: [PATCH 5/5] VT binding: Add new doc file describing the feature
-Date: Sat, 10 Jun 2006 22:26:15 -0400
-Message-ID: <9e4733910606101926h73addc1j7cbb4027d3d9f41e@mail.gmail.com>
-References: <44893407.4020507@gmail.com>
-	 <9e4733910606092253n7fe4e074xe54eaec0fe4149f3@mail.gmail.com>
-	 <448AC8BE.7090202@gmail.com>
-	 <9e4733910606100916r74615af8i34d37f323414034c@mail.gmail.com>
-	 <448B38F8.2000402@gmail.com>
-	 <9e4733910606101644j79b3d8a5ud7431564f4f42c7f@mail.gmail.com>
-	 <448B61F9.4060507@gmail.com>
-	 <9e4733910606101749r77d72a56mbcf6fb3505eb1de0@mail.gmail.com>
-	 <9e4733910606101805t3060c0cdgd08ceabe8cfe4e0e@mail.gmail.com>
-	 <448B7594.6040408@gmail.com>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [PATCH 5/5] VT binding: Add new doc file
+	describing the feature
+Date: Sun, 11 Jun 2006 11:03:52 +0800
+Message-ID: <448B8818.1010303@gmail.com>
+References: <44893407.4020507@gmail.com>	
+	<9e4733910606092253n7fe4e074xe54eaec0fe4149f3@mail.gmail.com>	
+	<448AC8BE.7090202@gmail.com>	
+	<9e4733910606100916r74615af8i34d37f323414034c@mail.gmail.com>	
+	<448B38F8.2000402@gmail.com>	
+	<9e4733910606101644j79b3d8a5ud7431564f4f42c7f@mail.gmail.com>	
+	<448B61F9.4060507@gmail.com>	
+	<9e4733910606101749r77d72a56mbcf6fb3505eb1de0@mail.gmail.com>	
+	<448B6ED3.5060408@gmail.com>
+	<9e4733910606101905y6bfdff4bo3c1b1a2126d02b26@mail.gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1161066AbWFKC0R@vger.kernel.org>
-In-Reply-To: <448B7594.6040408@gmail.com>
-Content-Disposition: inline
-Sender: linux-kernel-owner@vger.kernel.org
-List-Id: <fbdev-devel.lists.sourceforge.net
-Content-Type: text/plain; charset="us-ascii"; format="flowed"
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
+Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1FpGFC-0004Ij-Fk for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 10 Jun 2006 20:04:06 -0700
+Received: from py-out-1112.google.com ([64.233.166.179])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FpGFA-0003JP-0W
+	for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 10 Jun 2006 20:04:06 -0700
+Received: by py-out-1112.google.com with SMTP id f25so1082833pyf
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Sat, 10 Jun 2006 20:04:02 -0700 (PDT)
+In-Reply-To: <9e4733910606101905y6bfdff4bo3c1b1a2126d02b26@mail.gmail.com>
+List-Id: <fbdev-devel.lists.sourceforge.net>
+List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
+List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
+List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
+List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
+List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
+	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
+Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
+Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+To: Jon Smirl <jonsmirl@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, Greg KH <greg@kroah.com>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-On 6/10/06, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> Jon Smirl wrote:
-> > On 6/10/06, Jon Smirl <jonsmirl@gmail.com> wrote:
-> >> On 6/10/06, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> >> > > I see now that you can have tty0-7 assigned to a different console
-> >> > > driver than tty8-63.
-> >> > > Why do I want to do this?
-> >> >
-> >> > Multi-head.  I can have vgacon on the primary card for tty0-7,
-> >> > fbcon on the secondary card for tty8-16.
-> >>
-> >
-> > When I say dropped, I mean drop the feature of having multiple drivers
-> > simultaneously open by the VT layer. You would still be able to switch
-> > from vgacon to fbcon by using sysfs. You just wouldn't be able to use
-> > VT swap hotkeys between them.
->
-> Quoting you:
->
-> "Googling around the only example I could find was someone with a VGA
-> card and a Hercules card. They setup 8 consoles on each card."
->
-> How do you think they accomplished that? They did not rewrite the VT
-> layer, all they need to do is change the 'first' and 'last' parameter
-> passed to take_over_console() in mdacon.c.  This implies that the VT
-> layer already supports multiple active VT console drivers, maybe as
-> early as 2.2, and no, we won't remove that.
+Jon Smirl wrote:
+> On 6/10/06, Antonino A. Daplas <adaplas@gmail.com> wrote:
+>> Jon Smirl wrote:
+>> > On 6/10/06, Antonino A. Daplas <adaplas@gmail.com> wrote:
+>> >> > I see now that you can have tty0-7 assigned to a different console
+>> >> > driver than tty8-63.
+>> >> > Why do I want to do this?
+>> >>
+>> >> Multi-head.  I can have vgacon on the primary card for tty0-7,
+>> >> fbcon on the secondary card for tty8-16.
+>> >
+>> > That's what I thought, I couldn't see any other reason. The kernel
+>> > doesn't support input from multiple users so multihead can only be
+>> > used by a single user.
+>> >
+>> > Does anyone use single user multihead on current systems? The kernel
+>> > doesn't have code in it to initialize secondary VGA cards. What modern
+>> > non-VGA hardware does this work on?
+>>
+>> matroxfb supports multihead and fbcon already has this feature for a
+>> long time, ie you can bind /dev/fb0 to tty0-3 and /dev/fb1 to tty4-6.
+>> And there are definite users because I happen to break this feature once
+>> and I got rained with complaints :-)
+> 
+> Were those people using this: http://linuxconsole.sourceforge.net/
+> Does that work anymore?
 
-But the hardware has changed. The kernel is missing a lot of the
-support needed for multiple VGA cards in a single box so that option
-isn't legal. So this needs to be done with non-VGA cards. Are there
-non-VGA cards still in production where a user would want to put
-multiple cards in their box? As far as I know they aren't any in the
-x86 world, I don't know about other architectures.
+No, plain vanilla kernel support this feature. There are lots of
+users using the single-user, multi-head feature of fbcon. I've been using it.
+The developer of one of the cyber cards also use it.
 
-All modern Hercules cards are VGA based, they use NVidia and ATI
-chips. The reference was from 1998, they were referring to the ancient
-Hercules cards that were non-VGA.
+The main goal of the linuxconsole people is true multiuser, multihead.
+One user per card simultaneously.
 
-Back in the days of CGA, MDA, HGC, 8514, etc this situation was
-common, but now everything is VGA.
+> 
+> This is single a single driver bound to the vt layer. Support for both
+> fb0 and fb1 are provided by that single driver. So there may be some
+> way to make this work.
+> 
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Yes, fbcon does intermediate between drivers, so it's not a problem.
+
+>> > If this feature doesn't work on current hardware, could it be dropped?
+>> > It would make binding to the vt system much simpler if only one driver
+>> > could be bound at a time. Anything we do to make that system simpler
+>> > would benefit everyone.
+>>
+>> You can't drop something that's already in the kernel and has users,
+>> well,
+>> the binding part at least. What we don't currently have is the
+>> fine-grained
+>> control and because of the reason's you mentioned, I said that it's
+>> for the
+>> future.
+> 
+> There are variations on 'drop' is it dropping if we provide an
+> alternate way to achieve the same thing?
+
+Yes, by not providing the user with the option to load and bind
+multiple drivers at one time, we are essentially not supporting this
+feature.  And that's not a problem. /sys/class/vtconsole/vtcon[x]/bind
+handles wholesale binding and unbinding, ie, when you echo 1 > bind,
+only that driver, and nothing else, becomes active.
+
+My point is: 'Multiple active drivers feature' is a natural consequence
+of the evolution of the code, but the only way to take advantage of it
+is if we provide a means for the user to use it.  And we are not
+providing the means.
+
+> 
+> Does matroxfb know which VC number it is drawing too? If so, we could
+> move the mapping between head and VC down to an attribute on the
+> matroxfb driver. That would allow the general case of the VC layer
+> binding to be simplified to opening a single driver.
+> 
+> That is not an attribute you want long term on the matroxfb driver,
+> but all of this would get more cleanly sorted out when a user space
+> implementation happens.
+
+No, matroxfb and any other fbdev drivers has no knowledge whatsoever about
+the console.
+
+Tony

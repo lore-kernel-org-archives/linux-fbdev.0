@@ -1,30 +1,23 @@
-From: Vassilis Virvilis <vasvir@iit.demokritos.gr>
-Subject: Re: Twister savagefb doesn't sync (resolved for
- 640x480@64K)
-Date: Sun, 11 Jun 2006 15:03:07 +0300
-Message-ID: <448C067B.3040404@iit.demokritos.gr>
-References: <44698356.80806@iit.demokritos.gr> <44781B3A.5030406@gmail.com>	
-	<44781BFB.5020708@gmail.com> <447994A8.30600@iit.demokritos.gr>	
-	<447A3CC0.9060403@gmail.com> <447AF58E.3050803@iit.demokritos.gr>	
-	<447B60D7.8020204@gmail.com> <44845DEC.1000608@iit.demokritos.gr>	
-	<a728f9f90606052211v43de97c7l91a22a9faa93f76c@mail.gmail.com>	
-	<44855197.7040801@iit.demokritos.gr>
-	<a728f9f90606060743t7fd6dfdfia3e2a050ff954e06@mail.gmail.com>
-Reply-To: vasvir@iit.demokritos.gr,
-	linux-fbdev-devel@lists.sourceforge.net
+From: Knut Petersen <Knut_Petersen@t-online.de>
+Subject: Re: [PATCH 0/7] Detaching fbcon
+Date: Sun, 11 Jun 2006 15:25:43 +0200
+Message-ID: <448C19D7.5010706@t-online.de>
+References: <44856223.9010606@gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="------------010506020104030403030809"
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FpOaC-0004w2-0z for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 11 Jun 2006 04:58:20 -0700
-Received: from zeus.iit.demokritos.gr ([143.233.226.2])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FpOaA-0007Of-DV
+	id 1FpPvY-0003hS-M7 for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 11 Jun 2006 06:24:28 -0700
+Received: from mailout08.sul.t-online.com ([194.25.134.20])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FpPvV-0007R7-28
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 11 Jun 2006 04:58:20 -0700
-In-Reply-To: <a728f9f90606060743t7fd6dfdfia3e2a050ff954e06@mail.gmail.com>
+	Sun, 11 Jun 2006 06:24:25 -0700
+In-Reply-To: <44856223.9010606@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,88 +28,63 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Alex Deucher <alexdeucher@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@gmail.com>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Andrew Morton <akpm@osdl.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-This is a multi-part message in MIME format.
---------------010506020104030403030809
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Antonino A. Daplas wrote:
 
-Hi Alex,
+>Overall, this feature is a great help for developers working in the
+>framebuffer or console layer.  =
 
-I would like to thank you and Antonino for all the help so far. I have finally
-manage to make my twister to sync with both of my screens (one TFT, one CRT).
+>
+Well, it has long been possible to load / unload framebuffer hardware
+drivers using the vfb module as an intermediate step. It even has been
+possible to load both vesafb and another framebuffer driver for the same
+hardware, to assign vesafb to tty{a,b,c..}, the other framebuffer driver
+to tty{m,n,o...} and to switch between those drivers using the usual
+keyboard hotkeys.
 
-I am attaching the patch. The patch itself disables all modes other than
-640x480@64K-60Hz. Note that the patch is clearly inapropriate but it
-may sparkle some discussion about how this thing works.
+So the main addition of your patchset is the possibility to replace
+fbcon and helper modules, a nice feature I missed in the past.
 
-One more question:
+But should a framebuffer driver terminate and leave the hardware in
+graphics mode or in text mode? Up to now that was not a real question,
+as we all knew that another framebuffer driver would take over control.
+With your patches it is possible that a user really wants to switch to text
+mode and to remove the complete fbcon layer. So should we switch the
+hardware to text mode upon unloading a framebuffer driver?
 
-Alex Deucher wrote:
->> > The reason the savage xorg drver uses the bios is because almost every
->> > panel they connect to the chip seems to require fairly custom timings.
->> > the twisters and prosavages are even worse than the discrete chips.
->> > Also, only the bios seems to know the magic incantation necessary for
->> > dualhead.  I tried for a while to add non-bios mode setting to crtc2
->> > without much luck.
->>
+Maybe unbinding of the framebuffer console is not followed by an
+unloading of the framebuffer module. You tell us that an
+"echo 1 > /sys/class/graphics/fbcon/detach" has the simple effect of a
+corrupt display unless vbetools is used. No, that=B4s not ok.
 
-When you say panel what do you mean?
-a) The rest of the framebuffer and scan logic resided in CRTC?
-b) The screen attached to CRTC?
+Think about an echo 1 > /sys/class/graphics/fbcon/detach inside of an
+xterm session.
 
-I believe a) but I would like to know for sure.
+I think we need new fbops, eg.
 
-Thanks again...
+    int fb_fbcon_unbind(...)
+    int fb_fbcon_bind(...)
 
-    .bill
+If these are not implemented, unbinding is not allowed. Any requests to do
+so will be ignored.
 
---------------010506020104030403030809
-Content-Type: text/x-patch;
- name="savage-640x48064K.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="savage-640x48064K.patch"
+If these are implemented the fbcon_unbind() function of the framebuffer
+driver is called first. If it does not return an error, unbinding can =
 
-diff --git a/drivers/video/savage/savagefb_driver.c b/drivers/video/savage/savagefb_driver.c
-index 10e6b3a..117205e 100644
---- a/drivers/video/savage/savagefb_driver.c
-+++ b/drivers/video/savage/savagefb_driver.c
-@@ -901,6 +901,7 @@ static int savagefb_decode_var (struct f
- 
- 	SavageCalcClock (dclk, 1, 1, 127, 0, 4, 180000, 360000, &m, &n, &r);
- 	/* m = 107; n = 4; r = 2; */
-+	m = 0xfc; n = 0x5; r = 0x3; /* TwisterP */
- 
- 	if (par->MCLK <= 0) {
- 		par->SR10 = 255;
-@@ -908,6 +909,7 @@ static int savagefb_decode_var (struct f
- 	} else {
- 		common_calc_clock (par->MCLK, 1, 1, 31, 0, 3, 135000, 270000,
- 				   &par->SR11, &par->SR10);
-+		par->SR10 = 0x0; par->SR11 = 0x0; /* TwisterP */
- 		/*      par->SR10 = 80; // MCLK == 286000 */
- 		/*      par->SR11 = 125; */
- 	}
+continue,
+otherwise it fails.
 
---------------010506020104030403030809
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+With implemented fb_restore_state() and fb_save_state() fbops the =
 
+framebuffer
+driver knows best about the current hardware state and can act in a way that
+there is no need for vbetools & friends as well as no possibility of fatal
+interactions with X.
 
---------------010506020104030403030809
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Unbinding requests should only be honored if the framebuffer driver decides
+that it is safe. Don=B4t enable it by default.
 
-_______________________________________________
-Linux-fbdev-devel mailing list
-Linux-fbdev-devel@lists.sourceforge.net
-https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-
---------------010506020104030403030809--
+cu,
+ knut

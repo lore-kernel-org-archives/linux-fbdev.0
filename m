@@ -1,38 +1,29 @@
-From: Vassilis Virvilis <vasvir@iit.demokritos.gr>
-Subject: Re: Twister savagefb doesn't sync (resolved for
- 640x480@64K)
-Date: Mon, 12 Jun 2006 09:12:58 +0300
-Message-ID: <448D05EA.8060501@iit.demokritos.gr>
-References: <44698356.80806@iit.demokritos.gr>	
-	<447994A8.30600@iit.demokritos.gr> <447A3CC0.9060403@gmail.com>	
-	<447AF58E.3050803@iit.demokritos.gr> <447B60D7.8020204@gmail.com>	
-	<44845DEC.1000608@iit.demokritos.gr>	
-	<a728f9f90606052211v43de97c7l91a22a9faa93f76c@mail.gmail.com>	
-	<44855197.7040801@iit.demokritos.gr>	
-	<a728f9f90606060743t7fd6dfdfia3e2a050ff954e06@mail.gmail.com>	
-	<448C067B.3040404@iit.demokritos.gr>
-	<a728f9f90606110803v10ca364xf3e32e4a40f4bbfa@mail.gmail.com>
-Reply-To: vasvir@iit.demokritos.gr,
-	linux-fbdev-devel@lists.sourceforge.net
+From: Knut Petersen <Knut_Petersen@t-online.de>
+Subject: Re: [PATCH 0/7] Detaching fbcon
+Date: Mon, 12 Jun 2006 09:49:50 +0200
+Message-ID: <448D1C9E.7050606@t-online.de>
+References: <44856223.9010606@gmail.com> <448C19D7.5010706@t-online.de>
+	<448C83AD.9060200@gmail.com>
+Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-list1-b.sourceforge.net ([10.3.1.7]
 	helo=sc8-sf-list1.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Fpfam-0005b6-Lv for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 11 Jun 2006 23:08:04 -0700
+	id 1Fph9p-0005iK-KI for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 12 Jun 2006 00:48:21 -0700
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1Fpfam-0006rX-8M for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 11 Jun 2006 23:08:04 -0700
-Received: from zeus.iit.demokritos.gr ([143.233.226.2])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Fpfal-0007pK-RP
+	id 1Fph9p-0006Zx-8c for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 12 Jun 2006 00:48:21 -0700
+Received: from mailout11.sul.t-online.com ([194.25.134.85])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Fph9o-00074W-TZ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 11 Jun 2006 23:08:04 -0700
-In-Reply-To: <a728f9f90606110803v10ca364xf3e32e4a40f4bbfa@mail.gmail.com>
+	Mon, 12 Jun 2006 00:48:21 -0700
+In-Reply-To: <448C83AD.9060200@gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -43,31 +34,57 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Alex Deucher <alexdeucher@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@gmail.com>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Andrew Morton <akpm@osdl.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-Alex Deucher wrote:
+Hi Tony,
 
-> 
-> I'm not sure I understand your question.
+>We'll use fb_restore_state and fb_save_state if available, yes, but I don't
+>think we need to implement unbind and bind.  For one, as Jon and Andrew
+>has pointed out, drivers should have no concept of binding. (That's why the
+>patch has escalated to VT binding).
+>
+>  =
 
-That is because it wasn't a brilliant question and when I say screen
-I mean monitor. Sorry for the confusion. I was trying to figure out
-if the thing was external to the PCI card (i.e. in the monitor) or internal
-(i.e. DAC). But since I am not familiar with the domain I don't know
-how to ask the questions properly.
+>
+Well, it does not matter if it=B4s the fbcon or vt layer that does the
+binding. I agree with Jon and Andrew that vt binding is the better
+way.
 
-Anyway is there a way to probe for that FP thing? or to distinguish
-between them?
+>And why force drivers to have an fb_restore_state/fb_save_state just to
+>unbind/bind?  This is going to penalize 10's of drivers that don't need
+>it.  Just make this feature an experimental kconfig option, or make this
+>available as a boot option.
+>  =
 
+>
+An experimental feature could be "Allow all framebuffer drivers to unbind".
+Non-experimental behaviour really should be to allow unbinding
+only if the framebuffer driver allows it. The fbcon and vt layer simply
+does not know if it is safe, and thus they have to interrogate the
+hardware layer that knows the answer.
 
-> Perhaps if we had a few more testers we
-> could figure out a pattern for common panels and put in some sort of
-> generic fix.
-> 
+Your current proposal is to allow unbinding and removal of the framebuffer
+driver and the fbcon layer, no matter what the result will be. I don=B4t th=
+ink
+that this is ok.  There is  John User that tries to switch to text mode, and
+he will complain if it does leave his hardware in an unusable state.
 
-I don't mind produce more data or test things as long as I have the
-equipment...
+I suggest to add the fb_unbinding / fb_binding fbops and to only allow
+unbinding if we know that it will not leave the video hardware in a state
+that is unusable for proper operation.
 
+If there is nothing to be done inside those two fbops, they simply return
+0.
 
-       .bill
+Other framebuffer drivers set the hardware to a state that is completely
+unusable by a textmode console and that is incompatible with X. These
+might need to know if X is active to decide if unbinding makes any sense at
+that specific moment. They can know that by adding the save/restore_state
+fbops. No, I don=B4t think that the save/restore_state fbops should be =
+
+required
+for unbinding operations, I think you misunderstood me in that place.
+
+cu,
+ knut

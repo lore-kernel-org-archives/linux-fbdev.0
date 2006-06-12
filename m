@@ -1,97 +1,76 @@
-From: "Michal Suchanek" <hramrach@centrum.cz>
-Subject: Re: [PATCH 0/7] Detaching fbcon
-Date: Mon, 12 Jun 2006 15:28:26 +0200
-Message-ID: <a5d587fb0606120628o203941c3h761bfffbb6ec08f7@mail.gmail.com>
-References: <44856223.9010606@gmail.com> <448C19D7.5010706@t-online.de>
-	<448C83AD.9060200@gmail.com> <448D1C9E.7050606@t-online.de>
-	<448D5B4F.5080504@gmail.com>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: [Linux-fbdev-devel] [PATCH 0/7] Detaching fbcon
+Date: Mon, 12 Jun 2006 22:15:50 +0800
+Message-ID: <448D7716.5070205@gmail.com>
+References: <44856223.9010606@gmail.com> <448C19D7.5010706@t-online.de>	<448C83AD.9060200@gmail.com> <448D1C9E.7050606@t-online.de>	<448D5B4F.5080504@gmail.com> <a5d587fb0606120628o203941c3h761bfffbb6ec08f7@mail.gmail.com>
 Mime-Version: 1.0
-Content-Transfer-Encoding: base64
-Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FpmT1-0002pb-MQ for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 12 Jun 2006 06:28:31 -0700
-Received: from nf-out-0910.google.com ([64.233.182.189])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FpmT0-00065a-1T
-	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 12 Jun 2006 06:28:31 -0700
-Received: by nf-out-0910.google.com with SMTP id k26so871650nfc
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 12 Jun 2006 06:28:26 -0700 (PDT)
-In-Reply-To: <448D5B4F.5080504@gmail.com>
-Content-Disposition: inline
-List-Id: <fbdev-devel.lists.sourceforge.net>
-List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
-List-Archive: <http://sourceforge.net/mailarchive/forum.php?forum=linux-fbdev-devel>
-List-Post: <mailto:linux-fbdev-devel@lists.sourceforge.net>
-List-Help: <mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=help>
-List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
-	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
-Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
-Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Return-path: <linux-kernel-owner+glk-linux-kernel-3=40m.gmane.org-S1751983AbWFLOQI@vger.kernel.org>
+In-Reply-To: <a5d587fb0606120628o203941c3h761bfffbb6ec08f7@mail.gmail.com>
+Sender: linux-kernel-owner@vger.kernel.org
+List-Id: <fbdev-devel.lists.sourceforge.net
 Content-Type: text/plain; charset="iso-8859-1"
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Andrew Morton <akpm@osdl.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Knut Petersen <Knut_Petersen@t-online.de>
+Cc: Andrew Morton <akpm@osdl.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Knut Petersen <Knut_Petersen@t-online.de>, hramrach@centrum.cz
 
-T24gNi8xMi8wNiwgQW50b25pbm8gQS4gRGFwbGFzIDxhZGFwbGFzQGdtYWlsLmNvbT4gd3JvdGU6
-Cj4gPiBOb24tZXhwZXJpbWVudGFsIGJlaGF2aW91ciByZWFsbHkgc2hvdWxkIGJlIHRvIGFsbG93
-IHVuYmluZGluZwo+ID4gb25seSBpZiB0aGUgZnJhbWVidWZmZXIgZHJpdmVyIGFsbG93cyBpdC4g
-VGhlIGZiY29uIGFuZCB2dCBsYXllciBzaW1wbHkKPiA+IGRvZXMgbm90IGtub3cgaWYgaXQgaXMg
-c2FmZSwgYW5kIHRodXMgdGhleSBoYXZlIHRvIGludGVycm9nYXRlIHRoZQo+ID4gaGFyZHdhcmUg
-bGF5ZXIgdGhhdCBrbm93cyB0aGUgYW5zd2VyLgo+ID4KPiA+IFlvdXIgY3VycmVudCBwcm9wb3Nh
-bCBpcyB0byBhbGxvdyB1bmJpbmRpbmcgYW5kIHJlbW92YWwgb2YgdGhlIGZyYW1lYnVmZmVyCj4g
-PiBkcml2ZXIgYW5kIHRoZSBmYmNvbiBsYXllciwgbm8gbWF0dGVyIHdoYXQgdGhlIHJlc3VsdCB3
-aWxsIGJlLiBJIGRvbsK0dCB0aGluawo+ID4gdGhhdCB0aGlzIGlzIG9rLiAgVGhlcmUgaXMgIEpv
-aG4gVXNlciB0aGF0IHRyaWVzIHRvIHN3aXRjaCB0byB0ZXh0IG1vZGUsIGFuZAo+ID4gaGUgd2ls
-bCBjb21wbGFpbiBpZiBpdCBkb2VzIGxlYXZlIGhpcyBoYXJkd2FyZSBpbiBhbiB1bnVzYWJsZSBz
-dGF0ZS4KPgo+IFRoaXMgSSBkaXNhZ3JlZSB3aXRoIHlvdS4gIFRoZSB2aWV3IHRoYXQgYW4gb3Bl
-cmF0aW9uIHNob3VsZCBiZSB0b3RhbGx5Cj4gZG9uZSAxMDAlIHdpdGhpbiB0aGUga2VybmVsIGlz
-IHZlcnkgdXRvcGljLiAgV2UgYWxyZWFkeSBoYXZlIGZlYXR1cmVzIHRoYXQKPiByZXF1aXJlIGJv
-dGggdGhlIGtlcm5lbCBhbmQgdXNlcnNwYWNlIGZvciB0aGVtIHRvIHdvcmsuIFRoZSBuZWFyZXN0
-IGV4YW1wbGUKPiBpcyBzdXNwZW5kL3Jlc3VtZS4gSXQncyBnb29kIGlmIHlvdSBjYW4gbWFrZSBz
-dXNwZW5kL3Jlc3VtZSB3b3JrIHdpdGhvdXQKPiBhZGRpdGlvbmFsIGVmZm9ydCwgYnV0IHRoYXQn
-cyBub3QgdGhlIGNhc2UuIE1ham9yaXR5IG9mIHVzZXJzIHN0aWxsIG5lZWQKPiB1dGlsaXRpZXMg
-c3VjaCBhcyB2YmV0b29sLgoKV2VsbCwgSSBndWVzcyB0aGF0IHRoZSBmYiBkcml2ZXIgc2hvdWxk
-IHRyeSB0byByZXN0b3JlIHRoZSBvcmlnaW5hbAptb2RlIChpZSB0ZXh0IG1vZGUgb24geDg2KSBv
-biB1bmxvYWQuIEFuZCBpdCBpcyBlaXRoZXIgY29uc2lkZXJlZApmbGF3ZWQgaWYgaXQgZG9lc250
-IG9yIGl0IHNob3VsZCBpbmRpY2F0ZSBzb21ld2hlcmUgdGhhdCBpdCBkb2VzIG5vdAprbm93IGhv
-dyB0byB1bmxvYWQgaXRzZWxmLgoKVGhhdCBpcyB3aGF0IEkgYXMgYSB1c2VyIHdvdWxkIGV4cGVj
-dC4gQnV0IEkgZG8gbm90IGV4cGVjdCBhbGwgZHJpdmVycwp0byBiZSBmbGF3bGVzcyBhdCBhbGwg
-dGltZXMuIEl0IHdvdWxkIGJlIG5pY2UgYnV0IGl0IGRvZXMgbm90IGhhcHBlbi4KCj4KPiA+Cj4g
-PiBJIHN1Z2dlc3QgdG8gYWRkIHRoZSBmYl91bmJpbmRpbmcgLyBmYl9iaW5kaW5nIGZib3BzIGFu
-ZCB0byBvbmx5IGFsbG93Cj4gPiB1bmJpbmRpbmcgaWYgd2Uga25vdyB0aGF0IGl0IHdpbGwgbm90
-IGxlYXZlIHRoZSB2aWRlbyBoYXJkd2FyZSBpbiBhIHN0YXRlCj4gPiB0aGF0IGlzIHVudXNhYmxl
-IGZvciBwcm9wZXIgb3BlcmF0aW9uLgo+ID4KPiA+IElmIHRoZXJlIGlzIG5vdGhpbmcgdG8gYmUg
-ZG9uZSBpbnNpZGUgdGhvc2UgdHdvIGZib3BzLCB0aGV5IHNpbXBseSByZXR1cm4KPiA+IDAuCj4g
-Pgo+ID4gT3RoZXIgZnJhbWVidWZmZXIgZHJpdmVycyBzZXQgdGhlIGhhcmR3YXJlIHRvIGEgc3Rh
-dGUgdGhhdCBpcyBjb21wbGV0ZWx5Cj4gPiB1bnVzYWJsZSBieSBhIHRleHRtb2RlIGNvbnNvbGUg
-YW5kIHRoYXQgaXMgaW5jb21wYXRpYmxlIHdpdGggWC4gVGhlc2UKPiA+IG1pZ2h0IG5lZWQgdG8g
-a25vdyBpZiBYIGlzIGFjdGl2ZSB0byBkZWNpZGUgaWYgdW5iaW5kaW5nIG1ha2VzIGFueSBzZW5z
-ZSBhdAo+ID4gdGhhdCBzcGVjaWZpYyBtb21lbnQuCj4KPiBUaGlzIGlzIHZlcnkgdWdseS4gRHJp
-dmVycyBzaG91bGQgbm90IGNhcmUgd2hldGhlciBpdCdzIHNhZmUgdG8gbG9hZCBvcgo+IHVubG9h
-ZCwgdW5iaW5kIG9yIGJpbmQsIG9yIHdoZXRoZXIgYSBzcGVjaWZpYyBhcHBsaWNhdGlvbiBpcyBv
-cGVuIG9yIG5vdC4KPiBUaGlzIGlzIG5vdCB0aGVpciBqb2IsIHRoaXMgc2hvdWxkIGJlIHRoZSBq
-b2Igb2YgdGhlIGhpZ2hlciBsYXllciBvciBhbgo+IGFyYml0ZXIuICBBbmQgeWVzLCB0aGUgc3Rh
-dGUgb2YgZ3JhcGhpY3MgaXMgY3VycmVudGx5IHVnbHksIHdpdG5lc3MgdGhlCj4gdmVyeSBsb25n
-IHRocmVhZHMgb24gaG93IHRvIHRvIG1ha2UgZXZlcnl0aGluZyB3b3JrIHRvZ2V0aGVyLgo+Cj4g
-UmlnaHQgbm93LCB0aGUgb25seSB0aGluZyBJIGNhbiBjbGFpbSBpcyB0aGF0IHRyeWluZyB0byBk
-byBhbiBmYmRldgo+IG9wZXJhdGlvbiB3aGlsZSBpbnNpZGUgWCB3aWxsIHJlc3VsdCBpbiB1bmRl
-ZmluZWQsIGlmIG5vdCBmYXRhbCBiZWhhdmlvci4KPiBEb24ndCBkbyBpdC4gQW5kIG5vIG1hdHRl
-ciBob3cgbWFueSB1Z2x5IGhhY2tzIGFuZCB3b3JrYXJvdW5kcyB3ZSBhZGQKPiBmb3IgdGhlIGZy
-YW1lYnVmZmVyIGxheWVyLCB0aGlzIHdpbGwgYWx3YXlzIGJlIHRydWUuCgpJIGxpa2UgdGhlIHBv
-c3NpYmlsaXR5IHRvIGNoYW5nZSBYIHJlc29sdXRpb24gdXNpbmcgZmJzZXQgKGZyb20gaW5zaWRl
-ClgpLiBJIHVzZSBpdCB0byBjb3JyZWN0IHByb2JsZW1zIGNhdXNlZCBieSBjcmFzaGVkIFggcHJv
-Z3JhbXMgdGhhdApjaGFuZ2UgcmVzb2x1dGlvbi4gQnV0IEkgcnVuIFggd2l0aCB0aGUgVXNlRmJE
-ZXYgb3B0aW9uLiBUaGUgWCBzZXJ2ZXIKd291bGQgYmUgcHJvYmFibHkgcXVpdGUgdW5oYXBweSBp
-ZiBJIHJlbW92ZWQgdGhlIGZiIGRyaXZlciBidXQgc2luY2UKaXQgdXNlcyB0aGUgZmIgZGV2aWNl
-IHRoZSBkcml2ZXIgc2hvdWxkIG5vdCB1bmxvYWQuCgpJIGd1ZXNzIHRoYXQgaWYgWCBjaGFuZ2Vz
-IHNldHRpbmdzIG9mIHRoZSBncmFwaGljcyBjYXJkIGFuZCBkb2VzIG5vdAp0ZWxsIHRoZSBmYiBk
-cml2ZXIgdGhlIGNvb3BlcmF0aW9uIHdvdWxkIG5vdCBiZSB0aGF0IG5pY2UuIEJ1dCB0aGF0J3MK
-WCBwcm9ibGVtIHRoZW4gSSB0aGluay4KClRoYW5rcwoKTWljaGFsCgpfX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1mYmRldi1kZXZlbCBtYWlsaW5n
-IGxpc3QKTGludXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlz
-dHMuc291cmNlZm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRldmVsCg==
+Michal Suchanek wrote:
+> On 6/12/06, Antonino A. Daplas <adaplas@gmail.com> wrote:
+>>> Non-experimental behaviour really should be to allow unbinding
+>>> only if the framebuffer driver allows it. The fbcon and vt layer si=
+mply
+>>> does not know if it is safe, and thus they have to interrogate the
+>>> hardware layer that knows the answer.
+>>>
+>>> Your current proposal is to allow unbinding and removal of the fram=
+ebuffer
+>>> driver and the fbcon layer, no matter what the result will be. I do=
+n=C2=B4t think
+>>> that this is ok.  There is  John User that tries to switch to text =
+mode, and
+>>> he will complain if it does leave his hardware in an unusable state=
+=2E
+>> This I disagree with you.  The view that an operation should be tota=
+lly
+>> done 100% within the kernel is very utopic.  We already have feature=
+s that
+>> require both the kernel and userspace for them to work. The nearest =
+example
+>> is suspend/resume. It's good if you can make suspend/resume work wit=
+hout
+>> additional effort, but that's not the case. Majority of users still =
+need
+>> utilities such as vbetool.
+>=20
+> Well, I guess that the fb driver should try to restore the original
+> mode (ie text mode on x86) on unload. And it is either considered
+> flawed if it doesnt or it should indicate somewhere that it does not
+> know how to unload itself.
+
+Well, failure to implement proper suspend and resume by a driver does n=
+ot
+stop the entire suspend/resume process, does it? Even if it results
+in a blank screen. It doesn't because we have a userspace options and
+tools that complements the kernel side. So why should it be any differe=
+nt
+in this case?=20
+
+Some drivers, i810fb and rivafb, saves the hardware state on the
+first open, and restores the hardware state on the last close. This
+is usually sufficient for them to restore the hardware to VGA text
+mode on unload. It would be nice if we can implement something like thi=
+s
+for all drivers, but failure to do so should not be a reason to stop th=
+e
+entire process.
+
+> I like the possibility to change X resolution using fbset (from insid=
+e
+> X). I use it to correct problems caused by crashed X programs that
+> change resolution. But I run X with the UseFbDev option. The X server
+> would be probably quite unhappy if I removed the fb driver but since
+> it uses the fb device the driver should not unload.
+
+If X is using fbdev, then X is also holding a reference count on the
+driver.  And the driver will not unload even if you try to.
+
+Tony

@@ -1,18 +1,16 @@
 From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 5/5] VT binding: Add new doc file
- describing the feature
-Date: Mon, 12 Jun 2006 10:31:56 +0200 (CEST)
-Message-ID: <Pine.LNX.4.62.0606121029010.7668@pademelon.sonytel.be>
-References: <44893407.4020507@gmail.com>
-	<9e4733910606092253n7fe4e074xe54eaec0fe4149f3@mail.gmail.com>
-	<448AC8BE.7090202@gmail.com>
-	<9e4733910606100916r74615af8i34d37f323414034c@mail.gmail.com>
-	<448B38F8.2000402@gmail.com>
-	<9e4733910606101644j79b3d8a5ud7431564f4f42c7f@mail.gmail.com>
-	<448B61F9.4060507@gmail.com>
-	<9e4733910606101749r77d72a56mbcf6fb3505eb1de0@mail.gmail.com>
-	<9e4733910606101805t3060c0cdgd08ceabe8cfe4e0e@mail.gmail.com>
-	<448B7594.6040408@gmail.com>
+Subject: Re: Twister savagefb doesn't sync (resolved for
+ 640x480@64K)
+Date: Mon, 12 Jun 2006 10:33:24 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0606121032430.7668@pademelon.sonytel.be>
+References: <44698356.80806@iit.demokritos.gr> <44781B3A.5030406@gmail.com>
+	<44781BFB.5020708@gmail.com> <447994A8.30600@iit.demokritos.gr> 
+	<447A3CC0.9060403@gmail.com> <447AF58E.3050803@iit.demokritos.gr> 
+	<447B60D7.8020204@gmail.com> <44845DEC.1000608@iit.demokritos.gr> 
+	<a728f9f90606052211v43de97c7l91a22a9faa93f76c@mail.gmail.com> 
+	<44855197.7040801@iit.demokritos.gr>
+	<a728f9f90606060743t7fd6dfdfia3e2a050ff954e06@mail.gmail.com>
+	<448C067B.3040404@iit.demokritos.gr>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -21,18 +19,18 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-list1-b.sourceforge.net ([10.3.1.7]
 	helo=sc8-sf-list1.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FphqY-00013c-G9 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 12 Jun 2006 01:32:30 -0700
+	id 1Fphrf-00019W-UC for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 12 Jun 2006 01:33:39 -0700
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FphqY-0001k3-7v for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 12 Jun 2006 01:32:30 -0700
+	id 1Fphrf-0001pI-NQ for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 12 Jun 2006 01:33:39 -0700
 Received: from witte.sonytel.be ([80.88.33.193])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FphqW-00016L-Nt
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Fphrf-0001OX-8Q
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 12 Jun 2006 01:32:30 -0700
-In-Reply-To: <448B7594.6040408@gmail.com>
+	Mon, 12 Jun 2006 01:33:39 -0700
+In-Reply-To: <448C067B.3040404@iit.demokritos.gr>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -43,38 +41,26 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@osdl.org>, Greg KH <greg@kroah.com>, Jon Smirl <jonsmirl@gmail.com>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+To: vasvir@iit.demokritos.gr, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
+Cc: Alex Deucher <alexdeucher@gmail.com>, "Antonino A. Daplas" <adaplas@gmail.com>
 
-On Sun, 11 Jun 2006, Antonino A. Daplas wrote:
-> Jon Smirl wrote:
-> > On 6/10/06, Jon Smirl <jonsmirl@gmail.com> wrote:
-> >> On 6/10/06, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> >> > > I see now that you can have tty0-7 assigned to a different console
-> >> > > driver than tty8-63.
-> >> > > Why do I want to do this?
-> >> >
-> >> > Multi-head.  I can have vgacon on the primary card for tty0-7,
-> >> > fbcon on the secondary card for tty8-16.
-> >>
-> > 
-> > When I say dropped, I mean drop the feature of having multiple drivers
-> > simultaneously open by the VT layer. You would still be able to switch
-> > from vgacon to fbcon by using sysfs. You just wouldn't be able to use
-> > VT swap hotkeys between them.
+On Sun, 11 Jun 2006, Vassilis Virvilis wrote:
+> Alex Deucher wrote:
+> > > > The reason the savage xorg drver uses the bios is because almost every
+> > > > panel they connect to the chip seems to require fairly custom timings.
+> > > > the twisters and prosavages are even worse than the discrete chips.
+> > > > Also, only the bios seems to know the magic incantation necessary for
+> > > > dualhead.  I tried for a while to add non-bios mode setting to crtc2
+> > > > without much luck.
+> > > 
 > 
-> Quoting you:
+> When you say panel what do you mean?
+> a) The rest of the framebuffer and scan logic resided in CRTC?
+> b) The screen attached to CRTC?
 > 
-> "Googling around the only example I could find was someone with a VGA
-> card and a Hercules card. They setup 8 consoles on each card."
-> 
-> How do you think they accomplished that? They did not rewrite the VT
-> layer, all they need to do is change the 'first' and 'last' parameter
-> passed to take_over_console() in mdacon.c.  This implies that the VT
-> layer already supports multiple active VT console drivers, maybe as
-> early as 2.2, and no, we won't remove that.
+> I believe a) but I would like to know for sure.
 
-JFYI, probably 2.1.x. Multi-head dates back to at least 1996.
+panel = LCD panel (in contrast to CRT = Cathode Ray Tube)
 
 Gr{oetje,eeting}s,
 

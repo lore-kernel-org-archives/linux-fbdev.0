@@ -1,29 +1,34 @@
 From: "Michal Suchanek" <hramrach@centrum.cz>
 Subject: Re: [PATCH 0/7] Detaching fbcon
-Date: Mon, 12 Jun 2006 18:44:36 +0200
-Message-ID: <a5d587fb0606120944t6d064e9bvb1bfa24eb69e5ce6@mail.gmail.com>
+Date: Mon, 12 Jun 2006 18:46:49 +0200
+Message-ID: <a5d587fb0606120946n7bbc2a41jd489efaff6742fe8@mail.gmail.com>
 References: <44856223.9010606@gmail.com> <448C19D7.5010706@t-online.de>
 	<448C83AD.9060200@gmail.com> <448D1C9E.7050606@t-online.de>
 	<448D5B4F.5080504@gmail.com>
 	<a5d587fb0606120628o203941c3h761bfffbb6ec08f7@mail.gmail.com>
-	<448D7716.5070205@gmail.com>
+	<1150122011.5693.17.camel@thor.lorrainebruecke.local>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Transfer-Encoding: base64
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
+Received: from sc8-sf-list1-b.sourceforge.net ([10.3.1.7]
+	helo=sc8-sf-list1.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FppWy-000688-9f for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 12 Jun 2006 09:44:48 -0700
-Received: from nf-out-0910.google.com ([64.233.182.184])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FppWx-0006Kp-T1
+	id 1FppZ0-0006J8-F9 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 12 Jun 2006 09:46:54 -0700
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1FppZ0-0002al-4q for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 12 Jun 2006 09:46:54 -0700
+Received: from nf-out-0910.google.com ([64.233.182.189])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FppYx-0002Q2-Vr
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 12 Jun 2006 09:44:48 -0700
-Received: by nf-out-0910.google.com with SMTP id n15so906477nfc
+	Mon, 12 Jun 2006 09:46:54 -0700
+Received: by nf-out-0910.google.com with SMTP id x37so904934nfc
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 12 Jun 2006 09:44:41 -0700 (PDT)
-In-Reply-To: <448D7716.5070205@gmail.com>
+	Mon, 12 Jun 2006 09:46:49 -0700 (PDT)
+In-Reply-To: <1150122011.5693.17.camel@thor.lorrainebruecke.local>
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -36,61 +41,19 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 Content-Type: text/plain; charset="iso-8859-1"
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-fbdev-devel@lists.sourceforge.net, Linux Kernel Development <linux-kernel@vger.kernel.org>, Knut Petersen <Knut_Petersen@t-online.de>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-T24gNi8xMi8wNiwgQW50b25pbm8gQS4gRGFwbGFzIDxhZGFwbGFzQGdtYWlsLmNvbT4gd3JvdGU6
-Cj4gTWljaGFsIFN1Y2hhbmVrIHdyb3RlOgo+ID4gT24gNi8xMi8wNiwgQW50b25pbm8gQS4gRGFw
-bGFzIDxhZGFwbGFzQGdtYWlsLmNvbT4gd3JvdGU6Cj4gPj4+IE5vbi1leHBlcmltZW50YWwgYmVo
-YXZpb3VyIHJlYWxseSBzaG91bGQgYmUgdG8gYWxsb3cgdW5iaW5kaW5nCj4gPj4+IG9ubHkgaWYg
-dGhlIGZyYW1lYnVmZmVyIGRyaXZlciBhbGxvd3MgaXQuIFRoZSBmYmNvbiBhbmQgdnQgbGF5ZXIg
-c2ltcGx5Cj4gPj4+IGRvZXMgbm90IGtub3cgaWYgaXQgaXMgc2FmZSwgYW5kIHRodXMgdGhleSBo
-YXZlIHRvIGludGVycm9nYXRlIHRoZQo+ID4+PiBoYXJkd2FyZSBsYXllciB0aGF0IGtub3dzIHRo
-ZSBhbnN3ZXIuCj4gPj4+Cj4gPj4+IFlvdXIgY3VycmVudCBwcm9wb3NhbCBpcyB0byBhbGxvdyB1
-bmJpbmRpbmcgYW5kIHJlbW92YWwgb2YgdGhlIGZyYW1lYnVmZmVyCj4gPj4+IGRyaXZlciBhbmQg
-dGhlIGZiY29uIGxheWVyLCBubyBtYXR0ZXIgd2hhdCB0aGUgcmVzdWx0IHdpbGwgYmUuIEkgZG9u
-wrR0IHRoaW5rCj4gPj4+IHRoYXQgdGhpcyBpcyBvay4gIFRoZXJlIGlzICBKb2huIFVzZXIgdGhh
-dCB0cmllcyB0byBzd2l0Y2ggdG8gdGV4dCBtb2RlLCBhbmQKPiA+Pj4gaGUgd2lsbCBjb21wbGFp
-biBpZiBpdCBkb2VzIGxlYXZlIGhpcyBoYXJkd2FyZSBpbiBhbiB1bnVzYWJsZSBzdGF0ZS4KPiA+
-PiBUaGlzIEkgZGlzYWdyZWUgd2l0aCB5b3UuICBUaGUgdmlldyB0aGF0IGFuIG9wZXJhdGlvbiBz
-aG91bGQgYmUgdG90YWxseQo+ID4+IGRvbmUgMTAwJSB3aXRoaW4gdGhlIGtlcm5lbCBpcyB2ZXJ5
-IHV0b3BpYy4gIFdlIGFscmVhZHkgaGF2ZSBmZWF0dXJlcyB0aGF0Cj4gPj4gcmVxdWlyZSBib3Ro
-IHRoZSBrZXJuZWwgYW5kIHVzZXJzcGFjZSBmb3IgdGhlbSB0byB3b3JrLiBUaGUgbmVhcmVzdCBl
-eGFtcGxlCj4gPj4gaXMgc3VzcGVuZC9yZXN1bWUuIEl0J3MgZ29vZCBpZiB5b3UgY2FuIG1ha2Ug
-c3VzcGVuZC9yZXN1bWUgd29yayB3aXRob3V0Cj4gPj4gYWRkaXRpb25hbCBlZmZvcnQsIGJ1dCB0
-aGF0J3Mgbm90IHRoZSBjYXNlLiBNYWpvcml0eSBvZiB1c2VycyBzdGlsbCBuZWVkCj4gPj4gdXRp
-bGl0aWVzIHN1Y2ggYXMgdmJldG9vbC4KPiA+Cj4gPiBXZWxsLCBJIGd1ZXNzIHRoYXQgdGhlIGZi
-IGRyaXZlciBzaG91bGQgdHJ5IHRvIHJlc3RvcmUgdGhlIG9yaWdpbmFsCj4gPiBtb2RlIChpZSB0
-ZXh0IG1vZGUgb24geDg2KSBvbiB1bmxvYWQuIEFuZCBpdCBpcyBlaXRoZXIgY29uc2lkZXJlZAo+
-ID4gZmxhd2VkIGlmIGl0IGRvZXNudCBvciBpdCBzaG91bGQgaW5kaWNhdGUgc29tZXdoZXJlIHRo
-YXQgaXQgZG9lcyBub3QKPiA+IGtub3cgaG93IHRvIHVubG9hZCBpdHNlbGYuCj4KPiBXZWxsLCBm
-YWlsdXJlIHRvIGltcGxlbWVudCBwcm9wZXIgc3VzcGVuZCBhbmQgcmVzdW1lIGJ5IGEgZHJpdmVy
-IGRvZXMgbm90Cj4gc3RvcCB0aGUgZW50aXJlIHN1c3BlbmQvcmVzdW1lIHByb2Nlc3MsIGRvZXMg
-aXQ/IEV2ZW4gaWYgaXQgcmVzdWx0cwo+IGluIGEgYmxhbmsgc2NyZWVuLiBJdCBkb2Vzbid0IGJl
-Y2F1c2Ugd2UgaGF2ZSBhIHVzZXJzcGFjZSBvcHRpb25zIGFuZAo+IHRvb2xzIHRoYXQgY29tcGxl
-bWVudHMgdGhlIGtlcm5lbCBzaWRlLiBTbyB3aHkgc2hvdWxkIGl0IGJlIGFueSBkaWZmZXJlbnQK
-PiBpbiB0aGlzIGNhc2U/CgpJIGRvIG5vdCBzYXkgaXQgbXVzdCBiZSBkaWZmZXJlbnQuIHZnYWNv
-biAob3Igd2hhdGV2ZXIgaXMgdGhlIHRleHQKY29uc29sZSBjYWxsZWQpIGZhaWxzIHRvIGRvIHBy
-b3BlciBzdXNwZW5kL3Jlc3VtZSBmb3IgbWUuIEkganVzdCB1c2UgWAphbmQgdGhpbmsgdGhlIGNv
-bnNvbGUgaXMgZmxhd2VkLiBIb3dldmVyLCBpdCB3b3VsZCBiZSBuaWNlIGlmIEkgd2FzCndhcm5l
-ZCBpbiBhZHZhbmNlIHRoYXQgdGhlIGNvbnNvbGUgd2lsbCBkaWUgb24gc3VzcGVuZC4KCj4KPiBT
-b21lIGRyaXZlcnMsIGk4MTBmYiBhbmQgcml2YWZiLCBzYXZlcyB0aGUgaGFyZHdhcmUgc3RhdGUg
-b24gdGhlCj4gZmlyc3Qgb3BlbiwgYW5kIHJlc3RvcmVzIHRoZSBoYXJkd2FyZSBzdGF0ZSBvbiB0
-aGUgbGFzdCBjbG9zZS4gVGhpcwo+IGlzIHVzdWFsbHkgc3VmZmljaWVudCBmb3IgdGhlbSB0byBy
-ZXN0b3JlIHRoZSBoYXJkd2FyZSB0byBWR0EgdGV4dAo+IG1vZGUgb24gdW5sb2FkLiBJdCB3b3Vs
-ZCBiZSBuaWNlIGlmIHdlIGNhbiBpbXBsZW1lbnQgc29tZXRoaW5nIGxpa2UgdGhpcwo+IGZvciBh
-bGwgZHJpdmVycywgYnV0IGZhaWx1cmUgdG8gZG8gc28gc2hvdWxkIG5vdCBiZSBhIHJlYXNvbiB0
-byBzdG9wIHRoZQo+IGVudGlyZSBwcm9jZXNzLgo+Cj4gPiBJIGxpa2UgdGhlIHBvc3NpYmlsaXR5
-IHRvIGNoYW5nZSBYIHJlc29sdXRpb24gdXNpbmcgZmJzZXQgKGZyb20gaW5zaWRlCj4gPiBYKS4g
-SSB1c2UgaXQgdG8gY29ycmVjdCBwcm9ibGVtcyBjYXVzZWQgYnkgY3Jhc2hlZCBYIHByb2dyYW1z
-IHRoYXQKPiA+IGNoYW5nZSByZXNvbHV0aW9uLiBCdXQgSSBydW4gWCB3aXRoIHRoZSBVc2VGYkRl
-diBvcHRpb24uIFRoZSBYIHNlcnZlcgo+ID4gd291bGQgYmUgcHJvYmFibHkgcXVpdGUgdW5oYXBw
-eSBpZiBJIHJlbW92ZWQgdGhlIGZiIGRyaXZlciBidXQgc2luY2UKPiA+IGl0IHVzZXMgdGhlIGZi
-IGRldmljZSB0aGUgZHJpdmVyIHNob3VsZCBub3QgdW5sb2FkLgo+Cj4gSWYgWCBpcyB1c2luZyBm
-YmRldiwgdGhlbiBYIGlzIGFsc28gaG9sZGluZyBhIHJlZmVyZW5jZSBjb3VudCBvbiB0aGUKPiBk
-cml2ZXIuICBBbmQgdGhlIGRyaXZlciB3aWxsIG5vdCB1bmxvYWQgZXZlbiBpZiB5b3UgdHJ5IHRv
-LgoKeWVzLCB0aGF0J3MgaXQuIEFuZCBpZiBpdCBkb2VzIG5vdCBpdCBpcyBYIHByb2JsZW0uIE5v
-dCBmYiBwcm9ibGVtLgoKClRoYW5rcwoKTWljaGFsCgpfX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fXwpMaW51eC1mYmRldi1kZXZlbCBtYWlsaW5nIGxpc3QKTGlu
-dXgtZmJkZXYtZGV2ZWxAbGlzdHMuc291cmNlZm9yZ2UubmV0Cmh0dHBzOi8vbGlzdHMuc291cmNl
-Zm9yZ2UubmV0L2xpc3RzL2xpc3RpbmZvL2xpbnV4LWZiZGV2LWRldmVsCg==
+T24gNi8xMi8wNiwgTWljaGVsIETDpG56ZXIgPG1pY2hlbEB0dW5nc3RlbmdyYXBoaWNzLmNvbT4g
+d3JvdGU6Cj4gT24gTW9uLCAyMDA2LTA2LTEyIGF0IDE1OjI4ICswMjAwLCBNaWNoYWwgU3VjaGFu
+ZWsgd3JvdGU6Cj4gPgo+ID4gSSBsaWtlIHRoZSBwb3NzaWJpbGl0eSB0byBjaGFuZ2UgWCByZXNv
+bHV0aW9uIHVzaW5nIGZic2V0IChmcm9tIGluc2lkZQo+ID4gWCkuIEkgdXNlIGl0IHRvIGNvcnJl
+Y3QgcHJvYmxlbXMgY2F1c2VkIGJ5IGNyYXNoZWQgWCBwcm9ncmFtcyB0aGF0Cj4gPiBjaGFuZ2Ug
+cmVzb2x1dGlvbi4gQnV0IEkgcnVuIFggd2l0aCB0aGUgVXNlRmJEZXYgb3B0aW9uLgo+Cj4gU3Rp
+bGwsIHlvdSBzaG91bGQgdXNlIHNvbWV0aGluZyBsaWtlIHhyYW5kciBpbnN0ZWFkLCBzbyB0aGUg
+WCBzZXJ2ZXIKPiBrbm93cyBhYm91dCBpdC4KCkkgaGF2ZSBuZXZlciBoZWFyZWQgb2YgYSB0b29s
+IGZvciBYIHRoYXQgZG9lcyBpdC4gRmJzZXQgaXMgaGVyZQphbHJlYWR5IGFuZCB3b3JrcyB3ZWxs
+LgoKVGhhbmtzCgpNaWNoYWwKCl9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fCkxpbnV4LWZiZGV2LWRldmVsIG1haWxpbmcgbGlzdApMaW51eC1mYmRldi1kZXZl
+bEBsaXN0cy5zb3VyY2Vmb3JnZS5uZXQKaHR0cHM6Ly9saXN0cy5zb3VyY2Vmb3JnZS5uZXQvbGlz
+dHMvbGlzdGluZm8vbGludXgtZmJkZXYtZGV2ZWwK

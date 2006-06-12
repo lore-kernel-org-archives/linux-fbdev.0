@@ -1,10 +1,8 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 0/7] Detaching fbcon
-Date: Mon, 12 Jun 2006 14:25:44 +0200 (CEST)
-Message-ID: <Pine.LNX.4.62.0606121424300.7668@pademelon.sonytel.be>
-References: <44856223.9010606@gmail.com> <448C19D7.5010706@t-online.de>
-	<448C83AD.9060200@gmail.com> <448D1C9E.7050606@t-online.de>
-	<448D5B4F.5080504@gmail.com>
+From: syed khader <sk.syed@yahoo.com>
+Subject: porting fb driver to 2, 6(fb_get_fix,
+	fb_get_var)
+Date: Mon, 12 Jun 2006 05:26:24 -0700 (PDT)
+Message-ID: <20060612122624.70277.qmail@web37915.mail.mud.yahoo.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -13,13 +11,12 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FplUM-0005N0-7I for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 12 Jun 2006 05:25:50 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FplUL-0007Yk-KE
+	id 1FplV1-0005T0-6t for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 12 Jun 2006 05:26:31 -0700
+Received: from web37915.mail.mud.yahoo.com ([209.191.124.110])
+	by mail.sourceforge.net with smtp (Exim 4.44) id 1FplV0-0007ky-Rm
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 12 Jun 2006 05:25:50 -0700
-In-Reply-To: <448D5B4F.5080504@gmail.com>
+	Mon, 12 Jun 2006 05:26:31 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,49 +27,38 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: Andrew Morton <akpm@osdl.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>, Knut Petersen <Knut_Petersen@t-online.de>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On Mon, 12 Jun 2006, Antonino A. Daplas wrote:
-> Knut Petersen wrote:
-> > I suggest to add the fb_unbinding / fb_binding fbops and to only allow
-> > unbinding if we know that it will not leave the video hardware in a state
-> > that is unusable for proper operation.
-> > 
-> > If there is nothing to be done inside those two fbops, they simply return
-> > 0.
-> > 
-> > Other framebuffer drivers set the hardware to a state that is completely
-> > unusable by a textmode console and that is incompatible with X. These
-> > might need to know if X is active to decide if unbinding makes any sense at
-> > that specific moment.
-> 
-> This is very ugly. Drivers should not care whether it's safe to load or
-> unload, unbind or bind, or whether a specific application is open or not.
-> This is not their job, this should be the job of the higher layer or an
-> arbiter.  And yes, the state of graphics is currently ugly, witness the
-> very long threads on how to to make everything work together.
-> 
-> Right now, the only thing I can claim is that trying to do an fbdev
-> operation while inside X will result in undefined, if not fatal behavior.
-> Don't do it. And no matter how many ugly hacks and workarounds we add
-> for the framebuffer layer, this will always be true.
+Hi,
+  I am trying to port one of our LCD display frame
+buffer driver to 2.6 kernel.
+  The old 2.4 kernel had these functions defined in
+fb_ops
+    fb_open:    
+    fb_release:
+    fb_get_fix: 
+    fb_get_var:     
+    fb_set_var: 
+    fb_get_cmap:
+    fb_set_cmap: 
+    fb_ioctl:   
 
-The main problem is that there are too many drivers for the same hardware:
-  - vgacon
-  - fbdev
-  - X
+  But the latest 2.6 fb_ops has removed these and
+there is entirely new set of functions. 
+  I tried to go to list archives but I could not find
+information. 
+  What functions in 2.6 fb_ops should to used to
+implement this old 2.4 set of functions?
 
-All of them want to control the hardware, and all of them make assumptions
-about its state...
+Regards
+Syed
 
-Gr{oetje,eeting}s,
 
-						Geert
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+
+
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 

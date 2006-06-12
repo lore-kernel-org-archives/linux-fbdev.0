@@ -1,26 +1,38 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH 0/7] Detaching fbcon
-Date: Mon, 12 Jun 2006 04:57:17 +0800
-Message-ID: <448C83AD.9060200@gmail.com>
-References: <44856223.9010606@gmail.com> <448C19D7.5010706@t-online.de>
-Reply-To: linux-fbdev-devel@lists.sourceforge.net
+From: Vassilis Virvilis <vasvir@iit.demokritos.gr>
+Subject: Re: Twister savagefb doesn't sync (resolved for
+ 640x480@64K)
+Date: Mon, 12 Jun 2006 09:12:58 +0300
+Message-ID: <448D05EA.8060501@iit.demokritos.gr>
+References: <44698356.80806@iit.demokritos.gr>	
+	<447994A8.30600@iit.demokritos.gr> <447A3CC0.9060403@gmail.com>	
+	<447AF58E.3050803@iit.demokritos.gr> <447B60D7.8020204@gmail.com>	
+	<44845DEC.1000608@iit.demokritos.gr>	
+	<a728f9f90606052211v43de97c7l91a22a9faa93f76c@mail.gmail.com>	
+	<44855197.7040801@iit.demokritos.gr>	
+	<a728f9f90606060743t7fd6dfdfia3e2a050ff954e06@mail.gmail.com>	
+	<448C067B.3040404@iit.demokritos.gr>
+	<a728f9f90606110803v10ca364xf3e32e4a40f4bbfa@mail.gmail.com>
+Reply-To: vasvir@iit.demokritos.gr,
+	linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
+Received: from sc8-sf-list1-b.sourceforge.net ([10.3.1.7]
+	helo=sc8-sf-list1.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FpY2i-0007Nt-RI for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 11 Jun 2006 15:04:24 -0700
-Received: from py-out-1112.google.com ([64.233.166.176])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FpY2i-00067o-FG
+	id 1Fpfam-0005b6-Lv for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 11 Jun 2006 23:08:04 -0700
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1Fpfam-0006rX-8M for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 11 Jun 2006 23:08:04 -0700
+Received: from zeus.iit.demokritos.gr ([143.233.226.2])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Fpfal-0007pK-RP
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 11 Jun 2006 15:04:24 -0700
-Received: by py-out-1112.google.com with SMTP id x31so1502527pye
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 11 Jun 2006 15:04:24 -0700 (PDT)
-In-Reply-To: <448C19D7.5010706@t-online.de>
+	Sun, 11 Jun 2006 23:08:04 -0700
+In-Reply-To: <a728f9f90606110803v10ca364xf3e32e4a40f4bbfa@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,72 +43,31 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Andrew Morton <akpm@osdl.org>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+To: Alex Deucher <alexdeucher@gmail.com>
+Cc: linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@gmail.com>
 
-Knut Petersen wrote:
-> Antonino A. Daplas wrote:
-> =
+Alex Deucher wrote:
 
->> Overall, this feature is a great help for developers working in the
->> framebuffer or console layer.  =
+> 
+> I'm not sure I understand your question.
 
->>
-> Well, it has long been possible to load / unload framebuffer hardware
-> drivers using the vfb module as an intermediate step. It even has been
-> possible to load both vesafb and another framebuffer driver for the same
-> hardware, to assign vesafb to tty{a,b,c..}, the other framebuffer driver
-> to tty{m,n,o...} and to switch between those drivers using the usual
-> keyboard hotkeys.
-> =
+That is because it wasn't a brilliant question and when I say screen
+I mean monitor. Sorry for the confusion. I was trying to figure out
+if the thing was external to the PCI card (i.e. in the monitor) or internal
+(i.e. DAC). But since I am not familiar with the domain I don't know
+how to ask the questions properly.
 
-> So the main addition of your patchset is the possibility to replace
-> fbcon and helper modules, a nice feature I missed in the past.
-> =
+Anyway is there a way to probe for that FP thing? or to distinguish
+between them?
 
-> But should a framebuffer driver terminate and leave the hardware in
-> graphics mode or in text mode? Up to now that was not a real question,
-> as we all knew that another framebuffer driver would take over control.
-> With your patches it is possible that a user really wants to switch to te=
-xt
-> mode and to remove the complete fbcon layer. So should we switch the
-> hardware to text mode upon unloading a framebuffer driver?
-> =
 
-> Maybe unbinding of the framebuffer console is not followed by an
-> unloading of the framebuffer module. You tell us that an
-> "echo 1 > /sys/class/graphics/fbcon/detach" has the simple effect of a
-> corrupt display unless vbetools is used. No, that=B4s not ok.
-> =
+> Perhaps if we had a few more testers we
+> could figure out a pattern for common panels and put in some sort of
+> generic fix.
+> 
 
-> Think about an echo 1 > /sys/class/graphics/fbcon/detach inside of an
-> xterm session.
-> =
+I don't mind produce more data or test things as long as I have the
+equipment...
 
-> I think we need new fbops, eg.
-> =
 
->     int fb_fbcon_unbind(...)
->     int fb_fbcon_bind(...)
-> =
-
-> If these are not implemented, unbinding is not allowed. Any requests to do
-> so will be ignored.
-
-We'll use fb_restore_state and fb_save_state if available, yes, but I don't
-think we need to implement unbind and bind.  For one, as Jon and Andrew
-has pointed out, drivers should have no concept of binding. (That's why the
-patch has escalated to VT binding).
-
-And why force drivers to have an fb_restore_state/fb_save_state just to
-unbind/bind?  This is going to penalize 10's of drivers that don't need
-it.  Just make this feature an experimental kconfig option, or make this
-available as a boot option.
-
-This feature is in a state of flux, so this is definitely not its final
-form, nor the last one in a series.  The main goal here is to make the fbdev
-system synchronize with other tools/modules whether it be for state
-preservation, assistance on mode setting, etc. We need this if we are going
-to make the different architectures work together.
-
-Tony
+       .bill

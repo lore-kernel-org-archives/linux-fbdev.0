@@ -1,8 +1,8 @@
 From: Dennis Munsie <dmunsie@cecropia.com>
-Subject: [PATCH 4/7 2.6.17-rc6-mm2] add preliminary i2c
+Subject: [PATCH 3/7 2.6.17-rc6-mm2] add preliminary i2c
 	support to intelfb
-Date: Wed, 14 Jun 2006 13:53:10 -0400
-Message-ID: <596D4304-93AF-4BE7-8A20-C1756763F434@cecropia.com>
+Date: Wed, 14 Jun 2006 13:53:05 -0400
+Message-ID: <B6AC359A-5990-4EB4-B69D-17F93F163AFB@cecropia.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0 (Apple Message framework v750)
 Content-Type: text/plain; charset="us-ascii"
@@ -11,13 +11,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FqZVd-0001CU-4g for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 14 Jun 2006 10:50:29 -0700
+	id 1FqZVY-0001CD-1M for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 14 Jun 2006 10:50:24 -0700
 Received: from mail6.sea5.speakeasy.net ([69.17.117.8])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1FqZVc-0000cy-Tk
+	(Exim 4.44) id 1FqZVX-0000bK-Ec
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 14 Jun 2006 10:50:29 -0700
+	Wed, 14 Jun 2006 10:50:23 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,60 +33,42 @@ Cc: Eric Hustvedt <ehustvedt@cecropia.com>, Dave Airlie <airlied@skynet.ie>
 
 From: Dennis Munsie <dmunsie@cecropia.com>
 
-[04/07] intelfb: add intelfb_output_rec struct and the constants for  
-it's
-fields.
+[03/07] intelfb: add intelfb_i2c_chan struct.
 
 Signed-off-by: Dennis Munsie <dmunsie@cecropia.com>
 
 ---
 
-drivers/video/intelfb/intelfb.h |   29 +++++++++++++++++++++++++++++
-1 file changed, 29 insertions(+)
+drivers/video/intelfb/intelfb.h |   13 +++++++++++++
+1 file changed, 13 insertions(+)
 
-diff -Naurp -X linux-2.6.17-rc6-patched/Documentation/dontdiff  
+diff -Naurp -X linux-2.6.17-rc6-patched//Documentation/dontdiff  
 linux-2.6.17-rc6-patched/drivers/video/intelfb/intelfb.h linux/ 
 drivers/video/intelfb/intelfb.h
 --- linux-2.6.17-rc6-patched/drivers/video/intelfb/intelfb.h	 
-2006-06-14 11:13:02.000000000 -0500
+2006-06-14 10:27:39.000000000 -0500
 +++ linux/drivers/video/intelfb/intelfb.h	2006-06-14  
-11:14:03.000000000 -0500
-@@ -119,6 +119,24 @@
-/* Intel agpgart driver */
-#define AGP_PHYSICAL_MEMORY     2
-+/* these are outputs from the chip - integrated only
-+   external chips are via DVO or SDVO output */
-+#define INTELFB_OUTPUT_UNUSED 0
-+#define INTELFB_OUTPUT_ANALOG 1
-+#define INTELFB_OUTPUT_DVO 2
-+#define INTELFB_OUTPUT_SDVO 3
-+#define INTELFB_OUTPUT_LVDS 4
-+#define INTELFB_OUTPUT_TVOUT 5
-+
-+#define INTELFB_DVO_CHIP_NONE 0
-+#define INTELFB_DVO_CHIP_LVDS 1
-+#define INTELFB_DVO_CHIP_TMDS 2
-+#define INTELFB_DVO_CHIP_TVOUT 4
-+
-+#define INTELFB_OUTPUT_PIPE_NC  0
-+#define INTELFB_OUTPUT_PIPE_A   1
-+#define INTELFB_OUTPUT_PIPE_B   2
-+
-/*** Data Types ***/
-/* supported chipsets */
-@@ -221,6 +239,17 @@ struct intelfb_i2c_chan {
-};
-#endif
-+struct intelfb_output_rec {
-+    int type;
-+    int pipe;
-+    int flags;
-+
+10:29:39.000000000 -0500
+@@ -6,6 +6,10 @@
+#include <linux/agp_backend.h>
+#include <linux/fb.h>
 +#ifdef CONFIG_FB_INTEL_I2C
-+    struct intelfb_i2c_chan i2c_bus;
-+    struct intelfb_i2c_chan ddc_bus;
++#include <linux/i2c.h>
++#include <linux/i2c-algo-bit.h>
 +#endif
+/*** Version/name ***/
+#define INTELFB_VERSION			"0.9.4"
+@@ -208,6 +212,15 @@ struct intelfb_heap_data {
+	u32 size;    // in bytes
+};
++#ifdef CONFIG_FB_INTEL_I2C
++struct intelfb_i2c_chan {
++    struct intelfb_info *dinfo;
++    u32 reg;
++    struct i2c_adapter adapter;
++    struct i2c_algo_bit_data algo;
 +};
++#endif
 +
 struct intelfb_vsync {
 	wait_queue_head_t wait;

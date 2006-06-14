@@ -1,35 +1,27 @@
-From: "Alex Deucher" <alexdeucher@gmail.com>
-Subject: Re: Twister savagefb doesn't sync (resolved for
-	640x480@64K)
-Date: Sun, 11 Jun 2006 11:03:11 -0400
-Message-ID: <a728f9f90606110803v10ca364xf3e32e4a40f4bbfa@mail.gmail.com>
-References: <44698356.80806@iit.demokritos.gr>
-	<447994A8.30600@iit.demokritos.gr> <447A3CC0.9060403@gmail.com>
-	<447AF58E.3050803@iit.demokritos.gr> <447B60D7.8020204@gmail.com>
-	<44845DEC.1000608@iit.demokritos.gr>
-	<a728f9f90606052211v43de97c7l91a22a9faa93f76c@mail.gmail.com>
-	<44855197.7040801@iit.demokritos.gr>
-	<a728f9f90606060743t7fd6dfdfia3e2a050ff954e06@mail.gmail.com>
-	<448C067B.3040404@iit.demokritos.gr>
+From: Richard Purdie <rpurdie@rpsys.net>
+Subject: Problems with rotated Logos
+Date: Wed, 14 Jun 2006 11:13:17 +0100
+Message-ID: <1150279997.27375.15.camel@localhost.localdomain>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
-	helo=mail.sourceforge.net)
+Received: from sc8-sf-list1-b.sourceforge.net ([10.3.1.7]
+	helo=sc8-sf-list1.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FpqOL-0002fZ-Fw for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 12 Jun 2006 10:39:57 -0700
-Received: from ug-out-1314.google.com ([66.249.92.169])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FpqOL-0002Ib-1g
+	id 1FqSNO-0008Kd-J5 for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 14 Jun 2006 03:13:30 -0700
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+	helo=mail.sourceforge.net)
+	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
+	id 1FqSNO-00053d-Fw for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 14 Jun 2006 03:13:30 -0700
+Received: from tim.rpsys.net ([194.106.48.114] ident=0)
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1FqSNM-0007x2-Qn
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 12 Jun 2006 10:39:57 -0700
-Received: by ug-out-1314.google.com with SMTP id o2so2468772uge
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 12 Jun 2006 10:39:49 -0700 (PDT)
-In-Reply-To: <448C067B.3040404@iit.demokritos.gr>
-Content-Disposition: inline
+	Wed, 14 Jun 2006 03:13:30 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -40,50 +32,37 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: vasvir@iit.demokritos.gr
-Cc: linux-fbdev-devel@lists.sourceforge.net, "Antonino A. Daplas" <adaplas@gmail.com>
+To: "Antonino A. Daplas" <adaplas@gmail.com>, linux-fbdev-devel@lists.sourceforge.net
 
-On 6/11/06, Vassilis Virvilis <vasvir@iit.demokritos.gr> wrote:
-> Hi Alex,
->
-> I would like to thank you and Antonino for all the help so far. I have finally
-> manage to make my twister to sync with both of my screens (one TFT, one CRT).
->
-> I am attaching the patch. The patch itself disables all modes other than
-> 640x480@64K-60Hz. Note that the patch is clearly inapropriate but it
-> may sparkle some discussion about how this thing works.
->
-> One more question:
->
-> Alex Deucher wrote:
-> >> > The reason the savage xorg drver uses the bios is because almost every
-> >> > panel they connect to the chip seems to require fairly custom timings.
-> >> > the twisters and prosavages are even worse than the discrete chips.
-> >> > Also, only the bios seems to know the magic incantation necessary for
-> >> > dualhead.  I tried for a while to add non-bios mode setting to crtc2
-> >> > without much luck.
-> >>
->
-> When you say panel what do you mean?
-> a) The rest of the framebuffer and scan logic resided in CRTC?
-> b) The screen attached to CRTC?
->
-> I believe a) but I would like to know for sure.
+Hi,
 
-I'm not sure I understand your question.  The panel connects to the
-chip via a built in flat panel interface, however it has to be driven
-with timings and a clock just like a CRT.  The CRTC can drive either
-the FP interface or the DAC or both.  Based on you patch it seems you
-only need to tweak the clock.  Perhaps if we had a few more testers we
-could figure out a pattern for common panels and put in some sort of
-generic fix.
+I've been experimenting with logos on the Sharp Zaurus C3000 which has a
+480x640 framebuffer which is rotated clockwise to give 640x480. I'm
+using a 2.6.16 based kernel.
 
-Alex
+If I use the standard Linux logo (clut224), all is well. I added a
+640x185 logo and this locked the machine up when booting. Space was
+cleared at the top of the console for the logo and some boot messages
+appeared beneath it. Also, 639x185 gave the same result.
 
->
-> Thanks again...
->
->     .bill
->
->
->
+To assist debugging, I changed to a 480x185 logo and tested this without
+console rotation where it displays fine. If I rotate the console
+clockwise, the logo doesn't appear but there is space left for it and
+the system boots.
+
+I've tried to get further with this but I couldn't quite understand how
+fb_rotate_logo_cw was working. Could this be broken in the case where
+you have a logo with width > height? (height > width in the case of that
+function). I made a test program to look at the numbers outputted by
+that function and they didn't seem right for my logo size. I've not
+checked with the tux logo sizes as I ran out of time but will do in due
+course.
+
+I'll continue to look into this but I wondered if anyone had any
+thoughts where the problem might be offhand? The lockup worries me but
+could be some separate issue and I'll work on getting the 480x185 logo
+working initially.
+
+Regards,
+
+Richard

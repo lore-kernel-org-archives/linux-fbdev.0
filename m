@@ -1,23 +1,23 @@
 From: Dennis Munsie <dmunsie@cecropia.com>
-Subject: [PATCH 0/7 2.6.17-rc6-mm2] add preliminary i2c
+Subject: [PATCH 1/7 2.6.17-rc6-mm2] add preliminary i2c
 	support to intelfb
-Date: Wed, 14 Jun 2006 13:52:41 -0400
-Message-ID: <03A6DAFF-D4B4-4806-8954-DCB12F8C2064@cecropia.com>
+Date: Wed, 14 Jun 2006 13:52:46 -0400
+Message-ID: <EB373D75-DE32-4833-B201-8EFF45533863@cecropia.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0 (Apple Message framework v750)
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FqZVB-00017P-UB for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 14 Jun 2006 10:50:01 -0700
+	id 1FqZVF-0001B5-6f for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 14 Jun 2006 10:50:05 -0700
 Received: from mail6.sea5.speakeasy.net ([69.17.117.8])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1FqZVA-0001Kb-Ng
+	(Exim 4.44) id 1FqZVE-0000Vq-S6
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 14 Jun 2006 10:50:01 -0700
+	Wed, 14 Jun 2006 10:50:05 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,19 +29,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Eric Hustvedt <ehustvedt@cecropia.com>, Dave Airlie <airlied@skynet.ie>
+Cc: khali@linux-fr.org, Eric Hustvedt <ehustvedt@cecropia.com>, Dave Airlie <airlied@skynet.ie>
 
-Hi,
+From: Dennis Munsie <dmunsie@cecropia.com>
 
-here is another set of patches to the intelfb -- these require the  
-vsync interrupt patch I sent out earlier today to apply cleanly, but  
-it does not depend on it's functionality.
+[01/07] i2c: add intelfb bit algorithm id
 
-these patches add preliminary i2c support to the intelfb driver.   
-Currently, they just register the i2c busses that the chipset  
-provides.  I plan to use this support when I port over Dave's SDVO  
-support from the X.org driver.
+Adds the intelfb bit algorithm id to i2c-id.h.
 
-this code is based heavily on Dave's x.org driver and the aty driver.
+Signed-off-by: Dennis Munsie <dmunsie@cecropia.com>
 
-dennis
+---
+
+include/linux/i2c-id.h |    1 +
+1 file changed, 1 insertion(+)
+
+diff -Naurp -X linux-2.6.17-rc6-patched/Documentation/dontdiff  
+linux-2.6.17-rc6-patched/include/linux/i2c-id.h linux/include/linux/ 
+i2c-id.h
+--- linux-2.6.17-rc6-patched/include/linux/i2c-id.h	2006-06-13  
+14:57:01.000000000 -0500
++++ linux/include/linux/i2c-id.h	2006-06-14 10:04:54.000000000 -0500
+@@ -189,6 +189,7 @@
+#define I2C_HW_B_RADEON		0x01001e /* radeon framebuffer driver */
+#define I2C_HW_B_EM28XX		0x01001f /* em28xx video capture cards */
+#define I2C_HW_B_CX2341X	0x010020 /* Conexant CX2341X MPEG encoder  
+cards */
++#define I2C_HW_B_INTELFB	0x010021 /* intel framebuffer driver */
+/* --- PCF 8584 based algorithms					*/
+#define I2C_HW_P_LP		0x020000 /* Parallel port interface */

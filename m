@@ -1,7 +1,7 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
 Subject: Re: Problems with rotated Logos
-Date: Thu, 15 Jun 2006 05:24:08 +0800
-Message-ID: <44907E78.8030409@gmail.com>
+Date: Thu, 15 Jun 2006 05:27:37 +0800
+Message-ID: <44907F49.7050609@gmail.com>
 References: <1150279997.27375.15.camel@localhost.localdomain>	
 	<4490091B.4090900@gmail.com>
 	<1150311401.9240.9.camel@localhost.localdomain>
@@ -13,15 +13,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Fqcqi-0003EU-5f for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 14 Jun 2006 14:24:28 -0700
+	id 1FqcvC-0003ey-SW for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 14 Jun 2006 14:29:06 -0700
 Received: from wr-out-0506.google.com ([64.233.184.237])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Fqcqf-0000u7-IJ
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FqcvB-0001w1-DI
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 14 Jun 2006 14:24:28 -0700
-Received: by wr-out-0506.google.com with SMTP id i24so239280wra
+	Wed, 14 Jun 2006 14:29:06 -0700
+Received: by wr-out-0506.google.com with SMTP id i24so240325wra
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Wed, 14 Jun 2006 14:24:22 -0700 (PDT)
+	Wed, 14 Jun 2006 14:29:03 -0700 (PDT)
 In-Reply-To: <1150311401.9240.9.camel@localhost.localdomain>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -72,6 +72,10 @@ Richard Purdie wrote:
 
 Yes, you're right, the dimensions where reversed. Can you revert the previous
 patch, and then apply this one?
+
+Tony
+
+PS: If this still doesn't work, can you send me your logo ppm file?
 
 fbdev: Fix logo rotation if width != height
 

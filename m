@@ -1,25 +1,28 @@
-From: Richard Purdie <rpurdie@rpsys.net>
-Subject: Re: Problems with rotated Logos
-Date: Wed, 14 Jun 2006 19:56:41 +0100
-Message-ID: <1150311401.9240.9.camel@localhost.localdomain>
-References: <1150279997.27375.15.camel@localhost.localdomain>
-	<4490091B.4090900@gmail.com>
+From: Dennis Munsie <dmunsie@cecropia.com>
+Subject: soliciting feedback/direction on DDC support
+Date: Wed, 14 Jun 2006 17:04:46 -0400
+Message-ID: <12A94EEB-565A-4220-81B0-6A43EA732A14@cecropia.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
+Mime-Version: 1.0 (Apple Message framework v750)
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FqaXv-0006sb-OU for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 14 Jun 2006 11:56:55 -0700
-Received: from tim.rpsys.net ([194.106.48.114] ident=0)
+	id 1FqcVA-0001Kb-PQ for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 14 Jun 2006 14:02:12 -0700
+Received: from mail7.sea5.speakeasy.net ([69.17.117.9])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1FqaXt-0004p7-TK
+	(Exim 4.44) id 1FqcV9-0004hi-Du
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 14 Jun 2006 11:56:55 -0700
-In-Reply-To: <4490091B.4090900@gmail.com>
+	Wed, 14 Jun 2006 14:02:12 -0700
+Received: from lex098.cecropia.com (HELO [192.168.3.25])
+	(dmunsie@cecropia.com@[63.138.212.98])
+	(envelope-sender <dmunsie@cecropia.com>)
+	by mail7.sea5.speakeasy.net (qmail-ldap-1.03) with RC4-SHA encrypted
+	SMTP for <linux-fbdev-devel@lists.sourceforge.net>;
+	14 Jun 2006 21:02:04 -0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -30,39 +33,41 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
 
-Hi,
+hi everyone,
 
-On Wed, 2006-06-14 at 21:03 +0800, Antonino A. Daplas wrote:
-> Richard Purdie wrote:
-> > Hi,
-> > 
-> > I've been experimenting with logos on the Sharp Zaurus C3000 which has a
-> > 480x640 framebuffer which is rotated clockwise to give 640x480. I'm
-> > using a 2.6.16 based kernel.
-> > 
-> > If I use the standard Linux logo (clut224), all is well. I added a
-> > 640x185 logo and this locked the machine up when booting. Space was
-> > cleared at the top of the console for the logo and some boot messages
-> > appeared beneath it. Also, 639x185 gave the same result.
-> 
-> Yes, it's a bug. Also present in CCW. Try this patch.
+now that I have the I2C bus support in the intelfb driver, I would  
+like to use it for the reading the EDID block.  And actually, I've  
+tested it and it works just fine.
 
-The patch helps in that the 640x185 image no longer locks the system up
-and it displays something, thanks! The image is corrupted however.
-Rather than trying to describe it:
+but... the way it does it is basically the same as the aty driver.   
+Which leads to an ugly mess of copy and pasting code from one driver  
+to another.  Not ideal at all.
 
-http://www.rpsys.net/openzaurus/temp/logo-corrupt.jpg
+So, I was thinking of making it generic and sticking it in fbmon.c  
+(or someplace similar).  But, to do it properly, I need to fiddle  
+with fields in the i2c_algo_bit_data struct.  Ideally, I would want  
+to make sure that the adapter that's passed in is using the i2c-algo- 
+bit algorithm.  But, to do this would require exposing functionality  
+from the i2c algorithm, which seems dirty.
 
-(I'm refraining from comment about the logo itself ;-)
+Normally I wouldn't need to do this, but it looks like the aty code  
+was accommodating older monitors that might not have implemented  
+everything to spec.  And therefore, it looks like they took to do a  
+little bit banging themselves.
 
-As well as the wrapping, the blue colour to the left is also corruption,
-and marks the edge of the screen.
+I've managed to make the aty functionality generic to a point -- it  
+doesn't fiddle the registers directly, but uses the routines defined  
+for that purpose -- but not as generic as I would ideally like.
 
-I suspect the rotation function has a bug...
+At this point, I'll probably still separate out the functionality,  
+but I won't feel comfortable submitting it upstream until the issues  
+of being safe and completely generic are resolved.
 
-Cheers,
+I really don't want this functionality to drop on the floor or be  
+implemented directly (like the other drivers) in the intelfb driver,  
+so any feedback would be greatly appreciated.  It might just be that  
+I'm completely missing something here.
 
-Richard
+dennis

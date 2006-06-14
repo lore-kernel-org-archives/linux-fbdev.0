@@ -1,8 +1,8 @@
 From: Dennis Munsie <dmunsie@cecropia.com>
-Subject: [PATCH 2/5 2.6.17-rc6-mm2] add vsync interrupt
+Subject: [PATCH 5/5 2.6.17-rc6-mm2] add vsync interrupt
 	support to intelfb driver
-Date: Wed, 14 Jun 2006 09:10:26 -0400
-Message-ID: <B3454014-3930-44CE-A6B5-F1B76D976849@cecropia.com>
+Date: Wed, 14 Jun 2006 09:10:38 -0400
+Message-ID: <13946B22-382B-4726-8801-8AE84D4B0CB0@cecropia.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0 (Apple Message framework v750)
 Content-Type: text/plain; charset="us-ascii"
@@ -11,13 +11,13 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FqV6E-0006xc-98 for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 14 Jun 2006 06:07:58 -0700
+	id 1FqV6M-00071t-4t for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 14 Jun 2006 06:08:06 -0700
 Received: from mail8.sea5.speakeasy.net ([69.17.117.10])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1FqV6A-0004AM-SU
+	(Exim 4.44) id 1FqV6J-0004EV-II
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 14 Jun 2006 06:07:55 -0700
+	Wed, 14 Jun 2006 06:08:06 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,88 +33,88 @@ Cc: Eric Hustvedt <ehustvedt@cecropia.com>, Dave Airlie <airlied@skynet.ie>
 
 From: Eric Hustvedt <ehustvedt@cecropia.com>
 
-[02/05] intelfb: Add interrupt related register definitions
+[05/05] intelfb: Honor FB_ACTIVATE_VBL for display panning
 
-Add constants for accessing HWSTAM, IER, IIR, and IMR registers.
-Add constants for interrupt types supported by the 8xx and 9xx chipsets.
-The registers are also stored in the hwstate struct and dumped in the
-debug routine.
+Extends the intelfb_vsync struct to store panning offset. The interrupt
+service routine uses the stored panning offset if a pan is requested
+for the vsync. intelfbhw_disable_irq also pans the display if there is a
+pending request.
 
 Signed-off-by: Eric Hustvedt <ehustvedt@cecropia.com>
 Signed-off-by: Dennis Munsie <dmunsie@cecropia.com>
 ---
 
-drivers/video/intelfb/intelfb.h   |    4 ++++
-drivers/video/intelfb/intelfbhw.c |    9 +++++++++
-drivers/video/intelfb/intelfbhw.h |   13 +++++++++++++
-3 files changed, 26 insertions(+)
+drivers/video/intelfb/intelfb.h    |    2 ++
+drivers/video/intelfb/intelfbdrv.c |    2 ++
+drivers/video/intelfb/intelfbhw.c  |   17 ++++++++++++++++-
+3 files changed, 20 insertions(+), 1 deletion(-)
 
-diff -X linux-2.6.17-rc4-16bit/Documentation/dontdiff -Naurp  
-linux-2.6.17-rc4-16bit/drivers/video/intelfb/intelfb.h linux-2.6.17- 
-rc4-hwstam/drivers/video/intelfb/intelfb.h
---- linux-2.6.17-rc4-16bit/drivers/video/intelfb/intelfb.h	2006-06-09  
-09:29:59.000000000 -0600
-+++ linux-2.6.17-rc4-hwstam/drivers/video/intelfb/intelfb.h	 
-2006-06-09 09:43:18.000000000 -0600
-@@ -195,6 +195,10 @@ struct intelfb_hwstate {
-	u32 mem_mode;
-	u32 fw_blc_0;
-	u32 fw_blc_1;
-+	u16 hwstam;
-+	u16 ier;
-+	u16 iir;
-+	u16 imr;
+diff -X linux-2.6.17-rc4-vsyncwait/Documentation/dontdiff -Naurp  
+linux-2.6.17-rc4-vsyncwait/drivers/video/intelfb/intelfb.h  
+linux-2.6.17-rc4-panning/drivers/video/intelfb/intelfb.h
+--- linux-2.6.17-rc4-vsyncwait/drivers/video/intelfb/intelfb.h	 
+2006-06-09 10:41:06.000000000 -0600
++++ linux-2.6.17-rc4-panning/drivers/video/intelfb/intelfb.h	 
+2006-06-09 11:06:08.000000000 -0600
+@@ -211,6 +211,8 @@ struct intelfb_heap_data {
+struct intelfb_vsync {
+	wait_queue_head_t wait;
+	unsigned int count;
++	int pan_display;
++	u32 pan_offset;
 };
-struct intelfb_heap_data {
-diff -X linux-2.6.17-rc4-16bit/Documentation/dontdiff -Naurp  
-linux-2.6.17-rc4-16bit/drivers/video/intelfb/intelfbhw.c linux-2.6.17- 
-rc4-hwstam/drivers/video/intelfb/intelfbhw.c
---- linux-2.6.17-rc4-16bit/drivers/video/intelfb/intelfbhw.c	 
-2006-06-09 09:29:59.000000000 -0600
-+++ linux-2.6.17-rc4-hwstam/drivers/video/intelfb/intelfbhw.c	 
-2006-06-09 09:43:18.000000000 -0600
-@@ -587,6 +587,11 @@ intelfbhw_read_hw_state(struct intelfb_i
-	hw->fw_blc_0 = INREG(FW_BLC_0);
-	hw->fw_blc_1 = INREG(FW_BLC_1);
-+	hw->hwstam = INREG16(HWSTAM);
-+	hw->ier = INREG16(IER);
-+	hw->iir = INREG16(IIR);
-+	hw->imr = INREG16(IMR);
-+
+struct intelfb_info {
+diff -X linux-2.6.17-rc4-vsyncwait/Documentation/dontdiff -Naurp  
+linux-2.6.17-rc4-vsyncwait/drivers/video/intelfb/intelfbdrv.c  
+linux-2.6.17-rc4-panning/drivers/video/intelfb/intelfbdrv.c
+--- linux-2.6.17-rc4-vsyncwait/drivers/video/intelfb/intelfbdrv.c	 
+2006-06-13 12:31:50.000000000 -0600
++++ linux-2.6.17-rc4-panning/drivers/video/intelfb/intelfbdrv.c	 
+2006-06-13 12:40:33.000000000 -0600
+@@ -900,6 +900,8 @@ intelfb_pci_register(struct pci_dev *pde
+	init_waitqueue_head(&dinfo->vsync.wait);
+	spin_lock_init(&dinfo->int_lock);
+	dinfo->irq_flags = 0;
++	dinfo->vsync.pan_display = 0;
++	dinfo->vsync.pan_offset = 0;
+	return 0;
+diff -X linux-2.6.17-rc4-vsyncwait/Documentation/dontdiff -Naurp  
+linux-2.6.17-rc4-vsyncwait/drivers/video/intelfb/intelfbhw.c  
+linux-2.6.17-rc4-panning/drivers/video/intelfb/intelfbhw.c
+--- linux-2.6.17-rc4-vsyncwait/drivers/video/intelfb/intelfbhw.c	 
+2006-06-13 12:31:22.000000000 -0600
++++ linux-2.6.17-rc4-panning/drivers/video/intelfb/intelfbhw.c	 
+2006-06-13 12:40:18.000000000 -0600
+@@ -371,7 +371,14 @@ intelfbhw_pan_display(struct fb_var_scre
+	offset += dinfo->fb.offset << 12;
+-	OUTREG(DSPABASE, offset);
++	dinfo->vsync.pan_offset = offset;
++	if ((var->activate & FB_ACTIVATE_VBL) &&
++	    !intelfbhw_enable_irq(dinfo, 0)) {
++		dinfo->vsync.pan_display = 1;
++	} else {
++		dinfo->vsync.pan_display = 0;
++		OUTREG(DSPABASE, offset);
++	}
 	return 0;
 }
-@@ -840,6 +845,10 @@ intelfbhw_print_hw_state(struct intelfb_
-	printk("	FW_BLC_0		0x%08x\n", hw->fw_blc_0);
-	printk("	FW_BLC_1		0x%08x\n", hw->fw_blc_1);
-+	printk("	HWSTAM			0x%04x\n", hw->hwstam);
-+	printk("	IER			0x%04x\n", hw->ier);
-+	printk("	IIR			0x%04x\n", hw->iir);
-+	printk("	IMR			0x%04x\n", hw->imr);
-	printk("hw state dump end\n");
-#endif
-}
-diff -X linux-2.6.17-rc4-16bit/Documentation/dontdiff -Naurp  
-linux-2.6.17-rc4-16bit/drivers/video/intelfb/intelfbhw.h linux-2.6.17- 
-rc4-hwstam/drivers/video/intelfb/intelfbhw.h
---- linux-2.6.17-rc4-16bit/drivers/video/intelfb/intelfbhw.h	 
-2006-06-09 09:40:48.000000000 -0600
-+++ linux-2.6.17-rc4-hwstam/drivers/video/intelfb/intelfbhw.h	 
-2006-06-09 10:04:37.000000000 -0600
-@@ -88,6 +88,19 @@
-#define INSTDONE		0x2090
-#define PRI_RING_EMPTY			1
-+#define HWSTAM			0x2098
-+#define IER			0x20A0
-+#define IIR			0x20A4
-+#define IMR			0x20A8
-+#define VSYNC_PIPE_A_INTERRUPT		(1 << 7)
-+#define PIPE_A_EVENT_INTERRUPT		(1 << 4)
-+#define VSYNC_PIPE_B_INTERRUPT		(1 << 5)
-+#define PIPE_B_EVENT_INTERRUPT		(1 << 4)
-+#define HOST_PORT_EVENT_INTERRUPT	(1 << 3)
-+#define CAPTURE_EVENT_INTERRUPT		(1 << 2)
-+#define USER_DEFINED_INTERRUPT		(1 << 1)
-+#define BREAKPOINT_INTERRUPT		1
-+
-#define INSTPM			0x20c0
-#define SYNC_FLUSH_ENABLE		(1 << 5)
+@@ -2013,6 +2020,10 @@ intelfbhw_irq(int irq, void *dev_id, str
+	if (tmp & VSYNC_PIPE_A_INTERRUPT) {
+		dinfo->vsync.count++;
++		if (dinfo->vsync.pan_display) {
++			dinfo->vsync.pan_display = 0;
++			OUTREG(DSPABASE, dinfo->vsync.pan_offset);
++		}
+		wake_up_interruptible(&dinfo->vsync.wait);
+		handled = 1;
+	}
+@@ -2056,6 +2067,10 @@ intelfbhw_disable_irq(struct intelfb_inf
+	u16 tmp;
+	if (test_and_clear_bit(0, &dinfo->irq_flags)) {
++		if (dinfo->vsync.pan_display) {
++			dinfo->vsync.pan_display = 0;
++			OUTREG(DSPABASE, dinfo->vsync.pan_offset);
++		}
+		spin_lock_irq(&dinfo->int_lock);
+		OUTREG16(HWSTAM, 0xffff);
+		OUTREG16(IMR, 0xffff);

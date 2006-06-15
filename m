@@ -1,31 +1,27 @@
-From: Dennis Munsie <dmunsie@cecropia.com>
-Subject: Re: soliciting feedback/direction on DDC support
-Date: Wed, 14 Jun 2006 20:30:27 -0400
-Message-ID: <41352250-4AB2-4628-B6A0-5B6EDFE32CD6@cecropia.com>
-References: <12A94EEB-565A-4220-81B0-6A43EA732A14@cecropia.com>
-	<44908352.9090704@gmail.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Suggestions req for new fb driver
+Date: Thu, 15 Jun 2006 10:38:20 +0200 (CEST)
+Message-ID: <Pine.LNX.4.62.0606151037450.19321@pademelon.sonytel.be>
+References: <0ab101c69042$ed73d330$f301a8c0@procsys>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0 (Apple Message framework v750)
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Fqfkl-0001qJ-ED for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 14 Jun 2006 17:30:31 -0700
-Received: from mail5.sea5.speakeasy.net ([69.17.117.7])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1Fqfkl-0002lA-5l
+	id 1FqnNA-0000T5-7f for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 15 Jun 2006 01:38:40 -0700
+Received: from witte.sonytel.be ([80.88.33.193])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FqnN0-0001OT-O2
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 14 Jun 2006 17:30:31 -0700
-Received: from pool-71-126-246-178.bstnma.fios.verizon.net (HELO
-	[192.168.0.100]) (dmunsie@cecropia.com@[71.126.246.178])
-	(envelope-sender <dmunsie@cecropia.com>)
-	by mail5.sea5.speakeasy.net (qmail-ldap-1.03) with RC4-SHA encrypted
-	SMTP for <linux-fbdev-devel@lists.sourceforge.net>;
-	15 Jun 2006 00:30:30 -0000
-In-Reply-To: <44908352.9090704@gmail.com>
+	Thu, 15 Jun 2006 01:38:40 -0700
+Received: from pademelon.sonytel.be (mail.sonytel.be [43.221.60.197])
+	by witte.sonytel.be (8.12.10/8.12.10) with ESMTP id k5F8cKCQ025025
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Thu, 15 Jun 2006 10:38:20 +0200 (MEST)
+In-Reply-To: <0ab101c69042$ed73d330$f301a8c0@procsys>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -36,42 +32,27 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
+To: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
 
-well, the hacks don't seem specific to the driver -- more that they  
-are there to deal with quirks in the monitors -- which is something  
-that shouldn't be in the driver.  It could also be that these hacks  
-are completely unnecessary -- but that is something that I'm not  
-qualified to determine.
+On Thu, 15 Jun 2006, ankur maheshwari wrote:
+> I am a newbie for framebuffer and trying to write framebuffer driver for lancelot vga controller, currently it is used only with Altera Nios (No MMU, softcore) kind of architecture.
+> 
+> Lancelot ip core provides multi display layers (five layers) functionality, i.e. layer0 we can use for background, layer1 we can use for video, layer2 we can use for text ........
+> 
+> I need some suggestions in design of frame buffer driver, as we have five display layer functionality in lancelot controller do I need to write five separate framebuffer driver for each layer, or I can take 5 different fb_info and work around with it.
+> 
+> To my understanding taking 5 fb_info will create fb0 fb1 fb2 fb3 fb4 nodes and graphic library (not decided yet, which one to use) will drive each frame buffer separately. 
+> Can some one suggest that my understanding is correct with respect to driving multi display layer, Is there any other way I can handle multi display layer, is there any already existing driver example for same functionality ???
 
-But, the problem is that to make it robust and generic, i need access  
-to some internal data in the i2c bit algo.  I can call the  
-appropriate functions that tie back into the drivers, but I can't be  
-100% sure that the I2C adapter passed to me is a bit algo and not  
-something else.  There is no ID field in the adapter struct (or any  
-of the structs inside of that one) that allows me to verify that I  
-have good data.
+Having 5 fb_info's is indeed the simplest solution.
 
-Now, playing devil's advocate, we could just say that since this  
-routine should only be called by drivers in the fb subsystem, they  
-should know what i2c algorithm they are using, and it can be up to  
-the caller to insure that everything is OK... but, I really don't  
-feel comfortable using that method.  I'll leave that one up for  
-debate...
+Gr{oetje,eeting}s,
 
-I'm going to go ahead and write up the less than ideal version and  
-post it up here for comments.  At least it can be a starting point  
-that can be improved upon :)
+						Geert
 
-dennis
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-On Jun 14, 2006, at 5:44 PM, Antonino A. Daplas wrote:
-> I don't see a problem making this generic.  For drivers such as  
-> radeonfb,
-> we can add addtional hooks such as
->
-> fb_ddc_pre_read() - hack before probing
-> fb_ddc_post_read() - hack after probing
-> fb_ddc_stop_read() - hack after everything is done
->
-> to accommodate the hacks.
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds

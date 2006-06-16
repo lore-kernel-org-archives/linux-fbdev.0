@@ -1,24 +1,23 @@
-From: Jean Delvare <khali@linux-fr.org>
-Subject: Re: [PATCH 1/7 2.6.17-rc6-mm2] add preliminary
- i2c support to intelfb
-Date: Thu, 15 Jun 2006 09:04:35 +0200
-Message-ID: <20060615090435.74476472.khali@linux-fr.org>
-References: <EB373D75-DE32-4833-B201-8EFF45533863@cecropia.com>
+From: Dennis Munsie <dmunsie@cecropia.com>
+Subject: [PATCH 7/7 2.6.17-rc6-mm2] add i2c cleanup code
+	to intelfb
+Date: Fri, 16 Jun 2006 09:51:25 -0400
+Message-ID: <E553F6E8-3F43-48A4-995A-D2CF2B12264C@cecropia.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
+Mime-Version: 1.0 (Apple Message framework v750)
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Fqluc-0000s0-IB for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 15 Jun 2006 00:05:06 -0700
-Received: from smtp-104-thursday.nerim.net ([62.4.16.104] helo=kraid.nerim.net)
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FqluO-0004qx-3Z
+	id 1FrEgf-0002hC-6N for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 16 Jun 2006 06:48:37 -0700
+Received: from mail1.sea5.speakeasy.net ([69.17.117.3])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1FrEgd-00005r-Tf
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 15 Jun 2006 00:04:54 -0700
-In-Reply-To: <EB373D75-DE32-4833-B201-8EFF45533863@cecropia.com>
+	Fri, 16 Jun 2006 06:48:37 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,39 +28,86 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Dennis Munsie <dmunsie@cecropia.com>
-Cc: Eric Hustvedt <ehustvedt@cecropia.com>, Dave Airlie <airlied@skynet.ie>, linux-fbdev-devel@lists.sourceforge.net
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Eric Hustvedt <ehustvedt@cecropia.com>, Dave Airlie <airlied@skynet.ie>
 
-Hi Dennis,
+hello again,
 
-> From: Dennis Munsie <dmunsie@cecropia.com>
-> 
-> [01/07] i2c: add intelfb bit algorithm id
-> 
-> Adds the intelfb bit algorithm id to i2c-id.h.
-> 
-> Signed-off-by: Dennis Munsie <dmunsie@cecropia.com>
-> 
-> ---
-> 
-> include/linux/i2c-id.h |    1 +
-> 1 file changed, 1 insertion(+)
-> 
-> diff -Naurp -X linux-2.6.17-rc6-patched/Documentation/dontdiff linux-2.6.17-rc6-patched/include/linux/i2c-id.h linux/include/linux/i2c-id.h
-> --- linux-2.6.17-rc6-patched/include/linux/i2c-id.h	2006-06-13  14:57:01.000000000 -0500
-> +++ linux/include/linux/i2c-id.h	2006-06-14 10:04:54.000000000 -0500
-> @@ -189,6 +189,7 @@
-> #define I2C_HW_B_RADEON		0x01001e /* radeon framebuffer driver */
-> #define I2C_HW_B_EM28XX		0x01001f /* em28xx video capture cards */
-> #define I2C_HW_B_CX2341X	0x010020 /* Conexant CX2341X MPEG encoder  
-> cards */
-> +#define I2C_HW_B_INTELFB	0x010021 /* intel framebuffer driver */
-> /* --- PCF 8584 based algorithms					*/
-> #define I2C_HW_P_LP		0x020000 /* Parallel port interface */
+looks like when I was putting together my i2c patches the other day,  
+I forgot to include the cleanup code.  This patch fixes that.
 
-No need to make a seperate patch for this, this belongs to the same
-patch where the user of this value is introduced.
+dennis
 
-Thanks,
--- 
-Jean Delvare
+---
+
+From: Dennis Munsie <dmunsie@cecropia.com>
+
+Adds code to unregister the I2C buses in the cleanup function.
+
+Signed-off-by: Dennis Munsie <dmunsie@cecropia.com>
+
+---
+
+drivers/video/intelfb/intelfb.h     |    1 +
+drivers/video/intelfb/intelfb_i2c.c |   16 ++++++++++++++++
+drivers/video/intelfb/intelfbdrv.c  |    5 +++++
+3 files changed, 22 insertions(+)
+
+diff -Naurp -X linux-2.6.17-rc6-patched/Documentation/dontdiff  
+linux-2.6.17-rc6-patched/drivers/video/intelfb/intelfb.h linux/ 
+drivers/video/intelfb/intelfb.h
+--- linux-2.6.17-rc6-patched/drivers/video/intelfb/intelfb.h	 
+2006-06-14 15:27:30.000000000 -0500
++++ linux/drivers/video/intelfb/intelfb.h	2006-06-16  
+08:38:25.000000000 -0500
+@@ -367,6 +367,7 @@ extern int intelfb_var_to_depth(const st
+#ifdef CONFIG_FB_INTEL_I2C
+extern void intelfb_create_i2c_busses(struct intelfb_info *dinfo);
++extern void intelfb_delete_i2c_busses(struct intelfb_info *dinfo);
+#endif
+#endif /* _INTELFB_H */
+diff -Naurp -X linux-2.6.17-rc6-patched/Documentation/dontdiff  
+linux-2.6.17-rc6-patched/drivers/video/intelfb/intelfb_i2c.c linux/ 
+drivers/video/intelfb/intelfb_i2c.c
+--- linux-2.6.17-rc6-patched/drivers/video/intelfb/intelfb_i2c.c	 
+2006-06-14 15:27:30.000000000 -0500
++++ linux/drivers/video/intelfb/intelfb_i2c.c	2006-06-16  
+08:36:58.000000000 -0500
+@@ -182,3 +182,19 @@ void intelfb_create_i2c_busses(struct in
+	}
+	dinfo->num_outputs = i;
+}
++
++void intelfb_delete_i2c_busses(struct intelfb_info *dinfo)
++{
++	int i;
++	
++	for (i = 0; i < MAX_OUTPUTS; i++) {
++		if (dinfo->output[i].i2c_bus.dinfo) {
++			i2c_bit_del_bus(&dinfo->output[i].i2c_bus.adapter);
++			dinfo->output[i].i2c_bus.dinfo = NULL;
++		}
++		if (dinfo->output[i].ddc_bus.dinfo) {
++			i2c_bit_del_bus(&dinfo->output[i].ddc_bus.adapter);
++			dinfo->output[i].ddc_bus.dinfo = NULL;
++		}
++	}
++}
+diff -Naurp -X linux-2.6.17-rc6-patched/Documentation/dontdiff  
+linux-2.6.17-rc6-patched/drivers/video/intelfb/intelfbdrv.c linux/ 
+drivers/video/intelfb/intelfbdrv.c
+--- linux-2.6.17-rc6-patched/drivers/video/intelfb/intelfbdrv.c	 
+2006-06-14 15:27:30.000000000 -0500
++++ linux/drivers/video/intelfb/intelfbdrv.c	2006-06-16  
+08:47:31.000000000 -0500
+@@ -474,6 +474,11 @@ cleanup(struct intelfb_info *dinfo)
+		agp_free_memory(dinfo->gtt_ring_mem);
+	}
++#ifdef CONFIG_FB_INTEL_I2C
++	/* un-register I2C bus */
++	intelfb_delete_i2c_busses(dinfo);
++#endif
++
+	if (dinfo->mmio_base)
+		iounmap((void __iomem *)dinfo->mmio_base);
+	if (dinfo->aperture.virtual)

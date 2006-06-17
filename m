@@ -1,23 +1,30 @@
-From: Dennis Munsie <dmunsie@cecropia.com>
-Subject: [PATCH 7/7 2.6.17-rc6-mm2] add i2c cleanup code
-	to intelfb
-Date: Fri, 16 Jun 2006 09:51:25 -0400
-Message-ID: <E553F6E8-3F43-48A4-995A-D2CF2B12264C@cecropia.com>
+From: Luca <kronos@people.it>
+Subject: Re: soliciting feedback/direction on DDC support
+Date: Sat, 17 Jun 2006 19:29:21 +0200
+Message-ID: <20060617172921.GA6281@dreamland.darkstar.lan>
+References: <12A94EEB-565A-4220-81B0-6A43EA732A14@cecropia.com>
+	<44908352.9090704@gmail.com>
+	<41352250-4AB2-4628-B6A0-5B6EDFE32CD6@cecropia.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0 (Apple Message framework v750)
+Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FrEgf-0002hC-6N for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 16 Jun 2006 06:48:37 -0700
-Received: from mail1.sea5.speakeasy.net ([69.17.117.3])
-	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1FrEgd-00005r-Tf
+	id 1FrebJ-00026m-Pd for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 17 Jun 2006 10:28:49 -0700
+Received: from mail-relay-3.tiscali.it ([213.205.33.43])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FrebI-0002LB-58
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 16 Jun 2006 06:48:37 -0700
+	Sat, 17 Jun 2006 10:28:49 -0700
+Received: from dreamland.darkstar.lan (84.222.32.139) by
+	mail-relay-3.tiscali.it (7.3.104)
+	id 44910E1400051629 for linux-fbdev-devel@lists.sourceforge.net;
+	Sat, 17 Jun 2006 19:28:38 +0200
+Content-Disposition: inline
+In-Reply-To: <41352250-4AB2-4628-B6A0-5B6EDFE32CD6@cecropia.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,85 +36,43 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Eric Hustvedt <ehustvedt@cecropia.com>, Dave Airlie <airlied@skynet.ie>
 
-hello again,
+Il Wed, Jun 14, 2006 at 08:30:27PM -0400, Dennis Munsie ha scritto: 
+> well, the hacks don't seem specific to the driver -- more that they  
+> are there to deal with quirks in the monitors -- which is something  
+> that shouldn't be in the driver.  It could also be that these hacks  
+> are completely unnecessary -- but that is something that I'm not  
+> qualified to determine.
 
-looks like when I was putting together my i2c patches the other day,  
-I forgot to include the cleanup code.  This patch fixes that.
+Those hacks are needed to wake up the EEPROMs on some weird monitors.
+When I did the initial coding of the I2C stuff I asked ATI and they
+confirmed that that black magic was not stricly needed but a "nice to
+have" to make sure that EDID could be read also from older monitors.
 
-dennis
+> But, the problem is that to make it robust and generic, i need access  
+> to some internal data in the i2c bit algo.  I can call the  
+> appropriate functions that tie back into the drivers, but I can't be  
+> 100% sure that the I2C adapter passed to me is a bit algo and not  
+> something else. There is no ID field in the adapter struct (or any  
+> of the structs inside of that one) that allows me to verify that I  
+> have good data.
+> 
+> Now, playing devil's advocate, we could just say that since this  
+> routine should only be called by drivers in the fb subsystem, they  
+> should know what i2c algorithm they are using, and it can be up to  
+> the caller to insure that everything is OK... but, I really don't  
+> feel comfortable using that method.  I'll leave that one up for  
+> debate...
 
----
+Well, this stuff will be used only from kernel drivers. So I'd say that
+if a driver is passing down something which is not a bit banging adaptor
+then that driver is buggy, it violating the API.
+I mean, right now I can pass crap to tons of kernel functions and then
+watch the kernel explode; it's not a library which will be used by
+userspace applications :P
 
-From: Dennis Munsie <dmunsie@cecropia.com>
-
-Adds code to unregister the I2C buses in the cleanup function.
-
-Signed-off-by: Dennis Munsie <dmunsie@cecropia.com>
-
----
-
-drivers/video/intelfb/intelfb.h     |    1 +
-drivers/video/intelfb/intelfb_i2c.c |   16 ++++++++++++++++
-drivers/video/intelfb/intelfbdrv.c  |    5 +++++
-3 files changed, 22 insertions(+)
-
-diff -Naurp -X linux-2.6.17-rc6-patched/Documentation/dontdiff  
-linux-2.6.17-rc6-patched/drivers/video/intelfb/intelfb.h linux/ 
-drivers/video/intelfb/intelfb.h
---- linux-2.6.17-rc6-patched/drivers/video/intelfb/intelfb.h	 
-2006-06-14 15:27:30.000000000 -0500
-+++ linux/drivers/video/intelfb/intelfb.h	2006-06-16  
-08:38:25.000000000 -0500
-@@ -367,6 +367,7 @@ extern int intelfb_var_to_depth(const st
-#ifdef CONFIG_FB_INTEL_I2C
-extern void intelfb_create_i2c_busses(struct intelfb_info *dinfo);
-+extern void intelfb_delete_i2c_busses(struct intelfb_info *dinfo);
-#endif
-#endif /* _INTELFB_H */
-diff -Naurp -X linux-2.6.17-rc6-patched/Documentation/dontdiff  
-linux-2.6.17-rc6-patched/drivers/video/intelfb/intelfb_i2c.c linux/ 
-drivers/video/intelfb/intelfb_i2c.c
---- linux-2.6.17-rc6-patched/drivers/video/intelfb/intelfb_i2c.c	 
-2006-06-14 15:27:30.000000000 -0500
-+++ linux/drivers/video/intelfb/intelfb_i2c.c	2006-06-16  
-08:36:58.000000000 -0500
-@@ -182,3 +182,19 @@ void intelfb_create_i2c_busses(struct in
-	}
-	dinfo->num_outputs = i;
-}
-+
-+void intelfb_delete_i2c_busses(struct intelfb_info *dinfo)
-+{
-+	int i;
-+	
-+	for (i = 0; i < MAX_OUTPUTS; i++) {
-+		if (dinfo->output[i].i2c_bus.dinfo) {
-+			i2c_bit_del_bus(&dinfo->output[i].i2c_bus.adapter);
-+			dinfo->output[i].i2c_bus.dinfo = NULL;
-+		}
-+		if (dinfo->output[i].ddc_bus.dinfo) {
-+			i2c_bit_del_bus(&dinfo->output[i].ddc_bus.adapter);
-+			dinfo->output[i].ddc_bus.dinfo = NULL;
-+		}
-+	}
-+}
-diff -Naurp -X linux-2.6.17-rc6-patched/Documentation/dontdiff  
-linux-2.6.17-rc6-patched/drivers/video/intelfb/intelfbdrv.c linux/ 
-drivers/video/intelfb/intelfbdrv.c
---- linux-2.6.17-rc6-patched/drivers/video/intelfb/intelfbdrv.c	 
-2006-06-14 15:27:30.000000000 -0500
-+++ linux/drivers/video/intelfb/intelfbdrv.c	2006-06-16  
-08:47:31.000000000 -0500
-@@ -474,6 +474,11 @@ cleanup(struct intelfb_info *dinfo)
-		agp_free_memory(dinfo->gtt_ring_mem);
-	}
-+#ifdef CONFIG_FB_INTEL_I2C
-+	/* un-register I2C bus */
-+	intelfb_delete_i2c_busses(dinfo);
-+#endif
-+
-	if (dinfo->mmio_base)
-		iounmap((void __iomem *)dinfo->mmio_base);
-	if (dinfo->aperture.virtual)
+Luca
+-- 
+Home: http://kronoz.cjb.net
+"Ci sono le balle, le megaballe e le statistiche".
+ Mark Twain

@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 1/9] VT binding: Remove sysfs control
-	from the tty layer
-Date: Sun, 18 Jun 2006 23:19:59 +0800
-Message-ID: <44956F1F.4030900@gmail.com>
+Subject: [PATCH 3/9] VT binding: Make VT binding a
+	Kconfig option
+Date: Sun, 18 Jun 2006 23:24:22 +0800
+Message-ID: <44957026.2020405@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FrzV2-0001ov-7K for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 18 Jun 2006 08:47:44 -0700
+	id 1FrzVG-0001pS-AD for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 18 Jun 2006 08:47:58 -0700
 Received: from py-out-1112.google.com ([64.233.166.182])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FrzV0-0000XY-Kz
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FrzVD-0000XY-V3
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 18 Jun 2006 08:47:44 -0700
+	Sun, 18 Jun 2006 08:47:58 -0700
 Received: by py-out-1112.google.com with SMTP id i49so1055622pye
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 18 Jun 2006 08:47:42 -0700 (PDT)
+	Sun, 18 Jun 2006 08:47:55 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -33,118 +33,110 @@ Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
 Cc: Greg KH <gregkh@suse.de>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-Remove VT binding sysfs control from the tty layer. It will be added to the
-VT layer instead.
+To enable this feature, CONFIG_VT_HW_CONSOLE_BINDING must be set to 'y'. This
+feature will default to 'n' to minimize users accidentally corrupting their
+virtual terminals.
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
-This is a revert of vt-binding-add-sysfs-support.patch
+ drivers/char/Kconfig |   17 +++++++++++++++++
+ drivers/char/vt.c    |   43 +++++++++++++++++++++++++++----------------
+ 2 files changed, 44 insertions(+), 16 deletions(-)
 
-Tony
-
- drivers/char/tty_io.c |   53 +------------------------------------------------
- include/linux/tty.h   |   19 ------------------
- 2 files changed, 1 insertions(+), 71 deletions(-)
-
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index e23d360..a5730a6 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -3231,47 +3231,6 @@ #ifdef CONFIG_VT
- static struct cdev vc0_cdev;
- #endif
+diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+index 29afe21..336aa31 100644
+--- a/drivers/char/Kconfig
++++ b/drivers/char/Kconfig
+@@ -62,6 +62,23 @@ config HW_CONSOLE
+ 	depends on VT && !S390 && !UML
+ 	default y
  
--static ssize_t store_bind(struct class_device *class_device,
--			  const char *buf, size_t count)
--{
--	int index = simple_strtoul(buf, NULL, 0);
--
--	vt_bind(index);
--	return count;
--}
--
--static ssize_t store_unbind(struct class_device *class_device,
--			    const char *buf, size_t count)
--{
--	int index = simple_strtoul(buf, NULL, 0);
--
--	vt_unbind(index);
--	return count;
--}
--
--static ssize_t show_con_drivers(struct class_device *class_device, char *buf)
--{
--	return vt_show_drivers(buf);
--}
--
--static struct class_device_attribute class_device_attrs[] = {
--	__ATTR(bind,   S_IWUSR, NULL, store_bind),
--	__ATTR(unbind, S_IWUSR, NULL, store_unbind),
--	__ATTR(backend, S_IRUGO, show_con_drivers, NULL),
--};
--
--static struct class_device *console_class_device;
--
--static int console_init_class_device(void)
--{
--	int i;
--
--	for (i = 0; i < ARRAY_SIZE(class_device_attrs); i++)
--		class_device_create_file(console_class_device,
--					 &class_device_attrs[i]);
--	return 0;
--}
--
- /*
-  * Ok, now we can initialize the rest of the tty devices and can count
-  * on memory allocations, interrupts etc..
-@@ -3290,17 +3249,7 @@ static int __init tty_init(void)
- 	    register_chrdev_region(MKDEV(TTYAUX_MAJOR, 1), 1, "/dev/console") < 0)
- 		panic("Couldn't register /dev/console driver\n");
- 	devfs_mk_cdev(MKDEV(TTYAUX_MAJOR, 1), S_IFCHR|S_IRUSR|S_IWUSR, "console");
--	console_class_device = class_device_create(tty_class, NULL,
--						   MKDEV(TTYAUX_MAJOR, 1),
--						   NULL, "console");
--	if (IS_ERR(console_class_device)) {
--		printk(KERN_WARNING "Unable to create class device "
--		       "for console; errno = %ldn",
--		       PTR_ERR(console_class_device));
--		console_class_device = NULL;
--	} else
--		console_init_class_device();
--
-+	class_device_create(tty_class, NULL, MKDEV(TTYAUX_MAJOR, 1), NULL, "console");
++config VT_HW_CONSOLE_BINDING
++       bool "Support for binding and unbinding console drivers"
++       depends on HW_CONSOLE
++       default n
++       ---help---
++         The virtual terminal is the device that interacts with the physical
++         terminal through console drivers. On these systems, at least one
++         console driver is loaded. In other configurations, additional console
++         drivers may be enabled, such as the framebuffer console. If more than
++         1 console driver is enabled, setting this to 'y' will allow you to
++         select the console driver that will serve as the backend for the
++         virtual terminals.
++
++	 See <file:Documentation/console/console.txt> for more
++	 information. For framebuffer console users, please refer to
++	 <file:Documentation/fb/fbcon.txt>.
++
+ config SERIAL_NONSTANDARD
+ 	bool "Non-standard serial port support"
+ 	---help---
+diff --git a/drivers/char/vt.c b/drivers/char/vt.c
+index d0cc421..1d98151 100644
+--- a/drivers/char/vt.c
++++ b/drivers/char/vt.c
+@@ -2691,22 +2691,6 @@ #include <linux/device.h>
  
- #ifdef CONFIG_UNIX98_PTYS
- 	cdev_init(&ptmx_cdev, &ptmx_fops);
-diff --git a/include/linux/tty.h b/include/linux/tty.h
-index 3edaa5d..cb35ca5 100644
---- a/include/linux/tty.h
-+++ b/include/linux/tty.h
-@@ -347,25 +347,6 @@ extern void console_print(const char *);
- extern int vt_ioctl(struct tty_struct *tty, struct file * file,
- 		    unsigned int cmd, unsigned long arg);
+ static struct class *vtconsole_class;
  
--#ifdef CONFIG_VT
--extern int vt_bind(int index);
--extern int vt_unbind(int index);
--extern int vt_show_drivers(char *buf);
--#else
--static inline int vt_bind(int index)
+-static int con_is_graphics(const struct consw *csw, int first, int last)
 -{
--	return 0;
--}
--static inline int vt_unbind(int index)
--{
--	return 0;
--}
--static inline int vt_show_drivers(char *buf)
--{
--	return 0;
--}
--#endif
+-	int i, retval = 0;
 -
- static inline dev_t tty_devnum(struct tty_struct *tty)
+-	for (i = first; i <= last; i++) {
+-		struct vc_data *vc = vc_cons[i].d;
+-
+-		if (vc && vc->vc_mode == KD_GRAPHICS) {
+-			retval = 1;
+-			break;
+-		}
+-	}
+-
+-	return retval;
+-}
+-
+ static int bind_con_driver(const struct consw *csw, int first, int last,
+ 			   int deflt)
  {
- 	return MKDEV(tty->driver->major, tty->driver->minor_start) + tty->index;
+@@ -2808,6 +2792,23 @@ err:
+ 	return retval;
+ };
+ 
++#ifdef CONFIG_VT_HW_CONSOLE_BINDING
++static int con_is_graphics(const struct consw *csw, int first, int last)
++{
++	int i, retval = 0;
++
++	for (i = first; i <= last; i++) {
++		struct vc_data *vc = vc_cons[i].d;
++
++		if (vc && vc->vc_mode == KD_GRAPHICS) {
++			retval = 1;
++			break;
++		}
++	}
++
++	return retval;
++}
++
+ static int unbind_con_driver(const struct consw *csw, int first, int last,
+ 			     int deflt)
+ {
+@@ -2977,6 +2978,16 @@ static int vt_unbind(struct con_driver *
+ err:
+ 	return 0;
+ }
++#else
++static inline int vt_bind(struct con_driver *con)
++{
++	return 0;
++}
++static inline int vt_unbind(struct con_driver *con)
++{
++	return 0;
++}
++#endif /* CONFIG_VT_HW_CONSOLE_BINDING */
+ 
+ static ssize_t store_bind(struct class_device *class_device,
+ 			  const char *buf, size_t count)

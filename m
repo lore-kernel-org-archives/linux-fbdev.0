@@ -1,8 +1,8 @@
 From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH 8/9] VT binding: Make promcon support
+Subject: [PATCH 9/9] VT binding: Make sticon support
 	binding
-Date: Sun, 18 Jun 2006 23:35:34 +0800
-Message-ID: <449572C6.7010302@gmail.com>
+Date: Sun, 18 Jun 2006 23:37:14 +0800
+Message-ID: <4495732A.3000407@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,15 +11,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FrzVq-0001vS-JL for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 18 Jun 2006 08:48:34 -0700
+	id 1FrzVx-0001vZ-4k for linux-fbdev-devel@lists.sourceforge.net;
+	Sun, 18 Jun 2006 08:48:41 -0700
 Received: from py-out-1112.google.com ([64.233.166.182])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FrzVq-0000XY-BM
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FrzVv-0000XY-Rx
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 18 Jun 2006 08:48:34 -0700
+	Sun, 18 Jun 2006 08:48:41 -0700
 Received: by py-out-1112.google.com with SMTP id i49so1055622pye
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 18 Jun 2006 08:48:34 -0700 (PDT)
+	Sun, 18 Jun 2006 08:48:39 -0700 (PDT)
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,35 +31,26 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: Andrew Morton <akpm@osdl.org>
-Cc: ecd@skynet.be, Jakub Jelinek <jj@ultra.linux.cz>, Greg KH <gregkh@suse.de>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+Cc: Helge Deller <deller@gmx.de>, Greg KH <gregkh@suse.de>, Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-Do not mark promcon_startup() and promcon_init_unimap() as __init
+Do not mark sticon_startup() as __init
 
 Signed-off-by: Antonino Daplas <adaplas@pol.net>
 ---
 
- drivers/video/console/promcon.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/console/sticon.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/console/promcon.c b/drivers/video/console/promcon.c
-index 04f42fc..d6e6ad5 100644
---- a/drivers/video/console/promcon.c
-+++ b/drivers/video/console/promcon.c
-@@ -109,7 +109,7 @@ promcon_end(struct vc_data *conp, char *
- 	return b - p;
+diff --git a/drivers/video/console/sticon.c b/drivers/video/console/sticon.c
+index fd5940f..45c4f22 100644
+--- a/drivers/video/console/sticon.c
++++ b/drivers/video/console/sticon.c
+@@ -75,7 +75,7 @@ static inline void cursor_undrawn(void)
+     cursor_drawn = 0;
  }
  
--const char __init *promcon_startup(void)
-+const char *promcon_startup(void)
+-static const char *__init sticon_startup(void)
++static const char *sticon_startup(void)
  {
- 	const char *display_desc = "PROM";
- 	int node;
-@@ -133,7 +133,7 @@ const char __init *promcon_startup(void)
- 	return display_desc;
+     return "STI console";
  }
- 
--static void __init 
-+static void
- promcon_init_unimap(struct vc_data *conp)
- {
- 	mm_segment_t old_fs = get_fs();

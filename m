@@ -1,23 +1,31 @@
-From: Andrew Morton <akpm@osdl.org>
-Subject: Fw: [Bugme-new] [Bug 6720] New: mga framebuffer
- flickers after upgrading to 2.6.17
-Date: Mon, 19 Jun 2006 16:09:34 -0700
-Message-ID: <20060619160934.488944da.akpm@osdl.org>
+From: "Dave Airlie" <airlied@gmail.com>
+Subject: Re: intelfb updates
+Date: Tue, 20 Jun 2006 09:14:08 +1000
+Message-ID: <21d7e9970606191614n324f3582pedb6488e36722ac1@mail.gmail.com>
+References: <21d7e9970605270158l1ee8551cw7cc8910378cc43de@mail.gmail.com>
+	<509BC7A5-C965-47C5-BB5F-416EC23D508A@cecropia.com>
+	<2E36B04D-0D7E-4D25-B2C7-D3EF201FFB1E@cecropia.com>
+	<21d7e9970606070155u5523432ew52ce4e705178711d@mail.gmail.com>
+	<52176753-4100-4290-963B-C9D1B73526D0@cecropia.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FsSox-0005aW-35 for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 19 Jun 2006 16:06:15 -0700
-Received: from smtp.osdl.org ([65.172.181.4])
-	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44) id 1FsSov-0002Om-L4
+	id 1FsSwb-0006G3-Vw for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 19 Jun 2006 16:14:10 -0700
+Received: from nz-out-0102.google.com ([64.233.162.204])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FsSwb-0005VS-MS
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 19 Jun 2006 16:06:15 -0700
+	Mon, 19 Jun 2006 16:14:09 -0700
+Received: by nz-out-0102.google.com with SMTP id z3so1022280nzf
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Mon, 19 Jun 2006 16:14:08 -0700 (PDT)
+In-Reply-To: <52176753-4100-4290-963B-C9D1B73526D0@cecropia.com>
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,38 +37,37 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Petr Vandrovec <VANDROVE@vc.cvut.cz>
+Cc: Eric Hustvedt <ehustvedt@cecropia.com>, "Antonino A. Daplas" <adaplas@gmail.com>
 
+> dave --
+>
+> just wanted to follow up on this.  You latest commit in your git tree
+> fixed the problem for me.  I now have a working display with just
+> your patchset :)
 
+I thought it might, I'm going to put my latest tree into 2.6.18, and
+I'll add your i2c stuff to my -mm tree for now...  It might get into
+2.6.18 later..
 
-Begin forwarded message:
+Dave.
 
-Date: Mon, 19 Jun 2006 13:42:51 -0700
-From: bugme-daemon@bugzilla.kernel.org
-To: bugme-new@lists.osdl.org
-Subject: [Bugme-new] [Bug 6720] New: mga framebuffer flickers after upgrading to 2.6.17
-
-
-http://bugzilla.kernel.org/show_bug.cgi?id=6720
-
-           Summary: mga framebuffer flickers after upgrading to 2.6.17
-    Kernel Version: 2.6.17
-            Status: NEW
-          Severity: normal
-             Owner: ak@suse.de
-         Submitter: markus.gapp@ktv-one.at
-
-
-Most recent kernel where this bug did not occur: 2.6.16.20
-Distribution: gentoo -- vanilla sources
-Hardware Environment: dual opteron, mga g550, lcd connected via dvi
-Software Environment: framebuffer console
-Problem Description: after upgrading to 2.6.17 on an opteron smp machine 
-(x86_64 kernel) with a mga g550 vga several dots around letters on a 
-framebuffer console are flickering. matroxfb is compiled as a module. 
-this also happens to an X server using mga and fbhw submodule.
-
-Steps to reproduce:
-
-------- You are receiving this mail because: -------
-You are on the CC list for the bug, or are watching someone who is.
+>
+> dennis
+>
+> On Jun 7, 2006, at 4:55 AM, Dave Airlie wrote:
+>
+> > Wow, can you give me some numbers from the old/new calc_vclock?
+> >
+> > what does it return when it works and when it doesn't work?
+> >
+> > I'm unsure what could be different on i945, but I'm sure something
+> > could be :-)
+> >
+> > Dave.
+>
+>
+> _______________________________________________
+> Linux-fbdev-devel mailing list
+> Linux-fbdev-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+>

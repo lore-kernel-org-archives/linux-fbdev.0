@@ -1,24 +1,27 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH] atyfb: Fix section warnings
-Date: Sun, 18 Jun 2006 23:42:08 +0800
-Message-ID: <44957450.1030803@gmail.com>
+From: Dennis Munsie <dmunsie@cecropia.com>
+Subject: Re: intelfb updates
+Date: Mon, 19 Jun 2006 11:39:00 -0400
+Message-ID: <52176753-4100-4290-963B-C9D1B73526D0@cecropia.com>
+References: <21d7e9970605270158l1ee8551cw7cc8910378cc43de@mail.gmail.com>
+	<509BC7A5-C965-47C5-BB5F-416EC23D508A@cecropia.com>
+	<2E36B04D-0D7E-4D25-B2C7-D3EF201FFB1E@cecropia.com>
+	<21d7e9970606070155u5523432ew52ce4e705178711d@mail.gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
+Mime-Version: 1.0 (Apple Message framework v750)
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Fs0bG-00083c-67 for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 18 Jun 2006 09:58:14 -0700
-Received: from py-out-1112.google.com ([64.233.166.182])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FrzWC-0000XY-8z
+	id 1FsLn2-0007S0-Dx for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 19 Jun 2006 08:35:48 -0700
+Received: from mail2.sea5.speakeasy.net ([69.17.117.4])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1FsLn1-0004xJ-5i
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Sun, 18 Jun 2006 08:48:56 -0700
-Received: by py-out-1112.google.com with SMTP id i49so1055622pye
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Sun, 18 Jun 2006 08:48:56 -0700 (PDT)
+	Mon, 19 Jun 2006 08:35:48 -0700
+In-Reply-To: <21d7e9970606070155u5523432ew52ce4e705178711d@mail.gmail.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,120 +32,24 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>
+To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Eric Hustvedt <ehustvedt@cecropia.com>, "Antonino A. Daplas" <adaplas@gmail.com>
 
-Fix the following warning:
+dave --
 
-WARNING: drivers/video/aty/atyfb.o - Section mismatch: reference to
-.init.text:aty_init_cursor from .text between 'aty_init' (at offset 0x241d)
-and 'atyfb_blank' 
+just wanted to follow up on this.  You latest commit in your git tree  
+fixed the problem for me.  I now have a working display with just  
+your patchset :)
 
-Signed-off-by: Antonino Daplas <adaplas@pol.net>
----
+dennis
 
- drivers/video/aty/atyfb_base.c    |   26 +++++++++++++-------------
- drivers/video/aty/mach64_cursor.c |    2 +-
- 2 files changed, 14 insertions(+), 14 deletions(-)
+On Jun 7, 2006, at 4:55 AM, Dave Airlie wrote:
 
-diff --git a/drivers/video/aty/atyfb_base.c b/drivers/video/aty/atyfb_base.c
-index 055a7d2..b1a30f4 100644
---- a/drivers/video/aty/atyfb_base.c
-+++ b/drivers/video/aty/atyfb_base.c
-@@ -316,12 +316,12 @@ static int vram;
- static int pll;
- static int mclk;
- static int xclk;
--static int comp_sync __initdata = -1;
-+static int comp_sync __devinitdata = -1;
- static char *mode;
- 
- #ifdef CONFIG_PPC
--static int default_vmode __initdata = VMODE_CHOOSE;
--static int default_cmode __initdata = CMODE_CHOOSE;
-+static int default_vmode __devinitdata = VMODE_CHOOSE;
-+static int default_cmode __devinitdata = CMODE_CHOOSE;
- 
- module_param_named(vmode, default_vmode, int, 0);
- MODULE_PARM_DESC(vmode, "int: video mode for mac");
-@@ -330,10 +330,10 @@ MODULE_PARM_DESC(cmode, "int: color mode
- #endif
- 
- #ifdef CONFIG_ATARI
--static unsigned int mach64_count __initdata = 0;
--static unsigned long phys_vmembase[FB_MAX] __initdata = { 0, };
--static unsigned long phys_size[FB_MAX] __initdata = { 0, };
--static unsigned long phys_guiregbase[FB_MAX] __initdata = { 0, };
-+static unsigned int mach64_count __devinitdata = 0;
-+static unsigned long phys_vmembase[FB_MAX] __devinitdata = { 0, };
-+static unsigned long phys_size[FB_MAX] __devinitdata = { 0, };
-+static unsigned long phys_guiregbase[FB_MAX] __devinitdata = { 0, };
- #endif
- 
- /* top -> down is an evolution of mach64 chipset, any corrections? */
-@@ -583,7 +583,7 @@ #if defined(CONFIG_PPC)
-  *  Apple monitor sense
-  */
- 
--static int __init read_aty_sense(const struct atyfb_par *par)
-+static int __devinit read_aty_sense(const struct atyfb_par *par)
- {
- 	int sense, i;
- 
-@@ -2261,7 +2261,7 @@ #endif
- 
- #endif /* CONFIG_FB_ATY_BACKLIGHT */
- 
--static void __init aty_calc_mem_refresh(struct atyfb_par *par, int xclk)
-+static void __devinit aty_calc_mem_refresh(struct atyfb_par *par, int xclk)
- {
- 	const int ragepro_tbl[] = {
- 		44, 50, 55, 66, 75, 80, 100
-@@ -2321,7 +2321,7 @@ static int __devinit atyfb_get_timings_f
- }
- #endif /* defined(__i386__) && defined(CONFIG_FB_ATY_GENERIC_LCD) */
- 
--static int __init aty_init(struct fb_info *info, const char *name)
-+static int __devinit aty_init(struct fb_info *info, const char *name)
- {
- 	struct atyfb_par *par = (struct atyfb_par *) info->par;
- 	const char *ramname = NULL, *xtal;
-@@ -2748,7 +2748,7 @@ #endif
- }
- 
- #ifdef CONFIG_ATARI
--static int __init store_video_par(char *video_str, unsigned char m64_num)
-+static int __devinit store_video_par(char *video_str, unsigned char m64_num)
- {
- 	char *p;
- 	unsigned long vmembase, size, guiregbase;
-@@ -3779,7 +3779,7 @@ #endif /* CONFIG_PM */
- #endif /* CONFIG_PCI */
- 
- #ifndef MODULE
--static int __init atyfb_setup(char *options)
-+static int __devinit atyfb_setup(char *options)
- {
- 	char *this_opt;
- 
-@@ -3851,7 +3851,7 @@ #endif
- }
- #endif  /*  MODULE  */
- 
--static int __init atyfb_init(void)
-+static int __devinit atyfb_init(void)
- {
- #ifndef MODULE
-     char *option = NULL;
-diff --git a/drivers/video/aty/mach64_cursor.c b/drivers/video/aty/mach64_cursor.c
-index 27bf013..2a7f381 100644
---- a/drivers/video/aty/mach64_cursor.c
-+++ b/drivers/video/aty/mach64_cursor.c
-@@ -187,7 +187,7 @@ #endif
- 	return 0;
- }
- 
--int __init aty_init_cursor(struct fb_info *info)
-+int __devinit aty_init_cursor(struct fb_info *info)
- {
- 	unsigned long addr;
+> Wow, can you give me some numbers from the old/new calc_vclock?
+>
+> what does it return when it works and when it doesn't work?
+>
+> I'm unsure what could be different on i945, but I'm sure something  
+> could be :-)
+>
+> Dave.

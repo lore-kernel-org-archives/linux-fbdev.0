@@ -1,32 +1,23 @@
 From: Andrew Morton <akpm@osdl.org>
-Subject: Fw: [Bugme-new] [Bug 6685] New: Permedia2
-	framebuffer on E250
-Date: Mon, 19 Jun 2006 15:33:20 -0700
-Message-ID: <20060619153320.49a7c736.akpm@osdl.org>
+Subject: Fw: [Bugme-new] [Bug 6720] New: mga framebuffer
+ flickers after upgrading to 2.6.17
+Date: Mon, 19 Jun 2006 16:09:34 -0700
+Message-ID: <20060619160934.488944da.akpm@osdl.org>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FsSFt-0002Ot-Bg for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 19 Jun 2006 15:30:01 -0700
+	id 1FsSox-0005aW-35 for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 19 Jun 2006 16:06:15 -0700
 Received: from smtp.osdl.org ([65.172.181.4])
 	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
-	(Exim 4.44) id 1FsSFq-0005pV-Uv
+	(Exim 4.44) id 1FsSov-0002Om-L4
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 19 Jun 2006 15:30:01 -0700
-Received: from shell0.pdx.osdl.net (fw.osdl.org [65.172.181.6])
-	by smtp.osdl.org (8.12.8/8.12.8) with ESMTP id k5JMTvgt014522
-	(version=TLSv1/SSLv3 cipher=EDH-RSA-DES-CBC3-SHA bits=168 verify=NO)
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 19 Jun 2006 15:29:58 -0700
-Received: from akpm.pao.digeo.com (shell0.pdx.osdl.net [10.9.0.31])
-	by shell0.pdx.osdl.net (8.13.1/8.11.6) with SMTP id k5JMTvkV015739
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 19 Jun 2006 15:29:57 -0700
+	Mon, 19 Jun 2006 16:06:15 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -38,38 +29,38 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Petr Vandrovec <VANDROVE@vc.cvut.cz>
 
 
 
 Begin forwarded message:
 
-Date: Tue, 13 Jun 2006 13:48:20 -0700
+Date: Mon, 19 Jun 2006 13:42:51 -0700
 From: bugme-daemon@bugzilla.kernel.org
 To: bugme-new@lists.osdl.org
-Subject: [Bugme-new] [Bug 6685] New: Permedia2 framebuffer on E250
+Subject: [Bugme-new] [Bug 6720] New: mga framebuffer flickers after upgrading to 2.6.17
 
 
-http://bugzilla.kernel.org/show_bug.cgi?id=6685
+http://bugzilla.kernel.org/show_bug.cgi?id=6720
 
-           Summary: Permedia2 framebuffer on E250
-    Kernel Version: 2.6.17-rc6
+           Summary: mga framebuffer flickers after upgrading to 2.6.17
+    Kernel Version: 2.6.17
             Status: NEW
           Severity: normal
-             Owner: platform_sparc64@kernel-bugs.osdl.org
-         Submitter: marvin@mydatex.cz
+             Owner: ak@suse.de
+         Submitter: markus.gapp@ktv-one.at
 
 
-Most recent kernel where this bug did not occur: 2.4.27
-Distribution: Debian Sid
-Hardware Environment: Sun E250
-Software Environment:  Permedia2 FB
-Problem Description:
-I have E250 with Raptor GFX framebuffer. On 2.4.27 works fine but with any
-kernel which I tested > 2.6.12 frame buffer console looks very ugly and is
-unreadable fonts is defocusing.
+Most recent kernel where this bug did not occur: 2.6.16.20
+Distribution: gentoo -- vanilla sources
+Hardware Environment: dual opteron, mga g550, lcd connected via dvi
+Software Environment: framebuffer console
+Problem Description: after upgrading to 2.6.17 on an opteron smp machine 
+(x86_64 kernel) with a mga g550 vga several dots around letters on a 
+framebuffer console are flickering. matroxfb is compiled as a module. 
+this also happens to an X server using mga and fbhw submodule.
 
 Steps to reproduce:
-Compile kernel with Permedia2 framebuffer enabled on E250
 
 ------- You are receiving this mail because: -------
 You are on the CC list for the bug, or are watching someone who is.

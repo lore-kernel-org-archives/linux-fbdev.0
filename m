@@ -1,13 +1,9 @@
-From: "Jon Smirl" <jonsmirl@gmail.com>
-Subject: Re: [PATCH 3/9] VT binding: Make VT binding a
-	Kconfig option
-Date: Tue, 20 Jun 2006 10:04:06 -0400
-Message-ID: <9e4733910606200704n19da7833s6873eb3270fe299e@mail.gmail.com>
-References: <44957026.2020405@gmail.com>
-	<9e4733910606191718n74d0bf40na7b0cc3902d80172@mail.gmail.com>
-	<44974AC7.4060708@gmail.com>
-	<9e4733910606191916i1994d4d1i2ea661e015431750@mail.gmail.com>
-	<4497B2B5.4040001@gmail.com>
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: porting fb driver to 2, 6(fb_get_fix,
+	fb_get_var)
+Date: Tue, 20 Jun 2006 22:25:38 +0800
+Message-ID: <44980562.1010906@gmail.com>
+References: <20060620120150.43888.qmail@web37914.mail.mud.yahoo.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -16,17 +12,16 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Fsgps-0007OC-Ep for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 20 Jun 2006 07:04:08 -0700
-Received: from nz-out-0102.google.com ([64.233.162.199])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Fsgps-0002tc-4T
+	id 1FshAu-0000uG-Jx for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 20 Jun 2006 07:25:52 -0700
+Received: from nz-out-0102.google.com ([64.233.162.195])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FshAt-0008EL-MB
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 20 Jun 2006 07:04:08 -0700
-Received: by nz-out-0102.google.com with SMTP id z3so132967nzf
+	Tue, 20 Jun 2006 07:25:52 -0700
+Received: by nz-out-0102.google.com with SMTP id 13so1297114nzp
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Tue, 20 Jun 2006 07:04:07 -0700 (PDT)
-In-Reply-To: <4497B2B5.4040001@gmail.com>
-Content-Disposition: inline
+	Tue, 20 Jun 2006 07:25:51 -0700 (PDT)
+In-Reply-To: <20060620120150.43888.qmail@web37914.mail.mud.yahoo.com>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -37,36 +32,89 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
+To: linux-fbdev-devel@lists.sourceforge.net
 
-On 6/20/06, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> All fbdev drivers have a startup mode that should always be valid. All
-> fbcon does is enable that mode.
->
-> You can load nvidiafb like this instead:
->
-> modprobe nvidiafb mode_option=1024x768@60
+syed khader wrote:
+> 
+> --- "Antonino A. Daplas" <adaplas@gmail.com> wrote:
+> 
+>> syed khader wrote:
+>>> Hi,
+>>>   I am trying to port one of our LCD display frame
+>>> buffer driver to 2.6 kernel.
+>>>   The old 2.4 kernel had these functions defined
+>> in
+>>> fb_ops
+>>>     fb_open:    
+>>>     fb_release:
+>> These 2 are still in 2.6, but they're optional.
+>>
+>>>     fb_get_fix: 
+>>>     fb_get_var:     
+>> Gone.
+> If they were gone do I have to just remove these
+> functions in the older version of the driver and
+> compile again. Will that suffice?
 
-Good idea, it didn't occur to me to use the module parameters. Doing
-it that way I can see what I am doing instead of typing blind.
+That, plus you need to add the functions that are
+new in 2.6, as mentioned below.
 
-> > How does vbetool save state?
->
-> vbetool basically calls an int10 function that saves the state.  This
-> function is unique per video BIOS, ie you cannot use the state file in
-> another machine even if the graphics chipset is the same.
->
-> > Could VGAcon do whatever vbetool is doing?
->
-> No it can't.  Once the card is in graphics mode, vgacon cannot go to
-> text mode on its own.  It has to know how to write to other VGA
-> registers which are unique per hardware.
+>>>     fb_set_var: 
+>> The above is split into:
+>>
+>> fb_check_var() - see if the requested var is
+>> compatible
+>>                  and if not, round up to the next
+>>                  legal value
+>>
+>> fb_set_par()  - set the hardware based on the
+>> current
+>>                 var
+>>>     fb_get_cmap:
+>> gone
+>>
+>>>     fb_set_cmap:
+>> replaced by fb_setcolreg()
+>>
+>>  
+>>>     fb_ioctl:   
+>> optional.
+>>
+>> Additional required ops for 2.6.
+>>
+>> fb_imageblit - expand monochrome to color and/or
+>>                expand 8-bit pseudocolor to color
+>>
+>> Generic version for packed-pixel: cfb_imageblit
+>>
+>> fb_fillrect - fill rectangular area with solid color
+>>
+>> Generic version for packed-pixel: cfb_fillrect
+>>
+>>
+>> fb_copyarea - copy rectangular area
+>>
+>> Generic version for packed-pixel: cfb_copyarea
+>>
+>>
+>>>   But the latest 2.6 fb_ops has removed these and
+>>> there is entirely new set of functions. 
+>>>   I tried to go to list archives but I could not
+>> find
+>>> information. 
+>>>   What functions in 2.6 fb_ops should to used to
+>>> implement this old 2.4 set of functions?
+>> Look at skeletonfb.c for comments.  The simplest
+>> framebuffer driver you can start with is vfb.c
+>>
+>>
+>> Tony
+>>
+>>
+>   Another question: What happens to "struct display"
+> being used in the older version.
 
-Might be a good place for a little call_usermodehelper example. VGAcon
-could try calling vbetool to save it's state and restore it. GregKH
-told me that the class firmware loader code was the place to start.
+It's gone.  It's now private to the framebuffer console
+which you need not worry about.
 
--- 
-Jon Smirl
-jonsmirl@gmail.com
+Tony

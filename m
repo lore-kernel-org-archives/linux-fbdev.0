@@ -1,8 +1,8 @@
 From: dmunsie@cecropia.com (Dennis Munsie)
-Subject: [PATCH 2.6.17-rc6-mm2 3/8] intelfb: RESEND -
+Subject: [PATCH 2.6.17-rc6-mm2 5/8] intelfb: RESEND -
 	add preliminary i2c support
 Date: Tue, 20 Jun 2006 14:55:55 -0400 (EDT)
-Message-ID: <20060620185555.2A76390CFB3@xenon>
+Message-ID: <20060620185555.2F11890CFB5@xenon>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -11,11 +11,11 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FslKx-0003B6-63 for linux-fbdev-devel@lists.sourceforge.net;
+	id 1FslKx-0003B5-51 for linux-fbdev-devel@lists.sourceforge.net;
 	Tue, 20 Jun 2006 11:52:31 -0700
-Received: from mail8.sea5.speakeasy.net ([69.17.117.10])
+Received: from mail6.sea5.speakeasy.net ([69.17.117.8])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1FslKw-0001tC-Ur
+	(Exim 4.44) id 1FslKw-0001tE-UP
 	for linux-fbdev-devel@lists.sourceforge.net;
 	Tue, 20 Jun 2006 11:52:31 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
@@ -33,42 +33,38 @@ Cc: ehustvedt@cecropia.com, airlied@skynet.ie
 
 From: Dennis Munsie <dmunsie@cecropia.com>
 
-[03/07] intelfb: add intelfb_i2c_chan struct.
+[05/07] intelfb: add output fields to dinfo.
 
 Signed-off-by: Dennis Munsie <dmunsie@cecropia.com>
 
 ---
 
- drivers/video/intelfb/intelfb.h |   13 +++++++++++++
- 1 file changed, 13 insertions(+)
+ drivers/video/intelfb/intelfb.h |    9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff -Naurp -X linux-2.6.17-rc6-patched//Documentation/dontdiff linux-2.6.17-rc6-patched/drivers/video/intelfb/intelfb.h linux/drivers/video/intelfb/intelfb.h
---- linux-2.6.17-rc6-patched/drivers/video/intelfb/intelfb.h	2006-06-14 10:27:39.000000000 -0500
-+++ linux/drivers/video/intelfb/intelfb.h	2006-06-14 10:29:39.000000000 -0500
-@@ -6,6 +6,10 @@
- #include <linux/agp_backend.h>
- #include <linux/fb.h>
+diff -Naurp -X linux-2.6.17-rc6-patched/Documentation/dontdiff linux-2.6.17-rc6-patched/drivers/video/intelfb/intelfb.h linux/drivers/video/intelfb/intelfb.h
+--- linux-2.6.17-rc6-patched/drivers/video/intelfb/intelfb.h	2006-06-14 12:34:07.000000000 -0500
++++ linux/drivers/video/intelfb/intelfb.h	2006-06-14 12:34:55.000000000 -0500
+@@ -119,6 +119,11 @@
+ /* Intel agpgart driver */
+ #define AGP_PHYSICAL_MEMORY     2
  
-+#ifdef CONFIG_FB_INTEL_I2C
-+#include <linux/i2c.h>
-+#include <linux/i2c-algo-bit.h>
-+#endif
- 
- /*** Version/name ***/
- #define INTELFB_VERSION			"0.9.4"
-@@ -208,6 +212,15 @@ struct intelfb_heap_data {
- 	u32 size;    // in bytes
++/* store information about an Ixxx DVO */
++/* The i830->i865 use multiple DVOs with multiple i2cs */
++/* the i915, i945 have a single sDVO i2c bus - which is different */
++#define MAX_OUTPUTS 6
++
+ /* these are outputs from the chip - integrated only 
+    external chips are via DVO or SDVO output */
+ #define INTELFB_OUTPUT_UNUSED 0
+@@ -344,6 +349,10 @@ struct intelfb_info {
+ 	
+ 	/* index into plls */
+ 	int pll_index;
++
++	/* outputs */
++	int num_outputs;
++	struct intelfb_output_rec output[MAX_OUTPUTS];
  };
  
-+#ifdef CONFIG_FB_INTEL_I2C
-+struct intelfb_i2c_chan {
-+    struct intelfb_info *dinfo;
-+    u32 reg;
-+    struct i2c_adapter adapter;
-+    struct i2c_algo_bit_data algo;
-+};
-+#endif
-+
- struct intelfb_vsync {
- 	wait_queue_head_t wait;
- 	unsigned int count;
+ #define IS_I9XX(dinfo) (((dinfo)->chipset == INTEL_915G)||(dinfo->chipset == INTEL_915GM)||((dinfo)->chipset == INTEL_945G)||(dinfo->chipset==INTEL_945GM))

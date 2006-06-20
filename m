@@ -1,22 +1,29 @@
-From: Robert Siemer <Robert.Siemer@backsla.sh>
-Subject: radeonfb: DDC read wrong?
-Date: Tue, 20 Jun 2006 16:01:52 +0200
-Message-ID: <20060620140152.GB5414@polar.elf12.net>
+From: dmunsie@cecropia.com (Dennis Munsie)
+Subject: [PATCH 2.6.17-rc6-mm2 2/5] intelfb: RESEND -
+	add vsync interrupt support
+Date: Tue, 20 Jun 2006 14:31:38 -0400 (EDT)
+Message-ID: <20060620183138.2C7C790CE11@xenon>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Fsgnv-0007Dl-8N for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 20 Jun 2006 07:02:07 -0700
-Received: from backsla.sh ([217.160.178.134])
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1Fsgnt-0002RM-K2
+	id 1FskxV-0000zJ-VY for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 20 Jun 2006 11:28:18 -0700
+Received: from mail8.sea5.speakeasy.net ([69.17.117.10])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1FskxU-0000QK-Jl
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 20 Jun 2006 07:02:07 -0700
-Content-Disposition: inline
+	Tue, 20 Jun 2006 11:28:17 -0700
+Received: from lex098.cecropia.com (HELO xenon)
+	(dmunsie@cecropia.com@[63.138.212.98])
+	(envelope-sender <dmunsie@cecropia.com>)
+	by mail8.sea5.speakeasy.net (qmail-ldap-1.03) with SMTP
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	20 Jun 2006 18:28:13 -0000
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -29,28 +36,81 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-Hello everybody!
+From: Eric Hustvedt <ehustvedt@cecropia.com>
 
-problem: booting kernel overdrives monitor with 200Hz refresh
+[02/05] intelfb: Add interrupt related register definitions
 
-kernel: 2.6.16
-kernel which worked fine: 2.6.14
+Add constants for accessing HWSTAM, IER, IIR, and IMR registers.
+Add constants for interrupt types supported by the 8xx and 9xx chipsets.
+The registers are also stored in the hwstate struct and dumped in the debug routine.
 
-Monitor: EIZO FlexScan F563-T
-Graphic adapter: ATI Technologies Inc Radeon RV250 If [Radeon 9000]
- (from Xorg.log)
+Signed-off-by: Eric Hustvedt <ehustvedt@cecropia.com>
+---
 
-I switched to 2.6.16 and booting the kernel overdrove my monitor with
-200Hz refresh rate.
+ drivers/video/intelfb/intelfb.h   |    4 ++++
+ drivers/video/intelfb/intelfbhw.c |    9 +++++++++
+ drivers/video/intelfb/intelfbhw.h |   13 +++++++++++++
+ 3 files changed, 26 insertions(+)
 
-As I notice now I have a limit configured in X (I will try it without
-limitation to see what X is doing...).
-
-The only interesting line so far from X-log:
-(II) RADEON(0): PLL parameters: rf=2700 rd=12 min=20000 max=40000;
-xclk=20000
-
-
-Any comments?
-
-Robert
+diff -X linux-2.6.17-rc4-16bit/Documentation/dontdiff -Naurp linux-2.6.17-rc4-16bit/drivers/video/intelfb/intelfb.h linux-2.6.17-rc4-hwstam/drivers/video/intelfb/intelfb.h
+--- linux-2.6.17-rc4-16bit/drivers/video/intelfb/intelfb.h	2006-06-09 09:29:59.000000000 -0600
++++ linux-2.6.17-rc4-hwstam/drivers/video/intelfb/intelfb.h	2006-06-09 09:43:18.000000000 -0600
+@@ -195,6 +195,10 @@ struct intelfb_hwstate {
+ 	u32 mem_mode;
+ 	u32 fw_blc_0;
+ 	u32 fw_blc_1;
++	u16 hwstam;
++	u16 ier;
++	u16 iir;
++	u16 imr;
+ };
+ 
+ struct intelfb_heap_data {
+diff -X linux-2.6.17-rc4-16bit/Documentation/dontdiff -Naurp linux-2.6.17-rc4-16bit/drivers/video/intelfb/intelfbhw.c linux-2.6.17-rc4-hwstam/drivers/video/intelfb/intelfbhw.c
+--- linux-2.6.17-rc4-16bit/drivers/video/intelfb/intelfbhw.c	2006-06-09 09:29:59.000000000 -0600
++++ linux-2.6.17-rc4-hwstam/drivers/video/intelfb/intelfbhw.c	2006-06-09 09:43:18.000000000 -0600
+@@ -587,6 +587,11 @@ intelfbhw_read_hw_state(struct intelfb_i
+ 	hw->fw_blc_0 = INREG(FW_BLC_0);
+ 	hw->fw_blc_1 = INREG(FW_BLC_1);
+ 
++	hw->hwstam = INREG16(HWSTAM);
++	hw->ier = INREG16(IER);
++	hw->iir = INREG16(IIR);
++	hw->imr = INREG16(IMR);
++
+ 	return 0;
+ }
+ 
+@@ -840,6 +845,10 @@ intelfbhw_print_hw_state(struct intelfb_
+ 	printk("	FW_BLC_0		0x%08x\n", hw->fw_blc_0);
+ 	printk("	FW_BLC_1		0x%08x\n", hw->fw_blc_1);
+ 
++	printk("	HWSTAM			0x%04x\n", hw->hwstam);
++	printk("	IER			0x%04x\n", hw->ier);
++	printk("	IIR			0x%04x\n", hw->iir);
++	printk("	IMR			0x%04x\n", hw->imr);
+ 	printk("hw state dump end\n");
+ #endif
+ }
+diff -X linux-2.6.17-rc4-16bit/Documentation/dontdiff -Naurp linux-2.6.17-rc4-16bit/drivers/video/intelfb/intelfbhw.h linux-2.6.17-rc4-hwstam/drivers/video/intelfb/intelfbhw.h
+--- linux-2.6.17-rc4-16bit/drivers/video/intelfb/intelfbhw.h	2006-06-09 09:40:48.000000000 -0600
++++ linux-2.6.17-rc4-hwstam/drivers/video/intelfb/intelfbhw.h	2006-06-09 10:04:37.000000000 -0600
+@@ -88,6 +88,19 @@
+ #define INSTDONE		0x2090
+ #define PRI_RING_EMPTY			1
+ 
++#define HWSTAM			0x2098
++#define IER			0x20A0
++#define IIR			0x20A4
++#define IMR			0x20A8
++#define VSYNC_PIPE_A_INTERRUPT		(1 << 7)
++#define PIPE_A_EVENT_INTERRUPT		(1 << 4)
++#define VSYNC_PIPE_B_INTERRUPT		(1 << 5)
++#define PIPE_B_EVENT_INTERRUPT		(1 << 4)
++#define HOST_PORT_EVENT_INTERRUPT	(1 << 3)
++#define CAPTURE_EVENT_INTERRUPT		(1 << 2)
++#define USER_DEFINED_INTERRUPT		(1 << 1)
++#define BREAKPOINT_INTERRUPT		1
++
+ #define INSTPM			0x20c0
+ #define SYNC_FLUSH_ENABLE		(1 << 5)

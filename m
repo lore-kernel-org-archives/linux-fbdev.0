@@ -1,34 +1,25 @@
-From: dmunsie@cecropia.com (Dennis Munsie)
-Subject: [PATCH 2.6.17-rc6-mm2 1/5] intelfb: RESEND -
-	add vsync interrupt support
-Date: Tue, 20 Jun 2006 14:31:38 -0400 (EDT)
-Message-ID: <20060620183138.2763890CE10@xenon>
+From: Dennis Munsie <dmunsie@cecropia.com>
+Subject: Re: [PATCH 2.6.17-rc6-mm2 0/8] intelfb: RESEND
+	- add preliminary i2c support
+Date: Tue, 20 Jun 2006 14:59:31 -0400
+Message-ID: <B6DC984D-832D-4330-8B86-2A30B697EF6A@cecropia.com>
+References: <20060620185554.276F190CFB2@xenon>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
+Mime-Version: 1.0 (Apple Message framework v750)
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-list1-b.sourceforge.net ([10.3.1.7]
-	helo=sc8-sf-list1.sourceforge.net)
-	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FslG7-0002iW-2L for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 20 Jun 2006 11:47:31 -0700
-Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
+Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
-	by sc8-sf-list1.sourceforge.net with esmtp (Exim 4.30)
-	id 1FskxR-0004nA-RA for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 20 Jun 2006 11:28:13 -0700
+	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
+	id 1FslOQ-0003hi-Lx for linux-fbdev-devel@lists.sourceforge.net;
+	Tue, 20 Jun 2006 11:56:06 -0700
 Received: from mail3.sea5.speakeasy.net ([69.17.117.5])
 	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
-	(Exim 4.44) id 1FskxR-0005Au-Lj
+	(Exim 4.44) id 1FslOQ-0006WS-FI
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Tue, 20 Jun 2006 11:28:13 -0700
-Received: from lex098.cecropia.com (HELO xenon)
-	(dmunsie@cecropia.com@[63.138.212.98])
-	(envelope-sender <dmunsie@cecropia.com>)
-	by mail3.sea5.speakeasy.net (qmail-ldap-1.03) with SMTP
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	20 Jun 2006 18:28:12 -0000
+	Tue, 20 Jun 2006 11:56:06 -0700
+In-Reply-To: <20060620185554.276F190CFB2@xenon>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -40,31 +31,32 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: ehustvedt@cecropia.com, airlied@skynet.ie
 
-From: Eric Hustvedt <ehustvedt@cecropia.com>
+again -- it looks like the list has dropped some of the messages.
 
-[01/05] intelfb: Add 16-bit register access macros
+Dave -- can you verify that you got all of the messages?  I CCd you  
+separately on them.
 
-This patch adds macros to read and write two-byte MMIO registers. The interrupt-related registers are all word-sized, rather than long-sized.
+dennis
 
-Signed-off-by: Eric Hustvedt <ehustvedt@cecropia.com>
----
+On Jun 20, 2006, at 2:55 PM, Dennis Munsie wrote:
 
- drivers/video/intelfb/intelfbhw.h |    3 +++
- 1 file changed, 3 insertions(+)
-
-diff -X linux-2.6.17-rc4-cecropia/Documentation/dontdiff -Naurp linux-2.6.17-rc4-cecropia/drivers/video/intelfb/intelfbhw.h linux-2.6.17-rc4-stable/drivers/video/intelfb/intelfbhw.h
---- linux-2.6.17-rc4-cecropia/drivers/video/intelfb/intelfbhw.h	2006-05-26 10:06:30.000000000 -0600
-+++ linux-2.6.17-rc4-stable/drivers/video/intelfb/intelfbhw.h	2006-06-07 11:14:18.000000000 -0600
-@@ -468,9 +474,12 @@
- 
- /* I/O macros */
- #define INREG8(addr)	      readb((u8 __iomem *)(dinfo->mmio_base + (addr)))
-+#define INREG16(addr)	      readw((u16 __iomem *)(dinfo->mmio_base + (addr)))
- #define INREG(addr)	      readl((u32 __iomem *)(dinfo->mmio_base + (addr)))
- #define OUTREG8(addr, val)    writeb((val),(u8 __iomem *)(dinfo->mmio_base + \
- 							   (addr)))
-+#define OUTREG16(addr, val)    writew((val),(u16 __iomem *)(dinfo->mmio_base + \
-+							   (addr)))
- #define OUTREG(addr, val)     writel((val),(u32 __iomem *)(dinfo->mmio_base + \
-                                      (addr)))
+> Hi,
+>
+> This is a resend of the i2c support patches for the intelfb driver.
+> I'm assuming that the same problem that Dave had with the other
+> patches also affects this one.  If this is not the case, I apologize
+> in advance.
+>
+> This patchset also includes the i2c cleanup patch that I had sent
+> out separately from the original patchset.
+>
+> dennis
+>
+>
+> _______________________________________________
+> Linux-fbdev-devel mailing list
+> Linux-fbdev-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+>

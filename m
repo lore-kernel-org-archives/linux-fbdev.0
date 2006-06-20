@@ -1,30 +1,27 @@
-From: "Dave Airlie" <airlied@gmail.com>
-Subject: Re: intelfb updates
-Date: Tue, 20 Jun 2006 09:14:08 +1000
-Message-ID: <21d7e9970606191614n324f3582pedb6488e36722ac1@mail.gmail.com>
-References: <21d7e9970605270158l1ee8551cw7cc8910378cc43de@mail.gmail.com>
-	<509BC7A5-C965-47C5-BB5F-416EC23D508A@cecropia.com>
-	<2E36B04D-0D7E-4D25-B2C7-D3EF201FFB1E@cecropia.com>
-	<21d7e9970606070155u5523432ew52ce4e705178711d@mail.gmail.com>
-	<52176753-4100-4290-963B-C9D1B73526D0@cecropia.com>
+From: "Jon Smirl" <jonsmirl@gmail.com>
+Subject: Re: [PATCH 3/9] VT binding: Make VT binding a
+	Kconfig option
+Date: Mon, 19 Jun 2006 20:18:59 -0400
+Message-ID: <9e4733910606191718n74d0bf40na7b0cc3902d80172@mail.gmail.com>
+References: <44957026.2020405@gmail.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FsSwb-0006G3-Vw for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 19 Jun 2006 16:14:10 -0700
-Received: from nz-out-0102.google.com ([64.233.162.204])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FsSwb-0005VS-MS
+	id 1FsTxN-00036B-0F for linux-fbdev-devel@lists.sourceforge.net;
+	Mon, 19 Jun 2006 17:19:01 -0700
+Received: from nz-out-0102.google.com ([64.233.162.207])
+	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FsTxM-0008BD-KQ
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Mon, 19 Jun 2006 16:14:09 -0700
-Received: by nz-out-0102.google.com with SMTP id z3so1022280nzf
+	Mon, 19 Jun 2006 17:19:00 -0700
+Received: by nz-out-0102.google.com with SMTP id z3so3933nzf
 	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Mon, 19 Jun 2006 16:14:08 -0700 (PDT)
-In-Reply-To: <52176753-4100-4290-963B-C9D1B73526D0@cecropia.com>
+	Mon, 19 Jun 2006 17:18:59 -0700 (PDT)
+In-Reply-To: <44957026.2020405@gmail.com>
 Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -36,38 +33,26 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Eric Hustvedt <ehustvedt@cecropia.com>, "Antonino A. Daplas" <adaplas@gmail.com>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Linux Fbdev development list <linux-fbdev-devel@lists.sourceforge.net>, Linux Kernel Development <linux-kernel@vger.kernel.org>
 
-> dave --
->
-> just wanted to follow up on this.  You latest commit in your git tree
-> fixed the problem for me.  I now have a working display with just
-> your patchset :)
+I gave this patch a try and it seems to work. I say seems because I
+could not get the nvidiafb driver to set a usable mode after it was
+bound/unbound. That's not a problem with the patch, the patch is not
+addressing that issue. I tried vbetool but it kept GPFing. This is a
+patch to help developers so maybe someone will fix nvidiafb to be more
+friendly.
 
-I thought it might, I'm going to put my latest tree into 2.6.18, and
-I'll add your i2c stuff to my -mm tree for now...  It might get into
-2.6.18 later..
+Is there any way to lessen this problem? Would it help if fbcon worked
+with text modes, or would it be better for each driver to set in a
+default mode that it understands when it gets control? The fbdev
+driver should not set a mode when it loads, but that doesn't mean
+fbcon can't set one when it is activated. Similarly VGAcon would set
+the mode (and load its fonts) when it regains control.
 
-Dave.
+It would also be interesting to make VGAcon a modular driver. You
+could build in fbcon and then work on VGAcon.
 
->
-> dennis
->
-> On Jun 7, 2006, at 4:55 AM, Dave Airlie wrote:
->
-> > Wow, can you give me some numbers from the old/new calc_vclock?
-> >
-> > what does it return when it works and when it doesn't work?
-> >
-> > I'm unsure what could be different on i945, but I'm sure something
-> > could be :-)
-> >
-> > Dave.
->
->
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
->
+-- 
+Jon Smirl
+jonsmirl@gmail.com

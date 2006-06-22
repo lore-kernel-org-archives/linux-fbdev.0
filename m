@@ -1,25 +1,20 @@
-From: Robert Siemer <Robert.Siemer@backsla.sh>
-Subject: Re: [PATCH 2.6.17-1] radeonfb: use generic ddc
-	read functionality
-Date: Thu, 22 Jun 2006 02:22:36 +0200
-Message-ID: <20060622002236.GB20522@polar.elf12.net>
-References: <08F6FAE0-AA73-44C4-B9B8-CB76508D24FF@cecropia.com>
+From: "twomol" <twomol@126.com>
+Subject: Strange iotcl operation
+Date: Thu, 22 Jun 2006 09:36:50 +0800 (CST)
+Message-ID: <4499F432.00003A.03013@m61.126.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="===============1718813848=="
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FtCyB-0008Ax-CO for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 Jun 2006 17:22:58 -0700
-Received: from backsla.sh ([217.160.178.134])
-	by mail.sourceforge.net with smtp (Exim 4.44) id 1FtCy9-000264-J4
+	id 1FtE85-000619-7i for linux-fbdev-devel@lists.sourceforge.net;
+	Wed, 21 Jun 2006 18:37:09 -0700
+Received: from m15-12.126.com ([220.181.15.12])
+	by mail.sourceforge.net with smtp (Exim 4.44) id 1FtE80-0005Gw-EH
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Wed, 21 Jun 2006 17:22:51 -0700
-Content-Disposition: inline
-In-Reply-To: <08F6FAE0-AA73-44C4-B9B8-CB76508D24FF@cecropia.com>
+	Wed, 21 Jun 2006 18:37:09 -0700
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -32,70 +27,77 @@ Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
 
-On Wed, Jun 21, 2006 at 04:52:06PM -0400, Dennis Munsie wrote:
-> hello --
-> 
-> here is that patch i promised in my last email.  This simply changes  
-> the radeonfb driver from using it's current method of reading the  
-> EDID block to using the new functionality that I put into fbmon.c.   
-> I've been able to test it on a radeon card I have here, and it  
-> appears to work just fine.  Again, I would like to get some feedback  
-> from other people that I haven't broke it for their configuration.
 
-Really? I got no comment on my email... <-:
-
-I switched from 2.6.14 to 2.6.16 and trusted the DDC code. - radeonfb
-switched to a 200Hz refresh mode. My monitor can handle only 160Hz.
-I'm still not sure if the monitor is to blame but it makes not a real
-differance:
-
-There should be a 100 or 120Hz cut-off as more is not better but worse
-(energy consumption, monitor aging).
-
-I just booted a DDC enabled kernel with cmdline
-video=radeonfb:1024x768@100, works fine...
-
-Okay, the faulty seems my monitor:
-
-ddcprobe (from edid: line on) says:
-edid: 
-edid: 1 1
-id: 0202
-eisa: EIZ0202
-serial: 00000000
-manufacture: 2 1996
-input: separate sync, composite sync, sync on green, analog signal.
-screensize: 31 23
-gamma: 1.800000
-dpms: RGB, active off, suspend, standby
-timing: 800x600@60 Hz (VESA)
-timing: 800x600@72 Hz (VESA)
-timing: 1024x768@70 Hz (VESA)
-monitorid: 7 V
-dtiming: 1x1@642500
-dtiming: 1x1@642500
-dtiming: 1x1@642500
+--===============1718813848==
+Content-Type: Multipart/Alternative;
+	boundary="Boundary-=_ZfCzIHkLJnRWxETxjehWlrjIGncr"
 
 
-Okay, worthless. Maybe there should be just some sanity checking which
-in my case would skip the dtiming values... Just for people with old
-hardware combinations!? (In my very case there is no workaround a video=
-line... Shame on EIZO.)
+--Boundary-=_ZfCzIHkLJnRWxETxjehWlrjIGncr
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: 7bit
 
-Something like minimal resolution, e.g. 320x160?
-Some future prove max resolution: 10240x7680
-Refresh cut-offs: 20-120Hz
+Hi,all
+I'm using FC5, our graphic card's framebuffer driver's ioctl function work abnormally.I mean
+our framebuffer driver provide extending ioctl command. But the ioctl cmd can't be transport correctly from user space to kernel space, ie,if I ioctl(fd,0x123456,&arg) in user space, the kernel space can not get the cmd 0x12345, but a totally different number. 
+But if I use standard cmd such as FBIOGET_VSCREENINFO, it work normally.
+By the way, My framebuffer driver work on FC4
+Any Suggestion is appreciate.
+ 
+ 
+--Boundary-=_ZfCzIHkLJnRWxETxjehWlrjIGncr
+Content-Type: text/html; charset="gb2312"
+Content-Transfer-Encoding: quoted-printable
 
-Or at least a documentation file in the kernel/Documentation/fb/ tree
-telling about the general fb kernel command line arguments. These could
-include a "ddc=off" or a "ddc=debug". The latter would print the EDID
-values without using them. The printing could be default...
+<DIV><SPAN >Hi,all</SPAN></DIV>
+<DIV><SPAN>I'm using FC5, our graphic card's framebuffer driver's ioctl f=
+unction work abnormally.I mean</SPAN></DIV>
+<DIV><SPAN>our framebuffer driver provide extending ioctl command. But th=
+e ioctl cmd can't be transport correctly from user space to kernel space,=
+ ie,if I ioctl(fd,0x123456,&amp;arg) in user space, the kernel space can =
+not get the cmd 0x12345, but a totally different number. </SPAN></DIV>
+<DIV><SPAN>But if I use standard cmd such as FBIOGET_VSCREENINFO, it work=
+ normally.</SPAN></DIV>
+<DIV><SPAN>By the way, My framebuffer driver work on FC4</SPAN></DIV>
+<DIV><SPAN>Any Suggestion is appreciate.</SPAN></DIV>
+<DIV><SPAN></SPAN>&nbsp;</DIV>
+<DIV><SPAN></SPAN>&nbsp;</DIV><br><!-- footer --><br><br><br><br><br><div=
+ style=3D"border-bottom:1px solid #999"></div><br>
+
+=09<font color=3D"black" style=3D"font-size:14.8px">=C4=E3 =B2=BB =CF=EB =
+=CA=D4 =CA=D4 =BD=F1 =CF=C4 =D7=EE =A1=B0=BF=E1=A1=B1 =B5=C4 =D3=CA =CF=E4=
+ =C2=F0 =A3=BF</font>
+=09<br>
+=09 <a href=3D"http://www.126.com/" target=3D"_blank" style=3D"font-size:=
+13px;line-height:160%;color:blue">=D4=CC =BA=AD =D6=D0 =BB=AA =B4=AB =CD=B3=
+ =CE=C4 =BB=AF =D3=DA =CA=C0 =BD=E7 =D2=BB =C1=F7 =BF=C6 =BC=BC =D6=AE =D6=
+=D0=A3=AC=B4=B4 =D0=C2 Ajax =BC=BC =CA=F5=A3=AC126 =A1=B0D =BC=C6 =BB=AE=A1=
+=B1=BB=F0 =C8=C8 =CC=E5 =D1=E9 =D6=D0 =A3=A1
+</a>
 
 
-Bye,
-	Robert
+--Boundary-=_ZfCzIHkLJnRWxETxjehWlrjIGncr--
+
+
+--===============1718813848==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
 All the advantages of Linux Managed Hosting--Without the Cost and Risk!
 Fully trained technicians. The highest number of Red Hat certifications in
 the hosting industry. Fanatical Support. Click to learn more
 http://sel.as-us.falkag.net/sel?cmd=lnk&kid=107521&bid=248729&dat=121642
+--===============1718813848==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+_______________________________________________
+Linux-fbdev-devel mailing list
+Linux-fbdev-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
+
+--===============1718813848==--

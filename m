@@ -1,34 +1,24 @@
-From: Torgeir Veimo <torgeir@pobox.com>
+From: Dennis Munsie <dmunsie@cecropia.com>
 Subject: Re: [PATCH 1/1] New Framebuffer for Intel based
- Macs [try #2] (fwd)
-Date: Thu, 22 Jun 2006 09:52:51 +0100
-Message-ID: <449A5A63.1080205@pobox.com>
+	Macs [try #2] (fwd)
+Date: Thu, 22 Jun 2006 07:24:03 -0400
+Message-ID: <9D874D8E-7EF1-4C29-98F2-AEDFD78C6676@cecropia.com>
 References: <Pine.LNX.4.62.0606221038280.23155@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
-Mime-Version: 1.0
+Mime-Version: 1.0 (Apple Message framework v750)
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FtKvs-0000Ph-8r for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Jun 2006 01:53:00 -0700
-Received: from rune.pobox.com ([208.210.124.79])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FtKvr-00059d-0e
+	id 1FtNI8-0005E7-HA for linux-fbdev-devel@lists.sourceforge.net;
+	Thu, 22 Jun 2006 04:24:08 -0700
+Received: from mail1.sea5.speakeasy.net ([69.17.117.3])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1FtNI7-0001dg-82
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Thu, 22 Jun 2006 01:53:00 -0700
-Received: from rune (localhost [127.0.0.1])
-	by rune.pobox.com (Postfix) with ESMTP id A750478A7E
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 22 Jun 2006 04:53:16 -0400 (EDT)
-Received: from [10.0.1.1] (82-35-248-75.cable.ubr06.dals.blueyonder.co.uk
-	[82.35.248.75])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by rune.sasl.smtp.pobox.com (Postfix) with ESMTP id 779227871D
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Thu, 22 Jun 2006 04:53:16 -0400 (EDT)
+	Thu, 22 Jun 2006 04:24:08 -0700
 In-Reply-To: <Pine.LNX.4.62.0606221038280.23155@pademelon.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
@@ -41,8 +31,19 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
 To: linux-fbdev-devel@lists.sourceforge.net
+Cc: Edgar Hucek <hostmaster@ed-soft.at>
 
-Geert Uytterhoeven wrote:
+Why is a new framebuffer driver required in this case?  Why not use  
+the intelfb driver for the mini and the MacBook and an ati driver for  
+the iMac and the MacBook Pro?
+
+i guess the only reason why someone might want to use is if the X1600  
+in the MBP and the iMac isn't supported yet.
+
+dennis
+
+On Jun 22, 2006, at 4:38 AM, Geert Uytterhoeven wrote:
+
 > ---------- Forwarded message ----------
 > Date: Wed, 21 Jun 2006 14:40:24 +0200
 > From: Edgar Hucek <hostmaster@ed-soft.at>
@@ -52,20 +53,7 @@ Geert Uytterhoeven wrote:
 > This patch add a new framebuffer driver for the Intel Based macs.
 > This framebuffer is needed when booting from EFI to get something
 > out the box  ;)
->
-> +typedef enum _MAC_TYPE {
-> +	M_I17,
-> +	M_I20,
-> +	M_MINI,
-> +	M_MACBOOK,
-> +	M_NEW
-> +} MAC_TYPE;
->   
-This doesn't support the macbook pro?
-
--- 
--Torgeir
-
+> Removed unused and untested code in this version of the patch.
 
 All the advantages of Linux Managed Hosting--Without the Cost and Risk!
 Fully trained technicians. The highest number of Red Hat certifications in

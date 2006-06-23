@@ -1,12 +1,7 @@
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH 2.6.17-rc6-mm2] fbdev: tag
- by	scantype in sysfs
-Date: Fri, 23 Jun 2006 20:00:11 +0800
-Message-ID: <449BD7CB.1050904@gmail.com>
-References: <4497AA7A.5050507@st.com>
-	<4497B4FA.2080602@pol.net>	<4497C289.5060007@st.com>
-	<4497CE24.7050908@gmail.com>	<1151049881.12499.18.camel@butch.bri.st.com>	<Pine.LNX.4.62.0606231115180.31279@pademelon.sonytel.be>
-	<449BB94A.6000003@st.com>
+From: "Jordan Crouse" <jordan.crouse@amd.com>
+Subject: [GIT PATCH] Geode patches for 2.6.17
+Date: Fri, 23 Jun 2006 11:00:58 -0600
+Message-ID: <20060623170058.GA12819@cosmic.amd.com>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -15,16 +10,15 @@ Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
 Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1FtkKm-0008V0-4R for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 23 Jun 2006 05:00:24 -0700
-Received: from py-out-1112.google.com ([64.233.166.177])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1FtkKk-0005ss-R6
+	id 1Ftox5-0003Da-9O for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 23 Jun 2006 09:56:15 -0700
+Received: from outbound-fra.frontbridge.com ([62.209.45.174]
+	helo=outbound1-fra-R.bigfish.com)
+	by mail.sourceforge.net with esmtps (TLSv1:DES-CBC3-SHA:168)
+	(Exim 4.44) id 1Ftox2-0000gi-7d
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 23 Jun 2006 05:00:24 -0700
-Received: by py-out-1112.google.com with SMTP id c31so739702pyd
-	for <linux-fbdev-devel@lists.sourceforge.net>;
-	Fri, 23 Jun 2006 05:00:17 -0700 (PDT)
-In-Reply-To: <449BB94A.6000003@st.com>
+	Fri, 23 Jun 2006 09:56:15 -0700
+Content-Disposition: inline
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -35,53 +29,36 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: linux-fbdev-devel@lists.sourceforge.net
-Cc: Daniel THOMPSON <daniel.thompson@st.com>, Geert Uytterhoeven <geert@linux-m68k.org>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@osdl.org, linux-fbdev-devel@lists.sourceforge.net
 
-Daniel THOMPSON wrote:
-> Geert Uytterhoeven wrote:
->> On Fri, 23 Jun 2006, Daniel THOMPSON wrote:
->>> On Tue, 2006-06-20 at 18:29 +0800, Antonino A. Daplas wrote:
->>>>  /sys/class/graphics---fb0
->>>>                     :
->>>>                     --fb1
->>>>                     :
->>>>                     --fbn
->>>>                     :
->>>>                     --mode0---640x480@60
->>>>                     :       :
->>>>                     :       --1024x768@60
->>>>                     :  
->>>>                     --mode1
->>> So the directory mode0 contains all the modes that fb0 is capable of
->>> displaying? Can't that go inside fb0?
->> Let's hope not, as most machines/fb combos don't have enough RAM to store all
->> modes the fb is capable of.
-> 
-> Fair point.
-> 
-> By default the existing modes includes only the VESA standard modes,
-> although I would expect drivers for TV-like hardware to override the
-> mode list to get the supportable CEA-851 standards instead.
->
+Hi - 
 
-It only includes modes that are in the driver's private mode list. For
-most drivers, that's one entry, for others with EDID, it can be as
-much as 40 (near-maximum the EDID block is capable of), but typically
-less than 10.
- 
-> I confess I'm having a great deal of difficulty trying to think of any
-> way to update the mode list while sticking to one file, one value.
+Please consider pulling from:
+git://git.infradead.net/users/jcrouse/geode.git linus-upstream
 
-We can unbind fb[n] from display[n], echo the mode we want added to an 'x'
-file one by one, and the modes we don't want into a 'y' file. Finally,
-we can bind fb[n] back to display[n]. It's ugly, but can work.
+This is the new home for patches for the AMD Geode family of processors.
 
-After giving it some thought, sysfs is just not appropriate to serve the
-needs of the framebuffer system. So I'll leave fbsysfs untouched for now and
-just find/invent more appropriate interfaces.
+For 2.6.18, we offer up patches to support the One Laptop
+Per Child effort - namely framebuffer tweaks, plus an attempt to remove
+automagic probing of VGA registers (which we don't have on the OLPC
+platform).
 
-Tony
+Here is the shortlog:
+
+Jordan Crouse:
+      GEODE: Update and fixup the PCI IDs for the CS5535
+      FB: Get the Geode GX frambuffer size from the BIOS
+      Add a configuration option to avoid automatically probing VGA
+      gxfb: Fixups for the AMD Geode GX framebuffer driver
+
+--
+Jordan Crouse
+Senior Linux Engineer
+Advanced Micro Devices, Inc.
+<www.amd.com/embeddedprocessors>
+
+
 
 Using Tomcat but need to do more? Need to support web services, security?
 Get stuff done quickly with pre-integrated technology to make your job easier

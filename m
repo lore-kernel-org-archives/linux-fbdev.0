@@ -1,26 +1,36 @@
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Daniel THOMPSON <daniel.thompson@st.com>
 Subject: Re: [PATCH 2.6.17-rc6-mm2] fbdev: tag by
- scantype in sysfs
-Date: Fri, 23 Jun 2006 11:16:07 +0200 (CEST)
-Message-ID: <Pine.LNX.4.62.0606231115180.31279@pademelon.sonytel.be>
+	scantype in sysfs
+Date: Fri, 23 Jun 2006 10:50:02 +0100
+Message-ID: <449BB94A.6000003@st.com>
 References: <4497AA7A.5050507@st.com> <4497B4FA.2080602@pol.net>
-	<4497C289.5060007@st.com>  <4497CE24.7050908@gmail.com>
+	<4497C289.5060007@st.com> <4497CE24.7050908@gmail.com>
 	<1151049881.12499.18.camel@butch.bri.st.com>
+	<Pine.LNX.4.62.0606231115180.31279@pademelon.sonytel.be>
 Reply-To: linux-fbdev-devel@lists.sourceforge.net
 Mime-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Return-path: <linux-fbdev-devel-bounces@lists.sourceforge.net>
-Received: from sc8-sf-mx1-b.sourceforge.net ([10.3.1.91]
+Received: from sc8-sf-mx2-b.sourceforge.net ([10.3.1.92]
 	helo=mail.sourceforge.net)
 	by sc8-sf-list1-new.sourceforge.net with esmtp (Exim 4.43)
-	id 1Fthly-0002j5-BS for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 23 Jun 2006 02:16:18 -0700
-Received: from witte.sonytel.be ([80.88.33.193])
-	by mail.sourceforge.net with esmtp (Exim 4.44) id 1Fthlt-0007qC-5z
+	id 1FtiN9-0005y7-0M for linux-fbdev-devel@lists.sourceforge.net;
+	Fri, 23 Jun 2006 02:54:43 -0700
+Received: from lon-del-03.spheriq.net ([195.46.50.99])
+	by mail.sourceforge.net with esmtps (TLSv1:AES256-SHA:256)
+	(Exim 4.44) id 1FtiN7-0005SW-7t
 	for linux-fbdev-devel@lists.sourceforge.net;
-	Fri, 23 Jun 2006 02:16:18 -0700
-In-Reply-To: <1151049881.12499.18.camel@butch.bri.st.com>
+	Fri, 23 Jun 2006 02:54:43 -0700
+Received: from lon-out-01.spheriq.net ([195.46.50.129])
+	by lon-del-03.spheriq.net with ESMTP id k5N9sbvX008437
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Fri, 23 Jun 2006 09:54:37 GMT
+Received: from lon-cus-01.spheriq.net (lon-cus-01.spheriq.net [195.46.50.37])
+	by lon-out-01.spheriq.net with ESMTP id k5N9teRk021222
+	for <linux-fbdev-devel@lists.sourceforge.net>;
+	Fri, 23 Jun 2006 09:55:44 GMT
+In-Reply-To: <Pine.LNX.4.62.0606231115180.31279@pademelon.sonytel.be>
 List-Id: <fbdev-devel.lists.sourceforge.net>
 List-Unsubscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>,
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=unsubscribe>
@@ -31,39 +41,43 @@ List-Subscribe: <https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel>
 	<mailto:linux-fbdev-devel-request@lists.sourceforge.net?subject=subscribe>
 Sender: linux-fbdev-devel-bounces@lists.sourceforge.net
 Errors-To: linux-fbdev-devel-bounces@lists.sourceforge.net
-To: daniel.thompson@st.com, Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux Frame Buffer Device Development <linux-fbdev-devel@lists.sourceforge.net>, "Antonino A. Daplas" <adaplas@gmail.com>
 
-On Fri, 23 Jun 2006, Daniel THOMPSON wrote:
-> On Tue, 2006-06-20 at 18:29 +0800, Antonino A. Daplas wrote:
-> >  /sys/class/graphics---fb0
-> >                     :
-> >                     --fb1
-> >                     :
-> >                     --fbn
-> >                     :
-> >                     --mode0---640x480@60
-> >                     :       :
-> >                     :       --1024x768@60
-> >                     :  
-> >                     --mode1
+Geert Uytterhoeven wrote:
+> On Fri, 23 Jun 2006, Daniel THOMPSON wrote:
+>> On Tue, 2006-06-20 at 18:29 +0800, Antonino A. Daplas wrote:
+>>>  /sys/class/graphics---fb0
+>>>                     :
+>>>                     --fb1
+>>>                     :
+>>>                     --fbn
+>>>                     :
+>>>                     --mode0---640x480@60
+>>>                     :       :
+>>>                     :       --1024x768@60
+>>>                     :  
+>>>                     --mode1
+>> So the directory mode0 contains all the modes that fb0 is capable of
+>> displaying? Can't that go inside fb0?
 > 
-> So the directory mode0 contains all the modes that fb0 is capable of
-> displaying? Can't that go inside fb0?
+> Let's hope not, as most machines/fb combos don't have enough RAM to store all
+> modes the fb is capable of.
 
-Let's hope not, as most machines/fb combos don't have enough RAM to store all
-modes the fb is capable of.
+Fair point.
 
-Gr{oetje,eeting}s,
+By default the existing modes includes only the VESA standard modes,
+although I would expect drivers for TV-like hardware to override the
+mode list to get the supportable CEA-851 standards instead.
 
-						Geert
+I confess I'm having a great deal of difficulty trying to think of any
+way to update the mode list while sticking to one file, one value.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+-- 
+Daniel Thompson (STMicroelectronics) <daniel.thompson@st.com>
+1000 Aztec West, Almondsbury, Bristol, BS32 4SQ. 01454 462659
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+If a car is a horseless carriage then is a motorcycle a horseless horse?
 
 Using Tomcat but need to do more? Need to support web services, security?
 Get stuff done quickly with pre-integrated technology to make your job easier
